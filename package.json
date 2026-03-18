@@ -294,6 +294,12 @@
       "import": "./dist/esm/plugins/webmcp/index.js",
       "default": "./dist/esm/plugins/webmcp/index.js"
     },
+    "./plugins/viewer": {
+      "types": "./dist/types/plugins/viewer/index.d.ts",
+      "require": "./dist/cjs/plugins/viewer/index.js",
+      "import": "./dist/esm/plugins/viewer/index.js",
+      "default": "./dist/esm/plugins/viewer/index.js"
+    },
     "./plugins/attachments-compression": {
       "types": "./dist/types/plugins/attachments-compression/index.d.ts",
       "require": "./dist/cjs/plugins/attachments-compression/index.js",

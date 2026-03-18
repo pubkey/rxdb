@@ -1,0 +1,1610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RxDB Viewer</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/simple-peer@9/simplepeer.min.js"></script>
+    <style>
+        :root {
+            --bg-primary: #20293C;
+            --bg-secondary: #0D0F18;
+            --bg-tertiary: #282330;
+            --bg-input: #1a2235;
+            --color-primary: #ED168F;
+            --color-primary-hover: #ff2da6;
+            --color-accent: #29d5b0;
+            --color-text: #ffffff;
+            --color-text-secondary: #a0aec0;
+            --color-text-dim: #6272A4;
+            --color-border: #2d3748;
+            --color-error: #fc8181;
+            --color-success: #68d391;
+            --color-warning: #f6e05e;
+            --color-purple: #BD93F9;
+            --color-green: #50FA7B;
+            --color-yellow: #F1FA8C;
+            --color-cyan: #8BE9FD;
+            --color-orange: #FFB86C;
+            --radius: 6px;
+            --radius-sm: 4px;
+            --transition: all 0.15s ease-in-out;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--color-text);
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        #root { height: 100vh; display: flex; flex-direction: column; }
+
+        /* Header */
+        .header {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--color-border);
+            padding: 0 20px;
+            height: 52px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+        .header-left { display: flex; align-items: center; gap: 12px; }
+        .header-logo {
+            font-size: 18px;
+            font-weight: 800;
+            background: linear-gradient(90deg, var(--color-primary), #b2218b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .header-db-name {
+            color: var(--color-text-secondary);
+            font-size: 14px;
+            padding: 4px 10px;
+            background: var(--bg-primary);
+            border-radius: var(--radius-sm);
+        }
+        .header-right { display: flex; align-items: center; gap: 12px; }
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            color: var(--color-text-secondary);
+        }
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+        .status-dot.connected { background: var(--color-success); }
+        .status-dot.connecting { background: var(--color-warning); animation: pulse 1s infinite; }
+        .status-dot.disconnected { background: var(--color-error); }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        /* Main layout */
+        .main-layout {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 240px;
+            min-width: 240px;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--color-border);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .sidebar-header {
+            padding: 14px 16px 10px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--color-text-dim);
+        }
+        .collection-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0 8px;
+        }
+        .collection-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 12px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 14px;
+            margin-bottom: 2px;
+        }
+        .collection-item:hover { background: rgba(255,255,255,0.05); }
+        .collection-item.active {
+            background: linear-gradient(90deg, rgba(237,22,143,0.15), rgba(178,33,139,0.1));
+            color: var(--color-primary);
+        }
+        .collection-item .doc-count {
+            font-size: 12px;
+            color: var(--color-text-dim);
+            background: rgba(255,255,255,0.05);
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+        .collection-item.active .doc-count {
+            background: rgba(237,22,143,0.2);
+            color: var(--color-primary);
+        }
+
+        /* Schema panel in sidebar */
+        .sidebar-schema {
+            border-top: 1px solid var(--color-border);
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .sidebar-schema-header {
+            padding: 10px 16px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--color-text-dim);
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .sidebar-schema-content {
+            padding: 0 12px 12px;
+        }
+        .schema-json {
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            line-height: 1.5;
+            color: var(--color-text-secondary);
+            background: var(--bg-primary);
+            padding: 10px;
+            border-radius: var(--radius-sm);
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-break: break-all;
+            max-height: 220px;
+            overflow-y: auto;
+        }
+
+        /* Content area */
+        .content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Toolbar */
+        .toolbar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 16px;
+            border-bottom: 1px solid var(--color-border);
+            background: var(--bg-secondary);
+            flex-shrink: 0;
+        }
+        .query-input {
+            flex: 1;
+            background: var(--bg-input);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-sm);
+            color: var(--color-text);
+            padding: 8px 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            outline: none;
+            transition: var(--transition);
+        }
+        .query-input:focus {
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 2px rgba(237,22,143,0.15);
+        }
+        .query-input::placeholder { color: var(--color-text-dim); }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 0;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--color-border);
+            padding: 0 16px;
+            flex-shrink: 0;
+        }
+        .tab {
+            padding: 8px 16px;
+            font-size: 13px;
+            cursor: pointer;
+            color: var(--color-text-secondary);
+            border-bottom: 2px solid transparent;
+            transition: var(--transition);
+        }
+        .tab:hover { color: var(--color-text); }
+        .tab.active {
+            color: var(--color-primary);
+            border-bottom-color: var(--color-primary);
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 7px 14px;
+            border-radius: var(--radius-sm);
+            border: none;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-primary {
+            background: linear-gradient(90deg, var(--color-primary), #b2218b);
+            color: white;
+        }
+        .btn-primary:hover {
+            box-shadow: 0 0 6px rgba(237,22,143,0.4);
+        }
+        .btn-secondary {
+            background: transparent;
+            border: 1px solid var(--color-border);
+            color: var(--color-text-secondary);
+        }
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.05);
+            color: var(--color-text);
+        }
+        .btn-danger {
+            background: transparent;
+            border: 1px solid rgba(252,129,129,0.3);
+            color: var(--color-error);
+        }
+        .btn-danger:hover {
+            background: rgba(252,129,129,0.1);
+        }
+        .btn-sm {
+            padding: 4px 10px;
+            font-size: 12px;
+        }
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Document table */
+        .table-container {
+            flex: 1;
+            overflow: auto;
+        }
+        .doc-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        .doc-table th {
+            position: sticky;
+            top: 0;
+            background: var(--bg-secondary);
+            padding: 10px 14px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--color-text-dim);
+            border-bottom: 1px solid var(--color-border);
+            cursor: pointer;
+            user-select: none;
+            white-space: nowrap;
+            z-index: 1;
+        }
+        .doc-table th:hover { color: var(--color-text-secondary); }
+        .doc-table th.sorted { color: var(--color-primary); }
+        .doc-table td {
+            padding: 8px 14px;
+            border-bottom: 1px solid rgba(45,55,72,0.5);
+            max-width: 300px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            color: var(--color-text-secondary);
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+        .doc-table tr { transition: var(--transition); }
+        .doc-table tr:hover { background: rgba(255,255,255,0.02); }
+        .doc-table tr.selected {
+            background: rgba(237,22,143,0.08);
+        }
+        .doc-table tr.selected td { color: var(--color-text); }
+        .cell-string { color: var(--color-yellow); }
+        .cell-number { color: var(--color-purple); }
+        .cell-boolean { color: var(--color-orange); }
+        .cell-null { color: var(--color-text-dim); font-style: italic; }
+        .cell-object { color: var(--color-cyan); }
+
+        /* Document detail panel */
+        .detail-panel {
+            width: 400px;
+            min-width: 400px;
+            border-left: 1px solid var(--color-border);
+            background: var(--bg-secondary);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .detail-header {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--color-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 13px;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+        .detail-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px;
+        }
+        .json-viewer {
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        .json-key { color: var(--color-cyan); }
+        .json-string { color: var(--color-yellow); }
+        .json-number { color: var(--color-purple); }
+        .json-boolean { color: var(--color-orange); }
+        .json-null { color: var(--color-text-dim); }
+        .json-brace { color: var(--color-text-secondary); }
+
+        .detail-actions {
+            padding: 10px 16px;
+            border-top: 1px solid var(--color-border);
+            display: flex;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        /* Connect panel */
+        .connect-panel {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+            padding: 40px;
+        }
+        .connect-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            padding: 40px;
+            max-width: 560px;
+            width: 100%;
+        }
+        .connect-title {
+            font-size: 24px;
+            font-weight: 800;
+            margin-bottom: 8px;
+            background: linear-gradient(90deg, var(--color-primary), #b2218b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .connect-subtitle {
+            color: var(--color-text-secondary);
+            font-size: 14px;
+            margin-bottom: 24px;
+            line-height: 1.5;
+        }
+        .connect-label {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: block;
+            color: var(--color-text-secondary);
+        }
+        .connect-textarea {
+            width: 100%;
+            height: 120px;
+            background: var(--bg-input);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-sm);
+            color: var(--color-text);
+            padding: 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            resize: vertical;
+            outline: none;
+            margin-bottom: 16px;
+            transition: var(--transition);
+        }
+        .connect-textarea:focus {
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 2px rgba(237,22,143,0.15);
+        }
+        .connect-error {
+            color: var(--color-error);
+            font-size: 13px;
+            margin-bottom: 12px;
+            padding: 8px 12px;
+            background: rgba(252,129,129,0.1);
+            border-radius: var(--radius-sm);
+        }
+
+        /* Query Observer panel */
+        .observer-panel {
+            border-top: 1px solid var(--color-border);
+            background: var(--bg-secondary);
+            max-height: 280px;
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+        .observer-header {
+            padding: 8px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--color-border);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+        .observer-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px;
+        }
+        .observer-item {
+            padding: 8px 12px;
+            background: var(--bg-primary);
+            border-radius: var(--radius-sm);
+            margin-bottom: 6px;
+            font-size: 12px;
+        }
+        .observer-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+        .observer-item-query {
+            font-family: 'Courier New', monospace;
+            color: var(--color-text-secondary);
+            font-size: 11px;
+        }
+        .observer-item-meta {
+            color: var(--color-text-dim);
+            font-size: 11px;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        .observer-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .observer-badge.live {
+            background: rgba(104,211,145,0.15);
+            color: var(--color-success);
+        }
+
+        /* Empty state */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+            color: var(--color-text-dim);
+            font-size: 14px;
+            gap: 8px;
+        }
+
+        /* Edit modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+        .modal {
+            background: var(--bg-secondary);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            padding: 24px;
+            width: 600px;
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .modal-title {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+        .modal-body { flex: 1; overflow-y: auto; }
+        .modal textarea {
+            width: 100%;
+            min-height: 300px;
+            background: var(--bg-input);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-sm);
+            color: var(--color-text);
+            padding: 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            resize: vertical;
+            outline: none;
+        }
+        .modal textarea:focus {
+            border-color: var(--color-primary);
+        }
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            margin-top: 16px;
+        }
+        .modal-error {
+            color: var(--color-error);
+            font-size: 13px;
+            margin-top: 8px;
+        }
+
+        /* Toast notification */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 10px 18px;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            z-index: 200;
+            animation: slideIn 0.2s ease-out;
+        }
+        .toast.success { background: rgba(104,211,145,0.2); color: var(--color-success); border: 1px solid rgba(104,211,145,0.3); }
+        .toast.error { background: rgba(252,129,129,0.2); color: var(--color-error); border: 1px solid rgba(252,129,129,0.3); }
+
+        @keyframes slideIn {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--color-text-dim); }
+
+        /* Status bar */
+        .status-bar {
+            height: 26px;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--color-border);
+            padding: 0 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 11px;
+            color: var(--color-text-dim);
+            flex-shrink: 0;
+        }
+    </style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+// process.nextTick polyfill for simple-peer
+if (typeof process === 'undefined') {
+    window.process = { nextTick: function(fn) { Promise.resolve().then(fn); } };
+} else if (typeof process.nextTick !== 'function') {
+    process.nextTick = function(fn) { Promise.resolve().then(fn); };
+}
+
+var h = React.createElement;
+var useState = React.useState;
+var useEffect = React.useEffect;
+var useRef = React.useRef;
+var useCallback = React.useCallback;
+var useMemo = React.useMemo;
+
+// ========== WebRTC Connection Layer ==========
+function createViewerConnection(params, callbacks) {
+    var topic = params.topic;
+    var signalingServerUrl = params.signalingServerUrl;
+    var peer = null;
+    var ownPeerId = '';
+    var peers = {};
+    var closed = false;
+    var socket = null;
+    var pendingRequests = {};
+    var requestCounter = 0;
+    var pingInterval = null;
+
+    function sendSocketMsg(ws, msg) {
+        if (ws && ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify(msg));
+        }
+    }
+
+    function createSocket() {
+        if (closed) return;
+        socket = new WebSocket(signalingServerUrl);
+        socket.onclose = function() {
+            if (!closed) {
+                callbacks.onStatusChange('connecting');
+                setTimeout(function() { createSocket(); }, 2000);
+            }
+        };
+        socket.onerror = function() {};
+        socket.onopen = function() {
+            socket.onmessage = function(ev) {
+                var msg = JSON.parse(ev.data);
+                switch (msg.type) {
+                    case 'init':
+                        ownPeerId = msg.yourPeerId;
+                        sendSocketMsg(socket, { type: 'join', room: topic });
+                        break;
+                    case 'joined':
+                        msg.otherPeerIds.forEach(function(remotePeerId) {
+                            if (remotePeerId === ownPeerId || peers[remotePeerId]) return;
+                            createPeerConnection(remotePeerId);
+                        });
+                        break;
+                    case 'signal':
+                        var p = peers[msg.senderPeerId];
+                        if (p) p.signal(msg.data);
+                        break;
+                }
+            };
+        };
+    }
+
+    function createPeerConnection(remotePeerId) {
+        var disconnected = false;
+        var sp = new SimplePeer({
+            initiator: remotePeerId > ownPeerId,
+            trickle: true
+        });
+        peers[remotePeerId] = sp;
+
+        sp.on('signal', function(signal) {
+            sendSocketMsg(socket, {
+                type: 'signal',
+                senderPeerId: ownPeerId,
+                receiverPeerId: remotePeerId,
+                room: topic,
+                data: signal
+            });
+        });
+
+        sp.on('data', function(data) {
+            var msg = JSON.parse(data.toString());
+            if (msg.type === 'observeResult') {
+                callbacks.onObserveResult(msg.observeId, msg.data);
+            } else if (msg.id && pendingRequests[msg.id]) {
+                pendingRequests[msg.id](msg);
+                delete pendingRequests[msg.id];
+            }
+        });
+
+        sp.on('connect', function() {
+            peer = sp;
+            callbacks.onStatusChange('connected');
+        });
+
+        sp.on('error', function() {
+            if (!disconnected) {
+                disconnected = true;
+                delete peers[remotePeerId];
+                if (peer === sp) {
+                    peer = null;
+                    callbacks.onStatusChange('connecting');
+                }
+            }
+        });
+
+        sp.on('close', function() {
+            if (!disconnected) {
+                disconnected = true;
+                delete peers[remotePeerId];
+                if (peer === sp) {
+                    peer = null;
+                    callbacks.onStatusChange('connecting');
+                }
+            }
+            if (!closed) {
+                createPeerConnection(remotePeerId);
+            }
+        });
+    }
+
+    createSocket();
+    pingInterval = setInterval(function() {
+        if (closed) { clearInterval(pingInterval); return; }
+        sendSocketMsg(socket, { type: 'ping' });
+    }, 120000);
+
+    return {
+        sendRequest: function(method, params) {
+            return new Promise(function(resolve, reject) {
+                if (!peer) {
+                    reject(new Error('Not connected'));
+                    return;
+                }
+                var id = 'vr-' + (++requestCounter) + '-' + Date.now();
+                var timeout = setTimeout(function() {
+                    delete pendingRequests[id];
+                    reject(new Error('Request timeout'));
+                }, 30000);
+                pendingRequests[id] = function(response) {
+                    clearTimeout(timeout);
+                    if (response.error) {
+                        reject(new Error(response.error));
+                    } else {
+                        resolve(response.result);
+                    }
+                };
+                try {
+                    peer.send(JSON.stringify({ id: id, method: method, params: params || {} }));
+                } catch (e) {
+                    clearTimeout(timeout);
+                    delete pendingRequests[id];
+                    reject(e);
+                }
+            });
+        },
+        close: function() {
+            closed = true;
+            clearInterval(pingInterval);
+            Object.keys(peers).forEach(function(k) {
+                try { peers[k].destroy(); } catch(e) {}
+            });
+            peers = {};
+            peer = null;
+            if (socket) {
+                try { socket.close(); } catch(e) {}
+            }
+        }
+    };
+}
+
+// ========== JSON Syntax Highlighting ==========
+function syntaxHighlight(json) {
+    if (typeof json !== 'string') json = JSON.stringify(json, null, 2);
+    json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    return json.replace(
+        /("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g,
+        function(match) {
+            var cls = 'json-number';
+            if (/^"/.test(match)) {
+                if (/:$/.test(match)) {
+                    cls = 'json-key';
+                    match = match.slice(0, -1);
+                    return '<span class="' + cls + '">' + match + '</span>:';
+                } else {
+                    cls = 'json-string';
+                }
+            } else if (/true|false/.test(match)) {
+                cls = 'json-boolean';
+            } else if (/null/.test(match)) {
+                cls = 'json-null';
+            }
+            return '<span class="' + cls + '">' + match + '</span>';
+        }
+    );
+}
+
+function getCellClass(val) {
+    if (val === null || val === undefined) return 'cell-null';
+    if (typeof val === 'string') return 'cell-string';
+    if (typeof val === 'number') return 'cell-number';
+    if (typeof val === 'boolean') return 'cell-boolean';
+    if (typeof val === 'object') return 'cell-object';
+    return '';
+}
+
+function formatCellValue(val) {
+    if (val === null || val === undefined) return 'null';
+    if (typeof val === 'object') return JSON.stringify(val);
+    return String(val);
+}
+
+// ========== React Components ==========
+
+function ConnectPanel(props) {
+    var paramsText = props.paramsText;
+    var setParamsText = props.setParamsText;
+    var onConnect = props.onConnect;
+    var error = props.error;
+    var connecting = props.connecting;
+
+    return h('div', { className: 'connect-panel' },
+        h('div', { className: 'connect-card' },
+            h('div', { className: 'connect-title' }, 'RxDB Viewer'),
+            h('div', { className: 'connect-subtitle' },
+                'Connect to any RxDB database remotely via WebRTC. Paste the connection parameters JSON below to get started.'
+            ),
+            h('label', { className: 'connect-label' }, 'Connection Parameters (JSON)'),
+            h('textarea', {
+                className: 'connect-textarea',
+                value: paramsText,
+                onChange: function(e) { setParamsText(e.target.value); },
+                placeholder: '{\n  "topic": "rxdb-viewer-...",\n  "signalingServerUrl": "wss://signaling.rxdb.info/",\n  "databaseName": "mydb"\n}',
+                spellCheck: false
+            }),
+            error ? h('div', { className: 'connect-error' }, error) : null,
+            h('button', {
+                className: 'btn btn-primary',
+                onClick: onConnect,
+                disabled: connecting,
+                style: { width: '100%', justifyContent: 'center', height: 42 }
+            }, connecting ? 'Connecting...' : 'Connect')
+        )
+    );
+}
+
+function DocumentTable(props) {
+    var documents = props.documents;
+    var columns = props.columns;
+    var selectedDoc = props.selectedDoc;
+    var onSelectDoc = props.onSelectDoc;
+    var sortField = props.sortField;
+    var sortDir = props.sortDir;
+    var onSort = props.onSort;
+
+    if (!documents.length) {
+        return h('div', { className: 'empty-state' },
+            h('div', { style: { fontSize: 32, marginBottom: 8 } }, '\u{1F4C4}'),
+            'No documents found'
+        );
+    }
+
+    return h('div', { className: 'table-container' },
+        h('table', { className: 'doc-table' },
+            h('thead', null,
+                h('tr', null,
+                    columns.map(function(col) {
+                        var isSorted = sortField === col;
+                        return h('th', {
+                            key: col,
+                            className: isSorted ? 'sorted' : '',
+                            onClick: function() { onSort(col); }
+                        }, col + (isSorted ? (sortDir === 'asc' ? ' \u2191' : ' \u2193') : ''));
+                    })
+                )
+            ),
+            h('tbody', null,
+                documents.map(function(doc, idx) {
+                    var primaryVal = JSON.stringify(doc[columns[0]]);
+                    var isSelected = selectedDoc && JSON.stringify(selectedDoc[columns[0]]) === primaryVal;
+                    return h('tr', {
+                        key: primaryVal || idx,
+                        className: isSelected ? 'selected' : '',
+                        onClick: function() { onSelectDoc(doc); }
+                    },
+                        columns.map(function(col) {
+                            var val = doc[col];
+                            return h('td', {
+                                key: col,
+                                className: getCellClass(val),
+                                title: formatCellValue(val)
+                            }, formatCellValue(val));
+                        })
+                    );
+                })
+            )
+        )
+    );
+}
+
+function DetailPanel(props) {
+    var doc = props.doc;
+    var onClose = props.onClose;
+    var onEdit = props.onEdit;
+    var onDelete = props.onDelete;
+
+    if (!doc) return null;
+
+    return h('div', { className: 'detail-panel' },
+        h('div', { className: 'detail-header' },
+            h('span', null, 'Document Detail'),
+            h('button', { className: 'btn btn-secondary btn-sm', onClick: onClose }, '\u2715')
+        ),
+        h('div', { className: 'detail-body' },
+            h('div', {
+                className: 'json-viewer',
+                dangerouslySetInnerHTML: { __html: syntaxHighlight(doc) }
+            })
+        ),
+        h('div', { className: 'detail-actions' },
+            h('button', { className: 'btn btn-secondary btn-sm', onClick: function() { onEdit(doc); } }, 'Edit'),
+            h('button', { className: 'btn btn-danger btn-sm', onClick: function() { onDelete(doc); } }, 'Delete'),
+            h('button', { className: 'btn btn-secondary btn-sm', onClick: function() {
+                navigator.clipboard.writeText(JSON.stringify(doc, null, 2));
+            }}, 'Copy JSON')
+        )
+    );
+}
+
+function EditModal(props) {
+    var isOpen = props.isOpen;
+    var title = props.title;
+    var initialValue = props.initialValue;
+    var onSave = props.onSave;
+    var onCancel = props.onCancel;
+    var error = props.error;
+    var textRef = useRef(null);
+    var currentText = useRef(initialValue || '');
+
+    useEffect(function() {
+        currentText.current = initialValue || '';
+        if (textRef.current) {
+            textRef.current.value = initialValue || '';
+        }
+    }, [initialValue, isOpen]);
+
+    if (!isOpen) return null;
+
+    return h('div', { className: 'modal-overlay', onClick: function(e) {
+        if (e.target === e.currentTarget) onCancel();
+    }},
+        h('div', { className: 'modal' },
+            h('div', { className: 'modal-title' }, title),
+            h('div', { className: 'modal-body' },
+                h('textarea', {
+                    ref: textRef,
+                    defaultValue: initialValue,
+                    onChange: function(e) { currentText.current = e.target.value; },
+                    spellCheck: false
+                })
+            ),
+            error ? h('div', { className: 'modal-error' }, error) : null,
+            h('div', { className: 'modal-actions' },
+                h('button', { className: 'btn btn-secondary', onClick: onCancel }, 'Cancel'),
+                h('button', { className: 'btn btn-primary', onClick: function() {
+                    onSave(currentText.current);
+                }}, 'Save')
+            )
+        )
+    );
+}
+
+function QueryObserverPanel(props) {
+    var queries = props.queries;
+    var onRemove = props.onRemove;
+    var isOpen = props.isOpen;
+    var onToggle = props.onToggle;
+    var onViewResults = props.onViewResults;
+
+    return h('div', { className: 'observer-panel', style: isOpen ? {} : { maxHeight: 36 } },
+        h('div', { className: 'observer-header', onClick: onToggle },
+            h('span', null, 'Query Observer (' + queries.length + ')'),
+            h('span', null, isOpen ? '\u25BC' : '\u25B2')
+        ),
+        isOpen ? h('div', { className: 'observer-body' },
+            queries.length === 0 ?
+                h('div', { style: { color: 'var(--color-text-dim)', fontSize: 12, padding: 12, textAlign: 'center' } },
+                    'No observed queries. Use the toolbar to observe a query.'
+                ) :
+                queries.map(function(q) {
+                    return h('div', { key: q.id, className: 'observer-item' },
+                        h('div', { className: 'observer-item-header' },
+                            h('span', null,
+                                h('span', { style: { color: 'var(--color-accent)', fontWeight: 600 } }, q.collection),
+                                h('span', { className: 'observer-badge live', style: { marginLeft: 8 } }, '\u25CF Live')
+                            ),
+                            h('div', { style: { display: 'flex', gap: 6 } },
+                                h('button', { className: 'btn btn-secondary btn-sm', onClick: function() { onViewResults(q); } },
+                                    q.resultCount + ' docs'
+                                ),
+                                h('button', { className: 'btn btn-danger btn-sm', onClick: function() { onRemove(q.id); } }, '\u2715')
+                            )
+                        ),
+                        h('div', { className: 'observer-item-query' }, JSON.stringify(q.query || {})),
+                        h('div', { className: 'observer-item-meta' },
+                            q.lastUpdated ? 'Updated ' + new Date(q.lastUpdated).toLocaleTimeString() : 'Waiting...'
+                        )
+                    );
+                })
+        ) : null
+    );
+}
+
+function SchemaView(props) {
+    var schema = props.schema;
+    if (!schema) {
+        return h('div', { className: 'empty-state' }, 'Select a collection to view its schema');
+    }
+    return h('div', { style: { padding: 16, flex: 1, overflow: 'auto' } },
+        h('div', {
+            className: 'json-viewer',
+            dangerouslySetInnerHTML: { __html: syntaxHighlight(schema) }
+        })
+    );
+}
+
+// ========== Main App ==========
+function App() {
+    var _connState = useState('disconnected');
+    var connectionState = _connState[0], setConnectionState = _connState[1];
+
+    var _paramsText = useState('');
+    var paramsText = _paramsText[0], setParamsText = _paramsText[1];
+
+    var _connError = useState(null);
+    var connError = _connError[0], setConnError = _connError[1];
+
+    var _dbInfo = useState(null);
+    var dbInfo = _dbInfo[0], setDbInfo = _dbInfo[1];
+
+    var _selectedCollection = useState(null);
+    var selectedCollection = _selectedCollection[0], setSelectedCollection = _selectedCollection[1];
+
+    var _collectionInfo = useState(null);
+    var collectionInfo = _collectionInfo[0], setCollectionInfo = _collectionInfo[1];
+
+    var _documents = useState([]);
+    var documents = _documents[0], setDocuments = _documents[1];
+
+    var _selectedDoc = useState(null);
+    var selectedDoc = _selectedDoc[0], setSelectedDoc = _selectedDoc[1];
+
+    var _queryText = useState('{}');
+    var queryText = _queryText[0], setQueryText = _queryText[1];
+
+    var _sortField = useState(null);
+    var sortField = _sortField[0], setSortField = _sortField[1];
+
+    var _sortDir = useState('asc');
+    var sortDir = _sortDir[0], setSortDir = _sortDir[1];
+
+    var _activeTab = useState('data');
+    var activeTab = _activeTab[0], setActiveTab = _activeTab[1];
+
+    var _showObserver = useState(false);
+    var showObserver = _showObserver[0], setShowObserver = _showObserver[1];
+
+    var _observedQueries = useState([]);
+    var observedQueries = _observedQueries[0], setObservedQueries = _observedQueries[1];
+
+    var _editModal = useState({ open: false, title: '', value: '', error: null, mode: null });
+    var editModal = _editModal[0], setEditModal = _editModal[1];
+
+    var _toast = useState(null);
+    var toast = _toast[0], setToast = _toast[1];
+
+    var _showSchema = useState(true);
+    var showSchema = _showSchema[0], setShowSchema = _showSchema[1];
+
+    var _loading = useState(false);
+    var loading = _loading[0], setLoading = _loading[1];
+
+    var connectionRef = useRef(null);
+
+    function showToast(msg, type) {
+        setToast({ msg: msg, type: type || 'success' });
+        setTimeout(function() { setToast(null); }, 3000);
+    }
+
+    function handleConnect() {
+        setConnError(null);
+        var params;
+        try {
+            params = JSON.parse(paramsText);
+        } catch (e) {
+            setConnError('Invalid JSON. Please paste valid connection parameters.');
+            return;
+        }
+        if (!params.topic || !params.signalingServerUrl) {
+            setConnError('Missing required fields: topic and signalingServerUrl');
+            return;
+        }
+
+        setConnectionState('connecting');
+
+        if (connectionRef.current) {
+            connectionRef.current.close();
+        }
+
+        connectionRef.current = createViewerConnection(params, {
+            onStatusChange: function(status) {
+                setConnectionState(status);
+                if (status === 'connected') {
+                    loadDbInfo();
+                }
+            },
+            onObserveResult: function(observeId, data) {
+                setObservedQueries(function(prev) {
+                    return prev.map(function(q) {
+                        if (q.id === observeId) {
+                            return Object.assign({}, q, { results: data, resultCount: data.length, lastUpdated: Date.now() });
+                        }
+                        return q;
+                    });
+                });
+            }
+        });
+    }
+
+    function loadDbInfo() {
+        if (!connectionRef.current) return;
+        connectionRef.current.sendRequest('getDbInfo').then(function(info) {
+            setDbInfo(info);
+            if (info.collections.length > 0 && !selectedCollection) {
+                selectCollection(info.collections[0].name);
+            }
+        }).catch(function(err) {
+            showToast('Failed to load database info: ' + err.message, 'error');
+        });
+    }
+
+    function selectCollection(name) {
+        setSelectedCollection(name);
+        setSelectedDoc(null);
+        setDocuments([]);
+        setSortField(null);
+        setQueryText('{}');
+        setActiveTab('data');
+        loadCollectionInfo(name);
+        runQuery(name, {});
+    }
+
+    function loadCollectionInfo(name) {
+        if (!connectionRef.current) return;
+        connectionRef.current.sendRequest('getCollectionInfo', { collection: name }).then(function(info) {
+            setCollectionInfo(info);
+        }).catch(function(err) {
+            showToast('Failed to load collection info: ' + err.message, 'error');
+        });
+    }
+
+    function runQuery(collName, query) {
+        if (!connectionRef.current) return;
+        var col = collName || selectedCollection;
+        if (!col) return;
+        setLoading(true);
+        connectionRef.current.sendRequest('query', { collection: col, query: query }).then(function(docs) {
+            setDocuments(docs);
+            setLoading(false);
+        }).catch(function(err) {
+            showToast('Query error: ' + err.message, 'error');
+            setLoading(false);
+        });
+    }
+
+    function handleRunQuery() {
+        try {
+            var query = JSON.parse(queryText);
+            runQuery(selectedCollection, query);
+        } catch (e) {
+            showToast('Invalid query JSON', 'error');
+        }
+    }
+
+    function handleSort(field) {
+        var newDir = sortField === field && sortDir === 'asc' ? 'desc' : 'asc';
+        setSortField(field);
+        setSortDir(newDir);
+
+        try {
+            var query = JSON.parse(queryText);
+            var sortObj = {};
+            sortObj[field] = newDir;
+            query.sort = [sortObj];
+            setQueryText(JSON.stringify(query));
+            runQuery(selectedCollection, query);
+        } catch(e) {
+            // sort client-side as fallback
+            var sorted = documents.slice().sort(function(a, b) {
+                var va = a[field], vb = b[field];
+                if (va < vb) return newDir === 'asc' ? -1 : 1;
+                if (va > vb) return newDir === 'asc' ? 1 : -1;
+                return 0;
+            });
+            setDocuments(sorted);
+        }
+    }
+
+    function handleObserveQuery() {
+        if (!connectionRef.current || !selectedCollection) return;
+        var query;
+        try {
+            query = JSON.parse(queryText);
+        } catch(e) {
+            showToast('Invalid query JSON', 'error');
+            return;
+        }
+        var observeId = 'obs-' + Date.now() + '-' + Math.random().toString(36).substr(2, 6);
+        connectionRef.current.sendRequest('observeQuery', {
+            observeId: observeId,
+            collection: selectedCollection,
+            query: query
+        }).then(function() {
+            setObservedQueries(function(prev) {
+                return prev.concat([{
+                    id: observeId,
+                    collection: selectedCollection,
+                    query: query,
+                    results: [],
+                    resultCount: 0,
+                    lastUpdated: null
+                }]);
+            });
+            setShowObserver(true);
+            showToast('Query observation started');
+        }).catch(function(err) {
+            showToast('Failed to observe: ' + err.message, 'error');
+        });
+    }
+
+    function handleUnobserve(observeId) {
+        if (!connectionRef.current) return;
+        connectionRef.current.sendRequest('unobserveQuery', { observeId: observeId }).then(function() {
+            setObservedQueries(function(prev) { return prev.filter(function(q) { return q.id !== observeId; }); });
+        }).catch(function() {});
+    }
+
+    function handleViewObservedResults(q) {
+        if (q.results && q.results.length > 0) {
+            setDocuments(q.results);
+            setSelectedCollection(q.collection);
+            setActiveTab('data');
+        }
+    }
+
+    function handleEditDoc(doc) {
+        // Remove internal fields for editing
+        var editDoc = Object.assign({}, doc);
+        delete editDoc._rev;
+        delete editDoc._meta;
+        delete editDoc._deleted;
+        delete editDoc._attachments;
+        setEditModal({
+            open: true,
+            title: 'Edit Document',
+            value: JSON.stringify(editDoc, null, 2),
+            error: null,
+            mode: 'edit'
+        });
+    }
+
+    function handleAddDoc() {
+        if (!collectionInfo || !collectionInfo.schema) return;
+        var template = {};
+        var schema = collectionInfo.schema;
+        if (schema.properties) {
+            Object.keys(schema.properties).forEach(function(key) {
+                if (key.startsWith('_')) return;
+                var prop = schema.properties[key];
+                if (prop.type === 'string') template[key] = '';
+                else if (prop.type === 'number' || prop.type === 'integer') template[key] = 0;
+                else if (prop.type === 'boolean') template[key] = false;
+                else if (prop.type === 'array') template[key] = [];
+                else if (prop.type === 'object') template[key] = {};
+                else template[key] = null;
+            });
+        }
+        setEditModal({
+            open: true,
+            title: 'Add Document',
+            value: JSON.stringify(template, null, 2),
+            error: null,
+            mode: 'add'
+        });
+    }
+
+    function handleSaveDoc(text) {
+        if (!connectionRef.current || !selectedCollection) return;
+        var doc;
+        try {
+            doc = JSON.parse(text);
+        } catch(e) {
+            setEditModal(function(prev) { return Object.assign({}, prev, { error: 'Invalid JSON' }); });
+            return;
+        }
+        connectionRef.current.sendRequest('writeDocument', {
+            collection: selectedCollection,
+            document: doc
+        }).then(function() {
+            setEditModal({ open: false, title: '', value: '', error: null, mode: null });
+            showToast(editModal.mode === 'add' ? 'Document added' : 'Document updated');
+            runQuery(selectedCollection, JSON.parse(queryText || '{}'));
+            loadCollectionInfo(selectedCollection);
+        }).catch(function(err) {
+            setEditModal(function(prev) { return Object.assign({}, prev, { error: err.message }); });
+        });
+    }
+
+    function handleDeleteDoc(doc) {
+        if (!connectionRef.current || !selectedCollection || !collectionInfo) return;
+        var pk = collectionInfo.primaryKey;
+        if (!pk || !doc[pk]) {
+            showToast('Cannot determine primary key', 'error');
+            return;
+        }
+        if (!confirm('Delete document "' + doc[pk] + '"?')) return;
+        connectionRef.current.sendRequest('deleteDocument', {
+            collection: selectedCollection,
+            primaryKey: doc[pk]
+        }).then(function() {
+            showToast('Document deleted');
+            setSelectedDoc(null);
+            runQuery(selectedCollection, JSON.parse(queryText || '{}'));
+            loadCollectionInfo(selectedCollection);
+        }).catch(function(err) {
+            showToast('Delete failed: ' + err.message, 'error');
+        });
+    }
+
+    function handleExport() {
+        if (!connectionRef.current || !selectedCollection) return;
+        connectionRef.current.sendRequest('exportCollection', { collection: selectedCollection }).then(function(docs) {
+            var blob = new Blob([JSON.stringify(docs, null, 2)], { type: 'application/json' });
+            var a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = selectedCollection + '.json';
+            a.click();
+            URL.revokeObjectURL(a.href);
+            showToast('Exported ' + docs.length + ' documents');
+        }).catch(function(err) {
+            showToast('Export failed: ' + err.message, 'error');
+        });
+    }
+
+    function handleRefresh() {
+        if (selectedCollection) {
+            try {
+                runQuery(selectedCollection, JSON.parse(queryText || '{}'));
+                loadCollectionInfo(selectedCollection);
+                loadDbInfo();
+            } catch(e) {
+                runQuery(selectedCollection, {});
+            }
+        }
+    }
+
+    function handleDisconnect() {
+        if (connectionRef.current) {
+            connectionRef.current.close();
+            connectionRef.current = null;
+        }
+        setConnectionState('disconnected');
+        setDbInfo(null);
+        setSelectedCollection(null);
+        setCollectionInfo(null);
+        setDocuments([]);
+        setSelectedDoc(null);
+        setObservedQueries([]);
+    }
+
+    // Get columns from documents
+    var columns = useMemo(function() {
+        if (!documents.length) return [];
+        var colSet = {};
+        // Put primary key first
+        var pk = collectionInfo && collectionInfo.primaryKey;
+        if (pk) colSet[pk] = true;
+        documents.forEach(function(doc) {
+            Object.keys(doc).forEach(function(k) { colSet[k] = true; });
+        });
+        return Object.keys(colSet);
+    }, [documents, collectionInfo]);
+
+    // Disconnected state
+    if (connectionState === 'disconnected') {
+        return h('div', { id: 'app', style: { display: 'flex', flexDirection: 'column', height: '100vh' } },
+            h('div', { className: 'header' },
+                h('div', { className: 'header-left' },
+                    h('span', { className: 'header-logo' }, 'RxDB Viewer')
+                ),
+                h('div', { className: 'header-right' },
+                    h('span', { className: 'connection-status' },
+                        h('span', { className: 'status-dot disconnected' }),
+                        'Disconnected'
+                    )
+                )
+            ),
+            h(ConnectPanel, {
+                paramsText: paramsText,
+                setParamsText: setParamsText,
+                onConnect: handleConnect,
+                error: connError,
+                connecting: connectionState === 'connecting'
+            })
+        );
+    }
+
+    // Connected / connecting state
+    return h('div', { id: 'app', style: { display: 'flex', flexDirection: 'column', height: '100vh' } },
+        h('div', { className: 'header' },
+            h('div', { className: 'header-left' },
+                h('span', { className: 'header-logo' }, 'RxDB Viewer'),
+                dbInfo ? h('span', { className: 'header-db-name' }, dbInfo.databaseName) : null
+            ),
+            h('div', { className: 'header-right' },
+                h('span', { className: 'connection-status' },
+                    h('span', { className: 'status-dot ' + connectionState }),
+                    connectionState === 'connected' ? 'Connected' : 'Connecting...'
+                ),
+                h('button', { className: 'btn btn-secondary btn-sm', onClick: handleDisconnect }, 'Disconnect')
+            )
+        ),
+
+        h('div', { className: 'main-layout' },
+            // Sidebar
+            dbInfo ? h('div', { className: 'sidebar' },
+                h('div', { className: 'sidebar-header' }, 'Collections (' + dbInfo.collections.length + ')'),
+                h('div', { className: 'collection-list' },
+                    dbInfo.collections.map(function(col) {
+                        return h('div', {
+                            key: col.name,
+                            className: 'collection-item' + (selectedCollection === col.name ? ' active' : ''),
+                            onClick: function() { selectCollection(col.name); }
+                        },
+                            h('span', null, col.name),
+                            h('span', { className: 'doc-count' }, col.docCount)
+                        );
+                    })
+                ),
+                // Schema panel in sidebar
+                selectedCollection && collectionInfo ? h('div', { className: 'sidebar-schema' },
+                    h('div', { className: 'sidebar-schema-header', onClick: function() { setShowSchema(!showSchema); } },
+                        h('span', null, 'Schema'),
+                        h('span', null, showSchema ? '\u25BC' : '\u25B6')
+                    ),
+                    showSchema ? h('div', { className: 'sidebar-schema-content' },
+                        h('div', {
+                            className: 'schema-json',
+                            dangerouslySetInnerHTML: { __html: syntaxHighlight(collectionInfo.schema) }
+                        })
+                    ) : null
+                ) : null
+            ) : null,
+
+            // Content
+            h('div', { className: 'content' },
+                selectedCollection ? h(React.Fragment, null,
+                    // Tabs
+                    h('div', { className: 'tabs' },
+                        h('div', {
+                            className: 'tab' + (activeTab === 'data' ? ' active' : ''),
+                            onClick: function() { setActiveTab('data'); }
+                        }, 'Data'),
+                        h('div', {
+                            className: 'tab' + (activeTab === 'schema' ? ' active' : ''),
+                            onClick: function() { setActiveTab('schema'); }
+                        }, 'Schema')
+                    ),
+
+                    activeTab === 'data' ? h(React.Fragment, null,
+                        // Toolbar
+                        h('div', { className: 'toolbar' },
+                            h('input', {
+                                className: 'query-input',
+                                value: queryText,
+                                onChange: function(e) { setQueryText(e.target.value); },
+                                onKeyDown: function(e) { if (e.key === 'Enter') handleRunQuery(); },
+                                placeholder: 'Mango query: { "selector": { "field": "value" } }'
+                            }),
+                            h('button', { className: 'btn btn-primary btn-sm', onClick: handleRunQuery, disabled: loading }, loading ? '...' : 'Run'),
+                            h('button', { className: 'btn btn-secondary btn-sm', onClick: handleObserveQuery, title: 'Observe this query for live updates' }, 'Observe'),
+                            h('button', { className: 'btn btn-secondary btn-sm', onClick: handleRefresh, title: 'Refresh' }, '\u21BB'),
+                            h('button', { className: 'btn btn-secondary btn-sm', onClick: handleAddDoc, title: 'Add document' }, '+ Add'),
+                            h('button', { className: 'btn btn-secondary btn-sm', onClick: handleExport, title: 'Export collection as JSON' }, 'Export')
+                        ),
+
+                        // Table + Detail
+                        h('div', { style: { display: 'flex', flex: 1, overflow: 'hidden' } },
+                            h(DocumentTable, {
+                                documents: documents,
+                                columns: columns,
+                                selectedDoc: selectedDoc,
+                                onSelectDoc: function(doc) { setSelectedDoc(doc); },
+                                sortField: sortField,
+                                sortDir: sortDir,
+                                onSort: handleSort
+                            }),
+                            selectedDoc ? h(DetailPanel, {
+                                doc: selectedDoc,
+                                onClose: function() { setSelectedDoc(null); },
+                                onEdit: handleEditDoc,
+                                onDelete: handleDeleteDoc
+                            }) : null
+                        )
+                    ) : null,
+
+                    activeTab === 'schema' ? h(SchemaView, {
+                        schema: collectionInfo ? collectionInfo.schema : null
+                    }) : null
+                ) : h('div', { className: 'empty-state' },
+                    connectionState === 'connecting' ?
+                        h('div', null,
+                            h('div', { style: { fontSize: 32, marginBottom: 8 } }, '\u231B'),
+                            'Connecting to database...'
+                        ) :
+                        h('div', null,
+                            h('div', { style: { fontSize: 32, marginBottom: 8 } }, '\u{1F4E6}'),
+                            'Select a collection from the sidebar'
+                        )
+                ),
+
+                // Query Observer Panel
+                observedQueries.length > 0 || showObserver ? h(QueryObserverPanel, {
+                    queries: observedQueries,
+                    onRemove: handleUnobserve,
+                    isOpen: showObserver,
+                    onToggle: function() { setShowObserver(!showObserver); },
+                    onViewResults: handleViewObservedResults
+                }) : null
+            )
+        ),
+
+        // Status bar
+        h('div', { className: 'status-bar' },
+            h('span', null, selectedCollection ?
+                selectedCollection + ' \u2022 ' + documents.length + ' documents' + (collectionInfo ? ' / ' + collectionInfo.docCount + ' total' : '') :
+                'No collection selected'
+            ),
+            h('span', null, dbInfo ? dbInfo.databaseName : '')
+        ),
+
+        // Edit modal
+        h(EditModal, {
+            isOpen: editModal.open,
+            title: editModal.title,
+            initialValue: editModal.value,
+            error: editModal.error,
+            onSave: handleSaveDoc,
+            onCancel: function() { setEditModal({ open: false, title: '', value: '', error: null, mode: null }); }
+        }),
+
+        // Toast
+        toast ? h('div', { className: 'toast ' + toast.type }, toast.msg) : null
+    );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(h(App));
+</script>
+</body>
+</html>
