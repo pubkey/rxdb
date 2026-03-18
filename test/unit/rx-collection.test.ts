@@ -110,8 +110,11 @@ describe('rx-collection.test.ts', () => {
                 });
             });
             describe('negative', () => {
-                it('if not premium, it should limit the collections amount', async function() {
+                it('if not premium, it should limit the collections amount', async function () {
                     this.timeout(10 * 1000);
+                    if (isFastMode()) {
+                        return;
+                    }
                     if ((await hasPremiumFlag())) {
                         return;
                     }
