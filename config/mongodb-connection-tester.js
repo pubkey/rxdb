@@ -16,7 +16,7 @@ async function run() {
         try {
             await tryRun();
             console.log('MongoDB Tester: DONE');
-            break;
+            process.exit(0);
         } catch (err) {
             retries++;
             console.log('MongoDB Tester: attempt ' + retries + ' failed:', err.message);
