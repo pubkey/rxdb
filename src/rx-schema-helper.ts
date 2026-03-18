@@ -366,7 +366,7 @@ export function fillObjectWithDefaults(rxSchema: RxSchema<any>, obj: any): any {
     const defaultKeys = Object.keys(rxSchema.defaultValues);
     for (let i = 0; i < defaultKeys.length; ++i) {
         const key = defaultKeys[i];
-        if (!Object.prototype.hasOwnProperty.call(obj, key) || typeof obj[key] === 'undefined') {
+        if (obj[key] === undefined) {
             obj[key] = rxSchema.defaultValues[key];
         }
     }

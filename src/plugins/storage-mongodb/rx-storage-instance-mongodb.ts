@@ -112,7 +112,7 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
         indexes.push([this.inMongoPrimaryPath]);
 
         this.mongoCollectionPromise = this.mongoDatabase.createCollection(collectionName)
-            .then(async (mongoCollection) => {
+            .then(async (mongoCollection: MongoCollection<any>) => {
                 await mongoCollection.createIndexes(
                     indexes.map(index => {
                         const mongoIndex: any = {};
@@ -339,7 +339,7 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
                 session
             }
         ).toArray();
-        queryResult.forEach(row => {
+        queryResult.forEach((row: any) => {
             result.push(
                 swapMongoToRxDoc(
                     row as any
@@ -372,7 +372,7 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
         const resultDocs = await query.toArray();
         this.runningOperations.next(this.runningOperations.getValue() - 1);
         return {
-            documents: resultDocs.map(d => swapMongoToRxDoc(d))
+            documents: resultDocs.map((d: any) => swapMongoToRxDoc(d))
         };
     }
 
@@ -438,7 +438,7 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
         }
         this.closed = (async () => {
             await this.mongoCollectionPromise;
-            await firstValueFrom(this.runningOperations.pipe(filter(c => c === 0)));
+            await firstValueFrom(this.runningOperations.pipe(filter((c: number) => c === 0)));
             // await ensureNotFalsy(this.mongoChangeStream).close();
             await closeMongoDBClient(this.storage.databaseSettings.connection);
         })();

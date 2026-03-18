@@ -47,7 +47,7 @@ async function createDb() {
             module => addRxPlugin(module.RxDBDevModePlugin)
         );
     }
-    const db = createRxDatabase( /* ... */ );
+    const db = await createRxDatabase( /* ... */ );
 }
 ```
 
@@ -64,7 +64,7 @@ async function createDb() {
         );
     }
 
-    const db = createRxDatabase( /* ... */ );
+    const db = await createRxDatabase( /* ... */ );
     // ...
 }
 ```
@@ -97,7 +97,7 @@ async function createDb() {
             module => addRxPlugin(module.RxDBDevModePlugin)
         );
     }
-    const db = createRxDatabase( /* ... */ );
+    const db = await createRxDatabase( /* ... */ );
     // ...
 }
 ```

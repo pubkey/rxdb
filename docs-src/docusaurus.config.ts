@@ -142,6 +142,7 @@ Topic-specific documentation files:
                     'rx-storage-opfs.md',
                     'rx-storage-memory.md',
                     'rx-storage-filesystem-node.md',
+                    'rx-storage-filesystem-expo.md',
                     'rx-storage-sqlite.md',
                     'rx-storage-dexie.md',
                     'rx-storage-mongodb.md',

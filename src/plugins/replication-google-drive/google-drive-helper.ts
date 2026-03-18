@@ -392,7 +392,7 @@ export async function insertMultipartFile<T>(
     const metadata = {
         name: filename,
         mimeType: 'application/json',
-        parents: folderId,
+        parents: [folderId],
     };
 
     const postData = createMultipartBody(

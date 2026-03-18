@@ -11,6 +11,7 @@ import {
 import { overwritable } from '../../overwritable.ts';
 import { getChangedDocumentsSince } from '../../rx-storage-helper.ts';
 import type {
+    RxChangeEventBulk,
     RxCollection,
     RxDatabase,
     RxQuery,
@@ -84,7 +85,7 @@ export class RxStateBase<T, Reactivity = unknown> {
         this.$ = merge(
             this._ownEmits$,
             this.collection.eventBulks$.pipe(
-                tap(eventBulk => {
+                tap((eventBulk: RxChangeEventBulk<RxStateDocument>) => {
                     if (!this._initDone) {
                         return;
                     }
@@ -269,7 +270,7 @@ export class RxStateBase<T, Reactivity = unknown> {
         const firstNr = parseInt(firstWrite.id, 10);
         const lastNr = parseInt(lastWrite.id, 10);
         if ((lastNr - 5) < firstNr) {
-            // only run if more then 5 write rows
+            // only run if more than 5 write rows
             return;
         }
 

@@ -97,11 +97,11 @@ export declare interface RxDocumentBase<RxDocType, OrmMethods = {}, Reactivity =
     revision: string;
     /**
      * Used to de-duplicate the enriched property objects
-     * of the document.
+     * of the document. Lazily initialized on first property access.
      */
-    _propertyCache: Map<string, any>;
+    _propertyCache: Map<string, any> | undefined;
     $emit(cE: RxChangeEvent<RxDocType>): void;
-    _saveData(newData: any, oldData: any): Promise<RxDocument<RxDocType, OrmMethods, Reactivity>>;
+    _saveData(newData: any, oldData: RxDocumentData<RxDocType>): Promise<RxDocument<RxDocType, OrmMethods, Reactivity>>;
     // /internal things
 
     // Returns the latest state of the document

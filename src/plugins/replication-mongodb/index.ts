@@ -115,7 +115,7 @@ export function replicateMongoDB<RxDocType>(options: SyncOptionsMongoDB<RxDocTyp
                     { session }
                 ).toArray();
                 const currentDocsMap = new Map<any, any>();
-                currentDocsArray.forEach(doc => {
+                currentDocsArray.forEach((doc: any) => {
                     currentDocsMap.set(doc[primaryPath], doc);
                 });
                 let promises: Promise<any>[] = [];
@@ -123,7 +123,7 @@ export function replicateMongoDB<RxDocType>(options: SyncOptionsMongoDB<RxDocTyp
                     const toMongoDoc = rxdbDocToMongo(row.newDocumentState as any);
                     const docId = (row.newDocumentState as any)[primaryPath];
                     const current = currentDocsMap.get(docId);
-                    const remoteDocState = current ? mongodbDocToRxDB(primaryPath, current) : undefined;
+                    const remoteDocState: WithDeleted<RxDocType> | undefined = current ? mongodbDocToRxDB(primaryPath, current) : undefined;
 
                     /**
                      * We do not want to require a deleted-flag or any RxDB specific stuff on the RxDB side.

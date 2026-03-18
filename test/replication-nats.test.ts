@@ -134,7 +134,7 @@ describe('replication-nats.test.js', () => {
      * Run the base test suite that is shared
      * across all replication plugins.
      */
-    const baseNatsName = randomToken(10);
+    let baseNatsName = randomToken(10);
     runReplicationBaseTestSuite({
         startReplication(collection) {
             const replicationState = replicateNats({
@@ -172,8 +172,9 @@ describe('replication-nats.test.js', () => {
             return getAllDocsOfServer(baseNatsName);
         },
         async cleanUpServer() {
-            // NATS uses a fresh stream per base suite run,
-            // so no explicit cleanup needed.
+            // Use a fresh stream name to avoid stale data from previous tests.
+            await Promise.resolve();
+            baseNatsName = randomToken(10);
         },
         softDeletes: true,
         isDeleted: (doc) => !!(doc as any)._deleted,

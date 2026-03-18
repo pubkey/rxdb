@@ -111,7 +111,7 @@ export class DocumentCache<RxDocType, OrmMethods> {
          */
         public documentCreator: (docData: RxDocumentData<RxDocType>) => RxDocument<RxDocType, OrmMethods>
     ) {
-        changes$.subscribe(events => {
+        changes$.subscribe((events: RxStorageChangeEvent<RxDocType>[]) => {
             this.tasks.add(() => {
                 const cacheItemByDocId = this.cacheItemByDocId;
                 for (let index = 0; index < events.length; index++) {
@@ -208,6 +208,13 @@ function getCachedRxDocumentMonad<RxDocType, OrmMethods>(
 
             const revisionHeight = getHeightOfRevision(docData._rev);
 
+            /**
+             * @performance
+             * Compute the byRev cache key once and reuse it
+             * for both the Map.get() and Map.set() calls.
+             */
+            const cacheKey = revisionHeight + docData._meta.lwt + '';
+
             let byRev: Map<string, WeakRef<RxDocument<RxDocType, OrmMethods>>>;
             let cachedRxDocumentWeakRef: WeakRef<RxDocument<RxDocType, OrmMethods>> | undefined;
             let cacheItem = cacheItemByDocId.get(docId);
@@ -220,13 +227,13 @@ function getCachedRxDocumentMonad<RxDocType, OrmMethods>(
                 cacheItemByDocId.set(docId, cacheItem);
             } else {
                 byRev = cacheItem[0];
-                cachedRxDocumentWeakRef = byRev.get(revisionHeight + docData._meta.lwt + '');
+                cachedRxDocumentWeakRef = byRev.get(cacheKey);
             }
             let cachedRxDocument = cachedRxDocumentWeakRef ? cachedRxDocumentWeakRef.deref() : undefined;
             if (!cachedRxDocument) {
                 docData = deepFreezeWhenDevMode(docData) as any;
                 cachedRxDocument = documentCreator(docData) as RxDocument<RxDocType, OrmMethods>;
-                byRev.set(revisionHeight + docData._meta.lwt + '', createWeakRefWithFallback(cachedRxDocument));
+                byRev.set(cacheKey, createWeakRefWithFallback(cachedRxDocument));
                 if (registry) {
                     registryTasks.push(cachedRxDocument);
                 }

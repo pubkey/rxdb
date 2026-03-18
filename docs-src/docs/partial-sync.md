@@ -2,6 +2,7 @@
 title: Partial Sync with RxDB
 slug: partial-sync.html
 description: Learn how to implement partial sync patterns with RxDB by dynamically managing multiple replication states for different data scopes, keeping local storage lean and reducing network overhead.
+image: /headers/partial-sync.jpg
 ---
 
 # Partial Sync with RxDB
@@ -44,7 +45,7 @@ function startChunkReplication(chunkId) {
   activeReplications[chunkId] = replicationState;
 }
 
-function stopChunkReplication(chunkId) {
+async function stopChunkReplication(chunkId) {
   const rep = await activeReplications[chunkId];
   if (rep) {
     rep.cancel();

@@ -93,7 +93,7 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
     };
 
     const sub = state.input.forkInstance.changeStream()
-        .subscribe((eventBulk) => {
+        .subscribe((eventBulk: EventBulk<RxStorageChangeEvent<RxDocType>, any>) => {
             if (state.events.paused.getValue()) {
                 return;
             }
@@ -117,7 +117,7 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
     const subResync = replicationHandler
         .masterChangeStream$
         .pipe(
-            filter(ev => ev === 'RESYNC')
+            filter((ev: any) => ev === 'RESYNC')
         )
         .subscribe(() => {
             openTasks.push({
@@ -130,7 +130,7 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
     // unsubscribe when replication is canceled
     firstValueFrom(
         state.events.canceled.pipe(
-            filter(canceled => !!canceled)
+            filter((canceled: boolean) => !!canceled)
         )
     ).then(() => {
         sub.unsubscribe();

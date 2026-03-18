@@ -15,6 +15,7 @@ import {
     Subscription
 } from 'rxjs';
 import type {
+    BulkWriteRow,
     ReplicationOptions,
     ReplicationPullHandlerResult,
     ReplicationPullOptions,
@@ -77,7 +78,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
     public readonly subs: Subscription[] = [];
     public readonly subjects = {
         received: new Subject<RxDocumentData<RxDocType>>(), // all documents that are received from the endpoint
-        sent: new Subject<WithDeleted<RxDocType>>(), // all documents that are send to the endpoint
+        sent: new Subject<WithDeleted<RxDocType>>(), // all documents that are sent to the endpoint
         error: new Subject<RxError | RxTypeError>(), // all errors that are received from the endpoint, emits new Error() objects
         canceled: new BehaviorSubject<boolean>(false), // true when the replication was canceled
         active: new BehaviorSubject<boolean>(false) // true when something is running, false when not
@@ -236,15 +237,15 @@ export class RxReplicationState<RxDocType, CheckpointType> {
             waitBeforePersist: this.push ? this.push.waitBeforePersist : undefined,
             replicationHandler: {
                 masterChangeStream$: this.remoteEvents$.asObservable().pipe(
-                    filter(_v => !!this.pull),
-                    mergeMap(async (ev) => {
+                    filter((_v: RxReplicationPullStreamItem<RxDocType, CheckpointType>) => !!this.pull),
+                    mergeMap(async (ev: RxReplicationPullStreamItem<RxDocType, CheckpointType>) => {
                         if (ev === 'RESYNC') {
                             return ev;
                         }
                         const useEv = flatClone(ev);
                         useEv.documents = handlePulledDocuments(this.collection, this.deletedField, useEv.documents);
                         useEv.documents = await Promise.all(
-                            useEv.documents.map(d => pullModifier(d))
+                            useEv.documents.map((d: WithDeleted<RxDocType>) => pullModifier(d))
                         );
                         return useEv;
                     })
@@ -385,19 +386,19 @@ export class RxReplicationState<RxDocType, CheckpointType> {
         });
 
         this.subs.push(
-            this.internalReplicationState.events.error.subscribe(err => {
+            this.internalReplicationState.events.error.subscribe((err: RxError | RxTypeError) => {
                 this.subjects.error.next(err);
             }),
             this.internalReplicationState.events.processed.down
-                .subscribe(row => this.subjects.received.next(row.document as any)),
+                .subscribe((row: BulkWriteRow<RxDocType>) => this.subjects.received.next(row.document as any)),
             this.internalReplicationState.events.processed.up
-                .subscribe(writeToMasterRow => {
+                .subscribe((writeToMasterRow: RxReplicationWriteToMasterRow<RxDocType>) => {
                     this.subjects.sent.next(writeToMasterRow.newDocumentState);
                 }),
             combineLatest([
                 this.internalReplicationState.events.active.down,
                 this.internalReplicationState.events.active.up
-            ]).subscribe(([down, up]) => {
+            ]).subscribe(([down, up]: [boolean, boolean]) => {
                 const isActive = down || up;
                 this.subjects.active.next(isActive);
             })
@@ -410,12 +411,12 @@ export class RxReplicationState<RxDocType, CheckpointType> {
         ) {
             this.subs.push(
                 this.pull.stream$.subscribe({
-                    next: ev => {
+                    next: (ev: RxReplicationPullStreamItem<RxDocType, CheckpointType>) => {
                         if (!this.isStoppedOrPaused()) {
                             this.remoteEvents$.next(ev);
                         }
                     },
-                    error: err => {
+                    error: (err: any) => {
                         this.subjects.error.next(err);
                     }
                 })
@@ -471,7 +472,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
      * - All local data is replicated with the remote
      * - No replication cycle is running or in retry-state
      *
-     * WARNING: USing this function directly in a multi-tab browser application
+     * WARNING: Using this function directly in a multi-tab browser application
      * is dangerous because only the leading instance will ever be replicated,
      * so this promise will not resolve in the other tabs.
      * For multi-tab support you should set and observe a flag in a local document.

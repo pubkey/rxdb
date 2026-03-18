@@ -16,7 +16,6 @@ import {
     pluginMissing,
     overwriteGetterForCaching,
     clone,
-    now,
     PROMISE_RESOLVE_FALSE,
     RXJS_SHARE_REPLAY_DEFAULTS,
     ensureNotFalsy,
@@ -64,6 +63,13 @@ const newQueryID = function (): number {
     return ++_queryCount;
 };
 
+/**
+ * Counter for _lastEnsureEqual.
+ * We only need ordering and zero-check for cache replacement,
+ * so a counter is cheaper than Date.now().
+ */
+let _ensureEqualCount = 0;
+
 export class RxQueryBase<
     RxDocType,
     RxQueryResult,
@@ -77,15 +83,30 @@ export class RxQueryBase<
      * Some stats then are used for debugging and cache replacement policies
      */
     public _execOverDatabaseCount: number = 0;
-    public _creationTime = now();
+    /**
+     * @performance
+     * Use Date.now() instead of now() for creation time.
+     * The monotonic uniqueness guarantee of now() is not needed here
+     * since _creationTime is only used by the cache replacement policy
+     * for rough lifetime comparisons.
+     */
+    public _creationTime = Date.now();
 
     // used in the query-cache to determine if the RxQuery can be cleaned up.
+    // 0 means never executed. Updated to an incrementing counter on each _ensureEqual call.
     public _lastEnsureEqual = 0;
 
     public uncached = false;
 
     // used to count the subscribers to the query
-    public refCount$ = new BehaviorSubject(null);
+    // Lazy-initialized to avoid BehaviorSubject overhead for .exec()-only queries
+    public _refCount$: BehaviorSubject<null> | null = null;
+    public get refCount$(): BehaviorSubject<null> {
+        if (!this._refCount$) {
+            this._refCount$ = new BehaviorSubject<null>(null);
+        }
+        return this._refCount$;
+    }
 
     public isFindOneByIdQuery: false | string | string[];
 
@@ -108,10 +129,20 @@ export class RxQueryBase<
             this.mangoQuery = _getDefaultQuery();
         }
 
-        this.isFindOneByIdQuery = isFindOneByIdQuery(
-            this.collection.schema.primaryPath as string,
-            mangoQuery
-        );
+        /**
+         * @performance
+         * isFindOneByIdQuery is only used by queryCollection()
+         * which is not called for 'count' queries.
+         * Skip the check for count queries to avoid unnecessary work.
+         */
+        if (op === 'count') {
+            this.isFindOneByIdQuery = false;
+        } else {
+            this.isFindOneByIdQuery = isFindOneByIdQuery(
+                this.collection.schema.primaryPath as string,
+                mangoQuery
+            );
+        }
     }
     get $(): Observable<RxQueryResult> {
         if (!this._$) {
@@ -120,7 +151,7 @@ export class RxQueryBase<
                  * Performance shortcut.
                  * Changes to local documents are not relevant for the query.
                  */
-                filter(bulk => !bulk.isLocal),
+                filter((bulk: any) => !bulk.isLocal),
                 /**
                  * Start once to ensure the querying also starts
                  * when there where no changes.
@@ -133,19 +164,19 @@ export class RxQueryBase<
                 // do not run stuff above for each new subscriber, only once.
                 shareReplay(RXJS_SHARE_REPLAY_DEFAULTS),
                 // do not proceed if result set has not changed.
-                distinctUntilChanged((prev, curr) => {
+                distinctUntilChanged((prev: RxQuerySingleResult<RxDocType> | null, curr: RxQuerySingleResult<RxDocType> | null) => {
                     if (prev && prev.time === ensureNotFalsy(curr).time) {
                         return true;
                     } else {
                         return false;
                     }
                 }),
-                filter(result => !!result),
+                filter((result: RxQuerySingleResult<RxDocType> | null) => !!result),
                 /**
                  * Map the result set to a single RxDocument or an array,
                  * depending on query type
                  */
-                map((result) => {
+                map((result: RxQuerySingleResult<RxDocType> | null) => {
                     return ensureNotFalsy(result).getValue();
                 })
             );
@@ -236,25 +267,48 @@ export class RxQueryBase<
         };
 
         /**
-         * If a change happens during the query-run,
-         * we do not know for 100% if that change is already included
-         * into the query results or not. The storage itself does not give that information.
-         * This lead to cases where the query results where outdated but RxDB thought
-         * that the changeevents must not be processed.
-         * To fix this we re-run the query if a change happens directly during the query run.
+         * @performance
+         * Instead of subscribing to eventBulks$ to detect concurrent writes,
+         * we snapshot the change event counter before and after the query.
+         * If the counter changed, a write happened during execution and
+         * we must re-run the query to ensure correct results.
+         * This avoids the overhead of RxJS Subject subscribe/unsubscribe per query.
          *
          * @link https://github.com/pubkey/rxdb/issues/7067
          */
-        let eventsDuringQueryRun = 0;
-        const sub = this.collection.eventBulks$.subscribe(() => {
-            eventsDuringQueryRun++;
-        });
+        const counterBefore = this.collection._changeEventBuffer.getCounter();
 
-        if (this.op === 'count') {
+        if (this.op === 'findByIds') {
+            const ids: string[] = ensureNotFalsy(this.mangoQuery.selector as any)[this.collection.schema.primaryPath].$in;
+            const docsData: RxDocumentData<RxDocType>[] = [];
+            const mustBeQueried: string[] = [];
+            // first try to fill from docCache
+            for (let i = 0; i < ids.length; i++) {
+                const id = ids[i];
+                const docData = this.collection._docCache.getLatestDocumentDataIfExists(id);
+                if (docData) {
+                    if (!docData._deleted) {
+                        docsData.push(docData);
+                    }
+                } else {
+                    mustBeQueried.push(id);
+                }
+            }
+            // everything which was not in docCache must be fetched from the storage
+            if (mustBeQueried.length > 0) {
+                const docs = await this.collection.storageInstance.findDocumentsById(mustBeQueried, false);
+                for (let i = 0; i < docs.length; i++) {
+                    docsData.push(docs[i]);
+                }
+            }
+            result = {
+                result: docsData,
+                counter: this.collection._changeEventBuffer.getCounter()
+            };
+        } else if (this.op === 'count') {
             const preparedQuery = this.getPreparedQuery();
             const countResult = await this.collection.storageInstance.count(preparedQuery);
             if (countResult.mode === 'slow' && !this.collection.database.allowSlowCount) {
-                sub.unsubscribe();
                 throw newRxError('QU14', {
                     collection: this.collection,
                     queryObj: this.mangoQuery
@@ -265,34 +319,6 @@ export class RxQueryBase<
                     counter: this.collection._changeEventBuffer.getCounter()
                 };
             }
-        } else if (this.op === 'findByIds') {
-            const ids: string[] = ensureNotFalsy(this.mangoQuery.selector as any)[this.collection.schema.primaryPath].$in;
-            const ret = new Map<string, RxDocument<RxDocType>>();
-            const mustBeQueried: string[] = [];
-            // first try to fill from docCache
-            ids.forEach(id => {
-                const docData = this.collection._docCache.getLatestDocumentDataIfExists(id);
-                if (docData) {
-                    if (!docData._deleted) {
-                        const doc = this.collection._docCache.getCachedRxDocument(docData);
-                        ret.set(id, doc);
-                    }
-                } else {
-                    mustBeQueried.push(id);
-                }
-            });
-            // everything which was not in docCache must be fetched from the storage
-            if (mustBeQueried.length > 0) {
-                const docs = await this.collection.storageInstance.findDocumentsById(mustBeQueried, false);
-                docs.forEach(docData => {
-                    const doc = this.collection._docCache.getCachedRxDocument(docData);
-                    ret.set(doc.primary, doc);
-                });
-            }
-            result = {
-                result: ret as any,
-                counter: this.collection._changeEventBuffer.getCounter()
-            };
         } else {
             const queryResult = await queryCollection<RxDocType>(this as any);
             result = {
@@ -301,8 +327,7 @@ export class RxQueryBase<
             };
         }
 
-        sub.unsubscribe();
-        if (eventsDuringQueryRun > 0) {
+        if (this.collection._changeEventBuffer.getCounter() !== counterBefore) {
             await promiseWait(rerunCount * 20);
             return this._execOverDatabase(rerunCount + 1);
         }
@@ -351,7 +376,8 @@ export class RxQueryBase<
             'normalizedQuery',
             normalizeMangoQuery<RxDocType>(
                 this.collection.schema.jsonSchema,
-                this.mangoQuery
+                this.mangoQuery,
+                this.op === 'count'
             )
         );
     }
@@ -377,19 +403,33 @@ export class RxQueryBase<
      * @overwrites itself with the actual value
      */
     toString(): string {
-        const stringObj = sortObject({
-            op: this.op,
-            query: this.normalizedQuery,
-            other: this.other
-        }, true);
-        const value = JSON.stringify(stringObj);
+        /**
+         * For findByIds queries, build the cache key directly from the IDs
+         * to avoid the expensive normalizeMangoQuery + sortObject + JSON.stringify.
+         * The selector structure is guaranteed by findByIds() which always creates
+         * { [primaryPath]: { $in: ids } }
+         */
+        let value: string;
+        if (this.op === 'findByIds') {
+            const ids: string[] = (this.mangoQuery.selector as any)[this.collection.schema.primaryPath].$in;
+            // slice() is needed because sort() mutates the array in-place
+            const sortedIds = ids.slice().sort();
+            value = '|findByIds|' + JSON.stringify(sortedIds);
+        } else {
+            const stringObj = sortObject({
+                op: this.op,
+                query: this.normalizedQuery,
+                other: this.other
+            }, true);
+            value = JSON.stringify(stringObj);
+        }
         this.toString = () => value;
         return value;
     }
 
     /**
      * returns the prepared query
-     * which can be send to the storage instance to query for documents.
+     * which can be sent to the storage instance to query for documents.
      * @overwrites itself with the actual value.
      */
     getPreparedQuery(): PreparedQuery<RxDocType> {
@@ -565,10 +605,19 @@ function _isResultsInSync(rxQuery: RxQueryBase<any, any>): boolean {
  * wraps __ensureEqual()
  * to ensure it does not run in parallel
  * @return true if has changed, false if not
+ *
+ * @performance
+ * Avoid async wrapper when awaitBeforeReads is empty (common case).
+ * This eliminates one unnecessary Promise allocation per query execution.
  */
-async function _ensureEqual(rxQuery: RxQueryBase<any, any>): Promise<boolean> {
+function _ensureEqual(rxQuery: RxQueryBase<any, any>): Promise<boolean> {
     if (rxQuery.collection.awaitBeforeReads.size > 0) {
-        await Promise.all(Array.from(rxQuery.collection.awaitBeforeReads).map(fn => fn()));
+        return Promise.all(Array.from(rxQuery.collection.awaitBeforeReads).map(fn => fn()))
+            .then(() => {
+                rxQuery._ensureEqualQueue = rxQuery._ensureEqualQueue
+                    .then(() => __ensureEqual(rxQuery));
+                return rxQuery._ensureEqualQueue;
+            });
     }
 
     rxQuery._ensureEqualQueue = rxQuery._ensureEqualQueue
@@ -581,7 +630,13 @@ async function _ensureEqual(rxQuery: RxQueryBase<any, any>): Promise<boolean> {
  * @return true if results have changed
  */
 function __ensureEqual<RxDocType>(rxQuery: RxQueryBase<RxDocType, any>): Promise<boolean> {
-    rxQuery._lastEnsureEqual = now();
+    /**
+     * @performance
+     * Use a counter instead of Date.now() since _lastEnsureEqual
+     * is only used by the cache replacement policy for sorting queries
+     * by last usage and zero-check, not for time-based comparison.
+     */
+    rxQuery._lastEnsureEqual = ++_ensureEqualCount;
 
     /**
      * Optimisation shortcuts

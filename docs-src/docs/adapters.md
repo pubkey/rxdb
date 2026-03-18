@@ -1,6 +1,7 @@
 ---
 title: PouchDB Adapters
 slug: adapters.html
+description: Overview of PouchDB adapters for RxDB, including options for browser and Node.js environments. The PouchDB RxStorage has been removed and is no longer available for new projects.
 image: /headers/adapters.jpg
 ---
 

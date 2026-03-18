@@ -5,7 +5,8 @@ description: Discover how RxDB simplifies IndexedDB in React, offering reactive 
 image: /headers/react-indexeddb.jpg
 ---
 
-import PerformanceBrowser from '@site/src/components/performance-browser';
+import PerformanceChart from '@site/src/components/performance-chart';
+import { PERFORMANCE_DATA_BROWSER, PERFORMANCE_METRICS } from '@site/src/components/performance-data';
 
 # IndexedDB Database in React Apps - The Power of RxDB
 
@@ -56,7 +57,7 @@ Setting up RxDB with React is straightforward. It abstracts IndexedDB complexiti
 First, install RxDB and RxJS from npm:
 
 ```bash
-npm install rxdb rxjs --save```
+npm install rxdb rxjs --save
 ```
 
 ### Create a Database and Collections
@@ -245,7 +246,7 @@ Depending on your application's requirements, there are [alternative storage sol
 ## Performance comparison with other browser storages
 Here is a [performance overview](../rx-storage-performance.md) of the various browser based storage implementation of RxDB:
 
-<PerformanceBrowser />
+<PerformanceChart data={PERFORMANCE_DATA_BROWSER} metrics={PERFORMANCE_METRICS} />
 
 ## Follow Up
 - Learn how to use RxDB with the [RxDB Quickstart](../quickstart.md) for a guided introduction.

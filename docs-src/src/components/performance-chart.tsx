@@ -1,5 +1,6 @@
 import React, { Suspense } from 'react';
 import ExecutionEnvironment from '@docusaurus/ExecutionEnvironment';
+import { PERFORMANCE_METRICS, PERFORMANCE_DATA_BROWSER, PERFORMANCE_DATA_NODE } from './performance-data';
 
 // Lazy load the chart implementation so recharts isn't in the main bundle
 const PerformanceChartImpl = React.lazy(() => import('./performance-chart-impl'));
@@ -11,11 +12,22 @@ type PerformanceDataPoint = {
 
 type PerformanceChartProps = {
     data: PerformanceDataPoint[];
-    metrics: { key: string; name: string; color: string }[];
+    metrics?: { key: string; name: string; color: string }[];
     title?: string;
 };
 
-export default function PerformanceChart(props: PerformanceChartProps) {
+export default function PerformanceChart({ data, metrics, title }: PerformanceChartProps) {
+    if (!metrics && data && data.length > 0) {
+        // Auto-generate metrics from the first data object if not provided
+        const keys = Object.keys(data[0]).filter(k => k !== 'name');
+        const defaultColors = ['#FF8BE0', '#ED168F', '#FFB3DF', '#DE48B8', '#b2218b', '#DA93E5', '#A94FBE', '#FF59B9', '#8a2be2', '#9370db', '#ba55d3'];
+        metrics = keys.map((key, index) => ({
+            key,
+            name: key.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()), // default readable name
+            color: defaultColors[index % defaultColors.length]
+        }));
+    }
+
     // Recharts only renders properly in the browser
     if (!ExecutionEnvironment.canUseDOM) {
         return (
@@ -31,7 +43,7 @@ export default function PerformanceChart(props: PerformanceChartProps) {
                 Loading chart...
             </div>
         }>
-            <PerformanceChartImpl {...props} />
+            <PerformanceChartImpl title={title} data={data} metrics={metrics} />
             {process.env.NODE_ENV === 'development' && (
                 <div style={{ display: 'none' }}>
                     {/* Example value 1 */} <span>Example Dummy Metric 1</span>

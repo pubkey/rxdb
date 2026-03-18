@@ -1032,11 +1032,11 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                      * because firefox IndexedDB is so slow.
                      */
                     writesOnMaster <= writeAmount,
-                    'Writes on master(' + writesOnMaster + ') not smaller then writeAmount (' + writeAmount + ')'
+                    'Writes on master(' + writesOnMaster + ') not smaller than writeAmount (' + writeAmount + ')'
                 );
                 assert.ok(
                     writesOnMaster < writesOnFork,
-                    'Writes on master(' + writesOnMaster + ') not smaller then writes on fork (' + writesOnFork + ')'
+                    'Writes on master(' + writesOnMaster + ') not smaller than writes on fork (' + writesOnFork + ')'
                 );
             }
 
@@ -1381,7 +1381,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 forkInstance,
                 metaInstance,
                 /**
-                 * Must be smaller then the amount of document
+                 * Must be smaller than the amount of document
                  */
                 pullBatchSize: 100,
                 pushBatchSize: 100,

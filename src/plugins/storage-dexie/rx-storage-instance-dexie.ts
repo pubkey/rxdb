@@ -284,7 +284,7 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
                     .below(maxDeletionTime)
                     .toArray();
                 const removeIds: string[] = [];
-                toRemove.forEach(doc => {
+                toRemove.forEach((doc: any) => {
                     if (doc._deleted === '1') {
                         removeIds.push(doc[this.primaryPath]);
                     }

@@ -234,7 +234,7 @@ export function wrapRxStorageInstance<RxDocType>(
              */
             await firstValueFrom(
                 processingChangesCount$.pipe(
-                    filter(v => v === 0)
+                    filter((v: number) => v === 0)
                 )
             );
             return ret;
@@ -282,9 +282,9 @@ export function wrapRxStorageInstance<RxDocType>(
         changeStream: () => {
             return instance.changeStream().pipe(
                 tap(() => processingChangesCount$.next(processingChangesCount$.getValue() + 1)),
-                mergeMap(async (eventBulk) => {
+                mergeMap(async (eventBulk: EventBulk<RxStorageChangeEvent<RxDocType>, any>) => {
                     const useEvents = await Promise.all(
-                        eventBulk.events.map(async (event) => {
+                        eventBulk.events.map(async (event: RxStorageChangeEvent<RxDocType>) => {
                             const [
                                 documentData,
                                 previousDocumentData

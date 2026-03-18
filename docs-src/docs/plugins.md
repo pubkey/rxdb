@@ -1,6 +1,7 @@
 ---
 title: Creating Plugins
 slug: plugins.html
+description: Learn how to create custom RxDB plugins by extending internal classes, prototypes, and hooks to add new functionality to your database setup.
 image: /headers/plugins.jpg
 ---
 

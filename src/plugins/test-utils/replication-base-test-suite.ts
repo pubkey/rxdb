@@ -14,7 +14,7 @@ import { ensureNotFalsy } from '../utils/index.ts';
 import * as humansCollection from './humans-collection.ts';
 import * as schemaObjects from './schema-objects.ts';
 import {
-    ensureCollectionsHaveEqualState,
+    awaitCollectionsHaveEqualState,
     ensureReplicationHasNoErrors
 } from './test-util.ts';
 
@@ -157,21 +157,21 @@ export function runReplicationBaseTestSuite(config: ReplicationBaseTestSuiteConf
                 if (waitTime) { await wait(waitTime); }
                 await replicationStateA.awaitInSync();
 
-                await ensureCollectionsHaveEqualState(collectionA, collectionB, 'init sync');
+                await awaitCollectionsHaveEqualState(collectionA, collectionB, 'init sync');
 
                 // insert one
                 await collectionA.insert(schemaObjects.humanData('insert-a'));
                 await replicationStateA.awaitInSync();
                 await replicationStateB.awaitInSync();
                 if (waitTime) { await wait(waitTime); }
-                await ensureCollectionsHaveEqualState(collectionA, collectionB, 'after insert');
+                await awaitCollectionsHaveEqualState(collectionA, collectionB, 'after insert');
 
                 // delete one
                 await collectionB.findOne().remove();
                 await replicationStateB.awaitInSync();
                 await replicationStateA.awaitInSync();
                 if (waitTime) { await wait(waitTime); }
-                await ensureCollectionsHaveEqualState(collectionA, collectionB, 'after deletion');
+                await awaitCollectionsHaveEqualState(collectionA, collectionB, 'after deletion');
 
                 // insert many
                 await collectionA.bulkInsert(
@@ -182,7 +182,7 @@ export function runReplicationBaseTestSuite(config: ReplicationBaseTestSuiteConf
                 await replicationStateA.awaitInSync();
                 await replicationStateB.awaitInSync();
                 if (waitTime) { await wait(waitTime); }
-                await ensureCollectionsHaveEqualState(collectionA, collectionB, 'after insert many');
+                await awaitCollectionsHaveEqualState(collectionA, collectionB, 'after insert many');
 
                 // insert at both collections at the same time
                 await Promise.all([
@@ -194,7 +194,7 @@ export function runReplicationBaseTestSuite(config: ReplicationBaseTestSuiteConf
                 await replicationStateA.awaitInSync();
                 await replicationStateB.awaitInSync();
                 if (waitTime) { await wait(waitTime); }
-                await ensureCollectionsHaveEqualState(collectionA, collectionB, 'after insert both at same time');
+                await awaitCollectionsHaveEqualState(collectionA, collectionB, 'after insert both at same time');
 
                 await collectionA.database.close();
                 await collectionB.database.close();

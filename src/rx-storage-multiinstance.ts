@@ -139,7 +139,7 @@ export function addRxStorageMultiInstanceSupport<RxDocType>(
     const oldChangestream$ = instance.changeStream();
 
     let closed = false;
-    const sub = oldChangestream$.subscribe(eventBulk => {
+    const sub = oldChangestream$.subscribe((eventBulk: any) => {
         if (closed) {
             return;
         }

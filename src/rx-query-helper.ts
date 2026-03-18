@@ -33,7 +33,14 @@ import { getMingoQuery } from './rx-query-mingo.ts';
  */
 export function normalizeMangoQuery<RxDocType>(
     schema: RxJsonSchema<RxDocumentData<RxDocType>>,
-    mangoQuery: MangoQuery<RxDocType>
+    mangoQuery: MangoQuery<RxDocType>,
+    /**
+     * @performance
+     * Count queries do not need sort order.
+     * Skipping the sort computation avoids iterating over schema indexes
+     * and comparing fields, which improves count query performance.
+     */
+    skipSort?: boolean
 ): FilledMangoQuery<RxDocType> {
     const primaryKey: string = getPrimaryFieldOfPrimaryKey(schema.primaryKey);
 
@@ -92,7 +99,15 @@ export function normalizeMangoQuery<RxDocType>(
      * similar to how we add the primary key to indexes that do not have it.
      *
      */
-    if (!normalizedMangoQuery.sort) {
+    if (skipSort && !normalizedMangoQuery.sort) {
+        /**
+         * @performance
+         * Count queries do not need sorted results.
+         * Use a simple primary key sort to avoid the expensive
+         * index-matching sort computation.
+         */
+        normalizedMangoQuery.sort = [{ [primaryKey]: 'asc' }] as any;
+    } else if (!normalizedMangoQuery.sort) {
         /**
          * If no sort is given at all,
          * we can assume that the user does not care about sort order at al.
@@ -205,6 +220,18 @@ export function getSortComparator<RxDocType>(
             const valueA = sortPart.getValueFn(a);
             const valueB = sortPart.getValueFn(b);
             if (valueA !== valueB) {
+                /**
+                 * @performance
+                 * Use a fast inline comparison for common types (string, number)
+                 * instead of the more general mingoSortComparator.
+                 * Mingo's compare does extra type checks that are unnecessary
+                 * when both values share the same primitive type.
+                 */
+                const dirMultiplier = sortPart.direction === 'asc' ? 1 : -1;
+                const typeA = typeof valueA;
+                if (typeA === typeof valueB && (typeA === 'string' || typeA === 'number')) {
+                    return ((valueA < valueB ? -1 : 1) * dirMultiplier) as any;
+                }
                 const ret = sortPart.direction === 'asc' ? mingoSortComparator(valueA, valueB) : mingoSortComparator(valueB, valueA);
                 return ret as any;
             }
