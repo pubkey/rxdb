@@ -240,15 +240,19 @@ export class RxCollectionBase<
              * we retry after some times to account for this.
              */
             let count = 0;
-            while (count < 25 && OPEN_COLLECTIONS.size >= NON_PREMIUM_COLLECTION_LIMIT) {
+            let startTime = 0;
+            while (count < 35 && OPEN_COLLECTIONS.size >= NON_PREMIUM_COLLECTION_LIMIT) {
+                startTime = Date.now();
                 await this.promiseWait(30);
                 count++;
             }
             if (OPEN_COLLECTIONS.size > NON_PREMIUM_COLLECTION_LIMIT) {
+                const timeInRetry = Date.now() - startTime;
                 throw newRxError('COL23', {
                     database: this.database.name,
                     collection: this.name,
                     args: {
+                        timeInRetry,
                         existing: Array.from(OPEN_COLLECTIONS.values()).map(c => ({
                             db: c.database ? c.database.name : '',
                             c: c.name
