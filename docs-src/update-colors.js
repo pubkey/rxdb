@@ -3,8 +3,8 @@ const path = require('path');
 
 function walkDir(dir, callback) {
     fs.readdirSync(dir).forEach(f => {
-        let dirPath = path.join(dir, f);
-        let isDirectory = fs.statSync(dirPath).isDirectory();
+        const dirPath = path.join(dir, f);
+        const isDirectory = fs.statSync(dirPath).isDirectory();
         if (isDirectory) {
             walkDir(dirPath, callback);
         } else if (f.endsWith('.md')) {
