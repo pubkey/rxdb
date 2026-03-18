@@ -1355,6 +1355,14 @@ export const ERROR_MESSAGES = {
      * null checks etc. so you do not have to increase the
      * build size with error message strings.
      */
+    // plugins/viewer
+    VW1: {
+        message: 'getDatabaseConnectionParams() called but startRxDBViewer() was not called on this database before.',
+        cause: 'The viewer server was not started on the database before calling getDatabaseConnectionParams().',
+        fix: 'Call startRxDBViewer(database) before calling getDatabaseConnectionParams(database).',
+        docs: ''
+    },
+
     SNH: {
         message: 'This should never happen',
         cause: 'Should never be thrown. This error code is used for internal things like null-checks etc.',

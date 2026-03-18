@@ -489,6 +489,11 @@ const sidebars = {
         },
         {
           type: 'doc',
+          id: 'viewer',
+          label: 'Viewer'
+        },
+        {
+          type: 'doc',
           id: 'third-party-plugins',
           label: 'Third Party Plugins'
         }
