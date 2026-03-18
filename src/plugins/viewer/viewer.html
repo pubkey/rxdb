@@ -9,11 +9,21 @@
     <script src="https://unpkg.com/simple-peer@9/simplepeer.min.js"></script>
     <style>
         :root {
-            --bg-primary: #20293C;
-            --bg-secondary: #0D0F18;
-            --bg-tertiary: #282330;
+            /* Match docs-src/src/css/custom.css design tokens */
+            --color-top: #ED168F;
+            --color-middle: #b2218b;
+            --color-bottom: #752a8a;
+            --bg-color: #20293C;
+            --bg-color-dark: #0D0F18;
+            --bg-color-darkest: #0D0F18;
+            --bg-color-code: #282330;
+
+            /* Viewer-specific aliases using docs-src tokens */
+            --bg-primary: var(--bg-color);
+            --bg-secondary: var(--bg-color-dark);
+            --bg-tertiary: var(--bg-color-code);
             --bg-input: #1a2235;
-            --color-primary: #ED168F;
+            --color-primary: var(--color-top);
             --color-primary-hover: #ff2da6;
             --color-accent: #29d5b0;
             --color-text: #ffffff;
@@ -30,7 +40,7 @@
             --color-orange: #FFB86C;
             --radius: 6px;
             --radius-sm: 4px;
-            --transition: all 0.15s ease-in-out;
+            --transition: all 0.2s ease-in-out;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -60,7 +70,7 @@
         .header-logo {
             font-size: 18px;
             font-weight: 800;
-            background: linear-gradient(90deg, var(--color-primary), #b2218b);
+            background: linear-gradient(90deg, var(--color-top), var(--color-middle));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -101,7 +111,7 @@
             overflow: hidden;
         }
 
-        /* Sidebar */
+        /* Sidebar - matches docs-src side-tabs pattern */
         .sidebar {
             width: 240px;
             min-width: 240px;
@@ -133,12 +143,26 @@
             cursor: pointer;
             transition: var(--transition);
             font-size: 14px;
+            font-weight: 500;
             margin-bottom: 2px;
+            position: relative;
         }
         .collection-item:hover { background: rgba(255,255,255,0.05); }
+        /* Active state uses gradient indicator like docs-src side-tabs__tab--active */
         .collection-item.active {
             background: linear-gradient(90deg, rgba(237,22,143,0.15), rgba(178,33,139,0.1));
-            color: var(--color-primary);
+            color: var(--color-top);
+            font-weight: 800;
+        }
+        .collection-item.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 4px;
+            bottom: 4px;
+            width: 3px;
+            background: linear-gradient(180deg, var(--color-top), var(--color-middle));
+            border-radius: 0 2px 2px 0;
         }
         .collection-item .doc-count {
             font-size: 12px;
@@ -149,7 +173,7 @@
         }
         .collection-item.active .doc-count {
             background: rgba(237,22,143,0.2);
-            color: var(--color-primary);
+            color: var(--color-top);
         }
 
         /* Schema panel in sidebar */
@@ -219,12 +243,12 @@
             transition: var(--transition);
         }
         .query-input:focus {
-            border-color: var(--color-primary);
+            border-color: var(--color-top);
             box-shadow: 0 0 0 2px rgba(237,22,143,0.15);
         }
         .query-input::placeholder { color: var(--color-text-dim); }
 
-        /* Tabs */
+        /* Tabs - matches docs-src side-tabs horizontal style with gradient indicator */
         .tabs {
             display: flex;
             gap: 0;
@@ -234,47 +258,63 @@
             flex-shrink: 0;
         }
         .tab {
-            padding: 8px 16px;
-            font-size: 13px;
+            padding: 10px 16px;
+            font-size: 14px;
+            font-weight: 500;
             cursor: pointer;
             color: var(--color-text-secondary);
-            border-bottom: 2px solid transparent;
+            border-bottom: 3px solid transparent;
             transition: var(--transition);
+            user-select: none;
         }
         .tab:hover { color: var(--color-text); }
         .tab.active {
-            color: var(--color-primary);
-            border-bottom-color: var(--color-primary);
+            color: var(--color-text);
+            font-weight: 800;
+            border-image: linear-gradient(90deg, var(--color-top), var(--color-middle)) 1;
+            border-bottom-width: 3px;
+            border-bottom-style: solid;
         }
 
-        /* Buttons */
+        /* Buttons - matches docs-src Button component (button.tsx) */
         .btn {
-            padding: 7px 14px;
+            display: inline-flex;
+            height: 36px;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 0 14px;
             border-radius: var(--radius-sm);
             border: none;
             cursor: pointer;
             font-size: 13px;
             font-weight: 600;
             transition: var(--transition);
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
+            text-decoration: none;
+            position: relative;
+            overflow: hidden;
+            user-select: none;
+            line-height: initial;
         }
+        /* Primary: gradient from --color-top to --color-middle (matches button.tsx primary) */
         .btn-primary {
-            background: linear-gradient(90deg, var(--color-primary), #b2218b);
+            background: linear-gradient(90deg, var(--color-top) 0%, var(--color-middle) 100%);
             color: white;
+            font-weight: 800;
         }
         .btn-primary:hover {
-            box-shadow: 0 0 6px rgba(237,22,143,0.4);
+            box-shadow: 0 0 8px rgba(237,22,143,0.4);
         }
+        /* Secondary: transparent with border, inverts on hover (matches button.tsx secondary) */
         .btn-secondary {
             background: transparent;
             border: 1px solid var(--color-border);
             color: var(--color-text-secondary);
         }
         .btn-secondary:hover {
-            background: rgba(255,255,255,0.05);
-            color: var(--color-text);
+            background: #fff;
+            color: var(--bg-color-dark);
+            border-color: #fff;
         }
         .btn-danger {
             background: transparent;
@@ -285,7 +325,8 @@
             background: rgba(252,129,129,0.1);
         }
         .btn-sm {
-            padding: 4px 10px;
+            height: 30px;
+            padding: 0 10px;
             font-size: 12px;
         }
         .btn:disabled {
@@ -321,7 +362,7 @@
             z-index: 1;
         }
         .doc-table th:hover { color: var(--color-text-secondary); }
-        .doc-table th.sorted { color: var(--color-primary); }
+        .doc-table th.sorted { color: var(--color-top); }
         .doc-table td {
             padding: 8px 14px;
             border-bottom: 1px solid rgba(45,55,72,0.5);
@@ -412,7 +453,7 @@
             font-size: 24px;
             font-weight: 800;
             margin-bottom: 8px;
-            background: linear-gradient(90deg, var(--color-primary), #b2218b);
+            background: linear-gradient(90deg, var(--color-top), var(--color-middle));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -446,7 +487,7 @@
             transition: var(--transition);
         }
         .connect-textarea:focus {
-            border-color: var(--color-primary);
+            border-color: var(--color-top);
             box-shadow: 0 0 0 2px rgba(237,22,143,0.15);
         }
         .connect-error {
@@ -508,14 +549,17 @@
             gap: 12px;
             align-items: center;
         }
+        /* Badge - matches docs-src Tag component (pill shape, border-radius: 20px) */
         .observer-badge {
             display: inline-flex;
             align-items: center;
             gap: 4px;
-            padding: 2px 8px;
-            border-radius: 10px;
+            padding: 2px 10px;
+            border-radius: 20px;
             font-size: 11px;
             font-weight: 600;
+            user-select: none;
+            transition: var(--transition);
         }
         .observer-badge.live {
             background: rgba(104,211,145,0.15);
@@ -534,7 +578,7 @@
             gap: 8px;
         }
 
-        /* Edit modal */
+        /* Modal - matches docs-src Modal component (no border-radius, bg-color bg) */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -548,21 +592,29 @@
             z-index: 100;
         }
         .modal {
-            background: var(--bg-secondary);
+            background: var(--bg-color);
             border: 1px solid var(--color-border);
-            border-radius: var(--radius);
-            padding: 24px;
+            border-radius: 0;
+            padding: 0;
             width: 600px;
+            max-width: 90vw;
             max-height: 80vh;
             display: flex;
             flex-direction: column;
+            color: white;
+            font-weight: 700;
         }
         .modal-title {
             font-size: 16px;
             font-weight: 700;
-            margin-bottom: 16px;
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--color-border);
         }
-        .modal-body { flex: 1; overflow-y: auto; }
+        .modal-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+        }
         .modal textarea {
             width: 100%;
             min-height: 300px;
@@ -577,18 +629,38 @@
             outline: none;
         }
         .modal textarea:focus {
-            border-color: var(--color-primary);
+            border-color: var(--color-top);
         }
         .modal-actions {
             display: flex;
             justify-content: flex-end;
             gap: 8px;
-            margin-top: 16px;
+            padding: 16px;
+            border-top: 1px solid var(--color-border);
         }
         .modal-error {
             color: var(--color-error);
             font-size: 13px;
-            margin-top: 8px;
+            padding: 8px 16px;
+        }
+        /* Close button - matches docs-src Modal close icon style */
+        .modal-close {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: var(--transition);
+            color: var(--color-text-secondary);
+            background: transparent;
+            border: none;
+            font-size: 16px;
+        }
+        .modal-close:hover {
+            background: rgba(255,255,255,0.1);
+            color: var(--color-text);
         }
 
         /* Toast notification */
@@ -850,6 +922,59 @@ function formatCellValue(val) {
     return String(val);
 }
 
+// ========== Reusable Button Component ==========
+// Mirrors docs-src/src/components/button.tsx behavior:
+// - Primary: gradient background, mouse-following radial gradient on hover
+// - Secondary: transparent with border, inverts to white bg on hover
+function ViewerButton(props) {
+    var _hovered = useState(false);
+    var hovered = _hovered[0], setHovered = _hovered[1];
+    var _mousePos = useState(null);
+    var mousePos = _mousePos[0], setMousePos = _mousePos[1];
+
+    var isPrimary = props.variant === 'primary';
+    var isDanger = props.variant === 'danger';
+    var isSmall = props.small;
+
+    var baseStyle = {};
+
+    // Primary hover: radial gradient following mouse (from button.tsx)
+    if (isPrimary && hovered && mousePos) {
+        baseStyle.background = 'radial-gradient(circle at ' + mousePos.x + 'px ' + mousePos.y + 'px, var(--color-middle), var(--color-top))';
+    }
+    // Secondary hover: invert to white (from button.tsx)
+    if (!isPrimary && !isDanger && hovered) {
+        baseStyle.background = '#fff';
+        baseStyle.color = 'var(--bg-color-dark)';
+        baseStyle.borderColor = '#fff';
+    }
+
+    Object.assign(baseStyle, props.style || {});
+
+    var className = 'btn';
+    if (isPrimary) className += ' btn-primary';
+    else if (isDanger) className += ' btn-danger';
+    else className += ' btn-secondary';
+    if (isSmall) className += ' btn-sm';
+    if (props.className) className += ' ' + props.className;
+
+    return h('button', {
+        className: className,
+        style: baseStyle,
+        onClick: props.onClick,
+        disabled: props.disabled,
+        title: props.title,
+        onMouseEnter: function() { setHovered(true); },
+        onMouseLeave: function() { setHovered(false); setMousePos(null); },
+        onMouseMove: function(e) {
+            if (isPrimary) {
+                var rect = e.currentTarget.getBoundingClientRect();
+                setMousePos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+            }
+        }
+    }, props.children);
+}
+
 // ========== React Components ==========
 
 function ConnectPanel(props) {
@@ -874,11 +999,11 @@ function ConnectPanel(props) {
                 spellCheck: false
             }),
             error ? h('div', { className: 'connect-error' }, error) : null,
-            h('button', {
-                className: 'btn btn-primary',
+            h(ViewerButton, {
+                variant: 'primary',
                 onClick: onConnect,
                 disabled: connecting,
-                style: { width: '100%', justifyContent: 'center', height: 42 }
+                style: { width: '100%', justifyContent: 'center', height: 45 }
             }, connecting ? 'Connecting...' : 'Connect')
         )
     );
@@ -949,7 +1074,7 @@ function DetailPanel(props) {
     return h('div', { className: 'detail-panel' },
         h('div', { className: 'detail-header' },
             h('span', null, 'Document Detail'),
-            h('button', { className: 'btn btn-secondary btn-sm', onClick: onClose }, '\u2715')
+            h('button', { className: 'modal-close', onClick: onClose }, '\u2715')
         ),
         h('div', { className: 'detail-body' },
             h('div', {
@@ -958,9 +1083,9 @@ function DetailPanel(props) {
             })
         ),
         h('div', { className: 'detail-actions' },
-            h('button', { className: 'btn btn-secondary btn-sm', onClick: function() { onEdit(doc); } }, 'Edit'),
-            h('button', { className: 'btn btn-danger btn-sm', onClick: function() { onDelete(doc); } }, 'Delete'),
-            h('button', { className: 'btn btn-secondary btn-sm', onClick: function() {
+            h(ViewerButton, { variant: 'secondary', small: true, onClick: function() { onEdit(doc); } }, 'Edit'),
+            h(ViewerButton, { variant: 'danger', small: true, onClick: function() { onDelete(doc); } }, 'Delete'),
+            h(ViewerButton, { variant: 'secondary', small: true, onClick: function() {
                 navigator.clipboard.writeText(JSON.stringify(doc, null, 2));
             }}, 'Copy JSON')
         )
@@ -990,7 +1115,10 @@ function EditModal(props) {
         if (e.target === e.currentTarget) onCancel();
     }},
         h('div', { className: 'modal' },
-            h('div', { className: 'modal-title' }, title),
+            h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between' } },
+                h('div', { className: 'modal-title' }, title),
+                h('button', { className: 'modal-close', onClick: onCancel }, '\u2715')
+            ),
             h('div', { className: 'modal-body' },
                 h('textarea', {
                     ref: textRef,
@@ -1001,8 +1129,8 @@ function EditModal(props) {
             ),
             error ? h('div', { className: 'modal-error' }, error) : null,
             h('div', { className: 'modal-actions' },
-                h('button', { className: 'btn btn-secondary', onClick: onCancel }, 'Cancel'),
-                h('button', { className: 'btn btn-primary', onClick: function() {
+                h(ViewerButton, { variant: 'secondary', onClick: onCancel }, 'Cancel'),
+                h(ViewerButton, { variant: 'primary', onClick: function() {
                     onSave(currentText.current);
                 }}, 'Save')
             )
@@ -1035,10 +1163,10 @@ function QueryObserverPanel(props) {
                                 h('span', { className: 'observer-badge live', style: { marginLeft: 8 } }, '\u25CF Live')
                             ),
                             h('div', { style: { display: 'flex', gap: 6 } },
-                                h('button', { className: 'btn btn-secondary btn-sm', onClick: function() { onViewResults(q); } },
+                                h(ViewerButton, { variant: 'secondary', small: true, onClick: function() { onViewResults(q); } },
                                     q.resultCount + ' docs'
                                 ),
-                                h('button', { className: 'btn btn-danger btn-sm', onClick: function() { onRemove(q.id); } }, '\u2715')
+                                h(ViewerButton, { variant: 'danger', small: true, onClick: function() { onRemove(q.id); } }, '\u2715')
                             )
                         ),
                         h('div', { className: 'observer-item-query' }, JSON.stringify(q.query || {})),
@@ -1467,7 +1595,7 @@ function App() {
                     h('span', { className: 'status-dot ' + connectionState }),
                     connectionState === 'connected' ? 'Connected' : 'Connecting...'
                 ),
-                h('button', { className: 'btn btn-secondary btn-sm', onClick: handleDisconnect }, 'Disconnect')
+                h(ViewerButton, { variant: 'secondary', small: true, onClick: handleDisconnect }, 'Disconnect')
             )
         ),
 
@@ -1527,11 +1655,11 @@ function App() {
                                 onKeyDown: function(e) { if (e.key === 'Enter') handleRunQuery(); },
                                 placeholder: 'Mango query: { "selector": { "field": "value" } }'
                             }),
-                            h('button', { className: 'btn btn-primary btn-sm', onClick: handleRunQuery, disabled: loading }, loading ? '...' : 'Run'),
-                            h('button', { className: 'btn btn-secondary btn-sm', onClick: handleObserveQuery, title: 'Observe this query for live updates' }, 'Observe'),
-                            h('button', { className: 'btn btn-secondary btn-sm', onClick: handleRefresh, title: 'Refresh' }, '\u21BB'),
-                            h('button', { className: 'btn btn-secondary btn-sm', onClick: handleAddDoc, title: 'Add document' }, '+ Add'),
-                            h('button', { className: 'btn btn-secondary btn-sm', onClick: handleExport, title: 'Export collection as JSON' }, 'Export')
+                            h(ViewerButton, { variant: 'primary', small: true, onClick: handleRunQuery, disabled: loading }, loading ? '...' : 'Run'),
+                            h(ViewerButton, { variant: 'secondary', small: true, onClick: handleObserveQuery, title: 'Observe this query for live updates' }, 'Observe'),
+                            h(ViewerButton, { variant: 'secondary', small: true, onClick: handleRefresh, title: 'Refresh' }, '\u21BB'),
+                            h(ViewerButton, { variant: 'secondary', small: true, onClick: handleAddDoc, title: 'Add document' }, '+ Add'),
+                            h(ViewerButton, { variant: 'secondary', small: true, onClick: handleExport, title: 'Export collection as JSON' }, 'Export')
                         ),
 
                         // Table + Detail
