@@ -28,7 +28,9 @@ sudo mkdir -p /etc/foundationdb
 # The container generates a cluster file on startup at /var/fdb/fdb.cluster.
 # With --network host and FDB_NETWORKING_MODE=host, the cluster file
 # contains an IP address reachable from the host.
-docker cp "$CONTAINER_NAME:/var/fdb/fdb.cluster" "$FDB_CLUSTER_FILE"
+docker cp "$CONTAINER_NAME:/var/fdb/fdb.cluster" /tmp/fdb.cluster
+sudo cp /tmp/fdb.cluster "$FDB_CLUSTER_FILE"
+rm /tmp/fdb.cluster
 echo "# Cluster file contents:"
 cat "$FDB_CLUSTER_FILE"
 
