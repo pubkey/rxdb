@@ -348,6 +348,12 @@
       "import": "./dist/esm/plugins/state/index.js",
       "default": "./dist/esm/plugins/state/index.js"
     },
+    "./plugins/redux-persist": {
+      "types": "./dist/types/plugins/redux-persist/index.d.ts",
+      "require": "./dist/cjs/plugins/redux-persist/index.js",
+      "import": "./dist/esm/plugins/redux-persist/index.js",
+      "default": "./dist/esm/plugins/redux-persist/index.js"
+    },
     "./plugins/pipeline": {
       "types": "./dist/types/plugins/pipeline/index.d.ts",
       "require": "./dist/cjs/plugins/pipeline/index.js",

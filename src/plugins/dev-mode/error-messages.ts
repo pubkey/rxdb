@@ -1361,5 +1361,13 @@ export const ERROR_MESSAGES = {
         fix: 'If this throws, you likely found a bug and should make a PR with a test case to the RxDB repo, so we can reproduce it.',
         docs: 'https://rxdb.info/contribution.html'
     },
+
+    // redux-persist plugin errors
+    RP1: {
+        message: 'getRxStorageReduxPersist() requires a valid RxDatabase instance',
+        cause: 'A valid RxDatabase instance was not provided when creating the redux-persist storage engine.',
+        fix: 'Pass a valid RxDatabase instance to getRxStorageReduxPersist().',
+        docs: ''
+    },
 };
 

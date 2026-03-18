@@ -58,6 +58,7 @@ import './unit/replication-websocket.test.ts';
 import './unit/replication-webrtc.test.ts';
 import './unit/encryption.test.ts';
 import './unit/rx-state.test.ts';
+import './unit/redux-persist.test.ts';
 import './unit/migration-schema.test.ts';
 import './unit/attachments.test.ts';
 import './unit/attachments-compression.test.ts';
