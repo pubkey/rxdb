@@ -186,6 +186,31 @@ async function handleViewerRequest(
     }
 }
 
+function closeSocket(ws: WebSocket | undefined) {
+    if (!ws) {
+        return;
+    }
+    // Remove handlers to prevent reconnection, but keep onerror
+    // as a no-op to catch async errors emitted by ws.terminate()
+    ws.onclose = null;
+    ws.onopen = null;
+    ws.onmessage = null;
+    ws.onerror = () => { /* absorb async errors from terminate/close */ };
+    if (typeof (ws as any).removeAllListeners === 'function') {
+        (ws as any).removeAllListeners('error');
+        (ws as any).on('error', () => { /* absorb */ });
+    }
+    try {
+        if (typeof (ws as any).terminate === 'function') {
+            (ws as any).terminate();
+        } else {
+            ws.close();
+        }
+    } catch (_e) {
+        // Socket may already be closed or in an invalid state
+    }
+}
+
 function startViewerServer(
     database: RxDatabase,
     options: ViewerServerOptions = {}
@@ -205,7 +230,12 @@ function startViewerServer(
             return;
         }
         socket = new WebSocketConstructor(signalingServerUrl);
-        socket.onclose = () => createSocket();
+        socket.onerror = () => { /* handled */ };
+        socket.onclose = () => {
+            if (!closed) {
+                createSocket();
+            }
+        };
         socket.onopen = () => {
             ensureNotFalsy(socket).onmessage = (msgEvent: any) => {
                 const msg: ViewerSignalingMessage = JSON.parse(msgEvent.data as any);
@@ -238,6 +268,9 @@ function startViewerServer(
     }
 
     function createPeerConnection(remotePeerId: string) {
+        if (closed) {
+            return;
+        }
         let disconnected = false;
         const newPeer: ViewerPeer = new (Peer as any)({
             initiator: remotePeerId > ownPeerId,
@@ -278,7 +311,9 @@ function startViewerServer(
                 disconnected = true;
                 cleanupPeer(remotePeerId, newPeer);
             }
-            createPeerConnection(remotePeerId);
+            if (!closed) {
+                createPeerConnection(remotePeerId);
+            }
         });
     }
 
@@ -313,6 +348,9 @@ function startViewerServer(
     const state: ViewerState = {
         connectionParams,
         async close() {
+            if (closed) {
+                return;
+            }
             closed = true;
             clearInterval(pingInterval);
             peerSubscriptions.forEach(peerSubs => {
@@ -323,9 +361,8 @@ function startViewerServer(
                 try { peer.destroy(); } catch (_e) { /* */ }
             });
             peers.clear();
-            if (socket) {
-                try { socket.close(); } catch (_e) { /* */ }
-            }
+            closeSocket(socket);
+            socket = undefined;
             VIEWER_STATE_BY_DATABASE.delete(database);
         }
     };
