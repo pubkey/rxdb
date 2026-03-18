@@ -1328,6 +1328,28 @@ export const ERROR_MESSAGES = {
         docs: ''
     },
 
+    // custom-index errors
+    CI1: {
+        message: 'Field not in schema',
+        cause: 'The given field is not defined in the RxJsonSchema.',
+        fix: 'Make sure the field name is spelled correctly and exists in the schema.',
+        docs: ''
+    },
+    CI2: {
+        message: 'Unknown index type',
+        cause: 'The schema field type is not supported for indexing.',
+        fix: 'Use a supported type (string, boolean, number, integer) for the indexed field.',
+        docs: ''
+    },
+
+    // change-event-buffer errors
+    COB1: {
+        message: 'ChangeEventBuffer out of bounds',
+        cause: 'The requested pointer is out of the change event buffer bounds.',
+        fix: 'Re-execute the query instead of relying on the change event buffer.',
+        docs: ''
+    },
+
     /**
      * Should never be thrown, use this for
      * null checks etc. so you do not have to increase the

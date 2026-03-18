@@ -341,7 +341,7 @@ export function getMatcherQueryOpts(
                 inclusiveStart: false
             };
         default:
-            throw new Error('SNH');
+            throw newRxError('SNH');
     }
 }
 
