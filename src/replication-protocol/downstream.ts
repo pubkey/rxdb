@@ -223,7 +223,7 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
 
         tasks.forEach(task => {
             if (task === 'RESYNC') {
-                throw new Error('SNH');
+                throw newRxError('SNH');
             }
             docsOfAllTasks = docsOfAllTasks.concat(task.documents);
             lastCheckpoint = stackCheckpoints([lastCheckpoint, task.checkpoint]);

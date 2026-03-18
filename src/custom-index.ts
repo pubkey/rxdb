@@ -26,6 +26,9 @@ import {
     INDEX_MAX,
     INDEX_MIN
 } from './query-planner.ts';
+import {
+    newRxError
+} from './rx-error.ts';
 
 
 /**
@@ -56,7 +59,7 @@ export function getIndexMeta<RxDocType>(
             fieldName
         );
         if (!schemaPart) {
-            throw new Error('not in schema: ' + fieldName);
+            throw newRxError('CI1', { fieldName });
         }
         const type = schemaPart.type;
         let parsedLengths: ParsedLengths | undefined;
@@ -298,7 +301,7 @@ export function getStartIndexStringFromLowerBound(
                 }
                 break;
             default:
-                throw new Error('unknown index type ' + type);
+                throw newRxError('CI2', { type: type as string });
         }
     });
     return str;
@@ -357,7 +360,7 @@ export function getStartIndexStringFromUpperBound(
                 }
                 break;
             default:
-                throw new Error('unknown index type ' + type);
+                throw newRxError('CI2', { type: type as string });
         }
     });
     return str;

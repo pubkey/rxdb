@@ -261,9 +261,12 @@ jobs:
         run: |
           docker pull foundationdb/foundationdb:7.3.59
 
-      - name: install FoundationDB client and server
+      - name: install FoundationDB client
         working-directory: ./scripts
         run: sh install-foundationdb.sh
+
+      - name: Start FoundationDB Docker container
+        run: sh ./scripts/start-foundationdb-docker.sh
 
       - name: install npm dependencies
         run: npm install
