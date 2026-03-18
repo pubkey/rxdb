@@ -89,7 +89,7 @@ export async function runPerformanceTests(
 
     const totalTimes: { [k: string]: number[]; } = {};
 
-    // Generate dbName outside the loop to re-use the exact same MongoDB database.
+    // Generate dbName outside the loop to reuse the exact same MongoDB database.
     // This allows `.remove()` to drop the old collections and the next run to cleanly reuse the same 
     // namespace, avoiding creating thousands of collections on the DB server causing file exhaustion.
     const dbName = 'test-db-performance-' + randomToken(10);
