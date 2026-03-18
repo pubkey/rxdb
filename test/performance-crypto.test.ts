@@ -5,7 +5,7 @@ import * as assert from 'assert';
 import {
     isFastMode,
     isDeno,
-    runCryptoPerformanceTests
+    runPerformanceTests
 } from '../plugins/test-utils/index.mjs';
 import { wrappedKeyEncryptionCryptoJsStorage } from '../plugins/encryption-crypto-js/index.mjs';
 import { getRxStorageMemory } from '../plugins/storage-memory/index.mjs';
@@ -31,11 +31,14 @@ describe('performance-crypto.test.ts', () => {
         const encryptedStorage = wrappedKeyEncryptionCryptoJsStorage({
             storage: getRxStorageMemory()
         });
-        await runCryptoPerformanceTests(
+        await runPerformanceTests(
             encryptedStorage,
             'memory-encrypted',
-            TEST_PASSWORD,
-            { runs }
+            {
+                runs,
+                encrypted: ['deep'],
+                password: TEST_PASSWORD
+            }
         );
     });
     /**

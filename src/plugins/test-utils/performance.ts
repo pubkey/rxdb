@@ -53,6 +53,17 @@ export type PerformanceTestConfig = {
      * @default true
      */
     log?: boolean;
+    /**
+     * Fields to mark as encrypted in the schema.
+     * When set, the schema will have these fields encrypted
+     * and indexes on sub-properties of encrypted fields will be removed.
+     */
+    encrypted?: string[];
+    /**
+     * Password used for encryption.
+     * Required when encrypted is set.
+     */
+    password?: string;
 };
 
 export type PerformanceTestResult = {
@@ -84,7 +95,9 @@ export async function runPerformanceTests(
         parallelQueryAmount = 4,
         insertBatches = 6,
         waitBetweenTests = 100,
-        log = true
+        log = true,
+        encrypted,
+        password
     } = config;
 
     const totalTimes: { [k: string]: number[]; } = {};
@@ -120,7 +133,20 @@ export async function runPerformanceTests(
         updateTime();
 
         // create database
-        const schema = averageSchema();
+        const baseSchema = averageSchema();
+        let schema = baseSchema;
+        if (encrypted) {
+            // Remove indexes on encrypted fields because encrypted fields
+            // are stored as strings and cannot be indexed by sub-properties.
+            const filteredIndexes = (baseSchema.indexes || []).filter(index => {
+                const indexStr = Array.isArray(index) ? index.join(',') : index;
+                return !encrypted.some(field => indexStr.includes(field + '.'));
+            });
+            schema = Object.assign({}, baseSchema, {
+                encrypted,
+                indexes: filteredIndexes
+            });
+        }
         let collection: RxCollection<AverageSchemaDocumentType>;
         async function createDbWithCollections() {
             if (collection) {
@@ -137,7 +163,8 @@ export async function runPerformanceTests(
                  * creation time.
                 */
                 multiInstance: false,
-                storage
+                storage,
+                password
             });
 
             // create collections
