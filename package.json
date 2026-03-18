@@ -489,6 +489,8 @@
     "couch:start": "docker run -p 5984:5984 -e COUCHDB_USER=root -e COUCHDB_PASSWORD=root --rm --name rxdb-couchdb couchdb:3.3.3",
     "couch:stop": "docker rm -f rxdb-couchdb",
     "mongodb:start": "docker run --ulimit nofile=65536:65536 -p 27017:27017 -p 27018:27018 -p 27019:27019 --rm --name rxdb-mongodb mongo:8.0.4 mongod --replSet rs0 --bind_ip_all",
+    "foundationdb:start": "sh ./scripts/start-foundationdb-docker.sh",
+    "foundationdb:stop": "docker rm -f rxdb-foundationdb",
     "mongodb:stop": "docker rm -f rxdb-mongodb",
     "supabase:start": "npm run supabase:stop && supabase start --workdir ./config/ -x storage-api,imgproxy,vector,edge-runtime,logflare,pgadmin-schema-diff,inbucket",
     "supabase:stop": "rm -rf ./config/supabase/.[!.]* && supabase stop --workdir ./config/ --no-backup",
