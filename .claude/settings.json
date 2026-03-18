@@ -5,7 +5,21 @@
     "permissions": {
         "allow": [
             "Bash(npm run *)",
-            "Bash(npm install:*)"
+            "Bash(npm install:*)",
+            "Bash(cat:*)",
+            "Bash(ls:*)",
+            "Bash(grep:*)",
+            "Bash(node:*)",
+            "Bash(npx:*)",
+            "Bash(mkdir:*)",
+            "Bash(cp:*)",
+            "Bash(mv:*)",
+            "Bash(head:*)",
+            "Bash(tail:*)",
+            "Bash(wc:*)",
+            "Bash(find:*)",
+            "Bash(echo:*)",
+            "Bash(pwd:*)"
         ],
         "deny": [
             "Write(plugins/**)",
