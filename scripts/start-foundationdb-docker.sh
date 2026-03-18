@@ -3,7 +3,6 @@ set -e
 
 FDB_VERSION="7.3.59"
 CONTAINER_NAME="rxdb-foundationdb"
-FDB_PORT="4500"
 FDB_CLUSTER_FILE="/etc/foundationdb/fdb.cluster"
 TIMEOUT_SECONDS=30
 
@@ -49,7 +48,7 @@ if [ "$SECONDS_WAITED" -ge "$TIMEOUT_SECONDS" ]; then
     echo "# WARNING: Timed out waiting for FoundationDB to be reachable."
 fi
 
-# Configure the database for single-machine operation with SSD storage engine
+# Configure the database for single-machine operation with in-memory storage engine
 echo "# Configuring database..."
 fdbcli --exec "configure new single memory" --timeout "$TIMEOUT_SECONDS" || true
 
