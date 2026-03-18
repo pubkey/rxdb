@@ -122,6 +122,24 @@ export function boundGTByIndexString<T extends [string, ...any[]]>(a: T[], index
     return i;
 }
 
+export function boundEQByIndexString<T extends [string, ...any[]]>(a: T[], indexString: string): number {
+    let l = 0;
+    let h = a.length - 1;
+    while (l <= h) {
+        const m = (l + h) >>> 1;
+        const s = a[m][0];
+        if (s === indexString) {
+            return m;
+        }
+        if (s < indexString) {
+            l = m + 1;
+        } else {
+            h = m - 1;
+        }
+    }
+    return -1;
+}
+
 export function boundLTByIndexString<T extends [string, ...any[]]>(a: T[], indexString: string): number {
     let l = 0;
     let h = a.length - 1;

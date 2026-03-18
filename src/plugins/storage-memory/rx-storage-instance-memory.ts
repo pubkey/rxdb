@@ -37,10 +37,6 @@ import {
     requestIdlePromiseNoQueue
 } from '../../plugins/utils/index.ts';
 import {
-    boundGE,
-    boundGT,
-    boundLE,
-    boundLT,
     boundGEByIndexString,
     boundGTByIndexString,
     boundLEByIndexString,
@@ -173,7 +169,6 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
             return;
         }
         const internals = this.internals;
-        const documentsById = this.internals.documents;
         const primaryPath = this.primaryPath;
 
         const categorized = this.internals.ensurePersistenceTask;
@@ -206,12 +201,19 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
             const writeRow = bulkUpdateDocs[i];
             const doc = writeRow.document;
             const docId = doc[primaryPath];
+            /**
+             * @performance
+             * Pass writeRow.previous directly as the old document state
+             * instead of re-looking it up from the documents Map.
+             * This is safe because categorizeBulkWriteRows already verified
+             * that previous._rev matches the document in the Map (conflict check).
+             */
             putWriteRowToState(
                 docId as any,
                 internals,
                 stateByIndex,
                 doc,
-                documentsById.get(docId as any)
+                writeRow.previous
             );
         }
 
@@ -258,17 +260,23 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         if (documentsById.size === 0) {
             return Promise.resolve(ret);
         }
-        for (let i = 0; i < docIds.length; ++i) {
-            const docId = docIds[i];
-            const docInDb = documentsById.get(docId);
-            if (
-                docInDb &&
-                (
-                    !docInDb._deleted ||
-                    withDeleted
-                )
-            ) {
-                ret.push(docInDb);
+        /**
+         * @performance
+         * Split into two paths to avoid checking withDeleted on every iteration.
+         */
+        if (withDeleted) {
+            for (let i = 0; i < docIds.length; ++i) {
+                const docInDb = documentsById.get(docIds[i]);
+                if (docInDb) {
+                    ret.push(docInDb);
+                }
+            }
+        } else {
+            for (let i = 0; i < docIds.length; ++i) {
+                const docInDb = documentsById.get(docIds[i]);
+                if (docInDb && !docInDb._deleted) {
+                    ret.push(docInDb);
+                }
             }
         }
         return Promise.resolve(ret);

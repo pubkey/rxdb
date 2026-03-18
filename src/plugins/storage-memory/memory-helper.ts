@@ -1,5 +1,4 @@
 import type {
-    BulkWriteRow,
     RxDocumentData,
     RxJsonSchema
 } from '../../types/index.d.ts';
@@ -13,7 +12,7 @@ import {
     pushAtSortPosition
 } from 'array-push-at-sort-position';
 import { newRxError } from '../../rx-error.ts';
-import { boundEQ } from './binary-search-bounds.ts';
+import { boundEQByIndexString } from './binary-search-bounds.ts';
 
 
 export function getMemoryCollectionKey(
@@ -86,12 +85,11 @@ export function putWriteRowToState<RxDocType>(
                 /**
                  * Performance shortcut.
                  * Index did not change, so the old entry is at the same position.
-                 * We can find it by binary search and update in-place.
+                 * We can find it by string-specialized binary search and update in-place.
                  */
-                const eqPos = boundEQ(
+                const eqPos = boundEQByIndexString(
                     docsWithIndex,
-                    [previousIndexString] as any,
-                    compareDocsWithIndex
+                    previousIndexString
                 );
                 if (eqPos !== -1) {
                     /**
@@ -100,7 +98,6 @@ export function putWriteRowToState<RxDocType>(
                      */
                     if (docsWithIndex[eqPos][2] === docId) {
                         docsWithIndex[eqPos][1] = document;
-                        docsWithIndex[eqPos][2] = docId;
                         continue;
                     }
                     // Check neighbors
@@ -143,12 +140,13 @@ export function putWriteRowToState<RxDocType>(
                 /**
                  * Index changed, we must remove the old entry and insert the new one.
                  */
-                const indexBefore = boundEQ(
+                const indexBefore = boundEQByIndexString(
                     docsWithIndex,
-                    [previousIndexString] as any,
-                    compareDocsWithIndex
+                    previousIndexString
                 );
-                docsWithIndex.splice(indexBefore, 1);
+                if (indexBefore !== -1) {
+                    docsWithIndex.splice(indexBefore, 1);
+                }
             }
         }
 
@@ -189,7 +187,8 @@ export function bulkInsertToState<RxDocType>(
     }
 
     // For each index, batch-compute entries, sort, and merge
-    for (let indexI = 0; indexI < stateByIndex.length; ++indexI) {
+    const stateByIndexLength = stateByIndex.length;
+    for (let indexI = 0; indexI < stateByIndexLength; ++indexI) {
         const byIndex = stateByIndex[indexI];
         const docsWithIndex = byIndex.docsWithIndex;
         const getIndexableString = byIndex.getIndexableString;
@@ -269,14 +268,13 @@ export function removeDocFromState<RxDocType>(
         const docsWithIndex = byIndex.docsWithIndex;
         const indexString = byIndex.getIndexableString(doc);
 
-        const positionInIndex = boundEQ(
+        const positionInIndex = boundEQByIndexString(
             docsWithIndex,
-            [
-                indexString
-            ] as any,
-            compareDocsWithIndex
+            indexString
         );
-        docsWithIndex.splice(positionInIndex, 1);
+        if (positionInIndex !== -1) {
+            docsWithIndex.splice(positionInIndex, 1);
+        }
     }
 }
 
