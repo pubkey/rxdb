@@ -29,6 +29,35 @@ Using RxDB on top of FoundationDB, gives you many benefits compare to using the 
 - Install the [FoundationDB node bindings npm module](https://www.npmjs.com/package/foundationdb) via `npm install foundationdb`. This will install `v2.x.x`, which is only compatible with FoundationDB server and client `v7.3.x` (which is the only version currently maintained by the FoundationDB team). If you need to use an older version (e.g. `7.1.x` or `6.3.x`), you should run `npm install foundationdb@1.1.4` (though this might only work with `v6.3.x`).
 - Due to an outstanding bug in node foundationdb, you will need to specify an `apiVersion` of `720` even though you are using `730`. When [this PR](https://github.com/josephg/node-foundationdb/pull/86) is merged, you will be able to use `730`.
 
+## Running the FoundationDB Server with Docker
+
+Instead of installing the FoundationDB server locally, you can run it in a Docker container. This is the recommended approach for local development and CI environments.
+
+```bash
+# Pull the Docker image
+docker pull foundationdb/foundationdb:7.3.59
+
+# Start the container with host networking
+docker run -d \
+    --name rxdb-foundationdb \
+    --network host \
+    -e FDB_NETWORKING_MODE=host \
+    foundationdb/foundationdb:7.3.59
+
+# Copy the cluster file from the container
+sudo mkdir -p /etc/foundationdb
+docker cp rxdb-foundationdb:/var/fdb/fdb.cluster /etc/foundationdb/fdb.cluster
+
+# Configure the database
+fdbcli --exec "configure new single memory" --timeout 30
+```
+
+You can also use the provided npm scripts:
+```bash
+npm run foundationdb:start   # Starts the Docker container and configures the database
+npm run foundationdb:stop    # Stops and removes the Docker container
+```
+
 
 ## Usage
 
