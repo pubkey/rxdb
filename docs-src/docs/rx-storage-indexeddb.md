@@ -5,6 +5,8 @@ description: Choose IndexedDB RxStorage for unmatched speed and minimal build si
 image: /headers/rx-storage-indexeddb.jpg
 ---
 
+import PerformanceChart from '@site/src/components/performance-chart';
+import { PERFORMANCE_DATA_BROWSER, PERFORMANCE_METRICS } from '@site/src/components/performance-data';
 import {PremiumBlock} from '@site/src/components/premium-block';
 
 # IndexedDB RxStorage
@@ -15,14 +17,11 @@ and the smallest build size. Only for big datasets (more than 10k documents), th
 
 While the IndexedDB API itself can be very slow, the IndexedDB storage uses many tricks and performance optimizations, some of which are described [here](./slow-indexeddb.md). For example it uses custom index strings instead of the native IndexedDB indexes, batches cursors for faster bulk reads and many other improvements. The IndexedDB storage also operates on [Write-ahead logging](https://en.wikipedia.org/wiki/Write-ahead_logging) similar to SQLite, to improve write latency while still ensuring consistency on writes.
 
-
 ## IndexedDB performance comparison
 
 Here is some performance comparison with other storages. Compared to the non-memory storages like [OPFS](./rx-storage-opfs.md) and [WASM SQLite](./rx-storage-sqlite.md), IndexedDB has the smallest build size and fastest write speed. Only OPFS is faster on queries over big datasets. See [performance comparison](./rx-storage-performance.md) page for a comparison with all storages.
 
-<p align="center">
-  <img src="./files/rx-storage-performance-browser.png" alt="IndexedDB performance" width="700" />
-</p>
+<PerformanceChart data={PERFORMANCE_DATA_BROWSER} metrics={PERFORMANCE_METRICS} />
 
 
 <PremiumBlock />
@@ -55,7 +54,6 @@ const db = await createRxDatabase({
 });
 ```
 
-
 ## Overwrite/Polyfill the native IndexedDB
 
 [Node.js](./nodejs-database.md) has no IndexedDB API. To still run the IndexedDB `RxStorage` in Node.js, for example to run unit tests, you have to polyfill it.
@@ -79,7 +77,6 @@ const db = await createRxDatabase({
 
 ```
 
-
 ## Storage Buckets
 
 The [Storage Buckets API](https://wicg.github.io/storage-buckets/) provides a way for sites to organize locally stored data into groupings called "storage buckets". This allows the user agent or sites to manage and delete buckets independently rather than applying the same treatment to all the data from a single origin. [Read More](https://developer.chrome.com/docs/web-platform/storage-buckets?hl=en)
@@ -101,8 +98,6 @@ const db = await createRxDatabase({
     })
 });
 ```
-
-
 
 ## Limitations of the IndexedDB RxStorage
 

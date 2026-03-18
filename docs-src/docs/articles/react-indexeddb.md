@@ -5,11 +5,12 @@ description: Discover how RxDB simplifies IndexedDB in React, offering reactive 
 image: /headers/react-indexeddb.jpg
 ---
 
+import PerformanceChart from '@site/src/components/performance-chart';
+import { PERFORMANCE_DATA_BROWSER, PERFORMANCE_METRICS } from '@site/src/components/performance-data';
 
 # IndexedDB Database in React Apps - The Power of RxDB
 
 Building robust, [offline-capable](../offline-first.md) React applications often involves leveraging browser storage solutions to manage data. IndexedDB is one such powerful tool, but its raw API can be challenging to work with directly. RxDB abstracts away much of IndexedDB's complexity, providing a more developer-friendly experience. In this article, we'll explore what IndexedDB is, why it's beneficial in React applications, the challenges of using plain IndexedDB, and how [RxDB](https://rxdb.info/) can simplify your development process while adding advanced features.
-
 
 ## What is IndexedDB?
 
@@ -18,7 +19,6 @@ Building robust, [offline-capable](../offline-first.md) React applications often
 <center>
         <img src="../files/icons/react.svg" alt="React IndexedDB" width="120" />
 </center>
-
 
 ## Why Use IndexedDB in React
 
@@ -217,7 +217,6 @@ function HeroList({ collection }) {
 
 This approach provides automatic updates whenever the data changes, without needing to manage subscriptions manually.
 
-
 ## React IndexedDB Example with RxDB
 
 A comprehensive example of using RxDB within a React application can be found in the [RxDB GitHub repository](https://github.com/pubkey/rxdb/tree/master/examples/react). This repository contains sample applications, showcasing best practices and demonstrating how to integrate RxDB for various use cases.
@@ -238,21 +237,16 @@ While IndexedDB is powerful, it has some inherent limitations:
 - **Performance**: IndexedDB can be slow under certain conditions. Read more: [Slow IndexedDB](https://rxdb.info/slow-indexeddb.html)
 - **Storage Limits**: Browsers [impose limits](./indexeddb-max-storage-limit.md) on how much data can be stored. See: [Browser storage limits](https://rxdb.info/articles/localstorage-indexeddb-cookies-opfs-sqlite-wasm.html)
 
-
 ## Alternatives to IndexedDB
 Depending on your application's requirements, there are [alternative storage solutions](./localstorage-indexeddb-cookies-opfs-sqlite-wasm.md) to consider:
 
 - **Origin Private File System (OPFS)**: A newer API that can offer better performance. RxDB supports OPFS as well. More info: [RxDB OPFS Storage](../rx-storage-opfs.md)
 - **SQLite**: Ideal for React applications on Capacitor or [Ionic](./ionic-storage.md), offering native performance. Explore: [RxDB SQLite Storage](../rx-storage-sqlite.md)
 
-
 ## Performance comparison with other browser storages
 Here is a [performance overview](../rx-storage-performance.md) of the various browser based storage implementation of RxDB:
 
-<p align="center">
-  <img src="../files/rx-storage-performance-browser.png" alt="RxStorage performance - browser" width="700" />
-</p>
-
+<PerformanceChart data={PERFORMANCE_DATA_BROWSER} metrics={PERFORMANCE_METRICS} />
 
 ## Follow Up
 - Learn how to use RxDB with the [RxDB Quickstart](../quickstart.md) for a guided introduction.

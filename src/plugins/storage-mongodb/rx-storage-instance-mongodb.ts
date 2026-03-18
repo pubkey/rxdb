@@ -51,7 +51,9 @@ import {
     getMongoDBIndexName,
     prepareMongoDBQuery,
     swapMongoToRxDoc,
-    swapRxDocToMongo
+    swapRxDocToMongo,
+    getMongoDBClient,
+    closeMongoDBClient
 } from './mongodb-helper.ts';
 
 export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
@@ -65,7 +67,6 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
     public readonly inMongoPrimaryPath: string;
     public closed?: Promise<void>;
     private readonly changes$: Subject<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, RxStorageDefaultCheckpoint>> = new Subject();
-    public readonly mongoClient: MongoClient;
     public readonly mongoDatabase: MongoDatabase;
     public readonly mongoCollectionPromise: Promise<MongoCollection<RxDocumentData<RxDocType> | any>>;
     // public mongoChangeStream?: MongoChangeStream<any, ChangeStreamDocument<any>>;
@@ -94,15 +95,14 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
         public readonly schema: Readonly<RxJsonSchema<RxDocumentData<RxDocType>>>,
         public readonly internals: MongoDBStorageInternals,
         public readonly options: Readonly<RxStorageMongoDBInstanceCreationOptions>,
-        public readonly settings: RxStorageMongoDBSettings
+        public readonly settings: RxStorageMongoDBSettings,
+        public readonly mongoClient: MongoClient
     ) {
         if (this.schema.attachments) {
             throw new Error('attachments not supported in mongodb storage, make a PR if you need that');
         }
         this.primaryPath = getPrimaryFieldOfPrimaryKey(this.schema.primaryKey);
         this.inMongoPrimaryPath = this.primaryPath === '_id' ? MONGO_ID_SUBSTITUTE_FIELDNAME : this.primaryPath;
-
-        this.mongoClient = new MongoClient(storage.databaseSettings.connection, MONGO_OPTIONS_DRIVER_INFO);
         this.mongoDatabase = this.mongoClient.db(databaseName + '-v' + this.schema.version);
 
         const indexes = (this.schema.indexes ? this.schema.indexes.slice() : []).map(index => {
@@ -440,17 +440,18 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
             await this.mongoCollectionPromise;
             await firstValueFrom(this.runningOperations.pipe(filter((c: number) => c === 0)));
             // await ensureNotFalsy(this.mongoChangeStream).close();
-            await this.mongoClient.close();
+            await closeMongoDBClient(this.storage.databaseSettings.connection);
         })();
         return this.closed;
     }
 }
 
-export function createMongoDBStorageInstance<RxDocType>(
+export async function createMongoDBStorageInstance<RxDocType>(
     storage: RxStorageMongoDB,
     params: RxStorageInstanceCreationParams<RxDocType, RxStorageMongoDBInstanceCreationOptions>,
     settings: RxStorageMongoDBSettings
 ): Promise<RxStorageInstanceMongoDB<RxDocType>> {
+    const mongoClient = await getMongoDBClient(storage.databaseSettings.connection);
     const instance = new RxStorageInstanceMongoDB(
         storage,
         params.databaseName,
@@ -458,7 +459,8 @@ export function createMongoDBStorageInstance<RxDocType>(
         params.schema,
         {},
         params.options,
-        settings
+        settings,
+        mongoClient
     );
-    return Promise.resolve(instance);
+    return instance;
 }
