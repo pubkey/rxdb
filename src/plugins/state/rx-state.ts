@@ -27,7 +27,8 @@ import {
     clone,
     randomToken,
     deepEqual,
-    getFromMapOrCreate
+    getFromMapOrCreate,
+    promiseWait
 } from '../utils/index.ts';
 import {
     RX_STATE_COLLECTION_SCHEMA,
@@ -182,6 +183,12 @@ export class RxStateBase<T, Reactivity = unknown> {
                     if ((err as RxError).code !== 'CONFLICT') {
                         throw err;
                     }
+                    /**
+                     * Yield to the event loop so that cross-instance
+                     * change events can be processed and the _lastIdQuery
+                     * cache gets updated before retrying.
+                     */
+                    await promiseWait(0);
                 }
             }
         }).catch(error => {
