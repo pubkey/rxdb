@@ -1346,7 +1346,7 @@ export const ERROR_MESSAGES = {
     COB1: {
         message: 'ChangeEventBuffer out of bounds',
         cause: 'The requested pointer is out of the change event buffer bounds.',
-        fix: 'Re-execute the query instead of relying on the change event buffer.',
+        fix: 'This means something in RxDB itself behaves wrong because any access to the api should not make an out of bounds request.',
         docs: ''
     },
 
@@ -1357,9 +1357,9 @@ export const ERROR_MESSAGES = {
      */
     SNH: {
         message: 'This should never happen',
-        cause: '',
-        fix: '',
-        docs: ''
+        cause: 'Should never be thrown. This error code is used for internal things like null-checks etc.',
+        fix: 'If this throws, you likely found a bug and should make a PR with a test case to the RxDB repo, so we can reproduce it.',
+        docs: 'https://rxdb.info/contribution.html'
     },
 };
 
