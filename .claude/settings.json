@@ -4,14 +4,7 @@
     "lintCommand": "npm run lint",
     "permissions": {
         "allow": [
-            "Bash(npm run build)",
-            "Bash(npm run test*)",
-            "Bash(npm run lint*)",
-            "Bash(npm run check-types)",
-            "Bash(npm run dev*)",
-            "Bash(npm run generate:error-messages)",
-            "Bash(npm run docs:build)",
-            "Bash(npm run docs:serve)",
+            "Bash(npm run *)",
             "Bash(npm install:*)"
         ],
         "deny": [
