@@ -17,7 +17,7 @@ type PerformanceDataPoint = {
 
 type PerformanceChartImplProps = {
     data: PerformanceDataPoint[];
-    metrics: { key: string; name: string; color: string }[];
+    metrics: { key: string; name: string; color: string; }[];
     title?: string;
 };
 
