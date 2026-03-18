@@ -32,7 +32,7 @@ export type EventReduceResultPos<RxDocumentType> = {
 export type EventReduceResult<RxDocumentType> = EventReduceResultNeg | EventReduceResultPos<RxDocumentType>;
 
 
-export function getSortFieldsOfQuery<RxDocType>(
+function getSortFieldsOfQuery<RxDocType>(
     primaryKey: StringKeys<RxDocumentData<RxDocType>>,
     query: MangoQuery<RxDocType>
 ): (string | StringKeys<RxDocType>)[] {
@@ -45,7 +45,7 @@ export function getSortFieldsOfQuery<RxDocType>(
 
 
 
-export const RXQUERY_QUERY_PARAMS_CACHE: WeakMap<RxQuery, QueryParams<any>> = new WeakMap();
+const RXQUERY_QUERY_PARAMS_CACHE: WeakMap<RxQuery, QueryParams<any>> = new WeakMap();
 export function getQueryParams<RxDocType>(
     rxQuery: RxQuery<RxDocType>
 ): QueryParams<RxDocType> {

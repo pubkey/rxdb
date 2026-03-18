@@ -210,7 +210,7 @@ export function modifierFromPublicToInternal<RxDocType>(
 }
 
 
-export function findNewestOfDocumentStates<RxDocType>(
+function findNewestOfDocumentStates<RxDocType>(
     docs: RxDocumentData<RxDocType>[]
 ): RxDocumentData<RxDocType> {
 

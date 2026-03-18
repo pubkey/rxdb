@@ -83,7 +83,7 @@ export function areRxDocumentArraysEqual<RxDocType>(
 
 
 
-export function getSortDocumentsByLastWriteTimeComparator<RxDocType>(primaryPath: string) {
+function getSortDocumentsByLastWriteTimeComparator<RxDocType>(primaryPath: string) {
     return (a: RxDocumentData<RxDocType>, b: RxDocumentData<RxDocType>) => {
         if (a._meta.lwt === b._meta.lwt) {
             if ((b as any)[primaryPath] < (a as any)[primaryPath]) {

@@ -39,22 +39,6 @@ export function batchArray<T>(array: T[], batchSize: number): T[][] {
 }
 
 /**
- * @link https://stackoverflow.com/a/15996017
- */
-export function removeOneFromArrayIfMatches<T>(ar: T[], condition: (x: T) => boolean): T[] {
-    ar = ar.slice();
-    let i = ar.length;
-    let done = false;
-    while (i-- && !done) {
-        if (condition(ar[i])) {
-            done = true;
-            ar.splice(i, 1);
-        }
-    }
-    return ar;
-}
-
-/**
  * returns true if the supplied argument is either an Array<T> or a Readonly<Array<T>>
  */
 export function isMaybeReadonlyArray(x: any): x is MaybeReadonly<any[]> {
@@ -69,17 +53,6 @@ export function isMaybeReadonlyArray(x: any): x is MaybeReadonly<any[]> {
 }
 
 
-
-export function isOneItemOfArrayInOtherArray<T>(ar1: T[], ar2: T[]): boolean {
-    for (let i = 0; i < ar1.length; i++) {
-        const el = ar1[i];
-        const has = ar2.includes(el);
-        if (has) {
-            return true;
-        }
-    }
-    return false;
-}
 
 
 /**

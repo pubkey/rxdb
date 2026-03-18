@@ -64,23 +64,12 @@ export const RX_COLLECTION_BULK_INSERT_CONTEXT = 'rx-collection-bulk-insert';
  * are already cloned by the caller and can be safely
  * mutated in place (skip flatClone in the insert path).
  *
- * Plugins can register additional contexts via
- * registerMutableWriteContext().
+ * Additional contexts can be added to this set.
  */
 const MUTABLE_DOCUMENT_WRITE_CONTEXTS: Set<string> = new Set([
     RX_COLLECTION_BULK_INSERT_CONTEXT
 ]);
 
-/**
- * Register a bulkWrite context string as "mutable",
- * meaning the caller guarantees that insert documents
- * are already cloned and safe to mutate in place.
- * This allows the wrapped storage to skip a redundant
- * flatClone() call on the insert hot path.
- */
-export function registerMutableWriteContext(context: string): void {
-    MUTABLE_DOCUMENT_WRITE_CONTEXTS.add(context);
-}
 
 export async function getSingleDocument<RxDocType>(
     storageInstance: RxStorageInstance<RxDocType, any, any>,

@@ -72,17 +72,6 @@ export function objectPathMonad<T, R = any>(objectPath: string): ObjectPathMonad
 }
 
 
-export function getFromObjectOrThrow<V>(
-    obj: { [k: string]: V; },
-    key: string
-): V {
-    const val = obj[key];
-    if (!val) {
-        throw new Error('missing value from object ' + key);
-    }
-    return val;
-}
-
 /**
  * returns a flattened object
  * @link https://gist.github.com/penguinboy/762197
@@ -122,11 +111,6 @@ export function flatClone<T>(obj: T | DeepReadonlyObject<T> | Readonly<T>): T {
 export function firstPropertyNameOfObject(obj: any): string {
     return Object.keys(obj)[0];
 }
-export function firstPropertyValueOfObject<T>(obj: { [k: string]: T; }): T {
-    const key = Object.keys(obj)[0];
-    return obj[key];
-}
-
 
 /**
  * deep-sort an object so its attributes are in lexical order.
