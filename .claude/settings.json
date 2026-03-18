@@ -5,7 +5,8 @@
     "permissions": {
         "allow": [
             "Bash(npm run lint*)",
-            "Bash(npm run test*)"
+            "Bash(npm run test*)",
+            "Bash(npm install:*)"
         ],
         "deny": [
             "Write(plugins/**)",
