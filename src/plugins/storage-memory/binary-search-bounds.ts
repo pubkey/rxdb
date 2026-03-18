@@ -1,22 +1,21 @@
 /**
- * Everything in this file was copied and adapted from
- * @link https://github.com/mikolalysenko/binary-search-bounds
- *
- * We should use the original npm module instead when this bug is fixed:
- * @link https://github.com/mikolalysenko/binary-search-bounds/pull/14
+ * Optimized binary search functions for the memory storage.
+ * Based on https://github.com/mikolalysenko/binary-search-bounds
+ * but with performance improvements:
+ * - Removed unnecessary undefined checks for comparator
+ * - Inlined the norm() wrapper to avoid extra function calls
+ * - Added string-specialized variants to avoid temporary array allocations
  */
-
-
 
 type Compare<T> = ((a: T, b: T) => number | null | undefined);
 
-function ge<T>(a: T[], y: T, c: Compare<T>, l?: any, h?: any): number {
+export function boundGE<T>(a: T[], y: T, c: Compare<T>, lo?: any, hi?: any): number {
+    let l: number = lo === undefined ? 0 : lo | 0;
+    let h: number = hi === undefined ? a.length - 1 : hi | 0;
     let i: number = h + 1;
     while (l <= h) {
         const m = (l + h) >>> 1;
-        const x: any = a[m];
-        const p: any = (c !== undefined) ? c(x, y) : (x - (y as any));
-        if (p >= 0) {
+        if ((c(a[m], y) as number) >= 0) {
             i = m; h = m - 1;
         } else {
             l = m + 1;
@@ -25,13 +24,13 @@ function ge<T>(a: T[], y: T, c: Compare<T>, l?: any, h?: any): number {
     return i;
 }
 
-function gt<T>(a: T[], y: T, c: Compare<T>, l?: any, h?: any): number {
+export function boundGT<T>(a: T[], y: T, c: Compare<T>, lo?: any, hi?: any): number {
+    let l: number = lo === undefined ? 0 : lo | 0;
+    let h: number = hi === undefined ? a.length - 1 : hi | 0;
     let i = h + 1;
     while (l <= h) {
         const m = (l + h) >>> 1;
-        const x = a[m];
-        const p: any = (c !== undefined) ? c(x, y) : ((x as any) - (y as any));
-        if (p > 0) {
+        if ((c(a[m], y) as number) > 0) {
             i = m; h = m - 1;
         } else {
             l = m + 1;
@@ -40,12 +39,13 @@ function gt<T>(a: T[], y: T, c: Compare<T>, l?: any, h?: any): number {
     return i;
 }
 
-function lt<T>(a: T[], y: T, c: Compare<T>, l?: any, h?: any): number {
+export function boundLT<T>(a: T[], y: T, c: Compare<T>, lo?: any, hi?: any): number {
+    let l: number = lo === undefined ? 0 : lo | 0;
+    let h: number = hi === undefined ? a.length - 1 : hi | 0;
     let i = l - 1;
     while (l <= h) {
-        const m = (l + h) >>> 1, x = a[m];
-        const p: any = (c !== undefined) ? c(x, y) : ((x as any) - (y as any));
-        if (p < 0) {
+        const m = (l + h) >>> 1;
+        if ((c(a[m], y) as number) < 0) {
             i = m; l = m + 1;
         } else {
             h = m - 1;
@@ -54,12 +54,13 @@ function lt<T>(a: T[], y: T, c: Compare<T>, l?: any, h?: any): number {
     return i;
 }
 
-function le<T>(a: T[], y: T, c: Compare<T>, l?: any, h?: any): number {
+export function boundLE<T>(a: T[], y: T, c: Compare<T>, lo?: any, hi?: any): number {
+    let l: number = lo === undefined ? 0 : lo | 0;
+    let h: number = hi === undefined ? a.length - 1 : hi | 0;
     let i = l - 1;
     while (l <= h) {
-        const m = (l + h) >>> 1, x = a[m];
-        const p: any = (c !== undefined) ? c(x, y) : ((x as any) - (y as any));
-        if (p <= 0) {
+        const m = (l + h) >>> 1;
+        if ((c(a[m], y) as number) <= 0) {
             i = m; l = m + 1;
         } else {
             h = m - 1;
@@ -68,10 +69,12 @@ function le<T>(a: T[], y: T, c: Compare<T>, l?: any, h?: any): number {
     return i;
 }
 
-function eq<T>(a: T[], y: T, c: Compare<T>, l?: any, h?: any): number {
+export function boundEQ<T>(a: T[], y: T, c: Compare<T>, lo?: any, hi?: any): number {
+    let l: number = lo === undefined ? 0 : lo | 0;
+    let h: number = hi === undefined ? a.length - 1 : hi | 0;
     while (l <= h) {
-        const m = (l + h) >>> 1, x = a[m];
-        const p: any = (c !== undefined) ? c(x, y) : ((x as any) - (y as any));
+        const m = (l + h) >>> 1;
+        const p = c(a[m], y) as number;
         if (p === 0) {
             return m;
         }
@@ -84,23 +87,67 @@ function eq<T>(a: T[], y: T, c: Compare<T>, l?: any, h?: any): number {
     return -1;
 }
 
-function norm<T>(a: T[], y: T, c: Compare<T>, l: any, h: any, f: any) {
-    return f(a, y, c, (l === undefined) ? 0 : l | 0, (h === undefined) ? a.length - 1 : h | 0);
+/**
+ * Specialized binary search functions that compare DocWithIndexString
+ * entries directly against an index string, avoiding temporary array allocations.
+ * Used in query() and count() hot paths.
+ */
+export function boundGEByIndexString<T extends [string, ...any[]]>(a: T[], indexString: string): number {
+    let l = 0;
+    let h = a.length - 1;
+    let i: number = h + 1;
+    while (l <= h) {
+        const m = (l + h) >>> 1;
+        if (a[m][0] >= indexString) {
+            i = m; h = m - 1;
+        } else {
+            l = m + 1;
+        }
+    }
+    return i;
 }
 
+export function boundGTByIndexString<T extends [string, ...any[]]>(a: T[], indexString: string): number {
+    let l = 0;
+    let h = a.length - 1;
+    let i = h + 1;
+    while (l <= h) {
+        const m = (l + h) >>> 1;
+        if (a[m][0] > indexString) {
+            i = m; h = m - 1;
+        } else {
+            l = m + 1;
+        }
+    }
+    return i;
+}
 
-export function boundGE<T>(a: T[], y: T, c: Compare<T>, l?: any, h?: any) {
-    return norm(a, y, c, l, h, ge);
+export function boundLTByIndexString<T extends [string, ...any[]]>(a: T[], indexString: string): number {
+    let l = 0;
+    let h = a.length - 1;
+    let i = l - 1;
+    while (l <= h) {
+        const m = (l + h) >>> 1;
+        if (a[m][0] < indexString) {
+            i = m; l = m + 1;
+        } else {
+            h = m - 1;
+        }
+    }
+    return i;
 }
-export function boundGT<T>(a: T[], y: T, c: Compare<T>, l?: any, h?: any) {
-    return norm(a, y, c, l, h, gt);
-}
-export function boundLT<T>(a: T[], y: T, c: Compare<T>, l?: any, h?: any) {
-    return norm(a, y, c, l, h, lt);
-}
-export function boundLE<T>(a: T[], y: T, c: Compare<T>, l?: any, h?: any) {
-    return norm(a, y, c, l, h, le);
-}
-export function boundEQ<T>(a: T[], y: T, c: Compare<T>, l?: any, h?: any) {
-    return norm(a, y, c, l, h, eq);
+
+export function boundLEByIndexString<T extends [string, ...any[]]>(a: T[], indexString: string): number {
+    let l = 0;
+    let h = a.length - 1;
+    let i = l - 1;
+    while (l <= h) {
+        const m = (l + h) >>> 1;
+        if (a[m][0] <= indexString) {
+            i = m; l = m + 1;
+        } else {
+            h = m - 1;
+        }
+    }
+    return i;
 }

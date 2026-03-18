@@ -40,12 +40,15 @@ import {
     boundGE,
     boundGT,
     boundLE,
-    boundLT
+    boundLT,
+    boundGEByIndexString,
+    boundGTByIndexString,
+    boundLEByIndexString,
+    boundLTByIndexString
 } from './binary-search-bounds.ts';
 import {
     attachmentMapKey,
     bulkInsertToState,
-    compareDocsWithIndex,
     ensureNotRemoved,
     getMemoryCollectionKey,
     putWriteRowToState,
@@ -178,8 +181,9 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
 
         /**
          * Do inserts/updates
+         * @performance Use cached byIndexArray instead of Object.values()
          */
-        const stateByIndex = Object.values(this.internals.byIndex);
+        const stateByIndex = internals.byIndexArray;
 
         /**
          * @performance Use batch insert for bulk inserts to avoid
@@ -314,22 +318,17 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         const docsWithIndex = this.internals.byIndex[indexName].docsWithIndex;
 
 
+        /**
+         * @performance Use string-specialized binary search to avoid
+         * temporary array allocations on every query.
+         */
+        let indexOfLower = queryPlan.inclusiveStart
+            ? boundGEByIndexString(docsWithIndex, lowerBoundString)
+            : boundGTByIndexString(docsWithIndex, lowerBoundString);
 
-        let indexOfLower = (queryPlan.inclusiveStart ? boundGE : boundGT)(
-            docsWithIndex,
-            [
-                lowerBoundString
-            ] as any,
-            compareDocsWithIndex
-        );
-
-        const indexOfUpper = (queryPlan.inclusiveEnd ? boundLE : boundLT)(
-            docsWithIndex,
-            [
-                upperBoundString
-            ] as any,
-            compareDocsWithIndex
-        );
+        const indexOfUpper = queryPlan.inclusiveEnd
+            ? boundLEByIndexString(docsWithIndex, upperBoundString)
+            : boundLTByIndexString(docsWithIndex, upperBoundString);
 
         let rows: RxDocumentData<RxDocType>[] = [];
 
@@ -405,6 +404,7 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
          * If the selector is satisfied by the index,
          * we can compute the count directly from the index range
          * without extracting document data into an array.
+         * Uses string-specialized binary search to avoid allocations.
          */
         if (queryPlan.selectorSatisfiedByIndex) {
             const queryPlanFields: string[] = queryPlan.index;
@@ -428,17 +428,13 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
             }
             const docsWithIndex = this.internals.byIndex[indexName].docsWithIndex;
 
-            const indexOfLower = (queryPlan.inclusiveStart ? boundGE : boundGT)(
-                docsWithIndex,
-                [lowerBoundString] as any,
-                compareDocsWithIndex
-            );
+            const indexOfLower = queryPlan.inclusiveStart
+                ? boundGEByIndexString(docsWithIndex, lowerBoundString)
+                : boundGTByIndexString(docsWithIndex, lowerBoundString);
 
-            const indexOfUpper = (queryPlan.inclusiveEnd ? boundLE : boundLT)(
-                docsWithIndex,
-                [upperBoundString] as any,
-                compareDocsWithIndex
-            );
+            const indexOfUpper = queryPlan.inclusiveEnd
+                ? boundLEByIndexString(docsWithIndex, upperBoundString)
+                : boundLTByIndexString(docsWithIndex, upperBoundString);
 
             const count = Math.max(0, indexOfUpper - indexOfLower + 1);
             return Promise.resolve({
@@ -470,12 +466,9 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
             ]
         );
 
-        let indexOfLower = boundGT(
+        let indexOfLower = boundGTByIndexString(
             docsWithIndex,
-            [
-                lowerBoundString
-            ] as any,
-            compareDocsWithIndex
+            lowerBoundString
         );
 
         let done = false;
@@ -574,6 +567,7 @@ export function createMemoryStorageInstance<RxDocType>(
             documents: new Map(),
             attachments: params.schema.attachments ? new Map() : undefined as any,
             byIndex: {},
+            byIndexArray: [],
             changes$: new Subject()
         };
         addIndexesToInternalsState(internals, params.schema);

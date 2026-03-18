@@ -73,6 +73,11 @@ export type MemoryStorageInternals<RxDocType> = {
          */
         [indexName: string]: MemoryStorageInternalsByIndex<RxDocType>;
     };
+    /**
+     * Cached array of all MemoryStorageInternalsByIndex values.
+     * Avoids calling Object.values(byIndex) on every write operation.
+     */
+    byIndexArray: MemoryStorageInternalsByIndex<RxDocType>[];
 
     /**
      * We need these to do lazy writes.

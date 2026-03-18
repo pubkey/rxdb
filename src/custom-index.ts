@@ -128,10 +128,25 @@ export function getIndexableStringMonad<RxDocType>(
     const fieldNamePropertiesAmount = fieldNameProperties.length;
     const indexPartsFunctions = fieldNameProperties.map(r => r.getIndexStringPart);
 
-
     /**
      * @hotPath Performance of this function is very critical!
+     * Specialize for common field counts to avoid loop overhead.
      */
+    if (fieldNamePropertiesAmount === 1) {
+        return indexPartsFunctions[0];
+    }
+    if (fieldNamePropertiesAmount === 2) {
+        const fn0 = indexPartsFunctions[0];
+        const fn1 = indexPartsFunctions[1];
+        return (docData: RxDocumentData<RxDocType>): string => fn0(docData) + fn1(docData);
+    }
+    if (fieldNamePropertiesAmount === 3) {
+        const fn0 = indexPartsFunctions[0];
+        const fn1 = indexPartsFunctions[1];
+        const fn2 = indexPartsFunctions[2];
+        return (docData: RxDocumentData<RxDocType>): string => fn0(docData) + fn1(docData) + fn2(docData);
+    }
+
     const ret = function (docData: RxDocumentData<RxDocType>): string {
         let str = '';
         for (let i = 0; i < fieldNamePropertiesAmount; ++i) {
@@ -236,9 +251,15 @@ export function getNumberIndexString(
     let str = nonDecimalsValueAsString.padStart(parsedLengths.nonDecimals, '0');
 
     if (parsedLengths.decimals > 0) {
-        const splitByDecimalPoint = fieldValue.toString().split('.');
-        const decimalValueAsString = splitByDecimalPoint.length > 1 ? splitByDecimalPoint[1] : '0';
-        str += decimalValueAsString.padEnd(parsedLengths.decimals, '0');
+        /**
+         * @performance
+         * Use math to extract decimal digits instead of toString().split('.')
+         * which creates intermediate strings and arrays.
+         */
+        const multiplier = Math.pow(10, parsedLengths.decimals);
+        const shifted = Math.round(Math.abs(fieldValue) * multiplier);
+        const decimalPart = (shifted % multiplier).toString();
+        str += decimalPart.padStart(parsedLengths.decimals, '0');
     }
     return str;
 }

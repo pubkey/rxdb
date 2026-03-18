@@ -67,38 +67,67 @@ export function putWriteRowToState<RxDocType>(
     docInState?: RxDocumentData<RxDocType>
 ) {
     state.documents.set(docId, document as any);
-    for (let i = 0; i < stateByIndex.length; ++i) {
+    const stateByIndexLength = stateByIndex.length;
+    for (let i = 0; i < stateByIndexLength; ++i) {
         const byIndex = stateByIndex[i];
         const docsWithIndex = byIndex.docsWithIndex;
         const getIndexableString = byIndex.getIndexableString;
         const newIndexString = getIndexableString(document as any);
-        const insertPosition = pushAtSortPosition(
-            docsWithIndex,
-            [
-                newIndexString,
-                document,
-                docId,
-            ],
-            sortByIndexStringComparator,
-            0
-        );
 
         /**
-         * Remove previous if it was in the state
+         * @performance
+         * When updating a document, first compute whether the index changed.
+         * If it did not change, we only need to update the document reference
+         * in-place without any splice operations.
          */
         if (docInState) {
             const previousIndexString = getIndexableString(docInState);
             if (previousIndexString === newIndexString) {
                 /**
                  * Performance shortcut.
-                 * If index was not changed -> The old doc must be before or after the new one.
+                 * Index did not change, so the old entry is at the same position.
+                 * We can find it by binary search and update in-place.
                  */
-                const prev = docsWithIndex[insertPosition - 1];
-                if (prev && prev[2] === docId) {
+                const eqPos = boundEQ(
+                    docsWithIndex,
+                    [previousIndexString] as any,
+                    compareDocsWithIndex
+                );
+                if (eqPos !== -1) {
+                    /**
+                     * There might be multiple entries with the same index string
+                     * (e.g. different documents). Search around eqPos for ours.
+                     */
+                    if (docsWithIndex[eqPos][2] === docId) {
+                        docsWithIndex[eqPos][1] = document;
+                        docsWithIndex[eqPos][2] = docId;
+                        continue;
+                    }
+                    // Check neighbors
+                    const prev = docsWithIndex[eqPos - 1];
+                    if (prev && prev[0] === previousIndexString && prev[2] === docId) {
+                        docsWithIndex[eqPos - 1][1] = document;
+                        continue;
+                    }
+                    const next = docsWithIndex[eqPos + 1];
+                    if (next && next[0] === previousIndexString && next[2] === docId) {
+                        docsWithIndex[eqPos + 1][1] = document;
+                        continue;
+                    }
+                }
+                // Fallback: use the old insert+remove approach
+                const insertPosition = pushAtSortPosition(
+                    docsWithIndex,
+                    [newIndexString, document, docId],
+                    sortByIndexStringComparator,
+                    0
+                );
+                const prevEntry = docsWithIndex[insertPosition - 1];
+                if (prevEntry && prevEntry[2] === docId) {
                     docsWithIndex.splice(insertPosition - 1, 1);
                 } else {
-                    const next = docsWithIndex[insertPosition + 1];
-                    if (next[2] === docId) {
+                    const nextEntry = docsWithIndex[insertPosition + 1];
+                    if (nextEntry[2] === docId) {
                         docsWithIndex.splice(insertPosition + 1, 1);
                     } else {
                         throw newRxError('SNH', {
@@ -109,20 +138,26 @@ export function putWriteRowToState<RxDocType>(
                         });
                     }
                 }
+                continue;
             } else {
                 /**
-                 * Index changed, we must search for the old one and remove it.
+                 * Index changed, we must remove the old entry and insert the new one.
                  */
                 const indexBefore = boundEQ(
                     docsWithIndex,
-                    [
-                        previousIndexString
-                    ] as any,
+                    [previousIndexString] as any,
                     compareDocsWithIndex
                 );
                 docsWithIndex.splice(indexBefore, 1);
             }
         }
+
+        pushAtSortPosition(
+            docsWithIndex,
+            [newIndexString, document, docId],
+            sortByIndexStringComparator,
+            0
+        );
     }
 }
 
@@ -178,30 +213,31 @@ export function bulkInsertToState<RxDocType>(
             byIndex.docsWithIndex = newEntries;
         } else {
             // Merge sorted arrays
-            byIndex.docsWithIndex = mergeSortedArrays(docsWithIndex, newEntries, sortByIndexStringComparator);
+            byIndex.docsWithIndex = mergeSortedArrays(docsWithIndex, newEntries);
         }
     }
 }
 
 
 /**
- * Merges two sorted arrays into a single sorted array.
+ * Merges two sorted DocWithIndexString arrays into a single sorted array.
  * Runs in O(n + m) where n and m are the lengths of the input arrays.
+ * @performance Comparator is inlined to avoid function call overhead
+ * per comparison, which is significant for large arrays.
  */
-function mergeSortedArrays<T>(
-    a: T[],
-    b: T[],
-    comparator: (x: T, y: T) => number
-): T[] {
+function mergeSortedArrays<RxDocType>(
+    a: DocWithIndexString<RxDocType>[],
+    b: DocWithIndexString<RxDocType>[]
+): DocWithIndexString<RxDocType>[] {
     const aLen = a.length;
     const bLen = b.length;
-    const result: T[] = new Array(aLen + bLen);
+    const result: DocWithIndexString<RxDocType>[] = new Array(aLen + bLen);
     let ai = 0;
     let bi = 0;
     let ri = 0;
 
     while (ai < aLen && bi < bLen) {
-        if (comparator(a[ai], b[bi]) <= 0) {
+        if (a[ai][0] <= b[bi][0]) {
             result[ri++] = a[ai++];
         } else {
             result[ri++] = b[bi++];
@@ -227,7 +263,9 @@ export function removeDocFromState<RxDocType>(
     const docId: string = (doc as any)[primaryPath];
     state.documents.delete(docId);
 
-    Object.values(state.byIndex).forEach(byIndex => {
+    const stateByIndex = state.byIndexArray;
+    for (let i = 0; i < stateByIndex.length; ++i) {
+        const byIndex = stateByIndex[i];
         const docsWithIndex = byIndex.docsWithIndex;
         const indexString = byIndex.getIndexableString(doc);
 
@@ -239,7 +277,7 @@ export function removeDocFromState<RxDocType>(
             compareDocsWithIndex
         );
         docsWithIndex.splice(positionInIndex, 1);
-    });
+    }
 }
 
 

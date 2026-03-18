@@ -26,6 +26,7 @@ export function addIndexesToInternalsState<RxDocType>(
             getIndexableString: getIndexableStringMonad(schema, indexAr)
         };
     });
+    state.byIndexArray = Object.values(state.byIndex);
 }
 
 
