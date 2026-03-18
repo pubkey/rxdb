@@ -55,7 +55,7 @@ const groupedErrors = errorEntries.reduce((acc, [errorCode, errorMessage]) => {
     return acc;
 }, {} as Record<string, any[]>);
 
-function ErrorItem({ errorCode, errorMessage, isTarget, styles }: { errorCode: string, errorMessage: any, isTarget: boolean, styles: any }) {
+function ErrorItem({ errorCode, errorMessage, isTarget, styles }: { errorCode: string; errorMessage: any; isTarget: boolean; styles: any; }) {
     return (
         <li
             id={errorCode}
