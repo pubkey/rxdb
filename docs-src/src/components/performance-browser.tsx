@@ -8,7 +8,7 @@ export const browserMetrics = [
     { key: 'serial-inserts-50', name: 'Insert 50 docs (serial)', color: '#DE48B8' }, // Light Magenta
     { key: 'serial-find-by-id-50', name: 'Find 50 docs by ID (serial)', color: '#b2218b' }, // Base Middle
     { key: 'find-by-query', name: 'Find 3000 docs by query', color: '#DA93E5' }, // Very Light Purple
-    { key: 'find-by-query-parallel-4', name: 'Run 4 Qeuries in parallel, 750 docs each', color: '#A94FBE' }, // Light Purple
+    { key: 'find-by-query-parallel-4', name: 'Run 4 Queries in parallel, 750 docs each', color: '#A94FBE' }, // Light Purple
     { key: '4x-count', name: 'Count 300 docs (4x)', color: '#FF59B9' } // Bright Pink
 ] as const;
 
