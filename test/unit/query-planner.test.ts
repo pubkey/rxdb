@@ -86,6 +86,155 @@ describeParallel('query-planner.test.js', () => {
                 );
             });
         });
+        describe('normalize selector shorthands', () => {
+            it('should normalize top-level shorthand selectors to $eq', () => {
+                const schema = getHumanSchemaWithIndexes([]);
+                const query = normalizeMangoQuery<HumanDocumentType>(
+                    schema,
+                    {
+                        selector: {
+                            firstName: 'bar',
+                            age: 10
+                        },
+                        sort: [{ passportId: 'asc' }]
+                    }
+                );
+                assert.deepStrictEqual(
+                    (query.selector as any).firstName,
+                    { $eq: 'bar' }
+                );
+                assert.deepStrictEqual(
+                    (query.selector as any).age,
+                    { $eq: 10 }
+                );
+            });
+            it('should normalize shorthands inside $and', () => {
+                const schema = getHumanSchemaWithIndexes([]);
+                const query = normalizeMangoQuery<HumanDocumentType>(
+                    schema,
+                    {
+                        selector: {
+                            $and: [
+                                { firstName: 'Alice' },
+                                { age: 30 }
+                            ]
+                        } as any,
+                        sort: [{ passportId: 'asc' }]
+                    }
+                );
+                const $and = (query.selector as any).$and;
+                assert.deepStrictEqual($and[0].firstName, { $eq: 'Alice' });
+                assert.deepStrictEqual($and[1].age, { $eq: 30 });
+            });
+            it('should normalize shorthands inside $or', () => {
+                const schema = getHumanSchemaWithIndexes([]);
+                const query = normalizeMangoQuery<HumanDocumentType>(
+                    schema,
+                    {
+                        selector: {
+                            $or: [
+                                { firstName: 'Alice' },
+                                { firstName: 'Bob' }
+                            ]
+                        } as any,
+                        sort: [{ passportId: 'asc' }]
+                    }
+                );
+                const $or = (query.selector as any).$or;
+                assert.deepStrictEqual($or[0].firstName, { $eq: 'Alice' });
+                assert.deepStrictEqual($or[1].firstName, { $eq: 'Bob' });
+            });
+            it('should normalize shorthands inside $nor', () => {
+                const schema = getHumanSchemaWithIndexes([]);
+                const query = normalizeMangoQuery<HumanDocumentType>(
+                    schema,
+                    {
+                        selector: {
+                            $nor: [
+                                { firstName: 'Alice' }
+                            ]
+                        } as any,
+                        sort: [{ passportId: 'asc' }]
+                    }
+                );
+                const $nor = (query.selector as any).$nor;
+                assert.deepStrictEqual($nor[0].firstName, { $eq: 'Alice' });
+            });
+            it('should normalize shorthands inside $not', () => {
+                const schema = getHumanSchemaWithIndexes([]);
+                const query = normalizeMangoQuery<HumanDocumentType>(
+                    schema,
+                    {
+                        selector: {
+                            $not: {
+                                firstName: 'Alice'
+                            }
+                        } as any,
+                        sort: [{ passportId: 'asc' }]
+                    }
+                );
+                const $not = (query.selector as any).$not;
+                assert.deepStrictEqual($not.firstName, { $eq: 'Alice' });
+            });
+            it('should normalize shorthands in deeply nested $and inside $or', () => {
+                const schema = getHumanSchemaWithIndexes([]);
+                const query = normalizeMangoQuery<HumanDocumentType>(
+                    schema,
+                    {
+                        selector: {
+                            $or: [
+                                {
+                                    $and: [
+                                        { firstName: 'Alice' },
+                                        { age: 30 }
+                                    ]
+                                },
+                                { firstName: 'Bob' }
+                            ]
+                        } as any,
+                        sort: [{ passportId: 'asc' }]
+                    }
+                );
+                const $or = (query.selector as any).$or;
+                assert.deepStrictEqual($or[0].$and[0].firstName, { $eq: 'Alice' });
+                assert.deepStrictEqual($or[0].$and[1].age, { $eq: 30 });
+                assert.deepStrictEqual($or[1].firstName, { $eq: 'Bob' });
+            });
+            it('should not modify selectors that already use operators', () => {
+                const schema = getHumanSchemaWithIndexes([]);
+                const query = normalizeMangoQuery<HumanDocumentType>(
+                    schema,
+                    {
+                        selector: {
+                            $and: [
+                                { age: { $gt: 20 } },
+                                { firstName: 'Alice' }
+                            ]
+                        } as any,
+                        sort: [{ passportId: 'asc' }]
+                    }
+                );
+                const $and = (query.selector as any).$and;
+                assert.deepStrictEqual($and[0].age, { $gt: 20 });
+                assert.deepStrictEqual($and[1].firstName, { $eq: 'Alice' });
+            });
+            it('should handle null values in nested selectors', () => {
+                const schema = getHumanSchemaWithIndexes([]);
+                const query = normalizeMangoQuery<HumanDocumentType>(
+                    schema,
+                    {
+                        selector: {
+                            $or: [
+                                { firstName: null as any }
+                            ]
+                        } as any,
+                        sort: [{ passportId: 'asc' }]
+                    }
+                );
+                const $or = (query.selector as any).$or;
+                assert.deepStrictEqual($or[0].firstName, { $eq: null });
+            });
+        });
     });
     describe('.getQueryPlan()', () => {
         it('should pick the default index when no indexes specified in the schema', () => {
