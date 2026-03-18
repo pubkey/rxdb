@@ -13,6 +13,9 @@ import type {
 import {
     requestIdlePromiseNoQueue
 } from './plugins/utils/index.ts';
+import {
+    newRxError
+} from './rx-error.ts';
 
 
 /**
@@ -140,7 +143,7 @@ export class ChangeEventBuffer<RxDocType> {
         this.processTasks();
         const ret = this.getFrom(pointer);
         if (ret === null) {
-            throw new Error('out of bounds');
+            throw newRxError('COB1');
         } else {
             ret.forEach(cE => fn(cE));
         }
