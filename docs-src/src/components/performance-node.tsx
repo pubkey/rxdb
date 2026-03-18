@@ -1,32 +1,28 @@
 import React from 'react';
 import PerformanceChart from './performance-chart';
 
-const nodeMetrics = [
-    { key: 'timeToFirstInsert', name: 'Time to first insert', color: '#FF8BE0' }, // Very Light Pink
-    { key: 'insertDocsBulk', name: 'Insert docs (bulk)', color: '#ED168F' }, // Base Top
-    { key: 'findByIdBulk', name: 'Find by ID (bulk)', color: '#FFB3DF' }, // Very Light Magenta
-    { key: 'insertDocsSerial', name: 'Insert docs (serial)', color: '#DE48B8' }, // Light Magenta
-    { key: 'findByIdSerial', name: 'Find by ID (serial)', color: '#b2218b' }, // Base Middle
-    { key: 'findDocsQuery', name: 'Find docs by query', color: '#DA93E5' }, // Very Light Purple
-    { key: 'findDocsQueryParallel', name: 'Find docs (parallel)', color: '#A94FBE' }, // Light Purple
-    { key: 'countDocs', name: 'Count docs', color: '#FF59B9' } // Bright Pink
-];
+import { browserMetrics, PerformanceData } from './performance-browser';
 
-const nodeData = [
-    {
-        name: 'SQLite',
-        timeToFirstInsert: 100, insertDocsBulk: 50, findByIdBulk: 20,
-        insertDocsSerial: 150, findByIdSerial: 80, findDocsQuery: 100,
-        findDocsQueryParallel: 90, countDocs: 10
-    },
+const nodeData: PerformanceData[] = [
     {
         name: 'MongoDB',
-        timeToFirstInsert: 200, insertDocsBulk: 150, findByIdBulk: 100,
-        insertDocsSerial: 300, findByIdSerial: 200, findDocsQuery: 250,
-        findDocsQueryParallel: 200, countDocs: 50
+        "time-to-first-insert": 276.906,
+        "insert-documents-500": 47.497,
+        "find-by-ids-3000": 57.31,
+        "serial-inserts-50": 209.467,
+        "serial-find-by-id-50": 23.09,
+        "find-by-query": 42.315,
+        "find-by-query-parallel-4": 38.854,
+        "4x-count": 6.898
+    },
+    {
+        name: 'Memory',
+        'time-to-first-insert': 0.999, 'insert-documents-500': 0.317, 'find-by-ids-3000': 4.305,
+        'serial-inserts-50': 51.114, 'serial-find-by-id-50': 0.547, 'find-by-query': 2.307,
+        'find-by-query-parallel-4': 3.224, '4x-count': 0.294
     }
 ];
 
 export default function PerformanceNode() {
-    return <PerformanceChart title="Node.js based storages" metrics={nodeMetrics} data={nodeData} />;
+    return <PerformanceChart title="Node.js based storages" metrics={browserMetrics as any} data={nodeData} />;
 }

@@ -1,56 +1,64 @@
 import React from 'react';
 import PerformanceChart from './performance-chart';
 
-const browserMetrics = [
-    { key: 'timeToFirstInsert', name: 'Time to first insert', color: '#FF8BE0' }, // Very Light Pink
-    { key: 'insertDocsBulk', name: 'Insert docs (bulk)', color: '#ED168F' }, // Base Top
-    { key: 'findByIdBulk', name: 'Find by ID (bulk)', color: '#FFB3DF' }, // Very Light Magenta
-    { key: 'insertDocsSerial', name: 'Insert docs (serial)', color: '#DE48B8' }, // Light Magenta
-    { key: 'findByIdSerial', name: 'Find by ID (serial)', color: '#b2218b' }, // Base Middle
-    { key: 'findDocsQuery', name: 'Find docs by query', color: '#DA93E5' }, // Very Light Purple
-    { key: 'findDocsQueryParallel', name: 'Find docs (parallel)', color: '#A94FBE' }, // Light Purple
-    { key: 'countDocs', name: 'Count docs', color: '#FF59B9' } // Bright Pink
-];
+export const browserMetrics = [
+    { key: 'time-to-first-insert', name: 'Time to first insert', color: '#FF8BE0' }, // Very Light Pink
+    { key: 'insert-documents-500', name: 'Insert 500 docs (bulk)', color: '#ED168F' }, // Base Top
+    { key: 'find-by-ids-3000', name: 'Find 3000 docs by ID (bulk)', color: '#FFB3DF' }, // Very Light Magenta
+    { key: 'serial-inserts-50', name: 'Insert 50 docs (serial)', color: '#DE48B8' }, // Light Magenta
+    { key: 'serial-find-by-id-50', name: 'Find 50 docs by ID (serial)', color: '#b2218b' }, // Base Middle
+    { key: 'find-by-query', name: 'Find 3000 docs by query', color: '#DA93E5' }, // Very Light Purple
+    { key: 'find-by-query-parallel-4', name: 'Run 4 Qeuries in parallel, 750 docs each', color: '#A94FBE' }, // Light Purple
+    { key: '4x-count', name: 'Count 300 docs (4x)', color: '#FF59B9' } // Bright Pink
+] as const;
 
-const browserData = [
+export type MetricsKey = typeof browserMetrics[number]['key'];
+
+export type PerformanceData = {
+    name: string;
+} & {
+    [K in MetricsKey]: number;
+};
+
+const browserData: PerformanceData[] = [
     {
         name: 'IndexedDB',
-        timeToFirstInsert: 150, insertDocsBulk: 80, findByIdBulk: 40,
-        insertDocsSerial: 200, findByIdSerial: 100, findDocsQuery: 150,
-        findDocsQueryParallel: 140, countDocs: 20
+        'time-to-first-insert': 150, 'insert-documents-500': 80, 'find-by-ids-3000': 40,
+        'serial-inserts-50': 200, 'serial-find-by-id-50': 100, 'find-by-query': 150,
+        'find-by-query-parallel-4': 140, '4x-count': 20
     },
     {
         name: 'OPFS',
-        timeToFirstInsert: 200, insertDocsBulk: 60, findByIdBulk: 30,
-        insertDocsSerial: 250, findByIdSerial: 120, findDocsQuery: 100,
-        findDocsQueryParallel: 90, countDocs: 15
+        'time-to-first-insert': 200, 'insert-documents-500': 60, 'find-by-ids-3000': 30,
+        'serial-inserts-50': 250, 'serial-find-by-id-50': 120, 'find-by-query': 100,
+        'find-by-query-parallel-4': 90, '4x-count': 15
     },
     {
         name: 'Memory-mapped',
-        timeToFirstInsert: 50, insertDocsBulk: 30, findByIdBulk: 20,
-        insertDocsSerial: 40, findByIdSerial: 25, findDocsQuery: 40,
-        findDocsQueryParallel: 35, countDocs: 5
+        'time-to-first-insert': 50, 'insert-documents-500': 30, 'find-by-ids-3000': 20,
+        'serial-inserts-50': 40, 'serial-find-by-id-50': 25, 'find-by-query': 40,
+        'find-by-query-parallel-4': 35, '4x-count': 5
     },
     {
         name: 'WebSQL',
-        timeToFirstInsert: 180, insertDocsBulk: 90, findByIdBulk: 45,
-        insertDocsSerial: 220, findByIdSerial: 110, findDocsQuery: 160,
-        findDocsQueryParallel: 150, countDocs: 30
+        'time-to-first-insert': 180, 'insert-documents-500': 90, 'find-by-ids-3000': 45,
+        'serial-inserts-50': 220, 'serial-find-by-id-50': 110, 'find-by-query': 160,
+        'find-by-query-parallel-4': 150, '4x-count': 30
     },
     {
         name: 'LokiJS',
-        timeToFirstInsert: 60, insertDocsBulk: 35, findByIdBulk: 25,
-        insertDocsSerial: 50, findByIdSerial: 30, findDocsQuery: 45,
-        findDocsQueryParallel: 40, countDocs: 8
+        'time-to-first-insert': 60, 'insert-documents-500': 35, 'find-by-ids-3000': 25,
+        'serial-inserts-50': 50, 'serial-find-by-id-50': 30, 'find-by-query': 45,
+        'find-by-query-parallel-4': 40, '4x-count': 8
     },
     {
         name: 'Dexie',
-        timeToFirstInsert: 140, insertDocsBulk: 75, findByIdBulk: 35,
-        insertDocsSerial: 190, findByIdSerial: 95, findDocsQuery: 140,
-        findDocsQueryParallel: 130, countDocs: 18
+        'time-to-first-insert': 140, 'insert-documents-500': 75, 'find-by-ids-3000': 35,
+        'serial-inserts-50': 190, 'serial-find-by-id-50': 95, 'find-by-query': 140,
+        'find-by-query-parallel-4': 130, '4x-count': 18
     }
 ];
 
 export default function PerformanceBrowser() {
-    return <PerformanceChart title="Browser based storages" metrics={browserMetrics} data={browserData} />;
+    return <PerformanceChart title="Browser based storages" metrics={browserMetrics as any} data={browserData} />;
 }

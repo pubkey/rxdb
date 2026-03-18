@@ -6,7 +6,8 @@ import type {
     RxJsonSchema
 } from '../../types/index.d.ts';
 import {
-    Sort as MongoSort
+    Sort as MongoSort,
+    MongoClient
 } from 'mongodb';
 import { RXDB_VERSION, flatClone } from '../utils/index.ts';
 import { MongoDBPreparedQuery, MongoQuerySelector } from './mongodb-types.ts';
@@ -116,4 +117,45 @@ export function swapToMongoSort<RxDocType>(
 
 export function getMongoDBIndexName(index: string[]): string {
     return index.join('|');
+}
+
+export const MONGO_CLIENT_CACHE = new Map<string, { client: MongoClient, refCount: number, promise: Promise<MongoClient>, closeTimeout?: ReturnType<typeof setTimeout> }>();
+
+export async function getMongoDBClient(connection: string): Promise<MongoClient> {
+    let cached = MONGO_CLIENT_CACHE.get(connection);
+    if (!cached) {
+        const client = new MongoClient(connection, MONGO_OPTIONS_DRIVER_INFO);
+        cached = {
+            client,
+            refCount: 1,
+            promise: client.connect().then(() => client)
+        };
+        MONGO_CLIENT_CACHE.set(connection, cached);
+        return cached.promise;
+    }
+    cached.refCount++;
+    if (cached.closeTimeout) {
+        clearTimeout(cached.closeTimeout);
+        cached.closeTimeout = undefined;
+    }
+    return cached.promise;
+}
+
+export async function closeMongoDBClient(connection: string): Promise<void> {
+    const cached = MONGO_CLIENT_CACHE.get(connection);
+    if (cached) {
+        cached.refCount--;
+        if (cached.refCount === 0) {
+            if (cached.closeTimeout) {
+                clearTimeout(cached.closeTimeout);
+            }
+            cached.closeTimeout = setTimeout(() => {
+                const innerCached = MONGO_CLIENT_CACHE.get(connection);
+                if (innerCached && innerCached.refCount === 0) {
+                    MONGO_CLIENT_CACHE.delete(connection);
+                    innerCached.client.close().catch(() => { });
+                }
+            }, 2000); // 2 second delay to allow reuse
+        }
+    }
 }
