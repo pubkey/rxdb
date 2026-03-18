@@ -238,7 +238,7 @@ export class RxDatabaseBase<
     public collectionsSubject$ = new Subject<RxCollectionEvent>();
     private observable$: Observable<RxChangeEvent<any>> = this.eventBulks$
         .pipe(
-            mergeMap(changeEventBulk => rxChangeEventBulkToRxChangeEvents(changeEventBulk))
+            mergeMap((changeEventBulk: RxChangeEventBulk<any>) => rxChangeEventBulkToRxChangeEvents(changeEventBulk))
         );
 
     /**

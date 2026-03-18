@@ -11,6 +11,7 @@ import {
 import { overwritable } from '../../overwritable.ts';
 import { getChangedDocumentsSince } from '../../rx-storage-helper.ts';
 import type {
+    RxChangeEventBulk,
     RxCollection,
     RxDatabase,
     RxQuery,
@@ -84,7 +85,7 @@ export class RxStateBase<T, Reactivity = unknown> {
         this.$ = merge(
             this._ownEmits$,
             this.collection.eventBulks$.pipe(
-                tap(eventBulk => {
+                tap((eventBulk: RxChangeEventBulk<RxStateDocument>) => {
                     if (!this._initDone) {
                         return;
                     }

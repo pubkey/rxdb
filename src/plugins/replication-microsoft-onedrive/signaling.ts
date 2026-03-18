@@ -152,7 +152,9 @@ export class SignalingState {
 
     async pingPeers(message: SIGNAL) {
         Array.from(this.peerBySenderId.values()).forEach(peer => {
-            peer.send(message);
+            if (peer.connected) {
+                peer.send(message);
+            }
         });
     }
 
@@ -203,6 +205,7 @@ export class SignalingState {
                     });
                     peer.on('connect', () => {
                         this._resync$.next();
+                        peer.send('RESYNC');
                     });
                     peer.on('data', (dataBuffer: any) => {
                         const data = dataBuffer + '';

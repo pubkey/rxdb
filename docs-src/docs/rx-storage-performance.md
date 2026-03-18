@@ -45,7 +45,7 @@ The performance patterns of the browser based storages are very diverse. The [In
 
 ## Node/Native based Storages Performance Comparison
 
-For most client-side native applications ([react-native](./react-native-database.md), [electron](./electron-database.md), [capacitor](./capacitor-database.md)), using the [SQLite RxStorage](./rx-storage-sqlite.md) is recommended. For non-client side applications like a server, use the [MongoDB storage](./rx-storage-mongodb.md) instead.
+For most client-side native applications ([react-native](./react-native-database.md), [electron](./electron-database.md), [capacitor](./capacitor-database.md)), using the [SQLite RxStorage](./rx-storage-sqlite.md) is recommended as a solid baseline. For React Native and Expo applications specifically, the new [Expo Filesystem RxStorage](./rx-storage-filesystem-expo.md) bypasses the bridge and offers significantly better CPU and I/O performance. For non-client side applications like a server, use the [MongoDB storage](./rx-storage-mongodb.md) instead.
 
 <PerformanceChart data={PERFORMANCE_DATA_NODE} metrics={PERFORMANCE_METRICS} />
 

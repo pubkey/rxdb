@@ -225,6 +225,10 @@ export type RxStorageInstanceCreationParams<RxDocType, InstanceCreationOptions> 
      * process relies on the same storage.
      */
     multiInstance: boolean;
+    /**
+     * Typed as `any` because different encryption plugins
+     * may use passwords that are not strings.
+     */
     password?: string | any;
 
     /**

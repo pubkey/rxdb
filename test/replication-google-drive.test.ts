@@ -489,16 +489,16 @@ describe('replication-google-drive.test.ts', function () {
                 options.initData,
                 ids
             );
-            const fileIdByDocId: any = {};
+            const fileMetaByDocId: any = {};
             found.files.forEach((file, i) => {
                 const docId = docs[i][PRIMARY_PATH];
-                fileIdByDocId[docId] = file.id;
+                fileMetaByDocId[docId] = { fileId: file.id, etag: ensureNotFalsy(file.etag) };
             });
             await updateDocumentFiles(
                 options,
                 PRIMARY_PATH,
                 docs,
-                fileIdByDocId
+                fileMetaByDocId
             );
             const fileIds: string[] = found.files.map((f: any) => ensureNotFalsy(f.id));
             const batchResult = await fetchDocumentContents<any>(
@@ -509,6 +509,44 @@ describe('replication-google-drive.test.ts', function () {
                 assert.ok(batchResult.byId[fileId].passportId);
                 assert.strictEqual(batchResult.byId[fileId].foo, 'bar', 'must have the updated property');
             });
+        });
+        it('updateDocumentFiles() should throw GDR20 on stale etag', async () => {
+            const docs = new Array(1).fill(0).map(() => schemaObjects.humanData());
+            const ids = docs.map(d => (d as any)[PRIMARY_PATH]);
+            await insertDocumentFiles<any>(
+                options,
+                options.initData,
+                PRIMARY_PATH,
+                docs
+            );
+            const found = await getDocumentFiles(
+                options,
+                options.initData,
+                ids
+            );
+            const fileMetaByDocId: any = {};
+            found.files.forEach(file => {
+                const docId = file.name.split('.')[0];
+                fileMetaByDocId[docId] = { fileId: file.id, etag: ensureNotFalsy(file.etag) };
+            });
+
+            await updateDocumentFiles(
+                options,
+                PRIMARY_PATH,
+                docs,
+                fileMetaByDocId
+            );
+
+            await assertThrows(
+                () => updateDocumentFiles(
+                    options,
+                    PRIMARY_PATH,
+                    docs,
+                    fileMetaByDocId
+                ),
+                'RxError',
+                'GDR20'
+            );
         });
     });
     describe('downstream', () => {
@@ -624,7 +662,7 @@ describe('replication-google-drive.test.ts', function () {
                     options,
                     PRIMARY_PATH,
                     [firstDoc],
-                    { [firstDoc.passportId]: docFiles.files[0].id }
+                    { [firstDoc.passportId]: { fileId: docFiles.files[0].id, etag: ensureNotFalsy(docFiles.files[0].etag) } }
                 );
 
                 const changesAfterUpdate = await fetchChanges<HumanDocumentType>(

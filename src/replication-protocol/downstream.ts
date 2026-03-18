@@ -142,13 +142,13 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
         const sub = replicationHandler
             .masterChangeStream$
             .pipe(
-                mergeMap(async (ev) => {
+                mergeMap(async (ev: any) => {
                     /**
                      * While a push is running, we have to delay all incoming
                      * events from the server to not mix up the replication state.
                      */
                     await firstValueFrom(
-                        state.events.active.up.pipe(filter(s => !s))
+                        state.events.active.up.pipe(filter((s: boolean) => !s))
                     );
                     return ev;
                 })
@@ -160,7 +160,7 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
         // unsubscribe when replication is canceled
         firstValueFrom(
             state.events.canceled.pipe(
-                filter(canceled => !!canceled)
+                filter((canceled: boolean) => !!canceled)
             )
         ).then(() => sub.unsubscribe());
     }

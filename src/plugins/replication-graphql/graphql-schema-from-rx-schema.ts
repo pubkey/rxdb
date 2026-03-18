@@ -125,15 +125,15 @@ export function graphQLSchemaFromRxSchema(
         ret.inputs = ret.inputs.concat(
             inputGraphQL
                 .typeDefinitions
-                .map(str => replaceTopLevelTypeName(str, collectionNameInput))
+                .map((str: string) => replaceTopLevelTypeName(str, collectionNameInput))
         ).concat(
             pushRowGraphQL
                 .typeDefinitions
-                .map(str => replaceTopLevelTypeName(str, collectionNameInput + prefixes.pushRow))
+                .map((str: string) => replaceTopLevelTypeName(str, collectionNameInput + prefixes.pushRow))
         ).concat(
             checkpointInputGraphQL
                 .typeDefinitions
-                .map(str => replaceTopLevelTypeName(str, collectionNameInput + prefixes.checkpoint))
+                .map((str: string) => replaceTopLevelTypeName(str, collectionNameInput + prefixes.checkpoint))
         );
 
         const headersSchema: any = {
@@ -158,7 +158,7 @@ export function graphQLSchemaFromRxSchema(
             ret.inputs = ret.inputs.concat(
                 headersInputGraphQL
                     .typeDefinitions
-                    .map(str => replaceTopLevelTypeName(str, headersInputName))
+                    .map((str: string) => replaceTopLevelTypeName(str, headersInputName))
             );
         }
 
@@ -192,13 +192,13 @@ export function graphQLSchemaFromRxSchema(
         });
         ret.types = ret.types.concat(
             outputGraphQL.typeDefinitions
-                .map(str => replaceTopLevelTypeName(str, ucCollectionName))
+                .map((str: string) => replaceTopLevelTypeName(str, ucCollectionName))
         ).concat(
             checkpointOutputGraphQL.typeDefinitions
-                .map(str => replaceTopLevelTypeName(str, ucCollectionName + prefixes.checkpoint))
+                .map((str: string) => replaceTopLevelTypeName(str, ucCollectionName + prefixes.checkpoint))
         ).concat(
             pullBulkOutputGraphQL.typeDefinitions
-                .map(str => replaceTopLevelTypeName(str, ucCollectionName + prefixes.pullBulk))
+                .map((str: string) => replaceTopLevelTypeName(str, ucCollectionName + prefixes.pullBulk))
         );
 
         // query

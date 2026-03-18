@@ -32,6 +32,8 @@ import {
     RxDBcrdtPlugin,
     getCRDTConflictHandler
 } from '../../plugins/crdt/index.mjs';
+import { RxDBUpdatePlugin } from '../../plugins/update/index.mjs';
+addRxPlugin(RxDBUpdatePlugin);
 addRxPlugin(RxDBcrdtPlugin);
 import config, { describeParallel } from './config.ts';
 import { replicateRxCollection } from '../../plugins/replication/index.mjs';
@@ -256,7 +258,7 @@ describeParallel('crdt.test.ts', () => {
      * when the operations are not CRDTs.
      */
     describe('disallowed methods', () => {
-        it('should throw the correct errors', async () => {
+        it('should throw on incrementalModify', async () => {
             const collection = await getCRDTCollection();
             const doc = await collection.insert(schemaObjects.humanData('foobar', 1));
 
@@ -265,6 +267,59 @@ describeParallel('crdt.test.ts', () => {
                 'RxError',
                 'CRDT2'
             );
+
+            collection.database.close();
+        });
+        it('should throw on modify', async () => {
+            const collection = await getCRDTCollection();
+            const doc = await collection.insert(schemaObjects.humanData('foobar', 1));
+
+            await AsyncTestUtil.assertThrows(
+                () => doc.modify(d => d),
+                'RxError',
+                'CRDT4'
+            );
+
+            collection.database.close();
+        });
+    });
+
+    describe('redirected methods', () => {
+        it('should redirect patch through updateCRDT', async () => {
+            const collection = await getCRDTCollection();
+            const doc = await collection.insert(schemaObjects.humanData('foobar', 1));
+
+            await doc.patch({ age: 50 });
+            const latest = doc.getLatest();
+            assert.strictEqual(latest.age, 50);
+
+            const crdts = latest.toJSON().crdts;
+            assert.ok(crdts);
+            assert.ok(crdts.operations.length > 1);
+
+            collection.database.close();
+        });
+        it('should redirect incrementalRemove through updateCRDT', async () => {
+            const collection = await getCRDTCollection();
+            const doc = await collection.insert(schemaObjects.humanData('foobar', 1));
+
+            await doc.incrementalRemove();
+            const latest = doc.getLatest();
+            assert.strictEqual(latest.deleted, true);
+
+            collection.database.close();
+        });
+        it('should redirect update through updateCRDT', async () => {
+            const collection = await getCRDTCollection();
+            const doc = await collection.insert(schemaObjects.humanData('foobar', 1));
+
+            await doc.update({ $set: { age: 99 } });
+            const latest = doc.getLatest();
+            assert.strictEqual(latest.age, 99);
+
+            const crdts = latest.toJSON().crdts;
+            assert.ok(crdts);
+            assert.ok(crdts.operations.length > 1);
 
             collection.database.close();
         });

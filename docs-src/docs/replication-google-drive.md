@@ -6,6 +6,7 @@ image: /headers/replication-google-drive.jpg
 ---
 
 import {Steps} from '@site/src/components/steps';
+import {BetaBlock} from '@site/src/components/beta-block';
 
 # Replication with Google Drive
 
@@ -31,9 +32,7 @@ The replication uses the Google Drive API v3 and v2.
 - **Realtime Sync:** Uses [WebRTC](./replication-webrtc.md) for peer-to-peer signaling to achieve near real-time updates. Uses the same google-drive folder instead of a signaling-server.
 
 
-:::info
-This plugin is in **beta** since RxDB version 17.0.0.
-:::
+<BetaBlock since="17.0.0" />
 
 
 ## Usage
