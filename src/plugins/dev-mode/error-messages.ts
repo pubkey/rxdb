@@ -1364,9 +1364,9 @@ export const ERROR_MESSAGES = {
 
     // redux-persist plugin errors
     RP1: {
-        message: 'getRxStorageReduxPersist() requires a valid RxDatabase instance',
-        cause: 'A valid RxDatabase instance was not provided when creating the redux-persist storage engine.',
-        fix: 'Pass a valid RxDatabase instance to getRxStorageReduxPersist().',
+        message: 'getRxStorageReduxPersist() requires a valid RxCollection instance',
+        cause: 'A valid RxCollection instance was not provided when creating the redux-persist storage engine.',
+        fix: 'Pass a valid RxCollection to getRxStorageReduxPersist(). The collection schema must have key (string, primaryKey) and value (string) fields.',
         docs: ''
     },
 };

@@ -4,8 +4,6 @@ import type {
 } from '../../types/index.d.ts';
 import { newRxError } from '../../rx-error.ts';
 
-export const REDUX_PERSIST_COLLECTION_NAME = 'rxdbreduxpersist';
-
 export const REDUX_PERSIST_SCHEMA = {
     version: 0,
     primaryKey: 'key',
@@ -32,41 +30,25 @@ export type RxDBReduxPersistStorage = {
     removeItem: (key: string) => Promise<void>;
 };
 
-type ReduxPersistDocType = {
+export type ReduxPersistDocType = {
     key: string;
     value: string;
 };
 
-async function ensureReduxPersistCollection(
-    db: RxDatabase
-): Promise<RxCollection<ReduxPersistDocType>> {
-    if (!db.collections[REDUX_PERSIST_COLLECTION_NAME]) {
-        await db.addCollections({
-            [REDUX_PERSIST_COLLECTION_NAME]: {
-                schema: REDUX_PERSIST_SCHEMA
-            }
-        });
-    }
-    return db.collections[REDUX_PERSIST_COLLECTION_NAME];
-}
-
 /**
- * Creates a redux-persist compatible storage engine backed by RxDB.
- * Usage:
- * ```ts
- * import { getRxStorageReduxPersist } from 'rxdb/plugins/redux-persist';
- * const storage = await getRxStorageReduxPersist(myRxDatabase);
- * const persistConfig = { key: 'root', storage };
- * ```
+ * Creates a redux-persist compatible storage engine
+ * that persists into the given RxCollection.
+ *
+ * The collection must have a schema with at least
+ * a `key` (string, primaryKey) and `value` (string) field.
+ * You can use `REDUX_PERSIST_SCHEMA` as a convenience.
  */
-export async function getRxStorageReduxPersist(
-    database: RxDatabase
-): Promise<RxDBReduxPersistStorage> {
-    if (!database || !database.name) {
-        throw newRxError('RP1', { database });
+export function getRxStorageReduxPersist(
+    collection: RxCollection<ReduxPersistDocType>
+): RxDBReduxPersistStorage {
+    if (!collection || typeof collection.findOne !== 'function') {
+        throw newRxError('RP1', { collection });
     }
-
-    const collection = await ensureReduxPersistCollection(database);
 
     const storage: RxDBReduxPersistStorage = {
         async getItem(key: string): Promise<string | null> {

@@ -489,6 +489,11 @@ const sidebars = {
         },
         {
           type: 'doc',
+          id: 'redux-persist',
+          label: 'Redux-Persist'
+        },
+        {
+          type: 'doc',
           id: 'third-party-plugins',
           label: 'Third Party Plugins'
         }
