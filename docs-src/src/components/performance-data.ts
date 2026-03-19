@@ -12,13 +12,13 @@ export type RxStoragePerformanceMeasurement = {
 
 export const PERFORMANCE_METRICS = [
     { key: 'time-to-first-insert', name: 'Time to first insert', color: '#FF8BE0' }, // Very Light Pink
-    { key: 'insert-documents-500', name: 'Insert docs (bulk)', color: '#ED168F' }, // Base Top
-    { key: 'find-by-ids-3000', name: 'Find by ID (bulk)', color: '#FFB3DF' }, // Very Light Magenta
-    { key: 'serial-inserts-50', name: 'Insert docs (serial)', color: '#DE48B8' }, // Light Magenta
-    { key: 'serial-find-by-id-50', name: 'Find by ID (serial)', color: '#b2218b' }, // Base Middle
-    { key: 'find-by-query', name: 'Find docs by query', color: '#DA93E5' }, // Very Light Purple
-    { key: 'find-by-query-parallel-4', name: 'Find docs (parallel)', color: '#A94FBE' }, // Light Purple
-    { key: '4x-count', name: 'Count docs', color: '#FF59B9' } // Bright Pink
+    { key: 'insert-documents-500', name: 'Insert 500 docs (bulk)', color: '#ED168F' }, // Base Top
+    { key: 'find-by-ids-3000', name: 'Find 3000 docs by ID (bulk)', color: '#FFB3DF' }, // Very Light Magenta
+    { key: 'serial-inserts-50', name: 'Insert 50 docs (serial)', color: '#DE48B8' }, // Light Magenta
+    { key: 'serial-find-by-id-50', name: 'Find 50 docs by ID (serial)', color: '#b2218b' }, // Base Middle
+    { key: 'find-by-query', name: 'Find 3000 docs by query', color: '#DA93E5' }, // Very Light Purple
+    { key: 'find-by-query-parallel-4', name: 'Find 3000 docs by query (parallel)', color: '#A94FBE' }, // Light Purple
+    { key: '4x-count', name: 'Count 3000 docs (4x)', color: '#FF59B9' } // Bright Pink
 ];
 
 export const PERFORMANCE_DATA_BROWSER: RxStoragePerformanceMeasurement[] = [
@@ -62,15 +62,25 @@ export const PERFORMANCE_DATA_BROWSER: RxStoragePerformanceMeasurement[] = [
 
 export const PERFORMANCE_DATA_NODE: RxStoragePerformanceMeasurement[] = [
     {
-        name: 'SQLite',
-        'time-to-first-insert': 100, 'insert-documents-500': 50, 'find-by-ids-3000': 20,
-        'serial-inserts-50': 150, 'serial-find-by-id-50': 80, 'find-by-query': 100,
-        'find-by-query-parallel-4': 90, '4x-count': 10
+        name: 'MongoDB',
+        'time-to-first-insert': 276.906,
+        'insert-documents-500': 47.497,
+        'find-by-ids-3000': 57.31,
+        'serial-inserts-50': 209.467,
+        'serial-find-by-id-50': 23.09,
+        'find-by-query': 42.315,
+        'find-by-query-parallel-4': 38.854,
+        '4x-count': 6.898
     },
     {
-        name: 'MongoDB',
-        'time-to-first-insert': 200, 'insert-documents-500': 150, 'find-by-ids-3000': 100,
-        'serial-inserts-50': 300, 'serial-find-by-id-50': 200, 'find-by-query': 250,
-        'find-by-query-parallel-4': 200, '4x-count': 50
-    }
+        name: 'FoundationDB',
+        'time-to-first-insert': 6.38,
+        'insert-documents-500': 34.92,
+        'find-by-ids-3000': 43.14,
+        'serial-inserts-50': 82.62,
+        'serial-find-by-id-50': 22.41,
+        'find-by-query': 51.51,
+        'find-by-query-parallel-4': 44.53,
+        '4x-count': 57.41
+    },
 ];
