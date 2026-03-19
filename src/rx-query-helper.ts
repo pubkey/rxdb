@@ -64,19 +64,10 @@ export function normalizeMangoQuery<RxDocType>(
          * For normalization, we have to normalize this
          * so our checks can perform properly.
          *
-         *
-         * TODO this must work recursive with nested queries that
-         * contain multiple selectors via $and or $or etc.
+         * This works recursively for nested queries that
+         * contain multiple selectors via $and, $or, $nor or $not.
          */
-        Object
-            .entries(normalizedMangoQuery.selector)
-            .forEach(([field, matcher]) => {
-                if (typeof matcher !== 'object' || matcher === null) {
-                    (normalizedMangoQuery as any).selector[field] = {
-                        $eq: matcher
-                    };
-                }
-            });
+        normalizeQuerySelectorShorthands(normalizedMangoQuery.selector);
     }
 
     /**
@@ -285,6 +276,35 @@ export async function runQueryUpdateFunction<RxDocType, RxQueryResult>(
         const result = await fn(docs as any);
         return result as any;
     }
+}
+
+/**
+ * Normalizes selector shorthand values recursively.
+ * Converts `{field: value}` to `{field: {$eq: value}}`
+ * and recurses into $and, $or, $nor arrays and $not objects.
+ */
+const SELECTOR_ARRAY_OPERATORS = new Set(['$and', '$or', '$nor']);
+function normalizeQuerySelectorShorthands(selector: any): void {
+    Object
+        .entries(selector)
+        .forEach(([field, matcher]) => {
+            if (typeof matcher !== 'object' || matcher === null) {
+                selector[field] = { $eq: matcher };
+            } else if (SELECTOR_ARRAY_OPERATORS.has(field) && Array.isArray(matcher)) {
+                (matcher as any[]).forEach(subSelector => normalizeQuerySelectorShorthands(subSelector));
+            } else if (field === '$not' && typeof matcher === 'object') {
+                normalizeQuerySelectorShorthands(matcher);
+            } else if (!field.startsWith('$') && typeof matcher === 'object') {
+                /**
+                 * Recurse into field-level operator objects to normalize
+                 * sub-selectors like $elemMatch which contain nested selectors.
+                 */
+                const matcherObj = matcher as any;
+                if (matcherObj.$elemMatch && typeof matcherObj.$elemMatch === 'object') {
+                    normalizeQuerySelectorShorthands(matcherObj.$elemMatch);
+                }
+            }
+        });
 }
 
 /**
