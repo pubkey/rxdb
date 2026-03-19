@@ -294,6 +294,15 @@ function normalizeQuerySelectorShorthands(selector: any): void {
                 (matcher as any[]).forEach(subSelector => normalizeQuerySelectorShorthands(subSelector));
             } else if (field === '$not' && typeof matcher === 'object') {
                 normalizeQuerySelectorShorthands(matcher);
+            } else if (!field.startsWith('$') && typeof matcher === 'object') {
+                /**
+                 * Recurse into field-level operator objects to normalize
+                 * sub-selectors like $elemMatch which contain nested selectors.
+                 */
+                const matcherObj = matcher as any;
+                if (matcherObj.$elemMatch && typeof matcherObj.$elemMatch === 'object') {
+                    normalizeQuerySelectorShorthands(matcherObj.$elemMatch);
+                }
             }
         });
 }
