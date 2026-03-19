@@ -1,5 +1,5 @@
-
-
+/* eslint-disable @typescript-eslint/no-require-imports */
+const path = require('path');
 
 module.exports = async function (config) {
 
@@ -12,8 +12,7 @@ module.exports = async function (config) {
         basePath: '',
         frameworks: [
             'mocha',
-            'webpack',
-            'detectBrowsers'
+            'webpack'
         ],
         webpack: webpackConfig.default,
         files: [
@@ -37,16 +36,23 @@ module.exports = async function (config) {
             '/files': 'http://localhost:' + TEST_STATIC_FILE_SERVER_PORT + '/files'
         },
         browserNoActivityTimeout: 1000 * 60 * 3,
-        detectBrowsers: {
-            enabled: true,
-            usePhantomJS: false,
-            postDetection: function () {
-                /**
-                 * We run the performance tests only in chrome
-                 * because it has the same V8 JavaScript engine
-                 * as we have in Node.js
-                 */
-                return ['Chrome'];
+
+        /**
+         * We run the performance tests only in chrome
+         * because it has the same V8 JavaScript engine
+         * as we have in Node.js.
+         * Use a custom launcher with a set up profile
+         * and persistent IndexedDB.
+         */
+        browsers: ['ChromeWithPersistentIndexedDB'],
+        customLaunchers: {
+            ChromeWithPersistentIndexedDB: {
+                base: 'Chrome',
+                flags: [
+                    '--user-data-dir=' + path.join(__dirname, '..', '.chrome-profile-perf'),
+                    '--no-sandbox',
+                    '--no-first-run'
+                ]
             }
         },
 
@@ -55,11 +61,6 @@ module.exports = async function (config) {
             'karma-mocha',
             'karma-webpack',
             'karma-chrome-launcher',
-            'karma-safari-launcher',
-            'karma-firefox-launcher',
-            'karma-ie-launcher',
-            'karma-opera-launcher',
-            'karma-detect-browsers',
             'karma-spec-reporter'
         ],
 

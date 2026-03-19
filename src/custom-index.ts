@@ -87,13 +87,50 @@ export function getIndexMeta<RxDocType>(
                 return fieldValue ? '1' : '0';
             };
         } else { // number
-            getIndexStringPart = docData => {
-                const fieldValue = getValue(docData);
-                return getNumberIndexString(
-                    parsedLengths as any,
-                    fieldValue
-                );
-            };
+            /**
+             * @performance
+             * Inline the number index string generation to avoid
+             * function call overhead and redundant boundary checks.
+             * Document data in the hot path is assumed to be valid.
+             */
+            const pLengths = parsedLengths as ParsedLengths;
+            const pMin = pLengths.minimum;
+            const pMax = pLengths.maximum;
+            const pRoundedMin = pLengths.roundedMinimum;
+            const pNonDecimals = pLengths.nonDecimals;
+            const pDecimals = pLengths.decimals;
+            const pMultiplier = pLengths.multiplier;
+            if (pDecimals === 0) {
+                getIndexStringPart = docData => {
+                    let fieldValue = getValue(docData);
+                    if (typeof fieldValue === 'undefined') {
+                        fieldValue = 0;
+                    }
+                    if (fieldValue < pMin) {
+                        fieldValue = pMin;
+                    }
+                    if (fieldValue > pMax) {
+                        fieldValue = pMax;
+                    }
+                    return (Math.floor(fieldValue) - pRoundedMin).toString().padStart(pNonDecimals, '0');
+                };
+            } else {
+                getIndexStringPart = docData => {
+                    let fieldValue = getValue(docData);
+                    if (typeof fieldValue === 'undefined') {
+                        fieldValue = 0;
+                    }
+                    if (fieldValue < pMin) {
+                        fieldValue = pMin;
+                    }
+                    if (fieldValue > pMax) {
+                        fieldValue = pMax;
+                    }
+                    const str = (Math.floor(fieldValue) - pRoundedMin).toString().padStart(pNonDecimals, '0');
+                    const shifted = Math.round(Math.abs(fieldValue) * pMultiplier);
+                    return str + (shifted % pMultiplier).toString().padStart(pDecimals, '0');
+                };
+            }
         }
 
         const ret: IndexMetaField<RxDocType> = {
@@ -128,10 +165,25 @@ export function getIndexableStringMonad<RxDocType>(
     const fieldNamePropertiesAmount = fieldNameProperties.length;
     const indexPartsFunctions = fieldNameProperties.map(r => r.getIndexStringPart);
 
-
     /**
      * @hotPath Performance of this function is very critical!
+     * Specialize for common field counts to avoid loop overhead.
      */
+    if (fieldNamePropertiesAmount === 1) {
+        return indexPartsFunctions[0];
+    }
+    if (fieldNamePropertiesAmount === 2) {
+        const fn0 = indexPartsFunctions[0];
+        const fn1 = indexPartsFunctions[1];
+        return (docData: RxDocumentData<RxDocType>): string => fn0(docData) + fn1(docData);
+    }
+    if (fieldNamePropertiesAmount === 3) {
+        const fn0 = indexPartsFunctions[0];
+        const fn1 = indexPartsFunctions[1];
+        const fn2 = indexPartsFunctions[2];
+        return (docData: RxDocumentData<RxDocType>): string => fn0(docData) + fn1(docData) + fn2(docData);
+    }
+
     const ret = function (docData: RxDocumentData<RxDocType>): string {
         let str = '';
         for (let i = 0; i < fieldNamePropertiesAmount; ++i) {
@@ -149,6 +201,11 @@ declare type ParsedLengths = {
     nonDecimals: number;
     decimals: number;
     roundedMinimum: number;
+    /**
+     * Pre-computed Math.pow(10, decimals) to avoid
+     * recomputing on every getNumberIndexString call.
+     */
+    multiplier: number;
 };
 export function getStringLengthOfIndexNumber(
     schemaPart: JsonSchema
@@ -170,7 +227,8 @@ export function getStringLengthOfIndexNumber(
         maximum,
         nonDecimals,
         decimals,
-        roundedMinimum: minimum
+        roundedMinimum: minimum,
+        multiplier: Math.pow(10, decimals)
     };
 }
 
@@ -236,9 +294,16 @@ export function getNumberIndexString(
     let str = nonDecimalsValueAsString.padStart(parsedLengths.nonDecimals, '0');
 
     if (parsedLengths.decimals > 0) {
-        const splitByDecimalPoint = fieldValue.toString().split('.');
-        const decimalValueAsString = splitByDecimalPoint.length > 1 ? splitByDecimalPoint[1] : '0';
-        str += decimalValueAsString.padEnd(parsedLengths.decimals, '0');
+        /**
+         * @performance
+         * Use math to extract decimal digits instead of toString().split('.')
+         * which creates intermediate strings and arrays.
+         * multiplier is pre-computed in ParsedLengths to avoid Math.pow() per call.
+         */
+        const multiplier = parsedLengths.multiplier;
+        const shifted = Math.round(Math.abs(fieldValue) * multiplier);
+        const decimalPart = (shifted % multiplier).toString();
+        str += decimalPart.padStart(parsedLengths.decimals, '0');
     }
     return str;
 }

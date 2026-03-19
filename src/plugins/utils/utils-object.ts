@@ -59,6 +59,22 @@ export function objectPathMonad<T, R = any>(objectPath: string): ObjectPathMonad
         };
     }
 
+    /**
+     * Fast path for 3-segment paths (e.g. 'deep.deeper.deepNr').
+     * Common in index fields and nested document properties.
+     */
+    if (splitLength === 3) {
+        const key0 = split[0];
+        const key1 = split[1];
+        const key2 = split[2];
+        return (obj: T) => {
+            const v = (obj as any)[key0];
+            if (v === undefined) return v;
+            const v2 = v[key1];
+            return v2 === undefined ? v2 : v2[key2];
+        };
+    }
+
     return (obj: T) => {
         let currentVal: any = obj;
         for (let i = 0; i < splitLength; ++i) {
