@@ -45,6 +45,14 @@ export function attachmentMapKey(documentId: string, attachmentId: string): stri
 }
 
 
+/**
+ * @performance
+ * Threshold for using in-place splice vs. full merge-sort when inserting
+ * documents into indexes. Below this batch size, in-place binary search + splice
+ * is faster because it avoids allocating a new full-size array and copying all elements.
+ */
+const IN_PLACE_INSERT_THRESHOLD = 64;
+
 function sortByIndexStringComparator<RxDocType>(a: DocWithIndexString<RxDocType>, b: DocWithIndexString<RxDocType>) {
     if (a[0] < b[0]) {
         return -1;
@@ -203,7 +211,7 @@ export function bulkInsertToState<RxDocType>(
      * The threshold is based on when the merge approach becomes more
      * efficient than individual splices.
      */
-    const useInPlaceInsert = docsLength < 64;
+    const useInPlaceInsert = docsLength < IN_PLACE_INSERT_THRESHOLD;
 
     if (useInPlaceInsert) {
         for (let indexI = 0; indexI < stateByIndexLength; ++indexI) {
@@ -211,14 +219,18 @@ export function bulkInsertToState<RxDocType>(
             const docsWithIndex = byIndex.docsWithIndex;
             const getIndexableString = byIndex.getIndexableString;
 
-            for (let i = 0; i < docsLength; ++i) {
-                const doc = documents[i];
-                const indexString = getIndexableString(doc as any);
-                const newEntry: DocWithIndexString<RxDocType> = [indexString, doc, docIds[i]];
-
-                if (docsWithIndex.length === 0) {
-                    docsWithIndex.push(newEntry);
-                } else {
+            if (docsWithIndex.length === 0) {
+                for (let i = 0; i < docsLength; ++i) {
+                    const doc = documents[i];
+                    const indexString = getIndexableString(doc as any);
+                    docsWithIndex.push([indexString, doc, docIds[i]]);
+                }
+                docsWithIndex.sort(sortByIndexStringComparator);
+            } else {
+                for (let i = 0; i < docsLength; ++i) {
+                    const doc = documents[i];
+                    const indexString = getIndexableString(doc as any);
+                    const newEntry: DocWithIndexString<RxDocType> = [indexString, doc, docIds[i]];
                     const insertPos = boundGEByIndexString(docsWithIndex, indexString);
                     docsWithIndex.splice(insertPos, 0, newEntry);
                 }
