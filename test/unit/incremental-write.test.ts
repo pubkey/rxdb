@@ -3,7 +3,10 @@ import {
     now,
     randomToken,
     fillWithDefaultSettings,
-    getPrimaryFieldOfPrimaryKey
+    getPrimaryFieldOfPrimaryKey,
+    IncrementalWriteQueue,
+    findNewestOfDocumentStates,
+    modifierFromPublicToInternal
 } from '../../plugins/core/index.mjs';
 import {
     schemas,
@@ -12,11 +15,6 @@ import {
     HumanDocumentType
 } from '../../plugins/test-utils/index.mjs';
 import config, { describeParallel } from './config.ts';
-import {
-    IncrementalWriteQueue,
-    findNewestOfDocumentStates,
-    modifierFromPublicToInternal
-} from '../../dist/esm/incremental-write.js';
 import type {
     RxDocumentData
 } from '../../plugins/core/index.mjs';
@@ -223,7 +221,7 @@ describeParallel('incremental-write.test.ts', () => {
 
             const result = await queue.addWrite(
                 storedDoc,
-                (doc) => {
+                (doc: RxDocumentData<HumanDocumentType>) => {
                     doc.age = 99;
                     return doc;
                 }
@@ -277,15 +275,15 @@ describeParallel('incremental-write.test.ts', () => {
             const storedDoc = findResult[0] as RxDocumentData<HumanDocumentType>;
 
             // First write
-            const result1 = await queue.addWrite(storedDoc, (doc) => {
+            const result1 = await queue.addWrite(storedDoc, (doc: RxDocumentData<HumanDocumentType>) => {
                 doc.age = 10;
                 return doc;
             });
             assert.strictEqual(result1.age, 10);
 
             // Second write using the result of the first
-            const result2 = await queue.addWrite(result1, (doc) => {
-                doc.age = doc.age + 5;
+            const result2 = await queue.addWrite(result1, (doc: RxDocumentData<HumanDocumentType>) => {
+                doc.age = (doc.age ?? 0) + 5;
                 return doc;
             });
             assert.strictEqual(result2.age, 15);
@@ -340,12 +338,12 @@ describeParallel('incremental-write.test.ts', () => {
             queue.isRunning = true;
 
             // Queue two writes while triggerRun is "blocked"
-            const p1 = queue.addWrite(storedDoc, (doc) => {
+            const p1 = queue.addWrite(storedDoc, (doc: RxDocumentData<HumanDocumentType>) => {
                 doc.age = 10;
                 return doc;
             });
-            const p2 = queue.addWrite(storedDoc, (doc) => {
-                doc.age = doc.age + 5;
+            const p2 = queue.addWrite(storedDoc, (doc: RxDocumentData<HumanDocumentType>) => {
+                doc.age = (doc.age ?? 0) + 5;
                 return doc;
             });
 
@@ -414,7 +412,7 @@ describeParallel('incremental-write.test.ts', () => {
             );
             const storedDoc = findResult[0] as RxDocumentData<HumanDocumentType>;
 
-            await queue.addWrite(storedDoc, (doc) => {
+            await queue.addWrite(storedDoc, (doc: RxDocumentData<HumanDocumentType>) => {
                 doc.age = 50;
                 return doc;
             });
@@ -471,7 +469,7 @@ describeParallel('incremental-write.test.ts', () => {
 
             let error: any;
             try {
-                await queue.addWrite(storedDoc, (doc) => {
+                await queue.addWrite(storedDoc, (doc: RxDocumentData<HumanDocumentType>) => {
                     doc.age = 50;
                     return doc;
                 });
@@ -548,7 +546,7 @@ describeParallel('incremental-write.test.ts', () => {
             const p1 = queue.addWrite(storedDoc1, () => {
                 throw new Error('modifier-error');
             });
-            const p2 = queue.addWrite(storedDoc2, (doc) => {
+            const p2 = queue.addWrite(storedDoc2, (doc: RxDocumentData<HumanDocumentType>) => {
                 doc.age = 42;
                 return doc;
             });
@@ -637,11 +635,11 @@ describeParallel('incremental-write.test.ts', () => {
             // Prevent triggerRun from running to ensure batching
             queue.isRunning = true;
             bulkWriteCalls = 0;
-            const p1 = queue.addWrite(storedDoc1, (doc) => {
+            const p1 = queue.addWrite(storedDoc1, (doc: RxDocumentData<HumanDocumentType>) => {
                 doc.age = 11;
                 return doc;
             });
-            const p2 = queue.addWrite(storedDoc2, (doc) => {
+            const p2 = queue.addWrite(storedDoc2, (doc: RxDocumentData<HumanDocumentType>) => {
                 doc.age = 22;
                 return doc;
             });

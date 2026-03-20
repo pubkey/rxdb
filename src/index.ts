@@ -27,4 +27,5 @@ export * from './plugin-helpers.ts';
 export * from './plugins/utils/index.ts';
 export * from './hooks.ts';
 export * from './query-cache.ts';
+export * from './incremental-write.ts';
 export type * from './types/index.d.ts';
