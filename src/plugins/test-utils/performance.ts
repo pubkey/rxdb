@@ -53,6 +53,11 @@ export type PerformanceTestConfig = {
      * @default true
      */
     log?: boolean;
+    /**
+     * If set, the database will be created with encryption
+     * and the schema will mark applicable fields as encrypted.
+     */
+    password?: any;
 };
 
 export type PerformanceTestResult = {
@@ -84,7 +89,8 @@ export async function runPerformanceTests(
         parallelQueryAmount = 4,
         insertBatches = 6,
         waitBetweenTests = 100,
-        log = true
+        log = true,
+        password
     } = config;
 
     const totalTimes: { [k: string]: number[]; } = {};
@@ -121,6 +127,15 @@ export async function runPerformanceTests(
 
         // create database
         const schema = averageSchema();
+        if (password) {
+            schema.encrypted = ['deep', 'list'];
+            schema.indexes = schema.indexes!.filter(index => {
+                if (typeof index === 'string') {
+                    return !index.startsWith('deep.');
+                }
+                return !index.some(field => field.startsWith('deep.'));
+            });
+        }
         let collection: RxCollection<AverageSchemaDocumentType>;
         async function createDbWithCollections() {
             if (collection) {
@@ -137,7 +152,8 @@ export async function runPerformanceTests(
                  * creation time.
                 */
                 multiInstance: false,
-                storage
+                storage,
+                password
             });
 
             // create collections

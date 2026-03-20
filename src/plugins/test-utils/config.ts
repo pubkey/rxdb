@@ -40,7 +40,8 @@ function getEnvVariables() {
         const ret: any = {};
         [
             'DEFAULT_STORAGE',
-            'NODE_ENV'
+            'NODE_ENV',
+            'STORAGE_PASSWORD'
         ].forEach(k => {
             ret[k] = Deno.env.get(k);
         });
