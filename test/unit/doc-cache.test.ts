@@ -3,7 +3,7 @@ import { Subject } from 'rxjs';
 import {
     DocumentCache,
     mapDocumentsDataToCacheDocs
-} from '../../dist/esm/doc-cache.js';
+} from '../../src/doc-cache.ts';
 import type {
     RxDocumentData,
     RxStorageChangeEvent
