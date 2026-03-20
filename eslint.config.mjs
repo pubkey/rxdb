@@ -51,7 +51,8 @@ export default [
             'docs-src/build/',
             'docs-src/docusaurus-lunr-search-main',
             'config/.mocharc.cjs',
-            'config/karma.webpack.conf.cjs'
+            'config/karma.webpack.conf.cjs',
+            '.chrome-profile-perf/'
         ]
     },
     ...compat.extends('eslint:recommended', 'plugin:@typescript-eslint/eslint-recommended', 'plugin:@typescript-eslint/recommended', 'plugin:@typescript-eslint/recommended-requiring-type-checking'),

@@ -167,7 +167,7 @@ export default function PerformanceChartImpl({ data, metrics, title, logScale }:
     };
 
     return (
-        <div style={{ width: '100%', height: isMobile ? 500 : 400, marginTop: '35px', marginBottom: '55px' }}>
+        <div style={{ width: '100%', height: isMobile ? 500 : 400, marginTop: '35px', marginBottom: '95px' }}>
             {title && (
                 <h3 style={{ textAlign: 'center', marginBottom: '5px', color: 'var(--ifm-font-color-base)' }}>
                     {title}

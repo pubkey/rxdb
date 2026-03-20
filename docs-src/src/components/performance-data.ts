@@ -21,57 +21,113 @@ export const PERFORMANCE_METRICS = [
     { key: '4x-count', name: 'Count 3000 docs (4x)', color: '#FF59B9' } // Bright Pink
 ];
 
-export const PERFORMANCE_DATA_BROWSER: RxStoragePerformanceMeasurement[] = [
-    {
-        name: 'IndexedDB',
-        'time-to-first-insert': 150, 'insert-documents-500': 80, 'find-by-ids-3000': 40,
-        'serial-inserts-50': 200, 'serial-find-by-id-50': 100, 'find-by-query': 150,
-        'find-by-query-parallel-4': 140, '4x-count': 20
-    },
-    {
-        name: 'OPFS',
-        'time-to-first-insert': 200, 'insert-documents-500': 60, 'find-by-ids-3000': 30,
-        'serial-inserts-50': 250, 'serial-find-by-id-50': 120, 'find-by-query': 100,
-        'find-by-query-parallel-4': 90, '4x-count': 15
-    },
-    {
-        name: 'Memory-mapped',
-        'time-to-first-insert': 50, 'insert-documents-500': 30, 'find-by-ids-3000': 20,
-        'serial-inserts-50': 40, 'serial-find-by-id-50': 25, 'find-by-query': 40,
-        'find-by-query-parallel-4': 35, '4x-count': 5
-    },
-    {
-        name: 'WebSQL',
-        'time-to-first-insert': 180, 'insert-documents-500': 90, 'find-by-ids-3000': 45,
-        'serial-inserts-50': 220, 'serial-find-by-id-50': 110, 'find-by-query': 160,
-        'find-by-query-parallel-4': 150, '4x-count': 30
-    },
-    {
-        name: 'LokiJS',
-        'time-to-first-insert': 60, 'insert-documents-500': 35, 'find-by-ids-3000': 25,
-        'serial-inserts-50': 50, 'serial-find-by-id-50': 30, 'find-by-query': 45,
-        'find-by-query-parallel-4': 40, '4x-count': 8
-    },
-    {
-        name: 'Dexie',
-        'time-to-first-insert': 140, 'insert-documents-500': 75, 'find-by-ids-3000': 35,
-        'serial-inserts-50': 190, 'serial-find-by-id-50': 95, 'find-by-query': 140,
-        'find-by-query-parallel-4': 130, '4x-count': 18
-    }
-];
+export const PERFORMANCE_BROWSER_INDEXEDDB: RxStoragePerformanceMeasurement = {
+    name: 'IndexedDB',
+    'time-to-first-insert': 4.65,
+    'insert-documents-500': 11.04,
+    'find-by-ids-3000': 82.45,
+    'serial-inserts-50': 22.25,
+    'serial-find-by-id-50': 14.45,
+    'find-by-query': 61.05,
+    'find-by-query-parallel-4': 45.2,
+    '4x-count': 20.65
+};
+
+export const PERFORMANCE_BROWSER_DEXIE: RxStoragePerformanceMeasurement = {
+    'name': 'Dexie.js',
+    'time-to-first-insert': 5.8,
+    'insert-documents-500': 73.92,
+    'find-by-ids-3000': 76.9,
+    'serial-inserts-50': 39.8,
+    'serial-find-by-id-50': 14.35,
+    'find-by-query': 112.95,
+    'find-by-query-parallel-4': 62.6,
+    '4x-count': 23.75
+};
 
 
 const PERFORMANCE_NODE_MEMORY: RxStoragePerformanceMeasurement = {
     name: 'Memory',
-    'time-to-first-insert': 0.97,
-    'insert-documents-500': 0.31,
-    'find-by-ids-3000': 4.32,
-    'serial-inserts-50': 51.44,
-    'serial-find-by-id-50': 0.57,
-    'find-by-query': 2.51,
+    'time-to-first-insert': 1.09,
+    'insert-documents-500': 0.36,
+    'find-by-ids-3000': 4.6,
+    'serial-inserts-50': 1.66,
+    'serial-find-by-id-50': 0.61,
+    'find-by-query': 2.94,
     'find-by-query-parallel-4': 3.25,
-    '4x-count': 0.29
+    '4x-count': 0.3,
 };
+
+const PERFORMANCE_BROWSER_MEMORY: RxStoragePerformanceMeasurement = {
+    name: 'Memory',
+    'time-to-first-insert': 1,
+    'insert-documents-500': 0.38,
+    'find-by-ids-3000': 3.75,
+    'serial-inserts-50': 1.3,
+    'serial-find-by-id-50': 0.6,
+    'find-by-query': 2,
+    'find-by-query-parallel-4': 2.85,
+    '4x-count': 0.3,
+};
+
+const PERFORMANCE_NODE_FILESYSTEM: RxStoragePerformanceMeasurement = {
+    name: 'Filesystem Node.js',
+    'time-to-first-insert': 3.33,
+    'insert-documents-500': 5.78,
+    'find-by-ids-3000': 22.04,
+    'serial-inserts-50': 2.42,
+    'serial-find-by-id-50': 5,
+    'find-by-query': 19.37,
+    'find-by-query-parallel-4': 21.08,
+    '4x-count': 1.83
+};
+
+const PERFORMANCE_NODE_SQLITE_NATIVE: RxStoragePerformanceMeasurement = {
+    name: 'SQLite (node:sqlite)',
+    'time-to-first-insert': 5.2,
+    'insert-documents-500': 8.62,
+    'find-by-ids-3000': 26.41,
+    'serial-inserts-50': 10.84,
+    'serial-find-by-id-50': 2.67,
+    'find-by-query': 19.68,
+    'find-by-query-parallel-4': 20.38,
+    '4x-count': 2.01,
+};
+
+
+
+
+
+
+
+export const PERFORMANCE_DATA_BROWSER: RxStoragePerformanceMeasurement[] = [
+    {
+        name: 'OPFS (Worker)',
+        'time-to-first-insert': 27.2,
+        'insert-documents-500': 10.32,
+        'find-by-ids-3000': 24.5,
+        'serial-inserts-50': 7.4,
+        'serial-find-by-id-50': 8.25,
+        'find-by-query': 21.2,
+        'find-by-query-parallel-4': 35.8,
+        '4x-count': 2.95,
+    },
+    {
+        'name': 'OFPS (Main-Thread)',
+        'time-to-first-insert': 4,
+        'insert-documents-500': 8.09,
+        'find-by-ids-3000': 21.15,
+        'serial-inserts-50': 1.7,
+        'serial-find-by-id-50': 29.85,
+        'find-by-query': 21.15,
+        'find-by-query-parallel-4': 23.8,
+        '4x-count': 2.35
+    },
+    PERFORMANCE_BROWSER_INDEXEDDB,
+    PERFORMANCE_BROWSER_DEXIE,
+    PERFORMANCE_BROWSER_MEMORY,
+
+];
 
 export const PERFORMANCE_DATA_SERVER: RxStoragePerformanceMeasurement[] = [
     {
@@ -96,24 +152,27 @@ export const PERFORMANCE_DATA_SERVER: RxStoragePerformanceMeasurement[] = [
         'find-by-query-parallel-4': 44.53,
         '4x-count': 57.41
     },
-    PERFORMANCE_NODE_MEMORY
+    PERFORMANCE_NODE_FILESYSTEM,
+    PERFORMANCE_NODE_MEMORY,
 ];
 
 export const PERFORMANCE_DATA_NODE: RxStoragePerformanceMeasurement[] = [
-    PERFORMANCE_NODE_MEMORY
+    PERFORMANCE_NODE_SQLITE_NATIVE,
+    PERFORMANCE_NODE_FILESYSTEM,
+    PERFORMANCE_NODE_MEMORY,
 ];
 
 export const PERFORMANCE_DATA_ENCRYPTION: RxStoragePerformanceMeasurement[] = [
     {
         name: 'CryptoJS',
-        'time-to-first-insert': 2.1,
-        'insert-documents-500': 263.1,
-        'find-by-ids-3000': 727.31,
-        'serial-inserts-50': 81.68,
-        'serial-find-by-id-50': 13.5,
-        'find-by-query': 739.91,
-        'find-by-query-parallel-4': 726.94,
-        '4x-count': 0.38
+        'time-to-first-insert': 2.04,
+        'insert-documents-500': 262.7,
+        'find-by-ids-3000': 723.46,
+        'serial-inserts-50': 31.4,
+        'serial-find-by-id-50': 13.62,
+        'find-by-query': 734.1,
+        'find-by-query-parallel-4': 724.62,
+        '4x-count': 0.38,
     },
     {
         'name': 'WebCrypto AES-GCM',
