@@ -18,10 +18,11 @@ type PerformanceDataPoint = {
 type PerformanceChartImplProps = {
     data: PerformanceDataPoint[];
     metrics: { key: string; name: string; color: string; }[];
-    title?: string;
+    title: string;
+    logScale?: boolean;
 };
 
-export default function PerformanceChartImpl({ data, metrics, title }: PerformanceChartImplProps) {
+export default function PerformanceChartImpl({ data, metrics, title, logScale }: PerformanceChartImplProps) {
     const [hoveredKey, setHoveredKey] = useState<string | null>(null);
     const [isMobile, setIsMobile] = useState(false);
 
@@ -114,13 +115,67 @@ export default function PerformanceChartImpl({ data, metrics, title }: Performan
         );
     };
 
+    const CustomXAxisTick = ({ x, y, payload }: any) => {
+        let words: string[] = [];
+        if (payload.value.length > 12) {
+            const spaceWords = payload.value.split(' ');
+            spaceWords.forEach((word: string) => {
+                if (word.length > 12 && word.includes('-')) {
+                    const parts = word.split('-');
+                    for (let i = 0; i < parts.length - 1; i++) {
+                        words.push(parts[i] + '-');
+                    }
+                    words.push(parts[parts.length - 1]);
+                } else {
+                    words.push(word);
+                }
+            });
+        } else {
+            words = [payload.value];
+        }
+
+        const lines: string[] = [];
+        let currentLine = '';
+        words.forEach((word: string) => {
+            if ((currentLine + word).length > 15 && currentLine !== '') {
+                lines.push(currentLine.trim());
+                currentLine = word + ' ';
+            } else {
+                currentLine += word + (word.endsWith('-') ? '' : ' ');
+            }
+        });
+        if (currentLine) lines.push(currentLine.trim());
+
+        return (
+            <g transform={`translate(${x},${y})`}>
+                <text
+                    x={0}
+                    y={0}
+                    dy={16}
+                    textAnchor="end"
+                    fill="var(--ifm-font-color-base)"
+                    transform="rotate(-45)"
+                >
+                    {lines.map((line: string, index: number) => (
+                        <tspan key={index} x={0} dy={index === 0 ? 0 : 15}>
+                            {line}
+                        </tspan>
+                    ))}
+                </text>
+            </g>
+        );
+    };
+
     return (
         <div style={{ width: '100%', height: isMobile ? 500 : 400, marginTop: '35px', marginBottom: '55px' }}>
             {title && (
-                <h3 style={{ textAlign: 'center', marginBottom: '15px', color: 'var(--ifm-font-color-base)' }}>
+                <h3 style={{ textAlign: 'center', marginBottom: '5px', color: 'var(--ifm-font-color-base)' }}>
                     {title}
                 </h3>
             )}
+            <div style={{ textAlign: 'center', marginBottom: '15px', opacity: 0.8, fontSize: '0.9em', color: 'var(--ifm-font-color-base)' }}>
+                (times in milliseconds, lower is better)
+            </div>
             <ResponsiveContainer>
                 <BarChart
                     data={data}
@@ -135,14 +190,16 @@ export default function PerformanceChartImpl({ data, metrics, title }: Performan
                     <XAxis
                         dataKey="name"
                         stroke="var(--ifm-font-color-base)"
+                        tick={<CustomXAxisTick />}
                         tickMargin={10}
-                        angle={-45}
-                        textAnchor="end"
                         height={120}
+                        interval={0}
                     />
                     <YAxis
                         stroke="var(--ifm-font-color-base)"
                         label={{ value: 'ms', position: 'top', offset: 15, fill: 'var(--ifm-font-color-base)' }}
+                        scale={logScale ? 'log' : 'auto'}
+                        domain={logScale ? ['auto', 'auto'] : undefined}
                     />
                     <Tooltip
                         wrapperStyle={{ zIndex: 1000 }}

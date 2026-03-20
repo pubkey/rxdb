@@ -328,7 +328,7 @@ There is a wide range of possible improvements and performance hacks to speed up
 Here you can see the [performance comparison](../rx-storage-performance.md) of various RxDB storage implementations which gives a better view of real world performance:
 
 <center>
-  <PerformanceChart data={PERFORMANCE_DATA_BROWSER} metrics={PERFORMANCE_METRICS} />
+  <PerformanceChart title="Browser Storages" data={PERFORMANCE_DATA_BROWSER} metrics={PERFORMANCE_METRICS} />
 </center>
 
 ## Future Improvements

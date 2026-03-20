@@ -21,7 +21,7 @@ While the IndexedDB API itself can be very slow, the IndexedDB storage uses many
 
 Here is some performance comparison with other storages. Compared to the non-memory storages like [OPFS](./rx-storage-opfs.md) and [WASM SQLite](./rx-storage-sqlite.md), IndexedDB has the smallest build size and fastest write speed. Only OPFS is faster on queries over big datasets. See [performance comparison](./rx-storage-performance.md) page for a comparison with all storages.
 
-<PerformanceChart data={PERFORMANCE_DATA_BROWSER} metrics={PERFORMANCE_METRICS} />
+<PerformanceChart title="Browser Storages" data={PERFORMANCE_DATA_BROWSER} metrics={PERFORMANCE_METRICS} />
 
 
 <PremiumBlock />

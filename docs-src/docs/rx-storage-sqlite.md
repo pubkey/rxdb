@@ -21,7 +21,7 @@ SQLite is a natural fit for RxDB because most platforms - Android, iOS, Node.js,
 
 The SQLite storage is a bit slower compared to other Node.js based storages like the [Filesystem Storage](./rx-storage-filesystem-node.md) because wrapping SQLite has a bit of overhead and sending data from the JavaScript process to SQLite and backwards increases the latency. However for most hybrid apps the SQLite storage is the best option because it can leverage the SQLite version that comes already installed on the smartphone's OS (iOS and android). Also for desktop Electron apps it can be a viable solution because it is easy to ship SQLite together inside of the Electron bundle.
 
-<PerformanceChart data={PERFORMANCE_DATA_NODE} metrics={PERFORMANCE_METRICS} />
+<PerformanceChart title="Node/Native Storages" data={PERFORMANCE_DATA_NODE} metrics={PERFORMANCE_METRICS} />
 
 ## Using the SQLite RxStorage
 

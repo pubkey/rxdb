@@ -22,7 +22,7 @@ Using the same database folder in parallel with multiple Node.js processes is su
 
 <PremiumBlock />
 
-<PerformanceChart data={PERFORMANCE_DATA_NODE} metrics={PERFORMANCE_METRICS} />
+<PerformanceChart title="Node/Native Storages" data={PERFORMANCE_DATA_NODE} metrics={PERFORMANCE_METRICS} />
 
 ## Usage
 

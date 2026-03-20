@@ -221,4 +221,4 @@ setPremiumFlag();
 
 The performance of the Dexie.js RxStorage is good enough for most use cases but other storages can have way better performance metrics:
 
-<PerformanceChart data={PERFORMANCE_DATA_BROWSER} metrics={PERFORMANCE_METRICS} />
+<PerformanceChart title="Browser Storages" data={PERFORMANCE_DATA_BROWSER} metrics={PERFORMANCE_METRICS} />

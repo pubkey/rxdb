@@ -6,7 +6,7 @@ image: /headers/rx-storage-performance.jpg
 ---
 
 import PerformanceChart from '@site/src/components/performance-chart';
-import { PERFORMANCE_DATA_NODE, PERFORMANCE_METRICS, PERFORMANCE_DATA_BROWSER } from '@site/src/components/performance-data';
+import { PERFORMANCE_DATA_NODE, PERFORMANCE_METRICS, PERFORMANCE_DATA_BROWSER, PERFORMANCE_DATA_SERVER } from '@site/src/components/performance-data';
 
 ## RxStorage Performance comparison
 
@@ -41,11 +41,16 @@ Here the following metrics are measured:
 
 The performance patterns of the browser based storages are very diverse. The [IndexedDB storage](./rx-storage-indexeddb.md) is recommended for mostly all use cases so you should start with that one. Later you can do performance testings and switch to another storage like [OPFS](./rx-storage-opfs.md) or [memory-mapped](./rx-storage-memory-mapped.md).
 
-<PerformanceChart data={PERFORMANCE_DATA_BROWSER} metrics={PERFORMANCE_METRICS} />
+<PerformanceChart title="Browser Storages" data={PERFORMANCE_DATA_BROWSER} metrics={PERFORMANCE_METRICS} />
 
 ## Node/Native based Storages Performance Comparison
 
 For most client-side native applications ([react-native](./react-native-database.md), [electron](./electron-database.md), [capacitor](./capacitor-database.md)), using the [SQLite RxStorage](./rx-storage-sqlite.md) is recommended as a solid baseline. For React Native and Expo applications specifically, the new [Expo Filesystem RxStorage](./rx-storage-filesystem-expo.md) bypasses the bridge and offers significantly better CPU and I/O performance. For non-client side applications like a server, use the [MongoDB storage](./rx-storage-mongodb.md) instead.
 
-<PerformanceChart data={PERFORMANCE_DATA_NODE} metrics={PERFORMANCE_METRICS} />
+<PerformanceChart title="Node/Native Storages" data={PERFORMANCE_DATA_NODE} metrics={PERFORMANCE_METRICS} />
 
+## Server based Storages Performance Comparison
+When using RxDB on backend servers, you have different options compared to client-side applications. The [Filesystem Node storage](./rx-storage-filesystem-node.md) is a great choice for standalone Node.js processes utilizing local disk storage. The [MongoDB storage](./rx-storage-mongodb.md) provides solid performance for heavy server workloads. The [FoundationDB storage](./rx-storage-foundationdb.md) is very fast and works well for distributed systems. For purely in-memory operations, the [Memory storage](./rx-storage-memory.md) offers the lowest latency.
+
+
+<PerformanceChart title="Server Storages" data={PERFORMANCE_DATA_SERVER} metrics={PERFORMANCE_METRICS} />

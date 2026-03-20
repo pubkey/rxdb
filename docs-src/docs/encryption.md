@@ -6,6 +6,9 @@ image: /headers/encryption.jpg
 ---
 
 import {Steps} from '@site/src/components/steps';
+import {PremiumBlock} from '@site/src/components/premium-block';
+import PerformanceChart from '@site/src/components/performance-chart';
+import { PERFORMANCE_DATA_ENCRYPTION, PERFORMANCE_METRICS } from '@site/src/components/performance-data';
 
 # 🔒 Encrypted Local Storage with RxDB
 
@@ -56,7 +59,7 @@ It is not able to do **Asymmetric encryption** by itself. If you need Asymmetric
 RxDB currently has two plugins for encryption:
 
 - The free `encryption-crypto-js` plugin that is based on the `AES` algorithm of the [crypto-js](https://www.npmjs.com/package/crypto-js) library
-- The [👑 premium](/premium/) `encryption-web-crypto` plugin that is based on the native [Web Crypto API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API) which makes it faster and more secure to use. Document inserts are about 10x faster compared to `crypto-js` and it has a smaller build size because it uses the browsers API instead of bundling an npm module.
+- `encryption-web-crypto` plugin that is based on the native [Web Crypto API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API) which makes it faster and more secure to use. Document inserts are about 10x faster compared to `crypto-js` and it has a smaller build size because it uses the browsers API instead of bundling an npm module.
 
 An RxDB encryption plugin is a wrapper around any other [RxStorage](./rx-storage.md). 
 
@@ -121,9 +124,9 @@ await db.addCollections({
 ```
 </Steps>
 
-## Using Web-Crypto API
+## Using the WebCrypto API
 
-For professionals, we have the `web-crypto` [👑 premium](/premium/) plugin which is faster and more secure:
+<PremiumBlock />
 
 ```ts
 import {
@@ -182,12 +185,20 @@ If you are using [Worker RxStorage](./rx-storage-worker.md) or [SharedWorker RxS
 
 You do not need to worry about setting the password inside of the worker. The password will be set when calling createRxDatabase from the main thread, and will be passed internally to the storage in the worker automatically.
 
+## Encryption Performance
+
+As shown in the chart, the WebCrypto based encryption plugins are generally **5 times faster** than the `crypto-js` plugin.
+
+
+<PerformanceChart title="RxDB Encryption Plugins Performance (on Memory RxStorage)" data={PERFORMANCE_DATA_ENCRYPTION} metrics={PERFORMANCE_METRICS} logScale={false} />
+<br />
+
 ## FAQ
 
 <details>
 <summary>What are some JavaScript libraries for client side field encryption?</summary>
 
-RxDB provides robust plugins for client side field encryption directly within your javascript database. You encrypt sensitive document properties transparently before they save to local storage. The `encryption-crypto-js` plugin utilizes AES algorithms for dependable security. The premium `encryption-web-crypto` plugin employs native browser APIs to achieve superior performance. You maintain data confidentiality across Web, React Native, and Node.js environments.
+RxDB provides robust plugins for client side field encryption directly within your javascript database. You encrypt sensitive document properties transparently before they save to local storage. The `encryption-crypto-js` plugin utilizes AES algorithms for dependable security. The `encryption-web-crypto` plugin employs native browser APIs to achieve superior performance. You maintain data confidentiality across Web, React Native, and Node.js environments.
 </details>
 
 

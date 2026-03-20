@@ -12,10 +12,12 @@ type PerformanceDataPoint = {
 type PerformanceChartProps = {
     data: PerformanceDataPoint[];
     metrics?: { key: string; name: string; color: string; }[];
-    title?: string;
+    title: string;
+    skipMetrics?: string[];
+    logScale?: boolean;
 };
 
-export default function PerformanceChart({ data, metrics, title }: PerformanceChartProps) {
+export default function PerformanceChart({ data, metrics, title, skipMetrics, logScale }: PerformanceChartProps) {
     if (!metrics && data && data.length > 0) {
         // Auto-generate metrics from the first data object if not provided
         const keys = Object.keys(data[0]).filter(k => k !== 'name');
@@ -25,6 +27,10 @@ export default function PerformanceChart({ data, metrics, title }: PerformanceCh
             name: key.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()), // default readable name
             color: defaultColors[index % defaultColors.length]
         }));
+    }
+
+    if (metrics && skipMetrics && skipMetrics.length > 0) {
+        metrics = metrics.filter(m => !skipMetrics.includes(m.name) && !skipMetrics.includes(m.key));
     }
 
     // Recharts only renders properly in the browser
@@ -42,7 +48,7 @@ export default function PerformanceChart({ data, metrics, title }: PerformanceCh
                 Loading chart...
             </div>
         }>
-            <PerformanceChartImpl title={title} data={data} metrics={metrics} />
+            <PerformanceChartImpl title={title} data={data} metrics={metrics} logScale={logScale} />
             {process.env.NODE_ENV === 'development' && (
                 <div style={{ display: 'none' }}>
                     {/* Example value 1 */} <span>Example Dummy Metric 1</span>

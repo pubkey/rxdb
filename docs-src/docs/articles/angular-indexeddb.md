@@ -305,7 +305,7 @@ Depending on your needs, you might explore:
 ## Performance comparison with other browser storages
 Here is a [performance overview](../rx-storage-performance.md) of the various browser based storage implementation of RxDB:
 
-<PerformanceChart data={PERFORMANCE_DATA_BROWSER} metrics={PERFORMANCE_METRICS} />
+<PerformanceChart title="Browser Storages" data={PERFORMANCE_DATA_BROWSER} metrics={PERFORMANCE_METRICS} />
 
 ## Follow Up
 

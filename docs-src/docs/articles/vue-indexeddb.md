@@ -239,7 +239,7 @@ Depending on your application's requirements, there are [alternative storage sol
 ## Performance Comparison with Other Browser Storages
 Here is a performance overview of the various browser-based storage implementations of RxDB:
 
-<PerformanceChart data={PERFORMANCE_DATA_BROWSER} metrics={PERFORMANCE_METRICS} />
+<PerformanceChart title="Browser Storages" data={PERFORMANCE_DATA_BROWSER} metrics={PERFORMANCE_METRICS} />
 
 ## Follow Up
 - Learn how to use RxDB with the [RxDB Quickstart](../quickstart.md) for a guided introduction.

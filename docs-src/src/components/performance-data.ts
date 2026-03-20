@@ -60,7 +60,20 @@ export const PERFORMANCE_DATA_BROWSER: RxStoragePerformanceMeasurement[] = [
     }
 ];
 
-export const PERFORMANCE_DATA_NODE: RxStoragePerformanceMeasurement[] = [
+
+const PERFORMANCE_NODE_MEMORY: RxStoragePerformanceMeasurement = {
+    name: 'Memory',
+    'time-to-first-insert': 0.97,
+    'insert-documents-500': 0.31,
+    'find-by-ids-3000': 4.32,
+    'serial-inserts-50': 51.44,
+    'serial-find-by-id-50': 0.57,
+    'find-by-query': 2.51,
+    'find-by-query-parallel-4': 3.25,
+    '4x-count': 0.29
+};
+
+export const PERFORMANCE_DATA_SERVER: RxStoragePerformanceMeasurement[] = [
     {
         name: 'MongoDB',
         'time-to-first-insert': 276.906,
@@ -83,4 +96,56 @@ export const PERFORMANCE_DATA_NODE: RxStoragePerformanceMeasurement[] = [
         'find-by-query-parallel-4': 44.53,
         '4x-count': 57.41
     },
+    PERFORMANCE_NODE_MEMORY
+];
+
+export const PERFORMANCE_DATA_NODE: RxStoragePerformanceMeasurement[] = [
+    PERFORMANCE_NODE_MEMORY
+];
+
+export const PERFORMANCE_DATA_ENCRYPTION: RxStoragePerformanceMeasurement[] = [
+    {
+        name: 'CryptoJS',
+        'time-to-first-insert': 2.1,
+        'insert-documents-500': 263.1,
+        'find-by-ids-3000': 727.31,
+        'serial-inserts-50': 81.68,
+        'serial-find-by-id-50': 13.5,
+        'find-by-query': 739.91,
+        'find-by-query-parallel-4': 726.94,
+        '4x-count': 0.38
+    },
+    {
+        'name': 'WebCrypto AES-GCM',
+        'time-to-first-insert': 2.21,
+        'insert-documents-500': 51.82,
+        'find-by-ids-3000': 141.45,
+        'serial-inserts-50': 54.05,
+        'serial-find-by-id-50': 5.57,
+        'find-by-query': 140.01,
+        'find-by-query-parallel-4': 144.75,
+        '4x-count': 0.38
+    },
+    {
+        'name': 'WebCrypto AES-CBC',
+        'time-to-first-insert': 2,
+        'insert-documents-500': 43.62,
+        'find-by-ids-3000': 113.15,
+        'serial-inserts-50': 50.58,
+        'serial-find-by-id-50': 3.53,
+        'find-by-query': 110.19,
+        'find-by-query-parallel-4': 108.76,
+        '4x-count': 0.3,
+    },
+    {
+        'name': 'WebCrypto AES-CTR',
+        'time-to-first-insert': 1.98,
+        'insert-documents-500': 46.26,
+        'find-by-ids-3000': 134.05,
+        'serial-inserts-50': 52.06,
+        'serial-find-by-id-50': 4.39,
+        'find-by-query': 128.64,
+        'find-by-query-parallel-4': 124.82,
+        '4x-count': 0.29,
+    }
 ];

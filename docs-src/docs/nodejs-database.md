@@ -86,7 +86,7 @@ const myRxDatabase = await createRxDatabase({
 
 Here is a performance comparison chart of the different storages (lower is better):
 
-<PerformanceChart data={PERFORMANCE_DATA_NODE} metrics={PERFORMANCE_METRICS} />
+<PerformanceChart title="Node/Native Storages" data={PERFORMANCE_DATA_NODE} metrics={PERFORMANCE_METRICS} />
 
 ## RxDB as Node.js In-Memory Database
 
