@@ -5,7 +5,7 @@ description: Learn how RxDB simplifies IndexedDB in Vue, offering reactive queri
 image: /headers/vue-indexeddb.jpg
 ---
 
-import PerformanceChart from '@site/src/components/performance-chart';
+import { PerformanceChart } from '@site/src/components/performance-chart';
 import { PERFORMANCE_DATA_BROWSER, PERFORMANCE_METRICS } from '@site/src/components/performance-data';
 
 # IndexedDB Database in Vue Apps - The Power of RxDB

@@ -5,7 +5,7 @@ description: Get up and running quickly with RxDB's Filesystem Node RxStorage. S
 image: /headers/rx-storage-filesystem-node.jpg
 ---
 
-import PerformanceChart from '@site/src/components/performance-chart';
+import { PerformanceChart } from '@site/src/components/performance-chart';
 import { PERFORMANCE_DATA_NODE, PERFORMANCE_METRICS } from '@site/src/components/performance-data';
 import {PremiumBlock} from '@site/src/components/premium-block';
 

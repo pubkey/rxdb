@@ -5,7 +5,7 @@ description: Compare LocalStorage, IndexedDB, Cookies, OPFS, and WASM-SQLite for
 image: /headers/localstorage-indexeddb-cookies-opfs-sqlite-wasm.jpg
 ---
 
-import PerformanceChart from '@site/src/components/performance-chart';
+import { PerformanceChart } from '@site/src/components/performance-chart';
 import { PERFORMANCE_DATA_BROWSER, PERFORMANCE_METRICS } from '@site/src/components/performance-data';
 
 <!-- 

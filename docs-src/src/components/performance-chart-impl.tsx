@@ -167,7 +167,7 @@ export default function PerformanceChartImpl({ data, metrics, title, logScale }:
     };
 
     return (
-        <div style={{ width: '100%', height: isMobile ? 500 : 400, marginTop: '35px', marginBottom: '95px' }}>
+        <div style={{ width: '100%', height: isMobile ? 600 : 600, marginTop: '35px', marginBottom: '95px' }}>
             {title && (
                 <h3 style={{ textAlign: 'center', marginBottom: '5px', color: 'var(--ifm-font-color-base)' }}>
                     {title}
@@ -216,6 +216,7 @@ export default function PerformanceChartImpl({ data, metrics, title, logScale }:
                             name={metric.name}
                             fill={metric.color}
                             radius={[0, 0, 0, 0]}
+                            minPointSize={3}
                             fillOpacity={hoveredKey && hoveredKey !== metric.key ? 0.3 : 1}
                         />
                     ))}

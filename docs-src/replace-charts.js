@@ -106,11 +106,11 @@ walkDir(path.join(__dirname, 'docs'), (filePath) => {
             if (lines[0].trim() === '---') {
                 const endOfFrontmatter = lines.indexOf('---', 1);
                 if (endOfFrontmatter !== -1) {
-                    lines.splice(endOfFrontmatter + 1, 0, '', 'import PerformanceChart from \'@site/src/components/performance-chart\';');
+                    lines.splice(endOfFrontmatter + 1, 0, '', 'import { PerformanceChart } from \'@site/src/components/performance-chart\';');
                     content = lines.join('\n');
                 }
             } else {
-                lines.unshift('import PerformanceChart from \'@site/src/components/performance-chart\';', '');
+                lines.unshift('import { PerformanceChart } from \'@site/src/components/performance-chart\';', '');
                 content = lines.join('\n');
             }
         }

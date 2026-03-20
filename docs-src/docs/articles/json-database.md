@@ -5,7 +5,7 @@ description: Experience a powerful JSON database with RxDB, built for JavaScript
 image: /headers/json-database.jpg
 ---
 
-import PerformanceChart from '@site/src/components/performance-chart';
+import { PerformanceChart } from '@site/src/components/performance-chart';
 import { PERFORMANCE_DATA_BROWSER, PERFORMANCE_METRICS } from '@site/src/components/performance-data';
 
 # RxDB - JSON Database for JavaScript

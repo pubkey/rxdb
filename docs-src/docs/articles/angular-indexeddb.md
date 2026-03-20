@@ -5,7 +5,7 @@ description: Discover how to harness IndexedDB in Angular with RxDB for robust o
 image: /headers/angular-indexeddb.jpg
 ---
 
-import PerformanceChart from '@site/src/components/performance-chart';
+import { PerformanceChart } from '@site/src/components/performance-chart';
 import { PERFORMANCE_DATA_BROWSER, PERFORMANCE_METRICS } from '@site/src/components/performance-data';
 
 import {Tabs} from '@site/src/components/tabs';

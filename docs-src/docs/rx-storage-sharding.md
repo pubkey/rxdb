@@ -6,6 +6,8 @@ image: /headers/rx-storage-sharding.jpg
 ---
 
 import {PremiumBlock} from '@site/src/components/premium-block';
+import { PerformanceChart } from '@site/src/components/performance-chart';
+import { PERFORMANCE_BROWSER_SHARDING_INDEXEDDB, PERFORMANCE_BROWSER_INDEXEDDB } from '@site/src/components/performance-data';
 
 # Sharding RxStorage
 
@@ -79,3 +81,16 @@ const database = await createRxDatabase({
 
 ```
 
+
+
+## Performance
+
+The Sharding RxStorage wrapper can improve performance, especially when using an underlying storage that has bottlenecks with large single stores like IndexedDB. Below is a comparison.
+
+<PerformanceChart
+  data={[
+    PERFORMANCE_BROWSER_SHARDING_INDEXEDDB,
+    PERFORMANCE_BROWSER_INDEXEDDB
+  ]}
+  title="Sharding vs Normal IndexedDB Performance"
+/>

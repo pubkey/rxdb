@@ -5,7 +5,7 @@ description: Unlock seamless persistence with SQLite RxStorage. Explore usage in
 image: /headers/rx-storage-sqlite.jpg
 ---
 
-import PerformanceChart from '@site/src/components/performance-chart';
+import { PerformanceChart } from '@site/src/components/performance-chart';
 import { PERFORMANCE_DATA_NODE, PERFORMANCE_METRICS } from '@site/src/components/performance-data';
 
 import {Steps} from '@site/src/components/steps';

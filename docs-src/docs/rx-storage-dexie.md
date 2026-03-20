@@ -5,7 +5,7 @@ description: Use Dexie.js to power RxDB in the browser. Enjoy quick setup, Dexie
 image: /headers/rx-storage-dexie.jpg
 ---
 
-import PerformanceChart from '@site/src/components/performance-chart';
+import { PerformanceChart } from '@site/src/components/performance-chart';
 import { PERFORMANCE_DATA_BROWSER, PERFORMANCE_METRICS } from '@site/src/components/performance-data';
 
 import {Steps} from '@site/src/components/steps';

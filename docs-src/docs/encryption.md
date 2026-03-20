@@ -7,7 +7,7 @@ image: /headers/encryption.jpg
 
 import {Steps} from '@site/src/components/steps';
 import {PremiumBlock} from '@site/src/components/premium-block';
-import PerformanceChart from '@site/src/components/performance-chart';
+import { PerformanceChart } from '@site/src/components/performance-chart';
 import { PERFORMANCE_DATA_ENCRYPTION, PERFORMANCE_METRICS } from '@site/src/components/performance-data';
 
 # 🔒 Encrypted Local Storage with RxDB

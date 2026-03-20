@@ -5,7 +5,7 @@ description: Discover how RxDB simplifies IndexedDB in React, offering reactive 
 image: /headers/react-indexeddb.jpg
 ---
 
-import PerformanceChart from '@site/src/components/performance-chart';
+import { PerformanceChart } from '@site/src/components/performance-chart';
 import { PERFORMANCE_DATA_BROWSER, PERFORMANCE_METRICS } from '@site/src/components/performance-data';
 
 # IndexedDB Database in React Apps - The Power of RxDB

@@ -5,7 +5,7 @@ description: Discover how RxDB brings flexible, reactive NoSQL to Node.js. Scale
 image: /headers/nodejs-database.jpg
 ---
 
-import PerformanceChart from '@site/src/components/performance-chart';
+import { PerformanceChart } from '@site/src/components/performance-chart';
 import { PERFORMANCE_DATA_NODE, PERFORMANCE_METRICS } from '@site/src/components/performance-data';
 
 # Node.js Database

@@ -17,7 +17,7 @@ type PerformanceChartProps = {
     logScale?: boolean;
 };
 
-export default function PerformanceChart({ data, metrics, title, skipMetrics, logScale }: PerformanceChartProps) {
+export function PerformanceChart({ data, metrics, title, skipMetrics, logScale }: PerformanceChartProps) {
     if (!metrics && data && data.length > 0) {
         // Auto-generate metrics from the first data object if not provided
         const keys = Object.keys(data[0]).filter(k => k !== 'name');
@@ -36,7 +36,7 @@ export default function PerformanceChart({ data, metrics, title, skipMetrics, lo
     // Recharts only renders properly in the browser
     if (!ExecutionEnvironment.canUseDOM) {
         return (
-            <div style={{ width: '100%', height: 400, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px dashed var(--ifm-color-emphasis-300)' }}>
+            <div style={{ width: '100%', height: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px dashed var(--ifm-color-emphasis-300)' }}>
                 Loading chart...
             </div>
         );
@@ -44,7 +44,7 @@ export default function PerformanceChart({ data, metrics, title, skipMetrics, lo
 
     return (
         <Suspense fallback={
-            <div style={{ width: '100%', height: 400, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px dashed var(--ifm-color-emphasis-300)' }}>
+            <div style={{ width: '100%', height: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px dashed var(--ifm-color-emphasis-300)' }}>
                 Loading chart...
             </div>
         }>

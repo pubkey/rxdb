@@ -5,7 +5,7 @@ description: Explore real-world benchmarks comparing RxDB's persistent and semi-
 image: /headers/rx-storage-performance.jpg
 ---
 
-import PerformanceChart from '@site/src/components/performance-chart';
+import { PerformanceChart } from '@site/src/components/performance-chart';
 import { PERFORMANCE_DATA_NODE, PERFORMANCE_METRICS, PERFORMANCE_DATA_BROWSER, PERFORMANCE_DATA_SERVER } from '@site/src/components/performance-data';
 
 ## RxStorage Performance comparison
