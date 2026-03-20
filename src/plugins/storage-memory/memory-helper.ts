@@ -45,6 +45,14 @@ export function attachmentMapKey(documentId: string, attachmentId: string): stri
 }
 
 
+/**
+ * @performance
+ * Threshold for using in-place splice vs. full merge-sort when inserting
+ * documents into indexes. Below this batch size, in-place binary search + splice
+ * is faster because it avoids allocating a new full-size array and copying all elements.
+ */
+const IN_PLACE_INSERT_THRESHOLD = 64;
+
 function sortByIndexStringComparator<RxDocType>(a: DocWithIndexString<RxDocType>, b: DocWithIndexString<RxDocType>) {
     if (a[0] < b[0]) {
         return -1;
@@ -163,9 +171,13 @@ export function putWriteRowToState<RxDocType>(
 /**
  * @hotPath
  * Efficiently inserts multiple documents into the state at once.
- * Instead of inserting one-by-one with Array.splice() (O(n) per insert),
- * this pre-computes all index entries, sorts them, and merges them into
- * the existing sorted arrays in a single pass (O(n log n + n + m)).
+ *
+ * Uses two strategies based on batch size:
+ * - For small batches (relative to existing index size), uses in-place
+ *   binary search + splice per document. This avoids allocating a new
+ *   full-size array and copying all elements, reducing GC pressure.
+ * - For large batches (or empty indexes), pre-computes all index entries,
+ *   sorts them, and merges into the existing sorted arrays in a single pass.
  */
 export function bulkInsertToState<RxDocType>(
     primaryPath: string,
@@ -174,6 +186,7 @@ export function bulkInsertToState<RxDocType>(
     docs: { document: RxDocumentData<RxDocType> }[]
 ) {
     const docsLength = docs.length;
+    const stateByIndexLength = stateByIndex.length;
 
     // Extract documents and docIds once, store in Map
     const documents: RxDocumentData<RxDocType>[] = new Array(docsLength);
@@ -186,33 +199,75 @@ export function bulkInsertToState<RxDocType>(
         state.documents.set(docId, doc as any);
     }
 
-    // For each index, batch-compute entries, sort, and merge
-    const stateByIndexLength = stateByIndex.length;
-    for (let indexI = 0; indexI < stateByIndexLength; ++indexI) {
-        const byIndex = stateByIndex[indexI];
-        const docsWithIndex = byIndex.docsWithIndex;
-        const getIndexableString = byIndex.getIndexableString;
+    /**
+     * @performance
+     * For small batch sizes, use in-place binary search + splice
+     * instead of creating a full merged array copy. This is faster
+     * for serial inserts and small bulk inserts because it avoids:
+     * - Allocating a new array of size n+m
+     * - Copying all n existing elements
+     * - GC pressure from discarding the old array
+     *
+     * The threshold is based on when the merge approach becomes more
+     * efficient than individual splices.
+     */
+    const useInPlaceInsert = docsLength < IN_PLACE_INSERT_THRESHOLD;
 
-        // Build new entries
-        const newEntries: DocWithIndexString<RxDocType>[] = new Array(docsLength);
-        for (let i = 0; i < docsLength; ++i) {
-            const doc = documents[i];
-            newEntries[i] = [
-                getIndexableString(doc as any),
-                doc,
-                docIds[i]
-            ];
+    if (useInPlaceInsert) {
+        for (let indexI = 0; indexI < stateByIndexLength; ++indexI) {
+            const byIndex = stateByIndex[indexI];
+            const docsWithIndex = byIndex.docsWithIndex;
+            const getIndexableString = byIndex.getIndexableString;
+
+            if (docsWithIndex.length === 0) {
+                for (let i = 0; i < docsLength; ++i) {
+                    const doc = documents[i];
+                    const indexString = getIndexableString(doc as any);
+                    docsWithIndex.push([indexString, doc, docIds[i]]);
+                }
+                docsWithIndex.sort(sortByIndexStringComparator);
+            } else {
+                for (let i = 0; i < docsLength; ++i) {
+                    const doc = documents[i];
+                    const indexString = getIndexableString(doc as any);
+                    const newEntry: DocWithIndexString<RxDocType> = [indexString, doc, docIds[i]];
+                    pushAtSortPosition(
+                        docsWithIndex,
+                        newEntry,
+                        sortByIndexStringComparator,
+                        0
+                    );
+                }
+            }
         }
+    } else {
+        // For each index, batch-compute entries, sort, and merge
+        for (let indexI = 0; indexI < stateByIndexLength; ++indexI) {
+            const byIndex = stateByIndex[indexI];
+            const docsWithIndex = byIndex.docsWithIndex;
+            const getIndexableString = byIndex.getIndexableString;
 
-        // Sort by index string
-        newEntries.sort(sortByIndexStringComparator);
+            // Build new entries
+            const newEntries: DocWithIndexString<RxDocType>[] = new Array(docsLength);
+            for (let i = 0; i < docsLength; ++i) {
+                const doc = documents[i];
+                newEntries[i] = [
+                    getIndexableString(doc as any),
+                    doc,
+                    docIds[i]
+                ];
+            }
 
-        if (docsWithIndex.length === 0) {
-            // Index is empty, just assign sorted entries
-            byIndex.docsWithIndex = newEntries;
-        } else {
-            // Merge sorted arrays
-            byIndex.docsWithIndex = mergeSortedArrays(docsWithIndex, newEntries);
+            // Sort by index string
+            newEntries.sort(sortByIndexStringComparator);
+
+            if (docsWithIndex.length === 0) {
+                // Index is empty, just assign sorted entries
+                byIndex.docsWithIndex = newEntries;
+            } else {
+                // Merge sorted arrays
+                byIndex.docsWithIndex = mergeSortedArrays(docsWithIndex, newEntries);
+            }
         }
     }
 }
