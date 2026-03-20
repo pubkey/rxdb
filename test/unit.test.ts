@@ -6,6 +6,7 @@ import './unit/util.test.ts';
  * do not fully test RxDB but
  * just single methods
  */
+import './unit/vector-distance.test.ts';
 import './unit/custom-index.test.ts';
 import './unit/query-planner.test.ts';
 
