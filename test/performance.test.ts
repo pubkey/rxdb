@@ -33,7 +33,7 @@ describe('performance.test.ts', () => {
         this.timeout(500 * 1000);
         const runs = isFastMode() ? 1 : 40;
         const perfStorage = config.storage.getPerformanceStorage();
-        const password = ENV_VARIABLES.STORAGE_PASSWORD ? ENV_VARIABLES.STORAGE_PASSWORD : undefined;
+        const password = ENV_VARIABLES.STORAGE_PASSWORD || undefined;
         const storage = password ? getEncryptedStorage(perfStorage.storage) : perfStorage.storage;
         const description = password ? perfStorage.description + '-encrypted' : perfStorage.description;
         await runPerformanceTests(
