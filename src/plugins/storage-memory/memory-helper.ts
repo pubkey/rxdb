@@ -12,7 +12,7 @@ import {
     pushAtSortPosition
 } from 'array-push-at-sort-position';
 import { newRxError } from '../../rx-error.ts';
-import { boundEQByIndexString, boundGEByIndexString } from './binary-search-bounds.ts';
+import { boundEQByIndexString } from './binary-search-bounds.ts';
 
 
 export function getMemoryCollectionKey(
@@ -231,8 +231,12 @@ export function bulkInsertToState<RxDocType>(
                     const doc = documents[i];
                     const indexString = getIndexableString(doc as any);
                     const newEntry: DocWithIndexString<RxDocType> = [indexString, doc, docIds[i]];
-                    const insertPos = boundGEByIndexString(docsWithIndex, indexString);
-                    docsWithIndex.splice(insertPos, 0, newEntry);
+                    pushAtSortPosition(
+                        docsWithIndex,
+                        newEntry,
+                        sortByIndexStringComparator,
+                        0
+                    );
                 }
             }
         }
