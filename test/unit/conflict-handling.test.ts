@@ -132,6 +132,74 @@ describeParallel('conflict-handling.test.js', () => {
         });
     });
 
+    describe('custom conflict handler', () => {
+        it('should use a custom isEqual that only compares specific fields', () => {
+            const handler: RxConflictHandler<HumanDocumentType> = {
+                isEqual(a, b) {
+                    return a.passportId === b.passportId && a.firstName === b.firstName;
+                },
+                resolve(i) {
+                    return Promise.resolve(i.realMasterState);
+                }
+            };
+
+            const docA = humanWithDeleted({ passportId: 'custom-eq', firstName: 'Same' });
+            const docB = humanWithDeleted({ passportId: 'custom-eq', firstName: 'Same', age: 99 });
+            assert.strictEqual(handler.isEqual(docA, docB, 'test'), true);
+        });
+
+        it('should use a custom resolve that merges document fields', async () => {
+            const handler: RxConflictHandler<HumanDocumentType> = {
+                isEqual(docA, docB) {
+                    return defaultConflictHandler.isEqual(docA, docB, 'test');
+                },
+                resolve(i) {
+                    return Promise.resolve(Object.assign(
+                        {},
+                        i.realMasterState,
+                        { firstName: i.newDocumentState.firstName }
+                    ));
+                }
+            };
+
+            const master = humanWithDeleted({ passportId: 'merge-test', firstName: 'Master', age: 40 });
+            const local = humanWithDeleted({ passportId: 'merge-test', firstName: 'Local', age: 25 });
+            const handlerInput: RxConflictHandlerInput<HumanDocumentType> = {
+                realMasterState: master,
+                newDocumentState: local,
+            };
+            const result = await handler.resolve(handlerInput, 'test');
+            assert.strictEqual(result.firstName, 'Local');
+            assert.strictEqual(result.age, 40);
+        });
+
+        it('should use a custom resolve that picks the newest by age', async () => {
+            const handler: RxConflictHandler<HumanDocumentType> = {
+                isEqual(docA, docB) {
+                    return defaultConflictHandler.isEqual(docA, docB, 'test');
+                },
+                resolve(i) {
+                    const masterAge = i.realMasterState.age || 0;
+                    const localAge = i.newDocumentState.age || 0;
+                    if (localAge > masterAge) {
+                        return Promise.resolve(i.newDocumentState);
+                    }
+                    return Promise.resolve(i.realMasterState);
+                }
+            };
+
+            const master = humanWithDeleted({ passportId: 'age-pick', firstName: 'Master', age: 20 });
+            const local = humanWithDeleted({ passportId: 'age-pick', firstName: 'Local', age: 30 });
+            const handlerInput: RxConflictHandlerInput<HumanDocumentType> = {
+                realMasterState: master,
+                newDocumentState: local,
+            };
+            const result = await handler.resolve(handlerInput, 'test');
+            assert.strictEqual(result.firstName, 'Local');
+            assert.strictEqual(result.age, 30);
+        });
+    });
+
     describe('RxCollection with conflictHandler', () => {
         it('should set the default conflict handler on a collection', async () => {
             const db = await createRxDatabase({
