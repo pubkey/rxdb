@@ -24,13 +24,13 @@ export const PERFORMANCE_METRICS = [
 export const PERFORMANCE_BROWSER_INDEXEDDB: RxStoragePerformanceMeasurement = {
     name: 'IndexedDB',
     'time-to-first-insert': 4.65,
-    'insert-documents-500': 11.04,
-    'find-by-ids-3000': 82.45,
-    'serial-inserts-50': 22.25,
-    'serial-find-by-id-50': 14.45,
-    'find-by-query': 61.05,
-    'find-by-query-parallel-4': 45.2,
-    '4x-count': 20.65
+    'insert-documents-500': 10.66,
+    'find-by-ids-3000': 80.55,
+    'serial-inserts-50': 20.95,
+    'serial-find-by-id-50': 13.05,
+    'find-by-query': 59.55,
+    'find-by-query-parallel-4': 43.6,
+    '4x-count': 19.55
 };
 
 export const PERFORMANCE_BROWSER_DEXIE: RxStoragePerformanceMeasurement = {
@@ -142,17 +142,8 @@ export const PERFORMANCE_DATA_BROWSER: RxStoragePerformanceMeasurement[] = [
 ];
 
 export const PERFORMANCE_DATA_SERVER: RxStoragePerformanceMeasurement[] = [
-    {
-        name: 'MongoDB',
-        'time-to-first-insert': 276.906,
-        'insert-documents-500': 47.497,
-        'find-by-ids-3000': 57.31,
-        'serial-inserts-50': 209.467,
-        'serial-find-by-id-50': 23.09,
-        'find-by-query': 42.315,
-        'find-by-query-parallel-4': 38.854,
-        '4x-count': 6.898
-    },
+    PERFORMANCE_NODE_FILESYSTEM,
+    PERFORMANCE_NODE_SQLITE_NATIVE,
     {
         name: 'FoundationDB',
         'time-to-first-insert': 6.38,
@@ -164,27 +155,37 @@ export const PERFORMANCE_DATA_SERVER: RxStoragePerformanceMeasurement[] = [
         'find-by-query-parallel-4': 44.53,
         '4x-count': 57.41
     },
-    PERFORMANCE_NODE_FILESYSTEM,
+    {
+        name: 'MongoDB',
+        'time-to-first-insert': 276.906,
+        'insert-documents-500': 47.497,
+        'find-by-ids-3000': 57.31,
+        'serial-inserts-50': 209.467,
+        'serial-find-by-id-50': 23.09,
+        'find-by-query': 42.315,
+        'find-by-query-parallel-4': 38.854,
+        '4x-count': 6.898
+    },
     PERFORMANCE_NODE_MEMORY,
 ];
 
 export const PERFORMANCE_DATA_NODE: RxStoragePerformanceMeasurement[] = [
-    PERFORMANCE_NODE_SQLITE_NATIVE,
     PERFORMANCE_NODE_FILESYSTEM,
+    PERFORMANCE_NODE_SQLITE_NATIVE,
     PERFORMANCE_NODE_MEMORY,
 ];
 
 export const PERFORMANCE_DATA_ENCRYPTION: RxStoragePerformanceMeasurement[] = [
     {
-        name: 'CryptoJS',
-        'time-to-first-insert': 2.04,
-        'insert-documents-500': 262.7,
-        'find-by-ids-3000': 723.46,
-        'serial-inserts-50': 31.4,
-        'serial-find-by-id-50': 13.62,
-        'find-by-query': 734.1,
-        'find-by-query-parallel-4': 724.62,
-        '4x-count': 0.38,
+        'name': 'WebCrypto AES-CBC',
+        "time-to-first-insert": 2.21,
+        "insert-documents-500": 43.83,
+        "find-by-ids-3000": 111.83,
+        "serial-inserts-50": 52.51,
+        "serial-find-by-id-50": 3.68,
+        "find-by-query": 106.1,
+        "find-by-query-parallel-4": 103.92,
+        "4x-count": 0.3,
     },
     {
         'name': 'WebCrypto AES-GCM',
@@ -198,17 +199,6 @@ export const PERFORMANCE_DATA_ENCRYPTION: RxStoragePerformanceMeasurement[] = [
         "4x-count": 0.38,
     },
     {
-        'name': 'WebCrypto AES-CBC',
-        "time-to-first-insert": 2.21,
-        "insert-documents-500": 43.83,
-        "find-by-ids-3000": 111.83,
-        "serial-inserts-50": 52.51,
-        "serial-find-by-id-50": 3.68,
-        "find-by-query": 106.1,
-        "find-by-query-parallel-4": 103.92,
-        "4x-count": 0.3,
-    },
-    {
         'name': 'WebCrypto AES-CTR',
         "time-to-first-insert": 2.45,
         "insert-documents-500": 45.94,
@@ -218,6 +208,16 @@ export const PERFORMANCE_DATA_ENCRYPTION: RxStoragePerformanceMeasurement[] = [
         "find-by-query": 127.24,
         "find-by-query-parallel-4": 128.55,
         "4x-count": 0.3,
-
-    }
+    },
+    {
+        name: 'CryptoJS',
+        'time-to-first-insert': 2.04,
+        'insert-documents-500': 262.7,
+        'find-by-ids-3000': 723.46,
+        'serial-inserts-50': 31.4,
+        'serial-find-by-id-50': 13.62,
+        'find-by-query': 734.1,
+        'find-by-query-parallel-4': 724.62,
+        '4x-count': 0.38,
+    },
 ];
