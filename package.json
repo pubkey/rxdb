@@ -625,7 +625,7 @@
     "@rollup/plugin-commonjs": "29.0.2",
     "@rollup/plugin-node-resolve": "16.0.3",
     "@stylistic/eslint-plugin": "5.10.0",
-    "@supabase/supabase-js": "2.99.2",
+    "@supabase/supabase-js": "2.99.3",
     "@types/assert": "1.5.11",
     "@types/core-js": "2.5.8",
     "@types/cors": "2.8.19",
