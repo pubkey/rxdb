@@ -3,7 +3,10 @@ import {
     now,
     randomToken,
     fillWithDefaultSettings,
-    getPrimaryFieldOfPrimaryKey
+    getPrimaryFieldOfPrimaryKey,
+    IncrementalWriteQueue,
+    findNewestOfDocumentStates,
+    modifierFromPublicToInternal
 } from '../../plugins/core/index.mjs';
 import {
     schemas,
@@ -12,11 +15,6 @@ import {
     HumanDocumentType
 } from '../../plugins/test-utils/index.mjs';
 import config, { describeParallel } from './config.ts';
-import {
-    IncrementalWriteQueue,
-    findNewestOfDocumentStates,
-    modifierFromPublicToInternal
-} from '../../src/incremental-write.ts';
 import type {
     RxDocumentData
 } from '../../plugins/core/index.mjs';
@@ -285,7 +283,7 @@ describeParallel('incremental-write.test.ts', () => {
 
             // Second write using the result of the first
             const result2 = await queue.addWrite(result1, (doc: RxDocumentData<HumanDocumentType>) => {
-                doc.age = doc.age + 5;
+                doc.age = (doc.age ?? 0) + 5;
                 return doc;
             });
             assert.strictEqual(result2.age, 15);
@@ -345,7 +343,7 @@ describeParallel('incremental-write.test.ts', () => {
                 return doc;
             });
             const p2 = queue.addWrite(storedDoc, (doc: RxDocumentData<HumanDocumentType>) => {
-                doc.age = doc.age + 5;
+                doc.age = (doc.age ?? 0) + 5;
                 return doc;
             });
 
