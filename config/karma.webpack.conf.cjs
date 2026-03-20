@@ -9,7 +9,8 @@ const externals = {};
     'fs',
     'module',
     'http',
-    'assert'
+    'assert',
+    'buffer'
 ].forEach(k => externals['node:' + k] = '{}');
 
 module.exports = {
