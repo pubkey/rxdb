@@ -25,6 +25,11 @@ export function now(): number {
     const dateNow = Date.now();
     if (dateNow > _lastNowMs) {
         _lastNowMs = dateNow;
+        /**
+         * Start at 1 (not 0) so the returned value is always
+         * dateNow + 0.01 at minimum, matching the original behavior
+         * of always adding 0.01 to Date.now().
+         */
         _lastNowSub = 1;
     } else {
         if (++_lastNowSub === 100) {
