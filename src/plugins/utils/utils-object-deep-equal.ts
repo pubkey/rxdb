@@ -1,39 +1,32 @@
-
 /**
- * Copied from the fast-deep-equal package
- * because it does not support es modules and causes optimization bailouts.
- * TODO use the npm package again when this is merged:
- * @link https://github.com/epoberezkin/fast-deep-equal/pull/105
+ * Optimized deep-equal comparison for JSON-compatible data
+ * as used in RxDB documents, schemas, and queries.
+ * Based on fast-deep-equal but stripped of RegExp, valueOf,
+ * toString, and constructor checks that are unnecessary for JSON data.
  */
 export function deepEqual(a: any, b: any): boolean {
     if (a === b) return true;
 
-    if (a && b && typeof a == 'object' && typeof b == 'object') {
-        if (a.constructor !== b.constructor) return false;
-
-        let length;
-        let i;
+    if (a && b && typeof a === 'object' && typeof b === 'object') {
         if (Array.isArray(a)) {
-            length = a.length;
+            if (!Array.isArray(b)) return false;
+            const length = a.length;
             if (length !== b.length) return false;
-            for (i = length; i-- !== 0;)
+            for (let i = length; i-- !== 0;) {
                 if (!deepEqual(a[i], b[i])) return false;
+            }
             return true;
+        } else if (Array.isArray(b)) {
+            return false;
         }
 
-
-        if (a.constructor === RegExp) return a.source === b.source && a.flags === b.flags;
-        if (a.valueOf !== Object.prototype.valueOf) return a.valueOf() === b.valueOf();
-        if (a.toString !== Object.prototype.toString) return a.toString() === b.toString();
-
         const keys = Object.keys(a);
-        length = keys.length;
+        const length = keys.length;
         if (length !== Object.keys(b).length) return false;
 
-        // Single combined loop: check key existence AND deep-compare in one pass.
-        for (i = length; i-- !== 0;) {
+        for (let i = length; i-- !== 0;) {
             const key = keys[i];
-            if (!Object.prototype.hasOwnProperty.call(b, key) || !deepEqual(a[key], b[key])) return false;
+            if (!(key in b) || !deepEqual(a[key], b[key])) return false;
         }
 
         return true;
