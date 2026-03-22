@@ -125,11 +125,25 @@ export function flattenObject(ob: any) {
 /**
  * does a flat copy on the objects,
  * is about 3 times faster than using deepClone.
- * Using the spread operator instead of Object.assign
- * because V8 optimizes spread for plain objects (~4x faster).
+ * V8 optimizes spread for plain objects but has a performance cliff
+ * at around 20 properties where spread becomes ~100x slower.
+ * For small objects we use spread (fastest path in V8),
+ * for larger objects we fall back to an Object.keys loop.
  */
 export function flatClone<T>(obj: T | DeepReadonlyObject<T> | Readonly<T>): T {
-    return { ...obj } as any;
+    if (!obj) {
+        return { ...obj } as any;
+    }
+    const keys = Object.keys(obj as any);
+    if (keys.length < 20) {
+        return { ...obj } as any;
+    }
+    const ret: any = {};
+    for (let i = 0, len = keys.length; i < len; i++) {
+        const k = keys[i];
+        ret[k] = (obj as any)[k];
+    }
+    return ret;
 }
 
 /**
