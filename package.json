@@ -593,7 +593,7 @@
     "reconnecting-websocket": "4.4.0",
     "simple-peer": "9.11.1",
     "util": "0.12.5",
-    "ws": "8.19.0",
+    "ws": "8.20.0",
     "z-schema": "12.1.0"
   },
   "devDependencies": {
