@@ -1,5 +1,5 @@
 import { Client, createClient } from 'graphql-ws';
-import { getFromMapOrCreate, getFromMapOrThrow } from '../../plugins/utils/index.ts';
+import { getFromMapOrThrow } from '../../plugins/utils/index.ts';
 import { WebSocket } from 'ws';
 import { RxGraphQLPullWSOptions } from '../../types';
 
@@ -18,28 +18,25 @@ export function getGraphQLWebSocket(
     options: RxGraphQLPullWSOptions = {},
 ): Client {
 
-    const has = getFromMapOrCreate(
-        GRAPHQL_WEBSOCKET_BY_URL,
-        url,
-        () => {
-            const connectionParamsHeaders = headers ? { headers } : undefined;
-            const wsClient = createClient({
-                ...options,
-                url,
-                shouldRetry: () => true,
-                webSocketImpl: WebSocket,
-                connectionParams: options.connectionParams || connectionParamsHeaders,
-            });
-            return {
-                url,
-                socket: wsClient,
-                refCount: 1
-            };
-        },
-        (value) => {
-            value.refCount = value.refCount + 1;
-        }
-    );
+    let has = GRAPHQL_WEBSOCKET_BY_URL.get(url);
+    if (has) {
+        has.refCount = has.refCount + 1;
+    } else {
+        const connectionParamsHeaders = headers ? { headers } : undefined;
+        const wsClient = createClient({
+            ...options,
+            url,
+            shouldRetry: () => true,
+            webSocketImpl: WebSocket,
+            connectionParams: options.connectionParams || connectionParamsHeaders,
+        });
+        has = {
+            url,
+            socket: wsClient,
+            refCount: 1
+        };
+        GRAPHQL_WEBSOCKET_BY_URL.set(url, has);
+    }
     return has.socket;
 }
 

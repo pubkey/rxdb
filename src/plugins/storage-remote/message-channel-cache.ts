@@ -38,28 +38,26 @@ export function getMessageChannel(
     keepAlive: boolean = false
 ): Promise<RemoteMessageChannel> {
     const cacheKey = getCacheKey(settings, cacheKeys);
-    const cacheItem = getFromMapOrCreate(
-        getMessageChannelCache(settings.identifier),
-        cacheKey,
-        () => {
-            const newCacheItem: RemoteMessageChannelCacheItem = {
-                identifier: settings.identifier,
-                cacheKey,
-                keepAlive,
-                refCount: 1,
-                messageChannel: settings.messageChannelCreator()
-                    .then((messageChannel) => {
-                        OPEN_REMOTE_MESSAGE_CHANNELS.add(messageChannel);
-                        CACHE_ITEM_BY_MESSAGE_CHANNEL.set(messageChannel, newCacheItem);
-                        return messageChannel;
-                    }),
-            };
-            return newCacheItem;
-        },
-        (existingCacheItem) => {
-            existingCacheItem.refCount = existingCacheItem.refCount + 1;
-        }
-    );
+    const cache = getMessageChannelCache(settings.identifier);
+    let cacheItem = cache.get(cacheKey);
+    if (cacheItem) {
+        cacheItem.refCount = cacheItem.refCount + 1;
+    } else {
+        cacheItem = {
+            identifier: settings.identifier,
+            cacheKey,
+            keepAlive,
+            refCount: 1,
+            messageChannel: undefined as any,
+        };
+        cacheItem.messageChannel = settings.messageChannelCreator()
+            .then((messageChannel) => {
+                OPEN_REMOTE_MESSAGE_CHANNELS.add(messageChannel);
+                CACHE_ITEM_BY_MESSAGE_CHANNEL.set(messageChannel, cacheItem);
+                return messageChannel;
+            });
+        cache.set(cacheKey, cacheItem);
+    }
     return cacheItem.messageChannel;
 }
 

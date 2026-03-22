@@ -1,23 +1,21 @@
 export function getFromMapOrThrow<K, V>(map: Map<K, V> | WeakMap<any, V>, key: K): V {
     const val = map.get(key);
-    if (val === undefined) {
-        throw new Error('missing value from map ' + key);
+    if (val !== undefined) {
+        return val;
     }
-    return val;
+    throw new Error('missing value from map ' + key);
 }
 
 export function getFromMapOrCreate<MapIndex, MapValue>(
     map: Map<MapIndex, MapValue> | WeakMap<any, MapValue>,
     index: MapIndex,
     creator: () => MapValue,
-    ifWasThere?: (value: MapValue) => void
 ): MapValue {
-    let value = map.get(index);
-    if (value === undefined) {
-        value = creator();
-        map.set(index, value);
-    } else if (ifWasThere) {
-        ifWasThere(value);
+    const val = map.get(index);
+    if (val !== undefined) {
+        return val;
     }
-    return value;
+    const ret = creator();
+    map.set(index, ret);
+    return ret;
 }
