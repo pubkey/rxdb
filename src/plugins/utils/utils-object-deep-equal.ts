@@ -3,6 +3,8 @@
  * as used in RxDB documents, schemas, and queries.
  * Based on fast-deep-equal but stripped of RegExp, valueOf,
  * toString, and constructor checks that are unnecessary for JSON data.
+ * Uses 'in' operator for property checks which is safe for plain
+ * JSON objects (no prototype-inherited data keys).
  */
 export function deepEqual(a: any, b: any): boolean {
     if (a === b) return true;
