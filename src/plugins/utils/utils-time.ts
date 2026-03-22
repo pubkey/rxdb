@@ -10,29 +10,27 @@
  * We had to move from having no decimals, to having two decimal
  * because it turned out that some storages are such fast that
  * calling this method too often would return 'the future'.
+ *
+ * Tracks the current millisecond and a sub-millisecond counter (1-99)
+ * separately as integers to avoid floating point rounding errors
+ * and eliminate the need for Math.round().
  */
-let _lastNow: number = 0;
+let _lastNowMs: number = 0;
+let _lastNowSub: number = 0;
 /**
  * Returns the current time in milliseconds,
  * also ensures to not return the same value twice.
  */
 export function now(): number {
-    let ret = Date.now();
-    ret = ret + 0.01;
-    if (ret <= _lastNow) {
-        ret = _lastNow + 0.01;
+    const dateNow = Date.now();
+    if (dateNow > _lastNowMs) {
+        _lastNowMs = dateNow;
+        _lastNowSub = 1;
+    } else {
+        if (++_lastNowSub === 100) {
+            _lastNowMs++;
+            _lastNowSub = 1;
+        }
     }
-
-    /**
-     * Strip the returned number to max two decimals.
-     * In theory we would not need this but
-     * in practice JavaScript has no such good number precision
-     * so rounding errors could add another decimal place.
-     * Use Math.round instead of parseFloat(toFixed(2)) to avoid
-     * expensive string conversion.
-     */
-    const twoDecimals = Math.round(ret * 100) / 100;
-
-    _lastNow = twoDecimals;
-    return twoDecimals;
+    return _lastNowMs + _lastNowSub * 0.01;
 }
