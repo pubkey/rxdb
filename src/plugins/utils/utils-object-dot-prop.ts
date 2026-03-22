@@ -182,9 +182,6 @@ function assertNotStringIndex(object: any, key: string | number) {
     }
 }
 
-/**
- * TODO we need some performance tests and improvements here.
- */
 export function getProperty(object: any, path: string | string[], value?: any) {
     if (Array.isArray(path)) {
         path = path.join('.');
@@ -202,7 +199,7 @@ export function getProperty(object: any, path: string | string[], value?: any) {
         return object[path];
     }
 
-    if (!isObject(object as any) || typeof path !== 'string') {
+    if (object === null || (typeof object !== 'object' && typeof object !== 'function') || typeof path !== 'string') {
         return value === undefined ? object : value;
     }
 
@@ -214,15 +211,16 @@ export function getProperty(object: any, path: string | string[], value?: any) {
      */
     if (!path.includes('[') && !path.includes('\\')) {
         const segments = path.split('.');
+        const lastIdx = segments.length - 1;
         let current = object;
-        for (let i = 0; i < segments.length; i++) {
+        for (let i = 0; i <= lastIdx; i++) {
             const seg = segments[i];
-            if (disallowedKeys.has(seg)) {
+            if (seg === '__proto__' || seg === 'prototype' || seg === 'constructor') {
                 return value;
             }
             current = current[seg];
             if (current === undefined || current === null) {
-                if (i !== segments.length - 1) {
+                if (i !== lastIdx) {
                     return value;
                 }
                 break;
