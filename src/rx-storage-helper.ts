@@ -324,10 +324,14 @@ export function categorizeBulkWriteRows<RxDocType>(
             }
 
             if (!documentDeleted) {
+                let eventDocData = document as RxDocumentData<RxDocType>;
+                if (hasAttachments) {
+                    eventDocData = insertedRow ? insertedRow.document : stripAttachmentsDataFromDocument(document);
+                }
                 const event = {
                     documentId: docId,
                     operation: 'INSERT' as const,
-                    documentData: hasAttachments ? (insertedRow ? insertedRow.document : stripAttachmentsDataFromDocument(document)) : document as any,
+                    documentData: eventDocData,
                     previousDocumentData: hasAttachments && previous ? stripAttachmentsDataFromDocument(previous) : previous as any
                 };
                 eventBulkEvents.push(event);
