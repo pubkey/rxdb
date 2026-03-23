@@ -25,7 +25,7 @@ import {
     arrayBufferToString,
     clone,
     errorToPlainJson,
-    trimDots
+    trimDots,
     parseRevision,
     getHeightOfRevision,
     createRevision
