@@ -37,13 +37,13 @@
     "pouchdb-adapter-idb": "9.0.0",
     "rxdb": "file:rxdb-local.tgz",
     "rxjs": "7.8.2",
-    "ws": "8.19.0"
+    "ws": "8.20.0"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "async-test-util": "2.5.0",
     "css-loader": "7.1.4",
-    "eslint": "10.0.3",
+    "eslint": "10.1.0",
     "esm": "3.2.25",
     "file-loader": "6.2.0",
     "globals": "^17.3.0",

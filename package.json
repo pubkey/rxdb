@@ -593,7 +593,7 @@
     "reconnecting-websocket": "4.4.0",
     "simple-peer": "9.11.1",
     "util": "0.12.5",
-    "ws": "8.19.0",
+    "ws": "8.20.0",
     "z-schema": "12.1.0"
   },
   "devDependencies": {
@@ -626,7 +626,7 @@
     "@rollup/plugin-commonjs": "29.0.2",
     "@rollup/plugin-node-resolve": "16.0.3",
     "@stylistic/eslint-plugin": "5.10.0",
-    "@supabase/supabase-js": "2.99.3",
+    "@supabase/supabase-js": "2.100.0",
     "@types/assert": "1.5.11",
     "@types/core-js": "2.5.8",
     "@types/cors": "2.8.19",
@@ -655,7 +655,7 @@
     "delete": "1.1.0",
     "dependency-check": "4.1.0",
     "disc": "1.3.3",
-    "eslint": "10.0.3",
+    "eslint": "10.1.0",
     "eslint-plugin-import": "2.32.0",
     "eslint-plugin-jsdoc": "62.8.0",
     "exists-file": "3.0.2",
@@ -702,14 +702,14 @@
     "react": "19.2.4",
     "readline": "1.3.0",
     "rimraf": "6.1.3",
-    "rollup": "4.59.0",
+    "rollup": "4.60.0",
     "rxdb-old": "npm:rxdb@16.21.1",
     "rxjs": "7.8.2",
     "sharp": "0.34.5",
     "shelljs": "0.10.0",
     "source-map-support": "0.5.21",
     "stream": "0.0.3",
-    "supabase": "2.82.0",
+    "supabase": "2.83.0",
     "terser": "5.46.1",
     "terser-webpack-plugin": "5.4.0",
     "ts-loader": "9.5.4",
@@ -725,7 +725,7 @@
     "wrtc": "0.4.7"
   },
   "overrides": {
-    "eslint": "10.0.3",
+    "eslint": "10.1.0",
     "webpack-dev-server": "5.2.3"
   },
   "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
