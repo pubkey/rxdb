@@ -444,16 +444,9 @@ export function categorizeBulkWriteRows<RxDocType>(
             if (attachmentError) {
                 errors.push(attachmentError);
             } else {
-                if (hasAttachments) {
-                    bulkUpdateDocs.push(updatedRow);
-                    if (onUpdate) {
-                        onUpdate(document);
-                    }
-                } else {
-                    bulkUpdateDocs.push(updatedRow);
-                    if (onUpdate) {
-                        onUpdate(document);
-                    }
+                bulkUpdateDocs.push(updatedRow);
+                if (onUpdate) {
+                    onUpdate(document);
                 }
                 newestRow = updatedRow as any;
             }
@@ -465,7 +458,7 @@ export function categorizeBulkWriteRows<RxDocType>(
             if (previousDeleted && !documentDeleted) {
                 operation = 'INSERT';
                 eventDocumentData = hasAttachments ? stripAttachmentsDataFromDocument(document) : document as any;
-            } else if (previous && !previousDeleted && !documentDeleted) {
+            } else if (!previousDeleted && !documentDeleted) {
                 operation = 'UPDATE';
                 eventDocumentData = hasAttachments ? stripAttachmentsDataFromDocument(document) : document as any;
                 previousEventDocumentData = previous;
