@@ -25,6 +25,7 @@ import {
     arrayBufferToString,
     clone,
     errorToPlainJson,
+    trimDots,
     parseRevision,
     getHeightOfRevision,
     createRevision
@@ -77,6 +78,48 @@ describe('util.test.js', () => {
         });
     });
     describe('.sortObject()', () => {
+    });
+    describe('.trimDots()', () => {
+        it('should return the same string when no boundary dots exist', () => {
+            const str = 'hello.world';
+            const result = trimDots(str);
+            assert.strictEqual(result, str);
+            // should return the exact same reference (zero allocations)
+            assert.ok(result === str);
+        });
+        it('should remove leading dots', () => {
+            assert.strictEqual(trimDots('.hello'), 'hello');
+            assert.strictEqual(trimDots('..hello'), 'hello');
+            assert.strictEqual(trimDots('...hello'), 'hello');
+        });
+        it('should remove trailing dots', () => {
+            assert.strictEqual(trimDots('hello.'), 'hello');
+            assert.strictEqual(trimDots('hello..'), 'hello');
+            assert.strictEqual(trimDots('hello...'), 'hello');
+        });
+        it('should remove both leading and trailing dots', () => {
+            assert.strictEqual(trimDots('.hello.'), 'hello');
+            assert.strictEqual(trimDots('..hello..'), 'hello');
+            assert.strictEqual(trimDots('...hello.world...'), 'hello.world');
+        });
+        it('should return empty string when input is all dots', () => {
+            assert.strictEqual(trimDots('.'), '');
+            assert.strictEqual(trimDots('..'), '');
+            assert.strictEqual(trimDots('...'), '');
+        });
+        it('should return empty string for empty input', () => {
+            assert.strictEqual(trimDots(''), '');
+        });
+        it('should preserve dots in the middle of the string', () => {
+            assert.strictEqual(trimDots('a.b.c'), 'a.b.c');
+            assert.strictEqual(trimDots('.a.b.c.'), 'a.b.c');
+        });
+        it('should handle a single character without dots', () => {
+            const str = 'x';
+            const result = trimDots(str);
+            assert.strictEqual(result, str);
+            assert.ok(result === str);
+        });
     });
     describe('.recursiveDeepCopy()', () => {
         /**

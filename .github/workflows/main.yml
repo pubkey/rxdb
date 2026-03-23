@@ -49,7 +49,7 @@ jobs:
             ${{ runner.os }}-npm-core-x4-
 
       - name: install npm dependencies
-        run: npm install
+        run: npm install || (sleep 15 && npm install) || (sleep 15 && npm install)
 
       - name: build
         run: npm run build
@@ -87,7 +87,7 @@ jobs:
             ${{ runner.os }}-npm-windows-x4-
 
       - name: install npm dependencies
-        run: npm install
+        run: npm install || (sleep 15 && npm install) || (sleep 15 && npm install)
 
       - run: npm run build
 
@@ -115,7 +115,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-npm-storage-localstorage-x4-
 
-      - run: npm install
+      - run: npm install || (sleep 15 && npm install) || (sleep 15 && npm install)
       - run: npm run build
       - run: npm run test:node:localstorage
 
@@ -142,7 +142,7 @@ jobs:
             ${{ runner.os }}-npm-storage-dexie-x4-
 
       - name: install npm dependencies
-        run: npm install
+        run: npm install || (sleep 15 && npm install) || (sleep 15 && npm install)
 
       - name: build
         run: npm run build
@@ -178,7 +178,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-npm-memory-x4-
 
-      - run: npm install
+      - run: npm install || (sleep 15 && npm install) || (sleep 15 && npm install)
 
       - run: npm run build
 
@@ -195,7 +195,7 @@ jobs:
       - name: node example
         working-directory: ./examples/node
         run: |
-          npm install
+          npm install || (sleep 15 && npm install) || (sleep 15 && npm install)
           npm run test
 
   storage-remote:
@@ -221,7 +221,7 @@ jobs:
             ${{ runner.os }}-npm-remote-x4-
 
       - name: install npm dependencies
-        run: npm install
+        run: npm install || (sleep 15 && npm install) || (sleep 15 && npm install)
 
       - name: build
         run: npm run build
@@ -269,9 +269,9 @@ jobs:
         run: sh ./scripts/start-foundationdb-docker.sh
 
       - name: install npm dependencies
-        run: npm install
+        run: npm install || (sleep 15 && npm install) || (sleep 15 && npm install)
 
-      - run: npm install foundationdb@2.0.1
+      - run: npm install foundationdb@2.0.1 || (sleep 15 && npm install foundationdb@2.0.1) || (sleep 15 && npm install foundationdb@2.0.1)
 
       - name: build
         run: npm run build
@@ -304,7 +304,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-npm-storage-sqlite-trial-x4-
 
-      - run: npm install
+      - run: npm install || (sleep 15 && npm install) || (sleep 15 && npm install)
       - run: npm run build
       - run: npm run test:node:sqlite-trial
 
@@ -338,7 +338,7 @@ jobs:
           mongodb-replica-set: rs0
 
       - name: install npm dependencies
-        run: npm install
+        run: npm install || (sleep 15 && npm install) || (sleep 15 && npm install)
       - run: npm run build
 
       - run: node ./config/mongodb-connection-tester.js
@@ -377,7 +377,7 @@ jobs:
 
       - name: prepare RxDB core
         run: |
-          npm install --legacy-peer-deps
+          npm install --legacy-peer-deps || (sleep 15 && npm install --legacy-peer-deps) || (sleep 15 && npm install --legacy-peer-deps)
           npm run build
           rm -r node_modules
 
@@ -430,7 +430,7 @@ jobs:
 
       - name: prepare RxDB core
         run: |
-          npm install
+          npm install || (sleep 15 && npm install) || (sleep 15 && npm install)
           npm run build
 
       - name: measure build size
@@ -441,7 +441,7 @@ jobs:
       - name: npm run docs:build
         run: |
           npm -v
-          (cd docs-src && npm install)
+          (cd docs-src && (npm install || (sleep 15 && npm install) || (sleep 15 && npm install)))
           npm run docs:build
 
   test-code-style:
@@ -500,7 +500,7 @@ jobs:
 
       - name: prepare RxDB core
         run: |
-          npm install
+          npm install || (sleep 15 && npm install) || (sleep 15 && npm install)
           npm run build
       - name: test:deps
         run: npm run test:deps
@@ -532,14 +532,14 @@ jobs:
           chrome-version: 141
       - name: prepare RxDB core
         run: |
-          npm install --legacy-peer-deps
+          npm install --legacy-peer-deps || (sleep 15 && npm install --legacy-peer-deps) || (sleep 15 && npm install --legacy-peer-deps)
           npm run build
 
       - name: electron install
         working-directory: ./examples/electron
         run: |
           npm run preinstall
-          npm install --legacy-peer-deps
+          npm install --legacy-peer-deps || (sleep 15 && npm install --legacy-peer-deps) || (sleep 15 && npm install --legacy-peer-deps)
 
       - name: electron test
         uses: coactions/setup-xvfb@v1
@@ -583,13 +583,13 @@ jobs:
         run: cargo install tauri-driver --locked
       - name: prepare RxDB core
         run: |
-          npm install --legacy-peer-deps
+          npm install --legacy-peer-deps || (sleep 15 && npm install --legacy-peer-deps) || (sleep 15 && npm install --legacy-peer-deps)
           npm run build
       - name: tauri install
         working-directory: ./examples/tauri
         run: |
           npm run preinstall
-          npm install --legacy-peer-deps -D
+          npm install --legacy-peer-deps -D || (sleep 15 && npm install --legacy-peer-deps -D) || (sleep 15 && npm install --legacy-peer-deps -D)
       - name: tauri test
         uses: coactions/setup-xvfb@v1
         with:
@@ -613,14 +613,14 @@ jobs:
 
       - name: prepare RxDB core
         run: |
-          npm install --legacy-peer-deps
+          npm install --legacy-peer-deps || (sleep 15 && npm install --legacy-peer-deps) || (sleep 15 && npm install --legacy-peer-deps)
           npm run build
           rm -r node_modules
       - name: react install
         working-directory: ./examples/react
         run: |
           npm run preinstall
-          npm install --legacy-peer-deps
+          npm install --legacy-peer-deps || (sleep 15 && npm install --legacy-peer-deps) || (sleep 15 && npm install --legacy-peer-deps)
           npm run build
 
       - name: react test
@@ -645,14 +645,14 @@ jobs:
 
       - name: prepare RxDB core
         run: |
-          npm install --legacy-peer-deps
+          npm install --legacy-peer-deps || (sleep 15 && npm install --legacy-peer-deps) || (sleep 15 && npm install --legacy-peer-deps)
           npm run build
           rm -rf node_modules
       - name: react-native test dev
         run: |
           cd ./examples/react-native
           npm run preinstall
-          npm i install --legacy-peer-deps
+          npm i install --legacy-peer-deps || (sleep 15 && npm i install --legacy-peer-deps) || (sleep 15 && npm i install --legacy-peer-deps)
           npm run test
 
       - name: react-native test bundle
@@ -678,14 +678,14 @@ jobs:
           node-version-file: ".nvmrc"
       - name: prepare RxDB core
         run: |
-          npm install --legacy-peer-deps
+          npm install --legacy-peer-deps || (sleep 15 && npm install --legacy-peer-deps) || (sleep 15 && npm install --legacy-peer-deps)
           npm run build
           rm -r node_modules
       - name: vue build
         working-directory: ./examples/vue
         run: |
           npm run preinstall
-          npm install --legacy-peer-deps
+          npm install --legacy-peer-deps || (sleep 15 && npm install --legacy-peer-deps) || (sleep 15 && npm install --legacy-peer-deps)
           npm run lint
           npm run build
 
@@ -714,14 +714,14 @@ jobs:
           node-version-file: ".nvmrc"
       - name: prepare RxDB core
         run: |
-          npm install --legacy-peer-deps
+          npm install --legacy-peer-deps || (sleep 15 && npm install --legacy-peer-deps) || (sleep 15 && npm install --legacy-peer-deps)
           npm run build
           rm -r node_modules
       - name: svelte build
         working-directory: ./examples/svelte
         run: |
           npm run preinstall
-          npm install --legacy-peer-deps
+          npm install --legacy-peer-deps || (sleep 15 && npm install --legacy-peer-deps) || (sleep 15 && npm install --legacy-peer-deps)
           npm run build
 
       - name: svelte test
@@ -748,14 +748,14 @@ jobs:
           node-version-file: ".nvmrc"
       - name: prepare RxDB core
         run: |
-          npm install --legacy-peer-deps
+          npm install --legacy-peer-deps || (sleep 15 && npm install --legacy-peer-deps) || (sleep 15 && npm install --legacy-peer-deps)
           npm run build
           rm -r node_modules
       - name: vite vanilla ts build
         working-directory: ./examples/vite-vanilla-ts
         run: |
           npm run preinstall
-          npm install --legacy-peer-deps
+          npm install --legacy-peer-deps || (sleep 15 && npm install --legacy-peer-deps) || (sleep 15 && npm install --legacy-peer-deps)
           npm run build
       - name: vite vanilla ts test
         uses: coactions/setup-xvfb@v1
@@ -781,14 +781,14 @@ jobs:
           node-version-file: ".nvmrc"
       - name: prepare RxDB core
         run: |
-          npm install --legacy-peer-deps
+          npm install --legacy-peer-deps || (sleep 15 && npm install --legacy-peer-deps) || (sleep 15 && npm install --legacy-peer-deps)
           npm run build
 
       - name: install
         working-directory: ./examples/graphql
         run: |
           npm run preinstall
-          npm install --legacy-peer-deps
+          npm install --legacy-peer-deps || (sleep 15 && npm install --legacy-peer-deps) || (sleep 15 && npm install --legacy-peer-deps)
       - name: build
         working-directory: ./examples/graphql
         run: npm run build
@@ -860,12 +860,12 @@ jobs:
           node-version-file: ".nvmrc"
       - name: prepare RxDB core
         run: |
-          npm install
+          npm install || (sleep 15 && npm install) || (sleep 15 && npm install)
           npm run build
       - name: test tutorials
         working-directory: ./test/tutorials/
         run: |
-          npm install
+          npm install || (sleep 15 && npm install) || (sleep 15 && npm install)
           npm test
 
   # TODO this fails randomly because it will not always know about the project after running the import
@@ -958,7 +958,7 @@ jobs:
 
       - name: prepare RxDB core
         run: |
-          npm install
+          npm install || (sleep 15 && npm install) || (sleep 15 && npm install)
           npm run build
 
           
@@ -1006,7 +1006,7 @@ jobs:
 
       - name: prepare RxDB core
         run: |
-          npm install
+          npm install || (sleep 15 && npm install) || (sleep 15 && npm install)
           npm run build
 
       # bun
