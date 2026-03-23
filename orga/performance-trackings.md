@@ -2312,3 +2312,59 @@ WITH UNIQUE:
     "4x-count": 1.54,
     "property-access": 3.81
 }
+
+
+## IndexedDB wal branch prediction - 23. March 2026
+
+BEFORE (best 2 of 3 runs):
+
+LOG LOG: '{
+    "description": "indexeddb",
+    "collectionsAmount": 4,
+    "docsAmount": 3000,
+    "time-to-first-insert": 4.75,
+    "insert-documents-500": 11.49,
+    "find-by-ids-3000": 81.35,
+    "serial-inserts-50": 19.75,
+    "serial-find-by-id-50": 14.2,
+    "find-by-query": 59.8,
+    "find-by-query-parallel-4": 44.5,
+    "4x-count": 20.55,
+    "property-access": 6.05
+}'
+
+
+LOG LOG: '{
+    "description": "indexeddb",
+    "collectionsAmount": 4,
+    "docsAmount": 3000,
+    "time-to-first-insert": 5,
+    "insert-documents-500": 10.83,
+    "find-by-ids-3000": 81.3,
+    "serial-inserts-50": 20.8,
+    "serial-find-by-id-50": 15.25,
+    "find-by-query": 59.45,
+    "find-by-query-parallel-4": 44.05,
+    "4x-count": 20.65,
+    "property-access": 6.2
+}'
+
+
+AFTER:
+
+LOG LOG: '{
+    "description": "indexeddb",
+    "collectionsAmount": 4,
+    "docsAmount": 3000,
+    "time-to-first-insert": 5.3,
+    "insert-documents-500": 10.06,
+    "find-by-ids-3000": 83.75,
+    "serial-inserts-50": 17.3,
+    "serial-find-by-id-50": 7.8,
+    "find-by-query": 61.1,
+    "find-by-query-parallel-4": 43.7,
+    "4x-count": 18.95,
+    "property-access": 6.25
+}'
+
+

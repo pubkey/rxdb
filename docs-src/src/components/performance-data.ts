@@ -24,13 +24,13 @@ export const PERFORMANCE_METRICS = [
 export const PERFORMANCE_BROWSER_INDEXEDDB: RxStoragePerformanceMeasurement = {
     name: 'IndexedDB',
     'time-to-first-insert': 4.65,
-    'insert-documents-500': 10.66,
+    'insert-documents-500': 10.05,
     'find-by-ids-3000': 80.55,
-    'serial-inserts-50': 20.95,
-    'serial-find-by-id-50': 13.05,
+    'serial-inserts-50': 18.85,
+    'serial-find-by-id-50': 8.6,
     'find-by-query': 59.55,
     'find-by-query-parallel-4': 43.6,
-    '4x-count': 19.55
+    '4x-count': 18.05
 };
 
 export const PERFORMANCE_BROWSER_DEXIE: RxStoragePerformanceMeasurement = {
