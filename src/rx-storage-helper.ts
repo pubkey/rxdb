@@ -278,7 +278,7 @@ export function categorizeBulkWriteRows<RxDocType>(
             const previous = writeRow.previous;
             const docId = document[primaryPath] as string;
 
-            let documentInDb: RxDocumentData<RxDocType> | undefined;
+            let documentInDb: RxDocumentData<RxDocType> | undefined = undefined as any;
             if (hasDocsInDb) {
                 documentInDb = docsInDb.get(docId);
             }
@@ -529,7 +529,7 @@ export function categorizeBulkWriteRows<RxDocType>(
                 if (previousDeleted && !documentDeleted) {
                     operation = 'INSERT';
                     eventDocumentData = stripAttachmentsDataFromDocument(document) as any;
-                } else if (previous && !previousDeleted && !documentDeleted) {
+                } else if (!previousDeleted && !documentDeleted) {
                     operation = 'UPDATE';
                     eventDocumentData = stripAttachmentsDataFromDocument(document) as any;
                     previousEventDocumentData = previous;
@@ -1058,6 +1058,11 @@ export function getWrittenDocumentsFromBulkWriteResponse<RxDocType>(
             if (!realWriteRows) {
                 realWriteRows = writeRows;
             }
+            /**
+             * Use !== false so that undefined (response not from wrapped storage)
+             * defaults to true for safety, ensuring attachment data is always stripped
+             * when the schema info is unknown.
+             */
             const needsStrip = BULK_WRITE_HAS_ATTACHMENTS.get(response) !== false;
             if (response.error.length > 0 || reInsertIds) {
                 const errorIds = reInsertIds ? reInsertIds : new Set<string>();
