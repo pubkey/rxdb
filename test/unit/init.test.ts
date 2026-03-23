@@ -35,15 +35,16 @@ if (!isNode) {
         window.addEventListener('unhandledrejection', (event) => {
             console.error('init.test.ts: browser unhandledrejection:');
             const reason = event.reason;
-            if (reason instanceof Error) {
+            if (reason && typeof reason === 'object' && 'message' in reason) {
                 console.error(reason.message);
-                console.error(reason.stack);
+                console.error(reason.stack || new Error('unhandledrejection').stack);
             } else {
                 try {
                     console.error(JSON.stringify(reason));
                 } catch (_err) {
                     console.error(String(reason));
                 }
+                console.error(new Error('unhandledrejection').stack);
             }
         });
 
@@ -51,14 +52,15 @@ if (!isNode) {
             console.error('init.test.ts: browser uncaught error:');
             console.error(event.message);
             if (event.error) {
-                if (event.error instanceof Error) {
-                    console.error(event.error.stack);
+                if (event.error && typeof event.error === 'object' && 'message' in event.error) {
+                    console.error(event.error.stack || new Error('uncaught error').stack);
                 } else {
                     try {
                         console.error(JSON.stringify(event.error));
                     } catch (_err) {
                         console.error(String(event.error));
                     }
+                    console.error(new Error('uncaught error').stack);
                 }
             }
             if (event.filename) {

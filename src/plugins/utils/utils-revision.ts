@@ -9,13 +9,22 @@ import { newRxError } from '../../rx-error.ts';
  * then use getHeightOfRevision() instead which is faster.
  */
 export function parseRevision(revision: string): { height: number; hash: string; } {
-    const split = revision.split('-');
-    if (split.length !== 2) {
+    const dashIndex = revision.indexOf('-');
+    if (dashIndex === -1) {
         throw new Error('malformatted revision: ' + revision);
     }
+    let height: number;
+    if (dashIndex === 1) {
+        height = revision.charCodeAt(0) - 48;
+    } else {
+        height = 0;
+        for (let i = 0; i < dashIndex; i++) {
+            height = height * 10 + (revision.charCodeAt(i) - 48);
+        }
+    }
     return {
-        height: parseInt(split[0], 10),
-        hash: split[1]
+        height,
+        hash: revision.substring(dashIndex + 1)
     };
 }
 
@@ -33,12 +42,14 @@ export function getHeightOfRevision(revision: string): number {
     }
     // Fast path for single-digit revision heights (most common case)
     if (dashIndex === 1) {
-        const code = revision.charCodeAt(0);
-        if (code >= 48 && code <= 57) { // '0'-'9'
-            return code - 48;
-        }
+        return revision.charCodeAt(0) - 48;
     }
-    return parseInt(revision.substring(0, dashIndex), 10);
+    // Manual number parsing for multi-digit heights (avoids parseInt + substring)
+    let num = 0;
+    for (let i = 0; i < dashIndex; i++) {
+        num = num * 10 + (revision.charCodeAt(i) - 48);
+    }
+    return num;
 }
 
 

@@ -26,6 +26,9 @@ import {
     clone,
     errorToPlainJson,
     trimDots
+    parseRevision,
+    getHeightOfRevision,
+    createRevision
 } from '../../plugins/core/index.mjs';
 import config from './config.ts';
 
@@ -228,6 +231,80 @@ describe('util.test.js', () => {
                 }
             });
 
+        });
+        it('should always be strictly monotonically increasing', () => {
+            let previous = 0;
+            for (let i = 0; i < 1000; i++) {
+                const value = now();
+                assert.ok(
+                    value > previous,
+                    'now() value ' + value + ' must be greater than previous ' + previous + ' at iteration ' + i
+                );
+                previous = value;
+            }
+        });
+        it('should always have maximum two decimal places', () => {
+            for (let i = 0; i < 1000; i++) {
+                const value = now();
+                const asString = value.toString();
+                const afterDot = asString.split('.')[1];
+                if (afterDot && afterDot.length > 2) {
+                    throw new Error('too many decimals on ' + asString + ' at iteration ' + i);
+                }
+            }
+        });
+        it('should handle the sub-millisecond counter overflow (99 to next ms) correctly', () => {
+            /**
+             * Call now() many times in a tight loop so that
+             * we are guaranteed to exceed 99 calls within a single millisecond,
+             * triggering the counter overflow where _lastNowSub reaches 100
+             * and _lastNowMs is incremented.
+             */
+            const values: number[] = [];
+            for (let i = 0; i < 500; i++) {
+                values.push(now());
+            }
+
+            // All values must be unique
+            const uniqueValues = new Set(values);
+            assert.strictEqual(uniqueValues.size, values.length, 'all values must be unique');
+
+            // All values must be strictly increasing
+            for (let i = 1; i < values.length; i++) {
+                assert.ok(
+                    values[i] > values[i - 1],
+                    'value at index ' + i + ' (' + values[i] + ') must be greater than value at index ' + (i - 1) + ' (' + values[i - 1] + ')'
+                );
+            }
+
+            // All values must have maximum two decimal places
+            for (const val of values) {
+                const afterDot = val.toString().split('.')[1];
+                if (afterDot && afterDot.length > 2) {
+                    throw new Error('too many decimals on ' + val.toString());
+                }
+            }
+
+            /**
+             * Check that the overflow happened by verifying
+             * that consecutive values can cross a millisecond boundary.
+             * Look for a pair where the integer part increases by 1
+             * while the previous value had a non-zero decimal.
+             */
+            let overflowFound = false;
+            for (let i = 1; i < values.length; i++) {
+                const prevMs = Math.floor(values[i - 1]);
+                const currMs = Math.floor(values[i]);
+                const prevSub = Math.round((values[i - 1] - prevMs) * 100);
+                if (currMs > prevMs && prevSub > 1) {
+                    overflowFound = true;
+                    break;
+                }
+            }
+            assert.ok(
+                overflowFound,
+                'should have observed a sub-millisecond counter overflow across 500 rapid calls'
+            );
         });
     });
     describe('base64 helpers', () => {
@@ -612,6 +689,97 @@ describe('util.test.js', () => {
                     throw new Error('string has wrong length(is: ' + str.length + ', should:' + length + '): "' + str + '"');
                 }
             }
+        });
+    });
+    describe('.parseRevision()', () => {
+        it('should parse a single-digit height', () => {
+            const result = parseRevision('1-abc');
+            assert.strictEqual(result.height, 1);
+            assert.strictEqual(result.hash, 'abc');
+        });
+        it('should parse a two-digit height', () => {
+            const result = parseRevision('42-foobar');
+            assert.strictEqual(result.height, 42);
+            assert.strictEqual(result.hash, 'foobar');
+        });
+        it('should parse a three-digit height', () => {
+            const result = parseRevision('123-xyz');
+            assert.strictEqual(result.height, 123);
+            assert.strictEqual(result.hash, 'xyz');
+        });
+        it('should parse a four-digit height', () => {
+            const result = parseRevision('1234-hash123');
+            assert.strictEqual(result.height, 1234);
+            assert.strictEqual(result.hash, 'hash123');
+        });
+        it('should parse a large height', () => {
+            const result = parseRevision('999999-longhash');
+            assert.strictEqual(result.height, 999999);
+            assert.strictEqual(result.hash, 'longhash');
+        });
+        it('should parse height 0', () => {
+            const result = parseRevision('0-zerohash');
+            assert.strictEqual(result.height, 0);
+            assert.strictEqual(result.hash, 'zerohash');
+        });
+        it('should throw on malformatted revision without dash', () => {
+            assert.throws(() => parseRevision('nope'));
+        });
+    });
+    describe('.getHeightOfRevision()', () => {
+        it('should get height from a single-digit revision', () => {
+            assert.strictEqual(getHeightOfRevision('1-abc'), 1);
+        });
+        it('should get height from a two-digit revision', () => {
+            assert.strictEqual(getHeightOfRevision('42-foobar'), 42);
+        });
+        it('should get height from a three-digit revision', () => {
+            assert.strictEqual(getHeightOfRevision('123-xyz'), 123);
+        });
+        it('should get height from a four-digit revision', () => {
+            assert.strictEqual(getHeightOfRevision('1234-hash123'), 1234);
+        });
+        it('should get height from a large revision', () => {
+            assert.strictEqual(getHeightOfRevision('999999-longhash'), 999999);
+        });
+        it('should get height 0', () => {
+            assert.strictEqual(getHeightOfRevision('0-zerohash'), 0);
+        });
+        it('should get all single-digit heights correctly', () => {
+            for (let i = 0; i <= 9; i++) {
+                assert.strictEqual(getHeightOfRevision(i + '-hash'), i);
+            }
+        });
+    });
+    describe('.createRevision()', () => {
+        it('should create a revision with height 1 for new documents', () => {
+            const rev = createRevision('mytoken');
+            assert.strictEqual(rev, '1-mytoken');
+            assert.strictEqual(getHeightOfRevision(rev), 1);
+        });
+        it('should increment the height for existing documents', () => {
+            const token = 'mytoken';
+            const previousDocData = {
+                _rev: '5-oldtoken',
+                _attachments: {},
+                _deleted: false,
+                _meta: { lwt: 0 }
+            } as any;
+            const rev = createRevision(token, previousDocData);
+            assert.strictEqual(rev, '6-mytoken');
+            assert.strictEqual(getHeightOfRevision(rev), 6);
+        });
+        it('should increment correctly from a multi-digit height', () => {
+            const token = 'mytoken';
+            const previousDocData = {
+                _rev: '99-oldtoken',
+                _attachments: {},
+                _deleted: false,
+                _meta: { lwt: 0 }
+            } as any;
+            const rev = createRevision(token, previousDocData);
+            assert.strictEqual(rev, '100-mytoken');
+            assert.strictEqual(getHeightOfRevision(rev), 100);
         });
     });
 });

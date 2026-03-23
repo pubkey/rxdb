@@ -2,12 +2,17 @@ export function runXTimes(xTimes: number, fn: (idx: number) => void) {
     new Array(xTimes).fill(0).forEach((_v, idx) => fn(idx));
 }
 
+/**
+ * Move the throw into a separate function
+ * so that V8 can better inline the main ensureNotFalsy function.
+ */
+function ensureNotFalsyThrow(message?: string): never {
+    throw new Error('ensureNotFalsy() is falsy: ' + (message || ''));
+}
+
 export function ensureNotFalsy<T>(obj: T | false | undefined | null, message?: string): T {
     if (!obj) {
-        if (!message) {
-            message = '';
-        }
-        throw new Error('ensureNotFalsy() is falsy: ' + message);
+        ensureNotFalsyThrow(message);
     }
     return obj;
 }
