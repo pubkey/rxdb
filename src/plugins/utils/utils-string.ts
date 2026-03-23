@@ -39,6 +39,7 @@ export function ucfirst(str: string): string {
 export function trimDots(str: string): string {
     let start = 0;
     let end = str.length;
+    // charCode 46 is a dot ('.')
     while (start < end && str.charCodeAt(start) === 46) {
         start++;
     }
