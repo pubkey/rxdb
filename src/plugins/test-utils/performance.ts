@@ -58,6 +58,13 @@ export type PerformanceTestConfig = {
      * and the schema will mark applicable fields as encrypted.
      */
     password?: any;
+    /**
+     * Whether to run read-based performance tests
+     * like find-by-ids, find-by-query, count etc.
+     * Set to false to only run write-based tests.
+     * @default true
+     */
+    readTests?: boolean;
 };
 
 export type PerformanceTestResult = {
@@ -92,6 +99,7 @@ export async function runPerformanceTests(
         log = true,
         password
     } = config;
+    const readTests = config.readTests !== false;
 
     const totalTimes: { [k: string]: number[]; } = {};
 
@@ -203,18 +211,20 @@ export async function runPerformanceTests(
             await awaitBetweenTest(waitBetweenTests);
         }
 
-        // refresh db to ensure we do not run on caches
-        collection = await createDbWithCollections();
-        await awaitBetweenTest(waitBetweenTests);
+        if (readTests) {
+            // refresh db to ensure we do not run on caches
+            collection = await createDbWithCollections();
+            await awaitBetweenTest(waitBetweenTests);
 
-        /**
-         * Bulk Find by id
-         */
-        updateTime();
-        const idsResult = await collection.findByIds(docIds).exec();
-        updateTime('find-by-ids-' + docsAmount);
-        assert.strictEqual(Array.from(idsResult.keys()).length, docsAmount, 'find-by-id amount');
-        await awaitBetweenTest(waitBetweenTests);
+            /**
+             * Bulk Find by id
+             */
+            updateTime();
+            const idsResult = await collection.findByIds(docIds).exec();
+            updateTime('find-by-ids-' + docsAmount);
+            assert.strictEqual(Array.from(idsResult.keys()).length, docsAmount, 'find-by-id amount');
+            await awaitBetweenTest(waitBetweenTests);
+        }
 
         /**
          * Serial inserts
@@ -232,86 +242,88 @@ export async function runPerformanceTests(
         }
         updateTime('serial-inserts-' + serialDocsAmount);
 
-        // refresh db to ensure we do not run on caches
-        collection = await createDbWithCollections();
-        await awaitBetweenTest(waitBetweenTests);
+        if (readTests) {
+            // refresh db to ensure we do not run on caches
+            collection = await createDbWithCollections();
+            await awaitBetweenTest(waitBetweenTests);
 
-        /**
-         * Serial find-by-id
-         */
-        updateTime();
-        for (const id of serialIds) {
-            await collection.findByIds([id]).exec();
-        }
-        updateTime('serial-find-by-id-' + serialDocsAmount);
-        await awaitBetweenTest(waitBetweenTests);
+            /**
+             * Serial find-by-id
+             */
+            updateTime();
+            for (const id of serialIds) {
+                await collection.findByIds([id]).exec();
+            }
+            updateTime('serial-find-by-id-' + serialDocsAmount);
+            await awaitBetweenTest(waitBetweenTests);
 
-        // find by query
-        updateTime();
-        const query = collection.find({
-            selector: {},
-            sort: [
-                { var2: 'asc' },
-                { var1: 'asc' }
-            ]
-        });
-        const queryResult = await query.exec();
-        updateTime('find-by-query');
-        assert.strictEqual(queryResult.length, docsAmount + serialDocsAmount, 'find-by-query');
+            // find by query
+            updateTime();
+            const query = collection.find({
+                selector: {},
+                sort: [
+                    { var2: 'asc' },
+                    { var1: 'asc' }
+                ]
+            });
+            const queryResult = await query.exec();
+            updateTime('find-by-query');
+            assert.strictEqual(queryResult.length, docsAmount + serialDocsAmount, 'find-by-query');
 
-        // refresh db to ensure we do not run on caches
-        collection = await createDbWithCollections();
-        await awaitBetweenTest(waitBetweenTests);
+            // refresh db to ensure we do not run on caches
+            collection = await createDbWithCollections();
+            await awaitBetweenTest(waitBetweenTests);
 
-        // find by multiple queries in parallel
-        updateTime();
-        const parallelResult = await Promise.all(
-            new Array(parallelQueryAmount).fill(0).map((_v, idx) => {
-                const subQuery = collection.find({
+            // find by multiple queries in parallel
+            updateTime();
+            const parallelResult = await Promise.all(
+                new Array(parallelQueryAmount).fill(0).map((_v, idx) => {
+                    const subQuery = collection.find({
+                        selector: {
+                            var2: idx
+                        }
+                    });
+                    return subQuery.exec();
+                })
+            );
+            updateTime('find-by-query-parallel-' + parallelQueryAmount);
+            let parallelSum = 0;
+            parallelResult.forEach(r => parallelSum = parallelSum + r.length);
+            assert.strictEqual(parallelSum, docsAmount, 'parallelSum');
+            await awaitBetweenTest(waitBetweenTests);
+
+            // run count query
+            updateTime();
+            let t = 0;
+            while (t < parallelQueryAmount) {
+                const countQuery = collection.count({
                     selector: {
-                        var2: idx
+                        var2: {
+                            $eq: t
+                        }
                     }
                 });
-                return subQuery.exec();
-            })
-        );
-        updateTime('find-by-query-parallel-' + parallelQueryAmount);
-        let parallelSum = 0;
-        parallelResult.forEach(r => parallelSum = parallelSum + r.length);
-        assert.strictEqual(parallelSum, docsAmount, 'parallelSum');
-        await awaitBetweenTest(waitBetweenTests);
+                const countQueryResult = await countQuery.exec();
+                assert.ok(countQueryResult >= ((docsAmount / insertBatches) - 5), 'count A ' + countQueryResult);
+                assert.ok(countQueryResult < (docsAmount * 0.8), 'count B ' + countQueryResult);
+                t++;
+            }
+            updateTime('4x-count');
+            await awaitBetweenTest(waitBetweenTests);
 
-        // run count query
-        updateTime();
-        let t = 0;
-        while (t < parallelQueryAmount) {
-            const countQuery = collection.count({
-                selector: {
-                    var2: {
-                        $eq: t
-                    }
-                }
-            });
-            const countQueryResult = await countQuery.exec();
-            assert.ok(countQueryResult >= ((docsAmount / insertBatches) - 5), 'count A ' + countQueryResult);
-            assert.ok(countQueryResult < (docsAmount * 0.8), 'count B ' + countQueryResult);
-            t++;
+            // test property access time
+            updateTime();
+            let sum = 0;
+            for (let i = 0; i < queryResult.length; i++) {
+                const doc = queryResult[i];
+
+                // access the same property exactly 2 times
+                sum += doc.deep.deeper.deepNr;
+                sum += doc.deep.deeper.deepNr;
+            }
+            updateTime('property-access');
+            assert.ok(sum > 10);
         }
-        updateTime('4x-count');
-        await awaitBetweenTest(waitBetweenTests);
-
-        // test property access time
-        updateTime();
-        let sum = 0;
-        for (let i = 0; i < queryResult.length; i++) {
-            const doc = queryResult[i];
-
-            // access the same property exactly 2 times
-            sum += doc.deep.deeper.deepNr;
-            sum += doc.deep.deeper.deepNr;
-        }
-        updateTime('property-access');
-        assert.ok(sum > 10);
 
         await collection.database.remove();
     }
