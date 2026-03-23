@@ -186,6 +186,80 @@ describe('util.test.js', () => {
             });
 
         });
+        it('should always be strictly monotonically increasing', () => {
+            let previous = 0;
+            for (let i = 0; i < 1000; i++) {
+                const value = now();
+                assert.ok(
+                    value > previous,
+                    'now() value ' + value + ' must be greater than previous ' + previous + ' at iteration ' + i
+                );
+                previous = value;
+            }
+        });
+        it('should always have maximum two decimal places', () => {
+            for (let i = 0; i < 1000; i++) {
+                const value = now();
+                const asString = value.toString();
+                const afterDot = asString.split('.')[1];
+                if (afterDot && afterDot.length > 2) {
+                    throw new Error('too many decimals on ' + asString + ' at iteration ' + i);
+                }
+            }
+        });
+        it('should handle the sub-millisecond counter overflow (99 to next ms) correctly', () => {
+            /**
+             * Call now() many times in a tight loop so that
+             * we are guaranteed to exceed 99 calls within a single millisecond,
+             * triggering the counter overflow where _lastNowSub reaches 100
+             * and _lastNowMs is incremented.
+             */
+            const values: number[] = [];
+            for (let i = 0; i < 500; i++) {
+                values.push(now());
+            }
+
+            // All values must be unique
+            const uniqueValues = new Set(values);
+            assert.strictEqual(uniqueValues.size, values.length, 'all values must be unique');
+
+            // All values must be strictly increasing
+            for (let i = 1; i < values.length; i++) {
+                assert.ok(
+                    values[i] > values[i - 1],
+                    'value at index ' + i + ' (' + values[i] + ') must be greater than value at index ' + (i - 1) + ' (' + values[i - 1] + ')'
+                );
+            }
+
+            // All values must have maximum two decimal places
+            for (const val of values) {
+                const afterDot = val.toString().split('.')[1];
+                if (afterDot && afterDot.length > 2) {
+                    throw new Error('too many decimals on ' + val.toString());
+                }
+            }
+
+            /**
+             * Check that the overflow happened by verifying
+             * that consecutive values can cross a millisecond boundary.
+             * Look for a pair where the integer part increases by 1
+             * while the previous value had a non-zero decimal.
+             */
+            let overflowFound = false;
+            for (let i = 1; i < values.length; i++) {
+                const prevMs = Math.floor(values[i - 1]);
+                const currMs = Math.floor(values[i]);
+                const prevSub = Math.round((values[i - 1] - prevMs) * 100);
+                if (currMs > prevMs && prevSub > 1) {
+                    overflowFound = true;
+                    break;
+                }
+            }
+            assert.ok(
+                overflowFound,
+                'should have observed a sub-millisecond counter overflow across 500 rapid calls'
+            );
+        });
     });
     describe('base64 helpers', () => {
         it('should correctly encode/decode in a circle', () => {
