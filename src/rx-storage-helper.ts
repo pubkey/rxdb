@@ -284,54 +284,50 @@ export function categorizeBulkWriteRows<RxDocType>(
              * It is possible to insert already deleted documents,
              * this can happen on replication.
              */
-            const insertedIsDeleted = documentDeleted ? true : false;
             if (hasAttachments) {
-                Object
-                    .entries(document._attachments)
-                    .forEach(([attachmentId, attachmentData]) => {
-                        if (
-                            !(attachmentData as RxAttachmentWriteData).data
-                        ) {
-                            attachmentError = {
-                                documentId: docId,
-                                isError: true,
-                                status: 510,
-                                writeRow,
-                                attachmentId,
-                                context
-                            };
-                            errors.push(attachmentError);
-                        } else {
-                            attachmentsAdd.push({
-                                documentId: docId,
-                                attachmentId,
-                                attachmentData: attachmentData as any,
-                                digest: attachmentData.digest
-                            });
-                        }
-                    });
-            }
-            if (!attachmentError) {
-                if (hasAttachments) {
-                    bulkInsertDocs.push(stripAttachmentsDataFromRow(writeRow));
-                    if (onInsert) {
-                        onInsert(document);
-                    }
-                } else {
-                    bulkInsertDocs.push(writeRow as any);
-                    if (onInsert) {
-                        onInsert(document);
+                const atts = document._attachments;
+                const attKeys = Object.keys(atts);
+                for (let a = 0; a < attKeys.length; a++) {
+                    const attachmentId = attKeys[a];
+                    const attachmentData = atts[attachmentId];
+                    if (
+                        !(attachmentData as RxAttachmentWriteData).data
+                    ) {
+                        attachmentError = {
+                            documentId: docId,
+                            isError: true,
+                            status: 510,
+                            writeRow,
+                            attachmentId,
+                            context
+                        };
+                        errors.push(attachmentError);
+                    } else {
+                        attachmentsAdd.push({
+                            documentId: docId,
+                            attachmentId,
+                            attachmentData: attachmentData as any,
+                            digest: attachmentData.digest
+                        });
                     }
                 }
-
-                newestRow = writeRow as any;
+            }
+            let insertedRow: BulkWriteRowProcessed<RxDocType> | undefined;
+            if (!attachmentError) {
+                const row: BulkWriteRowProcessed<RxDocType> = hasAttachments ? stripAttachmentsDataFromRow(writeRow) : writeRow as any;
+                insertedRow = row;
+                bulkInsertDocs.push(row);
+                if (onInsert) {
+                    onInsert(document);
+                }
+                newestRow = row;
             }
 
-            if (!insertedIsDeleted) {
+            if (!documentDeleted) {
                 const event = {
                     documentId: docId,
                     operation: 'INSERT' as const,
-                    documentData: hasAttachments ? stripAttachmentsDataFromDocument(document) : document as any,
+                    documentData: hasAttachments ? (insertedRow ? insertedRow.document : stripAttachmentsDataFromDocument(document)) : document as any,
                     previousDocumentData: hasAttachments && previous ? stripAttachmentsDataFromDocument(previous) : previous as any
                 };
                 eventBulkEvents.push(event);
@@ -374,69 +370,72 @@ export function categorizeBulkWriteRows<RxDocType>(
                      * Deleted documents must have cleared all their attachments.
                      */
                     if (previous) {
-                        Object
-                            .keys(previous._attachments)
-                            .forEach(attachmentId => {
-                                attachmentsRemove.push({
-                                    documentId: docId,
-                                    attachmentId,
-                                    digest: ensureNotFalsy(previous)._attachments[attachmentId].digest
-                                });
+                        const prevAtts = previous._attachments;
+                        const prevAttKeys = Object.keys(prevAtts);
+                        for (let a = 0; a < prevAttKeys.length; a++) {
+                            const attachmentId = prevAttKeys[a];
+                            attachmentsRemove.push({
+                                documentId: docId,
+                                attachmentId,
+                                digest: prevAtts[attachmentId].digest
                             });
+                        }
                     }
                 } else {
                     // first check for errors
-                    Object
-                        .entries(document._attachments)
-                        .find(([attachmentId, attachmentData]) => {
-                            const previousAttachmentData = previous ? previous._attachments[attachmentId] : undefined;
-                            if (
-                                !previousAttachmentData &&
-                                !(attachmentData as RxAttachmentWriteData).data
-                            ) {
-                                attachmentError = {
-                                    documentId: docId,
-                                    documentInDb: documentInDb as any,
-                                    isError: true,
-                                    status: 510,
-                                    writeRow,
-                                    attachmentId,
-                                    context
-                                };
-                            }
-                            return true;
-                        });
+                    const docAtts = document._attachments;
+                    const docAttKeys = Object.keys(docAtts);
+                    for (let a = 0; a < docAttKeys.length; a++) {
+                        const attachmentId = docAttKeys[a];
+                        const attachmentData = docAtts[attachmentId];
+                        const previousAttachmentData = previous ? previous._attachments[attachmentId] : undefined;
+                        if (
+                            !previousAttachmentData &&
+                            !(attachmentData as RxAttachmentWriteData).data
+                        ) {
+                            attachmentError = {
+                                documentId: docId,
+                                documentInDb: documentInDb as any,
+                                isError: true,
+                                status: 510,
+                                writeRow,
+                                attachmentId,
+                                context
+                            };
+                            break;
+                        }
+                    }
                     if (!attachmentError) {
-                        Object
-                            .entries(document._attachments)
-                            .forEach(([attachmentId, attachmentData]) => {
-                                const previousAttachmentData = previous ? previous._attachments[attachmentId] : undefined;
-                                if (!previousAttachmentData) {
-                                    attachmentsAdd.push({
+                        for (let a = 0; a < docAttKeys.length; a++) {
+                            const attachmentId = docAttKeys[a];
+                            const attachmentData = docAtts[attachmentId];
+                            const previousAttachmentData = previous ? previous._attachments[attachmentId] : undefined;
+                            if (!previousAttachmentData) {
+                                attachmentsAdd.push({
+                                    documentId: docId,
+                                    attachmentId,
+                                    attachmentData: attachmentData as any,
+                                    digest: attachmentData.digest
+                                });
+                            } else {
+                                const newDigest = updatedRow.document._attachments[attachmentId].digest;
+                                if (
+                                    (attachmentData as RxAttachmentWriteData).data &&
+                                    /**
+                                     * Performance shortcut,
+                                     * do not update the attachment data if it did not change.
+                                     */
+                                    previousAttachmentData.digest !== newDigest
+                                ) {
+                                    attachmentsUpdate.push({
                                         documentId: docId,
                                         attachmentId,
-                                        attachmentData: attachmentData as any,
+                                        attachmentData: attachmentData as RxAttachmentWriteData,
                                         digest: attachmentData.digest
                                     });
-                                } else {
-                                    const newDigest = updatedRow.document._attachments[attachmentId].digest;
-                                    if (
-                                        (attachmentData as RxAttachmentWriteData).data &&
-                                        /**
-                                         * Performance shortcut,
-                                         * do not update the attachment data if it did not change.
-                                         */
-                                        previousAttachmentData.digest !== newDigest
-                                    ) {
-                                        attachmentsUpdate.push({
-                                            documentId: docId,
-                                            attachmentId,
-                                            attachmentData: attachmentData as RxAttachmentWriteData,
-                                            digest: attachmentData.digest
-                                        });
-                                    }
                                 }
-                            });
+                            }
+                        }
                     }
                 }
             }
@@ -444,16 +443,13 @@ export function categorizeBulkWriteRows<RxDocType>(
             if (attachmentError) {
                 errors.push(attachmentError);
             } else {
-                if (hasAttachments) {
-                    bulkUpdateDocs.push(stripAttachmentsDataFromRow(updatedRow));
-                    if (onUpdate) {
-                        onUpdate(document);
-                    }
-                } else {
-                    bulkUpdateDocs.push(updatedRow);
-                    if (onUpdate) {
-                        onUpdate(document);
-                    }
+                /**
+                 * updatedRow already has attachments stripped (line above),
+                 * so push it directly without stripping again.
+                 */
+                bulkUpdateDocs.push(updatedRow);
+                if (onUpdate) {
+                    onUpdate(document);
                 }
                 newestRow = updatedRow as any;
             }
@@ -464,10 +460,14 @@ export function categorizeBulkWriteRows<RxDocType>(
 
             if (previousDeleted && !documentDeleted) {
                 operation = 'INSERT';
-                eventDocumentData = hasAttachments ? stripAttachmentsDataFromDocument(document) : document as any;
+                /**
+                 * Reuse the already-stripped document from updatedRow
+                 * instead of calling stripAttachmentsDataFromDocument() again.
+                 */
+                eventDocumentData = hasAttachments ? updatedRow.document : document as any;
             } else if (previous && !previousDeleted && !documentDeleted) {
                 operation = 'UPDATE';
-                eventDocumentData = hasAttachments ? stripAttachmentsDataFromDocument(document) : document as any;
+                eventDocumentData = hasAttachments ? updatedRow.document : document as any;
                 previousEventDocumentData = previous;
             } else if (documentDeleted) {
                 operation = 'DELETE';
@@ -541,12 +541,13 @@ export function stripAttachmentsDataFromDocument<RxDocType>(doc: RxDocumentWrite
     }
 
     const useDoc: RxDocumentData<RxDocType> = flatClone(doc) as any;
-    useDoc._attachments = {};
-    Object
-        .entries(doc._attachments)
-        .forEach(([attachmentId, attachmentData]) => {
-            useDoc._attachments[attachmentId] = attachmentWriteDataToNormalData(attachmentData);
-        });
+    const destAtts: Record<string, RxAttachmentData> = {};
+    const attKeys = Object.keys(atts);
+    for (let i = 0; i < attKeys.length; i++) {
+        const attachmentId = attKeys[i];
+        destAtts[attachmentId] = attachmentWriteDataToNormalData(atts[attachmentId]);
+    }
+    useDoc._attachments = destAtts;
     return useDoc;
 }
 
@@ -559,13 +560,10 @@ export function stripAttachmentsDataFromDocument<RxDocType>(doc: RxDocumentWrite
 export function flatCloneDocWithMeta<RxDocType>(
     doc: RxDocumentData<RxDocType>
 ): RxDocumentData<RxDocType> {
-    return Object.assign(
-        {},
-        doc,
-        {
-            _meta: flatClone(doc._meta)
-        }
-    );
+    return {
+        ...doc,
+        _meta: { ...doc._meta }
+    } as any;
 }
 
 export type WrappedRxStorageInstance<RxDocumentType, Internals, InstanceCreationOptions> = RxStorageInstance<RxDocumentType, any, InstanceCreationOptions> & {
