@@ -24,14 +24,14 @@ jobs:
           node-version-file: '.nvmrc'
 
       - name: install npm dependencies
-        run: npm install
+        run: npm install || (sleep 15 && npm install) || (sleep 15 && npm install)
       
       - name: build code
         run: npm run build
       
       - name: build docs
         run: |
-          (cd docs-src && npm install)
+          (cd docs-src && (npm install || (sleep 15 && npm install) || (sleep 15 && npm install)))
           npm run generate:headers
           npm run docs:build
 
