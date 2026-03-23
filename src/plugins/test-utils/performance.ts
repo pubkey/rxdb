@@ -59,12 +59,36 @@ export type PerformanceTestConfig = {
      */
     password?: any;
     /**
-     * Whether to run read-based performance tests
-     * like find-by-ids, find-by-query, count etc.
-     * Set to false to only run write-based tests.
+     * Whether to run the bulk find-by-ids test.
      * @default true
      */
-    readTests?: boolean;
+    testBulkFindByIds?: boolean;
+    /**
+     * Whether to run the serial find-by-id test.
+     * @default true
+     */
+    testSerialFindById?: boolean;
+    /**
+     * Whether to run the find-by-query test.
+     * @default true
+     */
+    testFindByQuery?: boolean;
+    /**
+     * Whether to run the find-by-query-parallel test.
+     * @default true
+     */
+    testFindByQueryParallel?: boolean;
+    /**
+     * Whether to run the count query test.
+     * @default true
+     */
+    testCount?: boolean;
+    /**
+     * Whether to run the property access test.
+     * Requires testFindByQuery to also be enabled.
+     * @default true
+     */
+    testPropertyAccess?: boolean;
 };
 
 export type PerformanceTestResult = {
@@ -99,7 +123,12 @@ export async function runPerformanceTests(
         log = true,
         password
     } = config;
-    const readTests = config.readTests !== false;
+    const testBulkFindByIds = config.testBulkFindByIds !== false;
+    const testSerialFindById = config.testSerialFindById !== false;
+    const testFindByQuery = config.testFindByQuery !== false;
+    const testFindByQueryParallel = config.testFindByQueryParallel !== false;
+    const testCount = config.testCount !== false;
+    const testPropertyAccess = config.testPropertyAccess !== false;
 
     const totalTimes: { [k: string]: number[]; } = {};
 
@@ -211,7 +240,7 @@ export async function runPerformanceTests(
             await awaitBetweenTest(waitBetweenTests);
         }
 
-        if (readTests) {
+        if (testBulkFindByIds) {
             // refresh db to ensure we do not run on caches
             collection = await createDbWithCollections();
             await awaitBetweenTest(waitBetweenTests);
@@ -242,11 +271,13 @@ export async function runPerformanceTests(
         }
         updateTime('serial-inserts-' + serialDocsAmount);
 
-        if (readTests) {
+        if (testSerialFindById || testFindByQuery) {
             // refresh db to ensure we do not run on caches
             collection = await createDbWithCollections();
             await awaitBetweenTest(waitBetweenTests);
+        }
 
+        if (testSerialFindById) {
             /**
              * Serial find-by-id
              */
@@ -256,7 +287,10 @@ export async function runPerformanceTests(
             }
             updateTime('serial-find-by-id-' + serialDocsAmount);
             await awaitBetweenTest(waitBetweenTests);
+        }
 
+        let queryResult: any[] | undefined;
+        if (testFindByQuery) {
             // find by query
             updateTime();
             const query = collection.find({
@@ -266,14 +300,18 @@ export async function runPerformanceTests(
                     { var1: 'asc' }
                 ]
             });
-            const queryResult = await query.exec();
+            queryResult = await query.exec();
             updateTime('find-by-query');
             assert.strictEqual(queryResult.length, docsAmount + serialDocsAmount, 'find-by-query');
+        }
 
+        if (testFindByQueryParallel || testCount) {
             // refresh db to ensure we do not run on caches
             collection = await createDbWithCollections();
             await awaitBetweenTest(waitBetweenTests);
+        }
 
+        if (testFindByQueryParallel) {
             // find by multiple queries in parallel
             updateTime();
             const parallelResult = await Promise.all(
@@ -291,7 +329,9 @@ export async function runPerformanceTests(
             parallelResult.forEach(r => parallelSum = parallelSum + r.length);
             assert.strictEqual(parallelSum, docsAmount, 'parallelSum');
             await awaitBetweenTest(waitBetweenTests);
+        }
 
+        if (testCount) {
             // run count query
             updateTime();
             let t = 0;
@@ -310,7 +350,9 @@ export async function runPerformanceTests(
             }
             updateTime('4x-count');
             await awaitBetweenTest(waitBetweenTests);
+        }
 
+        if (testPropertyAccess && testFindByQuery && queryResult) {
             // test property access time
             updateTime();
             let sum = 0;
