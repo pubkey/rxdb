@@ -37,17 +37,19 @@ export function ucfirst(str: string): string {
  * removes trailing and ending dots from the string
  */
 export function trimDots(str: string): string {
-    // start
-    while (str.charAt(0) === '.') {
-        str = str.substr(1);
+    let start = 0;
+    let end = str.length;
+    // charCode 46 is a dot ('.')
+    while (start < end && str.charCodeAt(start) === 46) {
+        start++;
     }
-
-    // end
-    while (str.slice(-1) === '.') {
-        str = str.slice(0, -1);
+    while (end > start && str.charCodeAt(end - 1) === 46) {
+        end--;
     }
-
-    return str;
+    if (start === 0 && end === str.length) {
+        return str;
+    }
+    return str.substring(start, end);
 }
 
 /**
