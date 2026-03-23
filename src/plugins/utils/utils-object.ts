@@ -31,7 +31,19 @@ export function deepFreeze<T>(o: T): T {
  * and we can reuse the generated function.
  */
 export type ObjectPathMonadFunction<T, R = any> = (obj: T) => R;
+
+/**
+ * Cache for objectPathMonad to avoid re-creating closures
+ * and re-splitting strings for the same paths.
+ */
+const objectPathMonadCache = new Map<string, ObjectPathMonadFunction<any>>();
+
 export function objectPathMonad<T, R = any>(objectPath: string): ObjectPathMonadFunction<T, R> {
+    let fn = objectPathMonadCache.get(objectPath);
+    if (fn) {
+        return fn;
+    }
+
     const split = objectPath.split('.');
 
     // reuse this variable for better performance.
@@ -43,48 +55,84 @@ export function objectPathMonad<T, R = any>(objectPath: string): ObjectPathMonad
      * directly return the field of the object.
      */
     if (splitLength === 1) {
-        return (obj: T) => (obj as any)[objectPath];
-    }
-
-    /**
-     * Fast path for 2-segment paths (e.g. 'nested.field').
-     * Avoids the loop overhead for the most common nested case.
-     */
-    if (splitLength === 2) {
+        fn = (obj: T) => (obj as any)[objectPath];
+    } else if (splitLength === 2) {
+        /**
+         * Fast path for 2-segment paths (e.g. 'nested.field').
+         * Avoids the loop overhead for the most common nested case.
+         */
         const key0 = split[0];
         const key1 = split[1];
-        return (obj: T) => {
+        fn = (obj: T) => {
             const v = (obj as any)[key0];
             return v === undefined ? v : v[key1];
         };
-    }
-
-    /**
-     * Fast path for 3-segment paths (e.g. 'deep.deeper.deepNr').
-     * Common in index fields and nested document properties.
-     */
-    if (splitLength === 3) {
+    } else if (splitLength === 3) {
+        /**
+         * Fast path for 3-segment paths (e.g. 'deep.deeper.deepNr').
+         * Common in index fields and nested document properties.
+         */
         const key0 = split[0];
         const key1 = split[1];
         const key2 = split[2];
-        return (obj: T) => {
+        fn = (obj: T) => {
             const v = (obj as any)[key0];
             if (v === undefined) return v;
             const v2 = v[key1];
             return v2 === undefined ? v2 : v2[key2];
         };
+    } else if (splitLength === 4) {
+        /**
+         * Fast path for 4-segment paths.
+         * Avoids loop overhead for deeper nested properties.
+         */
+        const key0 = split[0];
+        const key1 = split[1];
+        const key2 = split[2];
+        const key3 = split[3];
+        fn = (obj: T) => {
+            const v = (obj as any)[key0];
+            if (v === undefined) return v;
+            const v2 = v[key1];
+            if (v2 === undefined) return v2;
+            const v3 = v2[key2];
+            return v3 === undefined ? v3 : v3[key3];
+        };
+    } else if (splitLength === 5) {
+        /**
+         * Fast path for 5-segment paths.
+         * Avoids loop overhead for deeply nested properties.
+         */
+        const key0 = split[0];
+        const key1 = split[1];
+        const key2 = split[2];
+        const key3 = split[3];
+        const key4 = split[4];
+        fn = (obj: T) => {
+            const v = (obj as any)[key0];
+            if (v === undefined) return v;
+            const v2 = v[key1];
+            if (v2 === undefined) return v2;
+            const v3 = v2[key2];
+            if (v3 === undefined) return v3;
+            const v4 = v3[key3];
+            return v4 === undefined ? v4 : v4[key4];
+        };
+    } else {
+        fn = (obj: T) => {
+            let currentVal: any = obj;
+            for (let i = 0; i < splitLength; ++i) {
+                currentVal = currentVal[split[i]];
+                if (currentVal === undefined) {
+                    return currentVal;
+                }
+            }
+            return currentVal;
+        };
     }
 
-    return (obj: T) => {
-        let currentVal: any = obj;
-        for (let i = 0; i < splitLength; ++i) {
-            currentVal = currentVal[split[i]];
-            if (currentVal === undefined) {
-                return currentVal;
-            }
-        }
-        return currentVal;
-    };
+    objectPathMonadCache.set(objectPath, fn);
+    return fn;
 }
 
 
