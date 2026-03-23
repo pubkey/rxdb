@@ -7,7 +7,6 @@ import type {
 } from './types/index.d.ts';
 import {
     getFromMapOrThrow,
-    getHeightOfRevision,
     overwriteGetterForCaching,
     requestIdlePromiseNoQueue
 } from './plugins/utils/index.ts';
@@ -57,7 +56,7 @@ declare type CacheItem<RxDocType, OrmMethods> = [
  */
 declare type FinalizationRegistryValue = {
     docId: string;
-    revisionHeight: number;
+    rev: string;
     lwt: number;
 };
 
@@ -91,7 +90,7 @@ export class DocumentCache<RxDocType, OrmMethods> {
             const docId = docMeta.docId;
             const cacheItem = this.cacheItemByDocId.get(docId);
             if (cacheItem) {
-                cacheItem[0].delete(docMeta.revisionHeight + docMeta.lwt + '');
+                cacheItem[0].delete(docMeta.rev + docMeta.lwt);
                 if (cacheItem[0].size === 0) {
                     /**
                      * No state of the document is cached anymore,
@@ -138,8 +137,7 @@ export class DocumentCache<RxDocType, OrmMethods> {
         if (this.tasks.size === 0) {
             return;
         }
-        const tasks = Array.from(this.tasks);
-        tasks.forEach(task => task());
+        this.tasks.forEach(task => task());
         this.tasks.clear();
     }
 
@@ -160,11 +158,11 @@ export class DocumentCache<RxDocType, OrmMethods> {
     }
 
     get getCachedRxDocument(): (docData: RxDocumentData<RxDocType>) => RxDocument<RxDocType, OrmMethods> {
-        const fn = getCachedRxDocumentMonad(this);
+        const fn = getCachedRxDocumentSingle(this);
         return overwriteGetterForCaching(
             this,
             'getCachedRxDocument',
-            doc => fn([doc])[0]
+            fn
         );
     }
 
@@ -187,6 +185,77 @@ export class DocumentCache<RxDocType, OrmMethods> {
 }
 
 /**
+ * @hotPath Dedicated single-document function that avoids array allocations.
+ * Used by getCachedRxDocument which is called from many call sites.
+ */
+function getCachedRxDocumentSingle<RxDocType, OrmMethods>(
+    docCache: DocumentCache<RxDocType, OrmMethods>
+): (docData: RxDocumentData<RxDocType>) => RxDocument<RxDocType, OrmMethods> {
+    const primaryPath = docCache.primaryPath;
+    const cacheItemByDocId = docCache.cacheItemByDocId;
+    const registry = docCache.registry;
+    const deepFreezeWhenDevMode = overwritable.deepFreezeWhenDevMode;
+    const documentCreator = docCache.documentCreator;
+
+    return (docData: RxDocumentData<RxDocType>): RxDocument<RxDocType, OrmMethods> => {
+        const docId: string = (docData as any)[primaryPath];
+        const rev = docData._rev;
+        const lwt = docData._meta.lwt;
+        const cacheKey = rev + lwt;
+
+        const cacheItem = cacheItemByDocId.get(docId);
+        if (!cacheItem) {
+            docData = deepFreezeWhenDevMode(docData) as any;
+            const newDoc = documentCreator(docData) as RxDocument<RxDocType, OrmMethods>;
+            const newByRev = new Map<string, WeakRef<RxDocument<RxDocType, OrmMethods>>>();
+            newByRev.set(cacheKey, createWeakRefWithFallback(newDoc));
+            cacheItemByDocId.set(docId, [newByRev, docData]);
+            if (registry) {
+                docCache.tasks.add(() => {
+                    registry.register(newDoc, {
+                        docId: newDoc.primary,
+                        rev,
+                        lwt
+                    });
+                });
+                if (docCache.tasks.size <= 1) {
+                    requestIdlePromiseNoQueue().then(() => {
+                        docCache.processTasks();
+                    });
+                }
+            }
+            return newDoc;
+        }
+
+        const byRev = cacheItem[0];
+        const cachedRxDocumentWeakRef = byRev.get(cacheKey);
+        let cachedRxDocument = cachedRxDocumentWeakRef ? cachedRxDocumentWeakRef.deref() : undefined;
+        if (!cachedRxDocument) {
+            docData = deepFreezeWhenDevMode(docData) as any;
+            cachedRxDocument = documentCreator(docData) as RxDocument<RxDocType, OrmMethods>;
+            byRev.set(cacheKey, createWeakRefWithFallback(cachedRxDocument));
+            if (registry) {
+                const registeredDoc = cachedRxDocument;
+                docCache.tasks.add(() => {
+                    registry.register(registeredDoc, {
+                        docId: registeredDoc.primary,
+                        rev,
+                        lwt
+                    });
+                });
+                if (docCache.tasks.size <= 1) {
+                    requestIdlePromiseNoQueue().then(() => {
+                        docCache.processTasks();
+                    });
+                }
+            }
+        }
+        return cachedRxDocument;
+    };
+}
+
+
+/**
  * This function is called very very often.
  * @hotPath This is one of the most important methods for performance.
  * It is used in many places to transform the raw document data into RxDocuments.
@@ -201,58 +270,65 @@ function getCachedRxDocumentMonad<RxDocType, OrmMethods>(
     const documentCreator = docCache.documentCreator;
     const fn: (docsData: RxDocumentData<RxDocType>[]) => RxDocument<RxDocType, OrmMethods>[] = (docsData: RxDocumentData<RxDocType>[]) => {
         const ret: RxDocument<RxDocType, OrmMethods>[] = new Array(docsData.length);
-        const registryTasks: RxDocument<RxDocType, OrmMethods>[] = [];
+        let registryTasks: { doc: RxDocument<RxDocType, OrmMethods>; rev: string; lwt: number; }[] | undefined;
         for (let index = 0; index < docsData.length; index++) {
             let docData = docsData[index];
             const docId: string = (docData as any)[primaryPath];
 
-            const revisionHeight = getHeightOfRevision(docData._rev);
+            const rev = docData._rev;
+            const lwt = docData._meta.lwt;
+            const cacheKey = rev + lwt;
 
-            /**
-             * @performance
-             * Compute the byRev cache key once and reuse it
-             * for both the Map.get() and Map.set() calls.
-             */
-            const cacheKey = revisionHeight + docData._meta.lwt + '';
-
-            let byRev: Map<string, WeakRef<RxDocument<RxDocType, OrmMethods>>>;
-            let cachedRxDocumentWeakRef: WeakRef<RxDocument<RxDocType, OrmMethods>> | undefined;
-            let cacheItem = cacheItemByDocId.get(docId);
+            const cacheItem = cacheItemByDocId.get(docId);
             if (!cacheItem) {
-                byRev = new Map();
-                cacheItem = [
-                    byRev,
-                    docData
-                ];
-                cacheItemByDocId.set(docId, cacheItem);
-            } else {
-                byRev = cacheItem[0];
-                cachedRxDocumentWeakRef = byRev.get(cacheKey);
-            }
-            let cachedRxDocument = cachedRxDocumentWeakRef ? cachedRxDocumentWeakRef.deref() : undefined;
-            if (!cachedRxDocument) {
+                /**
+                 * New document - no need for WeakRef lookup.
+                 * Create cache item directly.
+                 */
                 docData = deepFreezeWhenDevMode(docData) as any;
-                cachedRxDocument = documentCreator(docData) as RxDocument<RxDocType, OrmMethods>;
+                const cachedRxDocument = documentCreator(docData) as RxDocument<RxDocType, OrmMethods>;
+                const byRev = new Map<string, WeakRef<RxDocument<RxDocType, OrmMethods>>>();
                 byRev.set(cacheKey, createWeakRefWithFallback(cachedRxDocument));
+                cacheItemByDocId.set(docId, [byRev, docData]);
+                ret[index] = cachedRxDocument;
                 if (registry) {
-                    registryTasks.push(cachedRxDocument);
+                    if (!registryTasks) {
+                        registryTasks = [];
+                    }
+                    registryTasks.push({ doc: cachedRxDocument, rev, lwt });
                 }
+            } else {
+                const byRev = cacheItem[0];
+                const cachedRxDocumentWeakRef = byRev.get(cacheKey);
+                let cachedRxDocument = cachedRxDocumentWeakRef ? cachedRxDocumentWeakRef.deref() : undefined;
+                if (!cachedRxDocument) {
+                    docData = deepFreezeWhenDevMode(docData) as any;
+                    cachedRxDocument = documentCreator(docData) as RxDocument<RxDocType, OrmMethods>;
+                    byRev.set(cacheKey, createWeakRefWithFallback(cachedRxDocument));
+                    if (registry) {
+                        if (!registryTasks) {
+                            registryTasks = [];
+                        }
+                        registryTasks.push({ doc: cachedRxDocument, rev, lwt });
+                    }
+                }
+                ret[index] = cachedRxDocument;
             }
-            ret[index] = cachedRxDocument;
         }
-        if (registryTasks.length > 0 && registry) {
+        if (registryTasks && registry) {
             /**
              * Calling registry.register() has shown to have
              * really bad performance. So we add the cached documents
              * lazily.
              */
+            const tasks = registryTasks;
             docCache.tasks.add(() => {
-                for (let index = 0; index < registryTasks.length; index++) {
-                    const doc = registryTasks[index];
-                    registry.register(doc, {
-                        docId: doc.primary,
-                        revisionHeight: getHeightOfRevision(doc.revision),
-                        lwt: doc._data._meta.lwt
+                for (let index = 0; index < tasks.length; index++) {
+                    const task = tasks[index];
+                    registry.register(task.doc, {
+                        docId: task.doc.primary,
+                        rev: task.rev,
+                        lwt: task.lwt
                     });
                 }
             });
