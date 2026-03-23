@@ -395,7 +395,7 @@ jobs:
           BROWSER_PATH: ${{ steps.chrome.outputs.chrome-path }}
         with:
           working-directory: ./examples/angular
-          run: npm run test:build || npm run test:build || npm run test:build
+          run: bash -c "npm run test:build || npm run test:build || npm run test:build"
 
       - name: angular test ssr
         working-directory: ./examples/angular
