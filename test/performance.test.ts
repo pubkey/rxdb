@@ -50,6 +50,11 @@ describe('performance.test.ts', () => {
             { runs, password }
         );
     });
+    it('clear local data after tests', async () => {
+        await clearAllLocalIndexedDB();
+        await clearAllLocalOPFS();
+        await clearAllLocalStorage();
+    });
     /**
      * Some runtimes do not automatically exit for whatever reason.
      */
