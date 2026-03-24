@@ -583,7 +583,7 @@
     "dexie": "4.0.10",
     "event-reduce-js": "6.0.0",
     "get-graphql-from-jsonschema": "8.1.0",
-    "graphql": "16.13.1",
+    "graphql": "16.13.2",
     "graphql-ws": "5.16.2",
     "is-my-json-valid": "2.20.6",
     "js-base64": "3.7.8",
