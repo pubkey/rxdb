@@ -21,6 +21,27 @@ concurrency:
 # the jobs which take longes must come before the faster ones
 # because github will start them likely earlier
 jobs:
+  workflow-yaml-lint:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v6
+      - name: Validate workflow YAML syntax
+        run: |
+          python3 -c "
+          import yaml, glob, sys
+          errors = 0
+          for f in sorted(glob.glob('.github/workflows/*.yml')):
+              try:
+                  yaml.safe_load(open(f))
+                  print(f'{f}: OK')
+              except yaml.YAMLError as e:
+                  print(f'{f}: FAIL')
+                  print(e)
+                  errors += 1
+          sys.exit(1 if errors else 0)
+          "
+
   core:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
