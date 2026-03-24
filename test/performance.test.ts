@@ -4,6 +4,8 @@ import {
 import * as assert from 'assert';
 import {
     clearAllLocalIndexedDB,
+    clearAllLocalOPFS,
+    clearAllLocalStorage,
     ENV_VARIABLES,
     getEncryptedStorage,
     isFastMode,
@@ -21,6 +23,8 @@ declare const Deno: any;
 describe('performance.test.ts', () => {
     it('clear local IndexedDB data', async () => {
         await clearAllLocalIndexedDB();
+        await clearAllLocalOPFS();
+        await clearAllLocalStorage();
     });
     it('init storage', async () => {
         if (config.storage.init) {
