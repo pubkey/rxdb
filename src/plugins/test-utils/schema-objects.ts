@@ -236,7 +236,7 @@ export interface SimpleHeroArrayDocumentType {
 }
 export function simpleHeroArray(partial: Partial<SimpleHeroArrayDocumentType> = {}): SimpleHeroArrayDocumentType {
     const defaultObj = {
-        name: randomStringWithSpecialChars(6, 8),
+        name: randomStringWithSpecialChars(8, 10),
         skills: new Array(3).fill(0).map(() => randomStringWithSpecialChars(3, 6))
     };
     return Object.assign(

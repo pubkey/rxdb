@@ -234,7 +234,7 @@ describe('util.test.js', () => {
         });
         it('should always be strictly monotonically increasing', () => {
             let previous = 0;
-            for (let i = 0; i < 1000; i++) {
+            for (let i = 0; i < (isFastMode() ? 100 : 1000); i++) {
                 const value = now();
                 assert.ok(
                     value > previous,
@@ -244,7 +244,7 @@ describe('util.test.js', () => {
             }
         });
         it('should always have maximum two decimal places', () => {
-            for (let i = 0; i < 1000; i++) {
+            for (let i = 0; i < (isFastMode() ? 100 : 1000); i++) {
                 const value = now();
                 const asString = value.toString();
                 const afterDot = asString.split('.')[1];
@@ -687,6 +687,18 @@ describe('util.test.js', () => {
                 const str = randomStringWithSpecialChars(length, length);
                 if (str.length !== length) {
                     throw new Error('string has wrong length(is: ' + str.length + ', should:' + length + '): "' + str + '"');
+                }
+            }
+        });
+        it('should always respect the min and max length boundaries', () => {
+            let t = 0;
+            const minLength = 3;
+            const maxLength = 10;
+            while (t < (isFastMode() ? 10 : 100)) {
+                t++;
+                const str = randomStringWithSpecialChars(minLength, maxLength);
+                if (str.length < minLength || str.length > maxLength) {
+                    throw new Error('string has wrong length(is: ' + str.length + ', min:' + minLength + ', max:' + maxLength + '): "' + str + '"');
                 }
             }
         });
