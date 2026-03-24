@@ -148,7 +148,7 @@ export class DocumentCache<RxDocType, OrmMethods> {
      * because this is @performance relevant.
      * It is called on each document row for each write and read.
      */
-    get getCachedRxDocuments(): (docsData: RxDocumentData<RxDocType>[]) => RxDocument<RxDocType, OrmMethods>[] {
+    get getCachedRxDocuments(): (docsData: RxDocumentData<RxDocType>[], docsMap?: Map<string, RxDocument<RxDocType, OrmMethods>>) => RxDocument<RxDocType, OrmMethods>[] {
         const fn = getCachedRxDocumentMonad(this);
         return overwriteGetterForCaching(
             this,
@@ -262,13 +262,13 @@ function getCachedRxDocumentSingle<RxDocType, OrmMethods>(
  */
 function getCachedRxDocumentMonad<RxDocType, OrmMethods>(
     docCache: DocumentCache<RxDocType, OrmMethods>
-): (docsData: RxDocumentData<RxDocType>[]) => RxDocument<RxDocType, OrmMethods>[] {
+): (docsData: RxDocumentData<RxDocType>[], docsMap?: Map<string, RxDocument<RxDocType, OrmMethods>>) => RxDocument<RxDocType, OrmMethods>[] {
     const primaryPath = docCache.primaryPath;
     const cacheItemByDocId = docCache.cacheItemByDocId;
     const registry = docCache.registry;
     const deepFreezeWhenDevMode = overwritable.deepFreezeWhenDevMode;
     const documentCreator = docCache.documentCreator;
-    const fn: (docsData: RxDocumentData<RxDocType>[]) => RxDocument<RxDocType, OrmMethods>[] = (docsData: RxDocumentData<RxDocType>[]) => {
+    const fn: (docsData: RxDocumentData<RxDocType>[], docsMap?: Map<string, RxDocument<RxDocType, OrmMethods>>) => RxDocument<RxDocType, OrmMethods>[] = (docsData: RxDocumentData<RxDocType>[], docsMap?: Map<string, RxDocument<RxDocType, OrmMethods>>) => {
         const ret: RxDocument<RxDocType, OrmMethods>[] = new Array(docsData.length);
         let registryTasks: { doc: RxDocument<RxDocType, OrmMethods>; rev: string; lwt: number; }[] | undefined;
         for (let index = 0; index < docsData.length; index++) {
@@ -291,6 +291,9 @@ function getCachedRxDocumentMonad<RxDocType, OrmMethods>(
                 byRev.set(cacheKey, createWeakRefWithFallback(cachedRxDocument));
                 cacheItemByDocId.set(docId, [byRev, docData]);
                 ret[index] = cachedRxDocument;
+                if (docsMap) {
+                    docsMap.set(docId, cachedRxDocument);
+                }
                 if (registry) {
                     if (!registryTasks) {
                         registryTasks = [];
@@ -313,6 +316,9 @@ function getCachedRxDocumentMonad<RxDocType, OrmMethods>(
                     }
                 }
                 ret[index] = cachedRxDocument;
+                if (docsMap) {
+                    docsMap.set(docId, cachedRxDocument);
+                }
             }
         }
         if (registryTasks && registry) {
@@ -349,6 +355,21 @@ export function mapDocumentsDataToCacheDocs<RxDocType, OrmMethods>(
 ) {
     const getCachedRxDocuments = docCache.getCachedRxDocuments;
     return getCachedRxDocuments(docsData);
+}
+
+/**
+ * @performance Builds both the RxDocument array and a Map<primaryKey, RxDocument>
+ * in a single pass through the documents. Used by findByIds to avoid
+ * iterating the documents array a second time in the docsMap getter.
+ */
+export function mapDocumentsDataToCacheDocsAndMap<RxDocType, OrmMethods>(
+    docCache: DocumentCache<RxDocType, OrmMethods>,
+    docsData: RxDocumentData<RxDocType>[]
+): { documents: RxDocument<RxDocType, OrmMethods>[]; docsMap: Map<string, RxDocument<RxDocType, OrmMethods>>; } {
+    const docsMap = new Map<string, RxDocument<RxDocType, OrmMethods>>();
+    const getCachedRxDocuments = docCache.getCachedRxDocuments;
+    const documents = getCachedRxDocuments(docsData, docsMap);
+    return { documents, docsMap };
 }
 
 /**

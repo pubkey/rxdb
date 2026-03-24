@@ -280,25 +280,41 @@ export class RxQueryBase<
 
         if (this.op === 'findByIds') {
             const ids: string[] = ensureNotFalsy(this.mangoQuery.selector as any)[this.collection.schema.primaryPath].$in;
-            const docsData: RxDocumentData<RxDocType>[] = [];
-            const mustBeQueried: string[] = [];
-            // first try to fill from docCache
-            for (let i = 0; i < ids.length; i++) {
-                const id = ids[i];
-                const docData = this.collection._docCache.getLatestDocumentDataIfExists(id);
-                if (docData) {
-                    if (!docData._deleted) {
-                        docsData.push(docData);
+            let docsData: RxDocumentData<RxDocType>[];
+            /**
+             * @performance
+             * Process pending cache tasks once instead of per-ID via getLatestDocumentDataIfExists().
+             * Then access the cache Map directly to avoid repeated processTasks() calls.
+             * When the cache is empty, skip the per-ID loop entirely and fetch all from storage.
+             */
+            const docCache = this.collection._docCache;
+            docCache.processTasks();
+            const cacheItemByDocId = docCache.cacheItemByDocId;
+            if (cacheItemByDocId.size === 0) {
+                // Fast path: doc cache is empty, fetch all from storage
+                docsData = await this.collection.storageInstance.findDocumentsById(ids, false);
+            } else {
+                docsData = [];
+                const mustBeQueried: string[] = [];
+                // try to fill from docCache
+                for (let i = 0; i < ids.length; i++) {
+                    const id = ids[i];
+                    const cacheItem = cacheItemByDocId.get(id);
+                    if (cacheItem) {
+                        const docData = cacheItem[1];
+                        if (!docData._deleted) {
+                            docsData.push(docData);
+                        }
+                    } else {
+                        mustBeQueried.push(id);
                     }
-                } else {
-                    mustBeQueried.push(id);
                 }
-            }
-            // everything which was not in docCache must be fetched from the storage
-            if (mustBeQueried.length > 0) {
-                const docs = await this.collection.storageInstance.findDocumentsById(mustBeQueried, false);
-                for (let i = 0; i < docs.length; i++) {
-                    docsData.push(docs[i]);
+                // everything which was not in docCache must be fetched from the storage
+                if (mustBeQueried.length > 0) {
+                    const docs = await this.collection.storageInstance.findDocumentsById(mustBeQueried, false);
+                    for (let i = 0; i < docs.length; i++) {
+                        docsData.push(docs[i]);
+                    }
                 }
             }
             result = {
@@ -412,9 +428,8 @@ export class RxQueryBase<
         let value: string;
         if (this.op === 'findByIds') {
             const ids: string[] = (this.mangoQuery.selector as any)[this.collection.schema.primaryPath].$in;
-            // slice() is needed because sort() mutates the array in-place
-            const sortedIds = ids.slice().sort();
-            value = '|findByIds|' + JSON.stringify(sortedIds);
+            // IDs are already sorted by findByIds(), no need to slice+sort again.
+            value = '|findByIds|' + JSON.stringify(ids);
         } else {
             const stringObj = sortObject({
                 op: this.op,

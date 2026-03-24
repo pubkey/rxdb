@@ -905,10 +905,15 @@ export class RxCollectionBase<
         Reactivity
     > {
         ensureRxCollectionIsNotClosed(this);
+        /**
+         * @performance
+         * Sort the IDs at creation time so that toString() can skip
+         * the expensive slice+sort and directly build the cache key.
+         */
         const mangoQuery: MangoQuery<RxDocumentType> = {
             selector: {
                 [this.schema.primaryPath]: {
-                    $in: ids.slice(0)
+                    $in: ids.slice(0).sort()
                 }
             } as any
         };

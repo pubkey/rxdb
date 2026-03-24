@@ -1,4 +1,4 @@
-import { mapDocumentsDataToCacheDocs } from './doc-cache.ts';
+import { mapDocumentsDataToCacheDocs, mapDocumentsDataToCacheDocsAndMap } from './doc-cache.ts';
 import { overwriteGetterForCaching } from './plugins/utils/index.ts';
 import { newRxError } from './rx-error.ts';
 import { RxQueryBase } from './rx-query.ts';
@@ -42,6 +42,14 @@ export class RxQuerySingleResult<RxDocType> {
          */
         if (query.op === 'count') {
             this.documents = [];
+        } else if (query.op === 'findByIds') {
+            /**
+             * @performance For findByIds queries, build the docsMap in the same pass
+             * as creating the RxDocument array to avoid iterating twice.
+             */
+            const result = mapDocumentsDataToCacheDocsAndMap<RxDocType, any>(this.query.collection._docCache, docsDataFromStorageInstance);
+            this.documents = result.documents;
+            overwriteGetterForCaching(this, 'docsMap', result.docsMap);
         } else {
             this.documents = mapDocumentsDataToCacheDocs<RxDocType, any>(this.query.collection._docCache, docsDataFromStorageInstance);
         }
