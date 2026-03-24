@@ -1,9 +1,9 @@
 /**
  * Reads the current version from package.json,
  * increments the beta version number, and outputs the new version.
- * 
+ *
  * For example: 17.0.0-beta.24 -> 17.0.0-beta.25
- * 
+ *
  * If the current version is not a beta version,
  * it exits with an error.
  */
