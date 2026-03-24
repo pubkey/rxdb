@@ -3,6 +3,9 @@ import {
 } from '../plugins/core/index.mjs';
 import * as assert from 'assert';
 import {
+    clearAllLocalIndexedDB,
+    clearAllLocalOPFS,
+    clearAllLocalStorage,
     ENV_VARIABLES,
     getEncryptedStorage,
     isFastMode,
@@ -18,6 +21,11 @@ declare const Deno: any;
  * Run via 'npm run test:performance:memory:node' and change 'memory' for other storage names.
  */
 describe('performance.test.ts', () => {
+    it('clear local IndexedDB data', async () => {
+        await clearAllLocalIndexedDB();
+        await clearAllLocalOPFS();
+        await clearAllLocalStorage();
+    });
     it('init storage', async () => {
         if (config.storage.init) {
             await config.storage.init();
@@ -41,6 +49,11 @@ describe('performance.test.ts', () => {
             description,
             { runs, password }
         );
+    });
+    it('clear local data after tests', async () => {
+        await clearAllLocalIndexedDB();
+        await clearAllLocalOPFS();
+        await clearAllLocalStorage();
     });
     /**
      * Some runtimes do not automatically exit for whatever reason.

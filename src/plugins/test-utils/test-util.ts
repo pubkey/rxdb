@@ -70,6 +70,66 @@ export async function awaitCollectionsHaveEqualState<RxDocType>(
 
 
 
+/**
+ * Deletes all locally stored IndexedDB databases.
+ * Noop if IndexedDB is not available (e.g. in Node.js)
+ * or if the .databases() method is not supported.
+ */
+export async function clearAllLocalIndexedDB(): Promise<void> {
+    if (
+        typeof indexedDB === 'undefined' ||
+        typeof indexedDB.databases !== 'function'
+    ) {
+        return;
+    }
+    const databases = await indexedDB.databases();
+    await Promise.all(
+        databases
+            .filter(db => !!db.name)
+            .map(db => {
+                return new Promise<void>((resolve, reject) => {
+                    const req = indexedDB.deleteDatabase(db.name as string);
+                    req.onsuccess = () => resolve();
+                    req.onerror = () => reject(req.error);
+                });
+            })
+    );
+}
+
+/**
+ * Deletes all files and directories stored in the
+ * Origin Private File System (OPFS).
+ * Noop if OPFS is not available (e.g. in Node.js).
+ */
+export async function clearAllLocalOPFS(): Promise<void> {
+    if (
+        typeof navigator === 'undefined' ||
+        !navigator.storage ||
+        typeof navigator.storage.getDirectory !== 'function'
+    ) {
+        return;
+    }
+    const root = await navigator.storage.getDirectory();
+    // @ts-ignore entries() is not in all TS lib definitions
+    for await (const [name] of root.entries()) {
+        await root.removeEntry(name, { recursive: true });
+    }
+}
+
+/**
+ * Clears all localStorage data.
+ * Noop if localStorage is not available (e.g. in Node.js).
+ */
+export async function clearAllLocalStorage(): Promise<void> {
+    if (
+        typeof localStorage === 'undefined' ||
+        typeof localStorage.clear !== 'function'
+    ) {
+        return;
+    }
+    localStorage.clear();
+}
+
 export function ensureReplicationHasNoErrors(replicationState: RxReplicationState<any, any>) {
     /**
      * We do not have to unsubscribe because the observable will cancel anyway.
