@@ -62,7 +62,7 @@ jobs:
         run: |
           git add .
           git status .
-          git commit -m ${{ steps.version.outputs.version }}
+          git commit -m "${{ steps.version.outputs.version }}"
           git tag ${{ steps.version.outputs.version }}
 
       - run: npm publish --tag next
@@ -76,3 +76,4 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           branch: ${{ github.ref }}
+          tags: true
