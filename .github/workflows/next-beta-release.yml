@@ -1,0 +1,78 @@
+name: Next Beta Release
+
+on:
+  workflow_dispatch:
+
+jobs:
+  next-beta-release:
+    runs-on: ubuntu-22.04
+
+    permissions:
+      contents: write
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v6.3.0
+        with:
+          node-version-file: ".nvmrc"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Reuse npm cache folder
+        uses: actions/cache@v5
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: |
+            ~/.npm
+            ./node_modules
+          key: ${{ runner.os }}-npm-rxdb-beta-release-x3-${{ hashFiles('**/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-rxdb-beta-release-x3-
+
+      - name: install npm dependencies
+        run: |
+          node -v
+          rm -rf node_modules/
+          npm install || (sleep 15 && npm install) || (sleep 15 && npm install)
+
+      - name: Increment beta version
+        id: version
+        working-directory: "scripts"
+        run: node increment-beta-version.mjs
+
+      - name: Log new version
+        run: echo "new version ${{ steps.version.outputs.version }}"
+
+      - name: Update version and changelog
+        working-directory: "scripts"
+        run: node set-version.mjs ${{ steps.version.outputs.version }}
+
+      - run: npm run build
+      - run: npm run generate:error-messages
+
+      - name: Set git config
+        run: |
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+
+      - name: Commit version change
+        run: |
+          git add .
+          git status .
+          git commit -m ${{ steps.version.outputs.version }}
+          git tag ${{ steps.version.outputs.version }}
+
+      - run: npm publish --tag next
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - run: git pull
+
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.ref }}
