@@ -358,7 +358,7 @@ export function mapDocumentsDataToCacheDocs<RxDocType, OrmMethods>(
 }
 
 /**
- * @performance Builds both the RxDocument array and a Map<primaryKey, RxDocument>
+ * @performance Builds both the RxDocument array and a Map<string, RxDocument>
  * in a single pass through the documents. Used by findByIds to avoid
  * iterating the documents array a second time in the docsMap getter.
  */
