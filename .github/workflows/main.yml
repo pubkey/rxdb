@@ -24,6 +24,8 @@ jobs:
   workflow-yaml-lint:
     runs-on: ubuntu-22.04
     timeout-minutes: 5
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v6
       - name: Validate workflow YAML syntax
@@ -33,7 +35,8 @@ jobs:
           errors = 0
           for f in sorted(glob.glob('.github/workflows/*.yml')):
               try:
-                  yaml.safe_load(open(f))
+                  with open(f) as fh:
+                      yaml.safe_load(fh)
                   print(f'{f}: OK')
               except yaml.YAMLError as e:
                   print(f'{f}: FAIL')
