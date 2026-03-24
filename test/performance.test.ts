@@ -3,6 +3,7 @@ import {
 } from '../plugins/core/index.mjs';
 import * as assert from 'assert';
 import {
+    clearAllLocalIndexedDB,
     ENV_VARIABLES,
     getEncryptedStorage,
     isFastMode,
@@ -18,6 +19,9 @@ declare const Deno: any;
  * Run via 'npm run test:performance:memory:node' and change 'memory' for other storage names.
  */
 describe('performance.test.ts', () => {
+    it('clear local IndexedDB data', async () => {
+        await clearAllLocalIndexedDB();
+    });
     it('init storage', async () => {
         if (config.storage.init) {
             await config.storage.init();

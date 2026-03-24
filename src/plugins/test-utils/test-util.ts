@@ -70,6 +70,32 @@ export async function awaitCollectionsHaveEqualState<RxDocType>(
 
 
 
+/**
+ * Deletes all locally stored IndexedDB databases.
+ * Noop if IndexedDB is not available (e.g. in Node.js)
+ * or if the .databases() method is not supported.
+ */
+export async function clearAllLocalIndexedDB(): Promise<void> {
+    if (
+        typeof indexedDB === 'undefined' ||
+        typeof indexedDB.databases !== 'function'
+    ) {
+        return;
+    }
+    const databases = await indexedDB.databases();
+    await Promise.all(
+        databases
+            .filter(db => !!db.name)
+            .map(db => {
+                return new Promise<void>((resolve, reject) => {
+                    const req = indexedDB.deleteDatabase(db.name as string);
+                    req.onsuccess = () => resolve();
+                    req.onerror = () => reject(req.error);
+                });
+            })
+    );
+}
+
 export function ensureReplicationHasNoErrors(replicationState: RxReplicationState<any, any>) {
     /**
      * We do not have to unsubscribe because the observable will cancel anyway.
