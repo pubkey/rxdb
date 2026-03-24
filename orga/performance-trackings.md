@@ -2368,3 +2368,17 @@ LOG LOG: '{
 }'
 
 
+LOG LOG: '{
+    "description": "indexeddb",
+    "collectionsAmount": 4,
+    "docsAmount": 3000,
+    "time-to-first-insert": 5.3,
+    "insert-documents-500": 9.92,
+    "find-by-ids-3000": 82.45,
+    "serial-inserts-50": 18.9,
+    "serial-find-by-id-50": 7.95,
+    "find-by-query": 58.2,
+    "find-by-query-parallel-4": 43.95,
+    "4x-count": 18.85,
+    "property-access": 6.15
+}'

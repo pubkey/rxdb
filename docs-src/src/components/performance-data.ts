@@ -23,14 +23,14 @@ export const PERFORMANCE_METRICS = [
 
 export const PERFORMANCE_BROWSER_INDEXEDDB: RxStoragePerformanceMeasurement = {
     name: 'IndexedDB',
-    'time-to-first-insert': 4.65,
-    'insert-documents-500': 10.05,
-    'find-by-ids-3000': 80.55,
-    'serial-inserts-50': 18.85,
-    'serial-find-by-id-50': 8.6,
-    'find-by-query': 59.55,
-    'find-by-query-parallel-4': 43.6,
-    '4x-count': 18.05
+    'time-to-first-insert': 5.75,
+    'insert-documents-500': 11.02,
+    'find-by-ids-3000': 92.3,
+    'serial-inserts-50': 21.2,
+    'serial-find-by-id-50': 8.2,
+    'find-by-query': 64,
+    'find-by-query-parallel-4': 44.9,
+    '4x-count': 19.25,
 };
 
 export const PERFORMANCE_BROWSER_DEXIE: RxStoragePerformanceMeasurement = {
@@ -48,27 +48,29 @@ export const PERFORMANCE_BROWSER_DEXIE: RxStoragePerformanceMeasurement = {
 
 const PERFORMANCE_NODE_MEMORY: RxStoragePerformanceMeasurement = {
     name: 'Memory',
-    'time-to-first-insert': 1.09,
-    'insert-documents-500': 0.36,
-    'find-by-ids-3000': 4.6,
-    'serial-inserts-50': 1.66,
-    'serial-find-by-id-50': 0.61,
-    'find-by-query': 2.94,
-    'find-by-query-parallel-4': 3.25,
-    '4x-count': 0.3,
+    'time-to-first-insert': 1.25,
+    'insert-documents-500': 0.31,
+    'find-by-ids-3000': 5.37,
+    'serial-inserts-50': 1.56,
+    'serial-find-by-id-50': 0.55,
+    'find-by-query': 2.82,
+    'find-by-query-parallel-4': 4.02,
+    '4x-count': 0.28,
 };
 
 const PERFORMANCE_BROWSER_MEMORY: RxStoragePerformanceMeasurement = {
     name: 'Memory',
-    'time-to-first-insert': 1,
-    'insert-documents-500': 0.38,
-    'find-by-ids-3000': 3.75,
-    'serial-inserts-50': 1.3,
-    'serial-find-by-id-50': 0.6,
-    'find-by-query': 2,
-    'find-by-query-parallel-4': 2.85,
-    '4x-count': 0.3,
+    'time-to-first-insert': 0.9,
+    'insert-documents-500': 0.27,
+    'find-by-ids-3000': 3.8,
+    'serial-inserts-50': 1.1,
+    'serial-find-by-id-50': 0.5,
+    'find-by-query': 2.4,
+    'find-by-query-parallel-4': 3.3,
+    '4x-count': 0.25,
 };
+
+
 
 export const PERFORMANCE_BROWSER_SHARDING_INDEXEDDB: RxStoragePerformanceMeasurement = {
     name: 'Sharding IndexedDB',
