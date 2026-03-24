@@ -87,6 +87,9 @@ jobs:
           npm run generate:headers
           npm run docs:build
 
+      - name: "update release workflow default version"
+        run: sed -i 's/^        default: ".*"/        default: "${{github.event.inputs.version}}"/' .github/workflows/release.yml
+
       - name: add git tag
         run: |
           git add .
