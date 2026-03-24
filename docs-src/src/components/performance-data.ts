@@ -23,14 +23,14 @@ export const PERFORMANCE_METRICS = [
 
 export const PERFORMANCE_BROWSER_INDEXEDDB: RxStoragePerformanceMeasurement = {
     name: 'IndexedDB',
-    'time-to-first-insert': 5.75,
-    'insert-documents-500': 11.02,
-    'find-by-ids-3000': 92.3,
-    'serial-inserts-50': 21.2,
-    'serial-find-by-id-50': 8.2,
-    'find-by-query': 64,
-    'find-by-query-parallel-4': 44.9,
-    '4x-count': 19.25,
+    'time-to-first-insert': 5.8,
+    'insert-documents-500': 10.02,
+    'find-by-ids-3000': 81.15,
+    'serial-inserts-50': 18.55,
+    'serial-find-by-id-50': 7.9,
+    'find-by-query': 58.7,
+    'find-by-query-parallel-4': 43.45,
+    '4x-count': 18.6,
 };
 
 export const PERFORMANCE_BROWSER_DEXIE: RxStoragePerformanceMeasurement = {
@@ -143,9 +143,10 @@ export const PERFORMANCE_DATA_BROWSER: RxStoragePerformanceMeasurement[] = [
 
 ];
 
+
+
+
 export const PERFORMANCE_DATA_SERVER: RxStoragePerformanceMeasurement[] = [
-    PERFORMANCE_NODE_FILESYSTEM,
-    PERFORMANCE_NODE_SQLITE_NATIVE,
     {
         name: 'FoundationDB',
         'time-to-first-insert': 6.38,
@@ -167,8 +168,7 @@ export const PERFORMANCE_DATA_SERVER: RxStoragePerformanceMeasurement[] = [
         'find-by-query': 42.315,
         'find-by-query-parallel-4': 38.854,
         '4x-count': 6.898
-    },
-    PERFORMANCE_NODE_MEMORY,
+    }
 ];
 
 export const PERFORMANCE_DATA_NODE: RxStoragePerformanceMeasurement[] = [
