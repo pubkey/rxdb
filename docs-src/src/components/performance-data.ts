@@ -24,8 +24,8 @@ export const PERFORMANCE_METRICS = [
 export const PERFORMANCE_BROWSER_INDEXEDDB: RxStoragePerformanceMeasurement = {
     name: 'IndexedDB',
     'time-to-first-insert': 5.7,
-    'insert-documents-500': 9.83,
-    'find-by-ids-3000': 68.15,
+    'insert-documents-500': 9.67,
+    'find-by-ids-3000': 67.7,
     'serial-inserts-50': 18.55,
     'serial-find-by-id-50': 7.9,
     'find-by-query': 58.7,
