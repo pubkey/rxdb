@@ -101,7 +101,7 @@ export async function clearAllLocalIndexedDB(): Promise<void> {
  * Origin Private File System (OPFS).
  * Noop if OPFS is not available (e.g. in Node.js).
  */
-export async function clearAllLocalOPFS(): Promise<void> {
+export async function clearAllLocalOPFS(maxRetries = 20, delayMs = 200): Promise<void> {
     if (
         typeof navigator === 'undefined' ||
         !navigator.storage ||
@@ -112,7 +112,18 @@ export async function clearAllLocalOPFS(): Promise<void> {
     const root = await navigator.storage.getDirectory();
     // @ts-ignore entries() is not in all TS lib definitions
     for await (const [name] of root.entries()) {
-        await root.removeEntry(name, { recursive: true });
+        for (let attempt = 0; attempt < maxRetries; attempt++) {
+            try {
+                await root.removeEntry(name, { recursive: true });
+                break;
+            } catch (err: any) {
+                if (err?.name === 'NoModificationAllowedError' && attempt < maxRetries - 1) {
+                    await new Promise(resolve => setTimeout(resolve, delayMs));
+                } else {
+                    throw err;
+                }
+            }
+        }
     }
 }
 
