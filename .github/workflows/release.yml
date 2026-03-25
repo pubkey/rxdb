@@ -87,6 +87,10 @@ jobs:
           npm run generate:headers
           npm run docs:build
 
+      - name: notify bing indexnow
+        if: steps.vars.outputs.prerelease == 'false'
+        run: npm run docs:notify-indexnow
+
       - name: "update release workflow default version"
         run: |
           sed -i 's/^        default: ".*"/        default: "${{github.event.inputs.version}}"/' .github/workflows/release.yml

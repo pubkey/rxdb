@@ -35,6 +35,9 @@ jobs:
           npm run generate:headers
           npm run docs:build
 
+      - name: notify bing indexnow
+        run: npm run docs:notify-indexnow
+
       - name: Commit files
         run: |
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"

@@ -521,6 +521,7 @@
     "docs:serve": "(cd docs-src/ && npm start)",
     "docs:build": "node ./scripts/docs-fetch-git-history.mjs && rimraf -rf ./docs && mkdir ./docs && (cd docs-src/ && npm run build) && cp -r ./docs-src/build/* ./docs && cp ./docs-src/CNAME ./docs/CNAME",
     "docs:remove:time": "node ./scripts/docs-remove-time.mjs",
+    "docs:notify-indexnow": "node ./scripts/notify-indexnow.mjs",
     "disc": "npm run transpile && npm run build:esm && cross-env NODE_ENV=disc webpack --config ./config/webpack.config.js",
     "preversion": "npm run lint && npm run test",
     "dev": "watch 'npm run test:node:memory' src/ test/",
