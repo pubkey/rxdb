@@ -264,7 +264,6 @@ Topic-specific documentation files:
                 ],
             },
         ],
-
         function myWebpackTweaks() {
             return {
                 name: 'custom-webpack-tweaks',
