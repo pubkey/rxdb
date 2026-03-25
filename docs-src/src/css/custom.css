@@ -519,7 +519,7 @@ body {
 
 
 /**
- * Reversed order because the lunr search input
+ * Reversed order because the search input
  * must be on the left so we have no "blinking" when
  * switching between langinpages and docs
  */

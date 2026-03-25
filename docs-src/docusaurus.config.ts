@@ -264,12 +264,7 @@ Topic-specific documentation files:
                 ],
             },
         ],
-        [
-            './docusaurus-lunr-search-main/src/',
-            {
-                excludeRoutes: ['blog', 'releases'],
-            },
-        ],
+
         function myWebpackTweaks() {
             return {
                 name: 'custom-webpack-tweaks',
@@ -449,6 +444,12 @@ Topic-specific documentation files:
                 //   position: 'right',
                 // },
             ],
+        },
+        algolia: {
+            appId: 'MFS60LRE5L',
+            apiKey: '22d63ecafdabc681e5c59f767c4ceafa',
+            indexName: 'rxdb',
+            contextualSearch: true,
         },
         footer: {
             style: 'dark',
