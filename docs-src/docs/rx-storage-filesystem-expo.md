@@ -7,6 +7,8 @@ image: /headers/rx-storage-filesystem-expo.jpg
 
 import {BetaBlock} from '@site/src/components/beta-block';
 import {PremiumBlock} from '@site/src/components/premium-block';
+import { PerformanceChart } from '@site/src/components/performance-chart';
+import { PERFORMANCE_DATA_EXPO, PERFORMANCE_METRICS } from '@site/src/components/performance-data';
 
 # Expo Filesystem RxStorage
 
@@ -73,16 +75,4 @@ Because `expo-opfs` bypasses the standard React Native bridge and utilizes direc
 
 Here is a performance comparison of the **Expo Filesystem RxStorage** compared to the **SQLite RxStorage** (using `expo-sqlite`), tested with RxDB's internal performance testing suite (3000 documents, 4 collections):
 
-| Operation (Time in ms) | OPFS Sync (Worker) | OPFS Async (Main Thread) | SQLite (expo-sqlite) |
-| --- | --- | --- | --- |
-| **Time to first insert** | 123.36 | 89.15 | 177.45 |
-| **Insert 500 documents** | 113.02 | 117.00 | 66.64 |
-| **Find by IDs (3000)** | 342.30 | 320.83 | 252.21 |
-| **Serial inserts (50)** | 36.05 | 108.13 | 483.93 |
-| **Serial find by ID (50)** | 33.79 | 27.29 | 162.33 |
-| **Find by query** | 301.47 | 307.27 | 100.18 |
-| **Find by query (Parallel 4)** | 311.11 | 306.73 | 176.99 |
-| **4x count** | 5.23 | 8.21 | 29.19 |
-| **Property access** | 78.18 | 84.04 | 95.13 |
-
-As you can see, the **Expo Filesystem RxStorage** significantly outperforms SQLite in many critical areas, particularly in serial operations, counting, and initial setup time, making it exceptionally well-suited for high-performance React Native applications.
+<PerformanceChart title="Expo Storages" data={PERFORMANCE_DATA_EXPO} metrics={PERFORMANCE_METRICS} />
