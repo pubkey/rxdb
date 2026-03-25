@@ -244,7 +244,7 @@ export function wrapRxStorageInstance<RxDocType>(
             return instance.query(preparedQuery)
                 .then(queryResult => {
                     if (typeof queryResult === 'string') {
-                        throw newRxError('EN5', {});
+                        throw newRxError('EN5', { method: 'query' });
                     }
                     return Promise.all(queryResult.documents.map(doc => fromStorage(doc)));
                 })
@@ -263,7 +263,7 @@ export function wrapRxStorageInstance<RxDocType>(
             return instance.findDocumentsById(ids, deleted)
                 .then(async (findResult) => {
                     if (typeof findResult === 'string') {
-                        throw newRxError('EN5', {});
+                        throw newRxError('EN5', { method: 'findDocumentsById' });
                     }
                     const ret: RxDocumentData<RxDocType>[] = [];
                     await Promise.all(
@@ -279,7 +279,7 @@ export function wrapRxStorageInstance<RxDocType>(
             return ((instance as any).getChangedDocumentsSince)(limit, checkpoint)
                 .then(async (result: any) => {
                     if (typeof result === 'string') {
-                        throw newRxError('EN5', {});
+                        throw newRxError('EN5', { method: 'getChangedDocumentsSince' });
                     }
                     return {
                         checkpoint: result.checkpoint,
