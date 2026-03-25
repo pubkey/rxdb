@@ -23,6 +23,7 @@ import {
     getFromMapOrCreate,
     requestIdleCallbackIfAvailable
 } from './plugins/utils/index.ts';
+import { newRxError } from './rx-error.ts';
 import { BehaviorSubject, firstValueFrom } from 'rxjs';
 
 
@@ -242,6 +243,9 @@ export function wrapRxStorageInstance<RxDocType>(
         query: (preparedQuery) => {
             return instance.query(preparedQuery)
                 .then(queryResult => {
+                    if (typeof queryResult === 'string') {
+                        throw newRxError('EN5', { method: 'query' });
+                    }
                     return Promise.all(queryResult.documents.map(doc => fromStorage(doc)));
                 })
                 .then(documents => ({ documents: documents as any }));
@@ -258,6 +262,9 @@ export function wrapRxStorageInstance<RxDocType>(
         findDocumentsById: (ids, deleted) => {
             return instance.findDocumentsById(ids, deleted)
                 .then(async (findResult) => {
+                    if (typeof findResult === 'string') {
+                        throw newRxError('EN5', { method: 'findDocumentsById' });
+                    }
                     const ret: RxDocumentData<RxDocType>[] = [];
                     await Promise.all(
                         findResult
@@ -271,6 +278,9 @@ export function wrapRxStorageInstance<RxDocType>(
         getChangedDocumentsSince: !instance.getChangedDocumentsSince ? undefined : (limit, checkpoint) => {
             return ((instance as any).getChangedDocumentsSince)(limit, checkpoint)
                 .then(async (result: any) => {
+                    if (typeof result === 'string') {
+                        throw newRxError('EN5', { method: 'getChangedDocumentsSince' });
+                    }
                     return {
                         checkpoint: result.checkpoint,
                         documents: await Promise.all(

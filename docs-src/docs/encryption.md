@@ -185,6 +185,23 @@ If you are using [Worker RxStorage](./rx-storage-worker.md) or [SharedWorker RxS
 
 You do not need to worry about setting the password inside of the worker. The password will be set when calling createRxDatabase from the main thread, and will be passed internally to the storage in the worker automatically.
 
+### Using encryption inside the worker with OPFS
+
+When you wrap a storage like [OPFS](./rx-storage-opfs.md) with encryption inside of a worker, you have to set the `usesRxDatabaseInWorker` option on the OPFS storage. Without this option, the OPFS storage returns raw JSON strings instead of parsed objects as a performance optimization. The encryption wrapper cannot process these strings and will throw an error.
+
+```ts
+// inside of the worker.js file
+import { getRxStorageOPFS } from 'rxdb-premium/plugins/storage-opfs';
+import { wrappedKeyEncryptionWebCryptoStorage } from 'rxdb-premium/plugins/encryption-web-crypto';
+
+const storage = wrappedKeyEncryptionWebCryptoStorage({
+    storage: getRxStorageOPFS({
+        // Required when wrapping OPFS with encryption inside a worker
+        usesRxDatabaseInWorker: true
+    })
+});
+```
+
 ## Encryption Performance
 
 As shown in the chart, the WebCrypto based encryption plugins are generally **5 times faster** than the `crypto-js` plugin.

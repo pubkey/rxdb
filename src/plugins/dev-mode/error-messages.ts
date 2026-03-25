@@ -693,6 +693,12 @@ export const ERROR_MESSAGES = {
         fix: 'Check the password.',
         docs: 'https://rxdb.info/encryption.html?console=errors&code=EN4'
     },
+    EN5: {
+        message: 'Storage wrapper received a string instead of an array from the storage. This happens when a storage like OPFS is used inside of a worker and the usesRxDatabaseInWorker option is not set.',
+        cause: 'Some RxStorage implementations (like OPFS) return JSON strings instead of arrays for performance. When you wrap such a storage with encryption (or other plugins) inside of a worker, the wrapper receives the raw string and cannot process it.',
+        fix: 'Set usesRxDatabaseInWorker: true in your storage options. For example: getRxStorageOPFS({ usesRxDatabaseInWorker: true }).',
+        docs: 'https://rxdb.info/encryption.html?console=errors&code=EN5'
+    },
 
     // plugins/json-dump.js
     JD1: {
