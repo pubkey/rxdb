@@ -223,3 +223,39 @@ export const PERFORMANCE_DATA_ENCRYPTION: RxStoragePerformanceMeasurement[] = [
         '4x-count': 0.38,
     },
 ];
+
+export const PERFORMANCE_DATA_EXPO: RxStoragePerformanceMeasurement[] = [
+    {
+        name: 'OPFS Sync (Worker)',
+        'time-to-first-insert': 123.36,
+        'insert-documents-500': 113.02,
+        'find-by-ids-3000': 342.30,
+        'serial-inserts-50': 36.05,
+        'serial-find-by-id-50': 33.79,
+        'find-by-query': 301.47,
+        'find-by-query-parallel-4': 311.11,
+        '4x-count': 5.23,
+    },
+    {
+        name: 'OPFS Async (Main Thread)',
+        'time-to-first-insert': 89.15,
+        'insert-documents-500': 117.00,
+        'find-by-ids-3000': 320.83,
+        'serial-inserts-50': 108.13,
+        'serial-find-by-id-50': 27.29,
+        'find-by-query': 307.27,
+        'find-by-query-parallel-4': 306.73,
+        '4x-count': 8.21,
+    },
+    {
+        name: 'SQLite (expo-sqlite)',
+        'time-to-first-insert': 177.45,
+        'insert-documents-500': 66.64,
+        'find-by-ids-3000': 252.21,
+        'serial-inserts-50': 483.93,
+        'serial-find-by-id-50': 162.33,
+        'find-by-query': 100.18,
+        'find-by-query-parallel-4': 176.99,
+        '4x-count': 29.19,
+    }
+];
