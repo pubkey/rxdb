@@ -80,6 +80,10 @@ export function NavbarDropdown(props: { which: 'sync' | 'storages'; }) {
                                     text: 'SQLite'
                                 },
                                 {
+                                    href: '/rx-storage-filesystem-expo.html',
+                                    text: 'Expo Filesystem'
+                                },
+                                {
                                     href: '/rx-storage-memory.html',
                                     text: 'Memory'
                                 },
@@ -104,7 +108,7 @@ export function NavbarDropdown(props: { which: 'sync' | 'storages'; }) {
                                 },
                                 {
                                     href: '/rx-storage-filesystem-node.html',
-                                    text: 'Fileystem Node'
+                                    text: 'Node Fileystem'
                                 },
                                 {
                                     href: '/rx-storage-memory.html',
@@ -123,7 +127,7 @@ export function NavbarDropdown(props: { which: 'sync' | 'storages'; }) {
                                 },
                                 {
                                     href: '/rx-storage-filesystem-node.html',
-                                    text: 'Fileystem Node'
+                                    text: 'Node Fileystem'
                                 },
                                 {
                                     href: '/rx-storage-mongodb.html',

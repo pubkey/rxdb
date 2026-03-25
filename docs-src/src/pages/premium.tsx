@@ -404,6 +404,14 @@ export default function Premium() {
                                                                 RxStorage Filesystem Node
                                                             </a>
                                                         </li>
+                                                        <li>
+                                                            <a
+                                                                href="/rx-storage-filesystem-expo.html"
+                                                                target="_blank"
+                                                            >
+                                                                RxStorage Filesystem Expo
+                                                            </a>
+                                                        </li>
                                                     </ul>
                                                 </div>
                                             </div>
@@ -951,6 +959,16 @@ export default function Premium() {
                                             <h4>RxStorage Filesystem Node</h4>
                                             <p>
                                                 A fast RxStorage based on the <b>Node.js</b> Filesystem.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </a>
+                                <a href="/rx-storage-filesystem-expo.html" target="_blank">
+                                    <div className="premium-block hover-shadow-middle bg-gradient-right-top">
+                                        <div className="premium-block-inner">
+                                            <h4>RxStorage Filesystem Expo</h4>
+                                            <p>
+                                                A high-performance RxStorage for <b>React Native</b> and <b>Expo</b> apps based on the Expo Filesystem.
                                             </p>
                                         </div>
                                     </div>
