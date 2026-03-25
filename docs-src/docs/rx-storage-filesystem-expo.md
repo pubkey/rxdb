@@ -124,25 +124,35 @@ On iOS, no additional permissions or setup are necessary for standard filesystem
 
 <details>
 <summary>Why is SQLite slow in React-Native?</summary>
+
 In React Native, SQLite suffers from translation overhead. Every operation requires sending JavaScript queries to the native side, translating them into SQL statements, running the native query planner, and mapping the relational rows back into JavaScript objects. For bulk operations, this parsing and mapping causes noticeable performance degradation.
+
 </details>
 
 <details>
 <summary>Which database works best with React Native/Expo for performance?</summary>
+
 A NoSQL document store that avoids relational SQL overhead provides the fastest performance. RxDB paired with the Expo Filesystem RxStorage skips the SQLite engine entirely. It stores documents directly as plain JSON text appended to files, resulting in superior read and write speeds.
+
 </details>
 
 <details>
 <summary>How can I optimize database queries in React Native?</summary>
+
 You can optimize queries by using proper indexing to prevent full database scans. Switching from a relational SQL database to a local-first NoSQL database that queries directly against raw file data removes the translation steps between JavaScript objects and the storage layer, reducing query resolution times.
+
 </details>
 
 <details>
 <summary>How do I handle large datasets efficiently in React-Native?</summary>
+
 You should use a storage engine that supports fast bulk writes. The Expo Filesystem RxStorage manages large batches of documents by serializing them dynamically using highly optimized UTF-8 decoding, writing the entire batch directly to the filesystem in one continuous operation rather than parsing individual SQL insert statements.
+
 </details>
 
 <details>
 <summary>How to improve performance with offline caching in React Native?</summary>
+
 Use an offline-first database like RxDB to maintain a persistent local replica of your data on the device filesystem. Read operations resolve instantly from the local cache, while background replication synchronizes data modifications with your remote server asynchronously.
+
 </details>
