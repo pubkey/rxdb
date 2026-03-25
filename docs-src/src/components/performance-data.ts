@@ -110,8 +110,47 @@ const PERFORMANCE_NODE_SQLITE_NATIVE: RxStoragePerformanceMeasurement = {
 
 
 
+const PERFORMANCE_EXPO_FS_ASYNC: RxStoragePerformanceMeasurement = {
+    name: 'Expo Fs (Async)',
+    'time-to-first-insert': 55.72,
+    'insert-documents-500': 13.79,
+    'find-by-ids-3000': 156.88,
+    'serial-inserts-50': 8.85,
+    'serial-find-by-id-50': 15.42,
+    'find-by-query': 191.86,
+    'find-by-query-parallel-4': 177.5,
+    '4x-count': 5.04,
+};
 
+const PERFORMANCE_EXPO_FS_SYNC: RxStoragePerformanceMeasurement = {
+    name: 'Expo Fs (Sync)',
+    'time-to-first-insert': 72.37,
+    'insert-documents-500': 10.14,
+    'find-by-ids-3000': 182.04,
+    'serial-inserts-50': 10.79,
+    'serial-find-by-id-50': 18.64,
+    'find-by-query': 219.94,
+    'find-by-query-parallel-4': 222.14,
+    '4x-count': 3.82,
+};
 
+const PERFORMANCE_EXPO_SQLITE: RxStoragePerformanceMeasurement = {
+    name: 'Expo SQLite',
+    'time-to-first-insert': 53.28,
+    'insert-documents-500': 116.79,
+    'find-by-ids-3000': 336.17,
+    'serial-inserts-50': 13.54,
+    'serial-find-by-id-50': 19.08,
+    'find-by-query': 333.83,
+    'find-by-query-parallel-4': 339.58,
+    '4x-count': 2.67,
+};
+
+export const PERFORMANCE_DATA_EXPO: RxStoragePerformanceMeasurement[] = [
+    PERFORMANCE_EXPO_FS_ASYNC,
+    PERFORMANCE_EXPO_FS_SYNC,
+    PERFORMANCE_EXPO_SQLITE
+];
 
 
 export const PERFORMANCE_DATA_BROWSER: RxStoragePerformanceMeasurement[] = [
