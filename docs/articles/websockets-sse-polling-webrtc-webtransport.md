@@ -67,7 +67,7 @@ This complexity is why most people use a library on top of WebSockets like [Sock
 
 Server-Sent Events (SSE) provide a standard way to push server updates to the client over HTTP. Unlike WebSockets, SSEs are designed exclusively for one-way communication from server to client, making them ideal for scenarios like live news feeds, sports scores, or any situation where the client needs to be updated in real time without sending data to the server.
 
-You can think of Server-Sent-Events as a single HTTP request where the backend does not send the whole body at once, but instead keeps the connection open and trickles the answer by sending a single line each time an event has to be send to the client.
+You can think of Server-Sent-Events as a single HTTP request where the backend does not send the whole body at once, but instead keeps the connection open and trickles the answer by sending a single line each time an event has to be sent to the client.
 
 Creating a connection for receiving events with SSE is straightforward. On the client side in a browser, you initialize an [EventSource](https://developer.mozilla.org/en-US/docs/Web/API/EventSource) instance with the URL of the server-side script that generates the events.
 
@@ -249,6 +249,18 @@ There are many known problems with company infrastructure when using any of the 
 <summary>What are the differences between long polling and traditional polling in web development?</summary>
 
 Traditional polling forces the client to ask the server for updates at fixed intervals. The server responds immediately even when no new data exists. This approach wastes bandwidth and increases server load. Long polling improves this model. The client requests data and the server holds the connection open until it has new information to send. The server then responds and the client immediately opens a new connection. Long polling reduces unnecessary requests and provides updates faster than traditional polling.
+</details>
+
+<details>
+<summary>Are server-sent events or WebSockets suitable for offline notifications?</summary>
+
+Neither Server-Sent Events (SSE) nor [WebSockets](#what-are-websockets) are suitable for *triggering* offline notifications because they are strictly active, persistent network protocols that inherently drop when the device goes offline. To handle notifications while offline, you must rely on the operating system's native background task schedulers or the browser's Service Worker Push API, which can briefly wake your app to process payloads or evaluate local state before displaying a system-level notification.
+</details>
+
+<details>
+<summary>Is WebRTC faster than WebSockets for peer-to-peer applications?</summary>
+
+For pure peer-to-peer applications, [WebRTC](../replication-webrtc.md) is technically faster and scales infinitely better than WebSockets because data flows directly between the clients (over UDP) rather than bottlenecking through a central routing server. However, WebRTC is highly complex to configure, requiring ICE, STUN, and TURN servers to traverse enterprise NATs and firewalls. Generally, WebSockets are vastly simpler to implement for client-server topologies, while WebRTC is reserved strictly for specialized, heavily decentralized P2P architectures.
 </details>
 
 ## Follow Up

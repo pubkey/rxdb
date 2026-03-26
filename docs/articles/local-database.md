@@ -117,6 +117,54 @@ These qualities streamline development, making RxDB an appealing choice for team
 A local database provides data storage on the user device. This eliminates the need for continuous internet access. You achieve near-instant data retrieval and fast updates. An offline-first application requires a local database to function without a network connection. You reduce server load and bandwidth costs. You provide a smooth user experience regardless of network conditions.
 </details>
 
+<details>
+<summary>What is a local database and how does it compare to cloud databases?</summary>
+
+A **local database** runs directly on a user's device (e.g., a smartphone or browser) or local network rather than on a remote cloud server. The primary difference is where the data lives and computes. Local databases provide instant access, zero network latency, and robust offline capabilities, granting complete control over the application's data. **Cloud databases** rely exclusively on an active internet connection, abstract away infrastructure management, and are inherently centralized, making them great for heavy computing workloads but explicitly dependent on network stability.
+</details>
+
+<details>
+<summary>What is an embedded database and when should you use one?</summary>
+
+An **embedded database** (such as [SQLite](../rx-storage-sqlite.md) or [RxDB](../rx-database.md)) is tightly integrated into the application software itself rather than running as an independent standalone service. You should use one when deploying client-side applications such as mobile apps, desktop binaries via [Electron](../electron-database.md), or browser-based Progressive Web Apps that require low-latency data access, offline-first behavior, or when you want to avoid the administrative overhead of maintaining a separate remote database cluster.
+</details>
+
+<details>
+<summary>What offline databases support resilient data synchronization?</summary>
+
+For modern JavaScript and TypeScript applications, **[RxDB](../rx-database.md)** provides resilient, offline-first synchronization with automated conflict resolution through endpoints spanning [CouchDB](../replication-couchdb.md), [GraphQL](../replication-graphql.md), or even peer-to-peer networks via [WebRTC](../replication-webrtc.md). Other ecosystem alternatives include PouchDB, WatermelonDB, and cloud-provider SDKs like Firebase Firestore and Supabase, though RxDB offers the most flexible, [storage-agnostic](../rx-storage.md) reactivity model.
+</details>
+
+<details>
+<summary>What database should I use for an app that can't rely on constant internet access?</summary>
+
+An app that cannot rely on constant internet must utilize a [Local-First](../offline-first.md) or Offline-First architecture. A local document database like **RxDB** handles all read and write queries instantly on the device's storage (such as [IndexedDB](../rx-storage-indexeddb.md) or [SQLite](../rx-storage-sqlite.md)). A background replication process then synchronizes the local state with your central backend whenever connectivity is restored.
+</details>
+
+<details>
+<summary>What are the core advantages of using local databases?</summary>
+
+The core advantages include **Zero Latency** (data is fetched locally without round-trip network delays), **Offline Functionality** (the app remains completely usable during network drops or in airplane mode), **Reduced Server Costs** (querying and complex data manipulations happen on the client's own hardware instead of expensive cloud servers), and **Improved Privacy** (sensitive user information can be [encrypted](../encryption.md) and processed entirely on the native device before synchronizing).
+</details>
+
+<details>
+<summary>What is the best database for a Node.js environment?</summary>
+
+The "best" database for [Node.js](../nodejs-database.md) depends entirely on your application's architecture. For traditional, heavy-duty server clusters, PostgreSQL or MongoDB are standard. However, for offline-first tools, edge environments, or standalone applications, an embedded local database like **[SQLite](../rx-storage-sqlite.md)** or a JavaScript-native engine via **[RxDB's native filesystem storage](../rx-storage-filesystem-node.md)** provides exceptional, low-latency data access without requiring external database dependencies.
+</details>
+
+<details>
+<summary>What software and architecture is used to create robust offline local applications?</summary>
+
+Robust offline applications rely on an **Offline-First** (or [Local-First](../offline-first.md)) architecture. This involves storing data in a client-side database (like IndexedDB or SQLite) and wrapping it with a reactive state layer like **[RxDB](../rx-database.md)** to instantly serve the UI. A background [replication](../replication.md) engine then continually coordinates local changes with a cloud backend whenever network connectivity is restored.
+</details>
+
+<details>
+<summary>What is a document-oriented database compared to a relational local database?</summary>
+
+A **document-oriented database** (such as RxDB or MongoDB) stores data as flexible [JSON](./json-database.md) documents. This heavily aligns with JavaScript's native object structures and is ideal for continuously evolving data models. A **relational local database** (such as [SQLite](../rx-storage-sqlite.md)) strictly organizes data into rows and columns using rigid schemas. While relational databases are heavily optimized for complex JOIN queries, document databases offer substantially faster iteration speeds and simpler serialization for modern frontend frameworks.
+</details>
+
 ## Follow Up
 
 Ready to get started? Here are some next steps:

@@ -86,7 +86,7 @@ import { Overview } from '@site/src/components/overview';
 
 ---
 
-## 🚀 Quickstart
+## Quickstart
 
 import {Steps} from '@site/src/components/steps';
 import {TriggerEvent} from '@site/src/components/trigger-event';
@@ -189,6 +189,18 @@ import { DatabaseSync } from 'node:sqlite';
 const storage = getRxStorageSQLiteTrial({
 sqliteBasics: getSQLiteBasicsNodeNative(DatabaseSync)
 });
+```
+
+#### Expo Filesystem 👑
+
+For React Native and Expo applications, the [Expo Filesystem storage](./rx-storage-filesystem-expo.md) offers superior performance compared to SQLite and Async Storage by utilizing OPFS JSI bindings.
+
+```ts
+import {
+    getRxStorageExpoAsync
+} from 'rxdb-premium/plugins/storage-filesystem-expo';
+
+let storage = getRxStorageExpoAsync();
 ```
 
 #### And more...
@@ -1397,7 +1409,7 @@ This function returns an observable of the given path's value.
 The current value of this path will be emitted each time the document changes.
 ```js
 // get the live-updating value of 'name'
-var isName;
+let isName;
 myDocument.get$('name')
   .subscribe(newName => {
     isName = newName;
@@ -1420,9 +1432,9 @@ All properties of an `RxDocument` are assigned as getters so you can also direct
 
 ```js
   // Identical to myDocument.get('name');
-  var name = myDocument.name;
+  const name = myDocument.name;
   // Can also get nested values.
-  var nestedValue = myDocument.whatever.nestedfield;
+  const nestedValue = myDocument.whatever.nestedfield;
 
   // Also usable with observables:
   myDocument.firstName$.subscribe(newName => console.log('name is: ' + newName));
@@ -1855,7 +1867,7 @@ await mySourceCollection.insert({/* ... */});
  * we know that the result array contains data created
  * on top of the previously inserted documents.
  */
-const result = myDestinationCollection.find().exec();
+const result = await myDestinationCollection.find().exec();
 ```
 
 ## Creating a RxPipeline
@@ -2052,7 +2064,7 @@ To find documents inside of an [RxCollection](./rx-collection.md), RxDB uses the
 To create a basic `RxQuery`, call `.find()` on a collection and insert selectors. The result-set of normal queries is an array with documents.
 
 ```js
-// find all that are older then 18
+// find all that are older than 18
 const query = myCollection
     .find({
       selector: {
@@ -2411,7 +2423,7 @@ const count$ = myCollection.find({
 
 /**
  * To allow non-fully-indexed count queries,
- * you can also specify that by setting allowanceSlowCount: true
+ * you can also specify that by setting allowSlowCount: true
  * when creating the database.
  */
 const database = await createRxDatabase({
@@ -2669,7 +2681,7 @@ const id = myRxCollection.schema.getPrimaryOfDocumentData({
     firstName: 'foo',
     lastName: 'bar'
 });
-const myRxDocument = myRxCollection.findOne(id).exec();
+const myRxDocument = await myRxCollection.findOne(id).exec();
 
 ```
 
@@ -3123,7 +3135,7 @@ const replicationPool = await replicateWebRTC(
 
 ---
 
-## ⚙️ RxStorage Layer - Choose the Perfect RxDB Storage for Every Use Case
+## RxStorage Layer - Choose the Perfect RxDB Storage for Every Use Case
 
 # RxStorage
 
@@ -3132,7 +3144,7 @@ RxDB is not a self-contained database. Instead the data is stored in an implemen
 ## Quick Recommendations
 
 - In the Browser: Use the [LocalStorage](./rx-storage-localstorage.md) storage for simple setup and small build size. For bigger datasets, use either the [dexie.js storage](./rx-storage-dexie.md) (free) or the [IndexedDB RxStorage](./rx-storage-indexeddb.md) if you have [👑 premium access](/premium/) which is a bit faster and has a smaller build size.
-- In [Electron](./electron-database.md) and [ReactNative](./react-native-database.md): Use the [SQLite RxStorage](./rx-storage-sqlite.md) if you have [👑 premium access](/premium/) or the [trial-SQLite RxStorage](./rx-storage-sqlite.md) for tryouts.
+- In [Electron](./electron-database.md) and [ReactNative](./react-native-database.md): Use the [SQLite RxStorage](./rx-storage-sqlite.md) if you have [👑 premium access](/premium/) or the [trial-SQLite RxStorage](./rx-storage-sqlite.md) for tryouts. For ultimate performance in Expo and React Native, use the [Expo Filesystem RxStorage](./rx-storage-filesystem-expo.md).
 - In Capacitor: Use the [SQLite RxStorage](./rx-storage-sqlite.md) if you have [👑 premium access](/premium/), otherwise use the [localStorage](./rx-storage-localstorage.md) storage.
 
 ## Configuration Examples
@@ -3256,6 +3268,10 @@ To use RxDB in [electron](./electron-database.md), it is recommended to run the 
 
 ### Third Party based Storages
 
+#### 👑 Expo Filesystem
+
+The Expo Filesystem storage brings blazing-fast OPFS capabilities to React Native and Expo applications, bypassing the bridge via JSI bindings for maximum performance. This is the fastest storage engine for React Native. [Read more](./rx-storage-filesystem-expo.md)
+
 #### 👑 SQLite
 
 The SQLite storage has great performance when RxDB is used on **Node.js**, **Electron**, **React Native**, **Cordova** or **Capacitor**. [Read more](./rx-storage-sqlite.md)
@@ -3310,6 +3326,9 @@ import {
     RxJsonSchema,
     RxDocument,
 } from 'rxdb/plugins/core';
+import {
+    getRxStorageLocalstorage
+} from 'rxdb/plugins/storage-localstorage';
 ```
 
 ## Create the base document type
@@ -3451,7 +3470,8 @@ const heroSchema: RxJsonSchema<HeroDocType> = {
     type: 'object',
     properties: {
         passportId: {
-            type: 'string'
+            type: 'string',
+            maxLength: 100
         },
         firstName: {
             type: 'string'

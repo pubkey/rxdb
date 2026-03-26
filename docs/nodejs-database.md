@@ -2,6 +2,9 @@
 
 > Discover how RxDB brings flexible, reactive NoSQL to Node.js. Scale effortlessly, persist data, and power your server-side apps with ease.
 
+import { PerformanceChart } from '@site/src/components/performance-chart';
+import { PERFORMANCE_DATA_NODE, PERFORMANCE_METRICS } from '@site/src/components/performance-data';
+
 # Node.js Database
 
 [RxDB](https://rxdb.info) is a fast, reactive realtime NoSQL **database** made for **JavaScript** applications like Websites, [hybrid Apps](./articles/mobile-database.md), [Electron-Apps](./electron-database.md), [Progressive Web Apps](./articles/progressive-web-app-database.md) and **Node.js**. While RxDB was initially created to be used with UI applications, it has been matured and optimized to make it useful for pure server-side use cases. It can be used as embedded, local database inside of the Node.js JavaScript process, or it can be used similar to a database server that Node.js can connect to. The [RxStorage](./rx-storage.md) layer makes it possible to switch out the underlying storage engine which makes RxDB a very flexible database that can be optimized for many scenarios.
@@ -78,7 +81,7 @@ const myRxDatabase = await createRxDatabase({
 
 Here is a performance comparison chart of the different storages (lower is better):
 
-  
+<PerformanceChart title="Node/Native Storages" data={PERFORMANCE_DATA_NODE} metrics={PERFORMANCE_METRICS} />
 
 ## RxDB as Node.js In-Memory Database
 
@@ -138,6 +141,12 @@ Sometimes however you might not want to store the full dataset on each microserv
 <summary>What is the best database to use with Node.js?</summary>
 
 You must choose a database based on your project requirements. For simple server-side document storage you use MongoDB or CouchDB. For relational data you use PostgreSQL or MySQL. If you need realtime synchronization between your Node.js backend and client applications you use RxDB. RxDB provides local-first offline support and seamless data replication. You can combine RxDB with storage plugins like SQLite or FoundationDB to achieve high performance.
+</details>
+
+<details>
+<summary>Is LocalStorage available as an API in Node.js server environments?</summary>
+
+No, the `LocalStorage` API is strictly a browser-exclusive `window` object feature and does *not* exist in native Node.js V8 execution environments. Attempting to mount the `getRxStorageLocalstorage` plugin inside a pure Node server will immediately trigger `ReferenceError: localStorage is not defined`. To achieve persistent local storage within Node.js architecture blocks, you must implement explicitly file-driven adapters like the **[Filesystem Node Storage](./rx-storage-filesystem-node.md)** or the **[SQLite Storage](./rx-storage-sqlite.md)**.
 </details>
 
 ## Follow up on RxDB+Node.js

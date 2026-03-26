@@ -1,6 +1,6 @@
 # Testing
 
-> Writing tests for your RxDB application is crucial to ensure reliability. Because RxDB runs in many different environments (Browser, [Node.js](nodejs-database.md), [React Native](react-native-database.md), [Electron](electron-database.md), ...), testing strategies might vary. However, there are some common patterns that make testing easier and faster.
+> Strategies and patterns for testing RxDB applications, including using the memory RxStorage, resource management with the using keyword, and test helpers.
 
 # Testing
 

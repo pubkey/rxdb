@@ -1,4 +1,4 @@
-# ⚙️ RxStorage Layer - Choose the Perfect RxDB Storage for Every Use Case
+# RxStorage Layer - Choose the Perfect RxDB Storage for Every Use Case
 
 > Discover how RxDB's modular RxStorage lets you swap engines and unlock top performance, no matter the environment or use case.
 
@@ -9,7 +9,7 @@ RxDB is not a self-contained database. Instead the data is stored in an implemen
 ## Quick Recommendations
 
 - In the Browser: Use the [LocalStorage](./rx-storage-localstorage.md) storage for simple setup and small build size. For bigger datasets, use either the [dexie.js storage](./rx-storage-dexie.md) (free) or the [IndexedDB RxStorage](./rx-storage-indexeddb.md) if you have [👑 premium access](/premium/) which is a bit faster and has a smaller build size.
-- In [Electron](./electron-database.md) and [ReactNative](./react-native-database.md): Use the [SQLite RxStorage](./rx-storage-sqlite.md) if you have [👑 premium access](/premium/) or the [trial-SQLite RxStorage](./rx-storage-sqlite.md) for tryouts.
+- In [Electron](./electron-database.md) and [ReactNative](./react-native-database.md): Use the [SQLite RxStorage](./rx-storage-sqlite.md) if you have [👑 premium access](/premium/) or the [trial-SQLite RxStorage](./rx-storage-sqlite.md) for tryouts. For ultimate performance in Expo and React Native, use the [Expo Filesystem RxStorage](./rx-storage-filesystem-expo.md).
 - In Capacitor: Use the [SQLite RxStorage](./rx-storage-sqlite.md) if you have [👑 premium access](/premium/), otherwise use the [localStorage](./rx-storage-localstorage.md) storage.
 
 ## Configuration Examples
@@ -132,6 +132,10 @@ The [RxStorage](./rx-storage.md) Localstorage Meta Optimizer is a wrapper around
 To use RxDB in [electron](./electron-database.md), it is recommended to run the RxStorage in the main process and the RxDatabase in the renderer processes. With the rxdb electron plugin you can create a remote RxStorage and consume it from the renderer process. [Read more](./electron.md)
 
 ### Third Party based Storages
+
+#### 👑 Expo Filesystem
+
+The Expo Filesystem storage brings blazing-fast OPFS capabilities to React Native and Expo applications, bypassing the bridge via JSI bindings for maximum performance. This is the fastest storage engine for React Native. [Read more](./rx-storage-filesystem-expo.md)
 
 #### 👑 SQLite
 

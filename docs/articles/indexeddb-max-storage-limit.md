@@ -37,7 +37,7 @@ IndexedDB size quotas differ significantly across browsers and platforms. While 
 | iOS Safari     | Typically 1 GB, can be less on older iOS     | Early iOS versions were known for more aggressive quotas and data eviction on low space.                                     |
 | Android Chrome | Similar to desktop Chrome                    | May exhibit warnings in especially low-storage devices. The same 80% free space logic generally applies.                     |
 
-Historically, these limits have evolved. For instance, older Firefox versions included `dom.indexedDB.warningQuota`, showing a 50 MB prompt on desktop or a 5 MB prompt on mobile—many developers wrote about these notifications on Stack Overflow. Since around 2015, Firefox has changed its quota approach significantly. Likewise, Safari used to limit data more aggressively on older iOS versions. Some older tutorials suggest comparing IndexedDB to localStorage, but modern browsers allow far larger and more flexible storage with IndexedDB than the old localStorage or cookie-based setups.
+Historically, these limits have evolved. For instance, older Firefox versions included `dom.indexedDB.warningQuota`, showing a 50 MB prompt on desktop or a 5 MB prompt on mobile. Many developers wrote about these notifications on Stack Overflow. Since around 2015, Firefox has changed its quota approach significantly. Likewise, Safari used to limit data more aggressively on older iOS versions. Some older tutorials suggest comparing IndexedDB to localStorage, but modern browsers allow far larger and more flexible storage with IndexedDB than the old localStorage or cookie-based setups.
 
 ---
 
@@ -130,7 +130,7 @@ const compressed = {
 };
 ```
 
-Sharding data across multiple subdomains or iframes is another trick, though it complicates communication. When you need truly massive offline data, you might store part of the data under `sub1.yoursite.com` and another chunk under `sub2.yoursite.com`, using `postMessage()` to coordinate. This can circumvent single-origin limitations, but it introduces extra complexity. Another effective method is to let data expire automatically—perhaps older records are removed if they haven’t been accessed for a certain period.
+Sharding data across multiple subdomains or iframes is another trick, though it complicates communication. When you need truly massive offline data, you might store part of the data under `sub1.yoursite.com` and another chunk under `sub2.yoursite.com`, using `postMessage()` to coordinate. This can circumvent single-origin limitations, but it introduces extra complexity. Another effective method is to let data expire automatically, for example, older records can be removed if they haven’t been accessed for a certain period.
 
 <center>
     

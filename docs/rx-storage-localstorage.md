@@ -56,7 +56,7 @@ await db.addCollections({
       primaryKey: 'id',
       type: 'object',
       properties: {
-        id: { type: 'string' },
+        id: { type: 'string', maxLength: 100 },
         title: { type: 'string' },
         done: { type: 'boolean' }
       },

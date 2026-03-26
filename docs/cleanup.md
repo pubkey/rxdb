@@ -37,7 +37,7 @@ const db = await createRxDatabase({
        */
       minimumDeletedTime: 1000 * 60 * 60 * 24 * 31, // one month,
       /**
-       * The minimum amount of that that the RxCollection must have existed.
+       * The minimum amount of time that the RxCollection must have existed.
        * This ensures that at the initial page load, more important
        * tasks are not slowed down because a cleanup process is running.
        * [default=60 seconds]
@@ -90,7 +90,7 @@ await myRxCollection.cleanup(1000);
 
 /**
  * Purge all deleted documents no
- * matter when they where deleted
+ * matter when they were deleted
  * by setting minimumDeletedTime to zero.
  */
 await myRxCollection.cleanup(0);

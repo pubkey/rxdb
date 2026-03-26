@@ -1,8 +1,8 @@
-# Zero Latency Local First Apps with RxDB – Sync, Encryption and Compression
+# Zero Latency Local First Apps with RxDB - Sync, Encryption and Compression
 
 > Build blazing-fast, zero-latency local first apps with RxDB. Gain instant UI responses, robust offline capabilities, end-to-end encryption, and data compression for streamlined performance.
 
-# Zero Latency Local First Apps with RxDB – Sync, Encryption and Compression
+# Zero Latency Local First Apps with RxDB - Sync, Encryption and Compression
 
 Creating a **zero-latency local first** application involves ensuring that most (if not all) user interactions occur instantaneously, without waiting on remote network responses. This design drastically enhances user experience, allowing apps to remain responsive and functional even when offline or experiencing poor connectivity. As developers, we can achieve this by storing data **locally on the client** and synchronizing it to the backend in the background. **RxDB** (Reactive Database) offers a comprehensive set of features - covering replication, offline support, encryption, compression, conflict handling, and more - that make it straightforward to build such high-performing apps.
 
@@ -186,7 +186,7 @@ await db.addCollections({
       type: 'object',
       primaryKey: 'id',
       properties: {
-        id:         { type: 'string'. maxLength: 100 },
+        id:         { type: 'string', maxLength: 100 },
         message:    { type: 'string' },
         timestamp:  { type: 'number' }
       }

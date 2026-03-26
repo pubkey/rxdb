@@ -1,8 +1,6 @@
 # Remote RxStorage
 
-> The Remote [RxStorage](./rx-storage.md) is made to use a remote storage and communicate with it over an asynchronous message channel.
-The remote part could be on another JavaScript process or even on a different host machine.
-The remote storage plugin is used in many RxDB plugins like the [worker](./rx-storage-worker.md) or the [electron](./electron.md) plugin.
+> Use the Remote RxStorage plugin to run RxDB storage on a separate process or host machine and communicate over an asynchronous message channel.
 
 # Remote RxStorage
 

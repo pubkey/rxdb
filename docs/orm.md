@@ -1,6 +1,6 @@
 # ORM
 
-> Like [mongoose](http://mongoosejs.com/docs/guide.html#methods), RxDB has ORM capabilities which can be used to add specific behavior to documents and collections.
+> Add ORM capabilities to RxDB collections and documents with custom static methods, instance methods, and attachment methods for structured data access.
 
 # Object-Data-Relational-Mapping
 

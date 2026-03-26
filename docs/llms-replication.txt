@@ -242,6 +242,26 @@ The `RxAppwriteReplicationState` which is returned from `replicateAppwrite()` al
 
   
 
+## FAQ
+
+<details>
+<summary>Does Appwrite support multiple databases and subcollections?</summary>
+
+Yes, Appwrite supports creating multiple top-level databases within a single project, which cleanly partition collections. However, Appwrite is a rigid NoSQL document store that does *not* support nested subcollections (unlike Firebase). When utilizing the **[RxDB Appwrite Replication](./replication.md)** plugin, your local RxDB schema must mirror this flat topology precisely, keeping all documents completely devoid of complex nested relationships.
+</details>
+
+<details>
+<summary>What database driver does Appwrite use under the hood?</summary>
+
+Appwrite uses MariaDB (a highly performant MySQL fork) as its core backing database driver. To offer developers a flat NoSQL experience, Appwrite abstracts the MariaDB relational complexity behind a unified Document API. This architectural mapping allows **[RxDB](./rx-database.md)** to replicate data effortlessly into Appwrite via standard REST endpoints without ever dealing with strict SQL table mappings or migrations.
+</details>
+
+<details>
+<summary>Does Appwrite feature native real-time sync for offline apps?</summary>
+
+Appwrite natively provides robust WebSocket subscriptions allowing clients to receive real-time document events while the network is active. However, Appwrite does *not* feature a built-in offline-first caching or background-sync engine. To achieve true offline capabilities, you must mount the **[RxDB Appwrite Replication](./replication.md)** plugin on the client. RxDB handles all local caching, queues offline writes securely, and automatically pushes local mutations to Appwrite when connectivity returns.
+</details>
+
 ## Limitations of the Appwrite Replication Plugin
 
 - Appwrite primary keys only allow for the characters `a-z`, `A-Z`, `0-9`, and underscore `_` (They cannot start with a leading underscore). Also the primary key has a max length of 36 characters.
@@ -635,6 +655,7 @@ Keep in mind that you can not use inequality operators `(<, <=, !=, not-in, >, o
 ## Google Drive Sync
 
 import {Steps} from '@site/src/components/steps';
+import {BetaBlock} from '@site/src/components/beta-block';
 
 # Replication with Google Drive
 
@@ -651,9 +672,7 @@ The replication uses the Google Drive API v3 and v2.
 - **Cross-Device:** Users can access their data from multiple devices by signing into the same Google account.
 - **Realtime Sync:** Uses [WebRTC](./replication-webrtc.md) for peer-to-peer signaling to achieve near real-time updates. Uses the same google-drive folder instead of a signaling-server.
 
-:::info
-This plugin is in **beta** since RxDB version 17.0.0.
-:::
+<BetaBlock since="17.0.0" />
 
 ## Usage
 
@@ -1343,7 +1362,7 @@ Also the server has to respect the batchSize so that RxDB knows when there are n
 ```ts
 // > server.ts
 import { lastOfArray } from 'rxdb/plugins/core';
-app.get('/pull', (req, res) => {
+app.get('/pull', async (req, res) => {
     const id = req.query.id;
     const updatedAt = parseFloat(req.query.updatedAt);
     const documents = await mongoCollection.find({
@@ -1417,7 +1436,7 @@ import { Subject } from 'rxjs';
 let lastEventId = 0;
 const pullStream$ = new Subject();
 
-app.get('/push', (req, res) => {
+app.get('/push', async (req, res) => {
     const changeRows = req.body;
     const conflicts = [];
     const event = {
@@ -1426,7 +1445,7 @@ app.get('/push', (req, res) => {
         checkpoint: null
     };
     for(const changeRow of changeRows){
-        const realMasterState = mongoCollection.findOne({id: changeRow.newDocumentState.id});
+        const realMasterState = await mongoCollection.findOne({id: changeRow.newDocumentState.id});
         if(
             realMasterState && !changeRow.assumedMasterState ||
             (
@@ -1442,7 +1461,7 @@ app.get('/push', (req, res) => {
             conflicts.push(realMasterState);
         } else {
             // no conflict -> write the document
-            mongoCollection.updateOne(
+            await mongoCollection.updateOne(
                 {id: changeRow.newDocumentState.id},
                 changeRow.newDocumentState
             );
@@ -1589,6 +1608,7 @@ In this tutorial we only covered the basics of doing a HTTP replication between 
 ## Microsoft OneDrive Sync
 
 import {Steps} from '@site/src/components/steps';
+import {BetaBlock} from '@site/src/components/beta-block';
 
 # Replication with Microsoft OneDrive
 
@@ -1605,9 +1625,7 @@ The replication uses the Microsoft Graph API.
 - **Cross-Device:** Users can access their data from multiple devices by signing into the same Microsoft account.
 - **Realtime Sync:** Uses [WebRTC](./replication-webrtc.md) for peer-to-peer signaling to achieve near real-time updates. Uses the same onedrive folder instead of a signaling-server.
 
-:::info
-This plugin is in **beta** since RxDB version 17.0.0.
-:::
+<BetaBlock since="17.0.0" />
 
 ## Usage
 
@@ -2141,7 +2159,7 @@ import {RxdbMongoDiagramPlain} from '@site/src/components/mongodb-sync';
 
 The **Supabase Replication Plugin** for RxDB delivers seamless, two-way synchronization between your RxDB collections and a Supabase (Postgres) table. It uses **PostgREST** for pull/push and **Supabase Realtime** (logical replication) to stream live updates, so your data stays consistent across devices with first-class [local-first](./articles/local-first-future.md), offline-ready support.
 
-Under the hood, the plugin is powered by the RxDB [Sync Engine](./replication.md). It handles checkpointed incremental pulls, robust retry logic, and [conflict detection/resolution](./transactions-conflicts-revisions.md) for you. You focus on features—RxDB takes care of sync.
+Under the hood, the plugin is powered by the RxDB [Sync Engine](./replication.md). It handles checkpointed incremental pulls, robust retry logic, and [conflict detection/resolution](./transactions-conflicts-revisions.md) for you. You focus on features, and RxDB takes care of sync.
 
 <center>
     <VideoBox videoId="zBZgdTb-dns" title="Supabase in 100 Seconds" duration="2:36" />
@@ -2245,7 +2263,7 @@ await db.addCollections({
 
 ### Create the Supabase Client
 
-Make a single Supabase client and reuse it across your app. In the browser, use the anon key (RLS-protected). On trusted servers you may use the service role key—but never ship that to clients.
+Make a single Supabase client and reuse it across your app. In the browser, use the anon key (RLS-protected). On trusted servers you may use the service role key, but never ship that to clients.
 
 <Tabs>
 
@@ -2371,15 +2389,39 @@ The `RxSupabaseReplicationState` which is returned from `replicateSupabase()` al
 Supabase and RxDB offer the best of both worlds for Node.js and TypeScript applications. Supabase provides a powerful PostgreSQL backend. You can use PostgreSQL as a document database by storing JSON data. RxDB provides a reactive local document store. You achieve real-time synchronization between the local document store and the Supabase backend. You benefit from strong TypeScript typing on the client and robust SQL querying on the server.
 </details>
 
+<details>
+<summary>How to connect an anonymous key to a Supabase project?</summary>
+
+You connect an anonymous key to a Supabase project by initializing the official `@supabase/supabase-js` client utilizing your project's `SUPABASE_URL` and `SUPABASE_ANON_KEY`. In frontend applications interacting with the **[RxDB Supabase Replication](./replication.md)** plugin, you must inject the `anon` key, while simultaneously configuring strict Row Level Security (RLS) policies within your Supabase PostgreSQL backend to prevent unauthorized data manipulation.
+</details>
+
+<details>
+<summary>Does Supabase support full offline sync and CRDT capabilities?</summary>
+
+Natively, the Supabase JavaScript client does not support advanced offline-first synchronization pipelines or complex Conflict-free Replicated Data Type (CRDT) architectures. To implement full offline sync capable of continuous background disconnected writes, you must attach the **[RxDB](./rx-database.md)** Supabase Replication Plugin. RxDB acts as the offline-first local CRDT-like cache, deferring all local mutations into a unified outbound queue until the Supabase TCP connection is restored.
+</details>
+
+<details>
+<summary>Should Row Level Security (RLS) be enabled when using Supabase real-time sync?</summary>
+
+Yes, Row Level Security (RLS) is strictly mandatory whenever you expose a Supabase database directly to the frontend. Without RLS, the anonymous `anon` key used by the **[RxDB](./rx-database.md)** client grants full read and write access to your entire PostgreSQL cluster. You must configure RLS policies that enforce `auth.uid() = user_id` checks to guarantee clients only replicate and mutate their own specific documents.
+</details>
+
+<details>
+<summary>How does Supabase Realtime architecture work?</summary>
+
+Supabase Realtime acts as an Elixir-based WebSocket broadcasting server that taps directly into PostgreSQL's logical replication stream. When a row changes on the database, the Realtime server parses the WAL (Write-Ahead Log) and pushes the event down to subscribed clients. The **[RxDB Supabase Replication](./replication.md)** plugin leverages this WebSocket channel strictly for live change detection, triggering rapid localized pulls over PostgREST to guarantee no data is dropped during connection turbulence.
+</details>
+
 ## Follow Up
 
-- **Replication API Reference:** Learn the core concepts and lifecycle hooks — [Replication](./replication.md)
-- **Offline-First Guide:** Caching, retries, and conflict strategies — [Local-First](./articles/local-first-future.md)
-- **Supabase Essentials:**
-  - Row Level Security (RLS) — https://supabase.com/docs/guides/auth/row-level-security
-  - Realtime — https://supabase.com/docs/guides/realtime
-  - Local dev with the Supabase CLI — https://supabase.com/docs/guides/cli
-- **Community:** Questions or feedback? Join our Discord — [Chat](./chat)
+- **Replication API Reference:** Learn the core concepts and lifecycle hooks - [Replication](./replication.md)
+- **Offline-First Guide:** Caching, retries, and conflict strategies - [Local-First](./articles/local-first-future.md)
+- **Supabase Crash Course:** Build a React Native app with RxDB - [Webinar Video](https://www.youtube.com/watch?v=F051fX1z6lE)
+- Row Level Security (RLS) - https://supabase.com/docs/guides/auth/row-level-security
+- Realtime - https://supabase.com/docs/guides/realtime
+- Local dev with the Supabase CLI - https://supabase.com/docs/guides/cli
+- **Community:** Questions or feedback? Join our Discord - [Chat](./chat)
 
 ---
 
@@ -2637,14 +2679,14 @@ While all modern browsers support the WebRTC and WebSocket APIs, they is missing
 For the Websocket API use the `ws` package that is included into RxDB.
 
 ```ts
-import nodeDatachannelPolyfill from 'node-datachannel/polyfill';
+import PERFORMANCE_DATA_NODEchannelPolyfill from 'node-datachannel/polyfill';
 import { WebSocket } from 'ws';
 const replicationPool = await replicateWebRTC(
     {
         /* ... */
         connectionHandlerCreator: getConnectionHandlerSimplePeer({
             signalingServerUrl: 'wss://example.com:8080',
-            wrtc: nodeDatachannelPolyfill,
+            wrtc: PERFORMANCE_DATA_NODEchannelPolyfill,
             webSocketConstructor: WebSocket
         }),
         pull: {},
@@ -2662,9 +2704,21 @@ The WebRTC replication plugin seamlessly integrates with the [RxDB encryption pl
 ## FAQ
 
 <details>
+<summary>How can WebRTC enable real-time peer-to-peer communications between browsers?</summary>
+
+WebRTC enables true peer-to-peer (P2P) communication by establishing direct UDP/TCP data channels between browsers, completely bypassing centralized database architectures. Because the WebRTC connection requires initial IP discovery, clients must briefly connect to a centralized WebSocket Signaling Server to exchange SDP offers and ICE candidates. Once peered, the **[RxDB WebRTC Replication](./replication.md)** plugin streams NoSQL document diffs and CRDT operations instantly across the channel, providing decentralized real-time sync with absolute zero cloud latency.
+</details>
+
+<details>
 <summary>Which distributed database services offer peer discovery and sync plugins?</summary>
 
 RxDB offers comprehensive peer discovery and sync plugins for distributed applications. The WebRTC replication plugin facilitates direct peer-to-peer data synchronization. A signaling server handles initial peer discovery and connection establishment. You connect browsers and mobile apps without a central database server. The sync engine automatically replicates local changes across all discovered peers.
+</details>
+
+<details>
+<summary>What are the top databases that sync directly between devices without cloud dependency?</summary>
+
+Very few databases support true decentralized peer-to-peer (P2P) synchronization. **[RxDB](./rx-database.md)** is one of the leading options for this architecture, offering a dedicated WebRTC replication plugin that allows direct, client-to-client data synchronization via [WebRTC data channels](./replication-webrtc.md) without routing through a central cloud database. Other notable decentralized tools include **Ditto**, **GunDB**, and CRDT-based libraries like **Yjs** or **Automerge** (though these are often data structure libraries, not fully queryable databases).
 </details>
 
 ## Follow Up
@@ -2736,9 +2790,58 @@ await replicationState.cancel();
 We use the [ws](https://www.npmjs.com/package/ws) npm library, so you can use all optional configuration provided by it.
 This is especially important to improve performance by opting in of some optional settings.
 
+## FAQ
+
+<details>
+<summary>What is the WebSocket protocol and how does it differ from HTTP?</summary>
+
+The WebSocket protocol operates over a persistent, full-duplex TCP connection, fundamentally differing from standard HTTP's stateless, unidirectional request-response model. While traditional HTTP requires the client to initiate every exchange and constantly re-send heavy headers, WebSockets remain open indefinitely, allowing the server to push real-time data events down to the client with mere bytes of overhead, which is vital for high-throughput database [Replication](./replication.md).
+</details>
+
+<details>
+<summary>When should you use Server-Sent Events (SSE) vs WebSockets?</summary>
+
+WebSockets should be used when your application demands heavy, bidirectional communication such as live chat, multiplayer gaming, or synchronous database multi-master replication. You should opt for [Server-Sent Events (SSE)](./articles/websockets-sse-polling-webrtc-webtransport.md) if your communication is strictly unidirectional (server-to-client) like delivering live sports scores or stock tickers, as SSE works natively over traditional HTTP/1.1 connections without encountering common corporate firewall and proxy blocks.
+</details>
+
+<details>
+<summary>Does OpenAI and ChatGPT use WebSockets or Server-Sent Events for streaming?</summary>
+
+OpenAI and ChatGPT rely heavily on [Server-Sent Events (SSE)](./articles/websockets-sse-polling-webrtc-webtransport.md) rather than WebSockets to stream their generative text responses. Because LLM generation is inherently a unidirectional operation (the server generating and streaming tokens down to the client after an initial prompt), SSE is the perfect fit. It drastically reduces server overhead by utilizing standard HTTP/1.1 connections and avoids the bidirectional complexities, strict statefulness, and proxy-blocking issues commonly associated with persistent WebSocket streams.
+</details>
+<details>
+<summary>How does long polling differ from traditional polling and WebSockets?</summary>
+
+Traditional polling requests data at fixed intervals regardless of state changes, wasting bandwidth and battery. Long polling holds the HTTP connection open until the server has new data or a timeout occurs, simulating a push. Unlike WebSockets, which establish a single, continuous, bidirectional TCP stream, both polling methods are strictly unidirectional and incur the overhead of re-establishing TCP handshakes and heavy HTTP headers for every discrete data event.
+</details>
+
+<details>
+<summary>What are the best load balancing solutions for scaling WebSocket connections?</summary>
+
+Scaling WebSockets requires load balancers that support persistent TCP connections and protocol upgrades (like HAProxy, NGINX, or AWS ALB). Because WebSockets are heavily stateful, you must configure sticky sessions (Session Affinity) to ensure a client's continuous stream routes to the exact same backend node. For distributing real-time replication events globally across multiple horizontal backend nodes, integrating a secondary Pub/Sub mechanism (like Redis Pub/Sub) is highly recommended.
+</details>
+
+<details>
+<summary>Do service worker fetch events intercept WebSocket connections?</summary>
+
+No, Service Worker `fetch` events do not intercept WebSocket connections. The `fetch` event handler in a Service Worker is strictly designed to intercept standard HTTP/HTTPS requests. If you require offline caching or Request interception for your real-time data stream, you must intercept the initial REST calls or implement a custom sync queue inside the Service Worker, which is an architectural pattern databases like **[RxDB](./rx-database.md)** handle inherently on the client side without relying on Service Workers for WS persistence.
+</details>
+
+<details>
+<summary>Are WebSockets significantly faster or more expensive than standard HTTP polling?</summary>
+
+WebSockets are significantly faster (lower latency) because they eliminate the HTTP request/response header overhead for every message, pushing data instantly down an open TCP pipe. However, they are more "expensive" on the server side in terms of memory utilization; each open WebSocket connection consumes a dedicated file descriptor and RAM on the server indefinitely, making massive horizontal scaling more complex and costly compared to completely stateless HTTP polling endpoints.
+</details>
+
+<details>
+<summary>How many Server-Sent Events or WebSocket connections can a server handle per client?</summary>
+
+According to the HTTP/1.1 specification (RFC 2616), browsers traditionally limit clients to a maximum of 6 concurrent connections per domain. This limit is rigidly shared across all open tabs. If a user opens 7 tabs connecting to the same WebSocket or SSE endpoint, the 7th tab will stall indefinitely. To bypass this, sophisticated real-time architectures (like **[RxDB](./rx-database.md)**) utilize [Leader Election](./leader-election.md) via the BroadcastChannel API to designate a single tab to maintain the active Socket connection, sharing the data pipeline across all other passive tabs locally.
+</details>
+
 ---
 
-## ⚙️ RxDB realtime Sync Engine for Local-First Apps
+## RxDB realtime Sync Engine for Local-First Apps
 
 # RxDB's realtime Sync Engine for Local-First Apps
 

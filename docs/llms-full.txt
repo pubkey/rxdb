@@ -14,7 +14,7 @@ import { Overview } from '@site/src/components/overview';
 
 ---
 
-## 🚀 Quickstart
+## Quickstart
 
 import {Steps} from '@site/src/components/steps';
 import {TriggerEvent} from '@site/src/components/trigger-event';
@@ -117,6 +117,18 @@ import { DatabaseSync } from 'node:sqlite';
 const storage = getRxStorageSQLiteTrial({
 sqliteBasics: getSQLiteBasicsNodeNative(DatabaseSync)
 });
+```
+
+#### Expo Filesystem 👑
+
+For React Native and Expo applications, the [Expo Filesystem storage](./rx-storage-filesystem-expo.md) offers superior performance compared to SQLite and Async Storage by utilizing OPFS JSI bindings.
+
+```ts
+import {
+    getRxStorageExpoAsync
+} from 'rxdb-premium/plugins/storage-filesystem-expo';
+
+let storage = getRxStorageExpoAsync();
 ```
 
 #### And more...
@@ -500,7 +512,7 @@ async function createDb() {
             module => addRxPlugin(module.RxDBDevModePlugin)
         );
     }
-    const db = createRxDatabase( /* ... */ );
+    const db = await createRxDatabase( /* ... */ );
 }
 ```
 
@@ -516,7 +528,7 @@ async function createDb() {
         );
     }
 
-    const db = createRxDatabase( /* ... */ );
+    const db = await createRxDatabase( /* ... */ );
     // ...
 }
 ```
@@ -548,7 +560,7 @@ async function createDb() {
             module => addRxPlugin(module.RxDBDevModePlugin)
         );
     }
-    const db = createRxDatabase( /* ... */ );
+    const db = await createRxDatabase( /* ... */ );
     // ...
 }
 ```
@@ -606,6 +618,9 @@ import {
     RxJsonSchema,
     RxDocument,
 } from 'rxdb/plugins/core';
+import {
+    getRxStorageLocalstorage
+} from 'rxdb/plugins/storage-localstorage';
 ```
 
 ## Create the base document type
@@ -747,7 +762,8 @@ const heroSchema: RxJsonSchema<HeroDocType> = {
     type: 'object',
     properties: {
         passportId: {
-            type: 'string'
+            type: 'string',
+            maxLength: 100
         },
         firstName: {
             type: 'string'
@@ -1234,7 +1250,7 @@ const id = myRxCollection.schema.getPrimaryOfDocumentData({
     firstName: 'foo',
     lastName: 'bar'
 });
-const myRxDocument = myRxCollection.findOne(id).exec();
+const myRxDocument = await myRxCollection.findOne(id).exec();
 
 ```
 
@@ -1899,7 +1915,7 @@ This function returns an observable of the given path's value.
 The current value of this path will be emitted each time the document changes.
 ```js
 // get the live-updating value of 'name'
-var isName;
+let isName;
 myDocument.get$('name')
   .subscribe(newName => {
     isName = newName;
@@ -1922,9 +1938,9 @@ All properties of an `RxDocument` are assigned as getters so you can also direct
 
 ```js
   // Identical to myDocument.get('name');
-  var name = myDocument.name;
+  const name = myDocument.name;
   // Can also get nested values.
-  var nestedValue = myDocument.whatever.nestedfield;
+  const nestedValue = myDocument.whatever.nestedfield;
 
   // Also usable with observables:
   myDocument.firstName$.subscribe(newName => console.log('name is: ' + newName));
@@ -2182,7 +2198,7 @@ To find documents inside of an [RxCollection](./rx-collection.md), RxDB uses the
 To create a basic `RxQuery`, call `.find()` on a collection and insert selectors. The result-set of normal queries is an array with documents.
 
 ```js
-// find all that are older then 18
+// find all that are older than 18
 const query = myCollection
     .find({
       selector: {
@@ -2541,7 +2557,7 @@ const count$ = myCollection.find({
 
 /**
  * To allow non-fully-indexed count queries,
- * you can also specify that by setting allowanceSlowCount: true
+ * you can also specify that by setting allowSlowCount: true
  * when creating the database.
  */
 const database = await createRxDatabase({
@@ -2645,7 +2661,7 @@ However, this method has a significant downside: regex queries often cannot leve
 
 ---
 
-## ⚙️ RxStorage Layer - Choose the Perfect RxDB Storage for Every Use Case
+## RxStorage Layer - Choose the Perfect RxDB Storage for Every Use Case
 
 # RxStorage
 
@@ -2654,7 +2670,7 @@ RxDB is not a self-contained database. Instead the data is stored in an implemen
 ## Quick Recommendations
 
 - In the Browser: Use the [LocalStorage](./rx-storage-localstorage.md) storage for simple setup and small build size. For bigger datasets, use either the [dexie.js storage](./rx-storage-dexie.md) (free) or the [IndexedDB RxStorage](./rx-storage-indexeddb.md) if you have [👑 premium access](/premium/) which is a bit faster and has a smaller build size.
-- In [Electron](./electron-database.md) and [ReactNative](./react-native-database.md): Use the [SQLite RxStorage](./rx-storage-sqlite.md) if you have [👑 premium access](/premium/) or the [trial-SQLite RxStorage](./rx-storage-sqlite.md) for tryouts.
+- In [Electron](./electron-database.md) and [ReactNative](./react-native-database.md): Use the [SQLite RxStorage](./rx-storage-sqlite.md) if you have [👑 premium access](/premium/) or the [trial-SQLite RxStorage](./rx-storage-sqlite.md) for tryouts. For ultimate performance in Expo and React Native, use the [Expo Filesystem RxStorage](./rx-storage-filesystem-expo.md).
 - In Capacitor: Use the [SQLite RxStorage](./rx-storage-sqlite.md) if you have [👑 premium access](/premium/), otherwise use the [localStorage](./rx-storage-localstorage.md) storage.
 
 ## Configuration Examples
@@ -2778,6 +2794,10 @@ To use RxDB in [electron](./electron-database.md), it is recommended to run the 
 
 ### Third Party based Storages
 
+#### 👑 Expo Filesystem
+
+The Expo Filesystem storage brings blazing-fast OPFS capabilities to React Native and Expo applications, bypassing the bridge via JSI bindings for maximum performance. This is the fastest storage engine for React Native. [Read more](./rx-storage-filesystem-expo.md)
+
 #### 👑 SQLite
 
 The SQLite storage has great performance when RxDB is used on **Node.js**, **Electron**, **React Native**, **Cordova** or **Capacitor**. [Read more](./rx-storage-sqlite.md)
@@ -2856,7 +2876,7 @@ await db.addCollections({
       primaryKey: 'id',
       type: 'object',
       properties: {
-        id: { type: 'string' },
+        id: { type: 'string', maxLength: 100 },
         title: { type: 'string' },
         done: { type: 'boolean' }
       },
@@ -2910,6 +2930,10 @@ const db = await createRxDatabase({
 
 ## Instant Performance with IndexedDB RxStorage
 
+import { PerformanceChart } from '@site/src/components/performance-chart';
+import { PERFORMANCE_DATA_BROWSER, PERFORMANCE_METRICS } from '@site/src/components/performance-data';
+import {PremiumBlock} from '@site/src/components/premium-block';
+
 # IndexedDB RxStorage
 
 The IndexedDB [RxStorage](./rx-storage.md) is based on plain IndexedDB and can be used in browsers, [electron](./electron-database.md) or [hybrid apps](./articles/mobile-database.md).
@@ -2922,7 +2946,9 @@ While the IndexedDB API itself can be very slow, the IndexedDB storage uses many
 
 Here is some performance comparison with other storages. Compared to the non-memory storages like [OPFS](./rx-storage-opfs.md) and [WASM SQLite](./rx-storage-sqlite.md), IndexedDB has the smallest build size and fastest write speed. Only OPFS is faster on queries over big datasets. See [performance comparison](./rx-storage-performance.md) page for a comparison with all storages.
 
-  
+<PerformanceChart title="Browser Storages" data={PERFORMANCE_DATA_BROWSER} metrics={PERFORMANCE_METRICS} />
+
+<PremiumBlock />
 
 ## Using the IndexedDB RxStorage
 
@@ -3005,6 +3031,10 @@ const db = await createRxDatabase({
 
 ## Supercharged OPFS Database with RxDB
 
+import { PerformanceChart } from '@site/src/components/performance-chart';
+import { PERFORMANCE_DATA_BROWSER, PERFORMANCE_METRICS } from '@site/src/components/performance-data';
+import {PremiumBlock} from '@site/src/components/premium-block';
+
 # Origin Private File System (OPFS) Database with the RxDB OPFS-RxStorage
 
 With the [RxDB](https://rxdb.info/) OPFS storage you can build a fully featured database on top of the [Origin Private File System](https://web.dev/opfs) (OPFS) browser API. Compared to other storage solutions, it has a way better performance.
@@ -3082,13 +3112,13 @@ Because the Origin Private File System API provides low-level access to binary f
 
 A good comparison about real world scenarios, are the [performance results](./rx-storage-performance.md) of the various RxDB storages. Here it shows that reads are up to 4x faster compared to IndexedDB, even with complex queries:
 
-  
+<PerformanceChart title="Browser Storages" data={PERFORMANCE_DATA_BROWSER} metrics={PERFORMANCE_METRICS} />
 
 ## Using OPFS as RxStorage in RxDB
 
 The OPFS [RxStorage](./rx-storage.md) itself must run inside a WebWorker. Therefore we use the [Worker RxStorage](./rx-storage-worker.md) and let it point to the prebuild `opfs.worker.js` file that comes shipped with RxDB Premium 👑.
 
-Notice that the OPFS RxStorage is part of the [RxDB Premium 👑](/premium/) plugin that must be purchased.
+<PremiumBlock />
 
 ```ts
 import {
@@ -3250,9 +3280,21 @@ const db = await createRxDatabase({
 - **No Persistence**: All data is lost when the JavaScript process exits or the browser tab is closed.
 - **Memory Limits**: The dataset is constrained by the available RAM in the JavaScript runtime environment.
 
+## FAQ
+
+<details>
+<summary>What are the fastest scalable in-memory databases for node.js?</summary>
+
+The fastest scalable in-memory databases skip expensive disk I/O bindings and bypass JSON serialization bottlenecks by storing data strictly within standard JavaScript V8 variables. **[RxDB](./rx-database.md)**'s Memory Storage plugin utilizes pure algorithmic binary-search indexing over raw array references, offering instantaneous throughput. This makes it an unparalleled choice for Node.js environments processing real-time analytics, rapid CI/CD Server-Side Rendering (SSR) pipelines, or highly volatile chat application states.
+</details>
+
 ---
 
 ## Blazing-Fast Node Filesystem Storage
+
+import { PerformanceChart } from '@site/src/components/performance-chart';
+import { PERFORMANCE_DATA_NODE, PERFORMANCE_METRICS } from '@site/src/components/performance-data';
+import {PremiumBlock} from '@site/src/components/premium-block';
 
 # Filesystem Node RxStorage
 
@@ -3265,11 +3307,9 @@ Using the same database folder in parallel with multiple Node.js processes is su
 - Easier setup compared to [SQLite](./rx-storage-sqlite.md)
 - [Fast](./rx-storage-performance.md)
 
-### Cons
+<PremiumBlock />
 
-- It is part of the [RxDB Premium 👑](/premium/) plugin that must be purchased.
-
-  
+<PerformanceChart title="Node/Native Storages" data={PERFORMANCE_DATA_NODE} metrics={PERFORMANCE_METRICS} />
 
 ## Usage
 
@@ -3296,9 +3336,175 @@ const myRxDatabase = await createRxDatabase({
 /* ... */
 ```
 
+## FAQ
+
+<details>
+<summary>Does RxDB support single-file storage architectures in Node environments?</summary>
+
+The native `getRxStorageFilesystemNode` adapter does not compile documents into a single monolithic file (like SQLite), but instead serializes and persists document data as distinct JSON/text files directly representing the database tree on the disk. For strict single-file architectures in Node.js, you must mount the specialized **[SQLite RxStorage](./rx-storage-sqlite.md)** plugin, which wraps the entire database state into a single portable `.sqlite` file efficiently using Node's native `sqlite` bindings.
+</details>
+
+---
+
+## Expo Filesystem RxStorage for React Native
+
+import {BetaBlock} from '@site/src/components/beta-block';
+import {PremiumBlock} from '@site/src/components/premium-block';
+import { PerformanceChart } from '@site/src/components/performance-chart';
+import { PERFORMANCE_DATA_EXPO, PERFORMANCE_METRICS } from '@site/src/components/performance-data';
+
+# Expo Filesystem RxStorage
+
+<BetaBlock since="17.0.0" />
+
+The Expo Filesystem [RxStorage](./rx-storage.md) for RxDB is built on top of the [expo-file-system](https://docs.expo.dev/versions/latest/sdk/filesystem/) library, bringing blazing-fast direct filesystem capabilities to React Native and Expo applications.
+It stores data in plain files and achieves vastly superior performance compared to traditional React Native storage solutions like Async Storage or SQLite.
+
+### Pros
+
+- **Extreme Performance**: Significantly faster than SQLite and Async Storage in React Native.
+- **Easy Integration**: Drops right into any Expo or React Native project.
+- Directly utilizes the Expo FileSystem for minimum overhead without relying on an intermediate database engine.
+
+<PremiumBlock />
+
+## Installation
+
+> **Note:** This storage plugin requires at least **Expo SDK 54** or the equivalent React Native `expo-file-system` version to function.
+
+First, you need to install the `expo-file-system` dependency:
+
+```bash
+npx expo install expo-file-system
+```
+
+## Usage
+
+You can import either the **Asynchronous** or **Synchronous** storage from the `rxdb-premium` package.
+
+### Asynchronous API
+
+For standard usage in React Native and Expo, use the asynchronous storage plugin:
+
+```ts
+import { createRxDatabase } from 'rxdb';
+import {
+    getRxStorageExpoAsync
+} from 'rxdb-premium/plugins/storage-filesystem-expo';
+
+const myRxDatabase = await createRxDatabase({
+    name: 'exampledb',
+    storage: getRxStorageExpoAsync(),
+    // Usually false in React Native as there is only one JavaScript process
+    multiInstance: false
+});
+/* ... */
+```
+
+### Synchronous API
+
+Because the expo filesystem also has a sync API, you can utilize that which has faster writes but slower reads.
+
+```ts
+import { createRxDatabase } from 'rxdb';
+import {
+    getRxStorageExpoSync
+} from 'rxdb-premium/plugins/storage-filesystem-expo';
+
+const myRxDatabase = await createRxDatabase({
+    name: 'exampledb',
+    storage: getRxStorageExpoSync(),
+    multiInstance: false
+});
+/* ... */
+```
+
+## How it works (vs. SQLite)
+
+When using SQLite in React Native, every read and write operation has to go through multiple stages: the JavaScript query must be sent to the native side, translated into a SQL string, parsed and planned by the SQLite engine, and then finally executed on disk. For data retrieval, the SQLite rows must then be mapped back into JavaScript objects. This overhead can be significant, especially when handling many operations or large batches of documents.
+
+In contrast, the **Expo Filesystem RxStorage** skips the relational SQL database engine entirely and instead runs on RxDB's own highly-optimized NoSQL storage engine. While document data is efficiently stored via raw file read and write operations using `expo-file-system`, the storage maintains proper indexing and an advanced query engine directly in JavaScript. Because there is no SQL parsing, complex native query planning, or relational mapping involved, this makes reading, writing, and querying data significantly faster. It operates closer to the hardware and handles bulk document serialization dynamically using highly optimized UTF-8 decoding.
+
+## Performance of Expo Filesystem vs SQLite
+
+Because of this streamlined, direct-to-filesystem approach, operations like inserting large batches of documents or executing complex queries are handled with minimal overhead. This makes it one of the absolute fastest local storage engines available for React Native.
+
+Here is a performance comparison of the **Expo Filesystem RxStorage** compared to the **SQLite RxStorage** (using `expo-sqlite`), tested with RxDB's internal performance testing suite (3000 documents, 4 collections):
+
+<PerformanceChart title="Expo Storages" data={PERFORMANCE_DATA_EXPO} metrics={PERFORMANCE_METRICS} />
+
+## Using with Plain React Native (Bare Workflow)
+
+You can also use this storage in a plain React Native project that does not use the Expo framework. To use Expo modules in a bare React Native app, you must first install the `expo` package to provide the underlying infrastructure:
+
+```bash
+npx install-expo-modules@latest
+npx expo install expo-file-system
+```
+
+*(Note for iOS: You may need to run `npx pod-install` after installation so the native dependencies are linked correctly)*
+
+### Permissions
+
+The `expo-file-system` module requires certain permissions on Android to interact with the filesystem. 
+
+**For Expo Projects:**
+Installing the module will automatically add the required permissions during the build process. You do not need to configure these manually.
+
+**For Plain React Native (Bare Workflow) Projects:**
+You must manually add the following permissions to your `android/app/src/main/AndroidManifest.xml`:
+
+```xml
+<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+<uses-permission android:name="android.permission.INTERNET" />
+```
+
+On iOS, no additional permissions or setup are necessary for standard filesystem access.
+
+## FAQ
+
+<details>
+<summary>Why is SQLite slow in React-Native?</summary>
+
+In React Native, SQLite suffers from translation overhead. Every operation requires sending JavaScript queries to the native side, translating them into SQL statements, running the native query planner, and mapping the relational rows back into JavaScript objects. For bulk operations, this parsing and mapping causes noticeable performance degradation.
+
+</details>
+
+<details>
+<summary>Which database works best with React Native/Expo for performance?</summary>
+
+A NoSQL document store that avoids relational SQL overhead provides the fastest performance. RxDB paired with the Expo Filesystem RxStorage skips the SQLite engine entirely. It stores documents directly as plain JSON text appended to files, resulting in superior read and write speeds.
+
+</details>
+
+<details>
+<summary>How can I optimize database queries in React Native?</summary>
+
+You can optimize queries by using proper indexing to prevent full database scans. Switching from a relational SQL database to a local-first NoSQL database that queries directly against raw file data removes the translation steps between JavaScript objects and the storage layer, reducing query resolution times.
+
+</details>
+
+<details>
+<summary>How do I handle large datasets efficiently in React-Native?</summary>
+
+You should use a storage engine that supports fast bulk writes. The Expo Filesystem RxStorage manages large batches of documents by serializing them dynamically using highly optimized UTF-8 decoding, writing the entire batch directly to the filesystem in one continuous operation rather than parsing individual SQL insert statements.
+
+</details>
+
+<details>
+<summary>How to improve performance with offline caching in React Native?</summary>
+
+Use an offline-first database like RxDB to maintain a persistent local replica of your data on the device filesystem. Read operations resolve instantly from the local cache, while background replication synchronizes data modifications with your remote server asynchronously.
+
+</details>
+
 ---
 
 ## RxDB SQLite RxStorage for Hybrid Apps
+
+import { PerformanceChart } from '@site/src/components/performance-chart';
+import { PERFORMANCE_DATA_NODE, PERFORMANCE_METRICS } from '@site/src/components/performance-data';
 
 import {Steps} from '@site/src/components/steps';
 import {Tabs} from '@site/src/components/tabs';
@@ -3313,7 +3519,7 @@ SQLite is a natural fit for RxDB because most platforms - Android, iOS, Node.js,
 
 The SQLite storage is a bit slower compared to other Node.js based storages like the [Filesystem Storage](./rx-storage-filesystem-node.md) because wrapping SQLite has a bit of overhead and sending data from the JavaScript process to SQLite and backwards increases the latency. However for most hybrid apps the SQLite storage is the best option because it can leverage the SQLite version that comes already installed on the smartphone's OS (iOS and android). Also for desktop Electron apps it can be a viable solution because it is easy to ship SQLite together inside of the Electron bundle.
 
-  
+<PerformanceChart title="Node/Native Storages" data={PERFORMANCE_DATA_NODE} metrics={PERFORMANCE_METRICS} />
 
 ## Using the SQLite RxStorage
 
@@ -3615,7 +3821,7 @@ import {
 import {
     getRxStorageSQLite,
     getSQLiteBasicsTauri
-} from 'rxdb/plugins/storage-sqlite';
+} from 'rxdb-premium/plugins/storage-sqlite';
 import sqlite3 from '@tauri-apps/plugin-sql';
 
 const myRxDatabase = await createRxDatabase({
@@ -3667,12 +3873,29 @@ const storage = getRxStorageSQLite({
 });
 ```
 
+## FAQ
+
+<details>
+<summary>Does SQLite natively support querying and parsing JSON objects?</summary>
+
+Yes, starting natively from version `3.38.0`, SQLite includes comprehensive built-in core JSON functions like `JSON_EXTRACT`. The **[RxDB SQLite Storage](./rx-storage.md)** engine utilizes these exact JSON extension methods to seamlessly run complex NoSQL document queries, indexes, and sorting operations directly within the SQLite runtime, bridging the gap between flat tabular paradigms and rich document store flexibility.
+</details>
+
+<details>
+<summary>How can you save and export a SQLite database from a local environment?</summary>
+
+You can save and export an active SQLite database by closing the connection and copying its physical `.sqlite` storage file traversing the underlying OS filesystem. If you are operating within a strict sandboxed web environment using WebAssembly, you must extract the SQLite file via exactly matching the `wa-sqlite` export streams, or rely on **[RxDB](./rx-database.md)** JSON export plugins to seamlessly migrate data out of local constraints into raw JSON streams regardless of the active SQLite engine.
+</details>
+
 ## Related
 - [React Native Databases](./react-native-database.md)
 
 ---
 
 ## RxDB Dexie.js Database - Fast, Reactive, Sync with Any Backend
+
+import { PerformanceChart } from '@site/src/components/performance-chart';
+import { PERFORMANCE_DATA_BROWSER, PERFORMANCE_METRICS } from '@site/src/components/performance-data';
 
 import {Steps} from '@site/src/components/steps';
 
@@ -3886,6 +4109,16 @@ setPremiumFlag();
 ## Performance comparison with other RxStorage plugins
 
 The performance of the Dexie.js RxStorage is good enough for most use cases but other storages can have way better performance metrics:
+
+<PerformanceChart title="Browser Storages" data={PERFORMANCE_DATA_BROWSER} metrics={PERFORMANCE_METRICS} />
+
+## FAQ
+
+<details>
+<summary>What is Dexie.js and what advantages does it offer over raw IndexedDB?</summary>
+
+Dexie.js is a minimalist, Promise-based wrapper engineered specifically to resolve the notoriously complex callback-driven API of standard IndexedDB. It offers significant advantages over raw IndexedDB by providing an intuitive chainable query API, a far simpler database schema definition process, and extremely robust transaction management. However, Dexie lacks advanced querying capabilities found in Document-oriented NoSQL databases, such as deep-nested JSON querying and comprehensive MongoDB-style selectors. **[RxDB](./rx-database.md)**, which can use Dexie securely as its underlying storage engine, compensates for these limitations by providing a fully reactive advanced NoSQL query engine, robust cross-platform offline replication protocols, and built-in field encryption features that Dexie inherently lacks.
+</details>
 
 ---
 
@@ -4109,9 +4342,41 @@ const db = await createRxDatabase({
 
 Because FoundationDB does not offer a [changestream](https://forums.foundationdb.org/t/streaming-data-out-of-foundationdb/683/2), it is not possible to use the same cluster from more than one Node.js process at the same time. For example you cannot spin up multiple servers with RxDB databases that all use the same cluster. There might be workarounds to create something like a FoundationDB changestream and you can make a Pull Request if you need that feature.
 
+## Running the FoundationDB Server with Docker
+
+Instead of installing the FoundationDB server locally, you can run it in a Docker container. This is the recommended approach for local development and CI environments.
+
+```bash
+# Pull the Docker image
+docker pull foundationdb/foundationdb:7.3.59
+
+# Start the container with host networking
+docker run -d \
+    --name rxdb-foundationdb \
+    --network host \
+    -e FDB_NETWORKING_MODE=host \
+    foundationdb/foundationdb:7.3.59
+
+# Copy the cluster file from the container
+sudo mkdir -p /etc/foundationdb
+docker cp rxdb-foundationdb:/var/fdb/fdb.cluster /etc/foundationdb/fdb.cluster
+
+# Configure the database
+fdbcli --exec "configure new single memory" --timeout 30
+```
+
+You can also use the provided npm scripts:
+```bash
+npm run foundationdb:start   # Starts the Docker container and configures the database
+npm run foundationdb:stop    # Stops and removes the Docker container
+```
+
 ---
 
 ## Schema Validation
+
+import { PerformanceChart } from '@site/src/components/performance-chart';
+import { PERFORMANCE_DATA_VALIDATION_INDEXEDDB, PERFORMANCE_DATA_VALIDATION_MEMORY } from '@site/src/components/performance-data';
 
 # Schema validation
 
@@ -4220,19 +4485,11 @@ The RxDB team ran performance benchmarks using two storage options on an Ubuntu 
 
 IndexedDB Storage (based on the IndexedDB API in the browser):
 
-| **IndexedDB Storage** | Time to First insert | Insert 3000 documents |
-| ----------------- | :------------------: | --------------------: |
-| no validator      |        68 ms         |                213 ms |
-| ajv               |        67 ms         |                216 ms |
-| z-schema          |        71 ms         |                230 ms |
+<PerformanceChart title="Schema Validation on IndexedDB Storage" data={PERFORMANCE_DATA_VALIDATION_INDEXEDDB} logScale={false} />
 
-Memory Storage: stores everything in memory for extremely fast reads and writes, with no persistence by default. Often used with the RxDB memory-mapped plugin that processes data in memory an later persists to disc in background:
+Memory Storage: stores everything in memory for extremely fast reads and writes, with no persistence by default. Often used with the RxDB memory-mapped plugin that processes data in memory and later persists to disc in background:
 
-| **Memory Storage** | Time to First insert | Insert 3000 documents |
-| ------------------ | :------------------: | --------------------: |
-| no validator       |       1.15 ms        |                0.8 ms |
-| ajv                |       3.05 ms        |                2.7 ms |
-| z-schema           |        0.9 ms        |                 18 ms |
+<PerformanceChart title="Schema Validation on Memory Storage" data={PERFORMANCE_DATA_VALIDATION_MEMORY} logScale={false} />
 
 Including a validator library also increases your JavaScript bundle size. Here's how it breaks down (minified + gzip):
 
@@ -4242,11 +4499,22 @@ Including a validator library also increases your JavaScript bundle size. Here's
 | ajv                            |      106135 B      |             72773 B |
 | z-schema                       |      125186 B      |             91882 B |
 
+## FAQ
+
+<details>
+<summary>What is schema validation and does ajv-formats use eval internally?</summary>
+
+Schema validation structurally guarantees that all document mutations strictly comply with the statically defined **[RxCollection](./rx-collection.md)** JSON Schema format before data is physically committed to the underlying `RxStorage`. Yes, both `ajv` (via `ajv-formats`) and `is-my-json-valid` rely natively on `eval()` or `new Function()` during compilation to aggressively optimize their validation runtimes. If your deployment environment enforces extremely strict `unsafe-eval` Content Security Policies (CSP), you must explicitly swap the validator wrapper to **`validate-z-schema`**, which strictly avoids `eval()` at the cost of marginally slower execution.
+</details>
+
 ---
 
 ## Encryption
 
 import {Steps} from '@site/src/components/steps';
+import {PremiumBlock} from '@site/src/components/premium-block';
+import { PerformanceChart } from '@site/src/components/performance-chart';
+import { PERFORMANCE_DATA_ENCRYPTION, PERFORMANCE_METRICS } from '@site/src/components/performance-data';
 
 # 🔒 Encrypted Local Storage with RxDB
 
@@ -4290,7 +4558,7 @@ It is not able to do **Asymmetric encryption** by itself. If you need Asymmetric
 RxDB currently has two plugins for encryption:
 
 - The free `encryption-crypto-js` plugin that is based on the `AES` algorithm of the [crypto-js](https://www.npmjs.com/package/crypto-js) library
-- The [👑 premium](/premium/) `encryption-web-crypto` plugin that is based on the native [Web Crypto API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API) which makes it faster and more secure to use. Document inserts are about 10x faster compared to `crypto-js` and it has a smaller build size because it uses the browsers API instead of bundling an npm module.
+- `encryption-web-crypto` plugin that is based on the native [Web Crypto API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API) which makes it faster and more secure to use. Document inserts are about 10x faster compared to `crypto-js` and it has a smaller build size because it uses the browsers API instead of bundling an npm module.
 
 An RxDB encryption plugin is a wrapper around any other [RxStorage](./rx-storage.md). 
 
@@ -4354,9 +4622,9 @@ await db.addCollections({
 ```
 </Steps>
 
-## Using Web-Crypto API
+## Using the WebCrypto API
 
-For professionals, we have the `web-crypto` [👑 premium](/premium/) plugin which is faster and more secure:
+<PremiumBlock />
 
 ```ts
 import {
@@ -4415,12 +4683,53 @@ If you are using [Worker RxStorage](./rx-storage-worker.md) or [SharedWorker RxS
 
 You do not need to worry about setting the password inside of the worker. The password will be set when calling createRxDatabase from the main thread, and will be passed internally to the storage in the worker automatically.
 
+### Using encryption inside the worker with OPFS
+
+When you wrap a storage like [OPFS](./rx-storage-opfs.md) with encryption inside of a worker, you have to set the `usesRxDatabaseInWorker` option on the OPFS storage. Without this option, the OPFS storage returns raw JSON strings instead of parsed objects as a performance optimization. The encryption wrapper cannot process these strings and will throw an error.
+
+```ts
+// inside of the worker.js file
+import { getRxStorageOPFS } from 'rxdb-premium/plugins/storage-opfs';
+import { wrappedKeyEncryptionWebCryptoStorage } from 'rxdb-premium/plugins/encryption-web-crypto';
+
+const storage = wrappedKeyEncryptionWebCryptoStorage({
+    storage: getRxStorageOPFS({
+        // Required when wrapping OPFS with encryption inside a worker
+        usesRxDatabaseInWorker: true
+    })
+});
+```
+
+## Encryption Performance
+
+As shown in the chart, the WebCrypto based encryption plugins are generally **5 times faster** than the `crypto-js` plugin.
+
+<PerformanceChart title="RxDB Encryption Plugins Performance (on Memory RxStorage)" data={PERFORMANCE_DATA_ENCRYPTION} metrics={PERFORMANCE_METRICS} logScale={false} />
+
 ## FAQ
 
 <details>
 <summary>What are some JavaScript libraries for client side field encryption?</summary>
 
-RxDB provides robust plugins for client side field encryption directly within your javascript database. You encrypt sensitive document properties transparently before they save to local storage. The `encryption-crypto-js` plugin utilizes AES algorithms for dependable security. The premium `encryption-web-crypto` plugin employs native browser APIs to achieve superior performance. You maintain data confidentiality across Web, React Native, and Node.js environments.
+RxDB provides robust plugins for client side field encryption directly within your javascript database. You encrypt sensitive document properties transparently before they save to local storage. The `encryption-crypto-js` plugin utilizes AES algorithms for dependable security. The `encryption-web-crypto` plugin employs native browser APIs to achieve superior performance. You maintain data confidentiality across Web, React Native, and Node.js environments.
+</details>
+
+<details>
+<summary>What options exist for encrypting individual document fields and keys in JavaScript?</summary>
+
+You can implement encryption in JavaScript by manually encrypting fields with the native `WebCrypto API` before storing them, but this breaks standard querying. Advanced databases like **[RxDB](./rx-database.md)** simplify this through schema-level encryption plugins (`encryption-web-crypto`). By flagging specific document fields as `encrypted: true` in your JSON Schema, RxDB automatically encrypts the data before writing to the storage engine (like IndexedDB or SQLite) and decrypts it instantly upon retrieval.
+</details>
+
+<details>
+<summary>Is chrome.storage.local encrypted at rest by default?</summary>
+
+No, `chrome.storage.local` (and standard `IndexedDB` in the browser) is **not** encrypted at rest by default. Any user or potentially malicious extension with adequate local machine access can read the underlying data files. To properly secure sensitive data at rest in a browser extension or Web App, you must explicitly encrypt strings before saving them, a process seamlessly automated by using an encrypted [RxStorage](./rx-storage.md) wrapper.
+</details>
+
+<details>
+<summary>Are there open-source libraries for encrypting personal user data natively?</summary>
+
+Yes, libraries like `crypto-js` or wrappers over the native WebCrypto API provide robust open-source encryption. For developers building native mobile apps (React Native, Expo, Ionic) or browser applications, utilizing a database that ships with native encryption wrappers like **[RxDB's Encryption Plugins](https://rxdb.info/encryption.html)** is the most reliable method. It ensures data is never written to disk in plain text while allowing you to effortlessly swap underlying storage layers without rewriting your cryptography logic.
 </details>
 
 ---
@@ -4477,7 +4786,7 @@ const mySchema = {
       id: {
           type: 'string',
           maxLength: 100 // <- the primary key must have set maxLength
-      }
+      },
       /* ... */
   }
 };
@@ -4494,13 +4803,15 @@ await db.addCollections({
 
 ## RxDB Logger Plugin - Track & Optimize
 
+import {PremiumBlock} from '@site/src/components/premium-block';
+
 # RxDB Logger Plugin
 
 With the logger plugin you can log all operations to the [storage layer](./rx-storage.md) of your [RxDatabase](./rx-database.md).
 
 This is useful to debug performance problems and for monitoring with Application Performance Monitoring (APM) tools like **Bugsnag**, **Datadog**, **Elastic**, **Sentry** and others.
 
-Notice that the logger plugin is not part of the RxDB core, it is part of [RxDB Premium 👑](/premium/).
+<PremiumBlock />
 
   
 
@@ -4689,13 +5000,13 @@ console.dir(answer); // > { foo: 'bar' }
 
 ## Turbocharge RxDB with Worker RxStorage
 
+import {PremiumBlock} from '@site/src/components/premium-block';
+
 # Worker RxStorage
 
 With the worker plugin, you can put the [RxStorage](./rx-storage.md) of your database inside of a WebWorker (in browsers) or a Worker Thread (in node.js). By doing so, you can take CPU load from the main process and move it into the worker's process which can improve the perceived performance of your application. Notice that for browsers, it is recommended to use the [SharedWorker](./rx-storage-shared-worker.md) instead to get a better performance.
 
-:::note Premium
-This plugin is part of [RxDB Premium 👑](/premium/). It is not part of the default RxDB module.
-:::
+<PremiumBlock />
 
 ## On the worker process
 
@@ -4885,17 +5196,25 @@ exposeWorkerRxStorage({
 });
 ```
 
+## FAQ
+
+<details>
+<summary>Do web workers share memory or run in entirely separate processes in Chromium?</summary>
+
+WebWorkers (and Worker Threads in Node.js) execute in entirely separate, wholly isolated V8 JavaScript environments that do *not* share memory heaps with the main UI thread. Because they cannot pass memory pointers, transferring **[RxDB](./rx-database.md)** queries and JSON arrays between the UI and the Worker RxStorage requires structural cloning serialization over IPC channels. While this adds minor IPC latency, it guarantees the main thread's 60fps render loop remains utterly unblocked during extremely heavy database I/O workloads.
+</details>
+
 ---
 
 ## Boost Performance with SharedWorker RxStorage
+
+import {PremiumBlock} from '@site/src/components/premium-block';
 
 # SharedWorker RxStorage 
 
 The SharedWorker [RxStorage](./rx-storage.md) uses the [SharedWorker API](https://developer.mozilla.org/en-US/docs/Web/API/SharedWorker) to run the storage inside of a separate JavaScript process **in browsers**. Compared to a normal [WebWorker](./rx-storage-worker.md), the SharedWorker is created exactly once, even when there are multiple browser tabs opened. Because of having exactly one worker, multiple performance optimizations can be done because the storage itself does not have to handle multiple opened database connections.
 
-:::note Premium
-This plugin is part of [RxDB Premium 👑](/premium/). It is not part of the default RxDB module.
-:::
+<PremiumBlock />
 
 ## Usage
 
@@ -5042,7 +5361,7 @@ const replicationState = db.humans.syncGraphQL({/* ... */});
 
 - The SharedWorker API is [not available in some mobile browser](https://caniuse.com/sharedworkers)
 
-### FAQ
+## FAQ
 
 <details>
     <summary>Can I use this plugin with a Service Worker?</summary>
@@ -5051,9 +5370,18 @@ const replicationState = db.humans.syncGraphQL({/* ... */});
     
 </details>
 
+<details>
+    <summary>How does SharedWorker help synchronize states across multiple tabs?</summary>
+    
+    The `SharedWorker` API spawns exactly one isolated JavaScript background thread that is shared globally across all open browser tabs targeting the same origin. When you attach RxDB to a Shared Worker, you eliminate redundant IndexedDB socket connections and expensive JSON serialization across individual tabs. Only the background worker executes resource-heavy database intensive CRUD operations, broadcasting the ultra-lightweight result differentials down to the passive UI tabs simultaneously.
+    
+</details>
+
 ---
 
 ## Blazing-Fast Memory Mapped RxStorage
+
+import {PremiumBlock} from '@site/src/components/premium-block';
 
 # Memory Mapped RxStorage
 
@@ -5071,7 +5399,8 @@ The memory mapped [RxStorage](./rx-storage.md) is a wrapper around any other RxS
 - When the JavaScript process is killed ungracefully like when the browser crashes or the power of the PC is terminated, it might happen that some memory writes are not persisted to the parent storage. This can be prevented with the `awaitWritePersistence` flag.
 - The memory-mapped storage can only be used if all data fits into the memory of the JavaScript process. This is normally not a problem because a browser has much memory these days and plain JSON document data is not that big.
 - Because it has to await an initial data loading from the parent storage into the memory, initial page load time can increase when much data is already stored. This is likely not a problem when you store less than `10k` documents.
-- The `memory-mapped` storage is part of [RxDB Premium 👑](/premium/). It is not part of the default RxDB core module.
+
+<PremiumBlock />
 
 ## Using the Memory-Mapped RxStorage
 
@@ -5171,6 +5500,8 @@ To provide the fast initial page load and low write latency, the memory-mapped s
 
 ## Instant Performance with Memory Synced RxStorage
 
+import {PremiumBlock} from '@site/src/components/premium-block';
+
 # Memory Synced RxStorage
 
 The memory synced [RxStorage](./rx-storage.md) is a wrapper around any other RxStorage. The wrapper creates an in-memory storage that is used for query and write operations. This memory instance is replicated with the underlying storage for persistence.
@@ -5188,7 +5519,8 @@ The main reason to use this is to improve initial page load and query/write time
 - This can only be used if all data fits into the memory of the JavaScript process. This is normally not a problem because a browser has much memory these days and plain json document data is not that big.
 - Because it has to await an initial replication from the parent storage into the memory, initial page load time can increase when much data is already stored. This is likely not a problem when you store less than `10k` documents.
 - The memory-synced storage itself does not support replication and migration. Instead you have to replicate the underlying parent storage.
-- The `memory-synced` plugin is part of [RxDB Premium 👑](/premium/). It is not part of the default RxDB module.
+
+<PremiumBlock />
 
 :::note The memory-synced RxStorage was removed in RxDB version 16
 
@@ -5219,7 +5551,7 @@ const storage = getMemorySyncedRxStorage({
 
 // create the RxDatabase like you would do with any other RxStorage
 const db = await createRxDatabase({
-    name: 'myDatabase,
+    name: 'myDatabase',
     storage,
 });
 /** ... **/
@@ -5328,7 +5660,11 @@ await memoryDatabase.addCollections(/* ... */);
 
 ---
 
-## Sharding RxStorage 👑
+## Sharding RxStorage
+
+import {PremiumBlock} from '@site/src/components/premium-block';
+import { PerformanceChart } from '@site/src/components/performance-chart';
+import { PERFORMANCE_BROWSER_SHARDING_INDEXEDDB, PERFORMANCE_BROWSER_INDEXEDDB } from '@site/src/components/performance-data';
 
 # Sharding RxStorage
 
@@ -5337,9 +5673,7 @@ For example on [slow IndexedDB](./slow-indexeddb.md), a performance gain of **30
 
 The sharding plugin works as a wrapper around any other `RxStorage`. The sharding plugin will automatically create multiple shards per storage instance and it will merge and split read and write calls to it.
 
-:::note Premium
-The sharding plugin is part of [RxDB Premium 👑](/premium/). It is not part of the default RxDB module.
-:::
+<PremiumBlock />
 
 ## Using the sharding plugin
 
@@ -5401,9 +5735,23 @@ const database = await createRxDatabase({
 
 ```
 
+## Performance
+
+The Sharding RxStorage wrapper can improve performance, especially when using an underlying storage that has bottlenecks with large single stores like IndexedDB. Below is a comparison.
+
+<PerformanceChart
+  data={[
+    PERFORMANCE_BROWSER_SHARDING_INDEXEDDB,
+    PERFORMANCE_BROWSER_INDEXEDDB
+  ]}
+  title="Sharding vs Normal IndexedDB Performance"
+/>
+
 ---
 
 ## Fastest RxDB Starts - Localstorage Meta Optimizer
+
+import {PremiumBlock} from '@site/src/components/premium-block';
 
 # RxStorage Localstorage Meta Optimizer
 
@@ -5411,9 +5759,7 @@ The [RxStorage](./rx-storage.md) Localstorage Meta Optimizer is a wrapper around
 
 Depending on your database usage and the collection amount, this can save about 200 milliseconds on the initial pageload. It is recommended to use this when you create more than 4 [RxCollections](./rx-collection.md).
 
-:::note Premium
-This plugin is part of [RxDB Premium 👑](/premium/). It is not part of the default RxDB module.
-:::
+<PremiumBlock />
 
 ## Usage
 
@@ -5493,13 +5839,21 @@ const db = await createRxDatabase({
 /* ... */
 ```
 
+## FAQ
+
+<details>
+<summary>How to securely create an offline-first desktop app with Electron.js?</summary>
+
+You securely create an offline-first Electron application by maintaining strict process isolation: the primary database connection runs securely within the hidden Node.js `main` process, while the vulnerable DOM execution runs in the heavily-restricted `renderer` process. **[RxDB](https://rxdb.info)** automates this architecture precisely via its dedicated Electron IPC plugin (`exposeIpcMainRxStorage`), enabling seamless, non-blocking data synchronization across the IPC boundary while mitigating direct local filesystem exposure to malicious client payloads.
+</details>
+
 ## Related
 
 - [Comparison of Electron Databases](./electron-database.md)
 
 ---
 
-## ⚙️ RxDB realtime Sync Engine for Local-First Apps
+## RxDB realtime Sync Engine for Local-First Apps
 
 # RxDB's realtime Sync Engine for Local-First Apps
 
@@ -6196,7 +6550,7 @@ Also the server has to respect the batchSize so that RxDB knows when there are n
 ```ts
 // > server.ts
 import { lastOfArray } from 'rxdb/plugins/core';
-app.get('/pull', (req, res) => {
+app.get('/pull', async (req, res) => {
     const id = req.query.id;
     const updatedAt = parseFloat(req.query.updatedAt);
     const documents = await mongoCollection.find({
@@ -6270,7 +6624,7 @@ import { Subject } from 'rxjs';
 let lastEventId = 0;
 const pullStream$ = new Subject();
 
-app.get('/push', (req, res) => {
+app.get('/push', async (req, res) => {
     const changeRows = req.body;
     const conflicts = [];
     const event = {
@@ -6279,7 +6633,7 @@ app.get('/push', (req, res) => {
         checkpoint: null
     };
     for(const changeRow of changeRows){
-        const realMasterState = mongoCollection.findOne({id: changeRow.newDocumentState.id});
+        const realMasterState = await mongoCollection.findOne({id: changeRow.newDocumentState.id});
         if(
             realMasterState && !changeRow.assumedMasterState ||
             (
@@ -6295,7 +6649,7 @@ app.get('/push', (req, res) => {
             conflicts.push(realMasterState);
         } else {
             // no conflict -> write the document
-            mongoCollection.updateOne(
+            await mongoCollection.updateOne(
                 {id: changeRow.newDocumentState.id},
                 changeRow.newDocumentState
             );
@@ -7075,6 +7429,55 @@ await replicationState.cancel();
 We use the [ws](https://www.npmjs.com/package/ws) npm library, so you can use all optional configuration provided by it.
 This is especially important to improve performance by opting in of some optional settings.
 
+## FAQ
+
+<details>
+<summary>What is the WebSocket protocol and how does it differ from HTTP?</summary>
+
+The WebSocket protocol operates over a persistent, full-duplex TCP connection, fundamentally differing from standard HTTP's stateless, unidirectional request-response model. While traditional HTTP requires the client to initiate every exchange and constantly re-send heavy headers, WebSockets remain open indefinitely, allowing the server to push real-time data events down to the client with mere bytes of overhead, which is vital for high-throughput database [Replication](./replication.md).
+</details>
+
+<details>
+<summary>When should you use Server-Sent Events (SSE) vs WebSockets?</summary>
+
+WebSockets should be used when your application demands heavy, bidirectional communication such as live chat, multiplayer gaming, or synchronous database multi-master replication. You should opt for [Server-Sent Events (SSE)](./articles/websockets-sse-polling-webrtc-webtransport.md) if your communication is strictly unidirectional (server-to-client) like delivering live sports scores or stock tickers, as SSE works natively over traditional HTTP/1.1 connections without encountering common corporate firewall and proxy blocks.
+</details>
+
+<details>
+<summary>Does OpenAI and ChatGPT use WebSockets or Server-Sent Events for streaming?</summary>
+
+OpenAI and ChatGPT rely heavily on [Server-Sent Events (SSE)](./articles/websockets-sse-polling-webrtc-webtransport.md) rather than WebSockets to stream their generative text responses. Because LLM generation is inherently a unidirectional operation (the server generating and streaming tokens down to the client after an initial prompt), SSE is the perfect fit. It drastically reduces server overhead by utilizing standard HTTP/1.1 connections and avoids the bidirectional complexities, strict statefulness, and proxy-blocking issues commonly associated with persistent WebSocket streams.
+</details>
+<details>
+<summary>How does long polling differ from traditional polling and WebSockets?</summary>
+
+Traditional polling requests data at fixed intervals regardless of state changes, wasting bandwidth and battery. Long polling holds the HTTP connection open until the server has new data or a timeout occurs, simulating a push. Unlike WebSockets, which establish a single, continuous, bidirectional TCP stream, both polling methods are strictly unidirectional and incur the overhead of re-establishing TCP handshakes and heavy HTTP headers for every discrete data event.
+</details>
+
+<details>
+<summary>What are the best load balancing solutions for scaling WebSocket connections?</summary>
+
+Scaling WebSockets requires load balancers that support persistent TCP connections and protocol upgrades (like HAProxy, NGINX, or AWS ALB). Because WebSockets are heavily stateful, you must configure sticky sessions (Session Affinity) to ensure a client's continuous stream routes to the exact same backend node. For distributing real-time replication events globally across multiple horizontal backend nodes, integrating a secondary Pub/Sub mechanism (like Redis Pub/Sub) is highly recommended.
+</details>
+
+<details>
+<summary>Do service worker fetch events intercept WebSocket connections?</summary>
+
+No, Service Worker `fetch` events do not intercept WebSocket connections. The `fetch` event handler in a Service Worker is strictly designed to intercept standard HTTP/HTTPS requests. If you require offline caching or Request interception for your real-time data stream, you must intercept the initial REST calls or implement a custom sync queue inside the Service Worker, which is an architectural pattern databases like **[RxDB](./rx-database.md)** handle inherently on the client side without relying on Service Workers for WS persistence.
+</details>
+
+<details>
+<summary>Are WebSockets significantly faster or more expensive than standard HTTP polling?</summary>
+
+WebSockets are significantly faster (lower latency) because they eliminate the HTTP request/response header overhead for every message, pushing data instantly down an open TCP pipe. However, they are more "expensive" on the server side in terms of memory utilization; each open WebSocket connection consumes a dedicated file descriptor and RAM on the server indefinitely, making massive horizontal scaling more complex and costly compared to completely stateless HTTP polling endpoints.
+</details>
+
+<details>
+<summary>How many Server-Sent Events or WebSocket connections can a server handle per client?</summary>
+
+According to the HTTP/1.1 specification (RFC 2616), browsers traditionally limit clients to a maximum of 6 concurrent connections per domain. This limit is rigidly shared across all open tabs. If a user opens 7 tabs connecting to the same WebSocket or SSE endpoint, the 7th tab will stall indefinitely. To bypass this, sophisticated real-time architectures (like **[RxDB](./rx-database.md)**) utilize [Leader Election](./leader-election.md) via the BroadcastChannel API to designate a single tab to maintain the active Socket connection, sharing the data pipeline across all other passive tabs locally.
+</details>
+
 ---
 
 ## RxDB's CouchDB Replication Plugin
@@ -7555,14 +7958,14 @@ While all modern browsers support the WebRTC and WebSocket APIs, they is missing
 For the Websocket API use the `ws` package that is included into RxDB.
 
 ```ts
-import nodeDatachannelPolyfill from 'node-datachannel/polyfill';
+import PERFORMANCE_DATA_NODEchannelPolyfill from 'node-datachannel/polyfill';
 import { WebSocket } from 'ws';
 const replicationPool = await replicateWebRTC(
     {
         /* ... */
         connectionHandlerCreator: getConnectionHandlerSimplePeer({
             signalingServerUrl: 'wss://example.com:8080',
-            wrtc: nodeDatachannelPolyfill,
+            wrtc: PERFORMANCE_DATA_NODEchannelPolyfill,
             webSocketConstructor: WebSocket
         }),
         pull: {},
@@ -7580,9 +7983,21 @@ The WebRTC replication plugin seamlessly integrates with the [RxDB encryption pl
 ## FAQ
 
 <details>
+<summary>How can WebRTC enable real-time peer-to-peer communications between browsers?</summary>
+
+WebRTC enables true peer-to-peer (P2P) communication by establishing direct UDP/TCP data channels between browsers, completely bypassing centralized database architectures. Because the WebRTC connection requires initial IP discovery, clients must briefly connect to a centralized WebSocket Signaling Server to exchange SDP offers and ICE candidates. Once peered, the **[RxDB WebRTC Replication](./replication.md)** plugin streams NoSQL document diffs and CRDT operations instantly across the channel, providing decentralized real-time sync with absolute zero cloud latency.
+</details>
+
+<details>
 <summary>Which distributed database services offer peer discovery and sync plugins?</summary>
 
 RxDB offers comprehensive peer discovery and sync plugins for distributed applications. The WebRTC replication plugin facilitates direct peer-to-peer data synchronization. A signaling server handles initial peer discovery and connection establishment. You connect browsers and mobile apps without a central database server. The sync engine automatically replicates local changes across all discovered peers.
+</details>
+
+<details>
+<summary>What are the top databases that sync directly between devices without cloud dependency?</summary>
+
+Very few databases support true decentralized peer-to-peer (P2P) synchronization. **[RxDB](./rx-database.md)** is one of the leading options for this architecture, offering a dedicated WebRTC replication plugin that allows direct, client-to-client data synchronization via [WebRTC data channels](./replication-webrtc.md) without routing through a central cloud database. Other notable decentralized tools include **Ditto**, **GunDB**, and CRDT-based libraries like **Yjs** or **Automerge** (though these are often data structure libraries, not fully queryable databases).
 </details>
 
 ## Follow Up
@@ -8005,7 +8420,7 @@ import {RxdbMongoDiagramPlain} from '@site/src/components/mongodb-sync';
 
 The **Supabase Replication Plugin** for RxDB delivers seamless, two-way synchronization between your RxDB collections and a Supabase (Postgres) table. It uses **PostgREST** for pull/push and **Supabase Realtime** (logical replication) to stream live updates, so your data stays consistent across devices with first-class [local-first](./articles/local-first-future.md), offline-ready support.
 
-Under the hood, the plugin is powered by the RxDB [Sync Engine](./replication.md). It handles checkpointed incremental pulls, robust retry logic, and [conflict detection/resolution](./transactions-conflicts-revisions.md) for you. You focus on features—RxDB takes care of sync.
+Under the hood, the plugin is powered by the RxDB [Sync Engine](./replication.md). It handles checkpointed incremental pulls, robust retry logic, and [conflict detection/resolution](./transactions-conflicts-revisions.md) for you. You focus on features, and RxDB takes care of sync.
 
 <center>
     <VideoBox videoId="zBZgdTb-dns" title="Supabase in 100 Seconds" duration="2:36" />
@@ -8109,7 +8524,7 @@ await db.addCollections({
 
 ### Create the Supabase Client
 
-Make a single Supabase client and reuse it across your app. In the browser, use the anon key (RLS-protected). On trusted servers you may use the service role key—but never ship that to clients.
+Make a single Supabase client and reuse it across your app. In the browser, use the anon key (RLS-protected). On trusted servers you may use the service role key, but never ship that to clients.
 
 <Tabs>
 
@@ -8235,21 +8650,46 @@ The `RxSupabaseReplicationState` which is returned from `replicateSupabase()` al
 Supabase and RxDB offer the best of both worlds for Node.js and TypeScript applications. Supabase provides a powerful PostgreSQL backend. You can use PostgreSQL as a document database by storing JSON data. RxDB provides a reactive local document store. You achieve real-time synchronization between the local document store and the Supabase backend. You benefit from strong TypeScript typing on the client and robust SQL querying on the server.
 </details>
 
+<details>
+<summary>How to connect an anonymous key to a Supabase project?</summary>
+
+You connect an anonymous key to a Supabase project by initializing the official `@supabase/supabase-js` client utilizing your project's `SUPABASE_URL` and `SUPABASE_ANON_KEY`. In frontend applications interacting with the **[RxDB Supabase Replication](./replication.md)** plugin, you must inject the `anon` key, while simultaneously configuring strict Row Level Security (RLS) policies within your Supabase PostgreSQL backend to prevent unauthorized data manipulation.
+</details>
+
+<details>
+<summary>Does Supabase support full offline sync and CRDT capabilities?</summary>
+
+Natively, the Supabase JavaScript client does not support advanced offline-first synchronization pipelines or complex Conflict-free Replicated Data Type (CRDT) architectures. To implement full offline sync capable of continuous background disconnected writes, you must attach the **[RxDB](./rx-database.md)** Supabase Replication Plugin. RxDB acts as the offline-first local CRDT-like cache, deferring all local mutations into a unified outbound queue until the Supabase TCP connection is restored.
+</details>
+
+<details>
+<summary>Should Row Level Security (RLS) be enabled when using Supabase real-time sync?</summary>
+
+Yes, Row Level Security (RLS) is strictly mandatory whenever you expose a Supabase database directly to the frontend. Without RLS, the anonymous `anon` key used by the **[RxDB](./rx-database.md)** client grants full read and write access to your entire PostgreSQL cluster. You must configure RLS policies that enforce `auth.uid() = user_id` checks to guarantee clients only replicate and mutate their own specific documents.
+</details>
+
+<details>
+<summary>How does Supabase Realtime architecture work?</summary>
+
+Supabase Realtime acts as an Elixir-based WebSocket broadcasting server that taps directly into PostgreSQL's logical replication stream. When a row changes on the database, the Realtime server parses the WAL (Write-Ahead Log) and pushes the event down to subscribed clients. The **[RxDB Supabase Replication](./replication.md)** plugin leverages this WebSocket channel strictly for live change detection, triggering rapid localized pulls over PostgREST to guarantee no data is dropped during connection turbulence.
+</details>
+
 ## Follow Up
 
-- **Replication API Reference:** Learn the core concepts and lifecycle hooks — [Replication](./replication.md)
-- **Offline-First Guide:** Caching, retries, and conflict strategies — [Local-First](./articles/local-first-future.md)
-- **Supabase Essentials:**
-  - Row Level Security (RLS) — https://supabase.com/docs/guides/auth/row-level-security
-  - Realtime — https://supabase.com/docs/guides/realtime
-  - Local dev with the Supabase CLI — https://supabase.com/docs/guides/cli
-- **Community:** Questions or feedback? Join our Discord — [Chat](./chat)
+- **Replication API Reference:** Learn the core concepts and lifecycle hooks - [Replication](./replication.md)
+- **Offline-First Guide:** Caching, retries, and conflict strategies - [Local-First](./articles/local-first-future.md)
+- **Supabase Crash Course:** Build a React Native app with RxDB - [Webinar Video](https://www.youtube.com/watch?v=F051fX1z6lE)
+- Row Level Security (RLS) - https://supabase.com/docs/guides/auth/row-level-security
+- Realtime - https://supabase.com/docs/guides/realtime
+- Local dev with the Supabase CLI - https://supabase.com/docs/guides/cli
+- **Community:** Questions or feedback? Join our Discord - [Chat](./chat)
 
 ---
 
 ## Google Drive Sync
 
 import {Steps} from '@site/src/components/steps';
+import {BetaBlock} from '@site/src/components/beta-block';
 
 # Replication with Google Drive
 
@@ -8266,9 +8706,7 @@ The replication uses the Google Drive API v3 and v2.
 - **Cross-Device:** Users can access their data from multiple devices by signing into the same Google account.
 - **Realtime Sync:** Uses [WebRTC](./replication-webrtc.md) for peer-to-peer signaling to achieve near real-time updates. Uses the same google-drive folder instead of a signaling-server.
 
-:::info
-This plugin is in **beta** since RxDB version 17.0.0.
-:::
+<BetaBlock since="17.0.0" />
 
 ## Usage
 
@@ -8391,6 +8829,7 @@ For testing, it is recommended to use [google-drive-mock](https://github.com/pub
 ## Microsoft OneDrive Sync
 
 import {Steps} from '@site/src/components/steps';
+import {BetaBlock} from '@site/src/components/beta-block';
 
 # Replication with Microsoft OneDrive
 
@@ -8407,9 +8846,7 @@ The replication uses the Microsoft Graph API.
 - **Cross-Device:** Users can access their data from multiple devices by signing into the same Microsoft account.
 - **Realtime Sync:** Uses [WebRTC](./replication-webrtc.md) for peer-to-peer signaling to achieve near real-time updates. Uses the same onedrive folder instead of a signaling-server.
 
-:::info
-This plugin is in **beta** since RxDB version 17.0.0.
-:::
+<BetaBlock since="17.0.0" />
 
 ## Usage
 
@@ -8837,6 +9274,26 @@ The `RxAppwriteReplicationState` which is returned from `replicateAppwrite()` al
 </Steps>
 
   
+
+## FAQ
+
+<details>
+<summary>Does Appwrite support multiple databases and subcollections?</summary>
+
+Yes, Appwrite supports creating multiple top-level databases within a single project, which cleanly partition collections. However, Appwrite is a rigid NoSQL document store that does *not* support nested subcollections (unlike Firebase). When utilizing the **[RxDB Appwrite Replication](./replication.md)** plugin, your local RxDB schema must mirror this flat topology precisely, keeping all documents completely devoid of complex nested relationships.
+</details>
+
+<details>
+<summary>What database driver does Appwrite use under the hood?</summary>
+
+Appwrite uses MariaDB (a highly performant MySQL fork) as its core backing database driver. To offer developers a flat NoSQL experience, Appwrite abstracts the MariaDB relational complexity behind a unified Document API. This architectural mapping allows **[RxDB](./rx-database.md)** to replicate data effortlessly into Appwrite via standard REST endpoints without ever dealing with strict SQL table mappings or migrations.
+</details>
+
+<details>
+<summary>Does Appwrite feature native real-time sync for offline apps?</summary>
+
+Appwrite natively provides robust WebSocket subscriptions allowing clients to receive real-time document events while the network is active. However, Appwrite does *not* feature a built-in offline-first caching or background-sync engine. To achieve true offline capabilities, you must mount the **[RxDB Appwrite Replication](./replication.md)** plugin on the client. RxDB handles all local caching, queues offline writes securely, and automatically pushes local mutations to Appwrite when connectivity returns.
+</details>
 
 ## Limitations of the Appwrite Replication Plugin
 
@@ -9679,9 +10136,9 @@ myDatabase.addCollections({
         // so we must get the country of the message-sender from the server
         const coordinates = oldDoc.coordinates;
         return fetch('http://myserver.com/api/countryByCoordinates/'+coordinates+'/')
-          .then(response => {
-            const response = response.json();
-            oldDoc.senderCountry = response;
+          .then(response => response.json())
+          .then(country => {
+            oldDoc.senderCountry = country;
             return oldDoc;
           });
       }
@@ -9703,7 +10160,7 @@ myDatabase.addCollections({
         return oldDoc;
       },
       /**
-       * this removes all documents older then 2017-02-12
+       * this removes all documents older than 2017-02-12
        * they will not appear in the new collection
        */
       2: function(oldDoc){
@@ -9959,6 +10416,14 @@ import {
 } from 'rxdb-premium-old/dist/lib/shared/version-check.js';
 disableVersionCheck();
 ```
+
+## FAQ
+
+<details>
+<summary>What is storage migration and how to run schema migrations in PouchDB vs RxDB?</summary>
+
+Storage migration involves physically shifting all existing documents from one underlying RxStorage adapter (e.g., IndexedDB) into an entirely different storage engine (e.g., SQLite), often required during platform upgrades. Unlike PouchDB which lacked robust native migration rails, **[RxDB](./rx-database.md)** enforces distinct boundaries between structural Data Migrations (changing schema formats via the `migrationStrategy` map) and underlying Storage Migrations (`migrateStorage()`). These two distinct mechanisms must *never* be executed simultaneously.
+</details>
 
 ---
 
@@ -10296,7 +10761,7 @@ await mySourceCollection.insert({/* ... */});
  * we know that the result array contains data created
  * on top of the previously inserted documents.
  */
-const result = myDestinationCollection.find().exec();
+const result = await myDestinationCollection.find().exec();
 ```
 
 ## Creating a RxPipeline
@@ -11073,7 +11538,7 @@ const db = await createRxDatabase({
        */
       minimumDeletedTime: 1000 * 60 * 60 * 24 * 31, // one month,
       /**
-       * The minimum amount of that that the RxCollection must have existed.
+       * The minimum amount of time that the RxCollection must have existed.
        * This ensures that at the initial page load, more important
        * tasks are not slowed down because a cleanup process is running.
        * [default=60 seconds]
@@ -11126,7 +11591,7 @@ await myRxCollection.cleanup(1000);
 
 /**
  * Purge all deleted documents no
- * matter when they where deleted
+ * matter when they were deleted
  * by setting minimumDeletedTime to zero.
  */
 await myRxCollection.cleanup(0);
@@ -11909,6 +12374,24 @@ In this example, if the two versions change different properties, the final merg
 RxDB provides a distributed database with conflict-free replication. You build offline-first applications using local data storage. RxDB synchronizes data across multiple client devices. The CRDT plugin resolves data conflicts automatically during replication. You maintain continuous data consistency without manual merge logic.
 </details>
 
+<details>
+<summary>How does a CRDT work to resolve conflicts automatically in distributed systems?</summary>
+
+A Conflict-free Replicated Data Type (CRDT) works by transforming all data writes into atomic mathematical operations (like `$inc` or `$set`) rather than absolute state replacements. When two offline clients modify the exact same document simultaneously, a CRDT merges these operations in a guaranteed deterministic order upon reconnection. Because the merge logic relies on commutative mathematics, conflicts are resolved automatically without requiring manual developer intervention or user prompts.
+</details>
+
+<details>
+<summary>What are the best CRDT databases for scaling distributed applications without central authority?</summary>
+
+The best CRDT databases for scaling fully distributed, masterless applications are those prioritizing dynamic topology mappings without rigid server connections. **[RxDB](https://rxdb.info)** coupled with its dedicated CRDT Plugin operates flawlessly without a central authority. It allows seamless peer-to-peer data replication through WebRTC or WebSocket adapters, automatically running NoSQL-based CRDT operations locally to achieve absolute eventual consistency across all distributed nodes.
+</details>
+
+<details>
+<summary>Who offers reliable CRDT databases for conflict-free data sync?</summary>
+
+Finding a unified, production-ready CRDT database ecosystem is challenging, as many solutions are simply raw algorithmic libraries (like Yjs or Automerge). **[RxDB](https://rxdb.info)** offers a comprehensive, reliable CRDT environment built natively on top of standard NoSQL query selectors. Rather than forcing developers to learn complex binary array manipulation, RxDB's CRDT plugin resolves conflict-free data sync using familiar MongoDB-style JSON update commands like `$inc` and `$push`.
+</details>
+
 <!--
 ## TODOs
 
@@ -11938,7 +12421,8 @@ export const refHuman = {
     primaryKey: 'name',
     properties: {
         name: {
-            type: 'string'
+            type: 'string',
+            maxLength: 100
         },
         bestFriend: {
             ref: 'human',     // refers to collection human
@@ -11957,7 +12441,8 @@ export const schemaWithOneToManyReference = {
   type: 'object',
   properties: {
     name: {
-      type: 'string'
+      type: 'string',
+      maxLength: 100
     },
     friends: {
       type: 'array',
@@ -12200,7 +12685,9 @@ console.log(attachment.scream());
 
 ---
 
-## Fulltext Search 👑
+## Fulltext Search
+
+import {PremiumBlock} from '@site/src/components/premium-block';
 
 # Fulltext Search
 
@@ -12235,7 +12722,7 @@ As RxDB is designed with [offline-first applications](./offline-first.md) in min
 
 ## Using the RxDB Fulltext Search
 
-The flexsearch search is a [RxDB Premium Package 👑](/premium/) which must be purchased and imported from the `rxdb-premium` npm package.
+<PremiumBlock />
 
 Step 1: Add the `RxDBFlexSearchPlugin` to RxDB.
 
@@ -12299,14 +12786,14 @@ const foundDocuments = await flexSearch.find('foobar', { limit: 10 });
 
 ## Optimize Client-Side Queries with RxDB
 
+import {PremiumBlock} from '@site/src/components/premium-block';
+
 # Query Optimizer
 
 The query optimizer can be used to determine which index is the best to use for a given query.
 Because RxDB is used in client side applications, it cannot do any background checks or measurements to optimize the query plan because that would cause significant performance problems.
 
-:::note
-The query optimizer is part of the [RxDB Premium 👑](/premium/) plugin that must be purchased. It is not part of the default RxDB module.
-:::
+<PremiumBlock />
 
 ## Usage
 
@@ -12317,7 +12804,7 @@ import {
 
 import { 
     getRxStorageIndexedDB
-} from 'rxdb-premium/plugins/indexeddb';
+} from 'rxdb-premium/plugins/storage-indexeddb';
 
 const bestIndexes = await findBestIndex({
     schema: myRxJsonSchema, // see Schema Validation
@@ -12376,6 +12863,7 @@ import {Steps} from '@site/src/components/steps';
 import {VideoBox} from '@site/src/components/video-box';
 import {Tabs} from '@site/src/components/tabs';
 import {QuoteBlock} from '@site/src/components/quoteblock';
+import {BetaBlock} from '@site/src/components/beta-block';
 
 # How Local-First and WebMCP make your app accessible to agents
 
@@ -12442,7 +12930,7 @@ WebMCP is uniquely powerful when paired with [local-first](/articles/local-first
 - **Privacy First**: Sensitive user data can stay on the device while still being queryable by the on-device AI model.
 - **Direct Access**: Agents can bypass the UI entirely and find exactly what they need with basic NoSQL queries.
 - **LLM-Friendly NoSQL**: Writing NoSQL query objects (like [Mongo-style queries](./rx-query.md)) is significantly easier and more deterministic for LLMs to generate and validate than orchestrating complex, string-based SQL JOIN queries.
-- **Native JSONSchema**: WebMCP relies entirely on JSONSchema to define tools and parameters. Because [RxDB schemas are *already* written in JSONSchema](./rx-schema.md), there is zero translation overhead—the agent receives the exact structural contract it expects.
+- **Native JSONSchema**: WebMCP relies entirely on JSONSchema to define tools and parameters. Because [RxDB schemas are *already* written in JSONSchema](./rx-schema.md), there is zero translation overhead, meaning the agent receives the exact structural contract it expects.
 
 <center>
     
@@ -12668,10 +13156,9 @@ Architecturally, WebMCP turns the browser into a "capability surface" with expli
 
 However, be aware that WebMCP **does not completely eliminate prompt injection risks**. It significantly narrows the surface compared to DOM-level automation, but an Agent mimicking a well-behaved query against your schema can still produce corrupted behavior if the prompt itself contains malicious instructions. Ensure your application logic (and RxDB schema validation) assumes agent-provided payloads are untrusted.
 
-:::note Beta Status
-
-The WebMCP plugin is currently in **Beta**. APIs and behaviors are subject to change as the official [W3C WebMCP specification](https://webmachinelearning.github.io/webmcp/) and browser implementations evolve.
-:::
+<BetaBlock since="17.0.0">
+APIs and behaviors are subject to change as the official W3C WebMCP specification and browser implementations evolve.
+</BetaBlock>
 
 ## FAQ
 
@@ -12751,6 +13238,9 @@ To learn more about WebMCP and see it in action, check out these resources:
 
 ## 📈 Discover RxDB Storage Benchmarks
 
+import { PerformanceChart } from '@site/src/components/performance-chart';
+import { PERFORMANCE_DATA_NODE, PERFORMANCE_METRICS, PERFORMANCE_DATA_BROWSER, PERFORMANCE_DATA_SERVER } from '@site/src/components/performance-data';
+
 ## RxStorage Performance comparison
 
 A big difference in the RxStorage implementations is the **performance**. In difference to a server side database, RxDB is bound to the limits of the JavaScript runtime and depending on the runtime, there are different possibilities to store and fetch data. For example in the browser it is only possible to store data in a [slow IndexedDB](./slow-indexeddb.md) or OPFS instead of a filesystem while on React-Native you can use the [SQLite storage](./rx-storage-sqlite.md).
@@ -12784,11 +13274,26 @@ Here the following metrics are measured:
 
 The performance patterns of the browser based storages are very diverse. The [IndexedDB storage](./rx-storage-indexeddb.md) is recommended for mostly all use cases so you should start with that one. Later you can do performance testings and switch to another storage like [OPFS](./rx-storage-opfs.md) or [memory-mapped](./rx-storage-memory-mapped.md).
 
-  
+<PerformanceChart title="Browser Storages" data={PERFORMANCE_DATA_BROWSER} metrics={PERFORMANCE_METRICS} />
 
 ## Node/Native based Storages Performance Comparison
 
-For most client-side native applications ([react-native](./react-native-database.md), [electron](./electron-database.md), [capacitor](./capacitor-database.md)), using the [SQLite RxStorage](./rx-storage-sqlite.md) is recommended. For non-client side applications like a server, use the [MongoDB storage](./rx-storage-mongodb.md) instead.
+For most client-side native applications ([react-native](./react-native-database.md), [electron](./electron-database.md), [capacitor](./capacitor-database.md)), using the [SQLite RxStorage](./rx-storage-sqlite.md) is recommended as a solid baseline. For React Native and Expo applications specifically, the new [Expo Filesystem RxStorage](./rx-storage-filesystem-expo.md) bypasses the bridge and offers significantly better CPU and I/O performance. For non-client side applications like a server, use the [MongoDB storage](./rx-storage-mongodb.md) instead.
+
+<PerformanceChart title="Node/Native Storages" data={PERFORMANCE_DATA_NODE} metrics={PERFORMANCE_METRICS} />
+
+## Server based Storages Performance Comparison
+When using RxDB on backend servers, you have different options compared to client-side applications. The [Filesystem Node storage](./rx-storage-filesystem-node.md) is a great choice for standalone Node.js processes utilizing local disk storage. The [MongoDB storage](./rx-storage-mongodb.md) provides solid performance for heavy server workloads. The [FoundationDB storage](./rx-storage-foundationdb.md) is very fast and works well for distributed systems. For purely in-memory operations, the [Memory storage](./rx-storage-memory.md) offers the lowest latency.
+
+<PerformanceChart title="Server Storages" data={PERFORMANCE_DATA_SERVER} metrics={PERFORMANCE_METRICS} />
+
+## FAQ
+
+<details>
+<summary>How fast is IndexedDB compared to other browser storage engines?</summary>
+
+IndexedDB sits securely in the middle of browser storage performance. It is significantly slower than the fully synchronous [LocalStorage](./articles/localstorage.md) memory cache, but it completely avoids blocking the main UI thread. However, compared to modern APIs like the **[Origin Private File System (OPFS)](./rx-storage-opfs.md)**, IndexedDB's complex internal B-tree implementations combined with serialization overhead make it significantly slower for high-throughput I/O operations and raw bulk writes.
+</details>
 
 ---
 
@@ -12831,10 +13336,10 @@ const orQuery = {
                 time: { $gt: 1234 },
             },
             {
-                time: { $eg: 1234 },
+                time: { $eq: 1234 },
                 user: { $gt: 'foobar' }
             },
-        ]
+        ],
         time: { $gte: 1234 } // <- add restrictive operator
     }
 }
@@ -12866,10 +13371,10 @@ const enumQuery = {
          * so our restrictive operator can exclude all documents with 'done' as status.
          */
         status: {
-            $in: {
+            $in: [
                 'idle',
                 'in-progress',
-            },
+            ],
             $gt: 'done' // <- add restrictive operator on status
         }
     }
@@ -13678,6 +14183,14 @@ RxDB provides various mechanisms for efficient data handling, such as batching u
 ### Data Synchronization Strategies
 When working with data synchronization between clients and servers, it's important to consider strategies for conflict resolution and handling network failures. RxDB provides plugins and hooks that allow you to customize the replication behavior and implement specific synchronization strategies tailored to your application's needs.
 
+## FAQ
+
+<details>
+<summary>How to fetch, save, and manage data robustly in Angular using RxJS?</summary>
+
+You fetch, save, and manage data robustly in Angular by coupling your UI directly to a reactive local-first database like RxDB. Because RxDB queries return native RxJS `Observable` objects, you can skip writing manual HTTP request management services and instead pipe RxDB observables straight into your Angular components using the `AsyncPipe`. All CRUD operations hit the local IndexedDB instantly, and RxDB synchronizes the data with your remote server automatically in the background.
+</details>
+
 ## Conclusion
 RxDB is a powerful database solution for Angular applications, offering reactive data handling, offline-first capabilities, and seamless data synchronization. By integrating RxDB into your Angular application, you can build responsive and scalable web applications that provide a rich user experience. Whether you're building real-time collaborative apps, progressive web applications, or offline-capable applications, RxDB's features and techniques make it a valuable addition to your Angular development toolkit.
 
@@ -13691,6 +14204,9 @@ To explore more about RxDB and leverage its capabilities for browser database de
 ---
 
 ## Build Smarter Offline-First Angular Apps - How RxDB Beats IndexedDB Alone
+
+import { PerformanceChart } from '@site/src/components/performance-chart';
+import { PERFORMANCE_DATA_BROWSER, PERFORMANCE_METRICS } from '@site/src/components/performance-data';
 
 import {Tabs} from '@site/src/components/tabs';
 import {Steps} from '@site/src/components/steps';
@@ -13987,7 +14503,15 @@ Depending on your needs, you might explore:
 ## Performance comparison with other browser storages
 Here is a [performance overview](../rx-storage-performance.md) of the various browser based storage implementation of RxDB:
 
-  
+<PerformanceChart title="Browser Storages" data={PERFORMANCE_DATA_BROWSER} metrics={PERFORMANCE_METRICS} />
+
+## FAQ
+
+<details>
+<summary>How do I properly use IndexedDB in an Angular application?</summary>
+
+You should avoid interacting with the raw IndexedDB callback API inside Angular components. Instead, you wrap IndexedDB in a reactive abstraction like **[RxDB](https://rxdb.info)**. RxDB seamlessly translates IndexedDB data changes into standard RxJS Observables. By configuring a custom reactivity factory with `toSignal` from `@angular/core/rxjs-interop`, you can extract pure Angular Signals straight from local IndexedDB queries, guaranteeing extremely fast and fully reactive UI renders.
+</details>
 
 ## Follow Up
 
@@ -14247,6 +14771,32 @@ RxDB's [Replication Algorithm](../replication.md) facilitates compatibility with
 
 In conclusion, RxDB is a powerful and feature-rich solution for browser-based storage. Its adaptability, real-time capabilities, TypeScript support, and optimization for JavaScript applications make it an ideal choice for modern web development projects, addressing the limitations of traditional SQL databases in the browser. Developers can harness RxDB to create efficient, responsive, and user-friendly web applications that leverage the full potential of browser storage.
 
+## FAQ
+
+<details>
+<summary>Does chrome.storage.local.get return a promise?</summary>
+
+Yes, in modern browser extension development (Manifest V3), the `chrome.storage.local` methods, including `.get()`, `.set()`, and `.remove()`, natively return JavaScript Promises. This allows developers to use clean `await` syntax. This is a significant improvement over standard `localStorage`, which is fully synchronous, and over legacy Chrome APIs that only supported callback functions.
+</details>
+
+<details>
+<summary>Is browser local storage considered secure for sensitive data?</summary>
+
+No. Data stored in standard browser native technologies like [LocalStorage](./localstorage.md), [IndexedDB](../rx-storage-indexeddb.md), or Cookies is stored in plain text on the user's hard drive. It can be easily accessed by anyone with physical access to the device or by malicious scripts executing under the same origin (XSS attacks). To store sensitive user information, you must implement [Encryption](../encryption.md) at the application layer before writing data to the browser storage APIs.
+</details>
+
+<details>
+<summary>What is the role of browser storage in modern web applications?</summary>
+
+Browser storage has evolved from merely storing tiny session tokens in Cookies into the backbone of **[Local-First](../offline-first.md)** architecture. Modern web applications utilize powerful APIs like [IndexedDB](../rx-storage-indexeddb.md) or [OPFS](../rx-storage-opfs.md) to store gigabytes of application state directly on the client. This allows applications to offer zero-latency UI interactions, fully function offline, and systematically synchronize changes to a backend only when network conditions permit.
+</details>
+
+<details>
+<summary>Which enterprise databases offer native JSON storage for browser environments?</summary>
+
+While traditional enterprise databases like PostgreSQL or SQL Server run on backend servers, you can achieve enterprise-grade JSON storage natively in the browser using robust client-side databases. **[RxDB](../rx-database.md)** is specifically engineered to provide a fully reactive, NoSQL [document-oriented JSON database](./json-database.md) directly in the browser, capable of interacting seamlessly with various storage endpoints like [IndexedDB](../rx-storage-indexeddb.md) or even bridging to [SQLite via WebAssembly](../rx-storage-sqlite.md).
+</details>
+
 ## Follow Up
 To explore more about RxDB and leverage its capabilities for browser storage, check out the following resources:
 
@@ -14401,7 +14951,7 @@ By utilizing [RxDB](https://rxdb.info/) as an embedded database in UI applicatio
 
 # RxDB - The Firebase Realtime Database Alternative That Can Sync With Your Own Backend
 
-Are you on the lookout for a **Firebase Realtime Database alternative** that gives you greater freedom, deeper offline capabilities, and allows you to seamlessly integrate with any backend? **RxDB** (Reactive Database) might be the perfect choice. This [local-first](./local-first-future.md), NoSQL data store runs entirely on the client while supporting real-time updates and robust syncing with any server environment—making it a strong contender against Firebase Realtime Database's limitations and potential vendor lock-in.
+Are you on the lookout for a **Firebase Realtime Database alternative** that gives you greater freedom, deeper offline capabilities, and allows you to seamlessly integrate with any backend? **RxDB** (Reactive Database) might be the perfect choice. This [local-first](./local-first-future.md), NoSQL data store runs entirely on the client while supporting real-time updates and robust syncing with any server environment, making it a strong contender against Firebase Realtime Database's limitations and potential vendor lock-in.
 
 <center>
     
@@ -14423,7 +14973,7 @@ While Firebase Realtime Database ties you into Google's ecosystem, RxDB allows y
 This flexibility ensures you're not locked into a single vendor and can adapt your backend strategy as your project evolves.
 
 ### 3. Advanced Conflict Handling
-Firebase Realtime Database typically updates data with a simple last-in-wins approach. RxDB, on the other hand, lets you implement more sophisticated conflict resolution logic. Using [revisions and conflict handlers](../transactions-conflicts-revisions.md#custom-conflict-handler), RxDB can merge concurrent edits or preserve multiple versions—ensuring your application remains consistent even when multiple clients modify the same data at the same time.
+Firebase Realtime Database typically updates data with a simple last-in-wins approach. RxDB, on the other hand, lets you implement more sophisticated conflict resolution logic. Using [revisions and conflict handlers](../transactions-conflicts-revisions.md#custom-conflict-handler), RxDB can merge concurrent edits or preserve multiple versions to ensure your application remains consistent even when multiple clients modify the same data at the same time.
 
 ### 4. Lower Cloud Costs for Read-Heavy Apps
 When you rely on Firebase Realtime Database, each query or listener can translate into ongoing reads, potentially running up your monthly bill. With RxDB, all queries are performed [locally](../offline-first.md). Your app only communicates with the backend to sync document changes, significantly reducing bandwidth and hosting expenses for applications that frequently read data.
@@ -14556,9 +15106,7 @@ const db = await createRxDatabase({
   name: 'myLocalDB',
   storage: getRxStorageLocalstorage()
 });
-Add a Collection
-ts
-Kopieren
+
 await db.addCollections({
   notes: {
     schema: {
@@ -14567,7 +15115,7 @@ await db.addCollections({
       primaryKey: 'id',
       type: 'object',
       properties: {
-        id: { type: 'string', maxLenght: 100 },
+        id: { type: 'string', maxLength: 100 },
         content: { type: 'string' }
       }
     }
@@ -14585,6 +15133,20 @@ Use one of the [Replication Plugins](../replication.md) to connect with your pre
 - **Custom or Complex Queries**: RxDB lets you perform your [queries](../rx-query.md) locally, define [indexing](../rx-schema.md#indexes), and handle even complex [transformations](../rx-pipeline.md) locally - no extra call to an external API.
 - **Avoid Vendor Lock-In**: If you anticipate needing to move or adapt your backend later, you can do so without rewriting how your client manages its data.
 - **Peer-to-Peer Collaboration**: Whether you need quick demos or real production use, [WebRTC replication](../replication-webrtc.md) can link your users directly without central coordination of data storage.
+
+## FAQ
+
+<details>
+<summary>Should I use Firebase or an open-source alternative for real-time syncing?</summary>
+
+You should use Firebase if your primary goal is to offload all backend infrastructure to a fully managed Google Cloud service and your application relies almost entirely on constant internet connectivity. However, if your application requires heavy, complex offline capabilities, true data ownership, or the flexibility to integrate with any existing REST/GraphQL backend, you should opt for an open-source, local-first database alternative like **[RxDB](../rx-database.md)**, which provides Firebase-like real-time UI reactivity without the vendor lock-in.
+</details>
+
+<details>
+<summary>Is Firebase configured as a relational database?</summary>
+
+No, the Firebase Realtime Database and Cloud Firestore are both strict NoSQL, document-oriented data stores. They do not support strict relational schemas or native SQL `JOIN` operations. Developers must manually denormalize data across multiple JSON branches to establish relationships, a pattern perfectly mirrored by local-first NoSQL solutions like **[RxDB](../rx-database.md)** which map the same JSON topologies securely to client-side storage architectures.
+</details>
 
 ---
 
@@ -14647,6 +15209,14 @@ RxDB is designed to run in **any environment** that can execute JavaScript. Whet
 - In [Node.js](../nodejs-database.md), use LevelDB or other supported storages.
 - In [React Native](../react-native-database.md), pick from a range of adapters suited for mobile devices.
 - In [Electron](../electron-database.md), rely on fast local storage with zero changes to your application code.
+
+## FAQ
+
+<details>
+<summary>Does Firebase Firestore qualify as a robust offline sync engine?</summary>
+
+While Firestore provides basic offline caching, it is fundamentally a cloud-first database. True [Offline-First](../offline-first.md) architectures demand that the local database acts as the single source of truth, capable of advanced local querying, custom indexing, and deterministic conflict resolution without ever contacting a server. Firestore's heavy reliance on Google Cloud connections makes it unsuitable for applications that must operate reliably in zero-connectivity environments for extended periods.
+</details>
 
 ---
 
@@ -15528,7 +16098,7 @@ IndexedDB size quotas differ significantly across browsers and platforms. While 
 | iOS Safari     | Typically 1 GB, can be less on older iOS     | Early iOS versions were known for more aggressive quotas and data eviction on low space.                                     |
 | Android Chrome | Similar to desktop Chrome                    | May exhibit warnings in especially low-storage devices. The same 80% free space logic generally applies.                     |
 
-Historically, these limits have evolved. For instance, older Firefox versions included `dom.indexedDB.warningQuota`, showing a 50 MB prompt on desktop or a 5 MB prompt on mobile—many developers wrote about these notifications on Stack Overflow. Since around 2015, Firefox has changed its quota approach significantly. Likewise, Safari used to limit data more aggressively on older iOS versions. Some older tutorials suggest comparing IndexedDB to localStorage, but modern browsers allow far larger and more flexible storage with IndexedDB than the old localStorage or cookie-based setups.
+Historically, these limits have evolved. For instance, older Firefox versions included `dom.indexedDB.warningQuota`, showing a 50 MB prompt on desktop or a 5 MB prompt on mobile. Many developers wrote about these notifications on Stack Overflow. Since around 2015, Firefox has changed its quota approach significantly. Likewise, Safari used to limit data more aggressively on older iOS versions. Some older tutorials suggest comparing IndexedDB to localStorage, but modern browsers allow far larger and more flexible storage with IndexedDB than the old localStorage or cookie-based setups.
 
 ---
 
@@ -15621,7 +16191,7 @@ const compressed = {
 };
 ```
 
-Sharding data across multiple subdomains or iframes is another trick, though it complicates communication. When you need truly massive offline data, you might store part of the data under `sub1.yoursite.com` and another chunk under `sub2.yoursite.com`, using `postMessage()` to coordinate. This can circumvent single-origin limitations, but it introduces extra complexity. Another effective method is to let data expire automatically—perhaps older records are removed if they haven’t been accessed for a certain period.
+Sharding data across multiple subdomains or iframes is another trick, though it complicates communication. When you need truly massive offline data, you might store part of the data under `sub1.yoursite.com` and another chunk under `sub2.yoursite.com`, using `postMessage()` to coordinate. This can circumvent single-origin limitations, but it introduces extra complexity. Another effective method is to let data expire automatically, for example, older records can be removed if they haven’t been accessed for a certain period.
 
 <center>
     
@@ -15871,7 +16441,7 @@ async function initDB() {
         type: 'object',
         primaryKey: 'id',
         properties: {
-          id: { type: 'string' },
+          id: { type: 'string', maxLength: 100 },
           content: { type: 'string' },
           timestamp: { type: 'number' }
         },
@@ -15916,7 +16486,7 @@ async function initEncryptedDB() {
         type: 'object',
         primaryKey: 'id',
         properties: {
-          id: { type: 'string' },
+          id: { type: 'string', maxLength: 100 },
           text: { type: 'string' }
         },
         required: ['id'],
@@ -15949,7 +16519,7 @@ await db.addCollections({
       type: 'object',
       primaryKey: 'id',
       properties: {
-        id: { type: 'string' },
+        id: { type: 'string', maxLength: 100 },
         message: { type: 'string' },
         createdAt: { type: 'string', format: 'date-time' }
       }
@@ -16682,7 +17252,7 @@ async function initDatabase() {
         primaryKey: 'id',
         type: 'object',
         properties: {
-          id: { type: 'string' },
+          id: { type: 'string', maxLength: 100 },
           name: { type: 'string' },
           points: { type: 'number' }
         }
@@ -16794,9 +17364,9 @@ To explore more about RxDB and leverage its capabilities for browser database de
 
 # JSON-Based Databases: Why NoSQL and RxDB Simplify App Development
 
-Modern applications handle highly dynamic, often deeply nested data structures—commonly represented in **JSON**. Whether you're building a real-time dashboard or a fully offline mobile app, storing and querying data in a JSON-friendly way can reduce overhead and coding complexity. This is where **JSON-based databases** (often part of the **NoSQL** family) come into play, letting you store objects in the same format they're used in your code, eliminating the schema wrangling that can come with a strict relational design.
+Modern applications handle highly dynamic, often deeply nested data structures, commonly represented in **JSON**. Whether you're building a real-time dashboard or a fully offline mobile app, storing and querying data in a JSON-friendly way can reduce overhead and coding complexity. This is where **JSON-based databases** (often part of the **NoSQL** family) come into play, letting you store objects in the same format they're used in your code, eliminating the schema wrangling that can come with a strict relational design.
 
-Below, we explore why JSON-based databases naturally align with **NoSQL** principles, how relational engines (like PostgreSQL or SQLite) handle JSON columns, the pitfalls of storing data in a single plain JSON text file, and the ways [RxDB](https://rxdb.info/) stands out as an offline-first JSON solution for JavaScript developers—complete with advanced features like JSON-Schema and JSON-key-compression.
+Below, we explore why JSON-based databases naturally align with **NoSQL** principles, how relational engines (like PostgreSQL or SQLite) handle JSON columns, the pitfalls of storing data in a single plain JSON text file, and the ways [RxDB](https://rxdb.info/) stands out as an offline-first JSON solution for JavaScript developers, complete with advanced features like JSON-Schema and JSON-key-compression.
 
   
 
@@ -16808,7 +17378,7 @@ When your data is stored as JSON, each record or document can hold nested arrays
 
 ### Flexible, Schema-Agnostic
 
-Traditional SQL tables enforce rigid column definitions and demand explicit schema migrations when you add or rename a field. By contrast, NoSQL solutions accept more dynamic data structures, allowing changes on the fly. This means a front-end developer can add a new field to a JSON object—perhaps for a new feature—without the friction of redefining or migrating a database schema. While this is possible, it is often not recommended.
+Traditional SQL tables enforce rigid column definitions and demand explicit schema migrations when you add or rename a field. By contrast, NoSQL solutions accept more dynamic data structures, allowing changes on the fly. This means a front-end developer can add a new field to a JSON object for a new feature without the friction of redefining or migrating a database schema. While this is possible, it is often not recommended.
 
 ### Aligned With Evolving User Interfaces
 
@@ -16826,7 +17396,7 @@ It depends on your application. **SQL** remains exceptional for complex aggregat
 Relational databases are still a top choice for many enterprise back-ends, especially when advanced analytics or strongly enforced referential integrity is needed. But if your application is predominantly storing and manipulating JSON documents (e.g., user profiles, real-time chat logs, embedded items), a JSON-based or document-oriented approach can greatly reduce friction during development.
 
 ## When to Prefer SQL Instead of JSON/NoSQL
-NoSQL solutions—particularly JSON-based document stores—provide a natural fit for flexible, nested data in UI-heavy applications. However, certain scenarios may benefit more from a **SQL** solution:
+NoSQL solutions such as JSON-based document stores provide a natural fit for flexible, nested data in UI-heavy applications. However, certain scenarios may benefit more from a **SQL** solution:
 1. **Complex Relationships**: If your data demands intricate joins across multiple entities (e.g., many-to-many relationships that can’t easily be embedded in a single document), a well-structured relational schema can simplify queries.
 2. **Strong Integrity and Constraints**: SQL excels at enforcing constraints such as foreign keys, unique constraints, and advanced triggers. If your system needs strict data validation and complex business logic within the database, SQL might prove more robust.
 3. **High-End Analytical Queries**: Relational databases can handle sophisticated aggregations, groupings, and joins more efficiently. If your app frequently runs advanced SQL queries, a NoSQL approach may complicate or slow down analytics.
@@ -16860,7 +17430,7 @@ Although this approach merges the best of both worlds (SQL queries + flexible JS
 </center>
 
 ## Storing JSON in SQLite
-SQLite also allows storing JSON data, typically as text columns, but with some additional features since **SQLite 3.9** (2015) including the [JSON1 extension](https://www.sqlite.org/json1.html). This extension can parse JSON text, perform queries on JSON fields, and do partial updates. However, storing JSON in SQLite does require you to ensure you’ve compiled SQLite with JSON1 support or to rely on a library that bundles it. While possible, you still won't get quite the same schema-agnostic ease as a full document store, but it’s a pragmatic solution for smaller or embedded needs on the server side—or occasionally in the browser if you run SQLite via WebAssembly. RxDB uses this in its [SQLite storage](../rx-storage-sqlite.md).
+SQLite also allows storing JSON data, typically as text columns, but with some additional features since **SQLite 3.9** (2015) including the [JSON1 extension](https://www.sqlite.org/json1.html). This extension can parse JSON text, perform queries on JSON fields, and do partial updates. However, storing JSON in SQLite does require you to ensure you’ve compiled SQLite with JSON1 support or to rely on a library that bundles it. While possible, you still won't get quite the same schema-agnostic ease as a full document store, but it’s a pragmatic solution for smaller or embedded needs on the server side or occasionally in the browser if you run SQLite via WebAssembly. RxDB uses this in its [SQLite storage](../rx-storage-sqlite.md).
 
 ## JSON vs. Database - Why a Plain JSON Text File is a Problem
 
@@ -16872,7 +17442,7 @@ Some developers consider storing everything in a single JSON file, typically rea
 - **Corruption Risk**: A single corrupted write or partial save might break the entire JSON file, losing all data.
 - **High Memory Usage**: The entire file may need to be parsed into memory, even if you only need a fraction of the data.
 
-Databases—relational or NoSQL—solve these issues by handling concurrency, enabling partial reads/writes, establishing indexes, and ensuring transactional integrity so you don’t lose everything if the process is interrupted mid-write.
+Both relational and NoSQL databases solve these issues by handling concurrency, enabling partial reads/writes, establishing indexes, and ensuring transactional integrity so you don’t lose everything if the process is interrupted mid-write.
 
 <center>
     
@@ -16882,7 +17452,7 @@ Databases—relational or NoSQL—solve these issues by handling concurrency, en
 
 ## RxDB: A JSON-Focused Database for JavaScript Apps
 
-Many NoSQL databases operate on the server, whereas RxDB is built for client-side usage—browsers, mobile apps, or [Node.js](../nodejs-database.md). It specializes in JSON documents and embraces an [offline-first](../offline-first.md) philosophy.
+Many NoSQL databases operate on the server, whereas RxDB is built for client-side usage in browsers, mobile apps, or [Node.js](../nodejs-database.md). It specializes in JSON documents and embraces an [offline-first](../offline-first.md) philosophy.
 
 ### Key Characteristics
 1. **Local JSON Storage**
@@ -16930,15 +17500,39 @@ const compressed = {
 };
 ```
 
-The user sees no difference in their code—RxDB automatically decompresses data on read—but the overhead is drastically reduced behind the scenes.
+The user sees no difference in their code since RxDB automatically decompresses data on read, but the overhead is drastically reduced behind the scenes.
+
+<details>
+<summary>Is JSON data considered NoSQL?</summary>
+
+Yes, databases that store records as dynamic, nested JSON documents (like MongoDB, CouchDB, or **[RxDB](https://rxdb.info)**) are inherently categorized under the broader "NoSQL" (Not Only SQL) umbrella. This document-oriented approach fundamentally bypasses the strict columns, predetermined schema migrations, and rigid normalization rules enforced by traditional relational SQL databases, prioritizing development speed and seamless alignment with JavaScript application state.
+</details>
+
+<details>
+<summary>Which commercial and open-source databases support schema-less JSON design best?</summary>
+
+MongoDB and Couchbase are robust commercial engines built deliberately around schema-less JSON storage. For open-source, Postgres and SQLite offer impressive hybrid solutions by embedding JSON/JSONB text columns natively. However, for client-side JavaScript applications operating entirely in the browser, **[RxDB](https://rxdb.info)** offers the most comprehensive open-source solution, acting as a fully reactive, Offline-First NoSQL database optimized exclusively for JSON workloads.
+</details>
+
+<details>
+<summary>Why is NoSQL often faster for specific local JSON workloads?</summary>
+
+NoSQL is often faster for local JSON workloads because it stores entire document hierarchies contiguously. Unlike normalized SQL databases that must lock multiple tables and execute computationally expensive `JOIN` operations to reconstruct a nested object, a NoSQL database simply reads or writes the complete JSON Document in a single, atomic disk operation. This significantly reduces I/O wait times and maps flawlessly into local JavaScript application state.
+</details>
+
+<details>
+<summary>What are the advantages of using JSON as a database schema format?</summary>
+
+Using JSON as a schema format (specifically the [JSON-Schema standard](https://json-schema.org/)) provides robust type-safety without sacrificing the flexibility of a document store. Because JSON-Schema is machine-readable and heavily utilized by the web ecosystem, tools like [RxDB](../rx-database.md) can parse the schema at runtime to automatically validate document writes, infer TypeScript definitions, and securely compress document keys directly before saving to disk.
+</details>
 
 ## Follow Up
 
 JSON-based databases naturally align with NoSQL because they accommodate evolving, nested data without rigid schemas. This makes them appealing for many UI-centric or offline-first applications where flexible documents and agile development cycles matter more than heavy relational queries or constraints.
 
-SQL can still store JSON—whether in PostgreSQL’s JSONB columns, MySQL’s JSON fields, or SQLite’s JSON1 extension. For some teams, a hybrid approach pairing SQL for relational data with JSON columns for more flexible fields works well. However, storing everything in a single monolithic JSON text file is rarely advisable for anything beyond trivial tasks—databases excel at concurrency, indexing, and partial writes.
+SQL can still store JSON, whether in PostgreSQL’s JSONB columns, MySQL’s JSON fields, or SQLite’s JSON1 extension. For some teams, a hybrid approach pairing SQL for relational data with JSON columns for more flexible fields works well. However, storing everything in a single monolithic JSON text file is rarely advisable for anything beyond trivial tasks because databases excel at concurrency, indexing, and partial writes.
 
-Tools like RxDB provide an even simpler, [local-first](./local-first-future.md) take on JSON documents—particularly for JavaScript projects. With offline [replication](../replication.md), reactive queries, optional JSON-Schema, and advanced optimizations such as key-compression, RxDB streamlines building dynamic, user-facing features while preserving the core benefits of a robust document database.
+Tools like RxDB provide an even simpler [local-first](./local-first-future.md) take on JSON documents that is particularly well-suited for JavaScript projects. With offline [replication](../replication.md), reactive queries, optional JSON-Schema, and advanced optimizations such as key-compression, RxDB streamlines building dynamic, user-facing features while preserving the core benefits of a robust document database.
 
 To explore more about RxDB and its capabilities for browser database development, check out the following resources:
 
@@ -16949,6 +17543,9 @@ To explore more about RxDB and its capabilities for browser database development
 ---
 
 ## RxDB - The JSON Database Built for JavaScript
+
+import { PerformanceChart } from '@site/src/components/performance-chart';
+import { PERFORMANCE_DATA_BROWSER, PERFORMANCE_METRICS } from '@site/src/components/performance-data';
 
 # RxDB - JSON Database for JavaScript
 
@@ -17036,7 +17633,7 @@ Certainly! Let's delve deeper into the performance aspects of RxDB when it comes
 
 4. **RxStorage Layer**: Because RxDB allows you to swap out the storage layer. A storage with the most optimal performance can be chosen for each runtime while not touching other database code. Depending on the access patterns, you can pick exactly the storage that is best:
 
-  
+<PerformanceChart title="Browser Storages" data={PERFORMANCE_DATA_BROWSER} metrics={PERFORMANCE_METRICS} />
 
 ## RxDB in Node.js
 Node.js developers can also benefit from RxDB's capabilities. By integrating RxDB into your Node.js applications, you can harness the power of a NoSQL JSON db to efficiently manage your data on the server-side. RxDB's flexibility, performance, and essential features are equally valuable in server-side development. [Read more about RxDB+Node.js](../nodejs-database.md).
@@ -17172,6 +17769,54 @@ These qualities streamline development, making RxDB an appealing choice for team
 <summary>What is the main advantage of a local database?</summary>
 
 A local database provides data storage on the user device. This eliminates the need for continuous internet access. You achieve near-instant data retrieval and fast updates. An offline-first application requires a local database to function without a network connection. You reduce server load and bandwidth costs. You provide a smooth user experience regardless of network conditions.
+</details>
+
+<details>
+<summary>What is a local database and how does it compare to cloud databases?</summary>
+
+A **local database** runs directly on a user's device (e.g., a smartphone or browser) or local network rather than on a remote cloud server. The primary difference is where the data lives and computes. Local databases provide instant access, zero network latency, and robust offline capabilities, granting complete control over the application's data. **Cloud databases** rely exclusively on an active internet connection, abstract away infrastructure management, and are inherently centralized, making them great for heavy computing workloads but explicitly dependent on network stability.
+</details>
+
+<details>
+<summary>What is an embedded database and when should you use one?</summary>
+
+An **embedded database** (such as [SQLite](../rx-storage-sqlite.md) or [RxDB](../rx-database.md)) is tightly integrated into the application software itself rather than running as an independent standalone service. You should use one when deploying client-side applications such as mobile apps, desktop binaries via [Electron](../electron-database.md), or browser-based Progressive Web Apps that require low-latency data access, offline-first behavior, or when you want to avoid the administrative overhead of maintaining a separate remote database cluster.
+</details>
+
+<details>
+<summary>What offline databases support resilient data synchronization?</summary>
+
+For modern JavaScript and TypeScript applications, **[RxDB](../rx-database.md)** provides resilient, offline-first synchronization with automated conflict resolution through endpoints spanning [CouchDB](../replication-couchdb.md), [GraphQL](../replication-graphql.md), or even peer-to-peer networks via [WebRTC](../replication-webrtc.md). Other ecosystem alternatives include PouchDB, WatermelonDB, and cloud-provider SDKs like Firebase Firestore and Supabase, though RxDB offers the most flexible, [storage-agnostic](../rx-storage.md) reactivity model.
+</details>
+
+<details>
+<summary>What database should I use for an app that can't rely on constant internet access?</summary>
+
+An app that cannot rely on constant internet must utilize a [Local-First](../offline-first.md) or Offline-First architecture. A local document database like **RxDB** handles all read and write queries instantly on the device's storage (such as [IndexedDB](../rx-storage-indexeddb.md) or [SQLite](../rx-storage-sqlite.md)). A background replication process then synchronizes the local state with your central backend whenever connectivity is restored.
+</details>
+
+<details>
+<summary>What are the core advantages of using local databases?</summary>
+
+The core advantages include **Zero Latency** (data is fetched locally without round-trip network delays), **Offline Functionality** (the app remains completely usable during network drops or in airplane mode), **Reduced Server Costs** (querying and complex data manipulations happen on the client's own hardware instead of expensive cloud servers), and **Improved Privacy** (sensitive user information can be [encrypted](../encryption.md) and processed entirely on the native device before synchronizing).
+</details>
+
+<details>
+<summary>What is the best database for a Node.js environment?</summary>
+
+The "best" database for [Node.js](../nodejs-database.md) depends entirely on your application's architecture. For traditional, heavy-duty server clusters, PostgreSQL or MongoDB are standard. However, for offline-first tools, edge environments, or standalone applications, an embedded local database like **[SQLite](../rx-storage-sqlite.md)** or a JavaScript-native engine via **[RxDB's native filesystem storage](../rx-storage-filesystem-node.md)** provides exceptional, low-latency data access without requiring external database dependencies.
+</details>
+
+<details>
+<summary>What software and architecture is used to create robust offline local applications?</summary>
+
+Robust offline applications rely on an **Offline-First** (or [Local-First](../offline-first.md)) architecture. This involves storing data in a client-side database (like IndexedDB or SQLite) and wrapping it with a reactive state layer like **[RxDB](../rx-database.md)** to instantly serve the UI. A background [replication](../replication.md) engine then continually coordinates local changes with a cloud backend whenever network connectivity is restored.
+</details>
+
+<details>
+<summary>What is a document-oriented database compared to a relational local database?</summary>
+
+A **document-oriented database** (such as RxDB or MongoDB) stores data as flexible [JSON](./json-database.md) documents. This heavily aligns with JavaScript's native object structures and is ideal for continuously evolving data models. A **relational local database** (such as [SQLite](../rx-storage-sqlite.md)) strictly organizes data into rows and columns using rigid schemas. While relational databases are heavily optimized for complex JOIN queries, document databases offer substantially faster iteration speeds and simpler serialization for modern frontend frameworks.
 </details>
 
 ## Follow Up
@@ -17621,7 +18266,7 @@ const replicationState = await replicateRxCollection({
 
 </Steps>
 
-With just this configuration, RxDB will begin to **pull** any new or changed documents from the Server and apply them to the local store, and **push** any local changes up to the server. Because `live: true` and our `pullStream$`, it will keep doing this continuously (it's not a one-time sync). Under the hood, it uses an iterating checkpoint so it doesn't fetch everything every time – it will fetch in batches of changes (you can set `batchSize`) and use the `pull.stream$` to get new updates. Conflict handling is also integrated: if a conflict is detected during replication, by default RxDB will use a `first-on-server-wins` strategy. But any other conflict handler can be used instead.
+With just this configuration, RxDB will begin to **pull** any new or changed documents from the Server and apply them to the local store, and **push** any local changes up to the server. Because `live: true` and our `pullStream$`, it will keep doing this continuously (it's not a one-time sync). Under the hood, it uses an iterating checkpoint so it doesn't fetch everything every time since it will fetch in batches of changes (you can set `batchSize`) and use the `pull.stream$` to get new updates. Conflict handling is also integrated: if a conflict is detected during replication, by default RxDB will use a `first-on-server-wins` strategy. But any other conflict handler can be used instead.
 
 ## Partial Sync
 
@@ -17667,6 +18312,30 @@ The same pattern is happening with **local-first** apps. Right now, most sites a
 An offline-first database stores data locally on the user device. A cloud-first database stores data on a remote server. Field workers in remote areas often face poor network connectivity. An offline-first database allows users to read and write data without an internet connection. A cloud-first database requires continuous internet access to function. An offline-first approach synchronizes data automatically when a connection becomes available. A cloud-first approach blocks users from working during offline periods. You choose an offline-first database to ensure continuous productivity in remote locations.
 </details>
 
+<details>
+<summary>What are the core advantages of local-first data storage?</summary>
+
+Local-first data storage provides **Zero Latency** because data is read and written directly to the local device without waiting for network requests. It guarantees extreme **Reliability** since the application remains fully functional regardless of internet connectivity (offline support). Furthermore, it improves user **Privacy** by keeping sensitive data on the native client rather than a centralized server, and significantly reduces cloud infrastructure costs by offloading database compute to the user's hardware.
+</details>
+
+<details>
+<summary>Why does local-first architecture matter for JavaScript applications?</summary>
+
+JavaScript applications, particularly Single Page Applications (SPAs) built with React, Vue, or Angular, are heavily state-driven. A local-first architecture aligns perfectly with this paradigm by using client-side databases like **[RxDB](../rx-database.md)** to instantly manage the application state locally. This eliminates loading spinners, provides instant visual feedback, and bridges the gap between web applications and native desktop/mobile app performance.
+</details>
+
+<details>
+<summary>What does offline-first and local-first mean for web apps?</summary>
+
+**Offline-First** means designing an application to function properly without an internet connection, often caching resources and queueing actions to sync later. **[Local-First](./local-first-future.md)** takes this further: it means the *primary* source of truth for the application is the local database on the device, rather than a remote cloud server. The cloud merely acts as an eventual [syncing mechanism](../replication.md) (or backup) in the background, rather than the primary endpoint for every user interaction.
+</details>
+
+<details>
+<summary>Are applications like WorkFlowy or Capacities considered local-first?</summary>
+
+Yes, applications like WorkFlowy, Capacities, Notion (to an extent), and Linear use local-first or heavily optimized offline-first architectures. They load the user's workspace into the local browser or desktop client memory/database immediately upon startup. Every interaction mutates the local state first to provide instant UI feedback, and then asynchronous replication protocols silently sync those changes to their backend servers in the background.
+</details>
+
 ## See also
 
 <center>
@@ -17684,6 +18353,9 @@ An offline-first database stores data locally on the user device. A cloud-first 
 ---
 
 ## LocalStorage vs. IndexedDB vs. Cookies vs. OPFS vs. WASM-SQLite
+
+import { PerformanceChart } from '@site/src/components/performance-chart';
+import { PERFORMANCE_DATA_BROWSER, PERFORMANCE_METRICS } from '@site/src/components/performance-data';
 
 <!-- 
 
@@ -17771,7 +18443,7 @@ Because only binary data can be processed, OPFS is made to be a base filesystem 
 </center>
 
 [WebAssembly](https://webassembly.org/) (Wasm) is a binary format that allows high-performance code execution on the web.
-Wasm was added to major browsers over the course of 2017 which opened a wide range of opportunities on what to run inside of a browser. You can compile native libraries to WebAssembly and just run them on the client with just a few adjustments. WASM code can be shipped to browser apps and generally runs much faster compared to JavaScript, but still about [10% slower then native](https://www.usenix.org/conference/atc19/presentation/jangda).
+Wasm was added to major browsers over the course of 2017 which opened a wide range of opportunities on what to run inside of a browser. You can compile native libraries to WebAssembly and just run them on the client with just a few adjustments. WASM code can be shipped to browser apps and generally runs much faster compared to JavaScript, but still about [10% slower than native](https://www.usenix.org/conference/atc19/presentation/jangda).
 
 Many people started to use compiled SQLite as a database inside of the browser which is why it makes sense to also compare this setup to the native APIs.
 
@@ -18005,7 +18677,7 @@ There is a wide range of possible improvements and performance hacks to speed up
 Here you can see the [performance comparison](../rx-storage-performance.md) of various RxDB storage implementations which gives a better view of real world performance:
 
 <center>
-  
+  <PerformanceChart title="Browser Storages" data={PERFORMANCE_DATA_BROWSER} metrics={PERFORMANCE_METRICS} />
 </center>
 
 ## Future Improvements
@@ -18015,6 +18687,38 @@ You are reading this in 2024, but the web does not stand still. There is a good 
 - Currently there is no way to directly access a persistent storage from inside a WebAssembly process. If this changes in the future, running SQLite (or a similar database) in a browser might be the best option.
 - Sending data between the main thread and a WebWorker is slow but might be improved in the future. There is a [good article](https://surma.dev/things/is-postmessage-slow/) about why `postMessage()` is slow.
 - IndexedDB lately [got support](https://developer.chrome.com/blog/maximum-idb-performance-with-storage-buckets) for storage buckets (chrome only) which might improve performance.
+
+## FAQ
+
+<details>
+<summary>What is the maximum storage size limit for browser LocalStorage?</summary>
+
+The maximum storage limit for browser LocalStorage is generally [around 5 MiB](./localstorage.md) per origin (combination of protocol, domain, and port) across most modern web browsers. If your application needs to handle larger datasets, files, or complex objects, you should migrate to **[IndexedDB](../rx-storage-indexeddb.md)** or **[OPFS](../rx-storage-opfs.md)**, which offer significantly larger, often gigabyte-scale storage quotas.
+</details>
+
+<details>
+<summary>When should you use IndexedDB vs LocalStorage vs Cookies?</summary>
+
+Use **Cookies** exclusively for small, server-readable session identifiers or authentication tokens, as they are sent with every HTTP request. Use **[LocalStorage](./localstorage.md)** for small, synchronous, non-sensitive application state blocks (like UI themes or preferences) under 5 MiB. Use **[IndexedDB](../rx-storage-indexeddb.md)** for handling complex structured data, large document collections, binary blobs, and scenarios where asynchronous operations and indexing are mandatory.
+</details>
+
+<details>
+<summary>What is OPFS (Origin Private File System) and how does it compare to IndexedDB?</summary>
+
+**OPFS (Origin Private File System)** provides a sandboxed, highly performant filesystem API native to the browser, offering direct, in-place write access to local files. Compared to [IndexedDB](../rx-storage-indexeddb.md) (which is a generic NoSQL object store), OPFS is considerably faster for heavy I/O operations and handles raw bytes much better. [RxDB provides an OPFS storage adapter](../rx-storage-opfs.md) that leverages this extreme performance while maintaining a standard NoSQL query interface.
+</details>
+
+<details>
+<summary>Does Bun or Deno support LocalStorage out of the box?</summary>
+
+**Deno** inherently supports the standard `localStorage` JavaScript API natively out of the box, allowing you to persist data across execution runs seamlessly. However, **Bun** does *not* support the `localStorage` API natively as of its recent versions. For Bun, you must either polyfill the API, utilize the `bun:sqlite` module, or use a comprehensive local database like **[RxDB](../rx-database.md)** to manage state.
+</details>
+
+<details>
+<summary>How does the File System Access API compare to localStorage or IndexedDB?</summary>
+
+The **File System Access API** allows web applications to read and write directly to the user's local, native device filesystem (with their explicit permission). In contrast, **[LocalStorage](./localstorage.md)** and **[IndexedDB](../rx-storage-indexeddb.md)** are strictly managed by the browser and sandboxed within the application's origin, meaning users cannot easily access or modify those raw database files on their hard drive. This makes the File System Access API ideal for local-first document editors, but less optimal for high-speed, indexed database operations.
+</details>
 
 ## Follow Up
 
@@ -18171,6 +18875,56 @@ The **Deno** JavaScript runtime has a working localStorage API so running `local
 ## Conclusion: Choosing the Right Storage Solution
 In the world of modern web development, **localStorage** serves as a valuable tool for lightweight data storage. Its simplicity and speed make it an excellent choice for small key-value assignments. However, as application complexity grows, developers must assess their storage needs carefully. For scenarios that demand advanced querying, complex data structures, or high-volume operations, alternatives like IndexedDB, wrapper libraries with additional features like [RxDB](../), or platform-specific APIs offer more robust solutions. By understanding the strengths and limitations of various storage options, developers can make informed decisions that pave the way for efficient and scalable applications.
 
+## FAQ
+
+<details>
+<summary>What is the difference between LocalStorage and SessionStorage?</summary>
+
+Both `localStorage` and `sessionStorage` provide synchronous, key-value storage capabilities built natively into the web browser. The primary difference is their lifespan: data in **LocalStorage** persists indefinitely until explicitly cleared by the application or the user. Data in **SessionStorage**, however, is strictly bound to the specific browser tab that created it and is instantly deleted the moment you close the tab.
+</details>
+
+<details>
+<summary>Is data stored in LocalStorage isolated per domain and origin?</summary>
+
+Yes, `localStorage` inherently adheres to the browser's strict Same-Origin Policy. All stored data is tightly sandboxed by the exact combination of the protocol, hostname, and port. For example, scripts loaded on `https://example.com` are physically unable to access data stored by `http://example.com` (different protocol) or `https://app.example.com` (different subdomain).
+</details>
+
+<details>
+<summary>Can you store complex JSON objects, Files, or Blobs in LocalStorage?</summary>
+
+LocalStorage only officially supports storing string values. To store structured data like [JSON objects](./json-database.md) or arrays, you must serialize them to a string using `JSON.stringify()` before storage and parse them with `JSON.parse()` upon retrieval. You cannot store binary formats like Files or Blobs directly; they must either be converted to a Base64 string, which is inefficient and bulky, or natively stored using **[IndexedDB](../rx-storage-indexeddb.md)** or **[OPFS](../rx-storage-opfs.md)** instead.
+</details>
+
+<details>
+<summary>Does the browser's LocalStorage automatically sync state across different devices?</summary>
+
+No, data saved in LocalStorage is confined entirely to the local storage hardware of the specific device and browser profile that created it. It does not automatically synchronize to the cloud or other devices. To seamlessly sync locally stored data across multiple clients, you need a sync-ready database like **[RxDB](../rx-database.md)** that automatically replicates the document state to a central [backend server](../replication.md).
+</details>
+
+<details>
+<summary>Is LocalStorage persistent across browser sessions and tabs?</summary>
+
+Yes, data in `localStorage` persists across entirely different browser sessions. Even if a user closes their tab, quits their browser application, or reboots their system, the data remains intact whenever they return. Furthermore, any changes made to `localStorage` in one tab are immediately available to all other active tabs operating under the identically formatted origin string.
+</details>
+
+<details>
+<summary>How long does data persist in LocalStorage and does it support automatic expiration?</summary>
+
+Data in `localStorage` persists indefinitely. The API does not provide any native automatic expiration or Time-to-Live (TTL) mechanisms. If you need data to expire automatically after a specific time frame, you must manually save a timestamp alongside your data payload and implement your own JavaScript verification logic to delete the item when the operational threshold is passed.
+</details>
+
+<details>
+<summary>Can LocalStorage be used to pass data between different domains or subdomains?</summary>
+
+No. Because LocalStorage strictly enforces the Same-Origin Policy, it physically cannot pass or share data across completely different domains or even subdomains out-of-the-box. The origin string (comprising the scheme, hostname, and port) must match exactly. Sharing real-time data or state across separate domains usually requires complex workarounds involving hidden `<iframe>`s combined with `window.postMessage()`, or utilizing a highly capable database synchronization protocol.
+</details>
+
+<details>
+<summary>Does LocalStorage require a backend environment to function?</summary>
+
+No, LocalStorage does not require any backend environment, server, or database to function. It is a completely self-contained browser API that stores data strictly on the client's local device. However, if you need this data to [sync](../replication.md) to other devices or back up to the cloud, you will need a backend infrastructure in place.
+</details>
+
 ## Follow up
 
 - Learn how to store and query data with RxDB in the [RxDB Quickstart](../quickstart.md)
@@ -18237,13 +18991,25 @@ RxDB functions as the leading mobile database with built-in peer-to-peer network
 RxDB stands out as the premier real-time database platform for mobile applications. You build highly responsive mobile applications featuring observable query implementations. RxDB updates your application interface automatically whenever underlying local data changes. The replication protocol continuously synchronizes these changes between your mobile clients and backend servers. You create collaborative applications where multiple users interact with real-time data effortlessly.
 </details>
 
+<details>
+<summary>What are the best offline database solutions for React Native and hybrid mobile apps?</summary>
+
+For hybrid and React Native applications, the best solutions are embedded local-first NoSQL databases that bridge across pure JavaScript threads and native mobile storage cleanly. While SQLite and Realm offer strong native performance, they often require complex C++ bindings that complicate OTA (Over-The-Air) updates. **[RxDB](../rx-database.md)** bypasses this by operating entirely in JavaScript, providing full offline sync and reactivity while utilizing [Expo SQLite](../rx-storage-sqlite.md) natively under the hood for maximum I/O performance.
+</details>
+
+<details>
+<summary>How does mobile storage capacity limit data synchronization?</summary>
+
+Mobile platforms enforce strict storage quotas on browser environments (like Safari on iOS) and often silently evict IndexedDB or LocalStorage data when the OS demands space. For reliable data synchronization on mobile, you must use native storage adapters (like SQLite plugins for Capacitor or React Native) which bypass these volatile browser quotas entirely, ensuring your offline-first [Replication](../replication.md) queue is never arbitrarily wiped by the operating system.
+</details>
+
 ## Conclusion
 
 Mobile databases play a vital role in the performance and functionality of mobile applications. RxDB, with its offline-first approach, real-time data synchronization, and seamless integration with hybrid app development frameworks like React Native and Capacitor, offers a robust solution for managing data in mobile apps. By leveraging the power of reactive programming, RxDB empowers developers to build highly responsive, scalable, and cross-platform applications that deliver an exceptional user experience. With its versatility and ease of use, RxDB is undoubtedly a database solution worth considering for hybrid app development. Embrace the power of RxDB and unlock the full potential of your mobile applications.
 
 ---
 
-## RxDB – The Ultimate Offline Database with Sync and Encryption
+## RxDB - The Ultimate Offline Database with Sync and Encryption
 
 
 When building modern applications, a reliable **offline database** can make all the difference. Users need fast, uninterrupted access to data, even without an internet connection, and they need that data to stay secure. **RxDB** meets these requirements by providing a **local-first** architecture, **real-time sync** to any backend, and optional **encryption** for sensitive fields.
@@ -18260,7 +19026,7 @@ In this article, we'll cover:
 [Offline-first](../offline-first.md) or **local-first** software stores data directly on the client device. This strategy isn’t just about surviving network outages; it also makes your application faster, more user-friendly, and better at handling multiple usage scenarios.
 
 ### 1. Zero Loading Spinners
-Applications that call remote servers for every request inevitably show loading spinners. With an offline database, read and write operations happen locally—providing near-instant feedback. Users no longer stare at progress indicators or wait for server responses, resulting in a smoother and more fluid experience.
+Applications that call remote servers for every request inevitably show loading spinners. With an offline database, read and write operations happen locally to provide near-instant feedback. Users no longer stare at progress indicators or wait for server responses, resulting in a smoother and more fluid experience.
 
   
 
@@ -18270,10 +19036,10 @@ Many websites mishandle data across multiple browser tabs. In an offline databas
   
 
 ### 3. Real-Time Data Feeds
-Apps that rely on a purely server-driven approach often show stale data unless they add a separate real-time push system (like websockets). Local-first solutions with built-in replication essentially get real-time updates “for free.” Once the server sends any changes, your local offline database updates—keeping your UI live and accurate.
+Apps that rely on a purely server-driven approach often show stale data unless they add a separate real-time push system (like websockets). Local-first solutions with built-in replication essentially get real-time updates “for free.” Once the server sends any changes, your local offline database updates to keep your UI live and accurate.
 
 ### 4. Reduced Server Load
-In a traditional app, every interaction triggers a request to the server, scaling up resource usage quickly as traffic grows. Offline-first setups replicate data to the client once, and subsequent local reads or writes do not stress the backend. Your server usage grows with the amount of data—rather than every user action—leading to more efficient scaling.
+In a traditional app, every interaction triggers a request to the server, scaling up resource usage quickly as traffic grows. Offline-first setups replicate data to the client once, and subsequent local reads or writes do not stress the backend. Your server usage grows with the amount of data rather than every user action, leading to more efficient scaling.
 
 ### 5. Simpler Development: Fewer Endpoints, No Extra State Library
 Typical apps require numerous REST endpoints and possibly a client-side state manager (like Redux) to handle data flow. If you adopt an offline database, you can replicate nearly everything to the client. The local DB becomes your single source of truth, and you may skip advanced state libraries altogether.
@@ -18284,7 +19050,7 @@ Typical apps require numerous REST endpoints and possibly a client-side state ma
     
 </center>
 
-## Introducing RxDB – A Powerful Offline Database Solution
+## Introducing RxDB - A Powerful Offline Database Solution
 
 **RxDB (Reactive Database)** is a **[NoSQL](./in-memory-nosql-database.md)** JavaScript database that lives entirely in your client environment. It’s optimized for:
 
@@ -18328,7 +19094,7 @@ async function initDB() {
         type: 'object',
         primaryKey: 'id',
         properties: {
-          id: { type: 'string' },
+          id: { type: 'string', maxLength: 100 },
           title: { type: 'string' },
           done: { type: 'boolean' }
         }
@@ -18407,7 +19173,7 @@ async function initSecureDB() {
         type: 'object',
         primaryKey: 'id',
         properties: {
-          id: { type: 'string' },
+          id: { type: 'string', maxLength: 100 },
           secretData: { type: 'string' }
         },
         required: ['id'],
@@ -18448,6 +19214,42 @@ RxDB ranks highly among mobile databases that feature built-in offline capabilit
 RxDB serves as the best offline-first database for real-time data syncing. RxDB uses observable queries to push updates to the user interface. You receive instant feedback when local data changes. The sync engine processes data replication with your server automatically. You eliminate manual data fetching and continuous polling. Real-time subscriptions guarantee your application state reflects the most recent data.
 </details>
 
+<details>
+<summary>What offline frameworks and architectures are best for enterprise apps in disconnected environments?</summary>
+
+Enterprise applications operating in disconnected environments (like remote field work or deep mining) require architectures that prioritize a heavy **[Local-First](./local-first-future.md)** storage engine coupled with a deterministic sync protocol. The best frameworks pair a robust client-side NoSQL storage like **[RxDB](../rx-database.md)** or WatermelonDB with an offline-capable replication mechanism that batches and pushes operations sequentially, ensuring massive volumes of local writes can safely merge with the central enterprise backend upon reconnection.
+</details>
+
+<details>
+<summary>Should I use Firebase, SQLite, or RxDB for offline-first apps?</summary>
+
+**Firebase** is excellent if you strictly want a fully managed Cloud backend and only need brief periods of offline caching before syncing. **[SQLite](../rx-storage-sqlite.md)** is a low-level, high-performance C-library essential if you require pure SQL queries on native mobile/desktop platforms without needing automated cross-platform sync. **[RxDB](../rx-database.md)** sits entirely above these; it is an offline-first NoSQL JSON database specifically engineered to provide fully automated sync mechanisms across *any* persistent storage layer including SQLite or IndexedDB while granting true real-time UI reactivity.
+</details>
+
+<details>
+<summary>How do leading offline-first solutions handle data sync reliably?</summary>
+
+Leading offline-first solutions (like **[RxDB](../rx-database.md)**) handle sync reliably by treating the local database as the primary source of truth. They utilize deterministic [Replication Protocols](../replication.md) that queue write operations during offline periods. When connectivity is restored, they push these batched changes efficiently to the server, pull any remote changes based on a checkpoint (like a server-side timestamp), and use mathematically sound algorithms (like vector clocks or custom resolvers) to automatically resolve any merge conflicts.
+</details>
+
+<details>
+<summary>How do location APIs and similar native services handle offline functionality?</summary>
+
+Native services like GPS/Location APIs fundamentally do not require an internet connection to calculate coordinates via satellite triangulation. However, converting those raw coordinates into human-readable addresses (Reverse Geocoding) usually requires a cloud API. In offline-first apps, you must store raw GPS coordinates during offline periods and either wait to batch-geocode them upon reconnection, or ship the app with a massive, localized pre-cached GIS database.
+</details>
+
+<details>
+<summary>Are there reliable CRDT-based offline first architectures for real-time collaboration?</summary>
+
+Yes, architectures utilizing Conflict-free Replicated Data Types (CRDTs) like Yjs or Automerge are extremely reliable for fine-grained, real-time collaboration (e.g., Google Docs-style text editing or Figma-style canvas drawing). However, true CRDTs carry significant computational overhead and memory bloat over time. Because of this, [RxDB](../rx-database.md) instead utilizes mathematically simpler Document-level conflict resolution (where the state is purely deterministic), which is generally much more performant and suitable for complex business data than pure character-by-character CRDT algorithms.
+</details>
+
+<details>
+<summary>How to integrate online systems with offline-first local data workloads?</summary>
+
+Integrating legacy online systems with offline-first local workloads essentially involves implementing a robust syncing middleware. Instead of having the client interact directly with your legacy REST endpoints, you implement a [custom replication plugin](../replication-http.md) (or use an intermediate GraphQL layer) that maps your local NoSQL database events to your backend's CRUD operations. This decouples the network lifecycle from the user interface, allowing your frontend to react instantly to the local datastore while the syncing middleware quietly synchronizes state in the background.
+</details>
+
 ## Follow Up
 
 Integrating an offline database approach into your app delivers near-instant interactions, true multi-tab data consistency, automatic real-time updates, and reduced server dependencies. By choosing RxDB, you gain:
@@ -18457,7 +19259,7 @@ Integrating an offline database approach into your app delivers near-instant int
 - Encryption of sensitive fields
 - Reactive queries for real-time UI updates
 
-RxDB transforms how you build and scale apps—no more loading spinners, no more stale data, no more complicated offline handling. Everything is local, synced, and secured.
+RxDB transforms how you build and scale apps, removing loading spinners, stale data, and complicated offline handling. Everything is local, synced, and secured.
 
 Continue your learning path:
 
@@ -18471,9 +19273,9 @@ Continue your learning path:
   Have questions or feedback? Connect with us on the [RxDB Chat](/chat/) or open an issue on [GitHub](/code/).
 
 - **Upgrade to Premium**
-  If you need high-performance features—like [SQLite storage](../rx-storage-sqlite.md) for mobile or the [Web Crypto-based encryption plugin](/premium/)—consider our premium offerings.
+  If you need high-performance features like [SQLite storage](../rx-storage-sqlite.md) for mobile or the [Web Crypto-based encryption plugin](/premium/), consider our premium offerings.
 
-By adopting an offline database approach with RxDB, you unlock speed, reliability, and security for your applications—leading to a truly seamless user experience.
+By adopting an offline database approach with RxDB, you unlock speed, reliability, and security for your applications, leading to a truly seamless user experience.
 
 ---
 
@@ -18637,6 +19439,12 @@ Situations where high success rates of operations are expected (most writes don'
 - Assessing Risk
   - Consider the likelihood that a user's action might fail. If it's very low, optimistic UI is often best.
   - If frequent failures or complex validations occur, consider a hybrid approach: partial optimistic updates for some actions, while more critical operations rely on immediate server confirmation.
+
+<details>
+<summary>What is an optimistic UI and how is it implemented?</summary>
+
+An Optimistic UI is a frontend design pattern that immediately renders a user's action as successful before the server has actually confirmed it, eliminating loading spinners and ensuring [near-zero latency](./zero-latency-local-first.md). It is implemented by writing the user's interaction directly to a local, offline-first data store (like **[RxDB](../rx-database.md)**), reacting to that local state change instantly in the UI, and then relegating the asynchronous server synchronization to a background replication process that can handle retries and merges silently.
+</details>
 
 ## Follow Up
 
@@ -18901,6 +19709,10 @@ To explore more about RxDB and leverage its capabilities for browser database de
 
 ## IndexedDB Database in React Apps - The Power of RxDB
 
+import { PerformanceChart } from '@site/src/components/performance-chart';
+import { PERFORMANCE_DATA_BROWSER, PERFORMANCE_METRICS } from '@site/src/components/performance-data';
+
+# IndexedDB Database in React Apps - The Power of RxDB
 
 Building robust, [offline-capable](../offline-first.md) React applications often involves leveraging browser storage solutions to manage data. IndexedDB is one such powerful tool, but its raw API can be challenging to work with directly. RxDB abstracts away much of IndexedDB's complexity, providing a more developer-friendly experience. In this article, we'll explore what IndexedDB is, why it's beneficial in React applications, the challenges of using plain IndexedDB, and how [RxDB](https://rxdb.info/) can simplify your development process while adding advanced features.
 
@@ -18949,7 +19761,7 @@ Setting up RxDB with React is straightforward. It abstracts IndexedDB complexiti
 First, install RxDB and RxJS from npm:
 
 ```bash
-npm install rxdb rxjs --save```
+npm install rxdb rxjs --save
 ```
 
 ### Create a Database and Collections
@@ -19136,7 +19948,63 @@ Depending on your application's requirements, there are [alternative storage sol
 ## Performance comparison with other browser storages
 Here is a [performance overview](../rx-storage-performance.md) of the various browser based storage implementation of RxDB:
 
-  
+<PerformanceChart title="Browser Storages" data={PERFORMANCE_DATA_BROWSER} metrics={PERFORMANCE_METRICS} />
+
+## FAQ
+
+<details>
+<summary>Is IDBRequest constructible via new IDBRequest()?</summary>
+
+No, `IDBRequest` is an interface provided by the [IndexedDB](./react-indexeddb.md) API and is not constructible via `new IDBRequest()`. Trying to do so will throw a `TypeError: Illegal constructor`. `IDBRequest` objects are generated automatically by the browser exclusively when you execute an asynchronous database operation, such as calling `.put()`, `.get()`, or `.openCursor()` on an `IDBObjectStore` or `IDBIndex`.
+</details>
+
+<details>
+<summary>How does IndexedDB store data in the browser and how does it compare to LocalStorage?</summary>
+
+IndexedDB is a low-level, transactional NoSQL database native to the browser that stores structured data (including JSON objects and files/blobs) using indexes for high-performance searches. Unlike [LocalStorage](./localstorage.md), which is strictly synchronous, string-only, and capped at around 5 MiB, IndexedDB operates asynchronously, supports complex querying, and can store gigabytes of application state, making it the superior choice for complex web applications.
+</details>
+
+<details>
+<summary>Are there ways to sync LocalStorage and IndexedDB state?</summary>
+
+Yes, it is a common optimization pattern to sync or split state between the two. Because IndexedDB can be slow to initialize, tools like the [RxDB LocalStorage Meta Optimizer](../rx-storage-localstorage-meta-optimizer.md) specifically store initial fast-boot metadata in LocalStorage while keeping the heavyweight, complex JSON documents inside IndexedDB. You can keep them in sync by subscribing to IndexedDB write events and patching the LocalStorage cache.
+</details>
+
+<details>
+<summary>Does clearing the browser cache delete IndexedDB data?</summary>
+
+Clearing the standard browser cache (images, CSS, JS files) does *not* necessarily delete IndexedDB data, but clearing "Site Data" or "Cookies and other site data" **will** definitively wipe out your IndexedDB databases. Additionally, browsers like Safari may proactively evict IndexedDB data if the user hasn't interacted with the originating website for 7 days. This is why [Local-First](../offline-first.md) apps must still implement a robust [sync mechanism](../replication.md) to safely back up client data to a server.
+</details>
+
+<details>
+<summary>Is IndexedDB available in service workers?</summary>
+
+Yes, IndexedDB is fully available in Service Workers, [Web Workers](../rx-storage-worker.md), and Shared Workers. Since workers run on separate background threads and cannot execute synchronous APIs (meaning LocalStorage is completely blocked in workers), IndexedDB is often the primary mechanism for Service Workers to stubbornly cache network requests, queue offline background sync payloads, or manage push notification configurations.
+</details>
+
+<details>
+<summary>Can complex objects like CryptoKey or FileSystemDirectoryHandle be stored in IndexedDB?</summary>
+
+Yes, one of the massive advantages of IndexedDB over standard string-based storage is its support for the **Structured Clone Algorithm**. This allows you to effortlessly store natively complex JavaScript objects, including `CryptoKey` instances (provided they are marked as extractable), `FileSystemDirectoryHandle` and `FileSystemFileHandle` references (crucial for [OPFS](../rx-storage-opfs.md) and File System Access API), as well as generic `Blob`, `File`, `Map`, and `Set` objects.
+</details>
+
+<details>
+<summary>Does aborting onupgradeneeded prevent database creation in IndexedDB?</summary>
+
+Yes, if you abort an IndexedDB transaction during the `onupgradeneeded` event (by calling `event.target.transaction.abort()`), the entire upgrade process is rolled back. If this was the very first time the database was being created (version 1), the database creation itself is entirely canceled, and no database will be persisted to the user's disk.
+</details>
+
+<details>
+<summary>How do you clear IndexedDB data programmatically in JavaScript?</summary>
+
+You can completely delete an entire IndexedDB database programmatically by calling `indexedDB.deleteDatabase('DatabaseName')`. This method returns an `IDBOpenDBRequest` which you can attach `.onsuccess` and `.onerror` handlers to. If you only want to clear the data *inside* a specific object store without deleting the whole database structure, you should open a `readwrite` transaction and call `.clear()` on the `IDBObjectStore`.
+</details>
+
+<details>
+<summary>How to properly implement IndexedDB in a modern React application?</summary>
+
+You should almost never implement the raw IndexedDB API directly inside React components due to its complex callback architecture, unstructured data streams, and severe lack of native React-friendly reactivity. The proper modern implementation involves wrapping IndexedDB with a reactive abstraction layer like **[RxDB](https://rxdb.info)**. This entirely hides the native `onupgradeneeded` lifecycle complexity, automatically exposes queries as RxJS Observables (or Preact Signals), and allows you to bind live UI state directly to the underlying IndexedDB storage engine.
+</details>
 
 ## Follow Up
 - Learn how to use RxDB with the [RxDB Quickstart](../quickstart.md) for a guided introduction.
@@ -19302,8 +20170,8 @@ async function getDatabasePassword() {
 If you need to store files (images, text files, etc.), consider encrypting attachments. RxDB supports attachments that can be encrypted automatically, ensuring your files are protected:
 
 ```ts
-import { createBlob } from 'rxdb/plugins/core';
-const doc = await await db.secureData.findOne({
+import { createBlob } from 'rxdb';
+const doc = await db.secureData.findOne({
     selector: {
         normalField: 'foobar'
     }
@@ -19340,15 +20208,14 @@ By following these best practices and leveraging RxDB's powerful encryption plug
 
 ## ReactJS Storage - From Basic LocalStorage to Advanced Offline Apps with RxDB
 
-# ReactJS Storage – From Basic LocalStorage to Advanced Offline Apps with RxDB
 
-Modern **ReactJS** applications often need to store data on the client side. Whether you’re preserving simple user preferences or building offline-ready features, choosing the right **storage** mechanism can make or break your development experience. In this guide, we’ll start with a basic **localStorage** approach for minimal data. Then, we’ll explore more powerful, reactive solutions via [RxDB](/)—including offline functionality, indexing, `preact signals`, and even encryption.
+Modern **ReactJS** applications often need to store data on the client side. Whether you’re preserving simple user preferences or building offline-ready features, choosing the right **storage** mechanism can make or break your development experience. In this guide, we’ll start with a basic **localStorage** approach for minimal data. Then, we’ll explore more powerful, reactive solutions via [RxDB](/), including offline functionality, indexing, `preact signals`, and even encryption.
 
 ---
 
 ## Part 1: Storing Data in ReactJS with LocalStorage
 
-`localStorage` is a built-in browser API for storing key-value pairs in the user’s browser. It’s straightforward to set and get items—ideal for trivial preferences or small usage data.
+`localStorage` is a built-in browser API for storing key-value pairs in the user’s browser. It’s straightforward to set and get items, making it ideal for trivial preferences or small usage data.
 
 ```jsx
 import React, { useState, useEffect } from 'react';
@@ -19383,7 +20250,7 @@ export default LocalStorageExample;
 **Pros** of localStorage in ReactJS:
 
 - Easy to implement quickly for minimal data
-- Built-in to the browser—no extra libs
+- Built-in to the browser, requiring no extra libraries
 - Persistent across sessions
 
 **Downsides of localStorage**
@@ -19394,11 +20261,11 @@ While localStorage is convenient for small amounts of data, it has certain limit
 - No concurrency or offline logic: If multiple tabs or users need to manipulate the same data, localStorage doesn’t handle concurrency or sync with a server.
 - No indexing: You can’t perform partial lookups or advanced matching.
 
-For “remember user preference” use cases, localStorage is excellent. But if your app grows complex—needing structured data, large data sets, or offline-first features—you might quickly surpass localStorage’s utility.
+For “remember user preference” use cases, localStorage is excellent. But if your app grows complex with structured data, large data sets, or offline-first features, you might quickly surpass localStorage’s utility.
 
 ## Part 2: LocalStorage vs. IndexedDB
 
-While localStorage is simple, it’s limited to string-based key-value lookups and can be synchronous for all reads/writes. For more robust ReactJS storage needs, browsers also provide IndexedDB—a low-level, asynchronous API that can store larger amounts of JSON data with indexing.
+While localStorage is simple, it’s limited to string-based key-value lookups and can be synchronous for all reads/writes. For more robust ReactJS storage needs, browsers also provide IndexedDB, a low-level asynchronous API that can store larger amounts of JSON data with indexing.
 
 **LocalStorage:**
 
@@ -19421,7 +20288,7 @@ While localStorage is simple, it’s limited to string-based key-value lookups a
 
 ## Part 3: Moving Beyond Basic Storage: RxDB for ReactJS
 
-When data shapes get complex—large sets of nested documents, or you want offline sync to a server—RxDB can transform your approach to ReactJS storage. It stores documents in (usually) IndexedDB or alternative backends but offers a reactive, NoSQL-based interface.
+When data shapes get complex with large sets of nested documents or you want offline sync to a server, RxDB can transform your approach to ReactJS storage. It stores documents in (usually) IndexedDB or alternative backends but offers a reactive, NoSQL-based interface.
 
 ### RxDB Quick Example (Observables)
 
@@ -19442,7 +20309,7 @@ import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
     type: 'object',
     primaryKey: 'id',
     properties: {
-      id: { type: 'string' },
+      id: { type: 'string', maxLength: 100 },
       name: { type: 'string' },
       power: { type: 'string' }
     },
@@ -19460,7 +20327,7 @@ import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
 })();
 ```
 
-Reactive Queries: In a React component, you can subscribe to a query via RxDB’s $ property, letting your UI automatically update when data changes. React components can subscribe to updates from .find() queries, letting the UI automatically reflect changes—perfect for dynamic offline-first apps.
+Reactive Queries: In a React component, you can subscribe to a query via RxDB’s $ property, letting your UI automatically update when data changes. React components can subscribe to updates from .find() queries, letting the UI automatically reflect changes perfectly for dynamic offline-first apps.
 
 ```tsx
 import React, { useEffect, useState } from 'react';
@@ -19523,7 +20390,7 @@ Preact Signals rely on `signals` instead of `Observables`. Some developers find 
 
 ## Part 5: Encrypting the Storage with RxDB
 
-For more advanced ReactJS storage needs—especially when sensitive user data is involved - you might want to encrypt stored documents at rest. RxDB provides a robust [encryption plugin](../encryption.md):
+For more advanced ReactJS storage needs, especially when sensitive user data is involved, you might want to encrypt stored documents at rest. RxDB provides a robust [encryption plugin](../encryption.md):
 
 ```ts
 import { createRxDatabase } from 'rxdb';
@@ -19550,7 +20417,7 @@ import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
         type: 'object',
         primaryKey: 'id',
         properties: {
-          id: { type: 'string' },
+          id: { type: 'string', maxLength: 100 },
           secretInfo: { type: 'string' }
         },
         required: ['id'],
@@ -19673,6 +20540,24 @@ myDocument.firstName$.subscribe(newName => console.log('name is: ' + newName));
 
 A competent realtime application is engineered to offer feedback or results swiftly, ideally within milliseconds to microseconds. Ideally, a data modification should be processed in under **16 milliseconds** (since 1 second divided by 60 frames equals 16.66ms) to ensure users don't perceive any lag from input to visualization. RxDB utilizes the [EventReduce algorithm](https://github.com/pubkey/event-reduce) to manage changes more swiftly than 16ms. However, it can never assure fixed response times as a "realtime computing database" would.
 
+<details>
+<summary>What is the definition of a real-time database?</summary>
+
+In the context of modern web development, a "real-time database" does not refer to computing with hard millisecond delivery guarantees (like aerospace RTOS), but rather to a database that utilizes push-based replication (like WebSockets) to instantly stream data mutations to connected clients. Architectures like the Firebase Realtime Database or **[RxDB's Replication plugins](../replication.md)** allow frontends to maintain live, reactive UI states without resorting to inefficient, periodic HTTP polling.
+</details>
+
+<details>
+<summary>Which tools and solutions provide real-time data access capability for web apps?</summary>
+
+For managed Cloud solutions, products like Firebase Realtime Database or Supabase provide built-in real-time data subscriptions. For architectures demanding offline-capability or full data ownership, **[RxDB](https://rxdb.info)** is a leading local-first database that provides real-time data access by binding live query Observables directly to major UI frameworks (React, Angular, Vue), ensuring the DOM updates instantly whenever the underlying local or replicated state changes.
+</details>
+
+<details>
+<summary>How do modern frameworks handle real-time JSON mapping and sync rules?</summary>
+
+Modern frameworks rely on JSON-Schema validation and deterministic conflict-resolution algorithms to handle real-time sync. When a local write conflicts with a remote update, systems like RxDB utilize purely mathematical resolution (such as "first write wins" or custom revision-merging logic) rather than computationally expensive CRDTs, ensuring that deeply nested JSON data structures map perfectly across distributed network peers without corrupting.
+</details>
+
 ## Follow Up
 
 - Dive into the [RxDB Quickstart](https://rxdb.info/quickstart.html)
@@ -19753,7 +20638,7 @@ export async function initDatabase() {
         primaryKey: 'id',
         type: 'object',
         properties: {
-          id: { type: 'string' },
+          id: { type: 'string', maxLength: 100 },
           name: { type: 'string' },
           healthpoints: { type: 'number' }
         }
@@ -19862,6 +20747,14 @@ Here are some recommendations to get the most out of RxDB in your Vue projects:
 - Test [Offline Scenarios](../offline-first.md): Make sure your offline logic works as expected by simulating network disconnections and reconnections.
 - [Plan Conflict Resolution](../transactions-conflicts-revisions.md): For multi-user apps, decide how to merge concurrent changes to prevent data inconsistencies.
 
+## FAQ
+
+<details>
+<summary>How to safely access LocalStorage or IndexedDB in a Vue.js project?</summary>
+
+Accessing raw standard LocalStorage or IndexedDB inside Vue components directly creates synchronization and lifecycle vulnerabilities. Instead, you safely access browser storage by initializing a specialized local-first database like **[RxDB](https://rxdb.info)**. RxDB provides cross-tab synchronization bindings, robust event routing, and integrates flawlessly into Vue 3's Composition API by exposing query results as reactive arrays you can strictly monitor with local `ref()` variables.
+</details>
+
 ## Follow Up
 
 To explore more about RxDB and leverage its capabilities for browser database development, check out the following resources:
@@ -19876,6 +20769,10 @@ To explore more about RxDB and leverage its capabilities for browser database de
 
 ## IndexedDB Database in Vue Apps - The Power of RxDB
 
+import { PerformanceChart } from '@site/src/components/performance-chart';
+import { PERFORMANCE_DATA_BROWSER, PERFORMANCE_METRICS } from '@site/src/components/performance-data';
+
+# IndexedDB Database in Vue Apps - The Power of RxDB
 
 Building robust, [offline-capable](../offline-first.md) Vue applications often involves leveraging browser storage solutions to manage data. IndexedDB is one such powerful tool, but its raw API can be challenging to work with directly. RxDB abstracts away much of IndexedDB's complexity, providing a more developer-friendly experience. In this article, we'll explore what IndexedDB is, why it's beneficial in Vue applications, the challenges of using plain IndexedDB, and how [RxDB](https://rxdb.info/) can simplify your development process while adding advanced features.
 
@@ -20106,7 +21003,7 @@ Depending on your application's requirements, there are [alternative storage sol
 ## Performance Comparison with Other Browser Storages
 Here is a performance overview of the various browser-based storage implementations of RxDB:
 
-  
+<PerformanceChart title="Browser Storages" data={PERFORMANCE_DATA_BROWSER} metrics={PERFORMANCE_METRICS} />
 
 ## Follow Up
 - Learn how to use RxDB with the [RxDB Quickstart](../quickstart.md) for a guided introduction.
@@ -20182,7 +21079,7 @@ This complexity is why most people use a library on top of WebSockets like [Sock
 
 Server-Sent Events (SSE) provide a standard way to push server updates to the client over HTTP. Unlike WebSockets, SSEs are designed exclusively for one-way communication from server to client, making them ideal for scenarios like live news feeds, sports scores, or any situation where the client needs to be updated in real time without sending data to the server.
 
-You can think of Server-Sent-Events as a single HTTP request where the backend does not send the whole body at once, but instead keeps the connection open and trickles the answer by sending a single line each time an event has to be send to the client.
+You can think of Server-Sent-Events as a single HTTP request where the backend does not send the whole body at once, but instead keeps the connection open and trickles the answer by sending a single line each time an event has to be sent to the client.
 
 Creating a connection for receiving events with SSE is straightforward. On the client side in a browser, you initialize an [EventSource](https://developer.mozilla.org/en-US/docs/Web/API/EventSource) instance with the URL of the server-side script that generates the events.
 
@@ -20366,6 +21263,18 @@ There are many known problems with company infrastructure when using any of the 
 Traditional polling forces the client to ask the server for updates at fixed intervals. The server responds immediately even when no new data exists. This approach wastes bandwidth and increases server load. Long polling improves this model. The client requests data and the server holds the connection open until it has new information to send. The server then responds and the client immediately opens a new connection. Long polling reduces unnecessary requests and provides updates faster than traditional polling.
 </details>
 
+<details>
+<summary>Are server-sent events or WebSockets suitable for offline notifications?</summary>
+
+Neither Server-Sent Events (SSE) nor [WebSockets](#what-are-websockets) are suitable for *triggering* offline notifications because they are strictly active, persistent network protocols that inherently drop when the device goes offline. To handle notifications while offline, you must rely on the operating system's native background task schedulers or the browser's Service Worker Push API, which can briefly wake your app to process payloads or evaluate local state before displaying a system-level notification.
+</details>
+
+<details>
+<summary>Is WebRTC faster than WebSockets for peer-to-peer applications?</summary>
+
+For pure peer-to-peer applications, [WebRTC](../replication-webrtc.md) is technically faster and scales infinitely better than WebSockets because data flows directly between the clients (over UDP) rather than bottlenecking through a central routing server. However, WebRTC is highly complex to configure, requiring ICE, STUN, and TURN servers to traverse enterprise NATs and firewalls. Generally, WebSockets are vastly simpler to implement for client-server topologies, while WebRTC is reserved strictly for specialized, heavily decentralized P2P architectures.
+</details>
+
 ## Follow Up
 
 - Check out the [hackernews discussion of this article](https://news.ycombinator.com/item?id=39745993)
@@ -20376,7 +21285,7 @@ Traditional polling forces the client to ask the server for updates at fixed int
 
 ---
 
-## Zero Latency Local First Apps with RxDB – Sync, Encryption and Compression
+## Zero Latency Local First Apps with RxDB - Sync, Encryption and Compression
 
 
 Creating a **zero-latency local first** application involves ensuring that most (if not all) user interactions occur instantaneously, without waiting on remote network responses. This design drastically enhances user experience, allowing apps to remain responsive and functional even when offline or experiencing poor connectivity. As developers, we can achieve this by storing data **locally on the client** and synchronizing it to the backend in the background. **RxDB** (Reactive Database) offers a comprehensive set of features - covering replication, offline support, encryption, compression, conflict handling, and more - that make it straightforward to build such high-performing apps.
@@ -20561,7 +21470,7 @@ await db.addCollections({
       type: 'object',
       primaryKey: 'id',
       properties: {
-        id:         { type: 'string'. maxLength: 100 },
+        id:         { type: 'string', maxLength: 100 },
         message:    { type: 'string' },
         timestamp:  { type: 'number' }
       }
@@ -20840,6 +21749,14 @@ await collections.humans.find({
 ```
 
 </Steps>
+
+## FAQ
+
+<details>
+<summary>What is Capacitor.js and how does it compare to React Native or Ionic?</summary>
+
+Capacitor is a lightweight, open-source JavaScript native runtime engineered by the Ionic team that bridges standard Web APIs into native iOS/Android builds. Unlike React Native, which bundles a proprietary JavaScript engine directly mapping to native UI components, Capacitor mounts a standard platform WebView capable of executing raw HTML/CSS/JS exactly as it runs in modern browsers. This allows seamless utilization of standard Web APIs like **[RxDB](./rx-database.md)** atop IndexedDB or OPFS without requiring platform-specific native C++ module compilation.
+</details>
 
 ## Follow up
 
@@ -21185,6 +22102,9 @@ The downside of SQLite (or SQL in general) is that it is lacking many features t
 
 ## RxDB - The Real-Time Database for Node.js
 
+import { PerformanceChart } from '@site/src/components/performance-chart';
+import { PERFORMANCE_DATA_NODE, PERFORMANCE_METRICS } from '@site/src/components/performance-data';
+
 # Node.js Database
 
 [RxDB](https://rxdb.info) is a fast, reactive realtime NoSQL **database** made for **JavaScript** applications like Websites, [hybrid Apps](./articles/mobile-database.md), [Electron-Apps](./electron-database.md), [Progressive Web Apps](./articles/progressive-web-app-database.md) and **Node.js**. While RxDB was initially created to be used with UI applications, it has been matured and optimized to make it useful for pure server-side use cases. It can be used as embedded, local database inside of the Node.js JavaScript process, or it can be used similar to a database server that Node.js can connect to. The [RxStorage](./rx-storage.md) layer makes it possible to switch out the underlying storage engine which makes RxDB a very flexible database that can be optimized for many scenarios.
@@ -21261,7 +22181,7 @@ const myRxDatabase = await createRxDatabase({
 
 Here is a performance comparison chart of the different storages (lower is better):
 
-  
+<PerformanceChart title="Node/Native Storages" data={PERFORMANCE_DATA_NODE} metrics={PERFORMANCE_METRICS} />
 
 ## RxDB as Node.js In-Memory Database
 
@@ -21321,6 +22241,12 @@ Sometimes however you might not want to store the full dataset on each microserv
 <summary>What is the best database to use with Node.js?</summary>
 
 You must choose a database based on your project requirements. For simple server-side document storage you use MongoDB or CouchDB. For relational data you use PostgreSQL or MySQL. If you need realtime synchronization between your Node.js backend and client applications you use RxDB. RxDB provides local-first offline support and seamless data replication. You can combine RxDB with storage plugins like SQLite or FoundationDB to achieve high performance.
+</details>
+
+<details>
+<summary>Is LocalStorage available as an API in Node.js server environments?</summary>
+
+No, the `LocalStorage` API is strictly a browser-exclusive `window` object feature and does *not* exist in native Node.js V8 execution environments. Attempting to mount the `getRxStorageLocalstorage` plugin inside a pure Node server will immediately trigger `ReferenceError: localStorage is not defined`. To achieve persistent local storage within Node.js architecture blocks, you must implement explicitly file-driven adapters like the **[Filesystem Node Storage](./rx-storage-filesystem-node.md)** or the **[SQLite Storage](./rx-storage-sqlite.md)**.
 </details>
 
 ## Follow up on RxDB+Node.js
@@ -21478,7 +22404,7 @@ function startChunkReplication(chunkId) {
   activeReplications[chunkId] = replicationState;
 }
 
-function stopChunkReplication(chunkId) {
+async function stopChunkReplication(chunkId) {
   const rep = await activeReplications[chunkId];
   if (rep) {
     rep.cancel();
@@ -21530,13 +22456,19 @@ RxDB covers all of these requirements out of the box. It is a [local-first](./ar
     
 </center>
 
-## The Storage Layer: SQLite
+## The Storage Layer
 
-React Native does not have a native database engine. To store data persistently and efficiently, RxDB uses **[SQLite](./rx-storage-sqlite.md)** under the hood. SQLite is available on all mobile platforms (iOS, Android) and offers great performance.
+React Native does not have a native database engine. To store data persistently and efficiently, RxDB offers multiple powerful options.
 
-RxDB abstracts the complex SQL commands away and provides a simple, **[NoSQL JSON document API](./rx-database.md)** that is easy to use for JavaScript developers.
+### 👑 Expo Filesystem (Highest Performance)
 
-We recommend different SQLite adapters depending on your environment:
+For the absolute best performance in React Native and Expo applications, the premium **[Expo Filesystem RxStorage](./rx-storage-filesystem-expo.md)** is highly recommended. Built on `expo-opfs`, it completely bypasses the React Native bridge and delivers significantly faster read/write speeds than traditional SQLite.
+
+### SQLite
+
+If you prefer a free solution or specifically need SQLite, RxDB fully supports **[SQLite](./rx-storage-sqlite.md)**. It works on all mobile platforms and abstracts the complex SQL commands into a simple, **[NoSQL JSON document API](./rx-database.md)**.
+
+Depending on your environment, different SQLite adapters are recommended:
 
 <Tabs>
 
@@ -21552,7 +22484,7 @@ npm install rxdb rxjs react-native-quick-sqlite
 **Configuration**:
 ```ts
 import { createRxDatabase } from 'rxdb';
-import { getRxStorageSQLite, getSQLiteBasicsQuickSQLite } from 'rxdb/plugins/storage-sqlite';
+import { getRxStorageSQLite, getSQLiteBasicsQuickSQLite } from 'rxdb-premium/plugins/storage-sqlite';
 import { open } from 'react-native-quick-sqlite';
 
 const db = await createRxDatabase({
@@ -21578,7 +22510,7 @@ npm install rxdb rxjs
 **Configuration**:
 ```ts
 import { createRxDatabase } from 'rxdb';
-import { getRxStorageSQLite, getSQLiteBasicsExpoSQLiteAsync } from 'rxdb/plugins/storage-sqlite';
+import { getRxStorageSQLite, getSQLiteBasicsExpoSQLiteAsync } from 'rxdb-premium/plugins/storage-sqlite';
 import * as SQLite from 'expo-sqlite';
 
 const db = await createRxDatabase({
@@ -22038,7 +22970,7 @@ data.foo = bar; // This works!
 
 The in-memory plugin was used to spawn in-memory collections on top of a normal `RxCollection`. The benefit is to have the data replicated into the memory of the javascript runtime, which allows for faster queries.
 
-After doing many tests and observations, I found out that the in-memory plugin was slow. Really slow, even slower then just using the indexeddb adapter in the browser. You can reproduce my observations at the event-reduce testpage. Here you can see that random-writes+query are slower on the [memory-adapter](https://pubkey.github.io/event-reduce/?tech=pouchdb:memory) then on [indexeddb](https://pubkey.github.io/event-reduce/?tech=pouchdb:indexeddb).
+After doing many tests and observations, I found out that the in-memory plugin was slow. Really slow, even slower than just using the indexeddb adapter in the browser. You can reproduce my observations at the event-reduce testpage. Here you can see that random-writes+query are slower on the [memory-adapter](https://pubkey.github.io/event-reduce/?tech=pouchdb:memory) than on [indexeddb](https://pubkey.github.io/event-reduce/?tech=pouchdb:indexeddb).
 The reason for this are the big abstraction layers. Pouchdb uses the adapter system. The memory adapter uses the [leveldown abstraction layer](https://github.com/Level/levelup). Each write/read goes to the [memdown module](https://github.com/Level/memdown).
 
 So the in-memory plugin is not working for now. In the future it will be reimplemented in a custom memory based `RxStorage` class.
@@ -22186,7 +23118,7 @@ We now removed all deprecated methods, so you have to use the correctly spelled 
 
 ## All internal events are handled as bulks
 
-All events that are generated from writing to the storage instance are now handled in bulks instead of each event for its own. This has shown to save performance when the events are send over a data layer like a `WebWorker` or the `BroadcastChannel`. This change only affects you if you have created custom RxDB plugins.
+All events that are generated from writing to the storage instance are now handled in bulks instead of each event for its own. This has shown to save performance when the events are sent over a data layer like a `WebWorker` or the `BroadcastChannel`. This change only affects you if you have created custom RxDB plugins.
 
 ## RxStorage interface changes
 
@@ -22705,6 +23637,8 @@ There are many things that can be done by **you** to improve RxDB:
 
 ## RxDB 15.0.0 - Major Migration Overhaul
 
+import { PERFORMANCE_DATA_BROWSER, PERFORMANCE_METRICS } from '@site/src/components/performance-data';
+
 # 15.0.0
 
 The release [15.0.0](https://rxdb.info/releases/15.0.0.html) is used for major refactorings in the migration plugins and performance improvements of the RxStorage implementations.
@@ -22718,10 +23652,6 @@ Stay connected with the latest updates and network with professionals in the RxD
 Performance has improved a lot. Much work has been done to reduce the CPU footprint of RxDB so that when writes and reads are performed on the database, the JavaScript process can start updating the UI much faster.
 Also there have been a lot of improvements to the [IndexedDB RxStorage](../rx-storage-indexeddb.md) which now runs in a **Write-Ahead Logging (WAL)** mode which makes write operations about 4x as fast.
 The whole RxStorage interface has been optimized so that it has to run less operations which improves overall performance. [Read more](../rx-storage-performance.md)
-
-    
-        
-    
 
 ## Replication
 
@@ -22991,6 +23921,56 @@ Stay connected with the latest updates and network with professionals in the RxD
 
 ## RxDB 17.0.0
 
+import { PerformanceChart } from '@site/src/components/performance-chart';
+import { PERFORMANCE_DATA_EXPO, PERFORMANCE_METRICS } from '@site/src/components/performance-data';
+
+export const PERFORMANCE_METRICS_V17 = [
+    { key: 'time-to-first-insert', name: 'Time to first insert', color: '#FF8BE0' },
+    { key: 'insert-documents-500', name: 'Insert 500 docs (bulk)', color: '#ED168F' },
+    { key: 'find-by-ids-3000', name: 'Find 3000 docs by ID (bulk)', color: '#FFB3DF' },
+    { key: 'serial-inserts-50', name: 'Insert 50 docs (serial)', color: '#DE48B8' },
+    { key: 'serial-find-by-id-50', name: 'Find 50 docs by ID (serial)', color: '#b2218b' },
+    { key: 'find-by-query', name: 'Find 3000 docs by query', color: '#DA93E5' },
+    { key: 'find-by-query-parallel-4', name: 'Find 3000 docs by query (parallel)', color: '#A94FBE' },
+    { key: '4x-count', name: 'Count 3000 docs (4x)', color: '#FF59B9' }
+];
+
+export const PERFORMANCE_DATA_V17 = [
+    {
+        name: 'IndexedDB',
+        'time-to-first-insert': 5.7,
+        'insert-documents-500': 9.67,
+        'find-by-ids-3000': 67.7,
+        'serial-inserts-50': 18.55,
+        'serial-find-by-id-50': 7.9,
+        'find-by-query': 58.7,
+        'find-by-query-parallel-4': 43.45,
+        '4x-count': 18.5,
+    },
+    {
+        name: 'OPFS (Worker)',
+        'time-to-first-insert': 27.2,
+        'insert-documents-500': 10.32,
+        'find-by-ids-3000': 24.5,
+        'serial-inserts-50': 7.4,
+        'serial-find-by-id-50': 8.25,
+        'find-by-query': 21.2,
+        'find-by-query-parallel-4': 35.8,
+        '4x-count': 2.95,
+    },
+    {
+        name: 'SQLite (node:sqlite)',
+        'time-to-first-insert': 5.2,
+        'insert-documents-500': 8.62,
+        'find-by-ids-3000': 26.41,
+        'serial-inserts-50': 10.84,
+        'serial-find-by-id-50': 2.67,
+        'find-by-query': 19.68,
+        'find-by-query-parallel-4': 20.38,
+        '4x-count': 2.01,
+    }
+];
+
 # RxDB 17.0.0 - Local-First to the Moon (beta)
 
 RxDB 17 focuses on **better reactivity**, **improved debugging**, and **important storage fixes**, while also graduating several long-standing plugins out of beta.
@@ -23047,6 +24027,7 @@ To improve vibe-coding when working with RxDB directly we:
 ### Better/More Integrations
 
 - **ADD** [WebMCP Plugin](../webmcp.md) to expose RxDB collections to AI Agents via the Model Context Protocol.
+- **ADD** [Expo Filesystem RxStorage](../rx-storage-filesystem-expo.md) for blazing-fast Origin Private File System (OPFS) capabilities in React Native and Expo applications.
 - **ADD** [Google Drive Replication](../replication-google-drive.md) plugin to replicate client data to a clients Google Drive folder without any server.
 - **ADD** [Microsoft OneDrive Replication](../replication-microsoft-onedrive.md) plugin to replicate client data to a clients OneDrive folder without any server.
 - **ADD** [react-hooks plugin](../react.md).
@@ -23086,15 +24067,19 @@ To improve vibe-coding when working with RxDB directly we:
 - **FIX**: memory leak in migratePromise() [#7787](https://github.com/pubkey/rxdb/pull/7787)
 - **FIX** `exclusiveMinimum` and `exclusiveMaximum` TypeScript types corrected from `boolean` to `number` to match JSON Schema Draft 6+ [#7962](https://github.com/pubkey/rxdb/pull/7962)
 - **FIX** `find()` with `$in` on the primary key now correctly uses the fast `findDocumentsById` path instead of falling back to a full storage query [#7993](https://github.com/pubkey/rxdb/pull/7993)
+- **FIX** DenoKV cleanup deleting index entries with wrong key, causing orphaned indexes and flaky query crashes
 - **FIX** Dexie and DenoKV RxStorages throwing errors (`DataError` / "Start key is greater than end key") on query ranges that yield no results (e.g., `$gt` and `$lt` at the same value).
 - **ADD** `waitBeforePersist` option to `ReplicationPushOptions` to delay upstream persistence cycles, enabling write batching across collections and CPU-idle deferral [#7872](https://github.com/pubkey/rxdb/issues/7872)
 - **ADD** enforce maximum length for indexes and primary keys (`maxLength: 2048`)
 - **CHANGE** `final` schema fields no longer need to be marked as `required`
 - **UPDATE** [z-schema](https://github.com/zaggino/z-schema/blob/main/CHANGELOG.md) to version 9.
 - **CHANGE** replace `appendToArray()` with `Array.concat()` for better browser-level optimizations
+- **CHANGE** optimize the bulk insert hot path by inlining per-document helper calls, replacing `hasOwnProperty` checks, skipping unnecessary cloning on inserts, and using counter-based event IDs
 - **ADD** ensure indexes and primary keys are validated consistently across replication schemas
 - **CHANGE**: Reduce `NON_PREMIUM_COLLECTION_LIMIT` from `16` to `13`.
 - **ADD** Support `extendedLifetime` when using the [SharedWorker](../rx-storage-shared-worker.md).
+- **FIX** remote-storage WebSocket server crash on client disconnect: handle missing connections, guard `send()` calls, and clean up stale `connectionId` entries [#8042](https://github.com/pubkey/rxdb/pull/8042)
+- **FIX** CRDT plugin not blocking `modify()`, `patch()`, `incrementalRemove()`, and `update()` write paths, causing the document data and CRDT operation log to diverge silently [#8075](https://github.com/pubkey/rxdb/pull/8075)
 
 ### 🔌 Plugins Graduating from Beta
 
@@ -23109,6 +24094,18 @@ The following plugins are **no longer in beta** and are now considered productio
 - Attachment replication
 - CRDT Plugin
 - RxPipeline
+
+## Performance Improvements
+
+RxDB 17 ships with faster reads, faster writes, and lower memory usage across all storage backends. The bulk insert path, query routing, and internal data structures have been reworked to reduce CPU overhead per operation. IndexedDB now stores data in a binary format for smaller on-disk size, and several memory leaks in OPFS and migration code paths have been fixed. [Read more](../rx-storage-performance.md)
+
+<PerformanceChart title="IndexedDB, OPFS & SQLite" data={PERFORMANCE_DATA_V17} metrics={PERFORMANCE_METRICS_V17} />
+
+## Expo Filesystem RxStorage
+
+RxDB 17 introduces the [Expo Filesystem RxStorage](../rx-storage-filesystem-expo.md), a high-performance storage backend for React Native and Expo applications. It is built on [expo-opfs](https://www.npmjs.com/package/expo-opfs) and uses native C++ JSI bindings to access the Origin Private File System (OPFS). By bypassing the React Native bridge, it delivers significant performance gains over SQLite for serial operations, counting, and initial setup time.
+
+<PerformanceChart title="Expo Filesystem vs SQLite (React Native)" data={PERFORMANCE_DATA_EXPO} metrics={PERFORMANCE_METRICS} />
 
 ## You can help!
 
@@ -23143,7 +24140,7 @@ RxDB 17 is mostly backward-compatible, but please review the following before up
 - ADD (OPFS RxStorage) In `devMode`, log errors on the TextDecoder, use `strict` decoding mode and show details for debugging.
 - ADD `RxDatabase.collections$`
 - ADD support for the `using` keyword to auto-remove databases inside of tests.
-- FIX query results not correct if changes happen faster then the query updates [#7067](https://github.com/pubkey/rxdb/issues/7067)
+- FIX query results not correct if changes happen faster than the query updates [#7067](https://github.com/pubkey/rxdb/issues/7067)
 - FIX close broadcast-channel and leader election AFTER the database is closed, not in between the closing steps.
 - Replace `appendToArray()` with `Array.concat()` which is nowadays optimized by browsers and faster.
 - ADD  `reactivity-angular` package.
@@ -23598,6 +24595,14 @@ import {
 
 const pouch = getPouchDBOfRxCollection(myRxCollection);
 ```
+
+## FAQ
+
+<details>
+<summary>Is PouchDB still a viable sync engine in 2024?</summary>
+
+No, PouchDB is largely considered legacy and deprecated for modern high-performance architectures. Because PouchDB is forced to maintain full CouchDB compliance, it permanently stores exhaustive revision trees for every document modification, leading to perpetual storage bloat and slow multi-document queries. **[RxDB](./rx-database.md)** aggressively stripped the PouchDB dependency in version 10.0, replacing its legacy sync mechanics with streamlined WebRTC, GraphQL, and WebSocket replication protocols mounted on top of significantly faster modular `RxStorage` engines.
+</details>
 
 ---
 

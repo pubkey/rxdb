@@ -238,6 +238,26 @@ The `RxAppwriteReplicationState` which is returned from `replicateAppwrite()` al
 
   
 
+## FAQ
+
+<details>
+<summary>Does Appwrite support multiple databases and subcollections?</summary>
+
+Yes, Appwrite supports creating multiple top-level databases within a single project, which cleanly partition collections. However, Appwrite is a rigid NoSQL document store that does *not* support nested subcollections (unlike Firebase). When utilizing the **[RxDB Appwrite Replication](./replication.md)** plugin, your local RxDB schema must mirror this flat topology precisely, keeping all documents completely devoid of complex nested relationships.
+</details>
+
+<details>
+<summary>What database driver does Appwrite use under the hood?</summary>
+
+Appwrite uses MariaDB (a highly performant MySQL fork) as its core backing database driver. To offer developers a flat NoSQL experience, Appwrite abstracts the MariaDB relational complexity behind a unified Document API. This architectural mapping allows **[RxDB](./rx-database.md)** to replicate data effortlessly into Appwrite via standard REST endpoints without ever dealing with strict SQL table mappings or migrations.
+</details>
+
+<details>
+<summary>Does Appwrite feature native real-time sync for offline apps?</summary>
+
+Appwrite natively provides robust WebSocket subscriptions allowing clients to receive real-time document events while the network is active. However, Appwrite does *not* feature a built-in offline-first caching or background-sync engine. To achieve true offline capabilities, you must mount the **[RxDB Appwrite Replication](./replication.md)** plugin on the client. RxDB handles all local caching, queues offline writes securely, and automatically pushes local mutations to Appwrite when connectivity returns.
+</details>
+
 ## Limitations of the Appwrite Replication Plugin
 
 - Appwrite primary keys only allow for the characters `a-z`, `A-Z`, `0-9`, and underscore `_` (They cannot start with a leading underscore). Also the primary key has a max length of 36 characters.

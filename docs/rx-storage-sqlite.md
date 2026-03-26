@@ -2,6 +2,9 @@
 
 > Unlock seamless persistence with SQLite RxStorage. Explore usage in hybrid apps, compare performance, and leverage advanced features like attachments.
 
+import { PerformanceChart } from '@site/src/components/performance-chart';
+import { PERFORMANCE_DATA_NODE, PERFORMANCE_METRICS } from '@site/src/components/performance-data';
+
 import {Steps} from '@site/src/components/steps';
 import {Tabs} from '@site/src/components/tabs';
 
@@ -15,7 +18,7 @@ SQLite is a natural fit for RxDB because most platforms - Android, iOS, Node.js,
 
 The SQLite storage is a bit slower compared to other Node.js based storages like the [Filesystem Storage](./rx-storage-filesystem-node.md) because wrapping SQLite has a bit of overhead and sending data from the JavaScript process to SQLite and backwards increases the latency. However for most hybrid apps the SQLite storage is the best option because it can leverage the SQLite version that comes already installed on the smartphone's OS (iOS and android). Also for desktop Electron apps it can be a viable solution because it is easy to ship SQLite together inside of the Electron bundle.
 
-  
+<PerformanceChart title="Node/Native Storages" data={PERFORMANCE_DATA_NODE} metrics={PERFORMANCE_METRICS} />
 
 ## Using the SQLite RxStorage
 
@@ -317,7 +320,7 @@ import {
 import {
     getRxStorageSQLite,
     getSQLiteBasicsTauri
-} from 'rxdb/plugins/storage-sqlite';
+} from 'rxdb-premium/plugins/storage-sqlite';
 import sqlite3 from '@tauri-apps/plugin-sql';
 
 const myRxDatabase = await createRxDatabase({
@@ -368,6 +371,20 @@ const storage = getRxStorageSQLite({
     withoutRowId: false
 });
 ```
+
+## FAQ
+
+<details>
+<summary>Does SQLite natively support querying and parsing JSON objects?</summary>
+
+Yes, starting natively from version `3.38.0`, SQLite includes comprehensive built-in core JSON functions like `JSON_EXTRACT`. The **[RxDB SQLite Storage](./rx-storage.md)** engine utilizes these exact JSON extension methods to seamlessly run complex NoSQL document queries, indexes, and sorting operations directly within the SQLite runtime, bridging the gap between flat tabular paradigms and rich document store flexibility.
+</details>
+
+<details>
+<summary>How can you save and export a SQLite database from a local environment?</summary>
+
+You can save and export an active SQLite database by closing the connection and copying its physical `.sqlite` storage file traversing the underlying OS filesystem. If you are operating within a strict sandboxed web environment using WebAssembly, you must extract the SQLite file via exactly matching the `wa-sqlite` export streams, or rely on **[RxDB](./rx-database.md)** JSON export plugins to seamlessly migrate data out of local constraints into raw JSON streams regardless of the active SQLite engine.
+</details>
 
 ## Related
 - [React Native Databases](./react-native-database.md)

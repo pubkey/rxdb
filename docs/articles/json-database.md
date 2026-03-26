@@ -2,6 +2,9 @@
 
 > Experience a powerful JSON database with RxDB, built for JavaScript. Store, sync, and compress your data seamlessly across web and mobile apps.
 
+import { PerformanceChart } from '@site/src/components/performance-chart';
+import { PERFORMANCE_DATA_BROWSER, PERFORMANCE_METRICS } from '@site/src/components/performance-data';
+
 # RxDB - JSON Database for JavaScript
 
 Storing data as **JSON documents** in a **[NoSQL](./in-memory-nosql-database.md)** database is not just a trend; it's a practical choice. JSON data is highly compatible with various tools and is human-readable, making it an excellent fit for modern applications. JSON documents offer more flexibility compared to traditional SQL table rows, as they can contain nested data structures. This article introduces [RxDB](https://rxdb.info/), an open-source, flexible, performant, and battle-tested NoSQL JSON database specifically designed for **JavaScript** applications.
@@ -88,7 +91,7 @@ Certainly! Let's delve deeper into the performance aspects of RxDB when it comes
 
 4. **RxStorage Layer**: Because RxDB allows you to swap out the storage layer. A storage with the most optimal performance can be chosen for each runtime while not touching other database code. Depending on the access patterns, you can pick exactly the storage that is best:
 
-  
+<PerformanceChart title="Browser Storages" data={PERFORMANCE_DATA_BROWSER} metrics={PERFORMANCE_METRICS} />
 
 ## RxDB in Node.js
 Node.js developers can also benefit from RxDB's capabilities. By integrating RxDB into your Node.js applications, you can harness the power of a NoSQL JSON db to efficiently manage your data on the server-side. RxDB's flexibility, performance, and essential features are equally valuable in server-side development. [Read more about RxDB+Node.js](../nodejs-database.md).

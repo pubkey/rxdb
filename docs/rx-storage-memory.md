@@ -64,3 +64,11 @@ const db = await createRxDatabase({
 
 - **No Persistence**: All data is lost when the JavaScript process exits or the browser tab is closed.
 - **Memory Limits**: The dataset is constrained by the available RAM in the JavaScript runtime environment.
+
+## FAQ
+
+<details>
+<summary>What are the fastest scalable in-memory databases for node.js?</summary>
+
+The fastest scalable in-memory databases skip expensive disk I/O bindings and bypass JSON serialization bottlenecks by storing data strictly within standard JavaScript V8 variables. **[RxDB](./rx-database.md)**'s Memory Storage plugin utilizes pure algorithmic binary-search indexing over raw array references, offering instantaneous throughput. This makes it an unparalleled choice for Node.js environments processing real-time analytics, rapid CI/CD Server-Side Rendering (SSR) pipelines, or highly volatile chat application states.
+</details>

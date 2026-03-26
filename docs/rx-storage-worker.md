@@ -2,13 +2,13 @@
 
 > Offload RxDB queries to WebWorkers or Worker Threads, freeing the main thread and boosting performance. Experience smoother apps with Worker RxStorage.
 
+import {PremiumBlock} from '@site/src/components/premium-block';
+
 # Worker RxStorage
 
 With the worker plugin, you can put the [RxStorage](./rx-storage.md) of your database inside of a WebWorker (in browsers) or a Worker Thread (in node.js). By doing so, you can take CPU load from the main process and move it into the worker's process which can improve the perceived performance of your application. Notice that for browsers, it is recommended to use the [SharedWorker](./rx-storage-shared-worker.md) instead to get a better performance.
 
-:::note Premium
-This plugin is part of [RxDB Premium 👑](/premium/). It is not part of the default RxDB module.
-:::
+<PremiumBlock />
 
 ## On the worker process
 
@@ -197,3 +197,11 @@ exposeWorkerRxStorage({
     storage: getRxStorageIndexedDB()
 });
 ```
+
+## FAQ
+
+<details>
+<summary>Do web workers share memory or run in entirely separate processes in Chromium?</summary>
+
+WebWorkers (and Worker Threads in Node.js) execute in entirely separate, wholly isolated V8 JavaScript environments that do *not* share memory heaps with the main UI thread. Because they cannot pass memory pointers, transferring **[RxDB](./rx-database.md)** queries and JSON arrays between the UI and the Worker RxStorage requires structural cloning serialization over IPC channels. While this adds minor IPC latency, it guarantees the main thread's 60fps render loop remains utterly unblocked during extremely heavy database I/O workloads.
+</details>

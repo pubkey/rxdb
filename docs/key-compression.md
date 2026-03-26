@@ -1,6 +1,6 @@
 # Key Compression
 
-> import {Steps} from '@site/src/components/steps';
+> Use the RxDB key compression plugin to store documents in a compressed format, saving up to 40% disc space through JSON schema-based property name shortening.
 
 import {Steps} from '@site/src/components/steps';
 
@@ -52,7 +52,7 @@ const mySchema = {
       id: {
           type: 'string',
           maxLength: 100 // <- the primary key must have set maxLength
-      }
+      },
       /* ... */
   }
 };

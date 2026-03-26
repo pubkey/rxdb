@@ -104,7 +104,7 @@ async function initDatabase() {
         primaryKey: 'id',
         type: 'object',
         properties: {
-          id: { type: 'string' },
+          id: { type: 'string', maxLength: 100 },
           name: { type: 'string' },
           points: { type: 'number' }
         }

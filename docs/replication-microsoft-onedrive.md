@@ -3,6 +3,7 @@
 > Sync your RxDB application state with Microsoft OneDrive.
 
 import {Steps} from '@site/src/components/steps';
+import {BetaBlock} from '@site/src/components/beta-block';
 
 # Replication with Microsoft OneDrive
 
@@ -19,9 +20,7 @@ The replication uses the Microsoft Graph API.
 - **Cross-Device:** Users can access their data from multiple devices by signing into the same Microsoft account.
 - **Realtime Sync:** Uses [WebRTC](./replication-webrtc.md) for peer-to-peer signaling to achieve near real-time updates. Uses the same onedrive folder instead of a signaling-server.
 
-:::info
-This plugin is in **beta** since RxDB version 17.0.0.
-:::
+<BetaBlock since="17.0.0" />
 
 ## Usage
 

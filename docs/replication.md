@@ -1,4 +1,4 @@
-# ⚙️ RxDB realtime Sync Engine for Local-First Apps
+# RxDB realtime Sync Engine for Local-First Apps
 
 > Replicate data in real-time with RxDB's offline-first Sync Engine. Learn about efficient syncing, conflict resolution, and advanced multi-tab support.
 

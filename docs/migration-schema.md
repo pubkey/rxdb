@@ -59,9 +59,9 @@ myDatabase.addCollections({
         // so we must get the country of the message-sender from the server
         const coordinates = oldDoc.coordinates;
         return fetch('http://myserver.com/api/countryByCoordinates/'+coordinates+'/')
-          .then(response => {
-            const response = response.json();
-            oldDoc.senderCountry = response;
+          .then(response => response.json())
+          .then(country => {
+            oldDoc.senderCountry = country;
             return oldDoc;
           });
       }
@@ -83,7 +83,7 @@ myDatabase.addCollections({
         return oldDoc;
       },
       /**
-       * this removes all documents older then 2017-02-12
+       * this removes all documents older than 2017-02-12
        * they will not appear in the new collection
        */
       2: function(oldDoc){

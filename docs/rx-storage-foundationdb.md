@@ -66,3 +66,32 @@ const db = await createRxDatabase({
 ## Multi Instance
 
 Because FoundationDB does not offer a [changestream](https://forums.foundationdb.org/t/streaming-data-out-of-foundationdb/683/2), it is not possible to use the same cluster from more than one Node.js process at the same time. For example you cannot spin up multiple servers with RxDB databases that all use the same cluster. There might be workarounds to create something like a FoundationDB changestream and you can make a Pull Request if you need that feature.
+
+## Running the FoundationDB Server with Docker
+
+Instead of installing the FoundationDB server locally, you can run it in a Docker container. This is the recommended approach for local development and CI environments.
+
+```bash
+# Pull the Docker image
+docker pull foundationdb/foundationdb:7.3.59
+
+# Start the container with host networking
+docker run -d \
+    --name rxdb-foundationdb \
+    --network host \
+    -e FDB_NETWORKING_MODE=host \
+    foundationdb/foundationdb:7.3.59
+
+# Copy the cluster file from the container
+sudo mkdir -p /etc/foundationdb
+docker cp rxdb-foundationdb:/var/fdb/fdb.cluster /etc/foundationdb/fdb.cluster
+
+# Configure the database
+fdbcli --exec "configure new single memory" --timeout 30
+```
+
+You can also use the provided npm scripts:
+```bash
+npm run foundationdb:start   # Starts the Docker container and configures the database
+npm run foundationdb:stop    # Stops and removes the Docker container
+```

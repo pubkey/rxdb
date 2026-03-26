@@ -1,6 +1,8 @@
-# Fulltext Search 👑
+# Fulltext Search
 
 > Master local fulltext search with RxDB's FlexSearch plugin. Enjoy real-time indexing, efficient queries, and offline-first support made easy.
+
+import {PremiumBlock} from '@site/src/components/premium-block';
 
 # Fulltext Search
 
@@ -35,7 +37,7 @@ As RxDB is designed with [offline-first applications](./offline-first.md) in min
 
 ## Using the RxDB Fulltext Search
 
-The flexsearch search is a [RxDB Premium Package 👑](/premium/) which must be purchased and imported from the `rxdb-premium` npm package.
+<PremiumBlock />
 
 Step 1: Add the `RxDBFlexSearchPlugin` to RxDB.
 

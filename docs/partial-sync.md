@@ -42,7 +42,7 @@ function startChunkReplication(chunkId) {
   activeReplications[chunkId] = replicationState;
 }
 
-function stopChunkReplication(chunkId) {
+async function stopChunkReplication(chunkId) {
   const rep = await activeReplications[chunkId];
   if (rep) {
     rep.cancel();

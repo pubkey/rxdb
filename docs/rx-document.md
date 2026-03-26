@@ -38,7 +38,7 @@ This function returns an observable of the given path's value.
 The current value of this path will be emitted each time the document changes.
 ```js
 // get the live-updating value of 'name'
-var isName;
+let isName;
 myDocument.get$('name')
   .subscribe(newName => {
     isName = newName;
@@ -61,9 +61,9 @@ All properties of an `RxDocument` are assigned as getters so you can also direct
 
 ```js
   // Identical to myDocument.get('name');
-  var name = myDocument.name;
+  const name = myDocument.name;
   // Can also get nested values.
-  var nestedValue = myDocument.whatever.nestedfield;
+  const nestedValue = myDocument.whatever.nestedfield;
 
   // Also usable with observables:
   myDocument.firstName$.subscribe(newName => console.log('name is: ' + newName));

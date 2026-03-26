@@ -125,3 +125,11 @@ import {
 } from 'rxdb-premium-old/dist/lib/shared/version-check.js';
 disableVersionCheck();
 ```
+
+## FAQ
+
+<details>
+<summary>What is storage migration and how to run schema migrations in PouchDB vs RxDB?</summary>
+
+Storage migration involves physically shifting all existing documents from one underlying RxStorage adapter (e.g., IndexedDB) into an entirely different storage engine (e.g., SQLite), often required during platform upgrades. Unlike PouchDB which lacked robust native migration rails, **[RxDB](./rx-database.md)** enforces distinct boundaries between structural Data Migrations (changing schema formats via the `migrationStrategy` map) and underlying Storage Migrations (`migrateStorage()`). These two distinct mechanisms must *never* be executed simultaneously.
+</details>

@@ -2,6 +2,9 @@
 
 > Learn how RxDB simplifies IndexedDB in Vue, offering reactive queries, offline-first capabilities, encryption, compression, and effortless integration.
 
+import { PerformanceChart } from '@site/src/components/performance-chart';
+import { PERFORMANCE_DATA_BROWSER, PERFORMANCE_METRICS } from '@site/src/components/performance-data';
+
 # IndexedDB Database in Vue Apps - The Power of RxDB
 
 Building robust, [offline-capable](../offline-first.md) Vue applications often involves leveraging browser storage solutions to manage data. IndexedDB is one such powerful tool, but its raw API can be challenging to work with directly. RxDB abstracts away much of IndexedDB's complexity, providing a more developer-friendly experience. In this article, we'll explore what IndexedDB is, why it's beneficial in Vue applications, the challenges of using plain IndexedDB, and how [RxDB](https://rxdb.info/) can simplify your development process while adding advanced features.
@@ -233,7 +236,7 @@ Depending on your application's requirements, there are [alternative storage sol
 ## Performance Comparison with Other Browser Storages
 Here is a performance overview of the various browser-based storage implementations of RxDB:
 
-  
+<PerformanceChart title="Browser Storages" data={PERFORMANCE_DATA_BROWSER} metrics={PERFORMANCE_METRICS} />
 
 ## Follow Up
 - Learn how to use RxDB with the [RxDB Quickstart](../quickstart.md) for a guided introduction.

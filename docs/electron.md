@@ -43,6 +43,14 @@ const db = await createRxDatabase({
 /* ... */
 ```
 
+## FAQ
+
+<details>
+<summary>How to securely create an offline-first desktop app with Electron.js?</summary>
+
+You securely create an offline-first Electron application by maintaining strict process isolation: the primary database connection runs securely within the hidden Node.js `main` process, while the vulnerable DOM execution runs in the heavily-restricted `renderer` process. **[RxDB](https://rxdb.info)** automates this architecture precisely via its dedicated Electron IPC plugin (`exposeIpcMainRxStorage`), enabling seamless, non-blocking data synchronization across the IPC boundary while mitigating direct local filesystem exposure to malicious client payloads.
+</details>
+
 ## Related
 
 - [Comparison of Electron Databases](./electron-database.md)

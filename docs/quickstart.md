@@ -1,4 +1,4 @@
-# 🚀 Quickstart
+# Quickstart
 
 > Learn how to build a realtime app with RxDB. Follow this quickstart for setup, schema creation, data operations, and real-time syncing.
 
@@ -103,6 +103,18 @@ import { DatabaseSync } from 'node:sqlite';
 const storage = getRxStorageSQLiteTrial({
 sqliteBasics: getSQLiteBasicsNodeNative(DatabaseSync)
 });
+```
+
+#### Expo Filesystem 👑
+
+For React Native and Expo applications, the [Expo Filesystem storage](./rx-storage-filesystem-expo.md) offers superior performance compared to SQLite and Async Storage by utilizing OPFS JSI bindings.
+
+```ts
+import {
+    getRxStorageExpoAsync
+} from 'rxdb-premium/plugins/storage-filesystem-expo';
+
+let storage = getRxStorageExpoAsync();
 ```
 
 #### And more...

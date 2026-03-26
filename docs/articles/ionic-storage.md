@@ -82,7 +82,7 @@ async function initDB() {
         type: 'object',
         primaryKey: 'id',
         properties: {
-          id: { type: 'string' },
+          id: { type: 'string', maxLength: 100 },
           content: { type: 'string' },
           timestamp: { type: 'number' }
         },
@@ -127,7 +127,7 @@ async function initEncryptedDB() {
         type: 'object',
         primaryKey: 'id',
         properties: {
-          id: { type: 'string' },
+          id: { type: 'string', maxLength: 100 },
           text: { type: 'string' }
         },
         required: ['id'],
@@ -160,7 +160,7 @@ await db.addCollections({
       type: 'object',
       primaryKey: 'id',
       properties: {
-        id: { type: 'string' },
+        id: { type: 'string', maxLength: 100 },
         message: { type: 'string' },
         createdAt: { type: 'string', format: 'date-time' }
       }

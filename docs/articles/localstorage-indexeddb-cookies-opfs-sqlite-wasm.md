@@ -2,6 +2,9 @@
 
 > Compare LocalStorage, IndexedDB, Cookies, OPFS, and WASM-SQLite for web storage, performance, limits, and best practices for modern web apps.
 
+import { PerformanceChart } from '@site/src/components/performance-chart';
+import { PERFORMANCE_DATA_BROWSER, PERFORMANCE_METRICS } from '@site/src/components/performance-data';
+
 <!-- 
 
 GOALS:
@@ -88,7 +91,7 @@ Because only binary data can be processed, OPFS is made to be a base filesystem 
 </center>
 
 [WebAssembly](https://webassembly.org/) (Wasm) is a binary format that allows high-performance code execution on the web.
-Wasm was added to major browsers over the course of 2017 which opened a wide range of opportunities on what to run inside of a browser. You can compile native libraries to WebAssembly and just run them on the client with just a few adjustments. WASM code can be shipped to browser apps and generally runs much faster compared to JavaScript, but still about [10% slower then native](https://www.usenix.org/conference/atc19/presentation/jangda).
+Wasm was added to major browsers over the course of 2017 which opened a wide range of opportunities on what to run inside of a browser. You can compile native libraries to WebAssembly and just run them on the client with just a few adjustments. WASM code can be shipped to browser apps and generally runs much faster compared to JavaScript, but still about [10% slower than native](https://www.usenix.org/conference/atc19/presentation/jangda).
 
 Many people started to use compiled SQLite as a database inside of the browser which is why it makes sense to also compare this setup to the native APIs.
 
@@ -322,7 +325,7 @@ There is a wide range of possible improvements and performance hacks to speed up
 Here you can see the [performance comparison](../rx-storage-performance.md) of various RxDB storage implementations which gives a better view of real world performance:
 
 <center>
-  
+  <PerformanceChart title="Browser Storages" data={PERFORMANCE_DATA_BROWSER} metrics={PERFORMANCE_METRICS} />
 </center>
 
 ## Future Improvements
@@ -332,6 +335,38 @@ You are reading this in 2024, but the web does not stand still. There is a good 
 - Currently there is no way to directly access a persistent storage from inside a WebAssembly process. If this changes in the future, running SQLite (or a similar database) in a browser might be the best option.
 - Sending data between the main thread and a WebWorker is slow but might be improved in the future. There is a [good article](https://surma.dev/things/is-postmessage-slow/) about why `postMessage()` is slow.
 - IndexedDB lately [got support](https://developer.chrome.com/blog/maximum-idb-performance-with-storage-buckets) for storage buckets (chrome only) which might improve performance.
+
+## FAQ
+
+<details>
+<summary>What is the maximum storage size limit for browser LocalStorage?</summary>
+
+The maximum storage limit for browser LocalStorage is generally [around 5 MiB](./localstorage.md) per origin (combination of protocol, domain, and port) across most modern web browsers. If your application needs to handle larger datasets, files, or complex objects, you should migrate to **[IndexedDB](../rx-storage-indexeddb.md)** or **[OPFS](../rx-storage-opfs.md)**, which offer significantly larger, often gigabyte-scale storage quotas.
+</details>
+
+<details>
+<summary>When should you use IndexedDB vs LocalStorage vs Cookies?</summary>
+
+Use **Cookies** exclusively for small, server-readable session identifiers or authentication tokens, as they are sent with every HTTP request. Use **[LocalStorage](./localstorage.md)** for small, synchronous, non-sensitive application state blocks (like UI themes or preferences) under 5 MiB. Use **[IndexedDB](../rx-storage-indexeddb.md)** for handling complex structured data, large document collections, binary blobs, and scenarios where asynchronous operations and indexing are mandatory.
+</details>
+
+<details>
+<summary>What is OPFS (Origin Private File System) and how does it compare to IndexedDB?</summary>
+
+**OPFS (Origin Private File System)** provides a sandboxed, highly performant filesystem API native to the browser, offering direct, in-place write access to local files. Compared to [IndexedDB](../rx-storage-indexeddb.md) (which is a generic NoSQL object store), OPFS is considerably faster for heavy I/O operations and handles raw bytes much better. [RxDB provides an OPFS storage adapter](../rx-storage-opfs.md) that leverages this extreme performance while maintaining a standard NoSQL query interface.
+</details>
+
+<details>
+<summary>Does Bun or Deno support LocalStorage out of the box?</summary>
+
+**Deno** inherently supports the standard `localStorage` JavaScript API natively out of the box, allowing you to persist data across execution runs seamlessly. However, **Bun** does *not* support the `localStorage` API natively as of its recent versions. For Bun, you must either polyfill the API, utilize the `bun:sqlite` module, or use a comprehensive local database like **[RxDB](../rx-database.md)** to manage state.
+</details>
+
+<details>
+<summary>How does the File System Access API compare to localStorage or IndexedDB?</summary>
+
+The **File System Access API** allows web applications to read and write directly to the user's local, native device filesystem (with their explicit permission). In contrast, **[LocalStorage](./localstorage.md)** and **[IndexedDB](../rx-storage-indexeddb.md)** are strictly managed by the browser and sandboxed within the application's origin, meaning users cannot easily access or modify those raw database files on their hard drive. This makes the File System Access API ideal for local-first document editors, but less optimal for high-speed, indexed database operations.
+</details>
 
 ## Follow Up
 

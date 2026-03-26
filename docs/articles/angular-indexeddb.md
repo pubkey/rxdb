@@ -2,6 +2,9 @@
 
 > Discover how to harness IndexedDB in Angular with RxDB for robust offline apps. Learn reactive queries, advanced features, and more.
 
+import { PerformanceChart } from '@site/src/components/performance-chart';
+import { PERFORMANCE_DATA_BROWSER, PERFORMANCE_METRICS } from '@site/src/components/performance-data';
+
 import {Tabs} from '@site/src/components/tabs';
 import {Steps} from '@site/src/components/steps';
 
@@ -297,7 +300,15 @@ Depending on your needs, you might explore:
 ## Performance comparison with other browser storages
 Here is a [performance overview](../rx-storage-performance.md) of the various browser based storage implementation of RxDB:
 
-  
+<PerformanceChart title="Browser Storages" data={PERFORMANCE_DATA_BROWSER} metrics={PERFORMANCE_METRICS} />
+
+## FAQ
+
+<details>
+<summary>How do I properly use IndexedDB in an Angular application?</summary>
+
+You should avoid interacting with the raw IndexedDB callback API inside Angular components. Instead, you wrap IndexedDB in a reactive abstraction like **[RxDB](https://rxdb.info)**. RxDB seamlessly translates IndexedDB data changes into standard RxJS Observables. By configuring a custom reactivity factory with `toSignal` from `@angular/core/rxjs-interop`, you can extract pure Angular Signals straight from local IndexedDB queries, guaranteeing extremely fast and fully reactive UI renders.
+</details>
 
 ## Follow Up
 

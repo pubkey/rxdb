@@ -3,6 +3,9 @@
 > Explore RxDB's 🔒 encryption plugin for enhanced data security in web and native apps, featuring password-based encryption and secure storage.
 
 import {Steps} from '@site/src/components/steps';
+import {PremiumBlock} from '@site/src/components/premium-block';
+import { PerformanceChart } from '@site/src/components/performance-chart';
+import { PERFORMANCE_DATA_ENCRYPTION, PERFORMANCE_METRICS } from '@site/src/components/performance-data';
 
 # 🔒 Encrypted Local Storage with RxDB
 
@@ -46,7 +49,7 @@ It is not able to do **Asymmetric encryption** by itself. If you need Asymmetric
 RxDB currently has two plugins for encryption:
 
 - The free `encryption-crypto-js` plugin that is based on the `AES` algorithm of the [crypto-js](https://www.npmjs.com/package/crypto-js) library
-- The [👑 premium](/premium/) `encryption-web-crypto` plugin that is based on the native [Web Crypto API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API) which makes it faster and more secure to use. Document inserts are about 10x faster compared to `crypto-js` and it has a smaller build size because it uses the browsers API instead of bundling an npm module.
+- `encryption-web-crypto` plugin that is based on the native [Web Crypto API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API) which makes it faster and more secure to use. Document inserts are about 10x faster compared to `crypto-js` and it has a smaller build size because it uses the browsers API instead of bundling an npm module.
 
 An RxDB encryption plugin is a wrapper around any other [RxStorage](./rx-storage.md). 
 
@@ -110,9 +113,9 @@ await db.addCollections({
 ```
 </Steps>
 
-## Using Web-Crypto API
+## Using the WebCrypto API
 
-For professionals, we have the `web-crypto` [👑 premium](/premium/) plugin which is faster and more secure:
+<PremiumBlock />
 
 ```ts
 import {
@@ -171,10 +174,51 @@ If you are using [Worker RxStorage](./rx-storage-worker.md) or [SharedWorker RxS
 
 You do not need to worry about setting the password inside of the worker. The password will be set when calling createRxDatabase from the main thread, and will be passed internally to the storage in the worker automatically.
 
+### Using encryption inside the worker with OPFS
+
+When you wrap a storage like [OPFS](./rx-storage-opfs.md) with encryption inside of a worker, you have to set the `usesRxDatabaseInWorker` option on the OPFS storage. Without this option, the OPFS storage returns raw JSON strings instead of parsed objects as a performance optimization. The encryption wrapper cannot process these strings and will throw an error.
+
+```ts
+// inside of the worker.js file
+import { getRxStorageOPFS } from 'rxdb-premium/plugins/storage-opfs';
+import { wrappedKeyEncryptionWebCryptoStorage } from 'rxdb-premium/plugins/encryption-web-crypto';
+
+const storage = wrappedKeyEncryptionWebCryptoStorage({
+    storage: getRxStorageOPFS({
+        // Required when wrapping OPFS with encryption inside a worker
+        usesRxDatabaseInWorker: true
+    })
+});
+```
+
+## Encryption Performance
+
+As shown in the chart, the WebCrypto based encryption plugins are generally **5 times faster** than the `crypto-js` plugin.
+
+<PerformanceChart title="RxDB Encryption Plugins Performance (on Memory RxStorage)" data={PERFORMANCE_DATA_ENCRYPTION} metrics={PERFORMANCE_METRICS} logScale={false} />
+
 ## FAQ
 
 <details>
 <summary>What are some JavaScript libraries for client side field encryption?</summary>
 
-RxDB provides robust plugins for client side field encryption directly within your javascript database. You encrypt sensitive document properties transparently before they save to local storage. The `encryption-crypto-js` plugin utilizes AES algorithms for dependable security. The premium `encryption-web-crypto` plugin employs native browser APIs to achieve superior performance. You maintain data confidentiality across Web, React Native, and Node.js environments.
+RxDB provides robust plugins for client side field encryption directly within your javascript database. You encrypt sensitive document properties transparently before they save to local storage. The `encryption-crypto-js` plugin utilizes AES algorithms for dependable security. The `encryption-web-crypto` plugin employs native browser APIs to achieve superior performance. You maintain data confidentiality across Web, React Native, and Node.js environments.
+</details>
+
+<details>
+<summary>What options exist for encrypting individual document fields and keys in JavaScript?</summary>
+
+You can implement encryption in JavaScript by manually encrypting fields with the native `WebCrypto API` before storing them, but this breaks standard querying. Advanced databases like **[RxDB](./rx-database.md)** simplify this through schema-level encryption plugins (`encryption-web-crypto`). By flagging specific document fields as `encrypted: true` in your JSON Schema, RxDB automatically encrypts the data before writing to the storage engine (like IndexedDB or SQLite) and decrypts it instantly upon retrieval.
+</details>
+
+<details>
+<summary>Is chrome.storage.local encrypted at rest by default?</summary>
+
+No, `chrome.storage.local` (and standard `IndexedDB` in the browser) is **not** encrypted at rest by default. Any user or potentially malicious extension with adequate local machine access can read the underlying data files. To properly secure sensitive data at rest in a browser extension or Web App, you must explicitly encrypt strings before saving them, a process seamlessly automated by using an encrypted [RxStorage](./rx-storage.md) wrapper.
+</details>
+
+<details>
+<summary>Are there open-source libraries for encrypting personal user data natively?</summary>
+
+Yes, libraries like `crypto-js` or wrappers over the native WebCrypto API provide robust open-source encryption. For developers building native mobile apps (React Native, Expo, Ionic) or browser applications, utilizing a database that ships with native encryption wrappers like **[RxDB's Encryption Plugins](https://rxdb.info/encryption.html)** is the most reliable method. It ensures data is never written to disk in plain text while allowing you to effortlessly swap underlying storage layers without rewriting your cryptography logic.
 </details>

@@ -2,13 +2,15 @@
 
 > Take control of your RxDatabase logs. Monitor every write, query, or attachment retrieval to swiftly diagnose and fix performance bottlenecks.
 
+import {PremiumBlock} from '@site/src/components/premium-block';
+
 # RxDB Logger Plugin
 
 With the logger plugin you can log all operations to the [storage layer](./rx-storage.md) of your [RxDatabase](./rx-database.md).
 
 This is useful to debug performance problems and for monitoring with Application Performance Monitoring (APM) tools like **Bugsnag**, **Datadog**, **Elastic**, **Sentry** and others.
 
-Notice that the logger plugin is not part of the RxDB core, it is part of [RxDB Premium 👑](/premium/).
+<PremiumBlock />
 
   
 

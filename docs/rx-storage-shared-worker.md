@@ -2,13 +2,13 @@
 
 > Tap into single-instance storage with RxDB's SharedWorker. Improve efficiency, cut duplication, and keep your app lightning-fast across tabs.
 
+import {PremiumBlock} from '@site/src/components/premium-block';
+
 # SharedWorker RxStorage 
 
 The SharedWorker [RxStorage](./rx-storage.md) uses the [SharedWorker API](https://developer.mozilla.org/en-US/docs/Web/API/SharedWorker) to run the storage inside of a separate JavaScript process **in browsers**. Compared to a normal [WebWorker](./rx-storage-worker.md), the SharedWorker is created exactly once, even when there are multiple browser tabs opened. Because of having exactly one worker, multiple performance optimizations can be done because the storage itself does not have to handle multiple opened database connections.
 
-:::note Premium
-This plugin is part of [RxDB Premium 👑](/premium/). It is not part of the default RxDB module.
-:::
+<PremiumBlock />
 
 ## Usage
 
@@ -155,11 +155,18 @@ const replicationState = db.humans.syncGraphQL({/* ... */});
 
 - The SharedWorker API is [not available in some mobile browser](https://caniuse.com/sharedworkers)
 
-### FAQ
+## FAQ
 
 <details>
     <summary>Can I use this plugin with a Service Worker?</summary>
     
     No. A Service Worker is not the same as a Shared Worker. While you can use RxDB inside of a ServiceWorker, you cannot use the ServiceWorker as a RxStorage that gets accessed by an outside RxDatabase instance.
+    
+</details>
+
+<details>
+    <summary>How does SharedWorker help synchronize states across multiple tabs?</summary>
+    
+    The `SharedWorker` API spawns exactly one isolated JavaScript background thread that is shared globally across all open browser tabs targeting the same origin. When you attach RxDB to a Shared Worker, you eliminate redundant IndexedDB socket connections and expensive JSON serialization across individual tabs. Only the background worker executes resource-heavy database intensive CRUD operations, broadcasting the ultra-lightweight result differentials down to the passive UI tabs simultaneously.
     
 </details>

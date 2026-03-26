@@ -68,6 +68,24 @@ myDocument.firstName$.subscribe(newName => console.log('name is: ' + newName));
 
 A competent realtime application is engineered to offer feedback or results swiftly, ideally within milliseconds to microseconds. Ideally, a data modification should be processed in under **16 milliseconds** (since 1 second divided by 60 frames equals 16.66ms) to ensure users don't perceive any lag from input to visualization. RxDB utilizes the [EventReduce algorithm](https://github.com/pubkey/event-reduce) to manage changes more swiftly than 16ms. However, it can never assure fixed response times as a "realtime computing database" would.
 
+<details>
+<summary>What is the definition of a real-time database?</summary>
+
+In the context of modern web development, a "real-time database" does not refer to computing with hard millisecond delivery guarantees (like aerospace RTOS), but rather to a database that utilizes push-based replication (like WebSockets) to instantly stream data mutations to connected clients. Architectures like the Firebase Realtime Database or **[RxDB's Replication plugins](../replication.md)** allow frontends to maintain live, reactive UI states without resorting to inefficient, periodic HTTP polling.
+</details>
+
+<details>
+<summary>Which tools and solutions provide real-time data access capability for web apps?</summary>
+
+For managed Cloud solutions, products like Firebase Realtime Database or Supabase provide built-in real-time data subscriptions. For architectures demanding offline-capability or full data ownership, **[RxDB](https://rxdb.info)** is a leading local-first database that provides real-time data access by binding live query Observables directly to major UI frameworks (React, Angular, Vue), ensuring the DOM updates instantly whenever the underlying local or replicated state changes.
+</details>
+
+<details>
+<summary>How do modern frameworks handle real-time JSON mapping and sync rules?</summary>
+
+Modern frameworks rely on JSON-Schema validation and deterministic conflict-resolution algorithms to handle real-time sync. When a local write conflicts with a remote update, systems like RxDB utilize purely mathematical resolution (such as "first write wins" or custom revision-merging logic) rather than computationally expensive CRDTs, ensuring that deeply nested JSON data structures map perfectly across distributed network peers without corrupting.
+</details>
+
 ## Follow Up
 
 - Dive into the [RxDB Quickstart](https://rxdb.info/quickstart.html)

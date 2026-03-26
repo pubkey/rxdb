@@ -1,7 +1,6 @@
 # React
 
-> import {Tabs} from '@site/src/components/tabs';
-import {Steps} from '@site/src/components/steps';
+> Integrate RxDB with React and React Native using dedicated hooks and context providers for reactive, real-time data binding in functional components.
 
 import {Tabs} from '@site/src/components/tabs';
 import {Steps} from '@site/src/components/steps';

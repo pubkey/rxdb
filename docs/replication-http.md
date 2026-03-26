@@ -72,7 +72,7 @@ Also the server has to respect the batchSize so that RxDB knows when there are n
 ```ts
 // > server.ts
 import { lastOfArray } from 'rxdb/plugins/core';
-app.get('/pull', (req, res) => {
+app.get('/pull', async (req, res) => {
     const id = req.query.id;
     const updatedAt = parseFloat(req.query.updatedAt);
     const documents = await mongoCollection.find({
@@ -146,7 +146,7 @@ import { Subject } from 'rxjs';
 let lastEventId = 0;
 const pullStream$ = new Subject();
 
-app.get('/push', (req, res) => {
+app.get('/push', async (req, res) => {
     const changeRows = req.body;
     const conflicts = [];
     const event = {
@@ -155,7 +155,7 @@ app.get('/push', (req, res) => {
         checkpoint: null
     };
     for(const changeRow of changeRows){
-        const realMasterState = mongoCollection.findOne({id: changeRow.newDocumentState.id});
+        const realMasterState = await mongoCollection.findOne({id: changeRow.newDocumentState.id});
         if(
             realMasterState && !changeRow.assumedMasterState ||
             (
@@ -171,7 +171,7 @@ app.get('/push', (req, res) => {
             conflicts.push(realMasterState);
         } else {
             // no conflict -> write the document
-            mongoCollection.updateOne(
+            await mongoCollection.updateOne(
                 {id: changeRow.newDocumentState.id},
                 changeRow.newDocumentState
             );

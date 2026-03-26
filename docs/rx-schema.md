@@ -154,7 +154,7 @@ const id = myRxCollection.schema.getPrimaryOfDocumentData({
     firstName: 'foo',
     lastName: 'bar'
 });
-const myRxDocument = myRxCollection.findOne(id).exec();
+const myRxDocument = await myRxCollection.findOne(id).exec();
 
 ```
 

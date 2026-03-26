@@ -6,6 +6,7 @@ import {Steps} from '@site/src/components/steps';
 import {VideoBox} from '@site/src/components/video-box';
 import {Tabs} from '@site/src/components/tabs';
 import {QuoteBlock} from '@site/src/components/quoteblock';
+import {BetaBlock} from '@site/src/components/beta-block';
 
 # How Local-First and WebMCP make your app accessible to agents
 
@@ -72,7 +73,7 @@ WebMCP is uniquely powerful when paired with [local-first](/articles/local-first
 - **Privacy First**: Sensitive user data can stay on the device while still being queryable by the on-device AI model.
 - **Direct Access**: Agents can bypass the UI entirely and find exactly what they need with basic NoSQL queries.
 - **LLM-Friendly NoSQL**: Writing NoSQL query objects (like [Mongo-style queries](./rx-query.md)) is significantly easier and more deterministic for LLMs to generate and validate than orchestrating complex, string-based SQL JOIN queries.
-- **Native JSONSchema**: WebMCP relies entirely on JSONSchema to define tools and parameters. Because [RxDB schemas are *already* written in JSONSchema](./rx-schema.md), there is zero translation overhead—the agent receives the exact structural contract it expects.
+- **Native JSONSchema**: WebMCP relies entirely on JSONSchema to define tools and parameters. Because [RxDB schemas are *already* written in JSONSchema](./rx-schema.md), there is zero translation overhead, meaning the agent receives the exact structural contract it expects.
 
 <center>
     
@@ -298,10 +299,9 @@ Architecturally, WebMCP turns the browser into a "capability surface" with expli
 
 However, be aware that WebMCP **does not completely eliminate prompt injection risks**. It significantly narrows the surface compared to DOM-level automation, but an Agent mimicking a well-behaved query against your schema can still produce corrupted behavior if the prompt itself contains malicious instructions. Ensure your application logic (and RxDB schema validation) assumes agent-provided payloads are untrusted.
 
-:::note Beta Status
-
-The WebMCP plugin is currently in **Beta**. APIs and behaviors are subject to change as the official [W3C WebMCP specification](https://webmachinelearning.github.io/webmcp/) and browser implementations evolve.
-:::
+<BetaBlock since="17.0.0">
+APIs and behaviors are subject to change as the official W3C WebMCP specification and browser implementations evolve.
+</BetaBlock>
 
 ## FAQ
 

@@ -2,6 +2,8 @@
 
 > Accelerate RxDB with in-memory storage replicated to disk. Enjoy instant queries, faster loads, and unstoppable performance for your web apps.
 
+import {PremiumBlock} from '@site/src/components/premium-block';
+
 # Memory Synced RxStorage
 
 The memory synced [RxStorage](./rx-storage.md) is a wrapper around any other RxStorage. The wrapper creates an in-memory storage that is used for query and write operations. This memory instance is replicated with the underlying storage for persistence.
@@ -19,7 +21,8 @@ The main reason to use this is to improve initial page load and query/write time
 - This can only be used if all data fits into the memory of the JavaScript process. This is normally not a problem because a browser has much memory these days and plain json document data is not that big.
 - Because it has to await an initial replication from the parent storage into the memory, initial page load time can increase when much data is already stored. This is likely not a problem when you store less than `10k` documents.
 - The memory-synced storage itself does not support replication and migration. Instead you have to replicate the underlying parent storage.
-- The `memory-synced` plugin is part of [RxDB Premium 👑](/premium/). It is not part of the default RxDB module.
+
+<PremiumBlock />
 
 :::note The memory-synced RxStorage was removed in RxDB version 16
 
@@ -50,7 +53,7 @@ const storage = getMemorySyncedRxStorage({
 
 // create the RxDatabase like you would do with any other RxStorage
 const db = await createRxDatabase({
-    name: 'myDatabase,
+    name: 'myDatabase',
     storage,
 });
 /** ... **/

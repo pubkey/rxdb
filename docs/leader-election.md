@@ -1,7 +1,6 @@
 # Leader Election
 
-> RxDB comes with a leader-election which elects a leading instance between different instances in the same javascript runtime.
-Before you read this, please check out on how many of your open browser-tabs you have opened the same website more than once. Count them, I will wait..
+> Use RxDB leader election to coordinate browser tabs so that only one tab manages remote data access, reducing redundant connections and saving resources.
 
 # Leader-Election
 
