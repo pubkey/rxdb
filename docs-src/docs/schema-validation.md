@@ -5,6 +5,9 @@ description: Validate RxDB document data against JSON schemas using pluggable va
 image: /headers/schema-validation.jpg
 ---
 
+import { PerformanceChart } from '@site/src/components/performance-chart';
+import { PERFORMANCE_DATA_VALIDATION_INDEXEDDB, PERFORMANCE_DATA_VALIDATION_MEMORY } from '@site/src/components/performance-data';
+
 # Schema validation
 
 RxDB has multiple validation implementations that can be used to ensure that your document data is always matching the provided JSON 
@@ -115,19 +118,11 @@ The RxDB team ran performance benchmarks using two storage options on an Ubuntu 
 
 IndexedDB Storage (based on the IndexedDB API in the browser):
 
-| **IndexedDB Storage** | Time to First insert | Insert 3000 documents |
-| ----------------- | :------------------: | --------------------: |
-| no validator      |        68 ms         |                213 ms |
-| ajv               |        67 ms         |                216 ms |
-| z-schema          |        71 ms         |                230 ms |
+<PerformanceChart title="Schema Validation on IndexedDB Storage" data={PERFORMANCE_DATA_VALIDATION_INDEXEDDB} logScale={false} />
 
-Memory Storage: stores everything in memory for extremely fast reads and writes, with no persistence by default. Often used with the RxDB memory-mapped plugin that processes data in memory an later persists to disc in background:
+Memory Storage: stores everything in memory for extremely fast reads and writes, with no persistence by default. Often used with the RxDB memory-mapped plugin that processes data in memory and later persists to disc in background:
 
-| **Memory Storage** | Time to First insert | Insert 3000 documents |
-| ------------------ | :------------------: | --------------------: |
-| no validator       |       1.15 ms        |                0.8 ms |
-| ajv                |       3.05 ms        |                2.7 ms |
-| z-schema           |        0.9 ms        |                 18 ms |
+<PerformanceChart title="Schema Validation on Memory Storage" data={PERFORMANCE_DATA_VALIDATION_MEMORY} logScale={false} />
 
 
 Including a validator library also increases your JavaScript bundle size. Here's how it breaks down (minified + gzip):
