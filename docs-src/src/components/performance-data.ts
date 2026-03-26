@@ -216,6 +216,18 @@ export const PERFORMANCE_DATA_NODE: RxStoragePerformanceMeasurement[] = [
     PERFORMANCE_NODE_MEMORY,
 ];
 
+export const PERFORMANCE_DATA_VALIDATION_INDEXEDDB = [
+    { name: 'no validator', 'time-to-first-insert': 68, 'insert-3000-documents': 213 },
+    { name: 'ajv', 'time-to-first-insert': 67, 'insert-3000-documents': 216 },
+    { name: 'z-schema', 'time-to-first-insert': 71, 'insert-3000-documents': 230 },
+];
+
+export const PERFORMANCE_DATA_VALIDATION_MEMORY = [
+    { name: 'no validator', 'time-to-first-insert': 1.15, 'insert-3000-documents': 0.8 },
+    { name: 'ajv', 'time-to-first-insert': 3.05, 'insert-3000-documents': 2.7 },
+    { name: 'z-schema', 'time-to-first-insert': 0.9, 'insert-3000-documents': 18 },
+];
+
 export const PERFORMANCE_DATA_ENCRYPTION: RxStoragePerformanceMeasurement[] = [
     {
         'name': 'WebCrypto AES-CBC',
