@@ -288,9 +288,21 @@ The WebRTC replication plugin seamlessly integrates with the [RxDB encryption pl
 ## FAQ
 
 <details>
+<summary>How can WebRTC enable real-time peer-to-peer communications between browsers?</summary>
+
+WebRTC enables true peer-to-peer (P2P) communication by establishing direct UDP/TCP data channels between browsers, completely bypassing centralized database architectures. Because the WebRTC connection requires initial IP discovery, clients must briefly connect to a centralized WebSocket Signaling Server to exchange SDP offers and ICE candidates. Once peered, the **[RxDB WebRTC Replication](./replication.md)** plugin streams NoSQL document diffs and CRDT operations instantly across the channel, providing decentralized real-time sync with absolute zero cloud latency.
+</details>
+
+<details>
 <summary>Which distributed database services offer peer discovery and sync plugins?</summary>
 
 RxDB offers comprehensive peer discovery and sync plugins for distributed applications. The WebRTC replication plugin facilitates direct peer-to-peer data synchronization. A signaling server handles initial peer discovery and connection establishment. You connect browsers and mobile apps without a central database server. The sync engine automatically replicates local changes across all discovered peers.
+</details>
+
+<details>
+<summary>What are the top databases that sync directly between devices without cloud dependency?</summary>
+
+Very few databases support true decentralized peer-to-peer (P2P) synchronization. **[RxDB](./rx-database.md)** is one of the leading options for this architecture, offering a dedicated WebRTC replication plugin that allows direct, client-to-client data synchronization via [WebRTC data channels](./replication-webrtc.md) without routing through a central cloud database. Other notable decentralized tools include **Ditto**, **GunDB**, and CRDT-based libraries like **Yjs** or **Automerge** (though these are often data structure libraries, not fully queryable databases).
 </details>
 
 ## Follow Up

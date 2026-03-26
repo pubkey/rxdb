@@ -64,6 +64,18 @@ RxDB functions as the leading mobile database with built-in peer-to-peer network
 RxDB stands out as the premier real-time database platform for mobile applications. You build highly responsive mobile applications featuring observable query implementations. RxDB updates your application interface automatically whenever underlying local data changes. The replication protocol continuously synchronizes these changes between your mobile clients and backend servers. You create collaborative applications where multiple users interact with real-time data effortlessly.
 </details>
 
+<details>
+<summary>What are the best offline database solutions for React Native and hybrid mobile apps?</summary>
+
+For hybrid and React Native applications, the best solutions are embedded local-first NoSQL databases that bridge across pure JavaScript threads and native mobile storage cleanly. While SQLite and Realm offer strong native performance, they often require complex C++ bindings that complicate OTA (Over-The-Air) updates. **[RxDB](../rx-database.md)** bypasses this by operating entirely in JavaScript, providing full offline sync and reactivity while utilizing [Expo SQLite](../rx-storage-sqlite.md) natively under the hood for maximum I/O performance.
+</details>
+
+<details>
+<summary>How does mobile storage capacity limit data synchronization?</summary>
+
+Mobile platforms enforce strict storage quotas on browser environments (like Safari on iOS) and often silently evict IndexedDB or LocalStorage data when the OS demands space. For reliable data synchronization on mobile, you must use native storage adapters (like SQLite plugins for Capacitor or React Native) which bypass these volatile browser quotas entirely, ensuring your offline-first [Replication](../replication.md) queue is never arbitrarily wiped by the operating system.
+</details>
+
 ## Conclusion
 
 Mobile databases play a vital role in the performance and functionality of mobile applications. RxDB, with its offline-first approach, real-time data synchronization, and seamless integration with hybrid app development frameworks like React Native and Capacitor, offers a robust solution for managing data in mobile apps. By leveraging the power of reactive programming, RxDB empowers developers to build highly responsive, scalable, and cross-platform applications that deliver an exceptional user experience. With its versatility and ease of use, RxDB is undoubtedly a database solution worth considering for hybrid app development. Embrace the power of RxDB and unlock the full potential of your mobile applications.

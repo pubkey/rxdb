@@ -186,6 +186,12 @@ Situations where high success rates of operations are expected (most writes don'
   - Consider the likelihood that a user's action might fail. If it's very low, optimistic UI is often best.
   - If frequent failures or complex validations occur, consider a hybrid approach: partial optimistic updates for some actions, while more critical operations rely on immediate server confirmation.
 
+<details>
+<summary>What is an optimistic UI and how is it implemented?</summary>
+
+An Optimistic UI is a frontend design pattern that immediately renders a user's action as successful before the server has actually confirmed it, eliminating loading spinners and ensuring [near-zero latency](./zero-latency-local-first.md). It is implemented by writing the user's interaction directly to a local, offline-first data store (like **[RxDB](../rx-database.md)**), reacting to that local state change instantly in the UI, and then relegating the asynchronous server synchronization to a background replication process that can handle retries and merges silently.
+</details>
+
 ## Follow Up
 
 Ready to start building your own Optimistic UI with RxDB? Here are some next steps:

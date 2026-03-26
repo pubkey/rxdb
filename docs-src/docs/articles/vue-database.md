@@ -190,6 +190,14 @@ Here are some recommendations to get the most out of RxDB in your Vue projects:
 - Test [Offline Scenarios](../offline-first.md): Make sure your offline logic works as expected by simulating network disconnections and reconnections.
 - [Plan Conflict Resolution](../transactions-conflicts-revisions.md): For multi-user apps, decide how to merge concurrent changes to prevent data inconsistencies.
 
+## FAQ
+
+<details>
+<summary>How to safely access LocalStorage or IndexedDB in a Vue.js project?</summary>
+
+Accessing raw standard LocalStorage or IndexedDB inside Vue components directly creates synchronization and lifecycle vulnerabilities. Instead, you safely access browser storage by initializing a specialized local-first database like **[RxDB](https://rxdb.info)**. RxDB provides cross-tab synchronization bindings, robust event routing, and integrates flawlessly into Vue 3's Composition API by exposing query results as reactive arrays you can strictly monitor with local `ref()` variables.
+</details>
+
 ## Follow Up
 
 To explore more about RxDB and leverage its capabilities for browser database development, check out the following resources:

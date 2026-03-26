@@ -469,7 +469,7 @@ const replicationState = await replicateRxCollection({
 </Steps>
 
 
-With just this configuration, RxDB will begin to **pull** any new or changed documents from the Server and apply them to the local store, and **push** any local changes up to the server. Because `live: true` and our `pullStream$`, it will keep doing this continuously (it's not a one-time sync). Under the hood, it uses an iterating checkpoint so it doesn't fetch everything every time – it will fetch in batches of changes (you can set `batchSize`) and use the `pull.stream$` to get new updates. Conflict handling is also integrated: if a conflict is detected during replication, by default RxDB will use a `first-on-server-wins` strategy. But any other conflict handler can be used instead.
+With just this configuration, RxDB will begin to **pull** any new or changed documents from the Server and apply them to the local store, and **push** any local changes up to the server. Because `live: true` and our `pullStream$`, it will keep doing this continuously (it's not a one-time sync). Under the hood, it uses an iterating checkpoint so it doesn't fetch everything every time since it will fetch in batches of changes (you can set `batchSize`) and use the `pull.stream$` to get new updates. Conflict handling is also integrated: if a conflict is detected during replication, by default RxDB will use a `first-on-server-wins` strategy. But any other conflict handler can be used instead.
 
 
 ## Partial Sync
@@ -519,6 +519,30 @@ The same pattern is happening with **local-first** apps. Right now, most sites a
 <summary>What are the differences between an offline-first database and a cloud-first database for remote areas?</summary>
 
 An offline-first database stores data locally on the user device. A cloud-first database stores data on a remote server. Field workers in remote areas often face poor network connectivity. An offline-first database allows users to read and write data without an internet connection. A cloud-first database requires continuous internet access to function. An offline-first approach synchronizes data automatically when a connection becomes available. A cloud-first approach blocks users from working during offline periods. You choose an offline-first database to ensure continuous productivity in remote locations.
+</details>
+
+<details>
+<summary>What are the core advantages of local-first data storage?</summary>
+
+Local-first data storage provides **Zero Latency** because data is read and written directly to the local device without waiting for network requests. It guarantees extreme **Reliability** since the application remains fully functional regardless of internet connectivity (offline support). Furthermore, it improves user **Privacy** by keeping sensitive data on the native client rather than a centralized server, and significantly reduces cloud infrastructure costs by offloading database compute to the user's hardware.
+</details>
+
+<details>
+<summary>Why does local-first architecture matter for JavaScript applications?</summary>
+
+JavaScript applications, particularly Single Page Applications (SPAs) built with React, Vue, or Angular, are heavily state-driven. A local-first architecture aligns perfectly with this paradigm by using client-side databases like **[RxDB](../rx-database.md)** to instantly manage the application state locally. This eliminates loading spinners, provides instant visual feedback, and bridges the gap between web applications and native desktop/mobile app performance.
+</details>
+
+<details>
+<summary>What does offline-first and local-first mean for web apps?</summary>
+
+**Offline-First** means designing an application to function properly without an internet connection, often caching resources and queueing actions to sync later. **[Local-First](./local-first-future.md)** takes this further: it means the *primary* source of truth for the application is the local database on the device, rather than a remote cloud server. The cloud merely acts as an eventual [syncing mechanism](../replication.md) (or backup) in the background, rather than the primary endpoint for every user interaction.
+</details>
+
+<details>
+<summary>Are applications like WorkFlowy or Capacities considered local-first?</summary>
+
+Yes, applications like WorkFlowy, Capacities, Notion (to an extent), and Linear use local-first or heavily optimized offline-first architectures. They load the user's workspace into the local browser or desktop client memory/database immediately upon startup. Every interaction mutates the local state first to provide instant UI feedback, and then asynchronous replication protocols silently sync those changes to their backend servers in the background.
 </details>
 
 ## See also

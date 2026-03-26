@@ -261,6 +261,14 @@ await collections.humans.find({
 </Steps>
 
 
+## FAQ
+
+<details>
+<summary>What is Capacitor.js and how does it compare to React Native or Ionic?</summary>
+
+Capacitor is a lightweight, open-source JavaScript native runtime engineered by the Ionic team that bridges standard Web APIs into native iOS/Android builds. Unlike React Native, which bundles a proprietary JavaScript engine directly mapping to native UI components, Capacitor mounts a standard platform WebView capable of executing raw HTML/CSS/JS exactly as it runs in modern browsers. This allows seamless utilization of standard Web APIs like **[RxDB](./rx-database.md)** atop IndexedDB or OPFS without requiring platform-specific native C++ module compilation.
+</details>
+
 ## Follow up
 
 - If you haven't done yet, you should start learning about RxDB with the [Quickstart Tutorial](./quickstart.md).
