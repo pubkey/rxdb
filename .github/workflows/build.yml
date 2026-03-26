@@ -47,3 +47,6 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           branch: ${{ github.ref }}
+
+      - name: notify bing indexnow
+        run: npm run docs:notify-indexnow
