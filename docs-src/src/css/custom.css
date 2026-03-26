@@ -519,7 +519,7 @@ body {
 
 
 /**
- * Reversed order because the lunr search input
+ * Reversed order because the search input
  * must be on the left so we have no "blinking" when
  * switching between langinpages and docs
  */
@@ -3566,4 +3566,30 @@ pre[data-theme] span[style*="--shiki-token-keyword"] {
     background-color: var(--ifm-code-background);
     border-radius: 0px !important;
     padding: var(--ifm-code-padding-vertical) var(--ifm-code-padding-horizontal);
+}
+
+/* Force SearchBar to be full width and show text inside the sidebar (both desktop and mobile) */
+.sidebar-search-container .DocSearch.DocSearch-Button {
+    width: 100% !important;
+    margin: 0 !important;
+    border-radius: 8px !important;
+    justify-content: flex-start !important;
+    display: flex !important;
+}
+
+.sidebar-search-container .DocSearch-Button-Placeholder {
+    display: block !important;
+    padding-left: 8px !important;
+    visibility: visible !important;
+}
+
+.sidebar-search-container .DocSearch-Button-Keys {
+    display: flex !important;
+}
+
+/* Ensure mobile sidebar also has full width SearchBar without breaking its padding */
+@media (max-width: 996px) {
+    .sidebar-search-container .DocSearch.DocSearch-Button {
+        margin: 10px 0 !important;
+    }
 }
