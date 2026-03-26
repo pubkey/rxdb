@@ -2,13 +2,6 @@
 
 This file contains a list with things that should be implemented in the future. If you want to create a PR with one of these things, please create an issue before starting your work, so we can prevent duplication.
 
-## google-drive and dropbox-sync
-
-so that users can provide their own sync backend.
-
-## expo-fs RxStorage
-
-Based on the node-filesystem storage. Use the new expo filesystem api for that.
 
 ## RxServer MCP Server endpoint
 
@@ -32,14 +25,6 @@ https://news.ycombinator.com/item?id=45885768
 
 Like https://github.com/XuHaoJun/rxdb-storage-pglite
 
-## Zero-Sync replication plugin
-
-https://www.youtube.com/watch?v=hAxdOUgjctk&ab_channel=Syntax
-
-## import/export with attachments
-
-See [#1396](https://github.com/pubkey/rxdb/pull/1396#issuecomment-523014106)
-
 ## refactor middleware to not be based on side effects
 
 [See](https://github.com/pubkey/rxdb/issues/3426)
@@ -56,7 +41,6 @@ Similar to the NATS replication plugin.
 
 This might be faster because we have binary arrays already in OPFS and then we
 do not have to transfer big json strings to the main thread. Must be tested for performance first.
-
 
 ## query normalization and optimization
 
