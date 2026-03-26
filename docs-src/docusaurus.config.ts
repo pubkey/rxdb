@@ -447,7 +447,7 @@ Topic-specific documentation files:
         algolia: {
             appId: 'MFS60LRE5L',
             apiKey: '22d63ecafdabc681e5c59f767c4ceafa',
-            indexName: 'rxdb',
+            indexName: 'RxDB Docs Crawler',
             contextualSearch: true,
         },
         footer: {

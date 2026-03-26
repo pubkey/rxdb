@@ -1,23 +1,23 @@
-import React, {type ReactNode, useState} from 'react';
+import React, { type ReactNode, useState } from 'react';
 import clsx from 'clsx';
-import {ThemeClassNames} from '@docusaurus/theme-common';
+import { ThemeClassNames } from '@docusaurus/theme-common';
 import {
   useAnnouncementBar,
   useScrollPosition,
 } from '@docusaurus/theme-common/internal';
-import {translate} from '@docusaurus/Translate';
+import { translate } from '@docusaurus/Translate';
 import DocSidebarItems from '@theme/DocSidebarItems';
-import type {Props} from '@theme/DocSidebar/Desktop/Content';
+import type { Props } from '@theme/DocSidebar/Desktop/Content';
 
 import styles from './styles.module.css';
 import SearchBar from '@theme/SearchBar';
 
 function useShowAnnouncementBar() {
-  const {isActive} = useAnnouncementBar();
+  const { isActive } = useAnnouncementBar();
   const [showAnnouncementBar, setShowAnnouncementBar] = useState(isActive);
 
   useScrollPosition(
-    ({scrollY}) => {
+    ({ scrollY }) => {
       if (isActive) {
         setShowAnnouncementBar(scrollY === 0);
       }
@@ -47,11 +47,14 @@ export default function DocSidebarDesktopContent({
         showAnnouncementBar && styles.menuWithAnnouncementBar,
         className,
       )}>
-        <div style={{
-        padding: 10,
+      <div className="sidebar-search-container" style={{
+        padding: 0,
         paddingTop: 30,
-        marginLeft: 'auto',
-        marginRight: 'auto'
+        paddingBottom: 30,
+        paddingLeft: 40,
+        paddingRight: 10,
+        display: 'flex',
+        justifyContent: 'center'
       }}>
         <SearchBar />
       </div>
