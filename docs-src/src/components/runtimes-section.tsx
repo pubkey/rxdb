@@ -92,7 +92,7 @@ export function RuntimesSection(props: {
 
 
             <p>
-                RxDB's modular storage architecture adapts to any JavaScript runtime — <a href="/rx-storage-indexeddb.html" target="_blank">Browsers</a>
+                RxDB's modular storage architecture adapts to any JavaScript runtime - <a href="/rx-storage-indexeddb.html" target="_blank">Browsers</a>
                 , <a
                     href="/rx-storage-sqlite.html"
                     target="_blank"

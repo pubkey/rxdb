@@ -156,6 +156,56 @@ The **Deno** JavaScript runtime has a working localStorage API so running `local
 In the world of modern web development, **localStorage** serves as a valuable tool for lightweight data storage. Its simplicity and speed make it an excellent choice for small key-value assignments. However, as application complexity grows, developers must assess their storage needs carefully. For scenarios that demand advanced querying, complex data structures, or high-volume operations, alternatives like IndexedDB, wrapper libraries with additional features like [RxDB](../), or platform-specific APIs offer more robust solutions. By understanding the strengths and limitations of various storage options, developers can make informed decisions that pave the way for efficient and scalable applications.
 
 
+## FAQ
+
+<details>
+<summary>What is the difference between LocalStorage and SessionStorage?</summary>
+
+Both `localStorage` and `sessionStorage` provide synchronous, key-value storage capabilities built natively into the web browser. The primary difference is their lifespan: data in **LocalStorage** persists indefinitely until explicitly cleared by the application or the user. Data in **SessionStorage**, however, is strictly bound to the specific browser tab that created it and is instantly deleted the moment you close the tab.
+</details>
+
+<details>
+<summary>Is data stored in LocalStorage isolated per domain and origin?</summary>
+
+Yes, `localStorage` inherently adheres to the browser's strict Same-Origin Policy. All stored data is tightly sandboxed by the exact combination of the protocol, hostname, and port. For example, scripts loaded on `https://example.com` are physically unable to access data stored by `http://example.com` (different protocol) or `https://app.example.com` (different subdomain).
+</details>
+
+<details>
+<summary>Can you store complex JSON objects, Files, or Blobs in LocalStorage?</summary>
+
+LocalStorage only officially supports storing string values. To store structured data like [JSON objects](./json-database.md) or arrays, you must serialize them to a string using `JSON.stringify()` before storage and parse them with `JSON.parse()` upon retrieval. You cannot store binary formats like Files or Blobs directly; they must either be converted to a Base64 string, which is inefficient and bulky, or natively stored using **[IndexedDB](../rx-storage-indexeddb.md)** or **[OPFS](../rx-storage-opfs.md)** instead.
+</details>
+
+<details>
+<summary>Does the browser's LocalStorage automatically sync state across different devices?</summary>
+
+No, data saved in LocalStorage is confined entirely to the local storage hardware of the specific device and browser profile that created it. It does not automatically synchronize to the cloud or other devices. To seamlessly sync locally stored data across multiple clients, you need a sync-ready database like **[RxDB](../rx-database.md)** that automatically replicates the document state to a central [backend server](../replication.md).
+</details>
+
+<details>
+<summary>Is LocalStorage persistent across browser sessions and tabs?</summary>
+
+Yes, data in `localStorage` persists across entirely different browser sessions. Even if a user closes their tab, quits their browser application, or reboots their system, the data remains intact whenever they return. Furthermore, any changes made to `localStorage` in one tab are immediately available to all other active tabs operating under the identically formatted origin string.
+</details>
+
+<details>
+<summary>How long does data persist in LocalStorage and does it support automatic expiration?</summary>
+
+Data in `localStorage` persists indefinitely. The API does not provide any native automatic expiration or Time-to-Live (TTL) mechanisms. If you need data to expire automatically after a specific time frame, you must manually save a timestamp alongside your data payload and implement your own JavaScript verification logic to delete the item when the operational threshold is passed.
+</details>
+
+<details>
+<summary>Can LocalStorage be used to pass data between different domains or subdomains?</summary>
+
+No. Because LocalStorage strictly enforces the Same-Origin Policy, it physically cannot pass or share data across completely different domains or even subdomains out-of-the-box. The origin string (comprising the scheme, hostname, and port) must match exactly. Sharing real-time data or state across separate domains usually requires complex workarounds involving hidden `<iframe>`s combined with `window.postMessage()`, or utilizing a highly capable database synchronization protocol.
+</details>
+
+<details>
+<summary>Does LocalStorage require a backend environment to function?</summary>
+
+No, LocalStorage does not require any backend environment, server, or database to function. It is a completely self-contained browser API that stores data strictly on the client's local device. However, if you need this data to [sync](../replication.md) to other devices or back up to the cloud, you will need a backend infrastructure in place.
+</details>
+
 ## Follow up
 
 - Learn how to store and query data with RxDB in the [RxDB Quickstart](../quickstart.md)

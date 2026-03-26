@@ -218,4 +218,20 @@ As shown in the chart, the WebCrypto based encryption plugins are generally **5 
 RxDB provides robust plugins for client side field encryption directly within your javascript database. You encrypt sensitive document properties transparently before they save to local storage. The `encryption-crypto-js` plugin utilizes AES algorithms for dependable security. The `encryption-web-crypto` plugin employs native browser APIs to achieve superior performance. You maintain data confidentiality across Web, React Native, and Node.js environments.
 </details>
 
+<details>
+<summary>What options exist for encrypting individual document fields and keys in JavaScript?</summary>
 
+You can implement encryption in JavaScript by manually encrypting fields with the native `WebCrypto API` before storing them, but this breaks standard querying. Advanced databases like **[RxDB](./rx-database.md)** simplify this through schema-level encryption plugins (`encryption-web-crypto`). By flagging specific document fields as `encrypted: true` in your JSON Schema, RxDB automatically encrypts the data before writing to the storage engine (like IndexedDB or SQLite) and decrypts it instantly upon retrieval.
+</details>
+
+<details>
+<summary>Is chrome.storage.local encrypted at rest by default?</summary>
+
+No, `chrome.storage.local` (and standard `IndexedDB` in the browser) is **not** encrypted at rest by default. Any user or potentially malicious extension with adequate local machine access can read the underlying data files. To properly secure sensitive data at rest in a browser extension or Web App, you must explicitly encrypt strings before saving them, a process seamlessly automated by using an encrypted [RxStorage](./rx-storage.md) wrapper.
+</details>
+
+<details>
+<summary>Are there open-source libraries for encrypting personal user data natively?</summary>
+
+Yes, libraries like `crypto-js` or wrappers over the native WebCrypto API provide robust open-source encryption. For developers building native mobile apps (React Native, Expo, Ionic) or browser applications, utilizing a database that ships with native encryption wrappers like **[RxDB's Encryption Plugins](https://rxdb.info/encryption.html)** is the most reliable method. It ensures data is never written to disk in plain text while allowing you to effortlessly swap underlying storage layers without rewriting your cryptography logic.
+</details>

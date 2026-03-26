@@ -48,3 +48,11 @@ const myRxDatabase = await createRxDatabase({
 });
 /* ... */
 ```
+
+## FAQ
+
+<details>
+<summary>Does RxDB support single-file storage architectures in Node environments?</summary>
+
+The native `getRxStorageFilesystemNode` adapter does not compile documents into a single monolithic file (like SQLite), but instead serializes and persists document data as distinct JSON/text files directly representing the database tree on the disk. For strict single-file architectures in Node.js, you must mount the specialized **[SQLite RxStorage](./rx-storage-sqlite.md)** plugin, which wraps the entire database state into a single portable `.sqlite` file efficiently using Node's native `sqlite` bindings.
+</details>

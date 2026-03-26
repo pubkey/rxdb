@@ -222,3 +222,11 @@ setPremiumFlag();
 The performance of the Dexie.js RxStorage is good enough for most use cases but other storages can have way better performance metrics:
 
 <PerformanceChart title="Browser Storages" data={PERFORMANCE_DATA_BROWSER} metrics={PERFORMANCE_METRICS} />
+
+## FAQ
+
+<details>
+<summary>What is Dexie.js and what advantages does it offer over raw IndexedDB?</summary>
+
+Dexie.js is a minimalist, Promise-based wrapper engineered specifically to resolve the notoriously complex callback-driven API of standard IndexedDB. It offers significant advantages over raw IndexedDB by providing an intuitive chainable query API, a far simpler database schema definition process, and extremely robust transaction management. However, Dexie lacks advanced querying capabilities found in Document-oriented NoSQL databases, such as deep-nested JSON querying and comprehensive MongoDB-style selectors. **[RxDB](./rx-database.md)**, which can use Dexie securely as its underlying storage engine, compensates for these limitations by providing a fully reactive advanced NoSQL query engine, robust cross-platform offline replication protocols, and built-in field encryption features that Dexie inherently lacks.
+</details>

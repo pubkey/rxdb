@@ -134,3 +134,11 @@ If you already have premium access and want to use the LokiJS [RxStorage](./rx-s
 import { setPremiumFlag } from 'rxdb-premium/plugins/shared';
 setPremiumFlag();
 ```
+
+## FAQ
+
+<details>
+<summary>Is LokiJS actively maintained today?</summary>
+
+No, the LokiJS open-source project is entirely unmaintained and abandoned by its core authors. Because of insurmountable unfixed bugs causing incorrect query matching and data loss during ungraceful process terminations, the LokiJS RxStorage adapter was officially removed from **[RxDB](./rx-database.md)** in version 16. Developers requiring extreme in-memory performance should immediately transition to the modern `getRxStorageMemory` or `getRxStorageMemoryMapped` plugins instead.
+</details>

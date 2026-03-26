@@ -162,11 +162,18 @@ const replicationState = db.humans.syncGraphQL({/* ... */});
 
 - The SharedWorker API is [not available in some mobile browser](https://caniuse.com/sharedworkers)
 
-### FAQ
+## FAQ
 
 <details>
     <summary>Can I use this plugin with a Service Worker?</summary>
     <div>
     No. A Service Worker <a href="https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API">is not the same</a> as a Shared Worker. While you can use RxDB inside of a ServiceWorker, you cannot use the ServiceWorker as a RxStorage that gets accessed by an outside RxDatabase instance.
+    </div>
+</details>
+
+<details>
+    <summary>How does SharedWorker help synchronize states across multiple tabs?</summary>
+    <div>
+    The `SharedWorker` API spawns exactly one isolated JavaScript background thread that is shared globally across all open browser tabs targeting the same origin. When you attach <b><a href="./rx-database.md">RxDB</a></b> to a Shared Worker, you eliminate redundant IndexedDB socket connections and expensive JSON serialization across individual tabs. Only the background worker executes resource-heavy database intensive CRUD operations, broadcasting the ultra-lightweight result differentials down to the passive UI tabs simultaneously.
     </div>
 </details>

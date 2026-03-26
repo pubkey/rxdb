@@ -45,7 +45,7 @@ export function QuoteBlock({
           fontSize: '0.9rem',
         }}
       >
-        –{' '}
+        -{' '}
         {sourceLink ? (
           <a
             href={sourceLink}

@@ -132,3 +132,11 @@ Including a validator library also increases your JavaScript bundle size. Here's
 | no validator                   |      73103 B       |             39976 B |
 | ajv                            |      106135 B      |             72773 B |
 | z-schema                       |      125186 B      |             91882 B |
+
+## FAQ
+
+<details>
+<summary>What is schema validation and does ajv-formats use eval internally?</summary>
+
+Schema validation structurally guarantees that all document mutations strictly comply with the statically defined **[RxCollection](./rx-collection.md)** JSON Schema format before data is physically committed to the underlying `RxStorage`. Yes, both `ajv` (via `ajv-formats`) and `is-my-json-valid` rely natively on `eval()` or `new Function()` during compilation to aggressively optimize their validation runtimes. If your deployment environment enforces extremely strict `unsafe-eval` Content Security Policies (CSP), you must explicitly swap the validator wrapper to **`validate-z-schema`**, which strictly avoids `eval()` at the cost of marginally slower execution.
+</details>
