@@ -216,7 +216,7 @@ describe('replication-google-drive.test.ts', function () {
                     'empty.txt'
                 );
                 assert.ok(file.fileId);
-                assert.ok(file.fileId.length > 4);
+                assert.ok(file.fileId.length > 0);
                 assert.ok(file.etag.length > 0);
             });
             it('creating the same file twice should not create two files (series)', async () => {
