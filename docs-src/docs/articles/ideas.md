@@ -13,6 +13,7 @@
 - How Local-First and WebMCP make your app accessible to agents
 - DX for LLMs
 - vibe-coding is the killer-app for local-first
+- agent-first with RxDB
 
 ## Seo keywords:
 
