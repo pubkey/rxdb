@@ -37,10 +37,6 @@ Like https://github.com/XuHaoJun/rxdb-storage-pglite
 
 Similar to the NATS replication plugin.
 
-## Use zero-copy datastructures when return data from OPFS
-
-This might be faster because we have binary arrays already in OPFS and then we
-do not have to transfer big json strings to the main thread. Must be tested for performance first.
 
 ## query normalization and optimization
 
