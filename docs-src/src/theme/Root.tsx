@@ -133,6 +133,7 @@ export default function Root({ children }) {
             trackUrlChanges();
             addCallToActionButton();
             triggerClickEventWhenFromCode();
+            triggerClickEventWhenFromDiscord();
         }, 0);
 
         const showTime = location.pathname.includes('.html') ? 30 : 60;
@@ -308,13 +309,28 @@ function addCallToActionButton() {
  * which allows us to detect that a user has really installed and started RxDB.
  */
 function triggerClickEventWhenFromCode() {
-    const TRIGGER_CONSOLE_EVENT_ID = 'console-log-click';
+    const EVENT_ID = 'console-log-click';
     const urlParams = new URLSearchParams(window.location.search);
     if (!urlParams.has('console')) {
         return;
     }
-    triggerTrackingEvent(TRIGGER_CONSOLE_EVENT_ID, 10, 1);
-    triggerTrackingEvent(TRIGGER_CONSOLE_EVENT_ID + '_' + urlParams.get('console'), 10, 1);
+    triggerTrackingEvent(EVENT_ID, 10, 1, true);
+    triggerTrackingEvent(EVENT_ID + '_' + urlParams.get('console'), 10, 1);
+}
+
+/**
+ * All links that we post on discord have this
+ * discord param so we can conversion-track people who
+ * joined the discord
+ */
+function triggerClickEventWhenFromDiscord() {
+    const EVENT_ID = 'via-discord';
+    const urlParams = new URLSearchParams(window.location.search);
+    if (!urlParams.has('discord')) {
+        return;
+    }
+    triggerTrackingEvent(EVENT_ID, 3, 1, true);
+    triggerTrackingEvent(EVENT_ID + '_' + urlParams.get('discord'), 0, 1);
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars

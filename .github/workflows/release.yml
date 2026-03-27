@@ -138,7 +138,7 @@ jobs:
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
         with:
-          args: "@everyone A new RxDB version has been released: https://github.com/pubkey/rxdb/releases/tag/${{github.event.inputs.version}}"
+          args: "@everyone A new RxDB version has been released: https://rxdb.info/release/?discord=release&version=${{github.event.inputs.version}}"
 
       # @link https://github.com/marketplace/actions/send-tweet-action
 #      - name: Twitter notification
