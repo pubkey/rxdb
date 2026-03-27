@@ -29,9 +29,9 @@ Like https://github.com/XuHaoJun/rxdb-storage-pglite
 
 [See](https://github.com/pubkey/rxdb/issues/3426)
 
-## tool to generate sync enpoints in swagger
+## Reduce persist plugin
 
-## update+delete in one operation
+## tool to generate sync enpoints in swagger
 
 ## Redis Sync
 
