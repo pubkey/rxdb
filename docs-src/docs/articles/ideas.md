@@ -14,6 +14,9 @@
 - DX for LLMs
 - vibe-coding is the killer-app for local-first
 - agent-first with RxDB
+- "why the indexeddb API is almost perfekt"
+- "how to do auth with RxDB"
+- "Where to store that JWT token?"
 
 ## Seo keywords:
 
@@ -92,11 +95,3 @@ X- "reactjs storage"
 
 - "sync engine" - 390
 - "indexeddb alternative" - 70
-
-
-## Non Seo
-
-- "Local-First Partial Sync with RxDB"
-- "why the indexeddb API is almost perfekt"
-- "how to do auth with RxDB"
-- "Where to store that JWT token?"
