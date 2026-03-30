@@ -1,10 +1,11 @@
 import React from 'react';
 
-export function IconQuickstart(props: React.SVGProps<SVGSVGElement>) {
+export function IconQuickstart({ width = 25, height = 25, ...props }: React.SVGProps<SVGSVGElement>) {
     return <svg
         xmlns="http://www.w3.org/2000/svg"
-        width="25"
-        height="25"
+        viewBox="0 0 25 25"
+        width={width}
+        height={height}
         fill="none"
         {...props}
     >
