@@ -148,7 +148,7 @@ Topic-specific documentation files:
 - [RxDB 14.0 - Major Changes & New Features](https://rxdb.info/releases/14.0.0.md): Discover RxDB 14.0, a major release packed with API changes, improved performance, and streamlined storage, ensuring faster data operations than ever.
 - [RxDB 15.0.0 - Major Migration Overhaul](https://rxdb.info/releases/15.0.0.md): Discover RxDB 15.0.0, featuring new migration strategies, replication improvements, and lightning-fast performance to supercharge your app.
 - [RxDB 16.0.0 - Efficiency Redefined](https://rxdb.info/releases/16.0.0.md): Meet RxDB 16.0.0 - major refactorings, improved performance, and easy migrations. Experience a better, faster, and more stable database solution to...
-- [RxDB 17.0.0](https://rxdb.info/releases/17.0.0.md): RxDB 17 introduces improved reactivity APIs, better debugging, breaking storage fixes, and multiple plugins graduating from beta.
+- [RxDB 17.0.0 - Local-First to the Moon](https://rxdb.info/releases/17.0.0.md): RxDB 17 introduces improved reactivity APIs, better debugging, breaking storage fixes, and multiple plugins graduating from beta.
 - [Meet RxDB 8.0.0 - New Defaults & Performance](https://rxdb.info/releases/8.0.0.md): Discover how RxDB 8.0.0 boosts performance, simplifies schema handling, and streamlines reactive data updates for modern apps.
 - [RxDB 9.0.0 - Faster & Simpler](https://rxdb.info/releases/9.0.0.md): Discover RxDB 9.0.0's streamlined plugins, top-level schema definitions, and improved dev-mode. Experience a simpler, faster real-time database.
 - [Seamless P2P Data Sync](https://rxdb.info/replication-p2p.md): Discover how replication-webrtc ensures secure P2P data sync and real-time collaboration with RxDB. Explore the future of offline-first apps!
