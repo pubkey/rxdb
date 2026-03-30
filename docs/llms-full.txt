@@ -23954,7 +23954,7 @@ import { IconVibeCoding } from '@site/src/components/icons/vibe-coding';
 import { IconExperiment } from '@site/src/components/icons/experiment';
 import { IconDevicePhone } from '@site/src/components/icons/device-phone';
 import { IconQuickstart } from '@site/src/components/icons/quickstart';
-import { H2WithIcon } from '@site/src/components/h2-with-icon';
+import { HeadlineWithIcon } from '@site/src/components/headline-with-icon';
 
 export const PERFORMANCE_METRICS_V17 = [
     { key: 'time-to-first-insert', name: 'Time to first insert', color: '#FF8BE0' },
@@ -24003,9 +24003,7 @@ export const PERFORMANCE_DATA_V17 = [
     }
 ];
 
-  <IconQuickstart style={{ width: '80px', height: '80px', marginBottom: '10px' }} />
-
-# RxDB 17.0.0 - Local-First to the Moon
+# <HeadlineWithIcon h1 icon={<IconQuickstart />} subtitle="Local-First to the Moon">RxDB 17.0.0</HeadlineWithIcon>
 
 RxDB version 17 focuses on features for Vibe-Coders, **better reactivity**, **improved debugging and DX-for-LLMs**, performance and **important breaking storage fixes**, while also graduating several long-standing plugins out of beta.
 
@@ -24013,7 +24011,7 @@ Most applications can upgrade easily, but [**users of OPFS and filesystem-based 
 
 Lets start with the most exciting features...
 
-## <H2WithIcon icon={} subtitle="Sync without Servers">User Provided Sync Endpoints</H2WithIcon>
+## <HeadlineWithIcon h2 icon={} subtitle="Sync without Servers">User Provided Sync Endpoints</HeadlineWithIcon>
 
 RxDB 17 introduces two new replication plugins: [Google Drive Replication](../replication-google-drive.md) and [Microsoft OneDrive Replication](../replication-microsoft-onedrive.md).
 
@@ -24027,7 +24025,7 @@ Both plugins provide:
 
 By using these user-provided sync endpoints, you can build and distribute complex offline-first applications that scale to any number of users at zero infrastructure cost. Just host your static page on Github Pages, Vercel, Cloudflare or any other static hosting provider. [Read more](../replication-google-drive.md).
 
-## <H2WithIcon subtitle="Make your App AI Agent Ready">WebMCP Plugin</H2WithIcon>
+## <HeadlineWithIcon h2 subtitle="Make your App AI Agent Ready">WebMCP Plugin</HeadlineWithIcon>
 
 <LinkedinBox url="https://www.linkedin.com/embed/feed/update/urn:li:share:7434623645857046528?collapsed=1" />
 
@@ -24043,7 +24041,7 @@ WebMCP is highly effective when paired with a local-first database like RxDB. In
 Are you a YouTuber or Influencer talking about Web Development, Offline-First, or Local-First software? We are looking for creators to collaborate with! Please reach out to us on [Twitter](https://twitter.com/pubkeypubkey) or [Discord](/chat/).
 :::
 
-## <H2WithIcon icon={<IconVibeCoding />}>Improvements for our Vibe-Coders</H2WithIcon>
+## <HeadlineWithIcon h2 icon={<IconVibeCoding />}>Improvements for our Vibe-Coders</HeadlineWithIcon>
 
 To improve vibe-coding with RxDB, we made the following DX-for-LLM improvements:
 
@@ -24060,13 +24058,13 @@ Also to improve vibe-coding when working with RxDB directly we added the followi
 - **ADD** `.claude/settings.json` to improve post-generation testing.
 - **ADD** `CLAUDE.md`
 
-## <H2WithIcon icon={<IconDevicePhone />} subtitle="Faster than SQLite">Expo Filesystem RxStorage</H2WithIcon>
+## <HeadlineWithIcon h2 icon={<IconDevicePhone />} subtitle="Faster than SQLite">Expo Filesystem RxStorage</HeadlineWithIcon>
 
 RxDB 17 introduces the [Expo Filesystem RxStorage](../rx-storage-filesystem-expo.md), a high-performance storage backend for React Native and Expo applications. It is built on [expo-opfs](https://www.npmjs.com/package/expo-opfs) and uses the newest Expo Filesystem API. This delivers significant performance gains over SQLite for a wide range of access patterns. Currently I work on making pull requests to the Expo Core repository to further improve the performance of the underlying api. [Read more](../rx-storage-filesystem-expo.md).
 
 <PerformanceChart title="Expo Filesystem vs SQLite (React Native)" data={PERFORMANCE_DATA_EXPO} metrics={PERFORMANCE_METRICS} />
 
-## <H2WithIcon subtitle="Harder, Better, Faster, Stronger">Performance Improvements</H2WithIcon>
+## <HeadlineWithIcon h2 subtitle="Harder, Better, Faster, Stronger">Performance Improvements</HeadlineWithIcon>
 
 RxDB 17 ships with faster reads, faster writes, and lower memory usage across all storage backends. The bulk insert path, query routing, and internal data structures have been reworked to reduce CPU overhead per operation. IndexedDB now stores [attachment](../rx-attachment.md) data in a binary format for smaller on-disk size, and several memory leaks in OPFS and migration code paths have been fixed. [Read more](../rx-storage-performance.md).
 
@@ -24092,7 +24090,7 @@ RxDB 17 ships with faster reads, faster writes, and lower memory usage across al
 - **ADD** correctly typed `$$` properties and `get$$()` via HKT-based `ReactivityLambda` pattern. Signals now carry the document data type (e.g. `Signal<number>` instead of `Signal<any>`).
 - **ADD** enforce maximum length for indexes and primary keys (`maxLength: 2048`) because big maxLength values impact performance.
 
-## <H2WithIcon icon={<IconExperiment />}>Plugins Graduating from Beta</H2WithIcon>
+## <HeadlineWithIcon h2 icon={<IconExperiment />}>Plugins Graduating from Beta</HeadlineWithIcon>
 
 The following plugins are **no longer in beta** and are now considered production-ready:
 
