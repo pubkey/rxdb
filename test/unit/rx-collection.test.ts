@@ -1597,7 +1597,7 @@ describe('rx-collection.test.ts', () => {
                 const mySchema = {
                     version: 0,
                     primaryKey: 'passportId',
-                    type: 'object' as const,
+                    type: 'object',
                     properties: {
                         passportId: {
                             type: 'string',
@@ -2410,7 +2410,7 @@ describe('rx-collection.test.ts', () => {
             const schema = {
                 version: 0,
                 primaryKey: 'passportId',
-                type: 'object' as const,
+                type: 'object',
                 properties: {
                     passportId: {
                         type: 'string',
@@ -2442,7 +2442,7 @@ describe('rx-collection.test.ts', () => {
             const schema = {
                 version: 0,
                 primaryKey: 'passportId',
-                type: 'object' as const,
+                type: 'object',
                 properties: {
                     passportId: {
                         type: 'string',
@@ -2496,7 +2496,7 @@ describe('rx-collection.test.ts', () => {
             const schema = {
                 version: 0,
                 primaryKey: 'passportId',
-                type: 'object' as const,
+                type: 'object',
                 properties: {
                     passportId: {
                         type: 'string',

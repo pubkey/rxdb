@@ -366,7 +366,7 @@ describeParallel('reactive-query.test.js', () => {
             }
             const crawlStateSchema = {
                 version: 0,
-                type: 'object' as const,
+                type: 'object',
                 primaryKey: 'key',
                 properties: {
                     key: {

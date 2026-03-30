@@ -1509,7 +1509,7 @@ describe('rx-query.test.ts', () => {
         it('#585 sort by sub-path not working', async () => {
             const schema = {
                 version: 0,
-                type: 'object' as const,
+                type: 'object',
                 primaryKey: 'id',
                 keyCompression: false,
                 properties: {
@@ -1518,7 +1518,7 @@ describe('rx-query.test.ts', () => {
                         maxLength: 100
                     },
                     info: {
-                        type: 'object' as const,
+                        type: 'object',
                         properties: {
                             title: {
                                 type: 'string',
@@ -1580,7 +1580,7 @@ describe('rx-query.test.ts', () => {
                 version: 0,
                 keyCompression: false,
                 primaryKey: 'id',
-                type: 'object' as const,
+                type: 'object',
                 properties: {
                     id: {
                         type: 'string',
@@ -1698,7 +1698,7 @@ describe('rx-query.test.ts', () => {
             const mySchema = {
                 version: 0,
                 primaryKey: 'passportId',
-                type: 'object' as const,
+                type: 'object',
                 properties: {
                     passportId: {
                         type: 'string',
@@ -1763,7 +1763,7 @@ describe('rx-query.test.ts', () => {
             const mySchema = {
                 version: 0,
                 primaryKey: 'passportId',
-                type: 'object' as const,
+                type: 'object',
                 properties: {
                     passportId: {
                         type: 'string',
@@ -1996,7 +1996,7 @@ describe('rx-query.test.ts', () => {
             const schema = {
                 version: 0,
                 primaryKey: 'id',
-                type: 'object' as const,
+                type: 'object',
                 properties: {
                     id: {
                         type: 'string',
@@ -2112,7 +2112,7 @@ describe('rx-query.test.ts', () => {
             const mySchema = {
                 version: 0,
                 primaryKey: 'passportId',
-                type: 'object' as const,
+                type: 'object',
                 properties: {
                     passportId: {
                         type: 'string',
