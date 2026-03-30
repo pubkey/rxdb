@@ -51,7 +51,10 @@ npm install rxdb rxjs react-native-quick-sqlite
 **Configuration**:
 ```ts
 import { createRxDatabase } from 'rxdb';
-import { getRxStorageSQLite, getSQLiteBasicsQuickSQLite } from 'rxdb-premium/plugins/storage-sqlite';
+import {
+    getRxStorageSQLite,
+    getSQLiteBasicsQuickSQLite
+} from 'rxdb-premium/plugins/storage-sqlite';
 import { open } from 'react-native-quick-sqlite';
 
 const db = await createRxDatabase({
@@ -78,7 +81,10 @@ npm install rxdb rxjs
 **Configuration**:
 ```ts
 import { createRxDatabase } from 'rxdb';
-import { getRxStorageSQLite, getSQLiteBasicsExpoSQLiteAsync } from 'rxdb-premium/plugins/storage-sqlite';
+import {
+    getRxStorageSQLite,
+    getSQLiteBasicsExpoSQLiteAsync
+} from 'rxdb-premium/plugins/storage-sqlite';
 import * as SQLite from 'expo-sqlite';
 
 const db = await createRxDatabase({
@@ -149,7 +155,9 @@ RxDB supports **Signals** (via `@preact/signals-react` or similar) to pinpoint u
 ```tsx
 // Enable the signals plugin once
 import { addRxPlugin } from 'rxdb';
-import { RxDBReactivityPreactSignalsPlugin } from 'rxdb/plugins/reactivity-preact-signals';
+import {
+    RxDBReactivityPreactSignalsPlugin
+} from 'rxdb/plugins/reactivity-preact-signals';
 addRxPlugin(RxDBReactivityPreactSignalsPlugin);
 
 // ... in your component
