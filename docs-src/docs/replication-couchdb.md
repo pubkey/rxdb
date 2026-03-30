@@ -5,7 +5,9 @@ description: Replicate your RxDB collections with CouchDB the fast way. Enjoy fa
 image: /headers/replication-couchdb.jpg
 ---
 
-# Replication with CouchDB
+import {HeadlineWithIcon} from '@site/src/components/headline-with-icon';
+
+# <HeadlineWithIcon h1 icon={<img src="/files/icons/couchdb.svg" alt="CouchDB" />}>Replication with CouchDB</HeadlineWithIcon>
 
 A plugin to replicate between a [RxCollection](./rx-collection.md) and a CouchDB server.
 

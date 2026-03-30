@@ -9,13 +9,10 @@ import {Tabs} from '@site/src/components/tabs';
 import {Steps} from '@site/src/components/steps';
 import {VideoBox} from '@site/src/components/video-box';
 import {RxdbMongoDiagramPlain} from '@site/src/components/mongodb-sync';
+import {HeadlineWithIcon} from '@site/src/components/headline-with-icon';
 
 
-# Supabase Replication Plugin for RxDB - Real-Time, Offline-First Sync
-
-<p align="center">
-  <img src="./files/icons/supabase.svg" alt="Supabase" height="60" className="img-padding img-in-text-right" />
-</p>
+# <HeadlineWithIcon h1 icon={<img src="/files/icons/supabase.svg" alt="Supabase" />} subtitle="Real-Time, Offline-First Sync">Supabase Replication Plugin</HeadlineWithIcon>
 
 The **Supabase Replication Plugin** for RxDB delivers seamless, two-way synchronization between your RxDB collections and a Supabase (Postgres) table. It uses **PostgREST** for pull/push and **Supabase Realtime** (logical replication) to stream live updates, so your data stays consistent across devices with first-class [local-first](./articles/local-first-future.md), offline-ready support.
 

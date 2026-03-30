@@ -6,8 +6,9 @@ image: /headers/replication-webrtc.jpg
 ---
 
 import {Steps} from '@site/src/components/steps';
+import {HeadlineWithIcon} from '@site/src/components/headline-with-icon';
 
-# P2P WebRTC Replication with RxDB - Sync Data between Browsers and Devices in JavaScript
+# <HeadlineWithIcon h1 icon={<img src="/files/icons/webrtc.svg" alt="WebRTC" />} subtitle="Sync Data between Browsers and Devices in JavaScript">P2P WebRTC Replication with RxDB</HeadlineWithIcon>
 
 WebRTC P2P data connections are revolutionizing real-time web and mobile development by **eliminating central servers** in scenarios where clients can communicate directly. With the **RxDB** [Sync Engine](./replication.md), you can sync your local database state across multiple browsers or devices via **WebRTC P2P (Peer-to-Peer)** connections, ensuring scalable, secure, and **low-latency** data flows without traditional server bottlenecks.
 

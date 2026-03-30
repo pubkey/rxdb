@@ -5,7 +5,9 @@ description: Set up GraphQL-based replication with RxDB including pull, push, an
 image: /headers/replication-graphql.jpg
 ---
 
-# Replication with GraphQL
+import {HeadlineWithIcon} from '@site/src/components/headline-with-icon';
+
+# <HeadlineWithIcon h1 icon={<img src="/files/icons/graphql.svg" alt="GraphQL" />}>Replication with GraphQL</HeadlineWithIcon>
 
 The GraphQL replication provides handlers for GraphQL to run [replication](./replication.md) with GraphQL as the transport layer.
 

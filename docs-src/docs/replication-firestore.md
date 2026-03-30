@@ -6,15 +6,12 @@ image: /headers/replication-firestore.jpg
 ---
 
 import {Steps} from '@site/src/components/steps';
+import {HeadlineWithIcon} from '@site/src/components/headline-with-icon';
 
-# Replication with Firestore from Firebase
+# <HeadlineWithIcon h1 icon={<img src="/files/icons/firebase.svg" alt="Firebase" />}>Replication with Firestore from Firebase</HeadlineWithIcon>
 
 With the `replication-firestore` plugin you can do a two-way realtime replication
 between your client side [RxDB](./) Database and a [Cloud Firestore](https://firebase.google.com/docs/firestore) database that is hosted on the Firebase platform. It will use the [RxDB Sync Engine](./replication.md) to manage the replication streams, error- and conflict handling.
-
-<p align="center">
-  <img src="./files/alternatives/firebase.svg" alt="Firebase" height="40" />
-</p>
 
 
 Replicating your Firestore state to RxDB can bring multiple benefits compared to using the Firestore directly:

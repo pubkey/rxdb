@@ -6,6 +6,7 @@ image: /headers/fulltext-search.jpg
 ---
 
 import {PremiumBlock} from '@site/src/components/premium-block';
+import {Steps} from '@site/src/components/steps';
 
 
 # Fulltext Search
@@ -46,7 +47,9 @@ As RxDB is designed with [offline-first applications](./offline-first.md) in min
 
 <PremiumBlock />
 
-Step 1: Add the `RxDBFlexSearchPlugin` to RxDB.
+<Steps>
+
+### Step 1: Add the `RxDBFlexSearchPlugin` to RxDB.
 
 ```ts
 import { RxDBFlexSearchPlugin } from 'rxdb-premium/plugins/flexsearch';
@@ -54,7 +57,7 @@ import { addRxPlugin } from 'rxdb/plugins/core';
 addRxPlugin(RxDBFlexSearchPlugin);
 ```
 
-Step 2: Create a `RxFulltextSearch` instance on top of a collection with the `addFulltextSearch()` function.
+### Step 2: Create a `RxFulltextSearch` instance on top of a collection with the `addFulltextSearch()` function.
 
 ```ts
 import { addFulltextSearch } from 'rxdb-premium/plugins/flexsearch';
@@ -91,7 +94,7 @@ const flexSearch = await addFulltextSearch({
 });
 ```
 
-Step 3: Run a search operation:
+### Step 3: Run a search operation:
 
 
 ```ts
@@ -104,3 +107,5 @@ const foundDocuments = await flexSearch.find('foobar');
  */
 const foundDocuments = await flexSearch.find('foobar', { limit: 10 });
 ```
+
+</Steps>

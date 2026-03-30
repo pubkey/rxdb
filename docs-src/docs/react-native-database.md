@@ -97,6 +97,8 @@ const db = await createRxDatabase({
 
 RxDB is deeply integrated with React. It provides hooks that make fetching data and subscribing to changes effortless.
 
+<Steps>
+
 ### 1. Provide the Database
 Wrap your application with the `RxDatabaseProvider`.
 
@@ -157,6 +159,8 @@ const signals = collection.find().$$; // Returns a Signal<Doc[]>
 ```
 
 Using signals allows you to update only the specific text node that changed, keeping your UI running at 60fps even with massive data flux.
+
+</Steps>
 
 ## Sync with Backend
 

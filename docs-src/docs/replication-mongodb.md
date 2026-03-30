@@ -9,13 +9,9 @@ import {Tabs} from '@site/src/components/tabs';
 import {Steps} from '@site/src/components/steps';
 import {VideoBox} from '@site/src/components/video-box';
 import {RxdbMongoDiagramPlain} from '@site/src/components/mongodb-sync';
+import {HeadlineWithIcon} from '@site/src/components/headline-with-icon';
 
-# MongoDB Replication Plugin for RxDB - Real-Time, Offline-First Sync
-
-
-<p align="center">
-  <img src="./files/icons/mongodb.svg" alt="MongoDB Sync" height="60" class="img-padding img-in-text-right" />
-</p>
+# <HeadlineWithIcon h1 icon={<img src="/files/icons/mongodb-icon.svg" alt="MongoDB" />} subtitle="Real-Time, Offline-First Sync">MongoDB Replication Plugin</HeadlineWithIcon>
 
 
 The [MongoDB](https://www.mongodb.com/) Replication Plugin for RxDB delivers seamless, two-way synchronization between [MongoDB](./rx-storage-mongodb.md) and RxDB, enabling [real-time](./articles/realtime-database.md) updates and [offline-first](./offline-first.md) functionality for your applications. Built on **MongoDB Change Streams**, it supports both Atlas and self-hosted deployments, ensuring your data stays consistent across every device and service.

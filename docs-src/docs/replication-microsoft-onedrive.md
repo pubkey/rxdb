@@ -7,16 +7,12 @@ image: /headers/replication-microsoft-onedrive.jpg
 
 import {Steps} from '@site/src/components/steps';
 import {BetaBlock} from '@site/src/components/beta-block';
+import {HeadlineWithIcon} from '@site/src/components/headline-with-icon';
 
-# Replication with Microsoft OneDrive
+# <HeadlineWithIcon h1 icon={<img src="/files/icons/onedrive.svg" alt="Microsoft OneDrive" />}>Replication with Microsoft OneDrive</HeadlineWithIcon>
 
 The `replication-microsoft-onedrive` plugin allows you to replicate your client-side [RxDB](./) database to a folder in the user's Microsoft OneDrive. This enables cross-device [sync](./replication.md) for single users without requiring any backend server.
 
-<br />
-<p align="center">
-  <img src="./files/icons/onedrive.svg" alt="Microsoft OneDrive Sync" 
-  height="60" />
-</p>
 
 ## Overview
 

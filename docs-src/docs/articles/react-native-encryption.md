@@ -5,6 +5,7 @@ description: Secure your React Native app with RxDB encryption. Learn why it mat
 image: /headers/react-native-encryption.jpg
 ---
 
+import {Steps} from '@site/src/components/steps';
 
 # React Native Encryption and Encrypted Database/Storage
 
@@ -40,6 +41,8 @@ React Native supports multiple ways to secure local data:
 </center>
 
 ## Setting Up Encryption in RxDB for React Native
+
+<Steps>
 
 ### 1. Install RxDB and Required Plugins
 
@@ -142,6 +145,8 @@ Once you've set up the database with encryption, data in fields specified by you
 ```
 
 **Note**: You can only query directly by non-encrypted fields or primary keys. Encrypted fields cannot be used in queries because they are stored as ciphertext in the database. A common approach is to have a small subset of fields that need to be queried unencrypted while storing any sensitive data in encrypted fields.
+
+</Steps>
 
 ## Best Practices for React Native Encryption
 

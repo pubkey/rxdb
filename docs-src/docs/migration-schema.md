@@ -14,7 +14,7 @@ Imagine you have your awesome messenger-app distributed to many users. After a w
 With RxDB you can provide migrationStrategies for your collections that automatically (or on call) transform your existing data from older to newer schemas. This assures that the client's data always matches your newest code-version.
 
 
-# Add the migration plugin
+## Add the migration plugin
 
 To enable the data migration, you have to add the `migration-schema` plugin.
 

@@ -6,8 +6,9 @@ image: /headers/replication-nats.jpg
 ---
 
 import {Steps} from '@site/src/components/steps';
+import {HeadlineWithIcon} from '@site/src/components/headline-with-icon';
 
-# Replication with NATS
+# <HeadlineWithIcon h1 icon={<img src="/files/icons/nats.svg" alt="NATS" />}>Replication with NATS</HeadlineWithIcon>
 
 With this RxDB plugin you can run a two-way realtime replication with a [NATS](https://nats.io/) server.
 

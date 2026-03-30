@@ -60,6 +60,8 @@ Despite the advantages, directly working with IndexedDB has several drawbacks:
 
 ## Set Up RxDB in Angular
 
+<Steps>
+
 ### Installing RxDB
 
 You can [install RxDB](../install.md) into your Angular application via npm:
@@ -188,6 +190,8 @@ await doc.update({ $set: { power: 'Unlimited Strength' } });
 const doc = await db.heroes.findOne({ selector: { name: 'Thor' } }).exec();
 await doc.remove();
 ```
+
+</Steps>
 
 ## Reactive Queries and Live Updates
 

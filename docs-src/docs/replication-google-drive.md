@@ -7,18 +7,11 @@ image: /headers/replication-google-drive.jpg
 
 import {Steps} from '@site/src/components/steps';
 import {BetaBlock} from '@site/src/components/beta-block';
+import {HeadlineWithIcon} from '@site/src/components/headline-with-icon';
 
-# Replication with Google Drive
+# <HeadlineWithIcon h1 icon={<img src="/files/icons/google-drive.svg" alt="Google Drive" />}>Replication with Google Drive</HeadlineWithIcon>
 
 The `replication-google-drive` plugin allows you to replicate your client-side [RxDB](./) database to a folder in the user's Google Drive. This enables cross-device [sync](./replication.md) for single users without requiring any backend server.
-
-
-
-<br />
-<p align="center">
-  <img src="./files/icons/google-drive.svg" alt="Google Drive Sync" 
-  height="60" />
-</p>
 
 
 
