@@ -126,7 +126,7 @@ console.log(myDocument.name); // 'Steve'
 ```
 
 
-### Prevent conflicts with the incremental methods
+### Prevent conflicts with the incremental methods {#incrementalModify}
 
 Making a normal change to the non-latest version of an `RxDocument` will lead to a `409 CONFLICT` error because RxDB
 uses [revision checks](./transactions-conflicts-revisions.md) instead of transactions.
@@ -173,7 +173,7 @@ const latestDoc = myDocument.getLatest();
 console.log(docAfterEdit === latestDoc); // > true
 ```
 
-### Observe $
+### Observe $ {#observe}
 Calling this will return an [RxJS Observable](https://rxjs.dev/guide/observable) which emits the current newest state of the RxDocument.
 
 ```js
@@ -318,7 +318,7 @@ console.log(doc.getLatest().age); // 20
 **Calling non-incremental write methods on an outdated instance throws a `CONFLICT` error.** If you hold a reference to a document and another operation modifies that document in the meantime, calling `.patch()`, `.update()`, or `.modify()` on the outdated instance will fail with a conflict error. See [Transactions, Conflicts and Revisions](./transactions-conflicts-revisions.md) for details on how RxDB handles conflicts.
 
 To avoid this, either:
-- Use the [incremental methods](#prevent-conflicts-with-the-incremental-methods) (`incrementalPatch`, `incrementalModify`, `incrementalUpdate`) which always fetch the latest state before applying changes.
+- Use the [incremental methods](#incrementalModify) (`incrementalPatch`, `incrementalModify`, `incrementalUpdate`) which always fetch the latest state before applying changes.
 - Call `getLatest()` to get the current state before writing.
 - Re-query the collection to get a fresh document.
 

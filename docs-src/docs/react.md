@@ -201,7 +201,7 @@ The only platform-specific part of a React Native setup is database creation, wh
 
 ## Signals
 
-In addition to the React hooks shown on this page, RxDB also supports alternative reactivity models such as [signals](./reactivity.md#react). RxDB's core reactivity system can be configured to expose reactive values using different primitives instead of RxJS observables, which makes it possible to integrate RxDB with signal-based approaches in React or other frameworks. This is an advanced capability and is independent of the React integration described here. For more details about how RxDB's reactivity system works and how custom reactivity can be configured, see the [Reactivity documentation](./reactivity.md).
+In addition to the React hooks shown on this page, RxDB also supports alternative reactivity models such as [signals](./reactivity.md). RxDB's core reactivity system can be configured to expose reactive values using different primitives instead of RxJS observables, which makes it possible to integrate RxDB with signal-based approaches in React or other frameworks. This is an advanced capability and is independent of the React integration described here. For more details about how RxDB's reactivity system works and how custom reactivity can be configured, see the [Reactivity documentation](./reactivity.md).
 
 ## Follow Up
 
