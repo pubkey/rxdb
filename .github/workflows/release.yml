@@ -99,15 +99,15 @@ jobs:
           git commit -m ${{github.event.inputs.version}}
           git tag ${{github.event.inputs.version}}
 
-      # - run: npm publish --tag next
-      #   if: steps.vars.outputs.prerelease == 'true'
-      #   env:
-      #     NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - run: npm publish --tag next
+        if: steps.vars.outputs.prerelease == 'true'
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      # - run: npm publish --provenance --access public
-      #   if: steps.vars.outputs.prerelease == 'false'
-      #   env:
-      #     NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - run: npm publish --provenance --access public
+        if: steps.vars.outputs.prerelease == 'false'
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       # pull again to make it unlikely that we have a merge conflict.
       - run: git pull
