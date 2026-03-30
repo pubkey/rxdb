@@ -19,7 +19,9 @@ import { replicateServer } from 'rxdb-server/plugins/replication-server';
 const replicationState = await replicateServer({
     collection: usersCollection,
     replicationIdentifier: 'my-server-replication',
-    url: 'http://localhost:80/users/0', // endpoint url with the servers collection schema version at the end
+    // endpoint url with the servers collection
+    // schema version at the end
+    url: 'http://localhost:80/users/0',
     headers: {
         Authorization: 'Bearer S0VLU0UhI...'
     },
