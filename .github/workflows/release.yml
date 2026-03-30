@@ -24,6 +24,7 @@ jobs:
     # @link https://docs.github.com/en/actions/using-jobs/assigning-permissions-to-jobs
     permissions:
       contents: write
+      workflows: write
       # @link https://docs.npmjs.com/generating-provenance-statements#about-npm-provenance
       id-token: write
     # Steps represent a sequence of tasks that will be executed as part of the job
@@ -99,15 +100,15 @@ jobs:
           git commit -m ${{github.event.inputs.version}}
           git tag ${{github.event.inputs.version}}
 
-      - run: npm publish --tag next
-        if: steps.vars.outputs.prerelease == 'true'
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      # - run: npm publish --tag next
+      #   if: steps.vars.outputs.prerelease == 'true'
+      #   env:
+      #     NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - run: npm publish --provenance --access public
-        if: steps.vars.outputs.prerelease == 'false'
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      # - run: npm publish --provenance --access public
+      #   if: steps.vars.outputs.prerelease == 'false'
+      #   env:
+      #     NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       # pull again to make it unlikely that we have a merge conflict.
       - run: git pull
