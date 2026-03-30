@@ -64,10 +64,12 @@ console.dir(results); // > [RxDocument,RxDocument,RxDocument..]
 On `.findOne()` queries, you can call `.exec(true)` to ensure your document exists and to make TypeScript handling easier:
 
 ```ts
-// docOrUndefined can be the type RxDocument or null which then has to be handled to be typesafe.
+// docOrUndefined can be RxDocument or null
+// which then has to be handled to be typesafe.
 const docOrUndefined = await myCollection.findOne().exec();
 
-// with .exec(true), it will throw if the document cannot be found and always have the type RxDocument
+// with .exec(true), it will throw if the document
+// cannot be found and always return type RxDocument
 const doc = await myCollection.findOne().exec(true);
 ```
 
@@ -228,9 +230,14 @@ myCollection.find({
 /*
  * find by using sql equivalent '%like%' syntax
  * This example will e.g. match 'foo' but also 'fifoo' or 'foofa' or 'fifoofa'
- * Notice that in RxDB queries, a regex is represented as a $regex string with the $options parameter for flags.
- * Using a RegExp instance is not allowed because they are not JSON.stringify()-able and also
- * RegExp instances are mutable which could cause undefined behavior when the RegExp is mutated
+ * Notice that in RxDB queries, a regex is
+ * represented as a $regex string with the
+ * $options parameter for flags.
+ * Using a RegExp instance is not allowed
+ * because they are not JSON.stringify()-able
+ * and also RegExp instances are mutable which
+ * could cause undefined behavior when the
+ * RegExp is mutated
  * after the query was parsed.
  */
 myCollection.find({
@@ -241,7 +248,8 @@ myCollection.find({
 .exec().then(documents => console.dir(documents));
 
 // find using a composite statement eg: $or
-// This example checks where name is either foo or if name is not existent on the document
+// This example checks where name is either foo
+// or if name is not existent on the document
 myCollection.find({
   selector: { $or: [ { name: { $eq: 'foo' } }, { name: { $exists: false } }] }
 })
@@ -285,8 +293,12 @@ const query = myCollection
       /**
        * Because the developer knows that 50% of the documents are 'male',
        * but only 20% are below age 18,
-       * it makes sense to enforce using the ['gender', 'age'] index to improve performance.
-       * This could not be known by the query planner which might have chosen ['age', 'gender'] instead.
+       * it makes sense to enforce using the
+       * ['gender', 'age'] index to improve
+       * performance.
+       * This could not be known by the query
+       * planner which might have chosen
+       * ['age', 'gender'] instead.
        */
       index: ['gender', 'age']
     });

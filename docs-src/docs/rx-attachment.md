@@ -47,7 +47,9 @@ const mySchema = {
         // .
     },
     attachments: {
-        encrypted: true // if true, the attachment-data will be encrypted with the db-password
+        // if true, the attachment-data will be
+        // encrypted with the db-password
+        encrypted: true
     }
 };
 
@@ -69,7 +71,8 @@ const attachment = await myDocument.putAttachment(
     {
         id: 'cat.txt',     // (string) name of the attachment
         data: createBlob('meowmeow', 'text/plain'),   // (Blob) data of the attachment
-        type: 'text/plain'    // (string) type of the attachment-data like 'image/jpeg'
+        type: 'text/plain'   // (string) type of the attachment
+                            // data like 'image/jpeg'
     }
 );
 ```
@@ -294,10 +297,14 @@ const mySchema = {
         // ..
     },
     attachments: {
-        compression: 'deflate',  // <- Specify the compression mode here. OneOf ['deflate', 'gzip']
+        // Specify the compression mode.
+        // OneOf ['deflate', 'gzip']
+        compression: 'deflate',
 
         // Optional: override which MIME types get compressed.
-        // Supports wildcard prefix matching (e.g. 'text/*' matches 'text/plain', 'text/html', etc.).
+        // Supports wildcard prefix matching
+        // (e.g. 'text/*' matches 'text/plain',
+        // 'text/html', etc.).
         // If omitted, a built-in default list of compressible types is used.
         compressibleTypes: [
             'text/*',
