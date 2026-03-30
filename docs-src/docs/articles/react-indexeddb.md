@@ -189,7 +189,9 @@ npm install @preact/signals-core --save
 Set up RxDB with Preact Signals reactivity:
 
 ```ts
-import { PreactSignalsRxReactivityFactory } from 'rxdb/plugins/reactivity-preact-signals';
+import {
+    PreactSignalsRxReactivityFactory
+} from 'rxdb/plugins/reactivity-preact-signals';
 import { createRxDatabase } from 'rxdb/plugins/core';
 import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
 

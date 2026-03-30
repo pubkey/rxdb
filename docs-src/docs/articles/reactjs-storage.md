@@ -171,7 +171,9 @@ RxDB typically exposes reactivity via RxJS observables. However, some developers
 ```ts
 import { createRxDatabase } from 'rxdb/plugins/core';
 import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
-import { PreactSignalsRxReactivityFactory } from 'rxdb/plugins/reactivity-preact-signals';
+import {
+    PreactSignalsRxReactivityFactory
+} from 'rxdb/plugins/reactivity-preact-signals';
 
 (async function setUpRxDBWithSignals() {
   const db = await createRxDatabase({
@@ -195,7 +197,9 @@ For more advanced ReactJS storage needs, especially when sensitive user data is 
 
 ```ts
 import { createRxDatabase } from 'rxdb';
-import { wrappedKeyEncryptionCryptoJsStorage } from 'rxdb/plugins/encryption-crypto-js';
+import {
+    wrappedKeyEncryptionCryptoJsStorage
+} from 'rxdb/plugins/encryption-crypto-js';
 import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
 
 (async function secureSetup() {

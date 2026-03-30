@@ -60,7 +60,9 @@ Below is an example showing how to set up RxDB using the CryptoJS plugin. This e
 
 ```js
 import { createRxDatabase } from 'rxdb';
-import { wrappedKeyEncryptionCryptoJsStorage } from 'rxdb/plugins/encryption-crypto-js';
+import {
+    wrappedKeyEncryptionCryptoJsStorage
+} from 'rxdb/plugins/encryption-crypto-js';
 
 /*
  * For testing, we use the in-memory storage of RxDB.

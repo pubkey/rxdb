@@ -59,7 +59,8 @@ Step 2: Create a `RxFulltextSearch` instance on top of a collection with the `ad
 ```ts
 import { addFulltextSearch } from 'rxdb-premium/plugins/flexsearch';
 const flexSearch = await addFulltextSearch({
-    // unique identifier. Used to store metadata and continue indexing on restarts/reloads.
+    // unique identifier. Used to store metadata
+    // and continue indexing on restarts/reloads.
     identifier: 'my-search',
     // The source collection on whose documents the search is based on
     collection: myRxCollection,
@@ -79,7 +80,8 @@ const flexSearch = await addFulltextSearch({
     /**
      * (Optional)
      * lazy: Initialize the in memory fulltext index at the first search query.
-     * instant: Directly initialize so that the index is already there on the first query.
+     * instant: Directly initialize so that the
+     * index is already there on the first query.
      * Default: 'instant'
      */
     initialization: 'instant',
