@@ -289,7 +289,7 @@ describeParallel('import-export.test.js', () => {
             const docSchema = {
                 version: 0,
                 primaryKey: 'firstName',
-                type: 'object',
+                type: 'object' as const,
                 properties: {
                     firstName: {
                         type: 'string',

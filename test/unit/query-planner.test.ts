@@ -554,7 +554,7 @@ describeParallel('query-planner.test.js', () => {
             const schema: RxJsonSchema<RxDocumentData<any>> = fillWithDefaultSettings({
                 version: 0,
                 primaryKey: 'id',
-                type: 'object',
+                type: 'object' as const,
                 properties: {
                     id: {
                         type: 'string',
@@ -631,7 +631,7 @@ describeParallel('query-planner.test.js', () => {
             const mySchema = {
                 version: 0,
                 primaryKey: 'passportId',
-                type: 'object',
+                type: 'object' as const,
                 properties: {
                     passportId: {
                         type: 'string',

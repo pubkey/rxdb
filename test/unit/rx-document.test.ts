@@ -1000,7 +1000,7 @@ describe('rx-document.test.js', () => {
                             version: 0,
                             keyCompression: false,
                             primaryKey: 'passportId',
-                            type: 'object',
+                            type: 'object' as const,
                             properties: {
                                 passportId: {
                                     type: 'string',
@@ -1013,7 +1013,7 @@ describe('rx-document.test.js', () => {
                                     type: ['string', 'null']
                                 },
                                 nested: {
-                                    type: 'object',
+                                    type: 'object' as const,
                                     properties: {
                                         nullField: {
                                             type: ['string', 'null']
@@ -1051,7 +1051,7 @@ describe('rx-document.test.js', () => {
                             version: 0,
                             keyCompression: false,
                             primaryKey: 'passportId',
-                            type: 'object',
+                            type: 'object' as const,
                             properties: {
                                 passportId: {
                                     type: 'string',
@@ -1064,7 +1064,7 @@ describe('rx-document.test.js', () => {
                                     type: 'boolean'
                                 },
                                 nested: {
-                                    type: 'object',
+                                    type: 'object' as const,
                                     properties: {
                                         trueField: {
                                             type: 'boolean'
@@ -1180,7 +1180,7 @@ describe('rx-document.test.js', () => {
             const schema = {
                 version: 0,
                 primaryKey: 'key',
-                type: 'object',
+                type: 'object' as const,
                 properties: {
                     key: {
                         type: 'string',
@@ -1259,7 +1259,7 @@ describe('rx-document.test.js', () => {
                 version: 0,
                 description: 'describes an example collection schema',
                 primaryKey: 'name',
-                type: 'object',
+                type: 'object' as const,
                 properties: {
                     name: {
                         $comment: 'primary key MUST have a maximum length!',
@@ -1335,7 +1335,7 @@ describe('rx-document.test.js', () => {
             const mySchema: RxJsonSchema<any> = {
                 version: 0,
                 primaryKey: 'passportId',
-                type: 'object',
+                type: 'object' as const,
                 properties: {
                     passportId: {
                         type: 'string',
@@ -1353,7 +1353,7 @@ describe('rx-document.test.js', () => {
                         maximum: 150
                     },
                     tags: {
-                        type: 'object',
+                        type: 'object' as const,
                         additionalProperties: true,
                     },
                 },

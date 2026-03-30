@@ -443,7 +443,7 @@ describe('migration-schema.test.ts', function () {
                 const schema0 = {
                     version: 0,
                     primaryKey: 'id',
-                    type: 'object',
+                    type: 'object' as const,
                     properties: {
                         id: {
                             type: 'string',
@@ -455,7 +455,7 @@ describe('migration-schema.test.ts', function () {
                 const schema1 = {
                     version: 1,
                     primaryKey: 'id',
-                    type: 'object',
+                    type: 'object' as const,
                     properties: {
                         id: {
                             type: 'string',
@@ -808,7 +808,7 @@ describe('migration-schema.test.ts', function () {
             const mySchema = {
                 version: 0,
                 primaryKey: 'passportId',
-                type: 'object',
+                type: 'object' as const,
                 properties: {
                     passportId: {
                         type: 'string',
@@ -926,7 +926,7 @@ describe('migration-schema.test.ts', function () {
             const mySchema = {
                 version: 0,
                 primaryKey: 'passportId',
-                type: 'object',
+                type: 'object' as const,
                 properties: {
                     passportId: {
                         type: 'string',
@@ -1054,7 +1054,7 @@ describe('migration-schema.test.ts', function () {
                 return {
                     version,
                     primaryKey: 'passportId',
-                    type: 'object',
+                    type: 'object' as const,
                     properties: {
                         passportId: {
                             type: 'string',
@@ -1146,7 +1146,7 @@ describe('migration-schema.test.ts', function () {
             const schema0 = {
                 version: 0,
                 primaryKey: 'id',
-                type: 'object',
+                type: 'object' as const,
                 properties: {
                     id: { type: 'string', maxLength: 100 },
                     name: { type: 'string' }
@@ -1157,7 +1157,7 @@ describe('migration-schema.test.ts', function () {
             const schema1 = {
                 version: 1,
                 primaryKey: 'id',
-                type: 'object',
+                type: 'object' as const,
                 properties: {
                     id: { type: 'string', maxLength: 100 },
                     name: { type: 'string' },
@@ -1277,7 +1277,7 @@ describe('migration-schema.test.ts', function () {
             const schema0 = {
                 version: 0,
                 primaryKey: 'id',
-                type: 'object',
+                type: 'object' as const,
                 properties: {
                     id: { type: 'string', maxLength: 100 },
                     name: { type: 'string' }
@@ -1288,7 +1288,7 @@ describe('migration-schema.test.ts', function () {
             const schema1 = {
                 version: 1,
                 primaryKey: 'id',
-                type: 'object',
+                type: 'object' as const,
                 properties: {
                     id: { type: 'string', maxLength: 100 },
                     name: { type: 'string' },
@@ -1372,7 +1372,7 @@ describe('migration-schema.test.ts', function () {
             const mySchema = {
                 version: 0,
                 primaryKey: 'passportId',
-                type: 'object',
+                type: 'object' as const,
                 properties: {
                     passportId: {
                         type: 'string',
@@ -1396,7 +1396,7 @@ describe('migration-schema.test.ts', function () {
             const mySchema2 = {
                 version: 1,
                 primaryKey: 'passportId',
-                type: 'object',
+                type: 'object' as const,
                 properties: {
                     passportId: {
                         type: 'string',
@@ -1508,7 +1508,7 @@ describe('migration-schema.test.ts', function () {
                 description: 'describes a simple hero',
                 version: 0,
                 primaryKey: 'name',
-                type: 'object',
+                type: 'object' as const,
                 properties: {
                     name: {
                         type: 'string',
@@ -1525,7 +1525,7 @@ describe('migration-schema.test.ts', function () {
                 description: 'describes a simple hero',
                 version: 1,
                 primaryKey: 'name',
-                type: 'object',
+                type: 'object' as const,
                 properties: {
                     name: {
                         type: 'string',
@@ -1660,7 +1660,7 @@ describe('migration-schema.test.ts', function () {
                         schema: {
                             version: 0,
                             primaryKey: 'name',
-                            type: 'object',
+                            type: 'object' as const,
                             properties: {
                                 name: {
                                     type: 'string',
@@ -1707,7 +1707,7 @@ describe('migration-schema.test.ts', function () {
                     schema: {
                         version: 0,
                         primaryKey: 'name',
-                        type: 'object',
+                        type: 'object' as const,
                         properties: {
                             name: {
                                 type: 'string',

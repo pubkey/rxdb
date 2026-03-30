@@ -155,10 +155,10 @@ describe('typings.test.ts', function () {
         });
         describe('negative', () => {
             it('should not allow non-object type at the top level', () => {
-                // @ts-expect-error type must be 'object' at the top level
                 const schema: RxJsonSchema<DefaultDocType> = {
                     version: 0,
                     primaryKey: 'passportId',
+                    // @ts-expect-error type must be 'object' at the top level
                     type: 'array',
                     properties: {
                         passportId: { type: 'string', maxLength: 100 },
@@ -676,7 +676,7 @@ describe('other', () => {
                     const db: RxDatabase = {} as RxDatabase;
                     const heroSchema = {
                         version: 0,
-                        type: 'object',
+                        type: 'object' as const,
                         primaryKey: 'id',
                         properties: {
                             id: {

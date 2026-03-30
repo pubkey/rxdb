@@ -41,7 +41,7 @@ describe('bug-report.test.js', () => {
         const mySchema = {
             version: 0,
             primaryKey: 'passportId',
-            type: 'object',
+            type: 'object' as const,
             properties: {
                 passportId: {
                     type: 'string',

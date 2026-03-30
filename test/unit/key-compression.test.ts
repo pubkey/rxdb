@@ -191,7 +191,7 @@ describeParallel('key-compression.test.js', () => {
                 required: [
                     'id'
                 ],
-                type: 'object',
+                type: 'object' as const,
                 properties: {
                     id: {
                         type: 'string',
@@ -233,7 +233,7 @@ describeParallel('key-compression.test.js', () => {
                 description: 'describes a simple hero',
                 primaryKey: 'key',
                 required: ['key'],
-                type: 'object',
+                type: 'object' as const,
                 properties: {
                     key: {
                         type: 'string',
@@ -289,7 +289,7 @@ describeParallel('key-compression.test.js', () => {
                 version: 0,
                 keyCompression: true,
                 primaryKey: 'id',
-                type: 'object',
+                type: 'object' as const,
                 properties: {
                     id: {
                         type: 'string',
@@ -407,7 +407,7 @@ describeParallel('key-compression.test.js', () => {
             const mySchema = {
                 version: 0,
                 primaryKey: 'passportId',
-                type: 'object',
+                type: 'object' as const,
                 keyCompression: true,
                 properties: {
                     passportId: {
@@ -415,10 +415,10 @@ describeParallel('key-compression.test.js', () => {
                         maxLength: 100
                     },
                     tags: {
-                        type: 'object',
+                        type: 'object' as const,
                         patternProperties: {
                             '.*': {
-                                type: 'object',
+                                type: 'object' as const,
                                 properties: {
                                     name: { type: 'string' },
                                 },
@@ -484,7 +484,7 @@ describeParallel('key-compression.test.js', () => {
                 version: 0,
                 keyCompression: true,
                 primaryKey: 'passportId',
-                type: 'object',
+                type: 'object' as const,
                 properties: {
                     passportId: {
                         type: 'string',

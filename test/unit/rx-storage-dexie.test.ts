@@ -26,7 +26,7 @@ describeParallel('rx-storage-dexie.test.js', () => {
             it('should start with the primary key', () => {
                 const dexieSchema = getDexieStoreSchema({
                     primaryKey: 'id',
-                    type: 'object',
+                    type: 'object' as const,
                     version: 0,
                     properties: {
                         id: {
@@ -109,7 +109,7 @@ describeParallel('rx-storage-dexie.test.js', () => {
             const mySchema = {
                 version: 0,
                 primaryKey: 'id',
-                type: 'object',
+                type: 'object' as const,
                 properties: {
                     id: {
                         type: 'string',

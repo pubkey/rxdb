@@ -668,7 +668,7 @@ describeParallel('attachments.test.ts', () => {
             };
             const schema0: RxJsonSchema<DocData> = {
                 version: 0,
-                type: 'object',
+                type: 'object' as const,
                 primaryKey: 'id',
                 properties: {
                     id: {
@@ -738,7 +738,7 @@ describeParallel('attachments.test.ts', () => {
             const schema0: RxJsonSchema<DocData> = {
                 version: 0,
                 primaryKey: 'id',
-                type: 'object',
+                type: 'object' as const,
                 properties: {
                     id: {
                         type: 'string',
@@ -799,7 +799,7 @@ describeParallel('attachments.test.ts', () => {
             const schema0: RxJsonSchema<DocData> = {
                 version: 0,
                 primaryKey: 'id',
-                type: 'object',
+                type: 'object' as const,
                 properties: {
                     id: {
                         type: 'string',
@@ -1249,7 +1249,7 @@ describeParallel('attachments.test.ts', () => {
             const myschema = {
                 version: 0,
                 primaryKey: 'name',
-                type: 'object',
+                type: 'object' as const,
                 properties: {
                     name: {
                         type: 'string',
@@ -1328,7 +1328,7 @@ describeParallel('attachments.test.ts', () => {
             const mySchema = {
                 version: 0,
                 primaryKey: 'passportId',
-                type: 'object',
+                type: 'object' as const,
                 properties: {
                     passportId: {
                         type: 'string',

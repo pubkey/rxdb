@@ -65,7 +65,7 @@ describeParallel('rx-schema.test.ts', () => {
                 const userSchema = {
                     title: 'user schema',
                     description: 'describes a user',
-                    type: 'object',
+                    type: 'object' as const,
                     version: 0,
 
                     primaryKey: 'id',
@@ -129,7 +129,7 @@ describeParallel('rx-schema.test.ts', () => {
                         version: 0,
                         description: 'uses anyOf',
                         primaryKey: 'id',
-                        type: 'object',
+                        type: 'object' as const,
                         properties: {
                             id: {
                                 type: 'string',
@@ -155,7 +155,7 @@ describeParallel('rx-schema.test.ts', () => {
                         version: 0,
                         description: 'uses items array',
                         primaryKey: 'id',
-                        type: 'object',
+                        type: 'object' as const,
                         properties: {
                             id: {
                                 type: 'string',
@@ -179,7 +179,7 @@ describeParallel('rx-schema.test.ts', () => {
                     await assertThrows(() => checkSchema({
                         version: 0,
                         primaryKey: 'id',
-                        type: 'object',
+                        type: 'object' as const,
                         properties: {
                             id: {
                                 type: 'string',
@@ -190,14 +190,14 @@ describeParallel('rx-schema.test.ts', () => {
                                 index: true
                             } as any,
                             job: {
-                                type: 'object',
+                                type: 'object' as const,
                                 properties: {
                                     name: {
                                         type: 'string',
                                         index: true
                                     } as any,
                                     manager: {
-                                        type: 'object',
+                                        type: 'object' as const,
                                         properties: {
                                             fullName: {
                                                 type: 'string',
@@ -216,7 +216,7 @@ describeParallel('rx-schema.test.ts', () => {
                         title: 'schema',
                         version: 0,
                         primaryKey: '_asdf',
-                        type: 'object',
+                        type: 'object' as const,
                         properties: {
                             _asdf: {
                                 type: 'string',
@@ -241,7 +241,7 @@ describeParallel('rx-schema.test.ts', () => {
                             title: 'schema',
                             version: 0,
                             primaryKey: 'id',
-                            type: 'object',
+                            type: 'object' as const,
                             properties: {
                                 id: {
                                     type: 'string',
@@ -267,7 +267,7 @@ describeParallel('rx-schema.test.ts', () => {
                             title: 'schema',
                             version: 0,
                             primaryKey: 'id',
-                            type: 'object',
+                            type: 'object' as const,
                             properties: {
                                 id: {
                                     type: 'string',
@@ -296,7 +296,7 @@ describeParallel('rx-schema.test.ts', () => {
                         version: 0,
                         description: 'dot in fieldname',
                         primaryKey: 'my.field',
-                        type: 'object',
+                        type: 'object' as const,
                         properties: {
                             'my.field': {
                                 type: 'string',
@@ -310,7 +310,7 @@ describeParallel('rx-schema.test.ts', () => {
                         title: 'schema',
                         version: 0,
                         primaryKey: 'myfield',
-                        type: 'object',
+                        type: 'object' as const,
                         properties: {
                             'myfield': {
                                 type: 'string',
@@ -329,7 +329,7 @@ describeParallel('rx-schema.test.ts', () => {
                         title: 'schema',
                         version: 0,
                         primaryKey: 'id',
-                        type: 'object',
+                        type: 'object' as const,
                         properties: {
                             id: {
                                 type: 'string',
@@ -345,7 +345,7 @@ describeParallel('rx-schema.test.ts', () => {
                         version: 0,
                         primaryKey: 'id',
                         description: '$ in fieldname',
-                        type: 'object',
+                        type: 'object' as const,
                         properties: {
                             id: {
                                 type: 'string',
@@ -363,14 +363,14 @@ describeParallel('rx-schema.test.ts', () => {
                         version: 0,
                         description: '$ in nested fieldname',
                         primaryKey: 'id',
-                        type: 'object',
+                        type: 'object' as const,
                         properties: {
                             id: {
                                 type: 'string',
                                 maxLength: 100
                             },
                             'things': {
-                                type: 'object',
+                                type: 'object' as const,
                                 properties: {
                                     first$Name: {
                                         type: 'string'
@@ -384,14 +384,14 @@ describeParallel('rx-schema.test.ts', () => {
                         version: 0,
                         description: '$ in nested fieldname',
                         primaryKey: 'id',
-                        type: 'object',
+                        type: 'object' as const,
                         properties: {
                             id: {
                                 type: 'string',
                                 maxLength: 100
                             },
                             'things': {
-                                type: 'object',
+                                type: 'object' as const,
                                 properties: {
                                     firstName$: {
                                         type: 'string'
@@ -407,7 +407,7 @@ describeParallel('rx-schema.test.ts', () => {
                         version: 0,
                         primaryKey: 'id',
                         description: '_ in fieldname',
-                        type: 'object',
+                        type: 'object' as const,
                         properties: {
                             id: {
                                 type: 'string',
@@ -424,14 +424,14 @@ describeParallel('rx-schema.test.ts', () => {
                         version: 0,
                         description: 'dot in fieldname',
                         primaryKey: 'id',
-                        type: 'object',
+                        type: 'object' as const,
                         properties: {
                             id: {
                                 type: 'string',
                                 maxLength: 100
                             },
                             'foo': {
-                                type: 'object',
+                                type: 'object' as const,
                                 properties: {
                                     'name_': {
                                         type: 'string'
@@ -447,7 +447,7 @@ describeParallel('rx-schema.test.ts', () => {
                         version: 0,
                         description: 'collection as fieldname',
                         primaryKey: 'collection',
-                        type: 'object',
+                        type: 'object' as const,
                         properties: {
                             collection: {
                                 type: 'string',
@@ -462,7 +462,7 @@ describeParallel('rx-schema.test.ts', () => {
                         version: 0,
                         description: 'populate as fieldname',
                         primaryKey: 'populate',
-                        type: 'object',
+                        type: 'object' as const,
                         properties: {
                             populate: {
                                 type: 'string',
@@ -475,7 +475,7 @@ describeParallel('rx-schema.test.ts', () => {
                     assert.throws(() => checkSchema({
                         title: 'schema',
                         description: 'schema without version',
-                        type: 'object',
+                        type: 'object' as const,
                         properties: {
                             'foobar': {
                                 type: 'string'
@@ -489,7 +489,7 @@ describeParallel('rx-schema.test.ts', () => {
                         version: -10,
                         description: 'schema with negative version',
                         primaryKey: 'foobar',
-                        type: 'object',
+                        type: 'object' as const,
                         properties: {
                             'foobar': {
                                 type: 'string',
@@ -518,14 +518,14 @@ describeParallel('rx-schema.test.ts', () => {
                         version: 0,
                         description: 'save as fieldname',
                         primaryKey: 'foobar',
-                        type: 'object',
+                        type: 'object' as const,
                         properties: {
                             foobar: {
                                 type: 'string',
                                 maxLength: 100
                             },
                             deeper: {
-                                type: 'object',
+                                type: 'object' as const,
                                 properties: {
                                     name: {
                                         type: 'string',
@@ -542,7 +542,7 @@ describeParallel('rx-schema.test.ts', () => {
                         version: 0,
                         primaryKey: 'userId',
                         description: 'save as fieldname',
-                        type: 'object',
+                        type: 'object' as const,
                         properties: {
                             userId: {
                                 type: 'string',
@@ -566,7 +566,7 @@ describeParallel('rx-schema.test.ts', () => {
                         () => checkSchema({
                             version: 0,
                             primaryKey: 'userId',
-                            type: 'object',
+                            type: 'object' as const,
                             properties: {
                                 userId: {
                                     type: 'string',
@@ -609,7 +609,7 @@ describeParallel('rx-schema.test.ts', () => {
                 const schema: RxJsonSchema<any> = fillWithDefaultSettings({
                     primaryKey: 'id',
                     version: 0,
-                    type: 'object',
+                    type: 'object' as const,
                     properties: {
                         id: {
                             type: 'string',
@@ -660,7 +660,7 @@ describeParallel('rx-schema.test.ts', () => {
                 const ret = getFinalFields({
                     version: 0,
                     primaryKey: 'myField',
-                    type: 'object',
+                    type: 'object' as const,
                     properties: {
                         myField: {
                             type: 'string',
@@ -675,7 +675,7 @@ describeParallel('rx-schema.test.ts', () => {
                 const ret = getFinalFields({
                     version: 0,
                     primaryKey: 'myField',
-                    type: 'object',
+                    type: 'object' as const,
                     properties: {
                         myField: {
                             type: 'string',
@@ -694,7 +694,7 @@ describeParallel('rx-schema.test.ts', () => {
                     title: 'schema',
                     version: 0,
                     primaryKey: 'foobar',
-                    type: 'object',
+                    type: 'object' as const,
                     properties: {
                         'foobar': {
                             type: 'string',
@@ -712,7 +712,7 @@ describeParallel('rx-schema.test.ts', () => {
                     title: 'schema',
                     version: 5,
                     primaryKey: 'foobar',
-                    type: 'object',
+                    type: 'object' as const,
                     properties: {
                         'foobar': {
                             type: 'string',
@@ -853,17 +853,17 @@ describeParallel('rx-schema.test.ts', () => {
             const schema: RxJsonSchema<{ id: string; fileInfo: any; }> = {
                 version: 0,
                 primaryKey: 'id',
-                type: 'object',
+                type: 'object' as const,
                 properties: {
                     id: {
                         type: 'string',
                         maxLength: 100
                     },
                     fileInfo: {
-                        type: 'object',
+                        type: 'object' as const,
                         properties: {
                             watch: {
-                                type: 'object',
+                                type: 'object' as const,
                                 properties: {
                                     time: {
                                         type: 'number',
@@ -924,7 +924,7 @@ describeParallel('rx-schema.test.ts', () => {
             const mySchema: RxJsonSchema<{ passportId: string; firstName: string; lastName: string; age: number; }> = {
                 version: 0,
                 primaryKey: 'passportId',
-                type: 'object',
+                type: 'object' as const,
                 properties: {
                     passportId: {
                         type: 'string',
@@ -966,14 +966,14 @@ describeParallel('rx-schema.test.ts', () => {
             const mySchema: RxJsonSchema<{ id: string; properties: any; }> = {
                 version: 0,
                 primaryKey: 'id',
-                type: 'object',
+                type: 'object' as const,
                 properties: {
                     id: {
                         type: 'string',
                         maxLength: 100
                     },
                     properties: {
-                        type: 'object',
+                        type: 'object' as const,
                         properties: {
                             name: {
                                 type: 'string',
@@ -1013,7 +1013,7 @@ describeParallel('rx-schema.test.ts', () => {
         it('#697(2) should also work deep nested', async () => {
             const mySchema: RxJsonSchema<{ id: string; properties: any; }> = {
                 version: 0,
-                type: 'object',
+                type: 'object' as const,
                 primaryKey: 'id',
                 properties: {
                     id: {
@@ -1021,7 +1021,7 @@ describeParallel('rx-schema.test.ts', () => {
                         maxLength: 100
                     },
                     properties: {
-                        type: 'object',
+                        type: 'object' as const,
                         properties: {
                             name: {
                                 type: 'string',
@@ -1084,14 +1084,14 @@ describeParallel('rx-schema.test.ts', () => {
                 'keyCompression': false,
                 'version': 0,
                 'primaryKey': '_id',
-                'type': 'object',
+                'type': 'object' as const,
                 'properties': {
                     '_id': {
                         'type': 'string',
                         'maxLength': 100
                     },
                     'data': {
-                        'type': 'object'
+                        'type': 'object' as const
                     },
                     'isNew': {
                         'type': 'boolean',
@@ -1145,7 +1145,7 @@ describeParallel('rx-schema.test.ts', () => {
                 'keyCompression': false,
                 'version': 0,
                 'primaryKey': 'passportId',
-                'type': 'object',
+                'type': 'object' as const,
                 'properties': {
                     passportId: {
                         type: 'string',
@@ -1163,10 +1163,10 @@ describeParallel('rx-schema.test.ts', () => {
                         maximum: 150
                     },
                     tags: {
-                        type: 'object',
+                        type: 'object' as const,
                         patternProperties: {
                             '.*': {
-                                type: 'object',
+                                type: 'object' as const,
                                 properties: {
                                     created: {
                                         type: 'integer',
@@ -1236,7 +1236,7 @@ describeParallel('rx-schema.test.ts', () => {
             const brokenSchemas: RxJsonSchema<any>[] = [
                 {
                     version: 0,
-                    type: 'object',
+                    type: 'object' as const,
                     primaryKey: 'id',
                     properties: {
                         id: {
@@ -1256,7 +1256,7 @@ describeParallel('rx-schema.test.ts', () => {
                 },
                 {
                     version: 0,
-                    type: 'object',
+                    type: 'object' as const,
                     primaryKey: 'id',
                     properties: {
                         id: {
@@ -1270,7 +1270,7 @@ describeParallel('rx-schema.test.ts', () => {
                 },
                 {
                     version: 0,
-                    type: 'object',
+                    type: 'object' as const,
                     primaryKey: 'id',
                     properties: {
                         id: {

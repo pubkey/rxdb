@@ -1382,7 +1382,7 @@ describe('replication.test.ts', () => {
             const mySchema = {
                 version: 0,
                 primaryKey: 'id',
-                type: 'object',
+                type: 'object' as const,
                 properties: {
                     id: {
                         type: 'string',
@@ -1611,7 +1611,7 @@ describe('replication.test.ts', () => {
             const schemaV1: RxJsonSchema<any> = {
                 title: 'TestSchema',
                 version: 0,
-                type: 'object',
+                type: 'object' as const,
                 primaryKey: 'id',
                 properties: {
                     id: { type: 'string', maxLength: 50 },
@@ -1623,7 +1623,7 @@ describe('replication.test.ts', () => {
             const schemaV2: RxJsonSchema<any> = {
                 title: 'TestSchema',
                 version: 1,
-                type: 'object',
+                type: 'object' as const,
                 primaryKey: 'id',
                 properties: {
                     id: { type: 'string', maxLength: 50 },
@@ -1755,7 +1755,7 @@ describe('replication.test.ts', () => {
             const mySchema = {
                 version: 0,
                 primaryKey: 'passportId',
-                type: 'object',
+                type: 'object' as const,
                 properties: {
                     passportId: {
                         type: 'string',
@@ -1839,7 +1839,7 @@ describe('replication.test.ts', () => {
             const mySchema = {
                 version: 0,
                 primaryKey: 'id',
-                type: 'object',
+                type: 'object' as const,
                 properties: {
                     id: {
                         type: 'string',
