@@ -12,6 +12,8 @@ export function HeadlineWithIcon({ children, icon, subtitle, h1, h2, h3 }: { chi
     let marginRight = '20px';
     if (h1) {
         size = '40px';
+    } else if (h2) {
+
     } else if (h3) {
         size = '30px';
         marginRight = '15px';
