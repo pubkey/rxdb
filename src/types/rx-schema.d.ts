@@ -110,7 +110,7 @@ export type RxJsonSchema<
      */
     primaryKey: PrimaryKey<RxDocType>;
 
-    type: 'object' | (string & {});
+    type: 'object';
 
     properties: { [key in StringKeys<RxDocType>]: TopLevelProperty };
 

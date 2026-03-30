@@ -138,8 +138,36 @@ describe('typings.test.ts', function () {
             it('should allow \'as const\' composite primary schemas to work', () => {
                 const humanCompositePrimaryTyped: RxJsonSchema<HumanCompositePrimaryDocType> = schemas.humanCompositePrimarySchemaLiteral;
             });
+            it('should allow type \'object\' at the top level', () => {
+                const schema: RxJsonSchema<DefaultDocType> = {
+                    version: 0,
+                    primaryKey: 'passportId',
+                    type: 'object',
+                    properties: {
+                        passportId: { type: 'string', maxLength: 100 },
+                        age: { type: 'number' },
+                        oneOptional: { type: 'string' }
+                    },
+                    required: ['passportId', 'age']
+                };
+                assert.ok(schema);
+            });
         });
         describe('negative', () => {
+            it('should not allow non-object type at the top level', () => {
+                // @ts-expect-error type must be 'object' at the top level
+                const schema: RxJsonSchema<DefaultDocType> = {
+                    version: 0,
+                    primaryKey: 'passportId',
+                    type: 'array',
+                    properties: {
+                        passportId: { type: 'string', maxLength: 100 },
+                        age: { type: 'number' },
+                        oneOptional: { type: 'string' }
+                    },
+                    required: ['passportId', 'age']
+                };
+            });
             it('should not allow wrong properties when passing a model', async () => {
                 const databaseCreator: RxDatabaseCreator = {
                     name: 'mydb',
