@@ -50,6 +50,11 @@ export type JsonSchema<RxDocType = any> = {
     maxProperties?: number;
     maximum?: number;
     minimum?: number;
+    /**
+     * Having a large maxLength for indexed fields and primary keys can negatively
+     * impact performance on many storages. Therefore, you should only set it
+     * as big as needed.
+     */
     maxLength?: number;
     minLength?: number;
     maxItems?: number;

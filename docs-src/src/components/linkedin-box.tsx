@@ -1,6 +1,6 @@
 import React from 'react';
 
-export function LinkedinBox({ url, textAlign = 'right' }: { url: string, textAlign?: 'right' | 'center' }) {
+export function LinkedinBox({ url, textAlign = 'right' }: { url: string; textAlign?: 'right' | 'center'; }) {
     const isCenter = textAlign === 'center';
     return (
         <>
@@ -46,7 +46,7 @@ export function LinkedinBox({ url, textAlign = 'right' }: { url: string, textAli
                     }
                 }
             `}</style>
-            <div className={"linkedin-box-container " + (isCenter ? 'linkedin-box-center' : 'linkedin-box-right')}>
+            <div className={'linkedin-box-container ' + (isCenter ? 'linkedin-box-center' : 'linkedin-box-right')}>
                 <iframe
                     className={isCenter ? 'linkedin-box-iframe-center' : 'linkedin-box-iframe-right'}
                     src={url}
