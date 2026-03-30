@@ -12,19 +12,25 @@ image: /headers/install.jpg
 
 To install the latest release of `rxdb` and its dependencies and save it to your `package.json`, run:
 
-`npm i rxdb --save`
+```bash
+npm i rxdb --save
+```
 
 ## peer-dependency
 
 You also need to install the peer-dependency `rxjs` if you have not installed it before.
 
-`npm i rxjs --save`
+```bash
+npm i rxjs --save
+```
 
 ## polyfills
 
 RxDB is coded with ES8 and transpiled to ES5. This means you have to install [polyfills](https://developer.mozilla.org/en-US/docs/Glossary/Polyfill) to support older browsers. For example you can use the babel-polyfills with:
 
-`npm i @babel/polyfill --save`
+```bash
+npm i @babel/polyfill --save
+```
 
 If you need polyfills, you have to import them in your code.
 
