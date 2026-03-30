@@ -24,7 +24,6 @@ jobs:
     # @link https://docs.github.com/en/actions/using-jobs/assigning-permissions-to-jobs
     permissions:
       contents: write
-      workflows: write
       # @link https://docs.npmjs.com/generating-provenance-statements#about-npm-provenance
       id-token: write
     # Steps represent a sequence of tasks that will be executed as part of the job
@@ -88,9 +87,9 @@ jobs:
           npm run generate:headers
           npm run docs:build
 
-      - name: "update release workflow default version"
-        run: |
-          sed -i 's/^        default: ".*"/        default: "${{github.event.inputs.version}}"/' .github/workflows/release.yml
+      # - name: "update release workflow default version"
+      #   run: |
+      #     sed -i 's/^        default: ".*"/        default: "${{github.event.inputs.version}}"/' .github/workflows/release.yml
 
       - name: add git tag
         run: |
