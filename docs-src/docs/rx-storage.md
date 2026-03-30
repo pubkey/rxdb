@@ -30,7 +30,9 @@ We use the schema-validation on the top level to ensure schema-errors are clearl
 ```ts
 import { wrappedValidateAjvStorage } from 'rxdb/plugins/validate-ajv';
 import { wrappedKeyCompressionStorage } from 'rxdb/plugins/key-compression';
-import { wrappedKeyEncryptionCryptoJsStorage } from 'rxdb/plugins/encryption-crypto-js';
+import {
+    wrappedKeyEncryptionCryptoJsStorage
+} from 'rxdb/plugins/encryption-crypto-js';
 import { getRxStorageIndexedDB } from 'rxdb-premium/plugins/storage-indexeddb';
 
 const myDatabase = await createRxDatabase({
@@ -53,7 +55,9 @@ Also we can utilize a combination of storages to create a database that is optim
 import { getRxStorageSharding } from 'rxdb-premium/plugins/storage-sharding';
 import { getRxStorageWorker } from 'rxdb-premium/plugins/storage-worker';
 import { getRxStorageIndexedDB } from 'rxdb-premium/plugins/storage-indexeddb';
-import { getLocalstorageMetaOptimizerRxStorage } from 'rxdb-premium/plugins/storage-localstorage-meta-optimizer';
+import {
+    getLocalstorageMetaOptimizerRxStorage
+} from 'rxdb-premium/plugins/storage-localstorage-meta-optimizer';
 
 const myDatabase = await createRxDatabase({
     storage: getLocalstorageMetaOptimizerRxStorage({
@@ -72,8 +76,12 @@ const myDatabase = await createRxDatabase({
 Here we create a storage configuration that is optimized to have a low latency on simple reads and writes. It uses the memory-mapped storage to fetch and store data in memory. For persistence the OPFS storage is used in the main thread which has lower latency for fetching big chunks of data when at initialization the data is loaded from disk into memory. We do not use workers because sending data from the main thread to workers and backwards would increase the latency.
 
 ```ts
-import { getLocalstorageMetaOptimizerRxStorage } from 'rxdb-premium/plugins/storage-localstorage-meta-optimizer';
-import { getMemoryMappedRxStorage } from 'rxdb-premium/plugins/storage-memory-mapped';
+import {
+    getLocalstorageMetaOptimizerRxStorage
+} from 'rxdb-premium/plugins/storage-localstorage-meta-optimizer';
+import {
+    getMemoryMappedRxStorage
+} from 'rxdb-premium/plugins/storage-memory-mapped';
 import { getRxStorageOPFSMainThread } from 'rxdb-premium/plugins/storage-worker';
 
 

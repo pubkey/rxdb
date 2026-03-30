@@ -81,7 +81,10 @@ export const heroSchemaLiteral = {
 const schemaTyped = toTypedRxJsonSchema(heroSchemaLiteral);
 
 // aggregate the document type from the schema
-export type HeroDocType = ExtractDocumentTypeFromTypedRxJsonSchema<typeof schemaTyped>;
+export type HeroDocType =
+    ExtractDocumentTypeFromTypedRxJsonSchema<
+        typeof schemaTyped
+    >;
 
 // create the typed RxJsonSchema from the literal typed object.
 export const heroSchema: RxJsonSchema<HeroDocType> = heroSchemaLiteral;

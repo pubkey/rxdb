@@ -89,11 +89,16 @@ const storage = getMemorySyncedRxStorage({
     batchSize: 50,
 
     /**
-     * By default, the parent storage will be created without indexes for a faster page load.
-     * Indexes are not needed because the queries will anyway run on the memory storage.
-     * You can disable this behavior by setting keepIndexesOnParent to true.
-     * If you use the same parent storage for multiple RxDatabase instances where one is not
-     * a asynced-memory storage, you will get the error: 'schema not equal to existing storage'
+     * By default, the parent storage will be created
+     * without indexes for a faster page load.
+     * Indexes are not needed because the queries
+     * will anyway run on the memory storage.
+     * You can disable this behavior by setting
+     * keepIndexesOnParent to true.
+     * If you use the same parent storage for multiple
+     * RxDatabase instances where one is not
+     * a asynced-memory storage, you will get the
+     * error: 'schema not equal to existing storage'
      * if you do not set keepIndexesOnParent to true.
      * 
      * (optional)

@@ -286,14 +286,16 @@ const productSchema = {
 const productSchema = {
     version: 0,
     title: 'Store Product Inventory Item',
-    description: 'A physical item sold in our e-commerce store. Contains pricing and categorical SKU lookup data.',
+    description: 'A physical item sold in our store.' +
+        ' Contains pricing and SKU lookup data.',
     primaryKey: 'sku',
     type: 'object',
     properties: {
         sku: {
             type: 'string',
             maxLength: 100,
-            description: 'The Stock Keeping Unit identifier. Consists of a category prefix and a 6-digit number.'
+            description: 'The Stock Keeping Unit.' +
+                ' Category prefix and 6-digit number.'
         },
         price: {
             type: 'number',

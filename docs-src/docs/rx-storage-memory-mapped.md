@@ -77,7 +77,9 @@ import {
 import {
     getMemoryMappedRxStorage
 } from 'rxdb-premium/plugins/storage-memory-mapped';
-import { wrappedKeyEncryptionWebCryptoStorage } from 'rxdb-premium/plugins/encryption-web-crypto';
+import {
+    wrappedKeyEncryptionWebCryptoStorage
+} from 'rxdb-premium/plugins/encryption-web-crypto';
 
 const storage = getMemoryMappedRxStorage({
     storage: wrappedKeyEncryptionWebCryptoStorage({

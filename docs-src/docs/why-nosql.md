@@ -84,7 +84,11 @@ With **NoSQL** you can just do the same, but you have to write it manually:
 
 ```typescript
 const cityDocument = await db.cities.findOne().where('name').equals('Tokyo').exec();
-const customerDocuments = await db.customers.find().where('city_id').equals(cityDocument.id).exec();
+const customerDocuments = await db.customers
+    .find()
+    .where('city_id')
+    .equals(cityDocument.id)
+    .exec();
 ```
 
 So what are the differences? The SQL version would run faster on a remote database server because it would aggregate all data there and return only the customers as result set. But when you have a local database, it is not really a difference. Querying the two tables by hand would have about the same performance as a JavaScript implementation of SQL that is running locally.
