@@ -6,6 +6,7 @@ image: /headers/logger.jpg
 ---
 
 import {PremiumBlock} from '@site/src/components/premium-block';
+import {Steps} from '@site/src/components/steps';
 
 # RxDB Logger Plugin
 
@@ -24,21 +25,31 @@ This is useful to debug performance problems and for monitoring with Application
 
 The logger is a wrapper that can be wrapped around any [RxStorage](./rx-storage.md). Once your storage is wrapped, you can create your database with the wrapped storage and the logging will automatically happen.
 
-```ts
+<Steps>
 
+### Import Plugins
+
+```ts
 import {
     wrappedLoggerStorage
 } from 'rxdb-premium/plugins/logger';
 import {
     getRxStorageIndexedDB
 } from 'rxdb-premium/plugins/storage-indexeddb';
+```
 
+### Wrap Storage
 
+```ts
 // wrap a storage with the logger
 const loggingStorage = wrappedLoggerStorage({
     storage: getRxStorageIndexedDB({})
 });
+```
 
+### Create Database
+
+```ts
 // create your database with the wrapped storage
 const db = await createRxDatabase({
     name: 'mydatabase',
@@ -47,6 +58,8 @@ const db = await createRxDatabase({
 
 // create collections etc...
 ```
+
+</Steps>
 
 
 

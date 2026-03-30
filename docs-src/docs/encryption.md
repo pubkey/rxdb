@@ -10,8 +10,10 @@ import {PremiumBlock} from '@site/src/components/premium-block';
 import { PerformanceChart } from '@site/src/components/performance-chart';
 import { PERFORMANCE_DATA_ENCRYPTION, PERFORMANCE_METRICS } from '@site/src/components/performance-data';
 
-# 🔒 Encrypted Local Storage with RxDB
+import {HeadlineWithIcon} from '@site/src/components/headline-with-icon';
+import {IconEncryption} from '@site/src/components/icons/encryption';
 
+# <HeadlineWithIcon h1 icon={<IconEncryption />}>Encrypted Local Storage with RxDB</HeadlineWithIcon>
 
 <!-- keywords:
 encrypted browser storage
@@ -22,12 +24,7 @@ sqlite browser encrypted databases
 react native encrypted storage
 -->
 
-
 The RxDB encryption plugin empowers developers to fortify their applications' data security. It seamlessly integrates with [RxDB](https://rxdb.info/), allowing for the secure storage and retrieval of documents by **encrypting them with a password**. With encryption and decryption processes handled internally, it ensures that sensitive data remains confidential, making it a valuable tool for building robust, privacy-conscious applications. The encryption works on all RxDB supported devices types like the **[browser](./articles/browser-database.md)**, **[ReactNative](./react-native-database.md)** or **[Node.js](./nodejs-database.md)**.
-
-<p align="center">
-  <img src="./files/icons/with-gradient/storage-layer.svg" alt="Encryption Storage Layer" height="60" />
-</p>
 
 Encrypting client-side stored data in RxDB offers numerous advantages:
 - **Enhanced Security**: In the unfortunate event of a user's device being stolen, the encrypted data remains safeguarded on the hard drive, inaccessible without the correct password.

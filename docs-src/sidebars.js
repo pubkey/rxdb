@@ -203,7 +203,7 @@ const sidebars = {
         {
           type: 'doc',
           id: 'rx-storage-shared-worker',
-          label: 'SharedWorker RxStorage',
+          label: 'SharedWorker',
           customProps: {
             iconAfter: 'premium'
           }
@@ -211,7 +211,7 @@ const sidebars = {
         {
           type: 'doc',
           id: 'rx-storage-memory-mapped',
-          label: 'Memory Mapped RxStorage',
+          label: 'Memory Mapped',
           customProps: {
             iconAfter: 'premium'
           }

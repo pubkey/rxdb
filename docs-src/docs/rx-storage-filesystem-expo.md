@@ -11,12 +11,15 @@ import {Steps} from '@site/src/components/steps';
 import { PerformanceChart } from '@site/src/components/performance-chart';
 import { PERFORMANCE_DATA_EXPO, PERFORMANCE_METRICS } from '@site/src/components/performance-data';
 
-# Expo Filesystem RxStorage
+import {HeadlineWithIcon} from '@site/src/components/headline-with-icon';
 
-<BetaBlock since="17.0.0" />
+# <HeadlineWithIcon h1 icon={<img src="/files/icons/expo.svg" alt="Expo" />} subtitle="Faster than SQLite">Expo Filesystem RxStorage</HeadlineWithIcon>
+
 
 The Expo Filesystem [RxStorage](./rx-storage.md) for RxDB is built on top of the [expo-file-system](https://docs.expo.dev/versions/latest/sdk/filesystem/) library, bringing blazing-fast direct filesystem capabilities to React Native and Expo applications.
 It stores data in plain files and achieves vastly superior performance compared to traditional React Native storage solutions like Async Storage or SQLite.
+
+<BetaBlock since="17.0.0" />
 
 ### Pros
 
