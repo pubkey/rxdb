@@ -405,6 +405,7 @@ p {
     font-size: var(--fontSizes-xl);
     font-weight: 700;
     color: white;
+    margin-top: 80px;
 }
 
 .markdown h3 {
@@ -3437,9 +3438,11 @@ footer a:visited {
     margin-right: 22px;
     position: absolute;
 }
+
 .side-tabs.small .side-tabs__label {
     position: relative;
 }
+
 .side-tabs.small .side-tabs__tab--active .side-tabs__label {
     margin-top: -3px;
 }
@@ -3481,6 +3484,7 @@ footer a:visited {
 .alert.alert--info div div {
     border-color: var(--color-middle);
 }
+
 /* 
 .chat-background {
     background-size: 50%;

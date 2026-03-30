@@ -167,7 +167,7 @@ export default function PerformanceChartImpl({ data, metrics, title, logScale }:
     };
 
     return (
-        <div style={{ width: '100%', height: isMobile ? 600 : 600, marginTop: '35px', marginBottom: '95px' }}>
+        <div style={{ width: '100%', marginTop: '35px', marginBottom: '95px' }}>
             {title && (
                 <h3 style={{ textAlign: 'center', marginBottom: '5px', color: 'var(--ifm-font-color-base)' }}>
                     {title}
@@ -176,52 +176,54 @@ export default function PerformanceChartImpl({ data, metrics, title, logScale }:
             <div style={{ textAlign: 'center', marginBottom: '15px', opacity: 0.8, fontSize: '0.9em', color: 'var(--ifm-font-color-base)' }}>
                 (times in milliseconds, lower is better)
             </div>
-            <ResponsiveContainer>
-                <BarChart
-                    data={data}
-                    margin={{
-                        top: 35,
-                        right: isMobile ? 0 : 30,
-                        left: isMobile ? 0 : 20,
-                        bottom: 5,
-                    }}
-                >
-                    <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-                    <XAxis
-                        dataKey="name"
-                        stroke="var(--ifm-font-color-base)"
-                        tick={<CustomXAxisTick />}
-                        tickMargin={10}
-                        height={120}
-                        interval={0}
-                    />
-                    <YAxis
-                        stroke="var(--ifm-font-color-base)"
-                        label={{ value: 'ms', position: 'top', offset: 15, fill: 'var(--ifm-font-color-base)' }}
-                        scale={logScale ? 'log' : 'auto'}
-                        domain={logScale ? ['auto', 'auto'] : undefined}
-                    />
-                    <Tooltip
-                        wrapperStyle={{ zIndex: 1000 }}
-                        content={<CustomTooltip />}
-                    />
-                    <Legend
-                        wrapperStyle={{ paddingTop: isMobile ? '20px' : '0px' }}
-                        content={<CustomLegend />}
-                    />
-                    {metrics.map(metric => (
-                        <Bar
-                            key={metric.key}
-                            dataKey={metric.key}
-                            name={metric.name}
-                            fill={metric.color}
-                            radius={[0, 0, 0, 0]}
-                            minPointSize={3}
-                            fillOpacity={hoveredKey && hoveredKey !== metric.key ? 0.3 : 1}
+            <div style={{ width: '100%', height: isMobile ? 600 : 600 }}>
+                <ResponsiveContainer>
+                    <BarChart
+                        data={data}
+                        margin={{
+                            top: 35,
+                            right: isMobile ? 0 : 30,
+                            left: isMobile ? 0 : 20,
+                            bottom: 5,
+                        }}
+                    >
+                        <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                        <XAxis
+                            dataKey="name"
+                            stroke="var(--ifm-font-color-base)"
+                            tick={<CustomXAxisTick />}
+                            tickMargin={10}
+                            height={120}
+                            interval={0}
                         />
-                    ))}
-                </BarChart>
-            </ResponsiveContainer>
+                        <YAxis
+                            stroke="var(--ifm-font-color-base)"
+                            label={{ value: 'ms', position: 'top', offset: 15, fill: 'var(--ifm-font-color-base)' }}
+                            scale={logScale ? 'log' : 'auto'}
+                            domain={logScale ? ['auto', 'auto'] : undefined}
+                        />
+                        <Tooltip
+                            wrapperStyle={{ zIndex: 1000 }}
+                            content={<CustomTooltip />}
+                        />
+                        <Legend
+                            wrapperStyle={{ paddingTop: isMobile ? '20px' : '0px' }}
+                            content={<CustomLegend />}
+                        />
+                        {metrics.map(metric => (
+                            <Bar
+                                key={metric.key}
+                                dataKey={metric.key}
+                                name={metric.name}
+                                fill={metric.color}
+                                radius={[0, 0, 0, 0]}
+                                minPointSize={3}
+                                fillOpacity={hoveredKey && hoveredKey !== metric.key ? 0.3 : 1}
+                            />
+                        ))}
+                    </BarChart>
+                </ResponsiveContainer>
+            </div>
             <style>{`
                 .responsive-legend-wrapper {
                     display: flex;
