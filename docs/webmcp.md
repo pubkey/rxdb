@@ -12,6 +12,8 @@ import {BetaBlock} from '@site/src/components/beta-block';
 
 Over the past few years, the **[Local-First](./articles/local-first-future.md) architecture** has emerged as a new standard for building fast, offline-capable applications. Now, the long-awaited introduction of **WebMCP** makes local-first even more useful. By keeping data local, AI Agents can access, query, and mutate application states instantaneously on the client side, bypassing the latency and security vulnerabilities of traditional cloud APIs.
 
+> WebMCP provides a formalized machine interface alongside the human interface.
+
 ## What is WebMCP?
 
 [WebMCP](https://webmachinelearning.github.io/webmcp/) (Web Model Context Protocol) is an experimental browser API that allows your web application to seamlessly expose "tools" for AI Agents. WebMCP is an adaptation of the Model Context Protocol (MCP) standardized for use within web browsers, currently incubated through the W3C Web Machine Learning community group.

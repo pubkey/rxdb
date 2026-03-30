@@ -4,6 +4,7 @@
 
 import {BetaBlock} from '@site/src/components/beta-block';
 import {PremiumBlock} from '@site/src/components/premium-block';
+import {Steps} from '@site/src/components/steps';
 import { PerformanceChart } from '@site/src/components/performance-chart';
 import { PERFORMANCE_DATA_EXPO, PERFORMANCE_METRICS } from '@site/src/components/performance-data';
 
@@ -18,19 +19,33 @@ It stores data in plain files and achieves vastly superior performance compared 
 
 - **Extreme Performance**: Significantly faster than SQLite and Async Storage in React Native.
 - **Easy Integration**: Drops right into any Expo or React Native project.
-- Directly utilizes the Expo FileSystem for minimum overhead without relying on an intermediate database engine.
+- Directly uses the Expo FileSystem for minimum overhead without relying on an intermediate database engine.
 
 <PremiumBlock />
 
 ## Installation
 
-> **Note:** This storage plugin requires at least **Expo SDK 54** or the equivalent React Native `expo-file-system` version to function.
+> **Note:** This storage plugin requires at least **Expo SDK 54 (or newer)** or the equivalent React Native `expo-file-system` version to function.
+
+<Steps>
+
+### Install expo-file-system
 
 First, you need to install the `expo-file-system` dependency:
 
 ```bash
 npx expo install expo-file-system
 ```
+
+### Install expo-opfs
+
+You also have to install the `expo-opfs` peer dependency:
+
+```bash
+npx expo install expo-opfs
+```
+
+</Steps>
 
 ## Usage
 
@@ -57,7 +72,7 @@ const myRxDatabase = await createRxDatabase({
 
 ### Synchronous API
 
-Because the expo filesystem also has a sync API, you can utilize that which has faster writes but slower reads.
+Because the expo filesystem also has a sync API, you can use the sync storage which has faster writes but slower reads.
 
 ```ts
 import { createRxDatabase } from 'rxdb';
