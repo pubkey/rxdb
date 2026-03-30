@@ -122,7 +122,9 @@ On your MongoDB server, make sure to create a database and a collection.
 //> server.ts
 
 import { MongoClient } from 'mongodb';
-const mongoClient = new MongoClient('mongodb://localhost:27017/?directConnection=true');
+const mongoClient = new MongoClient(
+    'mongodb://localhost:27017/?directConnection=true'
+);
 const mongoDatabase = mongoClient.db('my-database');
 await mongoDatabase.createCollection('my-collection', {
   changeStreamPreAndPostImages: { enabled: true }

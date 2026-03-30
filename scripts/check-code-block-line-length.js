@@ -38,6 +38,11 @@ function checkFile(filePath) {
         const trimmed = line.trim();
 
         if (trimmed.startsWith('```')) {
+            // Single-line code block: ```code```
+            const rest = trimmed.slice(3);
+            if (rest.endsWith('```') && rest.length > 3) {
+                continue;
+            }
             inCodeBlock = !inCodeBlock;
             continue;
         }
