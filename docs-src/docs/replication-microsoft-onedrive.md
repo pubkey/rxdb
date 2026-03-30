@@ -46,7 +46,9 @@ Your application must handle the OAuth flow to get an `accessToken` from Microso
 Once you have the `accessToken`, you can start the replication.
 
 ```ts
-import { replicateMicrosoftOneDrive } from 'rxdb/plugins/replication-microsoft-onedrive';
+import {
+    replicateMicrosoftOneDrive
+} from 'rxdb/plugins/replication-microsoft-onedrive';
 
 const replicationState = await replicateMicrosoftOneDrive({
     replicationIdentifier: 'my-app-onedrive-sync',
