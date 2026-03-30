@@ -13,7 +13,7 @@ export function HeadlineWithIcon({ children, icon, subtitle, h1, h2, h3 }: { chi
     if (h1) {
         size = '40px';
     } else if (h2) {
-
+        size = '35px';
     } else if (h3) {
         size = '30px';
         marginRight = '15px';
