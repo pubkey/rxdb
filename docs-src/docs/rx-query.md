@@ -7,7 +7,7 @@ image: /headers/rx-query.jpg
 
 # RxQuery
 
-To find documents inside of an [RxCollection](./rx-collection.md), RxDB uses the RxQuery interface that handles all query operations: it serves as the main interface for fetching documents, relies on a MongoDB-like [Mango Query Syntax](https://github.com/cloudant/mango), and provides three types of queries: [find()](#find), [findOne()](#findone) and [count()](#count). By caching and de-duplicating results, RxQuery ensures efficient in-memory handling, and when queries are observed or re-run, the [EventReduce algorithm](https://github.com/pubkey/event-reduce) speeds up updates for a fast real-time experience and queries that run more than once.
+To find documents inside of an [RxCollection](./rx-collection.md), RxDB uses the RxQuery interface that handles all query operations: it serves as the main interface for fetching documents, relies on a MongoDB-like [Mango Query Syntax](https://github.com/cloudant/mango), and provides three types of queries: [find()](#find), [findOne()](#findOne) and [count()](#count). By caching and de-duplicating results, RxQuery ensures efficient in-memory handling, and when queries are observed or re-run, the [EventReduce algorithm](https://github.com/pubkey/event-reduce) speeds up updates for a fast real-time experience and queries that run more than once.
 
 ## find()
 To create a basic `RxQuery`, call `.find()` on a collection and insert selectors. The result-set of normal queries is an array with documents.
@@ -24,7 +24,7 @@ const query = myCollection
     });
 ```
 
-## findOne()
+## findOne() {#findOne}
 A findOne-query has only a single [RxDocument](./rx-document.md) or `null` as result-set.
 
 ```js
@@ -72,7 +72,7 @@ const doc = await myCollection.findOne().exec(true);
 ```
 
 
-## Observe $
+## Observe $ {#observe}
 An `BehaviorSubject` [see](https://medium.com/@luukgruijs/understanding-rxjs-behaviorsubject-replaysubject-and-asyncsubject-8cc061f1cfc0) that always has the current result-set as value.
 This is extremely helpful when used together with UIs that should always show the same state as what is written in the database.
 

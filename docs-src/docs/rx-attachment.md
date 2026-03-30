@@ -255,7 +255,7 @@ This option works with `upsert()`, `bulkUpsert()`, and `incrementalUpsert()`.
 
 
 
-# Attachment compression
+## Attachment compression {#attachment-compression}
 
 Storing many attachments can be a problem when the disc space of the device is exceeded.
 Therefore it can make sense to compress the attachments before storing them in the [RxStorage](./rx-storage.md).
