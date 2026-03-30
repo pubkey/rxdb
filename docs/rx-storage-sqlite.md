@@ -211,10 +211,6 @@ const storage = getRxStorageSQLite({
 
 ### Usage with **Expo SQLite**
 
-:::info
-For Expo apps, the **[Expo Filesystem RxStorage](./rx-storage-filesystem-expo.md)** exists and has significantly better performance compared to SQLite.
-:::
-
 Notice that [expo-sqlite](https://www.npmjs.com/package/expo-sqlite) cannot be used on android (but it works on iOS) if you use Expo SDK version 50 or older. Please update to Version 50 or newer to use it.
 
 In the latest expo SDK version, use the `getSQLiteBasicsExpoSQLiteAsync()` method:

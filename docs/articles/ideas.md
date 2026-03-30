@@ -6,16 +6,6 @@
 - performance and quality of vector indexing methods
 - What is new in IndexedDB 3.0
 - how progressive syncing beats client-server architecture
-- beating expo sqlite performce with the new expo filesystem and rxdb
-- linkedin post: How RxDB is optimized for LLMs to make you a 100x developer
-- how WebMCP & Local-First gives your app superpowers
-- How Local-First and WebMCP make your app accessible to agents
-- DX for LLMs
-- vibe-coding is the killer-app for local-first
-- agent-first with RxDB
-- "why the indexeddb API is almost perfekt"
-- "how to do auth with RxDB"
-- "Where to store that JWT token?"
 
 # ideas for articles
 
@@ -25,16 +15,6 @@
 - performance and quality of vector indexing methods
 - What is new in IndexedDB 3.0
 - how progressive syncing beats client-server architecture
-- beating expo sqlite performce with the new expo filesystem and rxdb
-- linkedin post: How RxDB is optimized for LLMs to make you a 100x developer
-- how WebMCP & Local-First gives your app superpowers
-- How Local-First and WebMCP make your app accessible to agents
-- DX for LLMs
-- vibe-coding is the killer-app for local-first
-- agent-first with RxDB
-- "why the indexeddb API is almost perfekt"
-- "how to do auth with RxDB"
-- "Where to store that JWT token?"
 
 ## Seo keywords:
 
@@ -113,3 +93,10 @@ X- "reactjs storage"
 
 - "sync engine" - 390
 - "indexeddb alternative" - 70
+
+## Non Seo
+
+- "Local-First Partial Sync with RxDB"
+- "why the indexeddb API is almost perfekt"
+- "how to do auth with RxDB"
+- "Where to store that JWT token?"
