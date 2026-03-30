@@ -77,7 +77,9 @@ RxDB creates RxJS observables outside of Angular's zone, meaning Angular won't a
 /**
  * IMPORTANT: RxDB creates rxjs observables outside of Angular's zone
  * So you have to import the rxjs patch to ensure change detection works correctly.
- * @link https://www.bennadel.com/blog/3448-binding-rxjs-observable-sources-outside-of-the-ngzone-in-angular-6-0-2.htm
+ * @link https://www.bennadel.com/blog/
+ * 3448-binding-rxjs-observable-sources-
+ * outside-of-the-ngzone-in-angular-6-0-2.htm
  */
 import 'zone.js/plugins/zone-patch-rxjs';
 ```
@@ -227,7 +229,9 @@ import { RxReactivityFactory } from 'rxdb/plugins/core';
 import { Signal, untracked, Injector } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 
-export function createReactivityFactory(injector: Injector): RxReactivityFactory<Signal<any>> {
+export function createReactivityFactory(
+  injector: Injector
+): RxReactivityFactory<Signal<any>> {
   return {
     fromObservable(observable$, initialValue) {
       return untracked(() =>
