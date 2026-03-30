@@ -8,14 +8,17 @@ export type CreateRxDatabaseFunctionType = (databaseName: string) => Promise<RxD
 export function setFlutterRxDatabaseConnector(
     createDB: CreateRxDatabaseFunctionType
 ) {
+    if (!(process as any).databases) {
+        (process as any).databases = {};
+    }
     (process as any).init = async (databaseName: string) => {
         const db = await createDB(databaseName);
-        db.eventBulks$.subscribe((eventBulk: RxChangeEventBulk<any>) => {
+        const eventSub = db.eventBulks$.subscribe((eventBulk: RxChangeEventBulk<any>) => {
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
             sendRxDBEvent(JSON.stringify(eventBulk));
         });
-        (process as any).db = db;
+        (process as any).databases[databaseName] = { db, eventSub };
         const collections: { name: string; primaryKey: string; }[] = [];
         Object.entries(db.collections).forEach(([collectionName, collection]) => {
             collections.push({
@@ -27,6 +30,14 @@ export function setFlutterRxDatabaseConnector(
             databaseName,
             collections
         };
+    };
+    (process as any).close = async (databaseName: string) => {
+        const entry = (process as any).databases[databaseName];
+        if (entry) {
+            entry.eventSub.unsubscribe();
+            await entry.db.close();
+            delete (process as any).databases[databaseName];
+        }
     };
 }
 
