@@ -532,7 +532,7 @@ jobs:
       - name: lint
         id: lint
         continue-on-error: true
-        run: npm run lint 2>&1 | tee /tmp/lint-output.txt
+        run: npm run lint
 
       - name: Trigger Copilot to fix lint errors
         if: steps.lint.outcome == 'failure' && github.event_name == 'pull_request'
@@ -540,31 +540,23 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const fs = require('fs');
-            const fullOutput = fs.readFileSync('/tmp/lint-output.txt', 'utf8');
-            const maxLen = 3000;
-            const wasTruncated = fullOutput.length > maxLen;
-            const lintOutput = wasTruncated ? fullOutput.slice(-maxLen) : fullOutput;
             const prNumber = context.payload.pull_request.number;
             const prTitle = context.payload.pull_request.title;
             const branch = context.payload.pull_request.head.ref;
-            const bodyParts = [
-              `The linting step failed in CI for PR #${prNumber} ("${prTitle}") on branch \`${branch}\`.`,
-              '',
-              'Please fix the following lint errors by running `npm run lint:fix` and addressing any remaining issues:',
-              '',
-            ];
-            if (wasTruncated) {
-              bodyParts.push('> **Note:** Output was truncated. Run `npm run lint` locally to see the full output.');
-              bodyParts.push('');
-            }
-            bodyParts.push('```', lintOutput, '```');
-            bodyParts.push('', `After fixing, push the changes to the \`${branch}\` branch.`);
+            const runUrl = `${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}`;
             await github.rest.issues.create({
               owner: context.repo.owner,
               repo: context.repo.repo,
               title: `Fix lint errors from PR #${prNumber}`,
-              body: bodyParts.join('\n'),
+              body: [
+                `The linting step failed in CI for PR #${prNumber} ("${prTitle}") on branch \`${branch}\`.`,
+                '',
+                `See the failed run for details: ${runUrl}`,
+                '',
+                'Please fix the lint errors by running `npm run lint:fix` and addressing any remaining issues.',
+                '',
+                `After fixing, push the changes to the \`${branch}\` branch.`
+              ].join('\n'),
               assignees: ['copilot']
             });
 
