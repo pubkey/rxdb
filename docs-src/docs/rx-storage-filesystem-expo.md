@@ -61,7 +61,7 @@ const myRxDatabase = await createRxDatabase({
 
 ### Synchronous API
 
-Because the expo filesystem also has a sync API, you can utilize that which has faster writes but slower reads.
+Because the expo filesystem also has a sync API, you can use the sync version which has faster writes but slower reads.
 
 ```ts
 import { createRxDatabase } from 'rxdb';
