@@ -53,7 +53,7 @@ function checkFile(filePath) {
                 filePath
             );
             console.error(
-                `Error: Code block line too long ` +
+                'Error: Code block line too long ' +
                 `(${line.length} > ${MAX_LINE_LENGTH}) ` +
                 `in ${relativePath}:${i + 1}`
             );
