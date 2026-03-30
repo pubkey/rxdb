@@ -21,7 +21,7 @@ It stores data in plain files and achieves vastly superior performance compared 
 
 - **Extreme Performance**: Significantly faster than SQLite and Async Storage in React Native.
 - **Easy Integration**: Drops right into any Expo or React Native project.
-- Directly utilizes the Expo FileSystem for minimum overhead without relying on an intermediate database engine.
+- Directly uses the Expo FileSystem for minimum overhead without relying on an intermediate database engine.
 
 <PremiumBlock />
 
@@ -61,7 +61,7 @@ const myRxDatabase = await createRxDatabase({
 
 ### Synchronous API
 
-Because the expo filesystem also has a sync API, you can utilize that which has faster writes but slower reads.
+Because the expo filesystem also has a sync API, you can use the sync storage which has faster writes but slower reads.
 
 ```ts
 import { createRxDatabase } from 'rxdb';
