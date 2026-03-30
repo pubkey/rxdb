@@ -110,12 +110,7 @@ export type RxJsonSchema<
      */
     primaryKey: PrimaryKey<RxDocType>;
 
-    /**
-     * TODO this looks like a typescript-bug
-     * we have to allows all string because the 'object'-literal is not recognized
-     * retry this in later typescript-versions
-     */
-    type: 'object' | string;
+    type: 'object' | (string & {});
 
     properties: { [key in StringKeys<RxDocType>]: TopLevelProperty };
 
