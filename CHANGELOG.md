@@ -19,7 +19,7 @@
 
 ### 17.0.0 (30 March 2026)
 
-🚀 **RxDB v15 is released**
+🚀 **RxDB v17 is released**
 
 - A list of changes for RxDB v17 can be found [here](https://rxdb.info/releases/17.0.0.html)
 
