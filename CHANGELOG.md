@@ -5,6 +5,7 @@
 
 <!-- ADD new changes here! -->
 
+- FIX `RxMigrationStatus.count.percent` returning `NaN` when migrating a collection with 0 documents
 - FIX incorrect index string generation for negative decimal numbers causing wrong sort order and query results
 - FIX `rateQueryPlan()` evaluated `startKeys` twice instead of `endKeys`, causing suboptimal index selection for `$lt`/`$lte` queries.
 - FIX event-reduce mutating cached `docsDataMap` causing missing documents after insert-delete cycles
