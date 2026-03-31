@@ -14,6 +14,7 @@
   "major": {
     "automerge": true
   },
+  "minimumReleaseAge": "7 days",
   "ignorePaths": [
     "docs-src/static/files/logo/package.json",
     "docs-src/package.json",
