@@ -314,8 +314,15 @@ export class RxQueryBase<
                     queryObj: this.mangoQuery
                 });
             } else {
+                let count = countResult.count;
+                if (this.mangoQuery.skip) {
+                    count = Math.max(0, count - this.mangoQuery.skip);
+                }
+                if (typeof this.mangoQuery.limit === 'number') {
+                    count = Math.min(count, this.mangoQuery.limit);
+                }
                 result = {
-                    result: countResult.count,
+                    result: count,
                     counter: this.collection._changeEventBuffer.getCounter()
                 };
             }

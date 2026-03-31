@@ -50,23 +50,6 @@ export function checkQuery(args: RxPluginPreCreateRxQueryArgs) {
         }
     });
 
-    // do not allow skip or limit for count queries
-    if (
-        args.op === 'count' &&
-        (
-            args.queryObj.limit ||
-            args.queryObj.skip
-        )
-    ) {
-        throw newRxError(
-            'QU15',
-            {
-                collection: args.collection.name,
-                query: args.queryObj
-            }
-        );
-    }
-
     ensureObjectDoesNotContainRegExp(args.queryObj);
 }
 

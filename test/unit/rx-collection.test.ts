@@ -1626,20 +1626,34 @@ describe('rx-collection.test.ts', () => {
                     );
                     c.database.close();
                 });
-                it('must throw on limit and skip', async () => {
-                    const c = await humansCollection.create(0);
-                    const query = c.count();
-                    await AsyncTestUtil.assertThrows(
-                        () => query.limit(11),
-                        'RxError',
-                        'QU15'
-                    );
+                it('should respect limit on count queries', async () => {
+                    const c = await humansCollection.create(5);
+                    const countWithLimit = await c.count().limit(2).exec();
+                    assert.strictEqual(countWithLimit, 2);
 
-                    await AsyncTestUtil.assertThrows(
-                        () => query.skip(11),
-                        'RxError',
-                        'QU15'
-                    );
+                    const countWithoutLimit = await c.count().exec();
+                    assert.strictEqual(countWithoutLimit, 5);
+
+                    c.database.close();
+                });
+                it('should respect skip on count queries', async () => {
+                    const c = await humansCollection.create(5);
+                    const countWithSkip = await c.count().skip(3).exec();
+                    assert.strictEqual(countWithSkip, 2);
+
+                    c.database.close();
+                });
+                it('should respect both skip and limit on count queries', async () => {
+                    const c = await humansCollection.create(10);
+                    const count = await c.count().skip(3).limit(2).exec();
+                    assert.strictEqual(count, 2);
+
+                    c.database.close();
+                });
+                it('should return 0 when skip exceeds total count', async () => {
+                    const c = await humansCollection.create(3);
+                    const count = await c.count().skip(5).limit(2).exec();
+                    assert.strictEqual(count, 0);
 
                     c.database.close();
                 });
