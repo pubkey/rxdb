@@ -628,6 +628,44 @@ describeParallel('rx-schema.test.ts', () => {
                     assert.ok(index.includes('id'));
                 });
             });
+            it('should deduplicate indexes that become identical after adding _deleted prefix and primaryKey suffix', () => {
+                /**
+                 * When the user defines ['name'] and ['name', 'id'],
+                 * both become ['_deleted', 'name', 'id'] after fillWithDefaultSettings
+                 * because _deleted is prepended and primaryKey 'id' is appended.
+                 * The result should not contain duplicate indexes.
+                 */
+                const schema: RxJsonSchema<any> = fillWithDefaultSettings({
+                    primaryKey: 'id',
+                    version: 0,
+                    type: 'object',
+                    properties: {
+                        id: {
+                            type: 'string',
+                            maxLength: 100
+                        },
+                        name: {
+                            type: 'string',
+                            maxLength: 100
+                        }
+                    },
+                    required: ['id'],
+                    indexes: [
+                        ['name'],
+                        ['name', 'id']
+                    ]
+                });
+
+                const indexes = ensureNotFalsy(schema.indexes);
+                const indexStrings = indexes.map((index: any) => JSON.stringify(index));
+                const uniqueIndexStrings = [...new Set(indexStrings)];
+
+                assert.strictEqual(
+                    indexStrings.length,
+                    uniqueIndexStrings.length,
+                    'fillWithDefaultSettings should deduplicate indexes that become identical after processing, but found duplicates: ' + JSON.stringify(indexes)
+                );
+            });
         });
         describe('.create()', () => {
             describe('positive', () => {
