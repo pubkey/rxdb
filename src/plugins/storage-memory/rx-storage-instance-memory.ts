@@ -491,7 +491,12 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
                     this.internals,
                     currentDoc[1]
                 );
-                indexOfLower++;
+                /**
+                 * Do NOT increment indexOfLower after removal.
+                 * removeDocFromState() splices the element out of the array,
+                 * so the next element shifts into the current position.
+                 * Incrementing would skip it.
+                 */
             }
         }
         return PROMISE_RESOLVE_TRUE;
