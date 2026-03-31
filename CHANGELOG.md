@@ -5,6 +5,8 @@
 
 <!-- ADD new changes here! -->
 
+- FIX memory storage `count()` returning incorrect results when the selector is not fully satisfied by the index and the query has a `limit` set
+
 - FIX incorrect index string generation for negative decimal numbers causing wrong sort order and query results
 - FIX `rateQueryPlan()` evaluated `startKeys` twice instead of `endKeys`, causing suboptimal index selection for `$lt`/`$lte` queries.
 - FIX event-reduce mutating cached `docsDataMap` causing missing documents after insert-delete cycles

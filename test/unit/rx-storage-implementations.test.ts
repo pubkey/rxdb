@@ -1950,6 +1950,55 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
 
                 storageInstance.remove();
             });
+            it('should count all matching documents regardless of limit when selector is not satisfied by index', async () => {
+                const schema = getTestDataSchema();
+                const storageInstance = await config.storage
+                    .getStorage()
+                    .createStorageInstance<TestDocType>({
+                        databaseInstanceToken: randomToken(10),
+                        databaseName: randomToken(12),
+                        collectionName: randomToken(12),
+                        schema,
+                        options: {},
+                        multiInstance: false,
+                        devMode: true
+                    });
+
+                // Insert 5 documents
+                await storageInstance.bulkWrite([
+                    { document: getWriteData({ value: 'aaa' }) },
+                    { document: getWriteData({ value: 'bbb' }) },
+                    { document: getWriteData({ value: 'ccc' }) },
+                    { document: getWriteData({ value: 'ddd' }) },
+                    { document: getWriteData({ value: 'eee' }) }
+                ], testContext);
+
+                /**
+                 * Use $regex in the selector so the query planner
+                 * does NOT set selectorSatisfiedByIndex=true.
+                 * This forces count() to use the slow path via query().
+                 */
+                const preparedQueryWithLimit = prepareQuery<TestDocType>(
+                    schema,
+                    {
+                        selector: {
+                            value: { $regex: '.*' }
+                        },
+                        sort: [{ key: 'asc' }],
+                        skip: 0,
+                        limit: 2
+                    }
+                );
+
+                // count() should return the total matching documents (5),
+                // NOT the limited amount (2)
+                const countResult = await storageInstance.count(preparedQueryWithLimit);
+                const queryResult = await storageInstance.query(preparedQueryWithLimit);
+                assert.strictEqual(queryResult.documents.length, 2, 'query() should respect limit');
+                assert.strictEqual(countResult.count, 5, 'count() must return total matching documents regardless of limit');
+
+                storageInstance.remove();
+            });
         });
         describe('.findDocumentsById()', () => {
             it('should find the documents', async () => {

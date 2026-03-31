@@ -451,10 +451,54 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
             });
         }
 
-        return this.query(preparedQuery).then(result => ({
-            count: result.documents.length,
+        const queryMatcher = getQueryMatcher(
+            this.schema,
+            preparedQuery.query
+        );
+        const queryPlanFields: string[] = queryPlan.index;
+        const index: string[] = queryPlanFields;
+        const lowerBound: any[] = queryPlan.startKeys;
+        const lowerBoundString = getStartIndexStringFromLowerBound(
+            this.schema,
+            index,
+            lowerBound
+        );
+        const upperBound: any[] = queryPlan.endKeys;
+        const upperBoundString = getStartIndexStringFromUpperBound(
+            this.schema,
+            index,
+            upperBound
+        );
+        const indexName = getMemoryIndexName(index);
+        if (!this.internals.byIndex[indexName]) {
+            throw newRxError('SNH', { args: { indexName } });
+        }
+        const docsWithIndex = this.internals.byIndex[indexName].docsWithIndex;
+
+        let indexOfLower = queryPlan.inclusiveStart
+            ? boundGEByIndexString(docsWithIndex, lowerBoundString)
+            : boundGTByIndexString(docsWithIndex, lowerBoundString);
+
+        const indexOfUpper = queryPlan.inclusiveEnd
+            ? boundLEByIndexString(docsWithIndex, upperBoundString)
+            : boundLTByIndexString(docsWithIndex, upperBoundString);
+
+        let count = 0;
+        while (indexOfLower <= indexOfUpper) {
+            const currentRow = docsWithIndex[indexOfLower];
+            if (!currentRow) {
+                break;
+            }
+            if (queryMatcher(currentRow[1])) {
+                count++;
+            }
+            indexOfLower++;
+        }
+
+        return Promise.resolve({
+            count,
             mode: 'fast' as const
-        }));
+        });
     }
 
     cleanup(minimumDeletedTime: number): Promise<boolean> {
