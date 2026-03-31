@@ -311,6 +311,47 @@ describe('rx-collection.test.ts', () => {
 
                     db.close();
                 });
+                it('should have independent non-primitive default values across multiple inserts', async () => {
+                    const mySchema: RxJsonSchema<{ id: string; tags: string[]; }> = {
+                        version: 0,
+                        primaryKey: 'id',
+                        type: 'object',
+                        properties: {
+                            id: {
+                                type: 'string',
+                                maxLength: 100
+                            },
+                            tags: {
+                                type: 'array',
+                                items: { type: 'string' },
+                                default: []
+                            }
+                        },
+                        required: ['id']
+                    };
+                    const db = await createRxDatabase({
+                        name: randomToken(10),
+                        storage: config.storage.getStorage(),
+                    });
+                    const collections = await db.addCollections({
+                        items: {
+                            schema: mySchema
+                        }
+                    });
+
+                    // Insert two documents without specifying the 'tags' field
+                    await collections.items.insert({ id: 'doc1' });
+                    await collections.items.insert({ id: 'doc2' });
+
+                    const doc1 = await collections.items.findOne({ selector: { id: 'doc1' } }).exec(true);
+                    const doc2 = await collections.items.findOne({ selector: { id: 'doc2' } }).exec(true);
+
+                    // Both documents should have the default empty array
+                    assert.deepStrictEqual(doc1.tags, []);
+                    assert.deepStrictEqual(doc2.tags, []);
+
+                    db.close();
+                });
             });
             describe('negative', () => {
                 it('should throw a conflict-error', async () => {
