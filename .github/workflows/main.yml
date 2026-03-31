@@ -441,6 +441,9 @@ jobs:
       - name: check for em-dashes
         run: node ./scripts/check-em-dashes.js
 
+      - name: check code block line length
+        run: node ./scripts/check-code-block-line-length.js
+
       - name: npm run docs:build
         run: |
           npm -v

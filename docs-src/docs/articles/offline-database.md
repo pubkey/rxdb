@@ -150,7 +150,9 @@ Local data can be a risk if it’s sensitive or personal. RxDB offers [encryptio
 ```ts
 import { createRxDatabase } from 'rxdb/plugins/core';
 import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
-import { wrappedKeyEncryptionCryptoJsStorage } from 'rxdb/plugins/encryption-crypto-js';
+import {
+  wrappedKeyEncryptionCryptoJsStorage
+} from 'rxdb/plugins/encryption-crypto-js';
 
 async function initSecureDB() {
   // Wrap the storage with crypto-js encryption

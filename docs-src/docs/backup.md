@@ -62,7 +62,8 @@ const backupOptions = {
 }
 const backupState = myDatabase.backup(backupOptions);
 
-// you can still await the initial backup write, but further changes will still be processed.
+// you can still await the initial backup write,
+// but further changes will still be processed.
 await backupState.awaitInitialBackup();
 ```
 
@@ -78,7 +79,10 @@ const backupOptions = {
 }
 const backupState = myDatabase.backup(backupOptions);
 
-const subscription = backupState.writeEvents$.subscribe(writeEvent => console.dir(writeEvent));
+const subscription = backupState.writeEvents$
+    .subscribe(writeEvent =>
+        console.dir(writeEvent)
+    );
 /*
 > {
     collectionName: 'humans',

@@ -39,7 +39,9 @@ await db.heroes.find({
     }
   }
 })
-.$ // the $ returns an observable that emits each time the result set of the query changes
+// the $ returns an observable that emits each
+// time the result set of the query changes
+.$
 .subscribe(aliveHeroes => console.dir(aliveHeroes));
 ```
 

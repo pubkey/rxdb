@@ -54,9 +54,11 @@ const database = await createRxDatabase({
             /**
              * Contains any value that can be used as parameter
              * to the SharedWorker constructor of thread.js
-             * Most likely you want to put the path to the shared-worker.js file in here.
+             * Most likely you want to put the path to
+             * the shared-worker.js file in here.
              * 
-             * @link https://developer.mozilla.org/en-US/docs/Web/API/SharedWorker?retiredLocale=de
+             * @link https://developer.mozilla.org/
+             * en-US/docs/Web/API/SharedWorker
              */
             workerInput: 'path/to/shared-worker.js',
             /**

@@ -195,7 +195,9 @@ const schemaWithIndexes = {
       },
       firstName: {
           type: 'string',
-          maxLength: 100 // <- string-fields that are used as an index, must have set maxLength.
+          // string-fields used as an index,
+          // must have set maxLength.
+          maxLength: 100
       },
       lastName: {
           type: 'string'
@@ -209,7 +211,8 @@ const schemaWithIndexes = {
       balance: {
           type: 'number',
 
-          // number fields that are used in an index, must have set minimum, maximum and multipleOf
+          // number fields used in an index, must set
+          // minimum, maximum and multipleOf
           minimum: 0,
           maximum: 100000,
           multipleOf: 0.01
@@ -232,7 +235,8 @@ const schemaWithIndexes = {
   ],
   indexes: [
     'firstName', // <- this will create a simple index for the `firstName` field
-    ['active', 'firstName'], // <- this will create a compound-index for these two fields
+    // <- compound-index for these two fields
+    ['active', 'firstName'],
     'active'
   ]
 };

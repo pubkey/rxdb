@@ -151,7 +151,9 @@ Over time, apps evolve - new fields, changed field types, or altered indexes. Rx
 When storing data locally, you may handle user-sensitive information like PII (Personal Identifiable Information) or financial details. RxDB supports on-device [encryption](../encryption.md) to protect fields. For example, you can define:
 
 ```ts
-import { wrappedKeyEncryptionCryptoJsStorage } from 'rxdb/plugins/encryption-crypto-js';
+import {
+    wrappedKeyEncryptionCryptoJsStorage
+} from 'rxdb/plugins/encryption-crypto-js';
 
 const encryptedStorage = wrappedKeyEncryptionCryptoJsStorage({
   storage: getRxStorageLocalstorage()

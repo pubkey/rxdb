@@ -171,7 +171,9 @@ const mySchema = {
         /* ... */
     },
     attachments: {
-        encrypted: true // if true, the attachment-data will be encrypted with the db-password
+        // if true, the attachment-data will be
+        // encrypted with the db-password
+        encrypted: true
     }
 };
 ```
@@ -189,7 +191,9 @@ When you wrap a storage like [OPFS](./rx-storage-opfs.md) with encryption inside
 ```ts
 // inside of the worker.js file
 import { getRxStorageOPFS } from 'rxdb-premium/plugins/storage-opfs';
-import { wrappedKeyEncryptionWebCryptoStorage } from 'rxdb-premium/plugins/encryption-web-crypto';
+import {
+    wrappedKeyEncryptionWebCryptoStorage
+} from 'rxdb-premium/plugins/encryption-web-crypto';
 
 const storage = wrappedKeyEncryptionWebCryptoStorage({
     storage: getRxStorageOPFS({

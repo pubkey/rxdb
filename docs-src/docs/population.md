@@ -28,7 +28,10 @@ export const refHuman = {
         },
         bestFriend: {
             ref: 'human',     // refers to collection human
-            type: 'string'    // ref-values must always be string or ['string', 'null'] (primary of foreign RxDocument) 
+            // ref-values must always be string
+            // or ['string', 'null']
+            // (primary of foreign RxDocument)
+            type: 'string'
         }
     }
 };

@@ -284,7 +284,9 @@ const withDistance = candidates.map(doc => ({
     doc,
     distance: euclideanDistance(queryVector, doc.embedding)
 }));
-const queryResult = withDistance.sort(sortByObjectNumberProperty('distance')).reverse();
+const queryResult = withDistance
+    .sort(sortByObjectNumberProperty('distance'))
+    .reverse();
 console.dir(queryResult);
 ```
 
@@ -381,7 +383,8 @@ const pipeline = await itemsCollection.addPipeline({
         await Promise.all(docs.map(async(doc) => {
             const embedding = await getEmbedding(doc.text);
             const docData = { id: doc.primary, embedding };
-            // calculate the distance to all samples and store them in the index fields
+            // calculate distance to all samples
+            // and store them in the index fields
             new Array(5).fill(0).map((_, idx) => {
                 const indexValue = euclideanDistance(sampleVectors[idx], embedding);
                 docData['idx' + idx] = indexNrToString(indexValue);
@@ -406,7 +409,9 @@ async function vectorSearchIndexSimilarity(searchEmbedding: number[]) {
     const candidates = new Set<RxDocument>();
     await Promise.all(
         new Array(5).fill(0).map(async (_, i) => {
-            const distanceToIndex = euclideanDistance(sampleVectors[i], searchEmbedding);
+            const distanceToIndex = euclideanDistance(
+                sampleVectors[i], searchEmbedding
+            );
             const [docsBefore, docsAfter] = await Promise.all([
                 vectorCollection.find({
                     selector: {
@@ -438,7 +443,9 @@ async function vectorSearchIndexSimilarity(searchEmbedding: number[]) {
             doc
         };
     });
-    const sorted = docsWithDistance.sort(sortByObjectNumberProperty('distance')).reverse();
+    const sorted = docsWithDistance
+        .sort(sortByObjectNumberProperty('distance'))
+        .reverse();
     return {
         result: sorted.slice(0, 10),
         docReads
@@ -456,7 +463,9 @@ async function vectorSearchIndexRange(searchEmbedding: number[]) {
     let docReads = 0;
     await Promise.all(
         new Array(5).fill(0).map(async (_, i) => {
-            const distanceToIndex = euclideanDistance(sampleVectors[i], searchEmbedding);
+            const distanceToIndex = euclideanDistance(
+                sampleVectors[i], searchEmbedding
+            );
             const range = distanceToIndex * indexDistance;
             const docs = await vectorCollection.find({
                 selector: {
@@ -479,7 +488,9 @@ async function vectorSearchIndexRange(searchEmbedding: number[]) {
             doc
         };
     });
-    const sorted = docsWithDistance.sort(sortByObjectNumberProperty('distance')).reverse();
+    const sorted = docsWithDistance
+        .sort(sortByObjectNumberProperty('distance'))
+        .reverse();
     return {
         result: sorted.slice(0, 10),
         docReads

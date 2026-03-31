@@ -48,7 +48,9 @@ const myDatabase = await createRxDatabase({
 myDatabase.addCollections({
   messages: {
     schema: messageSchema,
-    localDocuments: true // <- activate this to store local documents in the collection
+    // activate this to store local documents
+    // in the collection
+    localDocuments: true
   }
 });
 ```

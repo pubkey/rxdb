@@ -79,7 +79,9 @@ This is required because the `age` field is not unique, and we need a way to che
 ```ts
 const maxAge = 25;
 let result = [];
-const tx: IDBTransaction = db.transaction([storeName], 'readonly', TRANSACTION_SETTINGS);
+const tx: IDBTransaction = db.transaction(
+    [storeName], 'readonly', TRANSACTION_SETTINGS
+);
 const store = tx.objectStore(storeName);
 const index = store.index('age-index');
 let lastDoc;
