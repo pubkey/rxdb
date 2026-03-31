@@ -600,11 +600,11 @@ export class RxDatabaseBase<
              */
             await this.requestIdlePromise();
 
-            let closingError: any = null;
+            let closingError: Error | null = null;
             try {
                 await Promise.all(this.onClose.map(fn => fn()));
-            } catch (err) {
-                closingError = err;
+            } catch (err: unknown) {
+                closingError = err as Error;
             }
 
             // close all collections
