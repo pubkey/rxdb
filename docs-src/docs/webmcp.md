@@ -148,7 +148,7 @@ addRxPlugin(RxDBWebMCPPlugin);
 
 #### Create a database
 
-First, initialize your RxDatabase instance:
+First, initialize your [RxDatabase](./rx-database.md) instance:
 
 ```ts
 import { createRxDatabase } from 'rxdb';
@@ -286,14 +286,16 @@ const productSchema = {
 const productSchema = {
     version: 0,
     title: 'Store Product Inventory Item',
-    description: 'A physical item sold in our e-commerce store. Contains pricing and categorical SKU lookup data.',
+    description: 'A physical item sold in our store.' +
+        ' Contains pricing and SKU lookup data.',
     primaryKey: 'sku',
     type: 'object',
     properties: {
         sku: {
             type: 'string',
             maxLength: 100,
-            description: 'The Stock Keeping Unit identifier. Consists of a category prefix and a 6-digit number.'
+            description: 'The Stock Keeping Unit.' +
+                ' Category prefix and 6-digit number.'
         },
         price: {
             type: 'number',
@@ -314,7 +316,7 @@ const productSchema = {
 
 Architecturally, WebMCP turns the browser into a "capability surface" with explicit contracts. Security boundaries are clearer because only declared tools are visible and inputs are strictly validated against schemas.
 
-However, be aware that WebMCP **does not completely eliminate prompt injection risks**. It significantly narrows the surface compared to DOM-level automation, but an Agent mimicking a well-behaved query against your schema can still produce corrupted behavior if the prompt itself contains malicious instructions. Ensure your application logic (and RxDB schema validation) assumes agent-provided payloads are untrusted.
+However, be aware that WebMCP **does not completely eliminate prompt injection risks**. It significantly narrows the surface compared to DOM-level automation, but an Agent mimicking a well-behaved query against your schema can still produce corrupted behavior if the prompt itself contains malicious instructions. Ensure your application logic (and RxDB [schema validation](./schema-validation.md)) assumes agent-provided payloads are untrusted.
 
 
 <BetaBlock since="17.0.0">

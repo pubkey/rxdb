@@ -64,7 +64,13 @@ In your JavaScript project, install the RxDB libraries and the MongoDB node.js d
 
 ### Set up a MongoDB Server
 
-As first step, you need access to a running MongoDB Server. This can be done by either running a server locally or using the Atlas Cloud. Notice that we need to have a [replica set](https://www.mongodb.com/docs/manual/tutorial/deploy-replica-set/) because only on these, the MongoDB changestream can be used.
+As first step, you need access to a running
+MongoDB Server. This can be done by either
+running a server locally or using the Atlas
+Cloud. Notice that we need to have a
+[replica set](https://www.mongodb.com/docs/manual/tutorial/deploy-replica-set/)
+because only on these, the MongoDB changestream
+can be used.
 
 <Tabs>
 
@@ -82,18 +88,27 @@ If you have docker installed, you can start a container that runs the MongoDB se
 
 ### MongoDB Atlas
 
-Learn here how to create a MongoDB atlas account and how to start a MongoDB cluster that runs in the cloud: 
+Learn here how to create a MongoDB atlas
+account and how to start a MongoDB cluster
+that runs in the cloud:
 
 <br />
 <center>
-    <VideoBox videoId="bBA9rUdqmgY" title="Create MongoDB Atlas Server" duration="19:55" />
+    <VideoBox
+        videoId="bBA9rUdqmgY"
+        title="Create MongoDB Atlas Server"
+        duration="19:55"
+    />
 </center>
 
 
 </Tabs>
 <br />
 
-After this step you should have a valid connection string that points to a running MongoDB Server like `mongodb://localhost:27017/`.
+After this step you should have a valid
+connection string that points to a running
+MongoDB Server like
+`mongodb://localhost:27017/`.
 
 ### Create a MongoDB Database and Collection
 
@@ -103,7 +118,9 @@ On your MongoDB server, make sure to create a database and a collection.
 //> server.ts
 
 import { MongoClient } from 'mongodb';
-const mongoClient = new MongoClient('mongodb://localhost:27017/?directConnection=true');
+const mongoClient = new MongoClient(
+    'mongodb://localhost:27017/?directConnection=true'
+);
 const mongoDatabase = mongoClient.db('my-database');
 await mongoDatabase.createCollection('my-collection', {
   changeStreamPreAndPostImages: { enabled: true }
@@ -111,13 +128,23 @@ await mongoDatabase.createCollection('my-collection', {
 ```
 
 :::note
-To observe document deletions on the changestream, `changeStreamPreAndPostImages` must be enabled. This is not required if you have an insert/update-only collection where no documents are deleted ever.
+To observe document deletions on the
+changestream, `changeStreamPreAndPostImages`
+must be enabled. This is not required if you
+have an insert/update-only collection where
+no documents are deleted ever.
 :::
 
 
 ### Create a RxDB Database and Collection
 
-Now we create an RxDB [database](./rx-database.md) and a [collection](./rx-collection.md). In this example the [memory storage](./rx-storage-memory.md), in production you would use a [persistent storage](./rx-storage.md) instead.
+Now we create an RxDB
+[database](./rx-database.md) and a
+[collection](./rx-collection.md). In this
+example the
+[memory storage](./rx-storage-memory.md),
+in production you would use a
+[persistent storage](./rx-storage.md) instead.
 
 ```ts
 //> server.ts
@@ -151,7 +178,10 @@ await db.addCollections({
 
 ### Sync the Collection with the MongoDB Server
 
-Now we can start a [replication](./replication.md) that does a two-way replication between the RxDB Collection and the MongoDB Collection.
+Now we can start a
+[replication](./replication.md) that does a
+two-way replication between the RxDB
+Collection and the MongoDB Collection.
 
 ```ts
 //> server.ts
@@ -174,13 +204,22 @@ const replicationState = replicateMongoDB({
 ```
 
 :::note You can do many things with the replication state
-The `RxMongoDBReplicationState` which is returned from `replicateMongoDB()` allows you to run all functionality of the normal [RxReplicationState](./replication.md) like observing errors or doing start/stop operations.
+The `RxMongoDBReplicationState` which is
+returned from `replicateMongoDB()` allows
+you to run all functionality of the normal
+[RxReplicationState](./replication.md) like
+observing errors or doing start/stop
+operations.
 :::
 
 
 ### Start a RxServer
 
-Now that we have a RxDatabase and Collection that is replicated with MongoDB, we can spawn a [RxServer](./rx-server.md) on top of it. This server can then be used by client devices to connect.
+Now that we have a RxDatabase and Collection
+that is replicated with MongoDB, we can
+spawn a [RxServer](./rx-server.md) on top
+of it. This server can then be used by
+client devices to connect.
 
 ```ts
 //> server.ts
@@ -208,7 +247,10 @@ await server.start();
 
 ### Sync a Client with the RxServer
 
-On the client-side we create the exact same RxDatabase and collection and then replicate it with the replication endpoint of the RxServer.
+On the client-side we create the exact same
+RxDatabase and collection and then replicate
+it with the replication endpoint of the
+RxServer.
 
 ```ts
 //> client.ts
@@ -258,8 +300,12 @@ const replicationState = replicateServer({
 
 ## Follow Up
 
-- Try it out with the [RxDB-MongoDB example repository](https://github.com/pubkey/rxdb-mongodb-sync-example)
-- Read [From Local to Global: Scalable Edge Apps with RxDB + MongoDB](https://www.mongodb.com/company/blog/innovation/from-local-global-scalable-edge-apps-rxdb)
+- Try it out with the RxDB-MongoDB
+  [example repository](https://github.com/pubkey/rxdb-mongodb-sync-example)
+- Read [From Local to Global: Scalable
+  Edge Apps with RxDB + MongoDB][1]
+
+[1]: https://www.mongodb.com/company/blog/innovation/from-local-global-scalable-edge-apps-rxdb
 - [Replication API Reference](./replication.md)
 - [RxServer Documentation](./rx-server.md)
 - Join our [Discord Forum](./chat) for questions and feedback

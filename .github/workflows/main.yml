@@ -441,6 +441,9 @@ jobs:
       - name: check for em-dashes
         run: node ./scripts/check-em-dashes.js
 
+      - name: check code block line length
+        run: node ./scripts/check-code-block-line-length.js
+
       - name: npm run docs:build
         run: |
           npm -v
@@ -530,7 +533,34 @@ jobs:
         run: npm run test:circular
 
       - name: lint
+        id: lint
+        continue-on-error: true
         run: npm run lint
+
+      - name: Trigger Copilot to fix lint errors
+        if: steps.lint.outcome == 'failure' && github.ref == 'refs/heads/master'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const runUrl = `${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}`;
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `Fix lint errors on master`,
+              body: [
+                'The linting step failed in CI on the `master` branch.',
+                '',
+                `See the failed run for details: ${runUrl}`,
+                '',
+                'Please fix the lint errors by running `npm run lint:fix` and addressing any remaining issues.'
+              ].join('\n'),
+              assignees: ['copilot']
+            });
+
+      - name: Fail if lint failed
+        if: steps.lint.outcome == 'failure'
+        run: exit 1
 
       - name: check types
         run: npm run check-types

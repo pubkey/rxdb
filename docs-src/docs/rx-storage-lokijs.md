@@ -21,10 +21,10 @@ The LokiJS project itself is no longer in development or maintained and therefor
 
 ### Cons
 
-- It does not support attachments.
+- It does not support [attachments](./rx-attachment.md).
 - Data can be lost when the JavaScript process is killed ungracefully like when the browser crashes or the power of the PC is terminated.
 - All data must fit into the memory.
-- Slow initialisation time when used with `multiInstance: true` because it has to await the leader election process.
+- Slow initialisation time when used with `multiInstance: true` because it has to await the [leader election](./leader-election.md) process.
 - Slow initialisation time when really much data is stored inside of the database because it has to parse a big `JSON` string.
 
 ## Usage
@@ -37,8 +37,10 @@ import {
     getRxStorageLoki
 } from 'rxdb/plugins/storage-lokijs';
 
-// in the browser, we want to persist data in IndexedDB, so we use the indexeddb adapter.
-const LokiIncrementalIndexedDBAdapter = require('lokijs/src/incremental-indexeddb-adapter');
+// in the browser, we want to persist data in
+// IndexedDB, so we use the indexeddb adapter.
+const LokiIncrementalIndexedDBAdapter =
+    require('lokijs/src/incremental-indexeddb-adapter');
 
 const db = await createRxDatabase({
     name: 'exampledb',

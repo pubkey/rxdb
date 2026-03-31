@@ -122,9 +122,11 @@ const replicationState = await replicateRxCollection({
         async handler(checkpointOrNull, batchSize){
             const updatedAt = checkpointOrNull ? checkpointOrNull.updatedAt : 0;
             const id = checkpointOrNull ? checkpointOrNull.id : '';
-            const response = await fetch(
-                `https://localhost/pull?updatedAt=${updatedAt}&id=${id}&limit=${batchSize}`
-            );
+            const url = 'https://localhost/pull'
+                + `?updatedAt=${updatedAt}`
+                + `&id=${id}`
+                + `&limit=${batchSize}`;
+            const response = await fetch(url);
             const data = await response.json();
             return {
                 documents: data.documents,
@@ -164,14 +166,21 @@ app.get('/push', async (req, res) => {
         checkpoint: null
     };
     for(const changeRow of changeRows){
-        const realMasterState = await mongoCollection.findOne({id: changeRow.newDocumentState.id});
+        const realMasterState =
+            await mongoCollection.findOne(
+                {id: changeRow.newDocumentState.id}
+            );
         if(
             realMasterState && !changeRow.assumedMasterState ||
             (
                 realMasterState && changeRow.assumedMasterState &&
                 /*
-                 * For simplicity we detect conflicts on the server by only compare the updateAt value.
-                 * In reality you might want to do a more complex check or do a deep-equal comparison.
+                 * For simplicity we detect conflicts
+                 * on the server by only compare the
+                 * updateAt value.
+                 * In reality you might want to do a
+                 * more complex check or do a
+                 * deep-equal comparison.
                  */
                 realMasterState.updatedAt !== changeRow.assumedMasterState.updatedAt
             )
@@ -185,7 +194,11 @@ app.get('/push', async (req, res) => {
                 changeRow.newDocumentState
             );
             event.documents.push(changeRow.newDocumentState);
-            event.checkpoint = { id: changeRow.newDocumentState.id, updatedAt: changeRow.newDocumentState.updatedAt };
+            event.checkpoint = {
+                id: changeRow.newDocumentState.id,
+                updatedAt:
+                    changeRow.newDocumentState.updatedAt
+            };
         }
     }
     if(event.documents.length > 0){
