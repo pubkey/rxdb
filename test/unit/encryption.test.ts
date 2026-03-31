@@ -32,7 +32,8 @@ import {
 
 import {
     encryptString,
-    decryptString
+    decryptString,
+    wrappedKeyEncryptionCryptoJsStorage
 } from '../../plugins/encryption-crypto-js/index.mjs';
 import { replicateRxCollection } from '../../plugins/replication/index.mjs';
 import { getRxStorageMemory } from '../../plugins/storage-memory/index.mjs';
@@ -578,6 +579,117 @@ describeParallel('encryption.test.ts', () => {
                 assert.strictEqual(resultsAll.length, 0);
                 await db.remove();
             });
+        });
+        it('should work with encrypted fields that have maxLength in schema', async () => {
+            if (config.storage.hasEncryption) {
+                return;
+            }
+            type DocType = {
+                id: string;
+                secret: string;
+            };
+            const mySchema: RxJsonSchema<DocType> = {
+                version: 0,
+                primaryKey: 'id',
+                type: 'object',
+                properties: {
+                    id: {
+                        type: 'string',
+                        maxLength: 100
+                    },
+                    secret: {
+                        type: 'string',
+                        maxLength: 50
+                    }
+                },
+                required: ['id', 'secret'],
+                encrypted: ['secret']
+            };
+            const db = await createRxDatabase<{ test: RxCollection<DocType>; }>({
+                name: randomToken(10),
+                storage: wrappedKeyEncryptionCryptoJsStorage({
+                    storage: wrappedValidateAjvStorage({
+                        storage: getRxStorageMemory()
+                    })
+                }),
+                password: await getPassword()
+            });
+            const collections = await db.addCollections({
+                test: {
+                    schema: mySchema
+                }
+            });
+
+            // insert a document - the encrypted ciphertext is longer than maxLength
+            // but this should still work because maxLength should be stripped from the internal schema
+            await collections.test.insert({
+                id: 'test-1',
+                secret: 'my secret value'
+            });
+            const doc = await collections.test.findOne('test-1').exec(true);
+            assert.strictEqual(doc.secret, 'my secret value');
+
+            await db.remove();
+        });
+        it('should work with encrypted object fields that have nested properties', async () => {
+            if (config.storage.hasEncryption) {
+                return;
+            }
+            type DocType = {
+                id: string;
+                secret: {
+                    name: string;
+                    subname: string;
+                };
+            };
+            const mySchema: RxJsonSchema<DocType> = {
+                version: 0,
+                primaryKey: 'id',
+                type: 'object',
+                properties: {
+                    id: {
+                        type: 'string',
+                        maxLength: 100
+                    },
+                    secret: {
+                        type: 'object',
+                        properties: {
+                            name: { type: 'string' },
+                            subname: { type: 'string' }
+                        },
+                        required: ['name', 'subname']
+                    }
+                },
+                required: ['id', 'secret'],
+                encrypted: ['secret']
+            };
+            const db = await createRxDatabase<{ test: RxCollection<DocType>; }>({
+                name: randomToken(10),
+                storage: wrappedKeyEncryptionCryptoJsStorage({
+                    storage: wrappedValidateAjvStorage({
+                        storage: getRxStorageMemory()
+                    })
+                }),
+                password: await getPassword()
+            });
+            const collections = await db.addCollections({
+                test: {
+                    schema: mySchema
+                }
+            });
+
+            await collections.test.insert({
+                id: 'test-1',
+                secret: {
+                    name: 'foo',
+                    subname: 'bar'
+                }
+            });
+            const doc = await collections.test.findOne('test-1').exec(true);
+            assert.strictEqual(doc.secret.name, 'foo');
+            assert.strictEqual(doc.secret.subname, 'bar');
+
+            await db.remove();
         });
     });
 });
