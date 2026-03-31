@@ -331,7 +331,7 @@ describe('event-reduce.test.js', () => {
             colWithEventReduce.database.close();
         });
     });
-    it('re-inserting a previously inserted-then-deleted document should appear in query results', async () => {
+    it('should show re-inserted documents after insert-delete cycle', async () => {
         /**
          * This test reproduces a bug where event-reduce's calculateNewResults
          * mutated the cached docsDataMap on the query result object.
