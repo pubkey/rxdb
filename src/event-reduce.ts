@@ -109,16 +109,7 @@ export function calculateNewResults<RxDocumentType>(
     }
     const queryParams = getQueryParams(rxQuery);
     const previousResults: RxDocumentType[] = ensureNotFalsy(rxQuery._result).docsData.slice(0);
-    /**
-     * Copy the map to avoid mutating the cached docsDataMap on the result object.
-     * runAction() modifies the map in-place (adds/removes entries),
-     * which would corrupt the cached map if a later event triggers runFullQueryAgain
-     * and the full re-exec returns the same results (keeping the old result object).
-     * On subsequent event-reduce calls, the corrupted map would cause incorrect
-     * results because insertAtSortPosition checks keyDocumentMap.has(docId)
-     * to decide whether to skip insertion.
-     */
-    const previousResultsMap: Map<string, RxDocumentType> = new Map(ensureNotFalsy(rxQuery._result).docsDataMap);
+    const previousResultsMap: Map<string, RxDocumentType> = ensureNotFalsy(rxQuery._result).docsDataMap;
     let changed: boolean = false;
 
 
