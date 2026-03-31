@@ -7,7 +7,7 @@ image: /headers/replication-server.jpg
 
 # RxDB Server Replication
 
-The *Server Replication Plugin* connects to the replication endpoint of an [RxDB Server Replication Endpoint](./rx-server.md#replication-endpoint) and replicates data between the client and the server.
+The *Server Replication Plugin* connects to the [replication](./replication.md) endpoint of an [RxDB Server Replication Endpoint](./rx-server.md#replication-endpoint) and replicates data between the client and the server.
 
 ## Usage
 

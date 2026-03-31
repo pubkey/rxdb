@@ -171,7 +171,7 @@ async function getDatabasePassword() {
 ```
 
 - **Encrypt Attachments**:
-If you need to store files (images, text files, etc.), consider encrypting attachments. RxDB supports attachments that can be encrypted automatically, ensuring your files are protected:
+If you need to store files (images, text files, etc.), consider encrypting [attachments](../rx-attachment.md). RxDB supports attachments that can be encrypted automatically, ensuring your files are protected:
 
 ```ts
 import { createBlob } from 'rxdb';

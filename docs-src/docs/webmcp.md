@@ -148,7 +148,7 @@ addRxPlugin(RxDBWebMCPPlugin);
 
 #### Create a database
 
-First, initialize your RxDatabase instance:
+First, initialize your [RxDatabase](./rx-database.md) instance:
 
 ```ts
 import { createRxDatabase } from 'rxdb';
@@ -316,7 +316,7 @@ const productSchema = {
 
 Architecturally, WebMCP turns the browser into a "capability surface" with explicit contracts. Security boundaries are clearer because only declared tools are visible and inputs are strictly validated against schemas.
 
-However, be aware that WebMCP **does not completely eliminate prompt injection risks**. It significantly narrows the surface compared to DOM-level automation, but an Agent mimicking a well-behaved query against your schema can still produce corrupted behavior if the prompt itself contains malicious instructions. Ensure your application logic (and RxDB schema validation) assumes agent-provided payloads are untrusted.
+However, be aware that WebMCP **does not completely eliminate prompt injection risks**. It significantly narrows the surface compared to DOM-level automation, but an Agent mimicking a well-behaved query against your schema can still produce corrupted behavior if the prompt itself contains malicious instructions. Ensure your application logic (and RxDB [schema validation](./schema-validation.md)) assumes agent-provided payloads are untrusted.
 
 
 <BetaBlock since="17.0.0">

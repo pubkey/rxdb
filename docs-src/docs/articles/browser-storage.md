@@ -98,7 +98,7 @@ RxDB enables developers to observe individual document fields, offering fine-gra
 Being built in JavaScript and optimized for JavaScript applications, RxDB seamlessly integrates into web development stacks, minimizing compatibility issues.
 
 ### Observable Queries (rxjs) to Automatically Update the UI on Changes
-RxDB's support for Observable Queries allows the user interface to update automatically in real-time when data changes. This reactivity enhances the user experience and simplifies UI development.
+RxDB's support for Observable Queries allows the user interface to update automatically in real-time when data changes. This [reactivity](../reactivity.md) enhances the user experience and simplifies UI development.
 
 ```typescript
 const query = myCollection.find({

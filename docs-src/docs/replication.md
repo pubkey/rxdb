@@ -29,7 +29,7 @@ In contrast to other (server-side) database replication protocols, the RxDB Sync
 
 ## The Sync Engine on the document level
 
-On the RxDocument level, the replication works like git, where the fork/client contains all new writes and must be merged with the master/server before it can push its new state to the master/server.
+On the [RxDocument](./rx-document.md) level, the replication works like git, where the fork/client contains all new writes and must be merged with the master/server before it can push its new state to the master/server.
 
 ```
 A---B-----------D   master/server state

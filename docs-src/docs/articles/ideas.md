@@ -22,7 +22,7 @@
 
 X- "optimistic ui"
 X- "local database" (rddt done)
-X- "react-native encryption"
+X- "react-native [encryption](../encryption.md)"
 X- "vue database" (rddt done)
 X- "jquery database"
 X- "vue indexeddb"
@@ -32,7 +32,7 @@ X- "ionic storage" (rddt done)
 X- "local database"
 X- "offline database"
 X- "zero local first"
-X- "webrtc p2p" - 390 http://localhost:3000/replication-webrtc.html
+X- "webrtc p2p" - 390 http://localhost:3000/[replication](../replication.md)-webrtc.html
 
 X- "indexeddb storage limit" - 590 https://rxdb.info/articles/indexeddb-max-storage-limit.html
 X- "indexeddb size limit" - 260 https://rxdb.info/articles/indexeddb-max-storage-limit.html
@@ -55,7 +55,7 @@ X- "reactjs storage"
 - "reactive database" - 210
 - "electron sqlite"
 - "in browser database" - 90
-- "offline first app" - 260
+- "[offline first](../offline-first.md) app" - 260
 - "react native sql" - 110
 - "sqlite electron"
 - "localstorage vs indexeddb"

@@ -15,7 +15,7 @@ Using attachments instead of adding the data to the normal document, ensures tha
 
 - You can store string, binary files, images and whatever you want side by side with your documents.
 - Deleted documents automatically loose all their attachments data.
-- Not all replication plugins support the replication of attachments.
+- Not all [replication](./replication.md) plugins support the replication of attachments.
 - Attachments can be stored [encrypted](./encryption.md).
 
 Internally, attachment data is stored as `Blob` objects. Blob is the canonical internal type because it is immutable, carries MIME type metadata via `Blob.type`, provides synchronous size via `Blob.size`, and is [structured-cloneable](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm) (works with Worker/Electron `postMessage` and IndexedDB). Conversion to `ArrayBuffer` only happens at system boundaries that require it: encryption (Web Crypto), compression (CompressionStream), digest hashing, and WebSocket serialization.
@@ -134,7 +134,7 @@ const attachments = myDocument.allAttachments();
 
 ## allAttachments$
 
-Gets an Observable which emits a stream of all attachments from the document. Re-emits each time an attachment gets added or removed from the RxDocument.
+Gets an Observable which emits a stream of all attachments from the document. Re-emits each time an attachment gets added or removed from the [RxDocument](./rx-document.md).
 
 ```javascript
 const all = [];

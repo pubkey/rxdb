@@ -20,7 +20,7 @@ The memory mapped [RxStorage](./rx-storage.md) is a wrapper around any other RxS
 
 ## Cons
 
-- It does not support attachments because storing big attachments data in-memory should not be done.
+- It does not support [attachments](./rx-attachment.md) because storing big attachments data in-memory should not be done.
 - When the JavaScript process is killed ungracefully like when the browser crashes or the power of the PC is terminated, it might happen that some memory writes are not persisted to the parent storage. This can be prevented with the `awaitWritePersistence` flag.
 - The memory-mapped storage can only be used if all data fits into the memory of the JavaScript process. This is normally not a problem because a browser has much memory these days and plain JSON document data is not that big.
 - Because it has to await an initial data loading from the parent storage into the memory, initial page load time can increase when much data is already stored. This is likely not a problem when you store less than `10k` documents.
@@ -67,7 +67,7 @@ If you have a single JavaScript process, like in a React Native app, you do not 
 
 ## Encryption of the persistent data
 
-Normally RxDB is not capable of running queries on encrypted fields. But when you use the memory-mapped RxStorage, you can store the document data encrypted on disc, while being able to run queries on the not encrypted in-memory state. Make sure you use the encryption storage wrapper around the persistent storage, **NOT** around the memory-mapped storage as a whole.
+Normally RxDB is not capable of running queries on encrypted fields. But when you use the memory-mapped RxStorage, you can store the document data encrypted on disc, while being able to run queries on the not encrypted in-memory state. Make sure you use the [encryption](./encryption.md) storage wrapper around the persistent storage, **NOT** around the memory-mapped storage as a whole.
 
 ```ts
 

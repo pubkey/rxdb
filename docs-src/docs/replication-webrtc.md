@@ -293,7 +293,7 @@ The WebRTC replication plugin seamlessly integrates with the [RxDB encryption pl
 <details>
 <summary>How can WebRTC enable real-time peer-to-peer communications between browsers?</summary>
 
-WebRTC enables true peer-to-peer (P2P) communication by establishing direct UDP/TCP data channels between browsers, completely bypassing centralized database architectures. Because the WebRTC connection requires initial IP discovery, clients must briefly connect to a centralized WebSocket Signaling Server to exchange SDP offers and ICE candidates. Once peered, the **[RxDB WebRTC Replication](./replication.md)** plugin streams NoSQL document diffs and CRDT operations instantly across the channel, providing decentralized real-time sync with absolute zero cloud latency.
+WebRTC enables true peer-to-peer (P2P) communication by establishing direct UDP/TCP data channels between browsers, completely bypassing centralized database architectures. Because the WebRTC connection requires initial IP discovery, clients must briefly connect to a centralized WebSocket Signaling Server to exchange SDP offers and ICE candidates. Once peered, the **[RxDB WebRTC Replication](./replication.md)** plugin streams NoSQL document diffs and [CRDT](./crdt.md) operations instantly across the channel, providing decentralized real-time sync with absolute zero cloud latency.
 </details>
 
 <details>

@@ -188,7 +188,7 @@ Then mark fields as `encrypted` in the schema. This ensures data is unreadable o
 
 ### Setup Compression
 
-Local data can expand quickly, especially for large documents or repeated key names. RxDB's key compression feature replaces verbose field names with shorter tokens, decreasing storage usage and speeding up replication. You enable it by adding keyCompression: true to your collection schema:
+Local data can expand quickly, especially for large documents or repeated key names. RxDB's [key compression](../key-compression.md) feature replaces verbose field names with shorter tokens, decreasing storage usage and speeding up replication. You enable it by adding keyCompression: true to your collection schema:
 
 
 ```ts

@@ -6,7 +6,7 @@ image: /headers/data-base.jpg
 ---
 
 # RxDB as a data base: Empowering Web Applications with Reactive Data Handling
-In the world of web applications, efficient data management plays a crucial role in delivering a seamless user experience. As mobile applications continue to dominate the digital landscape, the importance of robust data bases becomes evident. In this article, we will explore RxDB as a powerful data base solution for web applications. We will delve into its features, advantages, and advanced techniques, highlighting its ability to handle reactive data and enable an offline-first approach.
+In the world of web applications, efficient data management plays a crucial role in delivering a seamless user experience. As mobile applications continue to dominate the digital landscape, the importance of robust data bases becomes evident. In this article, we will explore RxDB as a powerful data base solution for web applications. We will delve into its features, advantages, and advanced techniques, highlighting its ability to handle reactive data and enable an [offline-first](../offline-first.md) approach.
 
 <center>
     <a href="https://rxdb.info/">
@@ -35,7 +35,7 @@ One of the standout features of RxDB is its reactive data handling. It utilizes 
 RxDB embraces an offline-first approach, enabling applications to work seamlessly even when there is no internet connectivity. It achieves this by caching data locally on the client-side and synchronizing it with the server when the connection is available. This ensures that users can continue working with the application and have their data automatically synchronized when they come back online.
 
 ### Data Replication
-RxDB simplifies the process of data replication between clients and servers. It provides replication plugins that handle the synchronization of data in real-time. These plugins allow applications to keep data consistent across multiple clients, enabling collaborative features and ensuring that each client has the most up-to-date information.
+RxDB simplifies the process of data [replication](../replication.md) between clients and servers. It provides replication plugins that handle the synchronization of data in real-time. These plugins allow applications to keep data consistent across multiple clients, enabling collaborative features and ensuring that each client has the most up-to-date information.
 
 ### Observable Queries
 RxDB introduces the concept of observable queries, which are powerful tools for efficiently querying data. With observable queries, developers can subscribe to specific data queries and receive automatic updates whenever the underlying data changes. This eliminates the need for manual polling and ensures that applications always have access to the latest data.
@@ -51,8 +51,8 @@ RxDB provides various [storage layers](../rx-storage.md), known as RxStorage, th
 
 - [LocalStorage RxStorage](../rx-storage-localstorage.md): Built on top of the browsers [localStorage API](./localstorage.md).
 - [IndexedDB RxStorage](../rx-storage-indexeddb.md): This layer directly utilizes IndexedDB as its backend, providing a robust and widely supported storage option.
-- [OPFS RxStorage](../rx-storage-opfs.md): OPFS (Operational Transformation File System) is a file system-like storage layer that allows for efficient conflict resolution and real-time collaboration.
-- Memory RxStorage: Primarily used for testing and development, this storage layer keeps data in memory without persisting it to disk.
+- [OPFS RxStorage](../rx-storage-opfs.md): OPFS (Operational Transformation File System) is a file system-like storage layer that allows for efficient [conflict resolution](../transactions-conflicts-revisions.md) and real-time collaboration.
+- [Memory RxStorage](../rx-storage-memory.md): Primarily used for testing and development, this storage layer keeps data in memory without persisting it to disk.
 Each RxStorage layer has its strengths and is suited for different scenarios, enabling developers to choose the most appropriate option for their specific use case.
 
 ## Synchronizing Data with RxDB between Clients and Servers
@@ -67,7 +67,7 @@ Indexing and Performance Optimization
 To achieve optimal performance, RxDB offers indexing capabilities. Indexing allows for efficient data retrieval and faster query execution. By strategically defining indexes on frequently accessed fields, developers can significantly enhance the overall performance of their RxDB-powered applications.
 
 ### Encryption of Local Data
-In scenarios where data security is paramount, RxDB provides options for encrypting local data. By encrypting the data base contents, developers can ensure that sensitive information remains secure even if the underlying storage is compromised. RxDB integrates seamlessly with encryption libraries, making it easy to implement end-to-end encryption in applications.
+In scenarios where data security is paramount, RxDB provides options for encrypting local data. By encrypting the data base contents, developers can ensure that sensitive information remains secure even if the underlying storage is compromised. RxDB integrates seamlessly with [encryption](../encryption.md) libraries, making it easy to implement end-to-end encryption in applications.
 
 ### Change Streams and Event Handling
 RxDB offers change streams and event handling mechanisms, enabling developers to react to data changes in real-time. With change streams, applications can listen to specific collections or documents and trigger custom logic whenever a change occurs. This capability opens up possibilities for building real-time collaboration features, notifications, or other reactive behaviors.
