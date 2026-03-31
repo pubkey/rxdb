@@ -350,6 +350,20 @@ describe('rx-collection.test.ts', () => {
                     assert.deepStrictEqual(doc1.tags, []);
                     assert.deepStrictEqual(doc2.tags, []);
 
+                    // Update doc1's tags array
+                    await doc1.incrementalPatch({ tags: ['updated-tag'] });
+                    const doc1After = await collections.items.findOne({ selector: { id: 'doc1' } }).exec(true);
+                    assert.deepStrictEqual(doc1After.tags, ['updated-tag']);
+
+                    // doc2's tags must remain unchanged
+                    const doc2After = await collections.items.findOne({ selector: { id: 'doc2' } }).exec(true);
+                    assert.deepStrictEqual(doc2After.tags, []);
+
+                    // Insert a third document and verify it still gets a fresh default
+                    await collections.items.insert({ id: 'doc3' });
+                    const doc3 = await collections.items.findOne({ selector: { id: 'doc3' } }).exec(true);
+                    assert.deepStrictEqual(doc3.tags, []);
+
                     db.close();
                 });
             });
