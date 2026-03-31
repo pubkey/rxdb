@@ -572,18 +572,34 @@ export class RxReplicationState<RxDocType, CheckpointType> {
 
             /**
              * If the replication was never started (e.g. autoStart: false
-             * and start() was never called), there is no meta instance
-             * or connected storage to clean up.
+             * and start() was never called), we still have to
+             * create the meta storage instance and then remove its data.
+             * This is required so that old meta data from a previous
+             * replication with the same identifier is properly deleted.
              */
-            if (this.internalReplicationState) {
-                await this.internalReplicationState.checkpointQueue
-                    .then(() => ensureNotFalsy(this.metaInstance).remove());
-                await removeConnectedStorageFromCollection(
-                    this.collection,
-                    metaInfo.collectionName,
-                    metaInfo.schema
-                );
+            if (!this.metaInstance) {
+                const database = this.collection.database;
+                this.metaInstance = await database.storage.createStorageInstance<RxStorageReplicationMeta<RxDocType, CheckpointType>>({
+                    databaseName: database.name,
+                    collectionName: metaInfo.collectionName,
+                    databaseInstanceToken: database.token,
+                    multiInstance: database.multiInstance,
+                    options: {},
+                    schema: metaInfo.schema,
+                    password: database.password,
+                    devMode: overwritable.isDevMode()
+                });
             }
+
+            if (this.internalReplicationState) {
+                await this.internalReplicationState.checkpointQueue;
+            }
+            await ensureNotFalsy(this.metaInstance).remove();
+            await removeConnectedStorageFromCollection(
+                this.collection,
+                metaInfo.collectionName,
+                metaInfo.schema
+            );
         });
         return this.startQueue;
     }
