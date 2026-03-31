@@ -10,7 +10,7 @@ image: /headers/indexeddb-alternative.jpg
 IndexedDB is the standard [browser storage](../articles/browser-storage.md) API for storing significant amounts of structured data, including files/blobs. It is available in every modern browser.
 However, using the native IndexedDB API is **verbose**, **low-level**, and lacks many features modern applications need.
 
-If you are looking for an **IndexedDB alternative**, you likely want a library that abstracts the complexity away and provides features like **Reactivity**, **Schema Validation**, and **Sync**.
+If you are looking for an **IndexedDB alternative**, you likely want a library that abstracts the complexity away and provides features like **Reactivity**, **[Schema Validation](../schema-validation.md)**, and **Sync**.
 
 RxDB is the ultimate alternative because it gives you the speed of a [local database](../articles/local-database.md) with the ease of use of a modern [JSON-document store](../rx-collection.md).
 
@@ -98,7 +98,7 @@ const results = await db.users.find({
 ### 4. Synchronization
 
 Raw IndexedDB is purely local. Usage in real-world apps usually requires syncing data with a backend.
-Building a robust sync protocol (handling [offline](../offline-first.md) changes, conflict resolution, delta updates) is one of the hardest problems in software engineering.
+Building a robust sync protocol (handling [offline](../offline-first.md) changes, [conflict resolution](../transactions-conflicts-revisions.md), delta updates) is one of the hardest problems in software engineering.
 
 RxDB solves this out of the box. It has a robust [replication protocol](../replication.md) that supports:
 -   **[Real-time sync](../articles/realtime-database.md)**: Changes are pushed/pulled immediately.

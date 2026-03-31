@@ -34,7 +34,7 @@ Encrypting client-side stored data in RxDB offers numerous advantages:
 
 ## Querying encrypted data
 
-RxDB handles the encryption and decryption of data internally. This means that when you work with a RxDocument, you can access the properties of the document just like you would with normal, unencrypted data. RxDB automatically decrypts the data for you when you retrieve it, making it transparent to your application code.
+RxDB handles the encryption and decryption of data internally. This means that when you work with a [RxDocument](./rx-document.md), you can access the properties of the document just like you would with normal, unencrypted data. RxDB automatically decrypts the data for you when you retrieve it, making it transparent to your application code.
 This means the encryption works with all [RxStorage](./rx-storage.md) like **[SQLite](./rx-storage-sqlite.md)**, **[IndexedDB](./rx-storage-indexeddb.md)**, **[OPFS](./rx-storage-opfs.md)** and so on.
 
 However, there's a limitation when it comes to querying encrypted fields. **Encrypted fields cannot be used as operators in queries**. This means you cannot perform queries like "find all documents where the encrypted field equals a certain value." RxDB does not expose the encrypted data in a way that allows direct querying based on the encrypted content. To filter or search for documents based on the contents of encrypted fields, you would need to first decrypt the data and then perform the query, which might not be efficient or practical in some cases.
@@ -171,7 +171,9 @@ const mySchema = {
         /* ... */
     },
     attachments: {
-        encrypted: true // if true, the attachment-data will be encrypted with the db-password
+        // if true, the attachment-data will be
+        // encrypted with the db-password
+        encrypted: true
     }
 };
 ```
@@ -189,7 +191,9 @@ When you wrap a storage like [OPFS](./rx-storage-opfs.md) with encryption inside
 ```ts
 // inside of the worker.js file
 import { getRxStorageOPFS } from 'rxdb-premium/plugins/storage-opfs';
-import { wrappedKeyEncryptionWebCryptoStorage } from 'rxdb-premium/plugins/encryption-web-crypto';
+import {
+    wrappedKeyEncryptionWebCryptoStorage
+} from 'rxdb-premium/plugins/encryption-web-crypto';
 
 const storage = wrappedKeyEncryptionWebCryptoStorage({
     storage: getRxStorageOPFS({

@@ -20,10 +20,10 @@ The main reason to use this is to improve initial page load and query/write time
 
 ## Cons
 
-- It does not support attachments.
+- It does not support [attachments](./rx-attachment.md).
 - When the JavaScript process is killed ungracefully like when the browser crashes or the power of the PC is terminated, it might happen that some memory writes are not persisted to the parent storage. This can be prevented with the `awaitWritePersistence` flag.
 - This can only be used if all data fits into the memory of the JavaScript process. This is normally not a problem because a browser has much memory these days and plain json document data is not that big.
-- Because it has to await an initial replication from the parent storage into the memory, initial page load time can increase when much data is already stored. This is likely not a problem when you store less than `10k` documents.
+- Because it has to await an initial [replication](./replication.md) from the parent storage into the memory, initial page load time can increase when much data is already stored. This is likely not a problem when you store less than `10k` documents.
 - The memory-synced storage itself does not support replication and migration. Instead you have to replicate the underlying parent storage.
 
 <PremiumBlock />
@@ -89,11 +89,16 @@ const storage = getMemorySyncedRxStorage({
     batchSize: 50,
 
     /**
-     * By default, the parent storage will be created without indexes for a faster page load.
-     * Indexes are not needed because the queries will anyway run on the memory storage.
-     * You can disable this behavior by setting keepIndexesOnParent to true.
-     * If you use the same parent storage for multiple RxDatabase instances where one is not
-     * a asynced-memory storage, you will get the error: 'schema not equal to existing storage'
+     * By default, the parent storage will be created
+     * without indexes for a faster page load.
+     * Indexes are not needed because the queries
+     * will anyway run on the memory storage.
+     * You can disable this behavior by setting
+     * keepIndexesOnParent to true.
+     * If you use the same parent storage for multiple
+     * RxDatabase instances where one is not
+     * a asynced-memory storage, you will get the
+     * error: 'schema not equal to existing storage'
      * if you do not set keepIndexesOnParent to true.
      * 
      * (optional)

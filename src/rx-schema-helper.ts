@@ -367,7 +367,12 @@ export function fillObjectWithDefaults(rxSchema: RxSchema<any>, obj: any): any {
     for (let i = 0; i < defaultKeys.length; ++i) {
         const key = defaultKeys[i];
         if (obj[key] === undefined) {
-            obj[key] = rxSchema.defaultValues[key];
+            const val = rxSchema.defaultValues[key];
+            if (typeof val === 'object' && val !== null) {
+                obj[key] = Array.isArray(val) ? val.slice() : { ...val };
+            } else {
+                obj[key] = val;
+            }
         }
     }
     return obj;

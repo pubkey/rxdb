@@ -3167,6 +3167,77 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
 
                 await storageInstance.remove();
             });
+            it('should clean up all deleted documents when multiple are deleted', async () => {
+                const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
+                    databaseInstanceToken: randomToken(10),
+                    databaseName: randomToken(12),
+                    collectionName: randomToken(12),
+                    schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
+                    options: {},
+                    multiInstance: false,
+                    devMode: true
+                });
+
+                const docCount = 5;
+                const docIds: string[] = [];
+
+                /**
+                 * Insert multiple documents.
+                 */
+                const insertRows = new Array(docCount).fill(0).map((_, idx) => {
+                    const id = 'doc-' + idx;
+                    docIds.push(id);
+                    return {
+                        document: {
+                            key: id,
+                            value: 'val-' + idx,
+                            _rev: EXAMPLE_REVISION_1,
+                            _deleted: false,
+                            _meta: {
+                                lwt: now()
+                            },
+                            _attachments: {}
+                        }
+                    };
+                });
+                await storageInstance.bulkWrite(insertRows, testContext);
+
+                /**
+                 * Delete all of them.
+                 */
+                const deleteRows = insertRows.map((row) => ({
+                    previous: row.document,
+                    document: Object.assign({}, row.document, {
+                        _rev: EXAMPLE_REVISION_2,
+                        _deleted: true,
+                        _meta: {
+                            lwt: now()
+                        }
+                    })
+                }));
+                const deleteResult = await storageInstance.bulkWrite(deleteRows, testContext);
+                assert.deepStrictEqual(deleteResult.error, [], 'all deletes must succeed');
+
+                /**
+                 * Run cleanup(0) to remove all deleted docs.
+                 */
+                while (!await storageInstance.cleanup(0)) { }
+
+                /**
+                 * All deleted documents must be gone.
+                 */
+                const remainingDocs = await storageInstance.findDocumentsById(
+                    docIds,
+                    true
+                );
+                assert.deepStrictEqual(
+                    remainingDocs,
+                    [],
+                    'all deleted documents must be cleaned up, but found ' + remainingDocs.length
+                );
+
+                await storageInstance.remove();
+            });
             it('should at some time return true (when all docs are cleaned up)', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
                     databaseInstanceToken: randomToken(10),

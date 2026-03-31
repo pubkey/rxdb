@@ -659,6 +659,40 @@ describe('rx-document.test.js', () => {
                 assert.strictEqual(doc.mainSkill, undefined);
                 c.database.close();
             });
+            it('modify() should deep-clone the data so the modifier cannot corrupt the document via shared references', async () => {
+                const c = await humansCollection.createNested(1);
+                const doc = await c.findOne().exec(true);
+
+                const originalMainSkill = doc._data.mainSkill;
+                let receivedMainSkill: any;
+                await doc.modify((d: any) => {
+                    receivedMainSkill = d.mainSkill;
+                    d.mainSkill = { name: 'updated', level: 10 };
+                    return d;
+                });
+
+                /**
+                 * The nested object passed to the modifier must be a clone,
+                 * not a shared reference to the document's internal data.
+                 * Otherwise the modifier could corrupt doc._data by mutating
+                 * nested objects (especially in production mode where data
+                 * is not deep-frozen).
+                 */
+                assert.notStrictEqual(
+                    receivedMainSkill,
+                    originalMainSkill,
+                    'modifier must receive a deep-cloned nested object, not a shared reference'
+                );
+
+                /**
+                 * The update must still be persisted correctly.
+                 */
+                const fromDb = await c.findOne().exec(true);
+                assert.strictEqual(fromDb.mainSkill.name, 'updated');
+                assert.strictEqual(fromDb.mainSkill.level, 10);
+
+                c.database.close();
+            });
         });
         describe('negative', () => {
             it('should throw on conflict', async () => {

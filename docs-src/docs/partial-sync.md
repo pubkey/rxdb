@@ -11,9 +11,9 @@ Suppose you're building a Minecraft-like voxel game where the world can expand i
 
 ## Idea: One Collection, Multiple Replications
 
-You might define a single RxDB collection called `db.voxels`, where each document represents a block or "voxel" (with fields like id, chunkId, coordinates, and type). With RxDB you can, instead of setting up _one_ replication that tries to fetch _all_ voxels, you create **separate replication states** for each _chunk_ of the world the player is currently near.
+You might define a single RxDB collection called `db.voxels`, where each document represents a block or "voxel" (with fields like id, chunkId, coordinates, and type). With RxDB you can, instead of setting up _one_ [replication](./replication.md) that tries to fetch _all_ voxels, you create **separate replication states** for each _chunk_ of the world the player is currently near.
 
-When the player enters a particular chunk (say `chunk-123`), you **start a replication** dedicated to that chunk. On the server side, you have endpoints to **pull** only that chunk's voxels (e.g., GET `/api/voxels/pull?chunkId=123`) and **push** local changes back (e.g., POST `/api/voxels/push?chunkId=123`). RxDB handles them similarly to any other offline-first setup, but each replication is filtered to only that chunk's data.
+When the player enters a particular chunk (say `chunk-123`), you **start a replication** dedicated to that chunk. On the server side, you have endpoints to **pull** only that chunk's voxels (e.g., GET `/api/voxels/pull?chunkId=123`) and **push** local changes back (e.g., POST `/api/voxels/push?chunkId=123`). RxDB handles them similarly to any other [offline-first](./offline-first.md) setup, but each replication is filtered to only that chunk's data.
 
 When the player leaves `chunk-123` and no longer needs it, you **stop** that replication. If the player moves to `chunk-124`, you start a new replication for chunk 124. This ensures the game only downloads and syncs data relevant to the player's immediate location. Meanwhile, all edits made offline remain safely stored in the local database until a network connection is available.
 

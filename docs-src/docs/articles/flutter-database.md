@@ -34,7 +34,7 @@ Flutter is an open-source UI software development kit created by Google that all
 Databases play a vital role in Flutter applications by providing a persistent and reliable storage solution for storing and retrieving data. Whether it's user profiles, app settings, or complex data structures, a database helps in efficiently managing and organizing the application's data. Choosing the right database for a Flutter application can significantly impact the performance, scalability, and user experience of the app.
 
 ### Introducing RxDB as a Database Solution
-RxDB is a powerful NoSQL database solution that is designed to work seamlessly with JavaScript-based frameworks, such as Flutter. It stands for Reactive Database and offers a variety of features that make it an excellent choice for building Flutter applications. RxDB combines the simplicity of JavaScript's document-based database model with the reactive programming paradigm, enabling developers to build real-time and offline-first applications with ease.
+RxDB is a powerful NoSQL database solution that is designed to work seamlessly with JavaScript-based frameworks, such as Flutter. It stands for Reactive Database and offers a variety of features that make it an excellent choice for building Flutter applications. RxDB combines the simplicity of JavaScript's document-based database model with the reactive programming paradigm, enabling developers to build real-time and [offline-first](../offline-first.md) applications with ease.
 
 ## Getting Started with RxDB
 To understand how RxDB can be utilized in a Flutter application, let's explore its core features and advantages.
@@ -71,7 +71,7 @@ Now that we understand the core features of RxDB, let's explore how to integrate
 
 RxDB is written in TypeScript and compiled to JavaScript. To run it in a Flutter application, the `flutter_qjs` library is used to spawn a QuickJS JavaScript runtime. RxDB itself runs in that runtime and communicates with the flutter dart runtime. To store data persistent, the [LokiJS RxStorage](../rx-storage-lokijs.md) is used together with a custom storage adapter that persists the database inside of the `shared_preferences` data.
 
-To use RxDB, you have to create a compatible JavaScript file that creates your RxDatabase and starts some connectors which are used by Flutter to communicate with the JavaScript RxDB database via setFlutterRxDatabaseConnector().
+To use RxDB, you have to create a compatible JavaScript file that creates your [RxDatabase](../rx-database.md) and starts some connectors which are used by Flutter to communicate with the JavaScript RxDB database via setFlutterRxDatabaseConnector().
 
 ```javascript
 import {
@@ -184,7 +184,7 @@ query.$().listen((results) {
 
 
 ### Different RxStorage layers for RxDB
-RxDB offers multiple storage options, known as RxStorage layers, to store data locally. These options include:
+RxDB offers multiple storage options, known as [RxStorage](../rx-storage.md) layers, to store data locally. These options include:
 
 - [LokiJS RxStorage](../rx-storage-lokijs.md): LokiJS is an in-memory database that can be used as a [storage](./browser-storage.md) layer for RxDB. It provides fast and efficient in-memory data management capabilities.
 - [SQLite RxStorage](../rx-storage-sqlite.md): SQLite is a popular and widely used [embedded database](./embedded-database.md) that offers robust storage capabilities. RxDB utilizes SQLite as a storage layer to persist data on the device.
@@ -198,7 +198,7 @@ One of the key strengths of RxDB is its ability to synchronize data between mult
 RxDB's offline-first approach ensures that data can be accessed and modified even when there is no internet connection. Changes made offline are automatically synchronized with the server once a connection is reestablished. This ensures data consistency across all devices, providing a seamless user experience.
 
 ### RxDB Replication Plugins
-RxDB provides replication plugins that simplify the process of setting up data [synchronization between clients and servers](../replication.md). These plugins offer various synchronization strategies, such as one-way replication, two-way replication, and conflict resolution mechanisms. By configuring the appropriate replication plugin, developers can easily establish real-time data synchronization in their Flutter applications.
+RxDB provides replication plugins that simplify the process of setting up data [synchronization between clients and servers](../replication.md). These plugins offer various synchronization strategies, such as one-way replication, two-way replication, and [conflict resolution](../transactions-conflicts-revisions.md) mechanisms. By configuring the appropriate replication plugin, developers can easily establish real-time data synchronization in their Flutter applications.
 
 ## Advanced RxDB Features and Techniques
 RxDB offers a range of advanced features and techniques that enhance its functionality and performance. Let's explore a few of these features:

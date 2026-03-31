@@ -128,12 +128,14 @@ const replicationPool = await replicateWebRTC(
         // The topic is like a 'room-name'. All clients with the same topic
         // will replicate with each other. In most cases you want to use
         // a different topic string per user. Also you should prefix the topic with
-        // a unique identifier for your app, to ensure you do not let your users connect
+        // a unique identifier for your app, to ensure
+        // you do not let your users connect
         // with other apps that also use the RxDB P2P Replication.
         topic: 'my-users-pool',
         /**
          * You need a collection handler to be able to create WebRTC connections.
-         * Here we use the simple peer handler which uses the 'simple-peer' npm library.
+         * Here we use the simple peer handler which
+         * uses the 'simple-peer' npm library.
          * To learn how to create a custom connection handler, read the source code,
          * it is pretty simple.
          */
@@ -291,7 +293,7 @@ The WebRTC replication plugin seamlessly integrates with the [RxDB encryption pl
 <details>
 <summary>How can WebRTC enable real-time peer-to-peer communications between browsers?</summary>
 
-WebRTC enables true peer-to-peer (P2P) communication by establishing direct UDP/TCP data channels between browsers, completely bypassing centralized database architectures. Because the WebRTC connection requires initial IP discovery, clients must briefly connect to a centralized WebSocket Signaling Server to exchange SDP offers and ICE candidates. Once peered, the **[RxDB WebRTC Replication](./replication.md)** plugin streams NoSQL document diffs and CRDT operations instantly across the channel, providing decentralized real-time sync with absolute zero cloud latency.
+WebRTC enables true peer-to-peer (P2P) communication by establishing direct UDP/TCP data channels between browsers, completely bypassing centralized database architectures. Because the WebRTC connection requires initial IP discovery, clients must briefly connect to a centralized WebSocket Signaling Server to exchange SDP offers and ICE candidates. Once peered, the **[RxDB WebRTC Replication](./replication.md)** plugin streams NoSQL document diffs and [CRDT](./crdt.md) operations instantly across the channel, providing decentralized real-time sync with absolute zero cloud latency.
 </details>
 
 <details>

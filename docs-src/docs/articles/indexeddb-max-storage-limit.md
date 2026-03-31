@@ -169,4 +169,4 @@ IndexedDB data can remain indefinitely as long as the user does not clear the br
 
 ## Follow Up
 
-Learn more by checking the [IndexedDB official docs](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API), which detail store design, error handling, and quota usage. If you need a straightforward way to manage large offline data with compression and conflict resolution, explore the [RxDB Quickstart](../quickstart.md). You can also join the community on [GitHub](/code/) to share tips on overcoming the **IndexedDB max storage size limit** in production environments.
+Learn more by checking the [IndexedDB official docs](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API), which detail store design, error handling, and quota usage. If you need a straightforward way to manage large offline data with compression and [conflict resolution](../transactions-conflicts-revisions.md), explore the [RxDB Quickstart](../quickstart.md). You can also join the community on [GitHub](/code/) to share tips on overcoming the **IndexedDB max storage size limit** in production environments.

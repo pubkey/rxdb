@@ -118,8 +118,12 @@ When you need the best performance on mobile devices, purchase the RxDB [Premium
 To secure local data, add the crypto-js [encryption plugin](../encryption.md) (free version) or the [premium](/premium/) web-crypto plugin. Below is an example using the free crypto-js plugin:
 
 ```ts
-import { wrappedKeyEncryptionCryptoJsStorage } from 'rxdb/plugins/encryption-crypto-js';
-import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
+import {
+  wrappedKeyEncryptionCryptoJsStorage
+} from 'rxdb/plugins/encryption-crypto-js';
+import {
+  getRxStorageLocalstorage
+} from 'rxdb/plugins/storage-localstorage';
 import { createRxDatabase } from 'rxdb/plugins/core';
 
 async function initEncryptedDB() {
