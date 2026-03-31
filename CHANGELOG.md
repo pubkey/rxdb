@@ -5,6 +5,7 @@
 
 <!-- ADD new changes here! -->
 
+- FIX `deleted$` observable emitting duplicate values on unrelated document updates due to missing `distinctUntilChanged()`
 - FIX incorrect index string generation for negative decimal numbers causing wrong sort order and query results
 - FIX `rateQueryPlan()` evaluated `startKeys` twice instead of `endKeys`, causing suboptimal index selection for `$lt`/`$lte` queries.
 - FIX event-reduce mutating cached `docsDataMap` causing missing documents after insert-delete cycles

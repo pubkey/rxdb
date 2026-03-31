@@ -145,6 +145,34 @@ describeParallel('reactive-document.test.js', () => {
                 sub.unsubscribe();
                 await c.database.close();
             });
+            it('should not emit duplicate values on unrelated updates', async () => {
+                const c = await humansCollection.create(1);
+                const doc = await c.findOne().exec(true);
+
+                const emitted: boolean[] = [];
+                const sub = doc.deleted$.subscribe((v: boolean) => {
+                    emitted.push(v);
+                });
+
+                await promiseWait(10);
+                assert.strictEqual(emitted.length, 1, 'should have emitted initial value');
+                assert.strictEqual(emitted[0], false, 'initial value should be false');
+
+                // update the document without deleting it
+                await doc.incrementalPatch({ age: (doc.age ?? 0) + 1 });
+                await promiseWait(50);
+
+                // deleted$ should NOT emit again since deletion status has not changed
+                assert.strictEqual(
+                    emitted.length,
+                    1,
+                    'deleted$ should not emit duplicate false values on unrelated updates, but got ' +
+                    JSON.stringify(emitted)
+                );
+
+                sub.unsubscribe();
+                await c.database.close();
+            });
         });
         describe('negative', () => { });
     });
