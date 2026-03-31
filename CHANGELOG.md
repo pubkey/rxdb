@@ -5,6 +5,8 @@
 
 <!-- ADD new changes here! -->
 
+- FIX event-reduce mutating cached `docsDataMap` causing missing documents after insert-delete cycles
+
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
