@@ -367,7 +367,7 @@ export function rateQueryPlan<RxDocType>(
     const nonMinKeyCount = countUntilNotMatching(queryPlan.startKeys, keyValue => keyValue !== INDEX_MIN && keyValue !== INDEX_MAX);
     addQuality(nonMinKeyCount * pointsPerMatchingKey);
 
-    const nonMaxKeyCount = countUntilNotMatching(queryPlan.startKeys, keyValue => keyValue !== INDEX_MAX && keyValue !== INDEX_MIN);
+    const nonMaxKeyCount = countUntilNotMatching(queryPlan.endKeys, keyValue => keyValue !== INDEX_MAX && keyValue !== INDEX_MIN);
     addQuality(nonMaxKeyCount * pointsPerMatchingKey);
 
     const equalKeyCount = countUntilNotMatching(queryPlan.startKeys, (keyValue, idx) => {
