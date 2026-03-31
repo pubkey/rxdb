@@ -18,7 +18,8 @@ import {
     lastOfArray,
     INDEX_MIN,
     randomToken,
-    createRxDatabase
+    createRxDatabase,
+    rateQueryPlan
 } from '../../plugins/core/index.mjs';
 
 
@@ -624,6 +625,48 @@ describeParallel('query-planner.test.js', () => {
                 query
             );
             assert.strictEqual(queryPlan.sortSatisfiedByIndex, false);
+        });
+        it('rateQueryPlan should rate endKeys constraints ($lte) higher than no constraint', () => {
+            const schema = getHumanSchemaWithIndexes([['age']]);
+
+            // Query with only an upper bound ($lte) sets endKey but NOT startKey
+            const queryWithUpper = normalizeMangoQuery<HumanDocumentType>(
+                schema,
+                {
+                    selector: {
+                        age: {
+                            $lte: 50
+                        }
+                    },
+                    index: ['age']
+                }
+            );
+            const planWithUpper = getQueryPlan(schema, queryWithUpper);
+
+            // Query with no selector at all (full table scan)
+            const queryNoSelector = normalizeMangoQuery<HumanDocumentType>(
+                schema,
+                {
+                    selector: {},
+                    index: ['age']
+                }
+            );
+            const planNoSelector = getQueryPlan(schema, queryNoSelector);
+
+            const ratingWithUpper = rateQueryPlan(schema, queryWithUpper, planWithUpper);
+            const ratingNoSelector = rateQueryPlan(schema, queryNoSelector, planNoSelector);
+
+            /**
+             * The plan with an $lte constraint should be rated higher
+             * because its endKey is a specific value (50) rather than INDEX_MAX.
+             * Previously, rateQueryPlan() checked startKeys twice instead of
+             * checking endKeys, so both plans would receive the same rating.
+             */
+            assert.ok(
+                ratingWithUpper > ratingNoSelector,
+                'query with $lte endKey constraint should be rated higher than query with no constraint. ' +
+                'Got ratingWithUpper=' + ratingWithUpper + ', ratingNoSelector=' + ratingNoSelector
+            );
         });
     });
     describe('issues', () => {

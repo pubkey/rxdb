@@ -562,7 +562,7 @@ export class RxDatabaseBase<
             return this.closePromise;
         }
 
-        const { promise, resolve } = createPromiseWithResolvers<boolean>();
+        const { promise, resolve, reject } = createPromiseWithResolvers<boolean>();
         const resolveClosePromise = (result: boolean) => {
             if (this.onClosed) {
                 this.onClosed();
@@ -598,18 +598,42 @@ export class RxDatabaseBase<
             /**
              * First wait until the database is idle
              */
-            return this.requestIdlePromise()
-                .then(() => Promise.all(this.onClose.map(fn => fn())))
-                // close all collections
-                .then(() => Promise.all(
-                    Object.keys(this.collections as any)
-                        .map(key => (this.collections as any)[key])
-                        .map(col => col.close())
-                ))
-                // close internal storage instances
-                .then(() => this.internalStore.close())
-                .then(() => resolveClosePromise(true));
-        })();
+            await this.requestIdlePromise();
+
+            let closingError: Error | null = null;
+            try {
+                await Promise.all(this.onClose.map(fn => fn()));
+            } catch (err: unknown) {
+                closingError = err as Error;
+            }
+
+            // close all collections
+            await Promise.all(
+                Object.keys(this.collections as any)
+                    .map(key => (this.collections as any)[key])
+                    .map(col => col.close())
+            );
+
+            // close internal storage instances
+            await this.internalStore.close();
+
+            if (closingError) {
+                throw closingError;
+            }
+            resolveClosePromise(true);
+        })().catch((err) => {
+            /**
+             * If an error occurs during closing,
+             * we still have to mark the database as closed
+             * and clean up the instance tracking so that
+             * a new database with the same name can be created.
+             */
+            if (this.onClosed) {
+                this.onClosed();
+            }
+            this.closed = true;
+            reject(err);
+        });
 
         return promise;
     }

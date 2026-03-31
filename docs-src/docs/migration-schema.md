@@ -61,7 +61,8 @@ myDatabase.addCollections({
        * this returns a promise which resolves with the new document-data
        */
       2: function(oldDoc){
-        // in the new schema (version: 2) we defined 'senderCountry' as required field (string)
+        // in the new schema (version: 2) we defined
+        // 'senderCountry' as required field (string)
         // so we must get the country of the message-sender from the server
         const coordinates = oldDoc.coordinates;
         return fetch('http://myserver.com/api/countryByCoordinates/'+coordinates+'/')
@@ -129,7 +130,9 @@ if(needed === false) {
 }
 
 // start the migration
-messageCol.startMigration(10); // 10 is the batch-size, how many docs will run at parallel
+// 10 is the batch-size, how many docs will run
+// at parallel
+messageCol.startMigration(10);
 
 const migrationState = messageCol.getMigrationState();
 
@@ -186,11 +189,13 @@ You can do this by mutating the `oldDoc._attachments` property.
 import { createBlob } from 'rxdb';
 const migrationStrategies = {
       1: async function(oldDoc){
-        // do nothing with _attachments to keep all attachments and have them in the new collection version.
+        // do nothing with _attachments to keep all
+        // attachments in the new collection version.
         return oldDoc;
       },
       2: async function(oldDoc){
-        // set _attachments to an empty object to delete all existing ones during the migration.
+        // set _attachments to an empty object to
+        // delete all existing ones during migration.
         oldDoc._attachments = {};
         return oldDoc;
       },

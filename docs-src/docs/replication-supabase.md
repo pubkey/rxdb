@@ -267,9 +267,9 @@ You connect an anonymous key to a Supabase project by initializing the official 
 </details>
 
 <details>
-<summary>Does Supabase support full offline sync and CRDT capabilities?</summary>
+<summary>Does Supabase support full offline sync and [CRDT](./crdt.md) capabilities?</summary>
 
-Natively, the Supabase JavaScript client does not support advanced offline-first synchronization pipelines or complex Conflict-free Replicated Data Type (CRDT) architectures. To implement full offline sync capable of continuous background disconnected writes, you must attach the **[RxDB](./rx-database.md)** Supabase Replication Plugin. RxDB acts as the offline-first local CRDT-like cache, deferring all local mutations into a unified outbound queue until the Supabase TCP connection is restored.
+Natively, the Supabase JavaScript client does not support advanced [offline-first](./offline-first.md) synchronization pipelines or complex Conflict-free Replicated Data Type (CRDT) architectures. To implement full offline sync capable of continuous background disconnected writes, you must attach the **[RxDB](./rx-database.md)** Supabase Replication Plugin. RxDB acts as the offline-first local CRDT-like cache, deferring all local mutations into a unified outbound queue until the Supabase TCP connection is restored.
 </details>
 
 <details>

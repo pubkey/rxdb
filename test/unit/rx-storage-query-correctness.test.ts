@@ -464,7 +464,7 @@ describeParallel('rx-storage-query-correctness.test.ts', () => {
                     },
                     sort: [{ passportId: 'asc' }]
                 },
-                selectorSatisfiedByIndex: false,
+                selectorSatisfiedByIndex: true,
                 expectedResultDocIds: [
                     'aa',
                     'bb',

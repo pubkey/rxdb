@@ -82,7 +82,8 @@ export const defaultConflictHandler: RxConflictHandler<any> = {
          * document has to be pushed to the remote.
          * If the documents are deep equal,
          * we have no conflict.
-         * Because deepEqual is CPU expensive, on your custom conflict handler you might only
+         * Because deepEqual is CPU expensive, on your
+         * custom conflict handler you might only
          * check some properties, like the updatedAt time or revisions
          * for better performance.
          */

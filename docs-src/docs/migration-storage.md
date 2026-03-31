@@ -48,7 +48,9 @@ await migrateStorage({
     oldDatabaseName: 'myOldDatabaseName',
     oldStorage: getRxStorageLocalstorage(), // RxStorage of the old database
     batchSize: 500, // batch size
-    parallel: false, // <- true if it should migrate all collections in parallel. False (default) if should migrate in serial
+    // true: migrate all collections in parallel
+    // false (default): migrate in serial
+    parallel: false,
     afterMigrateBatch: (input: AfterMigrateBatchHandlerInput) => {
         console.log('storage migration: batch processed');
     }
@@ -81,7 +83,10 @@ Then you can run the migration by providing the old storage:
 ```ts
 /* ... */
 import { migrateStorage } from 'rxdb/plugins/migration-storage';
-import { getRxStorageLocalstorage } from 'rxdb-old/plugins/storage-localstorage'; // <- import from the old RxDB version
+// import from the old RxDB version
+import {
+    getRxStorageLocalstorage
+} from 'rxdb-old/plugins/storage-localstorage';
 
 await migrateStorage({
     database: db as any,

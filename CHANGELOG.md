@@ -6,6 +6,10 @@
 <!-- ADD new changes here! -->
 
 - FIX incorrect index string generation for negative decimal numbers causing wrong sort order and query results
+- FIX `rateQueryPlan()` evaluated `startKeys` twice instead of `endKeys`, causing suboptimal index selection for `$lt`/`$lte` queries.
+- FIX event-reduce mutating cached `docsDataMap` causing missing documents after insert-delete cycles
+- FIX `modify()` not deep-cloning document data, allowing the modifier to corrupt internal state via shared nested references
+- FIX `fillObjectWithDefaults` shared mutable references for non-primitive schema defaults (arrays/objects) causing corrupted values on subsequent inserts
 
 <!-- /CHANGELOG NEWEST -->
 

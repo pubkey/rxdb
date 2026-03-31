@@ -195,7 +195,9 @@ const schemaWithIndexes = {
       },
       firstName: {
           type: 'string',
-          maxLength: 100 // <- string-fields that are used as an index, must have set maxLength.
+          // string-fields used as an index,
+          // must have set maxLength.
+          maxLength: 100
       },
       lastName: {
           type: 'string'
@@ -209,7 +211,8 @@ const schemaWithIndexes = {
       balance: {
           type: 'number',
 
-          // number fields that are used in an index, must have set minimum, maximum and multipleOf
+          // number fields used in an index, must set
+          // minimum, maximum and multipleOf
           minimum: 0,
           maximum: 100000,
           multipleOf: 0.01
@@ -232,7 +235,8 @@ const schemaWithIndexes = {
   ],
   indexes: [
     'firstName', // <- this will create a simple index for the `firstName` field
-    ['active', 'firstName'], // <- this will create a compound-index for these two fields
+    // <- compound-index for these two fields
+    ['active', 'firstName'],
     'active'
   ]
 };
@@ -416,7 +420,7 @@ Also the following class properties of `RxDocument` cannot be used as top level 
 <div>
     RxDB automatically sets `additionalProperties: false` at the top level of a schema to ensure that all top-level fields are known in advance. This design choice offers several benefits:
 
-- Prevents collisions with RxDocument class properties:
+- Prevents collisions with [RxDocument](./rx-document.md) class properties:
 RxDB documents have built-in class methods (e.g., .toJSON, .save) at the top level. By forbidding unknown top-level properties, we avoid accidental naming collisions with these built-in methods.
 
 - Avoids conflicts with user-defined ORM functions:
@@ -446,7 +450,7 @@ To change the schema in **production**-mode, do the following steps:
 <details>
     <summary>Why does the top-level schema complain about a missing `_id` primary key field?</summary>
 <div>
-    You encounter an error stating that the top-level schema is missing the `_id` primary key field during replication. RxDB requires every schema to explicitly define the primary key property. Other databases use an implicit `_id` field. You must add the `_id` property to your schema manually if your backend expects it. You declare `_id` as a string type and set it as the `primaryKey` in your schema definition.
+    You encounter an error stating that the top-level schema is missing the `_id` primary key field during [replication](./replication.md). RxDB requires every schema to explicitly define the primary key property. Other databases use an implicit `_id` field. You must add the `_id` property to your schema manually if your backend expects it. You declare `_id` as a string type and set it as the `primaryKey` in your schema definition.
 </div>
 </details>
 
@@ -454,7 +458,7 @@ To change the schema in **production**-mode, do the following steps:
 In **development**-mode, the schema-change can be simplified by **one of these** strategies:
 
 -   Use the memory-storage so your db resets on restart and your schema is not saved permanently
--   Call `removeRxDatabase('mydatabasename', RxStorage);` before creating a new RxDatabase-instance
+-   Call `removeRxDatabase('mydatabasename', RxStorage);` before creating a new [RxDatabase](./rx-database.md)-instance
 -   Add a timestamp as suffix to the database-name to create a new one each run like `name: 'heroesDB' + new Date().getTime()`
 </div>
 </details>
