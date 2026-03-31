@@ -5,6 +5,8 @@
 
 <!-- ADD new changes here! -->
 
+- FIX incorrect index string generation for negative decimal numbers causing wrong sort order and query results
+
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
