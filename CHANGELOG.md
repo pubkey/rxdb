@@ -5,6 +5,7 @@
 
 <!-- ADD new changes here! -->
 
+- FIX event-reduce mutating cached `docsDataMap` causing missing documents after insert-delete cycles
 - FIX `modify()` not deep-cloning document data, allowing the modifier to corrupt internal state via shared nested references
 - FIX `fillObjectWithDefaults` shared mutable references for non-primitive schema defaults (arrays/objects) causing corrupted values on subsequent inserts
 

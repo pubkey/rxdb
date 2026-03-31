@@ -331,4 +331,93 @@ describe('event-reduce.test.js', () => {
             colWithEventReduce.database.close();
         });
     });
+    it('should show re-inserted documents after insert-delete cycle', async () => {
+        /**
+         * This test reproduces a bug where event-reduce's calculateNewResults
+         * mutated the cached docsDataMap on the query result object.
+         *
+         * The scenario:
+         * 1. A query with limit caches results [doc-a, doc-b].
+         * 2. Between two exec() calls, doc-c is inserted then deleted.
+         *    Event-reduce processes INSERT (adds doc-c to the cached map via
+         *    insertAtSortPosition), then DELETE triggers runFullQueryAgain.
+         * 3. Full re-exec returns [doc-a, doc-b] (same as before), so the old
+         *    result object is reused, keeping the corrupted map that still has doc-c.
+         * 4. doc-c is inserted again. Event-reduce calls insertAtSortPosition,
+         *    which checks keyDocumentMap.has('doc-c') and finds it in the
+         *    corrupted map, so it skips the insertion.
+         * 5. The query returns [doc-a, doc-b] instead of [doc-a, doc-c, doc-b].
+         */
+        const col = await createCollection(true);
+
+        // Insert initial documents
+        await col.bulkInsert([
+            {
+                passportId: 'doc-a',
+                firstName: 'Alice',
+                lastName: 'Smith',
+                age: 25
+            },
+            {
+                passportId: 'doc-b',
+                firstName: 'Bob',
+                lastName: 'Jones',
+                age: 30
+            }
+        ]);
+
+        // Create a query with limit so that delete-after-insert triggers runFullQueryAgain
+        const query = col.find({
+            selector: { age: { $gt: 20 } },
+            sort: [{ age: 'asc' }],
+            limit: 3
+        });
+
+        // Execute to cache initial results
+        const initialResults = await query.exec();
+        assert.strictEqual(initialResults.length, 2);
+        assert.strictEqual(initialResults[0].primary, 'doc-a');
+        assert.strictEqual(initialResults[1].primary, 'doc-b');
+
+        // Insert then delete doc-c WITHOUT calling exec() in between,
+        // so both events are batched in one calculateNewResults call.
+        // Event 1 (INSERT doc-c): handled by insertAtSortPosition (corrupts cached map)
+        // Event 2 (DELETE doc-c): triggers runFullQueryAgain (limit reached after insert)
+        const docC = await col.insert({
+            passportId: 'doc-c',
+            firstName: 'Charlie',
+            lastName: 'Brown',
+            age: 28
+        });
+        await docC.remove();
+
+        // Process the batched events: event-reduce fails, full re-exec returns
+        // [doc-a, doc-b] (same as before), so old result with corrupted map is reused.
+        const afterDeleteResults = await query.exec();
+        assert.strictEqual(afterDeleteResults.length, 2);
+
+        // Now re-insert doc-c. Without the fix, insertAtSortPosition would
+        // check the corrupted map, find 'doc-c' already present, and skip insertion.
+        await col.insert({
+            passportId: 'doc-c',
+            firstName: 'Charlie',
+            lastName: 'Brown',
+            age: 28
+        });
+
+        const finalResults = await query.exec();
+        assert.strictEqual(
+            finalResults.length,
+            3,
+            'doc-c should appear in query results after re-insertion. ' +
+            'Got ' + finalResults.length + ' results: [' +
+            finalResults.map(d => d.primary).join(', ') + ']. ' +
+            'If doc-c is missing, calculateNewResults likely mutated the cached docsDataMap.'
+        );
+        assert.strictEqual(finalResults[0].primary, 'doc-a');
+        assert.strictEqual(finalResults[1].primary, 'doc-c');
+        assert.strictEqual(finalResults[2].primary, 'doc-b');
+
+        col.database.close();
+    });
 });
