@@ -1720,16 +1720,15 @@ describe('migration-schema.test.ts', function () {
             await newDb.close();
         });
 
-        it('migratePromise() should return a valid percent (not NaN) when collection has 0 documents', async () => {
+        it('migratePromise() should return 100 percent when collection has 0 documents', async () => {
             const col = await humansCollection.createMigrationCollection(0);
             const result = await col.migratePromise();
 
             /**
-             * When total documents is 0, the percent should still be a valid number,
-             * not NaN from dividing 0/0.
+             * When total documents is 0, the migration is effectively complete
+             * so percent should be 100, not NaN from dividing 0/0.
              */
-            assert.strictEqual(typeof result.count.percent, 'number');
-            assert.ok(!isNaN(result.count.percent), 'percent must not be NaN, but was ' + result.count.percent);
+            assert.strictEqual(result.count.percent, 100);
             assert.strictEqual(result.status, 'DONE');
             await col.database.close();
         });

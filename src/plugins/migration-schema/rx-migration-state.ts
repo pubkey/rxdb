@@ -329,7 +329,7 @@ export class RxMigrationState {
                 for (const oneHandler of useHandlers) {
                     status = oneHandler(status);
                 }
-                status.count.percent = status.count.total === 0 ? 0 : Math.round((status.count.handled / status.count.total) * 100);
+                status.count.percent = status.count.total === 0 ? 100 : Math.round((status.count.handled / status.count.total) * 100);
 
                 if (
                     newDoc && previous &&
