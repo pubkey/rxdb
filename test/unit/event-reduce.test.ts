@@ -11,7 +11,8 @@ import {
     randomToken,
     RxCollection,
     RxDocument,
-    MangoQuery
+    MangoQuery,
+    ensureNotFalsy
 } from '../../plugins/core/index.mjs';
 
 import {
@@ -330,5 +331,78 @@ describe('event-reduce.test.js', () => {
             colNoEventReduce.database.close();
             colWithEventReduce.database.close();
         });
+    });
+    it('event-reduce should not mutate the cached docsDataMap of the query result', async () => {
+        /**
+         * This test verifies that the event-reduce algorithm does not mutate
+         * the cached docsDataMap on the current query result.
+         * Previously, the map was passed by reference to the event-reduce
+         * runAction functions, which modify it in-place (adding/removing entries).
+         * This could cause the cached map to accumulate stale entries,
+         * leading to incorrect behavior in subsequent event-reduce calls.
+         * Specifically, insertAtSortPosition checks keyDocumentMap.has(docId)
+         * and would incorrectly skip insertions for documents that were
+         * in the corrupted map but not in the actual results.
+         */
+        const col = await createCollection(true);
+
+        // Insert initial documents
+        await col.bulkInsert([
+            {
+                passportId: 'doc-a',
+                firstName: 'Alice',
+                lastName: 'Smith',
+                age: 30
+            },
+            {
+                passportId: 'doc-b',
+                firstName: 'Bob',
+                lastName: 'Jones',
+                age: 25
+            }
+        ]);
+
+        // Create and execute a query to populate _result
+        const query = col.find({
+            selector: { age: { $gt: 20 } },
+            sort: [{ age: 'asc' }]
+        });
+        await query.exec();
+
+        // Verify initial state
+        const resultBefore = ensureNotFalsy(query._result);
+        assert.strictEqual(resultBefore.docsData.length, 2);
+        assert.strictEqual(resultBefore.docsDataMap.size, 2);
+
+        // Capture the docsDataMap before any mutation
+        const mapSizeBefore = resultBefore.docsDataMap.size;
+
+        // Now insert a new matching document which triggers event-reduce
+        await col.insert({
+            passportId: 'doc-c',
+            firstName: 'Charlie',
+            lastName: 'Brown',
+            age: 28
+        });
+
+        // Wait for the query to update via event-reduce
+        await query.exec();
+
+        // The NEW result should have 3 documents
+        const resultAfter = ensureNotFalsy(query._result);
+        assert.strictEqual(resultAfter.docsData.length, 3);
+        assert.strictEqual(resultAfter.docsDataMap.size, 3);
+
+        // The OLD result's docsDataMap should NOT have been mutated
+        // (it should still have exactly 2 entries, not 3)
+        assert.strictEqual(
+            resultBefore.docsDataMap.size,
+            mapSizeBefore,
+            'The cached docsDataMap on the previous result was mutated by event-reduce! ' +
+            'Expected size ' + mapSizeBefore + ' but got ' + resultBefore.docsDataMap.size + '. ' +
+            'calculateNewResults should copy the map before passing it to runAction.'
+        );
+
+        col.database.close();
     });
 });
