@@ -5,6 +5,8 @@
 
 <!-- ADD new changes here! -->
 
+- FIX `rateQueryPlan()` evaluated `startKeys` twice instead of `endKeys`, causing suboptimal index selection for `$lt`/`$lte` queries.
+
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
