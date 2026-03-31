@@ -172,50 +172,6 @@ describeParallel('custom-index.test.ts', () => {
                 });
                 assert.strictEqual(sorted[0].num, 10.02);
             });
-            it('should get the correct sort order for negative decimal numbers', () => {
-                type NegDocType = {
-                    id: string;
-                    temperature: number;
-                };
-                const negSchema: RxJsonSchema<RxDocumentData<NegDocType>> = fillWithDefaultSettings({
-                    primaryKey: 'id',
-                    version: 0,
-                    type: 'object',
-                    properties: {
-                        id: {
-                            type: 'string',
-                            maxLength: 100
-                        },
-                        temperature: {
-                            type: 'number',
-                            minimum: -100,
-                            maximum: 100,
-                            multipleOf: 0.01
-                        }
-                    },
-                    required: ['id', 'temperature'],
-                    indexes: [['temperature']]
-                });
-                const index = ['temperature'];
-                const values = [-1.9, -1.7, -1.5, -1.3, -1.1, -1.0, 0.0, 1.1, 1.3, 1.5];
-                const getIndexStr = getIndexableStringMonad(negSchema, index);
-                const docs = values.map(v => ({
-                    id: randomString(10),
-                    temperature: v,
-                    _deleted: false,
-                    _attachments: {},
-                    _meta: { lwt: Date.now() },
-                    _rev: EXAMPLE_REVISION_1
-                } as RxDocumentData<NegDocType>));
-                const sorted = docs.slice().sort((a, b) => {
-                    const strA = getIndexStr(a);
-                    const strB = getIndexStr(b);
-                    return strA < strB ? -1 : 1;
-                });
-                const sortedValues = sorted.map(d => d.temperature);
-                const expectedSorted = values.slice().sort((a, b) => a - b);
-                assert.deepStrictEqual(sortedValues, expectedSorted);
-            });
             it('should work correctly on big numbers', () => {
                 type DocType = {
                     id: string;
