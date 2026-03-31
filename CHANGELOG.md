@@ -5,6 +5,8 @@
 
 <!-- ADD new changes here! -->
 
+- FIX `fillObjectWithDefaults` shared mutable references for non-primitive schema defaults (arrays/objects) causing corrupted values on subsequent inserts
+
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
