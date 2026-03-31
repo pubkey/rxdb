@@ -5,6 +5,7 @@
 
 <!-- ADD new changes here! -->
 
+- FIX RxState `set('', modifier)` passed `undefined` to the modifier instead of the current state
 - FIX incorrect index string generation for negative decimal numbers causing wrong sort order and query results
 - FIX `rateQueryPlan()` evaluated `startKeys` twice instead of `endKeys`, causing suboptimal index selection for `$lt`/`$lte` queries.
 - FIX event-reduce mutating cached `docsDataMap` causing missing documents after insert-delete cycles
