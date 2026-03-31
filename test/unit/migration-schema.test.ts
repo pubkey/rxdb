@@ -355,6 +355,29 @@ describe('migration-schema.test.ts', function () {
                 await col.database.remove();
             });
 
+            it('should have a valid percent value when migrating with zero documents', async () => {
+                const col = await humansCollection.createMigrationCollection(0);
+
+                const state$ = col.getMigrationState().$;
+                const states: RxMigrationStatus[] = [];
+                const sub = state$.subscribe(state => {
+                    states.push(state);
+                });
+
+                await col.migratePromise();
+
+                await waitUntil(() => lastOfArray(states)?.status === 'DONE');
+
+                // All emitted percent values must be valid numbers in range [0, 100], not NaN
+                for (const state of states) {
+                    assert.strictEqual(typeof state.count.percent, 'number', 'percent must be a number');
+                    assert.ok(!Number.isNaN(state.count.percent), 'percent must not be NaN (got NaN due to 0/0 division when total is 0)');
+                    assert.ok(state.count.percent >= 0 && state.count.percent <= 100, 'percent must be between 0 and 100');
+                }
+
+                sub.unsubscribe();
+                await col.database.remove();
+            });
             it('should remove the document when migration-strategy returns null', async () => {
                 const col = await humansCollection.createMigrationCollection(isFastMode() ? 3 : 10, {
                     3: () => {
