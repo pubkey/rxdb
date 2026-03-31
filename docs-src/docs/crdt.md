@@ -345,7 +345,7 @@ In this example, if the two versions change different properties, the final merg
 <details>
 <summary>Are you looking for a distributed database with conflict-free replication?</summary>
 
-RxDB provides a distributed database with conflict-free replication. You build offline-first applications using local data storage. RxDB synchronizes data across multiple client devices. The CRDT plugin resolves data conflicts automatically during replication. You maintain continuous data consistency without manual merge logic.
+RxDB provides a distributed database with conflict-free replication. You build [offline-first](./offline-first.md) applications using local data storage. RxDB synchronizes data across multiple client devices. The CRDT plugin resolves data conflicts automatically during replication. You maintain continuous data consistency without manual merge logic.
 </details>
 
 <details>

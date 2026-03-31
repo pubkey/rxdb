@@ -48,7 +48,7 @@ Despite the advantages, directly working with IndexedDB has several drawbacks:
 
 - **Cross-Tab Synchronization**: Handling concurrent data changes across multiple browser tabs is difficult in IndexedDB. RxDB has built-in multi-tab support that keeps all tabs in sync.
 
-- **Advanced Features Missing**: IndexedDB lacks built-in support for encryption, compression, or other advanced data management features.
+- **Advanced Features Missing**: IndexedDB lacks built-in support for [encryption](../encryption.md), compression, or other advanced data management features.
 
 - **Browser-Only**: IndexedDB works in the browser but not in environments like [React Native](../react-native-database.md) or [Electron](../electron-database.md). RxDB offers storage adapters to seamlessly reuse the same code on different platforms.
 
@@ -286,13 +286,13 @@ A comprehensive example of RxDB in an Angular application is available in the [R
 
 Beyond simple CRUD and local data storage, RxDB supports:
 
-- **Replication**: Sync your local data with a remote database. Learn more at [RxDB Replication](https://rxdb.info/replication.html).
+- **[Replication](../replication.md)**: Sync your local data with a remote database. Learn more at [RxDB Replication](https://rxdb.info/replication.html).
 
 - **Data Migration on Schema Changes**: RxDB supports automatic or manual schema migrations to manage backward-compatibility and evolve your data structure. See [RxDB Migration](https://rxdb.info/migration-schema.html).
 
 - **Encryption**: Easily encrypt sensitive data at rest. See [RxDB Encryption](https://rxdb.info/encryption.html).
 
-- **Compression**: Reduce storage and bandwidth usage using key compression. Learn more at [RxDB Key Compression](https://rxdb.info/key-compression.html).
+- **Compression**: Reduce storage and bandwidth usage using [key compression](../key-compression.md). Learn more at [RxDB Key Compression](https://rxdb.info/key-compression.html).
 
 ## Limitations of IndexedDB
 

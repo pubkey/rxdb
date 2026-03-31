@@ -57,7 +57,7 @@ RxDB extends its prowess to multi-tab scenarios, guaranteeing data consistency a
 Integrating RxDB into a Progressive Web App, driven by technologies like [React](./react-database.md), is a straightforward process. By configuring RxDB and installing the necessary packages, developers establish a solid foundation for robust data management within their PWA.
 
 ## Exploring Different RxStorage Layers
-RxDB caters to diverse needs through its various RxStorage layers:
+RxDB caters to diverse needs through its various [RxStorage](../rx-storage.md) layers:
 
 - [LocalStorage RxStorage](../rx-storage-localstorage.md): Leveraging the capabilities of the browser's LocalStorage API for storage.
 - [IndexedDB RxStorage](../rx-storage-indexeddb.md): Tapping into the browser's IndexedDB for efficient data storage.
@@ -84,13 +84,13 @@ RxDB empowers PWAs with the ability to encrypt local data, enhancing data securi
 Performance optimization is a top priority for PWAs. RxDB addresses this concern by offering indexing options that expedite data retrieval, resulting in a snappier user interface and heightened responsiveness.
 
 ### JSON Key Compression
-RxDB introduces JSON key compression, a feature that reduces storage requirements. This optimization is particularly beneficial for PWAs dealing with substantial data volumes, enhancing overall efficiency and resource utilization.
+RxDB introduces JSON [key compression](../key-compression.md), a feature that reduces storage requirements. This optimization is particularly beneficial for PWAs dealing with substantial data volumes, enhancing overall efficiency and resource utilization.
 
 ### Change Streams and Event Handling
 RxDB introduces change streams, enabling PWAs to react to data changes in real time. This capability empowers dynamic updates to the user interface, promoting interactivity and engagement.
 
 ## Conclusion
-In the ever-evolving landscape of web application development, Progressive Web Apps continue to redefine user experiences. RxDB emerges as a pivotal player, seamlessly integrating with PWAs and enhancing their capabilities. With features like the local-first approach, observable queries, replication mechanisms, and advanced encryption, RxDB empowers developers to create responsive, offline-capable, and data-driven PWAs. As the demand for sophisticated PWAs continues to surge, RxDB remains an indispensable tool for developers aiming to push the boundaries of innovation and redefine the standards of user engagement. By embracing RxDB, developers ensure their PWAs remain at the forefront of the digital revolution, offering seamless and immersive experiences to users around the world.
+In the ever-evolving landscape of web application development, Progressive Web Apps continue to redefine user experiences. RxDB emerges as a pivotal player, seamlessly integrating with PWAs and enhancing their capabilities. With features like the local-first approach, observable queries, replication mechanisms, and advanced [encryption](../encryption.md), RxDB empowers developers to create responsive, offline-capable, and data-driven PWAs. As the demand for sophisticated PWAs continues to surge, RxDB remains an indispensable tool for developers aiming to push the boundaries of innovation and redefine the standards of user engagement. By embracing RxDB, developers ensure their PWAs remain at the forefront of the digital revolution, offering seamless and immersive experiences to users around the world.
 
 
 ## Follow Up

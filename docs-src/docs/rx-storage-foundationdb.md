@@ -7,7 +7,7 @@ image: /headers/rx-storage-foundationdb.jpg
 
 # RxDB Database on top of FoundationDB
 
-[FoundationDB](https://www.foundationdb.org/) is a distributed key-value store designed to handle large volumes of structured data across clusters of computers while maintaining high levels of performance, scalability, and fault tolerance. While FoundationDB itself only can store and query key-value pairs, it lacks more advanced features like complex queries, encryption and replication.
+[FoundationDB](https://www.foundationdb.org/) is a distributed key-value store designed to handle large volumes of structured data across clusters of computers while maintaining high levels of performance, scalability, and fault tolerance. While FoundationDB itself only can store and query key-value pairs, it lacks more advanced features like complex queries, [encryption](./encryption.md) and [replication](./replication.md).
 
 With the FoundationDB based [RxStorage](./rx-storage.md) of [RxDB](https://rxdb.info/) you can combine the benefits of FoundationDB while having a fully featured, high performance NoSQL database.
 

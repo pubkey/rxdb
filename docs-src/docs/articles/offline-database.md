@@ -235,7 +235,7 @@ Enterprise applications operating in disconnected environments (like remote fiel
 <details>
 <summary>Should I use Firebase, SQLite, or RxDB for offline-first apps?</summary>
 
-**Firebase** is excellent if you strictly want a fully managed Cloud backend and only need brief periods of offline caching before syncing. **[SQLite](../rx-storage-sqlite.md)** is a low-level, high-performance C-library essential if you require pure SQL queries on native mobile/desktop platforms without needing automated cross-platform sync. **[RxDB](../rx-database.md)** sits entirely above these; it is an offline-first NoSQL JSON database specifically engineered to provide fully automated sync mechanisms across *any* persistent storage layer including SQLite or IndexedDB while granting true real-time UI reactivity.
+**Firebase** is excellent if you strictly want a fully managed Cloud backend and only need brief periods of offline caching before syncing. **[SQLite](../rx-storage-sqlite.md)** is a low-level, high-performance C-library essential if you require pure SQL queries on native mobile/desktop platforms without needing automated cross-platform sync. **[RxDB](../rx-database.md)** sits entirely above these; it is an offline-first NoSQL JSON database specifically engineered to provide fully automated sync mechanisms across *any* persistent storage layer including SQLite or IndexedDB while granting true real-time UI [reactivity](../reactivity.md).
 </details>
 
 <details>
@@ -251,7 +251,7 @@ Native services like GPS/Location APIs fundamentally do not require an internet 
 </details>
 
 <details>
-<summary>Are there reliable CRDT-based offline first architectures for real-time collaboration?</summary>
+<summary>Are there reliable [CRDT](../crdt.md)-based offline first architectures for real-time collaboration?</summary>
 
 Yes, architectures utilizing Conflict-free Replicated Data Types (CRDTs) like Yjs or Automerge are extremely reliable for fine-grained, real-time collaboration (e.g., Google Docs-style text editing or Figma-style canvas drawing). However, true CRDTs carry significant computational overhead and memory bloat over time. Because of this, [RxDB](../rx-database.md) instead utilizes mathematically simpler Document-level conflict resolution (where the state is purely deterministic), which is generally much more performant and suitable for complex business data than pure character-by-character CRDT algorithms.
 </details>
@@ -259,7 +259,7 @@ Yes, architectures utilizing Conflict-free Replicated Data Types (CRDTs) like Yj
 <details>
 <summary>How to integrate online systems with offline-first local data workloads?</summary>
 
-Integrating legacy online systems with offline-first local workloads essentially involves implementing a robust syncing middleware. Instead of having the client interact directly with your legacy REST endpoints, you implement a [custom replication plugin](../replication-http.md) (or use an intermediate GraphQL layer) that maps your local NoSQL database events to your backend's CRUD operations. This decouples the network lifecycle from the user interface, allowing your frontend to react instantly to the local datastore while the syncing middleware quietly synchronizes state in the background.
+Integrating legacy online systems with offline-first local workloads essentially involves implementing a robust syncing [middleware](../middleware.md). Instead of having the client interact directly with your legacy REST endpoints, you implement a [custom replication plugin](../replication-http.md) (or use an intermediate GraphQL layer) that maps your local NoSQL database events to your backend's CRUD operations. This decouples the network lifecycle from the user interface, allowing your frontend to react instantly to the local datastore while the syncing middleware quietly synchronizes state in the background.
 </details>
 
 ## Follow Up

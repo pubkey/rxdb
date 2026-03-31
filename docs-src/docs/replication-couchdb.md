@@ -19,7 +19,7 @@ Because the way RxDB handles revisions and documents is very similar to CouchDB,
 
 - Faster initial replication.
 - Works with any [RxStorage](./rx-storage.md), not just [PouchDB](./rx-storage-pouchdb.md).
-- Easier conflict handling because conflicts are handled during replication and not afterwards.
+- Easier [conflict handling](./transactions-conflicts-revisions.md) because conflicts are handled during replication and not afterwards.
 - Does not have to store all document revisions on the client, only stores the newest version.
 
 ## Cons

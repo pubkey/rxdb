@@ -173,7 +173,7 @@ Using signals allows you to update only the specific text node that changed, kee
 ## Sync with Backend
 
 A local database is useful, but a synchronized database is powerful.
-RxDB provides a robust replication protocol that can sync with **any backend**.
+RxDB provides a robust [replication](./replication.md) protocol that can sync with **any backend**.
 
 It has dedicated plugins for popular backend solutions:
 - **[Supabase / Postgres](./replication-supabase.md)**
@@ -184,7 +184,7 @@ It has dedicated plugins for popular backend solutions:
 For custom backends, you can implement the **[simple HTTP replication](./replication-http.md)** protocol.
 
 ### Example: Sync with Supabase
-Syncing is set-and-forget. You start the replication, and RxDB handles the rest (pulling changes, pushing writes, handling conflict resolution).
+Syncing is set-and-forget. You start the replication, and RxDB handles the rest (pulling changes, pushing writes, handling [conflict resolution](./transactions-conflicts-revisions.md)).
 
 ```ts
 import { replicateSupabase } from 'rxdb/plugins/replication-supabase';
@@ -216,7 +216,7 @@ How does RxDB compare to other React Native database solutions?
 
 ### Summary
 - **AsyncStorage**: Good for simple key-value pairs (like settings). Too slow for data.
-- **SQLite**: Great foundation, but requires writing raw SQL and manual reactivity/sync.
+- **SQLite**: Great foundation, but requires writing raw SQL and manual [reactivity](./reactivity.md)/sync.
 - **Realm**: Fast object store, but locks you into the MongoDB ecosystem for sync. Realm was deprecated in 2024 ([source](https://github.com/realm/realm-swift/discussions/8680)).
 - **Firestore**: Easy networked DB, but poor offline support (cannot start offline) and latency issues.
 - **RxDB**: Combines the performance of local SQLite with the ease of NoSQL, automatic reactivity, and backend-agnostic synchronization.

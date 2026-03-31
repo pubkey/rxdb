@@ -259,7 +259,7 @@ console.dir(json);
 */
 ```
 
-You can also set `withMetaFields: true` to get additional meta fields like the revision, attachments or the deleted flag.
+You can also set `withMetaFields: true` to get additional meta fields like the revision, [attachments](./rx-attachment.md) or the deleted flag.
 
 ```js
 const json = myDocument.toJSON(true);

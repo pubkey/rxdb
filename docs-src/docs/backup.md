@@ -9,7 +9,7 @@ image: /headers/backup.jpg
 # 📥 Backup Plugin
 
 With the backup plugin you can write the current database state and ongoing changes into folders on the filesystem.
-The files are written in plain json together with their attachments so that you can read them out with any software or tools, without being bound to RxDB.
+The files are written in plain json together with their [attachments](./rx-attachment.md) so that you can read them out with any software or tools, without being bound to RxDB.
 
 This is useful to:
   - Consume the database content with other software that cannot replicate with RxDB

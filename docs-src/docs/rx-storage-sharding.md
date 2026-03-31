@@ -91,7 +91,7 @@ const database = await createRxDatabase({
 
 ## Performance
 
-The Sharding RxStorage wrapper can improve performance, especially when using an underlying storage that has bottlenecks with large single stores like IndexedDB. Below is a comparison.
+The Sharding [RxStorage](./rx-storage.md) wrapper can improve performance, especially when using an underlying storage that has bottlenecks with large single stores like IndexedDB. Below is a comparison.
 
 <PerformanceChart
   data={[

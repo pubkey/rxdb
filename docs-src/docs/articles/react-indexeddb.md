@@ -39,7 +39,7 @@ While IndexedDB itself is powerful, its native API comes with several drawbacks 
 - **TypeScript Support**: Ensuring good TypeScript support with IndexedDB is challenging, especially when trying to enforce document type consistency.
 - **Lack of Observable API**: IndexedDB doesn't provide an observable API out of the box. RxDB solves this by enabling you to observe query results or specific document fields.
 - **Cross-Tab Communication**: Managing cross-tab updates in plain IndexedDB is difficult. RxDB handles this seamlessly-changes in one tab automatically affect observed data in others.
-- **Missing Advanced Features**: Features like encryption or compression aren't built into IndexedDB, but they are available via RxDB.
+- **Missing Advanced Features**: Features like [encryption](../encryption.md) or compression aren't built into IndexedDB, but they are available via RxDB.
 - **Limited Platform Support**: IndexedDB exists only in the browser. In contrast, RxDB offers swappable storages to use the same code in [React Native](../react-native-database.md), [Capacitor](../capacitor-database.md), or [Electron](../electron-database.md).
 
 <center>
@@ -180,7 +180,7 @@ This component subscribes to the collection's changes, updating the UI automatic
 
 ### With Preact Signals
 
-RxDB also supports Preact Signals for reactivity, which can be integrated into React applications. Preact Signals offer a modern, fine-grained reactivity model.
+RxDB also supports Preact Signals for [reactivity](../reactivity.md), which can be integrated into React applications. Preact Signals offer a modern, fine-grained reactivity model.
 
 First, install the necessary package:
 ```bash
@@ -230,7 +230,7 @@ RxDB offers many advanced features that extend beyond basic data storage:
 - **RxDB Replication**: Synchronize local data with remote databases seamlessly. Learn more: [RxDB Replication](https://rxdb.info/replication.html)
 - **Data Migration**: Handle schema changes gracefully with automatic data migrations. See: [Data migration](https://rxdb.info/migration-schema.html)
 - **Encryption**: Secure your data with built-in encryption capabilities. Explore: [Encryption](https://rxdb.info/encryption.html)
-- **Compression**: Optimize storage using key compression. Details: [Compression](https://rxdb.info/key-compression.html)
+- **Compression**: Optimize storage using [key compression](../key-compression.md). Details: [Compression](https://rxdb.info/key-compression.html)
 
 ## Limitations of IndexedDB
 
