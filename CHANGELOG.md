@@ -6,6 +6,7 @@
 <!-- ADD new changes here! -->
 
 - FIX `fillWithDefaultSettings()` index deduplication was broken because `Array.filter()` return value was discarded, causing duplicate indexes in schemas when user-defined indexes become identical after adding `_deleted` prefix and primary key suffix
+- FIX encryption plugin not stripping type-specific schema keywords (`maxLength`, `required`, `items`, etc.) from encrypted fields, causing validation errors when using a validator storage with encryption
 - FIX incorrect index string generation for negative decimal numbers causing wrong sort order and query results
 - FIX `rateQueryPlan()` evaluated `startKeys` twice instead of `endKeys`, causing suboptimal index selection for `$lt`/`$lte` queries.
 - FIX event-reduce mutating cached `docsDataMap` causing missing documents after insert-delete cycles
