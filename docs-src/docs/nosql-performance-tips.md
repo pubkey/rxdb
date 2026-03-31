@@ -74,8 +74,11 @@ const regexQuery = {
 const enumQuery = {
     selector: {
         /**
-         * Here lets assume our status field has the enum type ['idle', 'in-progress', 'done']
-         * so our restrictive operator can exclude all documents with 'done' as status.
+         * Here lets assume our status field has
+         * the enum type
+         * ['idle', 'in-progress', 'done']
+         * so our restrictive operator can exclude
+         * all documents with 'done' as status.
          */
         status: {
             $in: [
@@ -126,8 +129,11 @@ const query = myCollection
       /**
        * Because the developer knows that 50% of the documents are 'male',
        * but only 20% are below age 18,
-       * it makes sense to enforce using the ['gender', 'age'] index to improve performance.
-       * This could not be known by the query planer which might have chosen ['age', 'gender'] instead.
+       * it makes sense to enforce using the
+       * ['gender', 'age'] index to improve
+       * performance. This could not be known
+       * by the query planer which might have
+       * chosen ['age', 'gender'] instead.
        */
       index: ['gender', 'age']
     });

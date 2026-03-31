@@ -149,7 +149,10 @@ There is also the `client-rest` plugin that provides type-save interactions with
 ```ts
 // using the client (optional)
 import { createRestClient } from 'rxdb-server/plugins/client-rest';
-const client = createRestClient('http://localhost:80/' + endpoint.urlPath, {/* headers */});
+const client = createRestClient(
+    'http://localhost:80/' + endpoint.urlPath,
+    {/* headers */}
+);
 const response = await client.query({ selector: {} });
 ```
 
@@ -302,7 +305,10 @@ When you have fields that should only be modified by the server, but not by the 
 ```ts
 
 const myChangeValidator = function(authData, change){
-    if(change.newDocumentState.myReadonlyField !== change.assumedMasterState.myReadonlyField){
+    if(
+        change.newDocumentState.myReadonlyField !==
+        change.assumedMasterState.myReadonlyField
+    ){
         throw new Error('myReadonlyField is readonly');
     }
 }

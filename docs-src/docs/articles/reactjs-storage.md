@@ -76,7 +76,7 @@ While localStorage is simple, it’s limited to string-based key-value lookups a
 - Stores [large](./indexeddb-max-storage-limit.md) [JSON](./json-database.md) objects, able to index by multiple fields
 - Asynchronous and usually more scalable
 - More complicated to use directly (i.e., not as simple as .getItem())
-[RxDB](/), as you’ll see, simplifies [IndexedDB](../rx-storage-indexeddb.md) usage in ReactJS by adding a more intuitive layer for queries, reactivity, and advanced capabilities like [encryption](../encryption.md).
+[RxDB](/), as you’ll see, simplifies [IndexedDB](../rx-storage-indexeddb.md) usage in ReactJS by adding a more intuitive layer for queries, [reactivity](../reactivity.md), and advanced capabilities like [encryption](../encryption.md).
 
 
 <center>
@@ -171,7 +171,9 @@ RxDB typically exposes reactivity via RxJS observables. However, some developers
 ```ts
 import { createRxDatabase } from 'rxdb/plugins/core';
 import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
-import { PreactSignalsRxReactivityFactory } from 'rxdb/plugins/reactivity-preact-signals';
+import {
+    PreactSignalsRxReactivityFactory
+} from 'rxdb/plugins/reactivity-preact-signals';
 
 (async function setUpRxDBWithSignals() {
   const db = await createRxDatabase({
@@ -195,7 +197,9 @@ For more advanced ReactJS storage needs, especially when sensitive user data is 
 
 ```ts
 import { createRxDatabase } from 'rxdb';
-import { wrappedKeyEncryptionCryptoJsStorage } from 'rxdb/plugins/encryption-crypto-js';
+import {
+    wrappedKeyEncryptionCryptoJsStorage
+} from 'rxdb/plugins/encryption-crypto-js';
 import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
 
 (async function secureSetup() {

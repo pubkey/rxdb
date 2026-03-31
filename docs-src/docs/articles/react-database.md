@@ -49,7 +49,9 @@ await db.heroes.find({
     }
   }
 })
-.$ // the $ returns an observable that emits each time the result set of the query changes
+// the $ returns an observable that emits each
+// time the result set of the query changes
+.$
 .subscribe(aliveHeroes => console.dir(aliveHeroes));
 ```
 
@@ -132,21 +134,21 @@ RxDB offers multiple storage layers, each backed by a different underlying techn
 ### Synchronizing Data with RxDB between Clients and Servers
 The offline-first approach is a fundamental principle of RxDB's design. When dealing with client-server synchronization, RxDB ensures that changes made offline are captured and propagated to the server once connectivity is reestablished. This mechanism guarantees that data remains consistent across different client instances, even when operating in an occasionally connected environment.
 
-RxDB offers a range of [replication plugins](../replication.md) that facilitate data synchronization between clients and servers. These plugins support various synchronization strategies, such as one-way replication, two-way replication, and custom conflict resolution. Developers can select the appropriate plugin based on their application's synchronization requirements.
+RxDB offers a range of [replication plugins](../replication.md) that facilitate data synchronization between clients and servers. These plugins support various synchronization strategies, such as one-way replication, two-way replication, and custom [conflict resolution](../transactions-conflicts-revisions.md). Developers can select the appropriate plugin based on their application's synchronization requirements.
 
 <p align="center">
   <img src="../files/database-replication.png" alt="database replication" width="200" />
 </p>
 
 ### Advanced RxDB Features and Techniques
-Encryption of Local Data
+[Encryption](../encryption.md) of Local Data
 Security is paramount when handling sensitive user data. RxDB supports [data encryption](./react-native-encryption.md), ensuring that locally stored information remains protected from unauthorized access. This feature is particularly valuable when dealing with sensitive data in offline scenarios.
 
 ### Indexing and Performance Optimization
 Efficient indexing is critical for achieving optimal database performance. RxDB provides mechanisms to define indexes on specific fields, enhancing query speed and reducing the computational overhead of data retrieval.
 
 ### JSON Key Compression
-RxDB employs JSON key compression to reduce storage space and improve performance. This technique minimizes the memory footprint of the database, making it suitable for applications with limited resources.
+RxDB employs JSON [key compression](../key-compression.md) to reduce storage space and improve performance. This technique minimizes the memory footprint of the database, making it suitable for applications with limited resources.
 
 ### Change Streams and Event Handling
 RxDB enables developers to subscribe to change streams, which emit events whenever data changes occur. This functionality facilitates real-time event handling and provides opportunities for implementing features such as notifications and live updates.

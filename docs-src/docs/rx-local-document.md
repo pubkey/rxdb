@@ -14,7 +14,7 @@ They come in handy when you want to store settings or additional data next to yo
 - Local Document do not have to match the collections schema.
 - Local Documents do not get replicated.
 - Local Documents will not be found on queries.
-- Local Documents can not have attachments.
+- Local Documents can not have [attachments](./rx-attachment.md).
 - Local Documents will not get handled by the [migration-schema](./migration-schema.md).
 - The id of a local document has the `maxLength` of `128` characters.
 
@@ -48,7 +48,9 @@ const myDatabase = await createRxDatabase({
 myDatabase.addCollections({
   messages: {
     schema: messageSchema,
-    localDocuments: true // <- activate this to store local documents in the collection
+    // activate this to store local documents
+    // in the collection
+    localDocuments: true
   }
 });
 ```

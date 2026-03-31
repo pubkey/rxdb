@@ -845,6 +845,45 @@ describeParallel('rx-schema.test.ts', () => {
                     assert.strictEqual(filled2.foo, 'bar');
                     assert.strictEqual(filled2.age, 40);
                 });
+                it('should not share non-primitive default value references between filled objects', () => {
+                    const schema = createRxSchema({
+                        version: 0,
+                        primaryKey: 'id',
+                        type: 'object',
+                        properties: {
+                            id: {
+                                type: 'string',
+                                maxLength: 100
+                            },
+                            tags: {
+                                type: 'array',
+                                items: { type: 'string' },
+                                default: []
+                            },
+                            metadata: {
+                                type: 'object',
+                                properties: {},
+                                default: {}
+                            }
+                        },
+                        required: ['id']
+                    } as any, defaultHashSha256);
+
+                    const filled1 = fillObjectWithDefaults(schema, { id: 'doc1' });
+                    const filled2 = fillObjectWithDefaults(schema, { id: 'doc2' });
+
+                    // Both should have the correct default values
+                    assert.deepStrictEqual(filled1.tags, []);
+                    assert.deepStrictEqual(filled2.tags, []);
+                    assert.deepStrictEqual(filled1.metadata, {});
+                    assert.deepStrictEqual(filled2.metadata, {});
+
+                    // Default values must be independent copies, not shared references.
+                    // Otherwise mutating one document's defaults (e.g. in a pre-insert hook)
+                    // would corrupt the schema's cached defaults for all future documents.
+                    assert.notStrictEqual(filled1.tags, filled2.tags);
+                    assert.notStrictEqual(filled1.metadata, filled2.metadata);
+                });
             });
         });
     });

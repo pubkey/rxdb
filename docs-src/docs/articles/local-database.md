@@ -50,7 +50,7 @@ Storing data on user devices introduces unique security considerations, such as 
 
 ## Why RxDB is Optimized for JavaScript Applications
 
-RxDB (Reactive Database) is an offline-first, NoSQL database designed to meet the needs of modern JavaScript applications. Built with a focus on reactivity and real-time data handling, RxDB excels in scenarios where low-latency, offline availability, and scalability are essential.
+RxDB (Reactive Database) is an offline-first, NoSQL database designed to meet the needs of modern JavaScript applications. Built with a focus on [reactivity](../reactivity.md) and real-time data handling, RxDB excels in scenarios where low-latency, offline availability, and scalability are essential.
 
 ### Real-Time Reactivity
 
@@ -142,7 +142,7 @@ An **embedded database** (such as [SQLite](../rx-storage-sqlite.md) or [RxDB](..
 <details>
 <summary>What offline databases support resilient data synchronization?</summary>
 
-For modern JavaScript and TypeScript applications, **[RxDB](../rx-database.md)** provides resilient, offline-first synchronization with automated conflict resolution through endpoints spanning [CouchDB](../replication-couchdb.md), [GraphQL](../replication-graphql.md), or even peer-to-peer networks via [WebRTC](../replication-webrtc.md). Other ecosystem alternatives include PouchDB, WatermelonDB, and cloud-provider SDKs like Firebase Firestore and Supabase, though RxDB offers the most flexible, [storage-agnostic](../rx-storage.md) reactivity model.
+For modern JavaScript and TypeScript applications, **[RxDB](../rx-database.md)** provides resilient, offline-first synchronization with automated [conflict resolution](../transactions-conflicts-revisions.md) through endpoints spanning [CouchDB](../replication-couchdb.md), [GraphQL](../replication-graphql.md), or even peer-to-peer networks via [WebRTC](../replication-webrtc.md). Other ecosystem alternatives include PouchDB, WatermelonDB, and cloud-provider SDKs like Firebase Firestore and Supabase, though RxDB offers the most flexible, [storage-agnostic](../rx-storage.md) reactivity model.
 </details>
 
 <details>

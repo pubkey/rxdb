@@ -58,7 +58,9 @@ This is often used in Node.js to give one microservice access to another service
 ```ts
 // server.js
 import { getRxStorageMemory } from 'rxdb/plugins/storage-memory';
-import { startRxStorageRemoteWebsocketServer } from 'rxdb/plugins/storage-remote-websocket';
+import {
+    startRxStorageRemoteWebsocketServer
+} from 'rxdb/plugins/storage-remote-websocket';
 
 // either you can create the server based on a RxDatabase
 const serverBasedOnDatabase = await startRxStorageRemoteWebsocketServer({

@@ -119,7 +119,10 @@ Once your database is initialized, you can perform all CRUD operations:
 
 ```ts
 // insert
-await db.heroes.insert({ id: '1', name: 'Iron Man', power: 'Genius-level intellect' });
+await db.heroes.insert({
+    id: '1', name: 'Iron Man',
+    power: 'Genius-level intellect'
+});
 
 // bulk insert
 await db.heroes.bulkInsert([

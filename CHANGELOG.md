@@ -6,6 +6,7 @@
 <!-- ADD new changes here! -->
 
 - FIX `modify()` not deep-cloning document data, allowing the modifier to corrupt internal state via shared nested references
+- FIX `fillObjectWithDefaults` shared mutable references for non-primitive schema defaults (arrays/objects) causing corrupted values on subsequent inserts
 
 <!-- /CHANGELOG NEWEST -->
 
