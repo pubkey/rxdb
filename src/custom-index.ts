@@ -126,9 +126,10 @@ export function getIndexMeta<RxDocType>(
                     if (fieldValue > pMax) {
                         fieldValue = pMax;
                     }
-                    const str = (Math.floor(fieldValue) - pRoundedMin).toString().padStart(pNonDecimals, '0');
-                    const shifted = Math.round(Math.abs(fieldValue) * pMultiplier);
-                    return str + (shifted % pMultiplier).toString().padStart(pDecimals, '0');
+                    const flooredValue = Math.floor(fieldValue);
+                    const str = (flooredValue - pRoundedMin).toString().padStart(pNonDecimals, '0');
+                    const shifted = Math.round((fieldValue - flooredValue) * pMultiplier);
+                    return str + shifted.toString().padStart(pDecimals, '0');
                 };
             }
         }
@@ -301,8 +302,8 @@ export function getNumberIndexString(
          * multiplier is pre-computed in ParsedLengths to avoid Math.pow() per call.
          */
         const multiplier = parsedLengths.multiplier;
-        const shifted = Math.round(Math.abs(fieldValue) * multiplier);
-        const decimalPart = (shifted % multiplier).toString();
+        const shifted = Math.round((fieldValue - Math.floor(fieldValue)) * multiplier);
+        const decimalPart = shifted.toString();
         str += decimalPart.padStart(parsedLengths.decimals, '0');
     }
     return str;

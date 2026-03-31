@@ -464,7 +464,7 @@ describeParallel('rx-storage-query-correctness.test.ts', () => {
                     },
                     sort: [{ passportId: 'asc' }]
                 },
-                selectorSatisfiedByIndex: false,
+                selectorSatisfiedByIndex: true,
                 expectedResultDocIds: [
                     'aa',
                     'bb',
@@ -1962,6 +1962,70 @@ describeParallel('rx-storage-query-correctness.test.ts', () => {
                 }
             ]
         });
+
+    testCorrectQueries<{
+        id: string;
+        temperature: number;
+    }>({
+        testTitle: 'negative decimal numbers sort and query correctly',
+        data: [
+            { id: 'a', temperature: -1.9 },
+            { id: 'b', temperature: -1.5 },
+            { id: 'c', temperature: -1.1 },
+            { id: 'd', temperature: -1.0 },
+            { id: 'e', temperature: 0.0 },
+            { id: 'f', temperature: 1.1 },
+            { id: 'g', temperature: 1.5 }
+        ],
+        schema: {
+            primaryKey: 'id',
+            type: 'object',
+            version: 0,
+            properties: {
+                id: { type: 'string', maxLength: 20 },
+                temperature: { type: 'number', minimum: -100, maximum: 100, multipleOf: 0.01 }
+            },
+            required: ['id', 'temperature'],
+            indexes: ['temperature']
+        },
+        queries: [
+            {
+                info: 'sort ascending returns negative decimals in correct order',
+                query: {
+                    selector: { temperature: { $gte: -2 } },
+                    sort: [{ temperature: 'asc' }]
+                },
+                selectorSatisfiedByIndex: true,
+                expectedResultDocIds: ['a', 'b', 'c', 'd', 'e', 'f', 'g']
+            },
+            {
+                info: '$gt on a negative decimal excludes smaller values',
+                query: {
+                    selector: { temperature: { $gt: -1.5 } },
+                    sort: [{ temperature: 'asc' }]
+                },
+                selectorSatisfiedByIndex: true,
+                expectedResultDocIds: ['c', 'd', 'e', 'f', 'g']
+            },
+            {
+                info: '$lt on a negative decimal excludes larger values',
+                query: {
+                    selector: { temperature: { $lt: -1.0 } },
+                    sort: [{ temperature: 'asc' }]
+                },
+                selectorSatisfiedByIndex: true,
+                expectedResultDocIds: ['a', 'b', 'c']
+            },
+            {
+                info: 'range query with negative decimal bounds',
+                query: {
+                    selector: { temperature: { $gte: -1.5, $lte: -1.1 } },
+                    sort: [{ temperature: 'asc' }]
+                },
+                expectedResultDocIds: ['b', 'c']
+            }
+        ]
+    });
 
     testCorrectQueries<{
         id: string;

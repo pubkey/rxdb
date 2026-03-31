@@ -276,7 +276,7 @@ export const basePrototype = {
         _context?: string
     ): Promise<RxDocument> {
         const oldData = this._data;
-        const newData: RxDocumentData<RxDocType> = await modifierFromPublicToInternal<RxDocType>(mutationFunction)(oldData) as any;
+        const newData: RxDocumentData<RxDocType> = await modifierFromPublicToInternal<RxDocType>(mutationFunction)(clone(oldData)) as any;
         return this._saveData(newData, oldData) as any;
     },
 
