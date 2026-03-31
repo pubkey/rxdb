@@ -97,12 +97,14 @@ export function wrappedKeyEncryptionCryptoJsStorage<Internals, InstanceCreationO
 
                 /**
                  * Encrypted data is always stored as string
-                 * so we have to change the schema to have "type": "string"
-                 * on encrypted fields.
+                 * so we have to replace the schema definition of
+                 * encrypted fields with just {type: 'string'}.
+                 * All type-specific keywords (properties, required,
+                 * items, maxLength, enum etc.) must be removed because
+                 * they do not apply to the encrypted ciphertext string.
                  */
                 ensureNotFalsy(params.schema.encrypted).forEach(key => {
-                    (schemaWithoutEncrypted as any).properties[key].type = 'string';
-                    delete (schemaWithoutEncrypted as any).properties[key].properties;
+                    (schemaWithoutEncrypted as any).properties[key] = { type: 'string' };
                 });
 
                 const instance = await args.storage.createStorageInstance(
