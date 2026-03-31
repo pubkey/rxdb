@@ -564,6 +564,29 @@ describeParallel('rx-database.test.ts', () => {
                 await db.close();
                 assert.strictEqual(db.closed, true);
             });
+            it('close promise should reject if an onClose handler throws', async () => {
+                const db = await createRxDatabase({
+                    name: randomToken(10),
+                    storage: config.storage.getStorage()
+                });
+                await db.addCollections({
+                    foobar: {
+                        schema: schemas.human
+                    }
+                });
+
+                const closeError = new Error('onClose error');
+                db.onClose.push(() => {
+                    throw closeError;
+                });
+
+                await AsyncTestUtil.assertThrows(
+                    () => db.close(),
+                    Error,
+                    'onClose error'
+                );
+                assert.strictEqual(db.closed, true);
+            });
         });
     });
     describe('.collections$', () => {
