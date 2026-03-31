@@ -548,6 +548,20 @@ export class RxReplicationState<RxDocType, CheckpointType> {
         this.subjects.received.complete();
         this.subjects.sent.complete();
 
+        /**
+         * Remove from the REPLICATION_STATE_BY_COLLECTION registry
+         * so that the cleanup plugin does not try to access a stopped
+         * replication's meta instance, and to prevent memory leaks
+         * from accumulating canceled replication state objects.
+         */
+        const states = REPLICATION_STATE_BY_COLLECTION.get(this.collection as any);
+        if (states) {
+            const idx = states.indexOf(this);
+            if (idx !== -1) {
+                states.splice(idx, 1);
+            }
+        }
+
         return Promise.all(promises);
     }
 
@@ -555,13 +569,21 @@ export class RxReplicationState<RxDocType, CheckpointType> {
         this.startQueue = this.startQueue.then(async () => {
             const metaInfo = await this.metaInfoPromise;
             await this._cancel(true);
-            await ensureNotFalsy(this.internalReplicationState).checkpointQueue
-                .then(() => ensureNotFalsy(this.metaInstance).remove());
-            await removeConnectedStorageFromCollection(
-                this.collection,
-                metaInfo.collectionName,
-                metaInfo.schema
-            );
+
+            /**
+             * If the replication was never started (e.g. autoStart: false
+             * and start() was never called), there is no meta instance
+             * or connected storage to clean up.
+             */
+            if (this.internalReplicationState) {
+                await this.internalReplicationState.checkpointQueue
+                    .then(() => ensureNotFalsy(this.metaInstance).remove());
+                await removeConnectedStorageFromCollection(
+                    this.collection,
+                    metaInfo.collectionName,
+                    metaInfo.schema
+                );
+            }
         });
         return this.startQueue;
     }

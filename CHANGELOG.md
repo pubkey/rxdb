@@ -5,6 +5,8 @@
 
 <!-- ADD new changes here! -->
 
+- FIX `replicateRxCollection().remove()` crashing when called on a never-started replication (autoStart: false)
+- FIX `REPLICATION_STATE_BY_COLLECTION` not cleaned up on `cancel()`/`remove()`, leaking replication state references
 - FIX incorrect index string generation for negative decimal numbers causing wrong sort order and query results
 - FIX `rateQueryPlan()` evaluated `startKeys` twice instead of `endKeys`, causing suboptimal index selection for `$lt`/`$lte` queries.
 - FIX event-reduce mutating cached `docsDataMap` causing missing documents after insert-delete cycles

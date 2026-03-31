@@ -55,7 +55,8 @@ import {
 
 import {
     RxReplicationState,
-    replicateRxCollection
+    replicateRxCollection,
+    REPLICATION_STATE_BY_COLLECTION
 } from '../../plugins/replication/index.mjs';
 
 import type {
@@ -912,6 +913,80 @@ describe('replication.test.ts', () => {
             const currentReplicationState = await startReplication();
             await currentReplicationState.start();
             await currentReplicationState.remove();
+
+            localCollection.database.close();
+            remoteCollection.database.close();
+        });
+        it('should not crash when calling remove() without ever calling start()', async () => {
+            const { localCollection, remoteCollection } = await getTestCollections({ local: 0, remote: 0 });
+            const replicationState = replicateRxCollection({
+                collection: localCollection,
+                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                autoStart: false,
+                live: true,
+                pull: {
+                    handler: getPullHandler(remoteCollection),
+                },
+                push: {
+                    handler: getPushHandler(remoteCollection),
+                }
+            });
+            // remove() without ever calling start() should not throw
+            await replicationState.remove();
+
+            localCollection.database.close();
+            remoteCollection.database.close();
+        });
+        it('should remove replication state from REPLICATION_STATE_BY_COLLECTION on cancel()', async () => {
+            const { localCollection, remoteCollection } = await getTestCollections({ local: 0, remote: 0 });
+            const replicationState = replicateRxCollection({
+                collection: localCollection,
+                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                live: true,
+                pull: {
+                    handler: getPullHandler(remoteCollection),
+                },
+                push: {
+                    handler: getPushHandler(remoteCollection),
+                }
+            });
+            await replicationState.awaitInitialReplication();
+
+            const statesBefore = REPLICATION_STATE_BY_COLLECTION.get(localCollection);
+            assert.ok(statesBefore);
+            assert.ok(statesBefore.includes(replicationState));
+
+            await replicationState.cancel();
+
+            const statesAfter = REPLICATION_STATE_BY_COLLECTION.get(localCollection);
+            assert.ok(!statesAfter || !statesAfter.includes(replicationState));
+
+            localCollection.database.close();
+            remoteCollection.database.close();
+        });
+        it('should remove replication state from REPLICATION_STATE_BY_COLLECTION on remove()', async () => {
+            const { localCollection, remoteCollection } = await getTestCollections({ local: 0, remote: 0 });
+            const replicationState = replicateRxCollection({
+                collection: localCollection,
+                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                live: true,
+                pull: {
+                    handler: getPullHandler(remoteCollection),
+                },
+                push: {
+                    handler: getPushHandler(remoteCollection),
+                }
+            });
+            await replicationState.awaitInitialReplication();
+
+            const statesBefore = REPLICATION_STATE_BY_COLLECTION.get(localCollection);
+            assert.ok(statesBefore);
+            assert.ok(statesBefore.includes(replicationState));
+
+            await replicationState.remove();
+
+            const statesAfter = REPLICATION_STATE_BY_COLLECTION.get(localCollection);
+            assert.ok(!statesAfter || !statesAfter.includes(replicationState));
 
             localCollection.database.close();
             remoteCollection.database.close();
