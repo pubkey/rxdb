@@ -1123,6 +1123,20 @@ describe('rx-query.test.ts', () => {
             c.database.close();
         });
 
+        it('isFindOneByIdQuery(): should not crash when primary key selector value is null', async () => {
+            const c = await humansCollection.create(2);
+
+            // A null selector value for the primary key must not crash.
+            // It should gracefully fall back to the standard query path.
+            const q1 = c.find({ selector: { passportId: null } as any });
+            assert.strictEqual(q1.isFindOneByIdQuery, false);
+            const result = await q1.exec();
+            // No document has a null primary key, so result should be empty.
+            assert.strictEqual(result.length, 0);
+
+            c.database.close();
+        });
+
     });
     describeParallel('updates to the result of the query', () => {
         describe('RxQuery.update()', () => {

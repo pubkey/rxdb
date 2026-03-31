@@ -885,18 +885,19 @@ export function isFindOneByIdQuery(
         if (typeof value === 'string') {
             return value;
         } else if (
-            typeof value.$eq === 'string'
+            value !== null && typeof value === 'object'
         ) {
-            return value.$eq;
-        }
-
-        // same with $in string arrays
-        if (
-            Array.isArray(value.$in) &&
-            // must only contain strings
-            !(value.$in as any[]).find(r => typeof r !== 'string')
-        ) {
-            return value.$in;
+            if (typeof value.$eq === 'string') {
+                return value.$eq;
+            }
+            // same with $in string arrays
+            if (
+                Array.isArray(value.$in) &&
+                // must only contain strings
+                !(value.$in as any[]).find(r => typeof r !== 'string')
+            ) {
+                return value.$in;
+            }
         }
     }
     return false;
