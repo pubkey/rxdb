@@ -535,27 +535,22 @@ jobs:
         run: npm run lint
 
       - name: Trigger Copilot to fix lint errors
-        if: steps.lint.outcome == 'failure' && github.event_name == 'pull_request'
+        if: steps.lint.outcome == 'failure' && github.ref == 'refs/heads/master'
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const prNumber = context.payload.pull_request.number;
-            const prTitle = context.payload.pull_request.title;
-            const branch = context.payload.pull_request.head.ref;
             const runUrl = `${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}`;
             await github.rest.issues.create({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              title: `Fix lint errors from PR #${prNumber}`,
+              title: `Fix lint errors on master`,
               body: [
-                `The linting step failed in CI for PR #${prNumber} ("${prTitle}") on branch \`${branch}\`.`,
+                'The linting step failed in CI on the `master` branch.',
                 '',
                 `See the failed run for details: ${runUrl}`,
                 '',
-                'Please fix the lint errors by running `npm run lint:fix` and addressing any remaining issues.',
-                '',
-                `After fixing, push the changes to the \`${branch}\` branch.`
+                'Please fix the lint errors by running `npm run lint:fix` and addressing any remaining issues.'
               ].join('\n'),
               assignees: ['copilot']
             });
