@@ -470,7 +470,14 @@ export class RxQueryBase<
      * deletes all found documents
      * @return promise with deleted documents
      */
-    async remove(): Promise<RxQueryResult> {
+    async remove(throwIfMissing?: boolean): Promise<RxQueryResult> {
+        if (throwIfMissing && this.op !== 'findOne') {
+            throw newRxError('QU9', {
+                collection: this.collection.name,
+                query: this.mangoQuery,
+                op: this.op
+            });
+        }
         const docs = await this.exec();
         if (Array.isArray(docs)) {
             const result = await this.collection.bulkRemove(docs);
@@ -482,6 +489,13 @@ export class RxQueryBase<
         } else {
             // findOne() can return null when no document matches
             if (!docs) {
+                if (throwIfMissing) {
+                    throw newRxError('QU10', {
+                        collection: this.collection.name,
+                        query: this.mangoQuery,
+                        op: this.op
+                    });
+                }
                 return null as any;
             }
             return (docs as any).remove();

@@ -2164,5 +2164,21 @@ describe('rx-query.test.ts', () => {
             assert.strictEqual(result, null);
             c.database.close();
         });
+        it('findOne().remove(true) should throw when no document matches', async () => {
+            const c = await humansCollection.create(0);
+            await assertThrows(
+                () => c.findOne().remove(true),
+                'RxError',
+                'QU10'
+            );
+            c.database.close();
+        });
+        it('findOne().remove(true) should succeed when a document matches', async () => {
+            const c = await humansCollection.create(1);
+            const result = await c.findOne().remove(true);
+            assert.ok(result);
+            assert.strictEqual(result.deleted, true);
+            c.database.close();
+        });
     });
 });

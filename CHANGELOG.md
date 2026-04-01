@@ -6,6 +6,7 @@
 <!-- ADD new changes here! -->
 
 - FIX `findOne().remove()` crashing with `TypeError: Cannot read properties of null` when no document matches the query, instead of returning `null`
+- ADD `findOne().remove(true)` to throw when no document matches, consistent with `findOne().exec(true)`
 
 - FIX memory storage `count()` returning incorrect results when the selector is not fully satisfied by the index and the query has a `limit` set
 
