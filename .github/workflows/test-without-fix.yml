@@ -1,0 +1,128 @@
+# When a PR contains both test changes and source changes,
+# this workflow runs the changed tests WITHOUT the source fix
+# to verify that the tests actually reproduce the bug.
+# - Tests FAILING without the fix = expected (confirms the test catches the bug)
+# - Tests PASSING without the fix = warning (the test might not verify the bugfix)
+
+name: Verify Test Reproduction
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test-without-fix:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Check for changed test and source files
+        id: check-changes
+        run: |
+          BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+          MERGE_BASE=$(git merge-base "$BASE_SHA" "$HEAD_SHA")
+
+          # Get changed test files (only *.test.ts files)
+          CHANGED_TESTS=$(git diff --name-only "$MERGE_BASE" "$HEAD_SHA" -- 'test/' | grep '\.test\.ts$' || true)
+          # Get changed source files
+          CHANGED_SRC=$(git diff --name-only "$MERGE_BASE" "$HEAD_SHA" -- 'src/')
+
+          if [ -z "$CHANGED_TESTS" ]; then
+            echo "No test files changed, skipping"
+            echo "should_run=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if [ -z "$CHANGED_SRC" ]; then
+            echo "No source files changed (test-only PR), skipping"
+            echo "should_run=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "should_run=true" >> "$GITHUB_OUTPUT"
+          echo "Changed test files:"
+          echo "$CHANGED_TESTS"
+          echo ""
+          echo "Changed source files:"
+          echo "$CHANGED_SRC"
+
+      - name: Set node version
+        if: steps.check-changes.outputs.should_run == 'true'
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: ".nvmrc"
+
+      - name: Reuse npm cache folder
+        if: steps.check-changes.outputs.should_run == 'true'
+        uses: actions/cache@v5
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: |
+            ~/.npm
+            ./node_modules
+          key: ${{ runner.os }}-npm-test-without-fix-x1-${{ hashFiles('**/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-test-without-fix-x1-
+
+      - name: Apply test changes to base branch code
+        if: steps.check-changes.outputs.should_run == 'true'
+        id: apply-patch
+        run: |
+          BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+          MERGE_BASE=$(git merge-base "$BASE_SHA" "$HEAD_SHA")
+
+          # Save the test directory changes as a patch
+          git diff "$MERGE_BASE" "$HEAD_SHA" -- test/ > /tmp/test-changes.patch
+
+          if [ ! -s /tmp/test-changes.patch ]; then
+            echo "Empty patch, nothing to apply"
+            exit 0
+          fi
+
+          # Checkout the merge base (code state before this PR)
+          git checkout "$MERGE_BASE"
+
+          # Apply only the test changes on top of the unfixed code
+          git apply /tmp/test-changes.patch
+
+      - name: Install dependencies
+        if: steps.check-changes.outputs.should_run == 'true'
+        run: npm install || (sleep 15 && npm install) || (sleep 15 && npm install)
+
+      - name: Build
+        if: steps.check-changes.outputs.should_run == 'true'
+        id: build
+        continue-on-error: true
+        run: npm run build
+
+      - name: Run tests (expect failure)
+        if: steps.check-changes.outputs.should_run == 'true' && steps.build.outcome == 'success'
+        id: run-tests
+        continue-on-error: true
+        run: npm run test:fast:memory
+
+      - name: Evaluate results
+        if: steps.check-changes.outputs.should_run == 'true'
+        run: |
+          if [ "${{ steps.build.outcome }}" == "failure" ]; then
+            echo "✅ Build failed without the source changes - this confirms the test requires the source changes from this PR."
+            exit 0
+          fi
+
+          if [ "${{ steps.run-tests.outcome }}" == "failure" ]; then
+            echo "✅ Tests FAILED without the fix - this confirms the test correctly reproduces the bug."
+            exit 0
+          fi
+
+          echo "⚠️ Tests PASSED without the fix."
+          echo "The changed tests do not fail without the source changes from this PR."
+          echo "Please ensure your test changes actually test the bug that your source changes fix."
+          exit 1
