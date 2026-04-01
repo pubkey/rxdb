@@ -5,6 +5,8 @@
 
 <!-- ADD new changes here! -->
 
+- FIX encryption plugin `validatePassword()` leaking the plaintext password in `RxError` parameters and error messages when password validation fails
+
 - FIX memory storage `count()` returning incorrect results when the selector is not fully satisfied by the index and the query has a `limit` set
 
 - FIX `replicateRxCollection().remove()` on a never-started replication now creates the meta instance and deletes its data instead of skipping cleanup
