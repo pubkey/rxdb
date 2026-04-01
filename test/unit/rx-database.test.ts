@@ -650,6 +650,27 @@ describeParallel('rx-database.test.ts', () => {
             });
             await db2.remove();
         });
+        it('should call collection onRemove handlers when database is removed', async () => {
+            const name = randomToken(10);
+            const db = await createRxDatabase({
+                name,
+                storage: config.storage.getStorage()
+            });
+            await db.addCollections({
+                humans: {
+                    schema: schemas.human
+                }
+            });
+
+            let onRemoveCalled = false;
+            db.humans.onRemove.push(() => {
+                onRemoveCalled = true;
+            });
+
+            await db.remove();
+
+            assert.strictEqual(onRemoveCalled, true, 'collection onRemove handler should have been called when database.remove() is called');
+        });
         it('should have deleted the local documents', async () => {
             const name = randomToken(10);
             const db = await createRxDatabase({
