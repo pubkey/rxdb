@@ -6,6 +6,7 @@
 <!-- ADD new changes here! -->
 
 - FIX RxState `set('', modifier)` passed `undefined` to the modifier instead of the current state
+- FIX `RxMigrationStatus.count.percent` returning `NaN` instead of `100` when migrating a collection with 0 documents
 - FIX `fillWithDefaultSettings()` index deduplication was broken because `Array.filter()` return value was discarded, causing duplicate indexes in schemas when user-defined indexes become identical after adding `_deleted` prefix and primary key suffix
 - FIX encryption plugin not stripping type-specific schema keywords (`maxLength`, `required`, `items`, etc.) from encrypted fields, causing validation errors when using a validator storage with encryption
 - FIX incorrect index string generation for negative decimal numbers causing wrong sort order and query results
@@ -20,7 +21,7 @@
 
 ### 17.0.0 (30 March 2026)
 
-🚀 **RxDB v15 is released**
+🚀 **RxDB v17 is released**
 
 - A list of changes for RxDB v17 can be found [here](https://rxdb.info/releases/17.0.0.html)
 
