@@ -5,6 +5,8 @@
 
 <!-- ADD new changes here! -->
 
+- FIX `getStartIndexStringFromUpperBound()` incorrectly mapping `INDEX_MIN` to `'1'` for boolean index fields, causing queries with exclusive bounds (`$gt`/`$lt`) on a field preceding a boolean index field to include boundary documents in the results
+
 - FIX memory storage `count()` returning incorrect results when the selector is not fully satisfied by the index and the query has a `limit` set
 
 - FIX `replicateRxCollection().remove()` on a never-started replication now creates the meta instance and deletes its data instead of skipping cleanup
