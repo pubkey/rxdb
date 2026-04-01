@@ -1626,6 +1626,12 @@ describe('rx-collection.test.ts', () => {
                     );
                     c.database.close();
                 });
+                /**
+                 * Count queries must not use limit or skip.
+                 * The storage.count() returns the total number of matching documents
+                 * and is designed to ignore limit/skip by contract.
+                 * @intentional This is correct behavior, not a bug.
+                 */
                 it('must throw on limit and skip', async () => {
                     const c = await humansCollection.create(0);
                     const query = c.count();

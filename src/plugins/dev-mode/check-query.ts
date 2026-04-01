@@ -50,7 +50,13 @@ export function checkQuery(args: RxPluginPreCreateRxQueryArgs) {
         }
     });
 
-    // do not allow skip or limit for count queries
+    /**
+     * Count queries cannot use skip or limit.
+     * The storage.count() method returns the total number of matching documents
+     * and is designed to ignore skip/limit (see rx-storage.interface.d.ts).
+     * This is intentional by design - count should always return the total.
+     * @intentional This is correct behavior, not a bug.
+     */
     if (
         args.op === 'count' &&
         (
