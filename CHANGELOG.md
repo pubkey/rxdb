@@ -5,6 +5,8 @@
 
 <!-- ADD new changes here! -->
 
+- FIX dev-mode `checkSchema()` not validating composite primary key fields for encryption (SC15), index (SC13), unique (SC14), and type (SC16) constraints because it compared property names against the primaryKey object instead of resolving the primary field path
+
 - FIX memory storage `count()` returning incorrect results when the selector is not fully satisfied by the index and the query has a `limit` set
 
 - FIX `replicateRxCollection().remove()` on a never-started replication now creates the meta instance and deletes its data instead of skipping cleanup
