@@ -878,7 +878,7 @@ export class RxCollectionBase<
         return query as any;
     }
 
-    count(queryObj?: MangoQuery<RxDocumentType>): RxQuery<
+    count(queryObj?: MangoQuerySelectorAndIndex<RxDocumentType>): RxQuery<
         RxDocumentType,
         number,
         OrmMethods,
