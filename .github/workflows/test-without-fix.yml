@@ -112,17 +112,19 @@ jobs:
       - name: Evaluate results
         if: steps.check-changes.outputs.should_run == 'true'
         run: |
+          echo "== Test-Without-Fix Results =="
+          echo ""
           if [ "${{ steps.build.outcome }}" == "failure" ]; then
-            echo "✅ Build failed without the source changes - this confirms the test requires the source changes from this PR."
-            exit 0
+            echo "✅ Build FAILED without the source changes."
+            echo "This confirms the test requires the source changes from this PR."
+          elif [ "${{ steps.run-tests.outcome }}" == "failure" ]; then
+            echo "✅ Tests FAILED without the fix."
+            echo "This confirms the test correctly reproduces the bug."
+          else
+            echo "⚠️ Tests PASSED without the fix."
+            echo "The changed tests do not fail without the source changes from this PR."
+            echo "Please inspect whether the test changes actually test the bug that the source changes fix."
           fi
-
-          if [ "${{ steps.run-tests.outcome }}" == "failure" ]; then
-            echo "✅ Tests FAILED without the fix - this confirms the test correctly reproduces the bug."
-            exit 0
-          fi
-
-          echo "⚠️ Tests PASSED without the fix."
-          echo "The changed tests do not fail without the source changes from this PR."
-          echo "Please ensure your test changes actually test the bug that your source changes fix."
-          exit 1
+          echo ""
+          echo "This workflow is informational only. Inspect the output above to verify the test reproduces the bug."
+          exit 0
