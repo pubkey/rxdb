@@ -5,6 +5,8 @@
 
 <!-- ADD new changes here! -->
 
+- FIX `replicateRxCollection().remove()` on a never-started replication now creates the meta instance and deletes its data instead of skipping cleanup
+- FIX `REPLICATION_STATE_BY_COLLECTION` not cleaned up on `cancel()`/`remove()`, leaking replication state references
 - FIX floating-point rounding overflow in index string decimal generation, where `Math.round` could produce a value equal to the multiplier (e.g. 10 instead of max 9), creating a string one character too long and breaking sort order in compound indexes
 - FIX `normalizeMangoQuery()` skipped fully-matching indexes when choosing default sort order, falling back to the first index instead of using the best match
 - FIX RxState `set('', modifier)` passed `undefined` to the modifier instead of the current state
