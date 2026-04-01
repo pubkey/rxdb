@@ -149,7 +149,7 @@ export class RxStateBase<T, Reactivity = unknown> {
                     const ops: RxStateOperation[] = [];
                     for (let index = 0; index < useWrites.length; index++) {
                         const writeRow = useWrites[index];
-                        const value = getProperty(newState, writeRow.path);
+                        const value = writeRow.path === '' ? newState : getProperty(newState, writeRow.path);
                         const newValue = writeRow.modifier(value);
                         /**
                          * Here we have to clone the value because
