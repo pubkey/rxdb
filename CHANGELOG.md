@@ -5,6 +5,8 @@
 
 <!-- ADD new changes here! -->
 
+- FIX leader-election plugin not calling `die()` on the LeaderElector when the database is closed, because `LEADER_ELECTORS_OF_DB` was never populated due to a dead code branch
+
 - FIX memory storage `count()` returning incorrect results when the selector is not fully satisfied by the index and the query has a `limit` set
 
 - FIX `replicateRxCollection().remove()` on a never-started replication now creates the meta instance and deletes its data instead of skipping cleanup

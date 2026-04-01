@@ -64,14 +64,11 @@ export function getForDatabase(this: RxDatabase): LeaderElector {
     };
 
 
-    let elector = getLeaderElectorByBroadcastChannel(broadcastChannel);
-    if (!elector) {
-        elector = getLeaderElectorByBroadcastChannel(broadcastChannel);
-        LEADER_ELECTORS_OF_DB.set(
-            this,
-            elector
-        );
-    }
+    const elector = getLeaderElectorByBroadcastChannel(broadcastChannel);
+    LEADER_ELECTORS_OF_DB.set(
+        this,
+        elector
+    );
 
     /**
      * Overwrite for caching
