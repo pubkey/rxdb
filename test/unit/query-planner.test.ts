@@ -86,6 +86,44 @@ describeParallel('query-planner.test.js', () => {
                     ]
                 );
             });
+            it('should prefer the index with the most matching fields even when all fields match', () => {
+                const schema = getHumanSchemaWithIndexes([
+                    ['lastName'],
+                    ['age', 'firstName']
+                ]);
+                const query = normalizeMangoQuery<RxDocumentData<HumanDocumentType>>(
+                    schema,
+                    {
+                        selector: {
+                            _deleted: false,
+                            age: {
+                                $gt: 20
+                            },
+                            firstName: {
+                                $gt: ''
+                            },
+                            passportId: {
+                                $gt: ''
+                            }
+                        }
+                    }
+                );
+
+                /**
+                 * The ['age', 'firstName'] index (expanded to ['_deleted', 'age', 'firstName', 'passportId'])
+                 * has all 4 fields matched by the selector, so it should be preferred over
+                 * the ['lastName'] index which only matches '_deleted' (1 field).
+                 */
+                assert.deepStrictEqual(
+                    query.sort,
+                    [
+                        { _deleted: 'asc' },
+                        { age: 'asc' },
+                        { firstName: 'asc' },
+                        { passportId: 'asc' }
+                    ]
+                );
+            });
         });
         describe('normalize selector shorthands', () => {
             it('should normalize top-level shorthand selectors to $eq', () => {

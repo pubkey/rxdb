@@ -5,6 +5,8 @@
 
 <!-- ADD new changes here! -->
 
+- FIX floating-point rounding overflow in index string decimal generation, where `Math.round` could produce a value equal to the multiplier (e.g. 10 instead of max 9), creating a string one character too long and breaking sort order in compound indexes
+- FIX `normalizeMangoQuery()` skipped fully-matching indexes when choosing default sort order, falling back to the first index instead of using the best match
 - FIX incorrect index string generation for negative decimal numbers causing wrong sort order and query results
 - FIX `rateQueryPlan()` evaluated `startKeys` twice instead of `endKeys`, causing suboptimal index selection for `$lt`/`$lte` queries.
 - FIX event-reduce mutating cached `docsDataMap` causing missing documents after insert-delete cycles
