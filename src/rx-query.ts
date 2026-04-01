@@ -480,6 +480,10 @@ export class RxQueryBase<
                 return result.success as any;
             }
         } else {
+            // findOne() can return null when no document matches
+            if (!docs) {
+                return null as any;
+            }
             return (docs as any).remove();
         }
     }

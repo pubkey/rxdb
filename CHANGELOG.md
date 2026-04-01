@@ -5,6 +5,8 @@
 
 <!-- ADD new changes here! -->
 
+- FIX `findOne().remove()` crashing with `TypeError: Cannot read properties of null` when no document matches the query, instead of returning `null`
+
 - FIX memory storage `count()` returning incorrect results when the selector is not fully satisfied by the index and the query has a `limit` set
 
 - FIX `replicateRxCollection().remove()` on a never-started replication now creates the meta instance and deletes its data instead of skipping cleanup
