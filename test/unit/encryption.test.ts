@@ -691,5 +691,73 @@ describeParallel('encryption.test.ts', () => {
 
             await db.remove();
         });
+        it('should correctly encrypt and decrypt nested fields with dot-notation paths and non-string types', async () => {
+            if (config.storage.hasEncryption) {
+                return;
+            }
+            type DocType = {
+                id: string;
+                nested: {
+                    secretScore: number;
+                    label: string;
+                };
+            };
+            const mySchema: RxJsonSchema<DocType> = {
+                version: 0,
+                primaryKey: 'id',
+                type: 'object',
+                properties: {
+                    id: {
+                        type: 'string',
+                        maxLength: 100
+                    },
+                    nested: {
+                        type: 'object',
+                        properties: {
+                            secretScore: {
+                                type: 'number'
+                            },
+                            label: {
+                                type: 'string'
+                            }
+                        },
+                        required: ['secretScore', 'label']
+                    }
+                },
+                required: ['id', 'nested'],
+                encrypted: ['nested.secretScore']
+            };
+            const db = await createRxDatabase<{ test: RxCollection<DocType>; }>({
+                name: randomToken(10),
+                storage: wrappedKeyEncryptionCryptoJsStorage({
+                    storage: wrappedValidateAjvStorage({
+                        storage: getRxStorageMemory()
+                    })
+                }),
+                password: await getPassword()
+            });
+            const collections = await db.addCollections({
+                test: {
+                    schema: mySchema
+                }
+            });
+
+            // Insert a document with a nested encrypted number field
+            await collections.test.insert({
+                id: 'test-1',
+                nested: {
+                    secretScore: 42,
+                    label: 'public-label'
+                }
+            });
+            const doc = await collections.test.findOne('test-1').exec(true);
+
+            // The decrypted value must be the original number, not a string
+            assert.strictEqual(doc.nested.secretScore, 42);
+            assert.strictEqual(typeof doc.nested.secretScore, 'number');
+            assert.strictEqual(doc.nested.label, 'public-label');
+
+            await db.remove();
+        });
     });
 });
