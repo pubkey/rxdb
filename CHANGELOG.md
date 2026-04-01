@@ -7,6 +7,8 @@
 
 - FIX `replicateRxCollection().remove()` on a never-started replication now creates the meta instance and deletes its data instead of skipping cleanup
 - FIX `REPLICATION_STATE_BY_COLLECTION` not cleaned up on `cancel()`/`remove()`, leaking replication state references
+- FIX RxState `set('', modifier)` passed `undefined` to the modifier instead of the current state
+- FIX `RxMigrationStatus.count.percent` returning `NaN` instead of `100` when migrating a collection with 0 documents
 - FIX `fillWithDefaultSettings()` index deduplication was broken because `Array.filter()` return value was discarded, causing duplicate indexes in schemas when user-defined indexes become identical after adding `_deleted` prefix and primary key suffix
 - FIX encryption plugin not stripping type-specific schema keywords (`maxLength`, `required`, `items`, etc.) from encrypted fields, causing validation errors when using a validator storage with encryption
 - FIX incorrect index string generation for negative decimal numbers causing wrong sort order and query results

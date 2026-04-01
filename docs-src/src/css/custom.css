@@ -640,6 +640,10 @@ body {
     background: var(--bg-color-dark);
 }
 
+.block.dark .slider-content {
+    background: var(--bg-color);
+}
+
 .slider-content h3 {
     font-size: 1.2em;
     font-weight: normal;
