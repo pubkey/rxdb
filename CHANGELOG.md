@@ -5,6 +5,8 @@
 
 <!-- ADD new changes here! -->
 
+- FIX `RxPipeline.remove()` not properly cleaning up checkpoint when called during active processing, causing a re-added pipeline with the same identifier to skip already-processed documents instead of starting fresh
+
 - FIX memory storage `count()` returning incorrect results when the selector is not fully satisfied by the index and the query has a `limit` set
 
 - FIX `replicateRxCollection().remove()` on a never-started replication now creates the meta instance and deletes its data instead of skipping cleanup
