@@ -5,6 +5,8 @@
 
 <!-- ADD new changes here! -->
 
+- FIX push-only replication losing local writes that occur during a pause because `reSync()` events were filtered out when no pull handler was configured
+
 - FIX memory storage `count()` returning incorrect results when the selector is not fully satisfied by the index and the query has a `limit` set
 
 - FIX `replicateRxCollection().remove()` on a never-started replication now creates the meta instance and deletes its data instead of skipping cleanup
