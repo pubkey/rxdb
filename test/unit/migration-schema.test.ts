@@ -1732,5 +1732,91 @@ describe('migration-schema.test.ts', function () {
             assert.strictEqual(result.status, 'DONE');
             await col.database.close();
         });
+
+        it('should apply schema default values to migrated documents', async () => {
+            const dbName = randomToken(10);
+            const schema0 = {
+                version: 0,
+                primaryKey: 'id',
+                type: 'object' as const,
+                properties: {
+                    id: {
+                        type: 'string' as const,
+                        maxLength: 100
+                    },
+                    name: {
+                        type: 'string' as const
+                    }
+                },
+                required: ['id', 'name'] as const
+            };
+            const schema1 = {
+                version: 1,
+                primaryKey: 'id',
+                type: 'object' as const,
+                properties: {
+                    id: {
+                        type: 'string' as const,
+                        maxLength: 100
+                    },
+                    name: {
+                        type: 'string' as const
+                    },
+                    nickname: {
+                        type: 'string' as const,
+                        default: 'anonymous'
+                    }
+                },
+                required: ['id', 'name'] as const
+            };
+
+            // create v0 collection and insert documents
+            const db = await createRxDatabase({
+                name: dbName,
+                storage: config.storage.getStorage(),
+            });
+            const cols = await db.addCollections({
+                heroes: {
+                    schema: schema0
+                }
+            });
+            await cols.heroes.bulkInsert([
+                { id: 'alice', name: 'Alice' },
+                { id: 'bob', name: 'Bob' },
+                { id: 'charlie', name: 'Charlie' }
+            ]);
+            await db.close();
+
+            // reopen with v1 schema - migration strategy returns doc as-is
+            // because the new field has a default value
+            const db2 = await createRxDatabase({
+                name: dbName,
+                storage: config.storage.getStorage(),
+            });
+            const cols2 = await db2.addCollections({
+                heroes: {
+                    schema: schema1,
+                    migrationStrategies: {
+                        1: (oldDoc: any) => {
+                            return oldDoc;
+                        }
+                    }
+                }
+            });
+
+            const docs = await cols2.heroes.find().exec();
+            assert.strictEqual(docs.length, 3);
+
+            // Each migrated document should have the default value for 'nickname'
+            for (const doc of docs) {
+                assert.strictEqual(
+                    (doc as any).nickname,
+                    'anonymous',
+                    'migrated document should have the default value for the new field'
+                );
+            }
+
+            await db2.close();
+        });
     });
 });
