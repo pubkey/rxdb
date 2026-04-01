@@ -5,6 +5,8 @@
 
 <!-- ADD new changes here! -->
 
+- FIX `mergeOperationsIntoState()` not handling root-level state replacement (`k === ''`), causing corrupted state when a second multi-instance initializes from storage after a root-level `set('', modifier)` or `_cleanup()` was performed
+
 - FIX memory storage `count()` returning incorrect results when the selector is not fully satisfied by the index and the query has a `limit` set
 
 - FIX `replicateRxCollection().remove()` on a never-started replication now creates the meta instance and deletes its data instead of skipping cleanup

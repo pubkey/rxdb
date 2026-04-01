@@ -526,6 +526,35 @@ addRxPlugin(RxDBJsonDumpPlugin);
                 state1.collection.database.close();
                 state2.collection.database.close();
             });
+            it('second instance should correctly load state after root-level set was used', async () => {
+                const databaseName = randomToken(10);
+                const state1 = await getState(databaseName);
+
+                // Set an individual property
+                await state1.set('a', () => 42);
+
+                // Replace the entire state using root-level set (path = '')
+                await state1.set('', () => ({
+                    a: 100,
+                    foo: 'replaced'
+                } as any));
+
+                // Verify state1 has the correct replaced state
+                assert.strictEqual(state1.a, 100);
+                assert.strictEqual(state1.foo, 'replaced');
+
+                // Create a second instance while instance 1 is still alive.
+                // Instance 2 initializes its state by reading from shared storage
+                // which includes both the individual set and the root-level set operations.
+                const state2 = await getState(databaseName);
+
+                // Instance 2 should see the replaced state, not the old individual property
+                assert.strictEqual(state2.a, 100);
+                assert.strictEqual(state2.foo, 'replaced');
+
+                state1.collection.database.close();
+                state2.collection.database.close();
+            });
         });
         describe('issues', () => {
             /**
