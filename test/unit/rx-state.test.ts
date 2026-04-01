@@ -558,6 +558,27 @@ addRxPlugin(RxDBJsonDumpPlugin);
 
                 state.collection.database.close();
             });
+            it('set() with empty path should pass the current state to the modifier', async () => {
+                const state = await getState();
+
+                await state.set('foo', () => 'bar');
+                await state.set('a', () => 42);
+
+                // When using empty path '', the modifier should receive the current full state
+                let receivedValue: any;
+                await state.set('', (prevState: any) => {
+                    receivedValue = prevState;
+                    return { ...prevState, b: 100 };
+                });
+
+                // The modifier should have received the current state
+                assert.deepStrictEqual(receivedValue, { foo: 'bar', a: 42 });
+
+                // The new state should include the original properties plus the new one
+                assert.deepStrictEqual(state.get(), { foo: 'bar', a: 42, b: 100 });
+
+                state.collection.database.remove();
+            });
             /**
              * @link https://github.com/pubkey/rxdb/pull/6503
              */

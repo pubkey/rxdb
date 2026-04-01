@@ -10,6 +10,7 @@ import React, { useEffect, useRef } from 'react';
 import { triggerTrackingEvent } from '../components/trigger-event';
 
 import { ReviewsBlock } from '../components/review-block';
+import { NewsBlock } from '../components/news-block';
 import useIsBrowser from '@docusaurus/useIsBrowser';
 import { VideoSection } from '../components/video-section';
 import { HeroSection_B } from '../components/hero-section/T4_hero_b';
@@ -349,6 +350,7 @@ export default function Home(props: {
           </div>
 
 
+
           <PartnerTrophy
             href="https://supabase.com/partners/integrations/rxdb"
             title="Supabase"
@@ -479,6 +481,17 @@ export default function Home(props: {
                     </Button>
                   </div>
                 </a>
+              </div>
+            </div>
+          </div>
+
+          <div className="block news dark" id="news" >
+            <div className="content centered">
+              <h2>
+                Latest <b>News</b>
+              </h2>
+              <div className="inner">
+                <NewsBlock></NewsBlock>
               </div>
             </div>
           </div>

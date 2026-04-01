@@ -291,7 +291,7 @@ export function fillWithDefaultSettings<T = any>(
 
     // make indexes unique
     const hasIndex = new Set<string>();
-    useIndexes.filter(index => {
+    schemaObj.indexes = useIndexes.filter(index => {
         const indexStr = index.join(',');
         if (hasIndex.has(indexStr)) {
             return false;
@@ -300,8 +300,6 @@ export function fillWithDefaultSettings<T = any>(
             return true;
         }
     });
-
-    schemaObj.indexes = useIndexes;
 
     return schemaObj as any;
 }
