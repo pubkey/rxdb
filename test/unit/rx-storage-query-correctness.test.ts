@@ -2029,6 +2029,60 @@ describeParallel('rx-storage-query-correctness.test.ts', () => {
 
     testCorrectQueries<{
         id: string;
+        score: number;
+    }>({
+        testTitle: 'compound index with decimal numbers preserves correct sort order',
+        data: [
+            { id: 'a', score: 0 },
+            { id: 'b', score: 1 },
+            { id: 'c', score: 2 },
+            { id: 'd', score: 3 },
+            { id: 'e', score: 4 },
+            { id: 'f', score: 5 }
+        ],
+        schema: {
+            primaryKey: 'id',
+            type: 'object',
+            version: 0,
+            properties: {
+                id: { type: 'string', maxLength: 20 },
+                score: { type: 'number', minimum: -10, maximum: 10, multipleOf: 0.1 }
+            },
+            required: ['id', 'score'],
+            indexes: ['score']
+        },
+        queries: [
+            {
+                info: '$gt on integer value with decimal-precision index',
+                query: {
+                    selector: { score: { $gt: 2 } },
+                    sort: [{ score: 'asc' }]
+                },
+                selectorSatisfiedByIndex: true,
+                expectedResultDocIds: ['d', 'e', 'f']
+            },
+            {
+                info: '$lt on integer value with decimal-precision index',
+                query: {
+                    selector: { score: { $lt: 3 } },
+                    sort: [{ score: 'asc' }]
+                },
+                selectorSatisfiedByIndex: true,
+                expectedResultDocIds: ['a', 'b', 'c']
+            },
+            {
+                info: '$gte/$lte range with decimal-precision index',
+                query: {
+                    selector: { score: { $gte: 1, $lte: 4 } },
+                    sort: [{ score: 'asc' }]
+                },
+                expectedResultDocIds: ['b', 'c', 'd', 'e']
+            }
+        ]
+    });
+
+    testCorrectQueries<{
+        id: string;
         status: string;
         age: number;
     }>({
