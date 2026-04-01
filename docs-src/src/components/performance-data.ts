@@ -153,29 +153,38 @@ export const PERFORMANCE_DATA_EXPO: RxStoragePerformanceMeasurement[] = [
 ];
 
 
+export const PERFORMANCE_OPFS_WORKER: RxStoragePerformanceMeasurement = {
+    name: 'OPFS (Worker)',
+    'time-to-first-insert': 27.2,
+    'insert-documents-500': 10.32,
+    'find-by-ids-3000': 24.5,
+    'serial-inserts-50': 7.4,
+    'serial-find-by-id-50': 8.25,
+    'find-by-query': 21.2,
+    'find-by-query-parallel-4': 35.8,
+    '4x-count': 2.95,
+};
+
+export const PERFORMANCE_OPFS_MAIN_THREAD: RxStoragePerformanceMeasurement = {
+    name: 'OPFS (Main-Thread)',
+    'time-to-first-insert': 4,
+    'insert-documents-500': 8.09,
+    'find-by-ids-3000': 21.15,
+    'serial-inserts-50': 1.7,
+    'serial-find-by-id-50': 29.85,
+    'find-by-query': 21.15,
+    'find-by-query-parallel-4': 23.8,
+    '4x-count': 2.35
+};
+
+export const PERFORMANCE_DATA_OPFS: RxStoragePerformanceMeasurement[] = [
+    PERFORMANCE_OPFS_WORKER,
+    PERFORMANCE_OPFS_MAIN_THREAD
+];
+
 export const PERFORMANCE_DATA_BROWSER: RxStoragePerformanceMeasurement[] = [
-    {
-        name: 'OPFS (Worker)',
-        'time-to-first-insert': 27.2,
-        'insert-documents-500': 10.32,
-        'find-by-ids-3000': 24.5,
-        'serial-inserts-50': 7.4,
-        'serial-find-by-id-50': 8.25,
-        'find-by-query': 21.2,
-        'find-by-query-parallel-4': 35.8,
-        '4x-count': 2.95,
-    },
-    {
-        'name': 'OFPS (Main-Thread)',
-        'time-to-first-insert': 4,
-        'insert-documents-500': 8.09,
-        'find-by-ids-3000': 21.15,
-        'serial-inserts-50': 1.7,
-        'serial-find-by-id-50': 29.85,
-        'find-by-query': 21.15,
-        'find-by-query-parallel-4': 23.8,
-        '4x-count': 2.35
-    },
+    PERFORMANCE_OPFS_WORKER,
+    PERFORMANCE_OPFS_MAIN_THREAD,
     PERFORMANCE_BROWSER_INDEXEDDB,
     PERFORMANCE_BROWSER_DEXIE,
     PERFORMANCE_BROWSER_MEMORY,
