@@ -11,6 +11,7 @@ import {
     RxDocumentData,
     RxJsonSchema,
     getStringLengthOfIndexNumber,
+    getNumberIndexString,
     getStartIndexStringFromLowerBound,
     getStartIndexStringFromUpperBound,
     fillWithDefaultSettings,
@@ -171,6 +172,44 @@ describeParallel('custom-index.test.ts', () => {
                     return strA < strB ? -1 : 1;
                 });
                 assert.strictEqual(sorted[0].num, 10.02);
+            });
+            it('should produce correct length strings when decimal rounds up to multiplier', () => {
+                const parsedLengths = getStringLengthOfIndexNumber({
+                    type: 'number',
+                    minimum: -10,
+                    maximum: 10,
+                    multipleOf: 0.1
+                });
+                const expectedLength = parsedLengths.nonDecimals + parsedLengths.decimals;
+
+                const overflowValues = [0.95, 2.95, -0.05, -1.05, -2.05];
+                overflowValues.forEach(val => {
+                    const result = getNumberIndexString(parsedLengths, val);
+                    assert.strictEqual(
+                        result.length,
+                        expectedLength,
+                        'getNumberIndexString(' + val + ') produced string "' + result +
+                        '" with length ' + result.length + ' but expected ' + expectedLength
+                    );
+                });
+            });
+            it('should produce monotonically increasing strings for ascending values', () => {
+                const parsedLengths = getStringLengthOfIndexNumber({
+                    type: 'number',
+                    minimum: -10,
+                    maximum: 10,
+                    multipleOf: 0.1
+                });
+
+                const values = [-2, -1.5, -1, -0.5, 0, 0.5, 1, 1.5, 2];
+                const strings = values.map(v => getNumberIndexString(parsedLengths, v));
+                for (let i = 1; i < strings.length; i++) {
+                    assert.ok(
+                        strings[i] > strings[i - 1],
+                        'Expected string for ' + values[i] + ' ("' + strings[i] +
+                        '") to be greater than string for ' + values[i - 1] + ' ("' + strings[i - 1] + '")'
+                    );
+                }
             });
             it('should work correctly on big numbers', () => {
                 type DocType = {

@@ -5,6 +5,8 @@
 
 <!-- ADD new changes here! -->
 
+- FIX floating-point rounding overflow in index string decimal generation, where `Math.round` could produce a value equal to the multiplier (e.g. 10 instead of max 9), creating a string one character too long and breaking sort order in compound indexes
+- FIX `normalizeMangoQuery()` skipped fully-matching indexes when choosing default sort order, falling back to the first index instead of using the best match
 - FIX RxState `set('', modifier)` passed `undefined` to the modifier instead of the current state
 - FIX `RxMigrationStatus.count.percent` returning `NaN` instead of `100` when migrating a collection with 0 documents
 - FIX `fillWithDefaultSettings()` index deduplication was broken because `Array.filter()` return value was discarded, causing duplicate indexes in schemas when user-defined indexes become identical after adding `_deleted` prefix and primary key suffix

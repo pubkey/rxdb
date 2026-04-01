@@ -135,11 +135,12 @@ export function normalizeMangoQuery<RxDocType>(
                 schema.indexes.forEach(index => {
                     const useIndex = isMaybeReadonlyArray(index) ? index : [index];
                     const firstWrongIndex = useIndex.findIndex(indexField => !fieldsWithLogicalOperator.has(indexField));
+                    const matchingFieldCount = firstWrongIndex === -1 ? useIndex.length : firstWrongIndex;
                     if (
-                        firstWrongIndex > 0 &&
-                        firstWrongIndex > currentFieldsAmount
+                        matchingFieldCount > 0 &&
+                        matchingFieldCount > currentFieldsAmount
                     ) {
-                        currentFieldsAmount = firstWrongIndex;
+                        currentFieldsAmount = matchingFieldCount;
                         currentBestIndexForSort = useIndex;
                     }
                 });
