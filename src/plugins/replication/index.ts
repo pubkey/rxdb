@@ -548,6 +548,20 @@ export class RxReplicationState<RxDocType, CheckpointType> {
         this.subjects.received.complete();
         this.subjects.sent.complete();
 
+        /**
+         * Remove from the REPLICATION_STATE_BY_COLLECTION registry
+         * so that the cleanup plugin does not try to access a stopped
+         * replication's meta instance, and to prevent memory leaks
+         * from accumulating canceled replication state objects.
+         */
+        const states = REPLICATION_STATE_BY_COLLECTION.get(this.collection as any);
+        if (states) {
+            const idx = states.indexOf(this);
+            if (idx !== -1) {
+                states.splice(idx, 1);
+            }
+        }
+
         return Promise.all(promises);
     }
 
@@ -555,8 +569,32 @@ export class RxReplicationState<RxDocType, CheckpointType> {
         this.startQueue = this.startQueue.then(async () => {
             const metaInfo = await this.metaInfoPromise;
             await this._cancel(true);
-            await ensureNotFalsy(this.internalReplicationState).checkpointQueue
-                .then(() => ensureNotFalsy(this.metaInstance).remove());
+
+            /**
+             * If the replication was never started (e.g. autoStart: false
+             * and start() was never called), we still have to
+             * create the meta storage instance and then remove its data.
+             * This is required so that old meta data from a previous
+             * replication with the same identifier is properly deleted.
+             */
+            if (!this.metaInstance) {
+                const database = this.collection.database;
+                this.metaInstance = await database.storage.createStorageInstance<RxStorageReplicationMeta<RxDocType, CheckpointType>>({
+                    databaseName: database.name,
+                    collectionName: metaInfo.collectionName,
+                    databaseInstanceToken: database.token,
+                    multiInstance: database.multiInstance,
+                    options: {},
+                    schema: metaInfo.schema,
+                    password: database.password,
+                    devMode: overwritable.isDevMode()
+                });
+            }
+
+            if (this.internalReplicationState) {
+                await this.internalReplicationState.checkpointQueue;
+            }
+            await ensureNotFalsy(this.metaInstance).remove();
             await removeConnectedStorageFromCollection(
                 this.collection,
                 metaInfo.collectionName,
