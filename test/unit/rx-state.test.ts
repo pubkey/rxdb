@@ -597,6 +597,35 @@ addRxPlugin(RxDBJsonDumpPlugin);
                 assert.deepStrictEqual(state.get(), { foo: 'bar6' });
                 state.collection.database.remove();
             });
+            it('state should be correctly recovered from disk after set with empty path', async () => {
+                const databaseName = randomToken(10);
+                let state = await getState(databaseName);
+
+                await state.set('foo', () => 'bar');
+                await state.set('a', () => 42);
+
+                // Use the public API: set('', modifier) replaces the entire state
+                await state.set('', (prevState: TestState) => {
+                    return { ...prevState, b: 100 };
+                });
+
+                // Verify state is correct in the current instance
+                assert.strictEqual(state.get('foo'), 'bar');
+                assert.strictEqual(state.get('a'), 42);
+                assert.strictEqual(state.get('b'), 100);
+
+                // Close and reopen the database
+                await state.collection.database.close();
+                state = await getState(databaseName);
+
+                // State should be correctly reconstructed from disk
+                assert.strictEqual(state.get('foo'), 'bar');
+                assert.strictEqual(state.get('a'), 42);
+                assert.strictEqual(state.get('b'), 100);
+                assert.deepStrictEqual(state.get(), { foo: 'bar', a: 42, b: 100 });
+
+                state.collection.database.remove();
+            });
         });
     });
 });

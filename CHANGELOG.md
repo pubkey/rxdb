@@ -5,6 +5,8 @@
 
 <!-- ADD new changes here! -->
 
+- FIX RxState `mergeOperationsIntoState()` not handling empty-path operations during state reconstruction from disk, causing state corruption when the database is reopened after using `set('', modifier)` or `_cleanup()`
+
 - FIX memory storage `count()` returning incorrect results when the selector is not fully satisfied by the index and the query has a `limit` set
 
 - FIX `replicateRxCollection().remove()` on a never-started replication now creates the meta instance and deletes its data instead of skipping cleanup
