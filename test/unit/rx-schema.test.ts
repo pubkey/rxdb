@@ -1447,6 +1447,39 @@ describeParallel('rx-schema.test.ts', () => {
             db.close();
         });
     });
+    describe('.getJsonSchemaWithoutMeta()', () => {
+        it('should not contain any RxDB-internal meta properties like _rev', async () => {
+            const db = await createRxDatabase({
+                name: randomToken(10),
+                storage: config.storage.getStorage()
+            });
+            const collections = await db.addCollections({
+                humans: {
+                    schema: schemas.human
+                }
+            });
+            const schemaWithoutMeta = collections.humans.schema.getJsonSchemaWithoutMeta();
+            const propertyKeys = Object.keys(schemaWithoutMeta.properties);
+
+            // none of the internal meta properties should be present
+            assert.ok(!propertyKeys.includes('_rev'), '_rev should not be in properties');
+            assert.ok(!propertyKeys.includes('_deleted'), '_deleted should not be in properties');
+            assert.ok(!propertyKeys.includes('_meta'), '_meta should not be in properties');
+            assert.ok(!propertyKeys.includes('_attachments'), '_attachments should not be in properties');
+
+            // the required array should also not contain any internal meta fields
+            const required = schemaWithoutMeta.required as string[];
+            assert.ok(!required.some(r => r.startsWith('_')), 'required should not contain _-prefixed meta fields');
+
+            // user-defined properties should still be present
+            assert.ok(propertyKeys.includes('firstName'));
+            assert.ok(propertyKeys.includes('lastName'));
+            assert.ok(propertyKeys.includes('passportId'));
+            assert.ok(propertyKeys.includes('age'));
+
+            await db.close();
+        });
+    });
     describe('wait a bit', () => {
         it('w8 a bit', async () => {
             await AsyncTestUtil.wait(0);

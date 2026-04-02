@@ -283,18 +283,16 @@ export const RxDBAttachmentsPlugin: RxPlugin = {
                 get: function allAttachments$(this: RxDocument) {
                     return this.$
                         .pipe(
-                            map((rxDocument: RxDocument) => Object.entries(
-                                rxDocument.toJSON(true)._attachments
-                            )),
-                            map((entries: [string, any][]) => {
-                                return entries
-                                    .map(([id, attachmentData]: [string, any]) => {
-                                        return fromStorageInstanceResult(
-                                            id,
-                                            attachmentData,
-                                            this
-                                        );
-                                    });
+                            map((rxDocument: RxDocument) => {
+                                return Object.entries(
+                                    rxDocument.toJSON(true)._attachments
+                                ).map(([id, attachmentData]: [string, any]) => {
+                                    return fromStorageInstanceResult(
+                                        id,
+                                        attachmentData,
+                                        rxDocument
+                                    );
+                                });
                             })
                         );
                 }
