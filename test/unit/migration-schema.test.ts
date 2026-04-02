@@ -1733,7 +1733,7 @@ describe('migration-schema.test.ts', function () {
             await col.database.close();
         });
 
-        it('should apply schema default values to migrated documents', async () => {
+        it('should NOT auto-apply schema default values during migration', async () => {
             const dbName = randomToken(10);
             const schema0 = {
                 version: 0,
@@ -1787,8 +1787,12 @@ describe('migration-schema.test.ts', function () {
             ]);
             await db.close();
 
-            // reopen with v1 schema - migration strategy returns doc as-is
-            // because the new field has a default value
+            /**
+             * Migration strategies must have full explicit control
+             * over the document data. Schema default values are NOT
+             * auto-applied so the strategy can decide exactly
+             * what each field should contain.
+             */
             const db2 = await createRxDatabase({
                 name: dbName,
                 storage: config.storage.getStorage(),
@@ -1807,12 +1811,13 @@ describe('migration-schema.test.ts', function () {
             const docs = await cols2.heroes.find().exec();
             assert.strictEqual(docs.length, 3);
 
-            // Each migrated document should have the default value for 'nickname'
+            // Default values must NOT be auto-applied during migration.
+            // The migration strategy has full control over the document data.
             for (const doc of docs) {
                 assert.strictEqual(
                     (doc as any).nickname,
-                    'anonymous',
-                    'migrated document should have the default value for the new field'
+                    undefined,
+                    'migrated document must not have auto-applied default values'
                 );
             }
 

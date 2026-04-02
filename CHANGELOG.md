@@ -5,8 +5,6 @@
 
 <!-- ADD new changes here! -->
 
-- FIX schema migration not applying `default` values from the new schema to migrated documents, causing fields with defaults to be `undefined` after migration instead of the schema-defined default value
-
 - FIX memory storage `count()` returning incorrect results when the selector is not fully satisfied by the index and the query has a `limit` set
 
 - FIX `replicateRxCollection().remove()` on a never-started replication now creates the meta instance and deletes its data instead of skipping cleanup

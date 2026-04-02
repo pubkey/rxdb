@@ -4,7 +4,6 @@ import {
     getPrimaryKeyOfInternalDocument
 } from '../../rx-database-internal-store.ts';
 import { getPreviousVersions } from '../../rx-schema.ts';
-import { fillObjectWithDefaults } from '../../rx-schema-helper.ts';
 import type {
     ById,
     InternalStoreCollectionDocType,
@@ -93,13 +92,6 @@ export function migrateDocumentData(
             return PROMISE_RESOLVE_NULL;
         }
 
-        /**
-         * Fill in default values from the new schema
-         * so that migrated documents are consistent with
-         * documents inserted via the normal API which also
-         * applies defaults via fillObjectDataBeforeInsert().
-         */
-        doc = fillObjectWithDefaults(collection.schema, doc);
         if (meta) {
             doc._meta = meta;
         }
