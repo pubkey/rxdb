@@ -122,7 +122,7 @@ export const ERROR_MESSAGES = {
     },
     QU10: {
         message: 'result empty and throwIfMissing: true',
-        cause: 'exec(true) was called but the document was not found.',
+        cause: 'exec(true) or remove(true) was called on a findOne() query but the document was not found.',
         fix: 'Ensure the document exists or do not use the throwIfMissing flag.',
         docs: ''
     },
