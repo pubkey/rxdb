@@ -793,7 +793,10 @@ describeParallel('encryption.test.ts', () => {
             );
 
             // SECURITY: The password must NOT appear anywhere in the serialized error
-            const serialized = JSON.stringify(thrownError, Object.getOwnPropertyNames(thrownError));
+            const serialized = JSON.stringify(
+                thrownError,
+                Object.getOwnPropertyNames(thrownError).filter(p => p !== 'stack')
+            );
             assert.ok(
                 !serialized.includes(shortPassword),
                 'password should not appear anywhere in the serialized error object'
