@@ -70,6 +70,8 @@ export function migrateDocumentData(
     const attachmentsBefore = flatClone(docData._attachments);
     const mutateableDocData = clone(docData);
     const meta = mutateableDocData._meta;
+    const deleted = mutateableDocData._deleted;
+    delete mutateableDocData._deleted;
     delete mutateableDocData._meta;
     mutateableDocData._attachments = attachmentsBefore;
 
@@ -95,6 +97,7 @@ export function migrateDocumentData(
         if (meta) {
             doc._meta = meta;
         }
+        doc._deleted = deleted;
         return doc;
     });
 }

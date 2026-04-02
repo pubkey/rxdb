@@ -220,13 +220,13 @@ function cloneWithoutAttachments<T>(data: RxDocumentWriteData<T>): RxDocumentDat
 function validatePassword(password: string) {
     if (typeof password !== 'string') {
         throw newRxTypeError('EN1', {
-            password
+            passwordType: typeof password
         });
     }
     if (password.length < MINIMUM_PASSWORD_LENGTH) {
         throw newRxError('EN2', {
             minPassLength: MINIMUM_PASSWORD_LENGTH,
-            password
+            passwordLength: password.length
         });
     }
 }
