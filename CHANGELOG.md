@@ -6,6 +6,7 @@
 <!-- ADD new changes here! -->
 
 - FIX `mergeOperationsIntoState()` not handling root-level state replacement (`k === ''`), causing corrupted state when a second multi-instance initializes from storage after a root-level `set('', modifier)` or `_cleanup()` was performed
+- FIX RxState not correctly recovering full-state replacements (via `set('', modifier)`) from disk on database reopen, causing corrupted state
 
 - FIX memory storage `count()` returning incorrect results when the selector is not fully satisfied by the index and the query has a `limit` set
 
