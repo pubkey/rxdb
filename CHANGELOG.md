@@ -5,6 +5,7 @@
 
 <!-- ADD new changes here! -->
 
+- FIX dev-mode `checkSchema()` not validating composite primary key fields for encryption (SC15), index (SC13), unique (SC14), and type (SC16) constraints because it compared property names against the primaryKey object instead of resolving the primary field path
 - FIX `findOne().remove()` crashing with `TypeError: Cannot read properties of null` when no document matches the query, instead of returning `null`
 - ADD `findOne().remove(true)` to throw when no document matches, consistent with `findOne().exec(true)`
 - FIX schema migration losing `_deleted` state when migration strategy returns a new object, causing deleted documents to be resurrected after migration
