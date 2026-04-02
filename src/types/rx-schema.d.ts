@@ -212,3 +212,13 @@ export type RxJsonSchema<
  * @link https://github.com/pubkey/rxdb/discussions/3467
  */
 export type ExtractDocumentTypeFromTypedRxJsonSchema<TypedRxJsonSchema> = AsTyped<TypedRxJsonSchema>;
+
+/**
+ * Shorthand alias for ExtractDocumentTypeFromTypedRxJsonSchema.
+ * Use with toTypedRxJsonSchema() to infer the document type from a schema:
+ * @example
+ * const schemaLiteral = { ... } as const;
+ * const typedSchema = toTypedRxJsonSchema(schemaLiteral);
+ * type MyDocType = InferDocType<typeof typedSchema>;
+ */
+export type InferDocType<TypedRxJsonSchema> = AsTyped<TypedRxJsonSchema>;

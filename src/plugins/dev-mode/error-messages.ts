@@ -1097,6 +1097,12 @@ export const ERROR_MESSAGES = {
         fix: 'Reduce the maxLength.',
         docs: 'https://rxdb.info/rx-schema.html?console=errors&code=SC42#indexes'
     },
+    SC43: {
+        message: 'Indexed fields must be part of the required array in the schema. Some RxStorage implementations like Dexie.js do not support indexes on optional fields.',
+        cause: 'A field used in an index is not listed in the required array.',
+        fix: 'Add the indexed field to the required array of the schema.',
+        docs: 'https://rxdb.info/rx-storage-dexie.html?console=errors&code=SC43'
+    },
 
 
     // plugins/dev-mode
