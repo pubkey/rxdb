@@ -18,7 +18,7 @@ import {
     FilledMangoQuery,
     prepareQuery,
     toTypedRxJsonSchema,
-    InferDocType,
+    ExtractDocumentTypeFromTypedRxJsonSchema,
     MangoQuery,
 } from '../../plugins/core/index.mjs';
 import {
@@ -430,7 +430,7 @@ describeParallel('key-compression.test.js', () => {
             } as const;
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const schemaTyped = toTypedRxJsonSchema(mySchema);
-            type TestDocType = InferDocType<typeof schemaTyped>;
+            type TestDocType = ExtractDocumentTypeFromTypedRxJsonSchema<typeof schemaTyped>;
 
             const db = await createRxDatabase<{ mycollection: RxCollection<TestDocType>; }>({
                 name: randomToken(10),

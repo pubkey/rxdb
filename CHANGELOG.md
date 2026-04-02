@@ -5,7 +5,6 @@
 
 <!-- ADD new changes here! -->
 
-- ADD `InferDocType<T>` as the primary way to infer document types from schemas. `ExtractDocumentTypeFromTypedRxJsonSchema` is now deprecated
 - ADD React `useRxDocument(collection, primaryKey)` hook for subscribing to a single document by primary key with live updates
 - ADD React `useRxMutation(collection)` hook that provides `insert`, `update`, and `remove` operations with `loading` and `error` states
 - ADD React `useReplicationStatus(replicationState)` hook that exposes `syncing`, `error`, `lastSyncedAt`, and `canceled` from replication observables
