@@ -271,5 +271,34 @@ describeParallel('reactive-document.test.js', () => {
 
             await c.database.close();
         });
+        it('get$() on nested object path should not emit when unrelated field changes', async () => {
+            const c = await humansCollection.createNested();
+            const doc = await c.findOne().exec(true);
+
+            const emitted: any[] = [];
+            const sub = doc.get$('mainSkill').subscribe((val: any) => {
+                emitted.push(val);
+            });
+
+            // Wait for initial emission
+            await AsyncTestUtil.waitUntil(() => emitted.length === 1);
+            assert.strictEqual(emitted.length, 1);
+
+            // Update an unrelated field (firstName), not mainSkill
+            await doc.incrementalPatch({ firstName: randomToken(8) });
+            await promiseWait(100);
+
+            // get$('mainSkill') should NOT have emitted again because mainSkill didn't change
+            assert.strictEqual(
+                emitted.length,
+                1,
+                'get$() on a nested object path should not re-emit when an unrelated field changes. ' +
+                'Got ' + emitted.length + ' emissions but expected 1. ' +
+                'The distinctUntilChanged() uses === which fails for object values across revisions.'
+            );
+
+            sub.unsubscribe();
+            await c.database.close();
+        });
     });
 });
