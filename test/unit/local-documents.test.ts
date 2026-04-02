@@ -307,6 +307,37 @@ describeParallel('local-documents.test.ts', () => {
                 docSub.unsubscribe();
                 c.database.close();
             });
+            it('should upsert after remove and create a non-deleted document', async () => {
+                const c = await humansCollection.create(0);
+
+                // insert a local document
+                const doc = await c.upsertLocal<{ foo: string; }>('foobar', {
+                    foo: 'bar'
+                });
+                assert.strictEqual(doc.get('foo'), 'bar');
+
+                // remove it
+                await doc.remove();
+                const afterRemove = await c.getLocal('foobar');
+                assert.ok(ensureNotFalsy(afterRemove).deleted);
+
+                // upsert again with new data
+                const doc2 = await c.upsertLocal<{ foo: string; }>('foobar', {
+                    foo: 'bar2'
+                });
+
+                // the upserted document must NOT be deleted
+                assert.strictEqual(doc2.deleted, false);
+                assert.strictEqual(doc2.get('foo'), 'bar2');
+
+                // getLocal should also return the non-deleted document
+                const doc3 = await c.getLocal<{ foo: string; }>('foobar');
+                assert.ok(doc3);
+                assert.strictEqual(ensureNotFalsy(doc3).deleted, false);
+                assert.strictEqual(ensureNotFalsy(doc3).get('foo'), 'bar2');
+
+                c.database.close();
+            });
         });
         describe('negative', () => { });
     });

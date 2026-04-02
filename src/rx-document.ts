@@ -13,6 +13,7 @@ import {
     trimDots,
     pluginMissing,
     flatClone,
+    deepEqual,
     PROMISE_RESOLVE_NULL,
     RXJS_SHARE_REPLAY_DEFAULTS,
     getProperty,
@@ -160,7 +161,14 @@ export const basePrototype = {
         return this.$
             .pipe(
                 map((data: any) => getProperty(data, path)),
-                distinctUntilChanged()
+                distinctUntilChanged((prev: any, curr: any) => {
+                    /**
+                     * Use deepEqual for non-primitive values (objects/arrays)
+                     * because the default === comparison always fails across
+                     * document revisions since each revision creates new object references.
+                     */
+                    return deepEqual(prev, curr);
+                })
             );
     },
     get$$(this: RxDocument, path: string) {
