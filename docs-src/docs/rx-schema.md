@@ -397,7 +397,9 @@ Also the following class properties of `RxDocument` cannot be used as top level 
     }
     ```
 
-    In RxDB it is recommended to **not** store `null` values. Instead, define the field as non-required and leave it `undefined` (not set) when there is no value. A field that is not listed in the `required` array can be omitted from a document. This approach works better with RxDB's internal handling and keeps your data cleaner:
+    When you use a nullable type like `["string", "null"]`, you should always add that field to the `required` array. If a nullable field is not required, it can end up in three possible states: a string value, `null`, or `undefined` (not set). Having three states instead of two makes your code harder to reason about.
+
+    In RxDB it is recommended to **not** store `null` values at all. Instead, define the field as non-required and leave it `undefined` (not set) when there is no value. A field that is not listed in the `required` array can be omitted from a document. This approach works better with RxDB's internal handling and keeps your data cleaner:
     ```ts
     {
         "version": 0,
