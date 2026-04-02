@@ -388,6 +388,39 @@ Also the following class properties of `RxDocument` cannot be used as top level 
 </details>
 
 <details>
+    <summary>How do I specify nullable in JSON Schema?</summary>
+<div>
+    In JSON Schema, you make a field nullable by allowing multiple types with an array:
+    ```json
+    {
+        "type": ["string", "null"]
+    }
+    ```
+
+    In RxDB it is recommended to **not** store `null` values. Instead, define the field as non-required and leave it `undefined` (not set) when there is no value. A field that is not listed in the `required` array can be omitted from a document. This approach works better with RxDB's internal handling and keeps your data cleaner:
+    ```ts
+    {
+        "version": 0,
+        "primaryKey": "id",
+        "type": "object",
+        "properties": {
+            "id": {
+                "type": "string",
+                "maxLength": 100
+            },
+            "nickname": {
+                "type": "string"
+            }
+        },
+        "required": ["id"]
+        // "nickname" is not required, so it can be left undefined (not set)
+    }
+    ```
+
+</div>
+</details>
+
+<details>
     <summary>How to store schemaless data?</summary>
 <div>
     By design, RxDB requires that every collection has a schema. This means you cannot create a truly "schema-less" collection where top-level fields are unknown at schema creation time. RxDB must know about all fields of a document at the top level to perform validation, index creation, and other internal optimizations.
