@@ -168,6 +168,16 @@ const query = myCollection.find({
 const removedDocs = await query.remove();
 ```
 
+On `.findOne()` queries, `.remove()` returns `null` when no document matches. You can call `.remove(true)` to throw if the document is missing, similar to `.exec(true)`:
+
+```ts
+// returns null if no document matches
+const removed = await myCollection.findOne('foobar').remove();
+
+// throws if no document matches, return type is always RxDocument
+const removed = await myCollection.findOne('foobar').remove(true);
+```
+
 ## doesDocumentDataMatch()
 Returns `true` if the given document data matches the query.
 
