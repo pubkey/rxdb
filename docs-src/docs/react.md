@@ -213,47 +213,6 @@ const HeroDetail = ({ heroId }: { heroId: string }) => {
 };
 ```
 
-## Mutations
-
-The `useRxMutation` hook provides `insert`, `update`, and `remove` functions for a collection with shared `loading` and `error` state.
-
-```tsx
-import { useRxCollection } from 'rxdb/plugins/react';
-import { useRxMutation } from 'rxdb/plugins/react';
-
-const HeroCreator = () => {
-    const collection = useRxCollection('heroes');
-    const { insert, loading, error } = useRxMutation(collection);
-
-    const handleCreate = async () => {
-        await insert({
-            name: 'Bob',
-            color: 'blue'
-        });
-    };
-
-    return (
-        <div>
-            <button onClick={handleCreate} disabled={loading}>
-                {loading ? 'Creating...' : 'Create Hero'}
-            </button>
-            {error && <span className="error">{error}</span>}
-        </div>
-    );
-};
-```
-
-The `update` function uses `incrementalModify` under the hood:
-
-```tsx
-const { update } = useRxMutation(collection);
-
-await update(heroDocument, (doc) => {
-    doc.color = 'red';
-    return doc;
-});
-```
-
 ## Replication status
 
 The `useReplicationStatus` hook subscribes to an `RxReplicationState` and exposes its status as React state. This is useful for showing sync indicators in the UI.

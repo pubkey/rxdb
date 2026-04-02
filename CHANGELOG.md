@@ -6,7 +6,7 @@
 <!-- ADD new changes here! -->
 
 - ADD React `useRxDocument(collection, primaryKey)` hook for subscribing to a single document by primary key with live updates
-- ADD React `useRxMutation(collection)` hook that provides `insert`, `update`, and `remove` operations with `loading` and `error` states
+
 - ADD React `useReplicationStatus(replicationState)` hook that exposes `syncing`, `error`, `lastSyncedAt`, and `canceled` from replication observables
 - FIX `upsertLocal()` on a previously removed local document keeping the document in deleted state instead of un-deleting it
 - FIX push-only replication losing local writes that occur during a pause because `reSync()` events were filtered out when no pull handler was configured
