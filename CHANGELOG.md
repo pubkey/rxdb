@@ -5,6 +5,8 @@
 
 <!-- ADD new changes here! -->
 
+- FIX `findOne().remove()` crashing with `TypeError: Cannot read properties of null` when no document matches the query, instead of returning `null`
+- ADD `findOne().remove(true)` to throw when no document matches, consistent with `findOne().exec(true)`
 - FIX schema migration losing `_deleted` state when migration strategy returns a new object, causing deleted documents to be resurrected after migration
 - FIX `RxPipeline.remove()` not properly cleaning up checkpoint when called during active processing, causing a re-added pipeline with the same identifier to skip already-processed documents instead of starting fresh
 - FIX cleanup plugin prematurely exiting its retry loop when `storageInstance.cleanup()` returns `false` (batched cleanup), because `Array.find()` returns the found value `false` and `!false` evaluates to `true`, causing `isDone` to be set incorrectly

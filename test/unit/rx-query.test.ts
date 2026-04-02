@@ -2145,5 +2145,40 @@ describe('rx-query.test.ts', () => {
 
             db.close();
         });
+        it('findOne().remove() should return null when no document matches instead of crashing', async () => {
+            const c = await humansCollection.create(0);
+            // No documents in the collection, so findOne() returns null.
+            // Calling .remove() on the query should return null, not throw.
+            const result = await c.findOne().remove();
+            assert.strictEqual(result, null);
+            c.database.close();
+        });
+        it('findOne().remove() with selector matching no document should return null', async () => {
+            const c = await humansCollection.create(5);
+            // Use a selector that matches no document
+            const result = await c.findOne({
+                selector: {
+                    firstName: { $eq: 'does-not-exist-at-all' }
+                }
+            }).remove();
+            assert.strictEqual(result, null);
+            c.database.close();
+        });
+        it('findOne().remove(true) should throw when no document matches', async () => {
+            const c = await humansCollection.create(0);
+            await assertThrows(
+                () => c.findOne().remove(true),
+                'RxError',
+                'QU10'
+            );
+            c.database.close();
+        });
+        it('findOne().remove(true) should succeed when a document matches', async () => {
+            const c = await humansCollection.create(1);
+            const result = await c.findOne().remove(true);
+            assert.ok(result);
+            assert.strictEqual(result.deleted, true);
+            c.database.close();
+        });
     });
 });
