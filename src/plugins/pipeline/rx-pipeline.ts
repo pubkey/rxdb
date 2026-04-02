@@ -172,6 +172,8 @@ export class RxPipeline<RxDocType> {
                     done = true;
                 }
             }
+        }).catch(err => {
+            this.error = err;
         });
     }
 

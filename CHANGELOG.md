@@ -6,6 +6,8 @@
 <!-- ADD new changes here! -->
 
 - FIX push-only replication losing local writes that occur during a pause because `reSync()` events were filtered out when no pull handler was configured
+- FIX `getStartIndexStringFromUpperBound()` incorrectly mapping `INDEX_MIN` to `'1'` for boolean index fields, causing queries with exclusive bounds (`$gt`/`$lt`) on a field preceding a boolean index field to include boundary documents in the results
+- FIX leader-election plugin not calling `die()` on the LeaderElector when the database is closed, because `LEADER_ELECTORS_OF_DB` was never populated due to a dead code branch
 - FIX encryption plugin schema transformation not correctly handling nested dot-notation encrypted paths (e.g. `'nested.field'`), causing validation failures when using a validator storage with non-string nested encrypted fields
 - FIX dev-mode `checkSchema()` not validating composite primary key fields for encryption (SC15), index (SC13), unique (SC14), and type (SC16) constraints because it compared property names against the primaryKey object instead of resolving the primary field path
 - FIX `findOne().remove()` crashing with `TypeError: Cannot read properties of null` when no document matches the query, instead of returning `null`
