@@ -4,7 +4,7 @@
 
 # RxQuery
 
-To find documents inside of an [RxCollection](./rx-collection.md), RxDB uses the RxQuery interface that handles all query operations: it serves as the main interface for fetching documents, relies on a MongoDB-like [Mango Query Syntax](https://github.com/cloudant/mango), and provides three types of queries: [find()](#find), [findOne()](#findone) and [count()](#count). By caching and de-duplicating results, RxQuery ensures efficient in-memory handling, and when queries are observed or re-run, the [EventReduce algorithm](https://github.com/pubkey/event-reduce) speeds up updates for a fast real-time experience and queries that run more than once.
+To find documents inside of an [RxCollection](./rx-collection.md), RxDB uses the RxQuery interface that handles all query operations: it serves as the main interface for fetching documents, relies on a MongoDB-like [Mango Query Syntax](https://github.com/cloudant/mango), and provides three types of queries: [find()](#find), [findOne()](#findOne) and [count()](#count). By caching and de-duplicating results, RxQuery ensures efficient in-memory handling, and when queries are observed or re-run, the [EventReduce algorithm](https://github.com/pubkey/event-reduce) speeds up updates for a fast real-time experience and queries that run more than once.
 
 ## find()
 To create a basic `RxQuery`, call `.find()` on a collection and insert selectors. The result-set of normal queries is an array with documents.
@@ -21,7 +21,7 @@ const query = myCollection
     });
 ```
 
-## findOne()
+## findOne() {#findOne}
 A findOne-query has only a single [RxDocument](./rx-document.md) or `null` as result-set.
 
 ```js
@@ -61,14 +61,16 @@ console.dir(results); // > [RxDocument,RxDocument,RxDocument..]
 On `.findOne()` queries, you can call `.exec(true)` to ensure your document exists and to make TypeScript handling easier:
 
 ```ts
-// docOrUndefined can be the type RxDocument or null which then has to be handled to be typesafe.
+// docOrUndefined can be RxDocument or null
+// which then has to be handled to be typesafe.
 const docOrUndefined = await myCollection.findOne().exec();
 
-// with .exec(true), it will throw if the document cannot be found and always have the type RxDocument
+// with .exec(true), it will throw if the document
+// cannot be found and always return type RxDocument
 const doc = await myCollection.findOne().exec(true);
 ```
 
-## Observe $
+## Observe $ {#observe}
 An `BehaviorSubject` [see](https://medium.com/@luukgruijs/understanding-rxjs-behaviorsubject-replaysubject-and-asyncsubject-8cc061f1cfc0) that always has the current result-set as value.
 This is extremely helpful when used together with UIs that should always show the same state as what is written in the database.
 
@@ -161,6 +163,16 @@ const query = myCollection.find({
 const removedDocs = await query.remove();
 ```
 
+On `.findOne()` queries, `.remove()` returns `null` when no document matches. You can call `.remove(true)` to throw if the document is missing, similar to `.exec(true)`:
+
+```ts
+// returns null if no document matches
+const removed = await myCollection.findOne('foobar').remove();
+
+// throws if no document matches, return type is always RxDocument
+const removed = await myCollection.findOne('foobar').remove(true);
+```
+
 ## doesDocumentDataMatch()
 Returns `true` if the given document data matches the query.
 
@@ -220,9 +232,14 @@ myCollection.find({
 /*
  * find by using sql equivalent '%like%' syntax
  * This example will e.g. match 'foo' but also 'fifoo' or 'foofa' or 'fifoofa'
- * Notice that in RxDB queries, a regex is represented as a $regex string with the $options parameter for flags.
- * Using a RegExp instance is not allowed because they are not JSON.stringify()-able and also
- * RegExp instances are mutable which could cause undefined behavior when the RegExp is mutated
+ * Notice that in RxDB queries, a regex is
+ * represented as a $regex string with the
+ * $options parameter for flags.
+ * Using a RegExp instance is not allowed
+ * because they are not JSON.stringify()-able
+ * and also RegExp instances are mutable which
+ * could cause undefined behavior when the
+ * RegExp is mutated
  * after the query was parsed.
  */
 myCollection.find({
@@ -233,7 +250,8 @@ myCollection.find({
 .exec().then(documents => console.dir(documents));
 
 // find using a composite statement eg: $or
-// This example checks where name is either foo or if name is not existent on the document
+// This example checks where name is either foo
+// or if name is not existent on the document
 myCollection.find({
   selector: { $or: [ { name: { $eq: 'foo' } }, { name: { $exists: false } }] }
 })
@@ -276,8 +294,12 @@ const query = myCollection
       /**
        * Because the developer knows that 50% of the documents are 'male',
        * but only 20% are below age 18,
-       * it makes sense to enforce using the ['gender', 'age'] index to improve performance.
-       * This could not be known by the query planner which might have chosen ['age', 'gender'] instead.
+       * it makes sense to enforce using the
+       * ['gender', 'age'] index to improve
+       * performance.
+       * This could not be known by the query
+       * planner which might have chosen
+       * ['age', 'gender'] instead.
        */
       index: ['gender', 'age']
     });

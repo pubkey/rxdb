@@ -5,6 +5,12 @@
 
 <!-- ADD new changes here! -->
 
+<!-- /CHANGELOG NEWEST -->
+
+<!-- RELEASE BELOW -->
+
+### 17.1.0 (2 April 2026)
+
 - FIX CRDT plugin `bulkInsert` hook not including schema default values in CRDT operations, causing data loss during conflict resolution rebuild when fields rely on schema defaults
 - FIX `RxDocument.get$()` on nested object/array paths emitting spurious values when unrelated document fields changed, because `distinctUntilChanged()` used reference equality which always fails for non-primitive values across document revisions
 - FIX `incrementalUpsert()` throwing a CONFLICT error when a concurrent `upsert()`/`insert()` creates the same document between the internal `findOne()` and `insert()` calls
@@ -43,10 +49,6 @@
 - FIX event-reduce mutating cached `docsDataMap` causing missing documents after insert-delete cycles
 - FIX `modify()` not deep-cloning document data, allowing the modifier to corrupt internal state via shared nested references
 - FIX `fillObjectWithDefaults` shared mutable references for non-primitive schema defaults (arrays/objects) causing corrupted values on subsequent inserts
-
-<!-- /CHANGELOG NEWEST -->
-
-<!-- RELEASE BELOW -->
 
 ### 17.0.0 (30 March 2026)
 

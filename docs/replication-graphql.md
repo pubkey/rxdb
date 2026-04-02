@@ -2,7 +2,9 @@
 
 > Set up GraphQL-based replication with RxDB including pull, push, and live streaming handlers for syncing data between client and server.
 
-# Replication with GraphQL
+import {HeadlineWithIcon} from '@site/src/components/headline-with-icon';
+
+# <HeadlineWithIcon h1 icon={}>Replication with GraphQL</HeadlineWithIcon>
 
 The GraphQL replication provides handlers for GraphQL to run [replication](./replication.md) with GraphQL as the transport layer.
 
@@ -180,8 +182,14 @@ const replicationState = replicateGraphQL(
         },
         pull: {
             queryBuilder: pullQueryBuilder, // the queryBuilder from above
-            modifier: doc => doc, // (optional) modifies all pulled documents before they are handled by RxDB
-            dataPath: undefined, // (optional) specifies the object path to access the document(s). Otherwise, the first result of the response data is used.
+            // (optional) modifies all pulled documents
+            // before they are handled by RxDB
+            modifier: doc => doc,
+            // (optional) specifies the object path to
+            // access the document(s). Otherwise, the
+            // first result of the response data
+            // is used.
+            dataPath: undefined,
             /**
              * Amount of documents that the remote will send in one request.
              * If the response contains less than [batchSize] documents,
@@ -251,12 +259,14 @@ const replicationState = replicateGraphQL(
             queryBuilder: pushQueryBuilder, // the queryBuilder from above
             /**
              * batchSize (optional)
-             * Amount of document that will be pushed to the server in a single request.
+             * Amount of document that will be pushed
+             * to the server in a single request.
              */
             batchSize: 5,
             /**
              * modifier (optional)
-             * Modifies all pushed documents before they are sent to the GraphQL endpoint.
+             * Modifies all pushed documents before
+             * they are sent to the GraphQL endpoint.
              * Returning null will skip the document.
              */
             modifier: doc => doc
@@ -312,7 +322,8 @@ const replicationState = replicateGraphQL(
         // urls to the GraphQL endpoints
         url: {
             http: 'http://example.com/graphql',
-            ws: 'ws://example.com/subscriptions' // <- The websocket has to use a different url.
+            // The websocket has to use a different url.
+            ws: 'ws://example.com/subscriptions'
         },
         push: {
             batchSize: 100,
@@ -325,13 +336,25 @@ const replicationState = replicateGraphQL(
             batchSize: 100,
             queryBuilder: pullQueryBuilder,
             streamQueryBuilder: pullStreamQueryBuilder,
-            includeWsHeaders: false, // Includes headers as connection parameter to Websocket.
+            // Includes headers as connection
+            // parameter to Websocket.
+            includeWsHeaders: false,
 
-            // Websocket options that can be passed as a parameter to initialize the subscription
-            // Can be applied anything from the graphql-ws ClientOptions - https://the-guild.dev/graphql/ws/docs/interfaces/client.ClientOptions
-            // Except these parameters: 'url', 'shouldRetry', 'webSocketImpl' - locked for internal usage
-            // Note: if you provide connectionParams as a wsOption, make sure it returns any necessary headers (e.g. authorization)
-            // because providing your own connectionParams prevents headers from being included automatically
+            // Websocket options that can be passed
+            // as a parameter to initialize the
+            // subscription
+            // Can be applied anything from the
+            // graphql-ws ClientOptions:
+            // https://the-guild.dev/graphql/ws/docs/interfaces/client.ClientOptions
+            // Except these parameters: 'url',
+            // 'shouldRetry', 'webSocketImpl' -
+            // locked for internal usage
+            // Note: if you provide connectionParams
+            // as a wsOption, make sure it returns any
+            // necessary headers (e.g. authorization)
+            // because providing your own
+            // connectionParams prevents headers from
+            // being included automatically
             wsOptions: { 
                 retryAttempts: 10,
             }
@@ -392,11 +415,20 @@ const replicationState: RxGraphQLReplicationState<RxDocType> = replicateGraphQL(
         pull: {
             responseModifier: async function(
                 plainResponse, // the exact response that was returned from the server
-                origin, // either 'handler' if plainResponse came from the pull.handler, or 'stream' if it came from the pull.stream
-                requestCheckpoint // if origin==='handler', the requestCheckpoint contains the checkpoint that was sent to the backend
+                // either 'handler' if plainResponse
+                // came from the pull.handler,
+                // or 'stream' if it came from
+                // the pull.stream
+                origin,
+                // if origin==='handler', the
+                // requestCheckpoint contains the
+                // checkpoint that was sent to
+                // the backend
+                requestCheckpoint
             ) {
                 /**
-                 * In this example we aggregate the checkpoint from the documents array
+                 * In this example we aggregate the
+                 * checkpoint from the documents array
                  * that was returned from the graphql endpoint.
                  */
                 const docs = plainResponse;
@@ -425,7 +457,8 @@ type PushResponse {
 }
 
 type Mutation {
-    # Returns a PushResponse type that contains the conflicts along with other information
+    # Returns a PushResponse type that contains
+    # the conflicts along with other information
     pushHuman(rows: [HumanInputPushRow!]): PushResponse!
 }
 ```
@@ -440,7 +473,9 @@ const replicationState: RxGraphQLReplicationState<RxDocType> = replicateGraphQL(
         push: {
             responseModifier: async function (plainResponse) {
                 /**
-                 * In this example we aggregate the conflicting documents from a response object
+                 * In this example we aggregate the
+                 * conflicting documents from a
+                 * response object
                  */
                 return plainResponse.conflicts;
             },

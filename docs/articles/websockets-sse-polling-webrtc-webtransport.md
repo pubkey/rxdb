@@ -267,6 +267,6 @@ For pure peer-to-peer applications, [WebRTC](../replication-webrtc.md) is techni
 
 - Check out the [hackernews discussion of this article](https://news.ycombinator.com/item?id=39745993)
 - Shared/Like my [announcement tweet](https://twitter.com/rxdbjs/status/1769507055298064818)
-- Learn how to use Server-Sent-Events to [replicate a client side RxDB database with your backend](../replication-http.md#pullstream-for-ongoing-changes).
+- Learn how to use Server-Sent-Events to [replicate a client side RxDB database with your backend](../replication-http.md#implement-the-pullstream-endpoint).
 - Learn how to use RxDB with the [RxDB Quickstart](../quickstart.md)
 - Check out the [RxDB github repo](https://github.com/pubkey/rxdb) and leave a star ⭐

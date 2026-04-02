@@ -24,7 +24,7 @@ In contrast to other (server-side) database replication protocols, the RxDB Sync
 
 ## The Sync Engine on the document level
 
-On the RxDocument level, the replication works like git, where the fork/client contains all new writes and must be merged with the master/server before it can push its new state to the master/server.
+On the [RxDocument](./rx-document.md) level, the replication works like git, where the fork/client contains all new writes and must be merged with the master/server before it can push its new state to the master/server.
 
 ```
 A---B-----------D   master/server state
@@ -176,8 +176,10 @@ const replicationState = await replicateRxCollection({
     /**
      * When multiInstance is true, like when you use RxDB in multiple browser tabs,
      * the replication should always run in only one of the open browser tabs.
-     * If waitForLeadership is true, it will wait until the current instance is leader.
-     * If waitForLeadership is false, it will start replicating, even if it is not leader.
+     * If waitForLeadership is true, it will wait until
+     * the current instance is leader.
+     * If waitForLeadership is false, it will start
+     * replicating, even if it is not leader.
      * [default=true]
      */
     waitForLeadership: true,
@@ -192,12 +194,17 @@ const replicationState = await replicateRxCollection({
     /**
      * Custom deleted field, the boolean property of the document data that
      * marks a document as being deleted.
-     * If your backend uses a different field name than '_deleted', set the field name here.
-     * RxDB will still store the documents internally with '_deleted', setting this field
+     * If your backend uses a different field name
+     * than '_deleted', set the field name here.
+     * RxDB will still store the documents internally
+     * with '_deleted', setting this field
      * only maps the data on the data layer.
      * 
      * If a custom deleted field contains a non-boolean value, the deleted state
-     * of the documents depends on if the value is truthy or not. So instead of providing a boolean deleted value, you could also work with using a 'deletedAt' timestamp instead.
+     * of the documents depends on if the value is
+     * truthy or not. So instead of providing a boolean
+     * deleted value, you could also work with using a
+     * 'deletedAt' timestamp instead.
      * 
      * [default='_deleted']
      */
@@ -237,20 +244,32 @@ const replicationState = await replicateRxCollection({
         batchSize: 5,
         /**
          * Modifies all documents before they are given to the push handler.
-         * Can be used to swap out a custom deleted flag instead of the '_deleted' field.
-         * If the push modifier return null, the document will be skipped and not sent to the remote.
-         * Notice that the modifier can be called multiple times and should not contain any side effects.
+         * Can be used to swap out a custom deleted
+         * flag instead of the '_deleted' field.
+         * If the push modifier return null, the
+         * document will be skipped and not sent to
+         * the remote.
+         * Notice that the modifier can be called
+         * multiple times and should not contain
+         * any side effects.
          * (optional)
          */
         modifier: d => d,
         /**
-         * When a local write happens, the replication will normally start pushing immediately.
-         * By providing a function here that returns a promise, the replication waits for that
-         * promise to resolve before starting the next upstream persist cycle.
-         * This lets you batch writes from multiple rapid inserts into a single push call,
-         * or defer pushing until the CPU is idle (e.g. via requestIdleCallback).
-         * NOTE: The longer you wait, the higher the risk of losing writes if the replication
-         * closes unexpectedly.
+         * When a local write happens, the
+         * replication will normally start pushing
+         * immediately.
+         * By providing a function here that returns
+         * a promise, the replication waits for that
+         * promise to resolve before starting the
+         * next upstream persist cycle.
+         * This lets you batch writes from multiple
+         * rapid inserts into a single push call,
+         * or defer pushing until the CPU is idle
+         * (e.g. via requestIdleCallback).
+         * NOTE: The longer you wait, the higher
+         * the risk of losing writes if the
+         * replication closes unexpectedly.
          * (optional)
          */
         waitBeforePersist: () => new Promise(resolve => requestIdleCallback(resolve))
@@ -269,7 +288,9 @@ const replicationState = await replicateRxCollection({
              * In this example we replicate with a remote REST server
              */
             const response = await fetch(
-                `https://example.com/api/sync/?minUpdatedAt=${minTimestamp}&limit=${batchSize}`
+                `https://example.com/api/sync/` +
+                `?minUpdatedAt=${minTimestamp}` +
+                `&limit=${batchSize}`
             );
             const documentsFromRemote = await response.json();
             return {
@@ -277,7 +298,9 @@ const replicationState = await replicateRxCollection({
                  * Contains the pulled documents from the remote.
                  * Not that if documentsFromRemote.length < batchSize,
                  * then RxDB assumes that there are no more un-replicated documents
-                 * on the backend, so the replication will switch to 'Event observation' mode.
+                 * on the backend, so the replication
+                 * will switch to 'Event observation'
+                 * mode.
                  */
                 documents: documentsFromRemote,
                 /**
@@ -295,7 +318,9 @@ const replicationState = await replicateRxCollection({
         /**
          * Modifies all documents after they have been pulled
          * but before they are used by RxDB.
-         * Notice that the modifier can be called multiple times and should not contain any side effects.
+         * Notice that the modifier can be called
+         * multiple times and should not contain
+         * any side effects.
          * (optional)
          */
         modifier: d => d,
@@ -310,7 +335,8 @@ const replicationState = await replicateRxCollection({
 
 /**
  * Creating the pull stream for realtime replication.
- * Here we use a websocket but any other way of sending data to the client can be used,
+ * Here we use a websocket but any other way of
+ * sending data to the client can be used,
  * like long polling or server-sent events.
  */
 const pullStream$ = new Subject<RxReplicationPullStreamItem<any, any>>();
@@ -459,7 +485,10 @@ For example if you want to block clients from using the app if they have not bee
 ```ts
 
 // update last-in-sync-flag each time replication is in sync
-await myCollection.insertLocal('last-in-sync', { time: 0 }).catch(); // ensure flag exists
+// ensure flag exists
+await myCollection.insertLocal(
+    'last-in-sync', { time: 0 }
+).catch();
 myReplicationState.active$.pipe(
     mergeMap(async() => {
         await myReplicationState.awaitInSync();
@@ -546,7 +575,8 @@ By setting a custom `push.initialCheckpoint`, you can tell the replication to on
 let lastLocalCheckpoint: any;
 myCollection.checkpoint$.subscribe(checkpoint => lastLocalCheckpoint = checkpoint);
 
-// start the replication but only push documents that are newer than the lastLocalCheckpoint
+// start the replication but only push documents
+// that are newer than the lastLocalCheckpoint
 const replicationState = replicateRxCollection({
     collection: myCollection,
     replicationIdentifier: 'my-custom-replication-with-init-checkpoint',
@@ -562,9 +592,12 @@ The same can be done for the other direction by setting a `pull.initialCheckpoin
 
 ```ts
 // get the last pull checkpoint from the server
-const lastRemoteCheckpoint = await (await fetch('http://example.com/pull-checkpoint')).json();
+const lastRemoteCheckpoint = await (
+    await fetch('http://example.com/pull-checkpoint')
+).json();
 
-// start the replication but only pull documents that are newer than the lastRemoteCheckpoint
+// start the replication but only pull documents
+// that are newer than the lastRemoteCheckpoint
 const replicationState = replicateRxCollection({
     collection: myCollection,
     replicationIdentifier: 'my-custom-replication-with-init-checkpoint',

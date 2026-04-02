@@ -34,7 +34,7 @@ RxDB - short for Reactive Database - is built on the principle of combining [NoS
 5. **Observable Queries**: Automatically refresh the result set when documents in your queried collection change.
 
 ### RxDB vs. Other Vue Database Options
-Compared to traditional approaches - like raw IndexedDB or local storage - RxDB adds a powerful, reactive layer that simplifies your data flow. While tools like Vuex or Pinia are great for state management, they are not fully fledged databases with features like replication, conflict resolution, and offline persistence. RxDB bridges the gap by providing an integrated data handling solution tailor-made for modern, data-intensive Vue applications.
+Compared to traditional approaches - like raw IndexedDB or local storage - RxDB adds a powerful, reactive layer that simplifies your data flow. While tools like Vuex or Pinia are great for state management, they are not fully fledged databases with features like [replication](../replication.md), conflict resolution, and offline persistence. RxDB bridges the gap by providing an integrated data handling solution tailor-made for modern, data-intensive Vue applications.
 
 ## Getting Started with RxDB
 Let's break down the essentials for using RxDB within a Vue application.
@@ -130,7 +130,7 @@ onMounted(async () => {
 
 ## Different RxStorage Layers for RxDB
 
-RxDB supports multiple storage backends - called "RxStorage layers" - giving you flexibility in how data is persisted:
+RxDB supports multiple storage backends - called "[RxStorage](../rx-storage.md) layers" - giving you flexibility in how data is persisted:
 
 - [LocalStorage RxStorage](../rx-storage-localstorage.md): Uses the browsers localstorage API.
 - [IndexedDB RxStorage](../rx-storage-indexeddb.md): Direct usage of native IndexedDB.

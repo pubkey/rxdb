@@ -31,7 +31,7 @@ RxDB stands for Reactive Database and is built on the principles of reactive pro
 To begin our journey with RxDB, let's understand its key concepts and features.
 
 ### What is RxDB?
-[RxDB](https://rxdb.info/) is a client-side database that follows the principles of reactive programming. It is built on top of IndexedDB, the [native browser database](./browser-database.md), and leverages the RxJS library for reactive data handling. RxDB provides a simple and intuitive API for managing data and offers features like data replication, multi-tab support, and efficient query handling.
+[RxDB](https://rxdb.info/) is a client-side database that follows the principles of reactive programming. It is built on top of IndexedDB, the [native browser database](./browser-database.md), and leverages the RxJS library for reactive data handling. RxDB provides a simple and intuitive API for managing data and offers features like data [replication](../replication.md), multi-tab support, and efficient query handling.
 
 <center>
     
@@ -48,7 +48,7 @@ At the core of RxDB is the concept of reactive data handling. RxDB leverages obs
 One of the standout features of RxDB is its offline-first approach. It allows you to build applications that can work seamlessly in offline scenarios. RxDB stores data locally and automatically synchronizes changes with the server when the network becomes available. This capability is particularly useful for applications that need to function in low-connectivity or unreliable network environments.
 
 ### Data Replication
-RxDB provides built-in support for data replication between clients and servers. This means you can synchronize data across multiple devices or instances of your application effortlessly. RxDB handles conflict resolution and ensures that data remains consistent across all connected clients.
+RxDB provides built-in support for data replication between clients and servers. This means you can synchronize data across multiple devices or instances of your application effortlessly. RxDB handles [conflict resolution](../transactions-conflicts-revisions.md) and ensures that data remains consistent across all connected clients.
 
 ### Observable Queries
 RxDB offers a powerful querying mechanism with support for [observable queries](../rx-query.md). This allows you to create dynamic queries that automatically update when the underlying data changes. By leveraging RxDB's observable queries, you can build reactive UI components that respond to data changes in real-time.

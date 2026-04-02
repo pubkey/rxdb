@@ -94,7 +94,9 @@ const db1 = await createRxDatabase({
 const db2 = await createRxDatabase({
   name: 'heroesdb',
   storage: getRxStorageLocalstorage(),
-  ignoreDuplicate: true // this create-call will not throw because you explicitly allow it
+  // this create-call will not throw because
+  // you explicitly allow it
+  ignoreDuplicate: true
 });
 ```
 

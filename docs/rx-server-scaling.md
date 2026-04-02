@@ -27,7 +27,9 @@ So instead of directly serving requests from the persistence layer, you add an i
 ```ts
 import { getRxStorageMemory } from 'rxdb/plugins/storage-memory';
 import { replicateRxCollection } from 'rxdb/plugins/replication';
-import { getRxStorageFilesystemNode } from 'rxdb-premium/plugins/storage-filesystem-node';
+import {
+    getRxStorageFilesystemNode
+} from 'rxdb-premium/plugins/storage-filesystem-node';
 import { getMemoryMappedRxStorage } from 'rxdb-premium/plugins/storage-memory-mapped';
 const myRxDatabase = await createRxDatabase({
     name: 'mydb',

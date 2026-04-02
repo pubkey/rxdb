@@ -12,19 +12,25 @@ This file contains all documentation content in a single document following the 
 
 To install the latest release of `rxdb` and its dependencies and save it to your `package.json`, run:
 
-`npm i rxdb --save`
+```bash
+npm i rxdb --save
+```
 
 ## peer-dependency
 
 You also need to install the peer-dependency `rxjs` if you have not installed it before.
 
-`npm i rxjs --save`
+```bash
+npm i rxjs --save
+```
 
 ## polyfills
 
 RxDB is coded with ES8 and transpiled to ES5. This means you have to install [polyfills](https://developer.mozilla.org/en-US/docs/Glossary/Polyfill) to support older browsers. For example you can use the babel-polyfills with:
 
-`npm i @babel/polyfill --save`
+```bash
+npm i @babel/polyfill --save
+```
 
 If you need polyfills, you have to import them in your code.
 
@@ -169,7 +175,8 @@ import {
 } from 'rxdb-premium/plugins/storage-sqlite';
 
 // Provide the sqliteBasics adapter for your runtime, e.g. Node.js, React Native, etc.
-// For example in Node.js you would derive sqliteBasics from a sqlite3-compatible library:
+// For example in Node.js you would derive
+// sqliteBasics from a sqlite3-compatible library:
 import sqlite3 from 'sqlite3';
 
 const storage = getRxStorageSQLite({
@@ -481,7 +488,7 @@ Using attachments instead of adding the data to the normal document, ensures tha
 
 - You can store string, binary files, images and whatever you want side by side with your documents.
 - Deleted documents automatically loose all their attachments data.
-- Not all replication plugins support the replication of attachments.
+- Not all [replication](./replication.md) plugins support the replication of attachments.
 - Attachments can be stored [encrypted](./encryption.md).
 
 Internally, attachment data is stored as `Blob` objects. Blob is the canonical internal type because it is immutable, carries MIME type metadata via `Blob.type`, provides synchronous size via `Blob.size`, and is [structured-cloneable](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm) (works with Worker/Electron `postMessage` and IndexedDB). Conversion to `ArrayBuffer` only happens at system boundaries that require it: encryption (Web Crypto), compression (CompressionStream), digest hashing, and WebSocket serialization.
@@ -511,7 +518,9 @@ const mySchema = {
         // .
     },
     attachments: {
-        encrypted: true // if true, the attachment-data will be encrypted with the db-password
+        // if true, the attachment-data will be
+        // encrypted with the db-password
+        encrypted: true
     }
 };
 
@@ -533,7 +542,8 @@ const attachment = await myDocument.putAttachment(
     {
         id: 'cat.txt',     // (string) name of the attachment
         data: createBlob('meowmeow', 'text/plain'),   // (Blob) data of the attachment
-        type: 'text/plain'    // (string) type of the attachment-data like 'image/jpeg'
+        type: 'text/plain'   // (string) type of the attachment
+                            // data like 'image/jpeg'
     }
 );
 ```
@@ -594,7 +604,7 @@ const attachments = myDocument.allAttachments();
 
 ## allAttachments$
 
-Gets an Observable which emits a stream of all attachments from the document. Re-emits each time an attachment gets added or removed from the RxDocument.
+Gets an Observable which emits a stream of all attachments from the document. Re-emits each time an attachment gets added or removed from the [RxDocument](./rx-document.md).
 
 ```javascript
 const all = [];
@@ -714,7 +724,7 @@ const doc2 = await myCollection.upsert(docData, { deleteExistingAttachments: tru
 
 This option works with `upsert()`, `bulkUpsert()`, and `incrementalUpsert()`.
 
-# Attachment compression
+## Attachment compression {#attachment-compression}
 
 Storing many attachments can be a problem when the disc space of the device is exceeded.
 Therefore it can make sense to compress the attachments before storing them in the [RxStorage](./rx-storage.md).
@@ -752,10 +762,14 @@ const mySchema = {
         // ..
     },
     attachments: {
-        compression: 'deflate',  // <- Specify the compression mode here. OneOf ['deflate', 'gzip']
+        // Specify the compression mode.
+        // OneOf ['deflate', 'gzip']
+        compression: 'deflate',
 
         // Optional: override which MIME types get compressed.
-        // Supports wildcard prefix matching (e.g. 'text/*' matches 'text/plain', 'text/html', etc.).
+        // Supports wildcard prefix matching
+        // (e.g. 'text/*' matches 'text/plain',
+        // 'text/html', etc.).
         // If omitted, a built-in default list of compressible types is used.
         compressibleTypes: [
             'text/*',
@@ -790,14 +804,18 @@ const myCollections = await myDatabase.addCollections({
   // key = collectionName
   humans: {
     schema: mySchema,
-    statics: {},                          // (optional) ORM-functions for this collection
+    statics: {},                       // (optional) ORM-functions
+                                         // for this collection
     methods: {},                          // (optional) ORM-functions for documents
     attachments: {},                      // (optional) ORM-functions for attachments
-    options: {},                          // (optional) Custom parameters that might be used in plugins
+    options: {},                       // (optional) Custom parameters
+                                         // that might be used in plugins
     migrationStrategies: {},              // (optional)
     autoMigrate: true,                    // (optional) [default=true]
-    cacheReplacementPolicy: function(){}, // (optional) custom cache replacement policy
-    conflictHandler: function(){}         // (optional) a custom conflict handler can be used
+    cacheReplacementPolicy: function(){}, // (optional) custom
+                                         // cache replacement policy
+    conflictHandler: function(){}         // (optional) custom
+                                         // conflict handler
   },
   // you can create multiple collections at once
   animals: {
@@ -1211,7 +1229,9 @@ const db1 = await createRxDatabase({
 const db2 = await createRxDatabase({
   name: 'heroesdb',
   storage: getRxStorageLocalstorage(),
-  ignoreDuplicate: true // this create-call will not throw because you explicitly allow it
+  // this create-call will not throw because
+  // you explicitly allow it
+  ignoreDuplicate: true
 });
 ```
 
@@ -1491,7 +1511,7 @@ await myDocument.patch({
 console.log(myDocument.name); // 'Steve'
 ```
 
-### Prevent conflicts with the incremental methods
+### Prevent conflicts with the incremental methods {#incrementalModify}
 
 Making a normal change to the non-latest version of an `RxDocument` will lead to a `409 CONFLICT` error because RxDB
 uses [revision checks](./transactions-conflicts-revisions.md) instead of transactions.
@@ -1536,7 +1556,7 @@ const latestDoc = myDocument.getLatest();
 console.log(docAfterEdit === latestDoc); // > true
 ```
 
-### Observe $
+### Observe $ {#observe}
 Calling this will return an [RxJS Observable](https://rxjs.dev/guide/observable) which emits the current newest state of the RxDocument.
 
 ```js
@@ -1619,7 +1639,7 @@ console.dir(json);
 */
 ```
 
-You can also set `withMetaFields: true` to get additional meta fields like the revision, attachments or the deleted flag.
+You can also set `withMetaFields: true` to get additional meta fields like the revision, [attachments](./rx-attachment.md) or the deleted flag.
 
 ```js
 const json = myDocument.toJSON(true);
@@ -1675,7 +1695,7 @@ console.log(doc.getLatest().age); // 20
 **Calling non-incremental write methods on an outdated instance throws a `CONFLICT` error.** If you hold a reference to a document and another operation modifies that document in the meantime, calling `.patch()`, `.update()`, or `.modify()` on the outdated instance will fail with a conflict error. See [Transactions, Conflicts and Revisions](./transactions-conflicts-revisions.md) for details on how RxDB handles conflicts.
 
 To avoid this, either:
-- Use the [incremental methods](#prevent-conflicts-with-the-incremental-methods) (`incrementalPatch`, `incrementalModify`, `incrementalUpdate`) which always fetch the latest state before applying changes.
+- Use the [incremental methods](#incrementalModify) (`incrementalPatch`, `incrementalModify`, `incrementalUpdate`) which always fetch the latest state before applying changes.
 - Call `getLatest()` to get the current state before writing.
 - Re-query the collection to get a fresh document.
 
@@ -1694,7 +1714,7 @@ They come in handy when you want to store settings or additional data next to yo
 - Local Document do not have to match the collections schema.
 - Local Documents do not get replicated.
 - Local Documents will not be found on queries.
-- Local Documents can not have attachments.
+- Local Documents can not have [attachments](./rx-attachment.md).
 - Local Documents will not get handled by the [migration-schema](./migration-schema.md).
 - The id of a local document has the `maxLength` of `128` characters.
 
@@ -1728,7 +1748,9 @@ const myDatabase = await createRxDatabase({
 myDatabase.addCollections({
   messages: {
     schema: messageSchema,
-    localDocuments: true // <- activate this to store local documents in the collection
+    // activate this to store local documents
+    // in the collection
+    localDocuments: true
   }
 });
 ```
@@ -1934,7 +1956,7 @@ const mailIds = await emailByReceiverCollection.find({
 
 ### UseCase: Fulltext Search
 
-You can utilize the pipeline plugin to index text data for efficient fulltext search.
+You can utilize the pipeline plugin to index text data for efficient [fulltext search](./fulltext-search.md).
 
 ```ts
 const pipeline = await emailCollection.addPipeline({
@@ -2058,7 +2080,7 @@ To prevent deadlocks, consider:
 ## RxQuery
 
 
-To find documents inside of an [RxCollection](./rx-collection.md), RxDB uses the RxQuery interface that handles all query operations: it serves as the main interface for fetching documents, relies on a MongoDB-like [Mango Query Syntax](https://github.com/cloudant/mango), and provides three types of queries: [find()](#find), [findOne()](#findone) and [count()](#count). By caching and de-duplicating results, RxQuery ensures efficient in-memory handling, and when queries are observed or re-run, the [EventReduce algorithm](https://github.com/pubkey/event-reduce) speeds up updates for a fast real-time experience and queries that run more than once.
+To find documents inside of an [RxCollection](./rx-collection.md), RxDB uses the RxQuery interface that handles all query operations: it serves as the main interface for fetching documents, relies on a MongoDB-like [Mango Query Syntax](https://github.com/cloudant/mango), and provides three types of queries: [find()](#find), [findOne()](#findOne) and [count()](#count). By caching and de-duplicating results, RxQuery ensures efficient in-memory handling, and when queries are observed or re-run, the [EventReduce algorithm](https://github.com/pubkey/event-reduce) speeds up updates for a fast real-time experience and queries that run more than once.
 
 ## find()
 To create a basic `RxQuery`, call `.find()` on a collection and insert selectors. The result-set of normal queries is an array with documents.
@@ -2075,7 +2097,7 @@ const query = myCollection
     });
 ```
 
-## findOne()
+## findOne() {#findOne}
 A findOne-query has only a single [RxDocument](./rx-document.md) or `null` as result-set.
 
 ```js
@@ -2115,14 +2137,16 @@ console.dir(results); // > [RxDocument,RxDocument,RxDocument..]
 On `.findOne()` queries, you can call `.exec(true)` to ensure your document exists and to make TypeScript handling easier:
 
 ```ts
-// docOrUndefined can be the type RxDocument or null which then has to be handled to be typesafe.
+// docOrUndefined can be RxDocument or null
+// which then has to be handled to be typesafe.
 const docOrUndefined = await myCollection.findOne().exec();
 
-// with .exec(true), it will throw if the document cannot be found and always have the type RxDocument
+// with .exec(true), it will throw if the document
+// cannot be found and always return type RxDocument
 const doc = await myCollection.findOne().exec(true);
 ```
 
-## Observe $
+## Observe $ {#observe}
 An `BehaviorSubject` [see](https://medium.com/@luukgruijs/understanding-rxjs-behaviorsubject-replaysubject-and-asyncsubject-8cc061f1cfc0) that always has the current result-set as value.
 This is extremely helpful when used together with UIs that should always show the same state as what is written in the database.
 
@@ -2215,6 +2239,16 @@ const query = myCollection.find({
 const removedDocs = await query.remove();
 ```
 
+On `.findOne()` queries, `.remove()` returns `null` when no document matches. You can call `.remove(true)` to throw if the document is missing, similar to `.exec(true)`:
+
+```ts
+// returns null if no document matches
+const removed = await myCollection.findOne('foobar').remove();
+
+// throws if no document matches, return type is always RxDocument
+const removed = await myCollection.findOne('foobar').remove(true);
+```
+
 ## doesDocumentDataMatch()
 Returns `true` if the given document data matches the query.
 
@@ -2274,9 +2308,14 @@ myCollection.find({
 /*
  * find by using sql equivalent '%like%' syntax
  * This example will e.g. match 'foo' but also 'fifoo' or 'foofa' or 'fifoofa'
- * Notice that in RxDB queries, a regex is represented as a $regex string with the $options parameter for flags.
- * Using a RegExp instance is not allowed because they are not JSON.stringify()-able and also
- * RegExp instances are mutable which could cause undefined behavior when the RegExp is mutated
+ * Notice that in RxDB queries, a regex is
+ * represented as a $regex string with the
+ * $options parameter for flags.
+ * Using a RegExp instance is not allowed
+ * because they are not JSON.stringify()-able
+ * and also RegExp instances are mutable which
+ * could cause undefined behavior when the
+ * RegExp is mutated
  * after the query was parsed.
  */
 myCollection.find({
@@ -2287,7 +2326,8 @@ myCollection.find({
 .exec().then(documents => console.dir(documents));
 
 // find using a composite statement eg: $or
-// This example checks where name is either foo or if name is not existent on the document
+// This example checks where name is either foo
+// or if name is not existent on the document
 myCollection.find({
   selector: { $or: [ { name: { $eq: 'foo' } }, { name: { $exists: false } }] }
 })
@@ -2330,8 +2370,12 @@ const query = myCollection
       /**
        * Because the developer knows that 50% of the documents are 'male',
        * but only 20% are below age 18,
-       * it makes sense to enforce using the ['gender', 'age'] index to improve performance.
-       * This could not be known by the query planner which might have chosen ['age', 'gender'] instead.
+       * it makes sense to enforce using the
+       * ['gender', 'age'] index to improve
+       * performance.
+       * This could not be known by the query
+       * planner which might have chosen
+       * ['age', 'gender'] instead.
        */
       index: ['gender', 'age']
     });
@@ -2715,7 +2759,9 @@ const schemaWithIndexes = {
       },
       firstName: {
           type: 'string',
-          maxLength: 100 // <- string-fields that are used as an index, must have set maxLength.
+          // string-fields used as an index,
+          // must have set maxLength.
+          maxLength: 100
       },
       lastName: {
           type: 'string'
@@ -2729,7 +2775,8 @@ const schemaWithIndexes = {
       balance: {
           type: 'number',
 
-          // number fields that are used in an index, must have set minimum, maximum and multipleOf
+          // number fields used in an index, must set
+          // minimum, maximum and multipleOf
           minimum: 0,
           maximum: 100000,
           multipleOf: 0.01
@@ -2752,7 +2799,8 @@ const schemaWithIndexes = {
   ],
   indexes: [
     'firstName', // <- this will create a simple index for the `firstName` field
-    ['active', 'firstName'], // <- this will create a compound-index for these two fields
+    // <- compound-index for these two fields
+    ['active', 'firstName'],
     'active'
   ]
 };
@@ -2897,6 +2945,40 @@ Also the following class properties of `RxDocument` cannot be used as top level 
 </details>
 
 <details>
+    <summary>How do I specify nullable in JSON Schema?</summary>
+
+    In JSON Schema, you make a field nullable by allowing multiple types with an array:
+    ```json
+    {
+        "type": ["string", "null"]
+    }
+    ```
+
+    When you use a nullable type like `["string", "null"]`, you should always add that field to the `required` array. If a nullable field is not required, it can end up in three possible states: a string value, `null`, or `undefined` (not set). Having three states instead of two makes your code harder to reason about.
+
+    In RxDB it is recommended to **not** store `null` values at all. Instead, define the field as non-required and leave it `undefined` (not set) when there is no value. A field that is not listed in the `required` array can be omitted from a document. This approach works better with RxDB's internal handling and keeps your data cleaner:
+    ```ts
+    {
+        "version": 0,
+        "primaryKey": "id",
+        "type": "object",
+        "properties": {
+            "id": {
+                "type": "string",
+                "maxLength": 100
+            },
+            "nickname": {
+                "type": "string"
+            }
+        },
+        "required": ["id"]
+        // "nickname" is not required, so it can be left undefined (not set)
+    }
+    ```
+
+</details>
+
+<details>
     <summary>How to store schemaless data?</summary>
 
     By design, RxDB requires that every collection has a schema. This means you cannot create a truly "schema-less" collection where top-level fields are unknown at schema creation time. RxDB must know about all fields of a document at the top level to perform validation, index creation, and other internal optimizations.
@@ -2928,7 +3010,7 @@ Also the following class properties of `RxDocument` cannot be used as top level 
 
     RxDB automatically sets `additionalProperties: false` at the top level of a schema to ensure that all top-level fields are known in advance. This design choice offers several benefits:
 
-- Prevents collisions with RxDocument class properties:
+- Prevents collisions with [RxDocument](./rx-document.md) class properties:
 RxDB documents have built-in class methods (e.g., .toJSON, .save) at the top level. By forbidding unknown top-level properties, we avoid accidental naming collisions with these built-in methods.
 
 - Avoids conflicts with user-defined ORM functions:
@@ -2957,14 +3039,14 @@ To change the schema in **production**-mode, do the following steps:
 <details>
     <summary>Why does the top-level schema complain about a missing `_id` primary key field?</summary>
 
-    You encounter an error stating that the top-level schema is missing the `_id` primary key field during replication. RxDB requires every schema to explicitly define the primary key property. Other databases use an implicit `_id` field. You must add the `_id` property to your schema manually if your backend expects it. You declare `_id` as a string type and set it as the `primaryKey` in your schema definition.
+    You encounter an error stating that the top-level schema is missing the `_id` primary key field during [replication](./replication.md). RxDB requires every schema to explicitly define the primary key property. Other databases use an implicit `_id` field. You must add the `_id` property to your schema manually if your backend expects it. You declare `_id` as a string type and set it as the `primaryKey` in your schema definition.
 
 </details>
 
 In **development**-mode, the schema-change can be simplified by **one of these** strategies:
 
 -   Use the memory-storage so your db resets on restart and your schema is not saved permanently
--   Call `removeRxDatabase('mydatabasename', RxStorage);` before creating a new RxDatabase-instance
+-   Call `removeRxDatabase('mydatabasename', RxStorage);` before creating a new [RxDatabase](./rx-database.md)-instance
 -   Add a timestamp as suffix to the database-name to create a new one each run like `name: 'heroesDB' + new Date().getTime()`
 
 </details>
@@ -3162,7 +3244,9 @@ We use the schema-validation on the top level to ensure schema-errors are clearl
 ```ts
 import { wrappedValidateAjvStorage } from 'rxdb/plugins/validate-ajv';
 import { wrappedKeyCompressionStorage } from 'rxdb/plugins/key-compression';
-import { wrappedKeyEncryptionCryptoJsStorage } from 'rxdb/plugins/encryption-crypto-js';
+import {
+    wrappedKeyEncryptionCryptoJsStorage
+} from 'rxdb/plugins/encryption-crypto-js';
 import { getRxStorageIndexedDB } from 'rxdb-premium/plugins/storage-indexeddb';
 
 const myDatabase = await createRxDatabase({
@@ -3184,7 +3268,9 @@ Also we can utilize a combination of storages to create a database that is optim
 import { getRxStorageSharding } from 'rxdb-premium/plugins/storage-sharding';
 import { getRxStorageWorker } from 'rxdb-premium/plugins/storage-worker';
 import { getRxStorageIndexedDB } from 'rxdb-premium/plugins/storage-indexeddb';
-import { getLocalstorageMetaOptimizerRxStorage } from 'rxdb-premium/plugins/storage-localstorage-meta-optimizer';
+import {
+    getLocalstorageMetaOptimizerRxStorage
+} from 'rxdb-premium/plugins/storage-localstorage-meta-optimizer';
 
 const myDatabase = await createRxDatabase({
     storage: getLocalstorageMetaOptimizerRxStorage({
@@ -3203,8 +3289,12 @@ const myDatabase = await createRxDatabase({
 Here we create a storage configuration that is optimized to have a low latency on simple reads and writes. It uses the memory-mapped storage to fetch and store data in memory. For persistence the OPFS storage is used in the main thread which has lower latency for fetching big chunks of data when at initialization the data is loaded from disk into memory. We do not use workers because sending data from the main thread to workers and backwards would increase the latency.
 
 ```ts
-import { getLocalstorageMetaOptimizerRxStorage } from 'rxdb-premium/plugins/storage-localstorage-meta-optimizer';
-import { getMemoryMappedRxStorage } from 'rxdb-premium/plugins/storage-memory-mapped';
+import {
+    getLocalstorageMetaOptimizerRxStorage
+} from 'rxdb-premium/plugins/storage-localstorage-meta-optimizer';
+import {
+    getMemoryMappedRxStorage
+} from 'rxdb-premium/plugins/storage-memory-mapped';
 import { getRxStorageOPFSMainThread } from 'rxdb-premium/plugins/storage-worker';
 
 const myDatabase = await createRxDatabase({
@@ -3266,7 +3356,7 @@ The [RxStorage](./rx-storage.md) Localstorage Meta Optimizer is a wrapper around
 
 #### Electron IpcRenderer & IpcMain
 
-To use RxDB in [electron](./electron-database.md), it is recommended to run the RxStorage in the main process and the RxDatabase in the renderer processes. With the rxdb electron plugin you can create a remote RxStorage and consume it from the renderer process. [Read more](./electron.md)
+To use RxDB in [electron](./electron-database.md), it is recommended to run the RxStorage in the main process and the [RxDatabase](./rx-database.md) in the renderer processes. With the rxdb electron plugin you can create a remote RxStorage and consume it from the renderer process. [Read more](./electron.md)
 
 ### Third Party based Storages
 
@@ -3305,7 +3395,7 @@ import {Steps} from '@site/src/components/steps';
 <!-- IMPORTANT: When you edit this file, apply the same changes to test/tutorials/src/typescript.ts -->
 
 In this tutorial you will learn how to use RxDB with TypeScript.
-We will create a basic database with one collection and several ORM-methods, fully typed!
+We will create a basic database with one collection and several [ORM](../orm.md)-methods, fully typed!
 
 RxDB directly comes with its typings and you do not have to install anything else, however the latest version of RxDB requires that you are using Typescript v3.8 or newer.
 Our way to go is
@@ -3373,7 +3463,10 @@ export const heroSchemaLiteral = {
 const schemaTyped = toTypedRxJsonSchema(heroSchemaLiteral);
 
 // aggregate the document type from the schema
-export type HeroDocType = ExtractDocumentTypeFromTypedRxJsonSchema<typeof schemaTyped>;
+export type HeroDocType =
+    ExtractDocumentTypeFromTypedRxJsonSchema<
+        typeof schemaTyped
+    >;
 
 // create the typed RxJsonSchema from the literal typed object.
 export const heroSchema: RxJsonSchema<HeroDocType> = heroSchemaLiteral;

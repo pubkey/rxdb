@@ -47,7 +47,7 @@ Of course, this does not work for state that is not stored at the backend. So if
 
 ## There can be conflicts
 
-Imagine two of your users modify the same JSON document, while both are offline. After they go online again, their clients replicate the modified document to the server. Now you have two conflicting versions of the same document, and you need a way to determine how the correct new version of that document should look like. This process is called **conflict resolution**.
+Imagine two of your users modify the same JSON document, while both are offline. After they go online again, their clients replicate the modified document to the server. Now you have two conflicting versions of the same document, and you need a way to determine how the correct new version of that document should look like. This process is called **[conflict resolution](./transactions-conflicts-revisions.md)**.
 
   
 
@@ -67,7 +67,7 @@ Imagine two of your users modify the same JSON document, while both are offline.
   {id: new Date().toJSON(), change: 200} // balance increased by $200
   ```
 
-  6. There is this thing called **conflict-free replicated data type**, short **CRDT**. Using a CRDT library like [automerge](https://github.com/automerge/automerge) will magically solve all of your conflict problems. Until you use it in production where you observe that implementing CRDTs has basically the same complexity as implementing conflict resolution strategies.
+  6. There is this thing called **conflict-free replicated data type**, short **[CRDT](./crdt.md)**. Using a CRDT library like [automerge](https://github.com/automerge/automerge) will magically solve all of your conflict problems. Until you use it in production where you observe that implementing CRDTs has basically the same complexity as implementing conflict resolution strategies.
 
 ## Realtime is a lie
 
@@ -108,7 +108,7 @@ With offline first applications, it is even more fun. You do not only have to mi
 
 When you create a web based offline first app, you cannot store data directly on the users filesystem. In fact there are many layers between your JavaScript code and the filesystem of the operation system. Let's say you insert a document in [RxDB](https://github.com/pubkey/rxdb):
   - You call the RxDB API to validate and store the data
-  - RxDB calls the underlying RxStorage, for example [PouchDB](./rx-storage-pouchdb.md).
+  - RxDB calls the underlying [RxStorage](./rx-storage.md), for example [PouchDB](./rx-storage-pouchdb.md).
   - Pouchdb calls its underlying storage adapter
   - The storage adapter calls IndexedDB
   - The browser runs its internal handling of the IndexedDB API

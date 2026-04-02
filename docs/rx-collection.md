@@ -13,14 +13,18 @@ const myCollections = await myDatabase.addCollections({
   // key = collectionName
   humans: {
     schema: mySchema,
-    statics: {},                          // (optional) ORM-functions for this collection
+    statics: {},                       // (optional) ORM-functions
+                                         // for this collection
     methods: {},                          // (optional) ORM-functions for documents
     attachments: {},                      // (optional) ORM-functions for attachments
-    options: {},                          // (optional) Custom parameters that might be used in plugins
+    options: {},                       // (optional) Custom parameters
+                                         // that might be used in plugins
     migrationStrategies: {},              // (optional)
     autoMigrate: true,                    // (optional) [default=true]
-    cacheReplacementPolicy: function(){}, // (optional) custom cache replacement policy
-    conflictHandler: function(){}         // (optional) a custom conflict handler can be used
+    cacheReplacementPolicy: function(){}, // (optional) custom
+                                         // cache replacement policy
+    conflictHandler: function(){}         // (optional) custom
+                                         // conflict handler
   },
   // you can create multiple collections at once
   animals: {

@@ -4,12 +4,11 @@
 
 import {Steps} from '@site/src/components/steps';
 import {BetaBlock} from '@site/src/components/beta-block';
+import {HeadlineWithIcon} from '@site/src/components/headline-with-icon';
 
-# Replication with Microsoft OneDrive
+# <HeadlineWithIcon h1 icon={}>Replication with Microsoft OneDrive</HeadlineWithIcon>
 
 The `replication-microsoft-onedrive` plugin allows you to replicate your client-side [RxDB](./) database to a folder in the user's Microsoft OneDrive. This enables cross-device [sync](./replication.md) for single users without requiring any backend server.
-
-  
 
 ## Overview
 
@@ -39,7 +38,9 @@ Your application must handle the OAuth flow to get an `accessToken` from Microso
 Once you have the `accessToken`, you can start the replication.
 
 ```ts
-import { replicateMicrosoftOneDrive } from 'rxdb/plugins/replication-microsoft-onedrive';
+import {
+    replicateMicrosoftOneDrive
+} from 'rxdb/plugins/replication-microsoft-onedrive';
 
 const replicationState = await replicateMicrosoftOneDrive({
     replicationIdentifier: 'my-app-onedrive-sync',

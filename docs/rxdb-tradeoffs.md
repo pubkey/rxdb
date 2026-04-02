@@ -78,13 +78,13 @@ Because of the document based approach, TypeScript can know the exact type of th
 
 - Does not work with offline-first
 - Does not work with multi-tab
-- Easier conflict handling on document level
+- Easier [conflict handling](./transactions-conflicts-revisions.md) on document level
 
 -- Instead of transactions, rxdb works with revisions
 
 ## Why no relations
 
-- Does not work with easy replication
+- Does not work with easy [replication](./replication.md)
 
 ## Why is a schema required
 
