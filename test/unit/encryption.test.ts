@@ -692,4 +692,44 @@ describeParallel('encryption.test.ts', () => {
             await db.remove();
         });
     });
+    describe('SECURITY', () => {
+        it('should not leak the password in error parameters when password is too short', async () => {
+            const shortPassword = 'short1';
+            const useStorage = getEncryptedStorage();
+            let thrownError: any = null;
+            try {
+                await createRxDatabase({
+                    name: randomToken(10),
+                    storage: useStorage,
+                    password: shortPassword
+                });
+            } catch (err: any) {
+                thrownError = err;
+            }
+
+            // The error should be thrown
+            assert.ok(thrownError);
+            assert.strictEqual(thrownError.code, 'EN2');
+
+            // SECURITY: The password must NOT be in the error parameters
+            assert.strictEqual(
+                typeof thrownError.parameters.password,
+                'undefined',
+                'password should not be exposed in error parameters'
+            );
+
+            // SECURITY: The password must NOT appear in the error message string
+            assert.ok(
+                !thrownError.message.includes(shortPassword),
+                'password should not appear in the error message'
+            );
+
+            // SECURITY: The password must NOT appear anywhere in the serialized error
+            const serialized = JSON.stringify(thrownError, Object.getOwnPropertyNames(thrownError));
+            assert.ok(
+                !serialized.includes(shortPassword),
+                'password should not appear anywhere in the serialized error object'
+            );
+        });
+    });
 });

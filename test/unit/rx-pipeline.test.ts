@@ -423,4 +423,62 @@ describe('rx-pipeline.test.js', () => {
             c2.database.close();
         });
     });
+    describeParallel('.remove()', () => {
+        it('should properly clean up checkpoint when remove() is called while pipeline is processing', async () => {
+            const c1 = await humansCollection.create(0);
+            await c1.database.waitForLeadership();
+            const c2 = await humansCollection.create(0);
+            const identifier = randomToken(10);
+
+            const pipeline = await c1.addPipeline({
+                destination: c2,
+                handler: async (docs) => {
+                    // Slow handler to create a window where remove()
+                    // is called while processing is still ongoing
+                    await promiseWait(50);
+                    for (const doc of docs) {
+                        await c2.insert(schemaObjects.humanData(doc.passportId));
+                    }
+                },
+                identifier
+            });
+
+            // Insert a document which triggers the pipeline handler
+            await c1.insert(schemaObjects.humanData('foobar'));
+
+            // Call remove() while the handler is still processing (50ms delay).
+            // This should NOT throw and should properly clean up the checkpoint.
+            await pipeline.remove();
+
+            // Verify the checkpoint was properly cleaned up by creating
+            // a new pipeline with the same identifier.
+            // It should process all documents from the beginning.
+            const processedIds: string[] = [];
+            const pipeline2 = await c1.addPipeline({
+                destination: c2,
+                handler: (docs) => {
+                    for (const doc of docs) {
+                        processedIds.push(doc.primary);
+                    }
+                },
+                identifier
+            });
+
+            // Insert another document so that awaitIdle() properly waits
+            // for the pipeline to process (lastSourceDocTime gets updated).
+            await c1.insert(schemaObjects.humanData('after-remove'));
+            await pipeline2.awaitIdle();
+
+            // If checkpoint was properly cleaned up, pipeline2 should have
+            // processed 'foobar' from the beginning, not just 'after-remove'.
+            assert.ok(
+                processedIds.includes('foobar'),
+                'pipeline2 should have reprocessed foobar after remove()'
+            );
+
+            await pipeline2.close();
+            await c1.database.close();
+            await c2.database.close();
+        });
+    });
 });
