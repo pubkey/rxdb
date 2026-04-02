@@ -5,6 +5,8 @@
 
 <!-- ADD new changes here! -->
 
+- FIX CRDT plugin `bulkInsert` hook not including schema default values in CRDT operations, causing data loss during conflict resolution rebuild when fields rely on schema defaults
+
 - FIX memory storage `count()` returning incorrect results when the selector is not fully satisfied by the index and the query has a `limit` set
 
 - FIX `replicateRxCollection().remove()` on a never-started replication now creates the meta instance and deletes its data instead of skipping cleanup
