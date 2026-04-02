@@ -5,6 +5,7 @@
 
 <!-- ADD new changes here! -->
 
+- FIX encryption plugin schema transformation not correctly handling nested dot-notation encrypted paths (e.g. `'nested.field'`), causing validation failures when using a validator storage with non-string nested encrypted fields
 - FIX dev-mode `checkSchema()` not validating composite primary key fields for encryption (SC15), index (SC13), unique (SC14), and type (SC16) constraints because it compared property names against the primaryKey object instead of resolving the primary field path
 - FIX `findOne().remove()` crashing with `TypeError: Cannot read properties of null` when no document matches the query, instead of returning `null`
 - ADD `findOne().remove(true)` to throw when no document matches, consistent with `findOne().exec(true)`
