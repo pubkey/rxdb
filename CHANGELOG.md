@@ -6,6 +6,8 @@
 <!-- ADD new changes here! -->
 
 - FIX `mergeOperationsIntoState()` not handling root-level state replacement (`k === ''`), causing corrupted state when a second multi-instance initializes from storage after a root-level `set('', modifier)` or `_cleanup()` was performed
+- FIX `deleted$` observable emitting on every document revision instead of only when the deleted state changes, by adding `distinctUntilChanged()`
+- FIX `postSave` collection hook not receiving the RxDocument instance as the second argument, unlike `postInsert` and `postRemove` which correctly pass it
 - FIX `getJsonSchemaWithoutMeta()` not removing `_rev` from schema properties, while correctly removing other internal meta properties (`_deleted`, `_meta`, `_attachments`)
 - FIX `allAttachments$` observable emitting attachments with a stale document reference, causing `attachment.doc` to point to an outdated document version instead of the latest one
 - FIX RxState not correctly recovering full-state replacements (via `set('', modifier)`) from disk on database reopen, causing corrupted state
