@@ -180,6 +180,38 @@ allStatesObservable.subscribe(allStates => {
 });
 ```
 
+## Default values are not auto-applied
+
+Schema `default` values are **not** automatically filled in during migration. When you insert a document through the normal RxDB API (like `insert()` or `bulkInsert()`), fields with a `default` in the schema are auto-filled. Migration does not do this. Your migration strategy has full explicit control over the document data and must set every field that the new schema needs.
+
+```js
+const messageSchemaV1 = {
+    version: 1,
+    primaryKey: 'id',
+    type: 'object',
+    properties: {
+        id: { type: 'string', maxLength: 100 },
+        text: { type: 'string' },
+        // new field in v1 with a default value
+        priority: { type: 'string', default: 'normal' }
+    },
+    required: ['id', 'text']
+};
+
+const migrationStrategies = {
+    1: function(oldDoc){
+        /**
+         * You must explicitly set 'priority' here.
+         * The schema default 'normal' will NOT be
+         * applied automatically during migration.
+         */
+        oldDoc.priority = 'normal';
+        return oldDoc;
+    }
+};
+```
+
+
 ## Migrating attachments
 
 When you store [RxAttachment](./rx-attachment.md)s together with your document, they can also be changed, added or removed while running the migration.
