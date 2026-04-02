@@ -13,6 +13,7 @@ import {
     trimDots,
     pluginMissing,
     flatClone,
+    deepEqual,
     PROMISE_RESOLVE_NULL,
     RXJS_SHARE_REPLAY_DEFAULTS,
     getProperty,
@@ -161,17 +162,11 @@ export const basePrototype = {
                 map((data: any) => getProperty(data, path)),
                 distinctUntilChanged((prev: any, curr: any) => {
                     /**
-                     * Use JSON comparison for non-primitive values (objects/arrays)
+                     * Use deepEqual for non-primitive values (objects/arrays)
                      * because the default === comparison always fails across
                      * document revisions since each revision creates new object references.
                      */
-                    if (prev === curr) {
-                        return true;
-                    }
-                    if (typeof prev === 'object' && typeof curr === 'object' && prev !== null && curr !== null) {
-                        return JSON.stringify(prev) === JSON.stringify(curr);
-                    }
-                    return false;
+                    return deepEqual(prev, curr);
                 })
             );
     },
