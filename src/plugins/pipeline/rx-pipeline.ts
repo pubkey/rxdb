@@ -205,11 +205,14 @@ export class RxPipeline<RxDocType> {
      * Remove the pipeline and all metadata which it has stored
      */
     async remove() {
+        await this.close();
         const insternalStore = this.destination.database.internalStore;
         const checkpointDoc = await getCheckpointDoc(this);
         if (checkpointDoc) {
             const newDoc: RxDocumentData<InternalStoreDocType> = clone(checkpointDoc);
             newDoc._deleted = true;
+            newDoc._meta.lwt = now();
+            newDoc._rev = createRevision(this.destination.database.token, checkpointDoc);
             const writeResult = await insternalStore.bulkWrite([{
                 previous: checkpointDoc,
                 document: newDoc,
@@ -218,7 +221,6 @@ export class RxPipeline<RxDocType> {
                 throw writeResult.error;
             }
         }
-        return this.close();
     }
 }
 

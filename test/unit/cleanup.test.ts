@@ -243,6 +243,84 @@ describeParallel('cleanup.test.js', () => {
 
             await col.database.remove();
         });
+        it('should correctly loop cleanup when storage cleanup returns false (batched cleanup)', async () => {
+            /**
+             * Some storages like FoundationDB clean up in batches
+             * and return false from cleanup() to indicate more work is needed.
+             * The cleanup loop must continue calling cleanup() until all calls return true.
+             * @link https://github.com/pubkey/rxdb/issues/cleanup-batched
+             */
+            const baseStorage = config.storage.getStorage();
+            const origCreateStorageInstance = baseStorage.createStorageInstance.bind(baseStorage);
+
+            /**
+             * Wrap the storage to simulate batched cleanup:
+             * - First cleanup() call returns false without cleaning (more work needed)
+             * - Second cleanup() call does the real cleanup and returns true
+             */
+            const wrappedStorage: typeof baseStorage = Object.assign(
+                {},
+                baseStorage,
+                {
+                    createStorageInstance(params: any) {
+                        return origCreateStorageInstance(params).then((instance: any) => {
+                            const origCleanup = instance.cleanup.bind(instance);
+                            let cleanupCallCount = 0;
+                            instance.cleanup = function (minimumDeletedTime: number) {
+                                cleanupCallCount++;
+                                if (cleanupCallCount === 1) {
+                                    // simulate batched cleanup: not done yet
+                                    return Promise.resolve(false);
+                                }
+                                return origCleanup(minimumDeletedTime);
+                            };
+                            return instance;
+                        });
+                    }
+                }
+            );
+
+            const db = await createRxDatabase({
+                name: randomToken(10),
+                storage: wrappedStorage,
+                cleanupPolicy: {
+                    awaitReplicationsInSync: false,
+                    minimumCollectionAge: 200000,
+                    minimumDeletedTime: 0,
+                    runEach: 200000,
+                    waitForLeadership: false
+                }
+            });
+            const cols = await db.addCollections({
+                humans: {
+                    schema: schemas.human
+                }
+            });
+            const collection: RxCollection<HumanDocumentType> = cols.humans;
+
+            const doc = await collection.insert(schemaObjects.humanData());
+            const docPrimary = doc.primary;
+            await doc.remove();
+
+            // cleanup() should loop internally: first call returns false, second does real work
+            await collection.cleanup(0);
+
+            // Verify the deleted document was actually cleaned up from storage
+            const docsInStorage = await collection.storageInstance.findDocumentsById(
+                [docPrimary],
+                true
+            );
+            const deletedDocStillExists = !!docsInStorage.find(
+                (d: any) => d[collection.schema.primaryPath] === docPrimary
+            );
+            assert.strictEqual(
+                deletedDocStillExists,
+                false,
+                'deleted document should be removed after cleanup even when storage returns false on first call'
+            );
+
+            await db.close();
+        });
         it('fields with umlauts and emojis could break the state after cleanup in some storages', async () => {
             type DocType = {
                 id: string;
