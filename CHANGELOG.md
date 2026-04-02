@@ -5,6 +5,7 @@
 
 <!-- ADD new changes here! -->
 
+- FIX `RxPipeline.remove()` not properly cleaning up checkpoint when called during active processing, causing a re-added pipeline with the same identifier to skip already-processed documents instead of starting fresh
 - FIX cleanup plugin prematurely exiting its retry loop when `storageInstance.cleanup()` returns `false` (batched cleanup), because `Array.find()` returns the found value `false` and `!false` evaluates to `true`, causing `isDone` to be set incorrectly
 - FIX encryption plugin `validatePassword()` leaking the plaintext password in `RxError` parameters and error messages when password validation fails
 - FIX `database.remove()` not calling collection `onRemove` handlers, because `close()` unsubscribed all listeners before the remove operation could trigger them
