@@ -159,7 +159,20 @@ export const basePrototype = {
         return this.$
             .pipe(
                 map((data: any) => getProperty(data, path)),
-                distinctUntilChanged()
+                distinctUntilChanged((prev: any, curr: any) => {
+                    /**
+                     * Use JSON comparison for non-primitive values (objects/arrays)
+                     * because the default === comparison always fails across
+                     * document revisions since each revision creates new object references.
+                     */
+                    if (prev === curr) {
+                        return true;
+                    }
+                    if (typeof prev === 'object' && typeof curr === 'object' && prev !== null && curr !== null) {
+                        return JSON.stringify(prev) === JSON.stringify(curr);
+                    }
+                    return false;
+                })
             );
     },
     get$$(this: RxDocument, path: string) {

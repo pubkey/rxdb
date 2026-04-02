@@ -5,6 +5,8 @@
 
 <!-- ADD new changes here! -->
 
+- FIX `RxDocument.get$()` on nested object/array paths emitting spurious values when unrelated document fields changed, because `distinctUntilChanged()` used reference equality which always fails for non-primitive values across document revisions
+
 - FIX memory storage `count()` returning incorrect results when the selector is not fully satisfied by the index and the query has a `limit` set
 
 - FIX `replicateRxCollection().remove()` on a never-started replication now creates the meta instance and deletes its data instead of skipping cleanup
