@@ -6,6 +6,10 @@
 <!-- ADD new changes here! -->
 
 - FIX cleanup plugin prematurely exiting its retry loop when `storageInstance.cleanup()` returns `false` (batched cleanup), because `Array.find()` returns the found value `false` and `!false` evaluates to `true`, causing `isDone` to be set incorrectly
+- FIX `postSave` collection hook not receiving the RxDocument instance as the second argument, unlike `postInsert` and `postRemove` which correctly pass it
+- FIX `getJsonSchemaWithoutMeta()` not removing `_rev` from schema properties, while correctly removing other internal meta properties (`_deleted`, `_meta`, `_attachments`)
+- FIX `allAttachments$` observable emitting attachments with a stale document reference, causing `attachment.doc` to point to an outdated document version instead of the latest one
+- FIX RxState not correctly recovering full-state replacements (via `set('', modifier)`) from disk on database reopen, causing corrupted state
 
 - FIX memory storage `count()` returning incorrect results when the selector is not fully satisfied by the index and the query has a `limit` set
 
