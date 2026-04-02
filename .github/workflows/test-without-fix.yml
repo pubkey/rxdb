@@ -11,6 +11,7 @@ on:
 
 permissions:
   contents: read
+  pull-requests: write
 
 jobs:
   test-without-fix:
@@ -101,30 +102,112 @@ jobs:
         if: steps.check-changes.outputs.should_run == 'true'
         id: build
         continue-on-error: true
-        run: npm run build
+        run: npm run build 2>&1 | tee /tmp/build-output.txt
 
       - name: Run tests (expect failure)
         if: steps.check-changes.outputs.should_run == 'true' && steps.build.outcome == 'success'
         id: run-tests
         continue-on-error: true
-        run: npm run test:fast:memory
+        run: npm run test:fast:memory 2>&1 | tee /tmp/test-output.txt
 
       - name: Evaluate results
         if: steps.check-changes.outputs.should_run == 'true'
+        id: evaluate
         run: |
           echo "== Test-Without-Fix Results =="
           echo ""
           if [ "${{ steps.build.outcome }}" == "failure" ]; then
             echo "✅ Build FAILED without the source changes."
             echo "This confirms the test requires the source changes from this PR."
+            COMMENT_ICON="✅"
+            COMMENT_TITLE="Build FAILED without the source changes (expected)"
+            COMMENT_BODY="This confirms the source changes in this PR are required for the build to succeed."
+            OUTPUT_FILE="/tmp/build-output.txt"
           elif [ "${{ steps.run-tests.outcome }}" == "failure" ]; then
             echo "✅ Tests FAILED without the fix."
             echo "This confirms the test correctly reproduces the bug."
+            COMMENT_ICON="✅"
+            COMMENT_TITLE="Tests FAILED without the fix (expected)"
+            COMMENT_BODY="This confirms the changed tests correctly reproduce the bug that the source changes fix."
+            OUTPUT_FILE="/tmp/test-output.txt"
           else
             echo "⚠️ Tests PASSED without the fix."
             echo "The changed tests do not fail without the source changes from this PR."
             echo "Please inspect whether the test changes actually test the bug that the source changes fix."
+            COMMENT_ICON="⚠️"
+            COMMENT_TITLE="Tests PASSED without the fix (unexpected)"
+            COMMENT_BODY="The changed tests do not fail without the source changes from this PR. Please inspect whether the test changes actually test the bug that the source changes fix."
+            OUTPUT_FILE="/tmp/test-output.txt"
           fi
           echo ""
           echo "This workflow is informational only. Inspect the output above to verify the test reproduces the bug."
+
+          # Truncate output to last 200 lines to keep the comment readable
+          TRUNCATED_OUTPUT=""
+          if [ -f "$OUTPUT_FILE" ]; then
+            TOTAL_LINES=$(wc -l < "$OUTPUT_FILE")
+            if [ "$TOTAL_LINES" -gt 200 ]; then
+              TRUNCATED_OUTPUT="...(truncated, showing last 200 of $TOTAL_LINES lines)
+          $(tail -200 "$OUTPUT_FILE")"
+            else
+              TRUNCATED_OUTPUT="$(cat "$OUTPUT_FILE")"
+            fi
+          fi
+
+          # Write comment to a file for the next step
+          {
+            echo "## $COMMENT_ICON Verify Test Reproduction: $COMMENT_TITLE"
+            echo ""
+            echo "$COMMENT_BODY"
+            echo ""
+            echo "_This workflow runs the changed tests **without** the source fix to verify they reproduce the bug._"
+            echo ""
+            if [ -n "$TRUNCATED_OUTPUT" ]; then
+              echo "<details>"
+              echo "<summary>Show output</summary>"
+              echo ""
+              echo '```'
+              echo "$TRUNCATED_OUTPUT"
+              echo '```'
+              echo ""
+              echo "</details>"
+              echo ""
+            fi
+            echo "[View full workflow run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})"
+          } > /tmp/pr-comment.md
+
           exit 0
+
+      - name: Post or update PR comment
+        if: steps.check-changes.outputs.should_run == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const commentBody = fs.readFileSync('/tmp/pr-comment.md', 'utf8');
+            const marker = '<!-- test-without-fix-bot -->';
+            const body = marker + '\n' + commentBody;
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const existing = comments.find(c => c.body.includes(marker));
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }
