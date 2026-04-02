@@ -642,10 +642,18 @@ export class RxDatabaseBase<
      * deletes the database and its stored data.
      * Returns the names of all removed collections.
      */
-    remove(): Promise<string[]> {
-        return this
-            .close()
-            .then(() => removeRxDatabase(this.name, this.storage, this.multiInstance, this.password));
+    async remove(): Promise<string[]> {
+        /**
+         * Collect all collection onRemove handlers before closing,
+         * because close() will clear the collections and unsubscribe
+         * all listeners, making it impossible to trigger onRemove afterwards.
+         */
+        const collections = Object.values(this.collections as any) as RxCollection[];
+        await this.close();
+        await Promise.all(
+            collections.map(col => Promise.all(col.onRemove.map(fn => fn())))
+        );
+        return removeRxDatabase(this.name, this.storage, this.multiInstance, this.password);
     }
 
     get asRxDatabase(): RxDatabase<
