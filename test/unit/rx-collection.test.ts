@@ -2740,4 +2740,79 @@ describe('rx-collection.test.ts', () => {
             collection.database.close();
         });
     });
+
+    describe('count() with compound index containing boolean field after range-queried field', () => {
+        it('should return the correct count when using $lt on a field before a boolean field in a compound index', async () => {
+            const schema: RxJsonSchema<{
+                id: string;
+                score: number;
+                isActive: boolean;
+            }> = {
+                version: 0,
+                primaryKey: 'id',
+                type: 'object',
+                properties: {
+                    id: {
+                        type: 'string',
+                        maxLength: 100
+                    },
+                    score: {
+                        type: 'number',
+                        minimum: 0,
+                        maximum: 100,
+                        multipleOf: 1
+                    },
+                    isActive: {
+                        type: 'boolean'
+                    }
+                },
+                required: ['id', 'score', 'isActive'],
+                indexes: [
+                    ['score', 'isActive']
+                ]
+            };
+
+            const db = await createRxDatabase({
+                name: randomToken(10),
+                storage: config.storage.getStorage()
+            });
+
+            const collections = await db.addCollections({
+                items: { schema }
+            });
+            const collection = collections.items;
+
+            await collection.bulkInsert([
+                { id: 'a', score: 30, isActive: true },
+                { id: 'b', score: 50, isActive: false },
+                { id: 'c', score: 50, isActive: true },
+                { id: 'd', score: 60, isActive: false }
+            ]);
+
+            const countResult = await collection.count({
+                selector: {
+                    score: { $lt: 50 }
+                }
+            }).exec();
+
+            const findResult = await collection.find({
+                selector: {
+                    score: { $lt: 50 }
+                }
+            }).exec();
+
+            assert.strictEqual(
+                findResult.length,
+                1,
+                'find() should return only doc "a" with score=30'
+            );
+            assert.strictEqual(
+                countResult,
+                1,
+                'count() should match find().length: only doc "a" has score < 50'
+            );
+
+            db.close();
+        });
+    });
 });

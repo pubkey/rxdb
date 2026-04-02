@@ -5,6 +5,8 @@
 
 <!-- ADD new changes here! -->
 
+- FIX `getStartIndexStringFromUpperBound()` not handling `INDEX_MIN` and `INDEX_MAX` for boolean fields, causing incorrect query and count results on compound indexes where a boolean field follows a range-queried field (e.g. `$lt`, `$gt`)
+
 - FIX memory storage `count()` returning incorrect results when the selector is not fully satisfied by the index and the query has a `limit` set
 
 - FIX `replicateRxCollection().remove()` on a never-started replication now creates the meta instance and deletes its data instead of skipping cleanup
