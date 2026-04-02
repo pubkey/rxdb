@@ -580,6 +580,56 @@ describeParallel('attachments.test.ts', () => {
             sub.unsubscribe();
             await c.database.close();
         });
+        it('should have the latest document reference on emitted attachments', async () => {
+            const c = await createEncryptedAttachmentsCollection(1);
+            const doc = await c.findOne().exec(true);
+
+            // Add first attachment
+            await doc.putAttachment({
+                id: 'a1.txt',
+                data: createBlob('data1', 'text/plain'),
+                type: 'text/plain'
+            });
+
+            // Subscribe to allAttachments$ on the current doc
+            const emitted: any[] = [];
+            const sub = doc.allAttachments$
+                .subscribe((attachments: any[]) => emitted.push(attachments));
+
+            // Wait for the first emission (should have 1 attachment)
+            await AsyncTestUtil.waitUntil(() => emitted.length >= 1);
+            assert.strictEqual(emitted[emitted.length - 1].length, 1);
+
+            // Add a second attachment
+            const latestDoc = doc.getLatest();
+            await latestDoc.putAttachment({
+                id: 'a2.txt',
+                data: createBlob('data2', 'text/plain'),
+                type: 'text/plain'
+            });
+
+            // Wait for the emission with 2 attachments
+            await AsyncTestUtil.waitUntil(() => {
+                return emitted.length >= 2 && emitted[emitted.length - 1].length === 2;
+            });
+            const latestEmission = emitted[emitted.length - 1];
+            assert.strictEqual(latestEmission.length, 2);
+
+            // The attachment's doc reference should be the latest version
+            // which knows about both attachments
+            for (const attachment of latestEmission) {
+                const attachmentsFromDoc = attachment.doc.allAttachments();
+                assert.strictEqual(
+                    attachmentsFromDoc.length,
+                    2,
+                    'attachment.doc should reference the latest document version with all attachments, ' +
+                    'but got ' + attachmentsFromDoc.length + ' attachments'
+                );
+            }
+
+            sub.unsubscribe();
+            await c.database.close();
+        });
     });
     describe('multiInstance', () => {
         if (!config.storage.hasMultiInstance) {
