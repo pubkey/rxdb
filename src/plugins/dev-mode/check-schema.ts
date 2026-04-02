@@ -546,40 +546,6 @@ export function checkSchema(jsonSchema: RxJsonSchema<any>) {
             });
         });
 
-    /**
-     * Warn when top-level indexed fields are not in the required array.
-     * The Dexie.js RxStorage does not support indexes on non-required fields
-     * and will throw at runtime. This warning helps catch the issue early.
-     * Skip fields that are automatically added to required by fillWithDefaultSettings
-     * (the primary key, _deleted, _rev, _meta, _attachments).
-     */
-    if (jsonSchema.indexes) {
-        const autoRequiredFields = new Set([
-            primaryPath,
-            '_deleted',
-            '_rev',
-            '_meta',
-            '_attachments'
-        ]);
-        jsonSchema.indexes.forEach(index => {
-            const fields = isMaybeReadonlyArray(index) ? index : [index];
-            fields.forEach(field => {
-                if (
-                    !field.includes('.') &&
-                    !autoRequiredFields.has(field) &&
-                    (!jsonSchema.required || !jsonSchema.required.includes(field))
-                ) {
-                    console.warn(
-                        'RxDB WARNING: Indexed field "' + field + '" is not in the required array of the schema. ' +
-                        'Some RxStorage implementations like Dexie.js will throw on non-required index fields. ' +
-                        'Add "' + field + '" to the required array to ensure compatibility with all storages. ' +
-                        'https://rxdb.info/rx-storage-dexie.html'
-                    );
-                }
-            });
-        });
-    }
-
     /* ensure encrypted fields exist in the schema */
     if (jsonSchema.encrypted) {
         jsonSchema.encrypted
