@@ -5,6 +5,8 @@
 
 <!-- ADD new changes here! -->
 
+- FIX encryption plugin schema transformation not handling nested encrypted field paths (e.g. `'credentials.password'`), causing constraints like `maxLength` to not be stripped from the internal schema and producing validation errors with the encrypted ciphertext
+
 - FIX memory storage `count()` returning incorrect results when the selector is not fully satisfied by the index and the query has a `limit` set
 
 - FIX `replicateRxCollection().remove()` on a never-started replication now creates the meta instance and deletes its data instead of skipping cleanup

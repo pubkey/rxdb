@@ -104,7 +104,12 @@ export function wrappedKeyEncryptionCryptoJsStorage<Internals, InstanceCreationO
                  * they do not apply to the encrypted ciphertext string.
                  */
                 ensureNotFalsy(params.schema.encrypted).forEach(key => {
-                    (schemaWithoutEncrypted as any).properties[key] = { type: 'string' };
+                    const keyParts = key.split('.');
+                    let schemaObj: any = schemaWithoutEncrypted;
+                    for (let i = 0; i < keyParts.length - 1; i++) {
+                        schemaObj = schemaObj.properties[keyParts[i]];
+                    }
+                    schemaObj.properties[keyParts[keyParts.length - 1]] = { type: 'string' };
                 });
 
                 const instance = await args.storage.createStorageInstance(

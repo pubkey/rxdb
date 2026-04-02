@@ -691,5 +691,83 @@ describeParallel('encryption.test.ts', () => {
 
             await db.remove();
         });
+        it('should work with nested encrypted field paths that have maxLength in schema', async () => {
+            if (config.storage.hasEncryption) {
+                return;
+            }
+            type DocType = {
+                id: string;
+                credentials: {
+                    password: string;
+                    username: string;
+                };
+            };
+            const mySchema: RxJsonSchema<DocType> = {
+                version: 0,
+                primaryKey: 'id',
+                type: 'object',
+                properties: {
+                    id: {
+                        type: 'string',
+                        maxLength: 100
+                    },
+                    credentials: {
+                        type: 'object',
+                        properties: {
+                            password: {
+                                type: 'string',
+                                maxLength: 50
+                            },
+                            username: {
+                                type: 'string'
+                            }
+                        },
+                        required: ['password', 'username']
+                    }
+                },
+                required: ['id', 'credentials'],
+                encrypted: ['credentials.password']
+            };
+            const db = await createRxDatabase<{ test: RxCollection<DocType>; }>({
+                name: randomToken(10),
+                storage: wrappedKeyEncryptionCryptoJsStorage({
+                    storage: wrappedValidateAjvStorage({
+                        storage: getRxStorageMemory()
+                    })
+                }),
+                password: await getPassword()
+            });
+            const collections = await db.addCollections({
+                test: {
+                    schema: mySchema
+                }
+            });
+
+            // insert a document - the encrypted ciphertext is longer than maxLength
+            // but this should still work because maxLength should be stripped
+            // from the nested encrypted field in the internal schema
+            await collections.test.insert({
+                id: 'test-1',
+                credentials: {
+                    password: 'my secret password',
+                    username: 'alice'
+                }
+            });
+            const doc = await collections.test.findOne('test-1').exec(true);
+            assert.strictEqual(doc.credentials.password, 'my secret password');
+            assert.strictEqual(doc.credentials.username, 'alice');
+
+            // update the encrypted nested field
+            await doc.incrementalPatch({
+                credentials: {
+                    password: 'new secret password',
+                    username: 'alice'
+                }
+            });
+            const updatedDoc = await collections.test.findOne('test-1').exec(true);
+            assert.strictEqual(updatedDoc.credentials.password, 'new secret password');
+
+            await db.remove();
+        });
     });
 });
