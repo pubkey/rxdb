@@ -45,6 +45,7 @@ import './unit/query-builder.test.ts';
 import './unit/idle-queue.test.ts';
 import './unit/conflict-handling.test.ts';
 import './unit/reactivity.test.ts';
+import './unit/react-hooks.test.ts';
 import './unit/reactive-collection.test.ts';
 import './unit/reactive-document.test.ts';
 import './unit/cleanup.test.ts';
