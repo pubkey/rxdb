@@ -6,6 +6,11 @@
 <!-- ADD new changes here! -->
 
 - FIX `getStartIndexStringFromUpperBound()` incorrectly mapping `INDEX_MIN` to `'1'` for boolean index fields, causing queries with exclusive bounds (`$gt`/`$lt`) on a field preceding a boolean index field to include boundary documents in the results
+- FIX `deleted$` observable emitting on every document revision instead of only when the deleted state changes, by adding `distinctUntilChanged()`
+- FIX `postSave` collection hook not receiving the RxDocument instance as the second argument, unlike `postInsert` and `postRemove` which correctly pass it
+- FIX `getJsonSchemaWithoutMeta()` not removing `_rev` from schema properties, while correctly removing other internal meta properties (`_deleted`, `_meta`, `_attachments`)
+- FIX `allAttachments$` observable emitting attachments with a stale document reference, causing `attachment.doc` to point to an outdated document version instead of the latest one
+- FIX RxState not correctly recovering full-state replacements (via `set('', modifier)`) from disk on database reopen, causing corrupted state
 
 - FIX memory storage `count()` returning incorrect results when the selector is not fully satisfied by the index and the query has a `limit` set
 
