@@ -37,6 +37,22 @@ async function run() {
     );
 
 
+    // collect changelog entries from orga/changelog/ files
+    const changelogDir = path.join(rootPath, 'orga', 'changelog');
+    const changelogFiles = (await fs.promises.readdir(changelogDir))
+        .filter(f => f.endsWith('.md') && f !== 'README.md')
+        .sort();
+    let newRows = [];
+    for (const file of changelogFiles) {
+        const content = await fs.promises.readFile(
+            path.join(changelogDir, file),
+            'utf-8'
+        );
+        const lines = content.split('\n').filter(row => row.trim().length > 0);
+        newRows.push(...lines);
+    }
+    newRows.push('');
+
     // update changelog
     const changelogFlagStart = '<!-- CHANGELOG NEWEST -->';
     const changelogFlagEnd = '<!-- /CHANGELOG NEWEST -->';
@@ -57,14 +73,9 @@ async function run() {
     }
     const indexReleaseBelow = changelogRows.indexOf(changelogReleaseBelowFlag);
 
+    // remove everything between the NEWEST flags (no longer used for inline entries)
     const indexStart = changelogRows.indexOf(changelogFlagStart);
     const indexEnd = changelogRows.indexOf(changelogFlagEnd);
-
-    let newRows = changelogRows.slice(indexStart + 1, indexEnd);
-    newRows = newRows
-        .filter(row => !row.startsWith('<!-- '))
-        .filter(row => !row.startsWith('### '));
-    newRows.push('');
 
 
     /**
@@ -126,7 +137,7 @@ async function run() {
         changelogRows.unshift(newVersionHeader);
         changelogRows.unshift('');
         changelogRows.unshift('');
-        changelogRows.unshift('<!-- ADD new changes here! -->\n');
+        changelogRows.unshift('<!-- ADD new changes to orga/changelog/ as one file per change -->\n');
         changelogRows.unshift('');
         changelogRows.unshift(changelogFlagStart);
         changelogRows.unshift('');
@@ -138,7 +149,7 @@ async function run() {
         changelogRows.unshift('');
         changelogRows.unshift(changelogFlagEnd);
         changelogRows.unshift('');
-        changelogRows.unshift('<!-- ADD new changes here! -->\n');
+        changelogRows.unshift('<!-- ADD new changes to orga/changelog/ as one file per change -->\n');
         changelogRows.unshift('');
         changelogRows.unshift(changelogFlagStart);
     }
@@ -157,6 +168,11 @@ async function run() {
         newChangelogContent,
         'utf-8'
     );
+
+    // delete the changelog entry files after merging
+    for (const file of changelogFiles) {
+        await fs.promises.unlink(path.join(changelogDir, file));
+    }
 }
 
 run();

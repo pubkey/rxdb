@@ -1,0 +1,1 @@
+- FIX encryption plugin not stripping type-specific schema keywords (`maxLength`, `required`, `items`, etc.) from encrypted fields, causing validation errors when using a validator storage with encryption

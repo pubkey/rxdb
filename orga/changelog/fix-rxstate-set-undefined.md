@@ -1,0 +1,1 @@
+- FIX RxState `set('', modifier)` passed `undefined` to the modifier instead of the current state

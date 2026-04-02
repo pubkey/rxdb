@@ -1,0 +1,1 @@
+- FIX memory storage `count()` returning incorrect results when the selector is not fully satisfied by the index and the query has a `limit` set

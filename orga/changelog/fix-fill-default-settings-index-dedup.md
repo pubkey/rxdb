@@ -1,0 +1,1 @@
+- FIX `fillWithDefaultSettings()` index deduplication was broken because `Array.filter()` return value was discarded, causing duplicate indexes in schemas when user-defined indexes become identical after adding `_deleted` prefix and primary key suffix

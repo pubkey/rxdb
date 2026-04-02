@@ -1,0 +1,1 @@
+- FIX event-reduce mutating cached `docsDataMap` causing missing documents after insert-delete cycles

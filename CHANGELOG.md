@@ -3,27 +3,7 @@
 
 <!-- CHANGELOG NEWEST -->
 
-<!-- ADD new changes here! -->
-
-- FIX `getJsonSchemaWithoutMeta()` not removing `_rev` from schema properties, while correctly removing other internal meta properties (`_deleted`, `_meta`, `_attachments`)
-- FIX `allAttachments$` observable emitting attachments with a stale document reference, causing `attachment.doc` to point to an outdated document version instead of the latest one
-- FIX RxState not correctly recovering full-state replacements (via `set('', modifier)`) from disk on database reopen, causing corrupted state
-
-- FIX memory storage `count()` returning incorrect results when the selector is not fully satisfied by the index and the query has a `limit` set
-
-- FIX `replicateRxCollection().remove()` on a never-started replication now creates the meta instance and deletes its data instead of skipping cleanup
-- FIX `REPLICATION_STATE_BY_COLLECTION` not cleaned up on `cancel()`/`remove()`, leaking replication state references
-- FIX floating-point rounding overflow in index string decimal generation, where `Math.round` could produce a value equal to the multiplier (e.g. 10 instead of max 9), creating a string one character too long and breaking sort order in compound indexes
-- FIX `normalizeMangoQuery()` skipped fully-matching indexes when choosing default sort order, falling back to the first index instead of using the best match
-- FIX RxState `set('', modifier)` passed `undefined` to the modifier instead of the current state
-- FIX `RxMigrationStatus.count.percent` returning `NaN` instead of `100` when migrating a collection with 0 documents
-- FIX `fillWithDefaultSettings()` index deduplication was broken because `Array.filter()` return value was discarded, causing duplicate indexes in schemas when user-defined indexes become identical after adding `_deleted` prefix and primary key suffix
-- FIX encryption plugin not stripping type-specific schema keywords (`maxLength`, `required`, `items`, etc.) from encrypted fields, causing validation errors when using a validator storage with encryption
-- FIX incorrect index string generation for negative decimal numbers causing wrong sort order and query results
-- FIX `rateQueryPlan()` evaluated `startKeys` twice instead of `endKeys`, causing suboptimal index selection for `$lt`/`$lte` queries.
-- FIX event-reduce mutating cached `docsDataMap` causing missing documents after insert-delete cycles
-- FIX `modify()` not deep-cloning document data, allowing the modifier to corrupt internal state via shared nested references
-- FIX `fillObjectWithDefaults` shared mutable references for non-primitive schema defaults (arrays/objects) causing corrupted values on subsequent inserts
+<!-- ADD new changes to orga/changelog/ as one file per change -->
 
 <!-- /CHANGELOG NEWEST -->
 
