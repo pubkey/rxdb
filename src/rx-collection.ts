@@ -1205,20 +1205,11 @@ function _incrementalUpsertEnsureRxDocumentExists<RxDocType>(
                          * it means another concurrent operation already
                          * inserted a document with the same primary key
                          * between our findOne() and insert() calls.
-                         * In that case we know the document now exists
-                         * so we can fetch it and treat it as an existing doc.
+                         * Re-run the whole function which will now find the
+                         * existing document via cache or query.
                          */
                         if ((err as any).code === 'CONFLICT') {
-                            return rxCollection.findOne(primary).exec()
-                                .then(docAfterConflict => {
-                                    if (docAfterConflict) {
-                                        return {
-                                            doc: docAfterConflict,
-                                            inserted: false
-                                        };
-                                    }
-                                    throw err;
-                                });
+                            return _incrementalUpsertEnsureRxDocumentExists(rxCollection, primary, json);
                         }
                         throw err;
                     });
