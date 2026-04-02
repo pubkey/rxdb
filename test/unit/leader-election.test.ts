@@ -167,6 +167,32 @@ describe('leader-election.test.js', () => {
             await Promise.all(nonDeadDbs.map(db => db.close()));
         });
     });
+    describeParallel('cleanup', () => {
+        it('should properly call die() on the elector when the database is closed', async () => {
+            const name = randomToken(10);
+            const c1 = await humansCollection.createMultiInstance(name);
+            const c2 = await humansCollection.createMultiInstance(name);
+            const db1 = c1.database;
+            const db2 = c2.database;
+
+            await db1.waitForLeadership();
+            assert.strictEqual(db1.isLeader(), true);
+
+            const elector = db1.leaderElector();
+
+            // Close the leader database.
+            // The elector should have die() called, which sets isLeader to false.
+            await db1.close();
+
+            // With two instances sharing the same broadcast channel,
+            // the channel stays open (db2 still holds a reference).
+            // So the only way elector.isLeader can become false is
+            // if die() was explicitly called during close.
+            assert.strictEqual(elector.isLeader, false);
+
+            await db2.close();
+        });
+    });
     describeParallel('integration', () => {
         it('non-multiInstance should always be leader', async () => {
             const db = await createRxDatabase({
