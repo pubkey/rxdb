@@ -105,5 +105,47 @@ describeParallel('query-builder.test.js', () => {
             assert.deepStrictEqual(startQuery, builtJson.query);
         });
 
+        it('eq() should use $eq operator so it can coexist with other operators on the same field', () => {
+            // Using eq() should store as { $eq: value } not as a raw primitive,
+            // so that chaining another operator on the same field does not silently
+            // overwrite the equality condition.
+            const builder = createQueryBuilder();
+            builder
+                .where('age').eq(25)
+                .where('age').gt(20);
+            const result = builder.toJSON();
+            assert.deepStrictEqual(result.query.selector, {
+                age: {
+                    $eq: 25,
+                    $gt: 20
+                }
+            });
+        });
+        it('equals() should use $eq operator so it can coexist with other operators on the same field', () => {
+            const builder = createQueryBuilder();
+            builder
+                .where('age').equals(25)
+                .where('age').gt(20);
+            const result = builder.toJSON();
+            assert.deepStrictEqual(result.query.selector, {
+                age: {
+                    $eq: 25,
+                    $gt: 20
+                }
+            });
+        });
+        it('operator followed by eq() should preserve both conditions', () => {
+            const builder = createQueryBuilder();
+            builder
+                .where('age').gt(20)
+                .where('age').eq(25);
+            const result = builder.toJSON();
+            assert.deepStrictEqual(result.query.selector, {
+                age: {
+                    $gt: 20,
+                    $eq: 25
+                }
+            });
+        });
     });
 });

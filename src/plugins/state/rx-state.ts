@@ -335,7 +335,7 @@ export async function createRxState<T>(
         } else {
             for (let index = 0; index < documents.length; index++) {
                 const document = documents[index];
-                mergeOperationsIntoState(rxState._state, document.ops);
+                rxState._state = mergeOperationsIntoState(rxState._state, document.ops);
             }
         }
     }
@@ -385,9 +385,14 @@ export async function createRxState<T>(
 export function mergeOperationsIntoState<T>(
     state: T,
     operations: RxStateOperation[]
-) {
+): T {
     for (let index = 0; index < operations.length; index++) {
         const operation = operations[index];
-        setProperty(state, operation.k, clone(operation.v));
+        if (operation.k === '') {
+            state = clone(operation.v);
+        } else {
+            setProperty(state, operation.k, clone(operation.v));
+        }
     }
+    return state;
 }

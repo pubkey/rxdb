@@ -406,8 +406,10 @@ export function getStartIndexStringFromUpperBound(
                 }
                 break;
             case 'boolean':
-                if (bound === null) {
+                if (bound === null || bound === INDEX_MAX) {
                     str += '1';
+                } else if (bound === INDEX_MIN) {
+                    str += '0';
                 } else {
                     const boolToStr = bound ? '1' : '0';
                     str += boolToStr;
