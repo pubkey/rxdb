@@ -5,6 +5,11 @@
 
 <!-- ADD new changes here! -->
 
+- FIX CRDT plugin `bulkInsert` hook not including schema default values in CRDT operations, causing data loss during conflict resolution rebuild when fields rely on schema defaults
+- FIX `RxDocument.get$()` on nested object/array paths emitting spurious values when unrelated document fields changed, because `distinctUntilChanged()` used reference equality which always fails for non-primitive values across document revisions
+- FIX `incrementalUpsert()` throwing a CONFLICT error when a concurrent `upsert()`/`insert()` creates the same document between the internal `findOne()` and `insert()` calls
+- FIX `upsertLocal()` on a previously removed local document keeping the document in deleted state instead of un-deleting it
+- FIX push-only replication losing local writes that occur during a pause because `reSync()` events were filtered out when no pull handler was configured
 - FIX `getStartIndexStringFromUpperBound()` incorrectly mapping `INDEX_MIN` to `'1'` for boolean index fields, causing queries with exclusive bounds (`$gt`/`$lt`) on a field preceding a boolean index field to include boundary documents in the results
 - FIX leader-election plugin not calling `die()` on the LeaderElector when the database is closed, because `LEADER_ELECTORS_OF_DB` was never populated due to a dead code branch
 - FIX encryption plugin schema transformation not correctly handling nested dot-notation encrypted paths (e.g. `'nested.field'`), causing validation failures when using a validator storage with non-string nested encrypted fields

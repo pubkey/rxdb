@@ -1732,8 +1732,7 @@ describe('migration-schema.test.ts', function () {
             assert.strictEqual(result.status, 'DONE');
             await col.database.close();
         });
-
-        it('should not resurrect deleted documents when migration strategy returns a new object', async () => {
+           it('should not resurrect deleted documents when migration strategy returns a new object', async () => {
             const dbName = randomToken(10);
             const schema0 = {
                 version: 0,
@@ -1832,6 +1831,96 @@ describe('migration-schema.test.ts', function () {
 
             // Verify migrated field was applied
             assert.ok(docsAfterMigration.every(d => (d as any).migrated === true));
+
+            await db2.close();
+        });
+        it('should NOT auto-apply schema default values during migration', async () => {
+            const dbName = randomToken(10);
+            const schema0 = {
+                version: 0,
+                primaryKey: 'id',
+                type: 'object' as const,
+                properties: {
+                    id: {
+                        type: 'string' as const,
+                        maxLength: 100
+                    },
+                    name: {
+                        type: 'string' as const
+                    }
+                },
+                required: ['id', 'name'] as const
+            };
+            const schema1 = {
+                version: 1,
+                primaryKey: 'id',
+                type: 'object' as const,
+                properties: {
+                    id: {
+                        type: 'string' as const,
+                        maxLength: 100
+                    },
+                    name: {
+                        type: 'string' as const
+                    },
+                    nickname: {
+                        type: 'string' as const,
+                        default: 'anonymous'
+                    }
+                },
+                required: ['id', 'name'] as const
+            };
+
+            // create v0 collection and insert documents
+            const db = await createRxDatabase({
+                name: dbName,
+                storage: config.storage.getStorage(),
+            });
+            const cols = await db.addCollections({
+                heroes: {
+                    schema: schema0
+                }
+            });
+            await cols.heroes.bulkInsert([
+                { id: 'alice', name: 'Alice' },
+                { id: 'bob', name: 'Bob' },
+                { id: 'charlie', name: 'Charlie' }
+            ]);
+            await db.close();
+
+            /**
+             * Migration strategies must have full explicit control
+             * over the document data. Schema default values are NOT
+             * auto-applied so the strategy can decide exactly
+             * what each field should contain.
+             */
+            const db2 = await createRxDatabase({
+                name: dbName,
+                storage: config.storage.getStorage(),
+            });
+            const cols2 = await db2.addCollections({
+                heroes: {
+                    schema: schema1,
+                    migrationStrategies: {
+                        1: (oldDoc: any) => {
+                            return oldDoc;
+                        }
+                    }
+                }
+            });
+
+            const docs = await cols2.heroes.find().exec();
+            assert.strictEqual(docs.length, 3);
+
+            // Default values must NOT be auto-applied during migration.
+            // The migration strategy has full control over the document data.
+            for (const doc of docs) {
+                assert.strictEqual(
+                    (doc as any).nickname,
+                    undefined,
+                    'migrated document must not have auto-applied default values'
+                );
+            }
 
             await db2.close();
         });

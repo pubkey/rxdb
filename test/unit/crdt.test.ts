@@ -409,6 +409,72 @@ describeParallel('crdt.test.ts', () => {
                 doc1.collection.database.close();
                 doc2.collection.database.close();
             });
+            it('should preserve schema default values during conflict resolution', async () => {
+                /**
+                 * When a schema has default values and a document is inserted
+                 * without providing those fields, the default values must be
+                 * included in the CRDT operations. Otherwise, rebuildFromCRDT
+                 * (used during conflict resolution) will lose the default values.
+                 */
+                type DocType = {
+                    passportId: string;
+                    firstName: string;
+                    lastName: string;
+                    age: number;
+                    score?: number;
+                };
+                const schemaWithDefault: RxJsonSchema<DocType> = {
+                    version: 0,
+                    primaryKey: 'passportId',
+                    type: 'object',
+                    properties: {
+                        passportId: { type: 'string', maxLength: 100 },
+                        firstName: { type: 'string', maxLength: 100 },
+                        lastName: { type: 'string' },
+                        age: { type: 'integer', minimum: 0, maximum: 150 },
+                        score: { type: 'integer', minimum: 0, maximum: 1000, default: 0 }
+                    },
+                    required: ['firstName', 'lastName', 'passportId', 'age']
+                };
+
+                // Insert on two separate databases (simulating two clients)
+                async function getDocFromNewDb() {
+                    const c = await getCRDTCollection<DocType>(schemaWithDefault);
+                    const doc = await c.insert({
+                        passportId: 'foobar',
+                        firstName: 'Alice',
+                        lastName: 'Smith',
+                        age: 25
+                        // score is NOT provided, should use default: 0
+                    });
+                    return doc;
+                }
+                const doc1 = await getDocFromNewDb();
+                const doc2 = await getDocFromNewDb();
+
+                // Both should have score=0 from the default
+                assert.strictEqual(doc1.getLatest().score, 0);
+                assert.strictEqual(doc2.getLatest().score, 0);
+
+                // Resolve a conflict between the two versions
+                const schemaFilled = enableCRDTinSchema(fillWithDefaultSettings(schemaWithDefault));
+                const handler = getCRDTConflictHandler<WithCRDTs<DocType>>(
+                    defaultHashSha256,
+                    schemaFilled
+                );
+
+                const resolved = await handler.resolve({
+                    newDocumentState: doc1.toMutableJSON(true) as any,
+                    realMasterState: doc2.toMutableJSON(true) as any
+                }, 'test-defaults');
+
+                // After conflict resolution, the default value must be preserved
+                assert.strictEqual((resolved as any).score, 0,
+                    'Default value "score" was lost during conflict resolution rebuild');
+
+                doc1.collection.database.close();
+                doc2.collection.database.close();
+            });
         });
         describe('conflicts during replication', () => {
             if (!config.storage.hasReplication) {

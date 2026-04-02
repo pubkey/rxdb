@@ -60,24 +60,33 @@ export async function insertLocal<DocData extends Record<string, any> = any, Rea
  * save the local-document-data
  * overwrites existing if exists
  */
-export function upsertLocal<DocData extends Record<string, any> = any, Reactivity = unknown>(
+export async function upsertLocal<DocData extends Record<string, any> = any, Reactivity = unknown>(
     this: any,
     id: string,
     data: DocData
 ): Promise<RxLocalDocument<DocData, any, Reactivity>> {
-    return this.getLocal(id)
-        .then((existing: RxDocument) => {
-            if (!existing) {
-                // create new one
-                const docPromise = this.insertLocal(id, data);
-                return docPromise;
-            } else {
-                // update existing
-                return existing.incrementalModify(() => {
-                    return data;
-                });
+    const existing = await this.getLocal(id);
+    if (!existing) {
+        // create new one
+        return this.insertLocal(id, data);
+    } else if (existing.deleted) {
+        // document was deleted before, un-delete it via the write queue
+        const state = await getLocalDocStateByParent(this);
+        const writeResult = await state.incrementalWriteQueue.addWrite(
+            (existing as any)._data,
+            (docData: any) => {
+                docData.data = data;
+                docData._deleted = false;
+                return docData;
             }
+        );
+        return state.docCache.getCachedRxDocument(writeResult) as any;
+    } else {
+        // update existing
+        return existing.incrementalModify(() => {
+            return data;
         });
+    }
 }
 
 export async function getLocal<DocData = any, Reactivity = unknown>(this: any, id: string): Promise<RxLocalDocument<DocData, any, Reactivity> | null> {

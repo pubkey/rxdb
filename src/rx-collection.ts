@@ -1194,10 +1194,25 @@ function _incrementalUpsertEnsureRxDocumentExists<RxDocType>(
     return rxCollection.findOne(primary).exec()
         .then(doc => {
             if (!doc) {
-                return rxCollection.insert(json).then(newDoc => ({
-                    doc: newDoc,
-                    inserted: true
-                }));
+                return rxCollection.insert(json)
+                    .then(newDoc => ({
+                        doc: newDoc,
+                        inserted: true
+                    }))
+                    .catch((err) => {
+                        /**
+                         * If the insert fails with a conflict error,
+                         * it means another concurrent operation already
+                         * inserted a document with the same primary key
+                         * between our findOne() and insert() calls.
+                         * Re-run the whole function which will now find the
+                         * existing document via cache or query.
+                         */
+                        if ((err as any).code === 'CONFLICT') {
+                            return _incrementalUpsertEnsureRxDocumentExists(rxCollection, primary, json);
+                        }
+                        throw err;
+                    });
             } else {
                 return {
                     doc,
