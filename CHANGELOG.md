@@ -5,6 +5,7 @@
 
 <!-- ADD new changes here! -->
 
+- FIX cleanup plugin prematurely exiting its retry loop when `storageInstance.cleanup()` returns `false` (batched cleanup), because `Array.find()` returns the found value `false` and `!false` evaluates to `true`, causing `isDone` to be set incorrectly
 - FIX encryption plugin `validatePassword()` leaking the plaintext password in `RxError` parameters and error messages when password validation fails
 - FIX `database.remove()` not calling collection `onRemove` handlers, because `close()` unsubscribed all listeners before the remove operation could trigger them
 - FIX query-builder `eq()`/`equals()` silently overwriting other operator conditions on the same field because the value was stored as a raw primitive instead of using the `$eq` operator form
