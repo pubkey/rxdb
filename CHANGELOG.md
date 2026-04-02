@@ -5,6 +5,10 @@
 
 <!-- ADD new changes here! -->
 
+- ADD `InferDocType<T>` type alias as a shorthand for `ExtractDocumentTypeFromTypedRxJsonSchema<T>` to simplify typed schema definitions
+- ADD React `useRxDocument(collection, primaryKey)` hook for subscribing to a single document by primary key with live updates
+- ADD React `useRxMutation(collection)` hook that provides `insert`, `update`, and `remove` operations with `loading` and `error` states
+- ADD React `useReplicationStatus(replicationState)` hook that exposes `syncing`, `error`, `lastSyncedAt`, and `canceled` from replication observables
 - FIX `upsertLocal()` on a previously removed local document keeping the document in deleted state instead of un-deleting it
 - FIX push-only replication losing local writes that occur during a pause because `reSync()` events were filtered out when no pull handler was configured
 - FIX `getStartIndexStringFromUpperBound()` incorrectly mapping `INDEX_MIN` to `'1'` for boolean index fields, causing queries with exclusive bounds (`$gt`/`$lt`) on a field preceding a boolean index field to include boundary documents in the results

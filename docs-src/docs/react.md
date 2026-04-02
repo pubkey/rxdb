@@ -193,6 +193,86 @@ The returned documents are fully reactive RxDB documents and can be modified or 
 </Steps>
 
 
+## Single document subscription
+
+The `useRxDocument` hook subscribes to a single document by its primary key and re-renders whenever that document changes. It accepts an `RxCollection` instance directly for full type safety.
+
+```tsx
+import { useRxCollection } from 'rxdb/plugins/react';
+import { useRxDocument } from 'rxdb/plugins/react';
+
+const HeroDetail = ({ heroId }: { heroId: string }) => {
+    const collection = useRxCollection('heroes');
+    const { result: hero, loading } = useRxDocument(collection, heroId);
+
+    if (loading || !hero) {
+        return <span>Loading...</span>;
+    }
+
+    return <span>{hero.name} ({hero.color})</span>;
+};
+```
+
+## Mutations
+
+The `useRxMutation` hook provides `insert`, `update`, and `remove` functions for a collection with shared `loading` and `error` state.
+
+```tsx
+import { useRxCollection } from 'rxdb/plugins/react';
+import { useRxMutation } from 'rxdb/plugins/react';
+
+const HeroCreator = () => {
+    const collection = useRxCollection('heroes');
+    const { insert, loading, error } = useRxMutation(collection);
+
+    const handleCreate = async () => {
+        await insert({
+            name: 'Bob',
+            color: 'blue'
+        });
+    };
+
+    return (
+        <div>
+            <button onClick={handleCreate} disabled={loading}>
+                {loading ? 'Creating...' : 'Create Hero'}
+            </button>
+            {error && <span className="error">{error}</span>}
+        </div>
+    );
+};
+```
+
+The `update` function uses `incrementalModify` under the hood:
+
+```tsx
+const { update } = useRxMutation(collection);
+
+await update(heroDocument, (doc) => {
+    doc.color = 'red';
+    return doc;
+});
+```
+
+## Replication status
+
+The `useReplicationStatus` hook subscribes to an `RxReplicationState` and exposes its status as React state. This is useful for showing sync indicators in the UI.
+
+```tsx
+import { useReplicationStatus } from 'rxdb/plugins/react';
+
+const SyncIndicator = ({ replicationState }) => {
+    const { syncing, error, lastSyncedAt, canceled } = useReplicationStatus(replicationState);
+
+    if (canceled) return <span>Sync stopped</span>;
+    if (error) return <span>Sync error: {error.message}</span>;
+    if (syncing) return <span>Syncing...</span>;
+    if (lastSyncedAt) return <span>Last synced: {new Date(lastSyncedAt).toLocaleTimeString()}</span>;
+
+    return <span>Idle</span>;
+};
+```
+
 ## React Native compatibility
 
 All hooks and providers described on this page work the same way in React Native. The React integration does not rely on any browser-specific APIs.

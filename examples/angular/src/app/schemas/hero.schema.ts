@@ -1,7 +1,7 @@
 import {
     RxJsonSchema,
     toTypedRxJsonSchema,
-    ExtractDocumentTypeFromTypedRxJsonSchema
+    InferDocType
 } from 'rxdb';
 export const HERO_SCHEMA_LITERAL = {
     title: 'hero schema',
@@ -36,6 +36,6 @@ export const HERO_SCHEMA_LITERAL = {
 } as const;
 
 const schemaTyped = toTypedRxJsonSchema(HERO_SCHEMA_LITERAL);
-export type RxHeroDocumentType = ExtractDocumentTypeFromTypedRxJsonSchema<typeof schemaTyped>;
+export type RxHeroDocumentType = InferDocType<typeof schemaTyped>;
 
 export const HERO_SCHEMA: RxJsonSchema<RxHeroDocumentType> = HERO_SCHEMA_LITERAL;

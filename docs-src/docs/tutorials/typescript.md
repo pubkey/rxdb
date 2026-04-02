@@ -50,7 +50,7 @@ First we have to define the TypeScript type of the documents of a collection:
 ```typescript
 import {
     toTypedRxJsonSchema,
-    ExtractDocumentTypeFromTypedRxJsonSchema,
+    InferDocType,
     RxJsonSchema
 } from 'rxdb';
 export const heroSchemaLiteral = {
@@ -81,10 +81,7 @@ export const heroSchemaLiteral = {
 const schemaTyped = toTypedRxJsonSchema(heroSchemaLiteral);
 
 // aggregate the document type from the schema
-export type HeroDocType =
-    ExtractDocumentTypeFromTypedRxJsonSchema<
-        typeof schemaTyped
-    >;
+export type HeroDocType = InferDocType<typeof schemaTyped>;
 
 // create the typed RxJsonSchema from the literal typed object.
 export const heroSchema: RxJsonSchema<HeroDocType> = heroSchemaLiteral;
