@@ -33,6 +33,7 @@ import {
     RxError
 } from '../../index.ts';
 import { mingoUpdater } from '../update/mingo-updater.ts';
+import { fillObjectWithDefaults } from '../../rx-schema-helper.ts';
 
 
 
@@ -515,6 +516,13 @@ export const RxDBcrdtPlugin: RxPlugin = {
                     const storageToken = await collection.database.storageToken;
                     const useDocsData = await Promise.all(
                         docsData.map(async (docData) => {
+                            /**
+                             * Fill schema default values before creating CRDT operations,
+                             * so that default values are captured in the operations and
+                             * will be preserved during rebuildFromCRDT (conflict resolution).
+                             */
+                            fillObjectWithDefaults(collection.schema, docData);
+
                             const setMe: Partial<RxDocumentData<any>> = {};
                             Object.entries(docData).forEach(([key, value]) => {
                                 if (
