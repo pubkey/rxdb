@@ -72,6 +72,8 @@ export interface RxErrorParameters {
     readonly passwordHash?: string;
     readonly existingPasswordHash?: string;
     readonly password?: string | any;
+    readonly passwordType?: string;
+    readonly passwordLength?: number;
     readonly minPassLength?: number;
     readonly own?: any;
     readonly source?: any;
