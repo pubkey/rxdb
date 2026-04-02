@@ -579,6 +579,27 @@ addRxPlugin(RxDBJsonDumpPlugin);
 
                 state.collection.database.remove();
             });
+            it('should recover correct state from disk after full-state replacement with set(\'\')', async () => {
+                const databaseName = randomToken(10);
+
+                // Create state and do a full-state replacement via set('')
+                let state = await getState(databaseName);
+                await state.set('foo', () => 'bar');
+                await state.set('a', () => 1);
+                // Replace the entire state using empty path
+                await state.set('', () => ({ foo: 'replaced', b: 99 }));
+
+                // Verify in-memory state is correct before closing
+                assert.deepStrictEqual(state.get(), { foo: 'replaced', b: 99 });
+                await state.collection.database.close();
+
+                // Reopen the database and recover state from disk
+                state = await getState(databaseName);
+                // State should match what was set before closing
+                assert.deepStrictEqual(state.get(), { foo: 'replaced', b: 99 });
+
+                await state.collection.database.remove();
+            });
             /**
              * @link https://github.com/pubkey/rxdb/pull/6503
              */

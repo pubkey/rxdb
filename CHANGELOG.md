@@ -6,6 +6,7 @@
 <!-- ADD new changes here! -->
 
 - FIX `postSave` collection hook not receiving the RxDocument instance as the second argument, unlike `postInsert` and `postRemove` which correctly pass it
+- FIX RxState not correctly recovering full-state replacements (via `set('', modifier)`) from disk on database reopen, causing corrupted state
 
 - FIX memory storage `count()` returning incorrect results when the selector is not fully satisfied by the index and the query has a `limit` set
 
