@@ -142,39 +142,27 @@ jobs:
           echo ""
           echo "This workflow is informational only. Inspect the output above to verify the test reproduces the bug."
 
-          # Truncate output to last 200 lines to keep the comment readable
-          TRUNCATED_OUTPUT=""
+          # Write comment header to file
+          {
+            printf '## %s Verify Test Reproduction: %s\n\n' "$COMMENT_ICON" "$COMMENT_TITLE"
+            printf '%s\n\n' "$COMMENT_BODY"
+            printf '%s\n\n' '_This workflow runs the changed tests **without** the source fix to verify they reproduce the bug._'
+          } > /tmp/pr-comment.md
+
+          # Append truncated output if available
           if [ -f "$OUTPUT_FILE" ]; then
             TOTAL_LINES=$(wc -l < "$OUTPUT_FILE")
+            printf '<details>\n<summary>Show output</summary>\n\n```\n' >> /tmp/pr-comment.md
             if [ "$TOTAL_LINES" -gt 200 ]; then
-              TRUNCATED_OUTPUT="...(truncated, showing last 200 of $TOTAL_LINES lines)
-          $(tail -200 "$OUTPUT_FILE")"
+              printf '...(truncated, showing last 200 of %s lines)\n' "$TOTAL_LINES" >> /tmp/pr-comment.md
+              tail -200 "$OUTPUT_FILE" >> /tmp/pr-comment.md
             else
-              TRUNCATED_OUTPUT="$(cat "$OUTPUT_FILE")"
+              cat "$OUTPUT_FILE" >> /tmp/pr-comment.md
             fi
+            printf '\n```\n\n</details>\n\n' >> /tmp/pr-comment.md
           fi
 
-          # Write comment to a file for the next step
-          {
-            echo "## $COMMENT_ICON Verify Test Reproduction: $COMMENT_TITLE"
-            echo ""
-            echo "$COMMENT_BODY"
-            echo ""
-            echo "_This workflow runs the changed tests **without** the source fix to verify they reproduce the bug._"
-            echo ""
-            if [ -n "$TRUNCATED_OUTPUT" ]; then
-              echo "<details>"
-              echo "<summary>Show output</summary>"
-              echo ""
-              echo '```'
-              echo "$TRUNCATED_OUTPUT"
-              echo '```'
-              echo ""
-              echo "</details>"
-              echo ""
-            fi
-            echo "[View full workflow run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})"
-          } > /tmp/pr-comment.md
+          echo "[View full workflow run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> /tmp/pr-comment.md
 
           exit 0
 
