@@ -6,6 +6,13 @@
 <!-- ADD new changes here! -->
 
 - FIX encryption plugin `validatePassword()` leaking the plaintext password in `RxError` parameters and error messages when password validation fails
+- FIX `database.remove()` not calling collection `onRemove` handlers, because `close()` unsubscribed all listeners before the remove operation could trigger them
+- FIX query-builder `eq()`/`equals()` silently overwriting other operator conditions on the same field because the value was stored as a raw primitive instead of using the `$eq` operator form
+- FIX `deleted$` observable emitting on every document revision instead of only when the deleted state changes, by adding `distinctUntilChanged()`
+- FIX `postSave` collection hook not receiving the RxDocument instance as the second argument, unlike `postInsert` and `postRemove` which correctly pass it
+- FIX `getJsonSchemaWithoutMeta()` not removing `_rev` from schema properties, while correctly removing other internal meta properties (`_deleted`, `_meta`, `_attachments`)
+- FIX `allAttachments$` observable emitting attachments with a stale document reference, causing `attachment.doc` to point to an outdated document version instead of the latest one
+- FIX RxState not correctly recovering full-state replacements (via `set('', modifier)`) from disk on database reopen, causing corrupted state
 
 - FIX memory storage `count()` returning incorrect results when the selector is not fully satisfied by the index and the query has a `limit` set
 
