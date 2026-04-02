@@ -13,6 +13,9 @@ import {
     GRAPHQL_WEBSOCKET_BY_URL
 } from '../../plugins/replication-graphql/index.mjs';
 import {
+    OPEN_LEADER_ELECTORS
+} from '../../plugins/leader-election/index.mjs';
+import {
     OPEN_REMOTE_MESSAGE_CHANNELS,
     CACHE_ITEM_BY_MESSAGE_CHANNEL
 } from '../../plugins/storage-remote/index.mjs';
@@ -136,6 +139,23 @@ describe('last.test.ts (' + config.storage.name + ')', () => {
             console.log('open graphql websockets:');
             console.log(openSocketUrls.join(', '));
             throw new Error('not all graphql websockets have been closed (' + openSocketUrls.length + ')', { cause: err });
+        }
+    });
+
+    it('ensure all leader electors are dead', async () => {
+        try {
+            await waitUntil(() => {
+                return OPEN_LEADER_ELECTORS.size === 0;
+            }, 5 * 1000);
+        } catch (err) {
+            const openElectors = Array.from(OPEN_LEADER_ELECTORS.values());
+            console.log('open leader electors:');
+            openElectors.forEach(elector => {
+                console.dir({
+                    isLeader: elector.isLeader
+                });
+            });
+            throw new Error('not all leader electors have been cleaned up (' + OPEN_LEADER_ELECTORS.size + ' still open)', { cause: err });
         }
     });
 

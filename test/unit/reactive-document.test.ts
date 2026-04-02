@@ -147,6 +147,53 @@ describeParallel('reactive-document.test.js', () => {
             });
         });
         describe('negative', () => { });
+        it('should not emit when deleted state has not changed', async () => {
+            const c = await humansCollection.create(1);
+            const doc = await c.findOne().exec(true);
+
+            const emittedValues: boolean[] = [];
+            const sub = doc.deleted$.subscribe((val: boolean) => {
+                emittedValues.push(val);
+            });
+
+            // Wait for initial emission
+            await promiseWait(50);
+            assert.strictEqual(emittedValues.length, 1);
+            assert.strictEqual(emittedValues[0], false);
+
+            // Update the document without deleting it
+            await doc.incrementalPatch({ firstName: 'changed1' });
+            await promiseWait(50);
+
+            // deleted$ should not emit again since deleted state is still false
+            assert.strictEqual(
+                emittedValues.length,
+                1,
+                'deleted$ should not emit when deleted state has not changed, but got ' + JSON.stringify(emittedValues)
+            );
+
+            // Update again
+            await doc.incrementalPatch({ firstName: 'changed2' });
+            await promiseWait(50);
+
+            // Still should not have emitted
+            assert.strictEqual(
+                emittedValues.length,
+                1,
+                'deleted$ should still not have emitted after second update, but got ' + JSON.stringify(emittedValues)
+            );
+
+            // Now actually delete the document
+            await doc.getLatest().remove();
+            await promiseWait(50);
+
+            // Now it should have emitted true
+            assert.strictEqual(emittedValues.length, 2);
+            assert.strictEqual(emittedValues[1], true);
+
+            sub.unsubscribe();
+            await c.database.close();
+        });
     });
     describe('.$', () => {
         it('should emit a RxDocument, not only the document data', async () => {

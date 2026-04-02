@@ -2133,4 +2133,59 @@ describeParallel('rx-storage-query-correctness.test.ts', () => {
             }
         ]
     });
+
+    /**
+     * getStartIndexStringFromUpperBound() incorrectly mapped INDEX_MIN to '1'
+     * for boolean fields, widening the index range when a preceding field
+     * used exclusive bounds ($gt/$lt). With selectorSatisfiedByIndex=true,
+     * boundary documents were returned without per-document filtering.
+     */
+    testCorrectQueries<{ id: string; age: number; isActive: boolean; }>({
+        testTitle: '$gt/$lt on field before boolean index field should not include boundary docs',
+        schema: {
+            version: 0,
+            primaryKey: 'id',
+            type: 'object',
+            properties: {
+                id: {
+                    type: 'string',
+                    maxLength: 100
+                },
+                age: {
+                    type: 'integer',
+                    minimum: 0,
+                    maximum: 150,
+                    multipleOf: 1
+                },
+                isActive: {
+                    type: 'boolean'
+                }
+            },
+            indexes: [
+                ['age', 'isActive']
+            ],
+            required: ['id', 'age', 'isActive']
+        },
+        data: [
+            { id: 'a', age: 10, isActive: true },
+            { id: 'b', age: 30, isActive: true },
+            { id: 'c', age: 30, isActive: false },
+            { id: 'd', age: 50, isActive: false },
+            { id: 'e', age: 50, isActive: true },
+            { id: 'f', age: 70, isActive: false }
+        ],
+        queries: [
+            {
+                info: '$gt/$lt exclusive bounds must not include boundary age values',
+                query: {
+                    selector: {
+                        age: { $gt: 20, $lt: 50 }
+                    },
+                    sort: [{ age: 'asc' }]
+                },
+                expectedResultDocIds: ['b', 'c'],
+                selectorSatisfiedByIndex: true
+            }
+        ]
+    });
 });

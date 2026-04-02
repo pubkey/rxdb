@@ -283,7 +283,7 @@ export class RxCollectionBase<
             this.storageInstance,
             this.schema.primaryPath,
             (newData, oldData) => beforeDocumentUpdateWrite(this as any, newData, oldData),
-            result => this._runHooks('post', 'save', result)
+            result => this._runHooks('post', 'save', result, this._docCache.getCachedRxDocument(result))
         );
 
         this.$ = this.eventBulks$.pipe(
