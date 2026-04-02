@@ -5,6 +5,7 @@
 
 <!-- ADD new changes here! -->
 
+- FIX encryption plugin `validatePassword()` leaking the plaintext password in `RxError` parameters and error messages when password validation fails
 - FIX `database.remove()` not calling collection `onRemove` handlers, because `close()` unsubscribed all listeners before the remove operation could trigger them
 - FIX query-builder `eq()`/`equals()` silently overwriting other operator conditions on the same field because the value was stored as a raw primitive instead of using the `$eq` operator form
 - FIX `deleted$` observable emitting on every document revision instead of only when the deleted state changes, by adding `distinctUntilChanged()`
