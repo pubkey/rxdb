@@ -5,6 +5,7 @@
 
 <!-- ADD new changes here! -->
 
+- FIX `incrementalUpsert()` throwing a CONFLICT error when a concurrent `upsert()`/`insert()` creates the same document between the internal `findOne()` and `insert()` calls
 - FIX `upsertLocal()` on a previously removed local document keeping the document in deleted state instead of un-deleting it
 - FIX push-only replication losing local writes that occur during a pause because `reSync()` events were filtered out when no pull handler was configured
 - FIX `getStartIndexStringFromUpperBound()` incorrectly mapping `INDEX_MIN` to `'1'` for boolean index fields, causing queries with exclusive bounds (`$gt`/`$lt`) on a field preceding a boolean index field to include boundary documents in the results
