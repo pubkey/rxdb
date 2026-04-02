@@ -42,7 +42,7 @@ async function run() {
     const changelogFiles = (await fs.promises.readdir(changelogDir))
         .filter(f => f.endsWith('.md') && f !== 'README.md')
         .sort();
-    let newRows = [];
+    const newRows = [];
     for (const file of changelogFiles) {
         const content = await fs.promises.readFile(
             path.join(changelogDir, file),
@@ -72,10 +72,6 @@ async function run() {
         throw new Error('changelog flag missing');
     }
     const indexReleaseBelow = changelogRows.indexOf(changelogReleaseBelowFlag);
-
-    // remove everything between the NEWEST flags (no longer used for inline entries)
-    const indexStart = changelogRows.indexOf(changelogFlagStart);
-    const indexEnd = changelogRows.indexOf(changelogFlagEnd);
 
 
     /**
