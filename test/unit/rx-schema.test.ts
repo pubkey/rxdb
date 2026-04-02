@@ -561,6 +561,71 @@ describeParallel('rx-schema.test.ts', () => {
                 /**
                  * @link https://github.com/pubkey/rxdb/issues/4926#issuecomment-1712223984
                  */
+                it('should throw when composite primary key field is encrypted (SC15)', async () => {
+                    await assertThrows(
+                        () => checkSchema({
+                            version: 0,
+                            type: 'object',
+                            primaryKey: {
+                                key: 'id',
+                                fields: ['firstName', 'lastName'],
+                                separator: '|'
+                            },
+                            properties: {
+                                id: {
+                                    type: 'string',
+                                    maxLength: 100
+                                },
+                                firstName: {
+                                    type: 'string',
+                                    maxLength: 50
+                                },
+                                lastName: {
+                                    type: 'string',
+                                    maxLength: 50
+                                },
+                                secret: {
+                                    type: 'string'
+                                }
+                            },
+                            required: ['id', 'firstName', 'lastName'],
+                            encrypted: ['id']
+                        }),
+                        'RxError',
+                        'SC15'
+                    );
+                });
+                it('should throw when composite primary key field is in indexes (SC13)', async () => {
+                    await assertThrows(
+                        () => checkSchema({
+                            version: 0,
+                            type: 'object',
+                            primaryKey: {
+                                key: 'id',
+                                fields: ['firstName', 'lastName'],
+                                separator: '|'
+                            },
+                            properties: {
+                                id: {
+                                    type: 'string',
+                                    maxLength: 100
+                                },
+                                firstName: {
+                                    type: 'string',
+                                    maxLength: 50
+                                },
+                                lastName: {
+                                    type: 'string',
+                                    maxLength: 50
+                                }
+                            },
+                            required: ['id', 'firstName', 'lastName'],
+                            indexes: ['id']
+                        }),
+                        'RxError',
+                        'SC13'
+                    );
+                });
                 it('throw when $ref field is used', async () => {
                     await assertThrows(
                         () => checkSchema({

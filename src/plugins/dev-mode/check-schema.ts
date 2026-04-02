@@ -314,10 +314,11 @@ export function checkSchema(jsonSchema: RxJsonSchema<any>) {
     validateFieldsDeep(jsonSchema);
     checkPrimaryKey(jsonSchema);
 
+    const primaryPath = getPrimaryFieldOfPrimaryKey(jsonSchema.primaryKey);
     Object.keys(jsonSchema.properties).forEach(key => {
         const value: any = jsonSchema.properties[key];
         // check primary
-        if (key === jsonSchema.primaryKey) {
+        if (key === primaryPath) {
             if (jsonSchema.indexes && jsonSchema.indexes.includes(key)) {
                 throw newRxError('SC13', {
                     value,

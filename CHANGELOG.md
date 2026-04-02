@@ -6,6 +6,13 @@
 <!-- ADD new changes here! -->
 
 - FIX leader-election plugin not calling `die()` on the LeaderElector when the database is closed, because `LEADER_ELECTORS_OF_DB` was never populated due to a dead code branch
+- FIX encryption plugin schema transformation not correctly handling nested dot-notation encrypted paths (e.g. `'nested.field'`), causing validation failures when using a validator storage with non-string nested encrypted fields
+- FIX dev-mode `checkSchema()` not validating composite primary key fields for encryption (SC15), index (SC13), unique (SC14), and type (SC16) constraints because it compared property names against the primaryKey object instead of resolving the primary field path
+- FIX `findOne().remove()` crashing with `TypeError: Cannot read properties of null` when no document matches the query, instead of returning `null`
+- ADD `findOne().remove(true)` to throw when no document matches, consistent with `findOne().exec(true)`
+- FIX schema migration losing `_deleted` state when migration strategy returns a new object, causing deleted documents to be resurrected after migration
+- FIX `RxPipeline.remove()` not properly cleaning up checkpoint when called during active processing, causing a re-added pipeline with the same identifier to skip already-processed documents instead of starting fresh
+- FIX cleanup plugin prematurely exiting its retry loop when `storageInstance.cleanup()` returns `false` (batched cleanup), because `Array.find()` returns the found value `false` and `!false` evaluates to `true`, causing `isDone` to be set incorrectly
 - FIX encryption plugin `validatePassword()` leaking the plaintext password in `RxError` parameters and error messages when password validation fails
 - FIX `database.remove()` not calling collection `onRemove` handlers, because `close()` unsubscribed all listeners before the remove operation could trigger them
 - FIX query-builder `eq()`/`equals()` silently overwriting other operator conditions on the same field because the value was stored as a raw primitive instead of using the `$eq` operator form
