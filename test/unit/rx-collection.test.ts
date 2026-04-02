@@ -2136,6 +2136,45 @@ describe('rx-collection.test.ts', () => {
 
                     db.close();
                 });
+                it('should not throw when concurrent upsert creates the same document', async () => {
+                    /**
+                     * When incrementalUpsert races with a concurrent upsert/insert
+                     * for the same primary key on a document that does not yet exist,
+                     * _incrementalUpsertEnsureRxDocumentExists can fail because
+                     * findOne returns null but then insert gets a 409 conflict
+                     * because the other operation already created the document.
+                     * incrementalUpsert must handle this gracefully instead of throwing.
+                     */
+                    const db = await createRxDatabase({
+                        name: randomToken(10),
+                        storage: config.storage.getStorage(),
+                    });
+                    const collections = await db.addCollections({
+                        human: {
+                            schema: schemas.primaryHuman
+                        }
+                    });
+                    const c = collections.human;
+
+                    // Run multiple iterations to increase race likelihood
+                    const iterations = isFastMode() ? 30 : 60;
+                    for (let i = 0; i < iterations; i++) {
+                        const docData = schemaObjects.simpleHumanData();
+                        const primary = docData.passportId;
+                        // Both try to create the same document concurrently
+                        const [r1, r2] = await Promise.all([
+                            c.incrementalUpsert(docData),
+                            c.upsert(docData),
+                        ]);
+                        assert.ok(isRxDocument(r1));
+                        assert.ok(isRxDocument(r2));
+                        // The document must exist afterwards
+                        const found = await c.findOne(primary).exec(true);
+                        assert.strictEqual(found.primary, primary);
+                    }
+
+                    db.close();
+                });
             });
         });
         describeParallel('.remove()', () => {

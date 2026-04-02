@@ -5,6 +5,8 @@
 
 <!-- ADD new changes here! -->
 
+- FIX `incrementalUpsert()` throwing a CONFLICT error when a concurrent `upsert()`/`insert()` creates the same document between the internal `findOne()` and `insert()` calls
+
 - FIX memory storage `count()` returning incorrect results when the selector is not fully satisfied by the index and the query has a `limit` set
 
 - FIX `replicateRxCollection().remove()` on a never-started replication now creates the meta instance and deletes its data instead of skipping cleanup
