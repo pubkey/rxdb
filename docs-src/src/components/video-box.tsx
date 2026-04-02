@@ -175,7 +175,7 @@ export function VideoModal({ open, videoId, title, startAt, onClose }: VideoModa
 
         watchTimeoutRef.current = window.setTimeout(() => {
             triggerTrackingEvent('watch_video_x_secs', 1, 3, true);
-            triggerTrackingEvent('watch_video_' + watchSeconds + '_secs', 1, 0);
+            triggerTrackingEvent('watch_video_' + watchSeconds + '_secs', 1, 0, true);
             triggerTrackingEvent('watch_video_' + videoId + '_' + watchSeconds + '_secs', 1, 0);
         }, watchSeconds * 1000);
 
