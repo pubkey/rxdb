@@ -304,6 +304,23 @@ describe('hooks.test.js', () => {
                     assert.strictEqual(count, 1);
                     c.database.close();
                 });
+                it('should receive the RxDocument instance as second argument', async () => {
+                    const c = await humansCollection.createPrimary(0);
+                    const human = schemaObjects.simpleHumanData();
+                    await c.insert(human);
+                    const doc = await c.findOne(human.passportId).exec(true);
+                    let count = 0;
+                    let receivedInstance: any;
+                    c.postSave(function (data, instance) {
+                        receivedInstance = instance;
+                        count++;
+                    }, false);
+                    await doc.incrementalPatch({ firstName: 'foobar' });
+                    assert.strictEqual(count, 1);
+                    assert.ok(isRxDocument(receivedInstance));
+                    assert.strictEqual(receivedInstance.primary, human.passportId);
+                    c.database.close();
+                });
             });
             describe('negative', () => { });
         });
