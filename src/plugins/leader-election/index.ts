@@ -21,6 +21,8 @@ import { PROMISE_RESOLVE_TRUE, getFromMapOrCreate } from '../utils/index.ts';
 const LEADER_ELECTORS_OF_DB: WeakMap<RxDatabase, LeaderElector> = new WeakMap();
 const LEADER_ELECTOR_BY_BROADCAST_CHANNEL: WeakMap<BroadcastChannel, LeaderElector> = new WeakMap();
 
+export const OPEN_LEADER_ELECTORS: Set<LeaderElector> = new Set();
+
 
 /**
  * Returns the leader elector of a broadcast channel.
@@ -69,6 +71,7 @@ export function getForDatabase(this: RxDatabase): LeaderElector {
         this,
         elector
     );
+    OPEN_LEADER_ELECTORS.add(elector);
 
     /**
      * Overwrite for caching
@@ -102,6 +105,7 @@ export function onClose(db: RxDatabase) {
     const has = LEADER_ELECTORS_OF_DB.get(db);
     if (has) {
         has.die();
+        OPEN_LEADER_ELECTORS.delete(has);
     }
 }
 
