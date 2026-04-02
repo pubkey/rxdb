@@ -78,6 +78,7 @@ export class RxSchema<RxDocType = any> {
         const jsonSchema: any = flatClone(this.jsonSchema);
         jsonSchema.properties = flatClone(jsonSchema.properties);
         delete jsonSchema.properties._deleted;
+        delete jsonSchema.properties._rev;
         delete jsonSchema.properties._meta;
         delete jsonSchema.properties._attachments;
 
