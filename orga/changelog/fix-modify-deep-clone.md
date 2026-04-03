@@ -1,1 +1,0 @@
-- FIX `modify()` not deep-cloning document data, allowing the modifier to corrupt internal state via shared nested references

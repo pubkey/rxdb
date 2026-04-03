@@ -1,1 +1,0 @@
-- FIX incorrect index string generation for negative decimal numbers causing wrong sort order and query results
