@@ -104,7 +104,17 @@ export function wrappedKeyEncryptionCryptoJsStorage<Internals, InstanceCreationO
                  * they do not apply to the encrypted ciphertext string.
                  */
                 ensureNotFalsy(params.schema.encrypted).forEach(key => {
-                    (schemaWithoutEncrypted as any).properties[key] = { type: 'string' };
+                    const pathParts = key.split('.');
+                    if (pathParts.length === 1) {
+                        (schemaWithoutEncrypted as any).properties[key] = { type: 'string' };
+                    } else {
+                        // Navigate nested schema structure: properties.a.properties.b.properties.c
+                        let currentSchemaLevel: any = schemaWithoutEncrypted;
+                        for (let i = 0; i < pathParts.length - 1; i++) {
+                            currentSchemaLevel = currentSchemaLevel.properties[pathParts[i]];
+                        }
+                        currentSchemaLevel.properties[pathParts[pathParts.length - 1]] = { type: 'string' };
+                    }
                 });
 
                 const instance = await args.storage.createStorageInstance(
@@ -210,13 +220,13 @@ function cloneWithoutAttachments<T>(data: RxDocumentWriteData<T>): RxDocumentDat
 function validatePassword(password: string) {
     if (typeof password !== 'string') {
         throw newRxTypeError('EN1', {
-            password
+            passwordType: typeof password
         });
     }
     if (password.length < MINIMUM_PASSWORD_LENGTH) {
         throw newRxError('EN2', {
             minPassLength: MINIMUM_PASSWORD_LENGTH,
-            password
+            passwordLength: password.length
         });
     }
 }

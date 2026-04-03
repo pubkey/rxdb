@@ -9,6 +9,47 @@
 
 <!-- RELEASE BELOW -->
 
+### 17.1.0 (2 April 2026)
+
+- FIX CRDT plugin `bulkInsert` hook not including schema default values in CRDT operations, causing data loss during conflict resolution rebuild when fields rely on schema defaults
+- FIX `RxDocument.get$()` on nested object/array paths emitting spurious values when unrelated document fields changed, because `distinctUntilChanged()` used reference equality which always fails for non-primitive values across document revisions
+- FIX `incrementalUpsert()` throwing a CONFLICT error when a concurrent `upsert()`/`insert()` creates the same document between the internal `findOne()` and `insert()` calls
+- FIX `upsertLocal()` on a previously removed local document keeping the document in deleted state instead of un-deleting it
+- FIX push-only replication losing local writes that occur during a pause because `reSync()` events were filtered out when no pull handler was configured
+- FIX `getStartIndexStringFromUpperBound()` incorrectly mapping `INDEX_MIN` to `'1'` for boolean index fields, causing queries with exclusive bounds (`$gt`/`$lt`) on a field preceding a boolean index field to include boundary documents in the results
+- FIX leader-election plugin not calling `die()` on the LeaderElector when the database is closed, because `LEADER_ELECTORS_OF_DB` was never populated due to a dead code branch
+- FIX encryption plugin schema transformation not correctly handling nested dot-notation encrypted paths (e.g. `'nested.field'`), causing validation failures when using a validator storage with non-string nested encrypted fields
+- FIX dev-mode `checkSchema()` not validating composite primary key fields for encryption (SC15), index (SC13), unique (SC14), and type (SC16) constraints because it compared property names against the primaryKey object instead of resolving the primary field path
+- FIX `findOne().remove()` crashing with `TypeError: Cannot read properties of null` when no document matches the query, instead of returning `null`
+- ADD `findOne().remove(true)` to throw when no document matches, consistent with `findOne().exec(true)`
+- FIX schema migration losing `_deleted` state when migration strategy returns a new object, causing deleted documents to be resurrected after migration
+- FIX `RxPipeline.remove()` not properly cleaning up checkpoint when called during active processing, causing a re-added pipeline with the same identifier to skip already-processed documents instead of starting fresh
+- FIX cleanup plugin prematurely exiting its retry loop when `storageInstance.cleanup()` returns `false` (batched cleanup), because `Array.find()` returns the found value `false` and `!false` evaluates to `true`, causing `isDone` to be set incorrectly
+- FIX encryption plugin `validatePassword()` leaking the plaintext password in `RxError` parameters and error messages when password validation fails
+- FIX `database.remove()` not calling collection `onRemove` handlers, because `close()` unsubscribed all listeners before the remove operation could trigger them
+- FIX query-builder `eq()`/`equals()` silently overwriting other operator conditions on the same field because the value was stored as a raw primitive instead of using the `$eq` operator form
+- FIX `deleted$` observable emitting on every document revision instead of only when the deleted state changes, by adding `distinctUntilChanged()`
+- FIX `postSave` collection hook not receiving the RxDocument instance as the second argument, unlike `postInsert` and `postRemove` which correctly pass it
+- FIX `getJsonSchemaWithoutMeta()` not removing `_rev` from schema properties, while correctly removing other internal meta properties (`_deleted`, `_meta`, `_attachments`)
+- FIX `allAttachments$` observable emitting attachments with a stale document reference, causing `attachment.doc` to point to an outdated document version instead of the latest one
+- FIX RxState not correctly recovering full-state replacements (via `set('', modifier)`) from disk on database reopen, causing corrupted state
+
+- FIX memory storage `count()` returning incorrect results when the selector is not fully satisfied by the index and the query has a `limit` set
+
+- FIX `replicateRxCollection().remove()` on a never-started replication now creates the meta instance and deletes its data instead of skipping cleanup
+- FIX `REPLICATION_STATE_BY_COLLECTION` not cleaned up on `cancel()`/`remove()`, leaking replication state references
+- FIX floating-point rounding overflow in index string decimal generation, where `Math.round` could produce a value equal to the multiplier (e.g. 10 instead of max 9), creating a string one character too long and breaking sort order in compound indexes
+- FIX `normalizeMangoQuery()` skipped fully-matching indexes when choosing default sort order, falling back to the first index instead of using the best match
+- FIX RxState `set('', modifier)` passed `undefined` to the modifier instead of the current state
+- FIX `RxMigrationStatus.count.percent` returning `NaN` instead of `100` when migrating a collection with 0 documents
+- FIX `fillWithDefaultSettings()` index deduplication was broken because `Array.filter()` return value was discarded, causing duplicate indexes in schemas when user-defined indexes become identical after adding `_deleted` prefix and primary key suffix
+- FIX encryption plugin not stripping type-specific schema keywords (`maxLength`, `required`, `items`, etc.) from encrypted fields, causing validation errors when using a validator storage with encryption
+- FIX incorrect index string generation for negative decimal numbers causing wrong sort order and query results
+- FIX `rateQueryPlan()` evaluated `startKeys` twice instead of `endKeys`, causing suboptimal index selection for `$lt`/`$lte` queries.
+- FIX event-reduce mutating cached `docsDataMap` causing missing documents after insert-delete cycles
+- FIX `modify()` not deep-cloning document data, allowing the modifier to corrupt internal state via shared nested references
+- FIX `fillObjectWithDefaults` shared mutable references for non-primitive schema defaults (arrays/objects) causing corrupted values on subsequent inserts
+
 ### 17.0.0 (30 March 2026)
 
 🚀 **RxDB v17 is released**

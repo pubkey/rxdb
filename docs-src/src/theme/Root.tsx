@@ -463,26 +463,26 @@ function startAnalytics() {
     (function (w, d) {
         if (!(w as any).rdt) {
             // @ts-ignore
-            const p: any = w.rdt = function () {
+            const rdt: any = (w as any).rdt = function () {
                 // @ts-ignore
-                if (p.sendEvent) {
-                    p.sendEvent.apply(p, arguments);
+                if (rdt.sendEvent) {
+                    rdt.sendEvent.apply(rdt, arguments);
                 } else {
-                    p.callQueue.push(arguments);
+                    rdt.callQueue.push(arguments);
                 }
             };
-            p.callQueue = [];
+            rdt.callQueue = [];
             const t = d.createElement('script');
             t.src = 'https://www.redditstatic.com/ads/pixel.js';
             t.async = true;
             const s: any = d.getElementsByTagName('script')[0];
             s.parentNode.insertBefore(t, s);
         }
+
+        // Initialize pixel and track page visit
+        (w as any).rdt('init', 'a2_irjdz88999o9');
+        (w as any).rdt('track', 'PageVisit');
     })(window, document);
-    (window as any).rdt('init', 't2_131k54', {
-        'aaid': '<AAID-HERE>', 'email': '<EMAIL-HERE>', 'externalId': '<EXTERNAL-ID-HERE>', 'idfa': '<IDFA-HERE>'
-    });
-    (window as any).rdt('track', 'PageVisit');
     // /reddit pixel
 
 

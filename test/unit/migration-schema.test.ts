@@ -1732,5 +1732,197 @@ describe('migration-schema.test.ts', function () {
             assert.strictEqual(result.status, 'DONE');
             await col.database.close();
         });
+           it('should not resurrect deleted documents when migration strategy returns a new object', async () => {
+            const dbName = randomToken(10);
+            const schema0 = {
+                version: 0,
+                primaryKey: 'id',
+                type: 'object',
+                properties: {
+                    id: {
+                        type: 'string',
+                        maxLength: 100
+                    },
+                    name: {
+                        type: 'string'
+                    }
+                },
+                required: ['id', 'name']
+            } as const;
+            const schema1 = {
+                version: 1,
+                primaryKey: 'id',
+                type: 'object',
+                properties: {
+                    id: {
+                        type: 'string',
+                        maxLength: 100
+                    },
+                    name: {
+                        type: 'string'
+                    },
+                    migrated: {
+                        type: 'boolean'
+                    }
+                },
+                required: ['id', 'name']
+            } as const;
+
+            // Create v0 database, insert docs, delete some
+            const db = await createRxDatabase({
+                name: dbName,
+                storage: config.storage.getStorage(),
+            });
+            const cols = await db.addCollections({
+                heroes: { schema: schema0 }
+            });
+            const col = cols.heroes;
+
+            await col.bulkInsert([
+                { id: 'alice', name: 'Alice' },
+                { id: 'bob', name: 'Bob' },
+                { id: 'charlie', name: 'Charlie' }
+            ]);
+
+            // Delete bob
+            const bobDoc = await col.findOne('bob').exec(true);
+            await bobDoc.remove();
+
+            // Verify bob is deleted
+            const docsBeforeMigration = await col.find().exec();
+            assert.strictEqual(docsBeforeMigration.length, 2);
+            assert.ok(docsBeforeMigration.every(d => d.id !== 'bob'));
+
+            await db.close();
+
+            // Reopen with v1 schema and a migration strategy that returns a NEW object
+            const db2 = await createRxDatabase({
+                name: dbName,
+                storage: config.storage.getStorage(),
+            });
+            const cols2 = await db2.addCollections({
+                heroes: {
+                    schema: schema1,
+                    migrationStrategies: {
+                        1: (oldDoc: any) => {
+                            /**
+                             * Return a completely new object instead of mutating.
+                             * This is a common and valid pattern.
+                             */
+                            return {
+                                id: oldDoc.id,
+                                name: oldDoc.name,
+                                migrated: true,
+                                _attachments: oldDoc._attachments
+                            };
+                        }
+                    }
+                }
+            });
+
+            const col2 = cols2.heroes;
+
+            // After migration, only alice and charlie should exist.
+            // Bob was deleted and must NOT reappear.
+            const docsAfterMigration = await col2.find().exec();
+            const ids = docsAfterMigration.map(d => d.id).sort();
+            assert.strictEqual(docsAfterMigration.length, 2, 'deleted document was resurrected during migration');
+            assert.deepStrictEqual(ids, ['alice', 'charlie']);
+
+            // Verify migrated field was applied
+            assert.ok(docsAfterMigration.every(d => (d as any).migrated === true));
+
+            await db2.close();
+        });
+        it('should NOT auto-apply schema default values during migration', async () => {
+            const dbName = randomToken(10);
+            const schema0 = {
+                version: 0,
+                primaryKey: 'id',
+                type: 'object' as const,
+                properties: {
+                    id: {
+                        type: 'string' as const,
+                        maxLength: 100
+                    },
+                    name: {
+                        type: 'string' as const
+                    }
+                },
+                required: ['id', 'name'] as const
+            };
+            const schema1 = {
+                version: 1,
+                primaryKey: 'id',
+                type: 'object' as const,
+                properties: {
+                    id: {
+                        type: 'string' as const,
+                        maxLength: 100
+                    },
+                    name: {
+                        type: 'string' as const
+                    },
+                    nickname: {
+                        type: 'string' as const,
+                        default: 'anonymous'
+                    }
+                },
+                required: ['id', 'name'] as const
+            };
+
+            // create v0 collection and insert documents
+            const db = await createRxDatabase({
+                name: dbName,
+                storage: config.storage.getStorage(),
+            });
+            const cols = await db.addCollections({
+                heroes: {
+                    schema: schema0
+                }
+            });
+            await cols.heroes.bulkInsert([
+                { id: 'alice', name: 'Alice' },
+                { id: 'bob', name: 'Bob' },
+                { id: 'charlie', name: 'Charlie' }
+            ]);
+            await db.close();
+
+            /**
+             * Migration strategies must have full explicit control
+             * over the document data. Schema default values are NOT
+             * auto-applied so the strategy can decide exactly
+             * what each field should contain.
+             */
+            const db2 = await createRxDatabase({
+                name: dbName,
+                storage: config.storage.getStorage(),
+            });
+            const cols2 = await db2.addCollections({
+                heroes: {
+                    schema: schema1,
+                    migrationStrategies: {
+                        1: (oldDoc: any) => {
+                            return oldDoc;
+                        }
+                    }
+                }
+            });
+
+            const docs = await cols2.heroes.find().exec();
+            assert.strictEqual(docs.length, 3);
+
+            // Default values must NOT be auto-applied during migration.
+            // The migration strategy has full control over the document data.
+            for (const doc of docs) {
+                assert.strictEqual(
+                    (doc as any).nickname,
+                    undefined,
+                    'migrated document must not have auto-applied default values'
+                );
+            }
+
+            await db2.close();
+        });
     });
 });

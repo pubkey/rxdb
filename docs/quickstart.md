@@ -83,7 +83,8 @@ import {
 } from 'rxdb-premium/plugins/storage-sqlite';
 
 // Provide the sqliteBasics adapter for your runtime, e.g. Node.js, React Native, etc.
-// For example in Node.js you would derive sqliteBasics from a sqlite3-compatible library:
+// For example in Node.js you would derive
+// sqliteBasics from a sqlite3-compatible library:
 import sqlite3 from 'sqlite3';
 
 const storage = getRxStorageSQLite({

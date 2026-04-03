@@ -2384,4 +2384,53 @@ describe('replication.test.ts', () => {
             clientCollection.database.close();
         });
     });
+    describeParallel('push-only', () => {
+        it('should push documents written during pause after resume', async () => {
+            const { localCollection, remoteCollection } = await getTestCollections({ local: 2, remote: 0 });
+
+            const replicationState = replicateRxCollection({
+                collection: localCollection,
+                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                live: true,
+                push: {
+                    handler: getPushHandler(remoteCollection)
+                }
+            });
+            ensureReplicationHasNoErrors(replicationState);
+            await replicationState.awaitInitialReplication();
+            await replicationState.awaitInSync();
+
+            // Remote should have the 2 initial docs
+            let remoteDocs = await remoteCollection.find().exec();
+            assert.strictEqual(remoteDocs.length, 2);
+
+            // Pause the replication
+            await replicationState.pause();
+
+            // Insert a document locally while paused
+            await localCollection.insert(
+                schemaObjects.humanWithTimestampData({ id: 'written-during-pause' })
+            );
+
+            // The document should NOT have been synced yet
+            await wait(isFastMode() ? 50 : 200);
+            remoteDocs = await remoteCollection.find().exec();
+            assert.strictEqual(remoteDocs.length, 2);
+
+            // Resume the replication
+            await replicationState.start();
+            await replicationState.awaitInSync();
+
+            // The document written during pause should now be on the remote
+            remoteDocs = await remoteCollection.find().exec();
+            assert.strictEqual(
+                remoteDocs.length,
+                3,
+                'push-only replication must sync documents written during pause after resume'
+            );
+
+            await localCollection.database.close();
+            await remoteCollection.database.close();
+        });
+    });
 });

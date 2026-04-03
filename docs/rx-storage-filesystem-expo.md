@@ -8,12 +8,14 @@ import {Steps} from '@site/src/components/steps';
 import { PerformanceChart } from '@site/src/components/performance-chart';
 import { PERFORMANCE_DATA_EXPO, PERFORMANCE_METRICS } from '@site/src/components/performance-data';
 
-# Expo Filesystem RxStorage
+import {HeadlineWithIcon} from '@site/src/components/headline-with-icon';
 
-<BetaBlock since="17.0.0" />
+# <HeadlineWithIcon h1 icon={} subtitle="Faster than SQLite">Expo Filesystem RxStorage</HeadlineWithIcon>
 
 The Expo Filesystem [RxStorage](./rx-storage.md) for RxDB is built on top of the [expo-file-system](https://docs.expo.dev/versions/latest/sdk/filesystem/) library, bringing blazing-fast direct filesystem capabilities to React Native and Expo applications.
 It stores data in plain files and achieves vastly superior performance compared to traditional React Native storage solutions like Async Storage or SQLite.
+
+<BetaBlock since="17.0.0" />
 
 ### Pros
 
@@ -98,7 +100,7 @@ In contrast, the **Expo Filesystem RxStorage** skips the relational SQL database
 
 Because of this streamlined, direct-to-filesystem approach, operations like inserting large batches of documents or executing complex queries are handled with minimal overhead. This makes it one of the absolute fastest local storage engines available for React Native.
 
-Here is a performance comparison of the **Expo Filesystem RxStorage** compared to the **SQLite RxStorage** (using `expo-sqlite`), tested with RxDB's internal performance testing suite (3000 documents, 4 collections):
+Here is a performance comparison of the **Expo Filesystem RxStorage** compared to the **[SQLite RxStorage](./rx-storage-sqlite.md)** (using `expo-sqlite`), tested with RxDB's internal performance testing suite (3000 documents, 4 collections):
 
 <PerformanceChart title="Expo Storages" data={PERFORMANCE_DATA_EXPO} metrics={PERFORMANCE_METRICS} />
 
@@ -164,6 +166,6 @@ You should use a storage engine that supports fast bulk writes. The Expo Filesys
 <details>
 <summary>How to improve performance with offline caching in React Native?</summary>
 
-Use an offline-first database like RxDB to maintain a persistent local replica of your data on the device filesystem. Read operations resolve instantly from the local cache, while background replication synchronizes data modifications with your remote server asynchronously.
+Use an [offline-first](./offline-first.md) database like RxDB to maintain a persistent local replica of your data on the device filesystem. Read operations resolve instantly from the local cache, while background [replication](./replication.md) synchronizes data modifications with your remote server asynchronously.
 
 </details>

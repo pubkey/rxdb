@@ -9,7 +9,7 @@ import {Steps} from '@site/src/components/steps';
 <!-- IMPORTANT: When you edit this file, apply the same changes to test/tutorials/src/typescript.ts -->
 
 In this tutorial you will learn how to use RxDB with TypeScript.
-We will create a basic database with one collection and several ORM-methods, fully typed!
+We will create a basic database with one collection and several [ORM](../orm.md)-methods, fully typed!
 
 RxDB directly comes with its typings and you do not have to install anything else, however the latest version of RxDB requires that you are using Typescript v3.8 or newer.
 Our way to go is
@@ -77,7 +77,10 @@ export const heroSchemaLiteral = {
 const schemaTyped = toTypedRxJsonSchema(heroSchemaLiteral);
 
 // aggregate the document type from the schema
-export type HeroDocType = ExtractDocumentTypeFromTypedRxJsonSchema<typeof schemaTyped>;
+export type HeroDocType =
+    ExtractDocumentTypeFromTypedRxJsonSchema<
+        typeof schemaTyped
+    >;
 
 // create the typed RxJsonSchema from the literal typed object.
 export const heroSchema: RxJsonSchema<HeroDocType> = heroSchemaLiteral;

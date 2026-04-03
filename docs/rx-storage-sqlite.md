@@ -173,8 +173,13 @@ const myRxDatabase = await createRxDatabase({
 
 ### Usage with **React Native**
 
-1. Install the [react-native-quick-sqlite npm module](https://www.npmjs.com/package/react-native-quick-sqlite)
-2. Import `getSQLiteBasicsQuickSQLite` from the SQLite plugin and use it to create a [RxDatabase](./rx-database.md):
+<Steps>
+
+#### 1. Install the package
+Install the [react-native-quick-sqlite npm module](https://www.npmjs.com/package/react-native-quick-sqlite)
+
+#### 2. Create the Database
+Import `getSQLiteBasicsQuickSQLite` from the SQLite plugin and use it to create a [RxDatabase](./rx-database.md):
 
 ```ts
 import {
@@ -189,7 +194,8 @@ import { open } from 'react-native-quick-sqlite';
 // create database
 const myRxDatabase = await createRxDatabase({
     name: 'exampledb',
-    multiInstance: false, // <- Set multiInstance to false when using RxDB in React Native
+    // Set multiInstance to false for React Native
+    multiInstance: false,
     storage: getRxStorageSQLite({
         sqliteBasics: getSQLiteBasicsQuickSQLite(open)
     })
@@ -208,6 +214,8 @@ const storage = getRxStorageSQLite({
   sqliteBasics: getSQLiteBasicsWebSQL(SQLite.openDatabase)
 });
 ```
+
+</Steps>
 
 ### Usage with **Expo SQLite**
 
@@ -261,8 +269,13 @@ const myRxDatabase = await createRxDatabase({
 
 ### Usage with **SQLite Capacitor**
 
-1. Install the [sqlite capacitor npm module](https://github.com/capacitor-community/sqlite)
-2. Add the iOS database location to your capacitor config
+<Steps>
+
+#### 1. Install the sqlite capacitor npm module
+Install the [sqlite capacitor npm module](https://github.com/capacitor-community/sqlite)
+
+#### 2. Add the iOS database location
+Add the iOS database location to your capacitor config
 
 ```json
 {
@@ -274,7 +287,8 @@ const myRxDatabase = await createRxDatabase({
 }
 ```
 
-3. Use the function `getSQLiteBasicsCapacitor` to get the capacitor sqlite wrapper.
+#### 3. Get the capacitor sqlite wrapper
+Use the function `getSQLiteBasicsCapacitor` to get the capacitor sqlite wrapper.
 
 ```ts
 import {
@@ -311,11 +325,20 @@ const myRxDatabase = await createRxDatabase({
 });
 ```
 
+</Steps>
+
 ### Usage with Tauri SQLite
 
-1. Add the [Tauri SQL plugin](https://tauri.app/plugin/sql/#setup) to your Tauri project.
-2. Make sure to add `sqlite` as your database engine by running `cargo add tauri-plugin-sql --features sqlite` inside `src-tauri`.
-3. Use the `getSQLiteBasicsTauri` function to get the Tauri SQLite wrapper.
+<Steps>
+
+#### 1. Add the Tauri SQL plugin
+Add the [Tauri SQL plugin](https://tauri.app/plugin/sql/#setup) to your Tauri project.
+
+#### 2. Add sqlite as your database engine
+Make sure to add `sqlite` as your database engine by running `cargo add tauri-plugin-sql --features sqlite` inside `src-tauri`.
+
+#### 3. Use the Tauri SQLite wrapper
+Use the `getSQLiteBasicsTauri` function to get the Tauri SQLite wrapper.
 
 ```ts
 import {
@@ -334,6 +357,8 @@ const myRxDatabase = await createRxDatabase({
     })
 });
 ```
+
+</Steps>
 
 ## Database Connection
 

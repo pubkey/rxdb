@@ -45,19 +45,25 @@ const mySchema = {
     sharding: {
         /**
          * Amount of shards per RxStorage instance.
-         * Depending on your data size and query patterns, the optimal shard amount may differ.
+         * Depending on your data size and query
+         * patterns, the optimal shard amount may differ.
          * Do a performance test to optimize that value.
          * 10 Shards is a good value to start with.
          * 
-         * IMPORTANT: Changing the value of shards is not possible on a already existing database state,
+         * IMPORTANT: Changing the value of shards is
+         * not possible on an already existing
+         * database state,
          * you will lose access to  your data.
          */
         shards: 10,
         /**
          * Sharding mode,
          * you can either shard by collection or by database.
-         * For most cases you should use 'collection' which will shard on the collection level.
-         * For example with the IndexedDB RxStorage, it will then create multiple stores per IndexedDB database
+         * For most cases you should use 'collection'
+         * which will shard on the collection level.
+         * For example with the IndexedDB RxStorage,
+         * it will then create multiple stores per
+         * IndexedDB database
          * and not multiple IndexedDB databases, which would be slower.
          */
         mode: 'collection'
@@ -77,7 +83,7 @@ const database = await createRxDatabase({
 
 ## Performance
 
-The Sharding RxStorage wrapper can improve performance, especially when using an underlying storage that has bottlenecks with large single stores like IndexedDB. Below is a comparison.
+The Sharding [RxStorage](./rx-storage.md) wrapper can improve performance, especially when using an underlying storage that has bottlenecks with large single stores like IndexedDB. Below is a comparison.
 
 <PerformanceChart
   data={[

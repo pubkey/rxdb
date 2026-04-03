@@ -126,7 +126,10 @@ async function initDB() {
     pull: {
       handler: async (lastCheckpoint, batchSize) => {
         // Fetch from your REST endpoint
-        const res = await fetch(`https://myapi.com/pull?checkpoint=${JSON.stringify(lastCheckpoint)}&limit=${batchSize}`);
+        const url = 'https://myapi.com/pull' +
+          `?checkpoint=${JSON.stringify(lastCheckpoint)}` +
+          `&limit=${batchSize}`;
+        const res = await fetch(url);
         return await res.json();
       }
     },

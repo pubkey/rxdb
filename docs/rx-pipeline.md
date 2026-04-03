@@ -93,7 +93,7 @@ const mailIds = await emailByReceiverCollection.find({
 
 ### UseCase: Fulltext Search
 
-You can utilize the pipeline plugin to index text data for efficient fulltext search.
+You can utilize the pipeline plugin to index text data for efficient [fulltext search](./fulltext-search.md).
 
 ```ts
 const pipeline = await emailCollection.addPipeline({

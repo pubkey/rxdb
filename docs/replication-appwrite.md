@@ -6,8 +6,9 @@ import {Tabs} from '@site/src/components/tabs';
 import {Steps} from '@site/src/components/steps';
 import {VideoBox} from '@site/src/components/video-box';
 import {RxdbMongoDiagramPlain} from '@site/src/components/mongodb-sync';
+import {HeadlineWithIcon} from '@site/src/components/headline-with-icon';
 
-# RxDB Appwrite Replication
+# <HeadlineWithIcon h1 icon={}>RxDB Appwrite Replication</HeadlineWithIcon>
 
 This replication plugin allows you to synchronize documents between RxDB and an Appwrite server. It supports both push and pull replication, live updates via Appwrite's real-time subscriptions, [offline-capability](./offline-first.md) and [conflict resolution](./transactions-conflicts-revisions.md).
 

@@ -10,7 +10,7 @@ Prompts that are useful for any github or open source project which you can give
 ### Find a bug and fix it
 
 ```bash
-Find a bug in [FEATURE X] and make a test case
+Find a bug in FEATURE_NAME and make a test case
 for it. First run the test case without a fix
 and show me the output. Then apply a fix and
 run the test case again and show me the output.
@@ -44,7 +44,7 @@ Example resulting PRs:
 
 
 ```bash
-Improve the performance of [FEATURE X].
+Improve the performance of FEATURE_NAME.
 Run the performance tests before and after
 the improvement and show me the difference.
 When you find multiple ways to improve

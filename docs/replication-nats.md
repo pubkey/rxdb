@@ -3,8 +3,9 @@
 > Seamlessly sync your RxDB data with NATS for real-time, two-way replication. Handle conflicts, errors, and retries with ease.
 
 import {Steps} from '@site/src/components/steps';
+import {HeadlineWithIcon} from '@site/src/components/headline-with-icon';
 
-# Replication with NATS
+# <HeadlineWithIcon h1 icon={}>Replication with NATS</HeadlineWithIcon>
 
 With this RxDB plugin you can run a two-way realtime replication with a [NATS](https://nats.io/) server.
 
@@ -34,9 +35,14 @@ npm install nats --save
 
 ### Start the Replication
 
-To start the replication, import the `replicateNats()` method from the RxDB plugin and call it with the collection
+To start the replication, import the
+`replicateNats()` method from the RxDB
+plugin and call it with the collection
 that must be replicated.
-The replication runs *per [RxCollection](./rx-collection.md)*, you can replicate multiple RxCollections by starting a new replication for each of them.
+The replication runs
+*per [RxCollection](./rx-collection.md)*,
+you can replicate multiple RxCollections by
+starting a new replication for each of them.
 
 ```typescript
 import {
@@ -69,4 +75,12 @@ const replicationState = replicateNats({
 
 ## Handling deletes
 
-RxDB requires you to never [fully delete documents](./replication.md#data-layout-on-the-server). This is needed to be able to replicate the deletion state of a document to other instances. The NATS replication will set a boolean `_deleted` field to all documents to indicate the deletion state. You can change this by setting a different `deletedField` in the sync options.
+RxDB requires you to never
+[fully delete documents](./replication.md#data-layout-on-the-server).
+This is needed to be able to replicate the
+deletion state of a document to other
+instances. The NATS replication will set a
+boolean `_deleted` field to all documents to
+indicate the deletion state. You can change
+this by setting a different `deletedField`
+in the sync options.

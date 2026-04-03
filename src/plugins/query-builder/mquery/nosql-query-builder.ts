@@ -92,7 +92,10 @@ export class NoSqlQueryBuilderClass<DocType> {
     equals(val: any): NoSqlQueryBuilder<DocType> {
         this._ensurePath('equals');
         const path = this._path;
-        (this._conditions as any)[path] = val;
+        const conds = (this._conditions as any)[path] !== null && typeof (this._conditions as any)[path] === 'object' ?
+            (this._conditions as any)[path] :
+            ((this._conditions as any)[path] = {});
+        conds.$eq = val;
         return this as any;
     }
 
@@ -103,7 +106,10 @@ export class NoSqlQueryBuilderClass<DocType> {
     eq(val: any): NoSqlQueryBuilder<DocType> {
         this._ensurePath('eq');
         const path = this._path;
-        (this._conditions as any)[path] = val;
+        const conds = (this._conditions as any)[path] !== null && typeof (this._conditions as any)[path] === 'object' ?
+            (this._conditions as any)[path] :
+            ((this._conditions as any)[path] = {});
+        conds.$eq = val;
         return this as any;
     }
 

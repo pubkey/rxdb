@@ -2,6 +2,8 @@
 
 > Secure your React Native app with RxDB encryption. Learn why it matters, how to implement encrypted databases, and best practices to protect user data.
 
+import {Steps} from '@site/src/components/steps';
+
 # React Native Encryption and Encrypted Database/Storage
 
 Data security is a critical concern in modern mobile applications. As React Native continues to grow in popularity for building cross-platform apps, ensuring that your data is protected is paramount. RxDB, a real-time database for JavaScript applications, offers powerful encryption features that can help you secure your React Native app's data.
@@ -33,6 +35,8 @@ React Native supports multiple ways to secure local data:
 
 ## Setting Up Encryption in RxDB for React Native
 
+<Steps>
+
 ### 1. Install RxDB and Required Plugins
 
 Install RxDB and the encryption plugin(s) you need. For the CryptoJS plugin:
@@ -52,7 +56,9 @@ Below is an example showing how to set up RxDB using the CryptoJS plugin. This e
 
 ```js
 import { createRxDatabase } from 'rxdb';
-import { wrappedKeyEncryptionCryptoJsStorage } from 'rxdb/plugins/encryption-crypto-js';
+import {
+    wrappedKeyEncryptionCryptoJsStorage
+} from 'rxdb/plugins/encryption-crypto-js';
 
 /*
  * For testing, we use the in-memory storage of RxDB.
@@ -134,6 +140,8 @@ Once you've set up the database with encryption, data in fields specified by you
 
 **Note**: You can only query directly by non-encrypted fields or primary keys. Encrypted fields cannot be used in queries because they are stored as ciphertext in the database. A common approach is to have a small subset of fields that need to be queried unencrypted while storing any sensitive data in encrypted fields.
 
+</Steps>
+
 ## Best Practices for React Native Encryption
 
 - **Secure Password Handling**
@@ -154,7 +162,7 @@ async function getDatabasePassword() {
 ```
 
 - **Encrypt Attachments**:
-If you need to store files (images, text files, etc.), consider encrypting attachments. RxDB supports attachments that can be encrypted automatically, ensuring your files are protected:
+If you need to store files (images, text files, etc.), consider encrypting [attachments](../rx-attachment.md). RxDB supports attachments that can be encrypted automatically, ensuring your files are protected:
 
 ```ts
 import { createBlob } from 'rxdb';

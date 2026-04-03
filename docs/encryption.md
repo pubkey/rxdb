@@ -7,7 +7,10 @@ import {PremiumBlock} from '@site/src/components/premium-block';
 import { PerformanceChart } from '@site/src/components/performance-chart';
 import { PERFORMANCE_DATA_ENCRYPTION, PERFORMANCE_METRICS } from '@site/src/components/performance-data';
 
-# 🔒 Encrypted Local Storage with RxDB
+import {HeadlineWithIcon} from '@site/src/components/headline-with-icon';
+import {IconEncryption} from '@site/src/components/icons/encryption';
+
+# <HeadlineWithIcon h1 icon={<IconEncryption />}>Encrypted Local Storage with RxDB</HeadlineWithIcon>
 
 <!-- keywords:
 encrypted browser storage
@@ -20,8 +23,6 @@ react native encrypted storage
 
 The RxDB encryption plugin empowers developers to fortify their applications' data security. It seamlessly integrates with [RxDB](https://rxdb.info/), allowing for the secure storage and retrieval of documents by **encrypting them with a password**. With encryption and decryption processes handled internally, it ensures that sensitive data remains confidential, making it a valuable tool for building robust, privacy-conscious applications. The encryption works on all RxDB supported devices types like the **[browser](./articles/browser-database.md)**, **[ReactNative](./react-native-database.md)** or **[Node.js](./nodejs-database.md)**.
 
-  
-
 Encrypting client-side stored data in RxDB offers numerous advantages:
 - **Enhanced Security**: In the unfortunate event of a user's device being stolen, the encrypted data remains safeguarded on the hard drive, inaccessible without the correct password.
 - **Access Control**: You can retain control over stored data by revoking access at any time simply by withholding the password.
@@ -29,7 +30,7 @@ Encrypting client-side stored data in RxDB offers numerous advantages:
 
 ## Querying encrypted data
 
-RxDB handles the encryption and decryption of data internally. This means that when you work with a RxDocument, you can access the properties of the document just like you would with normal, unencrypted data. RxDB automatically decrypts the data for you when you retrieve it, making it transparent to your application code.
+RxDB handles the encryption and decryption of data internally. This means that when you work with a [RxDocument](./rx-document.md), you can access the properties of the document just like you would with normal, unencrypted data. RxDB automatically decrypts the data for you when you retrieve it, making it transparent to your application code.
 This means the encryption works with all [RxStorage](./rx-storage.md) like **[SQLite](./rx-storage-sqlite.md)**, **[IndexedDB](./rx-storage-indexeddb.md)**, **[OPFS](./rx-storage-opfs.md)** and so on.
 
 However, there's a limitation when it comes to querying encrypted fields. **Encrypted fields cannot be used as operators in queries**. This means you cannot perform queries like "find all documents where the encrypted field equals a certain value." RxDB does not expose the encrypted data in a way that allows direct querying based on the encrypted content. To filter or search for documents based on the contents of encrypted fields, you would need to first decrypt the data and then perform the query, which might not be efficient or practical in some cases.
@@ -163,7 +164,9 @@ const mySchema = {
         /* ... */
     },
     attachments: {
-        encrypted: true // if true, the attachment-data will be encrypted with the db-password
+        // if true, the attachment-data will be
+        // encrypted with the db-password
+        encrypted: true
     }
 };
 ```
@@ -181,7 +184,9 @@ When you wrap a storage like [OPFS](./rx-storage-opfs.md) with encryption inside
 ```ts
 // inside of the worker.js file
 import { getRxStorageOPFS } from 'rxdb-premium/plugins/storage-opfs';
-import { wrappedKeyEncryptionWebCryptoStorage } from 'rxdb-premium/plugins/encryption-web-crypto';
+import {
+    wrappedKeyEncryptionWebCryptoStorage
+} from 'rxdb-premium/plugins/encryption-web-crypto';
 
 const storage = wrappedKeyEncryptionWebCryptoStorage({
     storage: getRxStorageOPFS({

@@ -114,9 +114,11 @@ const replicationState = await replicateRxCollection({
         async handler(checkpointOrNull, batchSize){
             const updatedAt = checkpointOrNull ? checkpointOrNull.updatedAt : 0;
             const id = checkpointOrNull ? checkpointOrNull.id : '';
-            const response = await fetch(
-                `https://localhost/pull?updatedAt=${updatedAt}&id=${id}&limit=${batchSize}`
-            );
+            const url = 'https://localhost/pull'
+                + `?updatedAt=${updatedAt}`
+                + `&id=${id}`
+                + `&limit=${batchSize}`;
+            const response = await fetch(url);
             const data = await response.json();
             return {
                 documents: data.documents,
@@ -135,7 +137,7 @@ To send client side writes to the server, we have to implement the `push.handler
 
 For [conflict detection](./transactions-conflicts-revisions.md), on the server we first have to detect if the `assumedMasterState` is correct for each row. If yes, we have to write the new document state to the database, otherwise we have to return the "real" master state in the conflict array.
 
-The server also creates an `event` that is emitted to the `pullStream$` which is later used in the [pull.stream$](#pullstream-for-ongoing-changes).
+The server also creates an `event` that is emitted to the `pullStream$` which is later used in the [pull.stream$](#implement-the-pullstream-endpoint).
 
 ```ts
 // > server.ts
@@ -155,14 +157,21 @@ app.get('/push', async (req, res) => {
         checkpoint: null
     };
     for(const changeRow of changeRows){
-        const realMasterState = await mongoCollection.findOne({id: changeRow.newDocumentState.id});
+        const realMasterState =
+            await mongoCollection.findOne(
+                {id: changeRow.newDocumentState.id}
+            );
         if(
             realMasterState && !changeRow.assumedMasterState ||
             (
                 realMasterState && changeRow.assumedMasterState &&
                 /*
-                 * For simplicity we detect conflicts on the server by only compare the updateAt value.
-                 * In reality you might want to do a more complex check or do a deep-equal comparison.
+                 * For simplicity we detect conflicts
+                 * on the server by only compare the
+                 * updateAt value.
+                 * In reality you might want to do a
+                 * more complex check or do a
+                 * deep-equal comparison.
                  */
                 realMasterState.updatedAt !== changeRow.assumedMasterState.updatedAt
             )
@@ -176,7 +185,11 @@ app.get('/push', async (req, res) => {
                 changeRow.newDocumentState
             );
             event.documents.push(changeRow.newDocumentState);
-            event.checkpoint = { id: changeRow.newDocumentState.id, updatedAt: changeRow.newDocumentState.updatedAt };
+            event.checkpoint = {
+                id: changeRow.newDocumentState.id,
+                updatedAt:
+                    changeRow.newDocumentState.updatedAt
+            };
         }
     }
     if(event.documents.length > 0){
@@ -221,7 +234,7 @@ const replicationState = await replicateRxCollection({
 
 While the normal pull handler is used when the replication is in [iteration mode](./replication.md#checkpoint-iteration), we also need a stream of ongoing changes when the replication is in [event observation mode](./replication.md#event-observation). This brings the realtime replication to RxDB where changes on the server or on a client will directly get propagated to the other instances.
 
-On the server we have to implement the `pullStream` route and emit the events. We use the `pullStream$` observable from [above](#push-from-the-client-to-the-server) to fetch all ongoing events and respond them to the client. Here we use Server-Sent-Events (SSE) which is the most commonly used way to stream data from the server to the client. Other method also exist like [WebSockets or Long-Polling](./articles/websockets-sse-polling-webrtc-webtransport.md).
+On the server we have to implement the `pullStream` route and emit the events. We use the `pullStream$` observable from [above](#implement-the-push-endpoint) to fetch all ongoing events and respond them to the client. Here we use Server-Sent-Events (SSE) which is the most commonly used way to stream data from the server to the client. Other method also exist like [WebSockets or Long-Polling](./articles/websockets-sse-polling-webrtc-webtransport.md).
 
 ```ts
 // > server.ts

@@ -41,7 +41,8 @@ const db = await createRxDatabase({
          * For better performance, queries run with a batched cursor.
          * You can change the batchSize to optimize the query time
          * for specific queries.
-         * You should only change this value when you are also doing performance measurements.
+         * You should only change this value when
+         * you are also doing performance measurements.
          * [default=300]
          */
         batchSize: 300
@@ -86,7 +87,9 @@ const db = await createRxDatabase({
     name: 'exampledb',
     storage: getRxStorageIndexedDB({
         indexedDB: async(params) => {
-            const myStorageBucket = await navigator.storageBuckets.open('myApp-' + params.databaseName);
+            const myStorageBucket =
+                await navigator.storageBuckets
+                    .open('myApp-' + params.databaseName);
             return myStorageBucket.indexedDB;
         },
         IDBKeyRange
