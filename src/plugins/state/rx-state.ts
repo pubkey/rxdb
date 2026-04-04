@@ -264,21 +264,21 @@ export class RxStateBase<T, Reactivity = unknown> {
      * to store space and make recreating the state from
      * disc faster.
      */
-    async _cleanup() {
+    async _cleanup(): Promise<boolean> {
         const firstWrite = await this.collection.findOne({
             sort: [{ id: 'asc' }]
         }).exec();
         const lastWrite = await this._lastIdQuery.exec();
 
         if (!firstWrite || !lastWrite) {
-            return;
+            return true;
         }
 
         const firstNr = parseInt(firstWrite.id, 10);
         const lastNr = parseInt(lastWrite.id, 10);
         if ((lastNr - 5) < firstNr) {
             // only run if more than 5 write rows
-            return;
+            return true;
         }
 
         // update whole state object
@@ -293,6 +293,7 @@ export class RxStateBase<T, Reactivity = unknown> {
                 }
             }
         }).remove();
+        return true;
     }
 }
 

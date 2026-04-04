@@ -618,6 +618,45 @@ addRxPlugin(RxDBJsonDumpPlugin);
                 assert.deepStrictEqual(state.get(), { foo: 'bar6' });
                 state.collection.database.remove();
             });
+            /**
+             * _cleanup() must return true when it is done
+             * so that the cleanup plugin loop can terminate.
+             * @link https://github.com/pubkey/rxdb/issues/XXXX
+             */
+            it('_cleanup() should return true to signal completion', async () => {
+                const state = await getState();
+
+                // Write more than 5 documents so cleanup actually runs
+                await state.set('a', () => 0);
+                await state.set('a', () => 1);
+                await state.set('a', () => 2);
+                await state.set('a', () => 3);
+                await state.set('a', () => 4);
+                await state.set('a', () => 5);
+                await state.set('a', () => 6);
+
+                const docsBefore = await state.collection.find().exec();
+                assert.ok(docsBefore.length > 5, 'should have more than 5 docs before cleanup');
+
+                // First cleanup call should merge documents and return true
+                const firstResult = await state._cleanup();
+                assert.strictEqual(firstResult, true, '_cleanup() must return true after performing cleanup');
+
+                // Verify state is still correct
+                assert.strictEqual(state.a, 6);
+
+                const docsAfter = await state.collection.find().exec();
+                assert.strictEqual(docsAfter.length, 1, 'should have merged into 1 doc');
+
+                // Second cleanup call (no-op, < 5 docs) should also return true
+                const secondResult = await state._cleanup();
+                assert.strictEqual(secondResult, true, '_cleanup() must return true when no cleanup is needed');
+
+                // State must still be correct
+                assert.strictEqual(state.a, 6);
+
+                state.collection.database.remove();
+            });
         });
     });
 });

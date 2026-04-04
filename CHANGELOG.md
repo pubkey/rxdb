@@ -9,6 +9,8 @@
 
 <!-- RELEASE BELOW -->
 
+- FIX RxState `_cleanup()` not returning `true` on completion, causing the cleanup plugin loop to never terminate and run indefinitely
+
 ### 17.1.0 (2 April 2026)
 
 - FIX CRDT plugin `bulkInsert` hook not including schema default values in CRDT operations, causing data loss during conflict resolution rebuild when fields rely on schema defaults
