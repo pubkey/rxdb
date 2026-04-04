@@ -3,7 +3,7 @@
 
 <!-- CHANGELOG NEWEST -->
 
-<!-- ADD new changes here! -->
+<!-- ADD new changes to orga/changelog/ as one file per change -->
 
 <!-- /CHANGELOG NEWEST -->
 
