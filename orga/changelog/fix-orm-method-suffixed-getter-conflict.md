@@ -1,0 +1,1 @@
+- FIX ORM document method names conflicting with schema-generated suffixed getters (`field$`, `field$$`, `field_`) not being validated, causing a `TypeError` crash at runtime instead of a clear `RxError` (COL18) during collection creation
