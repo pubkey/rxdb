@@ -423,6 +423,64 @@ describe('rx-pipeline.test.js', () => {
             c2.database.close();
         });
     });
+    describeParallel('multiple pipelines to same destination', () => {
+        it('should not deadlock when two pipelines write to the same destination and both handlers read from it', async () => {
+            const source1 = await humansCollection.create(0);
+            await source1.database.waitForLeadership();
+            const source2 = await humansCollection.create(0);
+            await source2.database.waitForLeadership();
+            const dest = await humansCollection.create(0);
+
+            const pipeline1 = await source1.addPipeline({
+                destination: dest,
+                handler: async (docs) => {
+                    // Reading from the destination inside the handler
+                    // triggers awaitBeforeReads on dest, which calls
+                    // pipeline2's waitBeforeWriteFn -> pipeline2.awaitIdle()
+                    await dest.find().exec();
+                    for (const doc of docs) {
+                        await dest.insert(schemaObjects.humanData(doc.passportId + '-from-p1'));
+                    }
+                },
+                identifier: 'pipeline-1-' + randomToken(10)
+            });
+
+            const pipeline2 = await source2.addPipeline({
+                destination: dest,
+                handler: async (docs) => {
+                    // Same pattern: reading from dest triggers
+                    // pipeline1's waitBeforeWriteFn -> pipeline1.awaitIdle()
+                    await dest.find().exec();
+                    for (const doc of docs) {
+                        await dest.insert(schemaObjects.humanData(doc.passportId + '-from-p2'));
+                    }
+                },
+                identifier: 'pipeline-2-' + randomToken(10)
+            });
+
+            // Insert into both sources to trigger both pipelines concurrently
+            await source1.insert(schemaObjects.humanData('s1-doc'));
+            await source2.insert(schemaObjects.humanData('s2-doc'));
+
+            // awaitIdle on both pipelines should NOT deadlock
+            const result = await Promise.race([
+                Promise.all([pipeline1.awaitIdle(), pipeline2.awaitIdle()]).then(() => 'resolved'),
+                promiseWait(10000).then(() => 'timeout')
+            ]);
+
+            assert.strictEqual(result, 'resolved', 'awaitIdle() should not deadlock with multiple pipelines to the same destination');
+
+            // Both documents should have been processed into the destination
+            const destDocs = await dest.find().exec();
+            assert.strictEqual(destDocs.length, 2);
+
+            await pipeline1.close();
+            await pipeline2.close();
+            await source1.database.close();
+            await source2.database.close();
+            await dest.database.close();
+        });
+    });
     describeParallel('.remove()', () => {
         it('should properly clean up checkpoint when remove() is called while pipeline is processing', async () => {
             const c1 = await humansCollection.create(0);
