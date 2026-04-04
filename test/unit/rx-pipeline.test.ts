@@ -397,6 +397,55 @@ describe('rx-pipeline.test.js', () => {
             await c1.database.close();
             await c2.database.close();
         });
+        it('should not deadlock when handler reads destination after await in limited stack trace environments', async () => {
+            const c1 = await humansCollection.create(0);
+            await c1.database.waitForLeadership();
+            const c2 = await humansCollection.create(0);
+
+            /**
+             * Reduce Error.stackTraceLimit to simulate environments
+             * where async stack traces do not include the flagged
+             * function name (e.g. Safari/JavaScriptCore, or when
+             * Error.stackTraceLimit is low). In these environments,
+             * the waitBeforeWriteFn stack check fails after any await
+             * in the handler because the flagged function disappears
+             * from the synchronous-only stack trace.
+             */
+            const origStackTraceLimit = Error.stackTraceLimit;
+            Error.stackTraceLimit = 1;
+            try {
+                const pipeline = await c1.addPipeline({
+                    destination: c2,
+                    handler: async (docs) => {
+                        for (const doc of docs) {
+                            await c2.insert(schemaObjects.humanData(doc.passportId + '-first'));
+                            /**
+                             * After the above await, the synchronous stack
+                             * no longer contains the flagged function name.
+                             * With stackTraceLimit=1, the async frames are
+                             * also not included. This causes waitBeforeWriteFn
+                             * to call awaitIdle() which deadlocks.
+                             */
+                            const existing = await c2.find().exec();
+                            await c2.insert(schemaObjects.humanData(doc.passportId + '-count-' + existing.length));
+                        }
+                    },
+                    identifier: randomToken(10)
+                });
+
+                await c1.insert(schemaObjects.humanData('foobar'));
+                await pipeline.awaitIdle();
+
+                const allDocs = await c2.find().exec();
+                assert.ok(allDocs.length >= 2, 'should have at least 2 docs in destination');
+
+                await pipeline.close();
+            } finally {
+                Error.stackTraceLimit = origStackTraceLimit;
+            }
+            await c1.database.close();
+            await c2.database.close();
+        });
         it('should not block reads when localDocument inserted', async () => {
             const c1 = await humansCollection.create(0);
             await c1.database.waitForLeadership();

@@ -1,0 +1,1 @@
+- FIX `RxPipeline` handler deadlocking when reading from the destination collection after an `await`, in environments without async stack traces (Safari/JavaScriptCore, low `Error.stackTraceLimit`, minified builds), by adding a `handlerRunning` flag as fallback to the stack-trace-based detection

@@ -51,11 +51,28 @@ export class RxPipeline<RxDocType> {
 
     secretFunctionName = 'tx_fn_' + randomToken(10)
 
+    /**
+     * Set to true while the pipeline handler is running.
+     * Used as a fallback check in waitBeforeWriteFn for environments
+     * where async stack traces are not available (e.g. Safari/JavaScriptCore)
+     * or when Error.stackTraceLimit is too low to include the flagged function.
+     */
+    handlerRunning = false;
+
     waitBeforeWriteFn = async () => {
         const stack = new Error().stack;
         if (stack && (
             stack.includes(this.secretFunctionName)
         )) {
+        } else if (this.handlerRunning) {
+            /**
+             * Fallback: the stack trace check can fail in environments
+             * that do not preserve async stack frames (Safari, low
+             * Error.stackTraceLimit, minified builds). When the handler
+             * is currently running, skip the wait to avoid a deadlock
+             * where the handler waits for awaitIdle() which waits for
+             * the handler to finish.
+             */
         } else {
             await this.awaitIdle();
         }
@@ -151,11 +168,13 @@ export class RxPipeline<RxDocType> {
 
                     const fnKey = blockFlaggedFunctionKey();
                     this.secretFunctionName = fnKey;
+                    this.handlerRunning = true;
                     try {
                         await FLAGGED_FUNCTIONS[fnKey](() => _this.handler(rxDocuments));
                     } catch (err: any) {
                         this.error = err;
                     } finally {
+                        this.handlerRunning = false;
                         releaseFlaggedFunctionKey(fnKey);
                     }
 
