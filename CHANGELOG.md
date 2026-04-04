@@ -9,6 +9,10 @@
 
 <!-- RELEASE BELOW -->
 
+### 17.1.1 (4 April 2026)
+
+- FIX `getStartIndexStringFromLowerBound()` and `getStartIndexStringFromUpperBound()` using space character (`\x20`) as the minimum boundary for string index fields, causing documents with string values containing control characters (codepoints below 32, e.g. `\t`, `\n`) to fall below the index scan range and be silently excluded from query results and counts
+
 ### 17.1.0 (2 April 2026)
 
 - FIX CRDT plugin `bulkInsert` hook not including schema default values in CRDT operations, causing data loss during conflict resolution rebuild when fields rely on schema defaults

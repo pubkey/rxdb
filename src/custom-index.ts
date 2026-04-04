@@ -333,10 +333,20 @@ export function getStartIndexStringFromLowerBound(
             case 'string':
                 const maxLength = ensureNotFalsy(schemaPart.maxLength, 'maxLength not set');
                 if (typeof bound === 'string') {
-                    str += (bound as string).padEnd(maxLength, ' ');
+                    if (bound === INDEX_MAX) {
+                        str += ''.padEnd(maxLength, INDEX_MAX);
+                    } else {
+                        str += (bound as string).padEnd(maxLength, ' ');
+                    }
                 } else {
-                    // str += ''.padStart(maxLength, inclusiveStart ? ' ' : INDEX_MAX);
-                    str += ''.padEnd(maxLength, ' ');
+                    /**
+                     * Use the null character (\x00) as the absolute minimum
+                     * instead of space (\x20). Strings can contain characters
+                     * with codepoints below space (e.g. \t = 9, \n = 10)
+                     * which would sort before space-padded bounds and be
+                     * silently excluded from query results.
+                     */
+                    str += ''.padEnd(maxLength, '\x00');
                 }
                 break;
             case 'boolean':
@@ -400,7 +410,14 @@ export function getStartIndexStringFromUpperBound(
                 if (typeof bound === 'string' && bound !== INDEX_MAX) {
                     str += (bound as string).padEnd(maxLength, ' ');
                 } else if (bound === INDEX_MIN) {
-                    str += ''.padEnd(maxLength, ' ');
+                    /**
+                     * Use the null character (\x00) as the absolute minimum
+                     * to match the lower bound fix. This ensures that compound
+                     * index queries with exclusive bounds on earlier fields
+                     * correctly exclude documents whose later string fields
+                     * contain characters with codepoints below space.
+                     */
+                    str += ''.padEnd(maxLength, '\x00');
                 } else {
                     str += ''.padEnd(maxLength, INDEX_MAX);
                 }
