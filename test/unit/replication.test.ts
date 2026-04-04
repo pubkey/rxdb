@@ -2432,5 +2432,69 @@ describe('replication.test.ts', () => {
             await localCollection.database.close();
             await remoteCollection.database.close();
         });
+        it('should push documents after pause during push retry', async () => {
+            const { localCollection, remoteCollection } = await getTestCollections({ local: 0, remote: 0 });
+
+            const realPushHandler = getPushHandler(remoteCollection);
+
+            /**
+             * Use a flag to control whether the push handler fails.
+             * When pushShouldFail is true, the handler throws so
+             * the replication enters its retry loop.
+             */
+            let pushShouldFail = true;
+            const pushHandler: typeof realPushHandler = (rows) => {
+                if (pushShouldFail) {
+                    throw new Error('simulated network error');
+                }
+                return realPushHandler(rows);
+            };
+
+            const replicationState = replicateRxCollection({
+                collection: localCollection,
+                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                live: true,
+                retryTime: 100,
+                pull: {
+                    handler: getPullHandler(remoteCollection)
+                },
+                push: {
+                    handler: pushHandler
+                }
+            });
+            await replicationState.awaitInitialReplication();
+
+            // Insert a document locally
+            await localCollection.insert(
+                schemaObjects.humanWithTimestampData({ id: 'pause-retry-doc' })
+            );
+
+            // Wait for at least one push error to be emitted
+            await firstValueFrom(replicationState.error$);
+
+            // Pause while the push is retrying
+            await replicationState.pause();
+
+            // Allow enough time for the retry loop to observe the paused state
+            await wait(300);
+
+            // Fix the push handler so it succeeds on resume
+            pushShouldFail = false;
+
+            // Resume the replication
+            await replicationState.start();
+            await replicationState.awaitInSync();
+
+            // The document must be present on the remote
+            const remoteDocs = await remoteCollection.find().exec();
+            assert.strictEqual(
+                remoteDocs.length,
+                1,
+                'document must reach the remote after pause-during-retry and resume'
+            );
+
+            await localCollection.database.close();
+            await remoteCollection.database.close();
+        });
     });
 });
