@@ -117,6 +117,40 @@ describe('webmcp.test.ts', () => {
         assert.strictEqual(waitResolved, true);
     });
 
+    it('changes tool should return documents without internal meta fields', async () => {
+        db.registerWebMCP();
+        const tools = getTools();
+        const queryTool = tools.find((t: any) => t.name.startsWith(`rxdb_query_${db.name}_humans`));
+        const changesTool = tools.find((t: any) => t.name.startsWith(`rxdb_changes_${db.name}_humans`));
+
+        await collection.insert(schemaObjects.humanData('meta_alice'));
+
+        // Get document via query tool (uses toJSON, strips meta)
+        const queryResult = await executeTool(queryTool.name, { query: { selector: { passportId: 'meta_alice' } } });
+        assert.strictEqual(queryResult.length, 1);
+
+        // Get document via changes tool
+        const changesResult = await executeTool(changesTool.name, { limit: 10 });
+        assert.strictEqual(changesResult.documents.length, 1);
+
+        const queryDoc = queryResult[0];
+        const changesDoc = changesResult.documents[0];
+
+        // The changes tool should return documents in the same shape as query tool
+        // Internal meta fields like _meta, _rev, _attachments, _deleted should not be exposed
+        assert.strictEqual(changesDoc._meta, undefined, 'changes tool should not expose _meta');
+        assert.strictEqual(changesDoc._rev, undefined, 'changes tool should not expose _rev');
+        assert.strictEqual(changesDoc._attachments, undefined, 'changes tool should not expose _attachments');
+        assert.strictEqual(changesDoc._deleted, undefined, 'changes tool should not expose _deleted');
+
+        // The document fields should match between both tools
+        assert.deepStrictEqual(
+            Object.keys(queryDoc).sort(),
+            Object.keys(changesDoc).sort(),
+            'changes tool documents should have the same keys as query tool documents'
+        );
+    });
+
     it('should iterate over changes using checkpoint', async () => {
         db.registerWebMCP();
         const tools = getTools();
