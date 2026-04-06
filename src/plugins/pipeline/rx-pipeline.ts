@@ -28,8 +28,7 @@ import {
     lastOfArray,
     nameFunction,
     now,
-    promiseWait,
-    randomToken
+    promiseWait
 } from '../utils/index.ts';
 import { getChangedDocumentsSince } from '../../rx-storage-helper.ts';
 import { mapDocumentsDataToCacheDocs } from '../../doc-cache.ts';
@@ -49,7 +48,6 @@ export class RxPipeline<RxDocType> {
     somethingChanged = new Subject();
 
 
-    secretFunctionName = 'tx_fn_' + randomToken(10)
 
     waitBeforeWriteFn = async () => {
         const stack = new Error().stack;
@@ -150,7 +148,6 @@ export class RxPipeline<RxDocType> {
                     // await o[this.secretFunctionName](rxDocuments);
 
                     const fnKey = blockFlaggedFunctionKey();
-                    this.secretFunctionName = fnKey;
                     try {
                         await FLAGGED_FUNCTIONS[fnKey](() => _this.handler(rxDocuments));
                     } catch (err: any) {
