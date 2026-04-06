@@ -1,0 +1,1 @@
+- FIX `RxPipeline` deadlock when multiple pipelines share the same destination collection and their handlers read from the destination, because each pipeline's `waitBeforeWriteFn` only recognized its own flagged function name in the stack instead of any pipeline's flagged function prefix

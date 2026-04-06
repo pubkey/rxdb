@@ -1,0 +1,1 @@
+- FIX WebMCP `changes` tool returning documents with internal meta fields (`_meta`, `_rev`, `_attachments`, `_deleted`) instead of stripping them like the query, insert, upsert, and delete tools do via `toJSON()`
