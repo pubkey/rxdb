@@ -102,13 +102,17 @@ jobs:
         if: steps.check-changes.outputs.should_run == 'true'
         id: build
         continue-on-error: true
-        run: npm run build 2>&1 | tee /tmp/build-output.txt
+        run: |
+          set -o pipefail
+          npm run build 2>&1 | tee /tmp/build-output.txt
 
       - name: Run tests (expect failure)
         if: steps.check-changes.outputs.should_run == 'true' && steps.build.outcome == 'success'
         id: run-tests
         continue-on-error: true
-        run: npm run test:fast:memory 2>&1 | tee /tmp/test-output.txt
+        run: |
+          set -o pipefail
+          npm run test:fast:memory 2>&1 | tee /tmp/test-output.txt
 
       - name: Evaluate results
         if: steps.check-changes.outputs.should_run == 'true'
