@@ -761,6 +761,56 @@ describeParallel('encryption.test.ts', () => {
         });
     });
     describe('SECURITY', () => {
+        it('should not expose the database password as an enumerable property', async () => {
+            const useStorage = getEncryptedStorage();
+            const password = await getPassword();
+            const db = await createRxDatabase({
+                name: randomToken(10),
+                storage: useStorage,
+                password
+            });
+
+            // SECURITY: The password must NOT be enumerable on the database object.
+            // If it is enumerable, it can leak through Object.keys(), spreading,
+            // Object.assign(), for..in loops, and JSON.stringify() which are
+            // commonly used in logging, error reporting, and serialization.
+            const keys = Object.keys(db);
+            assert.ok(
+                !keys.includes('password'),
+                'password should not appear in Object.keys(db)'
+            );
+
+            // SECURITY: Spreading the database object must NOT include the password
+            const spread = { ...db };
+            assert.strictEqual(
+                (spread as any).password,
+                undefined,
+                'password should not be included when spreading the db object'
+            );
+
+            // SECURITY: JSON.stringify must NOT include the password.
+            // This is the most common leak vector through logging and error reporting.
+            // The db object has circular references, so use a replacer to handle them.
+            const seen = new WeakSet();
+            const serialized = JSON.stringify(db, (key, value) => {
+                if (typeof value === 'object' && value !== null) {
+                    if (seen.has(value)) {
+                        return undefined;
+                    }
+                    seen.add(value);
+                }
+                return value;
+            });
+            assert.ok(
+                !serialized.includes(password),
+                'password should not appear in JSON.stringify(db)'
+            );
+
+            // SECURITY: The password must still be accessible directly for internal use
+            assert.strictEqual(db.password, password, 'password should still be directly accessible');
+
+            await db.remove();
+        });
         it('should not leak the password in error parameters when password is too short', async () => {
             const shortPassword = 'short1';
             const useStorage = getEncryptedStorage();

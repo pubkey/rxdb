@@ -196,7 +196,17 @@ export function registerWebMCPCollection(this: RxCollection, options?: WebMCPOpt
             const limit = args.limit || 50;
             const storageInstance = collection.storageInstance;
             const changes = await getChangedDocumentsSince(storageInstance, limit, args.checkpoint);
-            return changes;
+            return {
+                documents: changes.documents.map((doc: any) => {
+                    const cleaned = Object.assign({}, doc);
+                    delete cleaned._meta;
+                    delete cleaned._rev;
+                    delete cleaned._attachments;
+                    delete cleaned._deleted;
+                    return cleaned;
+                }),
+                checkpoint: changes.checkpoint
+            };
         })
     });
 
