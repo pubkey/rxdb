@@ -1,0 +1,1 @@
+- FIX `RxCollection.cleanup()` returning `undefined` instead of `boolean` as declared by its TypeScript return type, because the cleanup plugin implementation did not return the result from `cleanupRxCollection()`
