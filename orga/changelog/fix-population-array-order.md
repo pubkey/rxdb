@@ -1,0 +1,1 @@
+- FIX `populate()` on array ref fields returning documents in wrong order when two documents reference the same set of IDs in different order, because `findByIds` query cache deduplication reused a cached query whose Map iteration order matched the first caller instead of preserving each document's own ref array order
