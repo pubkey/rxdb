@@ -788,6 +788,24 @@ describeParallel('encryption.test.ts', () => {
                 'password should not be included when spreading the db object'
             );
 
+            // SECURITY: JSON.stringify must NOT include the password.
+            // This is the most common leak vector through logging and error reporting.
+            // The db object has circular references, so use a replacer to handle them.
+            const seen = new WeakSet();
+            const serialized = JSON.stringify(db, (key, value) => {
+                if (typeof value === 'object' && value !== null) {
+                    if (seen.has(value)) {
+                        return undefined;
+                    }
+                    seen.add(value);
+                }
+                return value;
+            });
+            assert.ok(
+                !serialized.includes(password),
+                'password should not appear in JSON.stringify(db)'
+            );
+
             // SECURITY: The password must still be accessible directly for internal use
             assert.strictEqual(db.password, password, 'password should still be directly accessible');
 
