@@ -16,7 +16,7 @@ permissions:
 jobs:
   test-without-fix:
     runs-on: ubuntu-22.04
-    timeout-minutes: 30
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v6
         with:
@@ -106,13 +106,21 @@ jobs:
           set -o pipefail
           npm run build 2>&1 | tee /tmp/build-output.txt
 
-      - name: Run tests (expect failure)
+      - name: Run test:node (expect failure)
         if: steps.check-changes.outputs.should_run == 'true' && steps.build.outcome == 'success'
-        id: run-tests
+        id: run-tests-node
         continue-on-error: true
         run: |
           set -o pipefail
-          npm run test:fast:memory 2>&1 | tee /tmp/test-output.txt
+          npm run test:node 2>&1 | tee /tmp/test-node-output.txt
+
+      - name: Run test:browser:dexie (expect failure)
+        if: steps.check-changes.outputs.should_run == 'true' && steps.build.outcome == 'success'
+        id: run-tests-dexie
+        continue-on-error: true
+        uses: coactions/setup-xvfb@v1
+        with:
+          run: npm run test:browser:dexie 2>&1 | tee /tmp/test-dexie-output.txt
 
       - name: Evaluate results
         if: steps.check-changes.outputs.should_run == 'true'
@@ -120,6 +128,19 @@ jobs:
         run: |
           echo "== Test-Without-Fix Results =="
           echo ""
+          # Combine test outputs into a single file
+          : > /tmp/test-output.txt
+          if [ -f /tmp/test-node-output.txt ]; then
+            echo "=== test:node output ===" >> /tmp/test-output.txt
+            cat /tmp/test-node-output.txt >> /tmp/test-output.txt
+            echo "" >> /tmp/test-output.txt
+          fi
+          if [ -f /tmp/test-dexie-output.txt ]; then
+            echo "=== test:browser:dexie output ===" >> /tmp/test-output.txt
+            cat /tmp/test-dexie-output.txt >> /tmp/test-output.txt
+            echo "" >> /tmp/test-output.txt
+          fi
+
           if [ "${{ steps.build.outcome }}" == "failure" ]; then
             echo "✅ Build FAILED without the source changes."
             echo "This confirms the test requires the source changes from this PR."
@@ -127,7 +148,7 @@ jobs:
             COMMENT_TITLE="Build FAILED without the source changes (expected)"
             COMMENT_BODY="This confirms the source changes in this PR are required for the build to succeed."
             OUTPUT_FILE="/tmp/build-output.txt"
-          elif [ "${{ steps.run-tests.outcome }}" == "failure" ]; then
+          elif [ "${{ steps.run-tests-node.outcome }}" == "failure" ] || [ "${{ steps.run-tests-dexie.outcome }}" == "failure" ]; then
             echo "✅ Tests FAILED without the fix."
             echo "This confirms the test correctly reproduces the bug."
             COMMENT_ICON="✅"
