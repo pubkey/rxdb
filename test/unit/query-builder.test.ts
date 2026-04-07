@@ -150,7 +150,7 @@ describeParallel('query-builder.test.js', () => {
         it('selector shorthand value should be preserved when chaining another operator on the same field', () => {
             // When a selector uses shorthand syntax (e.g., { age: 5 } instead of { age: { $eq: 5 } }),
             // chaining another operator on the same field should preserve the implicit equality condition.
-            const builder = createQueryBuilder({
+            const builder = createQueryBuilder<{ age: number }>({
                 selector: {
                     age: 5
                 }
@@ -165,7 +165,7 @@ describeParallel('query-builder.test.js', () => {
             });
         });
         it('selector shorthand null value should be preserved when chaining another operator', () => {
-            const builder = createQueryBuilder({
+            const builder = createQueryBuilder<{ name: string | null }>({
                 selector: {
                     name: null
                 }
