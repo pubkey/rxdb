@@ -48,7 +48,7 @@ async function createDatabase(): Promise<RxDatabase> {
 }
 
 function createWrapper(db: RxDatabase) {
-    return function Wrapper({ children }: { children: React.ReactNode }) {
+    return function Wrapper({ children }: { children: React.ReactNode; }) {
         return <RxDatabaseProvider database={db}>{children}</RxDatabaseProvider>;
     };
 }
@@ -66,7 +66,7 @@ describe('react-hooks.test.tsx', () => {
         it('should throw when given an invalid database', () => {
             assert.throws(() => {
                 renderHook(() => { }, {
-                    wrapper: ({ children }: { children: React.ReactNode }) => (
+                    wrapper: ({ children }: { children: React.ReactNode; }) => (
                         <RxDatabaseProvider database={'not-a-db' as any}>{children}</RxDatabaseProvider>
                     )
                 });
