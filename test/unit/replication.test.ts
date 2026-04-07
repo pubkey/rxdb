@@ -2433,9 +2433,6 @@ describe('replication.test.ts', () => {
             await remoteCollection.database.close();
         });
         it('should push documents after pause during push retry', async () => {
-            if (isFastMode()) {
-                return;
-            }
             const { localCollection, remoteCollection } = await getTestCollections({ local: 0, remote: 0 });
 
             const realPushHandler = getPushHandler(remoteCollection);
