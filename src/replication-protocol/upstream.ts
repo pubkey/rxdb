@@ -420,6 +420,17 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
                 })
             );
 
+            /**
+             * Check for canceled or paused state before marking documents
+             * as successfully pushed. When the replication is paused during
+             * a push retry, masterWrite() returns [] even though no documents
+             * were actually sent. Without this check the meta instance would
+             * be updated, causing the documents to never be retried on resume.
+             */
+            if (state.events.canceled.getValue() || state.events.paused.getValue()) {
+                return false;
+            }
+
             const useWriteRowsToMeta: BulkWriteRow<RxStorageReplicationMeta<RxDocType, any>>[] = [];
 
             writeRowsToMasterIds.forEach(docId => {
@@ -428,10 +439,6 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
                     useWriteRowsToMeta.push(writeRowsToMeta[docId]);
                 }
             });
-
-            if (state.events.canceled.getValue()) {
-                return false;
-            }
 
             if (!state.skipStoringPullMeta && useWriteRowsToMeta.length > 0) {
                 await state.input.metaInstance.bulkWrite(
