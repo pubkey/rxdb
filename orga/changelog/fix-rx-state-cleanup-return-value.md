@@ -1,0 +1,1 @@
+- FIX RxState `_cleanup()` not returning `true` on completion, causing the cleanup plugin loop to never terminate and run indefinitely

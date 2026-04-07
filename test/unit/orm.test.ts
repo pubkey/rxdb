@@ -370,6 +370,68 @@ describeParallel('orm.test.js', () => {
         });
     });
     describe('ISSUES', () => {
+        it('ORM method with populate-getter suffix should throw COL18', async () => {
+            /**
+             * BUG: The schema generates populate getters for each field
+             * with a '_' suffix (e.g. field 'name' -> getter 'name_').
+             * An ORM method named 'name_' passes all validation in dev-mode
+             * but then causes a TypeError crash at runtime when the
+             * prototype merge tries to redefine the non-configurable
+             * schema property.
+             *
+             * The fix: checkOrmDocumentMethods must also check for
+             * conflicts with the suffixed schema-generated getters
+             * (field$, field$$, field_).
+             */
+            const db = await createRxDatabase({
+                name: randomToken(),
+                storage: config.storage.getStorage(),
+                multiInstance: false
+            });
+
+            type DocType = {
+                id: string;
+                name: string;
+            };
+
+            const schema: RxJsonSchema<DocType> = {
+                version: 0,
+                type: 'object',
+                primaryKey: 'id',
+                properties: {
+                    id: {
+                        type: 'string',
+                        maxLength: 100
+                    },
+                    name: {
+                        type: 'string'
+                    }
+                },
+                required: ['id', 'name']
+            };
+
+            /**
+             * 'name_' is exactly the populate getter name for 'name'.
+             * This must throw a clear RxError COL18 during collection
+             * creation, not a raw TypeError later on document access.
+             */
+            await AsyncTestUtil.assertThrows(
+                () => db.addCollections({
+                    humans: {
+                        schema,
+                        methods: {
+                            name_: function (this: any) {
+                                return this.name;
+                            }
+                        } as any
+                    }
+                }),
+                'RxError',
+                'COL18'
+            );
+
+            db.close();
+        });
         it('#791 Document methods are not bind() to the document', async () => {
             const db = await createRxDatabase({
                 name: randomToken(),

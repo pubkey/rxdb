@@ -321,6 +321,47 @@ describeParallel('cleanup.test.js', () => {
 
             await db.close();
         });
+        it('cleanup() should return true as stated by the TypeScript return type', async () => {
+            /**
+             * RxCollection.cleanup() is declared to return Promise<boolean>
+             * where true means all cleanable documents have been removed.
+             * But the cleanup plugin implementation returns Promise<void> (undefined at runtime),
+             * so the return value does not match the declared type.
+             */
+            const db = await createRxDatabase({
+                name: randomToken(10),
+                storage: config.storage.getStorage(),
+                cleanupPolicy: {
+                    awaitReplicationsInSync: false,
+                    minimumCollectionAge: 200000,
+                    minimumDeletedTime: 0,
+                    runEach: 200000,
+                    waitForLeadership: false
+                }
+            });
+            const cols = await db.addCollections({
+                humans: {
+                    schema: schemas.human
+                }
+            });
+            const collection: RxCollection<HumanDocumentType> = cols.humans;
+
+            // insert and delete a document
+            const doc = await collection.insert(schemaObjects.humanData());
+            await doc.remove();
+
+            // cleanup(0) should return true when done
+            const result = await collection.cleanup(0);
+            assert.strictEqual(typeof result, 'boolean', 'cleanup() must return a boolean, not ' + typeof result);
+            assert.strictEqual(result, true, 'cleanup() must return true when all deleted documents have been cleaned up');
+
+            // also test cleanup without arguments
+            const result2 = await collection.cleanup();
+            assert.strictEqual(typeof result2, 'boolean', 'cleanup() without args must also return a boolean');
+            assert.strictEqual(result2, true);
+
+            await db.close();
+        });
         it('fields with umlauts and emojis could break the state after cleanup in some storages', async () => {
             type DocType = {
                 id: string;

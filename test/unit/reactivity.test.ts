@@ -22,8 +22,10 @@ import {
 } from '../../plugins/core/index.mjs';
 
 import { RxDBQueryBuilderPlugin } from '../../plugins/query-builder/index.mjs';
+import { RxDBLocalDocumentsPlugin } from '../../plugins/local-documents/index.mjs';
 import { PREACT_SIGNAL_STATE, PreactSignalReactivityLambda, PreactSignalsRxReactivityFactory } from '../../plugins/reactivity-preact-signals/index.mjs';
 addRxPlugin(RxDBQueryBuilderPlugin);
+addRxPlugin(RxDBLocalDocumentsPlugin);
 
 
 
@@ -207,5 +209,77 @@ describeParallel('reactivity.test.ts', () => {
             await db.close();
         });
     });
-    describe('issues', () => { });
+    describe('issues', () => {
+        it('RxLocalDocument.get$() should not emit spurious values on nested object paths', async () => {
+            const collection = await getReactivityCollection();
+            const db = collection.database;
+            const localDoc = await db.insertLocal('nested-test', {
+                nested: { foo: 'bar' },
+                counter: 0
+            });
+
+            // subscribe to the nested object path via get$
+            const emitted: any[] = [];
+            const sub = localDoc.get$('nested').subscribe((val: any) => {
+                emitted.push(val);
+            });
+
+            // wait for initial emission
+            await waitUntil(() => emitted.length >= 1);
+            assert.deepStrictEqual(emitted[0], { foo: 'bar' });
+
+            // update an UNRELATED field - should NOT cause get$('nested') to re-emit
+            await localDoc.incrementalPatch({ counter: 1 });
+            await localDoc.incrementalPatch({ counter: 2 });
+
+            // give time for potential spurious emissions
+            await new Promise(resolve => setTimeout(resolve, 200));
+
+            // BUG: without deepEqual in distinctUntilChanged, we get spurious emissions
+            // because each document revision creates new object references for nested objects
+            assert.strictEqual(
+                emitted.length,
+                1,
+                'get$ on a nested object path should not emit when an unrelated field changes, but got ' + emitted.length + ' emissions'
+            );
+
+            sub.unsubscribe();
+            await db.close();
+        });
+        it('RxLocalDocument.get$$() should not emit spurious values on nested object paths', async () => {
+            const collection = await getReactivityCollection();
+            const db = collection.database;
+            const localDoc = await db.insertLocal('nested-test-signal', {
+                nested: { foo: 'bar' },
+                counter: 0
+            });
+
+            // get the reactive value for nested object path
+            const signal: ReactivityType = localDoc.get$$('nested') as any;
+
+            // subscribe to track emissions from the underlying observable
+            const emitted: any[] = [];
+            const sub = signal.obs.subscribe((val: any) => {
+                emitted.push(val);
+            });
+
+            await waitUntil(() => emitted.length >= 1);
+            assert.deepStrictEqual(emitted[0], { foo: 'bar' });
+
+            // update an UNRELATED field
+            await localDoc.incrementalPatch({ counter: 1 });
+            await localDoc.incrementalPatch({ counter: 2 });
+
+            await new Promise(resolve => setTimeout(resolve, 200));
+
+            assert.strictEqual(
+                emitted.length,
+                1,
+                'get$$ on a nested object path should not emit when an unrelated field changes, but got ' + emitted.length + ' emissions'
+            );
+
+            sub.unsubscribe();
+            await db.close();
+        });
+    });
 });

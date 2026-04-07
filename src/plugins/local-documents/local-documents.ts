@@ -65,15 +65,16 @@ export async function upsertLocal<DocData extends Record<string, any> = any, Rea
     id: string,
     data: DocData
 ): Promise<RxLocalDocument<DocData, any, Reactivity>> {
-    const existing = await this.getLocal(id);
-    if (!existing) {
+    const state = await getLocalDocStateByParent(this);
+    const docDataFromCache = state.docCache.getLatestDocumentDataIfExists(id);
+
+    if (!docDataFromCache) {
         // create new one
         return this.insertLocal(id, data);
-    } else if (existing.deleted) {
+    } else if (docDataFromCache._deleted) {
         // document was deleted before, un-delete it via the write queue
-        const state = await getLocalDocStateByParent(this);
         const writeResult = await state.incrementalWriteQueue.addWrite(
-            (existing as any)._data,
+            docDataFromCache,
             (docData: any) => {
                 docData.data = data;
                 docData._deleted = false;
@@ -83,6 +84,7 @@ export async function upsertLocal<DocData extends Record<string, any> = any, Rea
         return state.docCache.getCachedRxDocument(writeResult) as any;
     } else {
         // update existing
+        const existing = state.docCache.getCachedRxDocument(docDataFromCache) as any;
         return existing.incrementalModify(() => {
             return data;
         });
@@ -96,6 +98,9 @@ export async function getLocal<DocData = any, Reactivity = unknown>(this: any, i
     // check in doc-cache
     const found = docCache.getLatestDocumentDataIfExists(id);
     if (found) {
+        if (found._deleted) {
+            return null;
+        }
         return Promise.resolve(
             docCache.getCachedRxDocument(found) as any
         );

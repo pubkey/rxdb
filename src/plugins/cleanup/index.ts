@@ -11,7 +11,7 @@ export const RxDBCleanupPlugin: RxPlugin = {
     rxdb: true,
     prototypes: {
         RxCollection: (proto: any) => {
-            proto.cleanup = async function (this: RxCollection, minimumDeletedTime?: number): Promise<void> {
+            proto.cleanup = async function (this: RxCollection, minimumDeletedTime?: number): Promise<boolean> {
                 const cleanupPolicy = Object.assign(
                     {},
                     DEFAULT_CLEANUP_POLICY,
@@ -23,7 +23,7 @@ export const RxDBCleanupPlugin: RxPlugin = {
                 }
 
                 // run cleanup() until it returns true
-                await cleanupRxCollection(this, cleanupPolicy);
+                return cleanupRxCollection(this, cleanupPolicy);
             };
         }
     },

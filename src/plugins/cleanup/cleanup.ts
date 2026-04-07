@@ -63,7 +63,7 @@ export async function initialCleanupWait(collection: RxCollection, cleanupPolicy
 export async function cleanupRxCollection(
     rxCollection: RxCollection,
     cleanupPolicy: RxCleanupPolicy
-) {
+): Promise<boolean> {
     const rxDatabase = rxCollection.database;
     const storageInstance = rxCollection.storageInstance;
 
@@ -85,7 +85,7 @@ export async function cleanupRxCollection(
             );
         }
         if (rxCollection.closed) {
-            return;
+            return false;
         }
         RXSTORAGE_CLEANUP_QUEUE = RXSTORAGE_CLEANUP_QUEUE
             .then(async () => {
@@ -118,6 +118,7 @@ export async function cleanupRxCollection(
         collectionName: rxCollection.name,
         databaseName: rxDatabase.name
     });
+    return isDone;
 }
 
 export async function runCleanupAfterDelete(
