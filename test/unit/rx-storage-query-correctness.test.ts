@@ -2188,4 +2188,70 @@ describeParallel('rx-storage-query-correctness.test.ts', () => {
             }
         ]
     });
+
+    testCorrectQueries({
+        testTitle: 'string fields with control characters (codepoint < 32) must be found by queries',
+        schema: {
+            version: 0,
+            primaryKey: 'id',
+            type: 'object',
+            properties: {
+                id: {
+                    type: 'string',
+                    maxLength: 100
+                },
+                name: {
+                    type: 'string',
+                    maxLength: 100
+                },
+                age: {
+                    type: 'integer',
+                    minimum: 0,
+                    maximum: 150,
+                    multipleOf: 1
+                }
+            },
+            indexes: [
+                ['name'],
+                ['age', 'name']
+            ],
+            required: ['id', 'name', 'age']
+        },
+        data: [
+            { id: 'tab-name', name: '\tAlice', age: 30 },
+            { id: 'newline-name', name: '\nBob', age: 25 },
+            { id: 'normal-name', name: 'Carol', age: 35 },
+            { id: 'space-name', name: ' Dave', age: 40 }
+        ],
+        queries: [
+            {
+                info: 'find all documents including those with control characters in string fields',
+                query: {
+                    selector: {},
+                    sort: [{ name: 'asc' }]
+                },
+                expectedResultDocIds: ['tab-name', 'newline-name', 'space-name', 'normal-name']
+            },
+            {
+                info: 'control character strings with $gte should be found',
+                query: {
+                    selector: {
+                        name: { $gte: '\t' }
+                    },
+                    sort: [{ name: 'asc' }]
+                },
+                expectedResultDocIds: ['tab-name', 'newline-name', 'space-name', 'normal-name']
+            },
+            {
+                info: 'compound index: $gt on first field must not leak docs via control chars in second field',
+                query: {
+                    selector: {
+                        age: { $gt: 30 }
+                    },
+                    sort: [{ age: 'asc' }]
+                },
+                expectedResultDocIds: ['normal-name', 'space-name']
+            }
+        ]
+    });
 });

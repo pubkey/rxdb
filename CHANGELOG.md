@@ -1,11 +1,11 @@
 
 # RxDB Changelog
 
-<!-- CHANGELOG NEWEST -->
 
-<!-- ADD new changes to orga/changelog/ as one file per change -->
-
-<!-- /CHANGELOG NEWEST -->
+<!-- 
+  Do not add new changes directly here to the CHANGELOG.md file.
+  Instead add new changes to orga/changelog/ as one file per change as described in ./orga/changelog/README.md
+-->
 
 <!-- RELEASE BELOW -->
 

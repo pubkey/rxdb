@@ -28,13 +28,12 @@ import {
     lastOfArray,
     nameFunction,
     now,
-    promiseWait,
-    randomToken
+    promiseWait
 } from '../utils/index.ts';
 import { getChangedDocumentsSince } from '../../rx-storage-helper.ts';
 import { mapDocumentsDataToCacheDocs } from '../../doc-cache.ts';
 import { INTERNAL_CONTEXT_PIPELINE_CHECKPOINT, getPrimaryKeyOfInternalDocument } from '../../rx-database-internal-store.ts';
-import { FLAGGED_FUNCTIONS, blockFlaggedFunctionKey, releaseFlaggedFunctionKey } from './flagged-functions.ts';
+import { FLAGGED_FUNCTIONS, PIPELINE_FN_PREFIX, blockFlaggedFunctionKey, releaseFlaggedFunctionKey } from './flagged-functions.ts';
 
 export class RxPipeline<RxDocType> {
     processQueue = PROMISE_RESOLVE_VOID;
@@ -49,12 +48,11 @@ export class RxPipeline<RxDocType> {
     somethingChanged = new Subject();
 
 
-    secretFunctionName = 'tx_fn_' + randomToken(10)
 
     waitBeforeWriteFn = async () => {
         const stack = new Error().stack;
         if (stack && (
-            stack.includes(this.secretFunctionName)
+            stack.includes(PIPELINE_FN_PREFIX)
         )) {
         } else {
             await this.awaitIdle();
@@ -150,7 +148,6 @@ export class RxPipeline<RxDocType> {
                     // await o[this.secretFunctionName](rxDocuments);
 
                     const fnKey = blockFlaggedFunctionKey();
-                    this.secretFunctionName = fnKey;
                     try {
                         await FLAGGED_FUNCTIONS[fnKey](() => _this.handler(rxDocuments));
                     } catch (err: any) {
