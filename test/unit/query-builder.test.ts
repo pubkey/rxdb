@@ -147,5 +147,37 @@ describeParallel('query-builder.test.js', () => {
                 }
             });
         });
+        it('selector shorthand value should be preserved when chaining another operator on the same field', () => {
+            // When a selector uses shorthand syntax (e.g., { age: 5 } instead of { age: { $eq: 5 } }),
+            // chaining another operator on the same field should preserve the implicit equality condition.
+            const builder = createQueryBuilder<{ age: number; }>({
+                selector: {
+                    age: 5
+                }
+            });
+            builder.where('age').gt(3);
+            const result = builder.toJSON();
+            assert.deepStrictEqual(result.query.selector, {
+                age: {
+                    $eq: 5,
+                    $gt: 3
+                }
+            });
+        });
+        it('selector shorthand null value should be preserved when chaining another operator', () => {
+            const builder = createQueryBuilder<{ name: string | null; }>({
+                selector: {
+                    name: null
+                }
+            });
+            builder.where('name').ne('bar');
+            const result = builder.toJSON();
+            assert.deepStrictEqual(result.query.selector, {
+                name: {
+                    $eq: null,
+                    $ne: 'bar'
+                }
+            });
+        });
     });
 });

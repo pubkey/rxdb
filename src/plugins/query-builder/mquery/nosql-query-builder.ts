@@ -487,9 +487,21 @@ OTHER_MANGO_OPERATORS.forEach(function ($conditional) {
             path = arguments[0];
         }
 
-        const conds = this._conditions[path] === null || typeof this._conditions[path] === 'object' ?
-            this._conditions[path] :
-            (this._conditions[path] = {});
+        const existing = this._conditions[path];
+        let conds;
+        if (typeof existing === 'object' && existing !== null) {
+            conds = existing;
+        } else if (existing !== undefined) {
+            /**
+             * The selector had a shorthand value like { age: 5 }
+             * which is equivalent to { age: { $eq: 5 } }.
+             * Convert to operator form so the new operator can coexist
+             * instead of silently overwriting the equality condition.
+             */
+            conds = (this._conditions[path] = { $eq: existing });
+        } else {
+            conds = (this._conditions[path] = {});
+        }
 
 
 

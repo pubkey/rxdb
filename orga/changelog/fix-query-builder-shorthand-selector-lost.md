@@ -1,0 +1,1 @@
+- FIX query-builder operators (`gt`, `lt`, `ne`, `in`, etc.) silently dropping the implicit `$eq` condition when a selector shorthand value (e.g. `{ age: 5 }`) was used and then another operator was chained on the same field via the query-builder API
