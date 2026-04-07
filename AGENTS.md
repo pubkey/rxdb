@@ -46,11 +46,22 @@
 
 
 ## Development Workflow
-1. Make changes
-2. Build: `npm run build`
-3. Run tests: `npm run test:fast:memory`
-4. Run lint: `npm run lint`
-5. Check TypeScript types: `npm run check-types`
+
+After making any code changes, run these checks in order and fix any issues before finishing:
+
+```sh
+# 1. Lint JavaScript/TypeScript files
+npm run lint
+
+# 2. Check TypeScript types
+npm run check-types
+
+# 3. Build source files
+npm run build
+
+# 4. Run fast memory tests
+npm run test:fast:memory
+```
 
 
 ## Not allowed edits
