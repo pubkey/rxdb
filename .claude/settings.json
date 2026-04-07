@@ -38,6 +38,37 @@
                     }
                 ]
             }
+        ],
+        "PostToolUse": [
+            {
+                "matcher": "Write|Edit|MultiEdit",
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "f=$(jq -r '.tool_input.file_path // .tool_response.filePath // empty'); case \"$f\" in *.ts|*.tsx|*.js|*.jsx|*.mjs|*.cjs) cd /home/user/rxdb && (npm run lint > /tmp/claude-lint.log 2>&1 && echo '{\"systemMessage\":\"lint: ok\"}') || echo \"{\\\"systemMessage\\\":\\\"lint failed (see /tmp/claude-lint.log)\\\"}\" ;; esac",
+                        "async": true,
+                        "statusMessage": "Linting"
+                    },
+                    {
+                        "type": "command",
+                        "command": "f=$(jq -r '.tool_input.file_path // .tool_response.filePath // empty'); case \"$f\" in *.ts|*.tsx) cd /home/user/rxdb && (npm run check-types > /tmp/claude-check-types.log 2>&1 && echo '{\"systemMessage\":\"check-types: ok\"}') || echo \"{\\\"systemMessage\\\":\\\"check-types failed (see /tmp/claude-check-types.log)\\\"}\" ;; esac",
+                        "async": true,
+                        "statusMessage": "Type checking"
+                    },
+                    {
+                        "type": "command",
+                        "command": "f=$(jq -r '.tool_input.file_path // .tool_response.filePath // empty'); case \"$f\" in *src/*.ts|*src/*.tsx) cd /home/user/rxdb && (npm run build > /tmp/claude-build.log 2>&1 && echo '{\"systemMessage\":\"build: ok\"}') || echo \"{\\\"systemMessage\\\":\\\"build failed (see /tmp/claude-build.log)\\\"}\" ;; esac",
+                        "async": true,
+                        "statusMessage": "Building"
+                    },
+                    {
+                        "type": "command",
+                        "command": "f=$(jq -r '.tool_input.file_path // .tool_response.filePath // empty'); case \"$f\" in *.ts|*.tsx|*.js) cd /home/user/rxdb && (npm run test:fast:memory > /tmp/claude-test.log 2>&1 && echo '{\"systemMessage\":\"test:fast:memory: ok\"}') || echo \"{\\\"systemMessage\\\":\\\"test:fast:memory failed (see /tmp/claude-test.log)\\\"}\" ;; esac",
+                        "async": true,
+                        "statusMessage": "Running memory tests"
+                    }
+                ]
+            }
         ]
     }
 }
