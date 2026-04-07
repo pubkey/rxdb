@@ -3,4 +3,4 @@
  * These tests require a DOM environment (jsdom)
  * and are run separately from the main test suite.
  */
-import './unit/react-hooks.test.tsx';
+import './react/react-hooks.test.tsx';
