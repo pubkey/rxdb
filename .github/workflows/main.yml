@@ -57,6 +57,9 @@ jobs:
       - name: test:typings
         run: npm run test:typings
 
+      - name: test:react
+        run: npm run test:react
+
   # We have to run all major scripts once on windows to ensure windows-devs can
   # run the test suite.
   windows:

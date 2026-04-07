@@ -64,7 +64,7 @@ export function useRxQueryBase<
     const [results, setResults] = useState(
         [] as RxDocument<RxDocumentType, OrmMethods>[],
     );
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
     let dbCollection: RxCollection<
@@ -111,7 +111,7 @@ export function useRxQueryBase<
             return;
         }
         setError(null);
-        setLoading(loading);
+        setLoading(true);
         const rxQuery = dbCollection.find(query);
         if (live) {
             const subscription = rxQuery.$.subscribe({

@@ -1,0 +1,1 @@
+- FIX React hooks `useRxQuery` and `useLiveRxQuery` initializing `loading` state as `false` instead of `true`, causing components to briefly render with empty results before the query resolved [#8292](https://github.com/pubkey/rxdb/pull/8292)
