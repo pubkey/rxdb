@@ -45,6 +45,8 @@
         "**/node_modules/*",
         "dist",
         "test/tutorials/*",
+        "test/react/*",
+        "test/react.test.ts",
         "examples",
         "docs",
         "docs-src",
