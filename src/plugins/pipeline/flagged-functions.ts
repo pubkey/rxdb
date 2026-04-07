@@ -89,6 +89,14 @@ async function rx_pipeline_fn_20_(fn: any) {
 
 
 
+/**
+ * The shared prefix of all flagged pipeline function names.
+ * Used to detect if a call originates from ANY pipeline handler,
+ * not just the current one. This prevents deadlocks when multiple
+ * pipelines share the same destination collection.
+ */
+export const PIPELINE_FN_PREFIX = 'rx_pipeline_fn_';
+
 export const FLAGGED_FUNCTIONS = {
     rx_pipeline_fn_1_,
     rx_pipeline_fn_2_,

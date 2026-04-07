@@ -55,8 +55,27 @@ export function checkOrmDocumentMethods<RxDocType>(
     if (!methods) {
         return;
     }
+
+    /**
+     * Build a set of all schema-generated property names
+     * that will be defined on the document prototype.
+     * For each field, the schema generates:
+     * - field (value getter)
+     * - field$ (observable getter)
+     * - field$$ (reactivity getter)
+     * - field_ (populate getter)
+     */
+    const schemaGeneratedNames = new Set<string>();
+    topLevelFields.forEach(field => {
+        const f = field as string;
+        schemaGeneratedNames.add(f);
+        schemaGeneratedNames.add(f + '$');
+        schemaGeneratedNames.add(f + '$$');
+        schemaGeneratedNames.add(f + '_');
+    });
+
     Object.keys(methods)
-        .filter(funName => topLevelFields.includes(funName as any))
+        .filter(funName => schemaGeneratedNames.has(funName))
         .forEach(funName => {
             throw newRxError('COL18', {
                 funName

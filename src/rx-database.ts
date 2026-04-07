@@ -141,6 +141,20 @@ export class RxDatabaseBase<
         DB_COUNT++;
 
         /**
+         * SECURITY: Make the password property non-enumerable
+         * so it does not leak through Object.keys(), spreading,
+         * Object.assign(), for..in loops, or JSON.stringify().
+         */
+        if (typeof password !== 'undefined') {
+            Object.defineProperty(this, 'password', {
+                value: password,
+                enumerable: false,
+                writable: false,
+                configurable: false
+            });
+        }
+
+        /**
          * In the dev-mode, we create a pseudoInstance
          * to get all properties of RxDatabase and ensure they do not
          * conflict with the collection names etc.

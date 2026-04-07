@@ -216,8 +216,17 @@ export const basePrototype = {
 
         if (schemaObj.type === 'array') {
             return refCollection.findByIds(value).exec().then(res => {
-                const valuesIterator = res.values();
-                return Array.from(valuesIterator) as any;
+                // Preserve the original array order of the ref ids
+                // instead of using the Map iteration order which depends
+                // on the query cache and storage return order.
+                const result = [];
+                for (let i = 0; i < value.length; i++) {
+                    const doc = res.get(value[i]);
+                    if (doc) {
+                        result.push(doc);
+                    }
+                }
+                return result as any;
             });
         } else {
             return refCollection.findOne(value).exec();

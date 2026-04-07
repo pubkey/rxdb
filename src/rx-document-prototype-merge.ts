@@ -39,6 +39,16 @@ export function getDocumentPrototype(
     ].forEach(obj => {
         const props = Object.getOwnPropertyNames(obj);
         props.forEach(key => {
+            /**
+             * Skip properties already defined by a higher-priority prototype.
+             * Schema properties are set first (highest priority),
+             * then ORM methods, then base prototype (lowest priority).
+             * Without this check, redefining a non-configurable property
+             * would throw a TypeError.
+             */
+            if (Object.getOwnPropertyDescriptor(proto, key)) {
+                return;
+            }
             const desc: any = Object.getOwnPropertyDescriptor(obj, key);
             /**
              * When enumerable is true, it will show on console dir(instance)

@@ -100,13 +100,23 @@ export class RxStorageRemote implements RxStorage<RxStorageRemoteInternals, any>
             throw new Error('could not create instance ' + JSON.stringify(waitForOkResult.error));
         }
 
+        /**
+         * SECURITY: Remove the password from the stored params
+         * so it does not leak through JSON.stringify() or other
+         * enumeration of the storage instance internals.
+         * The password has already been sent to the remote side
+         * via the message channel and is no longer needed locally.
+         */
+        const paramsWithoutPassword = Object.assign({}, params);
+        delete paramsWithoutPassword.password;
+
         return new RxStorageInstanceRemote(
             this,
             params.databaseName,
             params.collectionName,
             params.schema,
             {
-                params,
+                params: paramsWithoutPassword,
                 connectionId,
                 messageChannel
             },
