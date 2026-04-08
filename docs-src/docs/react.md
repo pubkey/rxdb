@@ -221,12 +221,16 @@ The `useReplicationStatus` hook subscribes to an `RxReplicationState` and expose
 import { useReplicationStatus } from 'rxdb/plugins/react';
 
 const SyncIndicator = ({ replicationState }) => {
-    const { syncing, error, lastSyncedAt, canceled } = useReplicationStatus(replicationState);
+    const status = useReplicationStatus(replicationState);
+    const { syncing, error, lastSyncedAt, canceled } = status;
 
     if (canceled) return <span>Sync stopped</span>;
     if (error) return <span>Sync error: {error.message}</span>;
     if (syncing) return <span>Syncing...</span>;
-    if (lastSyncedAt) return <span>Last synced: {new Date(lastSyncedAt).toLocaleTimeString()}</span>;
+    if (lastSyncedAt) {
+        const time = new Date(lastSyncedAt).toLocaleTimeString();
+        return <span>Last synced: {time}</span>;
+    }
 
     return <span>Idle</span>;
 };
