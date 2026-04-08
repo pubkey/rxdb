@@ -110,5 +110,5 @@ const pouch = getPouchDBOfRxCollection(myRxCollection);
 <details>
 <summary>Is PouchDB still a viable sync engine in 2024?</summary>
 
-No, PouchDB is largely considered legacy and deprecated for modern high-performance architectures. Because PouchDB is forced to maintain full CouchDB compliance, it permanently stores exhaustive revision trees for every document modification, leading to perpetual storage bloat and slow multi-document queries. **[RxDB](./rx-database.md)** aggressively stripped the PouchDB dependency in version 10.0, replacing its legacy sync mechanics with streamlined WebRTC, GraphQL, and WebSocket replication protocols mounted on top of significantly faster modular `RxStorage` engines.
+No, PouchDB is largely considered legacy and deprecated for modern high-performance architectures. Because PouchDB is forced to maintain full CouchDB compliance, it permanently stores exhaustive revision trees for every document modification, leading to perpetual storage bloat and slow multi-document queries. **[RxDB](./rx-database.md)** aggressively stripped the PouchDB dependency in version 10.0, replacing its legacy sync mechanics with streamlined WebRTC, GraphQL, and [WebSocket replication](./replication-websocket.md) protocols mounted on top of significantly faster modular `RxStorage` engines.
 </details>

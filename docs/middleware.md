@@ -22,7 +22,7 @@ RxDB supports the following hooks:
 
 ### Why is there no validate-hook?
 Different to mongoose, the validation on document-data is running on the field-level for every change to a document.
-This means if you set the value `lastName` of a RxDocument, then the validation will only run on the changed field, not the whole document.
+This means if you set the value `lastName` of a [RxDocument](./rx-document.md), then the validation will only run on the changed field, not the whole document.
 Therefore it is not useful to have validate-hooks when a document is written to the database.
 
 ## Use Cases
@@ -48,7 +48,7 @@ An insert-hook receives the data-object of the new document.
 - RxCollection.insert is called
 - preInsert series-hooks
 - preInsert parallel-hooks
-- schema validation runs
+- [schema validation](./schema-validation.md) runs
 - new document is written to database
 - postInsert series-hooks
 - postInsert parallel-hooks

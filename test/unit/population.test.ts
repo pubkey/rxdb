@@ -354,5 +354,69 @@ describeParallel('population.test.js', () => {
 
             db.close();
         });
+        it('populate array should preserve the order of ref ids when two documents reference the same set in different order', async () => {
+            const db = await createRxDatabase({
+                name: randomToken(10),
+                storage: config.storage.getStorage(),
+            });
+            const cols = await db.addCollections({
+                human: {
+                    schema: {
+                        version: 0,
+                        primaryKey: 'name',
+                        type: 'object',
+                        properties: {
+                            name: {
+                                type: 'string',
+                                maxLength: 100
+                            },
+                            friends: {
+                                type: 'array',
+                                ref: 'human',
+                                items: {
+                                    type: 'string'
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            const col = cols.human;
+
+            const friendNames = ['charlie', 'alice', 'bob', 'eve', 'dave'];
+            await Promise.all(
+                friendNames.map(name => col.insert({ name, friends: [] }))
+            );
+
+            // Two documents reference the same set of friends but in different order.
+            // Because findByIds uses a sorted cache key, the second populate call
+            // would reuse the first cached query and return documents in the wrong order.
+            const orderA = ['eve', 'bob', 'charlie', 'alice', 'dave'];
+            const orderB = ['dave', 'alice', 'charlie', 'bob', 'eve'];
+            await col.insert({ name: 'protagonist-a', friends: orderA });
+            await col.insert({ name: 'protagonist-b', friends: orderB });
+
+            const docA = await col.findOne('protagonist-a').exec(true);
+            const docB = await col.findOne('protagonist-b').exec(true);
+
+            const friendDocsA = await docA.populate('friends');
+            const friendDocsB = await docB.populate('friends');
+
+            const populatedNamesA = friendDocsA.map((d: any) => d.name);
+            const populatedNamesB = friendDocsB.map((d: any) => d.name);
+
+            assert.deepStrictEqual(
+                populatedNamesA,
+                orderA,
+                'populated array order for docA must match its ref id order'
+            );
+            assert.deepStrictEqual(
+                populatedNamesB,
+                orderB,
+                'populated array order for docB must match its ref id order'
+            );
+
+            db.close();
+        });
     });
 });

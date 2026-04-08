@@ -85,7 +85,7 @@ RxDB utilizes NoSQL [JSON documents](./json-database.md), which align naturally 
 TypeScript is widely used in modern JavaScript development. [NoSQL databases](./in-memory-nosql-database.md), including RxDB, offer excellent TypeScript support, making it easier to build type-safe applications and leverage the benefits of static typing.
 
 ### Observable document fields
-RxDB allows observing individual document fields, providing granular reactivity. This feature enables efficient tracking of specific data changes and fine-grained UI updates, optimizing performance and responsiveness.
+RxDB allows observing individual document fields, providing granular [reactivity](../reactivity.md). This feature enables efficient tracking of specific data changes and fine-grained UI updates, optimizing performance and responsiveness.
 
 ### Made in JavaScript, optimized for JavaScript applications
 RxDB is built entirely in JavaScript, optimized for JavaScript applications. This ensures seamless integration with JavaScript codebases and maximizes performance within the browser environment.

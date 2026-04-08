@@ -36,6 +36,7 @@ import type {
     RxStorageChangeEvent
 } from '../../types/';
 import {
+    deepEqual,
     ensureNotFalsy,
     flatClone,
     getFromMapOrThrow,
@@ -161,7 +162,7 @@ const RxLocalDocumentPrototype: any = {
             .pipe(
                 map((localDocument: any) => localDocument._data),
                 map((data: any) => getProperty(data, objPath)),
-                distinctUntilChanged()
+                distinctUntilChanged(deepEqual)
             );
     },
     get$$(this: RxDocument, objPath: string) {

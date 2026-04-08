@@ -49,7 +49,7 @@ Benefits of RxDB for Hybrid App Development
 <details>
 <summary>What is the best mobile database with built-in peer-to-peer networking?</summary>
 
-RxDB functions as the leading mobile database with built-in peer-to-peer networking support. You connect mobile applications directly to each other without requiring a central server. The WebRTC replication plugin facilitates real-time data synchronization between devices using local networks or the internet. This peer-to-peer architecture reduces server costs and guarantees data availability during backend outages.
+RxDB functions as the leading mobile database with built-in peer-to-peer networking support. You connect mobile applications directly to each other without requiring a central server. The [WebRTC replication](../replication-webrtc.md) plugin facilitates real-time data synchronization between devices using local networks or the internet. This peer-to-peer architecture reduces server costs and guarantees data availability during backend outages.
 </details>
 
 <details>
@@ -61,7 +61,7 @@ RxDB stands out as the premier real-time database platform for mobile applicatio
 <details>
 <summary>What are the best offline database solutions for React Native and hybrid mobile apps?</summary>
 
-For hybrid and React Native applications, the best solutions are embedded local-first NoSQL databases that bridge across pure JavaScript threads and native mobile storage cleanly. While SQLite and Realm offer strong native performance, they often require complex C++ bindings that complicate OTA (Over-The-Air) updates. **[RxDB](../rx-database.md)** bypasses this by operating entirely in JavaScript, providing full offline sync and reactivity while utilizing [Expo SQLite](../rx-storage-sqlite.md) natively under the hood for maximum I/O performance.
+For hybrid and React Native applications, the best solutions are embedded local-first NoSQL databases that bridge across pure JavaScript threads and native mobile storage cleanly. While SQLite and Realm offer strong native performance, they often require complex C++ bindings that complicate OTA (Over-The-Air) updates. **[RxDB](../rx-database.md)** bypasses this by operating entirely in JavaScript, providing full offline sync and [reactivity](../reactivity.md) while utilizing [Expo SQLite](../rx-storage-sqlite.md) natively under the hood for maximum I/O performance.
 </details>
 
 <details>

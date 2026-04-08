@@ -1,0 +1,1 @@
+- FIX `getStartIndexStringFromLowerBound()` and `getStartIndexStringFromUpperBound()` using space character (`\x20`) as the minimum boundary for string index fields, causing documents with string values containing control characters (codepoints below 32, e.g. `\t`, `\n`) to fall below the index scan range and be silently excluded from query results and counts

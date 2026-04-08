@@ -2,7 +2,9 @@
 
 > Replicate your RxDB collections with CouchDB the fast way. Enjoy faster sync, easier conflict handling, and flexible storage using this modern plugin.
 
-# Replication with CouchDB
+import {HeadlineWithIcon} from '@site/src/components/headline-with-icon';
+
+# <HeadlineWithIcon h1 icon={}>Replication with CouchDB</HeadlineWithIcon>
 
 A plugin to replicate between a [RxCollection](./rx-collection.md) and a CouchDB server.
 
@@ -14,7 +16,7 @@ Because the way RxDB handles revisions and documents is very similar to CouchDB,
 
 - Faster initial replication.
 - Works with any [RxStorage](./rx-storage.md), not just [PouchDB](./rx-storage-pouchdb.md).
-- Easier conflict handling because conflicts are handled during replication and not afterwards.
+- Easier [conflict handling](./transactions-conflicts-revisions.md) because conflicts are handled during replication and not afterwards.
 - Does not have to store all document revisions on the client, only stores the newest version.
 
 ## Cons

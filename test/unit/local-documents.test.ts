@@ -105,6 +105,30 @@ describeParallel('local-documents.test.ts', () => {
                 assert.strictEqual(doc, null);
                 c.database.close();
             });
+            it('should return null for a deleted local document', async () => {
+                const c = await humansCollection.create(0);
+                const doc = await c.insertLocal('foobar', {
+                    foo: 'bar'
+                });
+
+                // remove the document
+                await doc.remove();
+
+                // getLocal() should return null for deleted documents,
+                // consistent with how the storage layer excludes deleted docs
+                const afterRemove = await c.getLocal('foobar');
+                assert.strictEqual(afterRemove, null);
+
+                // also test on database level
+                const dbDoc = await c.database.insertLocal('dblocal', {
+                    foo: 'bar'
+                });
+                await dbDoc.remove();
+                const dbAfterRemove = await c.database.getLocal('dblocal');
+                assert.strictEqual(dbAfterRemove, null);
+
+                c.database.close();
+            });
         });
     });
     describe('.$', () => {
@@ -319,7 +343,7 @@ describeParallel('local-documents.test.ts', () => {
                 // remove it
                 await doc.remove();
                 const afterRemove = await c.getLocal('foobar');
-                assert.ok(ensureNotFalsy(afterRemove).deleted);
+                assert.strictEqual(afterRemove, null);
 
                 // upsert again with new data
                 const doc2 = await c.upsertLocal<{ foo: string; }>('foobar', {
@@ -349,7 +373,7 @@ describeParallel('local-documents.test.ts', () => {
             });
             await doc.remove();
             const doc2 = await c.getLocal('foobar');
-            assert.ok(ensureNotFalsy(doc2).deleted);
+            assert.strictEqual(doc2, null);
             c.database.close();
         });
     });

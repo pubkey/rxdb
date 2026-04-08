@@ -140,7 +140,9 @@ Over time, apps evolve - new fields, changed field types, or altered indexes. Rx
 When storing data locally, you may handle user-sensitive information like PII (Personal Identifiable Information) or financial details. RxDB supports on-device [encryption](../encryption.md) to protect fields. For example, you can define:
 
 ```ts
-import { wrappedKeyEncryptionCryptoJsStorage } from 'rxdb/plugins/encryption-crypto-js';
+import {
+    wrappedKeyEncryptionCryptoJsStorage
+} from 'rxdb/plugins/encryption-crypto-js';
 
 const encryptedStorage = wrappedKeyEncryptionCryptoJsStorage({
   storage: getRxStorageLocalstorage()
@@ -174,7 +176,7 @@ Then mark fields as `encrypted` in the schema. This ensures data is unreadable o
 
 ### Setup Compression
 
-Local data can expand quickly, especially for large documents or repeated key names. RxDB's key compression feature replaces verbose field names with shorter tokens, decreasing storage usage and speeding up replication. You enable it by adding keyCompression: true to your collection schema:
+Local data can expand quickly, especially for large documents or repeated key names. RxDB's [key compression](../key-compression.md) feature replaces verbose field names with shorter tokens, decreasing storage usage and speeding up replication. You enable it by adding keyCompression: true to your collection schema:
 
 ```ts
 await db.addCollections({

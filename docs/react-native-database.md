@@ -48,7 +48,10 @@ npm install rxdb rxjs react-native-quick-sqlite
 **Configuration**:
 ```ts
 import { createRxDatabase } from 'rxdb';
-import { getRxStorageSQLite, getSQLiteBasicsQuickSQLite } from 'rxdb-premium/plugins/storage-sqlite';
+import {
+    getRxStorageSQLite,
+    getSQLiteBasicsQuickSQLite
+} from 'rxdb-premium/plugins/storage-sqlite';
 import { open } from 'react-native-quick-sqlite';
 
 const db = await createRxDatabase({
@@ -74,7 +77,10 @@ npm install rxdb rxjs
 **Configuration**:
 ```ts
 import { createRxDatabase } from 'rxdb';
-import { getRxStorageSQLite, getSQLiteBasicsExpoSQLiteAsync } from 'rxdb-premium/plugins/storage-sqlite';
+import {
+    getRxStorageSQLite,
+    getSQLiteBasicsExpoSQLiteAsync
+} from 'rxdb-premium/plugins/storage-sqlite';
 import * as SQLite from 'expo-sqlite';
 
 const db = await createRxDatabase({
@@ -92,6 +98,8 @@ const db = await createRxDatabase({
 ## React Integration
 
 RxDB is deeply integrated with React. It provides hooks that make fetching data and subscribing to changes effortless.
+
+<Steps>
 
 ### 1. Provide the Database
 Wrap your application with the `RxDatabaseProvider`.
@@ -145,7 +153,9 @@ RxDB supports **Signals** (via `@preact/signals-react` or similar) to pinpoint u
 ```tsx
 // Enable the signals plugin once
 import { addRxPlugin } from 'rxdb';
-import { RxDBReactivityPreactSignalsPlugin } from 'rxdb/plugins/reactivity-preact-signals';
+import {
+    RxDBReactivityPreactSignalsPlugin
+} from 'rxdb/plugins/reactivity-preact-signals';
 addRxPlugin(RxDBReactivityPreactSignalsPlugin);
 
 // ... in your component
@@ -154,10 +164,12 @@ const signals = collection.find().$$; // Returns a Signal<Doc[]>
 
 Using signals allows you to update only the specific text node that changed, keeping your UI running at 60fps even with massive data flux.
 
+</Steps>
+
 ## Sync with Backend
 
 A local database is useful, but a synchronized database is powerful.
-RxDB provides a robust replication protocol that can sync with **any backend**.
+RxDB provides a robust [replication](./replication.md) protocol that can sync with **any backend**.
 
 It has dedicated plugins for popular backend solutions:
 - **[Supabase / Postgres](./replication-supabase.md)**
@@ -168,7 +180,7 @@ It has dedicated plugins for popular backend solutions:
 For custom backends, you can implement the **[simple HTTP replication](./replication-http.md)** protocol.
 
 ### Example: Sync with Supabase
-Syncing is set-and-forget. You start the replication, and RxDB handles the rest (pulling changes, pushing writes, handling conflict resolution).
+Syncing is set-and-forget. You start the replication, and RxDB handles the rest (pulling changes, pushing writes, handling [conflict resolution](./transactions-conflicts-revisions.md)).
 
 ```ts
 import { replicateSupabase } from 'rxdb/plugins/replication-supabase';
@@ -200,7 +212,7 @@ How does RxDB compare to other React Native database solutions?
 
 ### Summary
 - **AsyncStorage**: Good for simple key-value pairs (like settings). Too slow for data.
-- **SQLite**: Great foundation, but requires writing raw SQL and manual reactivity/sync.
+- **SQLite**: Great foundation, but requires writing raw SQL and manual [reactivity](./reactivity.md)/sync.
 - **Realm**: Fast object store, but locks you into the MongoDB ecosystem for sync. Realm was deprecated in 2024 ([source](https://github.com/realm/realm-swift/discussions/8680)).
 - **Firestore**: Easy networked DB, but poor offline support (cannot start offline) and latency issues.
 - **RxDB**: Combines the performance of local SQLite with the ease of NoSQL, automatic reactivity, and backend-agnostic synchronization.

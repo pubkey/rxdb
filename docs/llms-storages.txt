@@ -50,7 +50,7 @@ const db = await createRxDatabase({
 ## FAQ
 
 <details>
-<summary>How to securely create an offline-first desktop app with Electron.js?</summary>
+<summary>How to securely create an [offline-first](./offline-first.md) desktop app with Electron.js?</summary>
 
 You securely create an offline-first Electron application by maintaining strict process isolation: the primary database connection runs securely within the hidden Node.js `main` process, while the vulnerable DOM execution runs in the heavily-restricted `renderer` process. **[RxDB](https://rxdb.info)** automates this architecture precisely via its dedicated Electron IPC plugin (`exposeIpcMainRxStorage`), enabling seamless, non-blocking data synchronization across the IPC boundary while mitigating direct local filesystem exposure to malicious client payloads.
 </details>
@@ -68,7 +68,10 @@ import {PremiumBlock} from '@site/src/components/premium-block';
 import { PerformanceChart } from '@site/src/components/performance-chart';
 import { PERFORMANCE_DATA_ENCRYPTION, PERFORMANCE_METRICS } from '@site/src/components/performance-data';
 
-# 🔒 Encrypted Local Storage with RxDB
+import {HeadlineWithIcon} from '@site/src/components/headline-with-icon';
+import {IconEncryption} from '@site/src/components/icons/encryption';
+
+# <HeadlineWithIcon h1 icon={<IconEncryption />}>Encrypted Local Storage with RxDB</HeadlineWithIcon>
 
 <!-- keywords:
 encrypted browser storage
@@ -81,8 +84,6 @@ react native encrypted storage
 
 The RxDB encryption plugin empowers developers to fortify their applications' data security. It seamlessly integrates with [RxDB](https://rxdb.info/), allowing for the secure storage and retrieval of documents by **encrypting them with a password**. With encryption and decryption processes handled internally, it ensures that sensitive data remains confidential, making it a valuable tool for building robust, privacy-conscious applications. The encryption works on all RxDB supported devices types like the **[browser](./articles/browser-database.md)**, **[ReactNative](./react-native-database.md)** or **[Node.js](./nodejs-database.md)**.
 
-  
-
 Encrypting client-side stored data in RxDB offers numerous advantages:
 - **Enhanced Security**: In the unfortunate event of a user's device being stolen, the encrypted data remains safeguarded on the hard drive, inaccessible without the correct password.
 - **Access Control**: You can retain control over stored data by revoking access at any time simply by withholding the password.
@@ -90,7 +91,7 @@ Encrypting client-side stored data in RxDB offers numerous advantages:
 
 ## Querying encrypted data
 
-RxDB handles the encryption and decryption of data internally. This means that when you work with a RxDocument, you can access the properties of the document just like you would with normal, unencrypted data. RxDB automatically decrypts the data for you when you retrieve it, making it transparent to your application code.
+RxDB handles the encryption and decryption of data internally. This means that when you work with a [RxDocument](./rx-document.md), you can access the properties of the document just like you would with normal, unencrypted data. RxDB automatically decrypts the data for you when you retrieve it, making it transparent to your application code.
 This means the encryption works with all [RxStorage](./rx-storage.md) like **[SQLite](./rx-storage-sqlite.md)**, **[IndexedDB](./rx-storage-indexeddb.md)**, **[OPFS](./rx-storage-opfs.md)** and so on.
 
 However, there's a limitation when it comes to querying encrypted fields. **Encrypted fields cannot be used as operators in queries**. This means you cannot perform queries like "find all documents where the encrypted field equals a certain value." RxDB does not expose the encrypted data in a way that allows direct querying based on the encrypted content. To filter or search for documents based on the contents of encrypted fields, you would need to first decrypt the data and then perform the query, which might not be efficient or practical in some cases.
@@ -224,7 +225,9 @@ const mySchema = {
         /* ... */
     },
     attachments: {
-        encrypted: true // if true, the attachment-data will be encrypted with the db-password
+        // if true, the attachment-data will be
+        // encrypted with the db-password
+        encrypted: true
     }
 };
 ```
@@ -242,7 +245,9 @@ When you wrap a storage like [OPFS](./rx-storage-opfs.md) with encryption inside
 ```ts
 // inside of the worker.js file
 import { getRxStorageOPFS } from 'rxdb-premium/plugins/storage-opfs';
-import { wrappedKeyEncryptionWebCryptoStorage } from 'rxdb-premium/plugins/encryption-web-crypto';
+import {
+    wrappedKeyEncryptionWebCryptoStorage
+} from 'rxdb-premium/plugins/encryption-web-crypto';
 
 const storage = wrappedKeyEncryptionWebCryptoStorage({
     storage: getRxStorageOPFS({
@@ -356,6 +361,7 @@ await db.addCollections({
 ## RxDB Logger Plugin - Track & Optimize
 
 import {PremiumBlock} from '@site/src/components/premium-block';
+import {Steps} from '@site/src/components/steps';
 
 # RxDB Logger Plugin
 
@@ -371,20 +377,31 @@ This is useful to debug performance problems and for monitoring with Application
 
 The logger is a wrapper that can be wrapped around any [RxStorage](./rx-storage.md). Once your storage is wrapped, you can create your database with the wrapped storage and the logging will automatically happen.
 
-```ts
+<Steps>
 
+### Import Plugins
+
+```ts
 import {
     wrappedLoggerStorage
 } from 'rxdb-premium/plugins/logger';
 import {
     getRxStorageIndexedDB
 } from 'rxdb-premium/plugins/storage-indexeddb';
+```
 
+### Wrap Storage
+
+```ts
 // wrap a storage with the logger
 const loggingStorage = wrappedLoggerStorage({
     storage: getRxStorageIndexedDB({})
 });
+```
 
+### Create Database
+
+```ts
 // create your database with the wrapped storage
 const db = await createRxDatabase({
     name: 'mydatabase',
@@ -393,6 +410,8 @@ const db = await createRxDatabase({
 
 // create collections etc...
 ```
+
+</Steps>
 
 ## Specify what to be logged
 
@@ -458,7 +477,7 @@ This gives you the benefits and features of the RxDB JavaScript Database, combin
 
 [DenoKV](https://deno.com/kv) is a strongly consistent key-value storage, globally replicated for low-latency reads across 35 worldwide regions via [Deno Deploy](https://deno.com/deploy).
 When you release your Deno application on Deno Deploy, it will start a instance on each of the [35 worldwide regions](https://docs.deno.com/deploy/manual/regions). This edge deployment guarantees minimal latency when serving requests to end users devices around the world. DenoKV is a shared storage which shares its state across all instances.
-But, because DenoKV is "only" a **Key-Value storage**, it only supports basic CRUD operations on datasets and indexes. Complex features like queries, encryption, compression or client-server replication, are missing. Using RxDB on top of DenoKV fills this gap and makes it easy to build realtime [offline-first](./offline-first.md) application on top of Deno backend.
+But, because DenoKV is "only" a **Key-Value storage**, it only supports basic CRUD operations on datasets and indexes. Complex features like queries, [encryption](./encryption.md), compression or client-server replication, are missing. Using RxDB on top of DenoKV fills this gap and makes it easy to build realtime [offline-first](./offline-first.md) application on top of Deno backend.
 
 ## Use cases
 
@@ -560,7 +579,7 @@ While Dexie.js [RxStorage](./rx-storage.md) can be used for free, most professio
 
 - It is faster and reduces build size by up to **36%**.
 - It has a way [better performance](./rx-storage-performance.md) on reads and writes.
-- It stores attachments data as binary instead of base64 which reduces used space by 33%.
+- It stores [attachments](./rx-attachment.md) data as binary instead of base64 which reduces used space by 33%.
 - It does not use a [Batched Cursor](./slow-indexeddb.md#batched-cursor) or [custom indexes](./slow-indexeddb.md#custom-indexes) which makes queries slower compared to the [IndexedDB RxStorage](./rx-storage-indexeddb.md).
 - It supports **non-required indexes** which is [not possible](https://github.com/pubkey/rxdb/pull/6643#issuecomment-2505310082) with Dexie.js.
 - It runs in a **WAL-like mode** (similar to SQLite) for faster writes and improved responsiveness.
@@ -610,7 +629,7 @@ const db = await createRxDatabase({
 
 ## Using Dexie Addons
 
-Dexie.js has its own plugin system with [many plugins](https://dexie.org/docs/DerivedWork#known-addons) for encryption, replication or other use cases. With the Dexie.js `RxStorage` you can use the same plugins by passing them to the `getRxStorageDexie()` function.
+Dexie.js has its own plugin system with [many plugins](https://dexie.org/docs/DerivedWork#known-addons) for [encryption](./encryption.md), replication or other use cases. With the Dexie.js `RxStorage` you can use the same plugins by passing them to the `getRxStorageDexie()` function.
 
 ```ts
 const db = await createRxDatabase({
@@ -781,12 +800,14 @@ import {Steps} from '@site/src/components/steps';
 import { PerformanceChart } from '@site/src/components/performance-chart';
 import { PERFORMANCE_DATA_EXPO, PERFORMANCE_METRICS } from '@site/src/components/performance-data';
 
-# Expo Filesystem RxStorage
+import {HeadlineWithIcon} from '@site/src/components/headline-with-icon';
 
-<BetaBlock since="17.0.0" />
+# <HeadlineWithIcon h1 icon={} subtitle="Faster than SQLite">Expo Filesystem RxStorage</HeadlineWithIcon>
 
 The Expo Filesystem [RxStorage](./rx-storage.md) for RxDB is built on top of the [expo-file-system](https://docs.expo.dev/versions/latest/sdk/filesystem/) library, bringing blazing-fast direct filesystem capabilities to React Native and Expo applications.
 It stores data in plain files and achieves vastly superior performance compared to traditional React Native storage solutions like Async Storage or SQLite.
+
+<BetaBlock since="17.0.0" />
 
 ### Pros
 
@@ -871,7 +892,7 @@ In contrast, the **Expo Filesystem RxStorage** skips the relational SQL database
 
 Because of this streamlined, direct-to-filesystem approach, operations like inserting large batches of documents or executing complex queries are handled with minimal overhead. This makes it one of the absolute fastest local storage engines available for React Native.
 
-Here is a performance comparison of the **Expo Filesystem RxStorage** compared to the **SQLite RxStorage** (using `expo-sqlite`), tested with RxDB's internal performance testing suite (3000 documents, 4 collections):
+Here is a performance comparison of the **Expo Filesystem RxStorage** compared to the **[SQLite RxStorage](./rx-storage-sqlite.md)** (using `expo-sqlite`), tested with RxDB's internal performance testing suite (3000 documents, 4 collections):
 
 <PerformanceChart title="Expo Storages" data={PERFORMANCE_DATA_EXPO} metrics={PERFORMANCE_METRICS} />
 
@@ -937,7 +958,7 @@ You should use a storage engine that supports fast bulk writes. The Expo Filesys
 <details>
 <summary>How to improve performance with offline caching in React Native?</summary>
 
-Use an offline-first database like RxDB to maintain a persistent local replica of your data on the device filesystem. Read operations resolve instantly from the local cache, while background replication synchronizes data modifications with your remote server asynchronously.
+Use an [offline-first](./offline-first.md) database like RxDB to maintain a persistent local replica of your data on the device filesystem. Read operations resolve instantly from the local cache, while background [replication](./replication.md) synchronizes data modifications with your remote server asynchronously.
 
 </details>
 
@@ -1003,7 +1024,7 @@ The native `getRxStorageFilesystemNode` adapter does not compile documents into 
 
 # RxDB Database on top of FoundationDB
 
-[FoundationDB](https://www.foundationdb.org/) is a distributed key-value store designed to handle large volumes of structured data across clusters of computers while maintaining high levels of performance, scalability, and fault tolerance. While FoundationDB itself only can store and query key-value pairs, it lacks more advanced features like complex queries, encryption and replication.
+[FoundationDB](https://www.foundationdb.org/) is a distributed key-value store designed to handle large volumes of structured data across clusters of computers while maintaining high levels of performance, scalability, and fault tolerance. While FoundationDB itself only can store and query key-value pairs, it lacks more advanced features like complex queries, [encryption](./encryption.md) and [replication](./replication.md).
 
 With the FoundationDB based [RxStorage](./rx-storage.md) of [RxDB](https://rxdb.info/) you can combine the benefits of FoundationDB while having a fully featured, high performance NoSQL database.
 
@@ -1138,7 +1159,8 @@ const db = await createRxDatabase({
          * For better performance, queries run with a batched cursor.
          * You can change the batchSize to optimize the query time
          * for specific queries.
-         * You should only change this value when you are also doing performance measurements.
+         * You should only change this value when
+         * you are also doing performance measurements.
          * [default=300]
          */
         batchSize: 300
@@ -1183,7 +1205,9 @@ const db = await createRxDatabase({
     name: 'exampledb',
     storage: getRxStorageIndexedDB({
         indexedDB: async(params) => {
-            const myStorageBucket = await navigator.storageBuckets.open('myApp-' + params.databaseName);
+            const myStorageBucket =
+                await navigator.storageBuckets
+                    .open('myApp-' + params.databaseName);
             return myStorageBucket.indexedDB;
         },
         IDBKeyRange
@@ -1369,7 +1393,7 @@ The memory mapped [RxStorage](./rx-storage.md) is a wrapper around any other RxS
 
 ## Cons
 
-- It does not support attachments because storing big attachments data in-memory should not be done.
+- It does not support [attachments](./rx-attachment.md) because storing big attachments data in-memory should not be done.
 - When the JavaScript process is killed ungracefully like when the browser crashes or the power of the PC is terminated, it might happen that some memory writes are not persisted to the parent storage. This can be prevented with the `awaitWritePersistence` flag.
 - The memory-mapped storage can only be used if all data fits into the memory of the JavaScript process. This is normally not a problem because a browser has much memory these days and plain JSON document data is not that big.
 - Because it has to await an initial data loading from the parent storage into the memory, initial page load time can increase when much data is already stored. This is likely not a problem when you store less than `10k` documents.
@@ -1415,7 +1439,7 @@ If you have a single JavaScript process, like in a React Native app, you do not 
 
 ## Encryption of the persistent data
 
-Normally RxDB is not capable of running queries on encrypted fields. But when you use the memory-mapped RxStorage, you can store the document data encrypted on disc, while being able to run queries on the not encrypted in-memory state. Make sure you use the encryption storage wrapper around the persistent storage, **NOT** around the memory-mapped storage as a whole.
+Normally RxDB is not capable of running queries on encrypted fields. But when you use the memory-mapped RxStorage, you can store the document data encrypted on disc, while being able to run queries on the not encrypted in-memory state. Make sure you use the [encryption](./encryption.md) storage wrapper around the persistent storage, **NOT** around the memory-mapped storage as a whole.
 
 ```ts
 
@@ -1425,7 +1449,9 @@ import {
 import {
     getMemoryMappedRxStorage
 } from 'rxdb-premium/plugins/storage-memory-mapped';
-import { wrappedKeyEncryptionWebCryptoStorage } from 'rxdb-premium/plugins/encryption-web-crypto';
+import {
+    wrappedKeyEncryptionWebCryptoStorage
+} from 'rxdb-premium/plugins/encryption-web-crypto';
 
 const storage = getMemoryMappedRxStorage({
     storage: wrappedKeyEncryptionWebCryptoStorage({
@@ -1488,10 +1514,10 @@ The main reason to use this is to improve initial page load and query/write time
 
 ## Cons
 
-- It does not support attachments.
+- It does not support [attachments](./rx-attachment.md).
 - When the JavaScript process is killed ungracefully like when the browser crashes or the power of the PC is terminated, it might happen that some memory writes are not persisted to the parent storage. This can be prevented with the `awaitWritePersistence` flag.
 - This can only be used if all data fits into the memory of the JavaScript process. This is normally not a problem because a browser has much memory these days and plain json document data is not that big.
-- Because it has to await an initial replication from the parent storage into the memory, initial page load time can increase when much data is already stored. This is likely not a problem when you store less than `10k` documents.
+- Because it has to await an initial [replication](./replication.md) from the parent storage into the memory, initial page load time can increase when much data is already stored. This is likely not a problem when you store less than `10k` documents.
 - The memory-synced storage itself does not support replication and migration. Instead you have to replicate the underlying parent storage.
 
 <PremiumBlock />
@@ -1555,11 +1581,16 @@ const storage = getMemorySyncedRxStorage({
     batchSize: 50,
 
     /**
-     * By default, the parent storage will be created without indexes for a faster page load.
-     * Indexes are not needed because the queries will anyway run on the memory storage.
-     * You can disable this behavior by setting keepIndexesOnParent to true.
-     * If you use the same parent storage for multiple RxDatabase instances where one is not
-     * a asynced-memory storage, you will get the error: 'schema not equal to existing storage'
+     * By default, the parent storage will be created
+     * without indexes for a faster page load.
+     * Indexes are not needed because the queries
+     * will anyway run on the memory storage.
+     * You can disable this behavior by setting
+     * keepIndexesOnParent to true.
+     * If you use the same parent storage for multiple
+     * RxDatabase instances where one is not
+     * a asynced-memory storage, you will get the
+     * error: 'schema not equal to existing storage'
      * if you do not set keepIndexesOnParent to true.
      * 
      * (optional)
@@ -1767,7 +1798,7 @@ const myRxDatabase = await createRxDatabase({
 ## Supercharged OPFS Database with RxDB
 
 import { PerformanceChart } from '@site/src/components/performance-chart';
-import { PERFORMANCE_DATA_BROWSER, PERFORMANCE_METRICS } from '@site/src/components/performance-data';
+import { PERFORMANCE_DATA_BROWSER, PERFORMANCE_DATA_OPFS, PERFORMANCE_METRICS } from '@site/src/components/performance-data';
 import {PremiumBlock} from '@site/src/components/premium-block';
 
 # Origin Private File System (OPFS) Database with the RxDB OPFS-RxStorage
@@ -1878,9 +1909,9 @@ const database = await createRxDatabase({
 
 ## Using OPFS in the main thread instead of a worker
 
-The `createSyncAccessHandle()` method from the OPFS File System Access API is only available inside of a WebWorker. Therefore you cannot use `getRxStorageOPFS()` in the main thread. Instead, RxDB provides `getRxStorageOPFSMainThread()`, which uses the asynchronous OPFS APIs (such as `FileSystemFileHandle.createWritable()`) under the hood. Because it cannot use the synchronous access handle, this main-thread variant is slightly slower for heavy write workloads than the worker-based storage.
+The `createSyncAccessHandle()` method from the OPFS File System Access API is only available inside of a WebWorker. Therefore you cannot use `getRxStorageOPFS()` in the main thread. Instead, RxDB provides `getRxStorageOPFSMainThread()`, which uses the asynchronous OPFS APIs (such as `FileSystemFileHandle.createWritable()`) under the hood.
 
-Using OPFS from the main thread can still have benefits, because avoiding the worker bridge can reduce latency for some read and write patterns and may simplify your application architecture.
+Using OPFS from the main thread can also simplify your application architecture by avoiding the WebWorker setup.
 
 ```ts
 import { createRxDatabase } from 'rxdb';
@@ -1891,6 +1922,10 @@ const database = await createRxDatabase({
     storage: getRxStorageOPFSMainThread()
 });
 ```
+
+The main thread and worker variants have different performance patterns. Running the database inside a WebWorker frees up the main thread to perform other tasks and enables faster synchronous file access, but passing messages between the main thread and the worker adds latency. Test both variants to determine which performs better for your specific use case.
+
+<PerformanceChart title="OPFS Worker vs Main-Thread" data={PERFORMANCE_DATA_OPFS} metrics={PERFORMANCE_METRICS} />
 
 ## Building a custom `worker.js`
 
@@ -2121,7 +2156,7 @@ const pouch = getPouchDBOfRxCollection(myRxCollection);
 <details>
 <summary>Is PouchDB still a viable sync engine in 2024?</summary>
 
-No, PouchDB is largely considered legacy and deprecated for modern high-performance architectures. Because PouchDB is forced to maintain full CouchDB compliance, it permanently stores exhaustive revision trees for every document modification, leading to perpetual storage bloat and slow multi-document queries. **[RxDB](./rx-database.md)** aggressively stripped the PouchDB dependency in version 10.0, replacing its legacy sync mechanics with streamlined WebRTC, GraphQL, and WebSocket replication protocols mounted on top of significantly faster modular `RxStorage` engines.
+No, PouchDB is largely considered legacy and deprecated for modern high-performance architectures. Because PouchDB is forced to maintain full CouchDB compliance, it permanently stores exhaustive revision trees for every document modification, leading to perpetual storage bloat and slow multi-document queries. **[RxDB](./rx-database.md)** aggressively stripped the PouchDB dependency in version 10.0, replacing its legacy sync mechanics with streamlined WebRTC, GraphQL, and [WebSocket replication](./replication-websocket.md) protocols mounted on top of significantly faster modular `RxStorage` engines.
 </details>
 
 ---
@@ -2174,7 +2209,9 @@ This is often used in Node.js to give one microservice access to another service
 ```ts
 // server.js
 import { getRxStorageMemory } from 'rxdb/plugins/storage-memory';
-import { startRxStorageRemoteWebsocketServer } from 'rxdb/plugins/storage-remote-websocket';
+import {
+    startRxStorageRemoteWebsocketServer
+} from 'rxdb/plugins/storage-remote-websocket';
 
 // either you can create the server based on a RxDatabase
 const serverBasedOnDatabase = await startRxStorageRemoteWebsocketServer({
@@ -2276,19 +2313,25 @@ const mySchema = {
     sharding: {
         /**
          * Amount of shards per RxStorage instance.
-         * Depending on your data size and query patterns, the optimal shard amount may differ.
+         * Depending on your data size and query
+         * patterns, the optimal shard amount may differ.
          * Do a performance test to optimize that value.
          * 10 Shards is a good value to start with.
          * 
-         * IMPORTANT: Changing the value of shards is not possible on a already existing database state,
+         * IMPORTANT: Changing the value of shards is
+         * not possible on an already existing
+         * database state,
          * you will lose access to  your data.
          */
         shards: 10,
         /**
          * Sharding mode,
          * you can either shard by collection or by database.
-         * For most cases you should use 'collection' which will shard on the collection level.
-         * For example with the IndexedDB RxStorage, it will then create multiple stores per IndexedDB database
+         * For most cases you should use 'collection'
+         * which will shard on the collection level.
+         * For example with the IndexedDB RxStorage,
+         * it will then create multiple stores per
+         * IndexedDB database
          * and not multiple IndexedDB databases, which would be slower.
          */
         mode: 'collection'
@@ -2308,7 +2351,7 @@ const database = await createRxDatabase({
 
 ## Performance
 
-The Sharding RxStorage wrapper can improve performance, especially when using an underlying storage that has bottlenecks with large single stores like IndexedDB. Below is a comparison.
+The Sharding [RxStorage](./rx-storage.md) wrapper can improve performance, especially when using an underlying storage that has bottlenecks with large single stores like IndexedDB. Below is a comparison.
 
 <PerformanceChart
   data={[
@@ -2370,9 +2413,11 @@ const database = await createRxDatabase({
             /**
              * Contains any value that can be used as parameter
              * to the SharedWorker constructor of thread.js
-             * Most likely you want to put the path to the shared-worker.js file in here.
+             * Most likely you want to put the path to
+             * the shared-worker.js file in here.
              * 
-             * @link https://developer.mozilla.org/en-US/docs/Web/API/SharedWorker?retiredLocale=de
+             * @link https://developer.mozilla.org/
+             * en-US/docs/Web/API/SharedWorker
              */
             workerInput: 'path/to/shared-worker.js',
             /**
@@ -2432,7 +2477,7 @@ When you know that you only ever create your RxDatabase inside of the shared wor
 
 ## Replication with SharedWorker
 
-When a SharedWorker RxStorage is used, it is recommended to run the replication **inside** of the worker. This is the best option for performance. You can do that by opening another [RxDatabase](./rx-database.md) inside of it and starting the replication there. If you are not concerned about performance, you can still start replication on the main thread instead. But you should never run replication on both the main thread **and** the worker.
+When a SharedWorker RxStorage is used, it is recommended to run the [replication](./replication.md) **inside** of the worker. This is the best option for performance. You can do that by opening another [RxDatabase](./rx-database.md) inside of it and starting the replication there. If you are not concerned about performance, you can still start replication on the main thread instead. But you should never run replication on both the main thread **and** the worker.
 
 ```ts
 // shared-worker.ts
@@ -2666,8 +2711,13 @@ const myRxDatabase = await createRxDatabase({
 
 ### Usage with **React Native**
 
-1. Install the [react-native-quick-sqlite npm module](https://www.npmjs.com/package/react-native-quick-sqlite)
-2. Import `getSQLiteBasicsQuickSQLite` from the SQLite plugin and use it to create a [RxDatabase](./rx-database.md):
+<Steps>
+
+#### 1. Install the package
+Install the [react-native-quick-sqlite npm module](https://www.npmjs.com/package/react-native-quick-sqlite)
+
+#### 2. Create the Database
+Import `getSQLiteBasicsQuickSQLite` from the SQLite plugin and use it to create a [RxDatabase](./rx-database.md):
 
 ```ts
 import {
@@ -2682,7 +2732,8 @@ import { open } from 'react-native-quick-sqlite';
 // create database
 const myRxDatabase = await createRxDatabase({
     name: 'exampledb',
-    multiInstance: false, // <- Set multiInstance to false when using RxDB in React Native
+    // Set multiInstance to false for React Native
+    multiInstance: false,
     storage: getRxStorageSQLite({
         sqliteBasics: getSQLiteBasicsQuickSQLite(open)
     })
@@ -2701,6 +2752,8 @@ const storage = getRxStorageSQLite({
   sqliteBasics: getSQLiteBasicsWebSQL(SQLite.openDatabase)
 });
 ```
+
+</Steps>
 
 ### Usage with **Expo SQLite**
 
@@ -2754,8 +2807,13 @@ const myRxDatabase = await createRxDatabase({
 
 ### Usage with **SQLite Capacitor**
 
-1. Install the [sqlite capacitor npm module](https://github.com/capacitor-community/sqlite)
-2. Add the iOS database location to your capacitor config
+<Steps>
+
+#### 1. Install the sqlite capacitor npm module
+Install the [sqlite capacitor npm module](https://github.com/capacitor-community/sqlite)
+
+#### 2. Add the iOS database location
+Add the iOS database location to your capacitor config
 
 ```json
 {
@@ -2767,7 +2825,8 @@ const myRxDatabase = await createRxDatabase({
 }
 ```
 
-3. Use the function `getSQLiteBasicsCapacitor` to get the capacitor sqlite wrapper.
+#### 3. Get the capacitor sqlite wrapper
+Use the function `getSQLiteBasicsCapacitor` to get the capacitor sqlite wrapper.
 
 ```ts
 import {
@@ -2804,11 +2863,20 @@ const myRxDatabase = await createRxDatabase({
 });
 ```
 
+</Steps>
+
 ### Usage with Tauri SQLite
 
-1. Add the [Tauri SQL plugin](https://tauri.app/plugin/sql/#setup) to your Tauri project.
-2. Make sure to add `sqlite` as your database engine by running `cargo add tauri-plugin-sql --features sqlite` inside `src-tauri`.
-3. Use the `getSQLiteBasicsTauri` function to get the Tauri SQLite wrapper.
+<Steps>
+
+#### 1. Add the Tauri SQL plugin
+Add the [Tauri SQL plugin](https://tauri.app/plugin/sql/#setup) to your Tauri project.
+
+#### 2. Add sqlite as your database engine
+Make sure to add `sqlite` as your database engine by running `cargo add tauri-plugin-sql --features sqlite` inside `src-tauri`.
+
+#### 3. Use the Tauri SQLite wrapper
+Use the `getSQLiteBasicsTauri` function to get the Tauri SQLite wrapper.
 
 ```ts
 import {
@@ -2827,6 +2895,8 @@ const myRxDatabase = await createRxDatabase({
     })
 });
 ```
+
+</Steps>
 
 ## Database Connection
 
@@ -3121,7 +3191,9 @@ We use the schema-validation on the top level to ensure schema-errors are clearl
 ```ts
 import { wrappedValidateAjvStorage } from 'rxdb/plugins/validate-ajv';
 import { wrappedKeyCompressionStorage } from 'rxdb/plugins/key-compression';
-import { wrappedKeyEncryptionCryptoJsStorage } from 'rxdb/plugins/encryption-crypto-js';
+import {
+    wrappedKeyEncryptionCryptoJsStorage
+} from 'rxdb/plugins/encryption-crypto-js';
 import { getRxStorageIndexedDB } from 'rxdb-premium/plugins/storage-indexeddb';
 
 const myDatabase = await createRxDatabase({
@@ -3143,7 +3215,9 @@ Also we can utilize a combination of storages to create a database that is optim
 import { getRxStorageSharding } from 'rxdb-premium/plugins/storage-sharding';
 import { getRxStorageWorker } from 'rxdb-premium/plugins/storage-worker';
 import { getRxStorageIndexedDB } from 'rxdb-premium/plugins/storage-indexeddb';
-import { getLocalstorageMetaOptimizerRxStorage } from 'rxdb-premium/plugins/storage-localstorage-meta-optimizer';
+import {
+    getLocalstorageMetaOptimizerRxStorage
+} from 'rxdb-premium/plugins/storage-localstorage-meta-optimizer';
 
 const myDatabase = await createRxDatabase({
     storage: getLocalstorageMetaOptimizerRxStorage({
@@ -3162,8 +3236,12 @@ const myDatabase = await createRxDatabase({
 Here we create a storage configuration that is optimized to have a low latency on simple reads and writes. It uses the memory-mapped storage to fetch and store data in memory. For persistence the OPFS storage is used in the main thread which has lower latency for fetching big chunks of data when at initialization the data is loaded from disk into memory. We do not use workers because sending data from the main thread to workers and backwards would increase the latency.
 
 ```ts
-import { getLocalstorageMetaOptimizerRxStorage } from 'rxdb-premium/plugins/storage-localstorage-meta-optimizer';
-import { getMemoryMappedRxStorage } from 'rxdb-premium/plugins/storage-memory-mapped';
+import {
+    getLocalstorageMetaOptimizerRxStorage
+} from 'rxdb-premium/plugins/storage-localstorage-meta-optimizer';
+import {
+    getMemoryMappedRxStorage
+} from 'rxdb-premium/plugins/storage-memory-mapped';
 import { getRxStorageOPFSMainThread } from 'rxdb-premium/plugins/storage-worker';
 
 const myDatabase = await createRxDatabase({
@@ -3225,7 +3303,7 @@ The [RxStorage](./rx-storage.md) Localstorage Meta Optimizer is a wrapper around
 
 #### Electron IpcRenderer & IpcMain
 
-To use RxDB in [electron](./electron-database.md), it is recommended to run the RxStorage in the main process and the RxDatabase in the renderer processes. With the rxdb electron plugin you can create a remote RxStorage and consume it from the renderer process. [Read more](./electron.md)
+To use RxDB in [electron](./electron-database.md), it is recommended to run the RxStorage in the main process and the [RxDatabase](./rx-database.md) in the renderer processes. With the rxdb electron plugin you can create a remote RxStorage and consume it from the renderer process. [Read more](./electron.md)
 
 ### Third Party based Storages
 
@@ -3322,7 +3400,9 @@ const db = await createRxDatabase({
 The `validate-is-my-json-valid` plugin uses [is-my-json-valid](https://www.npmjs.com/package/is-my-json-valid) for schema validation.
 
 ```javascript
-import { wrappedValidateIsMyJsonValidStorage } from 'rxdb/plugins/validate-is-my-json-valid';
+import {
+    wrappedValidateIsMyJsonValidStorage
+} from 'rxdb/plugins/validate-is-my-json-valid';
 import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
 
 // wrap the validation around the main RxStorage

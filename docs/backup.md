@@ -5,7 +5,7 @@
 # 📥 Backup Plugin
 
 With the backup plugin you can write the current database state and ongoing changes into folders on the filesystem.
-The files are written in plain json together with their attachments so that you can read them out with any software or tools, without being bound to RxDB.
+The files are written in plain json together with their [attachments](./rx-attachment.md) so that you can read them out with any software or tools, without being bound to RxDB.
 
 This is useful to:
   - Consume the database content with other software that cannot replicate with RxDB
@@ -56,7 +56,8 @@ const backupOptions = {
 }
 const backupState = myDatabase.backup(backupOptions);
 
-// you can still await the initial backup write, but further changes will still be processed.
+// you can still await the initial backup write,
+// but further changes will still be processed.
 await backupState.awaitInitialBackup();
 ```
 
@@ -72,7 +73,10 @@ const backupOptions = {
 }
 const backupState = myDatabase.backup(backupOptions);
 
-const subscription = backupState.writeEvents$.subscribe(writeEvent => console.dir(writeEvent));
+const subscription = backupState.writeEvents$
+    .subscribe(writeEvent =>
+        console.dir(writeEvent)
+    );
 /*
 > {
     collectionName: 'humans',

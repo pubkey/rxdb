@@ -1,9 +1,15 @@
 
 # RxDB Changelog
 
-<!-- CHANGELOG NEWEST -->
 
-<!-- ADD new changes here! -->
+<!-- 
+  Do not add new changes directly here to the CHANGELOG.md file.
+  Instead add new changes to orga/changelog/ as one file per change as described in ./orga/changelog/README.md
+-->
+
+<!-- RELEASE BELOW -->
+
+### 17.1.0 (2 April 2026)
 
 - ADD React `useRxDocument(collection, primaryKey)` hook for subscribing to a single document by primary key with live updates
 - ADD React `useReplicationStatus(replicationState)` hook that exposes `syncing`, `error`, `lastSyncedAt`, and `canceled` from replication observables
@@ -45,10 +51,6 @@
 - FIX event-reduce mutating cached `docsDataMap` causing missing documents after insert-delete cycles
 - FIX `modify()` not deep-cloning document data, allowing the modifier to corrupt internal state via shared nested references
 - FIX `fillObjectWithDefaults` shared mutable references for non-primitive schema defaults (arrays/objects) causing corrupted values on subsequent inserts
-
-<!-- /CHANGELOG NEWEST -->
-
-<!-- RELEASE BELOW -->
 
 ### 17.0.0 (30 March 2026)
 

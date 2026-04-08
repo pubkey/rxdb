@@ -3,7 +3,7 @@
 > Discover how to harness the Origin Private File System with RxDB's OPFS RxStorage for unrivaled performance and security in client-side data storage.
 
 import { PerformanceChart } from '@site/src/components/performance-chart';
-import { PERFORMANCE_DATA_BROWSER, PERFORMANCE_METRICS } from '@site/src/components/performance-data';
+import { PERFORMANCE_DATA_BROWSER, PERFORMANCE_DATA_OPFS, PERFORMANCE_METRICS } from '@site/src/components/performance-data';
 import {PremiumBlock} from '@site/src/components/premium-block';
 
 # Origin Private File System (OPFS) Database with the RxDB OPFS-RxStorage
@@ -114,9 +114,9 @@ const database = await createRxDatabase({
 
 ## Using OPFS in the main thread instead of a worker
 
-The `createSyncAccessHandle()` method from the OPFS File System Access API is only available inside of a WebWorker. Therefore you cannot use `getRxStorageOPFS()` in the main thread. Instead, RxDB provides `getRxStorageOPFSMainThread()`, which uses the asynchronous OPFS APIs (such as `FileSystemFileHandle.createWritable()`) under the hood. Because it cannot use the synchronous access handle, this main-thread variant is slightly slower for heavy write workloads than the worker-based storage.
+The `createSyncAccessHandle()` method from the OPFS File System Access API is only available inside of a WebWorker. Therefore you cannot use `getRxStorageOPFS()` in the main thread. Instead, RxDB provides `getRxStorageOPFSMainThread()`, which uses the asynchronous OPFS APIs (such as `FileSystemFileHandle.createWritable()`) under the hood.
 
-Using OPFS from the main thread can still have benefits, because avoiding the worker bridge can reduce latency for some read and write patterns and may simplify your application architecture.
+Using OPFS from the main thread can also simplify your application architecture by avoiding the WebWorker setup.
 
 ```ts
 import { createRxDatabase } from 'rxdb';
@@ -127,6 +127,10 @@ const database = await createRxDatabase({
     storage: getRxStorageOPFSMainThread()
 });
 ```
+
+The main thread and worker variants have different performance patterns. Running the database inside a WebWorker frees up the main thread to perform other tasks and enables faster synchronous file access, but passing messages between the main thread and the worker adds latency. Test both variants to determine which performs better for your specific use case.
+
+<PerformanceChart title="OPFS Worker vs Main-Thread" data={PERFORMANCE_DATA_OPFS} metrics={PERFORMANCE_METRICS} />
 
 ## Building a custom `worker.js`
 

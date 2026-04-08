@@ -67,7 +67,9 @@ const db = await createRxDatabase({
 The `validate-is-my-json-valid` plugin uses [is-my-json-valid](https://www.npmjs.com/package/is-my-json-valid) for schema validation.
 
 ```javascript
-import { wrappedValidateIsMyJsonValidStorage } from 'rxdb/plugins/validate-is-my-json-valid';
+import {
+    wrappedValidateIsMyJsonValidStorage
+} from 'rxdb/plugins/validate-is-my-json-valid';
 import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
 
 // wrap the validation around the main RxStorage

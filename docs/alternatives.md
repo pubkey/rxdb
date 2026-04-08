@@ -157,7 +157,7 @@ In the past, RxDB supported using [LokiJS as RxStorage](./rx-storage-lokijs.md) 
 
 ### Gundb
 
-GUN is a JavaScript graph database. While having many features, the **decentralized** replication is the main unique selling point. You can replicate data Peer-to-Peer without any centralized backend server. GUN has several other features that are useful on top of that, like encryption and authentication.
+GUN is a JavaScript graph database. While having many features, the **decentralized** replication is the main unique selling point. You can replicate data Peer-to-Peer without any centralized backend server. GUN has several other features that are useful on top of that, like [encryption](./encryption.md) and authentication.
 
 While testing it was really hard to get basic things running. GUN is open source, but because of how the source code [is written](https://github.com/amark/gun/blob/master/src/put.js), it is very difficult to understand what is going wrong.
 
@@ -188,7 +188,7 @@ RxDB supports using [Dexie.js as Database storage](./rx-storage-dexie.md) which 
 
 LowDB is a small, local JSON database powered by the Lodash library. It is designed to be simple, easy to use, and straightforward. LowDB allows you to perform native JavaScript queries and persist data in a flat JSON file. Written in TypeScript, it's particularly well-suited for small projects, prototyping, or when you need a lightweight, file-based database.
 
-As an alternative to LowDB, [RxDB](./) offers real-time reactivity, allowing developers to subscribe to database changes, a feature not natively available in LowDB. Additionally, RxDB provides robust [query capabilities](./rx-query.md), including the ability to subscribe to query results for automatic UI updates. These features make RxDB a strong alternative to LowDB for more complex and dynamic applications.
+As an alternative to LowDB, [RxDB](./) offers real-time [reactivity](./reactivity.md), allowing developers to subscribe to database changes, a feature not natively available in LowDB. Additionally, RxDB provides robust [query capabilities](./rx-query.md), including the ability to subscribe to query results for automatic UI updates. These features make RxDB a strong alternative to LowDB for more complex and dynamic applications.
 
 ### localForage
 localForage is a popular JavaScript library for offline storage that provides a simple, promise-based API. It abstracts over different storage mechanisms such as [IndexedDB](./rx-storage-indexeddb.md), WebSQL, or [localStorage](./articles/localstorage.md), making it easier to write code once and have it work seamlessly across various browsers. While localForage is great for storing data locally in a key-value manner, it doesn't provide the real-time reactive queries, [conflict handling](./transactions-conflicts-revisions.md), or revision-based replication that RxDB does. This makes localForage a useful choice for straightforward caching or persistent storage needs, but not ideal for advanced offline-first scenarios requiring multi-user collaboration or complex querying.
