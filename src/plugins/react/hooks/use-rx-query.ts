@@ -90,7 +90,6 @@ export function useRxQueryBase<
         }
         dbCollection = collection;
     }
-    (window as any).collection = dbCollection;
 
     const emitResults = (res: RxDocument<RxDocumentType, OrmMethods>[]) => {
         setResults(res);
