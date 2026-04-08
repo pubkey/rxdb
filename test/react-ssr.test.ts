@@ -12,6 +12,7 @@ import {
     createRxDatabase,
     randomToken,
     addRxPlugin,
+    RxDatabase,
 } from '../plugins/core/index.mjs';
 import { RxDBDevModePlugin } from '../plugins/dev-mode/index.mjs';
 import { getRxStorageMemory } from '../plugins/storage-memory/index.mjs';
@@ -41,7 +42,7 @@ describe('react-ssr.test.ts', () => {
     });
 
     it('should render the RxDatabaseProvider with renderToString', async () => {
-        const db = await createRxDatabase({
+        const db: RxDatabase = await createRxDatabase({
             name: randomToken(10),
             storage: wrappedValidateAjvStorage({ storage: getRxStorageMemory() }),
         });
@@ -49,8 +50,7 @@ describe('react-ssr.test.ts', () => {
         const html = renderToString(
             React.createElement(
                 RxDatabaseProvider,
-                { database: db } as any,
-                React.createElement('div', null, 'SSR content')
+                { database: db, children: React.createElement('div', null, 'SSR content') }
             )
         );
 
