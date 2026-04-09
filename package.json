@@ -416,7 +416,7 @@
     "// test:fast": "run tests in the fast-mode. Most of them will run in parallel, skips tests that are known slow",
     "test:fast": "npm run test:fast:memory && npm run test:fast:dexie",
     "test:fast:memory": "npm run transpile && cross-env DEFAULT_STORAGE=memory NODE_ENV=fast mocha --config ./config/.mocharc.cjs ./test_tmp/unit.test.js",
-    "test:react": "npm run transpile && cross-env DEFAULT_STORAGE=memory mocha --require global-jsdom/register --config ./config/.mocharc.cjs ./test_tmp/react.test.js",
+    "test:react": "npm run transpile && cross-env DEFAULT_STORAGE=memory mocha --config ./config/.mocharc.cjs ./test_tmp/react-ssr.test.js && cross-env DEFAULT_STORAGE=memory mocha --require global-jsdom/register --config ./config/.mocharc.cjs ./test_tmp/react.test.js",
     "test:fast:memory-random-delay": "npm run transpile && cross-env DEFAULT_STORAGE=memory-random-delay NODE_ENV=fast mocha --config ./config/.mocharc.cjs ./test_tmp/unit.test.js",
     "test:fast:dexie": "npm run transpile && cross-env DEFAULT_STORAGE=dexie NODE_ENV=fast mocha --config ./config/.mocharc.cjs ./test_tmp/unit.test.js",
     "test:fast:foundationdb": "npm run transpile && cross-env DEFAULT_STORAGE=foundationdb NODE_ENV=fast mocha --config ./config/.mocharc.cjs ./test_tmp/unit.test.js",
