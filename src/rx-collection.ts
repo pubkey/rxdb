@@ -376,7 +376,7 @@ export class RxCollectionBase<
 
     async insert(
         json: RxDocumentType | RxDocument
-    ): Promise<RxDocument<RxDocumentType, OrmMethods>> {
+    ): Promise<RxDocument<RxDocumentType, OrmMethods, Reactivity>> {
         ensureRxCollectionIsNotClosed(this);
         const writeResult = await this.bulkInsert([json as any]);
 
@@ -388,13 +388,13 @@ export class RxCollectionBase<
 
     async insertIfNotExists(
         json: RxDocumentType | RxDocument
-    ): Promise<RxDocument<RxDocumentType, OrmMethods>> {
+    ): Promise<RxDocument<RxDocumentType, OrmMethods, Reactivity>> {
         const writeResult = await this.bulkInsert([json as any]);
         if (writeResult.error.length > 0) {
             const error = writeResult.error[0];
             if (error.status === 409) {
                 const conflictDocData = error.documentInDb;
-                return mapDocumentsDataToCacheDocs(this._docCache, [conflictDocData])[0];
+                return mapDocumentsDataToCacheDocs(this._docCache, [conflictDocData])[0] as any;
 
             } else {
                 throw error;
@@ -406,7 +406,7 @@ export class RxCollectionBase<
     async bulkInsert(
         docsData: RxDocumentType[]
     ): Promise<{
-        success: RxDocument<RxDocumentType, OrmMethods>[];
+        success: RxDocument<RxDocumentType, OrmMethods, Reactivity>[];
         error: RxStorageWriteError<RxDocumentType>[];
     }> {
         ensureRxCollectionIsNotClosed(this);
@@ -509,7 +509,7 @@ export class RxCollectionBase<
          * Often the user does not need to access the RxDocuments of the bulkInsert() call.
          * So we transform the data to RxDocuments only if needed to use less CPU performance.
          */
-        let rxDocuments: RxDocument<RxDocumentType, OrmMethods>[];
+        let rxDocuments: RxDocument<RxDocumentType, OrmMethods, Reactivity>[];
         const collection = this;
         const ret = {
             get success() {
@@ -519,7 +519,7 @@ export class RxCollectionBase<
                         insertRows,
                         results
                     );
-                    rxDocuments = mapDocumentsDataToCacheDocs<RxDocumentType, OrmMethods>(collection._docCache, success);
+                    rxDocuments = mapDocumentsDataToCacheDocs<RxDocumentType, OrmMethods>(collection._docCache, success) as any;
                 }
                 return rxDocuments;
             },
@@ -555,7 +555,7 @@ export class RxCollectionBase<
          */
         idsOrDocs: string[] | RxDocument<RxDocumentType>[]
     ): Promise<{
-        success: RxDocument<RxDocumentType, OrmMethods>[];
+        success: RxDocument<RxDocumentType, OrmMethods, Reactivity>[];
         error: RxStorageWriteError<RxDocumentType>[];
     }> {
         ensureRxCollectionIsNotClosed(this);
@@ -571,12 +571,12 @@ export class RxCollectionBase<
             };
         }
 
-        let rxDocumentMap: Map<string, RxDocument<RxDocumentType, OrmMethods>>;
+        let rxDocumentMap: Map<string, RxDocument<RxDocumentType, OrmMethods, Reactivity>>;
         if (typeof idsOrDocs[0] === 'string') {
             rxDocumentMap = await this.findByIds(idsOrDocs as string[]).exec();
         } else {
             rxDocumentMap = new Map();
-            (idsOrDocs as RxDocument<RxDocumentType, OrmMethods>[]).forEach(d => rxDocumentMap.set(d.primary, d));
+            (idsOrDocs as RxDocument<RxDocumentType, OrmMethods, Reactivity>[]).forEach(d => rxDocumentMap.set(d.primary, d));
         }
 
         const docsData: RxDocumentData<RxDocumentType>[] = [];
@@ -613,11 +613,11 @@ export class RxCollectionBase<
             results
         );
 
-        const deletedRxDocuments: RxDocument<RxDocumentType, OrmMethods>[] = [];
+        const deletedRxDocuments: RxDocument<RxDocumentType, OrmMethods, Reactivity>[] = [];
         const successIds: string[] = success.map(d => {
             const id = d[primaryPath] as string;
             const doc = this._docCache.getCachedRxDocument(d);
-            deletedRxDocuments.push(doc);
+            deletedRxDocuments.push(doc as any);
             return id;
         });
 
@@ -644,7 +644,7 @@ export class RxCollectionBase<
      * same as bulkInsert but overwrites existing document with same primary
      */
     async bulkUpsert(docsData: Partial<RxDocumentType>[], options?: UpsertOptions): Promise<{
-        success: RxDocument<RxDocumentType, OrmMethods>[];
+        success: RxDocument<RxDocumentType, OrmMethods, Reactivity>[];
         error: RxStorageWriteError<RxDocumentType>[];
     }> {
         ensureRxCollectionIsNotClosed(this);
@@ -736,7 +736,7 @@ export class RxCollectionBase<
     /**
      * same as insert but overwrites existing document with same primary
      */
-    async upsert(json: Partial<RxDocumentType>, options?: UpsertOptions): Promise<RxDocument<RxDocumentType, OrmMethods>> {
+    async upsert(json: Partial<RxDocumentType>, options?: UpsertOptions): Promise<RxDocument<RxDocumentType, OrmMethods, Reactivity>> {
         ensureRxCollectionIsNotClosed(this);
         const bulkResult = await this.bulkUpsert([json], options);
         throwIfIsStorageWriteError<RxDocumentType>(
@@ -751,7 +751,7 @@ export class RxCollectionBase<
     /**
      * upserts to a RxDocument, uses incrementalModify if document already exists
      */
-    incrementalUpsert(json: Partial<RxDocumentType>, options?: UpsertOptions): Promise<RxDocument<RxDocumentType, OrmMethods>> {
+    incrementalUpsert(json: Partial<RxDocumentType>, options?: UpsertOptions): Promise<RxDocument<RxDocumentType, OrmMethods, Reactivity>> {
         ensureRxCollectionIsNotClosed(this);
         const useJson = fillObjectDataBeforeInsert(this.schema, json);
         const primary: string = useJson[this.schema.primaryPath] as any;
@@ -814,7 +814,7 @@ export class RxCollectionBase<
 
     find(queryObj?: MangoQuery<RxDocumentType>): RxQuery<
         RxDocumentType,
-        RxDocument<RxDocumentType, OrmMethods>[],
+        RxDocument<RxDocumentType, OrmMethods, Reactivity>[],
         OrmMethods,
         Reactivity
     > {
@@ -838,7 +838,7 @@ export class RxCollectionBase<
         queryObj?: MangoQueryNoLimit<RxDocumentType> | string
     ): RxQuery<
         RxDocumentType,
-        RxDocument<RxDocumentType, OrmMethods> | null,
+        RxDocument<RxDocumentType, OrmMethods, Reactivity> | null,
         OrmMethods,
         Reactivity
     > {
@@ -900,7 +900,7 @@ export class RxCollectionBase<
         ids: string[]
     ): RxQuery<
         RxDocumentType,
-        Map<string, RxDocument<RxDocumentType, OrmMethods>>,
+        Map<string, RxDocument<RxDocumentType, OrmMethods, Reactivity>>,
         OrmMethods,
         Reactivity
     > {
@@ -937,7 +937,7 @@ export class RxCollectionBase<
         throw pluginMissing('webmcp');
     }
 
-    insertCRDT(_updateObj: CRDTEntry<any> | CRDTEntry<any>[]): RxDocument<RxDocumentType, OrmMethods> {
+    insertCRDT(_updateObj: CRDTEntry<any> | CRDTEntry<any>[]): RxDocument<RxDocumentType, OrmMethods, Reactivity> {
         throw pluginMissing('crdt');
     }
 
