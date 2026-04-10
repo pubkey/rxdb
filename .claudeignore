@@ -38,3 +38,4 @@ dist/
 *-debug.log
 .vscode
 ai-context.txt
+.git/
