@@ -389,20 +389,21 @@ export const basePrototype = {
      * instead deleted documents get flagged with _deleted=true.
      */
     async remove(this: RxDocument): Promise<RxDocument> {
-        if (this.deleted) {
+        const latestDoc = this.getLatest();
+        if (latestDoc.deleted) {
             return Promise.reject(newRxError('DOC13', {
                 document: this,
                 id: this.primary
             }));
         }
 
-        const removeResult = await this.collection.bulkRemove([this]);
+        const removeResult = await this.collection.bulkRemove([latestDoc]);
         if (removeResult.error.length > 0) {
             const error = removeResult.error[0];
             throwIfIsStorageWriteError(
                 this.collection,
                 this.primary,
-                this._data,
+                latestDoc._data,
                 error
             );
         }

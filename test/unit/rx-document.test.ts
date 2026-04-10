@@ -242,6 +242,73 @@ describe('rx-document.test.js', () => {
 
                 c.database.close();
             });
+            it('remove() after patch() on the same reference should work (quickstart pattern)', async () => {
+                const db = await createRxDatabase({
+                    name: randomToken(10),
+                    storage: config.storage.getStorage(),
+                });
+                await db.addCollections({
+                    todos: {
+                        schema: {
+                            version: 0,
+                            primaryKey: 'id',
+                            type: 'object',
+                            properties: {
+                                id: {
+                                    type: 'string',
+                                    maxLength: 100
+                                },
+                                name: {
+                                    type: 'string'
+                                },
+                                done: {
+                                    type: 'boolean'
+                                },
+                                timestamp: {
+                                    type: 'string',
+                                    format: 'date-time'
+                                }
+                            },
+                            required: ['id', 'name', 'done', 'timestamp']
+                        }
+                    }
+                });
+
+                // Insert a document (quickstart step)
+                await db.todos.insert({
+                    id: 'todo1',
+                    name: 'Learn RxDB',
+                    done: false,
+                    timestamp: new Date().toISOString()
+                });
+
+                // Find documents (quickstart step)
+                const foundDocuments = await db.todos.find({
+                    selector: {
+                        done: {
+                            $eq: false
+                        }
+                    }
+                }).exec();
+                assert.strictEqual(foundDocuments.length, 1);
+
+                // Patch the first document (quickstart step)
+                const firstDocument = foundDocuments[0];
+                await firstDocument.patch({
+                    done: true
+                });
+
+                // Remove the document using the same reference (quickstart step).
+                // Even though firstDocument is now a stale reference after patch(),
+                // remove() should use the latest document version from the cache.
+                await firstDocument.remove();
+
+                // Verify the document is removed
+                const remainingDocs = await db.todos.find().exec();
+                assert.strictEqual(remainingDocs.length, 0);
+
+                await db.close();
+            });
             it('inserting to overwrite a deleted document should have the correct errors', async () => {
                 const c = await humansCollection.create(0);
                 const docData = schemaObjects.humanData('foobar');
@@ -278,25 +345,25 @@ describe('rx-document.test.js', () => {
             });
         });
         describe('negative', () => {
-            it('should throw on conflict', async () => {
+            it('should throw when removing an already deleted document', async () => {
                 const c = await humansCollection.create(1);
                 const doc = await c.findOne().exec(true);
                 await doc.remove();
                 await AsyncTestUtil.assertThrows(
                     () => doc.remove(),
                     'RxError',
-                    'CONFLICT'
+                    'DOC13'
                 );
                 c.database.close();
             });
-            it('delete doc twice should cause a conflict', async () => {
+            it('delete doc twice should throw already deleted error', async () => {
                 const c = await humansCollection.create(5);
                 const doc: any = await c.findOne().exec();
                 await doc.remove();
                 await AsyncTestUtil.assertThrows(
                     () => doc.remove(),
                     'RxError',
-                    'CONFLICT'
+                    'DOC13'
                 );
                 c.database.close();
             });

@@ -1,0 +1,1 @@
+- FIX `RxDocument.remove()` throwing a CONFLICT error when called on a stale document reference (e.g. after `patch()` was called on the same reference), because it used `this._data` instead of fetching the latest document version from the cache
