@@ -1,0 +1,1 @@
+- FIX `RxCollection.find()`, `findOne()`, and `findByIds()` return types missing the `Reactivity` generic parameter on `RxDocument`, causing documents obtained from query results to lose their custom reactivity typing (e.g. `doc.age$$` typed as `unknown` instead of the correct reactive container type like `Signal<number>`)

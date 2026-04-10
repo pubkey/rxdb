@@ -503,6 +503,63 @@ describe('typings.test.ts', function () {
             // @ts-expect-error get$$ should not be assignable to number
             const wrong: number = doc.get$$('age');
         });
+        it('documents from find().exec() should preserve Reactivity type', async () => {
+            interface SetReactivityLambda extends ReactivityLambda {
+                readonly _result: Set<this['_data']>;
+            }
+            type DbCollections = {
+                smth: RxCollection<DocType, {}, {}, {}, SetReactivityLambda>;
+            };
+            type Db = RxDatabase<DbCollections, any, any, SetReactivityLambda>;
+            const db: Db = {} as any;
+
+            // Documents returned from find().exec() must carry the Reactivity type
+            const docs = await db.smth.find().exec();
+            const doc = docs[0];
+            const ageSignal: Set<number> = doc.age$$;
+
+            // @ts-expect-error age$$ should not be assignable to number
+            const ageWrong: number = doc.age$$;
+        });
+        it('document from findOne().exec() should preserve Reactivity type', async () => {
+            interface SetReactivityLambda extends ReactivityLambda {
+                readonly _result: Set<this['_data']>;
+            }
+            type DbCollections = {
+                smth: RxCollection<DocType, {}, {}, {}, SetReactivityLambda>;
+            };
+            type Db = RxDatabase<DbCollections, any, any, SetReactivityLambda>;
+            const db: Db = {} as any;
+
+            // Document returned from findOne().exec() must carry the Reactivity type
+            const doc = await db.smth.findOne().exec();
+            if (doc) {
+                const ageSignal: Set<number> = doc.age$$;
+
+                // @ts-expect-error age$$ should not be assignable to number
+                const ageWrong: number = doc.age$$;
+            }
+        });
+        it('documents from findByIds().exec() should preserve Reactivity type', async () => {
+            interface SetReactivityLambda extends ReactivityLambda {
+                readonly _result: Set<this['_data']>;
+            }
+            type DbCollections = {
+                smth: RxCollection<DocType, {}, {}, {}, SetReactivityLambda>;
+            };
+            type Db = RxDatabase<DbCollections, any, any, SetReactivityLambda>;
+            const db: Db = {} as any;
+
+            // Documents returned from findByIds().exec() must carry the Reactivity type
+            const docsMap = await db.smth.findByIds(['id1']).exec();
+            const doc = docsMap.get('id1');
+            if (doc) {
+                const ageSignal: Set<number> = doc.age$$;
+
+                // @ts-expect-error age$$ should not be assignable to number
+                const ageWrong: number = doc.age$$;
+            }
+        });
     });
 });
 describe('local documents', () => {

@@ -814,7 +814,7 @@ export class RxCollectionBase<
 
     find(queryObj?: MangoQuery<RxDocumentType>): RxQuery<
         RxDocumentType,
-        RxDocument<RxDocumentType, OrmMethods>[],
+        RxDocument<RxDocumentType, OrmMethods, Reactivity>[],
         OrmMethods,
         Reactivity
     > {
@@ -838,7 +838,7 @@ export class RxCollectionBase<
         queryObj?: MangoQueryNoLimit<RxDocumentType> | string
     ): RxQuery<
         RxDocumentType,
-        RxDocument<RxDocumentType, OrmMethods> | null,
+        RxDocument<RxDocumentType, OrmMethods, Reactivity> | null,
         OrmMethods,
         Reactivity
     > {
@@ -900,7 +900,7 @@ export class RxCollectionBase<
         ids: string[]
     ): RxQuery<
         RxDocumentType,
-        Map<string, RxDocument<RxDocumentType, OrmMethods>>,
+        Map<string, RxDocument<RxDocumentType, OrmMethods, Reactivity>>,
         OrmMethods,
         Reactivity
     > {
