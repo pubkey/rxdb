@@ -1434,4 +1434,37 @@ describe('rx-document.test.js', () => {
             db.close();
         });
     });
+    describe('RxDocument.$ startWith stale data bug', () => {
+        it('$ observable should emit the latest document state even when subscribed after an update', async () => {
+            const c = await humansCollection.create(1);
+            const doc = await c.findOne().exec(true);
+            const initialName = doc.firstName;
+
+            // Step 1: Create the observable reference (captures startWith value eagerly)
+            const obs = doc.$;
+
+            // Step 2: Update the document AFTER creating the observable but BEFORE subscribing
+            await doc.incrementalPatch({ firstName: 'UpdatedAfterObsCreation' });
+
+            // Step 3: Subscribe to the previously created observable
+            const emissions: string[] = [];
+            const sub = obs.subscribe((d: any) => {
+                emissions.push(d.firstName);
+            });
+            await promiseWait(100);
+
+            // The subscriber should see the LATEST state ('UpdatedAfterObsCreation'),
+            // not the stale state from when the observable was created.
+            const lastEmission = emissions[emissions.length - 1];
+            assert.strictEqual(
+                lastEmission,
+                'UpdatedAfterObsCreation',
+                'Expected last emission to be the updated name but got: ' +
+                JSON.stringify(emissions) + ' (initial was ' + initialName + ')'
+            );
+
+            sub.unsubscribe();
+            c.database.close();
+        });
+    });
 });
