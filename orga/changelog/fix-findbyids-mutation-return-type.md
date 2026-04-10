@@ -1,0 +1,1 @@
+- FIX `findByIds()` mutation methods (`modify()`, `patch()`, `incrementalModify()`, `incrementalPatch()`, `incrementalRemove()`) returning an array instead of a `Map<string, RxDocument>`, violating the declared return type

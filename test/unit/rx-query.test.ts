@@ -2181,4 +2181,115 @@ describe('rx-query.test.ts', () => {
             c.database.close();
         });
     });
+    describeParallel('findByIds mutation methods', () => {
+        it('findByIds().modify() should return a Map, not an array', async () => {
+            const c = await humansCollection.create(0);
+            const id1 = 'modify-map-test-1';
+            const id2 = 'modify-map-test-2';
+            await c.bulkInsert([
+                schemaObjects.humanData(id1, 25, 'Alice'),
+                schemaObjects.humanData(id2, 30, 'Bob')
+            ]);
+
+            const result = await c.findByIds([id1, id2]).modify(
+                (docData) => {
+                    docData.age = (docData.age as number) + 1;
+                    return docData;
+                }
+            );
+
+            // The return type is declared as Map<string, RxDocument>,
+            // so it must be a Map instance.
+            assert.ok(result instanceof Map, 'result should be a Map but got ' + typeof result);
+            assert.strictEqual(result.size, 2);
+            assert.ok(result.has(id1));
+            assert.ok(result.has(id2));
+
+            // Verify the modification was applied
+            const doc1 = ensureNotFalsy(result.get(id1));
+            assert.strictEqual(doc1.age, 26);
+            const doc2 = ensureNotFalsy(result.get(id2));
+            assert.strictEqual(doc2.age, 31);
+
+            c.database.close();
+        });
+        it('findByIds().patch() should return a Map, not an array', async () => {
+            const c = await humansCollection.create(0);
+            const id1 = 'patch-map-test-1';
+            const id2 = 'patch-map-test-2';
+            await c.bulkInsert([
+                schemaObjects.humanData(id1, 25, 'Alice'),
+                schemaObjects.humanData(id2, 30, 'Bob')
+            ]);
+
+            const result = await c.findByIds([id1, id2]).patch({ age: 99 });
+
+            assert.ok(result instanceof Map, 'result should be a Map but got ' + typeof result);
+            assert.strictEqual(result.size, 2);
+            assert.ok(result.has(id1));
+            assert.ok(result.has(id2));
+
+            const doc1 = ensureNotFalsy(result.get(id1));
+            assert.strictEqual(doc1.age, 99);
+
+            c.database.close();
+        });
+        it('findByIds().incrementalModify() should return a Map, not an array', async () => {
+            const c = await humansCollection.create(0);
+            const id1 = 'incmod-map-test-1';
+            const id2 = 'incmod-map-test-2';
+            await c.bulkInsert([
+                schemaObjects.humanData(id1, 25, 'Alice'),
+                schemaObjects.humanData(id2, 30, 'Bob')
+            ]);
+
+            const result = await c.findByIds([id1, id2]).incrementalModify(
+                (docData) => {
+                    docData.age = (docData.age as number) + 5;
+                    return docData;
+                }
+            );
+
+            assert.ok(result instanceof Map, 'result should be a Map but got ' + typeof result);
+            assert.strictEqual(result.size, 2);
+
+            c.database.close();
+        });
+        it('findByIds().incrementalPatch() should return a Map, not an array', async () => {
+            const c = await humansCollection.create(0);
+            const id1 = 'incpatch-map-test-1';
+            const id2 = 'incpatch-map-test-2';
+            await c.bulkInsert([
+                schemaObjects.humanData(id1, 25, 'Alice'),
+                schemaObjects.humanData(id2, 30, 'Bob')
+            ]);
+
+            const result = await c.findByIds([id1, id2]).incrementalPatch({ age: 50 });
+
+            assert.ok(result instanceof Map, 'result should be a Map but got ' + typeof result);
+            assert.strictEqual(result.size, 2);
+
+            c.database.close();
+        });
+        it('findByIds().incrementalRemove() should return a Map, not an array', async () => {
+            const c = await humansCollection.create(0);
+            const id1 = 'increm-map-test-1';
+            const id2 = 'increm-map-test-2';
+            await c.bulkInsert([
+                schemaObjects.humanData(id1, 25, 'Alice'),
+                schemaObjects.humanData(id2, 30, 'Bob')
+            ]);
+
+            const result = await c.findByIds([id1, id2]).incrementalRemove();
+
+            assert.ok(result instanceof Map, 'result should be a Map but got ' + typeof result);
+            assert.strictEqual(result.size, 2);
+
+            // Verify documents were removed
+            const doc1 = ensureNotFalsy(result.get(id1));
+            assert.strictEqual(doc1.deleted, true);
+
+            c.database.close();
+        });
+    });
 });

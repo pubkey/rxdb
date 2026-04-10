@@ -269,9 +269,14 @@ export async function runQueryUpdateFunction<RxDocType, RxQueryResult>(
             docs.map(doc => fn(doc))
         ) as any;
     } else if (docs instanceof Map) {
-        return Promise.all(
-            [...docs.values()].map((doc) => fn(doc))
-        ) as any;
+        const resultMap = new Map<string, RxDocument<RxDocType>>();
+        await Promise.all(
+            [...docs.entries()].map(async ([key, doc]) => {
+                const updatedDoc = await fn(doc);
+                resultMap.set(key, updatedDoc);
+            })
+        );
+        return resultMap as any;
     } else {
         // via findOne()
         const result = await fn(docs as any);
