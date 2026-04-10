@@ -717,7 +717,7 @@
     "supabase": "2.84.7",
     "terser": "5.46.1",
     "terser-webpack-plugin": "5.4.0",
-    "ts-loader": "9.5.4",
+    "ts-loader": "9.5.7",
     "tsx": "4.21.0",
     "typescript": "5.9.3",
     "vue": "3.5.31",
