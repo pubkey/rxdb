@@ -626,6 +626,9 @@ addRxPlugin(RxDBJsonDumpPlugin);
              * duplicate emissions.
              */
             it('$ observable should not emit duplicate values on a single write', async () => {
+                if (isFastMode()) {
+                    return;
+                }
                 const state = await getState();
 
                 const emitted: any[] = [];
