@@ -2,6 +2,7 @@ import {
     Observable,
     Subject,
     distinctUntilChanged,
+    filter,
     map,
     merge,
     shareReplay,
@@ -86,10 +87,24 @@ export class RxStateBase<T, Reactivity = unknown> {
         this.$ = merge(
             this._ownEmits$,
             this.collection.eventBulks$.pipe(
-                tap((eventBulk: RxChangeEventBulk<RxStateDocument>) => {
+                /**
+                 * Filter out event bulks that do not contain
+                 * relevant events for this instance.
+                 * Only INSERT events from OTHER instances need
+                 * to be processed. Own-instance INSERTs are
+                 * already handled via _ownEmits$, and DELETE
+                 * events (e.g. from cleanup) do not change state.
+                 */
+                filter((eventBulk: RxChangeEventBulk<RxStateDocument>) => {
                     if (!this._initDone) {
-                        return;
+                        return false;
                     }
+                    return eventBulk.events.some(event =>
+                        event.operation === 'INSERT' &&
+                        event.documentData.sId !== this._instanceId
+                    );
+                }),
+                tap((eventBulk: RxChangeEventBulk<RxStateDocument>) => {
                     const events = eventBulk.events;
                     for (let index = 0; index < events.length; index++) {
                         const event = events[index];
