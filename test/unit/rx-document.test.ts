@@ -1435,6 +1435,9 @@ describe('rx-document.test.js', () => {
         });
     });
     describe('RxDocument.$ startWith stale data bug', () => {
+        if (isFastMode()) {
+            return;
+        }
         it('$ observable should emit the latest document state even when subscribed after an update', async () => {
             const c = await humansCollection.create(1);
             const doc = await c.findOne().exec(true);
