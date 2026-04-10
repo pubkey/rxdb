@@ -2395,6 +2395,30 @@ describe('rx-collection.test.ts', () => {
                 assert.strictEqual(res, 5);
                 c.database.close();
             });
+            it('should be able to remove the documents via findByIds().remove()', async () => {
+                const c = await humansCollection.create(5);
+                const docs = await c.find().exec();
+                const ids = docs.map((d) => d.primary);
+
+                // Use findByIds().remove() which should remove all found documents
+                const result = await c.findByIds(ids).remove();
+
+                // The result should be a Map containing the removed documents
+                assert.ok(result instanceof Map);
+                assert.strictEqual(result.size, 5);
+
+                // Verify that each returned document is marked as deleted
+                for (const [id, doc] of result) {
+                    assert.ok(ids.includes(id));
+                    assert.strictEqual(doc.deleted, true);
+                }
+
+                // Verify that all documents are actually removed from the collection
+                const remaining = await c.find().exec();
+                assert.strictEqual(remaining.length, 0);
+
+                c.database.close();
+            });
             /**
              * @link https://github.com/pubkey/rxdb/issues/6148
              */

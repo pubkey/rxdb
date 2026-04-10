@@ -1,0 +1,1 @@
+- FIX `findByIds().remove()` crashing with `TypeError: docs.remove is not a function` because the `remove()` method on `RxQuery` did not handle the `Map` result type returned by `findByIds()` queries

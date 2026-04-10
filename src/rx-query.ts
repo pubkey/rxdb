@@ -486,6 +486,19 @@ export class RxQueryBase<
             } else {
                 return result.success as any;
             }
+        } else if (docs instanceof Map) {
+            // findByIds() returns a Map<string, RxDocument>
+            const docsArray = Array.from((docs as Map<string, RxDocument<RxDocType>>).values());
+            const result = await this.collection.bulkRemove(docsArray);
+            if (result.error.length > 0) {
+                throw rxStorageWriteErrorToRxError(result.error[0]);
+            } else {
+                const resultMap = new Map<string, RxDocument<RxDocType>>();
+                for (const doc of result.success) {
+                    resultMap.set(doc.primary, doc);
+                }
+                return resultMap as any;
+            }
         } else {
             // findOne() can return null when no document matches
             if (!docs) {
