@@ -32,6 +32,7 @@ function checkFile(filePath) {
     const lines = content.split('\n');
 
     let inCodeBlock = false;
+    let ignoreCodeBlock = false;
 
     for (let i = 0; i < lines.length; i++) {
         const line = lines[i];
@@ -43,11 +44,17 @@ function checkFile(filePath) {
             if (rest.endsWith('```') && rest.length > 3) {
                 continue;
             }
-            inCodeBlock = !inCodeBlock;
+            if (!inCodeBlock) {
+                inCodeBlock = true;
+                ignoreCodeBlock = trimmed.startsWith('```txt');
+            } else {
+                inCodeBlock = false;
+                ignoreCodeBlock = false;
+            }
             continue;
         }
 
-        if (inCodeBlock && line.length > MAX_LINE_LENGTH) {
+        if (inCodeBlock && !ignoreCodeBlock && line.length > MAX_LINE_LENGTH) {
             const relativePath = path.relative(
                 path.join(__dirname, '..'),
                 filePath
