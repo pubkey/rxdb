@@ -92,7 +92,7 @@ export const defaultCacheReplacementPolicyMonad: (
                 maybeUncache.push(rxQuery);
             }
 
-            const mustUncache = maybeUncache.length - tryToKeepMax;
+            const mustUncache = queryCache._map.size - tryToKeepMax;
             if (mustUncache <= 0) {
                 return;
             }
