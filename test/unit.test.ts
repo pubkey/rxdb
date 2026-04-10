@@ -25,6 +25,7 @@ import './unit/rx-storage-query-correctness.test.ts';
 import './unit/rx-storage-helper.test.ts';
 
 import './unit/rx-storage-dexie.test.ts';
+import './unit/rx-storage-localstorage.test.ts';
 import './unit/rx-storage-remote.test.ts';
 import './unit/instance-of-check.test.ts';
 import './unit/rx-schema.test.ts';
