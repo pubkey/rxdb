@@ -440,6 +440,25 @@ export function categorizeBulkWriteRows<RxDocType>(
                                 }
                             }
                         }
+
+                        /**
+                         * Detect attachments that have been removed
+                         * (present in previous but missing from the new document).
+                         */
+                        if (previous) {
+                            const prevAtts = previous._attachments;
+                            const prevAttKeys = Object.keys(prevAtts);
+                            for (let a = 0; a < prevAttKeys.length; a++) {
+                                const attachmentId = prevAttKeys[a];
+                                if (!docAtts[attachmentId]) {
+                                    attachmentsRemove.push({
+                                        documentId: docId,
+                                        attachmentId,
+                                        digest: prevAtts[attachmentId].digest
+                                    });
+                                }
+                            }
+                        }
                     }
                 }
             }
