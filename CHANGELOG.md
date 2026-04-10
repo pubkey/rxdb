@@ -11,6 +11,7 @@
 
 ### 17.1.0 (2 April 2026)
 
+- FIX `RxDocument.populate()` throwing `DOC6` for array fields when `ref` is defined on `items` instead of on the array field itself, even though `createRxSchema` accepts both patterns
 - FIX CRDT plugin `bulkInsert` hook not including schema default values in CRDT operations, causing data loss during conflict resolution rebuild when fields rely on schema defaults
 - FIX `RxDocument.get$()` on nested object/array paths emitting spurious values when unrelated document fields changed, because `distinctUntilChanged()` used reference equality which always fails for non-primitive values across document revisions
 - FIX `incrementalUpsert()` throwing a CONFLICT error when a concurrent `upsert()`/`insert()` creates the same document between the internal `findOne()` and `insert()` calls
