@@ -2395,6 +2395,63 @@ describe('rx-collection.test.ts', () => {
                 assert.strictEqual(res, 5);
                 c.database.close();
             });
+            it('findByIds().modify() should return a Map, not an Array', async () => {
+                const c = await humansCollection.create(5);
+                const docs = await c.find().exec();
+                const ids = docs.map((d) => d.primary);
+
+                const result = await c.findByIds(ids).modify((doc) => {
+                    doc.firstName = 'modified-map-test';
+                    return doc;
+                });
+
+                // The return value must be a Map (matching RxQueryResult for findByIds)
+                assert.ok(result instanceof Map, 'findByIds().modify() should return a Map but got ' + typeof result);
+                assert.strictEqual(result.size, 5);
+
+                // Each entry in the map should be keyed by primary and be a valid RxDocument
+                for (const [key, doc] of result) {
+                    assert.strictEqual(typeof key, 'string');
+                    assert.strictEqual(doc.firstName, 'modified-map-test');
+                }
+
+                c.database.close();
+            });
+            it('findByIds().incrementalPatch() should return a Map, not an Array', async () => {
+                const c = await humansCollection.create(5);
+                const docs = await c.find().exec();
+                const ids = docs.map((d) => d.primary);
+
+                const result = await c.findByIds(ids).incrementalPatch({ firstName: 'patched-map-test' });
+
+                // The return value must be a Map (matching RxQueryResult for findByIds)
+                assert.ok(result instanceof Map, 'findByIds().incrementalPatch() should return a Map but got ' + typeof result);
+                assert.strictEqual(result.size, 5);
+
+                for (const [key, doc] of result) {
+                    assert.strictEqual(typeof key, 'string');
+                    assert.strictEqual(doc.firstName, 'patched-map-test');
+                }
+
+                c.database.close();
+            });
+            it('findByIds().remove() should return a Map, not crash', async () => {
+                const c = await humansCollection.create(5);
+                const docs = await c.find().exec();
+                const ids = docs.map((d) => d.primary);
+
+                const result = await c.findByIds(ids).remove();
+
+                // The return value must be a Map (matching RxQueryResult for findByIds)
+                assert.ok(result instanceof Map, 'findByIds().remove() should return a Map but got ' + typeof result);
+                assert.strictEqual(result.size, 5);
+
+                // All documents should now be deleted
+                const remaining = await c.count().exec();
+                assert.strictEqual(remaining, 0);
+
+                c.database.close();
+            });
             /**
              * @link https://github.com/pubkey/rxdb/issues/6148
              */
