@@ -1,0 +1,21 @@
+name: Notify rxdb-server
+on:
+  push:
+    branches: [master]
+jobs:
+  notify:
+    runs-on: ubuntu-24.04
+
+    # @link https://docs.github.com/en/actions/using-jobs/assigning-permissions-to-jobs
+    permissions:
+      contents: write
+
+    steps:
+
+      # Notify rxdb-server to update its rxdb dependency
+      - name: Notify rxdb-server of new release or master state
+        run: |
+          curl -X POST https://api.github.com/repos/pubkey/rxdb-server/dispatches \
+            -H "Authorization: token ${{ secrets.RXDB_SERVER_VERSION_BUMP }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            -d '{"event_type":"rxdb-release"}'

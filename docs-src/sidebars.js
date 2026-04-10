@@ -641,7 +641,8 @@ const sidebars = {
         'articles/indexeddb-max-storage-limit',
         'articles/json-based-database',
         'articles/reactjs-storage',
-        'articles/indexeddb-alternative'
+        'articles/indexeddb-alternative',
+        'articles/generic-prompts'
       ],
     },
     'contribute',
