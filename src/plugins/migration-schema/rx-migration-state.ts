@@ -600,7 +600,7 @@ export class RxMigrationState {
                 collectionName: this.collection.name,
                 count: {
                     handled: 0,
-                    percent: 0,
+                    percent: 100,
                     total: 0
                 }
             };
