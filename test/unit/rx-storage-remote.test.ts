@@ -21,8 +21,123 @@ import { getRxStorageMemory } from '../../plugins/storage-memory/index.mjs';
 import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.mjs';
 import { assertThrows } from 'async-test-util';
 import { nextPort } from '../helper/port-manager.ts';
+import {
+    getRxStorageIpcRenderer,
+    exposeIpcMainRxStorage
+} from '../../plugins/electron/index.mjs';
+
+/**
+ * Creates mock objects that simulate the Electron IPC
+ * communication between main and renderer processes.
+ */
+function createElectronIpcMock() {
+    const mainHandlers = new Map<string, Set<Function>>();
+    const rendererHandlers = new Map<string, Set<Function>>();
+
+    const sender = {
+        send(channel: string, msg: any) {
+            const handlers = rendererHandlers.get(channel);
+            if (handlers) {
+                handlers.forEach(h => h({}, msg));
+            }
+        },
+        on(_event: string, _handler: Function) {
+            // mock for renderer.on('destroyed', ...) - not needed in tests
+        }
+    };
+
+    const ipcMain = {
+        on(channel: string, handler: Function) {
+            if (!mainHandlers.has(channel)) {
+                mainHandlers.set(channel, new Set());
+            }
+            const handlers = mainHandlers.get(channel);
+            if (handlers) {
+                handlers.add(handler);
+            }
+        }
+    };
+
+    const ipcRenderer = {
+        on(channel: string, handler: Function) {
+            if (!rendererHandlers.has(channel)) {
+                rendererHandlers.set(channel, new Set());
+            }
+            const handlers = rendererHandlers.get(channel);
+            if (handlers) {
+                handlers.add(handler);
+            }
+        },
+        removeListener(channel: string, handler: Function) {
+            const handlers = rendererHandlers.get(channel);
+            if (handlers) {
+                handlers.delete(handler);
+            }
+        },
+        postMessage(channel: string, message: any) {
+            const handlers = mainHandlers.get(channel);
+            if (handlers) {
+                handlers.forEach(h => h({ sender }, message));
+            }
+        }
+    };
+
+    return { ipcMain, ipcRenderer };
+}
 
 describeParallel('rx-storage-remote.test.ts', () => {
+    if (!isNode) {
+        return;
+    }
+    const memoryStorageWithValidation = wrappedValidateAjvStorage({ storage: getRxStorageMemory() });
+
+    describe('electron IPC storage', () => {
+        it('should complete changeStream() when remove() is called', async () => {
+            const { ipcMain, ipcRenderer } = createElectronIpcMock();
+            const ipcKey = 'test-remove-' + randomToken(10);
+
+            // Set up main process storage
+            exposeIpcMainRxStorage({
+                key: ipcKey,
+                storage: getRxStorageMemory(),
+                ipcMain: ipcMain as any
+            });
+
+            // Create renderer storage
+            const storage = getRxStorageIpcRenderer({
+                key: ipcKey,
+                ipcRenderer: ipcRenderer as any,
+                mode: 'storage'
+            });
+
+            // Create storage instance
+            const instance = await storage.createStorageInstance({
+                databaseInstanceToken: randomToken(10),
+                databaseName: randomToken(10),
+                collectionName: randomToken(10),
+                schema: fillWithDefaultSettings(schemas.human),
+                options: {},
+                multiInstance: false,
+                devMode: true
+            });
+
+            // Subscribe to changeStream and track completion
+            let completed = false;
+            const sub = instance.changeStream().subscribe({
+                complete: () => {
+                    completed = true;
+                }
+            });
+
+            // Call remove
+            await instance.remove();
+
+            // The changeStream() observable must complete after remove()
+            assert.strictEqual(completed, true, 'changeStream() did not complete after remove()');
+            sub.unsubscribe();
+        });
+    });
+
     /**
      * Notice: Most use cases for the remote storage
      * are tests by having a full unit-test run where all
@@ -32,13 +147,9 @@ describeParallel('rx-storage-remote.test.ts', () => {
      * In this while we only add additional tests
      * that are specific to the remote storage plugin.
      */
-    if (
-        !isNode ||
-        config.storage.name !== 'remote'
-    ) {
+    if (config.storage.name !== 'remote') {
         return;
     }
-    const memoryStorageWithValidation = wrappedValidateAjvStorage({ storage: getRxStorageMemory() });
     describe('remote RxDatabase', () => {
         it('should have the same data on both sides', async () => {
             const port = await nextPort();

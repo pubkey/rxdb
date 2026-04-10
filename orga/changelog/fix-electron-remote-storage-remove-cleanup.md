@@ -1,0 +1,1 @@
+- FIX electron/remote storage `remove()` not unsubscribing internal subscriptions and not completing the `changeStream()` observable, causing memory leaks and preventing subscribers from receiving a completion notification
