@@ -86,6 +86,16 @@ export class RxSchema<RxDocType = any> {
             jsonSchema.required = jsonSchema.required.filter((r: string) => !r.startsWith('_'));
         }
 
+        // remove internal meta fields from indexes, consistent with properties and required cleanup
+        if (jsonSchema.indexes) {
+            jsonSchema.indexes = jsonSchema.indexes
+                .map((index: string | string[]) => {
+                    const arr: string[] = isMaybeReadonlyArray(index) ? [...index] : [index];
+                    return arr.filter((field: string) => !field.startsWith('_'));
+                })
+                .filter((index: string[]) => index.length > 0);
+        }
+
         return jsonSchema as RxJsonSchema<RxDocumentData<RxDocType>>;
     }
 

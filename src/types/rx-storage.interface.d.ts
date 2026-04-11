@@ -212,7 +212,10 @@ export interface RxStorageInstance<
     /**
      * Returns the amount of non-deleted documents
      * that match the given query.
-     * Sort, skip and limit of the query must be ignored!
+     * Must return the same amount as if the equivalent query()
+     * was run and the result array length measured.
+     * For example with .count({limit: 3}) must return the same
+     * as .query({limit: 3}).documents.length .
      */
     count(
         preparedQuery: PreparedQuery<RxDocType>

@@ -503,6 +503,87 @@ describe('typings.test.ts', function () {
             // @ts-expect-error get$$ should not be assignable to number
             const wrong: number = doc.get$$('age');
         });
+
+        /**
+         * @link https://github.com/pubkey/rxdb/issues/8311
+         * Documents returned from find/findOne/findByIds must propagate
+         * the Reactivity generic so that doc.$$ and field$$ are correctly typed.
+         */
+        it('#8311 findOne().exec() should propagate Reactivity to the returned document', async () => {
+            interface SetReactivityLambda extends ReactivityLambda {
+                readonly _result: Set<this['_data']>;
+            }
+            type DbCollections = {
+                smth: RxCollection<DocType, unknown, unknown, unknown, SetReactivityLambda>;
+            };
+            type Db = RxDatabase<DbCollections, unknown, unknown, SetReactivityLambda>;
+            const db: Db = {} as any;
+
+            const doc = await db.smth.findOne().exec(true);
+
+            // doc.age$$ should be Set<number>
+            const ageSignal: Set<number> = doc.age$$;
+
+            // doc.$$ should be Set<RxDocument<...>>
+            const docSignal: Set<RxDocument<DocType, unknown, SetReactivityLambda>> = doc.$$;
+
+            // @ts-expect-error age$$ should not be assignable to number
+            const ageWrong: number = doc.age$$;
+        });
+        it('#8311 find().exec() should propagate Reactivity to the returned documents', async () => {
+            interface SetReactivityLambda extends ReactivityLambda {
+                readonly _result: Set<this['_data']>;
+            }
+            type DbCollections = {
+                smth: RxCollection<DocType, unknown, unknown, unknown, SetReactivityLambda>;
+            };
+            type Db = RxDatabase<DbCollections, unknown, unknown, SetReactivityLambda>;
+            const db: Db = {} as any;
+
+            const docs = await db.smth.find().exec();
+            const doc = docs[0];
+
+            // doc.age$$ should be Set<number>
+            const ageSignal: Set<number> = doc.age$$;
+
+            // @ts-expect-error age$$ should not be assignable to number
+            const ageWrong: number = doc.age$$;
+        });
+        it('#8311 findByIds().exec() should propagate Reactivity to the returned documents', async () => {
+            interface SetReactivityLambda extends ReactivityLambda {
+                readonly _result: Set<this['_data']>;
+            }
+            type DbCollections = {
+                smth: RxCollection<DocType, unknown, unknown, unknown, SetReactivityLambda>;
+            };
+            type Db = RxDatabase<DbCollections, unknown, unknown, SetReactivityLambda>;
+            const db: Db = {} as any;
+
+            const docsMap = await db.smth.findByIds(['id1']).exec();
+            const doc = docsMap.get('id1') as NonNullable<typeof docsMap extends Map<string, infer V> ? V : never>;
+
+            // doc.age$$ should be Set<number>
+            const ageSignal: Set<number> = doc.age$$;
+
+            // @ts-expect-error age$$ should not be assignable to number
+            const ageWrong: number = doc.age$$;
+        });
+        it('#8311 query chaining should preserve Reactivity', () => {
+            interface SetReactivityLambda extends ReactivityLambda {
+                readonly _result: Set<this['_data']>;
+            }
+            type DbCollections = {
+                smth: RxCollection<DocType, unknown, unknown, unknown, SetReactivityLambda>;
+            };
+            type Db = RxDatabase<DbCollections, unknown, unknown, SetReactivityLambda>;
+            const db: Db = {} as any;
+
+            // Chaining where/sort/skip/limit should still have Set<...> for $$
+            const querySignal: Set<RxDocument<DocType, unknown, SetReactivityLambda>[]> = db.smth.find().where({ age: { $gt: 10 } }).sort({ age: 'asc' }).skip(0).limit(10).$$;
+
+            // @ts-expect-error should not be assignable to number
+            const queryWrong: number = db.smth.find().where({ age: { $gt: 10 } }).$$;
+        });
     });
 });
 describe('local documents', () => {

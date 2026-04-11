@@ -486,6 +486,15 @@ export class RxQueryBase<
             } else {
                 return result.success as any;
             }
+        } else if (docs instanceof Map) {
+            const docsArray = [...docs.values()];
+            const result = await this.collection.bulkRemove(docsArray as any);
+            if (result.error.length > 0) {
+                throw rxStorageWriteErrorToRxError(result.error[0]);
+            }
+            const resultMap = new Map();
+            result.success.forEach((doc: any) => resultMap.set(doc.primary, doc));
+            return resultMap as any;
         } else {
             // findOne() can return null when no document matches
             if (!docs) {
@@ -512,7 +521,7 @@ export class RxQueryBase<
     /**
      * helper function to transform RxQueryBase to RxQuery type
      */
-    get asRxQuery(): RxQuery<RxDocType, RxQueryResult> {
+    get asRxQuery(): RxQuery<RxDocType, RxQueryResult, OrmMethods, Reactivity> {
         return this as any;
     }
 
@@ -552,16 +561,16 @@ export class RxQueryBase<
 
     // we only set some methods of query-builder here
     // because the others depend on these ones
-    where(_queryObj: MangoQuerySelector<RxDocType> | keyof RxDocType | string): RxQuery<RxDocType, RxQueryResult> {
+    where(_queryObj: MangoQuerySelector<RxDocType> | keyof RxDocType | string): RxQuery<RxDocType, RxQueryResult, OrmMethods, Reactivity> {
         throw pluginMissing('query-builder');
     }
-    sort(_params: string | MangoQuerySortPart<RxDocType>): RxQuery<RxDocType, RxQueryResult> {
+    sort(_params: string | MangoQuerySortPart<RxDocType>): RxQuery<RxDocType, RxQueryResult, OrmMethods, Reactivity> {
         throw pluginMissing('query-builder');
     }
-    skip(_amount: number | null): RxQuery<RxDocType, RxQueryResult> {
+    skip(_amount: number | null): RxQuery<RxDocType, RxQueryResult, OrmMethods, Reactivity> {
         throw pluginMissing('query-builder');
     }
-    limit(_amount: number | null): RxQuery<RxDocType, RxQueryResult> {
+    limit(_amount: number | null): RxQuery<RxDocType, RxQueryResult, OrmMethods, Reactivity> {
         throw pluginMissing('query-builder');
     }
 }
@@ -576,10 +585,10 @@ export function _getDefaultQuery<RxDocType>(): MangoQuery<RxDocType> {
 /**
  * run this query through the QueryCache
  */
-export function tunnelQueryCache<RxDocumentType, RxQueryResult>(
-    rxQuery: RxQueryBase<RxDocumentType, RxQueryResult>
-): RxQuery<RxDocumentType, RxQueryResult> {
-    return rxQuery.collection._queryCache.getByQuery(rxQuery as any);
+export function tunnelQueryCache<RxDocumentType, RxQueryResult, OrmMethods = {}, Reactivity = unknown>(
+    rxQuery: RxQueryBase<RxDocumentType, RxQueryResult, OrmMethods, Reactivity>
+): RxQuery<RxDocumentType, RxQueryResult, OrmMethods, Reactivity> {
+    return rxQuery.collection._queryCache.getByQuery(rxQuery as any) as any;
 }
 
 export function createRxQuery<RxDocType>(

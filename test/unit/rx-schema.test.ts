@@ -1479,6 +1479,38 @@ describeParallel('rx-schema.test.ts', () => {
 
             await db.close();
         });
+        it('indexes should not reference internal meta fields that are removed from properties', async () => {
+            const db = await createRxDatabase({
+                name: randomToken(10),
+                storage: config.storage.getStorage()
+            });
+            const collections = await db.addCollections({
+                humans: {
+                    schema: schemas.human
+                }
+            });
+            const schemaWithoutMeta = collections.humans.schema.getJsonSchemaWithoutMeta();
+            const propertyKeys = Object.keys(schemaWithoutMeta.properties);
+
+            // every field referenced in an index must exist in properties
+            const indexes = schemaWithoutMeta.indexes as string[][];
+            for (const index of indexes) {
+                const fields = Array.isArray(index) ? index : [index];
+                for (const field of fields) {
+                    const topLevelField = field.split('.')[0];
+                    assert.ok(
+                        propertyKeys.includes(topLevelField),
+                        'index field "' + field + '" references property "' + topLevelField + '" which does not exist in the schema returned by getJsonSchemaWithoutMeta()'
+                    );
+                }
+            }
+
+            // user-defined index fields should still be present
+            const allIndexFields = indexes.flat();
+            assert.ok(allIndexFields.includes('firstName'), 'user-defined index field "firstName" should be present');
+
+            await db.close();
+        });
     });
     describe('wait a bit', () => {
         it('w8 a bit', async () => {
