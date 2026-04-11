@@ -473,6 +473,10 @@ export class RxStorageInstanceLocalstorage<RxDocType> implements RxStorageInstan
         });
     }
 
+    /**
+     * Returns the same count as query().documents.length
+     * to fulfill the RxStorageInstance interface contract.
+     */
     async count(
         preparedQuery: PreparedQuery<RxDocType>
     ): Promise<RxStorageCountResult> {
@@ -568,12 +572,20 @@ export class RxStorageInstanceLocalstorage<RxDocType> implements RxStorageInstan
         this.changeStreamSub.unsubscribe();
         this.localStorage.removeItem(this.changestreamStorageKey);
 
-        // delete documents
+        // delete documents and their attachments
         const firstIndex = Object.values(this.internals.indexes)[0];
         const indexedDocs = this.getIndex(firstIndex.index);
         indexedDocs.forEach(row => {
             const docId = row[1];
+            const doc = this.getDoc(docId);
             this.localStorage.removeItem(this.docsKey + '-' + docId);
+            if (doc && doc._attachments) {
+                Object.keys(doc._attachments).forEach(attachmentId => {
+                    this.localStorage.removeItem(
+                        this.attachmentsKey + '-' + docId + '||' + attachmentId
+                    );
+                });
+            }
         });
 
         // delete indexes
