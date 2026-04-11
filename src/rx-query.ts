@@ -486,6 +486,15 @@ export class RxQueryBase<
             } else {
                 return result.success as any;
             }
+        } else if (docs instanceof Map) {
+            const docsArray = [...docs.values()];
+            const result = await this.collection.bulkRemove(docsArray as any);
+            if (result.error.length > 0) {
+                throw rxStorageWriteErrorToRxError(result.error[0]);
+            }
+            const resultMap = new Map();
+            result.success.forEach((doc: any) => resultMap.set(doc.primary, doc));
+            return resultMap as any;
         } else {
             // findOne() can return null when no document matches
             if (!docs) {
