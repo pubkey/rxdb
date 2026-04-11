@@ -563,5 +563,113 @@ describeParallel('key-compression.test.js', () => {
             assert.deepStrictEqual(result.map(d => d.passportId), ['1', '2']);
             db.close();
         });
+        it('should forward the query index hint through key compression', async () => {
+            /**
+             * The compressQuery() function from jsonschema-key-compression
+             * creates a new query object but does NOT copy the 'index' property.
+             * This means user-specified index hints are silently dropped
+             * when key compression is enabled.
+             */
+            let capturedQueryIndex: string[] | undefined;
+
+            const baseStorage = config.storage.getStorage();
+            const spyStorage: typeof baseStorage = Object.assign(
+                {},
+                baseStorage,
+                {
+                    async createStorageInstance<RxDocType>(params: any) {
+                        const instance = await baseStorage.createStorageInstance<RxDocType>(params);
+                        const originalQuery = instance.query.bind(instance);
+                        (instance as any).query = function (preparedQuery: any) {
+                            capturedQueryIndex = preparedQuery.query.index;
+                            return originalQuery(preparedQuery);
+                        };
+                        return instance;
+                    }
+                }
+            );
+
+            const schema: RxJsonSchema<{
+                passportId: string;
+                firstName: string;
+                lastName: string;
+                age: number;
+            }> = {
+                version: 0,
+                keyCompression: true,
+                primaryKey: 'passportId',
+                type: 'object',
+                properties: {
+                    passportId: {
+                        type: 'string',
+                        maxLength: 128,
+                    },
+                    firstName: {
+                        type: 'string',
+                        maxLength: 128,
+                    },
+                    lastName: {
+                        type: 'string',
+                        maxLength: 128,
+                    },
+                    age: {
+                        type: 'integer',
+                        minimum: 0,
+                        maximum: 150,
+                        multipleOf: 1
+                    }
+                },
+                required: [
+                    'passportId',
+                    'firstName',
+                    'lastName'
+                ],
+                indexes: [
+                    'firstName',
+                    'lastName',
+                    ['firstName', 'lastName']
+                ]
+            };
+
+            const db = await createRxDatabase({
+                name: randomToken(10),
+                storage: wrappedKeyCompressionStorage({ storage: spyStorage })
+            });
+            const collections = await db.addCollections({
+                humans: { schema }
+            });
+
+            await collections.humans.bulkInsert([
+                { passportId: '1', firstName: 'Alice', lastName: 'Smith', age: 30 },
+                { passportId: '2', firstName: 'Bob', lastName: 'Jones', age: 25 },
+                { passportId: '3', firstName: 'Charlie', lastName: 'Brown', age: 35 }
+            ]);
+
+            const result = await collections.humans.find({
+                selector: {
+                    firstName: { $eq: 'Alice' }
+                },
+                index: ['firstName']
+            }).exec();
+
+            assert.strictEqual(result.length, 1);
+            assert.strictEqual(result[0].passportId, '1');
+
+            // The captured index on the inner storage query should exist
+            // and should contain compressed field names.
+            assert.ok(
+                capturedQueryIndex,
+                'index hint must be forwarded to the inner storage query'
+            );
+
+            // Verify that the index contains compressed field names
+            // (not the original uncompressed ones).
+            assert.ok(
+                !capturedQueryIndex.includes('firstName'),
+                'compressed query index must not contain uncompressed field name "firstName"'
+            );
+
+            db.close();
+        });
     });
 });
