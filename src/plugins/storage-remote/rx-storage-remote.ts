@@ -281,6 +281,8 @@ export class RxStorageInstanceRemote<RxDocType> implements RxStorageInstance<RxD
             throw new Error('already closed');
         }
         this.closed = (async () => {
+            this.subs.forEach(sub => sub.unsubscribe());
+            this.changes$.complete();
             await this.requestRemote('remove', []);
             await closeMessageChannel(this.internals.messageChannel);
         })();
