@@ -1834,6 +1834,127 @@ describe('migration-schema.test.ts', function () {
 
             await db2.close();
         });
+        it('migratePromise() should return percent 100 when status is DONE', async () => {
+            /**
+             * When migratePromise() is called and no migration is needed,
+             * the returned RxMigrationStatus has status 'DONE' but percent 0.
+             * This is inconsistent: the updateStatus() method correctly uses
+             * percent=100 when total=0, but migratePromise() hardcodes percent=0.
+             * The RxMigrationStatus type documents percent as "Total percentage [0-100]",
+             * so a DONE status must have percent=100.
+             */
+            const dbName = randomToken(10);
+
+            // Schema v0
+            const schema0 = {
+                version: 0,
+                primaryKey: 'id',
+                type: 'object' as const,
+                properties: {
+                    id: {
+                        type: 'string' as const,
+                        maxLength: 100
+                    },
+                    name: {
+                        type: 'string' as const
+                    }
+                },
+                required: ['id', 'name'] as const
+            };
+
+            // Schema v1 with a migration strategy
+            const schema1 = {
+                version: 1,
+                primaryKey: 'id',
+                type: 'object' as const,
+                properties: {
+                    id: {
+                        type: 'string' as const,
+                        maxLength: 100
+                    },
+                    name: {
+                        type: 'string' as const
+                    }
+                },
+                required: ['id', 'name'] as const
+            };
+
+            // Create v0 collection, insert documents, close
+            const db = await createRxDatabase({
+                name: dbName,
+                storage: config.storage.getStorage(),
+            });
+            const cols = await db.addCollections({
+                heroes: {
+                    schema: schema0
+                }
+            });
+            await cols.heroes.bulkInsert([
+                { id: 'alice', name: 'Alice' },
+                { id: 'bob', name: 'Bob' }
+            ]);
+            await db.close();
+
+            // Reopen with v1, autoMigrate: false, run migration manually
+            const db2 = await createRxDatabase({
+                name: dbName,
+                storage: config.storage.getStorage(),
+            });
+            const cols2 = await db2.addCollections({
+                heroes: {
+                    schema: schema1,
+                    autoMigrate: false,
+                    migrationStrategies: {
+                        1: (oldDoc: any) => oldDoc
+                    }
+                }
+            });
+
+            // Run the migration
+            const result: RxMigrationStatus = await cols2.heroes.getMigrationState().migratePromise();
+
+            // The migration is done, percent must be 100
+            assert.strictEqual(result.status, 'DONE');
+            assert.strictEqual(result.count.percent, 100, 'percent must be 100 when status is DONE');
+            assert.ok(result.count.handled > 0, 'documents were migrated');
+            assert.strictEqual(result.count.handled, result.count.total, 'all documents were handled');
+
+            // Now call migratePromise() again; no migration needed this time.
+            // A second RxMigrationState is needed because the first one has
+            // this.started === true and would throw DM1 inside startMigration().
+            // Instead, open a fresh database so a new RxMigrationState is created.
+            await db2.close();
+
+            const db3 = await createRxDatabase({
+                name: dbName,
+                storage: config.storage.getStorage(),
+            });
+            const cols3 = await db3.addCollections({
+                heroes: {
+                    schema: schema1,
+                    autoMigrate: false,
+                    migrationStrategies: {
+                        1: (oldDoc: any) => oldDoc
+                    }
+                }
+            });
+
+            // No migration needed (already migrated).
+            const needed = await cols3.heroes.migrationNeeded();
+            assert.strictEqual(needed, false, 'migration must not be needed');
+
+            const result2: RxMigrationStatus = await cols3.heroes.getMigrationState().migratePromise();
+
+            // Even when no migration was needed, DONE status must have percent=100
+            assert.strictEqual(result2.status, 'DONE');
+            assert.strictEqual(
+                result2.count.percent,
+                100,
+                'percent must be 100 when status is DONE (no migration needed)'
+            );
+
+            await db3.close();
+        });
         it('should NOT auto-apply schema default values during migration', async () => {
             const dbName = randomToken(10);
             const schema0 = {
