@@ -1,0 +1,1 @@
+- FIX `RxDocument.populate()` throwing `DOC6` for array fields when `ref` is defined on `items` instead of on the array field itself, even though `createRxSchema` accepts both patterns

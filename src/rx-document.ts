@@ -198,17 +198,22 @@ export const basePrototype = {
                 path
             });
         }
-        if (!schemaObj.ref) {
+        const ref = schemaObj.ref
+            ? schemaObj.ref
+            : (schemaObj.type === 'array' && schemaObj.items && (schemaObj.items as any).ref
+                ? (schemaObj.items as any).ref
+                : undefined);
+        if (!ref) {
             throw newRxError('DOC6', {
                 path,
                 schemaObj
             });
         }
 
-        const refCollection: RxCollection = this.collection.database.collections[schemaObj.ref];
+        const refCollection: RxCollection = this.collection.database.collections[ref];
         if (!refCollection) {
             throw newRxError('DOC7', {
-                ref: schemaObj.ref,
+                ref,
                 path,
                 schemaObj
             });
