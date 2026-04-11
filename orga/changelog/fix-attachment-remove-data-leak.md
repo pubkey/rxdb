@@ -1,0 +1,1 @@
+- FIX `RxAttachment.remove()` not cleaning up binary attachment data from storage, because `categorizeBulkWriteRows()` only iterated over the new document's `_attachments` and never detected attachments removed between revisions
