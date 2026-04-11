@@ -759,6 +759,66 @@ describeParallel('encryption.test.ts', () => {
 
             await db.remove();
         });
+        it('should not crash when encrypted contains overlapping parent and child paths', async () => {
+            if (config.storage.hasEncryption) {
+                return;
+            }
+            type DocType = {
+                id: string;
+                nested: {
+                    secret: string;
+                    label: string;
+                };
+            };
+            const mySchema: RxJsonSchema<DocType> = {
+                version: 0,
+                primaryKey: 'id',
+                type: 'object',
+                properties: {
+                    id: {
+                        type: 'string',
+                        maxLength: 100
+                    },
+                    nested: {
+                        type: 'object',
+                        properties: {
+                            secret: { type: 'string' },
+                            label: { type: 'string' }
+                        },
+                        required: ['secret', 'label']
+                    }
+                },
+                required: ['id', 'nested'],
+                encrypted: [
+                    'nested',
+                    'nested.secret'
+                ]
+            };
+            const db = await createRxDatabase<{ test: RxCollection<DocType>; }>({
+                name: randomToken(10),
+                storage: wrappedKeyEncryptionCryptoJsStorage({
+                    storage: wrappedValidateAjvStorage({
+                        storage: getRxStorageMemory()
+                    })
+                }),
+                password: await getPassword()
+            });
+            const collections = await db.addCollections({
+                test: { schema: mySchema }
+            });
+
+            await collections.test.insert({
+                id: 'doc1',
+                nested: { secret: 'classified', label: 'public-label' }
+            });
+            const doc = await collections.test.findOne('doc1').exec(true);
+
+            // The encrypted+decrypted value must match the original
+            assert.strictEqual(doc.nested.secret, 'classified');
+            assert.strictEqual(doc.nested.label, 'public-label');
+
+            await db.remove();
+        });
     });
     describe('SECURITY', () => {
         it('should not expose the database password as an enumerable property', async () => {
