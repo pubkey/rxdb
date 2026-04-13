@@ -1,1 +1,1 @@
-- FIX encryption plugin crashing with `TypeError` when the `encrypted` array contains overlapping paths where one path is a prefix of another (e.g. `encrypted: ['nested', 'nested.secret']`), because the schema transformation replaced the parent field with `{type: 'string'}` and then tried to navigate into it for the child path
+- ADD dev-mode check (SC43) to prevent encrypted fields from being nested inside other encrypted fields. When a parent path is encrypted, the entire object is encrypted so child paths must not be listed separately in the `encrypted` array.
