@@ -121,22 +121,6 @@ await db.addCollections({
 ```
 </Steps>
 
-## Nested encrypted fields are not allowed
-
-When you encrypt a parent field, the entire object at that path is encrypted as a single string. You cannot also encrypt a child path of an already-encrypted parent. For example, if you encrypt `nested`, you must **not** also add `nested.secret` to the `encrypted` array. Doing so will throw an error in [dev-mode](./dev-mode.md).
-
-```ts
-// NOT ALLOWED - 'nested.secret' is a child of 'nested'
-const schema = {
-    encrypted: ['nested', 'nested.secret']
-};
-
-// CORRECT - only encrypt the parent
-const schema = {
-    encrypted: ['nested']
-};
-```
-
 ## Using the WebCrypto API
 
 <PremiumBlock />
@@ -251,4 +235,23 @@ No, `chrome.storage.local` (and standard `IndexedDB` in the browser) is **not** 
 <summary>Are there open-source libraries for encrypting personal user data natively?</summary>
 
 Yes, libraries like `crypto-js` or wrappers over the native WebCrypto API provide robust open-source encryption. For developers building native mobile apps (React Native, Expo, Ionic) or browser applications, utilizing a database that ships with native encryption wrappers like **[RxDB's Encryption Plugins](https://rxdb.info/encryption.html)** is the most reliable method. It ensures data is never written to disk in plain text while allowing you to effortlessly swap underlying storage layers without rewriting your cryptography logic.
+</details>
+
+<details>
+<summary>Can I encrypt a child field when the parent field is already encrypted?</summary>
+
+No. When you encrypt a parent field, the entire object at that path is encrypted as a single string. You cannot also encrypt a child path of an already-encrypted parent. For example, if you encrypt `nested`, you must **not** also add `nested.secret` to the `encrypted` array. Doing so will throw an error in [dev-mode](./dev-mode.md).
+
+```ts
+// NOT ALLOWED - 'nested.secret' is a child of 'nested'
+const schema = {
+    encrypted: ['nested', 'nested.secret']
+};
+
+// CORRECT - only encrypt the parent
+const schema = {
+    encrypted: ['nested']
+};
+```
+
 </details>
