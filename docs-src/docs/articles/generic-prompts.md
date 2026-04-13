@@ -19,7 +19,7 @@ Run the installation and build and find the first warning. Fix that and make a p
 
 ### Remove unused dependencies
 
-Search for dependencies that you no longerneed to reduce install times, noise and token usage.
+Search for dependencies that you no longer need to reduce install times, noise and token usage.
 
 ```txt
 Run the installation find dependencies that are not used anymore. Ensure that these are really not used, not on the core and not in the tests. 
