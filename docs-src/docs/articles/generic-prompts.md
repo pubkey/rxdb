@@ -5,10 +5,13 @@ Prompts that are useful for any github or open source project which you can give
 
 ## Clean up
 
-Stuff to cleanup build and installations so we have less errors and warnings. Removing warnings is good to reduce the context size during agent runs because the terminal has less noisy output.
+Stuff to cleanup build and installations so we have less errors and warnings. 
+
 
 
 ### Remove warnings
+
+Removing warnings is good to reduce the context size during agent runs because the terminal has less noisy output.
 
 ```txt
 Run the installation and build and find the first warning. Fix that and make a pull request.
