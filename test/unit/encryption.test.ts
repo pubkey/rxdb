@@ -759,7 +759,7 @@ describeParallel('encryption.test.ts', () => {
 
             await db.remove();
         });
-        it('should not crash when encrypted contains overlapping parent and child paths', async () => {
+        it('should throw when encrypted contains overlapping parent and child paths', async () => {
             if (config.storage.hasEncryption) {
                 return;
             }
@@ -794,7 +794,7 @@ describeParallel('encryption.test.ts', () => {
                     'nested.secret'
                 ]
             };
-            const db = await createRxDatabase<{ test: RxCollection<DocType>; }>({
+            const db = await createRxDatabase({
                 name: randomToken(10),
                 storage: wrappedKeyEncryptionCryptoJsStorage({
                     storage: wrappedValidateAjvStorage({
@@ -803,20 +803,13 @@ describeParallel('encryption.test.ts', () => {
                 }),
                 password: await getPassword()
             });
-            const collections = await db.addCollections({
-                test: { schema: mySchema }
-            });
-
-            await collections.test.insert({
-                id: 'doc1',
-                nested: { secret: 'classified', label: 'public-label' }
-            });
-            const doc = await collections.test.findOne('doc1').exec(true);
-
-            // The encrypted+decrypted value must match the original
-            assert.strictEqual(doc.nested.secret, 'classified');
-            assert.strictEqual(doc.nested.label, 'public-label');
-
+            await AsyncTestUtil.assertThrows(
+                () => db.addCollections({
+                    test: { schema: mySchema }
+                }),
+                'RxError',
+                'SC43'
+            );
             await db.remove();
         });
     });

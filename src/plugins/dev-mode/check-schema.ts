@@ -561,5 +561,23 @@ export function checkSchema(jsonSchema: RxJsonSchema<any>) {
                     });
                 }
             });
+
+        /**
+         * Encrypted fields must not be nested inside other encrypted fields.
+         * When a parent path is encrypted, the whole object gets encrypted
+         * as a single string so child paths cannot also be encrypted separately.
+         */
+        jsonSchema.encrypted
+            .forEach(propPath => {
+                const hasEncryptedParent = jsonSchema.encrypted!.some(
+                    otherPath => otherPath !== propPath && propPath.startsWith(otherPath + '.')
+                );
+                if (hasEncryptedParent) {
+                    throw newRxError('SC43', {
+                        field: propPath,
+                        schema: jsonSchema
+                    });
+                }
+            });
     }
 }

@@ -102,20 +102,9 @@ export function wrappedKeyEncryptionCryptoJsStorage<Internals, InstanceCreationO
                  * All type-specific keywords (properties, required,
                  * items, maxLength, enum etc.) must be removed because
                  * they do not apply to the encrypted ciphertext string.
-                 *
-                 * Paths that are children of another encrypted path
-                 * (e.g. 'nested.secret' when 'nested' is also encrypted)
-                 * are redundant and must be skipped, because the parent
-                 * path already encrypts the entire object and its schema
-                 * node has already been replaced with {type: 'string'}.
                  */
                 const encryptedPaths = ensureNotFalsy(params.schema.encrypted);
-                const filteredEncryptedPaths = encryptedPaths.filter(path => {
-                    return !encryptedPaths.some(
-                        otherPath => otherPath !== path && path.startsWith(otherPath + '.') 
-                    );
-                });
-                filteredEncryptedPaths.forEach(key => {
+                encryptedPaths.forEach(key => {
                     const pathParts = key.split('.');
                     if (pathParts.length === 1) {
                         (schemaWithoutEncrypted as any).properties[key] = { type: 'string' };
@@ -141,7 +130,7 @@ export function wrappedKeyEncryptionCryptoJsStorage<Internals, InstanceCreationO
 
                 async function modifyToStorage(docData: RxDocumentWriteData<RxDocType>) {
                     docData = cloneWithoutAttachments(docData);
-                    filteredEncryptedPaths
+                    encryptedPaths
                         .forEach(path => {
                             const value = getProperty(docData, path);
                             if (typeof value === 'undefined') {
@@ -177,7 +166,7 @@ export function wrappedKeyEncryptionCryptoJsStorage<Internals, InstanceCreationO
                 }
                 function modifyFromStorage(docData: RxDocumentData<any>): Promise<RxDocumentData<RxDocType>> {
                     docData = cloneWithoutAttachments(docData);
-                    filteredEncryptedPaths
+                    encryptedPaths
                         .forEach(path => {
                             const value = getProperty(docData, path);
                             if (typeof value === 'undefined') {

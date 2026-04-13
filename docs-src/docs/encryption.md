@@ -121,6 +121,22 @@ await db.addCollections({
 ```
 </Steps>
 
+## Nested encrypted fields are not allowed
+
+When you encrypt a parent field, the entire object at that path is encrypted as a single string. You cannot also encrypt a child path of an already-encrypted parent. For example, if you encrypt `nested`, you must **not** also add `nested.secret` to the `encrypted` array. Doing so will throw an error in [dev-mode](./dev-mode.md).
+
+```ts
+// NOT ALLOWED - 'nested.secret' is a child of 'nested'
+const schema = {
+    encrypted: ['nested', 'nested.secret']
+};
+
+// CORRECT - only encrypt the parent
+const schema = {
+    encrypted: ['nested']
+};
+```
+
 ## Using the WebCrypto API
 
 <PremiumBlock />

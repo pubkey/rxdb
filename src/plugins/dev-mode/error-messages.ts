@@ -1097,6 +1097,12 @@ export const ERROR_MESSAGES = {
         fix: 'Reduce the maxLength.',
         docs: 'https://rxdb.info/rx-schema.html?console=errors&code=SC42#indexes'
     },
+    SC43: {
+        message: 'Encrypted fields must not be nested inside other encrypted fields. When a parent path is encrypted, the whole object at that path is encrypted so specifying child paths is not allowed.',
+        cause: 'An encrypted field is a child of another encrypted field.',
+        fix: 'Remove the child path from the encrypted array. Encrypting the parent path already encrypts all of its children.',
+        docs: 'https://rxdb.info/encryption.html?console=errors&code=SC43'
+    },
 
 
     // plugins/dev-mode

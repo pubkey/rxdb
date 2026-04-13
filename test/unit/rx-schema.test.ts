@@ -595,6 +595,32 @@ describeParallel('rx-schema.test.ts', () => {
                         'SC15'
                     );
                 });
+                it('should throw when encrypted field is nested inside another encrypted field (SC43)', async () => {
+                    await assertThrows(
+                        () => checkSchema({
+                            version: 0,
+                            type: 'object',
+                            primaryKey: 'id',
+                            properties: {
+                                id: {
+                                    type: 'string',
+                                    maxLength: 100
+                                },
+                                nested: {
+                                    type: 'object',
+                                    properties: {
+                                        secret: { type: 'string' },
+                                        label: { type: 'string' }
+                                    }
+                                }
+                            },
+                            required: ['id'],
+                            encrypted: ['nested', 'nested.secret']
+                        }),
+                        'RxError',
+                        'SC43'
+                    );
+                });
                 it('should throw when composite primary key field is in indexes (SC13)', async () => {
                     await assertThrows(
                         () => checkSchema({
