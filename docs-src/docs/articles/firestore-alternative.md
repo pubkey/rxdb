@@ -199,7 +199,8 @@ In addition to syncing with a central server, RxDB also supports pure peer-to-pe
 ```ts
 import {
   replicateWebRTC,
-  getConnectionHandlerSimplePeer
+  getConnectionHandlerSimplePeer,
+  createSimplePeerWrtc
 } from 'rxdb/plugins/replication-webrtc';
 
 const replicationPool = await replicateWebRTC({
