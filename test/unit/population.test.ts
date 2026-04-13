@@ -418,5 +418,62 @@ describeParallel('population.test.js', () => {
 
             db.close();
         });
+        it('populate array when ref is defined on items instead of on the array field', async () => {
+            const db = await createRxDatabase({
+                name: randomToken(10),
+                storage: config.storage.getStorage(),
+            });
+            const cols = await db.addCollections({
+                human: {
+                    schema: {
+                        version: 0,
+                        primaryKey: 'name',
+                        type: 'object',
+                        properties: {
+                            name: {
+                                type: 'string',
+                                maxLength: 100
+                            },
+                            friends: {
+                                type: 'array',
+                                items: {
+                                    ref: 'human',
+                                    type: 'string'
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            const col = cols.human;
+
+            const friendNames = ['alice', 'bob', 'charlie'];
+            await Promise.all(
+                friendNames.map(name => col.insert({ name, friends: [] }))
+            );
+            await col.insert({
+                name: 'protagonist',
+                friends: friendNames
+            });
+
+            const doc = await col.findOne('protagonist').exec(true);
+
+            // populate() must work when 'ref' is on items
+            const friendDocs = await doc.populate('friends');
+            assert.ok(Array.isArray(friendDocs));
+            assert.strictEqual(friendDocs.length, 3);
+            friendDocs.forEach((friend: any) => {
+                assert.ok(isRxDocument(friend));
+            });
+            const populatedNames = friendDocs.map((d: any) => d.name);
+            assert.deepStrictEqual(populatedNames, friendNames);
+
+            // pseudo-proxy _ getter must also work
+            const friendDocs2 = await (doc as any).friends_;
+            assert.ok(Array.isArray(friendDocs2));
+            assert.strictEqual(friendDocs2.length, 3);
+
+            db.close();
+        });
     });
 });

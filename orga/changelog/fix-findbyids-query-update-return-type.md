@@ -1,0 +1,1 @@
+- FIX `findByIds()` query operations `modify()`, `patch()`, `incrementalModify()`, `incrementalPatch()`, and `incrementalRemove()` returning an Array instead of a Map. Also fix `findByIds().remove()` crashing with `TypeError: docs.remove is not a function` because it did not handle the Map return type from `findByIds()`.

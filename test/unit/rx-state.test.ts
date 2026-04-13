@@ -619,6 +619,52 @@ addRxPlugin(RxDBJsonDumpPlugin);
                 state.collection.database.remove();
             });
             /**
+             * The $ observable should not emit duplicate values
+             * when a single write is performed.
+             * Previously, both _ownEmits$ and collection.eventBulks$
+             * would cause $ to emit for each write, resulting in
+             * duplicate emissions.
+             */
+            it('$ observable should not emit duplicate values on a single write', async () => {
+                if (isFastMode()) {
+                    return;
+                }
+                const state = await getState();
+
+                const emitted: any[] = [];
+                state.$.subscribe(v => {
+                    emitted.push(JSON.parse(JSON.stringify(v)));
+                });
+
+                // Perform a single write
+                await state.set('a', () => 1);
+
+                // Wait for any async events (like eventBulks$) to settle
+                await wait(200);
+
+                // Should have exactly 1 emission for 1 state change, not 2
+                assert.strictEqual(
+                    emitted.length,
+                    1,
+                    '$ should emit exactly once per state change but emitted ' + emitted.length + ' times: ' + JSON.stringify(emitted)
+                );
+                assert.deepStrictEqual(emitted[0], { a: 1 });
+
+                // Perform a second write
+                await state.set('b', () => 2);
+                await wait(200);
+
+                // Should have exactly 2 emissions total
+                assert.strictEqual(
+                    emitted.length,
+                    2,
+                    '$ should emit exactly twice for two state changes but emitted ' + emitted.length + ' times: ' + JSON.stringify(emitted)
+                );
+                assert.deepStrictEqual(emitted[1], { a: 1, b: 2 });
+
+                state.collection.database.remove();
+            });
+            /**
              * _cleanup() must return true when it is done
              * so that the cleanup plugin loop can terminate.
              * @link https://github.com/pubkey/rxdb/issues/XXXX

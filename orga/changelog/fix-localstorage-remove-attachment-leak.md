@@ -1,0 +1,1 @@
+- FIX localstorage storage `remove()` not deleting attachment data from localStorage, causing orphaned attachment entries to remain after the storage instance is removed

@@ -1661,4 +1661,42 @@ describeParallel('attachments.test.ts', () => {
             await db.close();
         });
     });
+    describe('attachment data cleanup on remove', () => {
+        it('should remove attachment binary data from storage when an individual attachment is removed', async () => {
+            const c = await humansCollection.createAttachments(1);
+            let doc = await c.findOne().exec(true);
+            const attachmentId = 'cat.txt';
+            const attachment = await doc.putAttachment({
+                id: attachmentId,
+                data: createBlob('meow I am a kitty with a knife', 'text/plain'),
+                type: 'text/plain'
+            });
+            const digest = attachment.digest;
+
+            // Verify attachment data is stored
+            const dataBefore = await c.storageInstance.getAttachmentData(doc.primary, attachmentId, digest);
+            assert.ok(dataBefore);
+
+            // Remove the individual attachment
+            doc = doc.getLatest();
+            const att = ensureNotFalsy(doc.getAttachment(attachmentId));
+            await att.remove();
+
+            // Verify attachment metadata is removed from the document
+            doc = await c.findOne().exec(true);
+            const shouldBeNull = doc.getAttachment(attachmentId);
+            assert.strictEqual(shouldBeNull, null);
+
+            // The attachment binary data should also be removed from storage
+            let hasThrown = false;
+            try {
+                await c.storageInstance.getAttachmentData(doc.primary, attachmentId, digest);
+            } catch (err) {
+                hasThrown = true;
+            }
+            assert.ok(hasThrown, 'Removed attachment binary data should be cleaned up from storage');
+
+            await c.database.remove();
+        });
+    });
 });

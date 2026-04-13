@@ -1,0 +1,1 @@
+- FIX `getJsonSchemaWithoutMeta()` not removing internal meta field references (`_deleted`, `_meta.lwt`) from indexes, while correctly removing them from properties and required, causing the returned schema to be internally inconsistent

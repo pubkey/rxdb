@@ -1,0 +1,1 @@
+- FIX default cache replacement policy not evicting executed unsubscribed queries when subscribed queries caused the total cache size to exceed `tryToKeepMax`, because the eviction count was calculated from only the unsubscribed query count instead of the total cache size

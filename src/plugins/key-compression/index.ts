@@ -193,6 +193,17 @@ export function wrappedKeyCompressionStorage<Internals, InstanceCreationOptions>
                             preparedQuery.query as any
                         ) as any;
 
+                        /**
+                         * compressQuery() from jsonschema-key-compression does not know
+                         * about the 'index' field, so it is dropped.
+                         * We have to manually compress and re-add it.
+                         */
+                        if (preparedQuery.query.index) {
+                            compressedQuery.index = preparedQuery.query.index.map(
+                                field => compressedPath(compressionState.table, field)
+                            );
+                        }
+
                         const compressedPreparedQuery = prepareQuery(
                             compressionState.compressedSchema,
                             compressedQuery
