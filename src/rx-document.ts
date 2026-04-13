@@ -1,5 +1,6 @@
 import {
-    Observable
+    Observable,
+    defer
 } from 'rxjs';
 import {
     distinctUntilChanged,
@@ -103,14 +104,18 @@ export const basePrototype = {
         const _this: RxDocument<{}, {}, {}> = this as any;
         const id = this.primary;
 
-        return _this.collection.eventBulks$.pipe(
-            filter((bulk: any) => !bulk.isLocal),
-            map((bulk: any) => bulk.events.find((ev: any) => ev.documentId === id)),
-            filter((event: any) => !!event),
-            map((changeEvent: any) => getDocumentDataOfRxChangeEvent(ensureNotFalsy(changeEvent))),
-            startWith(_this.collection._docCache.getLatestDocumentData(id)),
-            distinctUntilChanged((prev: RxDocumentData<any>, curr: RxDocumentData<any>) => prev._rev === curr._rev),
-            map((docData: RxDocumentData<any>) => (this as RxDocument<any>).collection._docCache.getCachedRxDocument(docData)),
+        return defer(() => {
+            const latestDocData = _this.collection._docCache.getLatestDocumentData(id);
+            return _this.collection.eventBulks$.pipe(
+                filter((bulk: any) => !bulk.isLocal),
+                map((bulk: any) => bulk.events.find((ev: any) => ev.documentId === id)),
+                filter((event: any) => !!event),
+                map((changeEvent: any) => getDocumentDataOfRxChangeEvent(ensureNotFalsy(changeEvent))),
+                startWith(latestDocData),
+                distinctUntilChanged((prev: RxDocumentData<any>, curr: RxDocumentData<any>) => prev._rev === curr._rev),
+                map((docData: RxDocumentData<any>) => (this as RxDocument<any>).collection._docCache.getCachedRxDocument(docData)),
+            );
+        }).pipe(
             shareReplay(RXJS_SHARE_REPLAY_DEFAULTS)
         );
     },
