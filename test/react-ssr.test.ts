@@ -32,6 +32,8 @@ import {
     useRxQuery,
     useLiveRxQuery,
     useRxCollection,
+    useRxDocument,
+    useReplicationStatus,
 } from '../plugins/react/index.mjs';
 
 addRxPlugin(RxDBDevModePlugin);
@@ -60,6 +62,8 @@ describe('react-ssr.test.ts', () => {
         assert.strictEqual(typeof useRxQuery, 'function');
         assert.strictEqual(typeof useLiveRxQuery, 'function');
         assert.strictEqual(typeof useRxCollection, 'function');
+        assert.strictEqual(typeof useRxDocument, 'function');
+        assert.strictEqual(typeof useReplicationStatus, 'function');
     });
 
     it('should render the RxDatabaseProvider with renderToString', async () => {
@@ -191,5 +195,60 @@ describe('react-ssr.test.ts', () => {
         assert.ok(html.includes('error:null'));
 
         await db.close();
+    });
+
+    it('should render useRxDocument inside RxDatabaseProvider with renderToString', async () => {
+        const db = await createDatabase();
+        const collection: RxCollection = db.collections.humans;
+
+        function UseRxDocumentComponent() {
+            /**
+             * In SSR, useEffect does not run so the subscription never starts.
+             * The hook returns its initial state: loading=false, result=null.
+             */
+            const { result, loading, error } = useRxDocument(collection, 'some-id');
+            return React.createElement('div', null,
+                'loading:' + loading + ',result:' + result + ',error:' + error
+            );
+        }
+
+        const html = renderToString(
+            React.createElement(
+                RxDatabaseProvider,
+                { database: db },
+                React.createElement(UseRxDocumentComponent)
+            )
+        );
+
+        assert.ok(html.includes('loading:false'));
+        assert.ok(html.includes('result:null'));
+        assert.ok(html.includes('error:null'));
+
+        await db.close();
+    });
+
+    it('should render useReplicationStatus with renderToString without crashing', () => {
+        function UseReplicationStatusComponent() {
+            /**
+             * In SSR, useEffect does not run so the replication subscriptions
+             * never start. The hook returns its default state.
+             */
+            const { syncing, error, lastSyncedAt, canceled } = useReplicationStatus(null);
+            return React.createElement('div', null,
+                'syncing:' + syncing +
+                ',error:' + error +
+                ',lastSyncedAt:' + lastSyncedAt +
+                ',canceled:' + canceled
+            );
+        }
+
+        const html = renderToString(
+            React.createElement(UseReplicationStatusComponent)
+        );
+
+        assert.ok(html.includes('syncing:false'));
+        assert.ok(html.includes('error:null'));
+        assert.ok(html.includes('lastSyncedAt:null'));
+        assert.ok(html.includes('canceled:false'));
     });
 });

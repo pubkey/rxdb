@@ -193,6 +193,49 @@ The returned documents are fully reactive RxDB documents and can be modified or 
 </Steps>
 
 
+## Single document subscription
+
+The `useRxDocument` hook subscribes to a single document by its primary key and re-renders whenever that document changes. It accepts an `RxCollection` instance directly for full type safety.
+
+```tsx
+import { useRxCollection } from 'rxdb/plugins/react';
+import { useRxDocument } from 'rxdb/plugins/react';
+
+const HeroDetail = ({ heroId }: { heroId: string }) => {
+    const collection = useRxCollection('heroes');
+    const { result: hero, loading } = useRxDocument(collection, heroId);
+
+    if (loading || !hero) {
+        return <span>Loading...</span>;
+    }
+
+    return <span>{hero.name} ({hero.color})</span>;
+};
+```
+
+## Replication status
+
+The `useReplicationStatus` hook subscribes to an `RxReplicationState` and exposes its status as React state. This is useful for showing sync indicators in the UI.
+
+```tsx
+import { useReplicationStatus } from 'rxdb/plugins/react';
+
+const SyncIndicator = ({ replicationState }) => {
+    const status = useReplicationStatus(replicationState);
+    const { syncing, error, lastSyncedAt, canceled } = status;
+
+    if (canceled) return <span>Sync stopped</span>;
+    if (error) return <span>Sync error: {error.message}</span>;
+    if (syncing) return <span>Syncing...</span>;
+    if (lastSyncedAt) {
+        const time = new Date(lastSyncedAt).toLocaleTimeString();
+        return <span>Last synced: {time}</span>;
+    }
+
+    return <span>Idle</span>;
+};
+```
+
 ## React Native compatibility
 
 All hooks and providers described on this page work the same way in React Native. The React integration does not rely on any browser-specific APIs.
