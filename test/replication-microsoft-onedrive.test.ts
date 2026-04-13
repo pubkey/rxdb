@@ -167,10 +167,11 @@ describe('replication-microsoft-onedrive.test.ts', function () {
     });
 
     describe('init', () => {
-        it('import WebRTC polyfills on Node.js', () => {
+        it('import WebRTC polyfills on Node.js', async () => {
             if (isNode) {
-                // eslint-disable-next-line @typescript-eslint/no-require-imports
-                wrtc = require('wrtc');
+                // @ts-ignore
+                const wrtcModule = await import('node-datachannel/polyfill');
+                wrtc = wrtcModule.default as any;
             }
         });
     });

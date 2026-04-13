@@ -92,7 +92,7 @@ To achieve real-time updates, this plugin uses **WebRTC** to signal changes betw
 WebRTC is native in browsers but requires a polyfill in Node.js.
 
 ```ts
-import wrtc from 'node-datachannel/polyfill'; // or 'wrtc' package
+import wrtc from 'node-datachannel/polyfill';
 // ...
 const replicationState = await replicateGoogleDrive({
     // ...

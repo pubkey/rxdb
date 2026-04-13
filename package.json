@@ -724,8 +724,7 @@
     "webpack": "5.105.4",
     "webpack-bundle-analyzer": "5.3.0",
     "webpack-cli": "7.0.2",
-    "webpack-dev-server": "5.2.3",
-    "wrtc": "0.4.7"
+    "webpack-dev-server": "5.2.3"
   },
   "overrides": {
     "eslint": "10.2.0",
