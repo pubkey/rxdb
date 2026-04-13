@@ -146,9 +146,11 @@ const replicationPool = await replicateWebRTC(
             signalingServerUrl: 'wss://signaling.rxdb.info/',
 
             // only in Node.js, we need the wrtc library
-            // because Node.js does not contain the WebRTC API.
-            // Use createSimplePeerWrtc() to wrap the polyfill for simple-peer compatibility.
-            wrtc: createSimplePeerWrtc(require('node-datachannel/polyfill')),
+            // because Node.js does not have WebRTC.
+            // Wrap with createSimplePeerWrtc().
+            wrtc: createSimplePeerWrtc(
+                require('node-datachannel/polyfill')
+            ),
 
             // only in Node.js, we need the WebSocket library
             // because Node.js does not contain the WebSocket API.
