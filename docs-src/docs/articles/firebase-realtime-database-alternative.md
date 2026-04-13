@@ -134,7 +134,7 @@ const webrtcPool = await replicateWebRTC({
   topic: 'p2p-topic-123',
   connectionHandlerCreator: getConnectionHandlerSimplePeer({
     signalingServerUrl: 'wss://signaling.rxdb.info/',
-    wrtc: require('node-datachannel/polyfill'),
+    wrtc: createSimplePeerWrtc(require('node-datachannel/polyfill')),
     webSocketConstructor: require('ws').WebSocket
   })
 });

@@ -59,7 +59,7 @@ import {
     RxReplicationWriteToMasterRow,
     WithDeletedAndAttachments
 } from '../src/index.ts';
-import { SimplePeerWrtc } from '../src/plugins/replication-webrtc/index.ts';
+import { SimplePeerWrtc, createSimplePeerWrtc } from '../src/plugins/replication-webrtc/index.ts';
 import Peer from 'simple-peer';
 
 
@@ -173,7 +173,7 @@ describe('replication-google-drive.test.ts', function () {
             if (isNode) {
                 // @ts-ignore
                 const wrtcModule = await import('node-datachannel/polyfill');
-                wrtc = wrtcModule.default as any;
+                wrtc = createSimplePeerWrtc(wrtcModule.default) as any;
             }
         });
     });

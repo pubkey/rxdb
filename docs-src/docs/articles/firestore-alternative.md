@@ -210,7 +210,7 @@ const replicationPool = await replicateWebRTC({
     signalingServerUrl: 'wss://signaling.rxdb.info/',
 
     // Node.js requires a polyfill for WebRTC & WebSocket
-    wrtc: require('node-datachannel/polyfill'),
+    wrtc: createSimplePeerWrtc(require('node-datachannel/polyfill')),
     webSocketConstructor: require('ws').WebSocket
   }),
   pull: {}, // optional pull config
