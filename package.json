@@ -686,7 +686,6 @@
     "karma-sourcemap-loader": "0.4.0",
     "karma-spec-reporter": "0.0.36",
     "karma-webpack": "5.0.1",
-    "leveldown": "6.1.1",
     "madge": "8.0.0",
     "microsoft-onedrive-mock": "1.0.5",
     "mini-css-extract-plugin": "2.10.2",
