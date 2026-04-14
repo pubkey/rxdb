@@ -1,0 +1,1 @@
+- FIX(types) `RxDocument.collection` losing the `Reactivity` generic because it was passed as the third type argument to `RxCollection` (which is `StaticMethods`) instead of the fifth, causing `doc.collection.find().$$` and similar calls to be typed as the default reactivity instead of the user's custom reactivity type
