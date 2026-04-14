@@ -7,6 +7,7 @@ import {
     blobToBase64String,
     blobToString,
     createBlobFromBase64,
+    deepEqual,
     flatClone,
     PROMISE_RESOLVE_VOID
 } from '../../plugins/utils/index.ts';
@@ -105,39 +106,6 @@ export function fromStorageInstanceResult<RxDocType>(
         length: attachmentData.length,
         digest: attachmentData.digest
     });
-}
-
-/**
- * Returns true if two attachments maps describe the same set of attachments
- * (same ids, same digests). Used to avoid unnecessary re-emissions from
- * allAttachments$ when the document revision changes without any actual
- * attachment change.
- */
-function attachmentsMapEqual(
-    a: { [id: string]: RxAttachmentData; } | undefined,
-    b: { [id: string]: RxAttachmentData; } | undefined
-): boolean {
-    if (a === b) {
-        return true;
-    }
-    if (!a || !b) {
-        return false;
-    }
-    const aKeys = Object.keys(a);
-    const bKeys = Object.keys(b);
-    if (aKeys.length !== bKeys.length) {
-        return false;
-    }
-    for (const key of aKeys) {
-        const bEntry = b[key];
-        if (!bEntry) {
-            return false;
-        }
-        if (a[key].digest !== bEntry.digest) {
-            return false;
-        }
-    }
-    return true;
 }
 
 async function _putAttachmentsImpl<RxDocType>(
@@ -324,12 +292,10 @@ export const RxDBAttachmentsPlugin: RxPlugin = {
                              * both wasteful and surprising for consumers that only care
                              * about attachment changes.
                              */
-                            distinctUntilChanged((prev: RxDocument, curr: RxDocument) => {
-                                return attachmentsMapEqual(
-                                    (prev as any)._data._attachments,
-                                    (curr as any)._data._attachments
-                                );
-                            }),
+                            distinctUntilChanged((prev: RxDocument, curr: RxDocument) => deepEqual(
+                                Object.keys((prev as any)._data._attachments || {}),
+                                Object.keys((curr as any)._data._attachments || {})
+                            )),
                             map((rxDocument: RxDocument) => {
                                 return Object.entries(
                                     rxDocument.toJSON(true)._attachments
