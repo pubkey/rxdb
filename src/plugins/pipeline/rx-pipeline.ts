@@ -33,7 +33,15 @@ import {
 import { getChangedDocumentsSince } from '../../rx-storage-helper.ts';
 import { mapDocumentsDataToCacheDocs } from '../../doc-cache.ts';
 import { INTERNAL_CONTEXT_PIPELINE_CHECKPOINT, getPrimaryKeyOfInternalDocument } from '../../rx-database-internal-store.ts';
-import { FLAGGED_FUNCTIONS, PIPELINE_FN_PREFIX, blockFlaggedFunctionKey, releaseFlaggedFunctionKey } from './flagged-functions.ts';
+import {
+    FLAGGED_FUNCTIONS,
+    PIPELINE_FN_PREFIX,
+    blockFlaggedFunctionKey,
+    decrementActivePipelineHandlers,
+    getActivePipelineHandlers,
+    incrementActivePipelineHandlers,
+    releaseFlaggedFunctionKey
+} from './flagged-functions.ts';
 
 export class RxPipeline<RxDocType> {
     processQueue = PROMISE_RESOLVE_VOID;
@@ -50,13 +58,28 @@ export class RxPipeline<RxDocType> {
 
 
     waitBeforeWriteFn = async () => {
-        const stack = new Error().stack;
-        if (stack && (
-            stack.includes(PIPELINE_FN_PREFIX)
-        )) {
-        } else {
-            await this.awaitIdle();
+        /**
+         * Skip the wait when the read originates from within a pipeline
+         * handler's execution context. Two checks are used:
+         *
+         * 1. `getActivePipelineHandlers()` - a counter that is incremented
+         *    around every handler invocation. This covers cases where the
+         *    synchronous stack is broken by async boundaries such as
+         *    `setTimeout`, `setImmediate` or subscriber callbacks, which
+         *    previously caused the pipeline to deadlock against itself.
+         * 2. The stack-based `PIPELINE_FN_PREFIX` check - kept as a
+         *    defensive fallback for any stack we already had working
+         *    before (it is cheap because the stack string only has to
+         *    be materialised when the counter is zero).
+         */
+        if (getActivePipelineHandlers() > 0) {
+            return;
         }
+        const stack = new Error().stack;
+        if (stack && stack.includes(PIPELINE_FN_PREFIX)) {
+            return;
+        }
+        await this.awaitIdle();
     }
 
     /**
@@ -148,11 +171,13 @@ export class RxPipeline<RxDocType> {
                     // await o[this.secretFunctionName](rxDocuments);
 
                     const fnKey = blockFlaggedFunctionKey();
+                    incrementActivePipelineHandlers();
                     try {
                         await FLAGGED_FUNCTIONS[fnKey](() => _this.handler(rxDocuments));
                     } catch (err: any) {
                         this.error = err;
                     } finally {
+                        decrementActivePipelineHandlers();
                         releaseFlaggedFunctionKey(fnKey);
                     }
 

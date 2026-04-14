@@ -481,6 +481,47 @@ describe('rx-pipeline.test.js', () => {
             await dest.database.close();
         });
     });
+    describeParallel('handler async boundaries', () => {
+        it('should not deadlock when handler reads destination from setTimeout callback', async () => {
+            const c1 = await humansCollection.create(0);
+            await c1.database.waitForLeadership();
+            const c2 = await humansCollection.create(0);
+            const pipeline = await c1.addPipeline({
+                destination: c2,
+                handler: (docs) => {
+                    // setTimeout breaks the synchronous stack, so the callback
+                    // has a fresh stack trace that doesn't include rx_pipeline_fn_*.
+                    // Reading the destination from inside the callback must not
+                    // deadlock - the pipeline must detect that we are still within
+                    // the handler's execution context.
+                    return new Promise<void>((resolve, reject) => {
+                        setTimeout(() => {
+                            (async () => {
+                                await c2.find().exec();
+                                for (const doc of docs) {
+                                    await c2.insert(schemaObjects.humanData(doc.passportId));
+                                }
+                            })().then(resolve, reject);
+                        }, 10);
+                    });
+                },
+                identifier: randomToken(10)
+            });
+            await c1.insert(schemaObjects.humanData('foobar'));
+
+            const result = await Promise.race([
+                pipeline.awaitIdle().then(() => 'resolved'),
+                new Promise(resolve => setTimeout(() => resolve('timeout'), 3000))
+            ]);
+            assert.strictEqual(result, 'resolved', 'pipeline should not deadlock when handler reads destination from setTimeout callback');
+
+            const doc2 = await c2.findOne().exec(true);
+            assert.strictEqual(doc2.passportId, 'foobar');
+
+            await c1.database.close();
+            await c2.database.close();
+        });
+    });
     describeParallel('.remove()', () => {
         it('should properly clean up checkpoint when remove() is called while pipeline is processing', async () => {
             const c1 = await humansCollection.create(0);

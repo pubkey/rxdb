@@ -97,6 +97,27 @@ async function rx_pipeline_fn_20_(fn: any) {
  */
 export const PIPELINE_FN_PREFIX = 'rx_pipeline_fn_';
 
+
+/**
+ * Module-level counter for how many pipeline handlers are currently running.
+ * The stack-based `PIPELINE_FN_PREFIX` check only works when the synchronous
+ * call chain is preserved. This counter covers the remaining cases where the
+ * handler's async context is maintained but the sync stack is broken by
+ * `setTimeout`, `setImmediate`, subscriber callbacks, etc., which would
+ * otherwise cause a self-deadlock when the handler reads from the destination
+ * through one of those async boundaries.
+ */
+let activePipelineHandlers = 0;
+export function incrementActivePipelineHandlers(): void {
+    activePipelineHandlers++;
+}
+export function decrementActivePipelineHandlers(): void {
+    activePipelineHandlers--;
+}
+export function getActivePipelineHandlers(): number {
+    return activePipelineHandlers;
+}
+
 export const FLAGGED_FUNCTIONS = {
     rx_pipeline_fn_1_,
     rx_pipeline_fn_2_,
