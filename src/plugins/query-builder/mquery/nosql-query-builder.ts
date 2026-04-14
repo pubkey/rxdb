@@ -393,10 +393,10 @@ export class NoSqlQueryBuilderClass<DocType> {
             selector: this._conditions,
         };
 
-        if (this.options.skip) {
+        if (typeof this.options.skip === 'number') {
             query.skip = this.options.skip;
         }
-        if (this.options.limit) {
+        if (typeof this.options.limit === 'number') {
             query.limit = this.options.limit;
         }
         if (this.options.sort) {

@@ -21,7 +21,12 @@ export async function queryDenoKV<RxDocType>(
     const queryPlan = preparedQuery.queryPlan;
     const query = preparedQuery.query;
     const skip = query.skip ? query.skip : 0;
-    const limit = query.limit ? query.limit : Infinity;
+    /**
+     * Use typeof so an explicit `limit: 0` from the mango query is
+     * honored. The previous truthy check treated `0` as "no limit"
+     * and returned all matching documents.
+     */
+    const limit = typeof query.limit === 'number' ? query.limit : Infinity;
     const skipPlusLimit = skip + limit;
     const queryPlanFields: string[] = queryPlan.index;
     const mustManuallyResort = !queryPlan.sortSatisfiedByIndex;
@@ -33,6 +38,10 @@ export async function queryDenoKV<RxDocType>(
             instance.schema,
             preparedQuery.query
         );
+    }
+
+    if (limit === 0) {
+        return { documents: [] };
     }
 
     const kv = await instance.kvPromise;
