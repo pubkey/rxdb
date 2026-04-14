@@ -381,56 +381,85 @@ describeParallel('orm.test.js', () => {
              *
              * The fix: checkOrmMethods must reject attachment ORM method
              * names that conflict with the built-in RxAttachment methods.
+             *
+             * To stay in sync with future RxAttachment changes, this test
+             * creates a real attachment, enumerates its instance and
+             * prototype property names, and asserts that none of them can
+             * be registered as an attachment ORM method.
              */
             if (!config.storage.hasAttachments) {
                 return;
             }
-            const db = await createRxDatabase({
-                name: randomToken(10),
-                storage: config.storage.getStorage(),
-                multiInstance: false
-            });
 
-            type DocType = {
-                id: string;
-            };
-
+            type DocType = { id: string; };
             const schema: RxJsonSchema<DocType> = {
                 version: 0,
                 type: 'object',
                 primaryKey: 'id',
                 properties: {
-                    id: {
-                        type: 'string',
-                        maxLength: 100
-                    }
+                    id: { type: 'string', maxLength: 100 }
                 },
                 required: ['id'],
                 attachments: {}
             };
 
-            /**
-             * 'getData' is a built-in RxAttachment method.
-             * Defining an attachment ORM method with this name must throw
-             * a clear RxError during collection creation, not silently
-             * override the built-in at attachment access time.
-             */
-            await AsyncTestUtil.assertThrows(
-                () => db.addCollections({
-                    humans: {
-                        schema,
-                        attachments: {
-                            getData: function () {
-                                return 'hijacked';
+            // 1. Create a real attachment to introspect.
+            const introspectDb = await createRxDatabase({
+                name: randomToken(10),
+                storage: config.storage.getStorage(),
+                multiInstance: false
+            });
+            const cols = await introspectDb.addCollections({
+                humans: { schema }
+            });
+            const doc = await cols.humans.insert({ id: 'a' });
+            const attachment = await doc.putAttachment({
+                id: 'cat.txt',
+                data: new Blob(['meow'], { type: 'text/plain' }),
+                type: 'text/plain'
+            });
+
+            // Collect every own property name on the instance and on its
+            // prototype chain (skipping Object.prototype and 'constructor'),
+            // since both are reachable on each attachment instance and would
+            // be silently shadowed by an ORM method of the same name.
+            const reservedNames = new Set<string>();
+            Object.getOwnPropertyNames(attachment).forEach(n => reservedNames.add(n));
+            let proto = Object.getPrototypeOf(attachment);
+            while (proto && proto !== Object.prototype) {
+                Object.getOwnPropertyNames(proto)
+                    .filter(n => n !== 'constructor')
+                    .forEach(n => reservedNames.add(n));
+                proto = Object.getPrototypeOf(proto);
+            }
+            await introspectDb.close();
+
+            assert.ok(reservedNames.size > 0, 'expected at least one reserved name');
+
+            // 2. For each reserved name, attempt to register an attachment
+            //    ORM method with that name and assert it throws.
+            for (const reservedName of reservedNames) {
+                const db = await createRxDatabase({
+                    name: randomToken(10),
+                    storage: config.storage.getStorage(),
+                    multiInstance: false
+                });
+                await AsyncTestUtil.assertThrows(
+                    () => db.addCollections({
+                        humans: {
+                            schema,
+                            attachments: {
+                                [reservedName]: function () {
+                                    return 'hijacked';
+                                }
                             }
                         }
-                    }
-                }),
-                'RxError',
-                'getData'
-            );
-
-            db.close();
+                    }),
+                    'RxError',
+                    reservedName
+                );
+                await db.close();
+            }
         });
         it('ORM method with populate-getter suffix should throw COL18', async () => {
             /**
