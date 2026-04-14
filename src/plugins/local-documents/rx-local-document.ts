@@ -93,8 +93,19 @@ const RxLocalDocumentPrototype: any = {
         const state = getFromMapOrThrow(LOCAL_DOC_STATE_BY_PARENT_RESOLVED, this.parent);
 
         const id = this.primary;
+        /**
+         * When the parent is the RxDatabase,
+         * the eventBulks$ stream contains events from all collections.
+         * Local documents on the database and on a collection can share the same id
+         * so we must filter out events that belong to a collection-level local doc
+         * to not leak their state into the database-level local doc observable.
+         */
+        const parentIsDatabase = isRxDatabase(_this.parent);
         return _this.parent.eventBulks$.pipe(
-            filter((bulk: RxChangeEventBulk<any>) => !!bulk.isLocal),
+            filter((bulk: RxChangeEventBulk<any>) =>
+                !!bulk.isLocal &&
+                (parentIsDatabase ? !bulk.collectionName : true)
+            ),
             map((bulk: RxChangeEventBulk<any>) => bulk.events.find((ev: RxStorageChangeEvent<any>) => ev.documentId === id)),
             filter((event: RxStorageChangeEvent<any> | undefined) => !!event),
             map((changeEvent: any) => getDocumentDataOfRxChangeEvent(ensureNotFalsy(changeEvent))),
@@ -102,7 +113,7 @@ const RxLocalDocumentPrototype: any = {
             distinctUntilChanged((prev: any, curr: any) => prev._rev === curr._rev),
             map((docData: any) => state.docCache.getCachedRxDocument(docData)),
             shareReplay(RXJS_SHARE_REPLAY_DEFAULTS)
-        ) as Observable<any>;;
+        ) as Observable<any>;
     },
     get $$(): any {
         const _this: RxLocalDocumentClass = this as any;

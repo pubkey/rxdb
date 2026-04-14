@@ -832,5 +832,57 @@ describeParallel('local-documents.test.ts', () => {
 
             db.close();
         });
+        it('database-level local doc $ must not be affected by collection-level local doc with same id', async () => {
+            type LDType = { level: string; };
+            const name = randomToken(10);
+            const db = await createRxDatabase({
+                name,
+                storage: config.storage.getStorage(),
+                localDocuments: true
+            });
+            const cols = await db.addCollections({
+                humans: {
+                    schema: schemas.primaryHuman,
+                    localDocuments: true
+                }
+            });
+
+            const sharedId = 'shared-id';
+            const dbDoc = await db.insertLocal<LDType>(sharedId, {
+                level: 'db'
+            });
+            const colDoc = await cols.humans.insertLocal<LDType>(sharedId, {
+                level: 'collection'
+            });
+
+            const dbEmitted: LDType[] = [];
+            const sub = dbDoc.$.subscribe(d => {
+                dbEmitted.push(d.toJSON().data as LDType);
+            });
+            await waitUntil(() => dbEmitted.length === 1);
+            assert.strictEqual(dbEmitted[0].level, 'db');
+
+            // update the collection-level doc: the db-level $ must NOT pick this up
+            await colDoc.incrementalPatch({ level: 'collection-updated' });
+            await wait(100);
+            assert.strictEqual(
+                dbEmitted.length,
+                1,
+                'database local doc observable leaked events from collection local doc. Got: ' +
+                JSON.stringify(dbEmitted)
+            );
+
+            // now update the db-level doc: must emit the db-level data
+            await dbDoc.incrementalPatch({ level: 'db-updated' });
+            await waitUntil(() => dbEmitted.length === 2);
+            assert.strictEqual(dbEmitted[1].level, 'db-updated');
+
+            // the getLatest() of the db-level doc must still return the db-level data
+            const latest = dbDoc.getLatest();
+            assert.strictEqual(latest.get('level'), 'db-updated');
+
+            sub.unsubscribe();
+            await db.close();
+        });
     });
 });

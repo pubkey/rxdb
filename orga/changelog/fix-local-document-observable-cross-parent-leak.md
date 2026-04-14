@@ -1,0 +1,1 @@
+- FIX database-level `RxLocalDocument.$` observable emitting events from a collection-level local document that shares the same id, because the filter on the database event stream only checked `isLocal` and did not exclude events that originated from a collection
