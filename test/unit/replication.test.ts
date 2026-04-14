@@ -271,6 +271,69 @@ describe('replication.test.ts', () => {
             localCollection.database.close();
             remoteCollection.database.close();
         });
+        it('sent$ must not emit null when the push-modifier returns null #bug', async () => {
+            const totalDocs = 10;
+            const { localCollection, remoteCollection } = await getTestCollections({
+                local: 0,
+                remote: 0
+            });
+            await localCollection.bulkInsert(
+                new Array(totalDocs).fill(0).map((_v, idx) => {
+                    return schemaObjects.humanWithTimestampData({
+                        name: 'from-local',
+                        age: idx + 1
+                    });
+                })
+            );
+            const replicationState = replicateRxCollection<HumanWithTimestampDocumentType, any>({
+                collection: localCollection,
+                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                live: false,
+                pull: {
+                    handler: getPullHandler(remoteCollection)
+                },
+                push: {
+                    handler: getPushHandler(remoteCollection),
+                    modifier: (doc) => {
+                        // drop every second document
+                        if (doc.age % 2 === 0) {
+                            return null;
+                        }
+                        return doc;
+                    }
+                }
+            });
+
+            const sentDocs: WithDeleted<HumanWithTimestampDocumentType>[] = [];
+            replicationState.sent$.subscribe(d => sentDocs.push(d));
+
+            ensureReplicationHasNoErrors(replicationState);
+            await replicationState.awaitInitialReplication();
+
+            /**
+             * sent$ is typed as Observable<WithDeleted<RxDocType>>,
+             * so it must never emit null or undefined values,
+             * not even for documents that were filtered out
+             * by the push modifier.
+             */
+            sentDocs.forEach((doc, idx) => {
+                assert.ok(
+                    doc !== null && doc !== undefined,
+                    'sent$ emitted ' + JSON.stringify(doc) + ' at index ' + idx
+                );
+                assert.strictEqual(typeof (doc as any).id, 'string');
+            });
+
+            // Only the 5 non-filtered documents were actually sent to the endpoint
+            assert.strictEqual(
+                sentDocs.length,
+                5,
+                'sent$ must only emit for actually pushed docs, got ' + sentDocs.length
+            );
+
+            localCollection.database.close();
+            remoteCollection.database.close();
+        });
         it('should not save pulled documents that do not match the schema', async () => {
             const amount = 5;
             const { localCollection, remoteCollection } = await getTestCollections({ local: 0, remote: amount });
