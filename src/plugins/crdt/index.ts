@@ -33,7 +33,7 @@ import {
     RxError
 } from '../../index.ts';
 import { mingoUpdater } from '../update/mingo-updater.ts';
-import { fillObjectWithDefaults } from '../../rx-schema-helper.ts';
+import { fillObjectWithDefaults, fillPrimaryKey } from '../../rx-schema-helper.ts';
 
 
 
@@ -522,6 +522,23 @@ export const RxDBcrdtPlugin: RxPlugin = {
                              * will be preserved during rebuildFromCRDT (conflict resolution).
                              */
                             fillObjectWithDefaults(collection.schema, docData);
+
+                            /**
+                             * Fill composite primary key before building the CRDT $set body.
+                             * When a schema uses a composite primary key, the value of the
+                             * primary key field is computed from other fields by RxDB and
+                             * is not provided by the user. Without this, the CRDT operation
+                             * would miss the primary key field and rebuildFromCRDT (used
+                             * during conflict resolution) would produce a document without
+                             * the primary key.
+                             */
+                            if (typeof collection.schema.jsonSchema.primaryKey !== 'string') {
+                                fillPrimaryKey(
+                                    collection.schema.primaryPath,
+                                    collection.schema.jsonSchema,
+                                    docData
+                                );
+                            }
 
                             const setMe: Partial<RxDocumentData<any>> = {};
                             Object.entries(docData).forEach(([key, value]) => {

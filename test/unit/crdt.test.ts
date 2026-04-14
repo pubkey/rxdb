@@ -475,6 +475,74 @@ describeParallel('crdt.test.ts', () => {
                 doc1.collection.database.close();
                 doc2.collection.database.close();
             });
+            it('should preserve the composite primary key during conflict resolution', async () => {
+                /**
+                 * When a schema uses a composite primary key, the value of the
+                 * primary key field is computed from the other fields by RxDB
+                 * and is not provided by the user during insert.
+                 * The CRDT operation must include the computed primary key,
+                 * otherwise rebuildFromCRDT (used during conflict resolution)
+                 * will produce a document with a missing primary key field.
+                 */
+                type CompositeDocType = {
+                    id: string;
+                    firstName: string;
+                    lastName: string;
+                    age: number;
+                };
+                const compositeSchema: RxJsonSchema<CompositeDocType> = {
+                    version: 0,
+                    primaryKey: {
+                        key: 'id',
+                        fields: ['firstName', 'age'],
+                        separator: '|'
+                    },
+                    type: 'object',
+                    properties: {
+                        id: { type: 'string', maxLength: 100 },
+                        firstName: { type: 'string', maxLength: 100 },
+                        lastName: { type: 'string' },
+                        age: { type: 'integer', minimum: 0, maximum: 150 }
+                    },
+                    required: ['id', 'firstName', 'lastName', 'age']
+                };
+
+                async function getDocFromNewDb() {
+                    const c = await getCRDTCollection<CompositeDocType>(compositeSchema);
+                    const doc = await c.insert({
+                        firstName: 'Alice',
+                        lastName: 'Smith',
+                        age: 25
+                        // id is NOT provided, must be auto-computed by RxDB
+                    } as CompositeDocType);
+                    return doc;
+                }
+                const doc1 = await getDocFromNewDb();
+                const doc2 = await getDocFromNewDb();
+
+                // Both must have the auto-computed composite primary key
+                assert.strictEqual(doc1.getLatest().id, 'Alice|25');
+                assert.strictEqual(doc2.getLatest().id, 'Alice|25');
+
+                // Resolve a conflict between the two versions.
+                const schemaFilled = enableCRDTinSchema(fillWithDefaultSettings(compositeSchema));
+                const handler = getCRDTConflictHandler<WithCRDTs<CompositeDocType>>(
+                    defaultHashSha256,
+                    schemaFilled
+                );
+
+                const resolved = await handler.resolve({
+                    newDocumentState: doc1.toMutableJSON(true) as any,
+                    realMasterState: doc2.toMutableJSON(true) as any
+                }, 'test-composite-primary');
+
+                // After conflict resolution, the composite primary key must be preserved.
+                assert.strictEqual((resolved as any).id, 'Alice|25',
+                    'Composite primary key "id" was lost during conflict resolution rebuild');
+
+                doc1.collection.database.close();
+                doc2.collection.database.close();
+            });
         });
         describe('conflicts during replication', () => {
             if (!config.storage.hasReplication) {

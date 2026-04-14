@@ -1,0 +1,1 @@
+- FIX CRDT plugin `bulkInsert` hook not including the composite primary key in CRDT operations, causing the primary key field to be lost during conflict resolution rebuild for schemas that use a composite primary key
