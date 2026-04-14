@@ -1122,6 +1122,25 @@ describe('rx-query.test.ts', () => {
 
             c.database.close();
         });
+        it('find({ limit: 0 }) must return an empty result set', async () => {
+            const c = await humansCollection.create(3);
+
+            // Sanity check: without a limit we get all three docs back.
+            const all = await c.find().exec();
+            assert.strictEqual(all.length, 3);
+
+            const result = await c.find({
+                selector: {},
+                limit: 0
+            }).exec();
+            assert.strictEqual(
+                result.length,
+                0,
+                'find({ limit: 0 }) must return zero documents, got ' + result.length
+            );
+
+            c.database.close();
+        });
 
     });
     describeParallel('updates to the result of the query', () => {

@@ -9,15 +9,34 @@
  * - 'npm run test:browser' so it runs in the browser
  */
 import assert from 'assert';
+import AsyncTestUtil from 'async-test-util';
 import config from './config.ts';
 
 import {
     createRxDatabase,
     randomToken
 } from '../../plugins/core/index.mjs';
-
+import {
+    isNode
+} from '../../plugins/test-utils/index.mjs';
 describe('bug-report.test.js', () => {
-    it('find({ limit: 0 }) must return an empty array', async function () {
+    it('should fail because it reproduces the bug', async function () {
+
+        /**
+         * If your test should only run in nodejs or only run in the browser,
+         * you should comment in the return operator and adapt the if statement.
+         */
+        if (
+            !isNode // runs only in node
+            // isNode // runs only in the browser
+        ) {
+            // return;
+        }
+
+        if (!config.storage.hasMultiInstance) {
+            return;
+        }
+
         // create a schema
         const mySchema = {
             version: 0,
@@ -40,7 +59,7 @@ describe('bug-report.test.js', () => {
                     maximum: 150
                 }
             }
-        } as const;
+        };
 
         /**
          * Always generate a random database-name
@@ -56,7 +75,8 @@ describe('bug-report.test.js', () => {
              * we can ensure that all variations of RxStorage are tested in the CI.
              */
             storage: config.storage.getStorage(),
-            eventReduce: true
+            eventReduce: true,
+            ignoreDuplicate: true
         });
         // create a collection
         const collections = await db.addCollections({
@@ -65,34 +85,57 @@ describe('bug-report.test.js', () => {
             }
         });
 
-        // insert a few documents so the collection is not empty
-        await collections.mycollection.bulkInsert([
-            { passportId: 'a', firstName: 'Alice', lastName: 'A', age: 10 },
-            { passportId: 'b', firstName: 'Bob', lastName: 'B', age: 20 },
-            { passportId: 'c', firstName: 'Chris', lastName: 'C', age: 30 }
-        ]);
-
-        // Sanity check: find() without limit must return all three docs.
-        const allDocs = await collections.mycollection.find().exec();
-        assert.strictEqual(allDocs.length, 3);
+        // insert a document
+        await collections.mycollection.insert({
+            passportId: 'foobar',
+            firstName: 'Bob',
+            lastName: 'Kelso',
+            age: 56
+        });
 
         /**
-         * A user specifies `limit: 0` which, per the MangoQuery public API,
-         * should be honored and return zero documents.
-         * The storage layer incorrectly interprets the falsy `0` as
-         * "no limit was set" and returns all documents instead.
+         * to simulate the event-propagation over multiple browser-tabs,
+         * we create the same database again
          */
-        const result = await collections.mycollection.find({
-            selector: {},
-            limit: 0
-        }).exec();
+        const dbInOtherTab = await createRxDatabase({
+            name,
+            storage: config.storage.getStorage(),
+            eventReduce: true,
+            ignoreDuplicate: true
+        });
+        // create a collection
+        const collectionInOtherTab = await dbInOtherTab.addCollections({
+            mycollection: {
+                schema: mySchema
+            }
+        });
 
-        assert.strictEqual(
-            result.length,
-            0,
-            'find({ limit: 0 }) must return an empty result set, got ' + result.length
-        );
+        // find the document in the other tab
+        const myDocument = await collectionInOtherTab.mycollection
+            .findOne()
+            .where('firstName')
+            .eq('Bob')
+            .exec();
 
+        /*
+         * assert things,
+         * here your tests should fail to show that there is a bug
+         */
+        assert.strictEqual(myDocument.age, 56);
+
+
+        // you can also wait for events
+        const emitted: any[] = [];
+        const sub = collectionInOtherTab.mycollection
+            .findOne().$
+            .subscribe(doc => {
+                emitted.push(doc);
+            });
+        await AsyncTestUtil.waitUntil(() => emitted.length === 1);
+
+        // clean up afterwards
+        sub.unsubscribe();
         db.close();
+        dbInOtherTab.close();
     });
 });
