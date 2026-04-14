@@ -1,0 +1,1 @@
+- FIX attachments-compression `isCompressibleType()` not stripping RFC 2045 parameters (e.g. `; charset=utf-8`) from MIME types, causing attachments with a charset-qualified type like `application/json; charset=utf-8` to silently bypass compression when matched against exact patterns like `application/json`

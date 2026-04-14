@@ -51,9 +51,24 @@ export const DEFAULT_COMPRESSIBLE_TYPES: string[] = [
 ];
 
 /**
+ * Normalizes a MIME type by lowercasing it and stripping any
+ * RFC 2045 parameters (everything after the first ';'), e.g.
+ * 'application/json; charset=utf-8' -> 'application/json'.
+ */
+function normalizeMimeType(mimeType: string): string {
+    const semicolonIndex = mimeType.indexOf(';');
+    const withoutParams = semicolonIndex === -1 ? mimeType : mimeType.slice(0, semicolonIndex);
+    return withoutParams.trim().toLowerCase();
+}
+
+/**
  * Checks if a given MIME type should be compressed,
  * based on a list of type patterns. Supports wildcard suffix matching
  * (e.g., 'text/*' matches 'text/plain', 'text/html', etc.).
+ *
+ * RFC 2045 parameters on the MIME type (e.g. '; charset=utf-8') are
+ * stripped before matching, so 'application/json; charset=utf-8'
+ * matches the 'application/json' pattern.
  *
  * Deterministic: same type + same pattern list = same answer.
  * No byte-level inspection needed.
@@ -62,9 +77,9 @@ export function isCompressibleType(
     mimeType: string,
     compressibleTypes: string[]
 ): boolean {
-    const lower = mimeType.toLowerCase();
+    const lower = normalizeMimeType(mimeType);
     for (const pattern of compressibleTypes) {
-        const lowerPattern = pattern.toLowerCase();
+        const lowerPattern = normalizeMimeType(pattern);
         if (lowerPattern.endsWith('/*')) {
             // 'text/*' -> 'text/', so startsWith matches all subtypes
             const prefix = lowerPattern.slice(0, -1);
