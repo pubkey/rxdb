@@ -363,7 +363,7 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
         if (preparedQuery.query.skip) {
             query = query.skip(preparedQuery.query.skip);
         }
-        if (preparedQuery.query.limit) {
+        if (typeof preparedQuery.query.limit === 'number') {
             query = query.limit(preparedQuery.query.limit);
         }
         if (preparedQuery.query.sort) {

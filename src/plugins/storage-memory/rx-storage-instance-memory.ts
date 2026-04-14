@@ -291,7 +291,12 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         const query = preparedQuery.query;
 
         const skip = query.skip ? query.skip : 0;
-        const limit = query.limit ? query.limit : Infinity;
+        /**
+         * Use typeof so an explicit `limit: 0` from the mango query is
+         * honored. The previous truthy check treated `0` as "no limit"
+         * and returned all matching documents.
+         */
+        const limit = typeof query.limit === 'number' ? query.limit : Infinity;
         const skipPlusLimit = skip + limit;
 
         let queryMatcher: QueryMatcher<RxDocumentData<RxDocType>> | false = false;

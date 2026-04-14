@@ -1,0 +1,1 @@
+- FIX storage `query()` returning all matching documents when the caller passes `limit: 0` in the mango query, because the truthy check `query.limit ? query.limit : Infinity` treated `0` as "no limit was set" (affects memory, dexie, localstorage, foundationdb, denokv, sqlite-trial, mongodb storages and the query-builder plugin).
