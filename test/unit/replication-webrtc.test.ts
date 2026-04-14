@@ -13,6 +13,7 @@ import {
     // getConnectionHandlerP2PCF,
     isMasterInWebRTCReplication,
     getConnectionHandlerSimplePeer,
+    createSimplePeerWrtc,
     SimplePeer,
     SimplePeerWebSocketConstructor,
     SimplePeerWrtc
@@ -55,7 +56,7 @@ describe('replication-webrtc.test.ts', function () {
             if (isNode) {
                 // @ts-ignore
                 const wrtcModule = await import('node-datachannel/polyfill');
-                wrtc = wrtcModule.default as any;
+                wrtc = createSimplePeerWrtc(wrtcModule.default) as any;
 
                 const wsModule = await import('ws');
                 webSocketConstructor = wsModule.WebSocket as unknown as SimplePeerWebSocketConstructor;

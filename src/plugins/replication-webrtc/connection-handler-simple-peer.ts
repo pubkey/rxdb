@@ -78,6 +78,35 @@ export type SimplePeerWrtc = SimplePeerOptions['wrtc'];
 export type SimplePeerConfig = SimplePeerOptions['config'];
 export type SimplePeerWebSocketConstructor = { new(url: string): WebSocket; };
 
+/**
+ * Creates a simple-peer compatible wrtc object from a WebRTC polyfill
+ * like node-datachannel/polyfill. This is needed because some polyfills
+ * return RTCSessionDescription objects with read-only properties
+ * that simple-peer tries to mutate.
+ */
+export function createSimplePeerWrtc(polyfill: {
+    RTCPeerConnection: any;
+    RTCSessionDescription: any;
+    RTCIceCandidate: any;
+}): SimplePeerWrtc {
+    const OrigRTCPeerConnection = polyfill.RTCPeerConnection;
+    class SimplePeerCompatRTCPeerConnection extends OrigRTCPeerConnection {
+        async createOffer(): Promise<{ type: string; sdp: string }> {
+            const offer = await super.createOffer();
+            return { type: offer.type, sdp: offer.sdp };
+        }
+        async createAnswer(): Promise<{ type: string; sdp: string }> {
+            const answer = await super.createAnswer();
+            return { type: answer.type, sdp: answer.sdp };
+        }
+    }
+    return {
+        RTCPeerConnection: SimplePeerCompatRTCPeerConnection as any,
+        RTCSessionDescription: polyfill.RTCSessionDescription,
+        RTCIceCandidate: polyfill.RTCIceCandidate
+    };
+}
+
 export type SimplePeerConnectionHandlerOptions = {
     /**
      * If no server is specified, the default signaling server

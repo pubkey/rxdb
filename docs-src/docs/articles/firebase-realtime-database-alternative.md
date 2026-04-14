@@ -126,7 +126,8 @@ In addition to using a centralized backend, RxDB supports peer-to-peer synchroni
 ```ts
 import {
   replicateWebRTC,
-  getConnectionHandlerSimplePeer
+  getConnectionHandlerSimplePeer,
+  createSimplePeerWrtc
 } from 'rxdb/plugins/replication-webrtc';
 
 const webrtcPool = await replicateWebRTC({
@@ -134,7 +135,7 @@ const webrtcPool = await replicateWebRTC({
   topic: 'p2p-topic-123',
   connectionHandlerCreator: getConnectionHandlerSimplePeer({
     signalingServerUrl: 'wss://signaling.rxdb.info/',
-    wrtc: require('node-datachannel/polyfill'),
+    wrtc: createSimplePeerWrtc(require('node-datachannel/polyfill')),
     webSocketConstructor: require('ws').WebSocket
   })
 });
