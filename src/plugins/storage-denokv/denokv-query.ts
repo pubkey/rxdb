@@ -40,6 +40,10 @@ export async function queryDenoKV<RxDocType>(
         );
     }
 
+    if (limit === 0) {
+        return { documents: [] };
+    }
+
     const kv = await instance.kvPromise;
 
     const indexForName = queryPlanFields.slice(0);
