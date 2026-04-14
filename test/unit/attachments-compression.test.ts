@@ -319,6 +319,32 @@ modes.forEach(mode => {
                 assert.strictEqual(isCompressibleType('video/mp4', defaultTypes), false);
                 assert.strictEqual(isCompressibleType('audio/mpeg', defaultTypes), false);
             });
+            it('should match types that include RFC 2045 parameters like charset', () => {
+                // Blobs often expose a MIME type with parameters (e.g. 'application/json;charset=utf-8').
+                // The parameter suffix must not prevent matching against an exact compressible pattern
+                // like 'application/json'. Without the fix, these attachments silently bypass compression.
+                assert.strictEqual(
+                    isCompressibleType('application/json; charset=utf-8', defaultTypes),
+                    true,
+                    'application/json with charset parameter should be compressible'
+                );
+                assert.strictEqual(
+                    isCompressibleType('application/json;charset=UTF-8', defaultTypes),
+                    true,
+                    'application/json with no-space charset parameter should be compressible'
+                );
+                assert.strictEqual(
+                    isCompressibleType('image/svg+xml; charset=utf-8', defaultTypes),
+                    true,
+                    'image/svg+xml with charset parameter should be compressible'
+                );
+                // Non-compressible types with parameters must still be rejected.
+                assert.strictEqual(
+                    isCompressibleType('image/jpeg; boundary=foo', defaultTypes),
+                    false,
+                    'image/jpeg with parameter must not become compressible'
+                );
+            });
         });
 
         describe('MIME type preservation', () => {
