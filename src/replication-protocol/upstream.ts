@@ -435,7 +435,18 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
 
             writeRowsToMasterIds.forEach(docId => {
                 if (!conflictIds.has(docId)) {
-                    state.events.processed.up.next(writeRowsToMaster[docId]);
+                    /**
+                     * Skip the processed.up emission for rows that were
+                     * filtered out by the replicationHandler.masterWrite()
+                     * wrapper (e.g. via a push modifier returning null).
+                     * Such rows have their newDocumentState set to null to
+                     * signal they were not actually sent to the master.
+                     * We still persist their meta state so that the upstream
+                     * does not keep retrying them.
+                     */
+                    if (writeRowsToMaster[docId].newDocumentState !== null) {
+                        state.events.processed.up.next(writeRowsToMaster[docId]);
+                    }
                     useWriteRowsToMeta.push(writeRowsToMeta[docId]);
                 }
             });

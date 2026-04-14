@@ -1,0 +1,1 @@
+- FIX replication `sent$` observable emitting `null` for documents that were filtered out by a `push.modifier` returning `null`, violating its `Observable<WithDeleted<RxDocType>>` type and falsely reporting filtered documents as sent to the endpoint
