@@ -1,0 +1,1 @@
+- FIX `RxPipeline` making the destination collection permanently unreadable after the handler threw, because `waitBeforeWriteFn` called `awaitIdle()` which rethrows the cached pipeline error on every destination query. The destination is now kept queryable when the pipeline is in an unrecoverable error state.

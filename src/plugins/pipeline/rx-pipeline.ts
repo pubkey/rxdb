@@ -59,6 +59,16 @@ export class RxPipeline<RxDocType> {
 
     waitBeforeWriteFn = async () => {
         /**
+         * If the pipeline is in an unrecoverable error state, do not keep
+         * blocking destination reads. The pipeline itself is broken, but
+         * the destination collection is a normal collection whose existing
+         * contents must remain queryable so the application can inspect or
+         * recover state.
+         */
+        if (this.error) {
+            return;
+        }
+        /**
          * Skip the wait when the read originates from within a pipeline
          * handler's execution context. Two checks are used:
          *

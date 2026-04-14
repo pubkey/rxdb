@@ -481,6 +481,64 @@ describe('rx-pipeline.test.js', () => {
             await dest.database.close();
         });
     });
+    describeParallel('destination reads after pipeline error', () => {
+        it('should keep destination queries working after the pipeline handler has thrown', async () => {
+            const c1 = await humansCollection.create(0);
+            await c1.database.waitForLeadership();
+            const c2 = await humansCollection.create(0);
+
+            // Seed the destination so that we can verify it is still
+            // readable with the expected contents after the pipeline breaks.
+            await c2.insert(schemaObjects.humanData('seed-doc'));
+
+            const pipeline = await c1.addPipeline({
+                destination: c2,
+                handler: () => {
+                    throw new Error('handlerBoom');
+                },
+                identifier: randomToken(10)
+            });
+
+            // Insert into source to trigger the (throwing) handler.
+            await c1.insert(schemaObjects.humanData('src-doc'));
+
+            // Wait for the error to propagate.
+            await assertThrows(
+                () => pipeline.awaitIdle(),
+                undefined,
+                'handlerBoom'
+            );
+
+            // The pipeline is now permanently broken. Destination queries
+            // should still succeed - a broken pipeline must not brick the
+            // destination collection.
+            const result = await Promise.race([
+                c2.findOne().exec(true).then(doc => ({ ok: true, doc })),
+                new Promise<{ ok: false; }>(resolve => setTimeout(
+                    () => resolve({ ok: false }),
+                    2000
+                ))
+            ]);
+
+            assert.strictEqual(
+                result.ok,
+                true,
+                'destination query should resolve even when the pipeline has errored'
+            );
+            if (result.ok) {
+                assert.strictEqual(result.doc.passportId, 'seed-doc');
+            }
+
+            await Promise.race([
+                c1.database.close(),
+                new Promise(resolve => setTimeout(resolve, 500))
+            ]);
+            await Promise.race([
+                c2.database.close(),
+                new Promise(resolve => setTimeout(resolve, 500))
+            ]);
+        });
+    });
     describeParallel('handler async boundaries', () => {
         it('should not deadlock when handler reads destination from setTimeout callback', async () => {
             const c1 = await humansCollection.create(0);
