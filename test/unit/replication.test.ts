@@ -271,7 +271,7 @@ describe('replication.test.ts', () => {
             localCollection.database.close();
             remoteCollection.database.close();
         });
-        it('sent$ must not emit null when the push-modifier returns null #bug', async () => {
+        it('sent$ must not emit null when the push-modifier returns null', async () => {
             const totalDocs = 10;
             const { localCollection, remoteCollection } = await getTestCollections({
                 local: 0,
