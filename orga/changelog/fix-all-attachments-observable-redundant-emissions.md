@@ -1,0 +1,1 @@
+- FIX `allAttachments$` observable emitting a new value on every document revision even when the set of attachments is unchanged, by filtering emissions with `distinctUntilChanged` based on attachment ids and digests

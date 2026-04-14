@@ -630,6 +630,53 @@ describeParallel('attachments.test.ts', () => {
             sub.unsubscribe();
             await c.database.close();
         });
+        it('should only emit when the set of attachments actually changes', async () => {
+            const c = await humansCollection.createAttachments(1);
+            let doc = await c.findOne().exec(true);
+            await doc.putAttachment({
+                id: 'a.txt',
+                data: createBlob('hello', 'text/plain'),
+                type: 'text/plain'
+            });
+            doc = doc.getLatest();
+
+            const emitted: RxDocument[] = [];
+            const sub = doc.allAttachments$
+                .subscribe((attachments: any[]) => emitted.push(attachments as any));
+
+            // Wait for the initial emission (1 attachment)
+            await AsyncTestUtil.waitUntil(() => emitted.length === 1);
+            assert.strictEqual((emitted[0] as any).length, 1);
+
+            // Update the document's non-attachment fields multiple times.
+            // Attachments do not change during these writes.
+            doc = await doc.getLatest().incrementalPatch({ age: 10 });
+            doc = await doc.getLatest().incrementalPatch({ age: 20 });
+            doc = await doc.getLatest().incrementalPatch({ age: 30 });
+
+            // Give any pending emissions time to propagate.
+            await promiseWait(200);
+
+            assert.strictEqual(
+                emitted.length,
+                1,
+                'allAttachments$ should not emit when attachments are unchanged, but emitted ' +
+                emitted.length + ' times'
+            );
+
+            // Now actually change the attachments and verify we DO get an emission.
+            await doc.getLatest().putAttachment({
+                id: 'b.txt',
+                data: createBlob('world', 'text/plain'),
+                type: 'text/plain'
+            });
+
+            await AsyncTestUtil.waitUntil(() => emitted.length === 2);
+            assert.strictEqual((emitted[1] as any).length, 2);
+
+            sub.unsubscribe();
+            await c.database.close();
+        });
     });
     describe('multiInstance', () => {
         if (!config.storage.hasMultiInstance) {

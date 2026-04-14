@@ -1,4 +1,5 @@
 import {
+    distinctUntilChanged,
     map
 } from 'rxjs';
 
@@ -6,6 +7,7 @@ import {
     blobToBase64String,
     blobToString,
     createBlobFromBase64,
+    deepEqual,
     flatClone,
     PROMISE_RESOLVE_VOID
 } from '../../plugins/utils/index.ts';
@@ -283,6 +285,17 @@ export const RxDBAttachmentsPlugin: RxPlugin = {
                 get: function allAttachments$(this: RxDocument) {
                     return this.$
                         .pipe(
+                            /**
+                             * Only emit when the set of attachments has actually changed.
+                             * Without this filter, any unrelated document revision
+                             * (e.g. a field update) would cause a new emission, which is
+                             * both wasteful and surprising for consumers that only care
+                             * about attachment changes.
+                             */
+                            distinctUntilChanged((prev: RxDocument, curr: RxDocument) => deepEqual(
+                                Object.keys((prev as any)._data._attachments || {}),
+                                Object.keys((curr as any)._data._attachments || {})
+                            )),
                             map((rxDocument: RxDocument) => {
                                 return Object.entries(
                                     rxDocument.toJSON(true)._attachments
