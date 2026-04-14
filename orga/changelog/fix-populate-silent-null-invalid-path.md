@@ -1,0 +1,1 @@
+- FIX `RxDocument.populate()` silently returning `null` for invalid schema paths and non-ref fields when the value at that path was falsy. The documented `DOC5` / `DOC6` errors are now thrown consistently, regardless of whether the document has a value at the given path.
