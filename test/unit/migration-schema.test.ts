@@ -2045,5 +2045,117 @@ describe('migration-schema.test.ts', function () {
 
             await db2.close();
         });
+        /**
+         * Regression test for migration losing attachments when the migration
+         * strategy returns a new object instead of mutating the old one.
+         *
+         * `migrateDocumentData()` preserves `_meta` and `_deleted` across
+         * strategies that return new objects, but never restores `_attachments`.
+         * Returning a fresh object from a strategy is a perfectly valid pattern
+         * (the TypeScript type only requires the user document fields plus
+         * `_attachments`), so attachments must not silently disappear.
+         */
+        it('should keep attachments when migration strategy returns a new object', async () => {
+            if (!config.storage.hasAttachments) {
+                return;
+            }
+            // fake-indexeddb (used by dexie in non-browser envs) and Deno
+            // structuredClone do not roundtrip Blobs correctly; the #3460 test
+            // skips the same combination.
+            if (isDeno && config.storage.name === 'dexie') {
+                return;
+            }
+
+            const dbName = randomToken(10);
+            const schema0 = {
+                version: 0,
+                primaryKey: 'id',
+                type: 'object' as const,
+                properties: {
+                    id: {
+                        type: 'string' as const,
+                        maxLength: 100
+                    },
+                    name: {
+                        type: 'string' as const
+                    }
+                },
+                required: ['id', 'name'] as const,
+                attachments: {}
+            };
+            const schema1 = {
+                version: 1,
+                primaryKey: 'id',
+                type: 'object' as const,
+                properties: {
+                    id: {
+                        type: 'string' as const,
+                        maxLength: 100
+                    },
+                    name: {
+                        type: 'string' as const
+                    },
+                    migrated: {
+                        type: 'boolean' as const
+                    }
+                },
+                required: ['id', 'name'] as const,
+                attachments: {}
+            };
+
+            // create v0 database, insert a document with an attachment
+            const db = await createRxDatabase({
+                name: dbName,
+                storage: config.storage.getStorage(),
+            });
+            const cols = await db.addCollections({
+                heroes: { schema: schema0 }
+            });
+            const doc = await cols.heroes.insert({ id: 'alice', name: 'Alice' });
+            const attachmentData = AsyncTestUtil.randomString(20);
+            await doc.putAttachment({
+                id: 'note.txt',
+                data: createBlob(attachmentData, 'text/plain'),
+                type: 'text/plain'
+            });
+            await db.close();
+
+            // reopen with v1 schema using a strategy that returns a NEW object
+            // without spreading `_attachments`. This is a valid public-API
+            // usage: the MigrationStrategy type is
+            //   `(doc, collection) => doc | null`, so returning any
+            //   WithAttachments<DocData> shape is allowed.
+            const db2 = await createRxDatabase({
+                name: dbName,
+                storage: config.storage.getStorage(),
+            });
+            const cols2 = await db2.addCollections({
+                heroes: {
+                    schema: schema1,
+                    migrationStrategies: {
+                        1: (oldDoc: any) => {
+                            return {
+                                id: oldDoc.id,
+                                name: oldDoc.name,
+                                migrated: true
+                            };
+                        }
+                    }
+                }
+            });
+
+            const migratedDoc = await cols2.heroes.findOne('alice').exec(true);
+            const attachment = migratedDoc.getAttachment('note.txt');
+            assert.ok(
+                attachment,
+                'attachment must be preserved after migration when the strategy returns a new object'
+            );
+            assert.strictEqual(attachment.type, 'text/plain');
+            assert.strictEqual(attachment.length, attachmentData.length);
+            const fetchedData = await attachment.getStringData();
+            assert.strictEqual(fetchedData, attachmentData);
+
+            await db2.close();
+        });
     });
 });

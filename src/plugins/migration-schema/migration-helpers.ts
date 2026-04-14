@@ -98,6 +98,20 @@ export function migrateDocumentData(
             doc._meta = meta;
         }
         doc._deleted = deleted;
+        /**
+         * Restore attachments in case a migration strategy returned a fresh
+         * object that did not forward the `_attachments` field. Strategies
+         * receive the document with its attachments already attached, but
+         * only internal fields (`_meta`, `_deleted`) were restored here.
+         * Without re-attaching, attachments would be silently dropped when
+         * a strategy returns a new object, which is a valid public API use.
+         * Strategies that intentionally clear attachments (e.g. by setting
+         * `_attachments = {}` on the old doc) still win because the
+         * returned object already carries the cleared value.
+         */
+        if (typeof doc._attachments === 'undefined') {
+            doc._attachments = attachmentsBefore;
+        }
         return doc;
     });
 }
