@@ -118,9 +118,11 @@ jobs:
         if: steps.check-changes.outputs.should_run == 'true' && steps.build.outcome == 'success'
         id: run-tests-dexie
         continue-on-error: true
-        uses: coactions/setup-xvfb@v1
-        with:
-          run: npm run test:browser:dexie 2>&1 | tee /tmp/test-dexie-output.txt
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -yq xvfb
+          set -o pipefail
+          xvfb-run --auto-servernum npm run test:browser:dexie 2>&1 | tee /tmp/test-dexie-output.txt
 
       - name: Evaluate results
         if: steps.check-changes.outputs.should_run == 'true'
