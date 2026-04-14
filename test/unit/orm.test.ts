@@ -370,6 +370,68 @@ describeParallel('orm.test.js', () => {
         });
     });
     describe('ISSUES', () => {
+        it('attachment ORM method with built-in name should throw', async () => {
+            /**
+             * BUG: Attachment ORM methods with a name that matches a
+             * built-in RxAttachment method (getData, getStringData,
+             * getDataBase64, remove) silently override that built-in
+             * method on every attachment instance via Object.defineProperty.
+             * The user thinks they're adding a new method, but they've
+             * replaced the data-retrieval API without any warning.
+             *
+             * The fix: checkOrmMethods must reject attachment ORM method
+             * names that conflict with the built-in RxAttachment methods.
+             */
+            if (!config.storage.hasAttachments) {
+                return;
+            }
+            const db = await createRxDatabase({
+                name: randomToken(10),
+                storage: config.storage.getStorage(),
+                multiInstance: false
+            });
+
+            type DocType = {
+                id: string;
+            };
+
+            const schema: RxJsonSchema<DocType> = {
+                version: 0,
+                type: 'object',
+                primaryKey: 'id',
+                properties: {
+                    id: {
+                        type: 'string',
+                        maxLength: 100
+                    }
+                },
+                required: ['id'],
+                attachments: {}
+            };
+
+            /**
+             * 'getData' is a built-in RxAttachment method.
+             * Defining an attachment ORM method with this name must throw
+             * a clear RxError during collection creation, not silently
+             * override the built-in at attachment access time.
+             */
+            await AsyncTestUtil.assertThrows(
+                () => db.addCollections({
+                    humans: {
+                        schema,
+                        attachments: {
+                            getData: function () {
+                                return 'hijacked';
+                            }
+                        }
+                    }
+                }),
+                'RxError',
+                'getData'
+            );
+
+            db.close();
+        });
         it('ORM method with populate-getter suffix should throw COL18', async () => {
             /**
              * BUG: The schema generates populate getters for each field

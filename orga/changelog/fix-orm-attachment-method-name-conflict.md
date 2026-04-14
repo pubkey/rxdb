@@ -1,0 +1,1 @@
+- FIX ORM attachment-method names conflicting with built-in `RxAttachment` methods (`getData`, `getStringData`, `getDataBase64`, `remove`) not being validated, silently shadowing the built-in method on every attachment instance and preventing users from retrieving their attachment data. Dev-mode now throws a clear `RxError` (COL17) during collection creation.
