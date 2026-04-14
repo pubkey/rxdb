@@ -665,6 +665,48 @@ addRxPlugin(RxDBJsonDumpPlugin);
                 state.collection.database.remove();
             });
             /**
+             * The observable returned by get$()/property$ should emit the
+             * CURRENT value when subscribed, not the value that was present
+             * at the time the observable was created.
+             * Previously, startWith() was eagerly evaluated at get$() call
+             * time. If the state changed between getting the observable
+             * reference and subscribing to it, the subscriber received a
+             * stale value first and only then the current one.
+             */
+            it('get$() should emit the current value when subscribed, not a stale value from creation time', async () => {
+                if (isFastMode()) {
+                    return;
+                }
+                const state = await getState();
+                await state.set('foo', () => 'first');
+
+                // Capture the observable reference BEFORE the state change.
+                const obs = state.foo$;
+
+                // Change state AFTER getting the observable reference,
+                // but BEFORE subscribing.
+                await state.set('foo', () => 'second');
+
+                // Let any async events settle.
+                await wait(100);
+
+                // Now subscribe. Subscriber should only see the current
+                // value ('second'), not the stale one ('first').
+                const emitted: any[] = [];
+                const sub = obs.subscribe(v => emitted.push(v));
+
+                await wait(100);
+
+                assert.deepStrictEqual(
+                    emitted,
+                    ['second'],
+                    'subscriber should receive only the current value but got: ' + JSON.stringify(emitted)
+                );
+
+                sub.unsubscribe();
+                state.collection.database.remove();
+            });
+            /**
              * _cleanup() must return true when it is done
              * so that the cleanup plugin loop can terminate.
              * @link https://github.com/pubkey/rxdb/issues/XXXX

@@ -1,6 +1,7 @@
 import {
     Observable,
     Subject,
+    defer,
     distinctUntilChanged,
     filter,
     map,
@@ -257,10 +258,18 @@ export class RxStateBase<T, Reactivity = unknown> {
         return ret;
     }
     get$(path?: Paths<T>): Observable<any> {
-        return this.$.pipe(
+        /**
+         * Use defer() so that the initial value passed to startWith()
+         * is evaluated lazily at subscription time, not at the time
+         * get$() is called. Otherwise, if the state changes between
+         * the get$() call and the subscription, the subscriber would
+         * first receive a stale value and only then the current one.
+         */
+        return defer(() => this.$.pipe(
             map(() => this.get(path)),
             startWith(this.get(path)),
             distinctUntilChanged(deepEqual),
+        )).pipe(
             shareReplay(RXJS_SHARE_REPLAY_DEFAULTS),
         );
     }
