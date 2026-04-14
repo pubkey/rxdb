@@ -22,9 +22,6 @@
             "Bash(pwd:*)"
         ],
         "deny": [
-            "Write(plugins/**)",
-            "Edit(plugins/**)",
-            "Delete(plugins/**)"
         ]
     },
     "hooks": {
