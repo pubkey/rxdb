@@ -182,7 +182,7 @@ describe('backup.test.ts', () => {
          * an empty result and the loop exited early.
          * The folders of the deleted documents remained in the backup.
          */
-        it('#7176 should remove the folder of a deleted document', async () => {
+        it('should remove the folder of a deleted document', async () => {
             if (!config.storage.hasAttachments) {
                 return;
             }
