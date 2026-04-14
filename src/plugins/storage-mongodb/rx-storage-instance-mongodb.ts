@@ -359,6 +359,10 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
         await this.writeQueue;
         const mongoCollection = await this.mongoCollectionPromise;
 
+        if (preparedQuery.query.limit === 0) {
+            this.runningOperations.next(this.runningOperations.getValue() - 1);
+            return { documents: [] };
+        }
         let query = mongoCollection.find(preparedQuery.mongoSelector);
         if (preparedQuery.query.skip) {
             query = query.skip(preparedQuery.query.skip);
