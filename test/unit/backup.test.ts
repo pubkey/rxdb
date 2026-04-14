@@ -175,4 +175,61 @@ describe('backup.test.ts', () => {
             assert.strictEqual(backupState.isStopped, true);
         });
     });
+    describe('issues', () => {
+        /**
+         * When a batch of changes contains only deleted documents,
+         * the deletion handler was skipped because findByIds() returned
+         * an empty result and the loop exited early.
+         * The folders of the deleted documents remained in the backup.
+         */
+        it('should remove the folder of a deleted document', async () => {
+            if (!config.storage.hasAttachments) {
+                return;
+            }
+            const collection = await createAttachments(1);
+            const firstDoc = await collection.findOne().exec(true);
+            const docId = firstDoc.primary;
+            const directory = getBackupDir();
+            const options = {
+                live: false,
+                directory,
+                attachments: true
+            };
+
+            const backupState1 = collection.database.backup(options);
+            await backupState1.awaitInitialBackup();
+
+            const docFolder = path.join(directory, docId);
+            assert.ok(
+                fs.existsSync(docFolder),
+                'doc folder should exist after initial backup'
+            );
+
+            // remove the only document in the collection
+            await firstDoc.getLatest().remove();
+
+            // run backup again, it should pick up from the last checkpoint
+            // and remove the folder of the deleted document
+            const emitted: RxBackupWriteEvent[] = [];
+            const backupState2 = collection.database.backup(options);
+            const sub = backupState2.writeEvents$.subscribe(ev => emitted.push(ev));
+            await backupState2.awaitInitialBackup();
+
+            assert.strictEqual(
+                fs.existsSync(docFolder),
+                false,
+                'the folder of the deleted document must not exist anymore'
+            );
+            const deletedEvents = emitted.filter(ev => ev.deleted);
+            assert.strictEqual(
+                deletedEvents.length,
+                1,
+                'exactly one delete event must be emitted'
+            );
+            assert.strictEqual(deletedEvents[0].documentId, docId);
+
+            sub.unsubscribe();
+            await collection.database.close();
+        });
+    });
 });

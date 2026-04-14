@@ -149,7 +149,11 @@ export class RxBackupState {
                             this.options.batchSize ? this.options.batchSize : 0,
                             lastCheckpoint
                         );
-                        lastCheckpoint = changesResult.documents.length > 0 ? changesResult.checkpoint : lastCheckpoint;
+                        if (changesResult.documents.length === 0) {
+                            hasMore = false;
+                            continue;
+                        }
+                        lastCheckpoint = changesResult.checkpoint;
                         meta.collectionStates[collectionName].checkpoint = lastCheckpoint;
 
                         const docIds: string[] = changesResult.documents
@@ -168,10 +172,6 @@ export class RxBackupState {
                         await this.database.requestIdlePromise();
 
                         const docs: Map<string, RxDocument> = await collection.findByIds(docIds).exec();
-                        if (docs.size === 0) {
-                            hasMore = false;
-                            continue;
-                        }
                         await Promise.all(
                             Array
                                 .from(docs.values())
