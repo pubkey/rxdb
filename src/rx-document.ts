@@ -194,10 +194,12 @@ export const basePrototype = {
             this.collection.schema.jsonSchema,
             path
         );
-        const value = this.get(path);
-        if (!value) {
-            return PROMISE_RESOLVE_NULL;
-        }
+        /**
+         * Validate the schema path BEFORE looking at the document value
+         * so that invalid paths and non-ref fields surface as DOC5/DOC6
+         * errors even when the value at that path happens to be falsy.
+         * Previously the `!value` short-circuit below swallowed these errors.
+         */
         if (!schemaObj) {
             throw newRxError('DOC5', {
                 path
@@ -222,6 +224,11 @@ export const basePrototype = {
                 path,
                 schemaObj
             });
+        }
+
+        const value = this.get(path);
+        if (!value) {
+            return PROMISE_RESOLVE_NULL;
         }
 
         if (schemaObj.type === 'array') {

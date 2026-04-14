@@ -1,4 +1,5 @@
 import assert from 'assert';
+import AsyncTestUtil from 'async-test-util';
 import config, { describeParallel } from './config.ts';
 
 import {
@@ -268,6 +269,78 @@ describeParallel('population.test.js', () => {
                 const doc2 = await doc.populate(doc.primaryPath);
                 assert.ok(doc2.collection === col2);
 
+                db.close();
+            });
+        });
+        describe('negative', () => {
+            it('throw DOC5 for a path that does not exist in the schema, even when the value is falsy', async () => {
+                const db = await createRxDatabase({
+                    name: randomToken(10),
+                    storage: config.storage.getStorage(),
+                });
+                const cols = await db.addCollections({
+                    human: {
+                        schema: {
+                            version: 0,
+                            primaryKey: 'name',
+                            type: 'object',
+                            properties: {
+                                name: { type: 'string', maxLength: 100 },
+                                bestFriend: {
+                                    ref: 'human',
+                                    type: 'string'
+                                }
+                            },
+                            required: ['name']
+                        }
+                    }
+                });
+                const col = cols.human;
+                await col.insert({ name: 'alice' });
+                const doc = await col.findOne('alice').exec(true);
+
+                // Calling populate with a path that does not exist in the schema
+                // must throw DOC5 so that typos are surfaced as errors instead of
+                // being silently swallowed as a "no ref value" null result.
+                await AsyncTestUtil.assertThrows(
+                    () => doc.populate('nonExistentField'),
+                    'RxError',
+                    'DOC5'
+                );
+                db.close();
+            });
+            it('throw DOC6 when populating a non-ref schema field, even when the value is falsy', async () => {
+                const db = await createRxDatabase({
+                    name: randomToken(10),
+                    storage: config.storage.getStorage(),
+                });
+                const cols = await db.addCollections({
+                    human: {
+                        schema: {
+                            version: 0,
+                            primaryKey: 'name',
+                            type: 'object',
+                            properties: {
+                                name: { type: 'string', maxLength: 100 },
+                                nickname: { type: 'string' }
+                            },
+                            required: ['name']
+                        }
+                    }
+                });
+                const col = cols.human;
+                // insert without `nickname` so that value is undefined
+                await col.insert({ name: 'alice' });
+                const doc = await col.findOne('alice').exec(true);
+
+                // Populating a field that exists in the schema but has no
+                // ref defined must throw DOC6 regardless of whether the value
+                // happens to be unset.
+                await AsyncTestUtil.assertThrows(
+                    () => doc.populate('nickname'),
+                    'RxError',
+                    'DOC6'
+                );
                 db.close();
             });
         });
