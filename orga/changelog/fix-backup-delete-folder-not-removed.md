@@ -1,0 +1,1 @@
+- FIX backup plugin not removing the folder of a deleted document when the change batch only contained deletions, because `findByIds()` returned an empty map and the loop exited early before running the deletion handler
