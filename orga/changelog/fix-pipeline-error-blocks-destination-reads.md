@@ -1,0 +1,1 @@
+- FIX `RxPipeline` error state blocking unrelated reads on the destination collection, because the pipeline's `waitBeforeWriteFn` hook always called `awaitIdle()` which re-throws the stored handler error forever. After a handler throws, reads on the destination collection now proceed normally instead of re-throwing the pipeline error.
