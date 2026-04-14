@@ -1,4 +1,5 @@
 import {
+    distinctUntilChanged,
     map
 } from 'rxjs';
 
@@ -104,6 +105,39 @@ export function fromStorageInstanceResult<RxDocType>(
         length: attachmentData.length,
         digest: attachmentData.digest
     });
+}
+
+/**
+ * Returns true if two attachments maps describe the same set of attachments
+ * (same ids, same digests). Used to avoid unnecessary re-emissions from
+ * allAttachments$ when the document revision changes without any actual
+ * attachment change.
+ */
+function attachmentsMapEqual(
+    a: { [id: string]: RxAttachmentData; } | undefined,
+    b: { [id: string]: RxAttachmentData; } | undefined
+): boolean {
+    if (a === b) {
+        return true;
+    }
+    if (!a || !b) {
+        return false;
+    }
+    const aKeys = Object.keys(a);
+    const bKeys = Object.keys(b);
+    if (aKeys.length !== bKeys.length) {
+        return false;
+    }
+    for (const key of aKeys) {
+        const bEntry = b[key];
+        if (!bEntry) {
+            return false;
+        }
+        if (a[key].digest !== bEntry.digest) {
+            return false;
+        }
+    }
+    return true;
 }
 
 async function _putAttachmentsImpl<RxDocType>(
@@ -283,6 +317,19 @@ export const RxDBAttachmentsPlugin: RxPlugin = {
                 get: function allAttachments$(this: RxDocument) {
                     return this.$
                         .pipe(
+                            /**
+                             * Only emit when the set of attachments has actually changed.
+                             * Without this filter, any unrelated document revision
+                             * (e.g. a field update) would cause a new emission, which is
+                             * both wasteful and surprising for consumers that only care
+                             * about attachment changes.
+                             */
+                            distinctUntilChanged((prev: RxDocument, curr: RxDocument) => {
+                                return attachmentsMapEqual(
+                                    (prev as any)._data._attachments,
+                                    (curr as any)._data._attachments
+                                );
+                            }),
                             map((rxDocument: RxDocument) => {
                                 return Object.entries(
                                     rxDocument.toJSON(true)._attachments
