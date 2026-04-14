@@ -224,6 +224,45 @@ describe('rx-pipeline.test.js', () => {
             await c1.database.close();
             await c2.database.close();
         });
+        it('should not break reads on destination after handler throws', async () => {
+            const c1 = await humansCollection.create(0);
+            await c1.database.waitForLeadership();
+            const c2 = await humansCollection.create(0);
+
+            // Insert a pre-existing document directly into the destination.
+            // This document is written independently of the pipeline.
+            await c2.insert(schemaObjects.humanData('pre-existing'));
+
+            const pipeline = await c1.addPipeline({
+                destination: c2,
+                handler: () => {
+                    throw new Error('handlerErrorPoisonsDestination');
+                },
+                identifier: randomToken(10)
+            });
+
+            // Trigger the failing handler by writing to the source.
+            await c1.insert(schemaObjects.humanData('trigger-error'));
+
+            // The pipeline's awaitIdle rejects as expected.
+            await assertThrows(
+                () => pipeline.awaitIdle(),
+                undefined,
+                'handlerErrorPoisonsDestination'
+            );
+
+            // Reads on the destination should still work because the destination
+            // is a regular collection that existed before the pipeline. The pipeline
+            // being in an errored state should not poison unrelated reads on the
+            // destination collection.
+            const docs = await c2.find().exec();
+            assert.strictEqual(docs.length, 1);
+            assert.strictEqual(docs[0].passportId, 'pre-existing');
+
+            await pipeline.close();
+            await c1.database.close();
+            await c2.database.close();
+        });
     });
     describeParallel('checkpoints', () => {
         it('should continue from the correct checkpoint', async () => {

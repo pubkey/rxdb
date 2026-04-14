@@ -50,6 +50,14 @@ export class RxPipeline<RxDocType> {
 
 
     waitBeforeWriteFn = async () => {
+        /**
+         * If the pipeline is in an errored state, do not block reads on the
+         * destination collection. The error is surfaced via pipeline.awaitIdle()
+         * and should not poison unrelated reads on the destination collection.
+         */
+        if (this.error) {
+            return;
+        }
         const stack = new Error().stack;
         if (stack && (
             stack.includes(PIPELINE_FN_PREFIX)
