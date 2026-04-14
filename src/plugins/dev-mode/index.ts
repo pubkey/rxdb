@@ -15,7 +15,8 @@ import {
 } from './check-schema.ts';
 import {
     checkOrmDocumentMethods,
-    checkOrmMethods
+    checkOrmMethods,
+    RX_ATTACHMENT_RESERVED_NAMES
 } from './check-orm.ts';
 import { checkMigrationStrategies } from './check-migration-strategies.ts';
 import {
@@ -188,7 +189,7 @@ Docs: ${err.docs}`;
                 // check ORM-methods
                 checkOrmMethods(args.creator.statics);
                 checkOrmMethods(args.creator.methods);
-                checkOrmMethods(args.creator.attachments);
+                checkOrmMethods(args.creator.attachments, RX_ATTACHMENT_RESERVED_NAMES);
 
                 // check migration strategies
                 if (args.creator.schema && args.creator.migrationStrategies) {

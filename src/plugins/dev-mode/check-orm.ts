@@ -6,10 +6,32 @@ import type { KeyFunctionMap, RxJsonSchema } from '../../types/index.d.ts';
 import { rxCollectionProperties, rxDocumentProperties } from './entity-properties.ts';
 
 /**
+ * Built-in property and method names on RxAttachment instances.
+ * Hard-coded here (instead of read from the RxAttachment class)
+ * so the dev-mode plugin does not have to import the attachments plugin.
+ * ORM attachment-methods that share a name with any of these would
+ * silently shadow the built-in method on each attachment instance.
+ */
+export const RX_ATTACHMENT_RESERVED_NAMES: string[] = [
+    'doc',
+    'id',
+    'type',
+    'length',
+    'digest',
+    'remove',
+    'getData',
+    'getStringData',
+    'getDataBase64'
+];
+
+/**
  * checks if the given static methods are allowed
  * @throws if not allowed
  */
-export function checkOrmMethods(statics?: KeyFunctionMap) {
+export function checkOrmMethods(
+    statics?: KeyFunctionMap,
+    additionalReservedNames?: string[]
+) {
     if (!statics) {
         return;
     }
@@ -37,7 +59,8 @@ export function checkOrmMethods(statics?: KeyFunctionMap) {
 
             if (
                 rxCollectionProperties().includes(k) ||
-                rxDocumentProperties().includes(k)
+                rxDocumentProperties().includes(k) ||
+                (additionalReservedNames && additionalReservedNames.includes(k))
             ) {
                 throw newRxError('COL17', {
                     name: k
