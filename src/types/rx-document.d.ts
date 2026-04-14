@@ -80,7 +80,7 @@ export type RxDocumentMeta = {
 
 export declare interface RxDocumentBase<RxDocType, OrmMethods = {}, Reactivity = unknown> {
     isInstanceOfRxDocument: true;
-    collection: RxCollection<RxDocType, OrmMethods, Reactivity>;
+    collection: RxCollection<RxDocType, OrmMethods, {}, {}, Reactivity>;
     readonly deleted: boolean;
 
     readonly $: Observable<RxDocument<RxDocType, OrmMethods, Reactivity>>;

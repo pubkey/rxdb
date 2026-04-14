@@ -584,6 +584,22 @@ describe('typings.test.ts', function () {
             // @ts-expect-error should not be assignable to number
             const queryWrong: number = db.smth.find().where({ age: { $gt: 10 } }).$$;
         });
+        it('RxDocument.collection should propagate Reactivity', () => {
+            interface SetReactivityLambda extends ReactivityLambda {
+                readonly _result: Set<this['_data']>;
+            }
+            const doc: RxDocument<DocType, unknown, SetReactivityLambda> = {} as any;
+
+            // doc.collection.find().$$ should be Set<RxDocument<DocType, unknown, SetReactivityLambda>[]>
+            // because doc.collection must carry the same Reactivity as the document.
+            const querySignal: Set<RxDocument<DocType, unknown, SetReactivityLambda>[]> = doc.collection.find().$$;
+
+            // doc.collection.findOne().$$ should be Set<RxDocument<DocType, unknown, SetReactivityLambda> | null>
+            const findOneSignal: Set<RxDocument<DocType, unknown, SetReactivityLambda> | null> = doc.collection.findOne().$$;
+
+            // @ts-expect-error should not be assignable to number
+            const queryWrong: number = doc.collection.find().$$;
+        });
     });
 });
 describe('local documents', () => {
