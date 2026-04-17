@@ -648,7 +648,7 @@
     "exists-file": "3.0.2",
     "express": "5.2.1",
     "fake-indexeddb": "6.2.5",
-    "firebase": "12.11.0",
+    "firebase": "12.12.0",
     "firebase-tools": "14.27.0",
     "get-port": "5.1.1",
     "global-jsdom": "29.0.0",
