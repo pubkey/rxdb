@@ -9,133 +9,79 @@
  * - 'npm run test:browser' so it runs in the browser
  */
 import assert from 'assert';
-import AsyncTestUtil from 'async-test-util';
+import { wait } from 'async-test-util';
 import config from './config.ts';
-
 import {
     createRxDatabase,
-    randomToken
+    randomToken,
+    RxCollection
 } from '../../plugins/core/index.mjs';
-import {
-    isNode
-} from '../../plugins/test-utils/index.mjs';
+
+const mySchema = {
+    version: 0,
+    primaryKey: 'passportId',
+    type: 'object',
+    properties: {
+        passportId: { type: 'string', maxLength: 100 },
+        firstName: { type: 'string' },
+        lastName: { type: 'string' },
+        age: { type: 'integer', minimum: 0, maximum: 150 }
+    }
+} as const;
+
+type HumanDoc = {
+    passportId: string;
+    firstName: string;
+    lastName: string;
+    age: number;
+};
+
 describe('bug-report.test.js', () => {
-    it('should fail because it reproduces the bug', async function () {
-
-        /**
-         * If your test should only run in nodejs or only run in the browser,
-         * you should comment in the return operator and adapt the if statement.
-         */
-        if (
-            !isNode // runs only in node
-            // isNode // runs only in the browser
-        ) {
-            // return;
-        }
-
-        if (!config.storage.hasMultiInstance) {
-            return;
-        }
-
-        // create a schema
-        const mySchema = {
-            version: 0,
-            primaryKey: 'passportId',
-            type: 'object',
-            properties: {
-                passportId: {
-                    type: 'string',
-                    maxLength: 100
-                },
-                firstName: {
-                    type: 'string'
-                },
-                lastName: {
-                    type: 'string'
-                },
-                age: {
-                    type: 'integer',
-                    minimum: 0,
-                    maximum: 150
-                }
-            }
-        };
-
-        /**
-         * Always generate a random database-name
-         * to ensure that different test runs do not affect each other.
-         */
+    if (!config.storage.hasMultiInstance) {
+        it('skip (no multi-instance)', () => { });
+        return;
+    }
+    it('multiInstance:false should NOT propagate events across instances with the same name', async () => {
         const name = randomToken(10);
-
-        // create a database
-        const db = await createRxDatabase({
-            name,
-            /**
-             * By calling config.storage.getStorage(),
-             * we can ensure that all variations of RxStorage are tested in the CI.
-             */
-            storage: config.storage.getStorage(),
-            eventReduce: true,
-            ignoreDuplicate: true
-        });
-        // create a collection
-        const collections = await db.addCollections({
-            mycollection: {
-                schema: mySchema
-            }
-        });
-
-        // insert a document
-        await collections.mycollection.insert({
-            passportId: 'foobar',
-            firstName: 'Bob',
-            lastName: 'Kelso',
-            age: 56
-        });
-
-        /**
-         * to simulate the event-propagation over multiple browser-tabs,
-         * we create the same database again
-         */
-        const dbInOtherTab = await createRxDatabase({
+        const db1 = await createRxDatabase<{ foo: RxCollection<HumanDoc>; }>({
             name,
             storage: config.storage.getStorage(),
             eventReduce: true,
-            ignoreDuplicate: true
+            ignoreDuplicate: true,
+            multiInstance: false
         });
-        // create a collection
-        const collectionInOtherTab = await dbInOtherTab.addCollections({
-            mycollection: {
-                schema: mySchema
-            }
+        await db1.addCollections({
+            foo: { schema: mySchema }
         });
 
-        // find the document in the other tab
-        const myDocument = await collectionInOtherTab.mycollection
-            .findOne()
-            .where('firstName')
-            .eq('Bob')
-            .exec();
+        const db2 = await createRxDatabase<{ foo: RxCollection<HumanDoc>; }>({
+            name,
+            storage: config.storage.getStorage(),
+            eventReduce: true,
+            ignoreDuplicate: true,
+            multiInstance: false
+        });
+        await db2.addCollections({
+            foo: { schema: mySchema }
+        });
 
-        /*
-         * assert things,
-         * here your tests should fail to show that there is a bug
-         */
-        assert.strictEqual(myDocument.age, 56);
-
-
-        // you can also wait for events
         const emitted: any[] = [];
-        const sub = collectionInOtherTab.mycollection
-            .findOne().$
-            .subscribe(doc => {
-                emitted.push(doc);
-            });
-        await AsyncTestUtil.waitUntil(() => emitted.length === 1);
+        const sub = db2.foo.$.subscribe(ev => {
+            emitted.push(ev.documentId);
+        });
 
-        // clean up afterwards
+        await db1.foo.insert({ passportId: 'a', firstName: 'A', lastName: 'X', age: 1 });
+        // wait enough time for an event to propagate if it were going to
+        await wait(300);
+
+        assert.strictEqual(
+            emitted.length,
+            0,
+            'With multiInstance:false, events must not propagate to other db instances'
+        );
+
         sub.unsubscribe();
-        db.close();
-        dbInOtherTab.close();
+        await db1.close();
+        await db2.close();
     });
 });

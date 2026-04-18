@@ -1,6 +1,7 @@
 import {
     Observable,
-    Subject
+    Subject,
+    Subscription
 } from 'rxjs';
 import {
     getStartIndexStringFromLowerBound,
@@ -87,6 +88,16 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
      */
     public categorizedByWriteInput = new WeakMap<BulkWriteRow<RxDocType>[], CategorizeBulkWriteRowsOutput<RxDocType>>();
 
+    /**
+     * Per-instance change stream. The shared `internals.changes$` is only used to
+     * broadcast events between instances that have opted into `multiInstance: true`.
+     * Each instance emits its own writes to this subject, and forwards broadcast
+     * events from other instances here when `multiInstance` is enabled.
+     */
+    public readonly changes$: Subject<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, RxStorageDefaultCheckpoint>> = new Subject();
+    private broadcastSub?: Subscription;
+    private isSelfBroadcast = false;
+
     constructor(
         public readonly storage: RxStorageMemory,
         public readonly databaseName: string,
@@ -95,10 +106,20 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         public readonly internals: MemoryStorageInternals<RxDocType>,
         public readonly options: Readonly<RxStorageMemoryInstanceCreationOptions>,
         public readonly settings: RxStorageMemorySettings,
-        public readonly devMode: boolean
+        public readonly devMode: boolean,
+        public readonly multiInstance: boolean = true
     ) {
         OPEN_MEMORY_INSTANCES.add(this);
         this.primaryPath = getPrimaryFieldOfPrimaryKey(this.schema.primaryKey);
+
+        if (multiInstance) {
+            this.broadcastSub = internals.changes$.subscribe(eventBulk => {
+                if (this.isSelfBroadcast) {
+                    return;
+                }
+                this.changes$.next(eventBulk);
+            });
+        }
     }
 
     bulkWrite(
@@ -148,7 +169,15 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
                 id: lastState[primaryPath],
                 lwt: lastState._meta.lwt
             };
-            internals.changes$.next(categorized.eventBulk);
+            this.changes$.next(categorized.eventBulk);
+            if (this.multiInstance) {
+                this.isSelfBroadcast = true;
+                try {
+                    internals.changes$.next(categorized.eventBulk);
+                } finally {
+                    this.isSelfBroadcast = false;
+                }
+            }
         }
 
         return awaitMe;
@@ -573,7 +602,7 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
 
     changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, RxStorageDefaultCheckpoint>> {
         ensureNotRemoved(this);
-        return this.internals.changes$.asObservable();
+        return this.changes$.asObservable();
     }
 
     async remove(): Promise<void> {
@@ -603,6 +632,9 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         }
         this.closed = true;
 
+        if (this.broadcastSub) {
+            this.broadcastSub.unsubscribe();
+        }
         this.internals.refCount = this.internals.refCount - 1;
         return PROMISE_RESOLVE_VOID;
     }
@@ -659,7 +691,8 @@ export function createMemoryStorageInstance<RxDocType>(
         internals,
         params.options,
         settings,
-        params.devMode
+        params.devMode,
+        params.multiInstance
     );
     return Promise.resolve(instance);
 }
