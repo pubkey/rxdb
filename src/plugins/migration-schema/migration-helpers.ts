@@ -77,6 +77,16 @@ export function migrateDocumentData(
 
     let nextVersion = docSchemaVersion + 1;
 
+    /**
+     * Track attachments across chained strategies so that each strategy
+     * receives the document matching the public `WithAttachments<DocData>`
+     * contract, even when an earlier strategy returned a fresh object that
+     * did not forward `_attachments`. A strategy that explicitly rewrites
+     * `_attachments` still wins because its value is carried forward as
+     * the new baseline.
+     */
+    let currentAttachments = attachmentsBefore;
+
     // run the document through migrationStrategies
     let currentPromise = Promise.resolve(mutateableDocData);
     while (nextVersion <= collection.schema.version) {
@@ -85,7 +95,16 @@ export function migrateDocumentData(
             collection,
             version,
             docOrNull
-        ));
+        )).then(docOrNull => {
+            if (docOrNull !== null) {
+                if (typeof docOrNull._attachments === 'undefined') {
+                    docOrNull._attachments = currentAttachments;
+                } else {
+                    currentAttachments = docOrNull._attachments;
+                }
+            }
+            return docOrNull;
+        });
         nextVersion++;
     }
 
@@ -98,20 +117,6 @@ export function migrateDocumentData(
             doc._meta = meta;
         }
         doc._deleted = deleted;
-        /**
-         * Restore attachments in case a migration strategy returned a fresh
-         * object that did not forward the `_attachments` field. Strategies
-         * receive the document with its attachments already attached, but
-         * only internal fields (`_meta`, `_deleted`) were restored here.
-         * Without re-attaching, attachments would be silently dropped when
-         * a strategy returns a new object, which is a valid public API use.
-         * Strategies that intentionally clear attachments (e.g. by setting
-         * `_attachments = {}` on the old doc) still win because the
-         * returned object already carries the cleared value.
-         */
-        if (typeof doc._attachments === 'undefined') {
-            doc._attachments = attachmentsBefore;
-        }
         return doc;
     });
 }
