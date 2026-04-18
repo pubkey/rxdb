@@ -1,7 +1,8 @@
 import {
     filter,
     map,
-    mergeMap
+    mergeMap,
+    takeUntil
 } from 'rxjs';
 
 import {
@@ -170,7 +171,8 @@ export class RxCollectionBase<
 
         if (database) { // might be falsy on pseudoInstance
             this.eventBulks$ = database.eventBulks$.pipe(
-                filter((changeEventBulk: RxChangeEventBulk<any>) => changeEventBulk.collectionName === this.name)
+                filter((changeEventBulk: RxChangeEventBulk<any>) => changeEventBulk.collectionName === this.name),
+                takeUntil(this.onCloseSubject$)
             );
         } else { }
     }
@@ -227,6 +229,15 @@ export class RxCollectionBase<
     */
     public onClose: (() => MaybePromise<any>)[] = [];
     public closed = false;
+
+    /**
+     * Emits once when the collection is closed and is then completed.
+     * Used to ensure all collection-level observables
+     * ({@link $}, {@link insert$}, {@link update$}, {@link remove$},
+     * query `.$` observables, etc.) complete when the collection closes,
+     * even if the database itself stays open.
+     */
+    public readonly onCloseSubject$: Subject<boolean> = new Subject();
 
     public onRemove: (() => MaybePromise<any>)[] = [];
 
@@ -1086,6 +1097,21 @@ export class RxCollectionBase<
          */
         this.closed = true;
 
+        /**
+         * Complete the collection-scoped event stream so that all
+         * subscribers (collection.$, insert$/update$/remove$, queries, ...)
+         * receive a complete-notification even when only the collection
+         * is closed but the database stays open.
+         */
+        this.onCloseSubject$.next(true);
+        this.onCloseSubject$.complete();
+        // complete refCount$ of cached queries so their merged .$ observables also complete.
+        this._queryCache._map.forEach(cachedQuery => {
+            const refCount = (cachedQuery as any)._refCount$;
+            if (refCount) {
+                refCount.complete();
+            }
+        });
 
         Array.from(this.timeouts).forEach(timeout => clearTimeout(timeout));
         if (this._changeEventBuffer) {
