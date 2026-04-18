@@ -42,7 +42,6 @@ import {
     RxStateOperation,
     RxStateModifier
 } from './types.ts';
-import { newRxError } from '../../rx-error.ts';
 import { runPluginHooks } from '../../hooks.ts';
 
 
@@ -144,7 +143,7 @@ export class RxStateBase<T, Reactivity = unknown> {
      * that would throw conflict errors and trigger a retry.
      */
     _triggerWrite() {
-        this._writeQueue = this._writeQueue.then(async () => {
+        const next = this._writeQueue.then(async () => {
             if (this._nonPersisted.length === 0) {
                 return;
             }
@@ -207,13 +206,10 @@ export class RxStateBase<T, Reactivity = unknown> {
                     await promiseWait(0);
                 }
             }
-        }).catch(error => {
-            throw newRxError('SNH', {
-                name: 'RxState WRITE QUEUE ERROR',
-                error
-            });
         });
-        return this._writeQueue;
+        // Keep the shared queue alive so a failing write does not block subsequent ones.
+        this._writeQueue = next.catch(() => { });
+        return next;
     }
 
     mergeOperationsIntoState(

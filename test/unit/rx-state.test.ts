@@ -745,6 +745,38 @@ addRxPlugin(RxDBJsonDumpPlugin);
 
                 state.collection.database.remove();
             });
+            /**
+             * When a modifier passed to set() throws, the write queue
+             * must not be permanently broken. Subsequent writes with
+             * valid modifiers should still succeed.
+             */
+            it('write queue should recover after a modifier throws', async () => {
+                const state = await getState();
+
+                await state.set('a', () => 1);
+                assert.strictEqual(state.get('a'), 1);
+
+                const thrownError = new Error('bad modifier');
+                let caughtError: any;
+                try {
+                    await state.set('a', () => {
+                        throw thrownError;
+                    });
+                } catch (err) {
+                    caughtError = err;
+                }
+                assert.ok(caughtError, 'the first set() should reject');
+
+                // a subsequent valid write must still succeed
+                await state.set('a', () => 2);
+                assert.strictEqual(state.get('a'), 2);
+
+                // and a later write should still work
+                await state.set('a', (prev: any) => prev + 1);
+                assert.strictEqual(state.get('a'), 3);
+
+                state.collection.database.remove();
+            });
         });
     });
 });

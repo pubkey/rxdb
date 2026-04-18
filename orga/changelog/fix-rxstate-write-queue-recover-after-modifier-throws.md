@@ -1,0 +1,1 @@
+- FIX `RxState.set()` permanently breaking the write queue when a user-supplied modifier throws, causing all subsequent `set()` calls to reject with an unrelated `SNH` error instead of performing the write
