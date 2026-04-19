@@ -1084,7 +1084,7 @@ jobs:
       - name: clear denoKV storage files
         run: rm -rf /home/runner/.cache/deno/location_data/*
 
-      - uses: denoland/setup-deno@v1
+      - uses: denoland/setup-deno@v2
         with:
           # https://github.com/denoland/deno/releases
           deno-version: "2.6.5"
