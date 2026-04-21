@@ -2157,5 +2157,130 @@ describe('migration-schema.test.ts', function () {
 
             await db2.close();
         });
+        /**
+         * Regression test for multi-step migrations where an intermediate
+         * migration strategy returns a new object without forwarding
+         * `_attachments`. Subsequent strategies still receive the document
+         * typed as `WithAttachments<DocData>`, so `_attachments` must stay
+         * visible across chained strategies. Without forwarding
+         * `_attachments` between steps, later strategies see it as
+         * `undefined` and can no longer read or mutate attachment metadata,
+         * even though the public-API docs explicitly describe mutating
+         * `oldDoc._attachments` inside a strategy.
+         */
+        it('should preserve _attachments across chained migration strategies', async () => {
+            if (!config.storage.hasAttachments) {
+                return;
+            }
+            if (isDeno && config.storage.name === 'dexie') {
+                return;
+            }
+
+            const dbName = randomToken(10);
+            const schema0 = {
+                version: 0,
+                primaryKey: 'id',
+                type: 'object' as const,
+                properties: {
+                    id: {
+                        type: 'string' as const,
+                        maxLength: 100
+                    },
+                    name: {
+                        type: 'string' as const
+                    }
+                },
+                required: ['id', 'name'] as const,
+                attachments: {}
+            };
+            const schema2 = {
+                version: 2,
+                primaryKey: 'id',
+                type: 'object' as const,
+                properties: {
+                    id: {
+                        type: 'string' as const,
+                        maxLength: 100
+                    },
+                    name: {
+                        type: 'string' as const
+                    },
+                    hadAttachmentInStepTwo: {
+                        type: 'boolean' as const
+                    }
+                },
+                required: ['id', 'name'] as const,
+                attachments: {}
+            };
+
+            // create v0 database and insert a doc with an attachment
+            const db = await createRxDatabase({
+                name: dbName,
+                storage: config.storage.getStorage(),
+            });
+            const cols = await db.addCollections({
+                heroes: { schema: schema0 }
+            });
+            const doc = await cols.heroes.insert({ id: 'alice', name: 'Alice' });
+            const attachmentData = AsyncTestUtil.randomString(20);
+            await doc.putAttachment({
+                id: 'note.txt',
+                data: createBlob(attachmentData, 'text/plain'),
+                type: 'text/plain'
+            });
+            await db.close();
+
+            // reopen with v2 schema using two strategies.
+            // Strategy 1 returns a NEW object without forwarding
+            // `_attachments` (a valid public-API usage: the
+            // MigrationStrategy type is
+            //   `(doc, collection) => WithAttachments<DocData> | null`
+            // and `_attachments` is optional on that type).
+            // Strategy 2 must still receive `_attachments` to comply
+            // with the same contract and the docs that show
+            // mutating `oldDoc._attachments` inside a strategy.
+            const db2 = await createRxDatabase({
+                name: dbName,
+                storage: config.storage.getStorage(),
+            });
+            const cols2 = await db2.addCollections({
+                heroes: {
+                    schema: schema2,
+                    migrationStrategies: {
+                        1: (oldDoc: any) => {
+                            return {
+                                id: oldDoc.id,
+                                name: oldDoc.name
+                            };
+                        },
+                        2: (oldDoc: any) => {
+                            const hadAttachment = !!oldDoc._attachments
+                                && Object.keys(oldDoc._attachments).length > 0;
+                            return {
+                                id: oldDoc.id,
+                                name: oldDoc.name,
+                                hadAttachmentInStepTwo: hadAttachment
+                            };
+                        }
+                    }
+                }
+            });
+
+            const migratedDoc = await cols2.heroes.findOne('alice').exec(true);
+            assert.strictEqual(
+                (migratedDoc as any).hadAttachmentInStepTwo,
+                true,
+                'strategy 2 must see _attachments even when strategy 1 returned a new object'
+            );
+
+            const attachment = migratedDoc.getAttachment('note.txt');
+            assert.ok(attachment, 'attachment must still be present after migration');
+            assert.strictEqual(attachment.type, 'text/plain');
+            assert.strictEqual(attachment.length, attachmentData.length);
+            const fetchedData = await attachment.getStringData();
+            assert.strictEqual(fetchedData, attachmentData);
+
+            await db2.close();
+        });
     });
 });
