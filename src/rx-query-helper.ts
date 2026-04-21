@@ -301,7 +301,7 @@ function shouldNormalizeElemMatchSelector(elemMatch: any): boolean {
      * it is a nested selector object and shorthand values
      * should be normalized.
      */
-    if (keys.find(key => !key.startsWith('$'))) {
+    if (keys.some(key => !key.startsWith('$'))) {
         return true;
     }
     /**
@@ -309,7 +309,7 @@ function shouldNormalizeElemMatchSelector(elemMatch: any): boolean {
      * This avoids breaking operator payloads like
      * { $regex: 'x', $options: 'i' } or { $eq: 'foo' }.
      */
-    return !!keys.find(key => SELECTOR_ARRAY_OPERATORS.has(key) || SELECTOR_OBJECT_OPERATORS.has(key));
+    return keys.some(key => SELECTOR_ARRAY_OPERATORS.has(key) || SELECTOR_OBJECT_OPERATORS.has(key));
 }
 function normalizeQuerySelectorShorthands(selector: any): void {
     Object
