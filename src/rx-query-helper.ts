@@ -291,7 +291,7 @@ export async function runQueryUpdateFunction<RxDocType, RxQueryResult>(
  */
 const SELECTOR_ARRAY_OPERATORS = new Set(['$and', '$or', '$nor']);
 const SELECTOR_OBJECT_OPERATORS = new Set(['$not']);
-function mustNormalizeElemMatchSelector(elemMatch: any): boolean {
+function shouldNormalizeElemMatchSelector(elemMatch: any): boolean {
     const keys = Object.keys(elemMatch);
     if (keys.length === 0) {
         return false;
@@ -330,7 +330,7 @@ function normalizeQuerySelectorShorthands(selector: any): void {
                 if (
                     matcherObj.$elemMatch &&
                     typeof matcherObj.$elemMatch === 'object' &&
-                    mustNormalizeElemMatchSelector(matcherObj.$elemMatch)
+                    shouldNormalizeElemMatchSelector(matcherObj.$elemMatch)
                 ) {
                     normalizeQuerySelectorShorthands(matcherObj.$elemMatch);
                 }

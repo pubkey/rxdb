@@ -297,7 +297,7 @@ describeParallel('query-planner.test.js', () => {
                 assert.deepStrictEqual($elemMatch.age, { $gt: 20 });
                 assert.deepStrictEqual($elemMatch.lastName, { $eq: 'Smith' });
             });
-            it('should not modify operator payloads inside $elemMatch', () => {
+            it('should not modify $regex/$options operator payloads inside $elemMatch', () => {
                 const schema = getHumanSchemaWithIndexes([]);
                 const regexQuery = normalizeMangoQuery<HumanDocumentType>(
                     schema,
@@ -320,7 +320,9 @@ describeParallel('query-planner.test.js', () => {
                         $options: 'i'
                     }
                 );
-
+            });
+            it('should not modify $eq operator payloads inside $elemMatch', () => {
+                const schema = getHumanSchemaWithIndexes([]);
                 const eqQuery = normalizeMangoQuery<HumanDocumentType>(
                     schema,
                     {
