@@ -190,7 +190,8 @@ In addition to syncing with a central server, RxDB also supports pure peer-to-pe
 ```ts
 import {
   replicateWebRTC,
-  getConnectionHandlerSimplePeer
+  getConnectionHandlerSimplePeer,
+  createSimplePeerWrtc
 } from 'rxdb/plugins/replication-webrtc';
 
 const replicationPool = await replicateWebRTC({
@@ -201,7 +202,7 @@ const replicationPool = await replicateWebRTC({
     signalingServerUrl: 'wss://signaling.rxdb.info/',
 
     // Node.js requires a polyfill for WebRTC & WebSocket
-    wrtc: require('node-datachannel/polyfill'),
+    wrtc: createSimplePeerWrtc(require('node-datachannel/polyfill')),
     webSocketConstructor: require('ws').WebSocket
   }),
   pull: {}, // optional pull config

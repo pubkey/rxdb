@@ -142,8 +142,11 @@ const replicationPool = await replicateWebRTC(
             signalingServerUrl: 'wss://signaling.rxdb.info/',
 
             // only in Node.js, we need the wrtc library
-            // because Node.js does not contain the WebRTC API.
-            wrtc: require('node-datachannel/polyfill'),
+            // because Node.js does not have WebRTC.
+            // Wrap with createSimplePeerWrtc().
+            wrtc: createSimplePeerWrtc(
+                require('node-datachannel/polyfill')
+            ),
 
             // only in Node.js, we need the WebSocket library
             // because Node.js does not contain the WebSocket API.
@@ -256,15 +259,18 @@ window.process = {
 While all modern browsers support the WebRTC and WebSocket APIs, they is missing in Node.js which will throw the error `No WebRTC support: Specify opts.wrtc option in this environment`. Therefore you have to polyfill it with a compatible WebRTC and WebSocket polyfill. It is recommended to use the [node-datachannel package](https://github.com/murat-dogan/node-datachannel/tree/master/src/polyfill) for WebRTC which **does not** come with RxDB but has to be installed before via `npm install node-datachannel --save`.
 For the Websocket API use the `ws` package that is included into RxDB.
 
+Because the `node-datachannel/polyfill` has read-only properties on `RTCSessionDescription` that are incompatible with `simple-peer`, you must use the `createSimplePeerWrtc()` wrapper:
+
 ```ts
-import PERFORMANCE_DATA_NODEchannelPolyfill from 'node-datachannel/polyfill';
+import nodeDatachannelPolyfill from 'node-datachannel/polyfill';
 import { WebSocket } from 'ws';
+import { createSimplePeerWrtc } from 'rxdb/plugins/replication-webrtc';
 const replicationPool = await replicateWebRTC(
     {
         /* ... */
         connectionHandlerCreator: getConnectionHandlerSimplePeer({
             signalingServerUrl: 'wss://example.com:8080',
-            wrtc: PERFORMANCE_DATA_NODEchannelPolyfill,
+            wrtc: createSimplePeerWrtc(nodeDatachannelPolyfill),
             webSocketConstructor: WebSocket
         }),
         pull: {},

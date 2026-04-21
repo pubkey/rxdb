@@ -82,15 +82,16 @@ To achieve real-time updates, this plugin uses **WebRTC** to signal changes betw
 
 ### Polyfill for Node.js
 
-WebRTC is native in browsers but requires a polyfill in Node.js.
+WebRTC is native in browsers but requires a polyfill in Node.js. Use `createSimplePeerWrtc()` to wrap the polyfill for compatibility with `simple-peer`:
 
 ```ts
-import wrtc from 'node-datachannel/polyfill'; // or 'wrtc' package
+import nodeDatachannelPolyfill from 'node-datachannel/polyfill';
+import { createSimplePeerWrtc } from 'rxdb/plugins/replication-webrtc';
 // ...
 const replicationState = await replicateGoogleDrive({
     // ...
     signalingOptions: {
-        wrtc // Pass the polyfill here
+        wrtc: createSimplePeerWrtc(nodeDatachannelPolyfill)
     }
 });
 ```
