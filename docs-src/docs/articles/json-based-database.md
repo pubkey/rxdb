@@ -74,7 +74,7 @@ INSERT INTO products (name, details) VALUES
 Although this approach merges the best of both worlds (SQL queries + flexible JSON fields), it can also create a “split personality” in your schema. You might store stable data in normal columns, while unpredictable or nested details live inside a JSONB field. Some projects flourish with this hybrid design, others find it a bit unwieldy.
 
 <center>
-        <img src="../files/icons/sqlite.svg" alt="WASM SQLite" width="140" class="img-padding" />
+        <img src="../files/icons/sqlite.svg" alt="WASM SQLite" width="140" className="img-padding" />
 </center>
 
 ## Storing JSON in SQLite

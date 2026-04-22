@@ -76,7 +76,7 @@ function PackageCheckbox(props: {
         checked={props.formValue?.packages.includes(props.packageName) ? true : false}
         readOnly
         onClick={() => {
-            triggerTrackingEvent('calculate_premium_price', 3, 1, true);
+            triggerTrackingEvent('calculate_premium_price', 3, 1, 'AddToCart');
             props.onToggle();
         }}
     />;

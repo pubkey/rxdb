@@ -314,7 +314,7 @@ function triggerClickEventWhenFromCode() {
     if (!urlParams.has('console')) {
         return;
     }
-    triggerTrackingEvent(EVENT_ID, 10, 1, true);
+    triggerTrackingEvent(EVENT_ID, 10, 1, 'Lead');
     triggerTrackingEvent(EVENT_ID + '_' + urlParams.get('console'), 10, 1);
 }
 
@@ -329,7 +329,7 @@ function triggerClickEventWhenFromDiscord() {
     if (!urlParams.has('discord')) {
         return;
     }
-    triggerTrackingEvent(EVENT_ID, 3, 1, true);
+    triggerTrackingEvent(EVENT_ID, 3, 1, 'Lead');
     triggerTrackingEvent(EVENT_ID + '_' + urlParams.get('discord'), 0, 1);
 }
 
@@ -447,7 +447,7 @@ function startAnalytics() {
         }
         const version = hasCookie.split('=')[1];
         console.log(DEV_MODE_EVENT_ID + ': track me version ' + version);
-        triggerTrackingEvent(DEV_MODE_EVENT_ID, 10, 1, true);
+        triggerTrackingEvent(DEV_MODE_EVENT_ID, 10, 1, 'Purchase');
         triggerTrackingEvent(DEV_MODE_EVENT_ID + '_' + version, 10, 1);
     }
     checkDevModeEvent();
@@ -639,8 +639,8 @@ function trackUrlChanges() {
             console.log('New URL visited:', normalized);
 
             if (visitedUrls.size >= URL_EVENT_COUNT) {
-                triggerTrackingEvent('visit_x_urls', 1.5, 1, true);
-                triggerTrackingEvent('visit_' + URL_EVENT_COUNT + '_urls', 0, 1, false);
+                triggerTrackingEvent('visit_x_urls', 1.5, 1, 'Lead');
+                triggerTrackingEvent('visit_' + URL_EVENT_COUNT + '_urls', 0, 1);
             }
         }
     }
@@ -696,7 +696,13 @@ function trackReturnAfter3to14Days() {
 
     // Only trigger conversion if between 3 and 14 days
     if (diff >= THREE_DAYS_MS && diff <= FOURTEEN_DAYS_MS) {
-        triggerTrackingEvent('revisit_3_days', 3.5, 1, true);
+        /**
+         * This is a primary google ads event
+         * but no primary reddit event because
+         * on reddit when we retarget, we do no want
+         * to count these as conversion.
+         */
+        triggerTrackingEvent('revisit_3_days', 3.5, 1);
     }
 }
 

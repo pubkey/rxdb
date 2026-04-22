@@ -90,7 +90,7 @@ Because only binary data can be processed, OPFS is made to be a base filesystem 
 ### What is WASM SQLite
 
 <center>
-        <img src="../files/icons/sqlite.svg" alt="WASM SQLite" width="140" class="img-padding" />
+        <img src="../files/icons/sqlite.svg" alt="WASM SQLite" width="140" className="img-padding" />
 </center>
 
 [WebAssembly](https://webassembly.org/) (Wasm) is a binary format that allows high-performance code execution on the web.

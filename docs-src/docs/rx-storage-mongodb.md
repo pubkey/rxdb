@@ -12,7 +12,7 @@ import {Steps} from '@site/src/components/steps';
 RxDB MongoDB RxStorage is an RxDB [RxStorage](./rx-storage.md) that allows you to use [MongoDB](https://www.mongodb.com/) as the underlying storage engine for your RxDB database. With this you can take advantage of MongoDB's features and scalability while benefiting from RxDB's real-time data synchronization capabilities.
 
 <p align="center">
-  <img src="./files/icons/mongodb.svg" alt="MongoDB storage" height="100" class="img-padding" />
+  <img src="./files/icons/mongodb.svg" alt="MongoDB storage" height="100" className="img-padding" />
 </p>
 
 The storage is made to work with any plain MongoDB Server, [MongoDB Replica Set](https://www.mongodb.com/docs/manual/tutorial/deploy-replica-set/), [Sharded MongoDB Cluster](https://www.mongodb.com/docs/manual/sharding/) or [Atlas Cloud Database](https://www.mongodb.com/atlas/database).
