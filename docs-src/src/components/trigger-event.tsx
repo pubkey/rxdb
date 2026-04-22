@@ -53,7 +53,8 @@ export function triggerTrackingEvent(
             (window as any).rdt('track', redditEventType, {
                 transactionId: type + '-' + new Date().getTime(),
                 currency: 'EUR',
-                value: value
+                value: value,
+                search_string: redditSearchTerm
             });
         } catch (err) {
             console.log('# Error on reddit trigger:');

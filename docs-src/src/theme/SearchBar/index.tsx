@@ -49,7 +49,7 @@ type DocSearchProps = Omit<
   externalUrlRegex?: string;
   searchPagePath: boolean | string;
   askAi?: Exclude<
-    (DocSearchModalProps & { askAi: unknown })['askAi'],
+    (DocSearchModalProps & { askAi: unknown; })['askAi'],
     string | undefined
   >;
 };
