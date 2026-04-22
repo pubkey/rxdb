@@ -151,7 +151,7 @@ export function VideoBox({ videoId, title, duration, startAt, dark }: VideoBoxPr
 export function VideoModal({ open, videoId, title, startAt, onClose }: VideoModalProps) {
     const watchTimeoutRef = useRef<number | null>(null);
     const openedTrackedRef = useRef(false);
-    const watchSeconds = 20;
+    const watchSeconds = 25;
 
     // Track "open_video" once per open session + start the 20s timer
     useEffect(() => {
@@ -174,8 +174,8 @@ export function VideoModal({ open, videoId, title, startAt, onClose }: VideoModa
         }
 
         watchTimeoutRef.current = window.setTimeout(() => {
-            triggerTrackingEvent('watch_video_x_secs', 1, 3, true);
-            triggerTrackingEvent('watch_video_' + watchSeconds + '_secs', 1, 0, true);
+            triggerTrackingEvent('watch_video_x_secs', 1, 1, 'Lead');
+            triggerTrackingEvent('watch_video_' + watchSeconds + '_secs', 1, 1);
             triggerTrackingEvent('watch_video_' + videoId + '_' + watchSeconds + '_secs', 1, 0);
         }, watchSeconds * 1000);
 

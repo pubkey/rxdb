@@ -2,6 +2,15 @@ import { useEffect } from 'react';
 import { getTestGroupEventPrefix } from './a-b-tests';
 import ExecutionEnvironment from '@docusaurus/ExecutionEnvironment';
 
+
+export type RedditEventType =
+    | 'PageVisit'
+    | 'ViewContent'
+    | 'Search'
+    | 'AddToCart'
+    | 'Lead'
+    | 'Purchase';
+
 export function triggerTrackingEvent(
     type: string,
     value: number,
@@ -11,7 +20,11 @@ export function triggerTrackingEvent(
      * does something many many times.
      */
     maxPerUser: number = 5,
-    primary: boolean = false
+    redditEventType?: RedditEventType,
+    /**
+     * Used in the reddit search-event.
+     */
+    redditSearchTerm?: string
 ) {
     if (!ExecutionEnvironment.canUseDOM) {
         return;
@@ -25,7 +38,7 @@ export function triggerTrackingEvent(
     }
     localStorage.setItem(prefix + type, (triggeredBefore + 1) + '');
 
-    console.log('triggerTrackingEvent(' + type + ', ' + value + ', primary=' + primary + ' ' + triggeredBefore + '/' + maxPerUser + ')');
+    console.log('triggerTrackingEvent(' + type + ', ' + value + ', redditEventType=' + redditEventType + ' ' + triggeredBefore + '/' + maxPerUser + ')');
 
     /**
      * Reddit does not have a concept of conversion-value
@@ -33,14 +46,15 @@ export function triggerTrackingEvent(
      * be counted as equally worthy conversion.
      */
     if (
-        primary &&
+        redditEventType &&
         typeof (window as any).rdt === 'function'
     ) {
         try {
-            (window as any).rdt('track', 'Lead', {
+            (window as any).rdt('track', redditEventType, {
                 transactionId: type + '-' + new Date().getTime(),
                 currency: 'EUR',
-                value: value
+                value: value,
+                search_string: redditSearchTerm
             });
         } catch (err) {
             console.log('# Error on reddit trigger:');
@@ -80,23 +94,33 @@ export function triggerTrackingEvent(
     }
 }
 
+
+type TriggerTrackingEventArgs = Parameters<typeof triggerTrackingEvent>;
+
+type TriggerEventProps = {
+    type: TriggerTrackingEventArgs[0];
+    value: TriggerTrackingEventArgs[1];
+    maxPerUser?: TriggerTrackingEventArgs[2];
+    redditEventType?: TriggerTrackingEventArgs[3];
+};
+
 /**
  * Empty component that can be used in .mdx files
  * to trigger events on page load.
  */
-export function TriggerEvent(props) {
+export function TriggerEvent(props: TriggerEventProps) {
     useEffect(() => {
         if (!ExecutionEnvironment.canUseDOM) return;
         triggerTrackingEvent(
             props.type,
             props.value,
             props.maxPerUser,
-            props.primary
+            props.redditEventType
         );
     }, []);
     return <></>;
 }
 
 export function onCopy() {
-    triggerTrackingEvent('copy_on_page', 1.5, 1, true);
+    triggerTrackingEvent('copy_on_page', 1.5, 1, 'Lead');
 }

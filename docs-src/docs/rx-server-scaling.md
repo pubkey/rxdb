@@ -64,7 +64,7 @@ The most common way to use multiple servers with RxDB is to split up the server 
 This is mostly useful on read-heavy applications because reads will directly run on the branches without ever reaching the main datastore and you can always add more branches to **scale up**. Even adding additional layers of "datastores" is possible so the tree can grow (or shrink) with the demand.
 
 <p align="center">
-  <img src="./files/server-scaling-tree.png" alt="Server Scaling Tree" width="320" class="img-padding" />
+  <img src="./files/server-scaling-tree.png" alt="Server Scaling Tree" width="320" className="img-padding" />
 </p>
 
 ### Moving the branches to "the edge"

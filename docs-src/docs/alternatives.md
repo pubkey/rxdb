@@ -44,7 +44,7 @@ Here are the alternatives to RxDB:
 
 <p align="center">
   <img src="./files/alternatives/firebase.svg" alt="firebase alternative" 
-  class="img-padding"
+  className="img-padding"
   height="60" />
 </p>
 
@@ -63,7 +63,7 @@ The biggest difference to RxDB is that firebase products are only able to be use
 ### Meteor
 
 <p align="center">
-  <img src="./files/alternatives/meteor_text.svg" alt="MeteorJS alternative"   class="img-padding"
+  <img src="./files/alternatives/meteor_text.svg" alt="MeteorJS alternative"   className="img-padding"
   height="60" />
 </p>
 
@@ -91,7 +91,7 @@ In React Native, WatermelonDB uses the provided SQLite database. Also there is a
 
 ### AWS Amplify
 <p align="center">
-  <img src="./files/alternatives/aws-amplify.svg" alt="AWS Amplify alternative" height="60" class="img-padding" />
+  <img src="./files/alternatives/aws-amplify.svg" alt="AWS Amplify alternative" height="60" className="img-padding" />
 </p>
 
 AWS Amplify is a collection of tools and libraries to develop web- and mobile frontend applications. Similar to firebase, it provides everything needed like authentication, analytics, a REST API, storage and so on. Everything hosted in the AWS Cloud, even when they state that *"AWS Amplify is designed to be open and pluggable for any custom backend or service"*. For realtime replication, AWS Amplify can connect to an AWS App-Sync GraphQL endpoint.
@@ -120,7 +120,7 @@ The biggest difference to RxDB is that you have to use the AWS cloud backends. T
 ### RethinkDB
 
 <p align="center">
-  <img src="./files/alternatives/rethinkdb.svg" alt="RethinkDB alternative" height="60" class="img-padding" />
+  <img src="./files/alternatives/rethinkdb.svg" alt="RethinkDB alternative" height="60" className="img-padding" />
 </p>
 
 RethinkDB is a backend database that pushed dynamic JSON data to the client in realtime. It was founded in 2009 and the company shut down in 2016.
@@ -133,7 +133,7 @@ Horizon is the client side library for RethinkDB which provides useful functions
 ### Supabase
 
 <p align="center">
-  <img src="./files/icons/supabase.svg" alt="Supabase alternative" height="60" class="img-padding" />
+  <img src="./files/icons/supabase.svg" alt="Supabase alternative" height="60" className="img-padding" />
 </p>
 
 
@@ -142,7 +142,7 @@ Supabase labels itself as "*an open source Firebase alternative*". It is a colle
 ### CouchDB
 
 <p align="center">
-  <img src="./files/icons/couchdb-text.svg" alt="CouchDB alternative" height="60" class="img-padding" />
+  <img src="./files/icons/couchdb-text.svg" alt="CouchDB alternative" height="60" className="img-padding" />
 </p>
 
 Apache CouchDB is a server-side, document-oriented database that is mostly known for its multi-master replication feature. Instead of having a master-slave replication, with CouchDB you can run replication in any constellation without having a master server as bottleneck where the server even can go off- and online at any time. This comes with the drawback of having a slow replication with much network overhead.
@@ -151,7 +151,7 @@ CouchDB has a changestream and a query syntax similar to MongoDB.
 ### PouchDB
 
 <p align="center">
-  <img src="./files/alternatives/pouchdb.svg" alt="PouchDB alternative" height="60" class="img-padding" />
+  <img src="./files/alternatives/pouchdb.svg" alt="PouchDB alternative" height="60" className="img-padding" />
 </p>
 
 
