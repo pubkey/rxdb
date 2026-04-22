@@ -20,33 +20,29 @@ Run the installation and build and find the first warning. Fix that and make a p
 
 ### Remove unused dependencies
 
-Search for dependencies that you no longer need to reduce install times, noise and token usage.
+-------------
+
+Search for dependencies that you no longer need to reduce install times, noise and token usage. Also reduces risk of supply-chain attacks.
 
 ```txt
-Run the installation find dependencies that are not used anymore. Ensure that these are really not used, not on the core and not in the tests. 
+Run the installation and find dependencies that are not used anymore. Ensure that these are really not used, not on the core and not in the tests. 
 Remove these unused dependencies and make a pull request.
 ```
+
+Example resulting PRs:
+- https://github.com/pubkey/rxdb/pull/8351
+
+-------------
 
 ## Correctness
 
 ### Find a bug and fix it
 
 ```txt
-Find a bug in FEATURE_NAME and make a test case
-for it. First run the test case without a fix
-and show me the output. Then apply a fix and
-run the test case again and show me the output.
-To reproduce the bug, you can only use the
-public API and correct TypeScript type usage.
-Using the API wrongly or with different types
-does not count as a bug. Also in the test case
-you can only use the public API and correct
-TypeScript type usage, you cannot check for
-internal APIs or behavior.
+Find a bug in FEATURE_NAME and make a test case for it. First run the test case without a fix and show me the output. Then apply a fix and run the test case again and show me the output. To reproduce the bug, you can only use the public API and correct TypeScript type usage. Using the API wrongly or with different types does not count as a bug. Also in the test case you can only use the public API and correct TypeScript type usage, you cannot check for internal APIs or behavior.
 
 - Ensure all other tests run successful.
-- Run the performance tests before and after
-  the fix and show me the difference.
+- Run the performance tests before and after the fix and show me the difference.
 - Add the fix to the changelog.
 - Ensure the linting is ok.
 ```
