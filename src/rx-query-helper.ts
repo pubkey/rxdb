@@ -290,6 +290,27 @@ export async function runQueryUpdateFunction<RxDocType, RxQueryResult>(
  * and recurses into $and, $or, $nor arrays and $not objects.
  */
 const SELECTOR_ARRAY_OPERATORS = new Set(['$and', '$or', '$nor']);
+const SELECTOR_OBJECT_OPERATORS = new Set(['$not']);
+function shouldNormalizeElemMatchSelector(elemMatch: any): boolean {
+    const keys = Object.keys(elemMatch);
+    if (keys.length === 0) {
+        return false;
+    }
+    /**
+     * If at least one key is not an operator,
+     * it is a nested selector object and shorthand values
+     * should be normalized.
+     */
+    if (keys.some(key => !key.startsWith('$'))) {
+        return true;
+    }
+    /**
+     * If all keys are operators, only recurse for selector operators.
+     * This avoids breaking operator payloads like
+     * { $regex: 'x', $options: 'i' } or { $eq: 'foo' }.
+     */
+    return keys.some(key => SELECTOR_ARRAY_OPERATORS.has(key) || SELECTOR_OBJECT_OPERATORS.has(key));
+}
 function normalizeQuerySelectorShorthands(selector: any): void {
     Object
         .entries(selector)
@@ -306,7 +327,11 @@ function normalizeQuerySelectorShorthands(selector: any): void {
                  * sub-selectors like $elemMatch which contain nested selectors.
                  */
                 const matcherObj = matcher as any;
-                if (matcherObj.$elemMatch && typeof matcherObj.$elemMatch === 'object') {
+                if (
+                    matcherObj.$elemMatch &&
+                    typeof matcherObj.$elemMatch === 'object' &&
+                    shouldNormalizeElemMatchSelector(matcherObj.$elemMatch)
+                ) {
                     normalizeQuerySelectorShorthands(matcherObj.$elemMatch);
                 }
             }

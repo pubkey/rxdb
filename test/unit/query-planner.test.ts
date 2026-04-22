@@ -297,6 +297,74 @@ describeParallel('query-planner.test.js', () => {
                 assert.deepStrictEqual($elemMatch.age, { $gt: 20 });
                 assert.deepStrictEqual($elemMatch.lastName, { $eq: 'Smith' });
             });
+            it('should not modify $regex/$options operator payloads inside $elemMatch', () => {
+                const schema = getHumanSchemaWithIndexes([]);
+                const regexQuery = normalizeMangoQuery<HumanDocumentType>(
+                    schema,
+                    {
+                        selector: {
+                            firstName: {
+                                $elemMatch: {
+                                    $regex: '^applicant$',
+                                    $options: 'i'
+                                }
+                            }
+                        } as any,
+                        sort: [{ passportId: 'asc' }]
+                    }
+                );
+                assert.deepStrictEqual(
+                    (regexQuery.selector as any).firstName.$elemMatch,
+                    {
+                        $regex: '^applicant$',
+                        $options: 'i'
+                    }
+                );
+            });
+            it('should not modify $eq operator payloads inside $elemMatch', () => {
+                const schema = getHumanSchemaWithIndexes([]);
+                const eqQuery = normalizeMangoQuery<HumanDocumentType>(
+                    schema,
+                    {
+                        selector: {
+                            firstName: {
+                                $elemMatch: {
+                                    $eq: 'Applicant'
+                                }
+                            }
+                        } as any,
+                        sort: [{ passportId: 'asc' }]
+                    }
+                );
+                assert.deepStrictEqual(
+                    (eqQuery.selector as any).firstName.$elemMatch,
+                    {
+                        $eq: 'Applicant'
+                    }
+                );
+            });
+            it('should normalize selector shorthands inside logical operators in $elemMatch', () => {
+                const schema = getHumanSchemaWithIndexes([]);
+                const query = normalizeMangoQuery<HumanDocumentType>(
+                    schema,
+                    {
+                        selector: {
+                            firstName: {
+                                $elemMatch: {
+                                    $or: [
+                                        { age: 25 },
+                                        { lastName: 'Smith' }
+                                    ]
+                                }
+                            }
+                        } as any,
+                        sort: [{ passportId: 'asc' }]
+                    }
+                );
+                const $or = (query.selector as any).firstName.$elemMatch.$or;
+                assert.deepStrictEqual($or[0].age, { $eq: 25 });
+                assert.deepStrictEqual($or[1].lastName, { $eq: 'Smith' });
+            });
             it('should normalize $elemMatch inside $and', () => {
                 const schema = getHumanSchemaWithIndexes([]);
                 const query = normalizeMangoQuery<HumanDocumentType>(

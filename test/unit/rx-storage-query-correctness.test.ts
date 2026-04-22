@@ -908,6 +908,55 @@ describeParallel('rx-storage-query-correctness.test.ts', () => {
                 ]
             },
             {
+                info: '$elemMatch with regex operator payload',
+                query: {
+                    selector: {
+                        skills: {
+                            $elemMatch: {
+                                name: {
+                                    $regex: '^bar[13]$',
+                                    $options: 'i'
+                                }
+                            }
+                        },
+                    },
+                    sort: [{ name: 'asc' }]
+                },
+                selectorSatisfiedByIndex: false,
+                expectedResultDocIds: [
+                    'foo1',
+                    'foo2'
+                ]
+            },
+            {
+                info: '$elemMatch with nested logical operator',
+                query: {
+                    selector: {
+                        skills: {
+                            $elemMatch: {
+                                $or: [
+                                    {
+                                        damage: 5
+                                    },
+                                    {
+                                        name: {
+                                            $regex: '^bar4$'
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                    },
+                    sort: [{ name: 'asc' }]
+                },
+                selectorSatisfiedByIndex: false,
+                expectedResultDocIds: [
+                    'foo1',
+                    'foo2',
+                    'foo3'
+                ]
+            },
+            {
                 info: '$size',
                 query: {
                     selector: {
@@ -922,6 +971,112 @@ describeParallel('rx-storage-query-correctness.test.ts', () => {
                     'foo3'
                 ]
             },
+        ]
+    });
+    testCorrectQueries({
+        testTitle: '$elemMatch nested arrays with regex',
+        data: [
+            {
+                id: 'a',
+                groups: [
+                    {
+                        name: 'admins',
+                        tags: ['Owner', 'Ops']
+                    },
+                    {
+                        name: 'users',
+                        tags: ['read']
+                    }
+                ]
+            },
+            {
+                id: 'b',
+                groups: [
+                    {
+                        name: 'guests',
+                        tags: ['ops']
+                    }
+                ]
+            },
+            {
+                id: 'c',
+                groups: [
+                    {
+                        name: 'admins',
+                        tags: ['audit']
+                    }
+                ]
+            }
+        ],
+        schema: {
+            version: 0,
+            primaryKey: 'id',
+            type: 'object',
+            properties: {
+                id: {
+                    type: 'string',
+                    maxLength: 100
+                },
+                groups: {
+                    type: 'array',
+                    items: {
+                        type: 'object',
+                        properties: {
+                            name: {
+                                type: 'string'
+                            },
+                            tags: {
+                                type: 'array',
+                                items: {
+                                    type: 'string'
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            required: ['id', 'groups']
+        },
+        queries: [
+            {
+                info: '$elemMatch on normal object array fields',
+                query: {
+                    selector: {
+                        groups: {
+                            $elemMatch: {
+                                name: 'admins'
+                            }
+                        }
+                    },
+                    sort: [{ id: 'asc' }]
+                },
+                expectedResultDocIds: [
+                    'a',
+                    'c'
+                ]
+            },
+            {
+                info: 'nested $elemMatch with regex/$options payload',
+                query: {
+                    selector: {
+                        groups: {
+                            $elemMatch: {
+                                tags: {
+                                    $elemMatch: {
+                                        $regex: '^ops$',
+                                        $options: 'i'
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    sort: [{ id: 'asc' }]
+                },
+                expectedResultDocIds: [
+                    'a',
+                    'b'
+                ]
+            }
         ]
     });
     testCorrectQueries({
