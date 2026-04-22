@@ -678,7 +678,7 @@
     "mongodb": "7.1.1",
     "nats": "2.29.3",
     "nconf": "0.13.0",
-    "node-appwrite": "23.1.0",
+    "node-appwrite": "24.0.0",
     "node-datachannel": "0.32.2",
     "pre-commit": "1.2.2",
     "process": "0.11.10",
