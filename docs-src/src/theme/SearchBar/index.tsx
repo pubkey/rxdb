@@ -128,7 +128,7 @@ function useTransformSearchClient(): DocSearchModalProps['transformSearchClient'
 
             setTimeout(() => {
               console.log('track search: ' + longestSearchString);
-              triggerTrackingEvent('algolia_search', 0.20, 1, 'Search', longestSearchString);
+              triggerTrackingEvent('search', 0.20, 1, 'Search', longestSearchString);
             }, 10 * 1000);
           }
         } catch (err) {
