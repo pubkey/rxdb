@@ -169,3 +169,21 @@ const replicationPool = await replicateWebRTC(
     }
 );
 ```
+
+## FAQ
+
+<details>
+<summary>What is the difference between RxState and LocalDocuments?</summary>
+
+RxState can be synced.
+
+RxState is used for persisted on-page state like "is element toggled" while [LocalDocuments](./rx-local-document.md) are more for logic-state like user-settings.
+
+RxState is a complex object while LocalDocuments are a key-object store.
+
+LocalDocuments can be modified like any other RxDocument with conflict handling and incremental writes while RxState has its own API.
+
+RxState is mapped fully into memory while LocalDocuments are in memory only when needed. For big data, LocalDocuments should be used.
+
+RxState is stored per RxDatabase while LocalDocuments can be stored either per RxDatabase or RxCollection.
+</details>
