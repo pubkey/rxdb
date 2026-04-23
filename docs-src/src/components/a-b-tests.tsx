@@ -19,10 +19,10 @@ const CURRENT_TEST_RUN = {
     id: 'TX',
     variations: {
         A: <>The easiest way to <b>store</b> and <b>sync</b> Data inside of your App</>,
-        B: <>The local-first <b>Database</b> for <b>JavaScript</b> Applications</>,
-        C: <>The Reactive Local-First <b>Database</b> for Modern <b>JavaScript</b> Apps</>,
-        D: <>The Local-First Database to <b>Store</b> and <b>Sync</b> App Data</>,
-        E: <>The Local-First <b>Database</b> for <b>JavaScript</b> Apps</>
+        // B: <>The local-first <b>Database</b> for <b>JavaScript</b> Applications</>,
+        // C: <>The Reactive Local-First <b>Database</b> for Modern <b>JavaScript</b> Apps</>,
+        // D: <>The Local-First Database to <b>Store</b> and <b>Sync</b> App Data</>,
+        // E: <>The Local-First <b>Database</b> for <b>JavaScript</b> Apps</>
     }
 };
 
