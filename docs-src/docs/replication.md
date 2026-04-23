@@ -5,7 +5,10 @@ description: Replicate data in real-time with RxDB's offline-first Sync Engine. 
 image: /headers/replication.jpg
 ---
 
-# RxDB's realtime Sync Engine for Local-First Apps
+import { IconGear } from '@site/src/components/icons/gear';
+import { HeadlineWithIcon } from '@site/src/components/headline-with-icon';
+
+# <HeadlineWithIcon h1 icon={<IconGear />}>RxDB's realtime Sync Engine for Local-First Apps</HeadlineWithIcon>
 
 The RxDB Sync Engine provides the ability to sync the database state in **realtime** between the clients and the server.
 

@@ -5,7 +5,10 @@ description: Discover how RxDB's modular RxStorage lets you swap engines and unl
 image: /headers/rx-storage.jpg
 ---
 
-# RxStorage
+import { IconStorage } from '@site/src/components/icons/storage';
+import { HeadlineWithIcon } from '@site/src/components/headline-with-icon';
+
+# <HeadlineWithIcon h1 icon={<IconStorage />}>RxStorage</HeadlineWithIcon>
 
 RxDB is not a self-contained database. Instead the data is stored in an implementation of the [RxStorage interface](https://github.com/pubkey/rxdb/blob/master/src/types/rx-storage.interface.d.ts). This allows you to **switch out** the underlying data layer, depending on the JavaScript environment and performance requirements. For example you can use the SQLite storage for a capacitor app or you can use the LocalStorage RxStorage to store data in localstorage in a browser-based application. There are also storages for other JavaScript runtimes like Node.js, React-Native, NativeScript and more.
 

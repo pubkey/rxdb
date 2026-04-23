@@ -10,9 +10,12 @@ import {TriggerEvent} from '@site/src/components/trigger-event';
 import {Tabs} from '@site/src/components/tabs';
 import {NavbarDropdownSyncList} from '@site/src/components/navbar-dropdowns';
 
+import { IconQuickstart } from '@site/src/components/icons/quickstart';
+import { HeadlineWithIcon } from '@site/src/components/headline-with-icon';
+
 <TriggerEvent type="page_quickstart" value={0.2} maxPerUser={1} redditEventType="PageVisit" />
 
-# RxDB Quickstart
+# <HeadlineWithIcon h1 icon={<IconQuickstart />}>RxDB Quickstart</HeadlineWithIcon>
 
 Welcome to the RxDB Quickstart. Here we'll learn how to create a simple real-time app with the RxDB database that is able to store and query data persistently in a browser and does realtime updates to the UI on changes.
 

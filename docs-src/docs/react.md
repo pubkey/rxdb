@@ -1,5 +1,5 @@
 ---
-title: React
+title: React RxDB integration
 slug: react.html
 description: Integrate RxDB with React and React Native using dedicated hooks and context providers for reactive, real-time data binding in functional components.
 image: /headers/react.jpg
@@ -7,8 +7,9 @@ image: /headers/react.jpg
 
 import {Tabs} from '@site/src/components/tabs';
 import {Steps} from '@site/src/components/steps';
+import {HeadlineWithIcon} from '@site/src/components/headline-with-icon';
 
-# React
+# <HeadlineWithIcon h1 icon={<img src="/files/icons/react.svg" alt="React" />}>Using RxDB with React</HeadlineWithIcon>
 
 RxDB provides first-class support for both React and React Native via a dedicated React integration. This integration makes it possible to use RxDB inside functional components using React Context and hooks, without manually subscribing to observables or managing cleanup logic.
 

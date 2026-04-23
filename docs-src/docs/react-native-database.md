@@ -7,8 +7,9 @@ image: /headers/react-native-database.jpg
 
 import {Steps} from '@site/src/components/steps';
 import {Tabs} from '@site/src/components/tabs';
+import {HeadlineWithIcon} from '@site/src/components/headline-with-icon';
 
-# React Native Database
+# <HeadlineWithIcon h1 icon={<img src="/files/icons/react.svg" alt="React" />}>React Native Database</HeadlineWithIcon>
 
 If you are looking for a **React Native Database**, you usually want three things:
 1. **Persistence**: Store data locally on the device so the app works **[offline](./offline-first.md)**.

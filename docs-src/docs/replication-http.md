@@ -8,7 +8,9 @@ image: /headers/replication-http.jpg
 import {Steps} from '@site/src/components/steps';
 import {Tabs} from '@site/src/components/tabs';
 
-# HTTP Replication from a custom server to RxDB clients
+import {HeadlineWithIcon} from '@site/src/components/headline-with-icon';
+
+# <HeadlineWithIcon h1 icon={<img src="/files/icons/http.svg" alt="HTTP" />}>HTTP Replication from a custom server to RxDB clients</HeadlineWithIcon>
 
 While RxDB has a range of backend-specific replication plugins (like [GraphQL](./replication-graphql.md) or [Firestore](./replication-firestore.md)), the replication is built in a way to make it very easy to replicate data from a custom server to RxDB clients. 
 
