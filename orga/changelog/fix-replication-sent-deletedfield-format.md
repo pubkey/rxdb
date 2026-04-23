@@ -1,0 +1,1 @@
+- FIX replication `sent$` observable emitting documents in the master format (with the user-defined `deletedField`) instead of the typed `WithDeleted<RxDocType>` format (with `_deleted: boolean`), because the `deletedField` swap mutated the same row object that was later forwarded to subscribers

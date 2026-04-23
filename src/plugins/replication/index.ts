@@ -321,11 +321,22 @@ export class RxReplicationState<RxDocType, CheckpointType> {
                             if (row.assumedMasterState) {
                                 row.assumedMasterState = await pushModifier(row.assumedMasterState);
                             }
+                            /**
+                             * The deletedField swap must not mutate the original row,
+                             * because that row is later forwarded to processed.up
+                             * which feeds sent$. sent$ is typed as
+                             * Observable<WithDeleted<RxDocType>> and must always emit
+                             * documents in the WithDeleted format with `_deleted: boolean`,
+                             * never the master-format `deletedField`.
+                             */
                             if (this.deletedField !== '_deleted') {
-                                row.newDocumentState = swapDefaultDeletedTodeletedField(this.deletedField, row.newDocumentState) as any;
-                                if (row.assumedMasterState) {
-                                    row.assumedMasterState = swapDefaultDeletedTodeletedField(this.deletedField, row.assumedMasterState) as any;
-                                }
+                                return {
+                                    ...row,
+                                    newDocumentState: swapDefaultDeletedTodeletedField(this.deletedField, row.newDocumentState) as any,
+                                    assumedMasterState: row.assumedMasterState
+                                        ? swapDefaultDeletedTodeletedField(this.deletedField, row.assumedMasterState) as any
+                                        : undefined
+                                };
                             }
                             return row;
                         })
