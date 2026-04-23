@@ -107,9 +107,11 @@ export function getTestGroupEventPrefix() {
         return [
             'abt',
             CURRENT_TEST_RUN.id,
+            Object.keys(CURRENT_TEST_RUN).length > 1 ? 'V:' + tg.variation : undefined,
             'O:' + tg.originId,
             'D:' + tg.deviceType,
-            'V:' + tg.variation,
-        ].join('_');
+        ]
+            .filter(v => !!v)
+            .join('_');
     }
 }
