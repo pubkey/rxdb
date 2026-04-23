@@ -187,3 +187,21 @@ RxState is mapped fully into memory while LocalDocuments are in memory only when
 
 RxState is stored per RxDatabase while LocalDocuments can be stored either per RxDatabase or RxCollection.
 </details>
+
+<details>
+<summary>When should I use RxState instead of Redux, Zustand, or Vuex?</summary>
+
+You should use RxState when you need state that automatically persists, synchronizes across browser tabs, or replicates between devices. While traditional in-memory stores require boilerplate replication logic and manual persistence, RxState handles these features out of the box.
+</details>
+
+<details>
+<summary>Why do I have to use a modifier function?</summary>
+
+Using a modifier function guarantees deterministic conflict resolution when multiple JavaScript realms (like WebWorkers or multiple browser tabs) attempt to update the state simultaneously. It ensures the state evaluates correctly even under concurrent modifications.
+</details>
+
+<details>
+<summary>Does RxState validate data against a schema?</summary>
+
+No, RxState is schema-less by default. Unlike standard RxDB collections, it accepts any complex JSON data without requiring a rigid schema definition, allowing for flexible state updates.
+</details>
