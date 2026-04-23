@@ -337,6 +337,12 @@ describe('replication.test.ts', () => {
         it('sent$ must emit documents in WithDeleted format with _deleted field when deletedField is custom', async () => {
             const localCollection = await humansCollection.createHumanWithTimestamp(0, randomToken(10), false);
 
+            // Prepare states before starting replication to avoid storage-specific
+            // intermediate emissions for insert-then-remove in a single run.
+            await localCollection.insert(schemaObjects.humanWithTimestampData({ id: 'alive' }));
+            const removeDoc = await localCollection.insert(schemaObjects.humanWithTimestampData({ id: 'to-remove' }));
+            await removeDoc.remove();
+
             const pushedToMaster: any[] = [];
             const replicationState = replicateRxCollection<HumanWithTimestampDocumentType, any>({
                 collection: localCollection,
@@ -354,11 +360,6 @@ describe('replication.test.ts', () => {
 
             const sentDocs: WithDeleted<HumanWithTimestampDocumentType>[] = [];
             replicationState.sent$.subscribe(d => sentDocs.push(d));
-
-            // Insert one alive doc and one that we delete (so we cover both _deleted=false and _deleted=true)
-            await localCollection.insert(schemaObjects.humanWithTimestampData({ id: 'alive' }));
-            const removeDoc = await localCollection.insert(schemaObjects.humanWithTimestampData({ id: 'to-remove' }));
-            await removeDoc.remove();
 
             await replicationState.awaitInitialReplication();
 
