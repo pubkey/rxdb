@@ -131,7 +131,9 @@ const database = await createRxDatabase({
 });
 ```
 
-The main thread and worker variants have different performance patterns. Running the database inside a WebWorker frees up the main thread to perform other tasks and enables faster synchronous file access, but passing messages between the main thread and the worker adds latency. Test both variants to determine which performs better for your specific use case.
+The main thread and worker variants have different performance patterns. Running the database inside a WebWorker frees up the main thread to perform other tasks and enables faster synchronous file access. This is why the worker can be noticeably faster for operations with many sequential reads, such as *Find 50 docs by ID*. 
+
+However, for many insert and bulk operations, the latency overhead of serializing queries and passing messages between the main thread and the worker will outweigh the raw storage performance gains. This means the Main Thread variant can appear faster in some benchmarks. Always test both variants to determine which performs better for your specific use case.
 
 <PerformanceChart title="OPFS Worker vs Main-Thread" data={PERFORMANCE_DATA_OPFS} metrics={PERFORMANCE_METRICS} />
 
