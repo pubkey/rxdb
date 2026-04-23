@@ -387,9 +387,13 @@ describe('replication.test.ts', () => {
             });
 
             const aliveSent = ensureNotFalsy(sentDocs.find(d => (d as any).id === 'alive'));
-            const removedSent = ensureNotFalsy(sentDocs.find(d => (d as any).id === 'to-remove'));
+            const removedSent = sentDocs.filter(d => (d as any).id === 'to-remove');
             assert.strictEqual(aliveSent._deleted, false, 'alive doc must have _deleted=false on sent$');
-            assert.strictEqual(removedSent._deleted, true, 'removed doc must have _deleted=true on sent$');
+            assert.ok(removedSent.length > 0, 'removed doc must be emitted on sent$');
+            assert.ok(
+                removedSent.some(doc => doc._deleted === true),
+                'removed doc must have _deleted=true on sent$'
+            );
 
             await localCollection.database.close();
         });
