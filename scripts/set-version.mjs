@@ -64,11 +64,7 @@ async function run() {
     );
     let changelogRows = changelogContent.split('\n');
 
-    if (
-        !changelogRows.includes(changelogFlagStart) ||
-        !changelogRows.includes(changelogFlagEnd) ||
-        !changelogRows.includes(changelogReleaseBelowFlag)
-    ) {
+    if (!changelogRows.includes(changelogReleaseBelowFlag)) {
         throw new Error('changelog flag missing');
     }
     const indexReleaseBelow = changelogRows.indexOf(changelogReleaseBelowFlag);
