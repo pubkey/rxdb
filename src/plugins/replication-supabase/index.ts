@@ -86,7 +86,7 @@ export function replicateSupabase<RxDocType>(
         return doc;
     }
     async function fetchById(id: string): Promise<WithDeleted<RxDocType>> {
-        const { data, error } = await options.client
+        const { data, error } = await (options.client as any)
             .from(options.tableName)
             .select()
             .eq(primaryPath, id)
