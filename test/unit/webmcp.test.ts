@@ -35,7 +35,12 @@ describe('webmcp.test.ts', () => {
         }
         initializeWebMCPPolyfill({ installTestingShim: true, autoInitialize: false });
         if ((global as any).navigator.modelContext) {
-            (global as any).navigator.modelContext.clearContext();
+            const tools = (global as any).navigator.modelContextTesting?.listTools() || [];
+            tools.forEach((tool: any) => {
+                try {
+                    (global as any).navigator.modelContext.unregisterTool(tool.name);
+                } catch (err) { }
+            });
         }
 
         db = await createRxDatabase({
