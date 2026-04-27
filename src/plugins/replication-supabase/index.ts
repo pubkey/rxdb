@@ -184,7 +184,8 @@ export function replicateSupabase<RxDocType>(
                 assumedMasterState: WithDeleted<RxDocType>
             ): Promise<WithDeleted<RxDocType> | undefined> {
                 ensureNotFalsy(assumedMasterState);
-                const id = (doc as any)[primaryPath];
+                const primaryKey: string = primaryPath;
+                const id = (doc as any)[primaryKey];
                 const toRow: Record<string, any> = flatClone(doc);
                 if (doc._deleted) {
                     toRow[deletedField] = !!doc._deleted;
@@ -213,7 +214,7 @@ export function replicateSupabase<RxDocType>(
                     await options.client
                         .from(options.tableName)
                         .update(toRow)
-                        .eq(primaryPath, id);
+                        .eq(primaryKey, id);
 
                     return;
                 }
