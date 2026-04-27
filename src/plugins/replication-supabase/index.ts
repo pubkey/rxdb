@@ -16,8 +16,7 @@ import { Subject } from 'rxjs';
 import {
     DEFAULT_DELETED_FIELD,
     DEFAULT_MODIFIED_FIELD,
-    POSTGRES_INSERT_CONFLICT_CODE,
-    addDocEqualityToQuery
+    POSTGRES_INSERT_CONFLICT_CODE
 } from './helper.ts';
 import { ensureNotFalsy, flatClone, lastOfArray } from '../utils/index.ts';
 
@@ -197,29 +196,30 @@ export function replicateSupabase<RxDocType>(
                 // modified field will be set server-side
                 delete toRow[modifiedField];
 
-                let query = options.client
-                    .from(options.tableName)
-                    .update(toRow);
+                // fetch the current document state from the server
+                const docOnServer: WithDeleted<RxDocType> = await fetchById(id);
 
-                query = addDocEqualityToQuery(
-                    collection.schema.jsonSchema,
-                    deletedField,
-                    modifiedField,
-                    assumedMasterState,
-                    query
-                );
-
-                const { data, error } = await query.select();
-                if (error) {
-                    throw error;
+                if (!docOnServer) {
+                    // the document does not exist on the server -> treat as conflict
+                    return docOnServer;
                 }
+                
+                const isSame = (Object.keys(assumedMasterState) as (keyof WithDeleted<RxDocType>)[])
+                    .every((prop) => docOnServer[prop] === assumedMasterState[prop])
 
-                if (data && data.length > 0) {
+                // check whether the server state matches the assumed master state
+                if (isSame) {
+                    // no conflict -> proceed with the update
+                    await options.client
+                        .from(options.tableName)
+                        .update(toRow)
+                        .eq(primaryPath, id);
+
                     return;
-                } else {
-                    // no match -> conflict
-                    return await fetchById(id);
                 }
+
+                // conflict detected -> return the current server state
+                return docOnServer;
             }
 
             const conflicts: WithDeleted<RxDocType>[] = [];
