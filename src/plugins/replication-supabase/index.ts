@@ -258,8 +258,17 @@ export function replicateSupabase<RxDocType>(
         const startBefore = replicationState.start.bind(replicationState);
         const cancelBefore = replicationState.cancel.bind(replicationState);
         replicationState.start = () => {
+            /**
+             * Use a unique channel name per replication instance.
+             * The supabase client reuses channels with the same topic, so
+             * two replications sharing the same client and tableName would
+             * otherwise get the same channel object. Calling .on() on an
+             * already-joined channel throws in realtime-js v2.101+, which
+             * prevents startBefore() from running and leaves startPromise
+             * forever unresolved.
+             */
             const sub = options.client
-                .channel('realtime:' + options.tableName)
+                .channel(options.replicationIdentifier)
                 .on(
                     'postgres_changes',
                     { event: '*', schema: 'public', table: options.tableName },
@@ -293,7 +302,7 @@ export function replicateSupabase<RxDocType>(
                     }
                 });
             replicationState.cancel = () => {
-                sub.unsubscribe();
+                options.client.removeChannel(sub);
                 return cancelBefore();
             };
             return startBefore();
