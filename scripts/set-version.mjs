@@ -53,6 +53,41 @@ async function run() {
     }
     newRows.push('');
 
+    // collect changelog entries from rxdb-server
+    try {
+        const rxdbServerToken = process.env.RXDB_SERVER_TOKEN || '';
+        const rxdbServerChangelogUrl = 'https://api.github.com/repos/pubkey/rxdb-server/contents/CHANGELOG.md';
+        const fetchHeaders = {
+            'Accept': 'application/vnd.github.v3.raw',
+            'User-Agent': 'rxdb-release-script'
+        };
+        if (rxdbServerToken) {
+            fetchHeaders['Authorization'] = `token ${rxdbServerToken}`;
+        }
+        const response = await fetch(rxdbServerChangelogUrl, { headers: fetchHeaders });
+        if (response.ok) {
+            const serverChangelog = await response.text();
+            const serverLines = serverChangelog.split('\n');
+            const unreleasedIdx = serverLines.findIndex(l => l.trim().startsWith('## Unreleased'));
+            if (unreleasedIdx !== -1) {
+                const nextSectionIdx = serverLines.findIndex((l, i) => i > unreleasedIdx && l.startsWith('## '));
+                const endIdx = nextSectionIdx === -1 ? serverLines.length : nextSectionIdx;
+                const serverChanges = serverLines
+                    .slice(unreleasedIdx + 1, endIdx)
+                    .filter(l => l.trim().startsWith('-'));
+                if (serverChanges.length > 0) {
+                    newRows.push('#### RxDB Server');
+                    newRows.push(...serverChanges);
+                    newRows.push('');
+                }
+            }
+        } else {
+            console.warn('Could not fetch rxdb-server changelog, status: ' + response.status);
+        }
+    } catch (e) {
+        console.warn('Could not fetch rxdb-server changelog: ' + e.message);
+    }
+
     // update changelog
     const changelogFlagStart = '<!-- CHANGELOG NEWEST -->';
     const changelogFlagEnd = '<!-- /CHANGELOG NEWEST -->';

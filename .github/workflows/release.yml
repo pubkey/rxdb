@@ -74,6 +74,8 @@ jobs:
 
       - name: "update version and changelog"
         working-directory: "scripts"
+        env:
+          RXDB_SERVER_TOKEN: ${{ secrets.RXDB_SERVER_VERSION_BUMP }}
         run: |
           node set-version.mjs ${{github.event.inputs.version}}
 
