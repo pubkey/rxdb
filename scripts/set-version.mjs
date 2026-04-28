@@ -97,7 +97,8 @@ async function run() {
 
     const rxdbServerToken = process.env.RXDB_SERVER_TOKEN || '';
     await appendExternalChangelog('rxdb-server', '#### RxDB Server', rxdbServerToken);
-    await appendExternalChangelog('rxdb-premium-dev', '#### RxDB Premium', rxdbServerToken);
+    const rxdbPremiumToken = process.env.RXDB_PREMIUM_FETCH_CHANGELOG || '';
+    await appendExternalChangelog('rxdb-premium-dev', '#### RxDB Premium', rxdbPremiumToken);
 
     // update changelog
     const changelogFlagStart = '<!-- CHANGELOG NEWEST -->';
