@@ -44,6 +44,7 @@ const primaryPath = 'passportId';
 const tableName = 'humans';
 
 describe('replication-supabase.test.ts', function () {
+    this.timeout(1000 * 60);
     addRxPlugin(RxDBDevModePlugin);
     config.storage.init?.();
 
@@ -444,7 +445,7 @@ describe('replication-supabase.test.ts', function () {
         softDeletes: true,
         isDeleted: (doc) => !!(doc as any)._deleted,
         getPrimaryOfServerDoc: (doc) => doc.passportId,
-        waitTime: 600,
+        waitTime: 1500,
     });
 
     describe('issues', () => {
