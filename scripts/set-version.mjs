@@ -56,33 +56,36 @@ async function run() {
     // collect changelog entries from rxdb-server
     try {
         const rxdbServerToken = process.env.RXDB_SERVER_TOKEN || '';
-        const rxdbServerChangelogUrl = 'https://api.github.com/repos/pubkey/rxdb-server/contents/CHANGELOG.md';
+        const rxdbServerChangelogDirUrl = 'https://api.github.com/repos/pubkey/rxdb-server/contents/orga/changelog';
         const fetchHeaders = {
-            'Accept': 'application/vnd.github.v3.raw',
+            'Accept': 'application/vnd.github.v3+json',
             'User-Agent': 'rxdb-release-script'
         };
         if (rxdbServerToken) {
             fetchHeaders['Authorization'] = `token ${rxdbServerToken}`;
         }
-        const response = await fetch(rxdbServerChangelogUrl, { headers: fetchHeaders });
-        if (response.ok) {
-            const serverChangelog = await response.text();
-            const serverLines = serverChangelog.split('\n');
-            const unreleasedIdx = serverLines.findIndex(l => l.trim().startsWith('## Unreleased'));
-            if (unreleasedIdx !== -1) {
-                const nextSectionIdx = serverLines.findIndex((l, i) => i > unreleasedIdx && l.startsWith('## '));
-                const endIdx = nextSectionIdx === -1 ? serverLines.length : nextSectionIdx;
-                const serverChanges = serverLines
-                    .slice(unreleasedIdx + 1, endIdx)
-                    .filter(l => l.trim().startsWith('-'));
-                if (serverChanges.length > 0) {
-                    newRows.push('#### RxDB Server');
-                    newRows.push(...serverChanges);
-                    newRows.push('');
+        const dirResponse = await fetch(rxdbServerChangelogDirUrl, { headers: fetchHeaders });
+        if (dirResponse.ok) {
+            const dirEntries = await dirResponse.json();
+            const serverChangelogFiles = dirEntries
+                .filter(e => e.type === 'file' && e.name.endsWith('.md') && e.name !== 'README.md')
+                .sort((a, b) => a.name.localeCompare(b.name));
+            const serverRows = [];
+            for (const entry of serverChangelogFiles) {
+                const fileResponse = await fetch(entry.download_url, { headers: fetchHeaders });
+                if (fileResponse.ok) {
+                    const content = await fileResponse.text();
+                    const lines = content.split('\n').filter(l => l.trim().length > 0);
+                    serverRows.push(...lines);
                 }
             }
+            if (serverRows.length > 0) {
+                newRows.push('#### RxDB Server');
+                newRows.push(...serverRows);
+                newRows.push('');
+            }
         } else {
-            console.warn('Could not fetch rxdb-server changelog, status: ' + response.status);
+            console.warn('Could not fetch rxdb-server changelog directory, status: ' + dirResponse.status);
         }
     } catch (e) {
         console.warn('Could not fetch rxdb-server changelog: ' + e.message);
