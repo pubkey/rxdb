@@ -95,9 +95,15 @@ async function run() {
         }
     }
 
-    const rxdbServerToken = process.env.RXDB_SERVER_TOKEN || '';
+    const rxdbServerToken = process.env.RXDB_SERVER_TOKEN;
+    if (!rxdbServerToken) {
+        throw new Error('RXDB_SERVER_TOKEN is not set');
+    }
     await appendExternalChangelog('rxdb-server', '#### RxDB Server', rxdbServerToken);
-    const rxdbPremiumToken = process.env.RXDB_PREMIUM_FETCH_CHANGELOG || '';
+    const rxdbPremiumToken = process.env.RXDB_PREMIUM_FETCH_CHANGELOG;
+    if (!rxdbPremiumToken) {
+        throw new Error('RXDB_PREMIUM_FETCH_CHANGELOG is not set');
+    }
     await appendExternalChangelog('rxdb-premium-dev', '#### RxDB Premium', rxdbPremiumToken);
 
     // update changelog
