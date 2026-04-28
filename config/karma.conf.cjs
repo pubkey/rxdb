@@ -121,12 +121,26 @@ module.exports = async function (config) {
              */
             env: process.env
         },
-        browserDisconnectTimeout: 120000,
+        /**
+         * 5 minutes — CI runners can be slow; a longer window prevents
+         * false-positive timeouts on legitimate (but sluggish) test runs.
+         */
+        browserDisconnectTimeout: 1000 * 60 * 5,
+        /**
+         * Retry a disconnected browser up to 4 times before marking the run
+         * as failed. Helps absorb transient network/process hiccups in CI.
+         */
+        browserDisconnectTolerance: 4,
         /**
          * 5 minutes — CI runners can be slow; a longer window prevents
          * false-positive timeouts on legitimate (but sluggish) test runs.
          */
         browserNoActivityTimeout: 1000 * 60 * 5,
+        /**
+         * 5 minutes to allow browsers to start and connect in CI.
+         * The default (60 s) is too short on resource-constrained runners.
+         */
+        captureTimeout: 1000 * 60 * 5,
         processKillTimeout: 120000,
         singleRun: true,
 
@@ -148,11 +162,8 @@ module.exports = async function (config) {
         // configuration.reporters = [];
 
         /**
-         * Limit to one browser at a time.
-         * The karma.runner.cjs script is the primary mechanism for sequential
-         * execution (it spawns karma once per browser and aborts on the first
-         * failure). Setting concurrency here as well provides a belt-and-
-         * suspenders guarantee in case karma is invoked directly.
+         * Limit to one browser at a time so that browsers run sequentially
+         * and a failure in one browser stops the run immediately.
          */
         configuration.concurrency = 1;
     }
