@@ -13,6 +13,8 @@ processed.txt
 config/isolate-*
 config/log.txt
 config/pouch__all_dbs__/
+config/supabase/.branches/
+config/supabase/.temp/
 pouch__all_dbs__/
 pouch__all_dbs__/
 .DS_Store
