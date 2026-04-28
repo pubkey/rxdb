@@ -257,7 +257,7 @@ export function replicateSupabase<RxDocType>(
     if (options.live && options.pull) {
         const startBefore = replicationState.start.bind(replicationState);
         const cancelBefore = replicationState.cancel.bind(replicationState);
-        replicationState.start = () => {
+        replicationState.start = async () => {
             /**
              * Use a unique channel name per replication instance.
              * The supabase client reuses channels with the same topic, so
@@ -305,7 +305,15 @@ export function replicateSupabase<RxDocType>(
                 options.client.removeChannel(sub);
                 return cancelBefore();
             };
-            return startBefore();
+            await startBefore();
+            /**
+             * Emit a RESYNC after startBefore() resolves so that
+             * pull.stream$ is guaranteed to have a subscriber by now.
+             * Without this, a SUBSCRIBED event emitted by the channel
+             * before _start() subscribes to pull.stream$ would be
+             * silently dropped, causing the initial resync to be missed.
+             */
+            replicationState.reSync();
         };
     }
 

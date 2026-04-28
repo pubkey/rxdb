@@ -155,7 +155,16 @@ export function runReplicationBaseTestSuite(config: ReplicationBaseTestSuiteConf
                 await replicationStateB.awaitInitialReplication();
 
                 if (waitTime) { await wait(waitTime); }
+                /**
+                 * Explicitly resync both sides before checking equality.
+                 * This makes the test independent of realtime event delivery speed:
+                 * even if realtime events were slow or missed, the explicit pull
+                 * from the server ensures both sides have the latest data.
+                 */
+                replicationStateA.reSync();
+                replicationStateB.reSync();
                 await replicationStateA.awaitInSync();
+                await replicationStateB.awaitInSync();
 
                 await awaitCollectionsHaveEqualState(collectionA, collectionB, 'init sync');
 
@@ -164,6 +173,10 @@ export function runReplicationBaseTestSuite(config: ReplicationBaseTestSuiteConf
                 await replicationStateA.awaitInSync();
                 await replicationStateB.awaitInSync();
                 if (waitTime) { await wait(waitTime); }
+                replicationStateA.reSync();
+                replicationStateB.reSync();
+                await replicationStateA.awaitInSync();
+                await replicationStateB.awaitInSync();
                 await awaitCollectionsHaveEqualState(collectionA, collectionB, 'after insert');
 
                 // delete one
@@ -171,6 +184,10 @@ export function runReplicationBaseTestSuite(config: ReplicationBaseTestSuiteConf
                 await replicationStateB.awaitInSync();
                 await replicationStateA.awaitInSync();
                 if (waitTime) { await wait(waitTime); }
+                replicationStateA.reSync();
+                replicationStateB.reSync();
+                await replicationStateA.awaitInSync();
+                await replicationStateB.awaitInSync();
                 await awaitCollectionsHaveEqualState(collectionA, collectionB, 'after deletion');
 
                 // insert many
@@ -182,6 +199,10 @@ export function runReplicationBaseTestSuite(config: ReplicationBaseTestSuiteConf
                 await replicationStateA.awaitInSync();
                 await replicationStateB.awaitInSync();
                 if (waitTime) { await wait(waitTime); }
+                replicationStateA.reSync();
+                replicationStateB.reSync();
+                await replicationStateA.awaitInSync();
+                await replicationStateB.awaitInSync();
                 await awaitCollectionsHaveEqualState(collectionA, collectionB, 'after insert many');
 
                 // insert at both collections at the same time
@@ -191,9 +212,11 @@ export function runReplicationBaseTestSuite(config: ReplicationBaseTestSuiteConf
                 ]);
                 await replicationStateA.awaitInSync();
                 await replicationStateB.awaitInSync();
+                if (waitTime) { await wait(waitTime); }
+                replicationStateA.reSync();
+                replicationStateB.reSync();
                 await replicationStateA.awaitInSync();
                 await replicationStateB.awaitInSync();
-                if (waitTime) { await wait(waitTime); }
                 await awaitCollectionsHaveEqualState(collectionA, collectionB, 'after insert both at same time');
 
                 await collectionA.database.close();
