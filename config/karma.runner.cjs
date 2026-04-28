@@ -77,17 +77,28 @@ function detectBrowsers() {
             } catch (_) { /* not found via env var */ }
         }
 
-        // Fall back to checking default paths for this platform
+        // Check default paths
         const paths = def.DEFAULT_CMD[process.platform] || [];
         for (const p of paths) {
+            // Two-step check that mirrors karma-detect-browsers:
+            //   1. fs.existsSync — handles absolute paths like /Applications/…
+            //      (short-circuits so which.sync is not called when the file
+            //      already exists on the filesystem)
+            //   2. which.sync — handles bare command names like 'google-chrome'
+            //      (throws when not found; caught below)
+            let available = false;
             try {
-                if (fs.existsSync(p) || which.sync(p)) {
-                    if (!found.includes(def.name)) {
-                        found.push(def.name);
-                    }
-                    break;
+                available = fs.existsSync(p);
+                if (!available) {
+                    which.sync(p);
+                    available = true;
                 }
-            } catch (_) { /* not found at this path */ }
+            } catch (_) { /* not available at this path */ }
+
+            if (available && !found.includes(def.name)) {
+                found.push(def.name);
+                break;
+            }
         }
     }
 
@@ -129,6 +140,15 @@ for (const browser of browsers) {
         ['start', karmaConf, '--single-run', '--browsers', browser],
         { stdio: 'inherit', env: process.env }
     );
+
+    // spawnSync sets result.error when the process could not be started at all
+    // (e.g. binary not found).  Check this before falling back to result.status.
+    if (result.error) {
+        console.error(
+            `\n# karma.runner: ✗ Could not start karma for ${browser}: ${result.error.message}. Aborting.`
+        );
+        process.exit(1);
+    }
 
     const exitCode = result.status ?? 1;
 
