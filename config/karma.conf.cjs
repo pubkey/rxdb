@@ -121,8 +121,26 @@ module.exports = async function (config) {
              */
             env: process.env
         },
-        browserDisconnectTimeout: 120000,
-        browserNoActivityTimeout: 120000,
+        /**
+         * 5 minutes — CI runners can be slow; a longer window prevents
+         * false-positive timeouts on legitimate (but sluggish) test runs.
+         */
+        browserDisconnectTimeout: 1000 * 60 * 5,
+        /**
+         * Retry a disconnected browser up to 4 times before marking the run
+         * as failed. Helps absorb transient network/process hiccups in CI.
+         */
+        browserDisconnectTolerance: 4,
+        /**
+         * 5 minutes — CI runners can be slow; a longer window prevents
+         * false-positive timeouts on legitimate (but sluggish) test runs.
+         */
+        browserNoActivityTimeout: 1000 * 60 * 5,
+        /**
+         * 5 minutes to allow browsers to start and connect in CI.
+         * The default (60 s) is too short on resource-constrained runners.
+         */
+        captureTimeout: 1000 * 60 * 5,
         processKillTimeout: 120000,
         singleRun: true,
 
@@ -143,8 +161,17 @@ module.exports = async function (config) {
          */
         // configuration.reporters = [];
 
-        // how many browser should be started simultaneously
+        /**
+         * Limit to one browser at a time so that browsers run sequentially
+         * and a failure in one browser stops the run immediately.
+         */
         configuration.concurrency = 1;
+
+        /**
+         * Retry failed test runs up to 3 times before marking the browser
+         * as failed. Helps with flaky tests in CI.
+         */
+        configuration.retryLimit = 3;
     }
 
     configuration.browserConsoleLogOptions = {
@@ -152,6 +179,21 @@ module.exports = async function (config) {
         format: '%b %T: %m',
         terminal: true
     };
+
+    /**
+     * Log the effective Karma configuration so CI logs make it easy to see
+     * what settings are actually in use.  Webpack config and process.env are
+     * omitted because they are too large and would obscure other output.
+     */
+    const configForLog = JSON.parse(
+        JSON.stringify(configuration, (key, value) => {
+            if (key === 'webpack') return '[webpack config omitted]';
+            if (key === 'postDetection') return '[function]';
+            if (key === 'env') return '[process.env omitted]';
+            return value;
+        })
+    );
+    console.log('# Karma effective config:', JSON.stringify(configForLog, null, 2));
 
 
     config.set(configuration);

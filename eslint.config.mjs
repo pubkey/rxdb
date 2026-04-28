@@ -468,7 +468,7 @@ export default [
         }
     },
     {
-        files: ['**/*.js'],
+        files: ['**/*.js', '**/*.cjs'],
         rules: {
             'no-var': 'off',
             '@typescript-eslint/no-require-imports': 'off'
