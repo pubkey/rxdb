@@ -53,6 +53,59 @@ async function run() {
     }
     newRows.push('');
 
+    /**
+     * Fetches changelog entries from a GitHub repo's orga/changelog/ directory
+     * (one-change-per-file convention) and appends them under a heading.
+     */
+    async function appendExternalChangelog(repo, heading, token) {
+        try {
+            const headers = {
+                'Accept': 'application/vnd.github.v3+json',
+                'User-Agent': 'rxdb-release-script'
+            };
+            if (token) {
+                headers['Authorization'] = `token ${token}`;
+            }
+            const dirUrl = `https://api.github.com/repos/pubkey/${repo}/contents/orga/changelog`;
+            const dirResponse = await fetch(dirUrl, { headers });
+            if (!dirResponse.ok) {
+                console.warn(`Could not fetch ${repo} changelog directory, status: ${dirResponse.status}`);
+                return;
+            }
+            const dirEntries = await dirResponse.json();
+            const files = dirEntries
+                .filter(e => e.type === 'file' && e.name.endsWith('.md') && e.name !== 'README.md')
+                .sort((a, b) => a.name.localeCompare(b.name));
+            const rows = [];
+            for (const entry of files) {
+                const fileResponse = await fetch(entry.download_url, { headers });
+                if (fileResponse.ok) {
+                    const content = await fileResponse.text();
+                    const lines = content.split('\n').filter(l => l.trim().length > 0);
+                    rows.push(...lines);
+                }
+            }
+            if (rows.length > 0) {
+                newRows.push(heading);
+                newRows.push(...rows);
+                newRows.push('');
+            }
+        } catch (e) {
+            console.warn(`Could not fetch ${repo} changelog: ${e.message}`);
+        }
+    }
+
+    const rxdbServerToken = process.env.RXDB_SERVER_TOKEN;
+    if (!rxdbServerToken) {
+        throw new Error('RXDB_SERVER_TOKEN is not set');
+    }
+    await appendExternalChangelog('rxdb-server', '#### RxDB Server', rxdbServerToken);
+    const rxdbPremiumToken = process.env.RXDB_PREMIUM_FETCH_CHANGELOG;
+    if (!rxdbPremiumToken) {
+        throw new Error('RXDB_PREMIUM_FETCH_CHANGELOG is not set');
+    }
+    await appendExternalChangelog('rxdb-premium-dev', '#### RxDB Premium', rxdbPremiumToken);
+
     // update changelog
     const changelogFlagStart = '<!-- CHANGELOG NEWEST -->';
     const changelogFlagEnd = '<!-- /CHANGELOG NEWEST -->';
