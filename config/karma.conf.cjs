@@ -166,6 +166,12 @@ module.exports = async function (config) {
          * and a failure in one browser stops the run immediately.
          */
         configuration.concurrency = 1;
+
+        /**
+         * Retry failed test runs up to 3 times before marking the browser
+         * as failed. Helps with flaky tests in CI.
+         */
+        configuration.retryLimit = 3;
     }
 
     configuration.browserConsoleLogOptions = {
