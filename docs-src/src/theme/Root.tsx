@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { onCopy, triggerTrackingEvent } from '../components/trigger-event';
+import { captureAttribution, onCopy, triggerTrackingEvent } from '../components/trigger-event';
 import { randomNumber } from '../../../plugins/utils';
 import { IconClose } from '../components/icons/close';
 import { Button } from '../components/button';
@@ -127,6 +127,7 @@ export default function Root({ children }) {
     useEffect(() => {
         // addCommunityChatButton();
         setTimeout(() => {
+            captureAttribution();
             startAnalytics();
             trackReturnAfter3to14Days();
             trackCopy();
