@@ -5,7 +5,8 @@ import {
     ensureNotFalsy,
     addRxPlugin,
     RxCollection,
-    WithDeleted
+    WithDeleted,
+    RxJsonSchema
 } from '../plugins/core/index.mjs';
 import {
     lastOfArray
@@ -17,7 +18,8 @@ import {
     ensureReplicationHasNoErrors,
     SimpleHumanDocumentType,
     PrimaryHumanDocType,
-    runReplicationBaseTestSuite
+    runReplicationBaseTestSuite,
+    HumanDocumentType
 } from '../plugins/test-utils/index.mjs';
 import { RxDBDevModePlugin } from '../plugins/dev-mode/index.mjs';
 import config from './unit/config.ts';
@@ -480,6 +482,58 @@ describe('replication-supabase.test.ts', function () {
             assert.strictEqual(firstDoc.lastName, 'push-modified');
 
             await collection.database.close();
+        });
+
+        it('#7986 does not add all document fields as equality conditions in the PATCH request URL', async () => {
+            await cleanUpServer();
+
+            const customHumanSchemaWithoutPropertySizeLimits: RxJsonSchema<HumanDocumentType> = {
+                title: 'human schema without property size limits',
+                version: 0,
+                keyCompression: false,
+                type: 'object',
+                primaryKey: 'passportId',
+                properties: {
+                    passportId: {
+                        type: 'string',
+                        maxLength: 100
+                    },
+                    firstName: {
+                        type: 'string'
+                    },
+                    lastName: {
+                        type: 'string'
+                    },
+                    age: {
+                        type: 'integer',
+                    }
+                },
+                required: ['passportId']
+            };
+
+            const collection = await humansCollection.createBySchema(customHumanSchemaWithoutPropertySizeLimits);
+
+            const replicationState = replicateSupabase<PrimaryHumanDocType>({
+                tableName,
+                client: supabase,
+                replicationIdentifier: randomToken(10),
+                collection,
+                pull: { batchSize },
+                push: { batchSize }
+            });
+            ensureReplicationHasNoErrors(replicationState);
+
+            const commonId = randomToken(10);
+            const doc = await collection.insert(schemaObjects.humanData(commonId, undefined, randomToken(40000)));
+            await replicationState.awaitInSync();
+
+            await doc.patch({ firstName: '0' });
+
+            const serverState = await getServerState();
+            assert.strictEqual(serverState.length, 1);
+
+            await collection.database.close();
+            await cleanUpServer();
         });
     });
 
