@@ -2,6 +2,21 @@ import { useEffect } from 'react';
 import { getTestGroupEventPrefix } from './a-b-tests';
 import ExecutionEnvironment from '@docusaurus/ExecutionEnvironment';
 
+export const GOOGLE_ADS_CONVERSION_ID = 'AW-16993451567';
+
+/**
+ * Maps tracking event types to Google Ads conversion labels.
+ * Each label corresponds to a distinct conversion action configured
+ * in the Google Ads account under the conversion ID above.
+ */
+export const GOOGLE_ADS_CONVERSION_LABELS: Record<string, string> = {
+    premium_lead: 'uAlvCNWL4tkaELe3-_o',
+    calculate_premium_price: 'ZM0dCNaL4tkaELe3-_o',
+    consulting_form_open: 'bVCkCNiL4tkaELe3-_o',
+    watch_video_x_secs: 'yVGkCNuL4tkaELe3-_o',
+    copy_on_page: 'kRmkCN-L4tkaELe3-_o',
+};
+
 
 export type RedditEventType =
     | 'PageVisit'
@@ -82,6 +97,20 @@ export function triggerTrackingEvent(
                     testGroupPrefix + '_' + type,
                     {
                         value: 0,
+                        currency: 'EUR'
+                    }
+                );
+            }
+
+            // Google Ads conversion tracking
+            const conversionLabel = GOOGLE_ADS_CONVERSION_LABELS[type];
+            if (conversionLabel) {
+                (window as any).gtag(
+                    'event',
+                    'conversion',
+                    {
+                        send_to: GOOGLE_ADS_CONVERSION_ID + '/' + conversionLabel,
+                        value,
                         currency: 'EUR'
                     }
                 );
