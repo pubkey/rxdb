@@ -179,33 +179,30 @@ export async function createEmptyFile(
      * This avoids a race condition where the etag could change between
      * the file listing and a separate etag fetch.
      */
-    const metaUrl =
-        googleDriveOptions.apiEndpoint +
-        `/drive/v2/files/${encodeURIComponent(fileId)}`;
-    const metaRes = await fetch(metaUrl, {
-        headers: {
-            Authorization: 'Bearer ' + googleDriveOptions.authToken,
-        },
-    });
-    if (!metaRes.ok) {
-        throw await newRxFetchError(metaRes, { folderName: fileName });
-    }
-    const meta = await metaRes.json();
-    const etag = ensureNotFalsy(metaRes.headers.get('ETag'), 'ETag missing');
+    const meta = await getFileMetadataV2(googleDriveOptions, fileId);
     return {
         status: response.status,
-        etag,
-        createdTime: ensureNotFalsy(meta.createdDate),
+        etag: meta.etag,
+        createdTime: meta.createdTime,
         fileId,
-        size: parseInt(meta.fileSize ?? '0', 10)
-    }
+        size: meta.size
+    };
 }
 
 
-export async function getFileEtag(
+/**
+ * Fetches file metadata from the Google Drive v2 API.
+ * Returns the etag (from the ETag response header), size, and createdTime
+ * in a single atomic request.
+ *
+ * Note: the v2 API uses "createdDate" and "fileSize" as field names;
+ * this function maps them to "createdTime" and "size" for consistency
+ * with the rest of the codebase.
+ */
+async function getFileMetadataV2(
     googleDriveOptions: GoogleDriveOptionsWithDefaults,
     fileId: string
-): Promise<string> {
+): Promise<{ etag: string; size: number; createdTime: string }> {
     const url =
         googleDriveOptions.apiEndpoint +
         `/drive/v2/files/${encodeURIComponent(fileId)}`;
@@ -217,9 +214,23 @@ export async function getFileEtag(
     if (!res.ok) {
         throw await newRxFetchError(res, { args: { fileId } });
     }
-    return ensureNotFalsy(res.headers.get('ETag'), 'ETag missing');
+    const meta = await res.json();
+    return {
+        etag: ensureNotFalsy(res.headers.get('ETag'), 'ETag missing'),
+        // v2 uses "fileSize" and "createdDate" instead of the v3 "size" and "createdTime"
+        size: parseInt(meta.fileSize ?? '0', 10),
+        createdTime: ensureNotFalsy(meta.createdDate)
+    };
 }
 
+
+export async function getFileEtag(
+    googleDriveOptions: GoogleDriveOptionsWithDefaults,
+    fileId: string
+): Promise<string> {
+    const meta = await getFileMetadataV2(googleDriveOptions, fileId);
+    return meta.etag;
+}
 
 export async function fillFileIfEtagMatches<T = any>(
     googleDriveOptions: GoogleDriveOptionsWithDefaults,

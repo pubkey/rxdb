@@ -215,6 +215,12 @@ export async function processWalFile<RxDocType>(
     );
     const fileMetaByDocId: Record<string, { fileId: string; etag: string }> = {};
 
+    /**
+     * The Google Drive v3 list API no longer supports "etag" as a field selector,
+     * so we fetch the etag for each file individually via the v2 API.
+     * Each file requires one additional request to retrieve its current etag.
+     * All requests are made in parallel to minimize total latency.
+     */
     await Promise.all(docFiles.files.map(async (file) => {
         const fileId = ensureNotFalsy(file.id);
         const docId = file.name.split('.')[0] as any;
