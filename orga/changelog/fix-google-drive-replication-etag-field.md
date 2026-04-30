@@ -1,0 +1,1 @@
+- FIX `replication-google-drive` plugin requesting `etag` in the Google Drive v3 list API `fields` parameter, which is rejected by the real API; etag is now fetched separately via the v2 API
