@@ -13,6 +13,7 @@ import {
     readFolder,
     initDriveStructure,
     fillFileIfEtagMatches,
+    getFileEtag,
     DriveStructure,
     startTransaction,
     commitTransaction,
@@ -486,10 +487,11 @@ describe('replication-google-drive.test.ts', function () {
                 ids
             );
             const fileMetaByDocId: any = {};
-            found.files.forEach((file, i) => {
-                const docId = docs[i][PRIMARY_PATH];
-                fileMetaByDocId[docId] = { fileId: file.id, etag: ensureNotFalsy(file.etag) };
-            });
+            await Promise.all(found.files.map(async (file) => {
+                const docId = file.name.split('.')[0];
+                const etag = await getFileEtag(options, ensureNotFalsy(file.id));
+                fileMetaByDocId[docId] = { fileId: file.id, etag };
+            }));
             await updateDocumentFiles(
                 options,
                 PRIMARY_PATH,
@@ -521,10 +523,11 @@ describe('replication-google-drive.test.ts', function () {
                 ids
             );
             const fileMetaByDocId: any = {};
-            found.files.forEach(file => {
+            await Promise.all(found.files.map(async (file) => {
                 const docId = file.name.split('.')[0];
-                fileMetaByDocId[docId] = { fileId: file.id, etag: ensureNotFalsy(file.etag) };
-            });
+                const etag = await getFileEtag(options, ensureNotFalsy(file.id));
+                fileMetaByDocId[docId] = { fileId: file.id, etag };
+            }));
 
             await updateDocumentFiles(
                 options,
@@ -654,11 +657,12 @@ describe('replication-google-drive.test.ts', function () {
                     options.initData,
                     [firstDoc.passportId]
                 );
+                const etag = await getFileEtag(options, ensureNotFalsy(docFiles.files[0].id));
                 await updateDocumentFiles(
                     options,
                     PRIMARY_PATH,
                     [firstDoc],
-                    { [firstDoc.passportId]: { fileId: docFiles.files[0].id, etag: ensureNotFalsy(docFiles.files[0].etag) } }
+                    { [firstDoc.passportId]: { fileId: docFiles.files[0].id, etag } }
                 );
 
                 const changesAfterUpdate = await fetchChanges<HumanDocumentType>(

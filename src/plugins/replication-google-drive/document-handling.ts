@@ -29,7 +29,7 @@ export async function getDocumentFiles(
     const params = new URLSearchParams({
         q,
         pageSize: MAX_DRIVE_PAGE_SIZE + '',
-        fields: "nextPageToken, files(id,name,mimeType,parents,modifiedTime,size,etag)",
+        fields: "nextPageToken, files(id,name,mimeType,parents,modifiedTime,size)",
         // Shared drives support (safe to include always)
         includeItemsFromAllDrives: "true",
         supportsAllDrives: "true",

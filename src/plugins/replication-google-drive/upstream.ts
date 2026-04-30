@@ -2,7 +2,7 @@ import { RxReplicationWriteToMasterRow, WithDeletedAndAttachments } from '../../
 import { newRxError, newRxFetchError } from '../../rx-error.ts';
 import { deepEqual, ensureNotFalsy } from '../utils/index.ts';
 import { fetchDocumentContents, getDocumentFiles, insertDocumentFiles, updateDocumentFiles } from './document-handling.ts';
-import { DRIVE_MAX_BULK_SIZE, fillFileIfEtagMatches } from './google-drive-helper.ts';
+import { DRIVE_MAX_BULK_SIZE, fillFileIfEtagMatches, getFileEtag } from './google-drive-helper.ts';
 import type {
     DriveFileMetadata,
     GoogleDriveOptionsWithDefaults
@@ -215,13 +215,12 @@ export async function processWalFile<RxDocType>(
     );
     const fileMetaByDocId: Record<string, { fileId: string; etag: string }> = {};
 
-    docFiles.files.forEach(file => {
+    await Promise.all(docFiles.files.map(async (file) => {
+        const fileId = ensureNotFalsy(file.id);
         const docId = file.name.split('.')[0] as any;
-        fileMetaByDocId[docId] = {
-            fileId: file.id,
-            etag: ensureNotFalsy(file.etag),
-        };
-    });
+        const etag = await getFileEtag(googleDriveOptions, fileId);
+        fileMetaByDocId[docId] = { fileId, etag };
+    }));
 
     const toInsert: WithDeletedAndAttachments<RxDocType>[] = [];
     const toUpdate: WithDeletedAndAttachments<RxDocType>[] = [];

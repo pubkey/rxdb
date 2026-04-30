@@ -162,7 +162,7 @@ export async function createEmptyFile(
     ].join(' and ');
     const url2 =
         googleDriveOptions.apiEndpoint + '/drive/v3/files' +
-        '?fields=files(id,etag,size,createdTime)' +
+        '?fields=files(id)' +
         '&orderBy=createdTime asc' +
         '&q=' + encodeURIComponent(query);
     const res = await fetch(url2, {
@@ -171,14 +171,53 @@ export async function createEmptyFile(
         },
     });
     const data = await res.json();
-    const file = ensureNotFalsy(data.files[0]);
+    const fileId = ensureNotFalsy(data.files[0]?.id);
+
+    /**
+     * Fetch the file metadata via v2 to get the etag (from the ETag response header)
+     * and the file size atomically in a single request.
+     * This avoids a race condition where the etag could change between
+     * the file listing and a separate etag fetch.
+     */
+    const metaUrl =
+        googleDriveOptions.apiEndpoint +
+        `/drive/v2/files/${encodeURIComponent(fileId)}`;
+    const metaRes = await fetch(metaUrl, {
+        headers: {
+            Authorization: 'Bearer ' + googleDriveOptions.authToken,
+        },
+    });
+    if (!metaRes.ok) {
+        throw await newRxFetchError(metaRes, { folderName: fileName });
+    }
+    const meta = await metaRes.json();
+    const etag = ensureNotFalsy(metaRes.headers.get('ETag'), 'ETag missing');
     return {
         status: response.status,
-        etag: ensureNotFalsy(file.etag),
-        createdTime: ensureNotFalsy(file.createdTime),
-        fileId: ensureNotFalsy(file.id),
-        size: parseInt(file.size, 10)
+        etag,
+        createdTime: ensureNotFalsy(meta.createdDate),
+        fileId,
+        size: parseInt(meta.fileSize ?? '0', 10)
     }
+}
+
+
+export async function getFileEtag(
+    googleDriveOptions: GoogleDriveOptionsWithDefaults,
+    fileId: string
+): Promise<string> {
+    const url =
+        googleDriveOptions.apiEndpoint +
+        `/drive/v2/files/${encodeURIComponent(fileId)}`;
+    const res = await fetch(url, {
+        headers: {
+            Authorization: `Bearer ${googleDriveOptions.authToken}`,
+        },
+    });
+    if (!res.ok) {
+        throw await newRxFetchError(res, { args: { fileId } });
+    }
+    return ensureNotFalsy(res.headers.get('ETag'), 'ETag missing');
 }
 
 
