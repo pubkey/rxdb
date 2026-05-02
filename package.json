@@ -696,7 +696,7 @@
     "stream": "0.0.3",
     "supabase": "2.95.3",
     "terser": "5.46.2",
-    "terser-webpack-plugin": "5.4.0",
+    "terser-webpack-plugin": "5.5.0",
     "ts-loader": "9.5.7",
     "tsx": "4.21.0",
     "typescript": "5.9.3",
