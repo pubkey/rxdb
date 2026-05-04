@@ -156,28 +156,7 @@ If you get the error message `TypeError: Cannot read properties of undefined (re
 ### liveQueryUpdateThrottleTime
 `(optional, default: 0 = disabled)`
 
-When set to a positive number (milliseconds), write-triggered live query updates are grouped with [RxJS auditTime](https://rxjs.dev/api/operators/auditTime) before `_ensureEqual()` runs. This limits how often RxDB re-evaluates a live query during write bursts, which avoids repeated full-result rebuilds for queries with large result sets.
-
-The first query result is always emitted immediately so subscriptions still behave like a `BehaviorSubject` on startup. Only subsequent change-triggered reruns are throttled.
-
-The value can be set at the database level (applies to all collections) or overridden per collection via `liveQueryUpdateThrottleTime` in `addCollections`.
-
-```ts
-// set at database level - applies to all collections
-const db = await createRxDatabase({
-  name: 'heroesdb',
-  storage: getRxStorageLocalstorage(),
-  liveQueryUpdateThrottleTime: 100 // ms
-});
-
-// or override per collection
-const collections = await db.addCollections({
-  heroes: {
-    schema: heroSchema,
-    liveQueryUpdateThrottleTime: 200 // ms, overrides the database-level value
-  }
-});
-```
+Groups write-triggered live query updates to limit how often RxDB re-evaluates queries during write bursts. See [liveQueryUpdateThrottleTime](./rx-query.md#livequeryupdatethrottletime) for full documentation.
 
 ## Methods
 

@@ -50,7 +50,7 @@ With the parameters `statics`, `methods` and `attachments`, you can define ORM f
 
 ### liveQueryUpdateThrottleTime
 
-Overrides `liveQueryUpdateThrottleTime` set at the database level for this specific collection. See [liveQueryUpdateThrottleTime](./rx-database.md#livequeryupdatethrottletime).
+Overrides `liveQueryUpdateThrottleTime` set at the database level for this specific collection. See [liveQueryUpdateThrottleTime](./rx-query.md#livequeryupdatethrottletime).
 
 ### Migration
 With the parameters `migrationStrategies` and `autoMigrate` you can specify how migration between different schema-versions should be done. [See Migration](./migration-schema.md).
