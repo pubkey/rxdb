@@ -5,6 +5,8 @@ description: Master RxQuery in RxDB - find, update, remove documents using Mango
 image: /headers/rx-query.jpg
 ---
 
+import {BetaBlock} from '@site/src/components/beta-block';
+
 # RxQuery
 
 To find documents inside of an [RxCollection](./rx-collection.md), RxDB uses the RxQuery interface that handles all query operations: it serves as the main interface for fetching documents, relies on a MongoDB-like [Mango Query Syntax](https://github.com/cloudant/mango), and provides three types of queries: [find()](#find), [findOne()](#findOne) and [count()](#count). By caching and de-duplicating results, RxQuery ensures efficient in-memory handling, and when queries are observed or re-run, the [EventReduce algorithm](https://github.com/pubkey/event-reduce) speeds up updates for a fast real-time experience and queries that run more than once.
@@ -442,6 +444,8 @@ const is = isRxQuery(myObj);
 ```
 
 ## liveQueryUpdateThrottleTime
+
+<BetaBlock since="17.1.0" />
 
 When set to a positive number (milliseconds), write-triggered live query updates are grouped with [RxJS auditTime](https://rxjs.dev/api/operators/auditTime) before `_ensureEqual()` runs. This limits how often RxDB re-evaluates a live query during write bursts, which avoids repeated full-result rebuilds for queries with large result sets.
 
