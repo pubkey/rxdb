@@ -8,7 +8,7 @@ import type {
     RxCollectionBase
 } from '../rx-collection.d.ts';
 import type { QueryCache } from '../query-cache.d.ts';
-import type { RxLocalDocumentMutation } from './rx-database.d.ts';
+import type { RxLocalDocumentMutation, RxDatabaseOptions } from './rx-database.d.ts';
 
 export interface KeyFunctionMap {
     [key: string]: Function;
@@ -31,7 +31,7 @@ export type RxCollectionCreator<RxDocType = any> = {
     statics?: KeyFunctionMap;
     methods?: KeyFunctionMap;
     attachments?: KeyFunctionMap;
-    options?: any;
+    options?: RxDatabaseOptions;
     /**
      * Set this to true if you want to store local documents
      * in the RxCollection instance.
