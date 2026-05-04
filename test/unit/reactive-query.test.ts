@@ -150,6 +150,91 @@ describeParallel('reactive-query.test.js', () => {
             sub.unsubscribe();
             c.database.close();
         });
+        it('groups live query write bursts before _ensureEqual when enabled', async () => {
+            const db = await createRxDatabase({
+                name: randomToken(10),
+                storage: config.storage.getStorage(),
+                multiInstance: false,
+                eventReduce: false,
+                liveQueryUpdateThrottleTime: 100
+            });
+            const collections = await db.addCollections({
+                humans: {
+                    schema: schemas.human
+                }
+            });
+            const c = collections.humans;
+            const query = c.find().sort('passportId');
+            const emitted: RxDocument<HumanDocumentType>[][] = [];
+            let sub: { unsubscribe(): void; } | undefined;
+            try {
+                sub = query.$.subscribe(results => emitted.push(results));
+                await waitUntil(() => emitted.length === 1);
+                const ensureEqualAfterInitialRun = query._lastEnsureEqual;
+
+                await Promise.all(
+                    new Array(5).fill(0).map((_v, index) => {
+                        return c.insert(schemaObjects.humanData('throttle-' + index));
+                    })
+                );
+                await promiseWait(5);
+
+                assert.strictEqual(query._lastEnsureEqual, ensureEqualAfterInitialRun);
+            } finally {
+                if (sub) {
+                    sub.unsubscribe();
+                }
+                db.close();
+            }
+        });
+        it('emits the latest matching result after grouped writes', async () => {
+            const db = await createRxDatabase({
+                name: randomToken(10),
+                storage: config.storage.getStorage(),
+                multiInstance: false,
+                eventReduce: false,
+                liveQueryUpdateThrottleTime: 10
+            });
+            const collections = await db.addCollections({
+                humans: {
+                    schema: schemas.human
+                }
+            });
+            const c = collections.humans;
+            await c.insert(schemaObjects.humanData('match-0', 1));
+
+            const query = c.find({
+                selector: {
+                    age: {
+                        $eq: 1
+                    }
+                },
+                sort: [
+                    {
+                        passportId: 'asc'
+                    }
+                ]
+            });
+            const emitted: RxDocument<HumanDocumentType>[][] = [];
+            const sub = query.$.subscribe(results => emitted.push(results));
+            try {
+                await waitUntil(() => emitted.length === 1);
+
+                await Promise.all([
+                    c.insert(schemaObjects.humanData('outside-result', 2)),
+                    c.insert(schemaObjects.humanData('match-1', 1))
+                ]);
+
+                await waitUntil(() => {
+                    const lastEmission = emitted[emitted.length - 1];
+                    return lastEmission &&
+                        lastEmission.map(doc => doc.primary).join(',') === 'match-0,match-1';
+                });
+            } finally {
+                sub.unsubscribe();
+                db.close();
+            }
+        });
         it('doing insert after subscribe should end with the correct results', async () => {
 
             const c = await humansCollection.create(1);
