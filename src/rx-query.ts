@@ -1,9 +1,11 @@
 import {
     BehaviorSubject,
     Observable,
-    merge
+    merge,
+    of
 } from 'rxjs';
 import {
+    auditTime,
     mergeMap,
     filter,
     map,
@@ -146,18 +148,32 @@ export class RxQueryBase<
     }
     get $(): Observable<RxQueryResult> {
         if (!this._$) {
-            const results$ = this.collection.eventBulks$.pipe(
+            const changeEventBulks$ = this.collection.eventBulks$.pipe(
                 /**
                  * Performance shortcut.
                  * Changes to local documents are not relevant for the query.
                  */
-                filter((bulk: any) => !bulk.isLocal),
+                filter((bulk: any) => !bulk.isLocal)
+            );
+            const liveQueryUpdateThrottleTime = getLiveQueryUpdateThrottleTime(this.collection);
+            const updateTrigger$ = liveQueryUpdateThrottleTime > 0 ?
+                merge(
+                    of(null),
+                    changeEventBulks$.pipe(auditTime(liveQueryUpdateThrottleTime))
+                ) :
+                changeEventBulks$.pipe(
+                    /**
+                     * Start once to ensure the querying also starts
+                     * when there where no changes.
+                     */
+                    startWith(null)
+                );
+            const results$ = updateTrigger$.pipe(
                 /**
-                 * Start once to ensure the querying also starts
-                 * when there where no changes.
+                 * Ensure query results are up to date.
+                 * When enabled, liveQueryUpdateThrottleTime groups change-triggered
+                 * reruns before this point so downstream throttling is not too late.
                  */
-                startWith(null),
-                // ensure query results are up to date.
                 mergeMap(() => _ensureEqual(this as any)),
                 // use the current result set, written by _ensureEqual().
                 map(() => this._result),
@@ -580,6 +596,13 @@ export function _getDefaultQuery<RxDocType>(): MangoQuery<RxDocType> {
     return {
         selector: {}
     };
+}
+
+function getLiveQueryUpdateThrottleTime(collection: RxCollection<any>): number {
+    if (typeof collection.liveQueryUpdateThrottleTime === 'number') {
+        return collection.liveQueryUpdateThrottleTime;
+    }
+    return collection.database.liveQueryUpdateThrottleTime;
 }
 
 /**

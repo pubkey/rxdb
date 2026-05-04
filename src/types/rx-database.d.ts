@@ -13,19 +13,6 @@ import type { RxCleanupPolicy } from './plugins/cleanup.d.ts';
 import type { ById, HashFunction } from './util.d.ts';
 import type { RxReactivityFactory } from './plugins/reactivity.d.ts';
 
-export type RxDatabaseOptions = {
-    /**
-     * When set to a positive number (in milliseconds), live query updates triggered by
-     * write events are grouped using `auditTime` before `_ensureEqual()` runs.
-     * This reduces the number of expensive live-query reruns during write bursts.
-     * The first query result is always emitted immediately.
-     * Defaults to 0 (disabled).
-     * Can be overridden per collection via `RxCollectionCreator.options.liveQueryUpdateThrottleTime`.
-     */
-    liveQueryUpdateThrottleTime?: number;
-    [key: string]: any;
-};
-
 export interface RxDatabaseCreator<Internals = any, InstanceCreationOptions = any, Reactivity = unknown> {
     storage: RxStorage<Internals, InstanceCreationOptions>;
     instanceCreationOptions?: InstanceCreationOptions;
@@ -38,7 +25,16 @@ export interface RxDatabaseCreator<Internals = any, InstanceCreationOptions = an
     multiInstance?: boolean;
     eventReduce?: boolean;
     ignoreDuplicate?: boolean;
-    options?: RxDatabaseOptions;
+    options?: any;
+    /**
+     * When set to a positive number (in milliseconds), live query updates triggered by
+     * write events are grouped using auditTime before _ensureEqual() runs.
+     * This reduces the number of expensive live-query reruns during write bursts.
+     * The first query result is always emitted immediately.
+     * Defaults to 0 (disabled).
+     * Can be overridden per collection via RxCollectionCreator.liveQueryUpdateThrottleTime.
+     */
+    liveQueryUpdateThrottleTime?: number;
     cleanupPolicy?: Partial<RxCleanupPolicy>;
     closeDuplicates?: boolean;
     /**

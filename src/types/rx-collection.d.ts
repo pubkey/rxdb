@@ -8,7 +8,7 @@ import type {
     RxCollectionBase
 } from '../rx-collection.d.ts';
 import type { QueryCache } from '../query-cache.d.ts';
-import type { RxLocalDocumentMutation, RxDatabaseOptions } from './rx-database.d.ts';
+import type { RxLocalDocumentMutation } from './rx-database.d.ts';
 
 export interface KeyFunctionMap {
     [key: string]: Function;
@@ -31,7 +31,14 @@ export type RxCollectionCreator<RxDocType = any> = {
     statics?: KeyFunctionMap;
     methods?: KeyFunctionMap;
     attachments?: KeyFunctionMap;
-    options?: RxDatabaseOptions;
+    options?: any;
+    /**
+     * When set to a positive number (in milliseconds), live query updates triggered by
+     * write events are grouped using auditTime before _ensureEqual() runs.
+     * Overrides liveQueryUpdateThrottleTime set at the database level for this collection.
+     * When not set, the database-level value is used.
+     */
+    liveQueryUpdateThrottleTime?: number;
     /**
      * Set this to true if you want to store local documents
      * in the RxCollection instance.

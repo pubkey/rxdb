@@ -163,7 +163,8 @@ export class RxCollectionBase<
         public options: any = {},
         public cacheReplacementPolicy: RxCacheReplacementPolicy = defaultCacheReplacementPolicy,
         public statics: KeyFunctionMap = {},
-        public conflictHandler: RxConflictHandler<RxDocumentType> = defaultConflictHandler
+        public conflictHandler: RxConflictHandler<RxDocumentType> = defaultConflictHandler,
+        public liveQueryUpdateThrottleTime: number | undefined = undefined
     ) {
         _applyHookFunctions(this.asRxCollection);
 
@@ -1240,7 +1241,8 @@ export async function createRxCollection(
         localDocuments = false,
         cacheReplacementPolicy = defaultCacheReplacementPolicy,
         conflictHandler = defaultConflictHandler,
-        storageInstance
+        storageInstance,
+        liveQueryUpdateThrottleTime = undefined
     }: any
 ): Promise<RxCollection> {
     if (!storageInstance) {
@@ -1278,7 +1280,8 @@ export async function createRxCollection(
         options,
         cacheReplacementPolicy,
         statics,
-        conflictHandler
+        conflictHandler,
+        liveQueryUpdateThrottleTime
     );
 
     try {

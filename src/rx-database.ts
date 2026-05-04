@@ -137,6 +137,7 @@ export class RxDatabaseBase<
         public readonly allowSlowCount?: boolean,
         public readonly reactivity?: RxReactivityFactory<any>,
         public readonly onClosed?: () => void,
+        public readonly liveQueryUpdateThrottleTime: number = 0,
     ) {
         DB_COUNT++;
 
@@ -768,7 +769,8 @@ export function createRxDatabase<
         allowSlowCount = false,
         localDocuments = false,
         hashFunction = defaultHashSha256,
-        reactivity
+        reactivity,
+        liveQueryUpdateThrottleTime = 0
     }: RxDatabaseCreator<Internals, InstanceCreationOptions, Reactivity>
 ): Promise<
     RxDatabase<Collections, Internals, InstanceCreationOptions, Reactivity>
@@ -847,7 +849,8 @@ export function createRxDatabase<
             cleanupPolicy,
             allowSlowCount,
             reactivity,
-            onInstanceClosed
+            onInstanceClosed,
+            liveQueryUpdateThrottleTime
         ) as RxDatabase<Collections>;
 
         await runAsyncPluginHooks('createRxDatabase', {
