@@ -1,0 +1,1 @@
+- DOCS Move the main `liveQueryUpdateThrottleTime` documentation to `rx-query.md`; `rx-database.md` and `rx-collection.md` now only list the option with a short description and a link
