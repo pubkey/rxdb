@@ -21,7 +21,8 @@ import {
     normalizeInlineAttachments,
     createRxCollectionStorageInstance,
     removeCollectionStorages,
-    ensureRxCollectionIsNotClosed
+    ensureRxCollectionIsNotClosed,
+    ensureRxCollectionIsNotMigrating
 } from './rx-collection-helper.ts';
 import {
     createRxQuery,
@@ -229,6 +230,13 @@ export class RxCollectionBase<
     public onClose: (() => MaybePromise<any>)[] = [];
     public closed = false;
 
+    /**
+     * Set to true while a schema migration is running for this collection.
+     * Writes are blocked while this is true to ensure the migration
+     * replication can fill the new storage without external interference.
+     */
+    public migrationInProgress = false;
+
     public onRemove: (() => MaybePromise<any>)[] = [];
 
     public async prepare(): Promise<void> {
@@ -379,6 +387,7 @@ export class RxCollectionBase<
         json: RxDocumentType | RxDocument
     ): Promise<RxDocument<RxDocumentType, OrmMethods, Reactivity>> {
         ensureRxCollectionIsNotClosed(this);
+        ensureRxCollectionIsNotMigrating(this);
         const writeResult = await this.bulkInsert([json as any]);
 
         const isError = writeResult.error[0];
@@ -411,6 +420,7 @@ export class RxCollectionBase<
         error: RxStorageWriteError<RxDocumentType>[];
     }> {
         ensureRxCollectionIsNotClosed(this);
+        ensureRxCollectionIsNotMigrating(this);
         /**
          * Optimization shortcut,
          * do nothing when called with an empty array
@@ -560,6 +570,7 @@ export class RxCollectionBase<
         error: RxStorageWriteError<RxDocumentType>[];
     }> {
         ensureRxCollectionIsNotClosed(this);
+        ensureRxCollectionIsNotMigrating(this);
         const primaryPath = this.schema.primaryPath;
         /**
          * Optimization shortcut,
@@ -649,6 +660,7 @@ export class RxCollectionBase<
         error: RxStorageWriteError<RxDocumentType>[];
     }> {
         ensureRxCollectionIsNotClosed(this);
+        ensureRxCollectionIsNotMigrating(this);
         const insertData: RxDocumentType[] = [];
         const useJsonByDocId: Map<string, RxDocumentType> = new Map();
 
@@ -739,6 +751,7 @@ export class RxCollectionBase<
      */
     async upsert(json: Partial<RxDocumentType>, options?: UpsertOptions): Promise<RxDocument<RxDocumentType, OrmMethods, Reactivity>> {
         ensureRxCollectionIsNotClosed(this);
+        ensureRxCollectionIsNotMigrating(this);
         const bulkResult = await this.bulkUpsert([json], options);
         throwIfIsStorageWriteError<RxDocumentType>(
             this.asRxCollection,
@@ -754,6 +767,7 @@ export class RxCollectionBase<
      */
     incrementalUpsert(json: Partial<RxDocumentType>, options?: UpsertOptions): Promise<RxDocument<RxDocumentType, OrmMethods, Reactivity>> {
         ensureRxCollectionIsNotClosed(this);
+        ensureRxCollectionIsNotMigrating(this);
         const useJson = fillObjectDataBeforeInsert(this.schema, json);
         const primary: string = useJson[this.schema.primaryPath] as any;
         if (!primary) {

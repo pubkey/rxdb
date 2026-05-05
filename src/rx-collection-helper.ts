@@ -266,3 +266,23 @@ export function ensureRxCollectionIsNotClosed(
         );
     }
 }
+
+/**
+ * Throws if a schema migration is currently running on the collection.
+ * Writes are not allowed during a migration because the new collection
+ * is being filled by the migration replication and outside writes
+ * could conflict with that process.
+ */
+export function ensureRxCollectionIsNotMigrating(
+    collection: RxCollection | RxCollectionBase<any, any, any, any, any>
+) {
+    if (collection.migrationInProgress) {
+        throw newRxError(
+            'COL25',
+            {
+                collection: collection.name,
+                version: collection.schema.version
+            }
+        );
+    }
+}

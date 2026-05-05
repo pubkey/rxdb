@@ -418,6 +418,106 @@ describe('migration-schema.test.ts', function () {
                 });
             });
         });
+        describe('writes during migration', () => {
+            it('should block writes while a migration is running and allow them again after it finishes', async () => {
+                const col = await humansCollection.createMigrationCollection(
+                    isFastMode() ? 3 : 10,
+                    {
+                        3: async (doc: any) => {
+                            await promiseWait(20);
+                            doc.age = parseInt(doc.age, 10);
+                            return doc;
+                        }
+                    }
+                );
+
+                const migrationDone = col.migratePromise(1);
+                // wait until the migration flag is actually set
+                await waitUntil(() => (col as any).migrationInProgress === true);
+
+                await assertThrows(
+                    () => col.insert(schemaObjects.simpleHumanAge() as any),
+                    'RxError',
+                    'COL25'
+                );
+                await assertThrows(
+                    () => col.bulkInsert([schemaObjects.simpleHumanAge() as any]),
+                    'RxError',
+                    'COL25'
+                );
+                await assertThrows(
+                    () => col.upsert(schemaObjects.simpleHumanAge() as any),
+                    'RxError',
+                    'COL25'
+                );
+                await assertThrows(
+                    () => col.bulkUpsert([schemaObjects.simpleHumanAge() as any]),
+                    'RxError',
+                    'COL25'
+                );
+                await assertThrows(
+                    () => col.incrementalUpsert(schemaObjects.simpleHumanAge() as any),
+                    'RxError',
+                    'COL25'
+                );
+                await assertThrows(
+                    () => col.bulkRemove(['nonexistent']),
+                    'RxError',
+                    'COL25'
+                );
+
+                // reads must still work
+                await col.find().exec();
+
+                await migrationDone;
+                assert.strictEqual((col as any).migrationInProgress, false);
+
+                // now writes work again
+                await col.insert(schemaObjects.simpleHumanAge() as any);
+
+                await col.database.close();
+            });
+
+            // Previously a bulkInsert called directly after migratePromise
+            // could race with the migration replication and surface as a
+            // confusing RC_PUSH error. Now the write must fail fast with COL25.
+            it('should block bulkInsert that races with a starting migration (no waitUntil)', async () => {
+                const col = await humansCollection.createMigrationCollection(
+                    isFastMode() ? 3 : 10,
+                    {
+                        3: async (doc: any) => {
+                            await promiseWait(20);
+                            doc.age = parseInt(doc.age, 10);
+                            return doc;
+                        }
+                    }
+                );
+
+                const migrationDone = col.migratePromise(1);
+
+                await assertThrows(
+                    () => col.bulkInsert([schemaObjects.simpleHumanAge() as any]),
+                    'RxError',
+                    'COL25'
+                );
+
+                await migrationDone;
+                await col.database.close();
+            });
+
+            it('should reset migrationInProgress on migration error', async () => {
+                const col = await humansCollection.createMigrationCollection(3, {
+                    3: () => {
+                        throw new Error('migration-failed-on-purpose');
+                    }
+                });
+                let failed = false;
+                await col.migratePromise().catch(() => failed = true);
+                assert.ok(failed);
+                assert.strictEqual((col as any).migrationInProgress, false);
+                await col.database.close();
+            });
+        });
     });
     describeParallel('integration into collection', () => {
         describe('run', () => {
