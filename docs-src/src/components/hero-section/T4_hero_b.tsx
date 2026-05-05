@@ -77,7 +77,14 @@ export function HeroSection_B(props: {
                         alignItems: 'center',
                     }}
                 >
-                    <ReplicationDiagram dark={true} hasIcon={false} />
+                    <ReplicationDiagram
+                        dark={true}
+                        hasIcon={false}
+                        onPlayClick={() => {
+                            setOpenVideo(true);
+                            triggerTrackingEvent('hero_section_video_open_diagram', 0.4);
+                        }}
+                    />
                 </div>
             </div>
             <div className="flex-start-center" style={{display: 'flex'}}>

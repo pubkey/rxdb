@@ -19,11 +19,13 @@ export function ReplicationDiagram({
   dark,
   hasIcon = true,
   demoOffline = false,
+  onPlayClick,
 }: {
   scale?: number;
   dark: boolean;
   hasIcon?: boolean;
   demoOffline?: boolean;
+  onPlayClick?: () => void;
 }) {
   const containerRef = useRef<HTMLDivElement | null>(null);
 
@@ -232,6 +234,33 @@ export function ReplicationDiagram({
           <Cloud darkMode={dark} style={{ width: '100%' }} hasIcon={hasIcon} />
         </div>
 
+        {/* YouTube play button (center overlay) */}
+        {onPlayClick && (
+          <div
+            onClick={onPlayClick}
+            role="button"
+            aria-label="Play video"
+            style={{
+              position: 'absolute',
+              left: centerX + offsetX,
+              top: centerY + offsetY,
+              transform: 'translate(-50%, -50%)',
+              cursor: 'pointer',
+              zIndex: 10,
+              filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.45))',
+              transition: 'transform 0.15s ease-out',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translate(-50%, -50%) scale(1.08)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translate(-50%, -50%) scale(1)';
+            }}
+          >
+            <YouTubePlayButtonSvg width={68 * scale} />
+          </div>
+        )}
+
         {/* Lines & devices */}
         {linesData.map(({ angleDeg, lineLength, deviceX, deviceY, inwardName, outwardName }, i) => {
           const lineStart = serverRadius + serverMargin;
@@ -369,3 +398,23 @@ const styles = {
     overflow: 'visible', // let diagram content grow
   } as React.CSSProperties,
 };
+
+function YouTubePlayButtonSvg({ width = 68 }: { width?: number; }) {
+  const height = (width * 48) / 68;
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={width}
+      height={height}
+      viewBox="0 0 68 48"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <path
+        d="M66.52 7.74c-.78-2.93-2.49-5.41-5.42-6.19C55.79.13 34 0 34 0S12.21.13 6.9 1.55c-2.93.78-4.63 3.26-5.42 6.19C.06 13.05 0 24 0 24s.06 10.95 1.48 16.26c.78 2.93 2.49 5.41 5.42 6.19C12.21 47.87 34 48 34 48s21.79-.13 27.1-1.55c2.93-.78 4.64-3.26 5.42-6.19C67.94 34.95 68 24 68 24s-.06-10.95-1.48-16.26z"
+        fill="#f00"
+      />
+      <path d="M45 24 27 14v20" fill="#fff" />
+    </svg>
+  );
+}
