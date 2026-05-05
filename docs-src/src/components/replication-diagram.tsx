@@ -257,7 +257,7 @@ export function ReplicationDiagram({
               e.currentTarget.style.transform = 'translate(-50%, -50%) scale(1)';
             }}
           >
-            <YouTubePlayButtonSvg width={68 * scale} />
+            <YouTubePlayButtonSvg width={41 * scale} />
           </div>
         )}
 
