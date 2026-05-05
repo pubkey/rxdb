@@ -26,7 +26,7 @@ import {
     assignMethodsToAttachment,
     ensureSchemaSupportsAttachments
 } from './attachments-utils.ts';
-import { ensureRxCollectionIsNotMigrating } from '../../rx-collection-helper.ts';
+import { isWriteAllowed } from '../../rx-collection-helper.ts';
 
 
 
@@ -57,7 +57,7 @@ export class RxAttachment {
     }
 
     remove(): Promise<void> {
-        ensureRxCollectionIsNotMigrating(this.doc.collection);
+        isWriteAllowed(this.doc.collection);
         return this.doc.collection.incrementalWriteQueue.addWrite(
             this.doc._data,
             docWriteData => {
@@ -115,7 +115,7 @@ async function _putAttachmentsImpl<RxDocType>(
     attachments: RxAttachmentCreator[]
 ): Promise<RxAttachment[]> {
     ensureSchemaSupportsAttachments(doc);
-    ensureRxCollectionIsNotMigrating(doc.collection);
+    isWriteAllowed(doc.collection);
 
     if (attachments.length === 0) {
         return [];

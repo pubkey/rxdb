@@ -268,14 +268,23 @@ export function ensureRxCollectionIsNotClosed(
 }
 
 /**
- * Throws if a schema migration is currently running on the collection.
- * Writes are not allowed during a migration because the new collection
- * is being filled by the migration replication and outside writes
- * could conflict with that process.
+ * Asserts that a write to the given collection is currently allowed.
+ * Throws if the collection is closed or if a schema migration is
+ * pending or running, in which cases external writes would either
+ * fail or conflict with the migration replication.
  */
-export function ensureRxCollectionIsNotMigrating(
+export function isWriteAllowed(
     collection: RxCollection | RxCollectionBase<any, any, any, any, any>
 ) {
+    if (collection.closed) {
+        throw newRxError(
+            'COL21',
+            {
+                collection: collection.name,
+                version: collection.schema.version
+            }
+        );
+    }
     if (collection.migrationInProgress) {
         throw newRxError(
             'COL25',

@@ -505,6 +505,34 @@ describe('migration-schema.test.ts', function () {
                 await col.database.close();
             });
 
+            it('should block writes when a migration is needed but not yet started', async () => {
+                // collection is created with autoMigrate=false and old data is present,
+                // so the migration is required but startMigration() has not been called.
+                const col = await humansCollection.createMigrationCollection(
+                    isFastMode() ? 3 : 5,
+                    {
+                        3: (doc: any) => {
+                            doc.age = parseInt(doc.age, 10);
+                            return doc;
+                        }
+                    }
+                );
+
+                await assertThrows(
+                    () => col.insert(schemaObjects.simpleHumanAge() as any),
+                    'RxError',
+                    'COL25'
+                );
+
+                await col.migratePromise();
+                assert.strictEqual((col as any).migrationInProgress, false);
+
+                // writes are allowed after the migration completes
+                await col.insert(schemaObjects.simpleHumanAge() as any);
+
+                await col.database.close();
+            });
+
             it('should reset migrationInProgress on migration error', async () => {
                 const col = await humansCollection.createMigrationCollection(3, {
                     3: () => {

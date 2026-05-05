@@ -42,7 +42,7 @@ import { overwritable } from './overwritable.ts';
 import { getSchemaByObjectPath } from './rx-schema-helper.ts';
 import { getWrittenDocumentsFromBulkWriteResponse, throwIfIsStorageWriteError } from './rx-storage-helper.ts';
 import { modifierFromPublicToInternal } from './incremental-write.ts';
-import { ensureRxCollectionIsNotMigrating } from './rx-collection-helper.ts';
+import { isWriteAllowed } from './rx-collection-helper.ts';
 
 export const basePrototype = {
     get primaryPath() {
@@ -326,7 +326,7 @@ export const basePrototype = {
         // used by some plugins that wrap the method
         _context?: string
     ): Promise<RxDocument> {
-        ensureRxCollectionIsNotMigrating(this.collection);
+        isWriteAllowed(this.collection);
         return this.collection.incrementalWriteQueue.addWrite(
             this._data,
             modifierFromPublicToInternal(mutationFunction)
@@ -373,7 +373,7 @@ export const basePrototype = {
         newData: RxDocumentWriteData<RxDocType>,
         oldData: RxDocumentData<RxDocType>
     ): Promise<RxDocument<RxDocType>> {
-        ensureRxCollectionIsNotMigrating(this.collection);
+        isWriteAllowed(this.collection);
         newData = flatClone(newData);
 
         // deleted documents cannot be changed
