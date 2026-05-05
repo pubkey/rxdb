@@ -109,10 +109,7 @@ If you have lots of data or the migrationStrategies take a long time, it might b
 
 :::warning No writes during a running migration
 While a schema migration is running on a collection, writes to that collection are not allowed.
-This includes `insert()`, `bulkInsert()`, `upsert()`, `bulkUpsert()`, `incrementalUpsert()`, `bulkRemove()`,
-RxDocument operations like `patch()`, `modify()`, `incrementalPatch()`, `incrementalModify()`, `remove()`,
-and attachment writes via `putAttachment()`/`putAttachments()`/`RxAttachment.remove()`.
-Calls to these methods will throw a `COL25` error until the migration finishes.
+Calls that would write will throw a `COL25` error until the migration finishes.
 Wait for `collection.migratePromise()` to resolve (or observe `collection.getMigrationState().$` until status is `DONE`)
 before performing writes.
 :::
