@@ -680,7 +680,7 @@
     "nconf": "0.13.0",
     "node-appwrite": "24.0.0",
     "node-datachannel": "0.32.3",
-    "pre-commit": "1.2.2",
+    "pre-commit": "2.0.0",
     "process": "0.11.10",
     "querystring-es3": "0.2.1",
     "random-int": "3.1.0",
