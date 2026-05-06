@@ -243,7 +243,7 @@ export function ReplicationDiagram({
             style={{
               position: 'absolute',
               left: centerX + offsetX,
-              top: centerY + offsetY,
+              top: 207,
               transform: 'translate(-50%, -50%)',
               cursor: 'pointer',
               zIndex: 10,
