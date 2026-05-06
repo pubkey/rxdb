@@ -472,8 +472,8 @@ describe('migration-schema.test.ts', function () {
                 await migrationDone;
                 assert.strictEqual((col as any).migrationInProgress, false);
 
-                // now writes work again
-                await col.insert(schemaObjects.simpleHumanAge() as any);
+                // now writes work again (use V3 data since migration converted age to number)
+                await col.insert(schemaObjects.simpleHumanV3Data());
 
                 await col.database.close();
             });
@@ -527,8 +527,8 @@ describe('migration-schema.test.ts', function () {
                 await col.migratePromise();
                 assert.strictEqual((col as any).migrationInProgress, false);
 
-                // writes are allowed after the migration completes
-                await col.insert(schemaObjects.simpleHumanAge() as any);
+                // writes are allowed after the migration completes (use V3 data since age is now a number)
+                await col.insert(schemaObjects.simpleHumanV3Data());
 
                 await col.database.close();
             });
