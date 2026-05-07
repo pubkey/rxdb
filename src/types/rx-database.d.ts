@@ -24,7 +24,7 @@ import type { RxReactivityFactory } from './plugins/reactivity.d.ts';
  * ```txt
  * src/
  *   database/
- *     index.ts          ← createRxDatabase() call, exports the db instance and all RxDocument and RxCollection types of all entities.
+ *     index.ts          ← createRxDatabase() call, exports the db instance and entity RxDocument/RxCollection types.
  *     plugins.ts        ← addRxPlugin() calls (dev-mode, validate, etc.)
  *     storage.ts        ← contains the storage configuration(s)
  *     collections/
@@ -38,7 +38,7 @@ import type { RxReactivityFactory } from './plugins/reactivity.d.ts';
  *         methods.ts
  *         hooks.ts
  *         migration.ts
- *     replication.ts    ← replication setup. Starts the replication of all collections
+ *     replication.ts    ← replication setup, starts the replication of all collections
  * ```
  *
  * Every collection folder contains the same set of files. This repetitive
