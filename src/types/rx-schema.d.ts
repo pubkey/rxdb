@@ -124,37 +124,14 @@ export type CompressionMode = 'deflate' | 'gzip';
  * export const todoSchema: RxJsonSchema<TodoDocType> = todoSchemaLiteral;
  * ```
  *
- * ### Schema Rules
+ * ### Recommended Schema Rules
  * - Collection names are plural (e.g. `todos`, `users`).
- * - Primary key is always a non-optional `string` field; use `id` by convention.
- * - Primary key fields must declare `maxLength`.
- * - Every document should include `createdAt` and `updatedAt` as ISO date-time strings.
- * - Date values use ISO 8601 strings (`format: 'date-time'`), never numeric timestamps.
- * - Never nest objects more than 3 levels deep.
- * - Arrays must always declare an `items` sub-schema.
- * - Every field used in a query `selector` or `sort` must appear in `indexes`.
+ * - Every document should include `createdAt` and `updatedAt`.
+ * - Do not nest objects more than 3 levels deep.
+ * - Arrays should always declare an `items` sub-schema.
+ * - Do not use more then one type like `type: ["string", "number"]`, prefer to use one single fixed type per property.
+ * - Do not use nullable fields, instead make them non-required (default) and leaf them undefined. Try to never store `null` inside of a JSON document.
  *
- * ### Document Modeling Heuristics
- * Prefer:
- * - Denormalized reads (embed related data to avoid cross-collection lookups).
- * - Shallow, flat document structures.
- * - Deterministic, stable string IDs.
- * - Immutable identifiers — never change a primary key value after insertion.
- *
- * Avoid:
- * - SQL-style joins or deeply normalized graphs.
- * - Polymorphic document shapes within the same collection.
- * - Circular references.
- * - Optional nested objects — use flat nullable fields instead.
- * - Dynamic or computed field names.
- *
- * ### Before Creating a Collection
- * 1. Identify all read patterns (what queries will run).
- * 2. Identify potential sync conflicts and choose a conflict handler.
- * 3. Add an index for every field used in `selector` or `sort`.
- * 4. Define a migration strategy for each future schema version change.
- * 5. Ensure the document shape is fully JSON-serializable (no `Date` objects, no `undefined`).
- * 6. Ensure all fields are safe for replication (no functions, no circular refs).
  */
 export type RxJsonSchema<
     /**
