@@ -41,9 +41,6 @@ import type { RxReactivityFactory } from './plugins/reactivity.d.ts';
  *     replication.ts    ← replication setup, starts the replication of all collections
  * ```
  *
- * Every collection folder contains the same set of files. This repetitive
- * structure makes it straightforward for both humans and AI agents to locate
- * code, generate new collections, and avoid import errors.
  */
 export interface RxDatabaseCreator<Internals = any, InstanceCreationOptions = any, Reactivity = unknown> {
     /**
