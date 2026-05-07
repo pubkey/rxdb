@@ -91,6 +91,71 @@ export interface TopLevelProperty extends JsonSchema {
  */
 export type CompressionMode = 'deflate' | 'gzip';
 
+/**
+ * Schema definition for an RxDB collection.
+ *
+ * ## AI Agent Guidance
+ *
+ * ### Golden Schema Template
+ * Always define schemas as `as const` literals and use `toTypedRxJsonSchema`
+ * to derive the TypeScript type. Never generate schemas dynamically.
+ *
+ * ```ts
+ * import { toTypedRxJsonSchema, ExtractDocumentTypeFromTypedRxJsonSchema, RxJsonSchema } from 'rxdb';
+ *
+ * const todoSchemaLiteral = {
+ *   title: 'todo schema',
+ *   version: 0,
+ *   primaryKey: 'id',
+ *   type: 'object',
+ *   properties: {
+ *     id:        { type: 'string', maxLength: 100 },
+ *     title:     { type: 'string' },
+ *     completed: { type: 'boolean' },
+ *     createdAt: { type: 'string', format: 'date-time' },
+ *     updatedAt: { type: 'string', format: 'date-time' }
+ *   },
+ *   required: ['id', 'title', 'completed', 'createdAt', 'updatedAt'],
+ *   indexes: ['updatedAt', ['completed', 'updatedAt']]
+ * } as const;
+ *
+ * const schemaTyped = toTypedRxJsonSchema(todoSchemaLiteral);
+ * export type TodoDocType = ExtractDocumentTypeFromTypedRxJsonSchema<typeof schemaTyped>;
+ * export const todoSchema: RxJsonSchema<TodoDocType> = todoSchemaLiteral;
+ * ```
+ *
+ * ### Schema Rules
+ * - Collection names are plural (e.g. `todos`, `users`).
+ * - Primary key is always a non-optional `string` field; use `id` by convention.
+ * - Primary key fields must declare `maxLength`.
+ * - Every document should include `createdAt` and `updatedAt` as ISO date-time strings.
+ * - Date values use ISO 8601 strings (`format: 'date-time'`), never numeric timestamps.
+ * - Never nest objects more than 3 levels deep.
+ * - Arrays must always declare an `items` sub-schema.
+ * - Every field used in a query `selector` or `sort` must appear in `indexes`.
+ *
+ * ### Document Modeling Heuristics
+ * Prefer:
+ * - Denormalized reads (embed related data to avoid cross-collection lookups).
+ * - Shallow, flat document structures.
+ * - Deterministic, stable string IDs.
+ * - Immutable identifiers — never change a primary key value after insertion.
+ *
+ * Avoid:
+ * - SQL-style joins or deeply normalized graphs.
+ * - Polymorphic document shapes within the same collection.
+ * - Circular references.
+ * - Optional nested objects — use flat nullable fields instead.
+ * - Dynamic or computed field names.
+ *
+ * ### Before Creating a Collection
+ * 1. Identify all read patterns (what queries will run).
+ * 2. Identify potential sync conflicts and choose a conflict handler.
+ * 3. Add an index for every field used in `selector` or `sort`.
+ * 4. Define a migration strategy for each future schema version change.
+ * 5. Ensure the document shape is fully JSON-serializable (no `Date` objects, no `undefined`).
+ * 6. Ensure all fields are safe for replication (no functions, no circular refs).
+ */
 export type RxJsonSchema<
     /**
      * The doctype must be given, and '=any' cannot be used,
@@ -129,7 +194,21 @@ export type RxJsonSchema<
      * Indexes that will be used for the queries.
      * RxDB will internally prepend the _deleted field to the index
      * because queries do NOT return documents with _deleted=true.
-     * @example ['firstName', ['lastName', 'yearOfBirth']]
+     *
+     * Every field referenced in a query `selector` or `sort` must have
+     * a matching index entry. Composite indexes must list fields in the
+     * same order as the selector + sort combination.
+     *
+     * @example
+     * // Single-field index
+     * indexes: ['updatedAt']
+     *
+     * // Composite index for a query that filters by `completed` and sorts by `updatedAt`:
+     * //   selector: { completed: false }, sort: [{ updatedAt: 'desc' }]
+     * indexes: [['completed', 'updatedAt']]
+     *
+     * // Mixed: one single-field and one composite index
+     * indexes: ['updatedAt', ['completed', 'updatedAt']]
      */
     indexes?: (string | string[])[] | (string | readonly string[])[] | readonly (string | string[])[] | readonly (string | readonly string[])[];
 

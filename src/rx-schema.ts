@@ -250,7 +250,40 @@ export function isRxSchema(obj: any): boolean {
 }
 
 /**
- * Used as helper function the generate the document type out of the schema via typescript.
+ * Helper function to generate the document type out of the schema via TypeScript.
+ * Always use this together with `as const` on the schema literal so that the
+ * TypeScript compiler can infer the narrowest possible type.
+ *
+ * ## AI Agent Guidance — Canonical Schema Definition Pattern
+ *
+ * ```ts
+ * import {
+ *   toTypedRxJsonSchema,
+ *   ExtractDocumentTypeFromTypedRxJsonSchema,
+ *   RxJsonSchema
+ * } from 'rxdb';
+ *
+ * const todoSchemaLiteral = {
+ *   title: 'todo schema',
+ *   version: 0,
+ *   primaryKey: 'id',
+ *   type: 'object',
+ *   properties: {
+ *     id:        { type: 'string', maxLength: 100 },
+ *     title:     { type: 'string' },
+ *     completed: { type: 'boolean' },
+ *     createdAt: { type: 'string', format: 'date-time' },
+ *     updatedAt: { type: 'string', format: 'date-time' }
+ *   },
+ *   required: ['id', 'title', 'completed', 'createdAt', 'updatedAt'],
+ *   indexes: ['updatedAt', ['completed', 'updatedAt']]
+ * } as const;
+ *
+ * const schemaTyped = toTypedRxJsonSchema(todoSchemaLiteral);
+ * export type TodoDocType = ExtractDocumentTypeFromTypedRxJsonSchema<typeof schemaTyped>;
+ * export const todoSchema: RxJsonSchema<TodoDocType> = todoSchemaLiteral;
+ * ```
+ *
  * @link https://github.com/pubkey/rxdb/discussions/3467
  */
 export function toTypedRxJsonSchema<T extends DeepReadonly<RxJsonSchema<any>>>(schema: T): DeepMutable<T> {

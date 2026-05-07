@@ -22,6 +22,21 @@ export interface NumberFunctionMap {
  * Params to create a new collection.
  * Notice the name of the collection is set one level higher
  * when calling addCollections()
+ *
+ * ## AI Agent Guidance — Before Creating a Collection
+ *
+ * Work through this checklist before finalizing the collection definition:
+ * 1. **Read patterns** — list every query the collection must serve.
+ * 2. **Indexes** — add an index entry for every field used in a `selector` or `sort`.
+ * 3. **Conflict handling** — choose a `conflictHandler` appropriate for your sync strategy.
+ * 4. **Migration** — provide a `migrationStrategies` entry for every future version bump.
+ * 5. **Serializability** — the document type must be fully JSON-serializable
+ *    (no `Date` objects, no `undefined` values, no functions).
+ * 6. **Replication safety** — all fields must survive a round-trip through JSON
+ *    (no circular refs, no class instances).
+ * 7. **Nesting depth** — keep document nesting to 3 levels or fewer.
+ *
+ * Prefer flat, denormalized documents over deeply nested or relational shapes.
  */
 export type RxCollectionCreator<RxDocType = any> = {
     schema: RxJsonSchema<RxDocType>;
