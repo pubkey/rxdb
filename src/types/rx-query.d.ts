@@ -110,37 +110,6 @@ export type MangoQueryNoLimit<RxDocType> = MangoQuerySelectorAndIndex<RxDocType>
 
 /**
  * Mango query for RxDB collections.
- *
- * ## AI Agent Guidance — Query / Index Pairing
- *
- * Every field used in `selector` or `sort` must have a matching index declared
- * in the collection schema. Queries without a matching index will be slow on
- * large datasets.
- *
- * Composite indexes must list fields in the same order as the selector +
- * sort combination.
- *
- * ```ts
- * // Query: filter by `completed`, sort by `updatedAt`
- * await db.todos
- *   .find({
- *     selector: { completed: { $eq: false } },
- *     sort: [{ updatedAt: 'desc' }]
- *   })
- *   .exec();
- *
- * // Required schema index for this query:
- * // indexes: [['completed', 'updatedAt']]
- * ```
- *
- * Rules:
- * - Add a single-field index for simple selector or sort fields.
- * - Add a composite index `[fieldA, fieldB]` when the query filters on
- *   `fieldA` and sorts on `fieldB`.
- * - The primary key is always indexed automatically; do not repeat it.
- * - Prefer `.find()` over `.findOne()` when you expect multiple results.
- * - Always call `.exec()` to run the query once, or subscribe to the
- *   observable returned by `.find().$` for live updates.
  */
 export type MangoQuery<RxDocType = any> = MangoQueryNoLimit<RxDocType> & {
     skip?: number;
