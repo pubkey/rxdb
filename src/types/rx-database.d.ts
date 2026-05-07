@@ -54,10 +54,8 @@ export interface RxDatabaseCreator<Internals = any, InstanceCreationOptions = an
      * schema errors surface with a clear message instead of silently corrupting
      * data.
      *
-     * Available validator wrappers (pick one):
-     * - `wrappedValidateAjvStorage` from `rxdb/plugins/validate-ajv` (recommended — fastest, best errors)
-     * - `wrappedValidateZSchemaStorage` from `rxdb/plugins/validate-z-schema`
-     * - `wrappedValidateIsMyJsonValidStorage` from `rxdb/plugins/validate-is-my-json-valid`
+     * See the schema validation docs for available validator wrappers:
+     * {@link https://rxdb.info/schema-validation.html}
      *
      * Remove the wrapper in production builds — validation adds overhead that is
      * not needed once the schema is stable.
