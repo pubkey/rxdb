@@ -60,6 +60,8 @@ The firestore is the successor to the realtime database. The big difference is t
 
 The biggest difference to RxDB is that firebase products are only able to be used on top of the Firebase cloud hosted backend, which creates a vendor lock-in. RxDB can replicate with any self hosted CouchDB server or custom GraphQL endpoints. You can even replicate Firestore to RxDB with the [Firestore Replication Plugin](./replication-firestore.md).
 
+[Read more about why RxDB is a good alternative to Firebase](./alternatives/firebase-alternative.md).
+
 ### Meteor
 
 <p align="center">
@@ -73,11 +75,14 @@ Because of how it works, it has proven to be hard to integrate it with other mod
 Meteor uses MongoDB in the backend and can replicate with a Minimongo database in the frontend.
 While testing, it has proven to be impossible to make a meteor app **offline first** capable. There are [some projects](https://github.com/frozeman/meteor-persistent-minimongo2) that might do this, but all are unmaintained.
 
+[Read more about why RxDB is a good alternative to Meteor](./alternatives/meteor-alternative.md).
 
 ### Minimongo
 
 Forked in Jan 2014 from meteorJSs' minimongo package, Minimongo is a client-side, in-memory, JavaScript version of MongoDB with backend replication over HTTP. Similar to MongoDB, it stores data in documents inside of [collections](./rx-collection.md) and also has the same query syntax. Minimongo has different storage adapters for IndexedDB, WebSQL, [LocalStorage](./articles/localstorage.md) and SQLite.
 Compared to RxDB, Minimongo has no concept of revisions or conflict handling, which might lead to undefined behavior when used with replication or in multiple browser tabs. Minimongo has no observable queries or changestream.
+
+[Read more about why RxDB is a good alternative to Minimongo](./alternatives/minimongo-alternative.md).
 
 ### WatermelonDB
 
@@ -88,6 +93,7 @@ Compared to RxDB, Minimongo has no concept of revisions or conflict handling, wh
 WatermelonDB is a reactive & asynchronous JavaScript database. While originally made for [React](./articles/react-database.md) and [React Native](./react-native-database.md), it can also be used with other JavaScript frameworks. The main goal of WatermelonDB is **performance** within an application with lots of data.
 In React Native, WatermelonDB uses the provided SQLite database. Also there is an Expo plugin for WatermelonDB. In a browser, WatermelonDB uses the LokiJS in-memory database to store and query data. WatermelonDB is one of the rare projects that support both Flow and Typescript at the same time.
 
+[Read more about why RxDB is a good alternative to WatermelonDB](./alternatives/watermelondb-alternative.md).
 
 ### AWS Amplify
 <p align="center">
@@ -101,6 +107,8 @@ AWS Amplify is a collection of tools and libraries to develop web- and mobile fr
 Since December 2019 the Amplify library includes the AWS Datastore which is a document-based, client side database that is able to replicate data via AWS AppSync in the background.
 The main difference to other projects is the complex project configuration via the amplify cli and the bit confusing query syntax that works over functions. Complex Queries with multiple `OR/AND` statements are not possible which might change in the future.
 Local development is hard because the AWS AppSync mock does not support realtime replication. It also is not really offline-first because a user login is always required.
+
+**DataStore is deprecated.** Amplify Gen 1 (which includes DataStore) entered maintenance mode in 2024 and reaches end-of-life on May 1, 2027. Amplify Gen 2 does not include a DataStore replacement, so teams must implement their own offline sync layer before that date.
 
 ```ts
 // An AWS datastore OR query
@@ -116,6 +124,8 @@ const posts = await DataStore.query(Post, Predicates.ALL, {
 
 The biggest difference to RxDB is that you have to use the AWS cloud backends. This might not be a problem if your data is at AWS anyway.
 
+[Read more about why RxDB is a good alternative to AWS Amplify DataStore](./alternatives/aws-amplify-datastore-alternative.md).
+
 
 ### RethinkDB
 
@@ -124,11 +134,15 @@ The biggest difference to RxDB is that you have to use the AWS cloud backends. T
 </p>
 
 RethinkDB is a backend database that pushed dynamic JSON data to the client in realtime. It was founded in 2009 and the company shut down in 2016.
-Rethink db is not a client side database, it streams data from the backend to the client which of course does not work while offline.
+RethinkDB is not a client side database, it streams data from the backend to the client which of course does not work while offline.
+
+[Read more about why RxDB is a good alternative to RethinkDB](./alternatives/rethinkdb-alternative.md).
 
 ### Horizon
 
 Horizon is the client side library for RethinkDB which provides useful functions like authentication, permission management and subscription to a RethinkDB backend. Offline support [never made](https://github.com/rethinkdb/horizon/issues/58) it to horizon.
+
+[Read more about why RxDB is a good alternative to Horizon](./alternatives/horizon-alternative.md).
 
 ### Supabase
 
@@ -139,6 +153,8 @@ Horizon is the client side library for RethinkDB which provides useful functions
 
 Supabase labels itself as "*an open source Firebase alternative*". It is a collection of open source tools that together mimic many Firebase features, most of them by providing a wrapper around a PostgreSQL database. While it has realtime queries that run over the wire, like with RethinkDB, Supabase has no client-side storage or replication feature and therefore is not offline first.
 
+[Read more about why RxDB is a good alternative to Supabase](./alternatives/supabase-alternative.md).
+
 ### CouchDB
 
 <p align="center">
@@ -147,6 +163,8 @@ Supabase labels itself as "*an open source Firebase alternative*". It is a colle
 
 Apache CouchDB is a server-side, document-oriented database that is mostly known for its multi-master replication feature. Instead of having a master-slave replication, with CouchDB you can run replication in any constellation without having a master server as bottleneck where the server even can go off- and online at any time. This comes with the drawback of having a slow replication with much network overhead.
 CouchDB has a changestream and a query syntax similar to MongoDB.
+
+[Read more about why RxDB is a good alternative to CouchDB](./alternatives/couchdb-alternative.md).
 
 ### PouchDB
 
@@ -158,6 +176,8 @@ CouchDB has a changestream and a query syntax similar to MongoDB.
 PouchDB is a JavaScript database that is compatible with most of the CouchDB API. It has an adapter system that allows you to switch out the underlying storage layer. There are many adapters like for [IndexedDB](./rx-storage-indexeddb.md), [SQLite](./rx-storage-sqlite.md), the Filesystem and so on. The main benefit is to be able to replicate data with any CouchDB compatible endpoint.
 Because of the CouchDB compatibility, PouchDB has to do a lot of overhead in handling the revision tree of documents, which is why it can show bad performance for bigger datasets.
 RxDB was originally build around PouchDB until the storage layer was abstracted out in version [10.0.0](./releases/10.0.0.md) so it now allows to use different `RxStorage` implementations. PouchDB has some performance issues because of how it has to store the document revision tree to stay compatible with the CouchDB API.
+
+[Read more about why RxDB is a good alternative to PouchDB](./alternatives/pouchdb-alternative.md).
 
 ### Couchbase
 
