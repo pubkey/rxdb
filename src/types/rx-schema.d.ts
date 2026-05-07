@@ -172,10 +172,6 @@ export type RxJsonSchema<
      * RxDB will internally prepend the _deleted field to the index
      * because queries do NOT return documents with _deleted=true.
      *
-     * Every field referenced in a query `selector` or `sort` must have
-     * a matching index entry. Composite indexes must list fields in the
-     * same order as the selector + sort combination.
-     *
      * @example
      * // Single-field index
      * indexes: ['updatedAt']
