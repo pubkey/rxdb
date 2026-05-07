@@ -184,6 +184,8 @@ RxDB was originally build around PouchDB until the storage layer was abstracted 
 Couchbase (originally known as Membase) is another NoSQL document database made for realtime applications.
 It uses the N1QL query language which is more SQL like compared to other NoSQL query languages. In theory you can achieve replication of a Couchbase with a PouchDB database, but this has shown to be not [that easy](https://github.com/pouchdb/pouchdb/issues/7793#issuecomment-501624297).
 
+[Read more about why RxDB is a good alternative to Couchbase](./alternatives/couchbase-alternative.md).
+
 ### Cloudant
 
 Cloudant is a cloud-based service that is based on [CouchDB](./replication-couchdb.md) and has mostly the same features.

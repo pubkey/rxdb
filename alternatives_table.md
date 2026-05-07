@@ -14,7 +14,7 @@ This table tracks the progress of creating individual pages for each RxDB altern
 | **Supabase** | Open source Firebase alternative wrapping PostgreSQL | [x] |
 | **CouchDB** | Server-side document database with multi-master replication | [x] |
 | **PouchDB** | JavaScript database compatible with CouchDB API | [x] |
-| **Couchbase** | NoSQL document database with N1QL query language | [ ] |
+| **Couchbase** | NoSQL document database with N1QL query language | [x] |
 | **Cloudant** | Cloud-based CouchDB service by IBM | [ ] |
 | **Hoodie** | Backend solution for offline-first frontend development | [ ] |
 | **LokiJS** | Embeddable in-memory JavaScript database | [ ] |
