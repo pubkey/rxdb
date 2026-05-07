@@ -192,11 +192,15 @@ Cloudant is a cloud-based service that is based on [CouchDB](./replication-couch
 It was originally designed for cloud computing where data can automatically be distributed between servers. But it can also be used to replicate with frontend PouchDB instances to create scalable web applications.
 It was bought by IBM in 2014 and since 2018 the Cloudant Shared Plan is retired and migrated to IBM Cloud.
 
+[Read more about why RxDB is a good alternative to Cloudant](./alternatives/cloudant-alternative.md).
+
 ### Hoodie
 
 Hoodie is a backend solution that enables offline-first JavaScript frontend development without having to write backend code. Its main goal is to abstract away configuration into simple calls to the Hoodie API.
 It uses CouchDB in the backend and PouchDB in the frontend to enable offline-first capabilities.
 The last commit for hoodie was one year ago and the website (hood.ie) is offline which indicates it is not an active project anymore.
+
+[Read more about why RxDB is a good alternative to Hoodie](./alternatives/hoodie-alternative.md).
 
 ### LokiJS
 
@@ -205,20 +209,28 @@ While the project is not that active anymore, it is more *finished* than *unmain
 
 In the past, RxDB supported using [LokiJS as RxStorage](./rx-storage-lokijs.md) but because the LokiJS is not maintained anymore and had too many issues, this storage option was removed in RxDB version 16.
 
+[Read more about why RxDB is a good alternative to LokiJS](./alternatives/lokijs-alternative.md).
+
 ### Gundb
 
 GUN is a JavaScript graph database. While having many features, the **decentralized** replication is the main unique selling point. You can replicate data Peer-to-Peer without any centralized backend server. GUN has several other features that are useful on top of that, like [encryption](./encryption.md) and authentication.
 
 While testing it was really hard to get basic things running. GUN is open source, but because of how the source code [is written](https://github.com/amark/gun/blob/master/src/put.js), it is very difficult to understand what is going wrong.
 
+[Read more about why RxDB is a good alternative to Gundb](./alternatives/gundb-alternative.md).
+
 ### sql.js
 
 sql.js is a javascript library to run SQLite on the web. It uses a virtual database file stored in memory and does not have any persistence. All data is lost once the JavaScript process exits. sql.js is created by compiling SQLite to WebAssembly so it has about the same features as SQLite. For older browsers there is a JavaScript fallback.
+
+[Read more about why RxDB is a good alternative to sql.js](./alternatives/sql-js-alternative.md).
 
 
 ### absurd-sQL
 
 Absurd-sql is a project that implements an IndexedDB-based persistence for sql.js. Instead of directly writing data into the IndexedDB, it treats IndexedDB like a disk and stores data in blocks there which shows to have a much better performance, mostly because of how [performance expensive](./slow-indexeddb.md) IndexedDB transactions are.
+
+[Read more about why RxDB is a good alternative to absurd-sQL](./alternatives/absurd-sql-alternative.md).
 
 ### NeDB
 
@@ -226,6 +238,8 @@ NeDB was a embedded persistent or in-memory database for Node.js, nw.js, [Electr
 It is document-oriented and had the same query syntax as MongoDB. 
 Like LokiJS it has persistence adapters for IndexedDB etc. to persist the database state on the disc.
 The last commit to NeDB was in **2016**.
+
+[Read more about why RxDB is a good alternative to NeDB](./alternatives/nedb-alternative.md).
 
 ### Dexie.js
 
@@ -235,14 +249,20 @@ Dexie.js is used by Whatsapp Web, Microsoft To Do and Github Desktop.
 
 RxDB supports using [Dexie.js as Database storage](./rx-storage-dexie.md) which enhances IndexedDB via dexie with RxDB features like MongoDB-like queries etc.
 
+[Read more about why RxDB is a good alternative to Dexie.js](./alternatives/dexie-alternative.md).
+
 ### LowDB
 
 LowDB is a small, local JSON database powered by the Lodash library. It is designed to be simple, easy to use, and straightforward. LowDB allows you to perform native JavaScript queries and persist data in a flat JSON file. Written in TypeScript, it's particularly well-suited for small projects, prototyping, or when you need a lightweight, file-based database.
 
 As an alternative to LowDB, [RxDB](./) offers real-time [reactivity](./reactivity.md), allowing developers to subscribe to database changes, a feature not natively available in LowDB. Additionally, RxDB provides robust [query capabilities](./rx-query.md), including the ability to subscribe to query results for automatic UI updates. These features make RxDB a strong alternative to LowDB for more complex and dynamic applications.
 
+[Read more about why RxDB is a good alternative to LowDB](./alternatives/lowdb-alternative.md).
+
 ### localForage
 localForage is a popular JavaScript library for offline storage that provides a simple, promise-based API. It abstracts over different storage mechanisms such as [IndexedDB](./rx-storage-indexeddb.md), WebSQL, or [localStorage](./articles/localstorage.md), making it easier to write code once and have it work seamlessly across various browsers. While localForage is great for storing data locally in a key-value manner, it doesn't provide the real-time reactive queries, [conflict handling](./transactions-conflicts-revisions.md), or revision-based replication that RxDB does. This makes localForage a useful choice for straightforward caching or persistent storage needs, but not ideal for advanced offline-first scenarios requiring multi-user collaboration or complex querying.
+
+[Read more about why RxDB is a good alternative to localForage](./alternatives/localforage-alternative.md).
 
 ### MongoDB Realm
 
@@ -251,37 +271,53 @@ It was meant as replacement for SQLite but is more like an object store than a f
 In 2019 MongoDB bought Realm and changed the projects focus.
 Now Realm is made for replication with the MongoDB Realm Sync based on the MongoDB Atlas Cloud platform. This tight coupling to the MongoDB cloud service is a big downside for most use cases.
 
+[Read more about why RxDB is a good alternative to MongoDB Realm](./alternatives/mongodb-realm-alternative.md).
+
 ### Apollo
 
 The Apollo [GraphQL](./replication-graphql.md) platform is made to transfer data between a server to UI applications over GraphQL endpoints. It contains several tools like GraphQL clients in different languages or libraries to create GraphQL endpoints.
 
 While it is has different caching features for offline usage, compared to RxDB it is not fully offline first because caching alone does not mean your application is fully usable when the user is offline.
 
+[Read more about why RxDB is a good alternative to Apollo](./alternatives/apollo-alternative.md).
+
 ### Replicache 
 
 Replicache is a client-side sync framework for building realtime, collaborative, [local-first](./articles/local-first-future.md) web apps. It claims to work with most backend stacks. In contrast to other local first tools, replicache does not work like a local database. Instead it runs on so called `mutators` that unify behavior on the client and server side. So instead of implementing and calling REST routes on both sides of your stack, you will implement mutators that define a specific delta behavior based on the input data. To observe data in replicache, there are `subscriptions` that notify your frontend application about changes to the state.
 Replicache can be used in most frontend technologies like browsers, React/Remix, NextJS/Vercel and React Native. While Replicache can be installed and used from npm, the Replicache source code is not open source and the Replicache github repo does not allow you to inspect or debug it. Still you can use replicache for in non-commercial projects, or for companies with < $200k revenue (ARR) and < $500k in funding. (2024: Replicache will be free and Rocicorp are working on a new Zerosync product to succeed Replicache and Reflect.)
 
+[Read more about why RxDB is a good alternative to Replicache](./alternatives/replicache-alternative.md).
+
 ### InstantDB
 
 InstantDB is designed for real-time data synchronization with built-in offline support, allowing changes to be queued locally and [synced](./replication.md) when the user reconnects. While it offers seamless [optimistic updates](./articles/optimistic-ui.md) and rollback capabilities, its offline-first design is not as mature or comprehensive as RxDB's - the [offline data](./articles/offline-database.md) is more of a cache, not a full-database sync. The query language used is Datalog, and the backend sync service is written in Clojure. InstantDB is focused more on simplicity and real-time collaboration, with fewer customization options for storage or conflict resolution compared to RxDB, which supports various storage adapters and advanced conflict handling via CRDTs.
+
+[Read more about why RxDB is a good alternative to InstantDB](./alternatives/instantdb-alternative.md).
 
 
 ### Yjs
 
 Yjs is a [CRDT-based](./crdt.md) (Conflict-free Replicated Data Type) library focused on enabling real-time collaboration - particularly for text editing, although it can handle other data types as well. While it provides powerful conflict resolution and peer-to-peer synchronization out of the box, Yjs itself is not a full-fledged database. Instead, you typically combine Yjs with other storage or networking layers to achieve a [local-first architecture](./offline-first.md). This flexibility allows for sophisticated [real-time](./articles/realtime-database.md) features, but also means you must handle indexing, queries, and persistence on your own if you need them. Compared to RxDB, Yjs does not offer built-in replication adapters or a query system, so developers who require a more complete solution for conflict resolution, data persistence, and offline-first capabilities may find RxDB more convenient.
 
+[Read more about why RxDB is a good alternative to Yjs](./alternatives/yjs-alternative.md).
+
 ### ElectricSQL
 
 2024: ElectricSQL is being rewritten in a new Electric-Next branch, which focuses on partial syncing of ("shapes", which makes is basically a NoSQL like document database) of data from a remote Postgres DB to a local clients written in TypeScript/JS or Elixir. The write path is not yet implemented, neither is client-side reactivity. The ElectricSQL backend is written in Elixir.
+
+[Read more about why RxDB is a good alternative to ElectricSQL](./alternatives/electricsql-alternative.md).
 
 ### SignalDB
 
 SignalDB provides a reactive, in-memory local-first JavaScript database with real-time sync, but it doesn't offer the same level of multi-client replication or flexibility with storage backends that RxDB provides, and through a RxDB persistence adapters you can actually use SignalDB for the front-end reactivity while relying on RxDB for backend sync and persistence.
 
+[Read more about why RxDB is a good alternative to SignalDB](./alternatives/signaldb-alternative.md).
+
 ### PowerSync
 
 PowerSync is a "framework" for implementing local-first solutions. It centralizes business logic and conflict resolution on a central, authoritative server (PostgreSQL or MongoDB), vs RxDB that also supports custom backends. Both RxDB and PowerSync can be used with a variety of storage backends, but PowerSync uses SQLite as the front-end database which has shown to be slow because the WASM-SQLite abstraction increases read and write latency. In terms of client SDKs, PowerSync offers Flutter, Kotlin, and Swift in addition to JS/TypeScript. PowerSync offers many client technologies, PowerSync is under a license that restricts commercial use that competes with PowerSync and the JourneyApps Platform.
+
+[Read more about why RxDB is a good alternative to PowerSync](./alternatives/powersync-alternative.md).
 
 # Read further
 
