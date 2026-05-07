@@ -13,7 +13,65 @@ import type { RxCleanupPolicy } from './plugins/cleanup.d.ts';
 import type { ById, HashFunction } from './util.d.ts';
 import type { RxReactivityFactory } from './plugins/reactivity.d.ts';
 
+/**
+ * Options for creating an RxDatabase instance.
+ *
+ * ## Preferred `database/` folder structure
+ *
+ * Keep all database-related code under a single `database/` folder so that
+ * every collection follows the same layout and is easy to locate.
+ *
+ * ```txt
+ * src/
+ *   database/
+ *     index.ts          ← createRxDatabase() call, exports the db instance
+ *     plugins.ts        ← addRxPlugin() calls (dev-mode, validate, etc.)
+ *     collections/
+ *       todos/
+ *         schema.ts     ← schema literal + derived TypeScript type
+ *         methods.ts    ← document-level ORM methods
+ *         hooks.ts      ← pre/post insert/save/remove hooks
+ *         migration.ts  ← migrationStrategies per version
+ *       users/
+ *         schema.ts
+ *         methods.ts
+ *         hooks.ts
+ *         migration.ts
+ *     replication/      ← replication setup per collection/backend
+ *     typings/          ← shared TypeScript helper types
+ * ```
+ *
+ * Every collection folder contains the same set of files. This repetitive
+ * structure makes it straightforward for both humans and AI agents to locate
+ * code, generate new collections, and avoid import errors.
+ */
 export interface RxDatabaseCreator<Internals = any, InstanceCreationOptions = any, Reactivity = unknown> {
+    /**
+     * The RxStorage implementation that persists documents.
+     *
+     * In development, wrap the storage with one of the RxDB schema-validator
+     * plugins so that every write is checked against the collection schema and
+     * schema errors surface with a clear message instead of silently corrupting
+     * data.
+     *
+     * Available validator wrappers (pick one):
+     * - `wrappedValidateAjvStorage` from `rxdb/plugins/validate-ajv` (recommended — fastest, best errors)
+     * - `wrappedValidateZSchemaStorage` from `rxdb/plugins/validate-z-schema`
+     * - `wrappedValidateIsMyJsonValidStorage` from `rxdb/plugins/validate-is-my-json-valid`
+     *
+     * Remove the wrapper in production builds — validation adds overhead that is
+     * not needed once the schema is stable.
+     *
+     * @example
+     * ```ts
+     * import { wrappedValidateAjvStorage } from 'rxdb/plugins/validate-ajv';
+     * import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
+     *
+     * const storage = process.env.NODE_ENV !== 'production'
+     *   ? wrappedValidateAjvStorage({ storage: getRxStorageDexie() })
+     *   : getRxStorageDexie();
+     * ```
+     */
     storage: RxStorage<Internals, InstanceCreationOptions>;
     instanceCreationOptions?: InstanceCreationOptions;
     name: string;
