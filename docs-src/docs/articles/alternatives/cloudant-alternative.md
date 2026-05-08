@@ -6,7 +6,7 @@ description: Replace PouchDB with RxDB on the client while keeping Cloudant or a
 
 # RxDB as a Cloudant Alternative for the JavaScript Client
 
-Teams that adopted **Cloudant** usually picked it because they wanted CouchDB semantics without running their own cluster. The replication protocol, the JSON document model, and the ability to sync with [PouchDB](../replication-couchdb.md) in the browser made Cloudant a popular choice for offline-capable web and mobile apps. Over time, many of those teams ran into the same set of issues on the client side: PouchDB struggles with large datasets, IBM Cloud pricing is hard to predict, and the developer experience around schemas and reactive UIs feels dated.
+Teams that adopted **Cloudant** usually picked it because they wanted CouchDB semantics without running their own cluster. The replication protocol, the JSON document model, and the ability to sync with [PouchDB](../../replication-couchdb.md) in the browser made Cloudant a popular choice for offline-capable web and mobile apps. Over time, many of those teams ran into the same set of issues on the client side: PouchDB struggles with large datasets, IBM Cloud pricing is hard to predict, and the developer experience around schemas and reactive UIs feels dated.
 
 This page explains how **RxDB** fits as a Cloudant alternative on the JavaScript client. You can keep your existing Cloudant backend and replace only the client database, or move to a different sync target entirely.
 
@@ -26,12 +26,12 @@ The protocol stayed open, which is the important part for this article: anything
 
 ## What is RxDB?
 
-[RxDB](https://rxdb.info/) is a [local-first](../articles/local-first-future.md) NoSQL database for JavaScript. It runs in the browser, in [Node.js](../nodejs-database.md), in React Native, in Electron, and in most other JavaScript runtimes. Documents live on the client, queries run locally against indexed storage, and a [replication layer](../replication.md) keeps the local state in sync with a remote endpoint.
+[RxDB](https://rxdb.info/) is a [local-first](../../articles/local-first-future.md) NoSQL database for JavaScript. It runs in the browser, in [Node.js](../../nodejs-database.md), in React Native, in Electron, and in most other JavaScript runtimes. Documents live on the client, queries run locally against indexed storage, and a [replication layer](../../replication.md) keeps the local state in sync with a remote endpoint.
 
 Two design choices matter for Cloudant users:
 
-- The storage layer is swappable. You can pick [IndexedDB](../rx-storage-indexeddb.md), [OPFS](../rx-storage-opfs.md), [Dexie](../rx-storage-dexie.md), in-memory, SQLite, and others depending on the runtime.
-- The replication layer is pluggable. There is a dedicated [CouchDB replication plugin](../replication-couchdb.md) that speaks the same protocol Cloudant uses, plus generic [HTTP replication](../replication-http.md) for custom endpoints.
+- The storage layer is swappable. You can pick [IndexedDB](../../rx-storage-indexeddb.md), [OPFS](../../rx-storage-opfs.md), [Dexie](../../rx-storage-dexie.md), in-memory, SQLite, and others depending on the runtime.
+- The replication layer is pluggable. There is a dedicated [CouchDB replication plugin](../../replication-couchdb.md) that speaks the same protocol Cloudant uses, plus generic [HTTP replication](../../replication-http.md) for custom endpoints.
 
 ## Where Cloudant with PouchDB Falls Short on the Client
 
@@ -39,7 +39,7 @@ Cloudant on the server is solid. The friction shows up in the browser, where mos
 
 ### PouchDB Performance with Large Datasets
 
-PouchDB stores a full **revision tree** for every document to stay protocol-compatible with CouchDB. On top of [IndexedDB](../slow-indexeddb.md), this design pays a cost for every read and write:
+PouchDB stores a full **revision tree** for every document to stay protocol-compatible with CouchDB. On top of [IndexedDB](../../slow-indexeddb.md), this design pays a cost for every read and write:
 
 - Each document update appends to a per-document revision tree, which inflates storage size.
 - Bulk inserts trigger many IndexedDB transactions because of the way revision metadata is written.
@@ -66,29 +66,29 @@ RxDB keeps the parts that made Cloudant attractive and replaces the parts that h
 
 ### 1. Still Talks to Any CouchDB-Compatible Server
 
-The [CouchDB replication plugin](../replication-couchdb.md) implements the standard CouchDB replication protocol, so it works against Cloudant, Apache CouchDB, and any compatible service. You keep your existing backend, your existing documents, and your existing access control.
+The [CouchDB replication plugin](../../replication-couchdb.md) implements the standard CouchDB replication protocol, so it works against Cloudant, Apache CouchDB, and any compatible service. You keep your existing backend, your existing documents, and your existing access control.
 
 ### 2. Faster Client Storage Options
 
 RxDB does not force a single storage engine. For browsers you can choose:
 
-- [IndexedDB storage](../rx-storage-indexeddb.md) for broad compatibility.
-- [OPFS storage](../rx-storage-opfs.md) for the fastest persistent storage in modern browsers.
-- [Dexie storage](../rx-storage-dexie.md) when you want a battle-tested IndexedDB wrapper.
+- [IndexedDB storage](../../rx-storage-indexeddb.md) for broad compatibility.
+- [OPFS storage](../../rx-storage-opfs.md) for the fastest persistent storage in modern browsers.
+- [Dexie storage](../../rx-storage-dexie.md) when you want a battle-tested IndexedDB wrapper.
 
 Because RxDB does not maintain a full CouchDB-style revision tree on disk, write throughput and initial sync are noticeably faster than PouchDB on the same hardware.
 
 ### 3. MongoDB-Style Queries
 
-[RxQuery](../rx-query.md) supports a Mango-like syntax with selectors, sort, skip, limit, and indexes defined at the schema level. The query planner uses your indexes directly against the underlying storage, so equality, range, and compound queries stay fast as the dataset grows.
+[RxQuery](../../rx-query.md) supports a Mango-like syntax with selectors, sort, skip, limit, and indexes defined at the schema level. The query planner uses your indexes directly against the underlying storage, so equality, range, and compound queries stay fast as the dataset grows.
 
 ### 4. Observable Queries
 
-Every query and document in RxDB is [reactive](../reactivity.md). A query returns an observable that emits a new result whenever a matching document changes, locally or through replication. UI frameworks like React, Vue, Svelte, and Angular bind to those observables directly, which removes a lot of glue code that PouchDB users normally write by hand.
+Every query and document in RxDB is [reactive](../../reactivity.md). A query returns an observable that emits a new result whenever a matching document changes, locally or through replication. UI frameworks like React, Vue, Svelte, and Angular bind to those observables directly, which removes a lot of glue code that PouchDB users normally write by hand.
 
 ### 5. Schemas, Migrations, and Plugins
 
-[Collections](../rx-collection.md) are defined with JSON schemas, which gives you validation, typed documents, schema versioning with migration strategies, encryption, attachments, and a long list of optional plugins. Cloudant on its own does not enforce a schema, and PouchDB does not either. Adding RxDB on the client gives you that structure without changing the backend.
+[Collections](../../rx-collection.md) are defined with JSON schemas, which gives you validation, typed documents, schema versioning with migration strategies, encryption, attachments, and a long list of optional plugins. Cloudant on its own does not enforce a schema, and PouchDB does not either. Adding RxDB on the client gives you that structure without changing the backend.
 
 ## Code Sample: Replicating with a Cloudant CouchDB Endpoint
 
@@ -169,21 +169,21 @@ There is no separate change feed wiring, no manual diffing, and no extra Cloudan
 You do not have to leave Cloudant to fix the client. A common migration path looks like this:
 
 1. Keep the existing Cloudant database, indexes, and security configuration.
-2. Replace PouchDB on the client with RxDB plus the [CouchDB replication plugin](../replication-couchdb.md).
-3. Pick a storage adapter that fits the target runtime, for example [OPFS](../rx-storage-opfs.md) for desktop browsers and [IndexedDB](../rx-storage-indexeddb.md) for older ones.
+2. Replace PouchDB on the client with RxDB plus the [CouchDB replication plugin](../../replication-couchdb.md).
+3. Pick a storage adapter that fits the target runtime, for example [OPFS](../../rx-storage-opfs.md) for desktop browsers and [IndexedDB](../../rx-storage-indexeddb.md) for older ones.
 4. Define RxDB schemas that mirror your existing document shapes and add validations gradually.
 5. Roll the new client out behind a feature flag so existing PouchDB users keep working until they switch over.
 
 Because RxDB speaks the CouchDB replication protocol, the server does not know or care whether the client is PouchDB or RxDB. You can run both at the same time during the transition.
 
-If you later decide to leave IBM Cloud entirely, you can repoint the [CouchDB replication](../replication-couchdb.md) at a self-hosted CouchDB cluster, or switch to [generic HTTP replication](../replication-http.md) against your own API. The client code does not change.
+If you later decide to leave IBM Cloud entirely, you can repoint the [CouchDB replication](../../replication-couchdb.md) at a self-hosted CouchDB cluster, or switch to [generic HTTP replication](../../replication-http.md) against your own API. The client code does not change.
 
 ## FAQ
 
 <details>
 <summary>Can RxDB replicate with Cloudant?</summary>
 
-Yes. Cloudant exposes the standard CouchDB replication protocol, and RxDB ships an official [CouchDB replication plugin](../replication-couchdb.md) that targets that protocol. Point the plugin at your Cloudant database URL and authenticate the same way you would with any other CouchDB client. Both pull and push are supported, including continuous live replication.
+Yes. Cloudant exposes the standard CouchDB replication protocol, and RxDB ships an official [CouchDB replication plugin](../../replication-couchdb.md) that targets that protocol. Point the plugin at your Cloudant database URL and authenticate the same way you would with any other CouchDB client. Both pull and push are supported, including continuous live replication.
 
 </details>
 
@@ -197,14 +197,14 @@ Cloudant is still offered as a managed service inside IBM Cloud Databases. The C
 <details>
 <summary>Why is RxDB faster than PouchDB?</summary>
 
-PouchDB stores a full per-document revision tree to mirror CouchDB on disk, which adds overhead to every read and write on top of [slow IndexedDB](../slow-indexeddb.md). RxDB separates the storage engine from the replication protocol, so the on-disk format is optimized for the client and replication metadata is kept compact. RxDB also supports faster storage backends like [OPFS](../rx-storage-opfs.md) and uses event reduction to avoid recomputing observable queries on every change.
+PouchDB stores a full per-document revision tree to mirror CouchDB on disk, which adds overhead to every read and write on top of [slow IndexedDB](../../slow-indexeddb.md). RxDB separates the storage engine from the replication protocol, so the on-disk format is optimized for the client and replication metadata is kept compact. RxDB also supports faster storage backends like [OPFS](../../rx-storage-opfs.md) and uses event reduction to avoid recomputing observable queries on every change.
 
 </details>
 
 <details>
 <summary>How do I migrate from PouchDB plus Cloudant to RxDB plus Cloudant?</summary>
 
-Install RxDB and the [CouchDB replication plugin](../replication-couchdb.md), define schemas for your existing collections, and start replication against the same Cloudant URL you used with PouchDB. RxDB will pull the documents into local storage on first run. You can keep the old PouchDB code path during a rollout window and remove it after users have synced. No server-side changes are required.
+Install RxDB and the [CouchDB replication plugin](../../replication-couchdb.md), define schemas for your existing collections, and start replication against the same Cloudant URL you used with PouchDB. RxDB will pull the documents into local storage on first run. You can keep the old PouchDB code path during a rollout window and remove it after users have synced. No server-side changes are required.
 
 </details>
 
@@ -215,13 +215,13 @@ Install RxDB and the [CouchDB replication plugin](../replication-couchdb.md), de
 | Client storage | IndexedDB via PouchDB only | IndexedDB, OPFS, Dexie, in-memory, SQLite, more |
 | Replication protocol | CouchDB | CouchDB, HTTP, GraphQL, WebRTC, P2P, Firestore, others |
 | Backend choice | IBM Cloud Cloudant | Cloudant, self-hosted CouchDB, custom servers |
-| Query language | Mango on PouchDB | Mango-like [RxQuery](../rx-query.md) with indexes |
+| Query language | Mango on PouchDB | Mango-like [RxQuery](../../rx-query.md) with indexes |
 | Reactive queries | Manual via change feed | Built-in observable queries |
 | Schema validation | None on client | JSON schema per collection |
 | Schema migrations | Manual | Built-in versioned migrations |
 | Encryption | Manual | Optional plugin |
 | Conflict handling | Revision-based, manual resolution | Pluggable conflict handler per collection |
-| Offline-first | Yes, with PouchDB caveats | Yes, [offline-first](../offline-first.md) by design |
+| Offline-first | Yes, with PouchDB caveats | Yes, [offline-first](../../offline-first.md) by design |
 | Vendor lock-in | IBM Cloud account and billing | None, replace replication target at any time |
 
 ## Follow Up
@@ -230,7 +230,7 @@ If Cloudant works for your backend but PouchDB is holding back your client, RxDB
 
 More resources:
 
-- [RxDB Sync Engine](../replication.md)
-- [CouchDB Replication Plugin](../replication-couchdb.md)
-- [HTTP Replication](../replication-http.md)
+- [RxDB Sync Engine](../../replication.md)
+- [CouchDB Replication Plugin](../../replication-couchdb.md)
+- [HTTP Replication](../../replication-http.md)
 - [RxDB GitHub Repository](/code/)

@@ -128,7 +128,7 @@ Supabase is built on PostgreSQL. The data model is relational: tables, rows, for
 
 [RxDB](https://rxdb.info) is a local-first JavaScript database. All reads and writes go to local storage first. Replication with a backend runs in the background. The application works offline by design, and data is synced when connectivity is available.
 
-RxDB includes a dedicated [Supabase Replication Plugin](../replication-supabase.md) that connects your RxDB collections to Supabase tables using PostgREST for pull and push, and Supabase Realtime for live streaming. This gives you the best of both: a locally cached, reactive database on the client, and a PostgreSQL backend in the cloud.
+RxDB includes a dedicated [Supabase Replication Plugin](../../replication-supabase.md) that connects your RxDB collections to Supabase tables using PostgREST for pull and push, and Supabase Realtime for live streaming. This gives you the best of both: a locally cached, reactive database on the client, and a PostgreSQL backend in the cloud.
 
 ### Local-First Data Storage
 
@@ -299,7 +299,7 @@ await db.addCollections({
 });
 ```
 
-For collaborative applications where concurrent edits from different users should be merged rather than one discarding the other, RxDB supports [CRDTs (Conflict-free Replicated Data Types)](../crdt.md):
+For collaborative applications where concurrent edits from different users should be merged rather than one discarding the other, RxDB supports [CRDTs (Conflict-free Replicated Data Types)](../../crdt.md):
 
 ```ts
 import { getCRDTSchemaPart, RxDBcrdtPlugin } from 'rxdb/plugins/crdt';
@@ -330,12 +330,12 @@ RxDB's storage layer is pluggable. You choose the storage engine based on the pl
 
 | Environment | Storage Option |
 |---|---|
-| Browser | [IndexedDB](../rx-storage-indexeddb.md) |
-| Browser (high-throughput writes) | [OPFS (Origin Private File System)](../rx-storage-opfs.md) |
-| React Native / Expo | [SQLite via expo-sqlite or op-sqlite](../rx-storage-sqlite.md) |
-| Node.js / Electron | [SQLite (better-sqlite3)](../rx-storage-sqlite.md) |
-| Multiple browser tabs | [SharedWorker](../rx-storage-shared-worker.md) |
-| Tests | [Memory](../rx-storage-memory.md) |
+| Browser | [IndexedDB](../../rx-storage-indexeddb.md) |
+| Browser (high-throughput writes) | [OPFS (Origin Private File System)](../../rx-storage-opfs.md) |
+| React Native / Expo | [SQLite via expo-sqlite or op-sqlite](../../rx-storage-sqlite.md) |
+| Node.js / Electron | [SQLite (better-sqlite3)](../../rx-storage-sqlite.md) |
+| Multiple browser tabs | [SharedWorker](../../rx-storage-shared-worker.md) |
+| Tests | [Memory](../../rx-storage-memory.md) |
 
 Switching storage is a one-line change:
 
@@ -352,13 +352,13 @@ const db = await createRxDatabase({
 });
 ```
 
-The [OPFS storage](../rx-storage-opfs.md) option is worth noting specifically for applications that Supabase users might build. OPFS gives browsers access to a private file system with low-level read and write operations. This is significantly faster than IndexedDB for write-heavy workloads, because IndexedDB transactions carry significant overhead per operation.
+The [OPFS storage](../../rx-storage-opfs.md) option is worth noting specifically for applications that Supabase users might build. OPFS gives browsers access to a private file system with low-level read and write operations. This is significantly faster than IndexedDB for write-heavy workloads, because IndexedDB transactions carry significant overhead per operation.
 
 ### Multi-Tab Support in the Browser
 
 When a user opens a web application in multiple browser tabs, each tab typically has its own JavaScript runtime. Without coordination, each tab would have its own copy of the local database, and writes from one tab would not appear in others.
 
-RxDB solves this with the [SharedWorker storage](../rx-storage-shared-worker.md):
+RxDB solves this with the [SharedWorker storage](../../rx-storage-shared-worker.md):
 
 ```ts
 import { getRxStorageSharedWorker } from 'rxdb/plugins/storage-shared-worker';
@@ -378,7 +378,7 @@ All tabs share one database instance running in the SharedWorker. A write from t
 
 ### Schema Validation and TypeScript Support
 
-RxDB validates every document against a [JSON Schema](../rx-schema.md) before writing it to storage. Invalid documents are rejected at the database level:
+RxDB validates every document against a [JSON Schema](../../rx-schema.md) before writing it to storage. Invalid documents are rejected at the database level:
 
 ```ts
 try {
@@ -408,7 +408,7 @@ if (post) {
 
 ### Schema Migrations
 
-When your data model changes, RxDB's [migration system](../migration-schema.md) handles the transition automatically. You increment the schema version number and provide a migration strategy:
+When your data model changes, RxDB's [migration system](../../migration-schema.md) handles the transition automatically. You increment the schema version number and provide a migration strategy:
 
 ```ts
 await db.addCollections({
@@ -444,7 +444,7 @@ When the database is opened with the new schema version, RxDB migrates the exist
 
 ### Encryption at Rest
 
-RxDB includes a [built-in encryption plugin](../encryption.md) for encrypting document fields before writing them to local storage. This is important for mobile applications that store sensitive user data locally:
+RxDB includes a [built-in encryption plugin](../../encryption.md) for encrypting document fields before writing them to local storage. This is important for mobile applications that store sensitive user data locally:
 
 ```ts
 import { wrappedKeyEncryptionCryptoJsStorage } from 'rxdb/plugins/encryption-crypto-js';
@@ -496,7 +496,7 @@ This combination gives you a complete local-first application stack. The RxDB Su
    Auth (GoTrue)
 ```
 
-You can also add custom backends or migrate away from Supabase later. RxDB supports [HTTP replication](../replication-http.md), [GraphQL replication](../replication-graphql.md), [CouchDB replication](../replication-couchdb.md), [WebSocket replication](../replication-websocket.md), and [WebRTC replication](../replication-webrtc.md) without changing any of the application logic that works against the local database.
+You can also add custom backends or migrate away from Supabase later. RxDB supports [HTTP replication](../../replication-http.md), [GraphQL replication](../../replication-graphql.md), [CouchDB replication](../../replication-couchdb.md), [WebSocket replication](../../replication-websocket.md), and [WebRTC replication](../../replication-webrtc.md) without changing any of the application logic that works against the local database.
 
 ---
 
@@ -614,7 +614,7 @@ From this point, the application reads and writes to IndexedDB, and the replicat
 <details>
 <summary>Does RxDB replace Supabase?</summary>
 
-No. RxDB is a client-side database and does not replace a backend. It stores data locally in the browser or on the device. Supabase provides the PostgreSQL backend, authentication, and storage. The two are designed to work together: RxDB handles local data and sync logic, Supabase handles server-side persistence and auth. If you want to sync RxDB with Supabase, use the [Supabase Replication Plugin](../replication-supabase.md).
+No. RxDB is a client-side database and does not replace a backend. It stores data locally in the browser or on the device. Supabase provides the PostgreSQL backend, authentication, and storage. The two are designed to work together: RxDB handles local data and sync logic, Supabase handles server-side persistence and auth. If you want to sync RxDB with Supabase, use the [Supabase Replication Plugin](../../replication-supabase.md).
 
 </details>
 
@@ -628,7 +628,7 @@ Yes. The Supabase replication plugin uses the official `@supabase/supabase-js` c
 <details>
 <summary>How does conflict resolution work when two clients write to the same document offline?</summary>
 
-When both clients reconnect, RxDB detects that the local version and the server version differ. It calls the conflict handler you defined when creating the collection. You decide the resolution strategy: last-write-wins by timestamp, field-level merge, or server-always-wins. For complex collaborative scenarios, RxDB's [CRDT plugin](../crdt.md) can merge changes from multiple clients automatically without a custom handler.
+When both clients reconnect, RxDB detects that the local version and the server version differ. It calls the conflict handler you defined when creating the collection. You decide the resolution strategy: last-write-wins by timestamp, field-level merge, or server-always-wins. For complex collaborative scenarios, RxDB's [CRDT plugin](../../crdt.md) can merge changes from multiple clients automatically without a custom handler.
 
 </details>
 

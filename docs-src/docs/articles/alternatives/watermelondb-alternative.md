@@ -109,7 +109,7 @@ Community discussions through 2024 and into 2025 show that many teams working on
 
 ### Browser/Web Support Is a Secondary Concern
 
-In the browser, WatermelonDB falls back to the LokiJS adapter, an in-memory JavaScript database backed by IndexedDB. LokiJS is no longer actively maintained. This means the web version of WatermelonDB is built on an unmaintained dependency, and it does not take advantage of modern browser storage APIs like the [Origin Private File System (OPFS)](../rx-storage-opfs.md), which offers significantly faster persistent storage than IndexedDB for write-heavy workloads.
+In the browser, WatermelonDB falls back to the LokiJS adapter, an in-memory JavaScript database backed by IndexedDB. LokiJS is no longer actively maintained. This means the web version of WatermelonDB is built on an unmaintained dependency, and it does not take advantage of modern browser storage APIs like the [Origin Private File System (OPFS)](../../rx-storage-opfs.md), which offers significantly faster persistent storage than IndexedDB for write-heavy workloads.
 
 For teams building apps that run on both web and mobile, WatermelonDB's web support feels like an afterthought compared to the optimized native experience.
 
@@ -135,13 +135,13 @@ RxDB includes a replication system with ready-made plugins for common backends. 
 
 | Plugin | Backend |
 |---|---|
-| [HTTP replication](../replication-http.md) | Any REST API |
-| [CouchDB replication](../replication-couchdb.md) | CouchDB or compatible (e.g., PouchDB sync server) |
-| [GraphQL replication](../replication-graphql.md) | Any GraphQL API |
-| [Firestore replication](../replication-firestore.md) | Google Firebase Firestore |
-| [WebSocket replication](../replication-websocket.md) | WebSocket-based backends |
-| [WebRTC replication](../replication-webrtc.md) | Peer-to-peer, no server required |
-| [Supabase replication](../replication-http.md) | Supabase Postgres backend |
+| [HTTP replication](../../replication-http.md) | Any REST API |
+| [CouchDB replication](../../replication-couchdb.md) | CouchDB or compatible (e.g., PouchDB sync server) |
+| [GraphQL replication](../../replication-graphql.md) | Any GraphQL API |
+| [Firestore replication](../../replication-firestore.md) | Google Firebase Firestore |
+| [WebSocket replication](../../replication-websocket.md) | WebSocket-based backends |
+| [WebRTC replication](../../replication-webrtc.md) | Peer-to-peer, no server required |
+| [Supabase replication](../../replication-http.md) | Supabase Postgres backend |
 
 For a custom backend, the replication interface requires only a pull handler and an optional push handler:
 
@@ -212,7 +212,7 @@ await db.addCollections({
 });
 ```
 
-For collaborative editing scenarios, RxDB also supports [CRDTs (Conflict-free Replicated Data Types)](../crdt.md), which resolve conflicts automatically and deterministically without custom handler logic:
+For collaborative editing scenarios, RxDB also supports [CRDTs (Conflict-free Replicated Data Types)](../../crdt.md), which resolve conflicts automatically and deterministically without custom handler logic:
 
 ```ts
 import { getCRDTSchemaPart, RxDBcrdtPlugin } from 'rxdb/plugins/crdt';
@@ -242,12 +242,12 @@ RxDB's storage system is pluggable. You choose the storage engine based on your 
 
 | Environment | Storage Option |
 |---|---|
-| Browser | [IndexedDB](../rx-storage-indexeddb.md) |
-| Browser (high-throughput) | [OPFS (Origin Private File System)](../rx-storage-opfs.md) |
-| React Native / Expo | [SQLite via op-sqlite or expo-sqlite](../rx-storage-sqlite.md) |
-| Node.js / Electron | [SQLite (better-sqlite3)](../rx-storage-sqlite.md) |
-| Multi-tab browsers | [SharedWorker](../rx-storage-shared-worker.md) |
-| Tests / CI | [Memory](../rx-storage-memory.md) |
+| Browser | [IndexedDB](../../rx-storage-indexeddb.md) |
+| Browser (high-throughput) | [OPFS (Origin Private File System)](../../rx-storage-opfs.md) |
+| React Native / Expo | [SQLite via op-sqlite or expo-sqlite](../../rx-storage-sqlite.md) |
+| Node.js / Electron | [SQLite (better-sqlite3)](../../rx-storage-sqlite.md) |
+| Multi-tab browsers | [SharedWorker](../../rx-storage-shared-worker.md) |
+| Tests / CI | [Memory](../../rx-storage-memory.md) |
 
 Switching storage is a one-line change to the `storage` parameter when creating the database:
 
@@ -284,7 +284,7 @@ await db.addCollections({
 });
 ```
 
-The OPFS storage option is particularly relevant for teams moving away from WatermelonDB's web adapter. OPFS gives browsers access to a private file system with low-level read and write operations that are [significantly faster](../rx-storage-opfs.md) than standard IndexedDB for bulk reads and sequential writes. Unlike the LokiJS adapter in WatermelonDB, OPFS is a modern, browser-native API maintained by the W3C.
+The OPFS storage option is particularly relevant for teams moving away from WatermelonDB's web adapter. OPFS gives browsers access to a private file system with low-level read and write operations that are [significantly faster](../../rx-storage-opfs.md) than standard IndexedDB for bulk reads and sequential writes. Unlike the LokiJS adapter in WatermelonDB, OPFS is a modern, browser-native API maintained by the W3C.
 
 ### Framework-Agnostic Reactive Queries
 
@@ -342,7 +342,7 @@ RxDB uses the [event-reduce](https://github.com/pubkey/event-reduce) algorithm t
 
 ### React Native Support Without Native Code Generation
 
-RxDB on React Native uses the [SQLite storage plugin](../rx-storage-sqlite.md), which supports multiple underlying SQLite drivers including `expo-sqlite` (for Expo managed workflows) and `op-sqlite` (a high-performance JSI-based driver). No custom Objective-C or Java code generation is required. You define your schema in TypeScript and the library handles everything else:
+RxDB on React Native uses the [SQLite storage plugin](../../rx-storage-sqlite.md), which supports multiple underlying SQLite drivers including `expo-sqlite` (for Expo managed workflows) and `op-sqlite` (a high-performance JSI-based driver). No custom Objective-C or Java code generation is required. You define your schema in TypeScript and the library handles everything else:
 
 ```ts
 import { createRxDatabase } from 'rxdb/plugins/core';
@@ -364,7 +364,7 @@ RxDB also runs correctly on the React Native New Architecture (Fabric, TurboModu
 
 ### Schema Validation and TypeScript
 
-RxDB validates every document against a [JSON Schema](../rx-schema.md) before it is written. Invalid documents are rejected at the database level, not by application-layer checks:
+RxDB validates every document against a [JSON Schema](../../rx-schema.md) before it is written. Invalid documents are rejected at the database level, not by application-layer checks:
 
 ```ts
 try {
@@ -385,7 +385,7 @@ RxDB also generates TypeScript types automatically from the schema, so you get I
 
 ### Multi-Tab Support in the Browser
 
-When a user opens your web application in multiple browser tabs, each tab needs access to the same data. RxDB handles this with its [SharedWorker storage](../rx-storage-shared-worker.md): all tabs connect to a single database instance running in a SharedWorker, so writes from any tab are immediately visible in all others:
+When a user opens your web application in multiple browser tabs, each tab needs access to the same data. RxDB handles this with its [SharedWorker storage](../../rx-storage-shared-worker.md): all tabs connect to a single database instance running in a SharedWorker, so writes from any tab are immediately visible in all others:
 
 ```ts
 import { getRxStorageSharedWorker } from 'rxdb/plugins/storage-shared-worker';
@@ -405,7 +405,7 @@ WatermelonDB's web adapter does not have a multi-tab coordination mechanism beca
 
 ### Encryption
 
-RxDB has a [built-in encryption plugin](../encryption.md) that encrypts document fields at rest. This is particularly relevant for mobile applications that store sensitive data locally. You can mark individual schema fields as encrypted:
+RxDB has a [built-in encryption plugin](../../encryption.md) that encrypts document fields at rest. This is particularly relevant for mobile applications that store sensitive data locally. You can mark individual schema fields as encrypted:
 
 ```ts
 import { wrappedKeyEncryptionCryptoJsStorage } from 'rxdb/plugins/encryption-crypto-js';
@@ -542,21 +542,21 @@ To add replication with your backend, import `replicateRxCollection` and point i
 <details>
 <summary>Can RxDB match WatermelonDB's performance for large datasets on React Native?</summary>
 
-RxDB on React Native uses SQLite through drivers like `op-sqlite`, which is a JSI-based SQLite driver. This puts RxDB in the same performance class as WatermelonDB's native SQLite adapter for most workloads. RxDB also runs queries outside the UI thread when using the [Worker storage plugin](../rx-storage-worker.md), which prevents database work from blocking React Native's JavaScript thread.
+RxDB on React Native uses SQLite through drivers like `op-sqlite`, which is a JSI-based SQLite driver. This puts RxDB in the same performance class as WatermelonDB's native SQLite adapter for most workloads. RxDB also runs queries outside the UI thread when using the [Worker storage plugin](../../rx-storage-worker.md), which prevents database work from blocking React Native's JavaScript thread.
 
 </details>
 
 <details>
 <summary>Does RxDB work with Expo managed workflows?</summary>
 
-Yes. RxDB supports `expo-sqlite` as a storage backend through the SQLite plugin. This works in Expo managed workflows without ejecting or running `expo prebuild`. You can also use the [Memory storage](../rx-storage-memory.md) for tests in a Node.js environment without any native dependencies.
+Yes. RxDB supports `expo-sqlite` as a storage backend through the SQLite plugin. This works in Expo managed workflows without ejecting or running `expo prebuild`. You can also use the [Memory storage](../../rx-storage-memory.md) for tests in a Node.js environment without any native dependencies.
 
 </details>
 
 <details>
 <summary>How does RxDB handle schema migrations?</summary>
 
-RxDB has a built-in [migration system](../migration-schema.md). When you increment the schema `version` number, you provide migration strategies that transform documents from the old shape to the new shape. RxDB runs these migrations automatically when the database is opened with a newer schema version. No native rebuild is required, and migrations run against the stored documents in the local database.
+RxDB has a built-in [migration system](../../migration-schema.md). When you increment the schema `version` number, you provide migration strategies that transform documents from the old shape to the new shape. RxDB runs these migrations automatically when the database is opened with a newer schema version. No native rebuild is required, and migrations run against the stored documents in the local database.
 
 </details>
 

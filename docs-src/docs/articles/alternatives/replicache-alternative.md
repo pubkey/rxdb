@@ -6,7 +6,7 @@ description: Compare RxDB and Replicache for local-first web apps. Learn how RxD
 
 # RxDB as a Replicache Alternative for Local-First Web Apps
 
-Replicache built strong mindshare in the local-first community with its mutator-based sync model and tight focus on collaborative web apps. Teams pick it because it advertises support for many backend stacks and ships a polished developer experience. Once a project grows, the mutator architecture, the source-available license, and the opinionated query API push some teams to look for a Replicache alternative. RxDB is an open source [local-first](../articles/local-first-future.md), NoSQL database for JavaScript that stores data on the client, runs MongoDB-style queries against a local store, and replicates with any backend you control.
+Replicache built strong mindshare in the local-first community with its mutator-based sync model and tight focus on collaborative web apps. Teams pick it because it advertises support for many backend stacks and ships a polished developer experience. Once a project grows, the mutator architecture, the source-available license, and the opinionated query API push some teams to look for a Replicache alternative. RxDB is an open source [local-first](../../articles/local-first-future.md), NoSQL database for JavaScript that stores data on the client, runs MongoDB-style queries against a local store, and replicates with any backend you control.
 
 <center>
     <a href="https://rxdb.info/">
@@ -18,20 +18,20 @@ Replicache built strong mindshare in the local-first community with its mutator-
 
 Replicache was built by [Rocicorp](https://rocicorp.dev/), founded by Aaron Boodman and Erik Arvidsson, and first appeared around 2020. It was distributed under a source-available license rather than an OSI-approved open source license. In 2024 Rocicorp announced that Replicache would be free to use and that the next-generation product, Zero (sometimes referred to as Zerosync), would succeed both Replicache and Reflect.
 
-The defining trait of Replicache is its mutator-driven model. Instead of writing to a local database and pushing the changes through a generic replication protocol, you define mutator functions that describe how a piece of input data changes the state. Each mutator runs first on the client for instant feedback and then again on the server to produce the authoritative state. The frontend reads data through `useSubscribe` and similar hooks that fire when the local cache changes. This gives strong [optimistic UI](../articles/optimistic-ui.md) behavior, but it forces you to mirror logic across both sides of the stack and to design your APIs around mutator names rather than collections, queries, or REST resources.
+The defining trait of Replicache is its mutator-driven model. Instead of writing to a local database and pushing the changes through a generic replication protocol, you define mutator functions that describe how a piece of input data changes the state. Each mutator runs first on the client for instant feedback and then again on the server to produce the authoritative state. The frontend reads data through `useSubscribe` and similar hooks that fire when the local cache changes. This gives strong [optimistic UI](../../articles/optimistic-ui.md) behavior, but it forces you to mirror logic across both sides of the stack and to design your APIs around mutator names rather than collections, queries, or REST resources.
 
 ## What Is RxDB?
 
-RxDB (Reactive Database) is a JavaScript database that stores documents in a local [RxCollection](../rx-collection.md) and exposes [reactive queries](../reactivity.md) on top of that store. It runs in the browser, in Node.js, in Electron, and in [React Native](../react-native-database.md). The local store is the source of truth for the UI, and the [Sync Engine](../replication.md) keeps it aligned with a remote endpoint. RxDB is licensed under Apache 2.0 with optional premium plugins, so the core code is fully open source and auditable.
+RxDB (Reactive Database) is a JavaScript database that stores documents in a local [RxCollection](../../rx-collection.md) and exposes [reactive queries](../../reactivity.md) on top of that store. It runs in the browser, in Node.js, in Electron, and in [React Native](../../react-native-database.md). The local store is the source of truth for the UI, and the [Sync Engine](../../replication.md) keeps it aligned with a remote endpoint. RxDB is licensed under Apache 2.0 with optional premium plugins, so the core code is fully open source and auditable.
 
 Key properties:
 
 - Document model with JSON schemas and indexes.
-- MongoDB-style query language through [RxQuery](../rx-query.md).
+- MongoDB-style query language through [RxQuery](../../rx-query.md).
 - Reactive results based on RxJS Observables.
 - Pluggable storage layer (IndexedDB, OPFS, SQLite, in-memory, and more).
-- Replication with [HTTP](../replication-http.md), [GraphQL](../replication-graphql.md), CouchDB, Firestore, WebRTC, and custom transports.
-- Custom [conflict handlers](../transactions-conflicts-revisions.md) per collection.
+- Replication with [HTTP](../../replication-http.md), [GraphQL](../../replication-graphql.md), CouchDB, Firestore, WebRTC, and custom transports.
+- Custom [conflict handlers](../../transactions-conflicts-revisions.md) per collection.
 
 ## Where Replicache Falls Short
 
@@ -39,7 +39,7 @@ Replicache is a focused product, and that focus shows up as friction once requir
 
 ### 1. Mutator Architecture Forces Shared Logic
 
-Every write goes through a mutator. The same function definition has to exist on the client and on the server, and both must produce the same delta for the same input. Teams that already own a REST or GraphQL backend end up wrapping their existing endpoints in mutators or rewriting business logic on the client. RxDB instead treats the local collection as a regular database. Writes happen locally and the [replication protocol](../replication.md) ships changes to whatever endpoint you already run.
+Every write goes through a mutator. The same function definition has to exist on the client and on the server, and both must produce the same delta for the same input. Teams that already own a REST or GraphQL backend end up wrapping their existing endpoints in mutators or rewriting business logic on the client. RxDB instead treats the local collection as a regular database. Writes happen locally and the [replication protocol](../../replication.md) ships changes to whatever endpoint you already run.
 
 ### 2. Source-Available, Not Open Source Until 2024
 
@@ -47,7 +47,7 @@ For most of Replicache's history the source code shipped under a source-availabl
 
 ### 3. Opinionated Query API
 
-Replicache reads data through key/value scans and `useSubscribe`. There is no built-in support for MongoDB-style operators, secondary indexes defined in a schema, or aggregation. Anything that resembles a query is something you assemble in JavaScript on top of the scan API. RxDB ships a full [RxQuery](../rx-query.md) engine with `$gt`, `$in`, `$regex`, sorting, limits, and indexed lookups, plus observable results.
+Replicache reads data through key/value scans and `useSubscribe`. There is no built-in support for MongoDB-style operators, secondary indexes defined in a schema, or aggregation. Anything that resembles a query is something you assemble in JavaScript on top of the scan API. RxDB ships a full [RxQuery](../../rx-query.md) engine with `$gt`, `$in`, `$regex`, sorting, limits, and indexed lookups, plus observable results.
 
 ### 4. Server-Side State Is Your Problem
 
@@ -55,18 +55,18 @@ Replicache hands you a sync protocol but expects you to maintain the canonical s
 
 ### 5. No First-Party Peer-to-Peer
 
-Replicache is a client-server protocol. RxDB ships a [WebRTC replication plugin](../replication.md) so peers can sync directly without a central server.
+Replicache is a client-server protocol. RxDB ships a [WebRTC replication plugin](../../replication.md) so peers can sync directly without a central server.
 
 ## Why Teams Pick RxDB Instead
 
 - **Apache 2.0 license** with no revenue gates on the core.
 - **Document database** with JSON schema validation and typed queries.
 - **Observable queries** that update the UI when underlying data changes.
-- **Replication with arbitrary endpoints**, including [HTTP](../replication-http.md), [GraphQL](../replication-graphql.md), CouchDB, Firestore, and WebRTC.
+- **Replication with arbitrary endpoints**, including [HTTP](../../replication-http.md), [GraphQL](../../replication-graphql.md), CouchDB, Firestore, and WebRTC.
 - **Multi-storage** so the same code runs on IndexedDB in the browser, SQLite in React Native, and in-memory in tests.
 - **No required mutator definitions**. Writes are normal `insert`, `patch`, and `remove` calls on the collection.
 - **Conflict handlers** that you control per collection.
-- **Real-time** behavior through the [reactive query engine](../articles/realtime-database.md).
+- **Real-time** behavior through the [reactive query engine](../../articles/realtime-database.md).
 
 ## Code Sample: HTTP Replication Without Shared Mutators
 
@@ -138,7 +138,7 @@ await db.todos.insert({
 });
 ```
 
-The same collection can be wired to a [GraphQL endpoint](../replication-graphql.md), a CouchDB server, or a custom WebSocket stream by swapping the replication plugin. The collection API does not change.
+The same collection can be wired to a [GraphQL endpoint](../../replication-graphql.md), a CouchDB server, or a custom WebSocket stream by swapping the replication plugin. The collection API does not change.
 
 ## Code Sample: Subscribing to a Query in React
 
@@ -180,7 +180,7 @@ export function OpenTodos({ db }) {
 }
 ```
 
-The query is declarative. The patch call is a normal write on the document. Optimistic UI behavior comes from the local store and is described in the [Optimistic UI guide](../articles/optimistic-ui.md).
+The query is declarative. The patch call is a normal write on the document. Optimistic UI behavior comes from the local store and is described in the [Optimistic UI guide](../../articles/optimistic-ui.md).
 
 ## Mutators vs Documents
 
@@ -188,14 +188,14 @@ The core difference between Replicache and RxDB is the mental model.
 
 Replicache treats every change as a named operation. A mutator like `addTodo({ id, text })` is the only way to mutate state. The client runs the mutator against the local cache for an instant result, the server runs the same mutator to produce the canonical state, and the protocol reconciles the two. Application logic lives inside mutators. Reads are scans over a key/value store.
 
-RxDB treats every change as a write to a document in a collection. Code calls `collection.insert`, `doc.patch`, or `collection.bulkUpsert`. The local store records the change, the [Sync Engine](../replication.md) ships it to the server through a generic push handler, and the server stores it in whatever database it already uses. Reads are MongoDB-style queries with reactive results.
+RxDB treats every change as a write to a document in a collection. Code calls `collection.insert`, `doc.patch`, or `collection.bulkUpsert`. The local store records the change, the [Sync Engine](../../replication.md) ships it to the server through a generic push handler, and the server stores it in whatever database it already uses. Reads are MongoDB-style queries with reactive results.
 
 This has practical consequences:
 
 - **Backend reuse**: RxDB plugs into existing REST, GraphQL, or SQL backends without renaming endpoints to match mutator semantics.
 - **Schema-driven storage**: RxDB validates documents against a JSON schema. Replicache stores arbitrary JSON values keyed by strings.
 - **Query expressiveness**: RxDB supports operators, sorting, and indexes. Replicache requires you to scan and filter manually.
-- **Conflict handling**: RxDB lets you write a [custom conflict handler](../transactions-conflicts-revisions.md) per collection. Replicache merges through mutator replay.
+- **Conflict handling**: RxDB lets you write a [custom conflict handler](../../transactions-conflicts-revisions.md) per collection. Replicache merges through mutator replay.
 
 Neither model is universally better. Mutators are convenient for tightly coupled collaborative editing. Documents are convenient for general application data, offline-first apps, and existing backends.
 
@@ -218,7 +218,7 @@ No. RxDB uses regular collection methods such as `insert`, `patch`, `bulkUpsert`
 <details>
 <summary>Can RxDB scale to many clients?</summary>
 
-Yes. The replication protocol is checkpoint-based, so each client only fetches changes since its last sync. The server can be any system that exposes pull and push endpoints, which means horizontal scaling is the same problem as scaling your existing API. RxDB also ships [WebRTC replication](../replication.md) for peer-to-peer scenarios.
+Yes. The replication protocol is checkpoint-based, so each client only fetches changes since its last sync. The server can be any system that exposes pull and push endpoints, which means horizontal scaling is the same problem as scaling your existing API. RxDB also ships [WebRTC replication](../../replication.md) for peer-to-peer scenarios.
 
 </details>
 
@@ -232,7 +232,7 @@ Zero is Rocicorp's successor to Replicache and Reflect. It is a different produc
 <details>
 <summary>Does RxDB work with NextJS, Remix, and React Native?</summary>
 
-Yes. RxDB runs anywhere JavaScript runs. In NextJS and Remix you instantiate the database in the browser and use the React bindings to subscribe to queries. In [React Native](../react-native-database.md) you pick a native storage such as SQLite. The same collection definitions and queries work across all environments.
+Yes. RxDB runs anywhere JavaScript runs. In NextJS and Remix you instantiate the database in the browser and use the React bindings to subscribe to queries. In [React Native](../../react-native-database.md) you pick a native storage such as SQLite. The same collection definitions and queries work across all environments.
 
 </details>
 
@@ -243,12 +243,12 @@ Yes. RxDB runs anywhere JavaScript runs. In NextJS and Remix you instantiate the
 | License                       | Source-available, free since 2024   | Apache 2.0 (open source)                 |
 | Data model                    | Key/value store                     | Document collections with JSON schema    |
 | Writes                        | Mutator functions on client+server  | Direct `insert`, `patch`, `remove` calls |
-| Query API                     | `useSubscribe` over scans           | MongoDB-style [RxQuery](../rx-query.md)  |
+| Query API                     | `useSubscribe` over scans           | MongoDB-style [RxQuery](../../rx-query.md)  |
 | Reactive results              | Yes                                 | Yes, via RxJS Observables                |
 | Server requirements           | Implement mutators and patch API    | Implement pull and push handlers         |
 | Storage options               | IndexedDB                           | IndexedDB, OPFS, SQLite, memory, more    |
 | Conflict resolution           | Mutator replay                      | Custom per-collection handlers           |
-| Peer-to-peer sync             | No                                  | Yes, [WebRTC](../replication.md)         |
+| Peer-to-peer sync             | No                                  | Yes, [WebRTC](../../replication.md)         |
 | Transports                    | Replicache protocol                 | HTTP, GraphQL, CouchDB, Firestore, WebRTC|
 | Runtimes                      | Browser, React Native               | Browser, Node.js, Electron, React Native |
 
@@ -258,12 +258,12 @@ If the mutator architecture or the historical license terms of Replicache are bl
 
 More resources:
 
-- [RxDB Sync Engine](../replication.md)
-- [HTTP Replication](../replication-http.md)
-- [GraphQL Replication](../replication-graphql.md)
-- [RxQuery](../rx-query.md)
-- [Reactivity](../reactivity.md)
-- [Conflict Resolution](../transactions-conflicts-revisions.md)
-- [Local-First Future](../articles/local-first-future.md)
-- [Realtime Database](../articles/realtime-database.md)
+- [RxDB Sync Engine](../../replication.md)
+- [HTTP Replication](../../replication-http.md)
+- [GraphQL Replication](../../replication-graphql.md)
+- [RxQuery](../../rx-query.md)
+- [Reactivity](../../reactivity.md)
+- [Conflict Resolution](../../transactions-conflicts-revisions.md)
+- [Local-First Future](../../articles/local-first-future.md)
+- [Realtime Database](../../articles/realtime-database.md)
 - [RxDB GitHub Repository](/code/)

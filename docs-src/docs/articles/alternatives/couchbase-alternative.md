@@ -84,7 +84,7 @@ Couchbase added JavaScript/browser support to Couchbase Lite in 2025. The librar
 
 Couchbase Lite for JavaScript does not support running the same database across multiple browser tabs simultaneously. If a user opens the application in two tabs, the behavior is undefined and may produce data inconsistencies. There is no cross-tab synchronization or locking mechanism.
 
-RxDB handles this natively with its [SharedWorker storage](../rx-storage-shared-worker.md). All tabs share a single database instance running in a Web Worker. A write in one tab propagates to reactive queries in all other tabs automatically:
+RxDB handles this natively with its [SharedWorker storage](../../rx-storage-shared-worker.md). All tabs share a single database instance running in a Web Worker. A write in one tab propagates to reactive queries in all other tabs automatically:
 
 ```ts
 import { getRxStorageSharedWorker } from 'rxdb/plugins/storage-shared-worker';
@@ -108,7 +108,7 @@ The SQL++ `MATCH()` function for full-text search is not available in Couchbase 
 
 Couchbase Lite for JavaScript requires a Sync Gateway or Capella App Services backend for replication. There is no peer-to-peer synchronization between browser tabs or devices without going through the server.
 
-RxDB supports [WebRTC replication](../replication-webrtc.md) for direct peer-to-peer sync between browser clients:
+RxDB supports [WebRTC replication](../../replication-webrtc.md) for direct peer-to-peer sync between browser clients:
 
 ```ts
 import { replicateWebRTC, getConnectionHandlerSimplePeer } from 'rxdb/plugins/replication-webrtc';
@@ -126,7 +126,7 @@ const replicationPool = await replicateWebRTC({
 
 There is no lightweight path to synchronization. Even a simple two-user application that needs to share a handful of documents must deploy and operate a Sync Gateway instance. The Couchbase Lite protocol is proprietary, so there is no way to write a compatible backend yourself without using Couchbase's own infrastructure.
 
-RxDB's [HTTP replication](../replication-http.md) works with any backend that supports two endpoints: one to fetch changed documents since a checkpoint, and one to accept pushed documents. You can implement this in any language on any infrastructure:
+RxDB's [HTTP replication](../../replication-http.md) works with any backend that supports two endpoints: one to fetch changed documents since a checkpoint, and one to accept pushed documents. You can implement this in any language on any infrastructure:
 
 ```ts
 import { replicateRxCollection } from 'rxdb/plugins/replication';
@@ -171,16 +171,16 @@ This model is identical in intent to what Couchbase Mobile aims for with Couchba
 
 ### Pluggable Storage Backends
 
-RxDB separates its query engine from the storage layer via the [RxStorage interface](../rx-storage.md). You choose the storage backend that fits your platform:
+RxDB separates its query engine from the storage layer via the [RxStorage interface](../../rx-storage.md). You choose the storage backend that fits your platform:
 
 | Environment | RxDB Storage Option |
 |---|---|
-| Browser (general use) | [IndexedDB](../rx-storage-indexeddb.md) |
-| Browser (high throughput) | [OPFS](../rx-storage-opfs.md) |
-| React Native | [SQLite via expo-sqlite or op-sqlite](../rx-storage-sqlite.md) |
-| Node.js / Electron | [SQLite (better-sqlite3)](../rx-storage-sqlite.md) |
-| Multiple browser tabs | [SharedWorker](../rx-storage-shared-worker.md) |
-| Testing | [Memory](../rx-storage-memory.md) |
+| Browser (general use) | [IndexedDB](../../rx-storage-indexeddb.md) |
+| Browser (high throughput) | [OPFS](../../rx-storage-opfs.md) |
+| React Native | [SQLite via expo-sqlite or op-sqlite](../../rx-storage-sqlite.md) |
+| Node.js / Electron | [SQLite (better-sqlite3)](../../rx-storage-sqlite.md) |
+| Multiple browser tabs | [SharedWorker](../../rx-storage-shared-worker.md) |
+| Testing | [Memory](../../rx-storage-memory.md) |
 
 Switching storage is a single-line change in the database creation call. The rest of the application code remains identical:
 
@@ -233,7 +233,7 @@ RxDB uses the [event-reduce algorithm](https://github.com/pubkey/event-reduce) t
 
 ### Schema Validation and Full TypeScript Support
 
-RxDB enforces a [JSON Schema](../rx-schema.md) on every document before it is written to storage. Documents that do not match the schema are rejected with a typed error:
+RxDB enforces a [JSON Schema](../../rx-schema.md) on every document before it is written to storage. Documents that do not match the schema are rejected with a typed error:
 
 ```ts
 await db.addCollections({
@@ -275,13 +275,13 @@ Couchbase Lite for JavaScript handles documents as untyped JSON objects. There i
 
 RxDB's replication system is built around a protocol-agnostic pull/push model. Any backend that supports a checkpoint-based sync API can work with RxDB. Built-in plugins cover the most common cases:
 
-- **[HTTP replication](../replication-http.md)**: Sync with any REST API via pull and push handlers
-- **[GraphQL replication](../replication-graphql.md)**: Sync with any GraphQL endpoint
-- **[WebSocket replication](../replication-websocket.md)**: Real-time bidirectional sync over WebSocket
-- **[CouchDB replication](../replication-couchdb.md)**: Sync with any CouchDB-compatible server
-- **[Supabase replication](../replication-supabase.md)**: Sync with a Supabase PostgreSQL backend
-- **[Firestore replication](../replication-firestore.md)**: Sync with Firebase Cloud Firestore
-- **[WebRTC replication](../replication-webrtc.md)**: Peer-to-peer sync between browser clients
+- **[HTTP replication](../../replication-http.md)**: Sync with any REST API via pull and push handlers
+- **[GraphQL replication](../../replication-graphql.md)**: Sync with any GraphQL endpoint
+- **[WebSocket replication](../../replication-websocket.md)**: Real-time bidirectional sync over WebSocket
+- **[CouchDB replication](../../replication-couchdb.md)**: Sync with any CouchDB-compatible server
+- **[Supabase replication](../../replication-supabase.md)**: Sync with a Supabase PostgreSQL backend
+- **[Firestore replication](../../replication-firestore.md)**: Sync with Firebase Cloud Firestore
+- **[WebRTC replication](../../replication-webrtc.md)**: Peer-to-peer sync between browser clients
 
 This means that if your backend is already PostgreSQL, MongoDB, a REST API, or any other existing system, you can add RxDB on the client without changing the backend architecture. There is no requirement to deploy Couchbase infrastructure.
 
@@ -341,7 +341,7 @@ await db.addCollections({
 });
 ```
 
-For collaborative applications where concurrent writes from multiple users should be merged automatically, RxDB supports [CRDTs (Conflict-free Replicated Data Types)](../crdt.md):
+For collaborative applications where concurrent writes from multiple users should be merged automatically, RxDB supports [CRDTs (Conflict-free Replicated Data Types)](../../crdt.md):
 
 ```ts
 import { getCRDTSchemaPart, RxDBcrdtPlugin } from 'rxdb/plugins/crdt';
@@ -367,7 +367,7 @@ With CRDTs enabled, concurrent writes are automatically merged when clients sync
 
 ### Encryption at Rest
 
-RxDB includes a [field-level encryption plugin](../encryption.md) that encrypts specific document fields before they are written to the local storage engine. The raw IndexedDB, OPFS, or SQLite contents contain ciphertext for encrypted fields:
+RxDB includes a [field-level encryption plugin](../../encryption.md) that encrypts specific document fields before they are written to the local storage engine. The raw IndexedDB, OPFS, or SQLite contents contain ciphertext for encrypted fields:
 
 ```ts
 import { wrappedKeyEncryptionCryptoJsStorage } from 'rxdb/plugins/encryption-crypto-js';
@@ -396,7 +396,7 @@ Without the passphrase, the raw storage contents are unreadable. This protects u
 
 ### Performance: OPFS Storage
 
-For browser applications that need high write throughput, RxDB supports the [Origin Private File System (OPFS)](../rx-storage-opfs.md) as a storage backend. OPFS gives JavaScript direct filesystem access within the browser's sandboxed origin, bypassing IndexedDB's transaction model entirely:
+For browser applications that need high write throughput, RxDB supports the [Origin Private File System (OPFS)](../../rx-storage-opfs.md) as a storage backend. OPFS gives JavaScript direct filesystem access within the browser's sandboxed origin, bypassing IndexedDB's transaction model entirely:
 
 ```ts
 import { getRxStorageOPFS } from 'rxdb/plugins/storage-opfs';
@@ -494,14 +494,14 @@ No. RxDB stores all data locally and operates fully offline without any backend 
 <details>
 <summary>How does RxDB handle replication conflicts?</summary>
 
-RxDB uses a configurable conflict handler per collection. During replication, when a locally modified document conflicts with a version from the server, the conflict handler receives both document states and returns the winning state. Common strategies include last-write-wins (based on a timestamp field) and merge-based strategies (combining fields from both versions). For text or structured data that requires automatic merging, the [CRDT plugin](../crdt.md) provides conflict-free replicated data types that merge concurrent changes without any custom handler code.
+RxDB uses a configurable conflict handler per collection. During replication, when a locally modified document conflicts with a version from the server, the conflict handler receives both document states and returns the winning state. Common strategies include last-write-wins (based on a timestamp field) and merge-based strategies (combining fields from both versions). For text or structured data that requires automatic merging, the [CRDT plugin](../../crdt.md) provides conflict-free replicated data types that merge concurrent changes without any custom handler code.
 
 </details>
 
 <details>
 <summary>Can RxDB work in React Native like Couchbase Lite can?</summary>
 
-Yes. RxDB works in React Native using the [SQLite storage plugin](../rx-storage-sqlite.md), which wraps either `expo-sqlite` or `op-sqlite`. The same schema definitions, queries, reactive subscriptions, and replication configuration that work in a browser also work in React Native. There is no separate SDK or separate configuration required.
+Yes. RxDB works in React Native using the [SQLite storage plugin](../../rx-storage-sqlite.md), which wraps either `expo-sqlite` or `op-sqlite`. The same schema definitions, queries, reactive subscriptions, and replication configuration that work in a browser also work in React Native. There is no separate SDK or separate configuration required.
 
 </details>
 

@@ -24,7 +24,7 @@ By default SignalDB stores data **in memory**. Persistence is added through adap
 
 ## What Is RxDB?
 
-[RxDB](https://rxdb.info/) is a [local-first](../offline-first.md), NoSQL JavaScript database that has been developed since 2016. It runs in browsers, Node.js, Electron, React Native, Deno, Bun, and Capacitor. Data is stored through a swappable [RxStorage](../rx-storage-dexie.md) layer, queried with a Mongo-style selector engine, and observed through RxJS. The [Sync Engine](../replication.md) provides a battle-tested protocol for [HTTP](../replication-http.md), WebSocket, GraphQL, CouchDB, Firestore, NATS, and custom backends.
+[RxDB](https://rxdb.info/) is a [local-first](../../offline-first.md), NoSQL JavaScript database that has been developed since 2016. It runs in browsers, Node.js, Electron, React Native, Deno, Bun, and Capacitor. Data is stored through a swappable [RxStorage](../../rx-storage-dexie.md) layer, queried with a Mongo-style selector engine, and observed through RxJS. The [Sync Engine](../../replication.md) provides a battle-tested protocol for [HTTP](../../replication-http.md), WebSocket, GraphQL, CouchDB, Firestore, NATS, and custom backends.
 
 RxDB treats storage, queries, and replication as first-class primitives rather than optional add-ons. That maturity is the main reason teams move to it after outgrowing a smaller library.
 
@@ -35,7 +35,7 @@ SignalDB is well designed for what it covers, but several gaps appear in product
 - **In-memory by default.** Data lives in RAM. A page reload wipes the collection unless you wire up a persistence adapter. Large datasets compete with the rest of the JS heap.
 - **Bring-your-own sync.** The sync manager is an interface, not a protocol. You implement pull, push, checkpoints, retry, and conflict handling. Real-world sync is harder than it looks once partial offline writes and reconnects enter the picture.
 - **Fewer storage adapters.** The list of supported backends is short compared to RxDB's storage matrix that covers IndexedDB, OPFS, Dexie, SQLite, Memory, MongoDB, DenoKV, FoundationDB, and more.
-- **Limited multi-client guarantees.** SignalDB does not include built-in [multi-tab coordination](../rx-storage-indexeddb.md) or leader election. Two open tabs can drift unless you build that yourself.
+- **Limited multi-client guarantees.** SignalDB does not include built-in [multi-tab coordination](../../rx-storage-indexeddb.md) or leader election. Two open tabs can drift unless you build that yourself.
 - **Smaller ecosystem.** Community plugins, examples, and long-term issue history are thinner. For business apps that ship for years, ecosystem depth matters.
 - **No schema-driven migrations.** SignalDB collections are loosely typed at runtime. RxDB enforces JSON Schema and runs versioned migrations on schema changes.
 
@@ -43,23 +43,23 @@ SignalDB is well designed for what it covers, but several gaps appear in product
 
 ### Durable storage with a swappable engine
 
-RxDB writes through an [RxStorage](../rx-storage-dexie.md) interface. Pick the storage that fits the runtime:
+RxDB writes through an [RxStorage](../../rx-storage-dexie.md) interface. Pick the storage that fits the runtime:
 
-- [IndexedDB](../rx-storage-indexeddb.md) for broad browser support.
-- [OPFS](../rx-storage-opfs.md) for high-throughput browser writes via the Origin Private File System.
-- [Dexie](../rx-storage-dexie.md) for a lightweight IndexedDB wrapper.
-- [Memory](../rx-storage-memory.md) for tests and ephemeral state.
+- [IndexedDB](../../rx-storage-indexeddb.md) for broad browser support.
+- [OPFS](../../rx-storage-opfs.md) for high-throughput browser writes via the Origin Private File System.
+- [Dexie](../../rx-storage-dexie.md) for a lightweight IndexedDB wrapper.
+- [Memory](../../rx-storage-memory.md) for tests and ephemeral state.
 - SQLite, MongoDB, DenoKV, and FoundationDB on the server side.
 
 Switching engines is a one-line change. The query, replication, and reactivity layers stay identical.
 
 ### A real replication protocol
 
-The [RxDB Sync Engine](../replication.md) defines pull, push, checkpoint, and conflict semantics so applications do not reinvent them. Plugins exist for [HTTP](../replication-http.md), WebSocket, GraphQL, CouchDB, Firestore, Supabase, NATS, and P2P. Conflict handlers are explicit functions you control per collection.
+The [RxDB Sync Engine](../../replication.md) defines pull, push, checkpoint, and conflict semantics so applications do not reinvent them. Plugins exist for [HTTP](../../replication-http.md), WebSocket, GraphQL, CouchDB, Firestore, Supabase, NATS, and P2P. Conflict handlers are explicit functions you control per collection.
 
 ### MongoDB-style queries with reactivity
 
-Both libraries expose a Mongo-like API. RxDB extends it with [observable queries](../rx-query.md) that emit through RxJS, plus [framework hooks](../reactivity.md) for React, Vue, Svelte, Solid, and Angular signals.
+Both libraries expose a Mongo-like API. RxDB extends it with [observable queries](../../rx-query.md) that emit through RxJS, plus [framework hooks](../../reactivity.md) for React, Vue, Svelte, Solid, and Angular signals.
 
 ### Multi-tab and conflict resolution out of the box
 
@@ -67,7 +67,7 @@ Open the same app in three tabs. RxDB elects a leader, broadcasts changes, and k
 
 ### Mature ecosystem since 2016
 
-RxDB has a decade of releases, paid support options, and production deployments at scale. The [local-first](../articles/local-first-future.md) movement has grown around projects like RxDB precisely because long-running data layers need this kind of stability.
+RxDB has a decade of releases, paid support options, and production deployments at scale. The [local-first](../../articles/local-first-future.md) movement has grown around projects like RxDB precisely because long-running data layers need this kind of stability.
 
 ## Code Sample: Collection and Reactive Query in RxDB
 
@@ -116,11 +116,11 @@ await db.tasks.insert({
 });
 ```
 
-See [RxCollection](../rx-collection.md) and [RxQuery](../rx-query.md) for the full surface.
+See [RxCollection](../../rx-collection.md) and [RxQuery](../../rx-query.md) for the full surface.
 
 ## Code Sample: HTTP Replication
 
-The [HTTP replication plugin](../replication-http.md) syncs an RxDB collection with any REST endpoint that exposes pull and push routes.
+The [HTTP replication plugin](../../replication-http.md) syncs an RxDB collection with any REST endpoint that exposes pull and push routes.
 
 ```ts
 import { replicateRxCollection } from 'rxdb/plugins/replication';
@@ -161,7 +161,7 @@ The same protocol scales to multi-device sync, partial replication by user or te
 
 A pattern that has emerged in the local-first community is to use SignalDB for **front-end reactivity** while delegating storage and sync to RxDB. SignalDB exposes a persistence adapter interface, so an RxDB-backed adapter can:
 
-1. Read from an [RxCollection](../rx-collection.md) on startup and feed the documents into the SignalDB collection.
+1. Read from an [RxCollection](../../rx-collection.md) on startup and feed the documents into the SignalDB collection.
 2. Forward SignalDB writes to RxDB so they hit durable storage.
 3. Subscribe to RxDB's change stream and push remote updates back into SignalDB so signals re-emit.
 
@@ -172,14 +172,14 @@ The result keeps the signal-friendly API that Vue, Solid, and React components c
 <details>
 <summary>Does RxDB integrate with framework signals?</summary>
 
-Yes. RxDB ships a [reactivity adapter API](../reactivity.md) that maps observable queries to Vue refs, Angular signals, Solid signals, Svelte stores, and Preact signals. Component code reads collections through the framework's native primitive while RxDB drives updates underneath.
+Yes. RxDB ships a [reactivity adapter API](../../reactivity.md) that maps observable queries to Vue refs, Angular signals, Solid signals, Svelte stores, and Preact signals. Component code reads collections through the framework's native primitive while RxDB drives updates underneath.
 
 </details>
 
 <details>
 <summary>Can SignalDB persist with RxDB?</summary>
 
-Yes. SignalDB's persistence interface accepts a custom adapter. An RxDB-backed adapter stores documents in an [RxCollection](../rx-collection.md), which gives SignalDB durable storage on IndexedDB, OPFS, SQLite, or any other RxStorage, plus the full [RxDB sync engine](../replication.md) for backend replication.
+Yes. SignalDB's persistence interface accepts a custom adapter. An RxDB-backed adapter stores documents in an [RxCollection](../../rx-collection.md), which gives SignalDB durable storage on IndexedDB, OPFS, SQLite, or any other RxStorage, plus the full [RxDB sync engine](../../replication.md) for backend replication.
 
 </details>
 
@@ -193,7 +193,7 @@ RxDB has been developed since 2016, ships regular releases, and runs in producti
 <details>
 <summary>How does query syntax compare?</summary>
 
-Both libraries use a MongoDB-style selector. RxDB queries return [RxQuery](../rx-query.md) objects with `.exec()` for one-shot reads and `.$` for an observable that emits on every change, including changes from other tabs and replication. SignalDB returns reactive cursors tied to its signal runtime. Migrating selectors between the two is mostly mechanical.
+Both libraries use a MongoDB-style selector. RxDB queries return [RxQuery](../../rx-query.md) objects with `.exec()` for one-shot reads and `.$` for an observable that emits on every change, including changes from other tabs and replication. SignalDB returns reactive cursors tied to its signal runtime. Migrating selectors between the two is mostly mechanical.
 
 </details>
 
@@ -204,13 +204,13 @@ Both libraries use a MongoDB-style selector. RxDB queries return [RxQuery](../rx
 | First release | 2023 | 2016 |
 | Default storage | In memory | Durable via RxStorage |
 | Storage adapters | localStorage, OPFS, custom | IndexedDB, OPFS, Dexie, Memory, SQLite, MongoDB, DenoKV, FoundationDB, more |
-| Query API | MongoDB-style, reactive cursors | MongoDB-style, [observable queries](../rx-query.md) |
-| Reactivity | Framework signals | RxJS plus [framework adapters](../reactivity.md) for React, Vue, Svelte, Solid, Angular |
+| Query API | MongoDB-style, reactive cursors | MongoDB-style, [observable queries](../../rx-query.md) |
+| Reactivity | Framework signals | RxJS plus [framework adapters](../../reactivity.md) for React, Vue, Svelte, Solid, Angular |
 | Schema and migrations | Loose typing | JSON Schema with versioned migrations |
-| Replication | Bring-your-own sync interface | Built-in [Sync Engine](../replication.md) with [HTTP](../replication-http.md), WebSocket, GraphQL, CouchDB, Firestore, NATS, P2P |
+| Replication | Bring-your-own sync interface | Built-in [Sync Engine](../../replication.md) with [HTTP](../../replication-http.md), WebSocket, GraphQL, CouchDB, Firestore, NATS, P2P |
 | Conflict resolution | Application-defined | Per-collection conflict handlers |
 | Multi-tab support | Manual | Built-in leader election and broadcast |
 | Runtimes | Browser, Node.js | Browser, Node.js, Electron, React Native, Deno, Bun, Capacitor |
 | Ecosystem age | New | Decade of releases and plugins |
 
-For more on the broader shift toward client-side data ownership, see [The Future of Local-First Apps](../articles/local-first-future.md) and the [offline-first guide](../offline-first.md).
+For more on the broader shift toward client-side data ownership, see [The Future of Local-First Apps](../../articles/local-first-future.md) and the [offline-first guide](../../offline-first.md).

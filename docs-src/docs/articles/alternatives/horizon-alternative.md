@@ -176,13 +176,13 @@ When connectivity returns, RxDB's replication plugins synchronize local changes 
     <img src="/files/offline-ready.png" alt="Offline-ready application with RxDB" width="400" />
 </center>
 
-This is the [offline-first architecture](../offline-first.md). RxDB treats local storage as the primary source of truth. The server is a sync target, not a dependency for normal operation. Horizon's architecture was exactly the opposite: the server was the only source of data, and offline operation was not possible.
+This is the [offline-first architecture](../../offline-first.md). RxDB treats local storage as the primary source of truth. The server is a sync target, not a dependency for normal operation. Horizon's architecture was exactly the opposite: the server was the only source of data, and offline operation was not possible.
 
 ### Multi-Tab Support
 
 Horizon ran as a single connection per browser window. If a user opened two tabs of the same application, each tab would maintain its own WebSocket connection to the server, and local state between tabs could diverge.
 
-RxDB provides a [SharedWorker storage mode](../rx-storage-shared-worker.md) that runs a single database instance in a shared worker. All tabs share that single instance, so a write in one tab is immediately reflected in reactive queries in all other tabs without any additional code:
+RxDB provides a [SharedWorker storage mode](../../rx-storage-shared-worker.md) that runs a single database instance in a shared worker. All tabs share that single instance, so a write in one tab is immediately reflected in reactive queries in all other tabs without any additional code:
 
 ```typescript
 import { getRxStorageSharedWorker } from 'rxdb/plugins/storage-shared-worker';
@@ -198,7 +198,7 @@ const db = await createRxDatabase({
 });
 ```
 
-For background tasks that only one tab should perform (such as running replication), RxDB includes a [leader election plugin](../leader-election.md). One tab is elected leader and handles background work. If the leader tab is closed, another tab takes over automatically:
+For background tasks that only one tab should perform (such as running replication), RxDB includes a [leader election plugin](../../leader-election.md). One tab is elected leader and handles background work. If the leader tab is closed, another tab takes over automatically:
 
 ```typescript
 import { RxDBLeaderElectionPlugin } from 'rxdb/plugins/leader-election';
@@ -259,11 +259,11 @@ For common backend setups, RxDB provides ready-made plugins:
 
 | Plugin | Use case |
 |---|---|
-| [HTTP replication](../replication-http.md) | Any REST API endpoint |
-| [GraphQL replication](../replication-graphql.md) | GraphQL APIs including AWS AppSync |
-| [WebSocket replication](../replication-websocket.md) | Low-latency server push |
-| [CouchDB replication](../replication-couchdb.md) | CouchDB or PouchDB server |
-| [Firestore replication](../replication-firestore.md) | Google Cloud Firestore |
+| [HTTP replication](../../replication-http.md) | Any REST API endpoint |
+| [GraphQL replication](../../replication-graphql.md) | GraphQL APIs including AWS AppSync |
+| [WebSocket replication](../../replication-websocket.md) | Low-latency server push |
+| [CouchDB replication](../../replication-couchdb.md) | CouchDB or PouchDB server |
+| [Firestore replication](../../replication-firestore.md) | Google Cloud Firestore |
 
 ### Pluggable Storage Backends
 
@@ -271,12 +271,12 @@ RxDB's storage layer is separate from its query and replication logic. The same 
 
 | Environment | Storage Option |
 |---|---|
-| Browser (standard) | [IndexedDB](../rx-storage-indexeddb.md) |
-| Browser (high-throughput) | [OPFS (Origin Private File System)](../rx-storage-opfs.md) |
-| React Native / Expo | [SQLite via expo-sqlite or op-sqlite](../rx-storage-sqlite.md) |
-| Node.js / Electron | [SQLite (better-sqlite3)](../rx-storage-sqlite.md) |
-| Multi-tab browsers | [SharedWorker](../rx-storage-shared-worker.md) |
-| Testing / CI | [Memory](../rx-storage-memory.md) |
+| Browser (standard) | [IndexedDB](../../rx-storage-indexeddb.md) |
+| Browser (high-throughput) | [OPFS (Origin Private File System)](../../rx-storage-opfs.md) |
+| React Native / Expo | [SQLite via expo-sqlite or op-sqlite](../../rx-storage-sqlite.md) |
+| Node.js / Electron | [SQLite (better-sqlite3)](../../rx-storage-sqlite.md) |
+| Multi-tab browsers | [SharedWorker](../../rx-storage-shared-worker.md) |
+| Testing / CI | [Memory](../../rx-storage-memory.md) |
 
 Switching storage is a one-line change:
 
@@ -312,7 +312,7 @@ await db.addCollections({
 });
 ```
 
-For collaborative editing where documents can be modified concurrently by multiple users, RxDB supports [CRDT-based conflict resolution](../crdt.md). CRDTs merge concurrent edits deterministically without requiring a central authority to decide the winner:
+For collaborative editing where documents can be modified concurrently by multiple users, RxDB supports [CRDT-based conflict resolution](../../crdt.md). CRDTs merge concurrent edits deterministically without requiring a central authority to decide the winner:
 
 ```typescript
 import { getCRDTSchemaPart, RxDBcrdtPlugin } from 'rxdb/plugins/crdt';
@@ -338,7 +338,7 @@ const messageSchema = {
 
 Horizon stored and returned plain JavaScript objects with no validation. If a client stored a document with the wrong field name or the wrong data type, RethinkDB accepted it without complaint, and that corrupted document propagated to all other clients through changefeeds.
 
-RxDB validates every document against a [JSON Schema](../rx-schema.md) before writing it to storage. Invalid documents are rejected at the write step, before they can reach the local store or propagate through replication:
+RxDB validates every document against a [JSON Schema](../../rx-schema.md) before writing it to storage. Invalid documents are rejected at the write step, before they can reach the local store or propagate through replication:
 
 ```typescript
 try {
@@ -361,7 +361,7 @@ As an application evolves, the data model changes. Adding new required fields, r
 
 Horizon provided no migration system. If you changed the shape of your data, you were responsible for writing a migration script that connected to RethinkDB and updated every document manually, with no help from the framework.
 
-RxDB has a built-in [schema migration system](../migration-schema.md). When the schema version number increases, RxDB automatically runs migration strategies on all locally stored documents before making the database available to the application:
+RxDB has a built-in [schema migration system](../../migration-schema.md). When the schema version number increases, RxDB automatically runs migration strategies on all locally stored documents before making the database available to the application:
 
 ```typescript
 await db.addCollections({
@@ -386,7 +386,7 @@ Migrations run locally on each client independently. They do not require a coord
 
 Horizon sent data between the browser and RethinkDB in plaintext (over WebSocket). Data in RethinkDB was stored as-is. If a user's device was compromised, the IndexedDB data from the browser session would be readable without decryption.
 
-RxDB includes a built-in [encryption plugin](../encryption.md) that encrypts individual document fields before writing them to local storage. The data is decrypted on read, so the application sees plaintext, but the underlying storage contains only ciphertext:
+RxDB includes a built-in [encryption plugin](../../encryption.md) that encrypts individual document fields before writing them to local storage. The data is decrypted on read, so the application sees plaintext, but the underlying storage contains only ciphertext:
 
 ```typescript
 import { wrappedKeyEncryptionCryptoJsStorage } from 'rxdb/plugins/encryption-crypto-js';
@@ -527,7 +527,7 @@ This works entirely offline. Connect a replication plugin when you need server s
 <details>
 <summary>Can RxDB replace Horizon for an existing RethinkDB-based application?</summary>
 
-Yes. RxDB can take over the client-side data layer. You keep RethinkDB on the server and build a thin API (REST or WebSocket) in front of it. Then use RxDB's [custom replication](../replication.md) or [WebSocket replication](../replication-websocket.md) plugin to sync data between RxDB on the client and RethinkDB on the server.
+Yes. RxDB can take over the client-side data layer. You keep RethinkDB on the server and build a thin API (REST or WebSocket) in front of it. Then use RxDB's [custom replication](../../replication.md) or [WebSocket replication](../../replication-websocket.md) plugin to sync data between RxDB on the client and RethinkDB on the server.
 
 The main difference is that Horizon was the entire client-server protocol, while with RxDB you own the API layer. That gives you full control over authentication, rate limiting, and data access rules, instead of depending on Horizon's specific permission model.
 

@@ -8,7 +8,7 @@ description: Compare RxDB and GUN (gundb) for JavaScript apps. Get typed schemas
 
 Developers who reach for [GUN](https://gun.eco/) usually want one thing: a JavaScript database that syncs data peer-to-peer without depending on a central backend. GUN delivers on that promise, and it pairs the graph model with extras like the SEA module for cryptography and authentication. The trouble starts once you move past the first demo. Getting basic features running often takes days of trial and error, the schema story is informal, and the source code is dense enough that tracking down a sync bug can stall a project for a week.
 
-This guide walks through where GUN came from, where it falls short for production JavaScript apps, and how [RxDB](https://rxdb.info/) covers the same [offline-first](../offline-first.md) and peer-to-peer use cases with a typed API, JSON Schema validation, and well-documented [replication](../replication.md) plugins.
+This guide walks through where GUN came from, where it falls short for production JavaScript apps, and how [RxDB](https://rxdb.info/) covers the same [offline-first](../../offline-first.md) and peer-to-peer use cases with a typed API, JSON Schema validation, and well-documented [replication](../../replication.md) plugins.
 
 <center>
     <a href="https://rxdb.info/">
@@ -24,7 +24,7 @@ On top of the core graph, the project ships SEA (Security, Encryption, Authoriza
 
 ## What is RxDB?
 
-[RxDB](https://rxdb.info/) (Reactive Database) is a [local-first](../articles/local-first-future.md) NoSQL database for JavaScript. It runs in the browser, in Node.js, in Electron, and in React Native, persists data through a pluggable storage layer, and exposes documents and queries as RxJS observables for [reactivity](../reactivity.md). The query language follows the MongoDB style and validates documents against [JSON Schema](../rx-schema.md). Replication is handled by a small generic protocol that already has plugins for HTTP, GraphQL, CouchDB, Firestore, [WebRTC](../replication-webrtc.md), and [Nostr](../replication-nostr.md).
+[RxDB](https://rxdb.info/) (Reactive Database) is a [local-first](../../articles/local-first-future.md) NoSQL database for JavaScript. It runs in the browser, in Node.js, in Electron, and in React Native, persists data through a pluggable storage layer, and exposes documents and queries as RxJS observables for [reactivity](../../reactivity.md). The query language follows the MongoDB style and validates documents against [JSON Schema](../../rx-schema.md). Replication is handled by a small generic protocol that already has plugins for HTTP, GraphQL, CouchDB, Firestore, [WebRTC](../../replication-webrtc.md), and [Nostr](../../replication-nostr.md).
 
 ## Where GUN Falls Short
 
@@ -59,13 +59,13 @@ GUN ships informal type definitions through community packages. The graph traver
 RxDB targets the same set of use cases (offline reads, real time updates, peer-to-peer sync) and addresses the points above directly.
 
 - **Typed API**: All collections, documents, and queries are typed. The schema feeds TypeScript types so query results infer correctly.
-- **JSON Schema validation**: Documents are checked against a [JSON Schema](../rx-schema.md). Required fields, enums, and string lengths are enforced at write time.
-- **MongoDB-style queries**: Use `$gt`, `$in`, `$regex`, sorting, and compound indexes through the [RxQuery](../rx-query.md) API. Queries return observables that re-emit when matching data changes.
-- **CRDT plugin**: For collaborative apps that need formal merge semantics, the [CRDT plugin](../crdt.md) provides documented operations on counters, sets, and lists.
-- **Encryption**: The [encryption plugin](../encryption.md) encrypts selected fields at rest using AES.
-- **WebRTC P2P replication**: The [WebRTC replication plugin](../replication-webrtc.md) syncs collections directly between browser peers without a central data server.
-- **Nostr replication**: The [Nostr replication plugin](../replication-nostr.md) uses the Nostr relay network as a transport, which gives you decentralized fan-out without running your own infrastructure.
-- **Conflict handling**: Custom conflict resolution is configured per collection through the [revisions and conflict handler API](../transactions-conflicts-revisions.md).
+- **JSON Schema validation**: Documents are checked against a [JSON Schema](../../rx-schema.md). Required fields, enums, and string lengths are enforced at write time.
+- **MongoDB-style queries**: Use `$gt`, `$in`, `$regex`, sorting, and compound indexes through the [RxQuery](../../rx-query.md) API. Queries return observables that re-emit when matching data changes.
+- **CRDT plugin**: For collaborative apps that need formal merge semantics, the [CRDT plugin](../../crdt.md) provides documented operations on counters, sets, and lists.
+- **Encryption**: The [encryption plugin](../../encryption.md) encrypts selected fields at rest using AES.
+- **WebRTC P2P replication**: The [WebRTC replication plugin](../../replication-webrtc.md) syncs collections directly between browser peers without a central data server.
+- **Nostr replication**: The [Nostr replication plugin](../../replication-nostr.md) uses the Nostr relay network as a transport, which gives you decentralized fan-out without running your own infrastructure.
+- **Conflict handling**: Custom conflict resolution is configured per collection through the [revisions and conflict handler API](../../transactions-conflicts-revisions.md).
 
 ## Code Sample: Schema and Reactive Query
 
@@ -115,7 +115,7 @@ The schema enforces shape at write time, and the query result is a stream that a
 
 ## Code Sample: Peer-to-Peer Replication via WebRTC
 
-The [WebRTC replication plugin](../replication-webrtc.md) gives you the same serverless P2P sync that draws people to GUN, with an explicit configuration and clear error events.
+The [WebRTC replication plugin](../../replication-webrtc.md) gives you the same serverless P2P sync that draws people to GUN, with an explicit configuration and clear error events.
 
 ```ts
 import {
@@ -140,21 +140,21 @@ replicationPool.error$.subscribe(err => {
 });
 ```
 
-Peers join a topic, the signaling server pairs them, and from there the data exchange runs directly between browsers. For a transport that does not require running your own signaling server, the [Nostr replication plugin](../replication-nostr.md) routes updates through public Nostr relays.
+Peers join a topic, the signaling server pairs them, and from there the data exchange runs directly between browsers. For a transport that does not require running your own signaling server, the [Nostr replication plugin](../../replication-nostr.md) routes updates through public Nostr relays.
 
 ## FAQ
 
 <details>
 <summary>Does RxDB support P2P like GUN?</summary>
 
-Yes. The [WebRTC replication plugin](../replication-webrtc.md) syncs collections directly between browser peers, and the [Nostr replication plugin](../replication-nostr.md) uses public Nostr relays as a transport. Both run without a central data server, and both reuse the same RxDB sync protocol used for HTTP and GraphQL backends.
+Yes. The [WebRTC replication plugin](../../replication-webrtc.md) syncs collections directly between browser peers, and the [Nostr replication plugin](../../replication-nostr.md) uses public Nostr relays as a transport. Both run without a central data server, and both reuse the same RxDB sync protocol used for HTTP and GraphQL backends.
 
 </details>
 
 <details>
 <summary>Can RxDB run without a central server?</summary>
 
-Yes. RxDB stores data locally in IndexedDB, OPFS, SQLite, or memory, and any [replication](../replication.md) is optional. With the WebRTC or Nostr plugins, multiple clients can sync directly with each other and never contact a backend you operate.
+Yes. RxDB stores data locally in IndexedDB, OPFS, SQLite, or memory, and any [replication](../../replication.md) is optional. With the WebRTC or Nostr plugins, multiple clients can sync directly with each other and never contact a backend you operate.
 
 </details>
 
@@ -168,14 +168,14 @@ Export your GUN graph to a JSON file by walking the root nodes you care about an
 <details>
 <summary>Does RxDB have built-in user accounts like SEA?</summary>
 
-RxDB does not bundle a full identity module. It pairs with any auth system you already use (JWT, OAuth, custom tokens) by passing credentials into the replication handler headers. For data confidentiality, the [encryption plugin](../encryption.md) encrypts selected fields with AES, and signed payloads can be added on top in the replication layer when needed.
+RxDB does not bundle a full identity module. It pairs with any auth system you already use (JWT, OAuth, custom tokens) by passing credentials into the replication handler headers. For data confidentiality, the [encryption plugin](../../encryption.md) encrypts selected fields with AES, and signed payloads can be added on top in the replication layer when needed.
 
 </details>
 
 <details>
 <summary>How does RxDB handle conflicts in P2P sync?</summary>
 
-Each collection has a conflict handler. The default keeps the newer revision, and you can replace it with a custom function that merges fields, picks a winner based on metadata, or runs CRDT operations through the [CRDT plugin](../crdt.md). The full model is described in [transactions, conflicts and revisions](../transactions-conflicts-revisions.md).
+Each collection has a conflict handler. The default keeps the newer revision, and you can replace it with a custom function that merges fields, picks a winner based on metadata, or runs CRDT operations through the [CRDT plugin](../../crdt.md). The full model is described in [transactions, conflicts and revisions](../../transactions-conflicts-revisions.md).
 
 </details>
 
@@ -184,13 +184,13 @@ Each collection has a conflict handler. The default keeps the newer revision, an
 | Topic                    | GUN (gundb)                              | RxDB                                                                 |
 | ------------------------ | ---------------------------------------- | -------------------------------------------------------------------- |
 | Data model               | JSON graph of linked nodes               | JSON documents organized into typed collections                      |
-| Schema                   | None, fields are free-form               | [JSON Schema](../rx-schema.md) with validation and migrations        |
+| Schema                   | None, fields are free-form               | [JSON Schema](../../rx-schema.md) with validation and migrations        |
 | TypeScript               | Community types, dynamic API             | First-class types inferred from schemas                              |
-| Query language           | Chainable graph traversal                | [MongoDB-style queries](../rx-query.md) with sort, limit, and indexes |
+| Query language           | Chainable graph traversal                | [MongoDB-style queries](../../rx-query.md) with sort, limit, and indexes |
 | Reactivity               | Subscriptions on nodes                   | RxJS observables on documents and queries                            |
-| Conflict resolution      | Built-in HAM merge, opaque rules         | Pluggable handler plus optional [CRDT plugin](../crdt.md)            |
-| Encryption               | SEA module                               | [Encryption plugin](../encryption.md), AES on selected fields        |
-| P2P transport            | Built-in WebSocket and WebRTC peers      | [WebRTC](../replication-webrtc.md) and [Nostr](../replication-nostr.md) plugins |
+| Conflict resolution      | Built-in HAM merge, opaque rules         | Pluggable handler plus optional [CRDT plugin](../../crdt.md)            |
+| Encryption               | SEA module                               | [Encryption plugin](../../encryption.md), AES on selected fields        |
+| P2P transport            | Built-in WebSocket and WebRTC peers      | [WebRTC](../../replication-webrtc.md) and [Nostr](../../replication-nostr.md) plugins |
 | Server-based sync        | Optional relay peers                     | HTTP, GraphQL, CouchDB, Firestore, and custom backends               |
 | Storage backends         | IndexedDB, file, in-memory               | IndexedDB, OPFS, SQLite, Dexie, LocalStorage, Memory, and more       |
 | Tooling                  | Minimal, source-level debugging          | Devtools, logger, schema validator, migration runner                 |
@@ -198,14 +198,14 @@ Each collection has a conflict handler. The default keeps the newer revision, an
 
 ## Follow Up
 
-If GUN attracted you because of peer-to-peer sync but the debugging cost is slowing the project down, RxDB covers the same ground with a typed schema, documented merge semantics, and dedicated plugins for [WebRTC](../replication-webrtc.md) and [Nostr](../replication-nostr.md) replication. Start with the [RxDB Quickstart](../quickstart.md), pick a storage that fits your runtime, and add a replication plugin once your local data model is stable.
+If GUN attracted you because of peer-to-peer sync but the debugging cost is slowing the project down, RxDB covers the same ground with a typed schema, documented merge semantics, and dedicated plugins for [WebRTC](../../replication-webrtc.md) and [Nostr](../../replication-nostr.md) replication. Start with the [RxDB Quickstart](../../quickstart.md), pick a storage that fits your runtime, and add a replication plugin once your local data model is stable.
 
 More resources:
 
-- [RxDB Sync Engine](../replication.md)
-- [WebRTC Replication](../replication-webrtc.md)
-- [Nostr Replication](../replication-nostr.md)
-- [CRDT Plugin](../crdt.md)
-- [Encryption Plugin](../encryption.md)
-- [Conflicts and Revisions](../transactions-conflicts-revisions.md)
-- [The Local-First Future](../articles/local-first-future.md)
+- [RxDB Sync Engine](../../replication.md)
+- [WebRTC Replication](../../replication-webrtc.md)
+- [Nostr Replication](../../replication-nostr.md)
+- [CRDT Plugin](../../crdt.md)
+- [Encryption Plugin](../../encryption.md)
+- [Conflicts and Revisions](../../transactions-conflicts-revisions.md)
+- [The Local-First Future](../../articles/local-first-future.md)

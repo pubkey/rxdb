@@ -26,9 +26,9 @@ The query language mirrored MongoDB, so developers could use operators like `$gt
 
 ## What is RxDB?
 
-[RxDB](https://rxdb.info/) is a reactive, NoSQL, [offline-first](../offline-first.md) database for JavaScript. It runs in the browser, in [Node.js](../nodejs-database.md), in [Electron](../electron-database.md), in React Native, and in any other JavaScript runtime. Documents are stored locally through a swappable storage layer, queries return observables that emit on every change, and an open [replication](../replication.md) protocol keeps clients in sync with any backend.
+[RxDB](https://rxdb.info/) is a reactive, NoSQL, [offline-first](../../offline-first.md) database for JavaScript. It runs in the browser, in [Node.js](../../nodejs-database.md), in [Electron](../../electron-database.md), in React Native, and in any other JavaScript runtime. Documents are stored locally through a swappable storage layer, queries return observables that emit on every change, and an open [replication](../../replication.md) protocol keeps clients in sync with any backend.
 
-RxDB has been under continuous development for nearly a decade and ships regular releases, security fixes, and new features. It treats the local database as the primary source of truth, which matches how teams build [local-first applications](../articles/local-first-future.md) today.
+RxDB has been under continuous development for nearly a decade and ships regular releases, security fixes, and new features. It treats the local database as the primary source of truth, which matches how teams build [local-first applications](../../articles/local-first-future.md) today.
 
 ## Where NeDB Falls Short
 
@@ -57,12 +57,12 @@ NeDB is schemaless. Every document can have any shape, which sounds flexible at 
 RxDB keeps the document-oriented model that NeDB users like, and adds the features missing from NeDB:
 
 - **Active maintenance**: continuous releases with security and feature updates.
-- **Schema validation**: every collection is defined by an [RxSchema](../rx-schema.md) based on JSON Schema, with versioning and migrations.
-- **MongoDB-style queries**: the [RxQuery](../rx-query.md) API supports the same operators NeDB users are accustomed to, including `$gt`, `$in`, `$regex`, `$elemMatch`, sorting, and skip/limit.
-- **Observable queries**: queries expose RxJS observables, and the UI updates automatically when results change. See [Reactivity](../reactivity.md).
+- **Schema validation**: every collection is defined by an [RxSchema](../../rx-schema.md) based on JSON Schema, with versioning and migrations.
+- **MongoDB-style queries**: the [RxQuery](../../rx-query.md) API supports the same operators NeDB users are accustomed to, including `$gt`, `$in`, `$regex`, `$elemMatch`, sorting, and skip/limit.
+- **Observable queries**: queries expose RxJS observables, and the UI updates automatically when results change. See [Reactivity](../../reactivity.md).
 - **Multi-tab support**: writes in one tab are streamed to all other tabs through `BroadcastChannel`, with conflict-safe storage handling under the hood.
-- **Replication**: the [Sync Engine](../replication.md) connects to any HTTP, GraphQL, CouchDB, WebRTC, or custom backend.
-- **Durable storages**: RxDB ships with battle-tested storage adapters. Use SQLite or the filesystem on [Node.js](../nodejs-database.md) and [Electron](../electron-database.md), use [IndexedDB](../rx-storage-indexeddb.md), [OPFS](../rx-storage-opfs.md), [Dexie](../rx-storage-dexie.md), or [SQLite-WASM](../rx-storage-sqlite.md) in the browser.
+- **Replication**: the [Sync Engine](../../replication.md) connects to any HTTP, GraphQL, CouchDB, WebRTC, or custom backend.
+- **Durable storages**: RxDB ships with battle-tested storage adapters. Use SQLite or the filesystem on [Node.js](../../nodejs-database.md) and [Electron](../../electron-database.md), use [IndexedDB](../../rx-storage-indexeddb.md), [OPFS](../../rx-storage-opfs.md), [Dexie](../../rx-storage-dexie.md), or [SQLite-WASM](../../rx-storage-sqlite.md) in the browser.
 
 ## Code Sample: From NeDB to RxDB
 
@@ -116,7 +116,7 @@ const openTasks = await db.tasks
     .exec();
 ```
 
-The query syntax stays close to MongoDB, so most NeDB selectors translate directly. See the full [RxQuery documentation](../rx-query.md) for supported operators.
+The query syntax stays close to MongoDB, so most NeDB selectors translate directly. See the full [RxQuery documentation](../../rx-query.md) for supported operators.
 
 ## Code Sample: Subscribing to a Query
 
@@ -140,11 +140,11 @@ This pattern removes the boilerplate of re-running queries after each write and 
 
 Most NeDB projects can move to RxDB in a few steps:
 
-1. **Define a schema** for every NeDB datastore. Inspect a sample of existing documents to derive the field types and required properties. The schema is required by [RxCollection](../rx-collection.md) and unlocks validation and migrations.
-2. **Pick a storage**. On Node.js or Electron, use a durable storage like SQLite (see [Node.js Database](../nodejs-database.md) and [Electron Database](../electron-database.md)). In the browser, [IndexedDB](../rx-storage-indexeddb.md) or [OPFS](../rx-storage-opfs.md) are good defaults.
+1. **Define a schema** for every NeDB datastore. Inspect a sample of existing documents to derive the field types and required properties. The schema is required by [RxCollection](../../rx-collection.md) and unlocks validation and migrations.
+2. **Pick a storage**. On Node.js or Electron, use a durable storage like SQLite (see [Node.js Database](../../nodejs-database.md) and [Electron Database](../../electron-database.md)). In the browser, [IndexedDB](../../rx-storage-indexeddb.md) or [OPFS](../../rx-storage-opfs.md) are good defaults.
 3. **Import data**. Read the existing NeDB file with the legacy library, normalize each document so it matches the new schema, and call `bulkInsert` on the corresponding RxDB collection. NeDB uses `_id` as the primary key, while RxDB lets you choose any field, so a small rename is often required.
 4. **Translate queries**. Most selectors port over with no changes. Replace callback APIs with async/await, and replace manual re-runs with `.$` observables where you want reactive updates.
-5. **Add replication if needed**. If your old setup synced data through a custom mechanism, replace it with the official [RxDB replication](../replication.md).
+5. **Add replication if needed**. If your old setup synced data through a custom mechanism, replace it with the official [RxDB replication](../../replication.md).
 
 A migration script that runs once on first launch is often enough. After a successful import, the legacy NeDB file can be deleted.
 
@@ -160,14 +160,14 @@ No. The original NeDB repository has not received commits since 2016 and is arch
 <details>
 <summary>Can I keep MongoDB-style queries in RxDB?</summary>
 
-Yes. RxDB queries use the same selector format as MongoDB and NeDB, including operators like `$gt`, `$lt`, `$in`, `$nin`, `$regex`, and `$elemMatch`, plus `sort`, `skip`, and `limit`. See the [RxQuery documentation](../rx-query.md) for the full list.
+Yes. RxDB queries use the same selector format as MongoDB and NeDB, including operators like `$gt`, `$lt`, `$in`, `$nin`, `$regex`, and `$elemMatch`, plus `sort`, `skip`, and `limit`. See the [RxQuery documentation](../../rx-query.md) for the full list.
 
 </details>
 
 <details>
 <summary>Is RxDB safe to use in Electron?</summary>
 
-Yes. RxDB ships official guidance and storage options for Electron, including SQLite-backed storages that store data on the local filesystem. The [Electron Database](../electron-database.md) page covers configuration in both the main and renderer processes, including multi-window setups.
+Yes. RxDB ships official guidance and storage options for Electron, including SQLite-backed storages that store data on the local filesystem. The [Electron Database](../../electron-database.md) page covers configuration in both the main and renderer processes, including multi-window setups.
 
 </details>
 
@@ -183,14 +183,14 @@ Read the existing NeDB file with the legacy library, define an RxDB schema that 
 | Feature | NeDB | RxDB |
 | --- | --- | --- |
 | Maintenance status | Last commit 2016, archived | Active, regular releases |
-| Query language | MongoDB-like | MongoDB-like ([RxQuery](../rx-query.md)) |
-| Schema validation | None | JSON Schema based ([RxSchema](../rx-schema.md)) |
-| Observable queries | No | Yes, via RxJS ([Reactivity](../reactivity.md)) |
+| Query language | MongoDB-like | MongoDB-like ([RxQuery](../../rx-query.md)) |
+| Schema validation | None | JSON Schema based ([RxSchema](../../rx-schema.md)) |
+| Observable queries | No | Yes, via RxJS ([Reactivity](../../reactivity.md)) |
 | Multi-tab support | No | Yes |
-| Replication | None | Built-in ([Sync Engine](../replication.md)) |
-| Browser storage | IndexedDB adapter | [IndexedDB](../rx-storage-indexeddb.md), [OPFS](../rx-storage-opfs.md), [Dexie](../rx-storage-dexie.md), [SQLite-WASM](../rx-storage-sqlite.md) |
-| Node.js storage | Single-file append log | SQLite, filesystem, memory ([Node.js Database](../nodejs-database.md)) |
-| Electron storage | Single-file append log | Durable storages ([Electron Database](../electron-database.md)) |
+| Replication | None | Built-in ([Sync Engine](../../replication.md)) |
+| Browser storage | IndexedDB adapter | [IndexedDB](../../rx-storage-indexeddb.md), [OPFS](../../rx-storage-opfs.md), [Dexie](../../rx-storage-dexie.md), [SQLite-WASM](../../rx-storage-sqlite.md) |
+| Node.js storage | Single-file append log | SQLite, filesystem, memory ([Node.js Database](../../nodejs-database.md)) |
+| Electron storage | Single-file append log | Durable storages ([Electron Database](../../electron-database.md)) |
 | Migrations | Manual | Built-in schema migrations |
 | TypeScript support | Community typings | First-class TypeScript |
 | Encryption | None | Optional plugin |
@@ -198,11 +198,11 @@ Read the existing NeDB file with the legacy library, define an RxDB schema that 
 
 ## Follow Up
 
-RxDB gives NeDB users a maintained, document-oriented database with the same MongoDB-style query language, plus the features modern apps require: schemas, observable queries, multi-tab coordination, and [replication](../replication.md). Read the [Quickstart](../quickstart.md), pick a storage that fits your runtime, and port your collections over with a short migration script.
+RxDB gives NeDB users a maintained, document-oriented database with the same MongoDB-style query language, plus the features modern apps require: schemas, observable queries, multi-tab coordination, and [replication](../../replication.md). Read the [Quickstart](../../quickstart.md), pick a storage that fits your runtime, and port your collections over with a short migration script.
 
 More resources:
 
 - [RxDB on GitHub](/code/)
-- [Local-First Future](../articles/local-first-future.md)
-- [Offline-First Guide](../offline-first.md)
-- [RxDB Sync Engine](../replication.md)
+- [Local-First Future](../../articles/local-first-future.md)
+- [Offline-First Guide](../../offline-first.md)
+- [RxDB Sync Engine](../../replication.md)

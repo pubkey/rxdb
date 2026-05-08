@@ -8,7 +8,7 @@ description: Replace MongoDB Realm and Atlas Device SDK with RxDB, a JavaScript 
 
 Teams that built mobile and web applications on top of [MongoDB Realm](https://www.mongodb.com/docs/realm/) and the Atlas Device SDKs are now in a difficult position. In September 2024, MongoDB announced the deprecation of the Atlas Device SDKs and Atlas Device Sync, with end of life targeted for September 2025. Applications that still rely on Realm for client storage and bidirectional sync need a JavaScript friendly replacement that does not lock the project to a single cloud vendor and that will keep receiving updates well past 2025.
 
-This page explains why [RxDB](https://rxdb.info/) is a strong replacement for Realm in JavaScript, TypeScript, [React Native](../react-native-database.md), [Electron](../electron-database.md), and browser environments. It covers the history of Realm, the technical shortcomings that existed even before the deprecation announcement, the features RxDB provides today, code samples for schema definition and replication to a MongoDB-backed HTTP endpoint, and practical migration notes.
+This page explains why [RxDB](https://rxdb.info/) is a strong replacement for Realm in JavaScript, TypeScript, [React Native](../../react-native-database.md), [Electron](../../electron-database.md), and browser environments. It covers the history of Realm, the technical shortcomings that existed even before the deprecation announcement, the features RxDB provides today, code samples for schema definition and replication to a MongoDB-backed HTTP endpoint, and practical migration notes.
 
 <center>
     <a href="https://rxdb.info/">
@@ -26,7 +26,7 @@ For JavaScript teams this timeline is short. Migrating client storage, replicati
 
 ## What is RxDB?
 
-RxDB is a [local-first](../articles/local-first-future.md) JavaScript database that stores data on the client and replicates it to any backend. It runs in the browser, Node.js, [Electron](../electron-database.md), [React Native](../react-native-database.md), Capacitor, Deno, and Bun. Data is organized into [collections](../rx-collection.md) with a JSON [schema](../rx-schema.md), queried with a MongoDB style [query language](../rx-query.md), and observed through [RxJS observables](../reactivity.md). Replication is pluggable: there are adapters for HTTP, GraphQL, WebRTC, CouchDB, Firestore, Supabase, NATS, and more. The storage layer is pluggable as well, so the same codebase can use IndexedDB, OPFS, SQLite, Memory, or a custom engine.
+RxDB is a [local-first](../../articles/local-first-future.md) JavaScript database that stores data on the client and replicates it to any backend. It runs in the browser, Node.js, [Electron](../../electron-database.md), [React Native](../../react-native-database.md), Capacitor, Deno, and Bun. Data is organized into [collections](../../rx-collection.md) with a JSON [schema](../../rx-schema.md), queried with a MongoDB style [query language](../../rx-query.md), and observed through [RxJS observables](../../reactivity.md). Replication is pluggable: there are adapters for HTTP, GraphQL, WebRTC, CouchDB, Firestore, Supabase, NATS, and more. The storage layer is pluggable as well, so the same codebase can use IndexedDB, OPFS, SQLite, Memory, or a custom engine.
 
 Unlike Realm, RxDB is written in TypeScript and ships as plain JavaScript. There are no per platform native bindings to maintain, and the same query and replication code works on every supported runtime.
 
@@ -45,13 +45,13 @@ The deprecation is the most pressing reason to migrate, but Realm had structural
 RxDB addresses each of the points above.
 
 - **Pure JavaScript**: RxDB has no native bindings of its own. Storage adapters wrap the platform's existing engine, for example IndexedDB in the browser or `op-sqlite` on React Native, and the rest of the database is plain JS that runs anywhere.
-- **Bring your own backend**: RxDB does not require any specific server. The [HTTP replication](../replication-http.md) plugin replicates to any REST style endpoint, including one that writes to MongoDB on the server side. There are also plugins for [GraphQL](../replication-graphql.md), WebRTC, CouchDB, Firestore, and Supabase. See the [replication overview](../replication.md) for the full list.
-- **MongoDB style queries**: Queries use the familiar `$gt`, `$in`, `$regex`, `$elemMatch` operators documented under [RxQuery](../rx-query.md). Developers coming from MongoDB or Mongoose feel at home.
-- **Observable queries**: Every query and document exposes an RxJS observable. UI code subscribes once and receives updates whenever the underlying data changes, on this tab or on another tab. This replaces Realm's change listeners with a standard reactive primitive. See [reactivity](../reactivity.md).
+- **Bring your own backend**: RxDB does not require any specific server. The [HTTP replication](../../replication-http.md) plugin replicates to any REST style endpoint, including one that writes to MongoDB on the server side. There are also plugins for [GraphQL](../../replication-graphql.md), WebRTC, CouchDB, Firestore, and Supabase. See the [replication overview](../../replication.md) for the full list.
+- **MongoDB style queries**: Queries use the familiar `$gt`, `$in`, `$regex`, `$elemMatch` operators documented under [RxQuery](../../rx-query.md). Developers coming from MongoDB or Mongoose feel at home.
+- **Observable queries**: Every query and document exposes an RxJS observable. UI code subscribes once and receives updates whenever the underlying data changes, on this tab or on another tab. This replaces Realm's change listeners with a standard reactive primitive. See [reactivity](../../reactivity.md).
 - **Multi tab support**: RxDB coordinates writes across browser tabs through a leader election. A query opened in tab A reflects writes performed in tab B without manual wiring.
-- **Encryption**: The [encryption plugin](../encryption.md) encrypts field values at rest using AES, with a password derived key. Realm offered file level encryption, RxDB lets you choose which fields to encrypt.
-- **Conflict resolution**: Replication conflicts are resolved through a user supplied handler. The default last write wins handler is provided, and custom merge logic can be plugged in. See [transactions, conflicts, and revisions](../transactions-conflicts-revisions.md).
-- **Offline first**: Reads and writes always go to the local store first and replication runs in the background. This is the same model Realm used and the same model that makes [offline first](../offline-first.md) apps feel fast.
+- **Encryption**: The [encryption plugin](../../encryption.md) encrypts field values at rest using AES, with a password derived key. Realm offered file level encryption, RxDB lets you choose which fields to encrypt.
+- **Conflict resolution**: Replication conflicts are resolved through a user supplied handler. The default last write wins handler is provided, and custom merge logic can be plugged in. See [transactions, conflicts, and revisions](../../transactions-conflicts-revisions.md).
+- **Offline first**: Reads and writes always go to the local store first and replication runs in the background. This is the same model Realm used and the same model that makes [offline first](../../offline-first.md) apps feel fast.
 
 ## Code sample: schema and reactive query
 
@@ -103,7 +103,7 @@ await db.todos.insert({
 
 ## Code sample: replicating to a MongoDB-backed HTTP endpoint
 
-RxDB does not talk to MongoDB directly from the client, which is the right architectural choice because the database driver belongs on the server. Instead the [HTTP replication plugin](../replication-http.md) calls REST endpoints that read from and write to MongoDB on the server. The endpoints follow the pull and push pattern documented in the [replication](../replication.md) guide.
+RxDB does not talk to MongoDB directly from the client, which is the right architectural choice because the database driver belongs on the server. Instead the [HTTP replication plugin](../../replication-http.md) calls REST endpoints that read from and write to MongoDB on the server. The endpoints follow the pull and push pattern documented in the [replication](../../replication.md) guide.
 
 ```ts
 import { replicateRxCollection } from 'rxdb/plugins/replication';
@@ -148,7 +148,7 @@ On the server side, `/api/todos/pull` runs a MongoDB `find({ updatedAt: { $gte: 
 
 A migration from Realm typically follows these steps.
 
-1. **Map Realm classes to RxDB schemas**. Each Realm object schema becomes a JSON schema under an [RxCollection](../rx-collection.md). Relationship properties map to references by primary key, and embedded objects map to nested object types in the schema.
+1. **Map Realm classes to RxDB schemas**. Each Realm object schema becomes a JSON schema under an [RxCollection](../../rx-collection.md). Relationship properties map to references by primary key, and embedded objects map to nested object types in the schema.
 2. **Export existing data**. Use the Realm SDK to read every object of every type and write them as JSON. This is a one off script that runs on app start during the transition release.
 3. **Bulk insert into RxDB**. Use `collection.bulkInsert(docs)` on first launch after the migration release. Mark the migration as complete in `localStorage` so it only runs once.
 4. **Replace Realm queries**. Realm's filter strings translate to RxDB selectors. For example `realm.objects('Todo').filtered('done == false SORT(createdAt DESC)')` becomes `db.todos.find({ selector: { done: false }, sort: [{ createdAt: 'desc' }] })`.
@@ -169,21 +169,21 @@ Yes. In September 2024 MongoDB announced the deprecation of the Atlas Device SDK
 <details>
 <summary>Can RxDB still talk to MongoDB?</summary>
 
-Yes, through a server side adapter. The RxDB client uses the [HTTP replication plugin](../replication-http.md) to call REST endpoints, and those endpoints read from and write to MongoDB on the server. Direct client to MongoDB connections are not supported, which is the correct security boundary for any production app.
+Yes, through a server side adapter. The RxDB client uses the [HTTP replication plugin](../../replication-http.md) to call REST endpoints, and those endpoints read from and write to MongoDB on the server. Direct client to MongoDB connections are not supported, which is the correct security boundary for any production app.
 
 </details>
 
 <details>
 <summary>How do I migrate Realm objects to RxDB?</summary>
 
-Define an [RxSchema](../rx-schema.md) for each Realm class, export every Realm object to JSON on app launch, and call `collection.bulkInsert(docs)` to load them into RxDB. Track migration completion in persistent storage so the import runs exactly once per device.
+Define an [RxSchema](../../rx-schema.md) for each Realm class, export every Realm object to JSON on app launch, and call `collection.bulkInsert(docs)` to load them into RxDB. Track migration completion in persistent storage so the import runs exactly once per device.
 
 </details>
 
 <details>
 <summary>Does RxDB run on React Native?</summary>
 
-Yes. RxDB has first class support for [React Native](../react-native-database.md) using the SQLite or memory storage adapters. The same schema and query code runs in the browser, in Node.js, in Electron, and on React Native without modification.
+Yes. RxDB has first class support for [React Native](../../react-native-database.md) using the SQLite or memory storage adapters. The same schema and query code runs in the browser, in Node.js, in Electron, and on React Native without modification.
 
 </details>
 

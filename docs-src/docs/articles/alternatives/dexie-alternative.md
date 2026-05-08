@@ -6,7 +6,7 @@ description: Compare Dexie.js with RxDB. Get MongoDB-style queries, JSON Schema 
 
 # RxDB as a Dexie.js Alternative with Mango Queries and Replication
 
-Teams reach for [Dexie.js](https://dexie.org/) when they want a friendlier API on top of IndexedDB without giving up the speed of a native browser store. Dexie does a fine job at that single goal. The trouble starts when an app outgrows simple key range lookups and needs MongoDB-style queries, [strict schemas](../rx-schema.md), [reactive results](../reactivity.md) across tabs, or [replication with a backend](../replication.md). At that point, most projects either build those features from scratch on top of Dexie or move to a database that already provides them. RxDB sits in the second category and can even run on top of Dexie internally through the [Dexie RxStorage](../rx-storage-dexie.md).
+Teams reach for [Dexie.js](https://dexie.org/) when they want a friendlier API on top of IndexedDB without giving up the speed of a native browser store. Dexie does a fine job at that single goal. The trouble starts when an app outgrows simple key range lookups and needs MongoDB-style queries, [strict schemas](../../rx-schema.md), [reactive results](../../reactivity.md) across tabs, or [replication with a backend](../../replication.md). At that point, most projects either build those features from scratch on top of Dexie or move to a database that already provides them. RxDB sits in the second category and can even run on top of Dexie internally through the [Dexie RxStorage](../../rx-storage-dexie.md).
 
 <center>
     <a href="https://rxdb.info/">
@@ -22,9 +22,9 @@ Later, the maintainers added Dexie Cloud, a paid service that provides sync, aut
 
 ## What is RxDB
 
-RxDB (Reactive Database) is a [local-first](../articles/local-first-future.md) NoSQL database for JavaScript. It runs in the browser, in Node.js, in React Native, in Electron, and in any other JavaScript runtime. Data is stored locally first and then replicated to one or many backends through a generic [replication protocol](../replication.md). Queries return [observables](../reactivity.md) that update whenever the underlying data changes, including changes made in other browser tabs.
+RxDB (Reactive Database) is a [local-first](../../articles/local-first-future.md) NoSQL database for JavaScript. It runs in the browser, in Node.js, in React Native, in Electron, and in any other JavaScript runtime. Data is stored locally first and then replicated to one or many backends through a generic [replication protocol](../../replication.md). Queries return [observables](../../reactivity.md) that update whenever the underlying data changes, including changes made in other browser tabs.
 
-RxDB is storage-agnostic. It can run on [IndexedDB](../rx-storage-indexeddb.md), [OPFS](../rx-storage-opfs.md), in-memory, SQLite, and on top of [Dexie.js](../rx-storage-dexie.md) itself. Picking the Dexie storage means you keep all the work Dexie does inside IndexedDB while gaining schemas, queries, replication, and reactivity from RxDB on top.
+RxDB is storage-agnostic. It can run on [IndexedDB](../../rx-storage-indexeddb.md), [OPFS](../../rx-storage-opfs.md), in-memory, SQLite, and on top of [Dexie.js](../../rx-storage-dexie.md) itself. Picking the Dexie storage means you keep all the work Dexie does inside IndexedDB while gaining schemas, queries, replication, and reactivity from RxDB on top.
 
 ## Where Dexie.js Stops Short
 
@@ -48,7 +48,7 @@ Plain Dexie has no replication. The official answer is Dexie Cloud, a hosted ser
 
 ### No Built-In CRDT or Conflict Handler
 
-When two tabs or two devices write to the same document, Dexie itself does not resolve the conflict. The application code has to detect it, decide which write wins, and apply the result. There is no [CRDT plugin](../crdt.md) and no pluggable [conflict handler](../transactions-conflicts-revisions.md). For a single-user, single-device app this rarely matters. For collaborative or multi-device apps it becomes the central problem.
+When two tabs or two devices write to the same document, Dexie itself does not resolve the conflict. The application code has to detect it, decide which write wins, and apply the result. There is no [CRDT plugin](../../crdt.md) and no pluggable [conflict handler](../../transactions-conflicts-revisions.md). For a single-user, single-device app this rarely matters. For collaborative or multi-device apps it becomes the central problem.
 
 ## What RxDB Adds on Top
 
@@ -56,11 +56,11 @@ RxDB was designed around the gaps above.
 
 ### MongoDB-Style Queries
 
-[RxQuery](../rx-query.md) accepts the full Mango query syntax. Operators like `$gt`, `$lt`, `$in`, `$or`, `$and`, `$regex`, and `$elemMatch` are first-class. The query planner picks an index automatically and falls back to a scan only when no index fits.
+[RxQuery](../../rx-query.md) accepts the full Mango query syntax. Operators like `$gt`, `$lt`, `$in`, `$or`, `$and`, `$regex`, and `$elemMatch` are first-class. The query planner picks an index automatically and falls back to a scan only when no index fits.
 
 ### JSON Schema Validation
 
-Every [RxCollection](../rx-collection.md) is defined by a [JSON Schema](../rx-schema.md). Inserts and updates are validated against the schema, primary keys are enforced, and indexes are declared once in the schema instead of being scattered across migration callbacks. Schema versions and migration strategies are part of the API.
+Every [RxCollection](../../rx-collection.md) is defined by a [JSON Schema](../../rx-schema.md). Inserts and updates are validated against the schema, primary keys are enforced, and indexes are declared once in the schema instead of being scattered across migration callbacks. Schema versions and migration strategies are part of the API.
 
 ### Observable Queries and Multi-Tab Sync
 
@@ -68,11 +68,11 @@ Query results are RxJS observables. When a document changes, every subscriber re
 
 ### Replication Primitives for Any Backend
 
-RxDB ships replication plugins for [HTTP](../replication-http.md), [GraphQL](../replication-graphql.md), [CouchDB](../replication-couchdb.md), WebRTC, Firestore, NATS, and more. All of them are built on the same generic [replication protocol](../replication.md), so a custom backend only needs to implement a pull and a push handler. There is no required hosted service and no per-document fee.
+RxDB ships replication plugins for [HTTP](../../replication-http.md), [GraphQL](../../replication-graphql.md), [CouchDB](../../replication-couchdb.md), WebRTC, Firestore, NATS, and more. All of them are built on the same generic [replication protocol](../../replication.md), so a custom backend only needs to implement a pull and a push handler. There is no required hosted service and no per-document fee.
 
 ### CRDT and Custom Conflict Handlers
 
-For collaborative workloads RxDB provides a [CRDT plugin](../crdt.md) and a pluggable [conflict handler](../transactions-conflicts-revisions.md) per collection. Conflicts are detected by revision, passed to the handler, and resolved deterministically on every device.
+For collaborative workloads RxDB provides a [CRDT plugin](../../crdt.md) and a pluggable [conflict handler](../../transactions-conflicts-revisions.md) per collection. Conflicts are detected by revision, passed to the handler, and resolved deterministically on every device.
 
 ## Code Sample: Dexie Query vs RxDB Query
 
@@ -123,7 +123,7 @@ db.tasks.find({
 
 ## Code Sample: RxDB on Dexie Storage with HTTP Replication
 
-The Dexie [RxStorage](../rx-storage-dexie.md) lets RxDB use Dexie under the hood. The application code stays on the RxDB API and gains queries, schemas, and replication.
+The Dexie [RxStorage](../../rx-storage-dexie.md) lets RxDB use Dexie under the hood. The application code stays on the RxDB API and gains queries, schemas, and replication.
 
 ```ts
 import { createRxDatabase } from 'rxdb/plugins/core';
@@ -186,41 +186,41 @@ This setup keeps Dexie as the storage engine, so writes still hit IndexedDB thro
 
 ## Use Dexie Inside RxDB
 
-The [Dexie RxStorage](../rx-storage-dexie.md) wraps Dexie as a storage backend for RxDB. It is a good pick when:
+The [Dexie RxStorage](../../rx-storage-dexie.md) wraps Dexie as a storage backend for RxDB. It is a good pick when:
 
 - The team already trusts Dexie and wants to keep it as the IndexedDB layer.
 - The browser is the main target and IndexedDB is the most compatible option.
 - The app needs schemas, observable queries, and replication that Dexie alone does not provide.
 
-The migration path is small. Documents stored by Dexie use the same IndexedDB databases that the Dexie RxStorage reads, but the RxDB layer adds its own metadata for revisions and replication checkpoints. Most projects copy the data from the legacy Dexie database into a new RxCollection on first start. For larger datasets see the notes on [slow IndexedDB writes](../slow-indexeddb.md) which apply to both Dexie and the Dexie RxStorage.
+The migration path is small. Documents stored by Dexie use the same IndexedDB databases that the Dexie RxStorage reads, but the RxDB layer adds its own metadata for revisions and replication checkpoints. Most projects copy the data from the legacy Dexie database into a new RxCollection on first start. For larger datasets see the notes on [slow IndexedDB writes](../../slow-indexeddb.md) which apply to both Dexie and the Dexie RxStorage.
 
 ## FAQ
 
 <details>
 <summary>Can I use Dexie under RxDB?</summary>
 
-Yes. RxDB ships the [Dexie RxStorage](../rx-storage-dexie.md) which uses Dexie.js as the underlying engine. Pass `getRxStorageDexie()` as the `storage` option when creating the database and Dexie handles the IndexedDB calls while RxDB provides schemas, queries, reactivity, and replication on top.
+Yes. RxDB ships the [Dexie RxStorage](../../rx-storage-dexie.md) which uses Dexie.js as the underlying engine. Pass `getRxStorageDexie()` as the `storage` option when creating the database and Dexie handles the IndexedDB calls while RxDB provides schemas, queries, reactivity, and replication on top.
 
 </details>
 
 <details>
 <summary>Does RxDB cost money?</summary>
 
-The core RxDB library and the open source storages, including the Dexie RxStorage, are free under the Apache 2.0 license. Some advanced plugins are part of the [Premium](/premium/) package for commercial projects. The [replication protocol](../replication.md) itself is open source, so syncing with your own backend never requires a paid service.
+The core RxDB library and the open source storages, including the Dexie RxStorage, are free under the Apache 2.0 license. Some advanced plugins are part of the [Premium](/premium/) package for commercial projects. The [replication protocol](../../replication.md) itself is open source, so syncing with your own backend never requires a paid service.
 
 </details>
 
 <details>
 <summary>How do I do MongoDB-style queries against IndexedDB?</summary>
 
-Use RxDB on top of an IndexedDB-based storage like the [Dexie RxStorage](../rx-storage-dexie.md), the [IndexedDB RxStorage](../rx-storage-indexeddb.md), or [OPFS](../rx-storage-opfs.md). RxDB exposes a Mango query API with operators like `$gt`, `$in`, `$or`, and `$elemMatch`, plans the query against the declared indexes, and returns either a snapshot or a live observable.
+Use RxDB on top of an IndexedDB-based storage like the [Dexie RxStorage](../../rx-storage-dexie.md), the [IndexedDB RxStorage](../../rx-storage-indexeddb.md), or [OPFS](../../rx-storage-opfs.md). RxDB exposes a Mango query API with operators like `$gt`, `$in`, `$or`, and `$elemMatch`, plans the query against the declared indexes, and returns either a snapshot or a live observable.
 
 </details>
 
 <details>
 <summary>Is RxDB faster than Dexie?</summary>
 
-RxDB on the Dexie storage adds a thin layer over Dexie, so raw single-document reads are close to plain Dexie. For multi-condition queries RxDB is often faster because the query planner uses indexes that a hand-written Dexie query would skip. For very large bulk inserts the underlying IndexedDB is the bottleneck for both libraries, see [slow IndexedDB](../slow-indexeddb.md).
+RxDB on the Dexie storage adds a thin layer over Dexie, so raw single-document reads are close to plain Dexie. For multi-condition queries RxDB is often faster because the query planner uses indexes that a hand-written Dexie query would skip. For very large bulk inserts the underlying IndexedDB is the bottleneck for both libraries, see [slow IndexedDB](../../slow-indexeddb.md).
 
 </details>
 
@@ -244,20 +244,20 @@ Yes. The common pattern is to keep the existing Dexie database read-only on firs
 | Multi-tab sync | Manual | Leader election built in |
 | Replication with custom backend | Not included | HTTP, GraphQL, CouchDB, WebRTC, more |
 | Hosted sync option | Dexie Cloud (paid) | Optional, any backend works |
-| CRDT support | None | [CRDT plugin](../crdt.md) |
+| CRDT support | None | [CRDT plugin](../../crdt.md) |
 | Conflict handler | Application code | Pluggable per collection |
 | Runtime targets | Browser only | Browser, Node.js, React Native, Electron |
 | License | Apache 2.0 | Apache 2.0 (Premium plugins separate) |
 
 ## Follow Up
 
-If Dexie covers the current requirements, it is a solid choice for IndexedDB access. Once the app needs Mango queries, JSON Schema, replication with an arbitrary backend, or deterministic conflict resolution, RxDB fills those gaps and can still keep Dexie as the storage engine through the [Dexie RxStorage](../rx-storage-dexie.md).
+If Dexie covers the current requirements, it is a solid choice for IndexedDB access. Once the app needs Mango queries, JSON Schema, replication with an arbitrary backend, or deterministic conflict resolution, RxDB fills those gaps and can still keep Dexie as the storage engine through the [Dexie RxStorage](../../rx-storage-dexie.md).
 
 More resources:
 
-- [RxDB Replication Engine](../replication.md)
-- [RxQuery and Mango Selectors](../rx-query.md)
-- [Reactivity in RxDB](../reactivity.md)
-- [Dexie RxStorage](../rx-storage-dexie.md)
-- [Local-First Future](../articles/local-first-future.md)
+- [RxDB Replication Engine](../../replication.md)
+- [RxQuery and Mango Selectors](../../rx-query.md)
+- [Reactivity in RxDB](../../reactivity.md)
+- [Dexie RxStorage](../../rx-storage-dexie.md)
+- [Local-First Future](../../articles/local-first-future.md)
 - [RxDB GitHub Repository](/code/)

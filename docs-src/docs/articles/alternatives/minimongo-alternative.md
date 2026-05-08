@@ -110,12 +110,12 @@ RxDB has a pluggable storage system. You choose the storage engine that matches 
 
 | Environment | Storage Option |
 |---|---|
-| Browser | [IndexedDB](../rx-storage-indexeddb.md) |
-| Browser (high-throughput) | [OPFS (Origin Private File System)](../rx-storage-opfs.md) |
-| React Native / Expo | [SQLite](../rx-storage-sqlite.md) |
-| Node.js / Electron | [Filesystem / SQLite](../rx-storage-sqlite.md) |
-| Tests | [Memory](../rx-storage-memory.md) |
-| Multi-tab browsers | [SharedWorker](../rx-storage-shared-worker.md) |
+| Browser | [IndexedDB](../../rx-storage-indexeddb.md) |
+| Browser (high-throughput) | [OPFS (Origin Private File System)](../../rx-storage-opfs.md) |
+| React Native / Expo | [SQLite](../../rx-storage-sqlite.md) |
+| Node.js / Electron | [Filesystem / SQLite](../../rx-storage-sqlite.md) |
+| Tests | [Memory](../../rx-storage-memory.md) |
+| Multi-tab browsers | [SharedWorker](../../rx-storage-shared-worker.md) |
 
 Switching storage engines requires changing only the `storage` parameter when creating the database. All application code above that layer remains the same:
 
@@ -213,7 +213,7 @@ await db.addCollections({
 });
 ```
 
-You can implement any conflict resolution strategy your application requires: last-write-wins, field-level merging, user-prompted resolution, or automatic reconciliation via CRDTs. RxDB natively supports [CRDTs (Conflict-free Replicated Data Types)](../crdt.md), which resolve conflicts automatically and deterministically without requiring custom handler logic:
+You can implement any conflict resolution strategy your application requires: last-write-wins, field-level merging, user-prompted resolution, or automatic reconciliation via CRDTs. RxDB natively supports [CRDTs (Conflict-free Replicated Data Types)](../../crdt.md), which resolve conflicts automatically and deterministically without requiring custom handler logic:
 
 ```ts
 import { getCRDTSchemaPart, RxDBcrdtPlugin } from 'rxdb/plugins/crdt';
@@ -279,15 +279,15 @@ If the network goes down, the replication state retries automatically at the con
 
 In addition to custom HTTP replication, RxDB provides ready-made plugins for common backends:
 
-- [CouchDB replication](../replication-couchdb.md)
-- [GraphQL replication](../replication-graphql.md)
-- [Firestore replication](../replication-firestore.md)
-- [WebSocket replication](../replication-websocket.md)
-- [WebRTC peer-to-peer replication](../replication-webrtc.md)
+- [CouchDB replication](../../replication-couchdb.md)
+- [GraphQL replication](../../replication-graphql.md)
+- [Firestore replication](../../replication-firestore.md)
+- [WebSocket replication](../../replication-websocket.md)
+- [WebRTC peer-to-peer replication](../../replication-webrtc.md)
 
 ### Multi-Tab Coordination
 
-RxDB handles multi-tab browser applications with its [SharedWorker storage](../rx-storage-shared-worker.md). When multiple tabs of the same application are open, they all connect to a single shared database instance running in a SharedWorker. All writes and subscriptions go through this shared instance, so a change made in one tab is immediately visible in all other tabs:
+RxDB handles multi-tab browser applications with its [SharedWorker storage](../../rx-storage-shared-worker.md). When multiple tabs of the same application are open, they all connect to a single shared database instance running in a SharedWorker. All writes and subscriptions go through this shared instance, so a change made in one tab is immediately visible in all other tabs:
 
 ```ts
 import { getRxStorageSharedWorker } from 'rxdb/plugins/storage-shared-worker';
@@ -305,7 +305,7 @@ const db = await createRxDatabase({
 
 After this setup, subscriptions in any tab observe the same unified data stream. No additional code is required to keep tabs in sync.
 
-For environments where SharedWorker is not available, RxDB falls back to using the [BroadcastChannel API](../rx-storage-indexeddb.md) to propagate change events across tabs, so all open tabs see updates even when using the standard IndexedDB storage.
+For environments where SharedWorker is not available, RxDB falls back to using the [BroadcastChannel API](../../rx-storage-indexeddb.md) to propagate change events across tabs, so all open tabs see updates even when using the standard IndexedDB storage.
 
 ### Query Capabilities and Indexing
 
@@ -343,7 +343,7 @@ Minimongo always performs a linear scan over all documents in memory for each qu
 
 ### Schema Validation and Type Safety
 
-RxDB validates every document against a [JSON Schema](../rx-schema.md) before it is written to storage. This means data integrity is enforced at the database level, not only in application code:
+RxDB validates every document against a [JSON Schema](../../rx-schema.md) before it is written to storage. This means data integrity is enforced at the database level, not only in application code:
 
 ```ts
 // Invalid documents are rejected at insert time
@@ -445,7 +445,7 @@ db.posts.find({
 });
 ```
 
-After the initial setup, you can add [replication](../replication.md) to sync with your existing backend, or deploy to React Native using the [SQLite storage plugin](../rx-storage-sqlite.md) with the same collection schema.
+After the initial setup, you can add [replication](../../replication.md) to sync with your existing backend, or deploy to React Native using the [SQLite storage plugin](../../rx-storage-sqlite.md) with the same collection schema.
 
 ---
 
@@ -485,7 +485,7 @@ Yes. RxDB's replication protocol can communicate with any HTTP server, including
 <details>
 <summary>Does RxDB support the same query syntax as Minimongo?</summary>
 
-RxDB uses a [MongoDB-compatible query syntax](../rx-query.md) for selectors, so many queries you have written for Minimongo will work with RxDB with little or no modification. The `selector` field in RxDB queries uses the same operators (`$eq`, `$gt`, `$in`, `$or`, `$and`, etc.) that Minimongo supports. RxDB does not support the full MongoDB aggregation pipeline, but it covers the query patterns needed for client-side filtering, sorting, and pagination.
+RxDB uses a [MongoDB-compatible query syntax](../../rx-query.md) for selectors, so many queries you have written for Minimongo will work with RxDB with little or no modification. The `selector` field in RxDB queries uses the same operators (`$eq`, `$gt`, `$in`, `$or`, `$and`, etc.) that Minimongo supports. RxDB does not support the full MongoDB aggregation pipeline, but it covers the query patterns needed for client-side filtering, sorting, and pagination.
 
 </details>
 
@@ -506,6 +506,6 @@ When the device comes back online, RxDB runs a replication cycle. It pulls all d
 <details>
 <summary>Is RxDB suitable for React Native?</summary>
 
-Yes. RxDB runs on React Native using the [SQLite storage plugin](../rx-storage-sqlite.md). The same schema definitions, query code, and replication setup you write for your web application can be shared with your React Native application. RxDB also supports [Expo](../react-native-database.md) through dedicated storage plugins.
+Yes. RxDB runs on React Native using the [SQLite storage plugin](../../rx-storage-sqlite.md). The same schema definitions, query code, and replication setup you write for your web application can be shared with your React Native application. RxDB also supports [Expo](../../react-native-database.md) through dedicated storage plugins.
 
 </details>

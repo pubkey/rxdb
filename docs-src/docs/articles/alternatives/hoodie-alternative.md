@@ -6,7 +6,7 @@ description: Replace unmaintained Hoodie with RxDB. Keep CouchDB sync, gain Type
 
 # RxDB as a Hoodie Alternative for Offline-First JavaScript Apps
 
-If you built a project on **Hoodie**, you chose it for a clear reason: ship an [offline-first](../offline-first.md) JavaScript application without writing a backend. The "noBackend" promise meant a single API call to store and sync data, with CouchDB and PouchDB doing the heavy lifting underneath. That promise still matters today, but the Hoodie project itself has been inactive for years, the `hood.ie` website is offline, and the GitHub repository has not received a meaningful commit in a long time.
+If you built a project on **Hoodie**, you chose it for a clear reason: ship an [offline-first](../../offline-first.md) JavaScript application without writing a backend. The "noBackend" promise meant a single API call to store and sync data, with CouchDB and PouchDB doing the heavy lifting underneath. That promise still matters today, but the Hoodie project itself has been inactive for years, the `hood.ie` website is offline, and the GitHub repository has not received a meaningful commit in a long time.
 
 Teams maintaining Hoodie applications now face a hard question: how do you keep the offline-first developer experience while moving to a stack that is actively maintained, typed, and supported across modern JavaScript runtimes? **RxDB** is a direct answer to that question. It keeps the local-first model, supports CouchDB replication out of the box, and adds reactive queries, multi-tab synchronization, and conflict handling that Hoodie never offered.
 
@@ -30,14 +30,14 @@ For a few years Hoodie was a popular choice for offline-first prototypes, hackat
 
 ## What is RxDB?
 
-RxDB (Reactive Database) is a local-first, NoSQL database for JavaScript. It runs in browsers, Node.js, Electron, React Native, and any other JavaScript runtime. Data is stored locally through a pluggable storage layer (IndexedDB, OPFS, SQLite, in-memory, and more) and can be replicated to any backend through the [RxDB Sync Engine](../replication.md).
+RxDB (Reactive Database) is a local-first, NoSQL database for JavaScript. It runs in browsers, Node.js, Electron, React Native, and any other JavaScript runtime. Data is stored locally through a pluggable storage layer (IndexedDB, OPFS, SQLite, in-memory, and more) and can be replicated to any backend through the [RxDB Sync Engine](../../replication.md).
 
 Compared to a raw PouchDB setup, RxDB adds:
 
 - A schema layer with JSON Schema validation and migrations.
-- [Reactive queries](../rx-query.md) that emit new results whenever the underlying data changes.
-- [Multi-tab support](../reactivity.md) so several browser tabs share a single consistent state.
-- A pluggable [conflict handler](../transactions-conflicts-revisions.md) instead of a fixed last-write-wins rule.
+- [Reactive queries](../../rx-query.md) that emit new results whenever the underlying data changes.
+- [Multi-tab support](../../reactivity.md) so several browser tabs share a single consistent state.
+- A pluggable [conflict handler](../../transactions-conflicts-revisions.md) instead of a fixed last-write-wins rule.
 - First-class TypeScript types for collections, documents, and queries.
 
 ## Where Hoodie Falls Short Today
@@ -50,7 +50,7 @@ The clearest issue is also the most important. Hoodie does not get bug fixes, se
 
 ### 2. CouchDB-Only Backend
 
-Hoodie was tightly coupled to CouchDB. If your team wants to sync to PostgreSQL, a custom REST API, GraphQL, Firestore, or a peer-to-peer mesh, Hoodie does not help. RxDB treats the backend as a plugin choice and ships replication adapters for [CouchDB](../replication-couchdb.md), [HTTP](../replication-http.md), and several other targets.
+Hoodie was tightly coupled to CouchDB. If your team wants to sync to PostgreSQL, a custom REST API, GraphQL, Firestore, or a peer-to-peer mesh, Hoodie does not help. RxDB treats the backend as a plugin choice and ships replication adapters for [CouchDB](../../replication-couchdb.md), [HTTP](../../replication-http.md), and several other targets.
 
 ### 3. Dated APIs and No TypeScript
 
@@ -62,7 +62,7 @@ Hoodie depends on PouchDB for local storage. PouchDB works, but its IndexedDB ad
 
 ### 5. No Built-In Conflict Strategy Beyond CouchDB Defaults
 
-Hoodie inherits CouchDB's conflict model, which surfaces conflicts but leaves resolution entirely to the application. RxDB lets you supply a [custom conflict handler](../transactions-conflicts-revisions.md) per collection, so merges happen automatically and consistently across clients.
+Hoodie inherits CouchDB's conflict model, which surfaces conflicts but leaves resolution entirely to the application. RxDB lets you supply a [custom conflict handler](../../transactions-conflicts-revisions.md) per collection, so merges happen automatically and consistently across clients.
 
 ## Why RxDB is a Strong Hoodie Replacement
 
@@ -70,7 +70,7 @@ Hoodie inherits CouchDB's conflict model, which surfaces conflicts but leaves re
 RxDB sees regular releases, security updates, and an active community. Bugs get fixed and new platforms (React Native New Architecture, OPFS, modern Node versions) are supported as they appear.
 
 ### Keep CouchDB if You Want
-If you already run a CouchDB cluster for your Hoodie deployment, you do not have to throw it away. The [CouchDB replication plugin](../replication-couchdb.md) lets RxDB sync directly with CouchDB or any CouchDB-compatible server.
+If you already run a CouchDB cluster for your Hoodie deployment, you do not have to throw it away. The [CouchDB replication plugin](../../replication-couchdb.md) lets RxDB sync directly with CouchDB or any CouchDB-compatible server.
 
 ### Modern TypeScript and Reactive APIs
 Every collection, document, and query is fully typed. Queries return RxJS observables, so your UI updates automatically when data changes locally or arrives from the server.
@@ -162,12 +162,12 @@ The same query updates when a remote replication pulls in a new document, when a
 
 A typical Hoodie migration follows these steps:
 
-1. **Inventory your stores.** Each Hoodie store maps to an [RxCollection](../rx-collection.md). Define a JSON Schema for each one, including the primary key.
-2. **Keep CouchDB during the transition.** Point RxDB at the existing CouchDB databases using the [CouchDB replication plugin](../replication-couchdb.md). Existing documents flow into the local RxDB store on first sync.
-3. **Translate Hoodie queries.** `hoodie.store.findAll(...)` and filter callbacks become [RxQuery](../rx-query.md) selectors with proper indexes.
-4. **Replace event listeners.** `store.on('add', ...)` becomes a subscription to `collection.$` or to a query's `.$` observable. See [Reactivity](../reactivity.md).
+1. **Inventory your stores.** Each Hoodie store maps to an [RxCollection](../../rx-collection.md). Define a JSON Schema for each one, including the primary key.
+2. **Keep CouchDB during the transition.** Point RxDB at the existing CouchDB databases using the [CouchDB replication plugin](../../replication-couchdb.md). Existing documents flow into the local RxDB store on first sync.
+3. **Translate Hoodie queries.** `hoodie.store.findAll(...)` and filter callbacks become [RxQuery](../../rx-query.md) selectors with proper indexes.
+4. **Replace event listeners.** `store.on('add', ...)` becomes a subscription to `collection.$` or to a query's `.$` observable. See [Reactivity](../../reactivity.md).
 5. **Plan account migration.** Hoodie shipped its own account system. With RxDB you choose your auth provider and pass credentials into the replication `fetch` function.
-6. **Decide on a long-term backend.** Many teams keep CouchDB. Others move to a custom HTTP endpoint using the [generic replication](../replication-http.md) plugin so they can drop CouchDB entirely.
+6. **Decide on a long-term backend.** Many teams keep CouchDB. Others move to a custom HTTP endpoint using the [generic replication](../../replication-http.md) plugin so they can drop CouchDB entirely.
 
 If you currently use PouchDB directly (with or without Hoodie), the migration is even smaller: replace the PouchDB instance with an RxDB collection, keep the same CouchDB server, and gain schemas, observables, and conflict handling on top.
 
@@ -183,21 +183,21 @@ No. The Hoodie project has not seen meaningful commits for several years, the `h
 <details>
 <summary>Can I keep using CouchDB if I move to RxDB?</summary>
 
-Yes. RxDB ships a [CouchDB replication plugin](../replication-couchdb.md) that syncs directly with any CouchDB-compatible server. You can migrate the client without touching the server, then decide later whether to keep CouchDB or switch to a different backend.
+Yes. RxDB ships a [CouchDB replication plugin](../../replication-couchdb.md) that syncs directly with any CouchDB-compatible server. You can migrate the client without touching the server, then decide later whether to keep CouchDB or switch to a different backend.
 
 </details>
 
 <details>
 <summary>Does RxDB give me a noBackend experience?</summary>
 
-RxDB gives you a local-first experience where the client is the source of truth. You still need a sync target, but it can be an existing CouchDB cluster, a managed service, a small custom HTTP endpoint, or even peer-to-peer WebRTC sync. The frontend code stays focused on data, queries, and UI, much like Hoodie's noBackend ideal. See [Local-First](../articles/local-first-future.md) for the broader pattern.
+RxDB gives you a local-first experience where the client is the source of truth. You still need a sync target, but it can be an existing CouchDB cluster, a managed service, a small custom HTTP endpoint, or even peer-to-peer WebRTC sync. The frontend code stays focused on data, queries, and UI, much like Hoodie's noBackend ideal. See [Local-First](../../articles/local-first-future.md) for the broader pattern.
 
 </details>
 
 <details>
 <summary>How do I migrate Hoodie data?</summary>
 
-Point RxDB at your existing CouchDB databases through the [CouchDB replication plugin](../replication-couchdb.md). On first run, RxDB pulls documents into the local store, validates them against your new JSON Schema, and keeps syncing on every change. For Hoodie account data, export the relevant `_users` and per-user databases the same way you would back up any CouchDB instance.
+Point RxDB at your existing CouchDB databases through the [CouchDB replication plugin](../../replication-couchdb.md). On first run, RxDB pulls documents into the local store, validates them against your new JSON Schema, and keeps syncing on every change. For Hoodie account data, export the relevant `_users` and per-user databases the same way you would back up any CouchDB instance.
 
 </details>
 
@@ -223,9 +223,9 @@ If you maintain a Hoodie application and want a path forward that keeps the offl
 
 More resources:
 
-- [RxDB Sync Engine](../replication.md)
-- [CouchDB Replication](../replication-couchdb.md)
-- [HTTP Replication](../replication-http.md)
-- [Reactive Queries](../rx-query.md)
-- [Conflict Handling](../transactions-conflicts-revisions.md)
-- [Local-First Future](../articles/local-first-future.md)
+- [RxDB Sync Engine](../../replication.md)
+- [CouchDB Replication](../../replication-couchdb.md)
+- [HTTP Replication](../../replication-http.md)
+- [Reactive Queries](../../rx-query.md)
+- [Conflict Handling](../../transactions-conflicts-revisions.md)
+- [Local-First Future](../../articles/local-first-future.md)

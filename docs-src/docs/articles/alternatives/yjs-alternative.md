@@ -33,9 +33,9 @@ Each provider plugs into a `Y.Doc` and synchronizes its update stream. The model
 
 ## What RxDB Brings to the Table
 
-[RxDB](https://rxdb.info/) is a [local-first](../articles/local-first-future.md), reactive, NoSQL database for JavaScript. It stores JSON documents in a pluggable storage layer, exposes MongoDB-style queries, and supports several replication protocols out of the box. Queries and documents are observable, so any UI bound to them updates automatically when the underlying data changes. See the [reactivity guide](../reactivity.md) for details.
+[RxDB](https://rxdb.info/) is a [local-first](../../articles/local-first-future.md), reactive, NoSQL database for JavaScript. It stores JSON documents in a pluggable storage layer, exposes MongoDB-style queries, and supports several replication protocols out of the box. Queries and documents are observable, so any UI bound to them updates automatically when the underlying data changes. See the [reactivity guide](../../reactivity.md) for details.
 
-RxDB also ships an optional [CRDT plugin](../crdt.md) that adds operation-based merging on top of regular RxDB documents. If you want CRDT semantics for parts of your data without giving up schemas, queries, and indexes, you do not need a separate CRDT runtime.
+RxDB also ships an optional [CRDT plugin](../../crdt.md) that adds operation-based merging on top of regular RxDB documents. If you want CRDT semantics for parts of your data without giving up schemas, queries, and indexes, you do not need a separate CRDT runtime.
 
 ## Where Yjs Falls Short as a General Database
 
@@ -69,13 +69,13 @@ Yjs sync moves the entire update stream of a `Y.Doc`. That works for one shared 
 
 RxDB approaches the same problem from the database side:
 
-- **Document database**: collections of JSON documents with a [JSON Schema](../rx-collection.md) per collection.
-- **MongoDB-style queries**: rich [`RxQuery`](../rx-query.md) API with selectors, sort, skip, limit, and indexes.
-- **Observable everything**: queries, documents, and fields emit on every change. See [reactivity](../reactivity.md).
+- **Document database**: collections of JSON documents with a [JSON Schema](../../rx-collection.md) per collection.
+- **MongoDB-style queries**: rich [`RxQuery`](../../rx-query.md) API with selectors, sort, skip, limit, and indexes.
+- **Observable everything**: queries, documents, and fields emit on every change. See [reactivity](../../reactivity.md).
 - **Pluggable storage**: IndexedDB, OPFS, SQLite, in-memory, and more. The same code runs in browser, Electron, React Native, and Node.js.
-- **Replication primitives**: a generic [replication protocol](../replication.md) plus ready-made adapters for HTTP, GraphQL, WebSocket, CouchDB, and [WebRTC](../replication-webrtc.md).
-- **Conflict handling**: per-collection [conflict handlers](../transactions-conflicts-revisions.md) with revisions, so you can merge, prefer remote, prefer local, or fold in CRDT logic.
-- **Optional CRDT plugin**: the [CRDT plugin](../crdt.md) adds operation-based merging where you need it.
+- **Replication primitives**: a generic [replication protocol](../../replication.md) plus ready-made adapters for HTTP, GraphQL, WebSocket, CouchDB, and [WebRTC](../../replication-webrtc.md).
+- **Conflict handling**: per-collection [conflict handlers](../../transactions-conflicts-revisions.md) with revisions, so you can merge, prefer remote, prefer local, or fold in CRDT logic.
+- **Optional CRDT plugin**: the [CRDT plugin](../../crdt.md) adds operation-based merging where you need it.
 
 ## Code Sample: Defining a Collection and Subscribing to a Query
 
@@ -129,7 +129,7 @@ Schemas, indexes, queries, and live results come from the database itself. Compa
 
 ## Code Sample: RxDB CRDT Plugin for Collaborative Fields
 
-When a field needs CRDT semantics, the [CRDT plugin](../crdt.md) lets you express updates as operations against a regular RxDB document:
+When a field needs CRDT semantics, the [CRDT plugin](../../crdt.md) lets you express updates as operations against a regular RxDB document:
 
 ```ts
 import { addRxPlugin } from 'rxdb';
@@ -176,7 +176,7 @@ Yjs and RxDB are not mutually exclusive. A common pattern in production apps:
 
 The serialized Yjs update (a `Uint8Array`) can be stored as a base64 string inside an RxDB document field. RxDB takes care of persistence, replication, and querying the metadata, while Yjs takes care of merging concurrent character edits.
 
-For real-time fan-out between peers, RxDB's [WebRTC replication](../replication-webrtc.md) and the standard [server replication](../replication.md) cover the structured side, and the existing Yjs providers cover the document side. See also the [realtime database article](../articles/realtime-database.md) for the broader pattern.
+For real-time fan-out between peers, RxDB's [WebRTC replication](../../replication-webrtc.md) and the standard [server replication](../../replication.md) cover the structured side, and the existing Yjs providers cover the document side. See also the [realtime database article](../../articles/realtime-database.md) for the broader pattern.
 
 ## FAQ
 
@@ -189,7 +189,7 @@ No. Yjs is a CRDT library. It defines shared data types and a merge algorithm, a
 <details>
 <summary>Does RxDB have CRDTs?</summary>
 
-Yes. The optional [CRDT plugin](../crdt.md) adds operation-based merging on top of regular RxDB documents. You keep schemas, queries, indexes, and replication, and you opt in to CRDT semantics for the fields that need them. For most app data, the default [conflict handler](../transactions-conflicts-revisions.md) is enough.
+Yes. The optional [CRDT plugin](../../crdt.md) adds operation-based merging on top of regular RxDB documents. You keep schemas, queries, indexes, and replication, and you opt in to CRDT semantics for the fields that need them. For most app data, the default [conflict handler](../../transactions-conflicts-revisions.md) is enough.
 </details>
 
 <details>
@@ -217,12 +217,12 @@ Yjs, paired with TipTap, ProseMirror, Slate, or Monaco. The bindings are mature 
 | Primary purpose                    | CRDT runtime                         | Local-first document database                            |
 | Data model                         | Shared types (`Y.Map`, `Y.Array`, `Y.Text`) | JSON documents in typed collections               |
 | Schema and validation              | None                                 | JSON Schema per collection                               |
-| Query API                          | None, manual iteration               | MongoDB-style [`RxQuery`](../rx-query.md)                |
+| Query API                          | None, manual iteration               | MongoDB-style [`RxQuery`](../../rx-query.md)                |
 | Indexes                            | None                                 | Single and compound indexes                              |
-| Reactive results                   | Per shared type observers            | Observable [queries and documents](../reactivity.md)     |
+| Reactive results                   | Per shared type observers            | Observable [queries and documents](../../reactivity.md)     |
 | Persistence                        | Provider based (`y-indexeddb`, etc.) | Pluggable storages (IndexedDB, OPFS, SQLite, memory)     |
-| Replication                        | Provider based, per `Y.Doc`          | Generic [replication protocol](../replication.md), HTTP, GraphQL, WebSocket, CouchDB, [WebRTC](../replication-webrtc.md) |
-| Conflict resolution                | Built-in CRDT                        | Pluggable [conflict handlers](../transactions-conflicts-revisions.md) plus optional [CRDT plugin](../crdt.md) |
+| Replication                        | Provider based, per `Y.Doc`          | Generic [replication protocol](../../replication.md), HTTP, GraphQL, WebSocket, CouchDB, [WebRTC](../../replication-webrtc.md) |
+| Conflict resolution                | Built-in CRDT                        | Pluggable [conflict handlers](../../transactions-conflicts-revisions.md) plus optional [CRDT plugin](../../crdt.md) |
 | Best fit                           | Collaborative rich-text editors      | Offline-first apps with structured data and queries      |
 
-If your product is a collaborative editor, start with Yjs. If your product is an app that happens to need collaboration on some fields, start with RxDB and add the [CRDT plugin](../crdt.md) or embed Yjs documents where they pay off.
+If your product is a collaborative editor, start with Yjs. If your product is an app that happens to need collaboration on some fields, start with RxDB and add the [CRDT plugin](../../crdt.md) or embed Yjs documents where they pay off.

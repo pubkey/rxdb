@@ -24,9 +24,9 @@ Around 2020 the pace of releases dropped sharply. The project is closer to "feat
 
 ## What RxDB Is
 
-RxDB is a [local-first](../offline-first.md), reactive, NoSQL database for JavaScript. It runs in the browser, in Node.js, in Electron, and in React Native. Documents are validated against a JSON schema, queries are MongoDB-style, and every [RxQuery](../rx-query.md) is observable so the UI can re-render when data changes. The storage layer is pluggable, so the same application code can run on top of [IndexedDB](../rx-storage-indexeddb.md), [OPFS](../rx-storage-opfs.md), [Dexie](../rx-storage-dexie.md), [SQLite](../rx-storage-sqlite.md), or a pure [in-memory](../rx-storage-memory.md) store.
+RxDB is a [local-first](../../offline-first.md), reactive, NoSQL database for JavaScript. It runs in the browser, in Node.js, in Electron, and in React Native. Documents are validated against a JSON schema, queries are MongoDB-style, and every [RxQuery](../../rx-query.md) is observable so the UI can re-render when data changes. The storage layer is pluggable, so the same application code can run on top of [IndexedDB](../../rx-storage-indexeddb.md), [OPFS](../../rx-storage-opfs.md), [Dexie](../../rx-storage-dexie.md), [SQLite](../../rx-storage-sqlite.md), or a pure [in-memory](../../rx-storage-memory.md) store.
 
-On top of that, RxDB ships a [replication protocol](../replication.md) that keeps clients in sync with each other and with a backend, with proper [conflict handling](../transactions-conflicts-revisions.md).
+On top of that, RxDB ships a [replication protocol](../../replication.md) that keeps clients in sync with each other and with a backend, with proper [conflict handling](../../transactions-conflicts-revisions.md).
 
 ## Where LokiJS Falls Short
 
@@ -43,11 +43,11 @@ The shortcomings below are the ones that show up most often when teams move off 
 
 RxDB was designed around the assumption that the database has to outlive a tab crash and stay consistent across many clients.
 
-- **Durable storages by default.** Pick the engine that matches the runtime: [IndexedDB](../rx-storage-indexeddb.md) and [OPFS](../rx-storage-opfs.md) in the browser, [Dexie](../rx-storage-dexie.md) as a thin wrapper over IndexedDB, [SQLite](../rx-storage-sqlite.md) for Node.js, Electron, and React Native. Each write is persisted by the underlying engine, not by a periodic snapshot of the whole dataset.
-- **In-memory mode when you want it.** The [Memory RxStorage](../rx-storage-memory.md) keeps everything in RAM for cache-style use cases, ephemeral test runs, and hot-path workloads where you do not need persistence.
-- **Real replication.** The [RxDB sync engine](../replication.md) handles pull, push, and live updates against any backend you point it at, including HTTP, GraphQL, CouchDB, WebRTC peers, and Firestore.
+- **Durable storages by default.** Pick the engine that matches the runtime: [IndexedDB](../../rx-storage-indexeddb.md) and [OPFS](../../rx-storage-opfs.md) in the browser, [Dexie](../../rx-storage-dexie.md) as a thin wrapper over IndexedDB, [SQLite](../../rx-storage-sqlite.md) for Node.js, Electron, and React Native. Each write is persisted by the underlying engine, not by a periodic snapshot of the whole dataset.
+- **In-memory mode when you want it.** The [Memory RxStorage](../../rx-storage-memory.md) keeps everything in RAM for cache-style use cases, ephemeral test runs, and hot-path workloads where you do not need persistence.
+- **Real replication.** The [RxDB sync engine](../../replication.md) handles pull, push, and live updates against any backend you point it at, including HTTP, GraphQL, CouchDB, WebRTC peers, and Firestore.
 - **MongoDB-style queries with indexes.** Define indexes on the fields you query and run rich selectors locally. Queries are observable, so subscribing to a result set is a single call.
-- **Reactive UI integration.** Each [RxQuery](../rx-query.md) emits the latest result whenever the underlying data changes, which is the [reactivity](../reactivity.md) story LokiJS never fully had.
+- **Reactive UI integration.** Each [RxQuery](../../rx-query.md) emits the latest result whenever the underlying data changes, which is the [reactivity](../../reactivity.md) story LokiJS never fully had.
 - **Multi-tab safety.** RxDB coordinates writes across tabs and refuses to corrupt itself when two tabs of the same origin open the same database.
 - **Schema and migrations.** Documents are validated, and schema upgrades are first-class instead of ad-hoc.
 
@@ -106,7 +106,7 @@ Compared to LokiJS, the meaningful difference is not the API surface, it is what
 
 ## Using In-Memory Storage for LokiJS-Style Speed
 
-When the workload truly is "load some data, query it many times, throw it away", swap the storage for the [Memory RxStorage](../rx-storage-memory.md). The rest of the code stays the same.
+When the workload truly is "load some data, query it many times, throw it away", swap the storage for the [Memory RxStorage](../../rx-storage-memory.md). The rest of the code stays the same.
 
 ```ts
 import { createRxDatabase } from 'rxdb/plugins/core';
@@ -143,14 +143,14 @@ const cheap = await cache.products
   .exec();
 ```
 
-The Memory storage is also useful as a fast tier in front of a persistent [RxCollection](../rx-collection.md) when you want both speed and durability.
+The Memory storage is also useful as a fast tier in front of a persistent [RxCollection](../../rx-collection.md) when you want both speed and durability.
 
 ## Why the LokiJS RxStorage Was Removed in RxDB v16
 
 Earlier RxDB versions shipped a `lokijs` RxStorage that wrapped LokiJS as a backing store. It was removed in RxDB version 16. Two reasons drove the decision:
 
 1. LokiJS itself stopped getting fixes for problems that surfaced through RxDB usage, especially around larger datasets and edge cases in the persistence adapters.
-2. The use cases the LokiJS storage covered are now served by other built-in storages. For "everything in RAM" there is the [Memory RxStorage](../rx-storage-memory.md). For "persistent in the browser" there is the [IndexedDB RxStorage](../rx-storage-indexeddb.md), the [OPFS RxStorage](../rx-storage-opfs.md), and the [Dexie RxStorage](../rx-storage-dexie.md). Each of these is faster, safer, and actively maintained.
+2. The use cases the LokiJS storage covered are now served by other built-in storages. For "everything in RAM" there is the [Memory RxStorage](../../rx-storage-memory.md). For "persistent in the browser" there is the [IndexedDB RxStorage](../../rx-storage-indexeddb.md), the [OPFS RxStorage](../../rx-storage-opfs.md), and the [Dexie RxStorage](../../rx-storage-dexie.md). Each of these is faster, safer, and actively maintained.
 
 If you previously used the LokiJS RxStorage, the migration is to pick whichever of those storages matches your durability needs and switch the `storage` option of `createRxDatabase`. Schemas and collection definitions stay the same.
 
@@ -166,7 +166,7 @@ LokiJS is no longer actively maintained, and bugs that affected RxDB users were 
 <details>
 <summary>Can RxDB give me LokiJS-like in-memory speed?</summary>
 
-Yes. The [Memory RxStorage](../rx-storage-memory.md) keeps the dataset in RAM and runs queries against in-memory indexes, which gives the same query latency profile as LokiJS without the broken persistence story.
+Yes. The [Memory RxStorage](../../rx-storage-memory.md) keeps the dataset in RAM and runs queries against in-memory indexes, which gives the same query latency profile as LokiJS without the broken persistence story.
 
 </details>
 
@@ -180,14 +180,14 @@ Activity on the project has been minimal since around 2020. New issues and pull 
 <details>
 <summary>How does RxDB persist data safely?</summary>
 
-Each write goes through the configured RxStorage, and storages like [IndexedDB](../rx-storage-indexeddb.md), [OPFS](../rx-storage-opfs.md), [Dexie](../rx-storage-dexie.md), and [SQLite](../rx-storage-sqlite.md) persist that write before acknowledging it. There is no autosave interval that can drop committed data when the tab is closed.
+Each write goes through the configured RxStorage, and storages like [IndexedDB](../../rx-storage-indexeddb.md), [OPFS](../../rx-storage-opfs.md), [Dexie](../../rx-storage-dexie.md), and [SQLite](../../rx-storage-sqlite.md) persist that write before acknowledging it. There is no autosave interval that can drop committed data when the tab is closed.
 
 </details>
 
 <details>
 <summary>How do I migrate from LokiJS to RxDB?</summary>
 
-Define an [RxCollection](../rx-collection.md) with a JSON schema that matches your LokiJS collection, read the existing LokiJS data once on startup, and `bulkInsert` it into the RxDB collection. From that point on, write through RxDB and use a [replication plugin](../replication.md) if you also need to sync the data with a server.
+Define an [RxCollection](../../rx-collection.md) with a JSON schema that matches your LokiJS collection, read the existing LokiJS data once on startup, and `bulkInsert` it into the RxDB collection. From that point on, write through RxDB and use a [replication plugin](../../replication.md) if you also need to sync the data with a server.
 
 </details>
 
@@ -197,12 +197,12 @@ Define an [RxCollection](../rx-collection.md) with a JSON schema that matches yo
 | ------------------------- | -------------------------------------------- | -------------------------------------------------------------- |
 | Primary storage model     | In-memory object graph                       | Pluggable RxStorage (IndexedDB, OPFS, Dexie, SQLite, Memory)   |
 | Durability of writes      | Periodic snapshot via adapter                | Per-write durability through the underlying engine             |
-| In-memory mode            | Default                                      | Optional via [Memory RxStorage](../rx-storage-memory.md)       |
-| Query API                 | MongoDB-style                                | MongoDB-style with observable [RxQuery](../rx-query.md)        |
+| In-memory mode            | Default                                      | Optional via [Memory RxStorage](../../rx-storage-memory.md)       |
+| Query API                 | MongoDB-style                                | MongoDB-style with observable [RxQuery](../../rx-query.md)        |
 | Reactivity                | Events, no observable queries                | RxJS observables on every query and document                   |
 | Multi-tab support         | Fragile, snapshot collisions                 | Coordinated writes across tabs                                 |
-| Replication / sync        | Not built in                                 | Built-in [sync engine](../replication.md), HTTP, GraphQL, CouchDB, WebRTC, Firestore |
-| Conflict resolution       | None                                         | Custom [conflict handlers](../transactions-conflicts-revisions.md) with revisions |
+| Replication / sync        | Not built in                                 | Built-in [sync engine](../../replication.md), HTTP, GraphQL, CouchDB, WebRTC, Firestore |
+| Conflict resolution       | None                                         | Custom [conflict handlers](../../transactions-conflicts-revisions.md) with revisions |
 | Schema and migrations     | Optional, ad-hoc                             | JSON schema with versioned migrations                          |
 | Project activity          | Low since around 2020                        | Actively maintained                                            |
 
@@ -210,4 +210,4 @@ Define an [RxCollection](../rx-collection.md) with a JSON schema that matches yo
 
 If LokiJS got you most of the way and stopped being enough once persistence, multi-tab safety, or sync entered the picture, RxDB is the natural next step. It keeps the document-store ergonomics, adds reactive queries, lets you choose between durable and in-memory storages per use case, and gives you a real replication protocol for the day your app stops being a single-device toy.
 
-For more on the broader direction RxDB is built around, see [the local-first future](../articles/local-first-future.md).
+For more on the broader direction RxDB is built around, see [the local-first future](../../articles/local-first-future.md).

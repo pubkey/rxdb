@@ -69,7 +69,7 @@ Storing the revision tree for every document causes two problems:
 1. **Storage bloat**: The client stores far more data than the current document state requires.
 2. **Slow queries**: IndexedDB queries must navigate around the revision storage layout, which is optimized for replication correctness, not for read performance.
 
-RxDB was originally built on top of PouchDB. As the project grew, these limitations became clear. In [RxDB version 10.0.0](../releases/10.0.0.md), the storage layer was fully abstracted away. RxDB no longer uses PouchDB internally. Instead, it uses a pluggable [RxStorage](../rx-storage.md) interface that can be backed by IndexedDB, OPFS, SQLite, or any other storage engine, without the revision-tree overhead required by the CouchDB protocol.
+RxDB was originally built on top of PouchDB. As the project grew, these limitations became clear. In [RxDB version 10.0.0](../../releases/10.0.0.md), the storage layer was fully abstracted away. RxDB no longer uses PouchDB internally. Instead, it uses a pluggable [RxStorage](../../rx-storage.md) interface that can be backed by IndexedDB, OPFS, SQLite, or any other storage engine, without the revision-tree overhead required by the CouchDB protocol.
 
 ### No Reactive Query System
 
@@ -93,7 +93,7 @@ When using CouchDB from a browser, queries go over the network to the server. Th
 
 ## How RxDB Solves These Problems
 
-[RxDB](https://rxdb.info) is a local-first JavaScript database designed to run on the client. All reads and writes go to local storage. Network replication happens in the background. RxDB includes a [CouchDB replication plugin](../replication-couchdb.md) so you can use CouchDB as a backend while gaining all the client-side benefits of RxDB.
+[RxDB](https://rxdb.info) is a local-first JavaScript database designed to run on the client. All reads and writes go to local storage. Network replication happens in the background. RxDB includes a [CouchDB replication plugin](../../replication-couchdb.md) so you can use CouchDB as a backend while gaining all the client-side benefits of RxDB.
 
 ### Local-First Architecture
 
@@ -138,7 +138,7 @@ Writes made while offline are stored locally and automatically pushed to CouchDB
 
 ### Replication with CouchDB
 
-RxDB provides a dedicated [CouchDB replication plugin](../replication-couchdb.md). This plugin does **not** use the official CouchDB replication protocol. Instead, it uses RxDB's own sync engine on top of the CouchDB HTTP API. This design choice avoids the revision-tree overhead while still replicating correctly.
+RxDB provides a dedicated [CouchDB replication plugin](../../replication-couchdb.md). This plugin does **not** use the official CouchDB replication protocol. Instead, it uses RxDB's own sync engine on top of the CouchDB HTTP API. This design choice avoids the revision-tree overhead while still replicating correctly.
 
 ```ts
 import { replicateCouchDB } from 'rxdb/plugins/replication-couchdb';
@@ -240,12 +240,12 @@ Unlike PouchDB, which is tied to IndexedDB in the browser, RxDB separates the qu
 
 | Environment | Storage Option |
 |---|---|
-| Browser (general use) | [IndexedDB](../rx-storage-indexeddb.md) |
-| Browser (write-heavy workloads) | [OPFS (Origin Private File System)](../rx-storage-opfs.md) |
-| React Native / Expo | [SQLite via expo-sqlite or op-sqlite](../rx-storage-sqlite.md) |
-| Node.js / Electron | [SQLite (better-sqlite3)](../rx-storage-sqlite.md) |
-| Multiple browser tabs | [SharedWorker](../rx-storage-shared-worker.md) |
-| Tests | [Memory](../rx-storage-memory.md) |
+| Browser (general use) | [IndexedDB](../../rx-storage-indexeddb.md) |
+| Browser (write-heavy workloads) | [OPFS (Origin Private File System)](../../rx-storage-opfs.md) |
+| React Native / Expo | [SQLite via expo-sqlite or op-sqlite](../../rx-storage-sqlite.md) |
+| Node.js / Electron | [SQLite (better-sqlite3)](../../rx-storage-sqlite.md) |
+| Multiple browser tabs | [SharedWorker](../../rx-storage-shared-worker.md) |
+| Tests | [Memory](../../rx-storage-memory.md) |
 
 Switching storage is a one-line change in database creation. The rest of the application (queries, replication, schema) remains unchanged:
 
@@ -262,13 +262,13 @@ const db = await createRxDatabase({
 });
 ```
 
-The [OPFS storage](../rx-storage-opfs.md) option is particularly useful for write-heavy applications. OPFS gives browsers direct access to a private file system, bypassing the IndexedDB transaction overhead. Benchmarks show OPFS significantly outperforming IndexedDB for bulk write operations.
+The [OPFS storage](../../rx-storage-opfs.md) option is particularly useful for write-heavy applications. OPFS gives browsers direct access to a private file system, bypassing the IndexedDB transaction overhead. Benchmarks show OPFS significantly outperforming IndexedDB for bulk write operations.
 
 ### Multi-Tab Consistency
 
 When a user opens a web application in multiple browser tabs, each tab has its own JavaScript process. Without coordination, writes from one tab would not appear reactively in other tabs.
 
-RxDB solves this with the [SharedWorker storage](../rx-storage-shared-worker.md):
+RxDB solves this with the [SharedWorker storage](../../rx-storage-shared-worker.md):
 
 ```ts
 import { getRxStorageSharedWorker } from 'rxdb/plugins/storage-shared-worker';
@@ -309,7 +309,7 @@ await db.addCollections({
 });
 ```
 
-For collaborative applications where changes from multiple users should be merged rather than discarded, RxDB supports [CRDTs (Conflict-free Replicated Data Types)](../crdt.md):
+For collaborative applications where changes from multiple users should be merged rather than discarded, RxDB supports [CRDTs (Conflict-free Replicated Data Types)](../../crdt.md):
 
 ```ts
 import { getCRDTSchemaPart, RxDBcrdtPlugin } from 'rxdb/plugins/crdt';
@@ -335,7 +335,7 @@ With CRDTs, concurrent writes are merged deterministically when clients sync. Th
 
 ### Schema Validation and TypeScript
 
-RxDB validates every document against a [JSON Schema](../rx-schema.md) before writing it to storage. Invalid documents are rejected before they reach storage:
+RxDB validates every document against a [JSON Schema](../../rx-schema.md) before writing it to storage. Invalid documents are rejected before they reach storage:
 
 ```ts
 try {
@@ -366,7 +366,7 @@ CouchDB has no client-side schema validation. Documents are freeform JSON. Enfor
 
 ### Schema Migrations
 
-When your data model changes, RxDB's [migration system](../migration-schema.md) handles the transition automatically. You increment the version number and provide a migration strategy:
+When your data model changes, RxDB's [migration system](../../migration-schema.md) handles the transition automatically. You increment the version number and provide a migration strategy:
 
 ```ts
 await db.addCollections({
@@ -400,7 +400,7 @@ When the database opens with the new schema version, RxDB migrates all existing 
 
 ### Encryption at Rest
 
-RxDB includes a [built-in encryption plugin](../encryption.md) for encrypting document fields before writing them to local storage:
+RxDB includes a [built-in encryption plugin](../../encryption.md) for encrypting document fields before writing them to local storage:
 
 ```ts
 import { wrappedKeyEncryptionCryptoJsStorage } from 'rxdb/plugins/encryption-crypto-js';
@@ -453,7 +453,7 @@ RxDB and CouchDB are not mutually exclusive. CouchDB is a capable server-side da
 
 This architecture gives you offline-capable clients with reactive queries and the battle-tested CouchDB replication protocol at the server tier.
 
-You can also switch away from CouchDB later without changing any application code. RxDB supports [HTTP replication](../replication-http.md), [GraphQL replication](../replication-graphql.md), [Supabase replication](../replication-supabase.md), [WebSocket replication](../replication-websocket.md), and [WebRTC peer-to-peer replication](../replication-webrtc.md). The application logic that works against the local RxDB collection does not change when the backend changes.
+You can also switch away from CouchDB later without changing any application code. RxDB supports [HTTP replication](../../replication-http.md), [GraphQL replication](../../replication-graphql.md), [Supabase replication](../../replication-supabase.md), [WebSocket replication](../../replication-websocket.md), and [WebRTC peer-to-peer replication](../../replication-webrtc.md). The application logic that works against the local RxDB collection does not change when the backend changes.
 
 ---
 
@@ -511,7 +511,7 @@ server {
 <details>
 <summary>Does RxDB replace CouchDB?</summary>
 
-No. RxDB is a client-side database. It runs in the browser or on a mobile device. CouchDB is a server-side database. They serve different roles. RxDB can sync with CouchDB using the [CouchDB replication plugin](../replication-couchdb.md), making them complementary parts of an offline-first application stack.
+No. RxDB is a client-side database. It runs in the browser or on a mobile device. CouchDB is a server-side database. They serve different roles. RxDB can sync with CouchDB using the [CouchDB replication plugin](../../replication-couchdb.md), making them complementary parts of an offline-first application stack.
 
 </details>
 
@@ -525,7 +525,7 @@ For initial replication and local queries, yes. PouchDB must store the full docu
 <details>
 <summary>Can I use RxDB without CouchDB?</summary>
 
-Yes. CouchDB is one of many backends RxDB can replicate with. You can use RxDB with a custom HTTP endpoint, a GraphQL server, Supabase, or no backend at all. The [replication protocol](../replication.md) is designed to be backend-agnostic. If you already have a CouchDB server, the CouchDB replication plugin is a straightforward way to add offline-first capabilities to your client application.
+Yes. CouchDB is one of many backends RxDB can replicate with. You can use RxDB with a custom HTTP endpoint, a GraphQL server, Supabase, or no backend at all. The [replication protocol](../../replication.md) is designed to be backend-agnostic. If you already have a CouchDB server, the CouchDB replication plugin is a straightforward way to add offline-first capabilities to your client application.
 
 </details>
 
@@ -534,7 +534,7 @@ Yes. CouchDB is one of many backends RxDB can replicate with. You can use RxDB w
 
 CouchDB stores all conflicting revisions as branches in the document revision tree. Reading a conflicted document requires fetching the winning and losing revisions, comparing them, and resolving the conflict by deleting the unwanted branch. This logic runs on the application side after the conflict is detected.
 
-RxDB resolves conflicts during replication. When a push is rejected because the server has a newer version, the conflict handler on the collection is called. You define the resolution strategy (last-write-wins, field merge, server-wins, etc.) once per collection. For complex collaborative scenarios, the [CRDT plugin](../crdt.md) can merge changes from multiple clients automatically.
+RxDB resolves conflicts during replication. When a push is rejected because the server has a newer version, the conflict handler on the collection is called. You define the resolution strategy (last-write-wins, field merge, server-wins, etc.) once per collection. For complex collaborative scenarios, the [CRDT plugin](../../crdt.md) can merge changes from multiple clients automatically.
 
 </details>
 

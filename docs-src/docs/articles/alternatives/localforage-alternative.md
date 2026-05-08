@@ -26,9 +26,9 @@ That focus is the point. localForage is a storage compatibility layer, not a dat
 
 ## What RxDB Is
 
-RxDB is a [local-first](../articles/local-first-future.md), NoSQL database that runs inside JavaScript runtimes. It stores documents in [collections](../rx-collection.md), validates them against a schema, runs MongoDB style [queries](../rx-query.md) with indexes, and emits changes through RxJS observables. RxDB sits on top of a pluggable storage layer, so the same database code can run on [IndexedDB](../rx-storage-indexeddb.md), [OPFS](../rx-storage-opfs.md), [Dexie](../rx-storage-dexie.md), in memory, in Node.js, in React Native, or in Electron.
+RxDB is a [local-first](../../articles/local-first-future.md), NoSQL database that runs inside JavaScript runtimes. It stores documents in [collections](../../rx-collection.md), validates them against a schema, runs MongoDB style [queries](../../rx-query.md) with indexes, and emits changes through RxJS observables. RxDB sits on top of a pluggable storage layer, so the same database code can run on [IndexedDB](../../rx-storage-indexeddb.md), [OPFS](../../rx-storage-opfs.md), [Dexie](../../rx-storage-dexie.md), in memory, in Node.js, in React Native, or in Electron.
 
-On top of local storage, RxDB ships a [replication protocol](../replication.md) that syncs collections with any backend that can speak HTTP, GraphQL, WebRTC, CouchDB, or Firestore. Reads stay local and fast, while writes flow to the server in the background.
+On top of local storage, RxDB ships a [replication protocol](../../replication.md) that syncs collections with any backend that can speak HTTP, GraphQL, WebRTC, CouchDB, or Firestore. Reads stay local and fast, while writes flow to the server in the background.
 
 ## Where localForage Stops
 
@@ -49,12 +49,12 @@ For a cache of avatars or a saved form draft, none of this matters. For an app t
 
 RxDB treats the browser like a real database environment.
 
-- **Documents and collections.** Data is stored in typed [collections](../rx-collection.md) with a JSON schema that validates every write.
-- **Indexed queries.** Define indexes in the schema and run [MongoDB style queries](../rx-query.md) such as `find`, `findOne`, `where`, `gt`, `in`, `sort`, `skip`, and `limit`.
-- **Reactive results.** Every query returns an [observable](../reactivity.md) that re-emits when matching documents change, so UI components stay in sync without manual refetching.
+- **Documents and collections.** Data is stored in typed [collections](../../rx-collection.md) with a JSON schema that validates every write.
+- **Indexed queries.** Define indexes in the schema and run [MongoDB style queries](../../rx-query.md) such as `find`, `findOne`, `where`, `gt`, `in`, `sort`, `skip`, and `limit`.
+- **Reactive results.** Every query returns an [observable](../../reactivity.md) that re-emits when matching documents change, so UI components stay in sync without manual refetching.
 - **Multi-tab.** Open the same app in three tabs and they share one database state, with leader election and cross-tab change propagation handled by RxDB.
-- **Replication primitives.** A [pull/push checkpoint protocol](../replication.md) keeps local data in sync with any backend you choose, including custom REST APIs.
-- **Storage choice.** Swap [IndexedDB](../rx-storage-indexeddb.md), [OPFS](../rx-storage-opfs.md), [Dexie](../rx-storage-dexie.md), memory, or a server side storage without changing application code.
+- **Replication primitives.** A [pull/push checkpoint protocol](../../replication.md) keeps local data in sync with any backend you choose, including custom REST APIs.
+- **Storage choice.** Swap [IndexedDB](../../rx-storage-indexeddb.md), [OPFS](../../rx-storage-opfs.md), [Dexie](../../rx-storage-dexie.md), memory, or a server side storage without changing application code.
 - **Conflict handling.** Each document carries a revision, and a custom conflict handler decides how concurrent edits merge.
 
 ## Code Sample: Reading a Single Record
@@ -142,7 +142,7 @@ Insert a new todo, mark one as done, or sync a remote change in another tab, and
 localForage and RxDB both end up writing to similar browser primitives, but the way they use them differs.
 
 - localForage selects one backend per database and stores opaque blobs at string keys.
-- RxDB writes structured documents through a pluggable [storage interface](../rx-storage-indexeddb.md). For modern browsers, the [OPFS storage](../rx-storage-opfs.md) avoids many [IndexedDB performance issues](../slow-indexeddb.md) by writing to the Origin Private File System. The [Dexie storage](../rx-storage-dexie.md) is a thin layer over IndexedDB for cases where Dexie is already in use.
+- RxDB writes structured documents through a pluggable [storage interface](../../rx-storage-indexeddb.md). For modern browsers, the [OPFS storage](../../rx-storage-opfs.md) avoids many [IndexedDB performance issues](../../slow-indexeddb.md) by writing to the Origin Private File System. The [Dexie storage](../../rx-storage-dexie.md) is a thin layer over IndexedDB for cases where Dexie is already in use.
 
 Because storages are swappable, the same RxDB schemas and queries run unchanged across these backends, including in Node.js or React Native where IndexedDB is not the right fit.
 
@@ -151,14 +151,14 @@ Because storages are swappable, the same RxDB schemas and queries run unchanged 
 <details>
 <summary>Should I use localForage or RxDB for caching?</summary>
 
-For a flat cache of API responses keyed by URL, localForage is fine and has a smaller footprint. Reach for RxDB when the cache needs queries, indexes, expiry rules expressed as fields, change subscriptions for the UI, or replication back to a server. See the [reactivity guide](../reactivity.md) for how observable queries replace manual cache invalidation.
+For a flat cache of API responses keyed by URL, localForage is fine and has a smaller footprint. Reach for RxDB when the cache needs queries, indexes, expiry rules expressed as fields, change subscriptions for the UI, or replication back to a server. See the [reactivity guide](../../reactivity.md) for how observable queries replace manual cache invalidation.
 
 </details>
 
 <details>
 <summary>Can RxDB replace localStorage?</summary>
 
-Yes. RxDB ships a localStorage based [storage adapter](../articles/localstorage.md) for small datasets, and IndexedDB or OPFS adapters for larger ones. Unlike raw localStorage, RxDB gives you schemas, queries, and async APIs that do not block the main thread.
+Yes. RxDB ships a localStorage based [storage adapter](../../articles/localstorage.md) for small datasets, and IndexedDB or OPFS adapters for larger ones. Unlike raw localStorage, RxDB gives you schemas, queries, and async APIs that do not block the main thread.
 
 </details>
 
@@ -172,7 +172,7 @@ Yes. With `multiInstance: true`, RxDB coordinates across tabs of the same origin
 <details>
 <summary>How big can RxDB scale in IndexedDB?</summary>
 
-RxDB has been used with hundreds of thousands of documents per collection in IndexedDB. For larger datasets or write heavy workloads, the [OPFS storage](../rx-storage-opfs.md) sidesteps many of the [slow IndexedDB](../slow-indexeddb.md) bottlenecks and keeps query latency low.
+RxDB has been used with hundreds of thousands of documents per collection in IndexedDB. For larger datasets or write heavy workloads, the [OPFS storage](../../rx-storage-opfs.md) sidesteps many of the [slow IndexedDB](../../slow-indexeddb.md) bottlenecks and keeps query latency low.
 
 </details>
 
@@ -191,18 +191,18 @@ RxDB has been used with hundreds of thousands of documents per collection in Ind
 | Storage backends | IndexedDB, WebSQL, localStorage | IndexedDB, OPFS, Dexie, memory, Node.js, React Native, more |
 | Encryption | Not built in | Plugin available |
 | Migrations | Manual | Schema versioning with migration strategies |
-| Offline first | Storage only | Full [offline first](../offline-first.md) stack |
+| Offline first | Storage only | Full [offline first](../../offline-first.md) stack |
 | Active development | Low | Active |
 
 ## When to Pick Which
 
 Choose localForage when the job is "store a few values in the browser without thinking about IndexedDB". It is small, well understood, and stays out of the way.
 
-Choose RxDB when the app needs a real client side database: typed [collections](../rx-collection.md), indexed [queries](../rx-query.md), [reactive results](../reactivity.md), [multi-tab](../rx-storage-indexeddb.md) coordination, and [replication](../replication.md) with a backend. RxDB takes more setup at first, then pays it back as features are added on top of the same data layer.
+Choose RxDB when the app needs a real client side database: typed [collections](../../rx-collection.md), indexed [queries](../../rx-query.md), [reactive results](../../reactivity.md), [multi-tab](../../rx-storage-indexeddb.md) coordination, and [replication](../../replication.md) with a backend. RxDB takes more setup at first, then pays it back as features are added on top of the same data layer.
 
 More resources:
 
-- [RxDB Quickstart](../quickstart.md)
-- [RxDB Sync Engine](../replication.md)
-- [RxDB Storage Plugins](../rx-storage-indexeddb.md)
-- [Local First Future](../articles/local-first-future.md)
+- [RxDB Quickstart](../../quickstart.md)
+- [RxDB Sync Engine](../../replication.md)
+- [RxDB Storage Plugins](../../rx-storage-indexeddb.md)
+- [Local First Future](../../articles/local-first-future.md)

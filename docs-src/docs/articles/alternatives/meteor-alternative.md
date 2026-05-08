@@ -189,14 +189,14 @@ This means if your backend uses PostgreSQL, MySQL, or a custom API, you will nee
 
 RxDB is backend-agnostic. The replication protocol is based on a simple pull/push interface that you implement yourself or with one of the provided plugins:
 
-- [CouchDB replication](../replication-couchdb.md) for syncing with CouchDB or compatible servers
-- [GraphQL replication](../replication-graphql.md) for syncing via GraphQL endpoints
-- [HTTP replication](../replication-http.md) for custom REST APIs
-- [WebSocket replication](../replication-websocket.md) for server-push patterns
-- [Firestore replication](../replication-firestore.md) for Google Firestore backends
-- [WebRTC replication](../replication-webrtc.md) for peer-to-peer sync without a central server
+- [CouchDB replication](../../replication-couchdb.md) for syncing with CouchDB or compatible servers
+- [GraphQL replication](../../replication-graphql.md) for syncing via GraphQL endpoints
+- [HTTP replication](../../replication-http.md) for custom REST APIs
+- [WebSocket replication](../../replication-websocket.md) for server-push patterns
+- [Firestore replication](../../replication-firestore.md) for Google Firestore backends
+- [WebRTC replication](../../replication-webrtc.md) for peer-to-peer sync without a central server
 
-You can also implement a [custom replication handler](../replication.md) that communicates with any protocol your existing backend speaks. If you have a legacy PostgreSQL database with a REST API, RxDB can sync with it without requiring any changes to your backend schema.
+You can also implement a [custom replication handler](../../replication.md) that communicates with any protocol your existing backend speaks. If you have a legacy PostgreSQL database with a REST API, RxDB can sync with it without requiring any changes to your backend schema.
 
 ---
 
@@ -208,12 +208,12 @@ RxDB has a modular storage system. You choose the storage engine that fits your 
 
 | Environment | Recommended Storage |
 |---|---|
-| Browser (general) | [IndexedDB](../rx-storage-indexeddb.md) |
-| Browser (high performance) | [OPFS](../rx-storage-opfs.md) |
-| React Native | [SQLite](../rx-storage-sqlite.md) |
-| Node.js / Electron | [Filesystem / SQLite](../rx-storage-sqlite.md) |
-| Memory (testing) | [Memory](../rx-storage-memory.md) |
-| Multi-tab browser apps | [SharedWorker](../rx-storage-shared-worker.md) |
+| Browser (general) | [IndexedDB](../../rx-storage-indexeddb.md) |
+| Browser (high performance) | [OPFS](../../rx-storage-opfs.md) |
+| React Native | [SQLite](../../rx-storage-sqlite.md) |
+| Node.js / Electron | [Filesystem / SQLite](../../rx-storage-sqlite.md) |
+| Memory (testing) | [Memory](../../rx-storage-memory.md) |
+| Multi-tab browser apps | [SharedWorker](../../rx-storage-shared-worker.md) |
 
 Switching storage engines typically requires only changing the `storage` parameter when creating the database:
 
@@ -263,7 +263,7 @@ These observables integrate naturally with React hooks (`rxdb-hooks`), Angular's
 
 In Meteor, the server is the authority. If a client-side Minimongo write conflicts with a server write, the server state wins and the client rolls back. Meteor does not provide mechanisms for merging concurrent changes or for handling conflicts that arise when users have been working offline for extended periods.
 
-RxDB includes a configurable [conflict resolution system](../transactions-conflicts-revisions.md). Every document has an associated revision, and when two versions of the same document arrive from different sources, RxDB calls your conflict handler to decide the outcome:
+RxDB includes a configurable [conflict resolution system](../../transactions-conflicts-revisions.md). Every document has an associated revision, and when two versions of the same document arrive from different sources, RxDB calls your conflict handler to decide the outcome:
 
 ```ts
 await db.addCollections({
@@ -285,7 +285,7 @@ await db.addCollections({
 
 You can implement any merge strategy, from simple last-write-wins to full three-way merges or even CRDT-based approaches. This is essential for applications where users might be offline for hours or days and need their changes reconciled safely when they reconnect.
 
-RxDB also supports [CRDTs (Conflict-free Replicated Data Types)](../crdt.md) natively, which provide automatic, deterministic conflict resolution for common data structures like counters and sets without requiring custom logic.
+RxDB also supports [CRDTs (Conflict-free Replicated Data Types)](../../crdt.md) natively, which provide automatic, deterministic conflict resolution for common data structures like counters and sets without requiring custom logic.
 
 ---
 
@@ -293,7 +293,7 @@ RxDB also supports [CRDTs (Conflict-free Replicated Data Types)](../crdt.md) nat
 
 Meteor apps run one WebSocket connection per browser tab, with each tab having its own Minimongo instance. There is no built-in coordination between multiple tabs of the same app.
 
-RxDB includes built-in [multi-tab support](../rx-storage-shared-worker.md). When using the SharedWorker storage, all open tabs share a single database instance running in a shared worker. Changes made in one tab are immediately visible in all other open tabs without additional configuration:
+RxDB includes built-in [multi-tab support](../../rx-storage-shared-worker.md). When using the SharedWorker storage, all open tabs share a single database instance running in a shared worker. Changes made in one tab are immediately visible in all other open tabs without additional configuration:
 
 ```ts
 import { getRxStorageSharedWorker } from 'rxdb/plugins/storage-shared-worker';
@@ -317,7 +317,7 @@ All tabs observe the same data stream, so a change in tab A appears immediately 
 
 Meteor's Minimongo is an in-memory database. In-memory operations are fast, but the entire dataset must fit in RAM, and the data is lost on page reload. For large datasets (tens of thousands of documents), the memory overhead and startup cost of re-fetching everything from the server become significant.
 
-RxDB stores data persistently and indexes it for fast lookups. Queries operate on locally indexed data rather than scanning in-memory arrays. With the [OPFS storage](../rx-storage-opfs.md) (Origin Private File System), RxDB achieves particularly high read and write throughput in modern browsers without needing WebAssembly.
+RxDB stores data persistently and indexes it for fast lookups. Queries operate on locally indexed data rather than scanning in-memory arrays. With the [OPFS storage](../../rx-storage-opfs.md) (Origin Private File System), RxDB achieves particularly high read and write throughput in modern browsers without needing WebAssembly.
 
 <p align="center">
   <img src="/files/logo/rxdb_javascript_database.svg" alt="RxDB JavaScript Database" width="160" />
@@ -331,7 +331,7 @@ RxDB also includes [event-reduce](https://github.com/pubkey/event-reduce) optimi
 
 Meteor is primarily a web and Node.js framework. There is a Cordova integration for wrapping Meteor apps as mobile apps, but it is a wrapper rather than a native approach. React Native is not officially supported.
 
-RxDB runs in React Native natively using the [SQLite storage plugin](../rx-storage-sqlite.md) or the memory storage. The same database code runs on iOS and Android without any wrappers. This means you can share business logic, replication code, and schema definitions between your web and mobile apps.
+RxDB runs in React Native natively using the [SQLite storage plugin](../../rx-storage-sqlite.md) or the memory storage. The same database code runs on iOS and Android without any wrappers. This means you can share business logic, replication code, and schema definitions between your web and mobile apps.
 
 ---
 
@@ -407,7 +407,7 @@ db.todos.find().sort({ updatedAt: 'asc' }).$.subscribe(todos => {
 });
 ```
 
-From here, you can add [replication](../replication.md) to sync with any backend, connect a frontend framework, and deploy to web, desktop, or mobile using the same codebase.
+From here, you can add [replication](../../replication.md) to sync with any backend, connect a frontend framework, and deploy to web, desktop, or mobile using the same codebase.
 
 ---
 
@@ -437,7 +437,7 @@ No. RxDB works entirely offline with no server. You create a local database, ins
 <details>
 <summary>How does RxDB handle data when the user has been offline for a long time?</summary>
 
-When the user reconnects, RxDB runs a full replication cycle. It pulls all documents changed on the server since the last successful checkpoint, and pushes all local changes that were written while offline. If a document was changed on both sides, RxDB calls your [conflict handler](../transactions-conflicts-revisions.md) to resolve the discrepancy. This cycle works correctly whether the user was offline for five minutes or five weeks.
+When the user reconnects, RxDB runs a full replication cycle. It pulls all documents changed on the server since the last successful checkpoint, and pushes all local changes that were written while offline. If a document was changed on both sides, RxDB calls your [conflict handler](../../transactions-conflicts-revisions.md) to resolve the discrepancy. This cycle works correctly whether the user was offline for five minutes or five weeks.
 
 </details>
 

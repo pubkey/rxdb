@@ -110,20 +110,20 @@ During RxDB's time as a PouchDB wrapper, many PouchDB bugs were encountered that
 
 RxDB stores only the current state of each document. There is no revision tree, no accumulated history, and no storage bloat over time. When documents are updated, old data is overwritten, not appended. The local database size reflects the actual data, not the complete update history.
 
-This approach is possible because RxDB has its own [conflict detection mechanism](../replication.md) that does not depend on storing revision trees. During replication, RxDB compares document versions using a configurable conflict handler rather than inspecting revision ancestry.
+This approach is possible because RxDB has its own [conflict detection mechanism](../../replication.md) that does not depend on storing revision trees. During replication, RxDB compares document versions using a configurable conflict handler rather than inspecting revision ancestry.
 
 ### Pluggable Storage Engines
 
-RxDB separates the query engine from the storage layer through the [RxStorage interface](../rx-storage.md). You choose the storage engine based on your platform and performance requirements:
+RxDB separates the query engine from the storage layer through the [RxStorage interface](../../rx-storage.md). You choose the storage engine based on your platform and performance requirements:
 
 | Environment | Storage Option |
 |---|---|
-| Browser (general use) | [IndexedDB](../rx-storage-indexeddb.md) |
-| Browser (write-heavy workloads) | [OPFS (Origin Private File System)](../rx-storage-opfs.md) |
-| React Native / Expo | [SQLite via expo-sqlite or op-sqlite](../rx-storage-sqlite.md) |
-| Node.js / Electron | [SQLite (better-sqlite3)](../rx-storage-sqlite.md) |
-| Multiple browser tabs | [SharedWorker](../rx-storage-shared-worker.md) |
-| Tests | [Memory](../rx-storage-memory.md) |
+| Browser (general use) | [IndexedDB](../../rx-storage-indexeddb.md) |
+| Browser (write-heavy workloads) | [OPFS (Origin Private File System)](../../rx-storage-opfs.md) |
+| React Native / Expo | [SQLite via expo-sqlite or op-sqlite](../../rx-storage-sqlite.md) |
+| Node.js / Electron | [SQLite (better-sqlite3)](../../rx-storage-sqlite.md) |
+| Multiple browser tabs | [SharedWorker](../../rx-storage-shared-worker.md) |
+| Tests | [Memory](../../rx-storage-memory.md) |
 
 Switching storage is a one-line change in the database creation call. The rest of the application, including queries, replication configuration, and schema definitions, remains unchanged:
 
@@ -180,7 +180,7 @@ db.items.$.subscribe(changeEvent => {
 
 ### Schema Validation and TypeScript Inference
 
-RxDB validates every document against a [JSON Schema](../rx-schema.md) before it is written to storage. Invalid documents are rejected immediately:
+RxDB validates every document against a [JSON Schema](../../rx-schema.md) before it is written to storage. Invalid documents are rejected immediately:
 
 ```ts
 const db = await createRxDatabase({
@@ -235,17 +235,17 @@ PouchDB documents return untyped objects. There is no connection between the sto
 
 ### Flexible Replication with Any Backend
 
-RxDB is not coupled to a single replication protocol. The [RxDB replication system](../replication.md) is designed around a generic pull/push model that can work with any backend that supports a checkpoint-based sync API.
+RxDB is not coupled to a single replication protocol. The [RxDB replication system](../../replication.md) is designed around a generic pull/push model that can work with any backend that supports a checkpoint-based sync API.
 
 Built-in replication plugins include:
 
-- **[CouchDB replication](../replication-couchdb.md)** - Sync with any CouchDB-compatible endpoint without the revision-tree overhead
-- **[GraphQL replication](../replication-graphql.md)** - Sync with any GraphQL API
-- **[HTTP replication](../replication-http.md)** - Sync with a custom REST API
-- **[WebSocket replication](../replication-websocket.md)** - Real-time push-based sync over WebSocket
-- **[Supabase replication](../replication-supabase.md)** - Sync with a Supabase PostgreSQL backend
-- **[WebRTC replication](../replication-webrtc.md)** - Peer-to-peer sync between browser tabs and devices
-- **[Firestore replication](../replication-firestore.md)** - Sync with Firebase Cloud Firestore
+- **[CouchDB replication](../../replication-couchdb.md)** - Sync with any CouchDB-compatible endpoint without the revision-tree overhead
+- **[GraphQL replication](../../replication-graphql.md)** - Sync with any GraphQL API
+- **[HTTP replication](../../replication-http.md)** - Sync with a custom REST API
+- **[WebSocket replication](../../replication-websocket.md)** - Real-time push-based sync over WebSocket
+- **[Supabase replication](../../replication-supabase.md)** - Sync with a Supabase PostgreSQL backend
+- **[WebRTC replication](../../replication-webrtc.md)** - Peer-to-peer sync between browser tabs and devices
+- **[Firestore replication](../../replication-firestore.md)** - Sync with Firebase Cloud Firestore
 
 You can also implement a custom replication handler for any backend that does not have a built-in plugin. The interface is straightforward:
 
@@ -287,7 +287,7 @@ This is in contrast to PouchDB, where the only built-in replication mechanism is
 
 ### CouchDB Replication Without the Overhead
 
-If you are currently using PouchDB with a CouchDB backend, you can migrate to RxDB and continue using CouchDB as the sync target. RxDB's [CouchDB replication plugin](../replication-couchdb.md) syncs with any CouchDB-compatible endpoint using RxDB's own sync engine. This means no revision trees are stored on the client and no compaction is required.
+If you are currently using PouchDB with a CouchDB backend, you can migrate to RxDB and continue using CouchDB as the sync target. RxDB's [CouchDB replication plugin](../../replication-couchdb.md) syncs with any CouchDB-compatible endpoint using RxDB's own sync engine. This means no revision trees are stored on the client and no compaction is required.
 
 ```ts
 import { replicateCouchDB } from 'rxdb/plugins/replication-couchdb';
@@ -379,7 +379,7 @@ await db.addCollections({
 });
 ```
 
-For collaborative applications where concurrent edits from multiple users should be merged, RxDB supports [CRDTs (Conflict-free Replicated Data Types)](../crdt.md):
+For collaborative applications where concurrent edits from multiple users should be merged, RxDB supports [CRDTs (Conflict-free Replicated Data Types)](../../crdt.md):
 
 ```ts
 import { getCRDTSchemaPart, RxDBcrdtPlugin } from 'rxdb/plugins/crdt';
@@ -409,7 +409,7 @@ PouchDB stores conflicting revisions as alternate branches in the revision tree.
 
 When a user opens a web app in multiple browser tabs, each tab has its own JavaScript process. A PouchDB write in one tab does not automatically appear in reactive queries in another tab. Synchronizing state across tabs requires custom coordination code using `localStorage` events, `BroadcastChannel`, or a similar mechanism.
 
-RxDB handles this through the [SharedWorker storage option](../rx-storage-shared-worker.md). All tabs share a single database instance running in the SharedWorker. A write from one tab automatically propagates to reactive queries in all other tabs without any additional code:
+RxDB handles this through the [SharedWorker storage option](../../rx-storage-shared-worker.md). All tabs share a single database instance running in the SharedWorker. A write from one tab automatically propagates to reactive queries in all other tabs without any additional code:
 
 ```ts
 import { getRxStorageSharedWorker } from 'rxdb/plugins/storage-shared-worker';
@@ -427,7 +427,7 @@ const db = await createRxDatabase({
 
 ### Encryption at Rest
 
-RxDB includes a [built-in encryption plugin](../encryption.md) for encrypting specific document fields before they are written to local storage. The raw storage (IndexedDB, SQLite, OPFS) contains ciphertext for encrypted fields:
+RxDB includes a [built-in encryption plugin](../../encryption.md) for encrypting specific document fields before they are written to local storage. The raw storage (IndexedDB, SQLite, OPFS) contains ciphertext for encrypted fields:
 
 ```ts
 import { wrappedKeyEncryptionCryptoJsStorage } from 'rxdb/plugins/encryption-crypto-js';
@@ -463,7 +463,7 @@ Because RxDB does not store revision trees and its storage layer is optimized fo
 - **Range queries**: RxDB's IndexedDB storage layout uses indexes designed for range queries. PouchDB's layout is designed for replication correctness.
 - **Storage size after sustained use**: RxDB database size is proportional to the number of documents. PouchDB database size grows with both the number of documents and the number of updates to each document.
 
-When using the [OPFS storage](../rx-storage-opfs.md), RxDB gets an additional performance advantage over PouchDB, because OPFS bypasses IndexedDB's transaction overhead entirely:
+When using the [OPFS storage](../../rx-storage-opfs.md), RxDB gets an additional performance advantage over PouchDB, because OPFS bypasses IndexedDB's transaction overhead entirely:
 
 ```ts
 import { getRxStorageOPFS } from 'rxdb/plugins/storage-opfs';
@@ -526,7 +526,7 @@ The main conceptual shift is moving from PouchDB's event-based model (listen to 
 <details>
 <summary>Can RxDB still replicate with CouchDB?</summary>
 
-Yes. RxDB has a dedicated [CouchDB replication plugin](../replication-couchdb.md) that syncs with any CouchDB-compatible endpoint. The key difference from PouchDB is that RxDB does not use the Couch Replication Protocol internally. It uses RxDB's own sync engine on top of the CouchDB HTTP API. This avoids the revision-tree storage overhead while still replicating correctly with CouchDB servers.
+Yes. RxDB has a dedicated [CouchDB replication plugin](../../replication-couchdb.md) that syncs with any CouchDB-compatible endpoint. The key difference from PouchDB is that RxDB does not use the Couch Replication Protocol internally. It uses RxDB's own sync engine on top of the CouchDB HTTP API. This avoids the revision-tree storage overhead while still replicating correctly with CouchDB servers.
 
 </details>
 
@@ -547,14 +547,14 @@ PouchDB is in incubation at the Apache Software Foundation as of 2024 and releas
 <details>
 <summary>What happens to the PouchDB RxStorage in RxDB?</summary>
 
-The PouchDB RxStorage was removed from RxDB because of persistent performance issues and bugs that could not be fixed externally. If you were using RxDB with the PouchDB storage, you should migrate to a different RxStorage such as [IndexedDB](../rx-storage-indexeddb.md) or [OPFS](../rx-storage-opfs.md). Staying on older versions of RxDB (before version 15) is also possible but means missing out on all improvements since then.
+The PouchDB RxStorage was removed from RxDB because of persistent performance issues and bugs that could not be fixed externally. If you were using RxDB with the PouchDB storage, you should migrate to a different RxStorage such as [IndexedDB](../../rx-storage-indexeddb.md) or [OPFS](../../rx-storage-opfs.md). Staying on older versions of RxDB (before version 15) is also possible but means missing out on all improvements since then.
 
 </details>
 
 <details>
 <summary>Is RxDB suitable for React Native, not just browsers?</summary>
 
-Yes. RxDB works in browsers, React Native, Electron, and Node.js. For React Native, the recommended storage is [SQLite via expo-sqlite or op-sqlite](../rx-storage-sqlite.md), which provides native performance on both iOS and Android. The same schema definitions, queries, and replication configuration work across all environments.
+Yes. RxDB works in browsers, React Native, Electron, and Node.js. For React Native, the recommended storage is [SQLite via expo-sqlite or op-sqlite](../../rx-storage-sqlite.md), which provides native performance on both iOS and Android. The same schema definitions, queries, and replication configuration work across all environments.
 
 </details>
 

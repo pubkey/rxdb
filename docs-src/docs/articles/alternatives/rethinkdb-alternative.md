@@ -146,7 +146,7 @@ RxDB uses the [event-reduce](https://github.com/pubkey/event-reduce) algorithm t
 
 When a user opens an RxDB application without network access, every feature works normally. Writes go to local storage. Queries return from local storage. The UI renders without any loading spinner or error state.
 
-When network connectivity becomes available, RxDB's replication plugins synchronize local changes with the remote backend in the background. When the user goes offline again, the local database continues working. This is the [offline-first architecture](../offline-first.md) pattern.
+When network connectivity becomes available, RxDB's replication plugins synchronize local changes with the remote backend in the background. When the user goes offline again, the local database continues working. This is the [offline-first architecture](../../offline-first.md) pattern.
 
 <center>
     <img src="/files/offline-ready.png" alt="Offline-ready application with RxDB" width="400" />
@@ -160,12 +160,12 @@ RxDB has a pluggable storage layer. The same application code works with differe
 
 | Environment | Storage Option |
 |---|---|
-| Browser (standard) | [IndexedDB](../rx-storage-indexeddb.md) |
-| Browser (high-throughput) | [OPFS (Origin Private File System)](../rx-storage-opfs.md) |
-| React Native / Expo | [SQLite via expo-sqlite or op-sqlite](../rx-storage-sqlite.md) |
-| Node.js / Electron | [SQLite (better-sqlite3)](../rx-storage-sqlite.md) |
-| Multi-tab browsers | [SharedWorker](../rx-storage-shared-worker.md) |
-| Testing / CI | [Memory](../rx-storage-memory.md) |
+| Browser (standard) | [IndexedDB](../../rx-storage-indexeddb.md) |
+| Browser (high-throughput) | [OPFS (Origin Private File System)](../../rx-storage-opfs.md) |
+| React Native / Expo | [SQLite via expo-sqlite or op-sqlite](../../rx-storage-sqlite.md) |
+| Node.js / Electron | [SQLite (better-sqlite3)](../../rx-storage-sqlite.md) |
+| Multi-tab browsers | [SharedWorker](../../rx-storage-shared-worker.md) |
+| Testing / CI | [Memory](../../rx-storage-memory.md) |
 
 Switching storage requires changing one parameter when creating the database:
 
@@ -182,7 +182,7 @@ const db = await createRxDatabase({
 
 RethinkDB is both the storage layer and the realtime transport. RxDB separates these concerns. RxDB stores data locally, and replication to a backend is a separate, configurable plugin.
 
-The [HTTP replication plugin](../replication-http.md) works with any REST or HTTP endpoint. The [GraphQL replication plugin](../replication-graphql.md) connects to GraphQL APIs including AWS AppSync. The [WebSocket replication plugin](../replication-websocket.md) provides low-latency push from a server. The [CouchDB replication plugin](../replication-couchdb.md) uses CouchDB's multi-master protocol. You can also implement a [custom replication handler](../replication.md) for any proprietary API.
+The [HTTP replication plugin](../../replication-http.md) works with any REST or HTTP endpoint. The [GraphQL replication plugin](../../replication-graphql.md) connects to GraphQL APIs including AWS AppSync. The [WebSocket replication plugin](../../replication-websocket.md) provides low-latency push from a server. The [CouchDB replication plugin](../../replication-couchdb.md) uses CouchDB's multi-master protocol. You can also implement a [custom replication handler](../../replication.md) for any proprietary API.
 
 ```typescript
 import { replicateRxCollection } from 'rxdb/plugins/replication';
@@ -226,7 +226,7 @@ The replication state is fully observable. You know exactly when replication is 
 
 RethinkDB is a server process; it does not have a concept of browser tabs. On the client side, running multiple browser tabs with independent in-memory state is a common source of consistency problems.
 
-RxDB solves this with the [SharedWorker storage](../rx-storage-shared-worker.md). All tabs share a single database instance running in a SharedWorker, so a write from any tab is immediately reflected in reactive queries in all other tabs:
+RxDB solves this with the [SharedWorker storage](../../rx-storage-shared-worker.md). All tabs share a single database instance running in a SharedWorker, so a write from any tab is immediately reflected in reactive queries in all other tabs:
 
 ```typescript
 import { getRxStorageSharedWorker } from 'rxdb/plugins/storage-shared-worker';
@@ -242,7 +242,7 @@ const db = await createRxDatabase({
 });
 ```
 
-For tab coordination in scenarios that require exactly one tab to do background work (like running replication), RxDB includes a [leader election plugin](../leader-election.md). One tab is elected leader and performs background tasks, while others wait. If the leader tab closes, another takes over automatically.
+For tab coordination in scenarios that require exactly one tab to do background work (like running replication), RxDB includes a [leader election plugin](../../leader-election.md). One tab is elected leader and performs background tasks, while others wait. If the leader tab closes, another takes over automatically.
 
 ```typescript
 import { RxDBLeaderElectionPlugin } from 'rxdb/plugins/leader-election';
@@ -257,7 +257,7 @@ startReplication(db);
 
 ### Observable Change Events
 
-RxDB exposes a [changestream](../rx-database.md) on both the database and collection level. You can subscribe to all document changes, similar to RethinkDB's table changefeeds, but the events come from the local database rather than a server:
+RxDB exposes a [changestream](../../rx-database.md) on both the database and collection level. You can subscribe to all document changes, similar to RethinkDB's table changefeeds, but the events come from the local database rather than a server:
 
 ```typescript
 // Subscribe to all changes in the messages collection
@@ -282,7 +282,7 @@ In a realtime multi-user system, two users can edit the same document concurrent
 
 RxDB operates on a local-first model: users can edit locally while offline, and those edits sync when connectivity returns. If two clients edited the same document while disconnected, both versions must be reconciled when they sync.
 
-RxDB handles this with a configurable [conflict handler](../replication.md):
+RxDB handles this with a configurable [conflict handler](../../replication.md):
 
 ```typescript
 await db.addCollections({
@@ -299,7 +299,7 @@ await db.addCollections({
 });
 ```
 
-For collaborative editing scenarios where merge semantics matter (text that two users edited in different places), RxDB supports [CRDT-based conflict resolution](../crdt.md). CRDTs merge concurrent edits deterministically without requiring a central authority:
+For collaborative editing scenarios where merge semantics matter (text that two users edited in different places), RxDB supports [CRDT-based conflict resolution](../../crdt.md). CRDTs merge concurrent edits deterministically without requiring a central authority:
 
 ```typescript
 import { getCRDTSchemaPart, RxDBcrdtPlugin } from 'rxdb/plugins/crdt';
@@ -323,7 +323,7 @@ const messageSchema = {
 
 ### Schema Validation and TypeScript Support
 
-RxDB validates every document against a [JSON Schema](../rx-schema.md) before writing it to storage. Documents that do not match the schema are rejected at the database level, preventing corrupted data from entering the local store.
+RxDB validates every document against a [JSON Schema](../../rx-schema.md) before writing it to storage. Documents that do not match the schema are rejected at the database level, preventing corrupted data from entering the local store.
 
 ```typescript
 try {
@@ -342,7 +342,7 @@ RxDB generates TypeScript types automatically from the schema, giving you IDE au
 
 ### Schema Migration
 
-As an application evolves, data models change. RxDB has a built-in [schema migration system](../migration-schema.md). When the local database opens with a higher schema version than the stored data, RxDB runs the migration automatically:
+As an application evolves, data models change. RxDB has a built-in [schema migration system](../../migration-schema.md). When the local database opens with a higher schema version than the stored data, RxDB runs the migration automatically:
 
 ```typescript
 await db.addCollections({
@@ -365,7 +365,7 @@ Migrations run locally on each client's data independently. They do not require 
 
 ### Encryption at Rest
 
-RxDB includes a built-in [encryption plugin](../encryption.md) that encrypts individual document fields before writing them to the local storage. This is useful for applications that store sensitive user data locally:
+RxDB includes a built-in [encryption plugin](../../encryption.md) that encrypts individual document fields before writing them to the local storage. This is useful for applications that store sensitive user data locally:
 
 ```typescript
 import { wrappedKeyEncryptionCryptoJsStorage } from 'rxdb/plugins/encryption-crypto-js';
@@ -484,7 +484,7 @@ All of this works offline. Connect a replication plugin when you need server syn
 <details>
 <summary>Can RxDB replicate to a RethinkDB backend?</summary>
 
-RxDB does not have a native RethinkDB replication plugin. If you run RethinkDB on the server, you can build a custom HTTP or WebSocket API in front of it and use RxDB's [custom replication](../replication.md) or [WebSocket replication](../replication-websocket.md) plugin to sync. RxDB's replication protocol only requires that the backend can serve document changes since a given checkpoint and accept pushed documents. Any server-side language with a RethinkDB driver can expose this interface.
+RxDB does not have a native RethinkDB replication plugin. If you run RethinkDB on the server, you can build a custom HTTP or WebSocket API in front of it and use RxDB's [custom replication](../../replication.md) or [WebSocket replication](../../replication-websocket.md) plugin to sync. RxDB's replication protocol only requires that the backend can serve document changes since a given checkpoint and accept pushed documents. Any server-side language with a RethinkDB driver can expose this interface.
 
 </details>
 
@@ -500,7 +500,7 @@ RxDB reactive queries emit the complete, current result set after every relevant
 <details>
 <summary>Is RxDB suitable for realtime collaborative applications?</summary>
 
-Yes. RxDB is used in production for collaborative applications. The local database ensures the UI is always responsive. Replication keeps all clients synchronized. For concurrent edits by multiple users on the same document, RxDB supports both custom [conflict handlers](../replication.md) and [CRDT-based merging](../crdt.md). The SharedWorker storage mode handles the case of multiple browser tabs in the same session sharing state without duplication.
+Yes. RxDB is used in production for collaborative applications. The local database ensures the UI is always responsive. Replication keeps all clients synchronized. For concurrent edits by multiple users on the same document, RxDB supports both custom [conflict handlers](../../replication.md) and [CRDT-based merging](../../crdt.md). The SharedWorker storage mode handles the case of multiple browser tabs in the same session sharing state without duplication.
 
 </details>
 
