@@ -1,5 +1,6 @@
 import { SupabaseClient } from '@supabase/supabase-js';
 import { RxDocumentData, RxJsonSchema, WithDeleted } from '../../types';
+import { newRxError } from '../../rx-error.ts';
 
 export const POSTGRES_INSERT_CONFLICT_CODE = "23505";
 export const DEFAULT_MODIFIED_FIELD = '_modified';
@@ -37,8 +38,15 @@ export function addDocEqualityToQuery<RxDocType>(
             query = query.is(key, v);
         } else if (type === 'undefined') {
             query = query.is(key, null);
+        } else if (type === 'object') {
+            /**
+             * Arrays and JSON objects:
+             * Use contains + containedBy so that together they enforce
+             * exact equality for both PostgreSQL array columns and JSONB columns.
+             */
+            query = query.contains(key, v).containedBy(key, v);
         } else {
-            throw new Error(`unknown how to handle type: ${type}`)
+            throw newRxError('SU1', { key, type });
         }
     }
 

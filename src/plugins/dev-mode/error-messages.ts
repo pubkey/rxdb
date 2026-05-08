@@ -1360,6 +1360,14 @@ export const ERROR_MESSAGES = {
         docs: ''
     },
 
+    // supabase replication errors
+    SU1: {
+        message: 'Supabase replication: cannot build equality filter for field',
+        cause: 'addDocEqualityToQuery encountered a value with a type that cannot be mapped to a PostgREST filter.',
+        fix: 'Make sure all document fields are of a supported type (string, number, boolean, null, array, or object).',
+        docs: 'https://rxdb.info/replication-supabase.html'
+    },
+
     // change-event-buffer errors
     COB1: {
         message: 'ChangeEventBuffer out of bounds',
