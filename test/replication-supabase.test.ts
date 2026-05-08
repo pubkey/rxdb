@@ -26,6 +26,7 @@ import {
     RxSupabaseReplicationState,
     replicateSupabase
 } from '../plugins/replication-supabase/index.mjs';
+import { addDocEqualityToQuery } from '../src/plugins/replication-supabase/helper.ts';
 import { SupabaseClient, createClient } from '@supabase/supabase-js';
 
 
@@ -167,7 +168,56 @@ describe('replication-supabase.test.ts', function () {
     });
 
     describe('helpers', () => {
+        it('should build equality query for array and object fields (#8473)', () => {
+            const calls: { method: string; key: string; value: any; }[] = [];
+            const mockQuery = {
+                eq(key: string, value: any) {
+                    calls.push({ method: 'eq', key, value });
+                    return mockQuery;
+                },
+                is(key: string, value: any) {
+                    calls.push({ method: 'is', key, value });
+                    return mockQuery;
+                },
+                contains(key: string, value: any) {
+                    calls.push({ method: 'contains', key, value });
+                    return mockQuery;
+                },
+                containedBy(key: string, value: any) {
+                    calls.push({ method: 'containedBy', key, value });
+                    return mockQuery;
+                }
+            };
 
+            addDocEqualityToQuery(
+                {
+                    properties: {
+                        passportId: { type: 'string' },
+                        skills: { type: 'array', items: { type: 'string' } },
+                        profile: { type: 'object' },
+                        firstName: { type: 'string' },
+                        _modified: { type: 'number' }
+                    }
+                } as any,
+                '_deleted',
+                '_modified',
+                {
+                    passportId: 'id-1',
+                    skills: ['Teaching', 'Summarizing'],
+                    profile: { rank: 1 },
+                    _deleted: false,
+                    _modified: 1
+                } as any,
+                mockQuery
+            );
+
+            assert.ok(calls.find(c => c.method === 'contains' && c.key === 'skills'));
+            assert.ok(calls.find(c => c.method === 'containedBy' && c.key === 'skills'));
+            assert.ok(calls.find(c => c.method === 'contains' && c.key === 'profile'));
+            assert.ok(calls.find(c => c.method === 'containedBy' && c.key === 'profile'));
+            assert.ok(calls.find(c => c.method === 'eq' && c.key === '_deleted' && c.value === false));
+            assert.ok(calls.find(c => c.method === 'eq' && c.key === '_modified' && c.value === 1));
+        });
     });
 
     describe('live:false push', () => {
