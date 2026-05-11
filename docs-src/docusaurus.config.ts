@@ -338,13 +338,16 @@ Topic-specific documentation files:
             'classic',
             /** @type {import('@docusaurus/preset-classic').Options} */
             {
-                gtag: {
+                // Only enable analytics in production builds. In local dev (or when
+                // an ad-blocker blocks the gtag script) window.gtag is undefined and
+                // the route-change tracker throws "window.gtag is not a function".
+                gtag: process.env.NODE_ENV === 'production' ? {
                     trackingID: 'G-62D63SY3S0',
                     anonymizeIP: false,
-                },
-                googleTagManager: {
+                } : undefined,
+                googleTagManager: process.env.NODE_ENV === 'production' ? {
                     containerId: 'GTM-PL63TR5',
-                },
+                } : undefined,
                 sitemap: {
                     lastmod: 'date',
                     changefreq: 'weekly',
