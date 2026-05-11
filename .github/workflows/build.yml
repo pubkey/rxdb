@@ -45,7 +45,8 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config user.name "github-actions[bot]"
 
-          # Create (or switch to) a local orphan worktree pointing at the docs branch
+          # Try to fetch the existing docs branch; suppress errors because it may not exist yet
+          # on first run (the worktree add --orphan path handles that case).
           git fetch origin docs:docs 2>/dev/null || true
           git worktree add /tmp/docs-branch docs 2>/dev/null || \
             git worktree add --orphan /tmp/docs-branch docs
