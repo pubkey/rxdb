@@ -427,7 +427,15 @@ await db.addCollections({
                 slug:      { type: 'string' },  // new field
                 updatedAt: { type: 'number' }
             },
-            required: ['id', 'title', 'body', 'authorId', 'published', 'slug', 'updatedAt']
+            required: [
+                'id',
+                'title',
+                'body',
+                'authorId',
+                'published',
+                'slug',
+                'updatedAt'
+            ]
         },
         migrationStrategies: {
             1: (oldDoc) => {
@@ -447,7 +455,9 @@ When the database is opened with the new schema version, RxDB migrates the exist
 RxDB includes a [built-in encryption plugin](../../encryption.md) for encrypting document fields before writing them to local storage. This is important for mobile applications that store sensitive user data locally:
 
 ```ts
-import { wrappedKeyEncryptionCryptoJsStorage } from 'rxdb/plugins/encryption-crypto-js';
+import {
+    wrappedKeyEncryptionCryptoJsStorage
+} from 'rxdb/plugins/encryption-crypto-js';
 
 const db = await createRxDatabase({
     name: 'myapp',

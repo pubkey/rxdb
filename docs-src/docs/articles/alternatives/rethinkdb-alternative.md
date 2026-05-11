@@ -192,7 +192,9 @@ const replicationState = await replicateRxCollection({
     replicationIdentifier: 'messages-http-v1',
     pull: {
         handler: async (checkpoint, batchSize) => {
-            const url = `/api/messages/changes?since=${checkpoint?.updatedAt ?? 0}&limit=${batchSize}`;
+            const url =
+                `/api/messages/changes?since=${checkpoint?.updatedAt ?? 0}` +
+                `&limit=${batchSize}`;
             const response = await fetch(url);
             const data = await response.json();
             return {
@@ -368,7 +370,9 @@ Migrations run locally on each client's data independently. They do not require 
 RxDB includes a built-in [encryption plugin](../../encryption.md) that encrypts individual document fields before writing them to the local storage. This is useful for applications that store sensitive user data locally:
 
 ```typescript
-import { wrappedKeyEncryptionCryptoJsStorage } from 'rxdb/plugins/encryption-crypto-js';
+import {
+    wrappedKeyEncryptionCryptoJsStorage
+} from 'rxdb/plugins/encryption-crypto-js';
 import { getRxStorageIndexedDB } from 'rxdb/plugins/storage-indexeddb';
 
 const db = await createRxDatabase({

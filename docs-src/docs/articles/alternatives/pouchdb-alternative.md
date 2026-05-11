@@ -311,7 +311,10 @@ replicationState.error$.subscribe(err => {
 The token can be updated mid-session when authentication is required:
 
 ```ts
-import { replicateCouchDB, getFetchWithCouchDBAuthorization } from 'rxdb/plugins/replication-couchdb';
+import {
+    replicateCouchDB,
+    getFetchWithCouchDBAuthorization
+} from 'rxdb/plugins/replication-couchdb';
 
 const replicationState = replicateCouchDB({
     replicationIdentifier: 'my-couchdb-replication',
@@ -430,7 +433,9 @@ const db = await createRxDatabase({
 RxDB includes a [built-in encryption plugin](../../encryption.md) for encrypting specific document fields before they are written to local storage. The raw storage (IndexedDB, SQLite, OPFS) contains ciphertext for encrypted fields:
 
 ```ts
-import { wrappedKeyEncryptionCryptoJsStorage } from 'rxdb/plugins/encryption-crypto-js';
+import {
+    wrappedKeyEncryptionCryptoJsStorage
+} from 'rxdb/plugins/encryption-crypto-js';
 
 const db = await createRxDatabase({
     name: 'myapp',
