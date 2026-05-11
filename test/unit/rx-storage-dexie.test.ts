@@ -221,7 +221,17 @@ describeParallel('rx-storage-dexie.test.js', () => {
                 'errors against the dead connection.'
             );
 
-            // db is already closed by the external-close path; don't call db.close() again.
+            // The dexie connection is closed externally above, but RxDB does not
+            // know. Call db.close() so RxDB performs its own bookkeeping (DB_COUNT--
+            // and friends) — otherwise this test leaks an RxDatabase reference and
+            // later suite tests that wait for `dbCount() === 0` will time out.
+            // The underlying storage close throws because it is already gone; we
+            // swallow that and trust RxDB's outer close to decrement the counter.
+            try {
+                await db.close();
+            } catch {
+                // expected: storage already closed
+            }
         });
     });
 });
