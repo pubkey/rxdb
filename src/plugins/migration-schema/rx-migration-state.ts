@@ -134,12 +134,23 @@ export class RxMigrationState {
      * is run on a different browser tab.
      */
     async startMigration(batchSize: number = MIGRATION_DEFAULT_BATCH_SIZE): Promise<void> {
-        const must = await this.mustMigrate;
-        if (!must) {
-            return;
-        }
         if (this.started) {
             throw newRxError('DM1');
+        }
+        /**
+         * Block outside writes to the collection while the migration is running.
+         * The migration replication fills the new storage and concurrent writes
+         * could conflict with that process.
+         * We set the flag synchronously (before the `mustMigrate` await) so that
+         * any code calling `migratePromise()` and then immediately performing a
+         * write will reliably observe the block.
+         * If no migration is actually needed, the flag is cleared again below.
+         */
+        this.collection.migrationInProgress = true;
+        const must = await this.mustMigrate;
+        if (!must) {
+            this.collection.migrationInProgress = false;
+            return;
         }
         this.started = true;
 
@@ -228,6 +239,7 @@ export class RxMigrationState {
             );
         } catch (err) {
             await oldStorageInstance.close();
+            this.collection.migrationInProgress = false;
             await this.updateStatus(s => {
                 s.status = 'ERROR';
                 s.error = errorToPlainJson(err as Error);
@@ -276,6 +288,7 @@ export class RxMigrationState {
             }
         }
 
+        this.collection.migrationInProgress = false;
         await this.updateStatus(s => {
             s.status = 'DONE';
             return s;
@@ -503,6 +516,7 @@ export class RxMigrationState {
      */
     public async cancel() {
         this.canceled = true;
+        this.collection.migrationInProgress = false;
         await Promise.all(
             Array.from(this.replicationStates.values())
                 .map(state => cancelRxStorageReplication(state))

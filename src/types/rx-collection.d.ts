@@ -22,6 +22,8 @@ export interface NumberFunctionMap {
  * Params to create a new collection.
  * Notice the name of the collection is set one level higher
  * when calling addCollections()
+ *
+ * Prefer flat, denormalized documents over deeply nested or relational shapes.
  */
 export type RxCollectionCreator<RxDocType = any> = {
     schema: RxJsonSchema<RxDocType>;

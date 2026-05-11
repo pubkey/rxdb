@@ -461,6 +461,12 @@ export const ERROR_MESSAGES = {
         fix: 'Reduce the number of open collections or upgrade to premium.',
         docs: 'https://rxdb.info/premium.html?console=errors&code=COL23'
     },
+    COL25: {
+        message: 'Cannot write to RxCollection while a schema migration is running. Wait for the migration to finish before writing.',
+        cause: 'You tried to insert/upsert/remove or modify a document while the collection is in the middle of a schema migration.',
+        fix: 'Await the migration (e.g. via collection.migratePromise() or by observing collection.getMigrationState().$) before writing.',
+        docs: 'https://rxdb.info/migration-schema.html?console=errors&code=COL25'
+    },
     COL24: {
         message: 'inline _attachments must be an array of { id, type, data } objects; the map format is reserved for internal use only',
         cause: 'An object was passed as _attachments that is neither an array of attachment creators nor a fully-normalized internal map.',

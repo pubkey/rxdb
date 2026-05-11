@@ -749,6 +749,35 @@ export async function createRxDatabaseStorageInstance<Internals, InstanceCreatio
     return internalStore;
 }
 
+/**
+ * Creates an RxDatabase instance.
+ *
+ * In development, add the dev-mode plugin via `addRxPlugin()` **before** calling
+ * this function. The dev-mode plugin enables schema validation, detailed error
+ * messages, and other helpful runtime checks that are stripped from production builds.
+ *
+ * @example
+ * ```ts
+ * import { createRxDatabase, addRxPlugin } from 'rxdb';
+ * import { RxDBDevModePlugin } from 'rxdb/plugins/dev-mode';
+ * import { wrappedValidateAjvStorage } from 'rxdb/plugins/validate-ajv';
+ * import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
+ *
+ * // Add dev-mode plugin first, before any other RxDB code runs.
+ * if (process.env.NODE_ENV !== 'production') {
+ *   addRxPlugin(RxDBDevModePlugin);
+ * }
+ *
+ * const db = await createRxDatabase({
+ *   name: 'mydb',
+ *   // In dev-mode, wrap the storage with a validator so every write is
+ *   // checked against the schema and errors surface immediately.
+ *   storage: process.env.NODE_ENV !== 'production'
+ *     ? wrappedValidateAjvStorage({ storage: getRxStorageDexie() })
+ *     : getRxStorageDexie()
+ * });
+ * ```
+ */
 export function createRxDatabase<
     Collections = { [key: string]: RxCollection; },
     Internals = any,

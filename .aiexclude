@@ -1,4 +1,10 @@
 node_modules/
+
+# still let the agent read the important parts
+!node_modules/**/README.md
+!node_modules/**/AGENTS.md
+!node_modules/**/CLAUDE.md
+
 docs/
 plugins/
 config/appwrite/

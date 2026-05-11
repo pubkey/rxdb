@@ -108,6 +108,9 @@ export type MangoQueryNoLimit<RxDocType> = MangoQuerySelectorAndIndex<RxDocType>
     sort?: MangoQuerySortPart<RxDocType>[];
 };
 
+/**
+ * Mango query for RxDB collections.
+ */
 export type MangoQuery<RxDocType = any> = MangoQueryNoLimit<RxDocType> & {
     skip?: number;
     limit?: number;

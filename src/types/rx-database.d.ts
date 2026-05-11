@@ -13,7 +13,60 @@ import type { RxCleanupPolicy } from './plugins/cleanup.d.ts';
 import type { ById, HashFunction } from './util.d.ts';
 import type { RxReactivityFactory } from './plugins/reactivity.d.ts';
 
+/**
+ * Options for creating an RxDatabase instance.
+ *
+ * ## Preferred `database/` folder structure
+ *
+ * Keep all database-related code under a single `database/` folder so that
+ * every collection follows the same layout and is easy to locate.
+ *
+ * ```txt
+ * src/
+ *   database/
+ *     index.ts          ← createRxDatabase() call, exports the db instance and entity RxDocument/RxCollection types.
+ *     plugins.ts        ← addRxPlugin() calls (dev-mode, validate, etc.)
+ *     storage.ts        ← contains the storage configuration(s)
+ *     collections/
+ *       todos/
+ *         schema.ts     ← schema literal + derived TypeScript type
+ *         methods.ts    ← document-level ORM methods
+ *         hooks.ts      ← pre/post insert/save/remove hooks
+ *         migration.ts  ← migrationStrategies per version
+ *       users/
+ *         schema.ts
+ *         methods.ts
+ *         hooks.ts
+ *         migration.ts
+ *     replication.ts    ← replication setup, starts the replication of all collections
+ * ```
+ *
+ */
 export interface RxDatabaseCreator<Internals = any, InstanceCreationOptions = any, Reactivity = unknown> {
+    /**
+     * The RxStorage implementation that persists documents.
+     *
+     * In development, wrap the storage with one of the RxDB schema-validator
+     * plugins so that every write is checked against the collection schema and
+     * schema errors surface with a clear message instead of silently corrupting
+     * data.
+     *
+     * See the schema validation docs for available validator wrappers:
+     * {@link https://rxdb.info/schema-validation.html}
+     *
+     * Remove the wrapper in production builds — validation adds overhead that is
+     * not needed once the schema is stable.
+     *
+     * @example
+     * ```ts
+     * import { wrappedValidateAjvStorage } from 'rxdb/plugins/validate-ajv';
+     * import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
+     *
+     * const storage = process.env.NODE_ENV !== 'production'
+     *   ? wrappedValidateAjvStorage({ storage: getRxStorageDexie() })
+     *   : getRxStorageDexie();
+     * ```
+     */
     storage: RxStorage<Internals, InstanceCreationOptions>;
     instanceCreationOptions?: InstanceCreationOptions;
     name: string;

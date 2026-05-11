@@ -36,6 +36,31 @@ export const RxDBMigrationPlugin: RxPlugin = {
     hooks: {
         preCloseRxDatabase: {
             after: onDatabaseClose
+        },
+        /**
+         * Block writes to the new collection while a migration is pending.
+         * For schemas with version > 0 we optimistically set the flag, then
+         * release it once we know no migration is actually needed. If a
+         * migration is needed, the flag stays set until startMigration()
+         * runs to completion (or fails/cancels), which clears it.
+         */
+        createRxCollection: {
+            after: (i: any) => {
+                const collection: RxCollection = i.collection;
+                if (collection.schema.version === 0) {
+                    return;
+                }
+                collection.migrationInProgress = true;
+                collection.migrationNeeded()
+                    .then((needed: boolean) => {
+                        if (!needed) {
+                            collection.migrationInProgress = false;
+                        }
+                    })
+                    .catch(() => {
+                        collection.migrationInProgress = false;
+                    });
+            }
         }
     },
     prototypes: {

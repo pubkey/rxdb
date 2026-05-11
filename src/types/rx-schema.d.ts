@@ -91,6 +91,48 @@ export interface TopLevelProperty extends JsonSchema {
  */
 export type CompressionMode = 'deflate' | 'gzip';
 
+/**
+ * Schema definition for an RxDB collection.
+ *
+ * ## AI Agent Guidance
+ *
+ * ### Golden Schema Template
+ * Always define schemas as `as const` literals and use `toTypedRxJsonSchema`
+ * to derive the TypeScript type. Never generate schemas dynamically.
+ *
+ * ```ts
+ * import { toTypedRxJsonSchema, ExtractDocumentTypeFromTypedRxJsonSchema, RxJsonSchema } from 'rxdb';
+ *
+ * const todoSchemaLiteral = {
+ *   title: 'todo schema',
+ *   version: 0,
+ *   primaryKey: 'id',
+ *   type: 'object',
+ *   properties: {
+ *     id:        { type: 'string', maxLength: 100 },
+ *     title:     { type: 'string' },
+ *     completed: { type: 'boolean' },
+ *     createdAt: { type: 'string', format: 'date-time' },
+ *     updatedAt: { type: 'string', format: 'date-time' }
+ *   },
+ *   required: ['id', 'title', 'completed', 'createdAt', 'updatedAt'],
+ *   indexes: ['updatedAt', ['completed', 'updatedAt']]
+ * } as const;
+ *
+ * const schemaTyped = toTypedRxJsonSchema(todoSchemaLiteral);
+ * export type TodoDocType = ExtractDocumentTypeFromTypedRxJsonSchema<typeof schemaTyped>;
+ * export const todoSchema: RxJsonSchema<TodoDocType> = todoSchemaLiteral;
+ * ```
+ *
+ * ### Recommended Schema Rules
+ * - Collection names are plural (e.g. `todos`, `users`).
+ * - Every document should include `createdAt` and `updatedAt`.
+ * - Do not nest objects more than 3 levels deep.
+ * - Arrays should always declare an `items` sub-schema.
+ * - Do not use more then one type like `type: ["string", "number"]`, prefer to use one single fixed type per property.
+ * - Do not use nullable fields, instead make them non-required (default) and leaf them undefined. Try to never store `null` inside of a JSON document.
+ *
+ */
 export type RxJsonSchema<
     /**
      * The doctype must be given, and '=any' cannot be used,
@@ -129,7 +171,17 @@ export type RxJsonSchema<
      * Indexes that will be used for the queries.
      * RxDB will internally prepend the _deleted field to the index
      * because queries do NOT return documents with _deleted=true.
-     * @example ['firstName', ['lastName', 'yearOfBirth']]
+     *
+     * @example
+     * // Single-field index
+     * indexes: ['updatedAt']
+     *
+     * // Composite index for a query that filters by `completed` and sorts by `updatedAt`:
+     * //   selector: { completed: false }, sort: [{ updatedAt: 'desc' }]
+     * indexes: [['completed', 'updatedAt']]
+     *
+     * // Mixed: one single-field and one composite index
+     * indexes: ['updatedAt', ['completed', 'updatedAt']]
      */
     indexes?: (string | string[])[] | (string | readonly string[])[] | readonly (string | string[])[] | readonly (string | readonly string[])[];
 

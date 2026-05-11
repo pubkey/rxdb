@@ -1,0 +1,1 @@
+- FIX writes to an `RxCollection` while a schema migration is pending or running now fail fast with a clear `COL25` error instead of racing the migration and surfacing as `RC_PUSH`.
