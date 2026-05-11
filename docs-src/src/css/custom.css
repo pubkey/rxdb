@@ -2475,7 +2475,7 @@ details {
     border-radius: 0 !important;
 }
 
-details > summary {
+details>summary {
     cursor: pointer;
     font-weight: normal;
     display: flex;
@@ -2486,24 +2486,24 @@ details > summary {
     padding: 0 !important;
 }
 
-details > summary::before {
+details>summary::before {
     display: none !important;
 }
 
-details > summary::-webkit-details-marker {
+details>summary::-webkit-details-marker {
     display: none;
 }
 
-details > summary::after {
+details>summary::after {
     content: '[+]';
     color: var(--color-top);
 }
 
-details[open] > summary::after {
+details[open]>summary::after {
     content: '[-]';
 }
 
-details[open] > summary {
+details[open]>summary {
     padding-bottom: 15px !important;
 }
 
@@ -3638,6 +3638,7 @@ pre[data-theme] span[style*="--shiki-token-keyword"] {
         margin: 10px 0 !important;
     }
 }
+
 /* Pricing Tiers */
 .pricing-tiers-header {
     text-align: center;
@@ -3682,7 +3683,7 @@ pre[data-theme] span[style*="--shiki-token-keyword"] {
     flex-direction: column;
     text-align: left;
     position: relative;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .pricing-tier h3 {
@@ -3700,7 +3701,7 @@ pre[data-theme] span[style*="--shiki-token-keyword"] {
 
 .pricing-tier .badge-recommended {
     position: absolute;
-    top: 30px;
+    top: 25px;
     right: 20px;
     background: var(--ifm-color-primary);
     color: white;
@@ -3826,4 +3827,3 @@ pre[data-theme] span[style*="--shiki-token-keyword"] {
     font-size: 12px;
     color: #6b7280;
 }
-
