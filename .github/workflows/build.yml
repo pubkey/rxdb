@@ -1,22 +1,24 @@
-# This is a basic workflow to help you get started with Actions
+name: Publish Docs
 
-name: build and push
-
-# Controls when the action will run. 
 on:
-  # Allows you to run this workflow manually from the Actions tab
+  # Run automatically whenever master is updated
+  push:
+    branches: [master]
+  # Allow manual triggering from the Actions tab
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
-  # This workflow contains a single job called "build"
-  build-all:
-    # The type of runner that the job will run on
+  publish-docs:
     runs-on: ubuntu-22.04
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v6
+        with:
+          # Fetch full history so per-file "Last updated" timestamps are accurate
+          fetch-depth: 0
 
       - name: Setup Node.js environment
         uses: actions/setup-node@v6.4.0
@@ -25,28 +27,40 @@ jobs:
 
       - name: install npm dependencies
         run: npm install || (sleep 15 && npm install) || (sleep 15 && npm install)
-      
+
       - name: build code
         run: npm run build
-      
+
+      - name: install docs dependencies
+        run: (cd docs-src && (npm install || (sleep 15 && npm install) || (sleep 15 && npm install)))
+
+      - name: generate headers
+        run: npm run generate:headers
+
       - name: build docs
-        run: |
-          (cd docs-src && (npm install || (sleep 15 && npm install) || (sleep 15 && npm install)))
-          npm run generate:headers
-          npm run docs:build
+        run: npm run docs:build
 
-      - name: Commit files
+      - name: Publish docs to the docs branch
         run: |
-          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-          git add .
-          git commit -m "BUILD" -a
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
 
-      - name: Push changes
-        uses: ad-m/github-push-action@master
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: ${{ github.ref }}
+          # Create (or switch to) a local orphan worktree pointing at the docs branch
+          git fetch origin docs:docs 2>/dev/null || true
+          git worktree add /tmp/docs-branch docs 2>/dev/null || \
+            git worktree add --orphan /tmp/docs-branch docs
+
+          # Wipe everything that was previously in the docs branch
+          rm -rf /tmp/docs-branch/*
+
+          # Copy the fresh build output
+          cp -r docs-src/build/. /tmp/docs-branch/
+
+          cd /tmp/docs-branch
+          git add -A
+          # Only commit when something actually changed
+          git diff --cached --quiet || git commit -m "docs: publish from ${{ github.sha }}"
+          git push origin HEAD:docs
 
       - name: notify bing indexnow
         run: npm run docs:notify-indexnow

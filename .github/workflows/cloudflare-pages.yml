@@ -1,6 +1,9 @@
 name: Deploy To Cloudflare Pages
 
 on:
+  # Trigger automatically after docs are published to the docs branch
+  push:
+    branches: [docs]
   workflow_dispatch:
 
 jobs:
@@ -9,9 +12,11 @@ jobs:
     name: Deploy
     steps:
       - uses: actions/checkout@v6
+        with:
+          ref: docs
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy docs --project-name=rxdb
+          command: pages deploy . --project-name=rxdb
