@@ -710,7 +710,8 @@
   },
   "overrides": {
     "eslint": "10.2.1",
-    "webpack-dev-server": "5.2.3"
+    "webpack-dev-server": "5.2.3",
+    "dexie": "4.4.2"
   },
   "resolutions": {
     "dexie": "4.4.2"
