@@ -251,7 +251,8 @@ const replicationState = await replicateRxCollection({
     pull: {
         handler: async (checkpoint, batchSize) => {
             const response = await fetch(
-                `/api/posts/pull?since=${checkpoint?.updatedAt ?? 0}&limit=${batchSize}`
+                `/api/posts/pull?since=${checkpoint?.updatedAt ?? 0}` +
+                `&limit=${batchSize}`
             );
             return response.json(); // { documents: [...], checkpoint: {...} }
         }
@@ -420,7 +421,14 @@ await db.addCollections({
                 createdAt: { type: 'number' },
                 updatedAt: { type: 'number' }
             },
-            required: ['id', 'title', 'category', 'authorId', 'createdAt', 'updatedAt'],
+            required: [
+                'id',
+                'title',
+                'category',
+                'authorId',
+                'createdAt',
+                'updatedAt'
+            ],
             indexes: ['createdAt', 'category']
         }
     }

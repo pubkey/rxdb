@@ -124,7 +124,8 @@ const replicationState = await replicateRxCollection({
     pull: {
         handler: async (checkpoint, batchSize) => {
             const response = await fetch(
-                `/api/posts/changes?since=${checkpoint?.updatedAt ?? 0}&limit=${batchSize}`
+                `/api/posts/changes?since=${checkpoint?.updatedAt ?? 0}` +
+                `&limit=${batchSize}`
             );
             const data = await response.json();
             return { documents: data.documents, checkpoint: data.checkpoint };
@@ -223,7 +224,9 @@ import { replicateGraphQL } from 'rxdb/plugins/replication-graphql';
 const replicationState = await replicateGraphQL({
     collection: db.posts,
     url: {
-        http: 'https://your-appsync-endpoint.appsync-api.us-east-1.amazonaws.com/graphql'
+        http:
+            'https://your-appsync-endpoint.appsync-api.us-east-1.amazonaws.com' +
+            '/graphql'
     },
     headers: {
         'x-api-key': 'your-api-key'
@@ -364,7 +367,9 @@ const db = await createRxDatabase({
 RxDB includes a built-in [encryption plugin](../../encryption.md) that encrypts individual document fields before they are written to the local storage. This is relevant for applications that store user data locally and need to comply with data protection requirements:
 
 ```ts
-import { wrappedKeyEncryptionCryptoJsStorage } from 'rxdb/plugins/encryption-crypto-js';
+import {
+    wrappedKeyEncryptionCryptoJsStorage
+} from 'rxdb/plugins/encryption-crypto-js';
 import { getRxStorageIndexedDB } from 'rxdb/plugins/storage-indexeddb';
 
 const db = await createRxDatabase({
@@ -444,11 +449,19 @@ const postSchema = {
 
 ```ts
 // DataStore
-await DataStore.save(new Post({ title: 'Hello', status: PostStatus.DRAFT, rating: 0 }));
+await DataStore.save(
+    new Post({ title: 'Hello', status: PostStatus.DRAFT, rating: 0 })
+);
 const posts = await DataStore.query(Post, c => c.status('eq', PostStatus.PUBLISHED));
 
 // RxDB equivalent
-await db.posts.insert({ id: uuid(), title: 'Hello', status: 'DRAFT', rating: 0, updatedAt: Date.now() });
+await db.posts.insert({
+    id: uuid(),
+    title: 'Hello',
+    status: 'DRAFT',
+    rating: 0,
+    updatedAt: Date.now()
+});
 const posts = await db.posts.find({ selector: { status: 'PUBLISHED' } }).exec();
 ```
 
