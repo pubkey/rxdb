@@ -415,6 +415,11 @@ Topic-specific documentation files:
                     dropdown: 'storages'
                 },
                 {
+                    href: '/premium/',
+                    label: 'Pricing',
+                    position: 'left',
+                },
+                {
                     href: '/consulting/',
                     label: 'Support',
                     position: 'left',
