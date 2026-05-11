@@ -135,7 +135,10 @@ If you want SQLite as the engine but still need durability, reactivity, and repl
 
 ```ts
 import { createRxDatabase } from 'rxdb/plugins/core';
-import { getRxStorageSQLiteTrial, getSQLiteBasicsWasm } from 'rxdb/plugins/storage-sqlite';
+import {
+    getRxStorageSQLiteTrial,
+    getSQLiteBasicsWasm
+} from 'rxdb/plugins/storage-sqlite';
 import sqliteWasm from '@vlcn.io/wa-sqlite';
 
 // Browser: SQLite compiled to WASM, persisted via OPFS

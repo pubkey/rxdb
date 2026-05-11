@@ -209,7 +209,7 @@ The RxDB core is open source under the Apache 2.0 license and free for commercia
 | Offline first | Yes | Yes |
 | React Native | Yes through native binding | Yes through SQLite or memory adapter |
 | Browser | Limited via WebAssembly | First class through IndexedDB, OPFS, Memory |
-| License | Apache 2.0 SDK, proprietary sync | Apache 2.0 core, optional Premium add ons |
+| License | Apache 2.0 SDK, proprietary sync | Apache 2.0 core, optional Premium add-ons |
 | Self hosting | Not supported | Fully supported |
 
 For teams currently running on Realm, the EOL date in September 2025 is firm. Starting the migration to RxDB now leaves time for a staged rollout, a tested HTTP replication layer against MongoDB, and a clean removal of the Atlas Device SDK before support ends.

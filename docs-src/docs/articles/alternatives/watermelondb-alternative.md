@@ -408,7 +408,9 @@ WatermelonDB's web adapter does not have a multi-tab coordination mechanism beca
 RxDB has a [built-in encryption plugin](../../encryption.md) that encrypts document fields at rest. This is particularly relevant for mobile applications that store sensitive data locally. You can mark individual schema fields as encrypted:
 
 ```ts
-import { wrappedKeyEncryptionCryptoJsStorage } from 'rxdb/plugins/encryption-crypto-js';
+import {
+    wrappedKeyEncryptionCryptoJsStorage
+} from 'rxdb/plugins/encryption-crypto-js';
 
 const db = await createRxDatabase({
     name: 'myapp',

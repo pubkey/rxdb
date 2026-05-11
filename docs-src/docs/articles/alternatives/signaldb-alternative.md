@@ -130,7 +130,9 @@ const replicationState = replicateRxCollection({
     replicationIdentifier: 'tasks-http-replication',
     pull: {
         async handler(checkpoint, batchSize) {
-            const url = `/api/tasks/pull?since=${checkpoint?.updatedAt ?? 0}&limit=${batchSize}`;
+            const url =
+                `/api/tasks/pull?since=${checkpoint?.updatedAt ?? 0}` +
+                `&limit=${batchSize}`;
             const response = await fetch(url);
             const data = await response.json();
             return {
