@@ -2461,12 +2461,59 @@ a:hover {
     padding-bottom: 40px;
 }
 
-.premium-faq details {
+details {
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
     text-align: left;
-    width: 60%;
-    padding-bottom: 25px;
+    padding-top: 25px !important;
+    padding-bottom: 25px !important;
     font-size: var(--fontSizes-m);
     text-align: justify;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+    margin-bottom: 0 !important;
+    border-radius: 0 !important;
+}
+
+details > summary {
+    cursor: pointer;
+    font-weight: normal;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    list-style: none;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+details > summary::before {
+    display: none !important;
+}
+
+details > summary::-webkit-details-marker {
+    display: none;
+}
+
+details > summary::after {
+    content: '[+]';
+    color: var(--color-top);
+}
+
+details[open] > summary::after {
+    content: '[-]';
+}
+
+details[open] > summary {
+    padding-bottom: 15px !important;
+}
+
+details[open] {
+    padding-bottom: 25px !important;
+}
+
+.premium-faq details {
+    width: 60%;
+    margin: 0 auto !important;
 }
 
 @media (max-width: 1050px) {
@@ -2479,16 +2526,6 @@ a:hover {
     .premium-faq details {
         width: 90%;
     }
-}
-
-.premium-faq details[open] {
-    padding-bottom: 25px;
-}
-
-.premium-faq summary {
-    padding-bottom: 10px;
-    cursor: pointer;
-    font-weight: bold;
 }
 
 .premium-request li {
@@ -3744,6 +3781,10 @@ pre[data-theme] span[style*="--shiki-token-keyword"] {
     line-height: 1.4;
 }
 
+.pricing-tier ul.tier-features li a {
+    color: white;
+}
+
 .pricing-tier ul.tier-features li::before {
     content: "▸";
     color: var(--ifm-color-primary);
@@ -3785,3 +3826,4 @@ pre[data-theme] span[style*="--shiki-token-keyword"] {
     font-size: 12px;
     color: #6b7280;
 }
+
