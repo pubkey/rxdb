@@ -2,6 +2,7 @@
 title: RxDB as a Minimongo Alternative - Persistent, Observable, Offline-First
 slug: alternatives/minimongo-alternative.html
 description: Compare RxDB and Minimongo for client-side JavaScript databases. Learn why RxDB is a better alternative for offline-first apps with persistent storage, reactive queries, conflict handling, and multi-tab support.
+image: /headers/alternatives/minimongo-alternative.jpg
 ---
 
 # RxDB as a Minimongo Alternative

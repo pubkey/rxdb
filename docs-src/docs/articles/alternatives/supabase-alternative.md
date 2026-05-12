@@ -2,6 +2,7 @@
 title: RxDB as a Supabase Alternative - Offline-First, Local Storage, Reactive Queries
 slug: alternatives/supabase-alternative.html
 description: Compare RxDB and Supabase for local-first JavaScript applications. Learn why Supabase lacks offline support, how the RxDB Supabase replication plugin bridges that gap, and when to choose RxDB as a client-side database paired with a Supabase backend.
+image: /headers/alternatives/supabase-alternative.jpg
 ---
 
 # RxDB as a Supabase Alternative

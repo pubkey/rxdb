@@ -2,6 +2,7 @@
 title: RxDB as a SignalDB Alternative for Local-First JavaScript Apps
 slug: signaldb-alternative.html
 description: Compare SignalDB and RxDB for local-first JavaScript apps. See how RxDB adds durable storage, replication, and conflict handling beyond in-memory signals.
+image: /headers/signaldb-alternative.jpg
 ---
 
 # RxDB as a SignalDB Alternative for Local-First JavaScript Apps

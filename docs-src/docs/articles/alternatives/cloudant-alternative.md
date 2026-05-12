@@ -2,6 +2,7 @@
 title: RxDB as a Cloudant Alternative for the JavaScript Client
 slug: cloudant-alternative.html
 description: Replace PouchDB with RxDB on the client while keeping Cloudant or any CouchDB-compatible backend. Faster local storage, reactive queries, less lock-in.
+image: /headers/cloudant-alternative.jpg
 ---
 
 # RxDB as a Cloudant Alternative for the JavaScript Client

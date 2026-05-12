@@ -2,6 +2,7 @@
 title: RxDB as a LowDB Alternative for Node.js and Beyond
 slug: lowdb-alternative.html
 description: Compare RxDB and LowDB. See where the JSON-file approach stops scaling and how RxDB adds reactivity, schema validation, and replication for Node.js apps.
+image: /headers/lowdb-alternative.jpg
 ---
 
 # RxDB as a LowDB Alternative for Node.js and Beyond

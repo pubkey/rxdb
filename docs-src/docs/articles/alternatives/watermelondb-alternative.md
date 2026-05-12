@@ -2,6 +2,7 @@
 title: RxDB as a WatermelonDB Alternative - Cross-Platform, Observable, Offline-First
 slug: alternatives/watermelondb-alternative.html
 description: Compare RxDB and WatermelonDB for offline-first JavaScript and React Native applications. Learn why RxDB is a strong alternative with built-in replication, flexible storage, and framework-agnostic reactive queries.
+image: /headers/alternatives/watermelondb-alternative.jpg
 ---
 
 # RxDB as a WatermelonDB Alternative

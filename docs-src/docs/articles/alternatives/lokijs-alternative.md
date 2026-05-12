@@ -2,6 +2,7 @@
 title: RxDB as a LokiJS Alternative for Persistent JavaScript Apps
 slug: lokijs-alternative.html
 description: Replace LokiJS with RxDB for safe persistence, real replication, reactive queries, and an in-memory mode for cache-style speed when you need it.
+image: /headers/lokijs-alternative.jpg
 ---
 
 # RxDB as a LokiJS Alternative for Persistent JavaScript Apps

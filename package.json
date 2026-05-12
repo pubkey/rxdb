@@ -519,8 +519,7 @@
     "docs:install": "(cd docs-src/ && npm install)",
     "// docs:serve": "start a local server to watch the docs. Served at http://localhost:4000/",
     "docs:serve": "(cd docs-src/ && npm start)",
-    "docs:build": "node ./scripts/docs-fetch-git-history.mjs && rimraf -rf ./docs && mkdir ./docs && (cd docs-src/ && npm run build) && cp -r ./docs-src/build/* ./docs && cp ./docs-src/CNAME ./docs/CNAME",
-    "docs:remove:time": "node ./scripts/docs-remove-time.mjs",
+    "docs:build": "node ./scripts/docs-fetch-git-history.mjs && (cd docs-src/ && npm run build)",
     "docs:notify-indexnow": "node ./scripts/notify-indexnow.mjs",
     "disc": "npm run transpile && npm run build:esm && cross-env NODE_ENV=disc webpack --config ./config/webpack.config.js",
     "preversion": "npm run lint && npm run test",
@@ -642,7 +641,7 @@
     "delete": "1.1.0",
     "dependency-check": "4.1.0",
     "disc": "1.3.3",
-    "eslint": "10.2.1",
+    "eslint": "10.3.0",
     "eslint-plugin-import": "2.32.0",
     "eslint-plugin-jsdoc": "62.9.0",
     "exists-file": "3.0.2",
@@ -652,7 +651,7 @@
     "firebase-tools": "14.27.0",
     "get-port": "5.1.1",
     "global-jsdom": "29.0.0",
-    "globals": "17.5.0",
+    "globals": "17.6.0",
     "google-drive-mock": "1.1.6",
     "graphql-http": "1.22.4",
     "graphql-subscriptions": "3.0.0",
@@ -694,7 +693,7 @@
     "shelljs": "0.10.0",
     "source-map-support": "0.5.21",
     "stream": "0.0.3",
-    "supabase": "2.95.6",
+    "supabase": "2.98.1",
     "terser": "5.46.2",
     "terser-webpack-plugin": "5.5.0",
     "ts-loader": "9.5.7",
@@ -709,11 +708,8 @@
     "webpack-dev-server": "5.2.3"
   },
   "overrides": {
-    "eslint": "10.2.1",
+    "eslint": "10.3.0",
     "webpack-dev-server": "5.2.3",
-    "dexie": "4.4.2"
-  },
-  "resolutions": {
     "dexie": "4.4.2"
   },
   "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"

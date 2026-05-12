@@ -2,6 +2,7 @@
 title: RxDB as a sql.js Alternative for Browser Persistence
 slug: sql-js-alternative.html
 description: Compare RxDB with sql.js for browser data. Get durable storage, reactive queries, replication, and schemas where sql.js only offers in-memory SQLite.
+image: /headers/sql-js-alternative.jpg
 ---
 
 # RxDB as a sql.js Alternative for Browser Persistence
