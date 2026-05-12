@@ -1,11 +1,11 @@
 name: Publish Docs
 
 on:
-  # Run automatically whenever master is updated
-  push:
-    branches: [master]
   # Allow manual triggering from the Actions tab
   workflow_dispatch:
+  # Run automatically when a GitHub release is published
+  release:
+    types: [published]
 
 permissions:
   contents: write
@@ -17,6 +17,8 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
+          # Always build docs from the source branch
+          ref: master
           # Fetch full history so per-file "Last updated" timestamps are accurate
           fetch-depth: 0
 
