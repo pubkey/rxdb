@@ -2,6 +2,7 @@
 title: RxDB as a Couchbase Alternative - Local-First, Backend-Agnostic, and Framework-Ready
 slug: alternatives/couchbase-alternative.html
 description: Compare RxDB and Couchbase for JavaScript applications. Learn why RxDB is a practical alternative to Couchbase and Couchbase Lite for offline-first web, mobile, and desktop apps without the enterprise infrastructure overhead.
+image: /headers/alternatives/couchbase-alternative.jpg
 ---
 
 # RxDB as a Couchbase Alternative
@@ -111,12 +112,17 @@ Couchbase Lite for JavaScript requires a Sync Gateway or Capella App Services ba
 RxDB supports [WebRTC replication](../../replication-webrtc.md) for direct peer-to-peer sync between browser clients:
 
 ```ts
-import { replicateWebRTC, getConnectionHandlerSimplePeer } from 'rxdb/plugins/replication-webrtc';
+import {
+    replicateWebRTC,
+    getConnectionHandlerSimplePeer
+} from 'rxdb/plugins/replication-webrtc';
 
 const replicationPool = await replicateWebRTC({
     collection: db.items,
     topic: 'my-collaboration-room',
-    connectionHandlerCreator: getConnectionHandlerSimplePeer({ signalingServerUrl: 'wss://signaling.example.com' }),
+    connectionHandlerCreator: getConnectionHandlerSimplePeer({
+        signalingServerUrl: 'wss://signaling.example.com'
+    }),
     pull: {},
     push: {}
 });
@@ -137,7 +143,9 @@ const replicationState = replicateRxCollection({
     pull: {
         async handler(checkpointOrNull, batchSize) {
             const since = checkpointOrNull ? checkpointOrNull.updatedAt : 0;
-            const response = await fetch(`/api/items?since=${since}&limit=${batchSize}`);
+            const response = await fetch(
+                `/api/items?since=${since}&limit=${batchSize}`
+            );
             const data = await response.json();
             return {
                 documents: data.items,
@@ -370,7 +378,9 @@ With CRDTs enabled, concurrent writes are automatically merged when clients sync
 RxDB includes a [field-level encryption plugin](../../encryption.md) that encrypts specific document fields before they are written to the local storage engine. The raw IndexedDB, OPFS, or SQLite contents contain ciphertext for encrypted fields:
 
 ```ts
-import { wrappedKeyEncryptionCryptoJsStorage } from 'rxdb/plugins/encryption-crypto-js';
+import {
+    wrappedKeyEncryptionCryptoJsStorage
+} from 'rxdb/plugins/encryption-crypto-js';
 
 const db = await createRxDatabase({
     name: 'myapp',

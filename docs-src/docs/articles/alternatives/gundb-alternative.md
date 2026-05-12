@@ -2,6 +2,7 @@
 title: RxDB as a GUN (gundb) Alternative for JavaScript Apps
 slug: gundb-alternative.html
 description: Compare RxDB and GUN (gundb) for JavaScript apps. Get typed schemas, MongoDB-style queries, encryption, and P2P replication via WebRTC and Nostr.
+image: /headers/gundb-alternative.jpg
 ---
 
 # RxDB as a GUN (gundb) Alternative for JavaScript Apps

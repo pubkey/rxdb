@@ -2,6 +2,7 @@
 title: RxDB as an Apollo Client Alternative for Truly Offline-First Apps
 slug: apollo-alternative.html
 description: Compare Apollo Client with RxDB for offline-first apps. Learn why a local database with GraphQL replication beats cache persistence for reliable sync.
+image: /headers/apollo-alternative.jpg
 ---
 
 # RxDB as an Apollo Client Alternative for Truly Offline-First Apps

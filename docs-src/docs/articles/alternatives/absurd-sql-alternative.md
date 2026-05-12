@@ -2,6 +2,7 @@
 title: RxDB as an absurd-sql Alternative for JS Apps That Need a Real Database
 slug: absurd-sql-alternative.html
 description: Looking beyond absurd-sql? RxDB offers schema validation, observable queries, replication, and pluggable storages like OPFS, IndexedDB, and SQLite without low-level SQL plumbing.
+image: /headers/absurd-sql-alternative.jpg
 ---
 
 # RxDB as an absurd-sql Alternative for JS Apps That Need a Real Database

@@ -2,6 +2,7 @@
 title: RxDB as a Supabase Alternative - Offline-First, Local Storage, Reactive Queries
 slug: alternatives/supabase-alternative.html
 description: Compare RxDB and Supabase for local-first JavaScript applications. Learn why Supabase lacks offline support, how the RxDB Supabase replication plugin bridges that gap, and when to choose RxDB as a client-side database paired with a Supabase backend.
+image: /headers/alternatives/supabase-alternative.jpg
 ---
 
 # RxDB as a Supabase Alternative
@@ -427,7 +428,15 @@ await db.addCollections({
                 slug:      { type: 'string' },  // new field
                 updatedAt: { type: 'number' }
             },
-            required: ['id', 'title', 'body', 'authorId', 'published', 'slug', 'updatedAt']
+            required: [
+                'id',
+                'title',
+                'body',
+                'authorId',
+                'published',
+                'slug',
+                'updatedAt'
+            ]
         },
         migrationStrategies: {
             1: (oldDoc) => {
@@ -447,7 +456,9 @@ When the database is opened with the new schema version, RxDB migrates the exist
 RxDB includes a [built-in encryption plugin](../../encryption.md) for encrypting document fields before writing them to local storage. This is important for mobile applications that store sensitive user data locally:
 
 ```ts
-import { wrappedKeyEncryptionCryptoJsStorage } from 'rxdb/plugins/encryption-crypto-js';
+import {
+    wrappedKeyEncryptionCryptoJsStorage
+} from 'rxdb/plugins/encryption-crypto-js';
 
 const db = await createRxDatabase({
     name: 'myapp',

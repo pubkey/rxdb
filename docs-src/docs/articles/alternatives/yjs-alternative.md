@@ -2,6 +2,7 @@
 title: RxDB as a Yjs Alternative for Local-First Apps with Queries and Persistence
 slug: yjs-alternative.html
 description: Compare Yjs and RxDB for local-first apps. Learn when to use a CRDT runtime, when to pick a queryable database, and how to combine them.
+image: /headers/yjs-alternative.jpg
 ---
 
 # RxDB as a Yjs Alternative for Local-First Apps with Queries and Persistence

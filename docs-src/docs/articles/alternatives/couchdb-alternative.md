@@ -2,6 +2,7 @@
 title: RxDB as a CouchDB Alternative - Client-Side, Offline-First, Reactive Queries
 slug: alternatives/couchdb-alternative.html
 description: Compare RxDB and CouchDB for local-first JavaScript applications. Learn why CouchDB is a server-side database, how RxDB provides client-side offline-first storage with reactive queries, and how the two can work together through the RxDB CouchDB replication plugin.
+image: /headers/alternatives/couchdb-alternative.jpg
 ---
 
 # RxDB as a CouchDB Alternative
@@ -168,7 +169,10 @@ replicationState.error$.subscribe(err => {
 When authentication is required, you can provide a custom `fetch` method:
 
 ```ts
-import { replicateCouchDB, getFetchWithCouchDBAuthorization } from 'rxdb/plugins/replication-couchdb';
+import {
+    replicateCouchDB,
+    getFetchWithCouchDBAuthorization
+} from 'rxdb/plugins/replication-couchdb';
 
 const replicationState = replicateCouchDB({
     replicationIdentifier: 'my-couchdb-replication',
@@ -184,7 +188,10 @@ const replicationState = replicateCouchDB({
 The token can also be updated dynamically while the replication is running:
 
 ```ts
-replicationState.fetch = getFetchWithCouchDBAuthorization('myUsername', 'newPassword');
+replicationState.fetch = getFetchWithCouchDBAuthorization(
+    'myUsername',
+    'newPassword'
+);
 ```
 
 ### Benefits Over the Traditional CouchDB + PouchDB Approach
@@ -403,7 +410,9 @@ When the database opens with the new schema version, RxDB migrates all existing 
 RxDB includes a [built-in encryption plugin](../../encryption.md) for encrypting document fields before writing them to local storage:
 
 ```ts
-import { wrappedKeyEncryptionCryptoJsStorage } from 'rxdb/plugins/encryption-crypto-js';
+import {
+    wrappedKeyEncryptionCryptoJsStorage
+} from 'rxdb/plugins/encryption-crypto-js';
 
 const db = await createRxDatabase({
     name: 'myapp',
