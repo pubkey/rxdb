@@ -42,8 +42,11 @@ export class HeroesListComponent {
     /**
      * You can also get singals instead of observables
      * @link https://rxdb.info/reactivity.html
+     *
+     * With AngularSignalReactivityLambda, the type is inferred as Signal<number>
+     * instead of Signal<unknown>, so templates can call heroCount$$() directly.
      */
-    public heroCount$$: Signal<unknown>;
+    public heroCount$$: Signal<number>;
 
     @Output('edit') editChange: EventEmitter<RxHeroDocument> = new EventEmitter();
 
