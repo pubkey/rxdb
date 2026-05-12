@@ -51,7 +51,6 @@ Also the maintainer will never go on a bug hunt based on your plain description.
 The source of the documentation is at the `docs-src`-folder.
 To read the docs locally, run `npm run docs:install && npm run docs:serve` and open `http://localhost:4000/`
 
-The built documentation is published automatically to the `docs` branch on release publication, and it can also be triggered manually via GitHub Actions. You do not need to commit any generated files to `master`.
 
 
 
