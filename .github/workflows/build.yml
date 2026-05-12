@@ -57,8 +57,9 @@ jobs:
           # including hidden files and directories.
           find /tmp/docs-branch -mindepth 1 -maxdepth 1 -exec rm -rf {} +
 
-          # Copy the fresh build output
-          cp -r docs-src/build/. /tmp/docs-branch/
+          # Copy the fresh build output into ./docs
+          mkdir -p /tmp/docs-branch/docs
+          cp -r docs-src/build/. /tmp/docs-branch/docs/
 
           cd /tmp/docs-branch
           git add -A
