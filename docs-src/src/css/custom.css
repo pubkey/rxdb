@@ -645,7 +645,7 @@ body {
 }
 
 .news-slider-content {
-    min-height: 430px;
+    min-height: 400px;
     padding: 16px;
     border-radius: 12px;
     justify-content: flex-start;
@@ -673,7 +673,7 @@ body {
     font-size: 18px;
     font-weight: 700;
     line-height: 1.25;
-    color: var(--color-top);
+    color: #f5f7ff;
 }
 
 .news-slider-content p {
@@ -681,7 +681,7 @@ body {
     font-size: 14px;
     line-height: 1.5;
     font-weight: 500;
-    color: var(--text-color);
+    color: #a2a9ba;
 }
 
 .news-slider-content .news-slider-link {
