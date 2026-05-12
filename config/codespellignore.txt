@@ -1,6 +1,0 @@
-statics
-falsy
-nin
-shouldBe
-Guage
-guage
