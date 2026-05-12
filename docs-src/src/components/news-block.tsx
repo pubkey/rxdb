@@ -47,6 +47,11 @@ export function NewsBlock() {
             <Slider items={
                 NEWS_ITEMS.map((item) => (
                     <div className="slider-content news-slider-content" key={item.slug}>
+                        {item.image && (
+                            <a href={item.slug} className="news-slider-image-link">
+                                <img src={item.image} alt={item.title} loading="lazy" className="news-slider-image" />
+                            </a>
+                        )}
                         <h3>{item.title}</h3>
                         <p>{item.description}</p>
                         <a href={item.slug} className="news-slider-link">

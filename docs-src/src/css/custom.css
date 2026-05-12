@@ -656,6 +656,18 @@ body {
     background: #1d2642;
 }
 
+.news-slider-content .news-slider-image-link {
+    display: block;
+}
+
+.news-slider-content .news-slider-image {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    border-radius: 8px;
+    display: block;
+}
+
 .news-slider-content h3 {
     margin: 0;
     font-size: 26px;
