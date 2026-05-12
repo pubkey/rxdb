@@ -54,8 +54,9 @@ jobs:
             git worktree add --orphan /tmp/docs-branch docs
 
           # Wipe everything that was previously in the docs branch,
-          # including hidden files and directories.
-          find /tmp/docs-branch -mindepth 1 -maxdepth 1 -exec rm -rf {} +
+          # including hidden files and directories. Keep the worktree's
+          # .git file so subsequent git commands keep working.
+          find /tmp/docs-branch -mindepth 1 -maxdepth 1 -not -name '.git' -exec rm -rf {} +
 
           # Copy the fresh build output into ./docs
           mkdir -p /tmp/docs-branch/docs
