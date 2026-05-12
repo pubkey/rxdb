@@ -34,7 +34,7 @@ async function fixDtsFile(file, addTsNoCheck = false) {
     }
 
     if (addTsNoCheck) {
-        content = `// @ts-nocheck\n        ${content}`;
+        content = `// @ts-nocheck\n${content}`;
     }
 
     await fs.writeFile(file, content);
