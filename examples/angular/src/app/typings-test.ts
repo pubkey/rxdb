@@ -3,7 +3,7 @@
  * when using AngularSignalReactivityLambda.
  *
  * It is compiled as part of the Angular build to catch any regressions in
- * the published type declarations (dist/types/**\/*.d.ts).
+ * the published type declarations (dist/types/**/*.d.ts).
  *
  * @link https://github.com/pubkey/rxdb/issues/8488
  */
