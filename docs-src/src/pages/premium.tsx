@@ -87,7 +87,7 @@ export default function Premium() {
                                         <p className="tier-desc">Open-source core. Everything you need to ship a side project or evaluate RxDB.</p>
                                         <span className="tier-price-prefix">&nbsp;</span>
                                         <div className="tier-price">€0<span>/ forever</span></div>
-                                        <div className="tier-license">MIT licensed</div>
+                                        <div className="tier-license">Open Source license</div>
                                     </div>
 
                                     <div className="tier-includes-title">INCLUDES</div>
@@ -103,7 +103,7 @@ export default function Premium() {
 
                                     <Button href="/quickstart.html" style={{ width: '100%', marginBottom: 15 }} icon={<span>&#8594;</span>}>Read the docs</Button>
                                     <div style={{ minHeight: 60, display: 'flex', flexDirection: 'column' }}>
-                                        <a href="https://github.com/pubkey/rxdb/blob/master/LICENSE.txt" className="tier-agreement" target="_blank">Preview License Agreement</a>
+                                        <a href="https://github.com/pubkey/rxdb/blob/master/LICENSE.txt" className="tier-agreement" target="_blank">Apache 2.0 License</a>
                                         <span className="tier-note">// no signup, no key</span>
                                     </div>
                                 </div>
@@ -132,7 +132,7 @@ export default function Premium() {
 
                                     <Button primary href="https://buy.stripe.com/eVq00k3fx1TbaIV0c1bbG05" target="_blank" style={{ width: '100%', marginBottom: 15 }} icon={<span>&#8594;</span>}>Buy Pro</Button>
                                     <div style={{ minHeight: 60, display: 'flex', flexDirection: 'column' }}>
-                                        <a href="/license-preview.html" className="tier-agreement" target="_blank">Preview License Agreement</a>
+                                        <a href="/license-preview/" className="tier-agreement" target="_blank">Preview License Agreement</a>
                                         <span className="tier-note">// most teams start here</span>
                                     </div>
                                 </div>
@@ -162,7 +162,7 @@ export default function Premium() {
 
                                     <Button href="https://buy.stripe.com/3cIcN6aHZcxP6sF5wlbbG06" target="_blank" style={{ width: '100%', marginBottom: 15 }} icon={<span>&#8594;</span>}>Buy Pro Plus</Button>
                                     <div style={{ minHeight: 60, display: 'flex', flexDirection: 'column' }}>
-                                        <a href="/license-preview.html" className="tier-agreement" target="_blank">Preview License Agreement</a>
+                                        <a href="/license-preview/" className="tier-agreement" target="_blank">Preview License Agreement</a>
                                         <span className="tier-note">// for high-throughput apps</span>
                                     </div>
                                 </div>

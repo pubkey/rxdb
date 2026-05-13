@@ -10,6 +10,7 @@ export default function LicensePreview() {
         <>
             <Head>
                 <link rel="canonical" href="/license-preview/" />
+                <meta name="robots" content="noindex, nofollow" />
             </Head>
             <Layout
                 title={`License Preview - ${siteConfig.title}`}
