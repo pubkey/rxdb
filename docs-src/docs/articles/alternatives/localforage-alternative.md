@@ -2,6 +2,7 @@
 title: RxDB as a localForage Alternative for Real Database Features
 slug: localforage-alternative.html
 description: Outgrowing localForage? RxDB adds schemas, indexed queries, reactive subscriptions, multi-tab sync, and replication on top of IndexedDB and OPFS.
+image: /headers/localforage-alternative.jpg
 ---
 
 # RxDB as a localForage Alternative for Real Database Features

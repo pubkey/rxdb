@@ -27,6 +27,8 @@ import {
     Reactified
 } from '../plugins/core/index.mjs';
 import { getRxStorageMemory } from '../plugins/storage-memory/index.mjs';
+import type { AngularSignalReactivityLambda } from '../plugins/reactivity-angular/index.mjs';
+import type { Signal } from '@angular/core';
 
 type DefaultDocType = {
     passportId: string;
@@ -599,6 +601,47 @@ describe('typings.test.ts', function () {
 
             // @ts-expect-error should not be assignable to number
             const queryWrong: number = doc.collection.find().$$;
+        });
+        /**
+         * @link https://github.com/pubkey/rxdb/issues/8488
+         * Verify that AngularSignalReactivityLambda produces Signal<T> with the
+         * correct inner type for $$, field$$, deleted$$, count().$$ etc.
+         * This tests the real Angular integration pattern.
+         */
+        it('#8488 AngularSignalReactivityLambda should produce properly typed Signals', async () => {
+            type DbCollections = {
+                hero: RxCollection<DocType, unknown, unknown, unknown, AngularSignalReactivityLambda>;
+            };
+            type Db = RxDatabase<DbCollections, unknown, unknown, AngularSignalReactivityLambda>;
+            const db: Db = {} as any;
+
+            // collection.find().$$ must be Signal<RxDocument<DocType, ...>[]>
+            const heroesSignal: Signal<RxDocument<DocType, unknown, AngularSignalReactivityLambda>[]> = db.hero.find().$$;
+
+            // collection.findOne().$$ must be Signal<RxDocument<DocType, ...> | null>
+            const firstHeroSignal: Signal<RxDocument<DocType, unknown, AngularSignalReactivityLambda> | null> = db.hero.findOne().$$;
+
+            // collection.count().$$ must be Signal<number>
+            const countSignal: Signal<number> = db.hero.count().$$;
+
+            // doc.$$ must be Signal<RxDocument<DocType, ...>>
+            const doc = await db.hero.findOne().exec(true);
+            const docSignal: Signal<RxDocument<DocType, unknown, AngularSignalReactivityLambda>> = doc.$$;
+
+            // doc.deleted$$ must be Signal<boolean>
+            const deletedSignal: Signal<boolean> = doc.deleted$$;
+
+            // doc.age$$ must be Signal<number>
+            const ageSignal: Signal<number> = doc.age$$;
+
+            // doc.firstName$$ must be Signal<string>
+            const nameSignal: Signal<string> = doc.firstName$$;
+
+            // @ts-expect-error age$$ must not be assignable to Signal<string>
+            const ageWrong: Signal<string> = doc.age$$;
+
+            // @ts-expect-error count().$$ must not be assignable to Signal<string>
+            const countWrong: Signal<string> = db.hero.count().$$;
         });
     });
 });

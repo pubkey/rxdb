@@ -2,6 +2,7 @@
 title: RxDB as an ElectricSQL Alternative for Local-First JavaScript Apps
 slug: electricsql-alternative.html
 description: Need a stable ElectricSQL alternative? RxDB is a local-first JavaScript database with full read and write replication, observable queries, and a flexible backend.
+image: /headers/electricsql-alternative.jpg
 ---
 
 # RxDB as an ElectricSQL Alternative for Local-First JavaScript Apps

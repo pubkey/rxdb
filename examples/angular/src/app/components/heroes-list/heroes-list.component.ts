@@ -43,7 +43,7 @@ export class HeroesListComponent {
      * You can also get singals instead of observables
      * @link https://rxdb.info/reactivity.html
      */
-    public heroCount$$: Signal<unknown>;
+    public heroCount$$: Signal<number>;
 
     @Output('edit') editChange: EventEmitter<RxHeroDocument> = new EventEmitter();
 

@@ -2,6 +2,7 @@
 title: RxDB as a MongoDB Realm Alternative After Atlas Device Sync Deprecation
 slug: mongodb-realm-alternative.html
 description: Replace MongoDB Realm and Atlas Device SDK with RxDB, a JavaScript local-first database with offline support, reactive queries, and flexible replication.
+image: /headers/mongodb-realm-alternative.jpg
 ---
 
 # RxDB as a MongoDB Realm Alternative After Atlas Device Sync Deprecation

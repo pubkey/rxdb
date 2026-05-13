@@ -2,6 +2,7 @@
 title: RxDB as a PouchDB Alternative - Reactive, Fast, and Backend-Agnostic
 slug: alternatives/pouchdb-alternative.html
 description: Compare RxDB and PouchDB for offline-first JavaScript applications. Learn why RxDB is a modern alternative to PouchDB with reactive queries, pluggable storage engines, flexible replication, and no revision-tree overhead.
+image: /headers/alternatives/pouchdb-alternative.jpg
 ---
 
 # RxDB as a PouchDB Alternative

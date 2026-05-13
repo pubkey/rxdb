@@ -2,6 +2,7 @@
 title: RxDB as a CouchDB Alternative - Client-Side, Offline-First, Reactive Queries
 slug: alternatives/couchdb-alternative.html
 description: Compare RxDB and CouchDB for local-first JavaScript applications. Learn why CouchDB is a server-side database, how RxDB provides client-side offline-first storage with reactive queries, and how the two can work together through the RxDB CouchDB replication plugin.
+image: /headers/alternatives/couchdb-alternative.jpg
 ---
 
 # RxDB as a CouchDB Alternative

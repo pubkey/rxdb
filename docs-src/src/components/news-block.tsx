@@ -46,28 +46,16 @@ export function NewsBlock() {
         <>
             <Slider items={
                 NEWS_ITEMS.map((item) => (
-                    <div className="slider-content" key={item.slug}>
-                        <a
-                            href={item.slug}
-                            style={{ textDecoration: 'none', color: 'inherit', display: 'block', height: '100%' }}
-                        >
-                            {item.image && (
-                                <img
-                                    src={item.image}
-                                    alt={item.title}
-                                    loading="lazy"
-                                    style={{ width: '100%', aspectRatio: '16 / 9', objectFit: 'cover', borderRadius: 8, marginBottom: 15 }}
-                                />
-                            )}
-                            <h3 style={{ fontSize: 18, marginBottom: 8, lineHeight: '1.2' }}>{item.title}</h3>
-                            <p style={{
-                                fontSize: 14,
-                                fontStyle: 'normal',
-                                fontWeight: 500,
-                                lineHeight: '21px',
-                                marginBottom: 0,
-                                color: 'var(--text-color)'
-                            }}>{item.description}</p>
+                    <div className="slider-content news-slider-content" key={item.slug}>
+                        {item.image && (
+                            <a href={item.slug} className="news-slider-image-link">
+                                <img src={item.image} alt={item.title} loading="lazy" className="news-slider-image" />
+                            </a>
+                        )}
+                        <h3>{item.title}</h3>
+                        <p>{item.description}</p>
+                        <a href={item.slug} className="news-slider-link">
+                            Read article →
                         </a>
                     </div>
                 ))

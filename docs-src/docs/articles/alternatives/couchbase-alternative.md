@@ -2,6 +2,7 @@
 title: RxDB as a Couchbase Alternative - Local-First, Backend-Agnostic, and Framework-Ready
 slug: alternatives/couchbase-alternative.html
 description: Compare RxDB and Couchbase for JavaScript applications. Learn why RxDB is a practical alternative to Couchbase and Couchbase Lite for offline-first web, mobile, and desktop apps without the enterprise infrastructure overhead.
+image: /headers/alternatives/couchbase-alternative.jpg
 ---
 
 # RxDB as a Couchbase Alternative

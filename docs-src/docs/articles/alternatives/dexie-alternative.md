@@ -2,6 +2,7 @@
 title: RxDB as a Dexie.js Alternative with Mango Queries and Replication
 slug: dexie-alternative.html
 description: Compare Dexie.js with RxDB. Get MongoDB-style queries, JSON Schema validation, observable results and full replication on top of IndexedDB.
+image: /headers/dexie-alternative.jpg
 ---
 
 # RxDB as a Dexie.js Alternative with Mango Queries and Replication

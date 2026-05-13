@@ -2,6 +2,7 @@
 title: RxDB as a Replicache Alternative for Local-First Web Apps
 slug: replicache-alternative.html
 description: Compare RxDB and Replicache for local-first web apps. Learn how RxDB offers an open source document database with flexible sync instead of mutators.
+image: /headers/replicache-alternative.jpg
 ---
 
 # RxDB as a Replicache Alternative for Local-First Web Apps

@@ -2,6 +2,7 @@
 title: RxDB as a PowerSync Alternative for JavaScript Local-First Apps
 slug: powersync-alternative.html
 description: Compare RxDB and PowerSync for local-first JavaScript apps. Learn why RxDB offers lower browser latency, flexible storage, and an Apache 2.0 license.
+image: /headers/powersync-alternative.jpg
 ---
 
 # RxDB as a PowerSync Alternative for JavaScript Local-First Apps
