@@ -30,7 +30,7 @@ export default function LicensePreview() {
                                 <h3>The Vendor:</h3>
                                 <p>
                                     [Deal owner]<br />
-                                    [Deal Owner Adress] <br />
+                                    [Deal Owner Address] <br />
                                 </p>
 
                                 <h3>The Customer:</h3>
