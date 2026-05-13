@@ -122,9 +122,9 @@ export default function Premium() {
                                     <div className="tier-includes-title">INCLUDES</div>
                                     <ul className="tier-features">
                                         <li>Everything in Free</li>
-                                        <li>RxStorage OPFS - fastest browser storage</li>
-                                        <li>RxStorage IndexedDB - lowest write latency</li>
-                                        <li>RxStorage SQLite - Node, Electron, RN, Capacitor</li>
+                                        <li>RxStorage OPFS - newest browser storage</li>
+                                        <li>RxStorage IndexedDB - most reliable browser storage</li>
+                                        <li>RxStorage SQLite - Electron, React-Native, Capacitor</li>
                                         <li>RxStorage Filesystem (Node + Expo)</li>
                                         <li>WebCrypto Encryption</li>
                                         <li>Fulltext Search</li>
@@ -132,7 +132,7 @@ export default function Premium() {
 
                                     <Button primary href="https://buy.stripe.com/eVq00k3fx1TbaIV0c1bbG05" target="_blank" style={{ width: '100%', marginBottom: 15 }} icon={<span>&#8594;</span>}>Buy Pro</Button>
                                     <div style={{ minHeight: 60, display: 'flex', flexDirection: 'column' }}>
-                                        <a href="/premium-agreement.html" className="tier-agreement" target="_blank">Preview License Agreement</a>
+                                        <a href="/license-preview.html" className="tier-agreement" target="_blank">Preview License Agreement</a>
                                         <span className="tier-note">// most teams start here</span>
                                     </div>
                                 </div>
@@ -151,18 +151,18 @@ export default function Premium() {
                                     <ul className="tier-features">
                                         <li>Everything in Pro</li>
                                         <li>RxStorage Worker - main-thread offload</li>
+                                        <li>RxStorage Shared Worker</li>
                                         <li>RxStorage Sharding</li>
                                         <li>RxStorage Memory-Mapped</li>
-                                        <li>RxStorage Shared Worker</li>
                                         <li>Localstorage Meta Optimizer</li>
-                                        <li>Query Optimizer (build-time index picker)</li>
+                                        <li>Query Optimizer</li>
                                         <li>RxServer adapters: Fastify, Koa</li>
-                                        <li>Logger plugin (APM-ready)</li>
+                                        <li>Logger plugin (Compatible with Sentry)</li>
                                     </ul>
 
                                     <Button href="https://buy.stripe.com/3cIcN6aHZcxP6sF5wlbbG06" target="_blank" style={{ width: '100%', marginBottom: 15 }} icon={<span>&#8594;</span>}>Buy Pro Plus</Button>
                                     <div style={{ minHeight: 60, display: 'flex', flexDirection: 'column' }}>
-                                        <a href="/premium-agreement.html" className="tier-agreement" target="_blank">Preview License Agreement</a>
+                                        <a href="/license-preview.html" className="tier-agreement" target="_blank">Preview License Agreement</a>
                                         <span className="tier-note">// for high-throughput apps</span>
                                     </div>
                                 </div>
@@ -193,7 +193,7 @@ export default function Premium() {
                                         e.preventDefault(); handleOpenConsultingDialog();
                                     }} style={{ width: '100%', marginBottom: 15 }} icon={<span>&#8594;</span>}>Request Quote</Button>
                                     <div style={{ minHeight: 60, display: 'flex', flexDirection: 'column' }}>
-                                        <a href="/premium-agreement.html" className="tier-agreement" target="_blank">Preview License Agreement</a>
+                                        <span className="tier-agreement" style={{ visibility: 'hidden' }}>Preview License Agreement</span>
                                         <span className="tier-note">// custom agreements & SLA</span>
                                     </div>
                                 </div>
@@ -347,6 +347,10 @@ export default function Premium() {
                                 We only offer discounts to developers who publicly speak about RxDB or are technical influencers.
                                 If you give talks at conferences, create educational content for a large audience, or can otherwise help spread the word about RxDB, please reach out to discuss a potential discount.
                             </details>
+                            <details>
+                                <summary>Why do I have to pay taxes?</summary>
+                                Taxation depends on your country and entity type. We recommend that you add a correct address and, importantly, your Tax ID when ordering on the Stripe page.
+                            </details>
                         </div>
                     </div>
 
@@ -386,7 +390,7 @@ export default function Premium() {
                                         <div className="premium-block-inner">
                                             <h4>RxStorage IndexedDB</h4>
                                             <p>
-                                                A storage for browsers based on <b>IndexedDB</b>. Has the best latency on writes and smallest build size.
+                                                A storage for browsers based on <b>IndexedDB</b>. It is the most reliable browser storage and has the smallest build size.
                                             </p>
                                         </div>
                                     </div>
