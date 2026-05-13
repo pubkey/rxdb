@@ -606,7 +606,7 @@
     "@babel/plugin-transform-template-literals": "7.27.1",
     "@babel/plugin-transform-typescript": "7.28.6",
     "@babel/polyfill": "7.12.1",
-    "@babel/preset-env": "7.29.2",
+    "@babel/preset-env": "7.29.5",
     "@babel/preset-typescript": "7.28.5",
     "@eslint/compat": "2.0.5",
     "@eslint/eslintrc": "3.3.5",
