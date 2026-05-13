@@ -16,8 +16,7 @@ type RxHeroDocMethods = {
 };
 
 /**
- * Use AngularSignalReactivityLambda so that doc.$$ and doc.field$$
- * resolve to Signal<T> with the correct inner type rather than Signal<unknown>.
+ * Use AngularSignalReactivityLambda so that doc.$$ and doc.field$$ resolve to Signal<T>.
  */
 export type RxHeroDocument = RxDocument<RxHeroDocumentType, RxHeroDocMethods, AngularSignalReactivityLambda>;
 

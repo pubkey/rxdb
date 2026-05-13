@@ -21,13 +21,7 @@ async function collectDtsFiles(dir) {
 async function fixDtsFile(file, addTsNoCheck = false) {
     let content = await fs.readFile(file, { encoding: 'utf-8' });
 
-    /**
-     * In declaration files, replace .ts and .d.ts import/export specifiers with .js.
-     * TypeScript (moduleResolution: "bundler") strips the .js extension when resolving
-     * imports from within .d.ts files and locates the companion .d.ts automatically.
-     * This avoids TS2846 ("A declaration file cannot be imported without 'import type'")
-     * while preserving both type and value exports.
-     */
+    // Replace .ts/.d.ts specifiers with .js so TypeScript resolves the companion .d.ts file.
     content = content.replace(/(?:\.d)?\.ts(?=['"])/g, '.js');
 
     if (addTsNoCheck) {
