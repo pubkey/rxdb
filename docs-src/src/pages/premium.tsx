@@ -58,7 +58,7 @@ export default function Premium() {
                                 RxDB <b>Pricing</b>
                             </h2>
 
-                            <p style={{ width: '80%' }}>
+                            <p style={{ width: '80%', textAlign: 'center' }}>
                                 RxDB's payd plugins offer advanced features and performance improvements designed for businesses and professionals.
                                 They are ideal for commercial or critical projects, providing <a href="/rx-storage-performance.html" target="_blank">better performance</a>, a smaller build size, flexible storage engines, secure encryption and other features.
                             </p>
@@ -75,10 +75,8 @@ export default function Premium() {
 
                     <div className="block dark" id="pricing">
                         <div className="content centered">
-                            <div className="pricing-tiers-header">
-                                <h2>Four tiers. <span>Annual licenses.</span></h2>
-                                <p>Free is the open-source core. Pro and Pro Plus add commercial plugins for production workloads. Enterprise adds the contract terms larger companies need.</p>
-                            </div>
+                            <h2>Four tiers. <b>Annual licenses.</b></h2>
+                            <p style={{ width: '80%', textAlign: 'center' }}>Free is the open-source core. Pro and Pro Plus add commercial plugins for production workloads. Enterprise adds the contract terms larger companies need.</p>
                             <div className="pricing-tiers">
                                 {/* FREE TIER */}
                                 <div className="pricing-tier">

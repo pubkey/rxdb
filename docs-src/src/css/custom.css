@@ -3709,14 +3709,6 @@ pre[data-theme] span[style*="--shiki-token-keyword"] {
     color: var(--ifm-color-primary);
 }
 
-.pricing-tiers-header p {
-    font-size: 1.1rem;
-    color: #a0a4b8;
-    max-width: 600px;
-    margin: 0 auto;
-    line-height: 1.6;
-}
-
 .pricing-tiers {
     display: flex;
     justify-content: center;
