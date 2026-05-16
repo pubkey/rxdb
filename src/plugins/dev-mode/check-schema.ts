@@ -496,6 +496,7 @@ export function checkSchema(jsonSchema: RxJsonSchema<any>) {
             return split.join('.');
         })
         .filter(key => key !== '')
+        .filter(key => key.indexOf('.patternProperties.') == -1 ) // regex in patternProperties not interpreted
         .filter((elem, pos, arr) => arr.indexOf(elem) === pos) // unique
         .filter(key => { // check if this path defines an index
             const value = getProperty(jsonSchema, key);
