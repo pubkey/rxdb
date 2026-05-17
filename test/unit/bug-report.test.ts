@@ -9,54 +9,51 @@
  * - 'npm run test:browser' so it runs in the browser
  */
 import assert from 'assert';
-import AsyncTestUtil from 'async-test-util';
 import config from './config.ts';
 
 import {
     createRxDatabase,
     randomToken
 } from '../../plugins/core/index.mjs';
-import {
-    isNode
-} from '../../plugins/test-utils/index.mjs';
 describe('bug-report.test.js', () => {
     it('should fail because it reproduces the bug', async function () {
 
-        /**
-         * If your test should only run in nodejs or only run in the browser,
-         * you should comment in the return operator and adapt the if statement.
-         */
-        if (
-            !isNode // runs only in node
-            // isNode // runs only in the browser
-        ) {
-            // return;
-        }
-
-        if (!config.storage.hasMultiInstance) {
-            return;
-        }
-
-        // create a schema
-        const mySchema = {
+        const schemaScalar = {
             version: 0,
-            primaryKey: 'passportId',
+            primaryKey: 'id',
             type: 'object',
             properties: {
-                passportId: {
+                id: {
                     type: 'string',
                     maxLength: 100
                 },
-                firstName: {
+                name: {
                     type: 'string'
                 },
-                lastName: {
+                number: {
+                    type: 'number'
+                }
+            }
+        };
+
+        const schemaComposite = {
+            version: 0,
+            primaryKey: {
+                key: 'id',
+                fields: ['name', 'number'],
+                separator: '|'
+            },
+            type: 'object',
+            properties: {
+                id: {
+                    type: 'string',
+                    maxLength: 100
+                },
+                name: {
                     type: 'string'
                 },
-                age: {
-                    type: 'integer',
-                    minimum: 0,
-                    maximum: 150
+                number: {
+                    type: 'number'
                 }
             }
         };
@@ -80,62 +77,27 @@ describe('bug-report.test.js', () => {
         });
         // create a collection
         const collections = await db.addCollections({
-            mycollection: {
-                schema: mySchema
+            collectionScalar: {
+                schema: schemaScalar
+            },
+            collectionComposite: {
+                schema: schemaComposite
             }
         });
+        collections.collectionScalar.preInsert( (data) => {
+            data.id = data.id ?? randomToken(10);
+        }, false);
+        collections.collectionComposite.preInsert( (data) => {
+            data.name = data.name ?? randomToken(10);
+            data.number = data.number ?? 42;
+        }, false);
 
         // insert a document
-        await collections.mycollection.insert({
-            passportId: 'foobar',
-            firstName: 'Bob',
-            lastName: 'Kelso',
-            age: 56
-        });
+        const docScalar = await collections.collectionScalar.insert({});     /// works
+        assert( docScalar.id.length === 10 );
+        const docComposite = await collections.collectionComposite.insert({});  /// fails
+        assert( docComposite.id.length === 10 + 3 );
 
-        /**
-         * to simulate the event-propagation over multiple browser-tabs,
-         * we create the same database again
-         */
-        const dbInOtherTab = await createRxDatabase({
-            name,
-            storage: config.storage.getStorage(),
-            eventReduce: true,
-            ignoreDuplicate: true
-        });
-        // create a collection
-        const collectionInOtherTab = await dbInOtherTab.addCollections({
-            mycollection: {
-                schema: mySchema
-            }
-        });
-
-        // find the document in the other tab
-        const myDocument = await collectionInOtherTab.mycollection
-            .findOne()
-            .where('firstName')
-            .eq('Bob')
-            .exec();
-
-        /*
-         * assert things,
-         * here your tests should fail to show that there is a bug
-         */
-        assert.strictEqual(myDocument.age, 56);
-
-
-        // you can also wait for events
-        const emitted: any[] = [];
-        const sub = collectionInOtherTab.mycollection
-            .findOne().$
-            .subscribe(doc => {
-                emitted.push(doc);
-            });
-        await AsyncTestUtil.waitUntil(() => emitted.length === 1);
-
-        // clean up afterwards
-        sub.unsubscribe();
         db.close();
-        dbInOtherTab.close();
     });
 });
