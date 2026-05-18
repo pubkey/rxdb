@@ -82,4 +82,12 @@ export type SyncOptionsGoogleDrive<RxDocType> = Omit<
     signalingOptions?: SignalingOptions;
     pull?: GoogleDriveSyncPullOptions<RxDocType>;
     push?: GoogleDriveSyncPushOptions<RxDocType>;
+    /**
+     * Set to false to disable attachment replication.
+     * When enabled (default), attachment binary data is stored as base64
+     * directly inside the document JSON file on Google Drive.
+     * Attachment replication only has an effect when the collection schema
+     * has `attachments: {}` defined.
+     */
+    attachments?: false;
 };

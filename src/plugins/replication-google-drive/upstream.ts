@@ -1,7 +1,7 @@
 import { RxReplicationWriteToMasterRow, WithDeletedAndAttachments } from '../../index.ts';
 import { newRxError, newRxFetchError } from '../../rx-error.ts';
 import { deepEqual, ensureNotFalsy } from '../utils/index.ts';
-import { fetchDocumentContents, getDocumentFiles, insertDocumentFiles, updateDocumentFiles } from './document-handling.ts';
+import { fetchDocumentContents, getDocumentFiles, insertDocumentFiles, updateDocumentFiles, withoutAttachmentData } from './document-handling.ts';
 import { DRIVE_MAX_BULK_SIZE, fillFileIfEtagMatches, getFileEtag } from './google-drive-helper.ts';
 import type {
     DriveFileMetadata,
@@ -54,7 +54,7 @@ export async function fetchConflicts<RxDocType>(
             fileContent = contentsByFileId.byId[fileId];
         }
         if (row.assumedMasterState) {
-            if (!deepEqual(row.assumedMasterState, fileContent)) {
+            if (!deepEqual(withoutAttachmentData(row.assumedMasterState), withoutAttachmentData(fileContent))) {
                 conflicts.push(ensureNotFalsy(fileContent));
             } else {
                 nonConflicts.push(row);

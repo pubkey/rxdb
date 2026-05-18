@@ -65,6 +65,13 @@ export type ReplicationBaseTestSuiteConfig = {
      * Additional wait time for eventually consistent backends (ms).
      */
     waitTime?: number;
+
+    /**
+     * When provided, attachment replication tests are enabled.
+     * The callback should return a one-shot sync state for a collection whose
+     * schema has `attachments: {}` defined, targeting the same server endpoint.
+     */
+    syncOnceWithAttachments?(collection: RxCollection<any>): Promise<void>;
 };
 
 /**
@@ -255,5 +262,105 @@ export function runReplicationBaseTestSuite(config: ReplicationBaseTestSuiteConf
                 await c2.database.close();
             });
         });
+
+        if (config.syncOnceWithAttachments) {
+            describe('attachment replication', () => {
+                const syncAttachments = (collection: RxCollection<any>) =>
+                    config.syncOnceWithAttachments!(collection);
+
+                it('should replicate an inserted attachment', async () => {
+                    await config.cleanUpServer();
+
+                    const c1 = await humansCollection.createAttachments(0);
+                    const c2 = await humansCollection.createAttachments(0);
+
+                    const doc1 = await c1.insert(schemaObjects.humanData('att-insert-base'));
+                    await doc1.putAttachment({
+                        id: 'test.txt',
+                        data: new Blob(['hello replication'], { type: 'text/plain' }),
+                        type: 'text/plain'
+                    });
+
+                    await syncAttachments(c1);
+                    await syncAttachments(c2);
+
+                    const doc2 = await c2.findOne('att-insert-base').exec(true);
+                    const att2 = doc2.getAttachment('test.txt');
+                    assert.ok(att2, 'attachment must exist on second collection');
+                    assert.strictEqual(await att2.getStringData(), 'hello replication');
+
+                    await c1.database.close();
+                    await c2.database.close();
+                });
+
+                it('should replicate an updated attachment', async () => {
+                    await config.cleanUpServer();
+
+                    const c1 = await humansCollection.createAttachments(0);
+                    const c2 = await humansCollection.createAttachments(0);
+
+                    const doc1 = await c1.insert(schemaObjects.humanData('att-update-base'));
+                    await doc1.putAttachment({
+                        id: 'file.txt',
+                        data: new Blob(['v1'], { type: 'text/plain' }),
+                        type: 'text/plain'
+                    });
+
+                    await syncAttachments(c1);
+                    await syncAttachments(c2);
+
+                    // Update on c1
+                    const doc1v2 = await c1.findOne('att-update-base').exec(true);
+                    await doc1v2.putAttachment({
+                        id: 'file.txt',
+                        data: new Blob(['v2'], { type: 'text/plain' }),
+                        type: 'text/plain'
+                    });
+                    await syncAttachments(c1);
+                    await syncAttachments(c2);
+
+                    const doc2 = await c2.findOne('att-update-base').exec(true);
+                    const att2 = doc2.getAttachment('file.txt');
+                    assert.ok(att2, 'updated attachment must exist');
+                    assert.strictEqual(await att2.getStringData(), 'v2');
+
+                    await c1.database.close();
+                    await c2.database.close();
+                });
+
+                it('should replicate a deleted attachment', async () => {
+                    await config.cleanUpServer();
+
+                    const c1 = await humansCollection.createAttachments(0);
+                    const c2 = await humansCollection.createAttachments(0);
+
+                    const doc1 = await c1.insert(schemaObjects.humanData('att-delete-base'));
+                    await doc1.putAttachment({
+                        id: 'remove.txt',
+                        data: new Blob(['bye'], { type: 'text/plain' }),
+                        type: 'text/plain'
+                    });
+
+                    await syncAttachments(c1);
+                    await syncAttachments(c2);
+
+                    // Delete on c1
+                    const doc1v2 = await c1.findOne('att-delete-base').exec(true);
+                    await doc1v2.getAttachment('remove.txt')!.remove();
+                    await syncAttachments(c1);
+                    await syncAttachments(c2);
+
+                    const doc2 = await c2.findOne('att-delete-base').exec(true);
+                    assert.strictEqual(
+                        doc2.getAttachment('remove.txt'),
+                        null,
+                        'deleted attachment must not exist on second collection'
+                    );
+
+                    await c1.database.close();
+                    await c2.database.close();
+                });
+            });
+        }
     });
 }

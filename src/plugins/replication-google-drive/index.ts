@@ -31,6 +31,10 @@ import {
     ensureProcessNextTickIsSet
 } from '../replication-webrtc/connection-handler-simple-peer.ts';
 import { SignalingOptions, SignalingState } from './signaling.ts';
+import {
+    deserializeDocAttachments,
+    serializeDocAttachments
+} from './document-handling.ts';
 
 export * from './google-drive-types.ts';
 export * from './google-drive-helper.ts';
@@ -106,6 +110,13 @@ export async function replicateGoogleDrive<RxDocType>(
     );
     const driveStructure = await initDriveStructure(googleDriveOptionsWithDefaults);
 
+    /**
+     * When true, attachment binary data is serialised as base64 inside the
+     * document JSON file stored on Google Drive.  Can be disabled by passing
+     * `attachments: false` in the options.
+     */
+    const replicateAttachments = options.attachments !== false;
+
 
     let replicationState: RxGoogleDriveReplicationState<RxDocType>;
 
@@ -132,6 +143,17 @@ export async function replicateGoogleDrive<RxDocType>(
                             lastPulledCheckpoint,
                             batchSize
                         );
+                        /**
+                         * Convert base64 attachment data that was stored in the
+                         * Google Drive JSON file back to Blobs so that the
+                         * downstream replication protocol can write them to the
+                         * fork storage instance correctly.
+                         */
+                        if (replicateAttachments) {
+                            await Promise.all(
+                                changes.documents.map(doc => deserializeDocAttachments(doc as any))
+                            );
+                        }
                         return changes as any;
                     }
                 );
@@ -149,6 +171,27 @@ export async function replicateGoogleDrive<RxDocType>(
             async handler(
                 rows: RxReplicationWriteToMasterRow<RxDocType>[]
             ) {
+                /**
+                 * Convert Blob attachment data to base64 strings before the
+                 * rows are written to the WAL file or stored as document JSON
+                 * in Google Drive.  We create new row objects so the originals
+                 * (which the replication protocol still uses for meta updates)
+                 * are not mutated.
+                 * When attachments are disabled we still run the conversion so
+                 * that Blob values are stripped rather than serialised as `{}`
+                 * by JSON.stringify.
+                 */
+                const rowsForDrive: RxReplicationWriteToMasterRow<RxDocType>[] =
+                    await Promise.all(
+                        rows.map(async row => {
+                            const newState = await serializeDocAttachments(
+                                row.newDocumentState,
+                                replicateAttachments
+                            );
+                            return { ...row, newDocumentState: newState };
+                        })
+                    );
+
                 return runInTransaction(
                     googleDriveOptionsWithDefaults,
                     driveStructure,
@@ -158,8 +201,17 @@ export async function replicateGoogleDrive<RxDocType>(
                             googleDriveOptionsWithDefaults,
                             driveStructure,
                             options.collection.schema.primaryPath as any,
-                            rows
+                            rowsForDrive
                         );
+                        /**
+                         * Conflict documents come back from Google Drive with
+                         * base64 attachment data.  Convert them to Blobs so
+                         * the replication conflict-resolution logic can write
+                         * proper attachment data to the fork storage instance.
+                         */
+                        if (replicateAttachments) {
+                            await Promise.all(conflicts.map(doc => deserializeDocAttachments(doc as any)));
+                        }
                         return conflicts;
                     },
                     () => replicationState.notifyPeers().catch(() => { })
