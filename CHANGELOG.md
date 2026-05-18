@@ -11,6 +11,7 @@
 
 ### 17.2.0 (4 May 2026)
 
+- FIX React `RxDatabaseProvider` TypeScript typings to accept `RxDatabase` instances with concrete typed collection maps that do not use a string index signature
 - ADD React `useRxDocument(collection, primaryKey)` hook for subscribing to a single document by primary key with live updates
 - ADD React `useReplicationStatus(replicationState)` hook that exposes `syncing`, `error`, `lastSyncedAt`, and `canceled` from replication observables
 - DOCS Mark `liveQueryUpdateThrottleTime` as a beta feature in the documentation
