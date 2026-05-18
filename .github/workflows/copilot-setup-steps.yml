@@ -9,6 +9,13 @@ on:
         paths:
             - .github/workflows/copilot-setup-steps.yml
 
+env:
+  NPM_CONFIG_FETCH_RETRIES: 3
+  NPM_CONFIG_FETCH_RETRY_FACTOR: 2
+  NPM_CONFIG_FETCH_RETRY_MINTIMEOUT: 5000
+  NPM_CONFIG_FETCH_RETRY_MAXTIMEOUT: 20000
+  NPM_CONFIG_PREFER_OFFLINE: true
+
 jobs:
     copilot-setup-steps:
         runs-on: ubuntu-latest
@@ -26,4 +33,4 @@ jobs:
                   node-version-file: ".nvmrc"
 
             - name: Install dependencies
-              run: npm install || (sleep 15 && npm install) || (sleep 15 && npm install)
+              run: npm install

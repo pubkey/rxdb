@@ -9,6 +9,13 @@ name: Verify Test Reproduction
 on:
   pull_request:
 
+env:
+  NPM_CONFIG_FETCH_RETRIES: 3
+  NPM_CONFIG_FETCH_RETRY_FACTOR: 2
+  NPM_CONFIG_FETCH_RETRY_MINTIMEOUT: 5000
+  NPM_CONFIG_FETCH_RETRY_MAXTIMEOUT: 20000
+  NPM_CONFIG_PREFER_OFFLINE: true
+
 permissions:
   contents: read
   pull-requests: write
@@ -67,10 +74,9 @@ jobs:
         with:
           path: |
             ~/.npm
-            ./node_modules
-          key: ${{ runner.os }}-npm-test-without-fix-x1-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-npm-root-v1-${{ hashFiles('**/package.json', '**/.npmrc') }}
           restore-keys: |
-            ${{ runner.os }}-npm-test-without-fix-x1-
+            ${{ runner.os }}-npm-root-v1-
 
       - name: Apply test changes to base branch code
         if: steps.check-changes.outputs.should_run == 'true'
@@ -96,7 +102,7 @@ jobs:
 
       - name: Install dependencies
         if: steps.check-changes.outputs.should_run == 'true'
-        run: npm install || (sleep 15 && npm install) || (sleep 15 && npm install)
+        run: npm install
 
       - name: Build
         if: steps.check-changes.outputs.should_run == 'true'
