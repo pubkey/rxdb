@@ -1,0 +1,1 @@
+- FIX live queries missing the required re-evaluation when writes race `_execOverDatabase()`, by retrying when the `ChangeEventBuffer` counter changes during the storage read [#8444](https://github.com/pubkey/rxdb/issues/8444)
