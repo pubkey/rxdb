@@ -6,7 +6,7 @@
  * this checks if typings work as expected
  */
 import * as assert from 'assert';
-import React from 'react';
+import * as React from 'react';
 import {
     HumanCompositePrimaryDocType,
     schemas
