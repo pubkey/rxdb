@@ -22,6 +22,10 @@ npm run lint
 npm run check-types
 ```
 
+## Changelog Rule
+- Whenever you add a testcase or implement a FIX, add a changelog entry file under `orga/changelog/`.
+- Prefer including a link to the root issue or pull request in that changelog line.
+
 ## Documentation Style
 - SHOULD use clear, simple language.
 - SHOULD use data and examples to support claims when possible.
