@@ -46,7 +46,8 @@ import {
     ensureReplicationHasNoErrors,
     humansCollection,
     awaitCollectionsHaveEqualState,
-    isNode
+    isNode,
+    runAttachmentReplicationTestSuite
 } from '../plugins/test-utils/index.mjs';
 import { RxDBDevModePlugin } from '../plugins/dev-mode/index.mjs';
 import { RxDBLeaderElectionPlugin } from '../plugins/leader-election/index.mjs';
@@ -943,176 +944,18 @@ describe('replication-google-drive.test.ts', function () {
     });
     describe('attachment replication', () => {
         /**
-         * These tests verify that binary attachment data is correctly synced
-         * through Google Drive. The attachment content is stored as base64
-         * inside the document JSON file on the Drive.
+         * Shared attachment replication tests from the base test suite.
+         * These cover insert, update, delete, and conflict behaviour.
          */
-        async function syncOnceWithAttachments(
-            collection: RxCollection<any, any, any, any>
-        ) {
-            await syncOnce(collection, options);
-        }
+        runAttachmentReplicationTestSuite(
+            (collection) => syncOnce(collection, options)
+        );
 
-        it('should replicate an inserted attachment to another collection', async () => {
-            const c1 = await humansCollection.createAttachments(0);
-            const c2 = await humansCollection.createAttachments(0);
-
-            // Insert a doc with an attachment on c1
-            const docData = schemaObjects.humanData('att-insert');
-            const doc1 = await c1.insert(docData);
-            await doc1.putAttachment({
-                id: 'test.txt',
-                data: new Blob(['hello world'], { type: 'text/plain' }),
-                type: 'text/plain'
-            });
-
-            // Push from c1 → Google Drive
-            await syncOnceWithAttachments(c1);
-
-            // Pull from Google Drive → c2
-            await syncOnceWithAttachments(c2);
-
-            const doc2 = await c2.findOne('att-insert').exec(true);
-            const att2 = doc2.getAttachment('test.txt');
-            assert.ok(att2, 'attachment should exist on c2 after replication');
-
-            const attData = await att2.getStringData();
-            assert.strictEqual(attData, 'hello world');
-
-            await c1.database.close();
-            await c2.database.close();
-        });
-
-        it('should replicate an updated attachment to another collection', async () => {
-            const c1 = await humansCollection.createAttachments(0);
-            const c2 = await humansCollection.createAttachments(0);
-
-            const docData = schemaObjects.humanData('att-update');
-            const doc1 = await c1.insert(docData);
-            await doc1.putAttachment({
-                id: 'file.txt',
-                data: new Blob(['version 1'], { type: 'text/plain' }),
-                type: 'text/plain'
-            });
-
-            // Initial sync: c1 → Drive → c2
-            await syncOnceWithAttachments(c1);
-            await syncOnceWithAttachments(c2);
-
-            // Update the attachment on c1
-            const doc1Latest = await c1.findOne('att-update').exec(true);
-            await doc1Latest.putAttachment({
-                id: 'file.txt',
-                data: new Blob(['version 2'], { type: 'text/plain' }),
-                type: 'text/plain'
-            });
-
-            // Push update: c1 → Drive → c2
-            await syncOnceWithAttachments(c1);
-            await syncOnceWithAttachments(c2);
-
-            const doc2 = await c2.findOne('att-update').exec(true);
-            const att2 = doc2.getAttachment('file.txt');
-            assert.ok(att2, 'attachment should still exist after update');
-
-            const attData = await att2.getStringData();
-            assert.strictEqual(attData, 'version 2', 'attachment content should be updated');
-
-            await c1.database.close();
-            await c2.database.close();
-        });
-
-        it('should replicate a deleted attachment to another collection', async () => {
-            const c1 = await humansCollection.createAttachments(0);
-            const c2 = await humansCollection.createAttachments(0);
-
-            const docData = schemaObjects.humanData('att-delete');
-            const doc1 = await c1.insert(docData);
-            await doc1.putAttachment({
-                id: 'remove-me.txt',
-                data: new Blob(['bye'], { type: 'text/plain' }),
-                type: 'text/plain'
-            });
-
-            // Initial sync
-            await syncOnceWithAttachments(c1);
-            await syncOnceWithAttachments(c2);
-
-            // Verify c2 received the attachment
-            const doc2Initial = await c2.findOne('att-delete').exec(true);
-            assert.ok(doc2Initial.getAttachment('remove-me.txt'), 'attachment should be present initially');
-
-            // Delete the attachment on c1
-            const doc1Latest = await c1.findOne('att-delete').exec(true);
-            const att1 = doc1Latest.getAttachment('remove-me.txt');
-            assert.ok(att1);
-            await att1.remove();
-
-            // Push deletion: c1 → Drive → c2
-            await syncOnceWithAttachments(c1);
-            await syncOnceWithAttachments(c2);
-
-            const doc2Latest = await c2.findOne('att-delete').exec(true);
-            const att2After = doc2Latest.getAttachment('remove-me.txt');
-            assert.strictEqual(att2After, null, 'attachment should be removed after replication');
-
-            await c1.database.close();
-            await c2.database.close();
-        });
-
-        it('should keep the master attachment state on conflict', async () => {
-            const c1 = await humansCollection.createAttachments(0);
-            const c2 = await humansCollection.createAttachments(0);
-
-            const docData = schemaObjects.humanData('att-conflict');
-            const doc1 = await c1.insert(docData);
-            await doc1.putAttachment({
-                id: 'shared.txt',
-                data: new Blob(['initial'], { type: 'text/plain' }),
-                type: 'text/plain'
-            });
-
-            // Both collections get the initial state
-            await syncOnceWithAttachments(c1);
-            await syncOnceWithAttachments(c2);
-
-            // c2 updates the attachment and pushes first (becomes master)
-            const doc2 = await c2.findOne('att-conflict').exec(true);
-            await doc2.putAttachment({
-                id: 'shared.txt',
-                data: new Blob(['from c2 - master'], { type: 'text/plain' }),
-                type: 'text/plain'
-            });
-            await syncOnceWithAttachments(c2);
-
-            // c1 also updates but pushes later → conflict → master (c2) wins
-            const doc1v2 = await c1.findOne('att-conflict').exec(true);
-            await doc1v2.putAttachment({
-                id: 'shared.txt',
-                data: new Blob(['from c1 - should lose'], { type: 'text/plain' }),
-                type: 'text/plain'
-            });
-            // First conflict sync: the replication protocol resolves the document-level
-            // conflict in favour of master (c2) but keeps the fork's attachment stubs,
-            // causing c1's stale attachment to be written to Drive in the second upstream
-            // cycle.  Two additional rounds are required to converge: c2 restores the
-            // correct attachment on Drive, then c1 pulls it.
-            await syncOnceWithAttachments(c1);
-            await syncOnceWithAttachments(c2);
-            await syncOnceWithAttachments(c1);
-
-            // After convergence c1 must reflect the master (c2) attachment state
-            const doc1Final = await c1.findOne('att-conflict').exec(true);
-            const att1Final = doc1Final.getAttachment('shared.txt');
-            assert.ok(att1Final, 'attachment must still exist after conflict resolution');
-
-            const content = await att1Final.getStringData();
-            assert.strictEqual(content, 'from c2 - master', 'master state (c2) must win the conflict');
-
-            await c1.database.close();
-            await c2.database.close();
-        });
-
+        /**
+         * Google Drive-specific test: verify that binary attachment data is
+         * NOT replicated when `attachments: false` is passed to
+         * replicateGoogleDrive().
+         */
         it('should not replicate attachment data when attachments: false', async () => {
             const c1 = await humansCollection.createAttachments(0);
             const c2 = await humansCollection.createAttachments(0);
@@ -1154,11 +997,8 @@ describe('replication-google-drive.test.ts', function () {
             // Document should be synced but attachment data not present
             const doc2 = await c2.findOne('att-disabled').exec(true);
             assert.ok(doc2, 'document should be replicated even with attachments disabled');
-            // The attachment stub may or may not be present, but if it is, getData() must not return meaningful data
             const att2 = doc2.getAttachment('no-sync.txt');
             if (att2) {
-                // With attachments: false, the data field was stripped so the attachment
-                // content is not transferable – its length/digest may still exist as metadata
                 const content = await att2.getStringData().catch(() => '');
                 assert.notStrictEqual(content, 'secret', 'attachment binary data must not have been replicated');
             }
