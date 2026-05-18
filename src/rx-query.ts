@@ -283,14 +283,9 @@ export class RxQueryBase<
         };
 
         /**
-         * @performance
-         * Instead of subscribing to eventBulks$ to detect concurrent writes,
-         * we snapshot the change event counter before and after the query.
-         * If the counter changed, a write happened during execution and
-         * we must re-run the query to ensure correct results.
-         * This avoids the overhead of RxJS Subject subscribe/unsubscribe per query.
-         *
-         * @link https://github.com/pubkey/rxdb/issues/7067
+         * Snapshot the counter before running the query.
+         * If a write commits during the query, the counter will be higher
+         * when we check it below, and we need to signal re-evaluation.
          */
         const counterBefore = this.collection._changeEventBuffer.getCounter();
 
@@ -343,8 +338,22 @@ export class RxQueryBase<
             };
         }
 
+        /**
+         * If a write committed concurrently during our query, our result may be
+         * stale: the write's change event was already buffered so getCounter()
+         * inside queryCollection() advanced _latestChangeEvent past the event,
+         * which would cause subsequent _ensureEqual() calls to see
+         * _isResultsInSync()=true and skip re-evaluation entirely.
+         *
+         * Re-run the query when a write commits concurrently. We still yield
+         * with a fixed wait so non-async storages do not monopolize the event
+         * loop, but we avoid the old growing backoff that could delay
+         * convergence more and more under write pressure.
+         *
+         * @link https://github.com/pubkey/rxdb/issues/7067
+         */
         if (this.collection._changeEventBuffer.getCounter() !== counterBefore) {
-            await promiseWait(rerunCount * 20);
+            await promiseWait(20);
             return this._execOverDatabase(rerunCount + 1);
         }
 
