@@ -1420,14 +1420,13 @@ describe('rx-query.test.ts', () => {
         /**
          * Regression test for https://github.com/pubkey/rxdb/issues/7067
          *
-         * _execOverDatabase previously contained an unbounded retry loop:
-         * whenever getCounter() advanced during the query it would re-run
-         * with `promiseWait(rerunCount * 20)` backoff. Under a continuous
-         * write loop the loop never exited, so query.$ never emitted.
+         * _execOverDatabase previously contained a retry loop with
+         * `promiseWait(rerunCount * 20)` backoff. Under a continuous write
+         * loop the growing delay could keep pushing the first emission out.
          *
-         * The fix returns counter=counterBefore when a concurrent write is
-         * detected, letting the existing _ensureEqualQueue mechanism
-         * re-evaluate once — no loop, no growing delay.
+         * The fix keeps the retry, but switches it to a fixed
+         * `promiseWait(20)` so the event loop still gets a chance to run on
+         * fast storages without compounding the delay on every re-run.
          *
          * We verify the fix by running a tight write loop while subscribing
          * and asserting that the first emission arrives within a strict
@@ -1507,7 +1506,7 @@ describe('rx-query.test.ts', () => {
                 timedOut,
                 false,
                 'query.$ did not emit within ' + DEADLINE_MS + ' ms under ' + WRITE_COUNT + ' concurrent writes. ' +
-                'This indicates the retry-loop regression from #7067.'
+                 'This indicates the retry-delay regression from #7067.'
             );
             assert.ok(firstEmissionDocCount > 0, 'emission should contain at least one document');
 

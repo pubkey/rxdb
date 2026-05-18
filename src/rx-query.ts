@@ -21,7 +21,8 @@ import {
     PROMISE_RESOLVE_FALSE,
     RXJS_SHARE_REPLAY_DEFAULTS,
     ensureNotFalsy,
-    areRxDocumentArraysEqual
+    areRxDocumentArraysEqual,
+    promiseWait
 } from './plugins/utils/index.ts';
 import {
     newRxError,
@@ -271,7 +272,7 @@ export class RxQueryBase<
      * executes the query on the database
      * @return results-array with document-data
      */
-    async _execOverDatabase(): Promise<{
+    async _execOverDatabase(rerunCount = 0): Promise<{
         result: RxDocumentData<RxDocType>[] | number;
         counter: number;
     }> {
@@ -344,19 +345,16 @@ export class RxQueryBase<
          * which would cause subsequent _ensureEqual() calls to see
          * _isResultsInSync()=true and skip re-evaluation entirely.
          *
-         * By returning counter=counterBefore instead of the actual (advanced)
-         * counter, we ensure the change events already queued in
-         * _ensureEqualQueue will see _isResultsInSync()=false and re-run the
-         * query with fresh data. This avoids an unbounded retry loop while still
-         * guaranteeing eventual correctness through the live-query mechanism.
+         * Re-run the query when a write commits concurrently. We still yield
+         * with a fixed wait so non-async storages do not monopolize the event
+         * loop, but we avoid the old growing backoff that could delay
+         * convergence more and more under write pressure.
          *
          * @link https://github.com/pubkey/rxdb/issues/7067
          */
         if (this.collection._changeEventBuffer.getCounter() !== counterBefore) {
-            return {
-                result: result.result,
-                counter: counterBefore
-            };
+            await promiseWait(20);
+            return this._execOverDatabase(rerunCount + 1);
         }
 
         return result;
