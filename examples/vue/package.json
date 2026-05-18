@@ -46,7 +46,7 @@
     "globals": "^17.3.0",
     "local-web-server": "5.4.0",
     "sass": "^1.80.0",
-    "sass-loader": "16.0.7",
+    "sass-loader": "16.0.8",
     "testcafe": "3.7.4",
     "typescript": "5.9.3"
   }
