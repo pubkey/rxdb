@@ -1,1 +1,1 @@
-- FIX live queries missing the required re-evaluation when writes race `_execOverDatabase()`, by retrying when the `ChangeEventBuffer` counter changes during the storage read [#8444](https://github.com/pubkey/rxdb/issues/8444)
+- FIX live-query subscriptions being delayed under concurrent writes, by using a fixed `promiseWait(20)` in the `_execOverDatabase()` rerun path instead of increasing the wait time with each rerun [#8444](https://github.com/pubkey/rxdb/issues/8444)
