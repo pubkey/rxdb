@@ -6,6 +6,7 @@
  * this checks if typings work as expected
  */
 import * as assert from 'assert';
+import React from 'react';
 import {
     HumanCompositePrimaryDocType,
     schemas
@@ -27,6 +28,7 @@ import {
     Reactified
 } from '../plugins/core/index.mjs';
 import { getRxStorageMemory } from '../plugins/storage-memory/index.mjs';
+import { RxDatabaseProvider } from '../plugins/react/index.mjs';
 import type { AngularSignalReactivityLambda } from '../plugins/reactivity-angular/index.mjs';
 import type { Signal } from '@angular/core';
 
@@ -784,6 +786,27 @@ describe('other', () => {
                 });
             });
             describe('issues', () => {
+                /**
+                 * @link https://github.com/pubkey/rxdb/issues/8517
+                 */
+                it('#8517 RxDatabaseProvider should accept databases with typed collections that have no string index signature', () => {
+                    type LocalCollections = {
+                        projects: RxCollection;
+                        entities: RxCollection;
+                        connections: RxCollection;
+                        wikiPages: RxCollection;
+                        timelineEvents: RxCollection;
+                        eventEffects: RxCollection;
+                    };
+                    const db: RxDatabase<LocalCollections> = {} as any;
+
+                    const providerElement = React.createElement(RxDatabaseProvider, {
+                        database: db,
+                        children: null
+                    });
+
+                    assert.ok(providerElement);
+                });
                 it('via gitter at 2018 Mai 22 19:20', () => {
                     const db: RxDatabase = {} as RxDatabase;
                     const heroSchema = {
