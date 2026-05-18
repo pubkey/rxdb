@@ -608,7 +608,7 @@
     "@babel/polyfill": "7.12.1",
     "@babel/preset-env": "7.29.5",
     "@babel/preset-typescript": "7.28.5",
-    "@eslint/compat": "2.0.5",
+    "@eslint/compat": "2.1.0",
     "@eslint/eslintrc": "3.3.5",
     "@eslint/js": "10.0.1",
     "@mcp-b/webmcp-polyfill": "2.2.0",
