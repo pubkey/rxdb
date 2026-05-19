@@ -112,10 +112,11 @@ export async function replicateGoogleDrive<RxDocType>(
 
     /**
      * When true, attachment binary data is serialised as base64 inside the
-     * document JSON file stored on Google Drive.  Can be disabled by passing
-     * `attachments: false` in the options.
+     * document JSON file stored on Google Drive.  Defaults to true only when
+     * the collection schema has `attachments: {}` defined.  Can be disabled
+     * explicitly by passing `attachments: false` in the options.
      */
-    const replicateAttachments = options.attachments !== false;
+    const replicateAttachments = options.attachments !== false && !!collection.schema.jsonSchema.attachments;
 
 
     let replicationState: RxGoogleDriveReplicationState<RxDocType>;

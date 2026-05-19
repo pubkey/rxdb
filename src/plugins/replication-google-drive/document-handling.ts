@@ -1,4 +1,5 @@
 import { newRxError, newRxFetchError } from '../../rx-error.ts';
+import { stripAttachmentsDataFromDocument } from '../../rx-storage-helper.ts';
 import { ById } from '../../types/util';
 import { ensureNotFalsy } from '../utils/index.ts';
 import { blobToBase64String, createBlobFromBase64 } from '../utils/index.ts';
@@ -216,31 +217,15 @@ export async function fetchDocumentContents<DocType>(
 }
 
 /**
- * Returns a shallow copy of the document with the `data` field stripped from
- * every entry in `_attachments`. Used before deepEqual comparison in conflict
- * detection so that binary payload differences do not affect the outcome –
- * the `digest` field is sufficient to detect attachment changes.
- */
-export function withoutAttachmentData<T>(doc: T): T {
-    const d = doc as any;
-    if (!d || !d._attachments) {
-        return doc;
-    }
-    const normalized: any = { ...d, _attachments: {} };
-    for (const [id, att] of Object.entries(d._attachments as Record<string, any>)) {
-        const { data: _ignored, ...stub } = att;
-        normalized._attachments[id] = stub;
-    }
-    return normalized as T;
-}
-
-/**
  * Serialises attachment data in a document clone so it can safely be stored
  * as JSON in Google Drive.
  *
- * - When `serializeData` is true: Blob values are converted to base64 strings.
- * - When `serializeData` is false: the `data` field is removed entirely,
- *   leaving only attachment stubs {length, type, digest}.
+ * - When `serializeData` is true: Blob values are extracted and stored as
+ *   base64 strings in the top-level `_attachments_data` field, while
+ *   `_attachments` is stripped to clean stubs via `stripAttachmentsDataFromDocument`.
+ * - When `serializeData` is false: attachment data is stripped entirely
+ *   (stubs only, no `_attachments_data`), so Blob values are never serialised
+ *   as `{}` by JSON.stringify.
  *
  * The function returns a NEW document object; the original is not mutated.
  */
@@ -249,38 +234,48 @@ export async function serializeDocAttachments<T>(doc: T, serializeData: boolean)
     if (!d?._attachments) {
         return doc;
     }
-    const newAttachments: Record<string, any> = {};
-    await Promise.all(
-        Object.entries(d._attachments as Record<string, any>).map(async ([id, att]) => {
-            if (att.data instanceof Blob) {
-                if (serializeData) {
-                    newAttachments[id] = { ...att, data: await blobToBase64String(att.data) };
-                } else {
-                    const { data: _ignored, ...stub } = att;
-                    newAttachments[id] = stub;
+
+    const attachmentData: Record<string, string> = {};
+    if (serializeData) {
+        await Promise.all(
+            Object.entries(d._attachments as Record<string, any>).map(async ([id, att]) => {
+                if (att.data instanceof Blob) {
+                    attachmentData[id] = await blobToBase64String(att.data);
                 }
-            } else {
-                newAttachments[id] = att;
-            }
-        })
-    );
-    return { ...d, _attachments: newAttachments } as any;
+            })
+        );
+    }
+
+    // Strip binary data from _attachments, leaving clean stubs {digest, length, type}.
+    const stripped = stripAttachmentsDataFromDocument(d) as any;
+
+    if (serializeData && Object.keys(attachmentData).length > 0) {
+        return { ...stripped, _attachments_data: attachmentData } as any;
+    }
+    return stripped as any;
 }
 
 /**
- * Converts base64 attachment data strings back to Blobs in-place on a document.
- * Used after fetching documents from Google Drive so that the replication
- * protocol can pass proper Blob values to the fork storage instance.
+ * Converts attachment data stored in `_attachments_data` back to Blobs in the
+ * document, so that the downstream replication protocol can write them to the
+ * fork storage instance correctly.
+ *
+ * Mutates the document in place and removes the `_attachments_data` field.
  */
 export async function deserializeDocAttachments(doc: any): Promise<void> {
-    if (!doc?._attachments) {
+    const attachmentData: Record<string, string> | undefined = doc._attachments_data;
+    if (!attachmentData || !doc._attachments) {
         return;
     }
     await Promise.all(
-        Object.entries(doc._attachments as Record<string, any>).map(async ([id, att]) => {
-            if (att.data && typeof att.data === 'string') {
-                doc._attachments[id] = { ...att, data: await createBlobFromBase64(att.data, att.type) };
+        Object.entries(attachmentData).map(async ([id, base64]) => {
+            if (doc._attachments[id]) {
+                doc._attachments[id] = {
+                    ...doc._attachments[id],
+                    data: await createBlobFromBase64(base64, doc._attachments[id].type)
+                };
             }
         })
     );
+    delete doc._attachments_data;
 }

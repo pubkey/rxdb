@@ -47,7 +47,7 @@ import {
     humansCollection,
     awaitCollectionsHaveEqualState,
     isNode,
-    runAttachmentReplicationTestSuite
+    runReplicationBaseTestSuite
 } from '../plugins/test-utils/index.mjs';
 import { RxDBDevModePlugin } from '../plugins/dev-mode/index.mjs';
 import { RxDBLeaderElectionPlugin } from '../plugins/leader-election/index.mjs';
@@ -942,15 +942,16 @@ describe('replication-google-drive.test.ts', function () {
             c2.database.close();
         });
     });
-    describe('attachment replication', () => {
-        /**
-         * Shared attachment replication tests from the base test suite.
-         * These cover insert, update, delete, and conflict behaviour.
-         */
-        runAttachmentReplicationTestSuite(
-            (collection) => syncOnce(collection, options)
-        );
-
+    /**
+     * Attachment replication tests shared across all replication backends.
+     * Each test gets a fresh server state via the `beforeEach` above, so
+     * `cleanUpServer` is a no-op here.
+     */
+    runReplicationBaseTestSuite({
+        cleanUpServer: async () => { /* fresh folder path from beforeEach */ },
+        syncOnceWithAttachments: (collection: RxCollection<any>) => syncOnce(collection, options)
+    });
+    describe('attachment replication (google drive specific)', () => {
         /**
          * Google Drive-specific test: verify that binary attachment data is
          * NOT replicated when `attachments: false` is passed to
