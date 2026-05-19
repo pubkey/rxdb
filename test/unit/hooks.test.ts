@@ -559,5 +559,58 @@ describe('hooks.test.js', () => {
             assert.strictEqual(allDocs.length, 0);
             c.database.close();
         });
+        it('should auto-generate composite primary key when set in preInsert hook', async () => {
+            const db = await createRxDatabase({
+                name: randomToken(10),
+                storage: config.storage.getStorage(),
+                multiInstance: true
+            });
+            const collections = await db.addCollections({
+                humans: {
+                    schema: {
+                        version: 0,
+                        primaryKey: {
+                            key: 'id',
+                            fields: ['name', 'number'],
+                            separator: '|'
+                        },
+                        type: 'object',
+                        properties: {
+                            id: {
+                                type: 'string',
+                                maxLength: 100
+                            },
+                            name: {
+                                type: 'string',
+                                maxLength: 100
+                            },
+                            number: {
+                                type: 'integer',
+                                minimum: 0,
+                                maximum: 9999
+                            }
+                        },
+                        required: [
+                            'id',
+                            'name',
+                            'number'
+                        ]
+                    }
+                }
+            });
+            const collection = collections.humans;
+
+            collection.preInsert((docData) => {
+                docData.name = 'alice';
+                docData.number = 5;
+            }, false);
+
+            const doc = await collection.insert({} as any);
+            assert.strictEqual(doc.id, 'alice|5');
+            assert.strictEqual(doc.name, 'alice');
+            assert.strictEqual(doc.number, 5);
+
+            db.close();
+        });
     });
 });
