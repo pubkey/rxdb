@@ -1,0 +1,1 @@
+- FIX allow `preInsert` hooks to set composite primary key fields (for example `name` and `number`) without manually setting `id`, so RxDB computes the composite primary key afterwards (https://github.com/pubkey/rxdb/pull/8527)
