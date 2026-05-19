@@ -120,6 +120,7 @@ describe('replication-google-drive.test.ts', function () {
         });
         ensureReplicationHasNoErrors(replicationState as any);
         await replicationState.awaitInitialReplication();
+        await replicationState.cancel();
     }
 
     async function sync(

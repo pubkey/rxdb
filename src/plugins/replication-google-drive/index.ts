@@ -205,13 +205,22 @@ export async function replicateGoogleDrive<RxDocType>(
                             rowsForDrive
                         );
                         /**
-                         * Conflict documents come back from Google Drive with
-                         * base64 attachment data.  Convert them to Blobs so
-                         * the replication conflict-resolution logic can write
-                         * proper attachment data to the fork storage instance.
+                         * When attachment replication is enabled we intentionally do
+                         * NOT return conflict documents to the replication protocol.
+                         *
+                         * The core `resolveConflictError` always overwrites `_attachments`
+                         * with `forkState._attachments`, so returning a conflict here
+                         * would cause the fork's (stale) attachment stubs to be pushed
+                         * back to Drive in the subsequent upstream sync, permanently
+                         * overwriting the master's attachment data.
+                         *
+                         * Instead we return an empty array and let the downstream pull
+                         * bring the correct master state — including its attachment data —
+                         * to the fork.  The pull also updates the assumed-master metadata,
+                         * so subsequent pushes converge without spurious conflicts.
                          */
                         if (replicateAttachments) {
-                            await Promise.all(conflicts.map(doc => deserializeDocAttachments(doc as any)));
+                            return [];
                         }
                         return conflicts;
                     },

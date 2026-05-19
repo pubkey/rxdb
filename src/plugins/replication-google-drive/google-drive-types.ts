@@ -3,6 +3,7 @@ import type {
     ReplicationPullOptions,
     ReplicationPushOptions
 } from '../../types/index.d.ts';
+import type { RxCollection } from '../../types/rx-collection.d.ts';
 import { SignalingOptions } from './signaling.ts';
 
 export type GoogleDriveCheckpointType = {
@@ -76,8 +77,9 @@ export type GoogleDriveSyncPushOptions<RxDocType> = Omit<ReplicationPushOptions<
 
 export type SyncOptionsGoogleDrive<RxDocType> = Omit<
     ReplicationOptions<RxDocType, any>,
-    'pull' | 'push'
+    'pull' | 'push' | 'collection'
 > & {
+    collection: RxCollection<RxDocType, any, any, any>;
     googleDrive: GoogleDriveOptions;
     signalingOptions?: SignalingOptions;
     pull?: GoogleDriveSyncPullOptions<RxDocType>;
