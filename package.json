@@ -589,7 +589,7 @@
     "oblivious-set": "2.0.0",
     "reconnecting-websocket": "4.4.0",
     "simple-peer": "9.11.1",
-    "ws": "8.20.0",
+    "ws": "8.20.1",
     "z-schema": "12.2.0"
   },
   "devDependencies": {
