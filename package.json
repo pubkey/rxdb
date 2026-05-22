@@ -641,7 +641,7 @@
     "delete": "1.1.0",
     "dependency-check": "4.1.0",
     "disc": "1.3.3",
-    "eslint": "10.3.0",
+    "eslint": "10.4.0",
     "eslint-plugin-import": "2.32.0",
     "eslint-plugin-jsdoc": "62.9.0",
     "exists-file": "3.0.2",
@@ -708,7 +708,7 @@
     "webpack-dev-server": "5.2.4"
   },
   "overrides": {
-    "eslint": "10.3.0",
+    "eslint": "10.4.0",
     "webpack-dev-server": "5.2.4",
     "dexie": "4.4.2"
   },
