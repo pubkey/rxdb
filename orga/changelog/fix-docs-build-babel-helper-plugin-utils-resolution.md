@@ -1,0 +1,1 @@
+- FIX docs build dependency resolution by overriding `@babel/helper-plugin-utils` to a broadly available 7.x range
