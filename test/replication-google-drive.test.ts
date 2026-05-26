@@ -108,7 +108,7 @@ describe('replication-google-drive.test.ts', function () {
     async function syncOnce(
         collection: RxCollection<any, any, any, any>,
         googleDrive: GoogleDriveOptions,
-        syncOptions?: Pick<SyncOptionsGoogleDrive<any>, 'pull' | 'push'>
+        syncOptions?: Pick<SyncOptionsGoogleDrive<any>, 'pull' | 'push' | 'attachments'>
     ) {
         const replicationState = await replicateGoogleDrive({
             replicationIdentifier: 'foobar',
@@ -117,6 +117,7 @@ describe('replication-google-drive.test.ts', function () {
             live: false,
             pull: syncOptions?.pull ?? {},
             push: syncOptions?.push ?? {},
+            attachments: syncOptions?.attachments,
         });
         ensureReplicationHasNoErrors(replicationState as any);
         await replicationState.awaitInitialReplication();
@@ -950,64 +951,10 @@ describe('replication-google-drive.test.ts', function () {
      */
     runReplicationBaseTestSuite({
         cleanUpServer: async () => { /* fresh folder path from beforeEach */ },
-        syncOnceWithAttachments: (collection: RxCollection<any>) => syncOnce(collection, options)
-    });
-    describe('attachment replication (google drive specific)', () => {
-        /**
-         * Google Drive-specific test: verify that binary attachment data is
-         * NOT replicated when `attachments: false` is passed to
-         * replicateGoogleDrive().
-         */
-        it('should not replicate attachment data when attachments: false', async () => {
-            const c1 = await humansCollection.createAttachments(0);
-            const c2 = await humansCollection.createAttachments(0);
-
-            const docData = schemaObjects.humanData('att-disabled');
-            const doc1 = await c1.insert(docData);
-            await doc1.putAttachment({
-                id: 'no-sync.txt',
-                data: new Blob(['secret'], { type: 'text/plain' }),
-                type: 'text/plain'
-            });
-
-            // Push with attachments disabled
-            const replicationStatePush = await replicateGoogleDrive({
-                replicationIdentifier: 'foobar',
-                collection: c1,
-                googleDrive: options,
-                live: false,
-                pull: {},
-                push: {},
-                attachments: false
-            });
-            ensureReplicationHasNoErrors(replicationStatePush as any);
-            await replicationStatePush.awaitInitialReplication();
-
-            // Pull with attachments disabled
-            const replicationStatePull = await replicateGoogleDrive({
-                replicationIdentifier: 'foobar',
-                collection: c2,
-                googleDrive: options,
-                live: false,
-                pull: {},
-                push: {},
-                attachments: false
-            });
-            ensureReplicationHasNoErrors(replicationStatePull as any);
-            await replicationStatePull.awaitInitialReplication();
-
-            // Document should be synced but attachment data not present
-            const doc2 = await c2.findOne('att-disabled').exec(true);
-            assert.ok(doc2, 'document should be replicated even with attachments disabled');
-            const att2 = doc2.getAttachment('no-sync.txt');
-            if (att2) {
-                const content = await att2.getStringData().catch(() => '');
-                assert.notStrictEqual(content, 'secret', 'attachment binary data must not have been replicated');
-            }
-
-            await c1.database.close();
-            await c2.database.close();
-        });
+        syncOnceWithAttachments: (collection: RxCollection<any>) => syncOnce(collection, options),
+        syncOnceWithAttachmentsDisabled: (collection: RxCollection<any>) => syncOnce(collection, options, {
+            attachments: false
+        })
     });
     describe('WebRTC signaling', () => {
         beforeEach(async () => {

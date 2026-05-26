@@ -76,6 +76,14 @@ export type ReplicationBaseTestSuiteConfig = {
      * schema has `attachments: {}` defined, targeting the same server endpoint.
      */
     syncOnceWithAttachments?(collection: RxCollection<any>): Promise<void>;
+
+    /**
+     * When provided, a test is run that verifies attachment binary data is NOT
+     * replicated when attachments are disabled (e.g. `attachments: false`).
+     * The callback should perform a one-shot sync for a collection whose schema
+     * has `attachments: {}` defined, but with attachment replication turned off.
+     */
+    syncOnceWithAttachmentsDisabled?(collection: RxCollection<any>): Promise<void>;
 };
 
 /**
@@ -412,6 +420,38 @@ export function runReplicationBaseTestSuite(config: ReplicationBaseTestSuiteConf
 
                     const content = await att1Final.getStringData();
                     assert.strictEqual(content, 'from c2 - master', 'master state (c2) must win the conflict');
+
+                    await c1.database.close();
+                    await c2.database.close();
+                });
+            });
+        }
+
+        if (config.syncOnceWithAttachmentsDisabled) {
+            describe('attachment replication disabled', () => {
+                it('should not replicate attachment data when attachments are disabled', async () => {
+                    await config.cleanUpServer();
+
+                    const c1 = await humansCollection.createAttachments(0);
+                    const c2 = await humansCollection.createAttachments(0);
+
+                    const doc1 = await c1.insert(schemaObjects.humanData('att-disabled'));
+                    await doc1.putAttachment({
+                        id: 'no-sync.txt',
+                        data: new Blob(['secret'], { type: 'text/plain' }),
+                        type: 'text/plain'
+                    });
+
+                    await config.syncOnceWithAttachmentsDisabled!(c1);
+                    await config.syncOnceWithAttachmentsDisabled!(c2);
+
+                    const doc2 = await c2.findOne('att-disabled').exec(true);
+                    assert.ok(doc2, 'document should be replicated even with attachments disabled');
+                    const att2 = doc2.getAttachment('no-sync.txt');
+                    if (att2) {
+                        const content = await att2.getStringData().catch(() => '');
+                        assert.notStrictEqual(content, 'secret', 'attachment binary data must not have been replicated');
+                    }
 
                     await c1.database.close();
                     await c2.database.close();
