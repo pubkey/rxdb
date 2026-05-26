@@ -68,11 +68,6 @@ export default function LicensePreview() {
                                             <li><strong>Prohibited Uses:</strong>
                                                 <ul>
                                                     <li>The customer may not sell, lease, license, or sublicense the software or documentation except as otherwise permitted in this agreement.</li>
-                                                    <li>The customer may only install the software on devices used by a maximum of 3 developers at the same time. A single developer using multiple devices (such as a laptop and a desktop) will only count as one developer installation toward the device limit. Continuous integration servers used solely for automated testing or application bundling do not count as developer devices and are exempt from this limit.<br />
-                                                        <div style={{ background: 'rgba(255,255,255,0.05)', padding: '10px', borderLeft: '4px solid var(--ifm-color-primary)', margin: '10px 0' }}>
-                                                            <em>Side Note: The customer can purchase additional developer slots via the normal payment link.</em>
-                                                        </div>
-                                                    </li>
                                                     <li>The customer may not decompile, disassemble, or reverse engineer any part of the software.</li>
                                                     <li>The customer may not allow access to the software by others not licensed under this agreement.</li>
                                                     <li>The customer may not use the software as part of another software library that is intended to be used by other software developers as a dependency in their source code.</li>
