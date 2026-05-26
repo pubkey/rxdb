@@ -1,6 +1,7 @@
 import { newRxFetchError } from '../../rx-error.ts';
 import { ensureNotFalsy, lastOfArray } from '../utils/index.ts';
 import { fetchDocumentContents } from './document-handling.ts';
+import { applyDriveSpace } from './google-drive-helper.ts';
 import type {
     DriveFileMetadata,
     GoogleDriveCheckpointType,
@@ -67,6 +68,7 @@ export async function fetchChangesFiles(
         supportsAllDrives: "true",
         includeItemsFromAllDrives: "true",
     });
+    applyDriveSpace(googleDriveOptions, params);
 
     const url =
         googleDriveOptions.apiEndpoint +

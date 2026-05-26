@@ -32,6 +32,7 @@ import {
     listFilesInFolder,
     handleUpstreamBatch,
     GoogleDriveCheckpointType,
+    GoogleDriveSpace,
     SyncOptionsGoogleDrive,
     GoogleDriveOptions,
     replicateGoogleDrive,
@@ -153,6 +154,7 @@ describe('replication-google-drive.test.ts', function () {
         authToken: string;
         apiEndpoint: string;
         folderPath: string;
+        space: GoogleDriveSpace;
         initData: DriveStructure;
         transactionTimeout: number;
         signalingOptions: SignalingOptions;
@@ -163,6 +165,7 @@ describe('replication-google-drive.test.ts', function () {
             authToken: 'valid-token',
             apiEndpoint: serverUrl,
             folderPath: 'rxdb-test-folder-' + randomToken(8),
+            space: 'drive',
             transactionTimeout: 500,
             initData: null as any,
             signalingOptions: { wrtc }
@@ -332,6 +335,7 @@ describe('replication-google-drive.test.ts', function () {
                 authToken: 'valid-token',
                 apiEndpoint: serverUrl,
                 folderPath: 'test-folder-' + Math.random(),
+                space: 'drive',
                 transactionTimeout: 1000,
                 initData: null as any,
                 signalingOptions: { wrtc }
@@ -416,6 +420,7 @@ describe('replication-google-drive.test.ts', function () {
                 authToken: 'valid-token',
                 apiEndpoint: serverUrl,
                 folderPath: 'test-folder-' + Math.random(),
+                space: 'drive',
                 transactionTimeout: 1000,
                 initData: null as any,
                 signalingOptions: { wrtc }
@@ -555,6 +560,7 @@ describe('replication-google-drive.test.ts', function () {
                 authToken: 'valid-token',
                 apiEndpoint: serverUrl,
                 folderPath: 'test-folder-' + Math.random(),
+                space: 'drive',
                 transactionTimeout: 1000,
                 initData: null as any,
                 signalingOptions: { wrtc }
@@ -684,6 +690,7 @@ describe('replication-google-drive.test.ts', function () {
                 authToken: 'valid-token',
                 apiEndpoint: serverUrl,
                 folderPath: 'test-folder-' + Math.random(),
+                space: 'drive',
                 transactionTimeout: 1000,
                 initData: null as any,
                 signalingOptions: { wrtc }
@@ -939,6 +946,72 @@ describe('replication-google-drive.test.ts', function () {
             c2.database.close();
         });
     });
+    describe('appDataFolder space', () => {
+        function appDataOptions(folderPath: string = '') {
+            return {
+                oauthClientId: 'mock-client-id',
+                authToken: 'valid-token',
+                apiEndpoint: serverUrl,
+                folderPath,
+                space: 'appDataFolder' as const,
+                transactionTimeout: 500,
+                initData: null as any,
+                signalingOptions: { wrtc }
+            };
+        }
+        it('initDriveStructure() should not throw with empty folderPath', async () => {
+            const initData = await initDriveStructure(appDataOptions());
+            assert.ok(initData.replicationIdentifier);
+            assert.strictEqual(initData.rootFolderId, 'appDataFolder');
+        });
+        it('should scope list requests to the appDataFolder space and parent there', async () => {
+            const originalFetch = globalThis.fetch;
+            const listUrls: string[] = [];
+            const createBodies: any[] = [];
+            globalThis.fetch = ((input: any, init: any) => {
+                const url = typeof input === 'string' ? input : input.url;
+                const method = (init && init.method) || 'GET';
+                if (url.includes('/drive/v3/files') && method === 'GET') {
+                    listUrls.push(url);
+                }
+                if (
+                    url.includes('/drive/v3/files') &&
+                    method === 'POST' &&
+                    init && typeof init.body === 'string'
+                ) {
+                    try {
+                        createBodies.push(JSON.parse(init.body));
+                    } catch (_err) { }
+                }
+                return originalFetch(input, init);
+            }) as any;
+            try {
+                await initDriveStructure(appDataOptions('app-' + randomToken(8)));
+            } finally {
+                globalThis.fetch = originalFetch;
+            }
+            assert.ok(listUrls.length > 0, 'should have made list requests');
+            assert.ok(
+                listUrls.every(u => u.includes('spaces=appDataFolder')),
+                'every files.list request must scope to the appDataFolder space'
+            );
+            const rootChild = createBodies.find(b => b.parents && b.parents.includes('appDataFolder'));
+            assert.ok(rootChild, 'the top folder must be created with parent appDataFolder');
+        });
+        it('should round-trip documents through the appDataFolder', async () => {
+            const folderPath = 'app-' + randomToken(8);
+            const c1 = await humansCollection.create(1);
+            const c2 = await humansCollection.create(0);
+
+            await syncOnce(c1, appDataOptions(folderPath));
+            await syncOnce(c2, appDataOptions(folderPath));
+
+            await awaitCollectionsHaveEqualState(c1, c2);
+
+            c1.database.close();
+            c2.database.close();
+        });
+    });
     describe('WebRTC signaling', () => {
         beforeEach(async () => {
             options = {
@@ -946,6 +1019,7 @@ describe('replication-google-drive.test.ts', function () {
                 authToken: 'valid-token',
                 apiEndpoint: serverUrl,
                 folderPath: 'test-folder-' + Math.random(),
+                space: 'drive',
                 transactionTimeout: 1000,
                 initData: null as any,
                 signalingOptions: { wrtc }
@@ -1025,6 +1099,7 @@ describe('replication-google-drive.test.ts', function () {
                 authToken: 'valid-token',
                 apiEndpoint: serverUrl,
                 folderPath: 'test-folder-' + Math.random(),
+                space: 'drive',
                 transactionTimeout: 1000,
                 initData: null as any,
                 signalingOptions: { wrtc, config: { iceServers: [] } }

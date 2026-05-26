@@ -25,13 +25,21 @@ export async function initDriveStructure(
     googleDriveOptions: GoogleDriveOptionsWithDefaults
 ) {
 
-    NON_ALLOWED_ROOT_FOLDERS.forEach(nonAllowed => {
-        if (googleDriveOptions.folderPath === nonAllowed) {
-            throw newRxError('GDR1', {
-                folderPath: googleDriveOptions.folderPath
-            });
-        }
-    });
+    /**
+     * The appDataFolder is a dedicated, hidden per-app space.
+     * Storing data directly in its root is allowed, so an empty
+     * folderPath is valid there. For the regular 'drive' space we
+     * must not use the root folder.
+     */
+    if (googleDriveOptions.space !== 'appDataFolder') {
+        NON_ALLOWED_ROOT_FOLDERS.forEach(nonAllowed => {
+            if (googleDriveOptions.folderPath === nonAllowed) {
+                throw newRxError('GDR1', {
+                    folderPath: googleDriveOptions.folderPath
+                });
+            }
+        });
+    }
 
 
     // root folder

@@ -29,6 +29,16 @@ export interface DriveFileMetadata {
     etag?: string;
 }
 
+/**
+ * The Google Drive "space" that the data is stored in.
+ * - 'drive' stores data in the user visible "My Drive".
+ * - 'appDataFolder' stores data in the hidden, per-application
+ *   data folder. This requires the
+ *   'https://www.googleapis.com/auth/drive.appdata' OAuth scope and
+ *   is isolated per OAuth client id.
+ */
+export type GoogleDriveSpace = 'drive' | 'appDataFolder';
+
 export type GoogleDriveOptions = {
     oauthClientId: string;
     authToken: string;
@@ -40,8 +50,17 @@ export type GoogleDriveOptions = {
     /**
      * Path to a folder in Google Drive where all data is stored.
      * Example: 'rxdb-replication/my-app'
+     *
+     * When space is 'appDataFolder' this is optional and interpreted
+     * relative to the appDataFolder root. If omitted, data is stored
+     * directly in the appDataFolder root.
      */
-    folderPath: string;
+    folderPath?: string;
+
+    /**
+     * Defaults to 'drive'.
+     */
+    space?: GoogleDriveSpace;
 
     /**
      * Time in milliseconds.
@@ -58,6 +77,7 @@ export type GoogleDriveOptionsWithDefaults = {
      */
     apiEndpoint: string;
     folderPath: string;
+    space: GoogleDriveSpace;
     /**
      * Time in milliseconds.
      */

@@ -11,6 +11,40 @@ export const DRIVE_MAX_PAGE_SIZE = 1000;
 export const DRIVE_MAX_BULK_SIZE = DRIVE_MAX_PAGE_SIZE / 4;
 export const FOLDER_MIME_TYPE = 'application/vnd.google-apps.folder';
 
+/**
+ * The id of the top level parent for the configured space.
+ * For 'appDataFolder' this is the literal 'appDataFolder' which Google Drive
+ * accepts as a parent id and in queries. For 'drive' it is the regular 'root'.
+ */
+export function driveRootParentId(
+    googleDriveOptions: GoogleDriveOptionsWithDefaults
+): string {
+    return googleDriveOptions.space === 'appDataFolder' ? 'appDataFolder' : 'root';
+}
+
+/**
+ * files.list only returns appDataFolder contents when spaces=appDataFolder
+ * is set, even when querying by an explicit parent id.
+ */
+export function applyDriveSpace(
+    googleDriveOptions: GoogleDriveOptionsWithDefaults,
+    params: URLSearchParams
+): void {
+    if (googleDriveOptions.space === 'appDataFolder') {
+        params.set('spaces', 'appDataFolder');
+    }
+}
+
+/**
+ * Same as applyDriveSpace() but for URLs that are built via string concatenation.
+ * Returns an empty string for the default 'drive' space.
+ */
+export function driveSpaceQuerySuffix(
+    googleDriveOptions: GoogleDriveOptionsWithDefaults
+): string {
+    return googleDriveOptions.space === 'appDataFolder' ? '&spaces=appDataFolder' : '';
+}
+
 export async function createFolder(
     googleDriveOptions: GoogleDriveOptionsWithDefaults,
     parentId: string = 'root',
@@ -75,7 +109,7 @@ export async function findFolder(
      * so in case the same folder was created multiple times, we always pick the same
      * one which is the oldest one.
      */
-    const searchUrl = googleDriveOptions.apiEndpoint + '/drive/v3/files?fields=files(id,mimeType)&orderBy=createdTime asc&q=' + encodeURIComponent(query);
+    const searchUrl = googleDriveOptions.apiEndpoint + '/drive/v3/files?fields=files(id,mimeType)&orderBy=createdTime asc&q=' + encodeURIComponent(query) + driveSpaceQuerySuffix(googleDriveOptions);
     const searchResponse = await fetch(searchUrl, {
         method: 'GET',
         headers: {
@@ -106,7 +140,7 @@ export async function ensureFolderExists(
     folderPath: string
 ): Promise<string> {
     const parts = folderPath.split('/').filter(p => p.length > 0);
-    let parentId = 'root';
+    let parentId = driveRootParentId(googleDriveOptions);
     for (const part of parts) {
         const newParentId = await findFolder(googleDriveOptions, parentId, part);
         if (newParentId) {
@@ -164,7 +198,8 @@ export async function createEmptyFile(
         googleDriveOptions.apiEndpoint + '/drive/v3/files' +
         '?fields=files(id)' +
         '&orderBy=createdTime asc' +
-        '&q=' + encodeURIComponent(query);
+        '&q=' + encodeURIComponent(query) +
+        driveSpaceQuerySuffix(googleDriveOptions);
     const res = await fetch(url2, {
         headers: {
             Authorization: 'Bearer ' + googleDriveOptions.authToken,
@@ -390,13 +425,13 @@ export async function readFolder(
     googleDriveOptions: GoogleDriveOptionsWithDefaults,
     folderPath: string
 ): Promise<DriveFileMetadata[]> {
-    let parentId = 'root';
+    let parentId = driveRootParentId(googleDriveOptions);
     const parts = folderPath.split('/').filter(p => p.length > 0);
 
     // Resolve folder path
     for (const part of parts) {
         const query = "name = '" + part + "' and '" + parentId + "' in parents and trashed = false and mimeType = '" + FOLDER_MIME_TYPE + "'";
-        const searchUrl = googleDriveOptions.apiEndpoint + '/drive/v3/files?fields=files(id)&q=' + encodeURIComponent(query);
+        const searchUrl = googleDriveOptions.apiEndpoint + '/drive/v3/files?fields=files(id)&q=' + encodeURIComponent(query) + driveSpaceQuerySuffix(googleDriveOptions);
         const searchResponse = await fetch(searchUrl, {
             method: 'GET',
             headers: {
@@ -413,7 +448,7 @@ export async function readFolder(
 
     // List children
     const query = "'" + parentId + "' in parents and trashed = false";
-    const listUrl = googleDriveOptions.apiEndpoint + '/drive/v3/files?fields=files(id,name,mimeType,trashed,parents)&q=' + encodeURIComponent(query);
+    const listUrl = googleDriveOptions.apiEndpoint + '/drive/v3/files?fields=files(id,name,mimeType,trashed,parents)&q=' + encodeURIComponent(query) + driveSpaceQuerySuffix(googleDriveOptions);
     const listResponse = await fetch(listUrl, {
         method: 'GET',
         headers: {
@@ -495,6 +530,7 @@ export async function listFilesInFolder(
         supportsAllDrives: "true",
         includeItemsFromAllDrives: "true",
     });
+    applyDriveSpace(googleDriveOptions, params);
 
     const url =
         googleDriveOptions.apiEndpoint +
