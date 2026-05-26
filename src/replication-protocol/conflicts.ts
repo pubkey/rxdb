@@ -41,7 +41,7 @@ export async function resolveConflictError<RxDocType>(
              */
             _meta: flatClone(forkState._meta),
             _rev: getDefaultRevision(),
-            _attachments: flatClone(forkState._attachments)
+            _attachments: flatClone((resolved as any)._attachments || forkState._attachments)
         }
     ) as any;
     resolvedDoc._meta.lwt = now();

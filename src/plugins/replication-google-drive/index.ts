@@ -205,22 +205,22 @@ export async function replicateGoogleDrive<RxDocType>(
                             rowsForDrive
                         );
                         /**
-                         * When attachment replication is enabled we intentionally do
-                         * NOT return conflict documents to the replication protocol.
+                         * When attachment replication is enabled, deserialise the
+                         * base64 attachment data that Google Drive stored in the
+                         * `_attachments_data` field back into Blobs on each conflict
+                         * document before returning them to the replication protocol.
                          *
-                         * The core `resolveConflictError` always overwrites `_attachments`
-                         * with `forkState._attachments`, so returning a conflict here
-                         * would cause the fork's (stale) attachment stubs to be pushed
-                         * back to Drive in the subsequent upstream sync, permanently
-                         * overwriting the master's attachment data.
-                         *
-                         * Instead we return an empty array and let the downstream pull
-                         * bring the correct master state — including its attachment data —
-                         * to the fork.  The pull also updates the assumed-master metadata,
-                         * so subsequent pushes converge without spurious conflicts.
+                         * The protocol passes these as `realMasterState` to
+                         * `resolveConflictError`, which (with the fix in
+                         * `conflicts.ts`) then writes the resolved state — including
+                         * the correct attachment Blob — to the fork instance.
+                         * Without this deserialisation the fork would receive stubs
+                         * with no binary data and the attachment would be lost.
                          */
-                        if (replicateAttachments) {
-                            return [];
+                        if (replicateAttachments && conflicts.length > 0) {
+                            await Promise.all(
+                                conflicts.map(c => deserializeDocAttachments(c as any))
+                            );
                         }
                         return conflicts;
                     },
