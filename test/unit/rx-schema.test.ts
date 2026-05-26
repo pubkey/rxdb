@@ -1392,6 +1392,57 @@ describeParallel('rx-schema.test.ts', () => {
             db.close();
         });
         /**
+         * @link https://github.com/pubkey/rxdb/pull/8522
+         */
+        it('#8522 patternProperties with square bracket character classes should not be interpreted as array index', async () => {
+            const db = await createRxDatabase({
+                name: randomToken(10),
+                storage: config.storage.getStorage()
+            });
+
+            const mySchema = {
+                version: 0,
+                primaryKey: 'passportId',
+                type: 'object',
+                properties: {
+                    passportId: {
+                        type: 'string',
+                        maxLength: 100
+                    },
+                    personFields: {
+                        type: 'object',
+                        patternProperties: {
+                            '^[a-z]\\w*$': {   // regex includes square brackets (character class)
+                                type: 'string'
+                            }
+                        },
+                        additionalProperties: false
+                    },
+                }
+            } as any;
+
+            const collections = await db.addCollections({
+                mycollection: {
+                    schema: mySchema
+                }
+            });
+
+            await collections.mycollection.insert({
+                passportId: 'foobar',
+                personFields: {
+                    firstLower: 'lower',
+                },
+            });
+
+            const myDocument = await collections.mycollection
+                .findOne('foobar')
+                .exec();
+
+            assert.strictEqual(myDocument.personFields.firstLower, 'lower');
+
+            db.close();
+        });
+        /**
          * Using Infinity as "maximum" does not work
          * and should throw a proper error.
          */
