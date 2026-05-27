@@ -223,9 +223,10 @@ export async function fetchDocumentContents<DocType>(
  * - When `serializeData` is true: Blob values are extracted and stored as
  *   base64 strings in the top-level `_attachments_data` field, while
  *   `_attachments` is stripped to clean stubs via `stripAttachmentsDataFromDocument`.
- * - When `serializeData` is false: attachment data is stripped entirely
- *   (stubs only, no `_attachments_data`), so Blob values are never serialised
- *   as `{}` by JSON.stringify.
+ * - When `serializeData` is false: `_attachments` is set to `{}` so that
+ *   attachment stubs (without binary data) are never stored in Drive.  This
+ *   prevents the downstream replication protocol from trying to write attachment
+ *   data it does not have when a peer pulls the document.
  *
  * The function returns a NEW document object; the original is not mutated.
  */
@@ -235,21 +236,23 @@ export async function serializeDocAttachments<T>(doc: T, serializeData: boolean)
         return doc;
     }
 
-    const attachmentData: Record<string, string> = {};
-    if (serializeData) {
-        await Promise.all(
-            Object.entries(d._attachments as Record<string, any>).map(async ([id, att]) => {
-                if (att.data instanceof Blob) {
-                    attachmentData[id] = await blobToBase64String(att.data);
-                }
-            })
-        );
+    if (!serializeData) {
+        return { ...d, _attachments: {} } as any;
     }
+
+    const attachmentData: Record<string, string> = {};
+    await Promise.all(
+        Object.entries(d._attachments as Record<string, any>).map(async ([id, att]) => {
+            if (att.data instanceof Blob) {
+                attachmentData[id] = await blobToBase64String(att.data);
+            }
+        })
+    );
 
     // Strip binary data from _attachments, leaving clean stubs {digest, length, type}.
     const stripped = stripAttachmentsDataFromDocument(d) as any;
 
-    if (serializeData && Object.keys(attachmentData).length > 0) {
+    if (Object.keys(attachmentData).length > 0) {
         return { ...stripped, _attachments_data: attachmentData } as any;
     }
     return stripped as any;
