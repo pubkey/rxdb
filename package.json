@@ -697,7 +697,7 @@
     "terser": "5.47.1",
     "terser-webpack-plugin": "5.6.0",
     "ts-loader": "9.5.7",
-    "tsx": "4.22.1",
+    "tsx": "4.22.3",
     "typescript": "5.9.3",
     "vue": "3.5.34",
     "walk-sync": "4.0.2",
