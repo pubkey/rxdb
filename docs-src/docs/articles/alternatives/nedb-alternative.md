@@ -2,6 +2,7 @@
 title: RxDB as a NeDB Alternative for Node.js, Electron, and the Browser
 slug: nedb-alternative.html
 description: Replace unmaintained NeDB with RxDB. Get schema validation, MongoDB-style queries, observable results, multi-tab support, and replication on Node, Electron, and browsers.
+image: /headers/nedb-alternative.jpg
 ---
 
 # RxDB as a NeDB Alternative for Node.js, Electron, and the Browser

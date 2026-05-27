@@ -2,6 +2,7 @@
 title: RxDB as a SignalDB Alternative for Local-First JavaScript Apps
 slug: signaldb-alternative.html
 description: Compare SignalDB and RxDB for local-first JavaScript apps. See how RxDB adds durable storage, replication, and conflict handling beyond in-memory signals.
+image: /headers/signaldb-alternative.jpg
 ---
 
 # RxDB as a SignalDB Alternative for Local-First JavaScript Apps
@@ -130,7 +131,9 @@ const replicationState = replicateRxCollection({
     replicationIdentifier: 'tasks-http-replication',
     pull: {
         async handler(checkpoint, batchSize) {
-            const url = `/api/tasks/pull?since=${checkpoint?.updatedAt ?? 0}&limit=${batchSize}`;
+            const url =
+                `/api/tasks/pull?since=${checkpoint?.updatedAt ?? 0}` +
+                `&limit=${batchSize}`;
             const response = await fetch(url);
             const data = await response.json();
             return {

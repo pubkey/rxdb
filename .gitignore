@@ -30,3 +30,4 @@ plugins/
 ai-context.txt
 ERROR-MESSAGES.md
 .chrome-profile-perf/
+/docs/

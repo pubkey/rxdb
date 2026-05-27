@@ -2,6 +2,7 @@
 title: RxDB as a sql.js Alternative for Browser Persistence
 slug: sql-js-alternative.html
 description: Compare RxDB with sql.js for browser data. Get durable storage, reactive queries, replication, and schemas where sql.js only offers in-memory SQLite.
+image: /headers/sql-js-alternative.jpg
 ---
 
 # RxDB as a sql.js Alternative for Browser Persistence
@@ -135,7 +136,10 @@ If you want SQLite as the engine but still need durability, reactivity, and repl
 
 ```ts
 import { createRxDatabase } from 'rxdb/plugins/core';
-import { getRxStorageSQLiteTrial, getSQLiteBasicsWasm } from 'rxdb/plugins/storage-sqlite';
+import {
+    getRxStorageSQLiteTrial,
+    getSQLiteBasicsWasm
+} from 'rxdb/plugins/storage-sqlite';
 import sqliteWasm from '@vlcn.io/wa-sqlite';
 
 // Browser: SQLite compiled to WASM, persisted via OPFS

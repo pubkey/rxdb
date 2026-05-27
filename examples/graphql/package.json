@@ -23,12 +23,12 @@
   "type": "module",
   "//": "NOTICE: For the Github CI we use the local RxDB build (rxdb-local.tgz). In your app should just install 'rxdb' from npm instead",
   "dependencies": {
-    "@apollo/server": "5.5.0",
+    "@apollo/server": "5.5.1",
     "@as-integrations/express5": "1.1.2",
     "concurrently": "9.2.1",
     "cors": "2.8.6",
     "express": "5.2.1",
-    "graphql": "16.13.2",
+    "graphql": "16.14.0",
     "graphql-client": "2.0.1",
     "graphql-subscriptions": "3.0.0",
     "graphql-ws": "5.16.2",
@@ -37,13 +37,13 @@
     "pouchdb-adapter-idb": "9.0.0",
     "rxdb": "file:rxdb-local.tgz",
     "rxjs": "7.8.2",
-    "ws": "8.20.0"
+    "ws": "8.20.1"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "async-test-util": "2.5.0",
     "css-loader": "7.1.4",
-    "eslint": "10.2.1",
+    "eslint": "10.4.0",
     "esm": "3.2.25",
     "file-loader": "6.2.0",
     "globals": "^17.3.0",
@@ -57,6 +57,6 @@
     "testcafe-hammerhead": "31.7.7",
     "webpack": "5.106.2",
     "webpack-cli": "7.0.2",
-    "webpack-dev-server": "5.2.3"
+    "webpack-dev-server": "5.2.4"
   }
 }

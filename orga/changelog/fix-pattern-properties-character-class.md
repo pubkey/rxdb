@@ -1,0 +1,1 @@
+- FIX schema using `patternProperties` with square bracket character classes no longer gets incorrectly interpreted as an array index in dev-mode schema validation. [#8522](https://github.com/pubkey/rxdb/pull/8522)

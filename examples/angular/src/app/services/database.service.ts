@@ -1,5 +1,6 @@
 import { Injectable, Injector, inject } from '@angular/core';
 import { createReactivityFactory } from 'rxdb/plugins/reactivity-angular';
+import type { AngularSignalReactivityLambda } from 'rxdb/plugins/reactivity-angular';
 
 // import typings
 import {
@@ -61,7 +62,7 @@ async function _create(): Promise<RxHeroesDatabase> {
 
     console.log('DatabaseService: creating database..');
 
-    const db = await createRxDatabase<RxHeroesCollections>({
+    const db = await createRxDatabase<RxHeroesCollections, unknown, unknown, AngularSignalReactivityLambda>({
         name: DATABASE_NAME,
         storage: environment.getRxStorage(),
         multiInstance: environment.multiInstance,

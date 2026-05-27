@@ -2,6 +2,7 @@
 title: RxDB as a Minimongo Alternative - Persistent, Observable, Offline-First
 slug: alternatives/minimongo-alternative.html
 description: Compare RxDB and Minimongo for client-side JavaScript databases. Learn why RxDB is a better alternative for offline-first apps with persistent storage, reactive queries, conflict handling, and multi-tab support.
+image: /headers/alternatives/minimongo-alternative.jpg
 ---
 
 # RxDB as a Minimongo Alternative
@@ -251,7 +252,8 @@ const replicationState = await replicateRxCollection({
     pull: {
         handler: async (checkpoint, batchSize) => {
             const response = await fetch(
-                `/api/posts/pull?since=${checkpoint?.updatedAt ?? 0}&limit=${batchSize}`
+                `/api/posts/pull?since=${checkpoint?.updatedAt ?? 0}` +
+                `&limit=${batchSize}`
             );
             return response.json(); // { documents: [...], checkpoint: {...} }
         }
@@ -420,7 +422,14 @@ await db.addCollections({
                 createdAt: { type: 'number' },
                 updatedAt: { type: 'number' }
             },
-            required: ['id', 'title', 'category', 'authorId', 'createdAt', 'updatedAt'],
+            required: [
+                'id',
+                'title',
+                'category',
+                'authorId',
+                'createdAt',
+                'updatedAt'
+            ],
             indexes: ['createdAt', 'category']
         }
     }

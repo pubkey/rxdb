@@ -2,6 +2,7 @@
 title: RxDB as a PouchDB Alternative - Reactive, Fast, and Backend-Agnostic
 slug: alternatives/pouchdb-alternative.html
 description: Compare RxDB and PouchDB for offline-first JavaScript applications. Learn why RxDB is a modern alternative to PouchDB with reactive queries, pluggable storage engines, flexible replication, and no revision-tree overhead.
+image: /headers/alternatives/pouchdb-alternative.jpg
 ---
 
 # RxDB as a PouchDB Alternative
@@ -311,7 +312,10 @@ replicationState.error$.subscribe(err => {
 The token can be updated mid-session when authentication is required:
 
 ```ts
-import { replicateCouchDB, getFetchWithCouchDBAuthorization } from 'rxdb/plugins/replication-couchdb';
+import {
+    replicateCouchDB,
+    getFetchWithCouchDBAuthorization
+} from 'rxdb/plugins/replication-couchdb';
 
 const replicationState = replicateCouchDB({
     replicationIdentifier: 'my-couchdb-replication',
@@ -430,7 +434,9 @@ const db = await createRxDatabase({
 RxDB includes a [built-in encryption plugin](../../encryption.md) for encrypting specific document fields before they are written to local storage. The raw storage (IndexedDB, SQLite, OPFS) contains ciphertext for encrypted fields:
 
 ```ts
-import { wrappedKeyEncryptionCryptoJsStorage } from 'rxdb/plugins/encryption-crypto-js';
+import {
+    wrappedKeyEncryptionCryptoJsStorage
+} from 'rxdb/plugins/encryption-crypto-js';
 
 const db = await createRxDatabase({
     name: 'myapp',

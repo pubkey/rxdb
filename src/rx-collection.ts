@@ -52,6 +52,7 @@ import {
     runAsyncPluginHooks,
     runPluginHooks
 } from './hooks.ts';
+import { fillPrimaryKey } from './rx-schema-helper.ts';
 
 import {
     Subscription,
@@ -443,9 +444,16 @@ export class RxCollectionBase<
         if (this.hasHooks('pre', 'insert')) {
             insertRows = await Promise.all(
                 docsData.map(docData => {
-                    const useDocData = fillObjectDataBeforeInsert(this.schema, docData);
+                    const useDocData = fillObjectDataBeforeInsert(this.schema, docData, true);
                     return this._runHooks('pre', 'insert', useDocData)
                         .then(() => {
+                            if (typeof this.schema.jsonSchema.primaryKey !== 'string') {
+                                fillPrimaryKey(
+                                    this.schema.primaryPath as any,
+                                    this.schema.jsonSchema as any,
+                                    useDocData as any
+                                );
+                            }
                             ids.add((useDocData as any)[primaryPath]);
                             return { document: useDocData };
                         });

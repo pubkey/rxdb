@@ -2,6 +2,7 @@
 title: RxDB as a Hoodie Alternative for Offline-First JavaScript Apps
 slug: hoodie-alternative.html
 description: Replace unmaintained Hoodie with RxDB. Keep CouchDB sync, gain TypeScript, reactive queries, multi-tab support, and modern offline-first JavaScript tooling.
+image: /headers/hoodie-alternative.jpg
 ---
 
 # RxDB as a Hoodie Alternative for Offline-First JavaScript Apps

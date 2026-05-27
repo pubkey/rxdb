@@ -110,7 +110,8 @@ const replicationState = await replicateRxCollection({
     pull: {
         handler: async (checkpointOrNull, batchSize) => {
             const response = await fetch(
-                `/api/messages/pull?checkpoint=${JSON.stringify(checkpointOrNull)}&limit=${batchSize}`
+                `/api/messages/pull?checkpoint=${JSON.stringify(checkpointOrNull)}` +
+                `&limit=${batchSize}`
             );
             return response.json();
         }
@@ -220,11 +221,17 @@ Switching storage engines typically requires only changing the `storage` paramet
 ```ts
 // Browser with IndexedDB
 import { getRxStorageIndexedDB } from 'rxdb/plugins/storage-indexeddb';
-const db = await createRxDatabase({ name: 'myapp', storage: getRxStorageIndexedDB() });
+const db = await createRxDatabase({
+    name: 'myapp',
+    storage: getRxStorageIndexedDB()
+});
 
 // React Native with SQLite
 import { getRxStorageSQLite } from 'rxdb/plugins/storage-sqlite';
-const db = await createRxDatabase({ name: 'myapp', storage: getRxStorageSQLite({ sqliteBasics }) });
+const db = await createRxDatabase({
+    name: 'myapp',
+    storage: getRxStorageSQLite({ sqliteBasics })
+});
 ```
 
 This abstraction means you can write application code once and run it across browser, mobile, and desktop without rewriting your database interactions.

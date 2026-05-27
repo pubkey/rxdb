@@ -3,222 +3,42 @@ import Layout from '@theme/Layout';
 import Head from '@docusaurus/Head';
 
 import React, { useEffect } from 'react';
-import { CollectionsOfDatabase, RxDatabase, RxLocalDocument, deepEqual, ensureNotFalsy } from '../../../plugins/core';
-import {
-    PackageName,
-    calculatePriceFromFormValueDoc
-} from '../components/price-calculator';
 import useIsBrowser from '@docusaurus/useIsBrowser';
-// import {
-//     Select
-// } from 'antd';
-import { distinctUntilChanged, map } from 'rxjs';
 import { triggerTrackingEvent } from '../components/trigger-event';
 import { IframeFormModal } from '../components/modal';
 import { Button } from '../components/button';
-
-export type FormValueDocData = {
-    developers: number;
-    homeCountry?: string;
-    companySize?: number;
-    packages: PackageName[];
-    price?: number;
-    formSubmitted: boolean;
-};
-export const FORM_VALUE_DOCUMENT_ID = 'premium-price-form';
+import { IconChevronsRight } from '../components/icons/chevrons-right';
 
 
-export const TEAM_SIZES = [
-    1,
-    3,
-    6,
-    12,
-    24,
-    30
-];
-
-let formValueDocPromiseCache: Promise<RxLocalDocument<RxDatabase<CollectionsOfDatabase, any, any, any>, FormValueDocData>>;
-
-function getFormValueDoc() {
-    if (!formValueDocPromiseCache) {
-        formValueDocPromiseCache = (async () => {
-            const dbModule = await import('../components/database.module');
-            const database = await dbModule.getDatabase();
-            let formValueDoc = await database.getLocal<FormValueDocData>(FORM_VALUE_DOCUMENT_ID);
-            if (!formValueDoc) {
-                formValueDoc = await database.upsertLocal<FormValueDocData>(FORM_VALUE_DOCUMENT_ID, {
-                    formSubmitted: false,
-                    developers: TEAM_SIZES[1],
-                    packages: [
-                        'browser'
-                    ]
-                });
-            }
-            return formValueDoc;
-        })();
-    }
-    return formValueDocPromiseCache;
-}
-
-
-
-
-
-function PackageCheckbox(props: {
-    packageName: PackageName;
-    formValue?: FormValueDocData;
-    onToggle: () => void;
-}) {
-    return <input
-        name={'package-' + props.packageName}
-        type="checkbox"
-        className="package-checkbox"
-        checked={props.formValue?.packages.includes(props.packageName) ? true : false}
-        readOnly
-        onClick={() => {
-            triggerTrackingEvent('calculate_premium_price', 3, 1, 'AddToCart');
-            props.onToggle();
-        }}
-    />;
-}
 
 
 export default function Premium() {
     const { siteConfig } = useDocusaurusContext();
     const isBrowser = useIsBrowser();
-    // const [homeCountry, setHomeCountry] = React.useState<string | null>(null);
-    // const [homeCountryInitial, setHomeCountryInitial] = React.useState<string | null>(null);
-
     const [initDone, setInitDone] = React.useState<boolean>(false);
-    const [formValue, setFormValue] = React.useState<FormValueDocData>(null);
-
-
-
 
     useEffect(() => {
         if (!isBrowser) {
             return;
         }
 
-
         if (initDone) {
             return;
         }
         setInitDone(true);
-        if (isBrowser) {
-            triggerTrackingEvent('open_pricing_page', 1);
-        }
-
-        (async () => {
-            // load previous form data
-            const formValueDoc = await getFormValueDoc();
-
-
-            formValueDoc.$.pipe(
-                map((d: RxLocalDocument<RxDatabase<CollectionsOfDatabase, any, any, any>, FormValueDocData>) => d._data.data),
-                distinctUntilChanged(deepEqual)
-            ).subscribe((data: FormValueDocData) => {
-                console.log('XXX new data:');
-                console.dir(data);
-
-                setFormValue(data);
-
-                // setHomeCountryInitial(formValueDoc._data.data.homeCountry);
-                // setHomeCountry(formValueDoc._data.data.homeCountry);
-                // setToInput('company-size', formValueDoc._data.data.companySize);
-                // // setToInput('project-amount', formValueDoc._data.data.projectAmount);
-                // // setToInput('license-period', formValueDoc._data.data.licensePeriod);
-
-                // console.log('################# setDevelopers() ' + formValueDoc._data.data.developers);
-                // setDevelopers(formValueDoc._data.data.developers);
-                // setToInput('developer-count', formValueDoc._data.data.developers);
-
-
-                // Object.keys(PACKAGE_PRICE).forEach(packageName => {
-                //     setToInput('package-' + packageName, formValueDoc._data.data.packages.includes(packageName as any));
-                // });
-
-                // auto-submit form
-                // submitCalculator(false);
-                recalculatePrice();
-
-            });
-        })();
-    });
+        triggerTrackingEvent('open_pricing_page', 1);
+    }, [isBrowser, initDone]);
 
     // for dialog
-    const [open, setOpen] = React.useState(false);
-    const handleOpenDialog = () => {
-        triggerTrackingEvent('open_premium_submit_popup', 20, 1);
-        setOpen(true);
+    const [openConsulting, setOpenConsulting] = React.useState(false);
+    const handleOpenConsultingDialog = () => {
+        triggerTrackingEvent('consulting_form_open', 0.4);
+        setOpenConsulting(true);
     };
-    const handleClose = () => {
-        setOpen(false);
+    const handleCloseConsulting = () => {
+        setOpenConsulting(false);
     };
 
-
-    async function recalculatePrice() {
-        const formValueDoc = await getFormValueDoc();
-        const priceResult = calculatePriceFromFormValueDoc(formValueDoc);
-        console.log('priceResult:');
-        console.log(JSON.stringify(priceResult, null, 4));
-
-
-        const $priceCalculatorResult = ensureNotFalsy(document.getElementById('price-calculator-result'));
-        const $priceCalculatorResultPerMonth = ensureNotFalsy(document.getElementById('total-per-project-per-month'));
-        const $priceCalculatorResultPerYear = ensureNotFalsy(document.getElementById('total-per-project-per-year'));
-        // const $priceCalculatorResultPerYear = ensureNotFalsy(document.getElementById('total-per-year'));
-        // const $priceCalculatorResultTotal = ensureNotFalsy(document.getElementById('total-price'));
-        const setPrice = (pricePerYear: number) => {
-            console.log('setPrice:');
-            console.dir(pricePerYear);
-            $priceCalculatorResultPerMonth.innerHTML = Math.ceil(pricePerYear / 12).toString();
-            $priceCalculatorResultPerYear.innerHTML = Math.ceil(pricePerYear).toString();
-            // (element as any).href = getConverterUrl(Math.ceil(price));
-        };
-        // const pricePerYear: number = (priceResult.totalPrice / priceCalculationInput.licensePeriod);
-        setPrice(priceResult.totalPrice);
-        // if (priceCalculationInput.projectAmount !== 'infinity') {
-        //     setPrice($priceCalculatorResultPerMonth, pricePerYear / parseInt(priceCalculationInput.projectAmount, 10) / 12);
-        // } else {
-        //     setPrice($priceCalculatorResultPerMonth, 0);
-        // }
-        // setPrice($priceCalculatorResultPerYear, pricePerYear);
-        // setPrice($priceCalculatorResultTotal, priceResult.totalPrice);
-
-        /**
-         * Save the input
-         * so we have to not re-insert manually on page reload.
-         */
-
-        // const database = await getDatabase();
-        // console.log('uipsert local developers: ' + developers);
-        // await database.upsertLocal<FormValueDocData>(FORM_VALUE_DOCUMENT_ID, {
-        //     developers: developers,
-        //     companySize: formData['company-size'] as any,
-        //     // projectAmount: formData['project-amount'] as any,
-        //     // licensePeriod: formData['license-period'] as any,
-        //     // homeCountry: homeCountryObject.name,
-        //     packages,
-        //     price: priceResult.totalPrice,
-        //     formSubmitted: false
-        // });
-
-
-        $priceCalculatorResult.style.display = 'block';
-    }
-
-
-    function togglePackage(name: PackageName) {
-        return getFormValueDoc().then(doc => doc.incrementalModify(d => {
-            if (d.packages.includes(name)) {
-                d.packages = d.packages.filter(p => p !== name);
-            } else {
-                d.packages.push(name);
-            }
-            return d;
-        }));
-    }
 
     return (
         <>
@@ -228,7 +48,7 @@ export default function Premium() {
             </Head>
 
             <Layout
-                title={`Premium Plugins - ${siteConfig.title}`}
+                title={`RxDB Pricing - ${siteConfig.title}`}
                 description="RxDB plugins for professionals. FAQ, pricing and license"
             >
                 <main>
@@ -236,11 +56,11 @@ export default function Premium() {
                         <div className="content centered">
 
                             <h2>
-                                RxDB <b>Premium</b>
+                                RxDB <b>Pricing</b>
                             </h2>
 
-                            <p style={{ width: '80%' }}>
-                                RxDB's Premium plugins offer advanced features and performance improvements designed for businesses and professionals.
+                            <p style={{ width: '80%', textAlign: 'center' }}>
+                                RxDB's paid plugins offer advanced features and performance improvements designed for businesses and professionals.
                                 They are ideal for commercial or critical projects, providing <a href="/rx-storage-performance.html" target="_blank">better performance</a>, a smaller build size, flexible storage engines, secure encryption and other features.
                             </p>
                             {/* <p style={{ width: '80%' }}>
@@ -254,374 +74,135 @@ export default function Premium() {
                         </div>
                     </div>
 
-                    <div className="block dark" id="price-calculator-block">
+                    <div className="block dark" id="pricing">
                         <div className="content centered">
-                            <h2>
-                                Price Calculator
-                            </h2>
-                            <div className="price-calculator">
-                                <div className="price-calculator-inner">
-                                    <form id="price-calculator-form">
-                                        {/*
-                                        <div className="field">
-                                            <label htmlFor="home-country">Company Home Country:</label>
-                                            <div className="input">
-                                                <Select
-                                                    id="home-country"
-                                                    style={{ width: '100%' }}
-                                                    popupMatchSelectWidth
-                                                    optionFilterProp="value"
-                                                    showSearch={true}
-                                                    placeholder="Company Home Country"
-                                                    value={homeCountry ? homeCountry : homeCountryInitial}
-                                                    onChange={(value) => {
-                                                        if (value !== homeCountry) {
-                                                            setHomeCountry(value);
-                                                        }
-                                                    }}
-                                                >
-                                                    {
-                                                        AVERAGE_FRONT_END_DEVELOPER_SALARY_BY_COUNTRY
-                                                            .sort((a, b) => a.name >= b.name ? 1 : -1)
-                                                            .map((country, idx) => {
-                                                                return <Select.Option key={idx} value={country.name}>{country.name}</Select.Option>;
-                                                            })
-                                                    }
-                                                </Select>
-                                            </div>
-                                        </div>
-                                        <br />
-                                        <div className="clear"></div>
-                                        <div className="field">
-                                            <label htmlFor="company-size">Company Size:</label>
-                                            <div className="input">
-                                                <input
-                                                    type="number"
-                                                    name="company-size"
-                                                    min={1}
-                                                    max={1000000}
-                                                    required={true}
-                                                    onKeyDown={() => {
-                                                        const ev = ensureNotFalsy(event) as any;
-                                                        return ev.keyCode !== 69 && ev.keyCode !== 189 && ev.keyCode !== 190;
-                                                    }}
-                                                    placeholder="Company Size"
-                                                />
-                                                <div className="suffix">employee(s)</div>
-                                            </div>
-                                        </div>
-                                        */}
-                                        {/* <div className="field">
-                                            <label htmlFor="project-amount">Project Amount:</label>
-                                            <div className="input">
-                                                <select name="project-amount" id="project-amount" required={true}
-                                                    defaultValue={1}
-                                                >
-                                                    <option value={1}>
-                                                        1
-                                                    </option>
-                                                    <option value={2}>2</option>
-                                                    <option value="infinity">Infinity</option>
-                                                </select>
-                                                <div className="suffix">project(s)</div>
-                                            </div>
-                                        </div> */}
-                                        {/* <div className="field">
-                                            <label
-                                                htmlFor="developer-count"
-                                            >Team Size:</label>
-                                            <div className="input">
-                                                <Select
-                                                    id="developer-count"
-                                                    style={{ width: '100%' }}
-                                                    popupMatchSelectWidth
-                                                    optionFilterProp="value"
-                                                    value={formValue?.developers ? formValue?.developers : 1}
-                                                    onChange={(value) => {
-                                                        getFormValueDoc().then(doc => doc.incrementalModify(d => {
-                                                            d.developers = value;
-                                                            return d;
-                                                        }));
-                                                    }}
-                                                >
-                                                    {
-                                                        TEAM_SIZES
-                                                            .map((nr, idx) => {
-                                                                return <Select.Option key={idx} value={nr}>up to {nr} developer{nr === 1 ? '' : 's'}</Select.Option>;
-                                                            })
-                                                    }
-                                                </Select>
-                                                <div className="clear"></div>
-                                                <br />
-                                                <span>&#9432; As a developer, we count everyone who stores the <b>rxdb-premium</b> npm package on their device, not only the ones who directly develop with RxDB.</span>
-                                            </div>
-                                        </div> */}
-                                        <div className="packages">
-                                            <h3>Choose your Packages</h3>
-                                            <div className="package">
-                                                <div className="package-inner">
-                                                    <PackageCheckbox packageName='browser' onToggle={() => togglePackage('browser')} formValue={formValue} />
-                                                    <h4>Browser Package</h4>
-                                                    <ul>
-                                                        <li>
-                                                            <a href="/rx-storage-opfs.html" target="_blank">
-                                                                RxStorage OPFS
-                                                            </a>
-                                                        </li>
-                                                        <li>
-                                                            <a href="/rx-storage-indexeddb.html" target="_blank">
-                                                                RxStorage IndexedDB
-                                                            </a>
-                                                        </li>
-                                                        <li>
-                                                            <a href="/rx-storage-worker.html" target="_blank">
-                                                                RxStorage Worker
-                                                            </a>
-                                                        </li>
-                                                        <li>
-                                                            <a href="/encryption.html" target="_blank">
-                                                                WebCrypto Encryption
-                                                            </a>
-                                                        </li>
-                                                    </ul>
-                                                </div>
-                                            </div>
-                                            <div className="package">
-                                                <div className="package-inner">
-                                                    <PackageCheckbox packageName='native' onToggle={() => togglePackage('native')} formValue={formValue} />
-                                                    <h4>Native Package</h4>
-                                                    <ul>
-                                                        <li>
-                                                            <a href="/rx-storage-sqlite.html" target="_blank">
-                                                                RxStorage SQLite
-                                                            </a>
-                                                        </li>
-                                                        <li>
-                                                            <a
-                                                                href="/rx-storage-filesystem-node.html"
-                                                                target="_blank"
-                                                            >
-                                                                RxStorage Filesystem Node
-                                                            </a>
-                                                        </li>
-                                                        <li>
-                                                            <a
-                                                                href="/rx-storage-filesystem-expo.html"
-                                                                target="_blank"
-                                                            >
-                                                                RxStorage Filesystem Expo
-                                                            </a>
-                                                        </li>
-                                                    </ul>
-                                                </div>
-                                            </div>
-                                            <div className="package">
-                                                <div className="package-inner">
-                                                    <PackageCheckbox packageName='performance' onToggle={() => togglePackage('performance')} formValue={formValue} />
-                                                    <h4>Performance Package</h4>
-                                                    <ul>
-                                                        <li>
-                                                            <a href="/rx-storage-sharding.html" target="_blank">
-                                                                RxStorage Sharding
-                                                            </a>
-                                                        </li>
-                                                        <li>
-                                                            <a href="/rx-storage-memory-mapped.html" target="_blank">
-                                                                RxStorage Memory Mapped
-                                                            </a>
-                                                        </li>
-                                                        <li>
-                                                            <a href="/query-optimizer.html" target="_blank">
-                                                                Query Optimizer
-                                                            </a>
-                                                        </li>
-                                                        <li>
-                                                            <a
-                                                                href="/rx-storage-localstorage-meta-optimizer.html"
-                                                                target="_blank"
-                                                            >
-                                                                RxStorage Localstorage Meta Optimizer
-                                                            </a>
-                                                        </li>
-                                                        <li>
-                                                            <a href="/rx-storage-shared-worker.html" target="_blank">
-                                                                RxStorage Shared Worker
-                                                            </a>
-                                                        </li>
-                                                    </ul>
-                                                </div>
-                                            </div>
-                                            <div className="package">
-                                                <div className="package-inner">
-                                                    <PackageCheckbox packageName='server' onToggle={() => togglePackage('server')} formValue={formValue} />
-                                                    <h4>Server Package</h4>
-                                                    <ul>
-                                                        <li>
-                                                            <a href="/rx-server.html" target="_blank">
-                                                                RxServer Adapter Fastify
-                                                            </a>
-                                                        </li>
-                                                        <li>
-                                                            <a href="/rx-server.html" target="_blank">
-                                                                RxServer Adapter Koa
-                                                            </a>
-                                                        </li>
-                                                    </ul>
-                                                </div>
-                                            </div>
-                                            <div className="package">
-                                                <div className="package-inner">
-                                                    <input
-                                                        name="package-utilities"
-                                                        type="checkbox"
-                                                        className="package-checkbox"
-                                                        defaultChecked={true}
-                                                        disabled={true}
-                                                    />
-                                                    <h4>
-                                                        Utilities Package <b>(always included)</b>
-                                                    </h4>
-                                                    <ul>
-                                                        <li>
-                                                            <a href="/logger.html" target="_blank">
-                                                                Logger
-                                                            </a>
-                                                        </li>
-                                                        <li>
-                                                            <a href="/fulltext-search.html" target="_blank">
-                                                                Fulltext Search
-                                                            </a>
-                                                        </li>
-                                                    </ul>
-                                                </div>
-                                            </div>
-                                            <div className="clear" />
-                                            {/* <h3>Other Options:</h3> */}
-                                            {/* <div className="package bg-gradient-left-top">
-                                                <div className="package-inner">
-                                                    <input
-                                                        name="package-sourcecode"
-                                                        type="checkbox"
-                                                        className="package-checkbox"
-                                                    />
-                                                    <h4>Source Code access</h4>
-                                                    <p>
-                                                        Get read access to the unminified plain source code of all
-                                                        purchased packages.
-                                                        <br />
-                                                    </p>
-                                                </div>
-                                            </div> */}
-                                            {/* <div className="package bg-gradient-left-top">
-                                                <div className="package-inner">
-                                                    <input
-                                                        name="package-perpetual"
-                                                        type="checkbox"
-                                                        className="package-checkbox"
-                                                    />
-                                                    <h4>Perpetual license</h4>
-                                                    <p>
-                                                        With the perpetual license option, you can still use the
-                                                        plugins even after the license is expired. But you will no
-                                                        longer get any updates from newer RxDB versions.
-                                                        <br />
-                                                    </p>
-                                                </div>
-                                            </div> */}
-                                            {/* <div className="package bg-gradient-left-top">
-                                                <div className="package-inner">
-                                                    <h4>Increase license period</h4>
-                                                    <p>
-                                                        The default license period is one year. We can do a longer
-                                                        license period to safe time on both sides by not having to
-                                                        go through the licensing process each single year. By
-                                                        choosing a license period of 2 years, you get a 10%
-                                                        discount. With a 3 year license the discount is 20%.
-                                                        <br />
-                                                    </p>
-                                                    <div className="field">
-                                                        <div
-                                                            className="input"
-                                                            style={{ float: 'left', width: '100%' }}
-                                                        >
-                                                            <div className="prefix">License period </div>
-                                                            <select
-                                                                name="license-period"
-                                                                id="license-period"
-                                                                required={true}
-                                                                defaultValue={1}
-                                                            >
-                                                                <option value={1}>
-                                                                    1
-                                                                </option>
-                                                                <option value={2}>2 (10% discount)</option>
-                                                                <option value={3}>3 (20% discount)</option>
-                                                            </select>
-                                                            <div className="suffix">year(s)</div>
-                                                        </div>
-                                                        <div className="clear" />
-                                                    </div>
-                                                    <p />
-                                                </div>
-                                            </div> */}
-                                            <div className="clear" />
-                                        </div>
-                                        {/* <div
-                                            className="button"
-                                            id="price-calculator-submit"
-                                            style={{
-                                            }}
-                                            onClick={() => recalculatePrice(true)}
-                                        >
-                                            Calculate Price
-                                        </div> */}
-                                    </form>
+                            <h2 style={{ textAlign: 'center' }}>Four tiers. <b>Annual licenses.</b></h2>
+                            <p style={{ width: '80%', textAlign: 'center' }}>Free is the open-source core. Pro and Pro Plus add commercial plugins for production workloads. Enterprise adds the contract terms larger companies need.</p>
+                            <div className="pricing-tiers">
+                                {/* FREE TIER */}
+                                <div className="pricing-tier">
+                                    <div className="tier-top" style={{ minHeight: 220, display: 'flex', flexDirection: 'column' }}>
+                                        <span className="tier-note">// no signup, no key</span>
+                                        <h3>Free</h3>
+                                        <p className="tier-desc">Open-source core. Get started for free.</p>
+                                        <span className="tier-price-prefix">&nbsp;</span>
+                                        <div className="tier-price">€0<span>/ forever</span></div>
+                                        <div className="tier-license">Open Source license</div>
+                                    </div>
+
+                                    <div className="tier-includes-title">INCLUDES</div>
+                                    <ul className="tier-features">
+                                        <li>RxDB core (schemas, queries, hooks)</li>
+                                        <li>Replication & realtime sync</li>
+                                        <li>Default RxStorage (Dexie, Memory, LokiJS)</li>
+                                        <li>Schema validation & migration</li>
+                                        <li>Community support on GitHub & Discord</li>
+                                        <li className="strikethrough">Premium storages (OPFS, SQLite, Filesystem)</li>
+                                        <li className="strikethrough">Performance plugins (Sharding, Memory Mapped)</li>
+                                    </ul>
+
+                                    <Button href="/quickstart.html" style={{ width: '100%', marginBottom: 15 }} icon={<IconChevronsRight />}>Get started</Button>
+                                    <div style={{ minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+                                        <a href="https://github.com/pubkey/rxdb/blob/master/LICENSE.txt" className="tier-agreement" target="_blank">Apache 2.0 License</a>
+                                    </div>
                                 </div>
-                            </div>
-                            <div className="price-calculator" id="price-calculator-result" style={{ marginBottom: 90, display: 'none' }}>
-                                <div className="price-calculator-inner">
-                                    <h4>Calculated Price:</h4>
-                                    <div className="inner">
-                                        <span className="price-label">&euro;</span>
-                                        <span id="total-per-project-per-month">XX</span>
-                                        <span className="per-month">/month</span>
-                                        <span className='clear'></span>
+
+                                {/* PRO TIER */}
+                                <div className="pricing-tier pro-tier">
+                                    <div className="tier-top" style={{ minHeight: 220, display: 'flex', flexDirection: 'column' }}>
+                                        <span className="tier-note">// most teams start here</span>
+                                        <div className="badge-recommended">RECOMMENDED</div>
+                                        <h3>Pro</h3>
+                                        <p className="tier-desc">Production-grade storage engines.</p>
+                                        <span className="tier-price-prefix">From</span>
+                                        <div className="tier-price">€1,300<span>/ year</span></div>
+                                        <div className="tier-license">unlimited developers</div>
                                     </div>
-                                    <div className="inner">
-                                        (billed yearly: <span id="total-per-project-per-year"></span> &euro;)
+
+                                    <div className="tier-includes-title">INCLUDES</div>
+                                    <ul className="tier-features">
+                                        <li>Everything in Free</li>
+                                        <li>RxStorage OPFS - newest browser storage</li>
+                                        <li>RxStorage IndexedDB - most reliable browser storage</li>
+                                        <li>RxStorage SQLite - Electron, React-Native, Capacitor</li>
+                                        <li>RxStorage Filesystem (Node + Expo)</li>
+                                        <li>WebCrypto Encryption</li>
+                                        <li>Fulltext Search</li>
+                                    </ul>
+
+                                    <Button primary href="https://buy.stripe.com/eVq00k3fx1TbaIV0c1bbG05" target="_blank" style={{ width: '100%', marginBottom: 15 }} icon={<IconChevronsRight />}>Buy Pro</Button>
+                                    <div style={{ minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+                                        <a href="/license-preview/" className="tier-agreement" target="_blank">Preview License Agreement</a>
                                     </div>
-                                    <br />
-                                    <div className='clear'></div>
-                                    <Button
-                                        primary
-                                        style={{
-                                            width: '100%'
-                                        }}
-                                        onClick={handleOpenDialog}
-                                    >Buy Now »</Button>
-                                    <div style={{
-                                        fontSize: '70%',
-                                        textAlign: 'center',
-                                        marginTop: 16
-                                    }}>If you have any questions, see the FAQ below or fill out the <b
-                                        style={{
-                                            color: 'white',
-                                            textDecoration: 'underline',
-                                            cursor: 'pointer'
-                                        }}
-                                        onClick={handleOpenDialog}
-                                    >Buy-Now Form</b> to get in contact.</div>
-                                    {/* <div className="button" onClick={handleOpenDialog}>Ask questions</div> */}
-                                    <div className='clear'></div>
+                                </div>
+
+                                {/* PRO PLUS TIER */}
+                                <div className="pricing-tier">
+                                    <div className="tier-top" style={{ minHeight: 220, display: 'flex', flexDirection: 'column' }}>
+                                        <span className="tier-note">// for high-throughput apps</span>
+                                        <h3>Pro Plus</h3>
+                                        <p className="tier-desc">Performance plugins & server adapters.</p>
+                                        <span className="tier-price-prefix">From</span>
+                                        <div className="tier-price">€2,000<span>/ year</span></div>
+                                        <div className="tier-license">unlimited developers</div>
+                                    </div>
+
+                                    <div className="tier-includes-title">INCLUDES</div>
+                                    <ul className="tier-features">
+                                        <li>Everything in Pro</li>
+                                        <li>RxStorage Worker - main-thread offload</li>
+                                        <li>RxStorage Shared Worker</li>
+                                        <li>RxStorage Sharding</li>
+                                        <li>RxStorage Memory-Mapped</li>
+                                        <li>Localstorage Meta Optimizer</li>
+                                        <li>Query Optimizer</li>
+                                        <li>RxServer adapters: Fastify, Koa</li>
+                                        <li>Logger plugin (Compatible with Sentry)</li>
+                                    </ul>
+
+                                    <Button href="https://buy.stripe.com/3cIcN6aHZcxP6sF5wlbbG06" target="_blank" style={{ width: '100%', marginBottom: 15 }} icon={<IconChevronsRight />}>Buy Pro Plus</Button>
+                                    <div style={{ minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+                                        <a href="/license-preview/" className="tier-agreement" target="_blank">Preview License Agreement</a>
+                                    </div>
+                                </div>
+
+                                {/* ENTERPRISE TIER */}
+                                <div className="pricing-tier">
+                                    <div className="tier-top" style={{ minHeight: 220, display: 'flex', flexDirection: 'column' }}>
+                                        <span className="tier-note">// custom agreements & SLA</span>
+                                        <h3>Enterprise</h3>
+                                        <p className="tier-desc">SLA, custom commercial terms.</p>
+                                        <span className="tier-price-prefix">&nbsp;</span>
+                                        <div className="tier-price">Custom</div>
+                                        <div className="tier-license">get in contact</div>
+                                    </div>
+
+                                    <div className="tier-includes-title">INCLUDES</div>
+                                    <ul className="tier-features">
+                                        <li>Everything in Pro Plus</li>
+                                        <li>Custom commercial license & MSA</li>
+                                        <li>Named engineer</li>
+                                        <li>Support SLA, 24-hour first response</li>
+                                        <li>Architecture review & onboarding</li>
+                                        <li>Priority bug fixes & feature requests</li>
+                                        <li>Source Code Access</li>
+                                        <li>Volume seats & multi-product licensing</li>
+                                    </ul>
+
+                                    <Button onClick={(e) => {
+                                        e.preventDefault(); handleOpenConsultingDialog();
+                                    }} style={{ width: '100%', marginBottom: 15 }} icon={<IconChevronsRight />}>Contact</Button>
+                                    <div style={{ minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+                                        <span className="tier-agreement" style={{ visibility: 'hidden' }}>Preview License Agreement</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-
                     <div className="block" id="faq">
                         <div className="content centered premium-faq">
                             <h2>
-                                F.A.Q. <b>(click to toggle)</b>
+                                F.A.Q.
                             </h2>
                             {
                                 /**
@@ -632,17 +213,9 @@ export default function Premium() {
                             <details>
                                 <summary>What is the process for making a purchase?</summary>
                                 <ul>
-                                    <li>Fill out the <b
-                                        style={{
-                                            color: 'white',
-                                            textDecoration: 'underline',
-                                            cursor: 'pointer'
-                                        }}
-                                        onClick={handleOpenDialog}
-                                    >Buy now form</b>.</li>
-                                    <li>You will get a license agreement that you can sign online.</li>
-                                    <li>You will get an invoice via stripe.com.</li>
-                                    <li>After payment you get the access token that you can use to add the Premium plugins to your project with <a href="https://www.npmjs.com/package/rxdb-premium" target="_blank">these instructions</a>.</li>
+                                    <li>Pay on Stripe by clicking one of the purchase buttons above.</li>
+                                    <li>You will be sent a license agreement to sign online.</li>
+                                    <li>Once signed, you will receive an access token to add the Premium plugins to your project following <a href="https://www.npmjs.com/package/rxdb-premium" target="_blank">these instructions</a>.</li>
                                 </ul>
                             </details>
 
@@ -760,50 +333,22 @@ export default function Premium() {
                             </details>
                             <details>
                                 <summary>
-                                    Can I add more Premium Packages later if I've already purchased some?
+                                    Can I upgrade to a higher tier later?
                                 </summary>
-                                Yes! You can upgrade or add additional Premium Packages at any time.
-                                When you decide to purchase more, we'll calculate a fair upgrade price,
-                                meaning you only pay the difference between your existing purchase and the new package total.
+                                Yes! You can upgrade to a higher tier at any time.
+                                When you decide to upgrade, we'll calculate a fair upgrade price,
+                                meaning you only pay the difference between your existing tier and the new tier.
                                 <br />
-                                Your previous payments are fully credited, so you never pay twice for the same plugins.
+                                Your previous payments are fully credited towards the new license.
                             </details>
                             <details>
                                 <summary>Can I get a discount?</summary>
-                                There are multiple ways to get a discount:
-                                <ul>
-                                    <li>
-                                        <h5>Contribute to the RxDB github repository</h5>
-                                        <p>If you have made significant contributions to the RxDB github repository, you can apply for a discount depending on your contribution.</p>
-                                    </li>
-                                    <li>
-                                        <h5>Get 25% off by writing about how you use RxDB</h5>
-                                        <p>
-                                            On your company/project website, publish an article/blogpost about how you use RxDB in your project.
-                                            Include how your setup looks like,
-                                            how you use RxDB in that setup and what problems you had and how did you overcome them.
-                                            You also need to link to the RxDB website or documentation pages.
-                                        </p>
-                                    </li>
-                                    <li>
-                                        <h5>Be active in the RxDB community</h5>
-                                        <p>If you are active in the RxDB community and discord channel by helping others out or creating educational content like videos and tutorials, feel free to apply for a discount.</p>
-                                    </li>
-                                    <li>
-                                        <h5>Solve one of the free-premium-tasks</h5>
-                                        <p>
-                                            For private personal projects there is the
-                                            option to solve one of the
-                                            {' '}<a
-                                                href="https://github.com/pubkey/rxdb/blob/master/orga/premium-tasks.md"
-                                                target="_blank"
-                                            >
-                                                Premium Tasks
-                                            </a>{' '}
-                                            to get a free 2 years access to the Premium Plugins.
-                                        </p>
-                                    </li>
-                                </ul>
+                                We only offer discounts to developers who publicly speak about RxDB or are technical influencers.
+                                If you give talks at conferences, create educational content for a large audience, or can otherwise help spread the word about RxDB, please reach out to discuss a potential discount.
+                            </details>
+                            <details>
+                                <summary>Why do I have to pay taxes?</summary>
+                                Taxation depends on your country and entity type. We recommend that you add a correct address and, importantly, your Tax ID when ordering on the Stripe page.
                             </details>
                         </div>
                     </div>
@@ -844,7 +389,7 @@ export default function Premium() {
                                         <div className="premium-block-inner">
                                             <h4>RxStorage IndexedDB</h4>
                                             <p>
-                                                A storage for browsers based on <b>IndexedDB</b>. Has the best latency on writes and smallest build size.
+                                                A storage for browsers based on <b>IndexedDB</b>. It is the most reliable browser storage and has the smallest build size.
                                             </p>
                                         </div>
                                     </div>
@@ -1014,7 +559,7 @@ export default function Premium() {
                             </div>
                         </div>
                     </div>
-                    <BuyFormDialog open={open} onClose={handleClose} />
+                    <ConsultingFormDialog open={openConsulting} onClose={handleCloseConsulting} />
                 </main>
             </Layout >
         </>
@@ -1025,12 +570,11 @@ export default function Premium() {
 // }
 
 
-// components
-function BuyFormDialog({ onClose, open }) {
+function ConsultingFormDialog({ onClose, open }) {
     return <IframeFormModal
         onClose={onClose}
         open={open}
-        iframeUrl='https://webforms.pipedrive.com/f/ccHQ5wi8dHxdFgcxEnRfXaXv2uTGnLNwP4tPAGO3hgSFan8xa5j7Kr3LH5OXzWQo2T'
-        eventId='buy_form'
+        iframeUrl='https://webforms.pipedrive.com/f/6UUQvwSg3cy0wizvNdC3pmT378WEHYcwv6tdTlPNRl2HtVm0JjBbj5MQjqVj7ePW3F'
+        eventId='consulting_form'
     />;
 }

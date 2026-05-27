@@ -2,6 +2,7 @@
 title: RxDB as an InstantDB Alternative with Custom Backends
 slug: instantdb-alternative.html
 description: Compare RxDB and InstantDB for local-first apps. Bring your own backend, run open source, use Mango queries, and get full offline storage with conflict handling.
+image: /headers/instantdb-alternative.jpg
 ---
 
 # RxDB as an InstantDB Alternative with Custom Backends

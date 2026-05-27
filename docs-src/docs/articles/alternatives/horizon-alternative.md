@@ -2,6 +2,7 @@
 title: RxDB as a Horizon Alternative - Offline-First, Client-Side Reactive Database
 slug: alternatives/horizon-alternative.html
 description: Compare RxDB and Horizon (RethinkDB's client library) for realtime JavaScript applications. Learn why RxDB is a strong alternative with true offline-first support, client-side reactive queries, flexible backends, and active long-term maintenance.
+image: /headers/alternatives/horizon-alternative.jpg
 ---
 
 # RxDB as a Horizon Alternative
@@ -226,7 +227,9 @@ const replicationState = await replicateRxCollection({
     pull: {
         handler: async (checkpoint, batchSize) => {
             const since = checkpoint?.updatedAt ?? 0;
-            const response = await fetch(`/api/messages?since=${since}&limit=${batchSize}`);
+            const response = await fetch(
+                `/api/messages?since=${since}&limit=${batchSize}`
+            );
             const data = await response.json();
             return {
                 documents: data.documents,
@@ -389,7 +392,9 @@ Horizon sent data between the browser and RethinkDB in plaintext (over WebSocket
 RxDB includes a built-in [encryption plugin](../../encryption.md) that encrypts individual document fields before writing them to local storage. The data is decrypted on read, so the application sees plaintext, but the underlying storage contains only ciphertext:
 
 ```typescript
-import { wrappedKeyEncryptionCryptoJsStorage } from 'rxdb/plugins/encryption-crypto-js';
+import {
+    wrappedKeyEncryptionCryptoJsStorage
+} from 'rxdb/plugins/encryption-crypto-js';
 import { getRxStorageIndexedDB } from 'rxdb/plugins/storage-indexeddb';
 
 const db = await createRxDatabase({

@@ -5,7 +5,6 @@ on:
   pull_request:
     paths:
     - 'dist/**'
-    - 'docs/**'
 
 jobs:
   warn-user:
@@ -13,4 +12,4 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: Warn User to not commit generated files
-        run: bash -c 'echo "You have commited generated files (from the dist or docs folder), this is not allowed. You can only commit files that you have manually edited" && exit 1'
+        run: bash -c 'echo "You have commited generated files (from the dist folder), this is not allowed. You can only commit files that you have manually edited" && exit 1'
