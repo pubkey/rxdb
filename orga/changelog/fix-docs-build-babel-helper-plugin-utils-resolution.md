@@ -1,1 +1,1 @@
-- FIX docs build dependency resolution by overriding `@babel/helper-plugin-utils` to a broadly available 7.x range
+- FIX CI install stability by overriding Babel helper packages (`@babel/helper-plugin-utils`, `@babel/helper-validator-option`, `@babel/helper-create-class-features-plugin`) to broadly available 7.x ranges

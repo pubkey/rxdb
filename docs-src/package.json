@@ -57,6 +57,8 @@
   },
   "overrides": {
     "webpackbar": "7.0.0",
-    "@babel/helper-plugin-utils": "^7.27.1"
+    "@babel/helper-plugin-utils": "^7.27.1",
+    "@babel/helper-validator-option": "^7.27.1",
+    "@babel/helper-create-class-features-plugin": "^7.27.1"
   }
 }
