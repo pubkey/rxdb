@@ -381,6 +381,11 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-npm-root-v1-
 
+      - name: Reset npm cache
+        run: |
+          npm cache clean --force
+          rm -rf ~/.npm/_cacache
+
       - name: prepare RxDB core
         run: |
           npm install --legacy-peer-deps
@@ -431,6 +436,11 @@ jobs:
           key: ${{ runner.os }}-npm-root-v1-${{ hashFiles('**/package.json', '**/.npmrc') }}
           restore-keys: |
             ${{ runner.os }}-npm-root-v1-
+
+      - name: Reset npm cache
+        run: |
+          npm cache clean --force
+          rm -rf ~/.npm/_cacache
 
       - name: prepare RxDB core
         run: |
