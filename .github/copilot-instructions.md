@@ -30,6 +30,10 @@ npm run build
 npm run test:fast:memory
 ```
 
+## Changelog Rule
+- Whenever you add a testcase or implement a FIX, add a changelog entry file under `orga/changelog/`.
+- Prefer including a link to the root issue or pull request in that changelog line.
+
 ## Not Allowed Edits
 - Do not edit anything in the `/docs` folder. It is generated. Edit `/docs-src` instead.
 - Do not edit anything in `plugins/`.

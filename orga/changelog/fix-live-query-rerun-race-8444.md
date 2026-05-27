@@ -1,0 +1,1 @@
+- FIX live-query subscriptions being delayed under concurrent writes, by using a fixed `promiseWait(20)` in the `_execOverDatabase()` rerun path instead of increasing the wait time with each rerun [#8444](https://github.com/pubkey/rxdb/issues/8444)

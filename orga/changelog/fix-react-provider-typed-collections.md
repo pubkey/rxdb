@@ -1,0 +1,1 @@
+- FIX React `RxDatabaseProvider` TypeScript typings to accept `RxDatabase` instances with concrete typed collection maps that do not use a string index signature

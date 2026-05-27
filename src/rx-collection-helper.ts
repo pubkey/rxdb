@@ -33,11 +33,12 @@ import { newRxError } from './rx-error.ts';
  */
 export function fillObjectDataBeforeInsert<RxDocType>(
     schema: RxSchema<RxDocType>,
-    data: Partial<RxDocumentData<RxDocType>> | any
+    data: Partial<RxDocumentData<RxDocType>> | any,
+    skipPrimaryKeyFill: boolean = false
 ): RxDocumentData<RxDocType> {
     data = flatClone(data);
     data = fillObjectWithDefaults(schema, data);
-    if (typeof schema.jsonSchema.primaryKey !== 'string') {
+    if (!skipPrimaryKeyFill && typeof schema.jsonSchema.primaryKey !== 'string') {
         data = fillPrimaryKey(
             schema.primaryPath,
             schema.jsonSchema,

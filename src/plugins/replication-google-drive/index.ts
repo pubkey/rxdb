@@ -104,10 +104,15 @@ export async function replicateGoogleDrive<RxDocType>(
     const googleDriveOptionsWithDefaults: GoogleDriveOptionsWithDefaults = Object.assign(
         {
             apiEndpoint: 'https://www.googleapis.com',
-            transactionTimeout: DEFAULT_TRANSACTION_TIMEOUT
+            transactionTimeout: DEFAULT_TRANSACTION_TIMEOUT,
+            space: 'drive',
+            folderPath: ''
         },
         options.googleDrive
     );
+    if (typeof googleDriveOptionsWithDefaults.folderPath !== 'string') {
+        googleDriveOptionsWithDefaults.folderPath = '';
+    }
     const driveStructure = await initDriveStructure(googleDriveOptionsWithDefaults);
 
     /**

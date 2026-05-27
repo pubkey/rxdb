@@ -5,7 +5,7 @@ import { Provider } from './database-context.ts';
 import { newRxError } from '../../rx-error.ts';
 
 export type RxDatabaseProviderProps = {
-    database: RxDatabase;
+    database: RxDatabase<any, any, any, any>;
     children: React.ReactNode;
 };
 

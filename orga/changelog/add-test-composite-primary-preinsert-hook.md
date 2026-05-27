@@ -1,0 +1,1 @@
+- TEST add reproduction for composite primary key auto-fill when only `name` and `number` are set in a `preInsert` hook without `id` (https://github.com/pubkey/rxdb/pull/8527)

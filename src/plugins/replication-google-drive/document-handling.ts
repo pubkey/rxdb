@@ -3,7 +3,7 @@ import { stripAttachmentsDataFromDocument } from '../../rx-storage-helper.ts';
 import { ById } from '../../types/util';
 import { ensureNotFalsy } from '../utils/index.ts';
 import { blobToBase64String, createBlobFromBase64 } from '../utils/index.ts';
-import { insertMultipartFile } from './google-drive-helper.ts';
+import { applyDriveSpace, insertMultipartFile } from './google-drive-helper.ts';
 import type {
     DriveFileListResponse,
     GoogleDriveOptionsWithDefaults
@@ -36,6 +36,7 @@ export async function getDocumentFiles(
         includeItemsFromAllDrives: "true",
         supportsAllDrives: "true",
     });
+    applyDriveSpace(googleDriveOptions, params);
     const url = googleDriveOptions.apiEndpoint + '/drive/v3/files?' + params.toString();
     const res = await fetch(url, {
         method: "GET",

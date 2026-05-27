@@ -1,0 +1,6 @@
+- FIX Use the lighter background color `var(--bg-color)` for pricing tiers on the premium page.
+- FIX Add `IconChevronsRight` component and use it as the icon for all pricing tier buttons on the premium page.
+- FIX Keep `IconArrowUpRight` component for future use.
+- FIX Update `.pricing-tier` styling in `custom.css` to use `width: 90%` on screens smaller than 768px.
+- FIX Position `tier-note` elements at the very top of each tier header block.
+- FIX Add a tablet media query to limit `.pricing-tiers` max-width to `560px` for screen sizes between 769px and 1120px to enforce a balanced 2-2 layout.

@@ -23,6 +23,7 @@ import {
     GoogleDriveOptionsWithDefaults
 } from './google-drive-types.ts';
 import {
+    applyDriveSpace,
     deleteFile,
     insertMultipartFile,
     readJsonFileContent
@@ -277,6 +278,7 @@ export async function readMessages(
      */
     params.set('orderBy', 'createdTime desc');
     params.set('pageSize', '1000');
+    applyDriveSpace(googleDriveOptions, params);
 
     const listUrl =
         googleDriveOptions.apiEndpoint +
@@ -368,6 +370,7 @@ export async function cleanupOldSignalingMessages(
     params.set('fields', fields);
     params.set('orderBy', 'createdTime asc');
     params.set('pageSize', '1000');
+    applyDriveSpace(googleDriveOptions, params);
 
     const url =
         googleDriveOptions.apiEndpoint +

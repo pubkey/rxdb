@@ -3719,7 +3719,7 @@ pre[data-theme] span[style*="--shiki-token-keyword"] {
 }
 
 .pricing-tier {
-    background: #181924;
+    background: var(--bg-color);
     border: 1px solid #2a2d3d;
     border-radius: 8px;
     padding: 30px 20px;
@@ -3736,7 +3736,7 @@ pre[data-theme] span[style*="--shiki-token-keyword"] {
     font-weight: 700;
     letter-spacing: 1px;
     color: var(--ifm-color-primary);
-    margin-bottom: 20px;
+    margin-bottom: 10px;
     text-transform: uppercase;
 }
 
@@ -3746,8 +3746,8 @@ pre[data-theme] span[style*="--shiki-token-keyword"] {
 
 .pricing-tier .badge-recommended {
     position: absolute;
-    top: 25px;
-    right: 20px;
+    top: -12px;
+    right: 10px;
     background: var(--ifm-color-primary);
     color: white;
     font-size: 10px;
@@ -3763,7 +3763,7 @@ pre[data-theme] span[style*="--shiki-token-keyword"] {
     line-height: 1.5;
     margin-bottom: 20px;
     flex-grow: 0;
-    min-height: 80px;
+    min-height: 46px;
 }
 
 .pricing-tier .tier-price-prefix {
@@ -3871,4 +3871,24 @@ pre[data-theme] span[style*="--shiki-token-keyword"] {
 .pricing-tier .tier-note {
     font-size: 12px;
     color: #6b7280;
+    margin-top: 0px;
+    margin-bottom: 10px;
+}
+
+@media (max-width: 768px) {
+    .pricing-tier {
+        width: 90%;
+    }
+}
+
+@media (max-width: 1150px) and (min-width: 769px) {
+    .pricing-tiers {
+        max-width: 620px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .pricing-tier {
+        width: 300px;
+    }
 }

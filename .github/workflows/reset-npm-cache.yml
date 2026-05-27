@@ -1,0 +1,60 @@
+name: Reset npm cache
+
+on:
+  workflow_dispatch:
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  reset-npm-cache:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Delete npm cache entries used by CI
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const cacheKeyNeedle = 'npm-root-v1-';
+
+            let page = 1;
+            const perPage = 100;
+            let deletedCount = 0;
+            let scannedCount = 0;
+
+            while (true) {
+              const { data } = await github.rest.actions.getActionsCacheList({
+                owner,
+                repo,
+                page,
+                per_page: perPage
+              });
+
+              const caches = data.actions_caches || [];
+              if (caches.length === 0) {
+                break;
+              }
+
+              for (const cache of caches) {
+                scannedCount++;
+                if (!cache.key.includes(cacheKeyNeedle)) {
+                  continue;
+                }
+
+                await github.rest.actions.deleteActionsCacheById({
+                  owner,
+                  repo,
+                  cache_id: cache.id
+                });
+                deletedCount++;
+              }
+
+              if (caches.length < perPage) {
+                break;
+              }
+              page++;
+            }
+
+            core.notice(`Scanned ${scannedCount} caches and deleted ${deletedCount} npm cache entries.`);

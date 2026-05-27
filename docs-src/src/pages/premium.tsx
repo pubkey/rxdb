@@ -7,6 +7,7 @@ import useIsBrowser from '@docusaurus/useIsBrowser';
 import { triggerTrackingEvent } from '../components/trigger-event';
 import { IframeFormModal } from '../components/modal';
 import { Button } from '../components/button';
+import { IconChevronsRight } from '../components/icons/chevrons-right';
 
 
 
@@ -59,7 +60,7 @@ export default function Premium() {
                             </h2>
 
                             <p style={{ width: '80%', textAlign: 'center' }}>
-                                RxDB's payd plugins offer advanced features and performance improvements designed for businesses and professionals.
+                                RxDB's paid plugins offer advanced features and performance improvements designed for businesses and professionals.
                                 They are ideal for commercial or critical projects, providing <a href="/rx-storage-performance.html" target="_blank">better performance</a>, a smaller build size, flexible storage engines, secure encryption and other features.
                             </p>
                             {/* <p style={{ width: '80%' }}>
@@ -75,14 +76,15 @@ export default function Premium() {
 
                     <div className="block dark" id="pricing">
                         <div className="content centered">
-                            <h2>Four tiers. <b>Annual licenses.</b></h2>
+                            <h2 style={{ textAlign: 'center' }}>Four tiers. <b>Annual licenses.</b></h2>
                             <p style={{ width: '80%', textAlign: 'center' }}>Free is the open-source core. Pro and Pro Plus add commercial plugins for production workloads. Enterprise adds the contract terms larger companies need.</p>
                             <div className="pricing-tiers">
                                 {/* FREE TIER */}
                                 <div className="pricing-tier">
                                     <div className="tier-top" style={{ minHeight: 220, display: 'flex', flexDirection: 'column' }}>
+                                        <span className="tier-note">// no signup, no key</span>
                                         <h3>Free</h3>
-                                        <p className="tier-desc">Open-source core. Everything you need to ship a side project or evaluate RxDB.</p>
+                                        <p className="tier-desc">Open-source core. Get started for free.</p>
                                         <span className="tier-price-prefix">&nbsp;</span>
                                         <div className="tier-price">€0<span>/ forever</span></div>
                                         <div className="tier-license">Open Source license</div>
@@ -99,22 +101,22 @@ export default function Premium() {
                                         <li className="strikethrough">Performance plugins (Sharding, Memory Mapped)</li>
                                     </ul>
 
-                                    <Button href="/quickstart.html" style={{ width: '100%', marginBottom: 15 }} icon={<span>&#8594;</span>}>Read the docs</Button>
-                                    <div style={{ minHeight: 60, display: 'flex', flexDirection: 'column' }}>
+                                    <Button href="/quickstart.html" style={{ width: '100%', marginBottom: 15 }} icon={<IconChevronsRight />}>Get started</Button>
+                                    <div style={{ minHeight: 0, display: 'flex', flexDirection: 'column' }}>
                                         <a href="https://github.com/pubkey/rxdb/blob/master/LICENSE.txt" className="tier-agreement" target="_blank">Apache 2.0 License</a>
-                                        <span className="tier-note">// no signup, no key</span>
                                     </div>
                                 </div>
 
                                 {/* PRO TIER */}
                                 <div className="pricing-tier pro-tier">
                                     <div className="tier-top" style={{ minHeight: 220, display: 'flex', flexDirection: 'column' }}>
+                                        <span className="tier-note">// most teams start here</span>
                                         <div className="badge-recommended">RECOMMENDED</div>
                                         <h3>Pro</h3>
-                                        <p className="tier-desc">Production-grade storage engines for browser & native. The pragmatic upgrade.</p>
+                                        <p className="tier-desc">Production-grade storage engines.</p>
                                         <span className="tier-price-prefix">From</span>
                                         <div className="tier-price">€1,300<span>/ year</span></div>
-                                        <div className="tier-license">annual, flat fee</div>
+                                        <div className="tier-license">unlimited developers</div>
                                     </div>
 
                                     <div className="tier-includes-title">INCLUDES</div>
@@ -128,21 +130,21 @@ export default function Premium() {
                                         <li>Fulltext Search</li>
                                     </ul>
 
-                                    <Button primary href="https://buy.stripe.com/eVq00k3fx1TbaIV0c1bbG05" target="_blank" style={{ width: '100%', marginBottom: 15 }} icon={<span>&#8594;</span>}>Buy Pro</Button>
-                                    <div style={{ minHeight: 60, display: 'flex', flexDirection: 'column' }}>
+                                    <Button primary href="https://buy.stripe.com/eVq00k3fx1TbaIV0c1bbG05" target="_blank" style={{ width: '100%', marginBottom: 15 }} icon={<IconChevronsRight />}>Buy Pro</Button>
+                                    <div style={{ minHeight: 0, display: 'flex', flexDirection: 'column' }}>
                                         <a href="/license-preview/" className="tier-agreement" target="_blank">Preview License Agreement</a>
-                                        <span className="tier-note">// most teams start here</span>
                                     </div>
                                 </div>
 
                                 {/* PRO PLUS TIER */}
                                 <div className="pricing-tier">
                                     <div className="tier-top" style={{ minHeight: 220, display: 'flex', flexDirection: 'column' }}>
+                                        <span className="tier-note">// for high-throughput apps</span>
                                         <h3>Pro Plus</h3>
-                                        <p className="tier-desc">Squeeze more out of every device - performance plugins & server adapters.</p>
+                                        <p className="tier-desc">Performance plugins & server adapters.</p>
                                         <span className="tier-price-prefix">From</span>
                                         <div className="tier-price">€2,000<span>/ year</span></div>
-                                        <div className="tier-license">annual, flat fee</div>
+                                        <div className="tier-license">unlimited developers</div>
                                     </div>
 
                                     <div className="tier-includes-title">INCLUDES</div>
@@ -158,21 +160,21 @@ export default function Premium() {
                                         <li>Logger plugin (Compatible with Sentry)</li>
                                     </ul>
 
-                                    <Button href="https://buy.stripe.com/3cIcN6aHZcxP6sF5wlbbG06" target="_blank" style={{ width: '100%', marginBottom: 15 }} icon={<span>&#8594;</span>}>Buy Pro Plus</Button>
-                                    <div style={{ minHeight: 60, display: 'flex', flexDirection: 'column' }}>
+                                    <Button href="https://buy.stripe.com/3cIcN6aHZcxP6sF5wlbbG06" target="_blank" style={{ width: '100%', marginBottom: 15 }} icon={<IconChevronsRight />}>Buy Pro Plus</Button>
+                                    <div style={{ minHeight: 0, display: 'flex', flexDirection: 'column' }}>
                                         <a href="/license-preview/" className="tier-agreement" target="_blank">Preview License Agreement</a>
-                                        <span className="tier-note">// for high-throughput apps</span>
                                     </div>
                                 </div>
 
                                 {/* ENTERPRISE TIER */}
                                 <div className="pricing-tier">
                                     <div className="tier-top" style={{ minHeight: 220, display: 'flex', flexDirection: 'column' }}>
+                                        <span className="tier-note">// custom agreements & SLA</span>
                                         <h3>Enterprise</h3>
-                                        <p className="tier-desc">SLA, dedicated engineers, custom commercial terms.</p>
+                                        <p className="tier-desc">SLA, custom commercial terms.</p>
                                         <span className="tier-price-prefix">&nbsp;</span>
                                         <div className="tier-price">Custom</div>
-                                        <div className="tier-license">talk to us</div>
+                                        <div className="tier-license">get in contact</div>
                                     </div>
 
                                     <div className="tier-includes-title">INCLUDES</div>
@@ -189,10 +191,9 @@ export default function Premium() {
 
                                     <Button onClick={(e) => {
                                         e.preventDefault(); handleOpenConsultingDialog();
-                                    }} style={{ width: '100%', marginBottom: 15 }} icon={<span>&#8594;</span>}>Request Quote</Button>
-                                    <div style={{ minHeight: 60, display: 'flex', flexDirection: 'column' }}>
+                                    }} style={{ width: '100%', marginBottom: 15 }} icon={<IconChevronsRight />}>Contact</Button>
+                                    <div style={{ minHeight: 0, display: 'flex', flexDirection: 'column' }}>
                                         <span className="tier-agreement" style={{ visibility: 'hidden' }}>Preview License Agreement</span>
-                                        <span className="tier-note">// custom agreements & SLA</span>
                                     </div>
                                 </div>
                             </div>

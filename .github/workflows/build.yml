@@ -7,6 +7,13 @@ on:
   release:
     types: [published]
 
+env:
+  NPM_CONFIG_FETCH_RETRIES: 3
+  NPM_CONFIG_FETCH_RETRY_FACTOR: 2
+  NPM_CONFIG_FETCH_RETRY_MINTIMEOUT: 5000
+  NPM_CONFIG_FETCH_RETRY_MAXTIMEOUT: 20000
+  NPM_CONFIG_PREFER_OFFLINE: true
+
 permissions:
   contents: write
 
@@ -28,13 +35,13 @@ jobs:
           node-version-file: '.nvmrc'
 
       - name: install npm dependencies
-        run: npm install || (sleep 15 && npm install) || (sleep 15 && npm install)
+        run: npm install
 
       - name: build code
         run: npm run build
 
       - name: install docs dependencies
-        run: (cd docs-src && (npm install || (sleep 15 && npm install) || (sleep 15 && npm install)))
+        run: (cd docs-src && (npm install))
 
       - name: generate headers
         run: npm run generate:headers
