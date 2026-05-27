@@ -111,10 +111,39 @@ const replicationState = await replicateGoogleDrive({
 - **authToken** `string`: The valid access token associated with the user.
 - **folderPath** `string`: The path to the folder in Google Drive where data should be stored.
     - The plugin will ensure this folder exists.
-    - It must **not** be the root folder.
+    - For the default `drive` space it must **not** be the root folder.
+    - For the `appDataFolder` space it is optional and interpreted relative to the appDataFolder root.
     - It creates subfolders `docs` (for data) and `signaling` (for WebRTC).
+- **space** `'drive' | 'appDataFolder'` (optional): Defaults to `'drive'`. See the section below.
 - **apiEndpoint** `string` (optional): Defaults to `https://www.googleapis.com`. Useful for mocking or proxies.
 - **transactionTimeout** `number` (optional): Default `10000` (10s). The plugin uses a `transaction` file in Drive to ensure data integrity during writes. This is the timeout after which a lock is considered stale.
+
+### Using the appDataFolder
+
+By default the plugin stores data in the user visible "My Drive". Set `space: 'appDataFolder'` to store data in Google Drive's hidden, per-application data folder instead. This is useful on Android and other clients where you want app state synced across the user's devices without cluttering their Drive UI.
+
+```ts
+const replicationState = await replicateGoogleDrive({
+    replicationIdentifier: 'my-app-drive-sync',
+    collection: myRxCollection,
+    googleDrive: {
+        oauthClientId: 'YOUR_GOOGLE_CLIENT_ID',
+        authToken: 'USER_ACCESS_TOKEN',
+        space: 'appDataFolder'
+        // folderPath is optional here
+    },
+    live: true,
+    pull: {},
+    push: {}
+});
+```
+
+When using `appDataFolder`:
+
+- Request the `https://www.googleapis.com/auth/drive.appdata` OAuth scope when you authenticate the user. The regular Drive scopes do not grant access to this space.
+- The data is hidden from the user's Drive UI and cannot be browsed manually.
+- The folder is isolated per OAuth client id. A debug build and a release build with different client ids will not see each other's data.
+- `folderPath` is optional. If omitted, the `docs` and `signaling` subfolders are created directly in the appDataFolder root.
 
 ### pull & push
 
