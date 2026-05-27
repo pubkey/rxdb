@@ -623,7 +623,7 @@
     "@types/crypto-js": "4.2.2",
     "@types/mocha": "10.0.10",
     "@types/node": "24.12.4",
-    "@types/react": "19.2.14",
+    "@types/react": "19.2.15",
     "@types/source-map-support": "0.5.10",
     "@typescript-eslint/eslint-plugin": "8.59.3",
     "@typescript-eslint/parser": "8.59.3",
