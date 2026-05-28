@@ -145,6 +145,24 @@ When using `appDataFolder`:
 - The folder is isolated per OAuth client id. A debug build and a release build with different client ids will not see each other's data.
 - `folderPath` is optional. If omitted, the `docs` and `signaling` subfolders are created directly in the appDataFolder root.
 
+### attachments
+
+Controls whether binary [attachment](./rx-attachment.md) data is replicated along with documents.
+
+- **Default**: enabled automatically when the collection schema has `attachments: {}` defined.
+- Set `attachments: false` to disable attachment replication (only document fields are synced).
+
+```ts
+const replicationState = await replicateGoogleDrive({
+    // ...
+    attachments: false, // disable attachment replication
+    pull: {},
+    push: {}
+});
+```
+
+When attachment replication is enabled, attachment binary data is encoded as base64 and stored in a separate `_attachments_data` field inside the document's JSON file on Drive. The standard `_attachments` field only contains metadata stubs (`digest`, `length`, `type`). On pull, the base64 data is decoded back to `Blob` instances and written to local storage.
+
 ### pull & push
 
 Standard RxDB [Replication Options](./replication.md) for batch size, modifiers, etc.

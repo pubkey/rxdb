@@ -24,8 +24,9 @@ export type ReplicationBaseTestSuiteConfig = {
      * Must target a shared server endpoint so that multiple
      * collections can replicate to the same backend.
      * When provided, live replication tests are run.
+     * May return a Promise to support plugins where the replication factory is async.
      */
-    startReplication?(collection: RxCollection<any>): RxReplicationState<any, any>;
+    startReplication?(collection: RxCollection<any>): RxReplicationState<any, any> | Promise<RxReplicationState<any, any>>;
 
     /**
      * Run a one-shot (non-live) sync and wait for completion.
@@ -118,7 +119,7 @@ export function runReplicationBaseTestSuite(config: ReplicationBaseTestSuiteConf
                     await config.cleanUpServer();
                     const collection = await humansCollection.create(2, undefined, false);
 
-                    const replicationState = config.startReplication!(collection);
+                    const replicationState = await Promise.resolve(config.startReplication!(collection));
                     ensureReplicationHasNoErrors(replicationState);
                     await replicationState.awaitInitialReplication();
 
@@ -166,11 +167,11 @@ export function runReplicationBaseTestSuite(config: ReplicationBaseTestSuiteConf
                     const collectionB = await humansCollection.create(0, undefined, false);
                     await collectionB.insert(schemaObjects.humanData('1bbb'));
 
-                    const replicationStateA = config.startReplication!(collectionA);
+                    const replicationStateA = await Promise.resolve(config.startReplication!(collectionA));
                     ensureReplicationHasNoErrors(replicationStateA);
                     await replicationStateA.awaitInitialReplication();
 
-                    const replicationStateB = config.startReplication!(collectionB);
+                    const replicationStateB = await Promise.resolve(config.startReplication!(collectionB));
                     ensureReplicationHasNoErrors(replicationStateB);
                     await replicationStateB.awaitInitialReplication();
 

@@ -952,12 +952,51 @@ describe('replication-google-drive.test.ts', function () {
         });
     });
     /**
-     * Attachment replication tests shared across all replication backends.
+     * Base replication tests shared across all replication backends.
      * Each test gets a fresh server state via the `beforeEach` above, so
      * `cleanUpServer` is a no-op here.
      */
     runReplicationBaseTestSuite({
         cleanUpServer: async () => { /* fresh folder path from beforeEach */ },
+        startReplication: async (collection: RxCollection<any>) => {
+            const replicationState = await replicateGoogleDrive({
+                replicationIdentifier: 'foobar-base-suite',
+                collection,
+                googleDrive: options,
+                live: true,
+                pull: {},
+                push: {},
+            });
+            ensureReplicationHasNoErrors(replicationState as any);
+            return replicationState;
+        },
+        syncOnce: (collection: RxCollection<any>) => syncOnce(collection, options),
+        getAllServerDocs: async () => {
+            const initData = await initDriveStructure(options);
+            const [files, walContent] = await Promise.all([
+                listFilesInFolder(options, initData.docsFolderId),
+                readWalContent<any>(options, initData)
+            ]);
+            const contents = await fetchDocumentContents<any>(options, files.map(f => f.id));
+            const docs: any[] = [...contents.ordered];
+            if (walContent.rows) {
+                const existingIds = new Set(docs.map((d: any) => d[PRIMARY_PATH]));
+                for (const row of walContent.rows) {
+                    const docId = (row.newDocumentState as any)[PRIMARY_PATH];
+                    if (existingIds.has(docId)) {
+                        const idx = docs.findIndex((d: any) => d[PRIMARY_PATH] === docId);
+                        docs[idx] = row.newDocumentState;
+                    } else {
+                        existingIds.add(docId);
+                        docs.push(row.newDocumentState);
+                    }
+                }
+            }
+            return docs;
+        },
+        softDeletes: true,
+        isDeleted: (doc: any) => doc._deleted === true,
+        getPrimaryOfServerDoc: (doc: any) => doc.passportId,
         syncOnceWithAttachments: (collection: RxCollection<any>) => syncOnce(collection, options),
         syncOnceWithAttachmentsDisabled: (collection: RxCollection<any>) => syncOnce(collection, options, {
             attachments: false
