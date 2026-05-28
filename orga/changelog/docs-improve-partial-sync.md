@@ -1,0 +1,1 @@
+- DOCS expand `partial-sync.md` to fully describe what partial sync is, when to use it, how to implement it with multiple `replicateRxCollection` states, per-scope checkpoints, document tagging via `pull.modifier`/`push.modifier`, scope cleanup, real-time pull streams, and tradeoffs.
