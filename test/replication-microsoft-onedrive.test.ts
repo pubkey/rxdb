@@ -43,10 +43,12 @@ import {
     ensureReplicationHasNoErrors,
     humansCollection,
     awaitCollectionsHaveEqualState,
-    isNode
+    isNode,
+    runReplicationBaseTestSuite
 } from '../plugins/test-utils/index.mjs';
 import { RxDBDevModePlugin } from '../plugins/dev-mode/index.mjs';
 import { RxDBLeaderElectionPlugin } from '../plugins/leader-election/index.mjs';
+import { RxDBAttachmentsPlugin } from '../plugins/attachments/index.mjs';
 
 import {
     startServer
@@ -92,6 +94,7 @@ let wrtc: SimplePeerWrtc = 'not loaded' as any;
 describe('replication-microsoft-onedrive.test.ts', function () {
     addRxPlugin(RxDBDevModePlugin);
     addRxPlugin(RxDBLeaderElectionPlugin);
+    addRxPlugin(RxDBAttachmentsPlugin);
     this.timeout(200 * 1000);
     let server: any;
     let serverUrl: string;
@@ -102,7 +105,7 @@ describe('replication-microsoft-onedrive.test.ts', function () {
     async function syncOnce(
         collection: RxCollection<any, any, any, any>,
         oneDrive: OneDriveState,
-        syncOptions?: Pick<SyncOptionsOneDrive<any>, 'pull' | 'push'>
+        syncOptions?: Pick<SyncOptionsOneDrive<any>, 'pull' | 'push' | 'attachments'>
     ) {
         const replicationState = await replicateMicrosoftOneDrive({
             replicationIdentifier: 'foobar',
@@ -111,6 +114,7 @@ describe('replication-microsoft-onedrive.test.ts', function () {
             live: false,
             pull: syncOptions?.pull ?? {},
             push: syncOptions?.push ?? {},
+            attachments: syncOptions?.attachments,
         });
         ensureReplicationHasNoErrors(replicationState as any);
         await replicationState.awaitInitialReplication();
@@ -908,6 +912,57 @@ describe('replication-microsoft-onedrive.test.ts', function () {
             c1.database.close();
             c2.database.close();
         });
+    });
+    /**
+     * Base replication tests shared across all replication backends.
+     * Each test gets a fresh server state via the `beforeEach` above, so
+     * `cleanUpServer` is a no-op here.
+     */
+    runReplicationBaseTestSuite({
+        cleanUpServer: async () => { /* fresh folder path from beforeEach */ },
+        startReplication: async (collection: RxCollection<any>) => {
+            const replicationState = await replicateMicrosoftOneDrive<any>({
+                replicationIdentifier: 'foobar-base-suite',
+                collection,
+                oneDrive: options,
+                live: true,
+                pull: {},
+                push: {},
+            });
+            ensureReplicationHasNoErrors(replicationState as any);
+            return replicationState;
+        },
+        syncOnce: (collection: RxCollection<any>) => syncOnce(collection, options),
+        getAllServerDocs: async () => {
+            const initData = await initDriveStructure(options);
+            const [files, walContent] = await Promise.all([
+                listFilesInFolder(options, initData.docsFolderId),
+                readWalContent<any>(options, initData)
+            ]);
+            const contents = await fetchDocumentContents<any>(options, files.map(f => f.id));
+            const docs: any[] = [...contents.ordered];
+            if (walContent.rows) {
+                const existingIds = new Set(docs.map((d: any) => d[PRIMARY_PATH]));
+                for (const row of walContent.rows) {
+                    const docId = (row.newDocumentState as any)[PRIMARY_PATH];
+                    if (existingIds.has(docId)) {
+                        const idx = docs.findIndex((d: any) => d[PRIMARY_PATH] === docId);
+                        docs[idx] = row.newDocumentState;
+                    } else {
+                        existingIds.add(docId);
+                        docs.push(row.newDocumentState);
+                    }
+                }
+            }
+            return docs;
+        },
+        softDeletes: true,
+        isDeleted: (doc: any) => doc._deleted === true,
+        getPrimaryOfServerDoc: (doc: any) => doc.passportId,
+        syncOnceWithAttachments: (collection: RxCollection<any>) => syncOnce(collection, options),
+        syncOnceWithAttachmentsDisabled: (collection: RxCollection<any>) => syncOnce(collection, options, {
+            attachments: false
+        })
     });
     describe('WebRTC signaling', () => {
         beforeEach(async () => {

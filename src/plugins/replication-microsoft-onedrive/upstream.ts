@@ -1,5 +1,6 @@
 import { RxReplicationWriteToMasterRow, WithDeletedAndAttachments } from '../../index.ts';
 import { newRxError, newRxFetchError } from '../../rx-error.ts';
+import { stripAllAttachmentDataForComparison } from '../../replication-protocol/helper.ts';
 import { deepEqual, ensureNotFalsy } from '../utils/index.ts';
 import { fetchDocumentContents, getDocumentFiles, insertDocumentFiles, updateDocumentFiles } from './document-handling.ts';
 import { fillFileIfEtagMatches, getDriveBaseUrl } from './microsoft-onedrive-helper.ts';
@@ -57,7 +58,10 @@ export async function fetchConflicts<RxDocType>(
             fileContent = contentsByFileId.byId[fileId];
         }
         if (row.assumedMasterState) {
-            if (!deepEqual(row.assumedMasterState, fileContent)) {
+            if (!deepEqual(
+                stripAllAttachmentDataForComparison(row.assumedMasterState),
+                stripAllAttachmentDataForComparison(fileContent)
+            )) {
                 conflicts.push(ensureNotFalsy(fileContent));
             } else {
                 nonConflicts.push(row);
