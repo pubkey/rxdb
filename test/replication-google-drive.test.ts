@@ -959,7 +959,7 @@ describe('replication-google-drive.test.ts', function () {
     runReplicationBaseTestSuite({
         cleanUpServer: async () => { /* fresh folder path from beforeEach */ },
         startReplication: async (collection: RxCollection<any>) => {
-            const replicationState = await replicateGoogleDrive({
+            const replicationState = await replicateGoogleDrive<any>({
                 replicationIdentifier: 'foobar-base-suite',
                 collection,
                 googleDrive: options,
