@@ -9,6 +9,31 @@
 
 <!-- RELEASE BELOW -->
 
+### 17.3.0 (28 May 2026)
+
+- TEST add reproduction for composite primary key auto-fill when only `name` and `number` are set in a `preInsert` hook without `id` (https://github.com/pubkey/rxdb/pull/8527)
+- DOCS expand `partial-sync.md` to fully describe what partial sync is, when to use it, how to implement it with multiple `replicateRxCollection` states, per-scope checkpoints, document tagging via `pull.modifier`/`push.modifier`, scope cleanup, real-time pull streams, and tradeoffs.
+- FIX allow `preInsert` hooks to set composite primary key fields (for example `name` and `number`) without manually setting `id`, so RxDB computes the composite primary key afterwards (https://github.com/pubkey/rxdb/pull/8527)
+- FIX live-query subscriptions being delayed under concurrent writes, by using a fixed `promiseWait(20)` in the `_execOverDatabase()` rerun path instead of increasing the wait time with each rerun [#8444](https://github.com/pubkey/rxdb/issues/8444)
+- FIX schema using `patternProperties` with square bracket character classes no longer gets incorrectly interpreted as an array index in dev-mode schema validation. [#8522](https://github.com/pubkey/rxdb/pull/8522)
+- FIX Use the lighter background color `var(--bg-color)` for pricing tiers on the premium page.
+- FIX Add `IconChevronsRight` component and use it as the icon for all pricing tier buttons on the premium page.
+- FIX Keep `IconArrowUpRight` component for future use.
+- FIX Update `.pricing-tier` styling in `custom.css` to use `width: 90%` on screens smaller than 768px.
+- FIX Position `tier-note` elements at the very top of each tier header block.
+- FIX Add a tablet media query to limit `.pricing-tiers` max-width to `560px` for screen sizes between 769px and 1120px to enforce a balanced 2-2 layout.
+- FIX React `RxDatabaseProvider` TypeScript typings to accept `RxDatabase` instances with concrete typed collection maps that do not use a string index signature
+- FIX generated `.d.ts` files under `dist/types/` contained `.ts` extension import specifiers that TypeScript with `moduleResolution: "bundler"` could not resolve, causing reactive field types (`doc.field$$`) to degrade to `Signal<unknown>` in Angular projects. `scripts/fix-types.mjs` now rewrites all generated declaration files. See [#8488](https://github.com/pubkey/rxdb/issues/8488)
+- ADD `replication-google-drive` `space: 'drive' | 'appDataFolder'` option to sync into Google Drive's hidden per-application data folder. When set to `appDataFolder`, the plugin stores data under the `appDataFolder` root, scopes every `files.list` request with `spaces=appDataFolder`, and makes `folderPath` optional. Requires the `https://www.googleapis.com/auth/drive.appdata` OAuth scope.
+- FIX writes to an `RxCollection` while a schema migration is pending or running now fail fast with a clear `COL25` error instead of racing the migration and surfacing as `RC_PUSH`.
+- ADD `replication-google-drive` plugin now supports attachment replication. Attachment binary data is stored as base64 in a separate `_attachments_data` field of the document JSON file on Google Drive, keeping `_attachments` as clean stubs. Attachment replication is enabled automatically when the collection schema has `attachments: {}` defined and can be disabled by passing `attachments: false` to `replicateGoogleDrive()`.
+- ADD `replication-microsoft-onedrive` plugin now supports attachment replication. Attachment binary data is stored as base64 in a separate `_attachments_data` field of the document JSON file on OneDrive, keeping `_attachments` as clean stubs. Attachment replication is enabled automatically when the collection schema has `attachments: {}` defined and can be disabled by passing `attachments: false` to `replicateMicrosoftOneDrive()`.
+- REFACTOR move the attachment serialisation helpers (`serializeDocAttachments`, `deserializeDocAttachments`, `stripAllAttachmentDataForComparison`) to `src/replication-protocol/helper.ts` so they can be shared between the google-drive and microsoft-onedrive replication plugins.
+
+#
+### RxDB Premium
+- FIX (storage-indexeddb) Eliminated unhandled `TransactionInactiveError` rejections that occurred during bulk replication pulls when concurrent reads hit the WAL flush window. See [#8497](https://github.com/pubkey/rxdb/issues/8497)
+
 ### 17.2.0 (4 May 2026)
 
 - ADD React `useRxDocument(collection, primaryKey)` hook for subscribing to a single document by primary key with live updates
@@ -58,6 +83,7 @@
 - FIX WebMCP `changes` tool returning documents with internal meta fields (`_meta`, `_rev`, `_attachments`, `_deleted`) instead of stripping them like the query, insert, upsert, and delete tools do via `toJSON()`
 
 #
+
 ### RxDB Server
 - FIX invalid CORS response when the server is configured with the default `cors: '*'`. The express adapter always sends `Access-Control-Allow-Credentials: true`, but combining that with `Access-Control-Allow-Origin: *` is rejected by browsers per the CORS spec, so credentialed (cookie/auth-header) requests from any cross-origin client would fail. The adapter now reflects the request `Origin` back when `cors` is `'*'`, keeping the "allow from anywhere" semantics while staying compatible with credentials.
 - FIX false conflicts during replication push when a `serverOnlyField` is absent from the stored server document (e.g. because the field is optional and was never set). `mergeServerDocumentFieldsMonad` previously wrote a `null` value for the missing field onto the merged `assumedMasterState`, so the extra key caused `masterWrite`'s `isEqual` check to report a conflict that did not actually exist, silently reverting the client's update. The helper now deletes the property in that case so the merged row matches the stored master state.
