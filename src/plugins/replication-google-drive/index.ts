@@ -59,7 +59,7 @@ export class RxGoogleDriveReplicationState<RxDocType> extends RxReplicationState
         public readonly googleDrive: GoogleDriveOptionsWithDefaults,
         public readonly driveStructure: DriveStructure,
         public readonly replicationIdentifierHash: string,
-        public readonly collection: RxCollection<RxDocType, any>,
+        public readonly collection: RxCollection<RxDocType, any, any, any>,
         public readonly pull?: ReplicationPullOptions<RxDocType, GoogleDriveCheckpointType>,
         public readonly push?: ReplicationPushOptions<RxDocType>,
         public readonly signalingOptions?: SignalingOptions,
