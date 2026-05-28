@@ -28,6 +28,34 @@ Concrete examples:
 - A multi-tenant SaaS app where each workspace is its own scope.
 - A field-service app that syncs work orders only for the technician's current route.
 
+## Example Use Cases for Partial Sync
+
+The pattern shows up in very different products, but the shape of the solution stays the same: pick a scope id, run one replication per active scope, stop replications when the scope is no longer in use.
+
+### Minecraft-like Voxel World
+
+A voxel game (think Minecraft) divides the world into fixed-size **chunks**, where each chunk is a cube of blocks identified by its grid coordinates. The full world can be effectively infinite, so storing it on the client is not an option. At the same time, the player still needs to read and write blocks while offline, for example when their network drops mid-session, and those edits must reach the server when connectivity returns.
+
+The natural scope is the **chunk id**. The client keeps one `db.voxels` collection and starts a replication for every chunk inside the player's render distance, for example a 5x5 area around the player. Each replication uses a `replicationIdentifier` like `voxels-chunk-123` and a pull URL like `/api/voxels/pull?chunkId=123`. As the player walks, a new ring of chunks comes into range and an old ring leaves. The client starts replications for the new chunks and cancels replications for the chunks that fell out of range. Because every replication keeps its own checkpoint, walking back to a chunk visited five minutes ago only fetches the blocks that other players modified in the meantime instead of re-downloading the whole chunk.
+
+Local edits made offline are kept in the local collection and pushed up the moment the chunk's replication is active and online. Cleanup is important here: the player can visit thousands of chunks per session, so old chunks should be removed from local storage when the scope is left to keep the database small.
+
+### Multi-Tenant SaaS Workspace
+
+In a multi-tenant SaaS product (think Notion, Linear, or a B2B CRM), every user belongs to one or more **workspaces** or **tenants**, and each workspace has its own documents, tasks, customers, or notes. A user only ever works inside one workspace at a time, and they must never see data from a workspace they have no access to. Downloading every workspace's data to the client would waste bandwidth and would also be a serious permissions problem.
+
+The scope is the **workspace id**. When the user opens workspace `acme`, the client starts a replication with `replicationIdentifier: 'workspace-acme'` against an endpoint like `/api/sync?workspaceId=acme`. The server enforces, on every pull and push, that the authenticated user is allowed to access that workspace and only returns rows that belong to it. When the user switches to workspace `globex`, the client starts a second replication for `globex` and, depending on product behavior, either keeps the `acme` replication running in the background (so notifications and counts stay live) or cancels it to save resources. Because each workspace has its own `replicationIdentifier`, switching back to `acme` later resumes from the last checkpoint instead of re-syncing from scratch.
+
+This is also a good fit for the cleanup plugin: when a user leaves a workspace permanently, removing the locally cached documents for that scope keeps the on-device footprint proportional to the workspaces the user actually uses.
+
+### Field-Service Work Orders by Route
+
+A field-service or last-mile delivery app (think a technician dispatch tool or a courier app) gives each worker a list of jobs assigned to them for the day. The backend has work orders for thousands of technicians across many regions, but a single technician only needs the orders on their **current route**, plus a small buffer for jobs that might be reassigned to them. They also need full offline support, because the app is used inside basements, elevators, and rural areas with no signal.
+
+The scope here can be the **route id**, the **assigned-technician id**, or even a **geo region** like a city or postal code. The client starts a replication identified by that scope, for example `routes-2026-05-28-tech-42`, and the server returns only the work orders matching it. When dispatch reassigns the technician to a different route mid-day, the client cancels the old replication and starts a new one. Updates the technician made offline (status changes, signatures, photos) sit in the local collection until the device gets signal again, at which point the active scope's replication pushes them up and resolves any conflicts.
+
+Compared to a full sync of all work orders, this keeps the device's storage tiny, makes the initial load fast even on a weak connection, and removes any risk of one technician seeing another technician's jobs.
+
 ## Core Idea: One Collection, Many Replication States
 
 Partial sync in RxDB is built on three properties of the [Sync Engine](./replication.md):
