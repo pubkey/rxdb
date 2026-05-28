@@ -9,7 +9,6 @@
 import assert from 'assert';
 import { wait } from 'async-test-util';
 import type { RxCollection } from '../../types/index.d.ts';
-import type { RxReplicationState } from '../replication/index.ts';
 import { ensureNotFalsy } from '../utils/index.ts';
 import * as humansCollection from './humans-collection.ts';
 import * as schemaObjects from './schema-objects.ts';
@@ -25,7 +24,7 @@ export type ReplicationBaseTestSuiteConfig = {
      * collections can replicate to the same backend.
      * May return a Promise to support plugins where the replication factory is async.
      */
-    startReplication(collection: RxCollection<any>): RxReplicationState<any, any> | Promise<RxReplicationState<any, any>>;
+    startReplication(collection: RxCollection<any>): any;
 
     /**
      * Run a one-shot (non-live) sync and wait for completion.
