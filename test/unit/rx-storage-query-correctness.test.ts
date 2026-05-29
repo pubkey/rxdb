@@ -1368,6 +1368,49 @@ describeParallel('rx-storage-query-correctness.test.ts', () => {
             },
         ],
     });
+    testCorrectQueries<{ id: string; score: number; }>({
+        testTitle: 'range bound outside the schema minimum/maximum must still match the boundary documents',
+        data: [
+            { id: 'aa', score: 0 },
+            { id: 'bb', score: 1 },
+            { id: 'cc', score: 50 },
+            { id: 'dd', score: 99 },
+            { id: 'ee', score: 100 }
+        ],
+        schema: {
+            version: 0,
+            indexes: [['score']],
+            primaryKey: 'id',
+            type: 'object',
+            properties: {
+                id: { type: 'string', maxLength: 2 },
+                score: { type: 'number', minimum: 0, maximum: 100, multipleOf: 1 }
+            },
+            required: ['id', 'score']
+        },
+        queries: [
+            {
+                info: '$gt below the schema minimum must include the minimum document',
+                query: { selector: { score: { $gt: -10 } }, sort: [{ score: 'asc' }] },
+                expectedResultDocIds: ['aa', 'bb', 'cc', 'dd', 'ee']
+            },
+            {
+                info: '$lt above the schema maximum must include the maximum document',
+                query: { selector: { score: { $lt: 110 } }, sort: [{ score: 'asc' }] },
+                expectedResultDocIds: ['aa', 'bb', 'cc', 'dd', 'ee']
+            },
+            {
+                info: '$gt at the exact minimum must still exclude it',
+                query: { selector: { score: { $gt: 0 } }, sort: [{ score: 'asc' }] },
+                expectedResultDocIds: ['bb', 'cc', 'dd', 'ee']
+            },
+            {
+                info: '$lt at the exact maximum must still exclude it',
+                query: { selector: { score: { $lt: 100 } }, sort: [{ score: 'asc' }] },
+                expectedResultDocIds: ['aa', 'bb', 'cc', 'dd']
+            }
+        ]
+    });
     /**
      * @link https://github.com/pubkey/rxdb/issues/5273
      */

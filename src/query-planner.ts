@@ -124,6 +124,34 @@ export function getQueryPlan<RxDocType>(
                 matcherOpts.inclusiveEnd = true;
             }
 
+            /**
+             * A range bound that lies entirely outside the field's schema
+             * [minimum, maximum] range matches every in-range value on that side.
+             * Without this, an out-of-range exclusive bound (e.g. $gt below the
+             * minimum or $lt above the maximum) is clamped to the boundary when the
+             * index string is built but kept exclusive, silently dropping the
+             * boundary document.
+             */
+            const indexFieldSchema = getSchemaByObjectPath(schema, indexField);
+            if (
+                indexFieldSchema &&
+                typeof indexFieldSchema.minimum === 'number' &&
+                typeof matcherOpts.startKey === 'number' &&
+                matcherOpts.startKey < indexFieldSchema.minimum
+            ) {
+                matcherOpts.startKey = INDEX_MIN;
+                matcherOpts.inclusiveStart = true;
+            }
+            if (
+                indexFieldSchema &&
+                typeof indexFieldSchema.maximum === 'number' &&
+                typeof matcherOpts.endKey === 'number' &&
+                matcherOpts.endKey > indexFieldSchema.maximum
+            ) {
+                matcherOpts.endKey = INDEX_MAX;
+                matcherOpts.inclusiveEnd = true;
+            }
+
             if (inclusiveStart && !matcherOpts.inclusiveStart) {
                 inclusiveStart = false;
             }
