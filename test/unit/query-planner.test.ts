@@ -491,7 +491,7 @@ describeParallel('query-planner.test.js', () => {
                 id: string;
                 score: number;
             };
-            const schema: RxJsonSchema<ScoreDoc> = fillWithDefaultSettings({
+            const schema: RxJsonSchema<RxDocumentData<ScoreDoc>> = fillWithDefaultSettings({
                 version: 0,
                 primaryKey: 'id',
                 type: 'object',
@@ -510,7 +510,7 @@ describeParallel('query-planner.test.js', () => {
 
             const belowMinimumPlan = getQueryPlan(
                 schema,
-                normalizeMangoQuery<ScoreDoc>(
+                normalizeMangoQuery<RxDocumentData<ScoreDoc>>(
                     schema,
                     {
                         selector: { score: { $gt: -10 } },
@@ -524,7 +524,7 @@ describeParallel('query-planner.test.js', () => {
 
             const aboveMaximumPlan = getQueryPlan(
                 schema,
-                normalizeMangoQuery<ScoreDoc>(
+                normalizeMangoQuery<RxDocumentData<ScoreDoc>>(
                     schema,
                     {
                         selector: { score: { $lt: 110 } },
@@ -538,7 +538,7 @@ describeParallel('query-planner.test.js', () => {
 
             const exactMinimumPlan = getQueryPlan(
                 schema,
-                normalizeMangoQuery<ScoreDoc>(
+                normalizeMangoQuery<RxDocumentData<ScoreDoc>>(
                     schema,
                     {
                         selector: { score: { $gt: 0 } },
@@ -551,7 +551,7 @@ describeParallel('query-planner.test.js', () => {
 
             const exactMaximumPlan = getQueryPlan(
                 schema,
-                normalizeMangoQuery<ScoreDoc>(
+                normalizeMangoQuery<RxDocumentData<ScoreDoc>>(
                     schema,
                     {
                         selector: { score: { $lt: 100 } },
