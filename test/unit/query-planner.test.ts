@@ -486,6 +486,82 @@ describeParallel('query-planner.test.js', () => {
             assert.strictEqual(lastOfArray(queryPlan.startKeys), INDEX_MAX);
             assert.strictEqual(lastOfArray(queryPlan.endKeys), INDEX_MIN);
         });
+        it('should turn out-of-schema number bounds into inclusive open ends', () => {
+            type ScoreDoc = {
+                id: string;
+                score: number;
+            };
+            const schema: RxJsonSchema<ScoreDoc> = fillWithDefaultSettings({
+                version: 0,
+                primaryKey: 'id',
+                type: 'object',
+                indexes: [['score']],
+                properties: {
+                    id: { type: 'string', maxLength: 10 },
+                    score: {
+                        type: 'number',
+                        minimum: 0,
+                        maximum: 100,
+                        multipleOf: 1
+                    }
+                },
+                required: ['id', 'score']
+            });
+
+            const belowMinimumPlan = getQueryPlan(
+                schema,
+                normalizeMangoQuery<ScoreDoc>(
+                    schema,
+                    {
+                        selector: { score: { $gt: -10 } },
+                        index: ['score']
+                    }
+                )
+            );
+            assert.deepStrictEqual(belowMinimumPlan.index, ['score', 'id']);
+            assert.strictEqual(belowMinimumPlan.startKeys[0], INDEX_MIN);
+            assert.strictEqual(belowMinimumPlan.inclusiveStart, true);
+
+            const aboveMaximumPlan = getQueryPlan(
+                schema,
+                normalizeMangoQuery<ScoreDoc>(
+                    schema,
+                    {
+                        selector: { score: { $lt: 110 } },
+                        index: ['score']
+                    }
+                )
+            );
+            assert.deepStrictEqual(aboveMaximumPlan.index, ['score', 'id']);
+            assert.strictEqual(aboveMaximumPlan.endKeys[0], INDEX_MAX);
+            assert.strictEqual(aboveMaximumPlan.inclusiveEnd, true);
+
+            const exactMinimumPlan = getQueryPlan(
+                schema,
+                normalizeMangoQuery<ScoreDoc>(
+                    schema,
+                    {
+                        selector: { score: { $gt: 0 } },
+                        index: ['score']
+                    }
+                )
+            );
+            assert.strictEqual(exactMinimumPlan.startKeys[0], 0);
+            assert.strictEqual(exactMinimumPlan.inclusiveStart, false);
+
+            const exactMaximumPlan = getQueryPlan(
+                schema,
+                normalizeMangoQuery<ScoreDoc>(
+                    schema,
+                    {
+                        selector: { score: { $lt: 100 } },
+                        index: ['score']
+                    }
+                )
+            );
+            assert.strictEqual(exactMaximumPlan.endKeys[0], 100);
+            assert.strictEqual(exactMaximumPlan.inclusiveEnd, false);
+        });
     });
     describe('.isSelectorSatisfiedByIndex()', () => {
         const schema = getHumanSchemaWithIndexes([['age']]);
