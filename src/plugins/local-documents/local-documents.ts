@@ -1,39 +1,37 @@
 import {
     getDefaultRevision,
-    getDefaultRxDocumentMeta
+    getDefaultRxDocumentMeta,
 } from '../../plugins/utils/index.ts';
 
 import type {
+    LocalDocumentState,
     RxChangeEvent,
     RxCollection,
     RxDatabase,
     RxDocument,
+    RxDocumentData,
     RxDocumentWriteData,
     RxLocalDocument,
-    RxLocalDocumentData
+    RxLocalDocumentData,
 } from '../../types/index.d.ts';
 
-import {
-    filter,
-    map,
-    startWith,
-    mergeMap
-} from 'rxjs';
+import { filter, map, startWith, mergeMap } from 'rxjs';
 import { Observable } from 'rxjs';
 
 import { getLocalDocStateByParent } from './local-documents-helper.ts';
 import { getSingleDocument, writeSingle } from '../../rx-storage-helper.ts';
 
-
-
 /**
  * save the local-document-data
  * throws if already exists
  */
-export async function insertLocal<DocData extends Record<string, any> = any, Reactivity = unknown>(
+export async function insertLocal<
+    DocData extends Record<string, any> = any,
+    Reactivity = unknown,
+>(
     this: RxDatabase | RxCollection,
     id: string,
-    data: DocData
+    data: DocData,
 ): Promise<RxLocalDocument<DocData, any, Reactivity>> {
     const state = await getLocalDocStateByParent(this);
 
@@ -44,117 +42,144 @@ export async function insertLocal<DocData extends Record<string, any> = any, Rea
         _deleted: false,
         _meta: getDefaultRxDocumentMeta(),
         _rev: getDefaultRevision(),
-        _attachments: {}
+        _attachments: {},
     };
 
     return writeSingle(
         state.storageInstance,
         {
-            document: docData
+            document: docData,
         },
-        'local-document-insert'
-    ).then(newDocData => state.docCache.getCachedRxDocument(newDocData) as any);
+        'local-document-insert',
+    ).then(
+        (newDocData) => state.docCache.getCachedRxDocument(newDocData) as any,
+    );
+}
+
+export async function getLocalDocFromState(
+    state: LocalDocumentState,
+    id: string,
+): Promise<RxDocumentData<RxLocalDocumentData<{ [key: string]: any }>> | null> {
+    const docCache = state.docCache;
+
+    // check in doc-cache
+    const found = docCache.getLatestDocumentDataIfExists(id);
+
+    if (found) {
+        return found;
+    }
+
+    // if not found, check in storage instance
+    return getSingleDocument(state.storageInstance, id).then((docData) => {
+        if (!docData) {
+            return null;
+        }
+
+        return docData;
+    });
 }
 
 /**
  * save the local-document-data
  * overwrites existing if exists
  */
-export async function upsertLocal<DocData extends Record<string, any> = any, Reactivity = unknown>(
+export async function upsertLocal<
+    DocData extends Record<string, any> = any,
+    Reactivity = unknown,
+>(
     this: any,
     id: string,
-    data: DocData
+    data: DocData,
 ): Promise<RxLocalDocument<DocData, any, Reactivity>> {
     const state = await getLocalDocStateByParent(this);
-    const docDataFromCache = state.docCache.getLatestDocumentDataIfExists(id);
+    const docData = await getLocalDocFromState(state, id);
 
-    if (!docDataFromCache) {
+    if (!docData) {
         // create new one
         return this.insertLocal(id, data);
-    } else if (docDataFromCache._deleted) {
+    } else if (docData._deleted) {
         // document was deleted before, un-delete it via the write queue
         const writeResult = await state.incrementalWriteQueue.addWrite(
-            docDataFromCache,
+            docData,
             (docData: any) => {
                 docData.data = data;
                 docData._deleted = false;
                 return docData;
-            }
+            },
         );
         return state.docCache.getCachedRxDocument(writeResult) as any;
     } else {
         // update existing
-        const existing = state.docCache.getCachedRxDocument(docDataFromCache) as any;
+        const existing = state.docCache.getCachedRxDocument(docData) as any;
         return existing.incrementalModify(() => {
             return data;
         });
     }
 }
 
-export async function getLocal<DocData = any, Reactivity = unknown>(this: any, id: string): Promise<RxLocalDocument<DocData, any, Reactivity> | null> {
+export async function getLocal<DocData = any, Reactivity = unknown>(
+    this: any,
+    id: string,
+): Promise<RxLocalDocument<DocData, any, Reactivity> | null> {
     const state = await getLocalDocStateByParent(this);
-    const docCache = state.docCache;
+    const found = await getLocalDocFromState(state, id);
 
-    // check in doc-cache
-    const found = docCache.getLatestDocumentDataIfExists(id);
-    if (found) {
-        if (found._deleted) {
-            return null;
-        }
-        return Promise.resolve(
-            docCache.getCachedRxDocument(found) as any
-        );
+    if (!found || found._deleted) {
+        return null;
     }
 
-    // if not found, check in storage instance
-    return getSingleDocument(state.storageInstance, id)
-        .then((docData) => {
-            if (!docData) {
-                return null;
-            }
-            return state.docCache.getCachedRxDocument(docData) as any;
-        });
+    return Promise.resolve(state.docCache.getCachedRxDocument(found) as any);
 }
 
-export function getLocal$<DocData = any, Reactivity = unknown>(this: RxCollection, id: string): Observable<RxLocalDocument<DocData, any, Reactivity> | null> {
+export function getLocal$<DocData = any, Reactivity = unknown>(
+    this: RxCollection,
+    id: string,
+): Observable<RxLocalDocument<DocData, any, Reactivity> | null> {
     return this.$.pipe(
         startWith(null),
         mergeMap(async (cE: RxChangeEvent<RxLocalDocumentData> | null) => {
             if (cE) {
                 return {
-                    changeEvent: cE
+                    changeEvent: cE,
                 };
             } else {
                 const doc = await this.getLocal(id);
                 return {
-                    doc: doc
+                    doc: doc,
                 };
             }
         }),
-        mergeMap(async (changeEventOrDoc: { changeEvent?: RxChangeEvent<RxLocalDocumentData>; doc?: any }) => {
-            if (changeEventOrDoc.changeEvent) {
-                const cE = changeEventOrDoc.changeEvent;
-                if (!cE.isLocal || cE.documentId !== id) {
-                    return {
-                        use: false
-                    };
+        mergeMap(
+            async (changeEventOrDoc: {
+                changeEvent?: RxChangeEvent<RxLocalDocumentData>;
+                doc?: any;
+            }) => {
+                if (changeEventOrDoc.changeEvent) {
+                    const cE = changeEventOrDoc.changeEvent;
+                    if (!cE.isLocal || cE.documentId !== id) {
+                        return {
+                            use: false,
+                        };
+                    } else {
+                        const doc = await this.getLocal(id);
+                        return {
+                            use: true,
+                            doc: doc,
+                        };
+                    }
                 } else {
-                    const doc = await this.getLocal(id);
                     return {
                         use: true,
-                        doc: doc
+                        doc: changeEventOrDoc.doc,
                     };
                 }
-            } else {
-                return {
-                    use: true,
-                    doc: changeEventOrDoc.doc
-                };
-            }
-        }),
-        filter((filterFlagged: { use: boolean; doc?: any }) => filterFlagged.use),
+            },
+        ),
+        filter(
+            (filterFlagged: { use: boolean; doc?: any }) => filterFlagged.use,
+        ),
         map((filterFlagged: { use: boolean; doc?: any }) => {
             return filterFlagged.doc as any;
-        })
+        }),
     );
 }

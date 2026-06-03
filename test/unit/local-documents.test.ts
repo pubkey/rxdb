@@ -19,7 +19,10 @@ import {
 } from '../../plugins/core/index.mjs';
 
 
-import { RxDBLocalDocumentsPlugin } from '../../plugins/local-documents/index.mjs';
+import {
+    RxDBLocalDocumentsPlugin,
+    LOCAL_DOC_STATE_BY_PARENT_RESOLVED
+} from '../../plugins/local-documents/index.mjs';
 addRxPlugin(RxDBLocalDocumentsPlugin);
 import config, { describeParallel } from './config.ts';
 import {
@@ -359,6 +362,29 @@ describeParallel('local-documents.test.ts', () => {
                 assert.ok(doc3);
                 assert.strictEqual(ensureNotFalsy(doc3).deleted, false);
                 assert.strictEqual(ensureNotFalsy(doc3).get('foo'), 'bar2');
+
+                c.database.close();
+            });
+            /**
+             * Regression from 17.2.0 (#8278): upsertLocal only checked docCache,
+             * so a document still in storage but evicted from cache caused insertLocal + 409.
+             */
+            it('should update when doc exists in storage but was evicted from docCache', async () => {
+                const c = await humansCollection.create(0);
+                const id = 'doc-cache-eviction-test';
+
+                await c.insertLocal(id, { time: 0 });
+                assert.strictEqual((await c.getLocal(id))?.get('time'), 0);
+
+                const state = LOCAL_DOC_STATE_BY_PARENT_RESOLVED.get(c);
+                if (!state) {
+                    throw new Error('Local document state not initialized on collection');
+                }
+                state.docCache.cacheItemByDocId.delete(id);
+
+                const doc = await c.upsertLocal(id, { time: 42 });
+                assert.strictEqual(doc.get('time'), 42);
+                assert.strictEqual((await c.getLocal(id))?.get('time'), 42);
 
                 c.database.close();
             });

@@ -1,0 +1,1 @@
+- FIX `upsertLocal()` throwing a 409 conflict when a local document exists in storage but was evicted from the local-documents `docCache`, regression introduced in 17.2.0 when `upsertLocal()` stopped using storage fallback after #8278
