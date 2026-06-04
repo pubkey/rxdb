@@ -1,0 +1,1 @@
+- FIX non-conflict write errors during migration (e.g. schema validation failures with status 422) now surface as a meaningful `COL20` error instead of the internal `SNH` ("This should never happen") error. See [issue #8607](https://github.com/pubkey/rxdb/issues/8607)

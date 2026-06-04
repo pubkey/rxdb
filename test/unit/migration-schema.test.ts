@@ -382,6 +382,105 @@ describe('migration-schema.test.ts', function () {
                 );
                 await col.database.close();
             });
+            /**
+             * Regression test for https://github.com/pubkey/rxdb/issues/8607
+             * When a migration strategy produces a document that fails schema
+             * validation (status 422), the error should surface as a meaningful
+             * schema validation error (COL20) rather than the internal SNH
+             * "This should never happen" error.
+             */
+            it('should throw a schema validation error (not SNH) when migrated document violates the new schema', async () => {
+                if (!config.storage.hasReplication) {
+                    return;
+                }
+                const dbName = randomToken(10);
+
+                const schemaV0 = {
+                    version: 0,
+                    primaryKey: 'id',
+                    type: 'object',
+                    properties: {
+                        id: {
+                            type: 'string',
+                            maxLength: 100
+                        },
+                        icon: {
+                            type: 'string',
+                            maxLength: 1000
+                        }
+                    },
+                    required: ['id']
+                };
+
+                // v1 makes `icon` required and typed as string — a null value will fail validation
+                const schemaV1 = {
+                    version: 1,
+                    primaryKey: 'id',
+                    type: 'object',
+                    properties: {
+                        id: {
+                            type: 'string',
+                            maxLength: 100
+                        },
+                        icon: {
+                            type: 'string',
+                            maxLength: 1000
+                        }
+                    },
+                    required: ['id', 'icon']
+                };
+
+                const db = await createRxDatabase({
+                    name: dbName,
+                    storage: config.storage.getStorage(),
+                });
+                const cols = await db.addCollections({
+                    apps: {
+                        schema: schemaV0
+                    }
+                });
+                // insert a document where `icon` is null — valid in v0 but invalid in v1
+                await cols.apps.insert({ id: 'claude.ai', icon: null as any });
+                await db.close();
+
+                const db2 = await createRxDatabase({
+                    name: dbName,
+                    storage: config.storage.getStorage(),
+                    ignoreDuplicate: true
+                });
+                const cols2 = await db2.addCollections({
+                    apps: {
+                        schema: schemaV1,
+                        autoMigrate: false,
+                        migrationStrategies: {
+                            // strategy intentionally keeps null icon, causing a 422 on write
+                            1: (doc: any) => doc
+                        }
+                    }
+                });
+
+                let caughtError: any;
+                try {
+                    await cols2.apps.getMigrationState().migratePromise();
+                } catch (err: any) {
+                    caughtError = err;
+                }
+
+                assert.ok(caughtError, 'migration should have thrown');
+                // The error should be DM4 (migration error) wrapping a COL20 (schema validation),
+                // NOT an SNH (should never happen) error.
+                assert.strictEqual(caughtError.code, 'DM4');
+                const innerError = caughtError.parameters?.error;
+                assert.ok(innerError, 'inner error should exist');
+                // The inner error must be a schema validation error (COL20), not SNH
+                assert.ok(
+                    innerError.code === 'COL20' || (innerError.parameters?.writeError?.status === 422),
+                    'inner error must be a schema validation error, not SNH. Got: ' + JSON.stringify(innerError?.code)
+                );
+                assert.notStrictEqual(innerError.code, 'SNH', 'Must not throw internal SNH error for schema validation failures');
+
+                await db2.close();
+            });
         });
         describe('.migratePromise()', () => {
             describe('positive', () => {
