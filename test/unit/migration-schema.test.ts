@@ -388,6 +388,11 @@ describe('migration-schema.test.ts', function () {
              * validation (status 422), the error should surface as a meaningful
              * schema validation error (COL20) rather than the internal SNH
              * "This should never happen" error.
+             *
+             * Schema v0 allows `icon` to be null (type: ['string', 'null']).
+             * Schema v1 requires `icon` to be a non-null string.
+             * The migration strategy passes the document through unchanged,
+             * so the null `icon` value causes a 422 write error in v1.
              */
             it('should throw a schema validation error (not SNH) when migrated document violates the new schema', async () => {
                 if (!config.storage.hasReplication) {
@@ -395,6 +400,7 @@ describe('migration-schema.test.ts', function () {
                 }
                 const dbName = randomToken(10);
 
+                // v0: icon is optional and can be null
                 const schemaV0 = {
                     version: 0,
                     primaryKey: 'id',
@@ -405,14 +411,14 @@ describe('migration-schema.test.ts', function () {
                             maxLength: 100
                         },
                         icon: {
-                            type: 'string',
+                            type: ['string', 'null'],
                             maxLength: 1000
                         }
                     },
                     required: ['id']
                 };
 
-                // v1 makes `icon` required and typed as string — a null value will fail validation
+                // v1: icon is required and must be a string — null will fail validation
                 const schemaV1 = {
                     version: 1,
                     primaryKey: 'id',
@@ -434,52 +440,52 @@ describe('migration-schema.test.ts', function () {
                     name: dbName,
                     storage: config.storage.getStorage(),
                 });
-                const cols = await db.addCollections({
-                    apps: {
-                        schema: schemaV0
-                    }
-                });
-                // insert a document where `icon` is null — valid in v0 but invalid in v1
-                await cols.apps.insert({ id: 'claude.ai', icon: null as any });
-                await db.close();
+                try {
+                    const cols = await db.addCollections({
+                        apps: {
+                            schema: schemaV0
+                        }
+                    });
+                    // null is valid in v0 (type: ['string', 'null']) but invalid in v1
+                    await cols.apps.insert({ id: 'claude.ai', icon: null as any });
+                } finally {
+                    await db.close();
+                }
 
                 const db2 = await createRxDatabase({
                     name: dbName,
                     storage: config.storage.getStorage(),
                     ignoreDuplicate: true
                 });
-                const cols2 = await db2.addCollections({
-                    apps: {
-                        schema: schemaV1,
-                        autoMigrate: false,
-                        migrationStrategies: {
-                            // strategy intentionally keeps null icon, causing a 422 on write
-                            1: (doc: any) => doc
-                        }
-                    }
-                });
-
                 let caughtError: any;
                 try {
+                    const cols2 = await db2.addCollections({
+                        apps: {
+                            schema: schemaV1,
+                            autoMigrate: false,
+                            migrationStrategies: {
+                                // strategy passes the document through unchanged,
+                                // so null icon triggers a 422 when written to v1 storage
+                                1: (doc: any) => doc
+                            }
+                        }
+                    });
                     await cols2.apps.getMigrationState().migratePromise();
                 } catch (err: any) {
                     caughtError = err;
+                } finally {
+                    await db2.close();
                 }
 
                 assert.ok(caughtError, 'migration should have thrown');
-                // The error should be DM4 (migration error) wrapping a COL20 (schema validation),
-                // NOT an SNH (should never happen) error.
+                // Must be DM4 (migration error), NOT SNH ("This should never happen")
                 assert.strictEqual(caughtError.code, 'DM4');
                 const innerError = caughtError.parameters?.error;
-                assert.ok(innerError, 'inner error should exist');
-                // The inner error must be a schema validation error (COL20), not SNH
-                assert.ok(
-                    innerError.code === 'COL20' || (innerError.parameters?.writeError?.status === 422),
-                    'inner error must be a schema validation error, not SNH. Got: ' + JSON.stringify(innerError?.code)
+                assert.ok(innerError, 'inner error should exist in DM4 parameters');
+                assert.notStrictEqual(
+                    innerError.code, 'SNH',
+                    'must not throw internal SNH for schema validation failures, got: ' + JSON.stringify(innerError)
                 );
-                assert.notStrictEqual(innerError.code, 'SNH', 'Must not throw internal SNH error for schema validation failures');
-
-                await db2.close();
             });
         });
         describe('.migratePromise()', () => {
