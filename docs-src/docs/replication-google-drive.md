@@ -188,6 +188,10 @@ Standard RxDB [Replication Options](./replication.md) for batch size, modifiers,
 - **Latency:** Changes take time to propagate and appear in listings (eventual consistency), which the plugin handles internally.
 - **Signaling Delay:** The initial WebRTC handshake requires writing and reading files from Drive, which can take a few seconds. Once connected, signaling is instant.
 
+## Testing
+
+For testing, it is recommended to use [google-drive-mock](https://github.com/pubkey/google-drive-mock). It simulates the Google Drive API so you can run tests without real credentials.
+
 ## FAQ
 
 <details>
@@ -198,14 +202,15 @@ Google Drive API rate limiting is based on **quota units**, not a flat request c
 - **1,000,000 quota units per minute per project**
 - **325,000 quota units per minute per user (within a project)**
 
-Different API endpoints consume different amounts of quota units, so your effective request throughput depends on which endpoints you use. When limits are exceeded, Google can return `403` (`User rate limit exceeded`) or `429` (`Rate limit exceeded`) responses.
+So the HTTP requests/minute depends on the endpoint cost:
+
+- If an endpoint costs **1 quota unit/request**, the theoretical maximum is **1,000,000 req/min/project** and **325,000 req/min/user**.
+- If an endpoint costs **100 quota units/request** (for example `files.list` in many setups), that is about **10,000 req/min/project** and **3,250 req/min/user**.
+
+When limits are exceeded, Google can return `403` (`User rate limit exceeded`) or `429` (`Rate limit exceeded`) responses.
 
 The replication plugin already retries with exponential backoff, but for high-traffic apps you should monitor quota usage and tune your sync frequency/batch sizes.
 
 - Official limits: https://developers.google.com/workspace/drive/api/guides/limits
 - Error handling guidance: https://developers.google.com/workspace/drive/api/guides/handle-errors
 </details>
-
-## Testing
-
-For testing, it is recommended to use [google-drive-mock](https://github.com/pubkey/google-drive-mock). It simulates the Google Drive API so you can run tests without real credentials.
