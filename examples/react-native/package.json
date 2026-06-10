@@ -15,6 +15,7 @@
   "devDependencies": {
     "@babel/core": "7.29.0",
     "@expo/cli": "56.1.11",
+    "@react-native/jest-preset": "0.85.3",
     "babel-preset-expo": "54.0.9",
     "buffer": "6.0.3",
     "cross-fetch": "4.1.0",

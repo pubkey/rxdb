@@ -3,17 +3,11 @@ const transformIgnorePatterns = [
   ];
   
   module.exports = {
-    projects: [
-      {
-        preset: "jest-expo/ios",
-        transformIgnorePatterns,
-      },
-      {
-        preset: "jest-expo/android",
-        transformIgnorePatterns,
-      },
-    ],
-  
+    preset: "@react-native/jest-preset",
+    transformIgnorePatterns,
     testRegex: "(/__tests__/.*|\\.(test|spec))\\.(ts|tsx|js)$",
+    moduleNameMapper: {
+      '^expo-crypto$': '<rootDir>/__mocks__/expo-crypto.js',
+    },
   };
   
