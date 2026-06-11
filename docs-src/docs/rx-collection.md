@@ -5,12 +5,18 @@ description: Discover how to create, manage, and migrate documents in RxCollecti
 image: /headers/rx-collection.jpg
 ---
 
+import { NON_PREMIUM_COLLECTION_LIMIT } from 'rxdb';
+
 # RxCollection
 A collection stores documents of the same type.
 
 
 ## Creating a Collection
 To create one or more collections you need an [RxDatabase](./rx-database.md) object which has the `.addCollections()` method. Every collection needs a collection name and a valid [RxJsonSchema](./rx-schema.md). Other attributes are optional.
+
+:::note
+Without the Premium Plugins, RxDB allows up to {NON_PREMIUM_COLLECTION_LIMIT} open collections in parallel. If you hit that limit, see the [FAQ on how to remove it](/rx-collection.html#faq).
+:::
 
 ```js
 const myCollections = await myDatabase.addCollections({
@@ -346,9 +352,9 @@ const is = isRxCollection(myObj);
     </div>
 </details>
 <details>
-    <summary>How to remove the limit of 13 collections?</summary>
+    <summary>How to remove the limit of {NON_PREMIUM_COLLECTION_LIMIT} collections?</summary>
     <div>
-    In the open-source version of RxDB, the amount of RxCollections that can exist in parallel is limited to `13`.
+    In the open-source version of RxDB, the amount of RxCollections that can exist in parallel is limited to `{NON_PREMIUM_COLLECTION_LIMIT}`.
     To remove this limit, you can purchase the [Premium Plugins](/premium/) and call the `setPremiumFlag()` function before creating a database:
     ```ts
     import { setPremiumFlag } from 'rxdb-premium/plugins/shared';
