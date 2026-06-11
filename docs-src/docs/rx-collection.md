@@ -14,10 +14,6 @@ A collection stores documents of the same type.
 ## Creating a Collection
 To create one or more collections you need an [RxDatabase](./rx-database.md) object which has the `.addCollections()` method. Every collection needs a collection name and a valid [RxJsonSchema](./rx-schema.md). Other attributes are optional.
 
-:::note
-Without the Premium Plugins, RxDB allows up to {NON_PREMIUM_COLLECTION_LIMIT} open collections in parallel. If you hit that limit, see the [FAQ on how to remove it](/rx-collection.html#faq).
-:::
-
 ```js
 const myCollections = await myDatabase.addCollections({
   // key = collectionName
@@ -42,6 +38,10 @@ const myCollections = await myDatabase.addCollections({
   }
 });
 ```
+
+:::note
+Without the Premium Plugins, RxDB allows up to {NON_PREMIUM_COLLECTION_LIMIT} open collections in parallel. If you hit that limit, see the [FAQ on how to remove it](/rx-collection.html#faq).
+:::
 
 ### name
 
