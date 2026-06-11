@@ -1,0 +1,1 @@
+export const NON_PREMIUM_COLLECTION_LIMIT = 13;
