@@ -4,6 +4,7 @@ import Head from '@docusaurus/Head';
 
 import React, { useEffect } from 'react';
 import useIsBrowser from '@docusaurus/useIsBrowser';
+import { NON_PREMIUM_COLLECTION_LIMIT } from 'rxdb';
 import { triggerTrackingEvent } from '../components/trigger-event';
 import { IframeFormModal } from '../components/modal';
 import { Button } from '../components/button';
@@ -96,6 +97,7 @@ export default function Premium() {
                                         <li>Replication & realtime sync</li>
                                         <li>Default RxStorage (Dexie, Memory, LokiJS)</li>
                                         <li>Schema validation & migration</li>
+                                        <li>Up to <a href="/rx-collection.html#faq">{NON_PREMIUM_COLLECTION_LIMIT} open collections</a> in parallel.</li>
                                         <li>Community support on GitHub & Discord</li>
                                         <li className="strikethrough">Premium storages (OPFS, SQLite, Filesystem)</li>
                                         <li className="strikethrough">Performance plugins (Sharding, Memory Mapped)</li>
