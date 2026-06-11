@@ -4,7 +4,7 @@ import Head from '@docusaurus/Head';
 
 import React, { useEffect } from 'react';
 import useIsBrowser from '@docusaurus/useIsBrowser';
-import { NON_PREMIUM_COLLECTION_LIMIT } from 'rxdb';
+import { NON_PREMIUM_COLLECTION_LIMIT } from '../constants';
 import { triggerTrackingEvent } from '../components/trigger-event';
 import { IframeFormModal } from '../components/modal';
 import { Button } from '../components/button';

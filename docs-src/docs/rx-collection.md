@@ -5,7 +5,7 @@ description: Discover how to create, manage, and migrate documents in RxCollecti
 image: /headers/rx-collection.jpg
 ---
 
-import { NON_PREMIUM_COLLECTION_LIMIT } from 'rxdb';
+import { NON_PREMIUM_COLLECTION_LIMIT } from '../src/constants';
 
 # RxCollection
 A collection stores documents of the same type.
