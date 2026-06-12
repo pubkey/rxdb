@@ -758,10 +758,57 @@ const replicationState = await replicateGoogleDrive({
 - **authToken** `string`: The valid access token associated with the user.
 - **folderPath** `string`: The path to the folder in Google Drive where data should be stored.
     - The plugin will ensure this folder exists.
-    - It must **not** be the root folder.
+    - For the default `drive` space it must **not** be the root folder.
+    - For the `appDataFolder` space it is optional and interpreted relative to the appDataFolder root.
     - It creates subfolders `docs` (for data) and `signaling` (for WebRTC).
+- **space** `'drive' | 'appDataFolder'` (optional): Defaults to `'drive'`. See the section below.
 - **apiEndpoint** `string` (optional): Defaults to `https://www.googleapis.com`. Useful for mocking or proxies.
 - **transactionTimeout** `number` (optional): Default `10000` (10s). The plugin uses a `transaction` file in Drive to ensure data integrity during writes. This is the timeout after which a lock is considered stale.
+
+### Using the appDataFolder
+
+By default the plugin stores data in the user visible "My Drive". Set `space: 'appDataFolder'` to store data in Google Drive's hidden, per-application data folder instead. This is useful on Android and other clients where you want app state synced across the user's devices without cluttering their Drive UI.
+
+```ts
+const replicationState = await replicateGoogleDrive({
+    replicationIdentifier: 'my-app-drive-sync',
+    collection: myRxCollection,
+    googleDrive: {
+        oauthClientId: 'YOUR_GOOGLE_CLIENT_ID',
+        authToken: 'USER_ACCESS_TOKEN',
+        space: 'appDataFolder'
+        // folderPath is optional here
+    },
+    live: true,
+    pull: {},
+    push: {}
+});
+```
+
+When using `appDataFolder`:
+
+- Request the `https://www.googleapis.com/auth/drive.appdata` OAuth scope when you authenticate the user. The regular Drive scopes do not grant access to this space.
+- The data is hidden from the user's Drive UI and cannot be browsed manually.
+- The folder is isolated per OAuth client id. A debug build and a release build with different client ids will not see each other's data.
+- `folderPath` is optional. If omitted, the `docs` and `signaling` subfolders are created directly in the appDataFolder root.
+
+### attachments
+
+Controls whether binary [attachment](./rx-attachment.md) data is replicated along with documents.
+
+- **Default**: enabled automatically when the collection schema has `attachments: {}` defined.
+- Set `attachments: false` to disable attachment replication (only document fields are synced).
+
+```ts
+const replicationState = await replicateGoogleDrive({
+    // ...
+    attachments: false, // disable attachment replication
+    pull: {},
+    push: {}
+});
+```
+
+When attachment replication is enabled, attachment binary data is encoded as base64 and stored in a separate `_attachments_data` field inside the document's JSON file on Drive. The standard `_attachments` field only contains metadata stubs (`digest`, `length`, `type`). On pull, the base64 data is decoded back to `Blob` instances and written to local storage.
 
 ### pull & push
 
@@ -791,6 +838,29 @@ Standard RxDB [Replication Options](./replication.md) for batch size, modifiers,
 ## Testing
 
 For testing, it is recommended to use [google-drive-mock](https://github.com/pubkey/google-drive-mock). It simulates the Google Drive API so you can run tests without real credentials.
+
+## FAQ
+
+<details>
+<summary>What are the Google Drive API request limits?</summary>
+
+Google Drive API rate limiting is based on **quota units**, not a flat request count. According to the official Google Drive API usage limits documentation, the default limits are:
+
+- **1,000,000 quota units per minute per project**
+- **325,000 quota units per minute per user (within a project)**
+
+So the HTTP requests/minute depends on the endpoint cost:
+
+- If an endpoint costs **1 quota unit/request**, the theoretical maximum is **1,000,000 req/min/project** and **325,000 req/min/user**.
+- If an endpoint costs **100 quota units/request** (for example `files.list` in many setups), that is about **10,000 req/min/project** and **3,250 req/min/user**.
+
+When limits are exceeded, Google can return `403` (`User rate limit exceeded`) or `429` (`Rate limit exceeded`) responses.
+
+The replication plugin already retries with exponential backoff, but for high-traffic apps you should monitor quota usage and tune your sync frequency/batch sizes.
+
+- Official limits: https://developers.google.com/workspace/drive/api/guides/limits
+- Error handling guidance: https://developers.google.com/workspace/drive/api/guides/handle-errors
+</details>
 
 ---
 
