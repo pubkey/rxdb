@@ -642,6 +642,7 @@ const sidebars = {
         'articles/json-based-database',
         'articles/reactjs-storage',
         'articles/indexeddb-alternative',
+        'articles/tanstack-db-supabase',
         'articles/generic-prompts'
       ],
     },
