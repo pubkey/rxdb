@@ -276,5 +276,3 @@ Yes. The TanStack DB and RxDB layers stay the same. Swap the replication plugin 
 - **Optimistic UI:** Patterns for instant, reliable writes - [Optimistic UI](./optimistic-ui.md)
 - **TanStack DB RxDB Collection:** Official integration docs - [tanstack.com/db](https://tanstack.com/db/latest/docs/collections/rxdb-collection)
 - **Community:** Questions or feedback? Join our Discord - [Chat](../chat)
-</content>
-</invoke>
