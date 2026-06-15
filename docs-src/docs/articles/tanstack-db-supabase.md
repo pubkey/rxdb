@@ -198,7 +198,11 @@ Mutations apply to the TanStack DB store immediately, persist to RxDB, and repli
 
 ```ts
 // insert
-todosCollection.insert({ id: crypto.randomUUID(), title: 'Buy milk', completed: false });
+todosCollection.insert({
+  id: crypto.randomUUID(),
+  title: 'Buy milk',
+  completed: false
+});
 
 // update
 todosCollection.update(todoId, (draft) => {
