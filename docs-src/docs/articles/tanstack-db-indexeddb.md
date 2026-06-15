@@ -239,5 +239,3 @@ Yes. The storage is configured only in `createRxDatabase`. Swapping `getRxStorag
 - Read the [IndexedDB storage](../rx-storage-indexeddb.md) and [Dexie storage](../rx-storage-dexie.md) pages to pick a storage.
 - Check the [TanStack DB RxDB collection docs](https://tanstack.com/db/latest/docs/collections/rxdb-collection) for the latest integration options.
 - Star the [RxDB GitHub repository](https://github.com/pubkey/rxdb) if you find it useful.
-</content>
-</invoke>
