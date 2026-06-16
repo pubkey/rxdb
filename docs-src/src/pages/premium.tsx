@@ -49,7 +49,7 @@ export default function Premium() {
             </Head>
 
             <Layout
-                title={`RxDB Pricing - ${siteConfig.title}`}
+                title={`RxDB for Professionals - ${siteConfig.title}`}
                 description="RxDB plugins for professionals. FAQ, pricing and license"
             >
                 <main>
@@ -57,28 +57,19 @@ export default function Premium() {
                         <div className="content centered">
 
                             <h2>
-                                RxDB <b>Pricing</b>
+                                RxDB for <b>Professionals</b>
                             </h2>
 
                             <p style={{ width: '80%', textAlign: 'center' }}>
-                                RxDB's paid plugins offer advanced features and performance improvements designed for businesses and professionals.
-                                They are ideal for commercial or critical projects, providing <a href="/rx-storage-performance.html" target="_blank">better performance</a>, a smaller build size, flexible storage engines, secure encryption and other features.
+                                While the core of RxDB is free and open-source, we offer paid licenses for businesses and professionals.
+                                Pro and Pro Plus tiers add commercial plugins that provide <a href="/rx-storage-performance.html" target="_blank">better performance</a>, a smaller build size, flexible storage engines, and secure encryption for production workloads.
+                                The Enterprise tier includes the contract terms that larger companies require.
                             </p>
-                            {/* <p style={{ width: '80%' }}>
-                                While most of RxDB is <b>open source</b>, RxDB's Premium plugins offer advanced features and performance improvements designed for businesses and professionals.
-                                They are ideal for commercial or critical projects, providing <a href="/rx-storage-performance.html" target="_blank">better performance</a>, flexible storage engines,
-                                {' '}<a href="https://rxdb.info/encryption.html" target="_blank">secure encryption</a> and other features.
-                            </p>
-                            <p style={{ width: '80%' }}>
-                                By purchasing these plugins, you get powerful tools while supporting RxDB's long-term development.
-                            </p> */}
                         </div>
                     </div>
 
                     <div className="block dark" id="pricing">
                         <div className="content centered">
-                            <h2 style={{ textAlign: 'center' }}>Four tiers. <b>Annual licenses.</b></h2>
-                            <p style={{ width: '80%', textAlign: 'center' }}>Free is the open-source core. Pro and Pro Plus add commercial plugins for production workloads. Enterprise adds the contract terms larger companies need.</p>
                             <div className="pricing-tiers">
                                 {/* FREE TIER */}
                                 <div className="pricing-tier">

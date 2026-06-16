@@ -1,1 +1,1 @@
-- CHANGE Display Pro and Pro Plus tier pricing as per-month figures with "billed annually, unlimited developers" in the sub-line on the Premium page.
+- CHANGE Display Pro and Pro Plus tier pricing as per-month figures, update title to "RxDB for Professionals", merge subtitles, and clean up redundant header sections.
