@@ -1,0 +1,1 @@
+- CHANGE Display Pro and Pro Plus tier pricing as per-month figures, update title to "RxDB for Professionals", merge subtitles, and clean up redundant header sections.

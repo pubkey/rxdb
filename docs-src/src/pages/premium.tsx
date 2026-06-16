@@ -49,7 +49,7 @@ export default function Premium() {
             </Head>
 
             <Layout
-                title={`RxDB Pricing - ${siteConfig.title}`}
+                title={`RxDB for Professionals - ${siteConfig.title}`}
                 description="RxDB plugins for professionals. FAQ, pricing and license"
             >
                 <main>
@@ -57,28 +57,19 @@ export default function Premium() {
                         <div className="content centered">
 
                             <h2>
-                                RxDB <b>Pricing</b>
+                                RxDB for <b>Professionals</b>
                             </h2>
 
                             <p style={{ width: '80%', textAlign: 'center' }}>
-                                RxDB's paid plugins offer advanced features and performance improvements designed for businesses and professionals.
-                                They are ideal for commercial or critical projects, providing <a href="/rx-storage-performance.html" target="_blank">better performance</a>, a smaller build size, flexible storage engines, secure encryption and other features.
+                                While the core of RxDB is free and open-source, we offer paid licenses for businesses and professionals.
+                                Pro and Pro Plus tiers add commercial plugins that provide <a href="/rx-storage-performance.html" target="_blank">better performance</a>, a smaller build size, flexible storage engines, and secure encryption for production workloads.
+                                The Enterprise tier includes the contract terms that larger companies require.
                             </p>
-                            {/* <p style={{ width: '80%' }}>
-                                While most of RxDB is <b>open source</b>, RxDB's Premium plugins offer advanced features and performance improvements designed for businesses and professionals.
-                                They are ideal for commercial or critical projects, providing <a href="/rx-storage-performance.html" target="_blank">better performance</a>, flexible storage engines,
-                                {' '}<a href="https://rxdb.info/encryption.html" target="_blank">secure encryption</a> and other features.
-                            </p>
-                            <p style={{ width: '80%' }}>
-                                By purchasing these plugins, you get powerful tools while supporting RxDB's long-term development.
-                            </p> */}
                         </div>
                     </div>
 
                     <div className="block dark" id="pricing">
                         <div className="content centered">
-                            <h2 style={{ textAlign: 'center' }}>Four tiers. <b>Annual licenses.</b></h2>
-                            <p style={{ width: '80%', textAlign: 'center' }}>Free is the open-source core. Pro and Pro Plus add commercial plugins for production workloads. Enterprise adds the contract terms larger companies need.</p>
                             <div className="pricing-tiers">
                                 {/* FREE TIER */}
                                 <div className="pricing-tier">
@@ -88,6 +79,7 @@ export default function Premium() {
                                         <p className="tier-desc">Open-source core. Get started for free.</p>
                                         <span className="tier-price-prefix">&nbsp;</span>
                                         <div className="tier-price">€0<span>/ forever</span></div>
+                                        <div className="tier-price-sub">&nbsp;</div>
                                         <div className="tier-license">Open Source license</div>
                                     </div>
 
@@ -117,8 +109,9 @@ export default function Premium() {
                                         <h3>Pro</h3>
                                         <p className="tier-desc">Production-grade storage engines.</p>
                                         <span className="tier-price-prefix">From</span>
-                                        <div className="tier-price">€1,300<span>/ year</span></div>
-                                        <div className="tier-license">unlimited developers</div>
+                                        <div className="tier-price">€99<span>/ month</span></div>
+                                        <div className="tier-price-sub">billed annually, unlimited developers</div>
+                                        <div className="tier-license">&nbsp;</div>
                                     </div>
 
                                     <div className="tier-includes-title">INCLUDES</div>
@@ -145,8 +138,9 @@ export default function Premium() {
                                         <h3>Pro Plus</h3>
                                         <p className="tier-desc">Performance plugins & server adapters.</p>
                                         <span className="tier-price-prefix">From</span>
-                                        <div className="tier-price">€2,000<span>/ year</span></div>
-                                        <div className="tier-license">unlimited developers</div>
+                                        <div className="tier-price">€169<span>/ month</span></div>
+                                        <div className="tier-price-sub">billed annually, unlimited developers</div>
+                                        <div className="tier-license">&nbsp;</div>
                                     </div>
 
                                     <div className="tier-includes-title">INCLUDES</div>
@@ -176,6 +170,7 @@ export default function Premium() {
                                         <p className="tier-desc">SLA, custom commercial terms.</p>
                                         <span className="tier-price-prefix">&nbsp;</span>
                                         <div className="tier-price">Custom</div>
+                                        <div className="tier-price-sub">&nbsp;</div>
                                         <div className="tier-license">get in contact</div>
                                     </div>
 
