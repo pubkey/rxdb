@@ -78,7 +78,7 @@ export default function Premium() {
                                         <h3>Free</h3>
                                         <p className="tier-desc">Open-source core. Get started for free.</p>
                                         <span className="tier-price-prefix">&nbsp;</span>
-                                        <div className="tier-price">€0<span>/ forever</span></div>
+                                        <div className="tier-price">$0<span>/ forever</span></div>
                                         <div className="tier-price-sub">&nbsp;</div>
                                         <div className="tier-license">Open Source license</div>
                                     </div>
@@ -109,7 +109,7 @@ export default function Premium() {
                                         <h3>Pro</h3>
                                         <p className="tier-desc">Production-grade storage engines.</p>
                                         <span className="tier-price-prefix">From</span>
-                                        <div className="tier-price">€99<span>/ month</span></div>
+                                        <div className="tier-price">$99<span>/ month</span></div>
                                         <div className="tier-price-sub">billed annually, unlimited developers</div>
                                         <div className="tier-license">&nbsp;</div>
                                     </div>
@@ -138,7 +138,7 @@ export default function Premium() {
                                         <h3>Pro Plus</h3>
                                         <p className="tier-desc">Performance plugins & server adapters.</p>
                                         <span className="tier-price-prefix">From</span>
-                                        <div className="tier-price">€169<span>/ month</span></div>
+                                        <div className="tier-price">$239<span>/ month</span></div>
                                         <div className="tier-price-sub">billed annually, unlimited developers</div>
                                         <div className="tier-license">&nbsp;</div>
                                     </div>
