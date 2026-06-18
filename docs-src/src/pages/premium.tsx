@@ -125,7 +125,7 @@ export default function Premium() {
                                         <li>Fulltext Search</li>
                                     </ul>
 
-                                    <Button primary href="https://buy.stripe.com/eVq00k3fx1TbaIV0c1bbG05" target="_blank" style={{ width: '100%', marginBottom: 15 }} icon={<IconChevronsRight />}>Buy Pro</Button>
+                                    <Button primary href="https://buy.stripe.com/6oUdRa17p1TbeZb0c1bbG07" target="_blank" style={{ width: '100%', marginBottom: 15 }} icon={<IconChevronsRight />}>Buy Pro</Button>
                                     <div style={{ minHeight: 0, display: 'flex', flexDirection: 'column' }}>
                                         <a href="/license-preview/" className="tier-agreement" target="_blank">Preview License Agreement</a>
                                     </div>
@@ -156,7 +156,7 @@ export default function Premium() {
                                         <li>Logger plugin (Compatible with Sentry)</li>
                                     </ul>
 
-                                    <Button href="https://buy.stripe.com/3cIcN6aHZcxP6sF5wlbbG06" target="_blank" style={{ width: '100%', marginBottom: 15 }} icon={<IconChevronsRight />}>Buy Pro Plus</Button>
+                                    <Button href="https://buy.stripe.com/14A4gAeYf41j6sF4shbbG08" target="_blank" style={{ width: '100%', marginBottom: 15 }} icon={<IconChevronsRight />}>Buy Pro Plus</Button>
                                     <div style={{ minHeight: 0, display: 'flex', flexDirection: 'column' }}>
                                         <a href="/license-preview/" className="tier-agreement" target="_blank">Preview License Agreement</a>
                                     </div>
