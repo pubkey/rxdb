@@ -8,6 +8,7 @@ const transformIgnorePatterns = [
     testRegex: "(/__tests__/.*|\\.(test|spec))\\.(ts|tsx|js)$",
     moduleNameMapper: {
       '^expo-crypto$': '<rootDir>/__mocks__/expo-crypto.js',
+      '^expo-sqlite$': '<rootDir>/__mocks__/expo-sqlite.js',
     },
   };
   
