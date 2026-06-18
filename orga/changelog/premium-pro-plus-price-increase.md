@@ -1,0 +1,1 @@
+- CHANGE Increase the Pro Plus tier price on the premium page from €169/month to €239/month.
