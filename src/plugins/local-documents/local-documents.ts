@@ -69,8 +69,22 @@ export async function upsertLocal<DocData extends Record<string, any> = any, Rea
     const docDataFromCache = state.docCache.getLatestDocumentDataIfExists(id);
 
     if (!docDataFromCache) {
-        // create new one
-        return this.insertLocal(id, data);
+        /**
+         * Not in cache - the document may still exist in storage but have been
+         * evicted from the cache by the garbage collector (FinalizationRegistry).
+         * Check storage before deciding to insert.
+         */
+        const docFromStorage = await getSingleDocument(state.storageInstance, id);
+        if (!docFromStorage || docFromStorage._deleted) {
+            // create new one
+            return this.insertLocal(id, data);
+        } else {
+            // exists in storage but was evicted from cache - update it
+            const existing = state.docCache.getCachedRxDocument(docFromStorage) as any;
+            return existing.incrementalModify(() => {
+                return data;
+            });
+        }
     } else if (docDataFromCache._deleted) {
         // document was deleted before, un-delete it via the write queue
         const writeResult = await state.incrementalWriteQueue.addWrite(

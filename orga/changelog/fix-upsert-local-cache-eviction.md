@@ -1,0 +1,1 @@
+- FIX `upsertLocal()` would fail with a 409 conflict when the document existed in storage but had been evicted from the doc cache by the garbage collector. Now it falls back to a storage check before inserting. See https://github.com/pubkey/rxdb/pull/8531
