@@ -140,8 +140,20 @@ export async function createEmptyFile(
         });
     }
 
-    // To make idempotent, we always search for the file after creation
-    // and take the oldest one in case there are duplicates.
+    if (response.ok) {
+        // Use the response body directly to avoid an extra round-trip.
+        const data = await response.json();
+        return {
+            status: response.status,
+            etag: ensureNotFalsy(data.eTag),
+            createdTime: data.lastModifiedDateTime,
+            fileId: ensureNotFalsy(data.id),
+            size: data.size ? data.size : 0
+        };
+    }
+
+    // Status 409: file already exists. Search for it and take the oldest
+    // one in case there are duplicates from concurrent creation attempts.
     const items = await listFilesInFolder(oneDriveState, parentId);
     const matchingFiles = items.filter(i => i.name === fileName);
     const file = ensureNotFalsy(
