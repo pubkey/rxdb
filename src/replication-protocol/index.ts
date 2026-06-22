@@ -49,7 +49,7 @@ import {
 import { startReplicationUpstream } from './upstream.ts';
 import { fillWriteDataForAttachmentsChange } from '../plugins/attachments/index.ts';
 import { getChangedDocumentsSince } from '../rx-storage-helper.ts';
-import { newRxError, rxStorageWriteErrorToRxError } from '../rx-error.ts';
+import { rxStorageWriteErrorToRxError } from '../rx-error.ts';
 
 
 export * from './checkpoint.ts';
