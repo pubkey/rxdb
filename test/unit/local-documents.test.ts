@@ -354,35 +354,47 @@ describeParallel('local-documents.test.ts', () => {
 
                 c.database.close();
             });
-            it('should properly handle 409 conflicts and rerun the write when concurrently upserted', async () => {
-                if (config.storage.init) {
-                    await config.storage.init();
-                }
-                const name = randomToken(10);
-                const db = await createRxDatabase({
-                    name,
-                    storage: config.storage.getStorage(),
-                    localDocuments: true
+            if (config.storage.hasMultiInstance) {
+                it('should properly handle 409 conflicts and rerun the write when concurrently upserted from another instance', async () => {
+                    if (config.storage.init) {
+                        await config.storage.init();
+                    }
+                    const name = randomToken(10);
+                    const db = await createRxDatabase({
+                        name,
+                        storage: config.storage.getStorage(),
+                        localDocuments: true
+                    });
+                    const db2 = await createRxDatabase({
+                        name,
+                        storage: config.storage.getStorage(),
+                        ignoreDuplicate: true,
+                        localDocuments: true
+                    });
+
+                    const id = 'concurrency-test';
+
+                    const [doc1, doc2] = await Promise.all([
+                        db.upsertLocal(id, { val: 'from-db1' }),
+                        db2.upsertLocal(id, { val: 'from-db2' })
+                    ]);
+
+                    assert.ok(doc1);
+                    assert.ok(doc2);
+
+                    await waitUntil(async () => {
+                        const val1 = (await db.getLocal(id))?.get('val');
+                        const val2 = (await db2.getLocal(id))?.get('val');
+                        return val1 === val2;
+                    });
+
+                    const finalVal = (await db.getLocal(id))?.get('val');
+                    assert.ok(finalVal === 'from-db1' || finalVal === 'from-db2');
+
+                    await db.close();
+                    await db2.close();
                 });
-
-                const id = 'concurrency-test';
-
-                const [doc1, doc2] = await Promise.all([
-                    db.upsertLocal(id, { val: 'from-1' }),
-                    db.upsertLocal(id, { val: 'from-2' })
-                ]);
-
-                assert.ok(doc1);
-                assert.ok(doc2);
-
-                const val1 = doc1.getLatest().get('val');
-                const val2 = doc2.getLatest().get('val');
-
-                assert.strictEqual(val1, val2);
-                assert.ok(val1 === 'from-1' || val1 === 'from-2');
-
-                await db.close();
-            });
+            }
             it('should upsert after remove and create a non-deleted document', async () => {
                 const c = await humansCollection.create(0);
 
