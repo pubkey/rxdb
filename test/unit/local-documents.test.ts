@@ -378,11 +378,14 @@ describeParallel('local-documents.test.ts', () => {
                 assert.ok(doc1);
                 assert.ok(doc2);
 
-                const val1 = (await db.getLocal(id))?.get('val');
-                const val2 = (await db2.getLocal(id))?.get('val');
+                await waitUntil(async () => {
+                    const val1 = (await db.getLocal(id))?.get('val');
+                    const val2 = (await db2.getLocal(id))?.get('val');
+                    return val1 === val2;
+                });
 
-                assert.ok(val1 === 'from-db1' || val1 === 'from-db2');
-                assert.strictEqual(val1, val2);
+                const finalVal = (await db.getLocal(id))?.get('val');
+                assert.ok(finalVal === 'from-db1' || finalVal === 'from-db2');
 
                 await db.close();
                 await db2.close();
