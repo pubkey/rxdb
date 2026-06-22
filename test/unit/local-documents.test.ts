@@ -19,7 +19,7 @@ import {
 } from '../../plugins/core/index.mjs';
 
 
-import { RxDBLocalDocumentsPlugin } from '../../plugins/local-documents/index.mjs';
+import { LOCAL_DOC_STATE_BY_PARENT_RESOLVED, RxDBLocalDocumentsPlugin } from '../../plugins/local-documents/index.mjs';
 addRxPlugin(RxDBLocalDocumentsPlugin);
 import config, { describeParallel } from './config.ts';
 import {
@@ -330,6 +330,62 @@ describeParallel('local-documents.test.ts', () => {
 
                 docSub.unsubscribe();
                 c.database.close();
+            });
+            /**
+             * Regression from 17.2.0 (#8278): upsertLocal only checked docCache,
+             * so a document still in storage but evicted from cache caused insertLocal + 409.
+             */
+            it('#8609 should update when doc exists in storage but was evicted from docCache', async () => {
+                const c = await humansCollection.create(0);
+                const id = 'doc-cache-eviction-test';
+
+                await c.insertLocal(id, { time: 0 });
+                assert.strictEqual((await c.getLocal(id))?.get('time'), 0);
+
+                const state = LOCAL_DOC_STATE_BY_PARENT_RESOLVED.get(c);
+                if (!state) {
+                    throw new Error('Local document state not initialized on collection');
+                }
+                state.docCache.cacheItemByDocId.delete(id);
+
+                const doc = await c.upsertLocal(id, { time: 42 });
+                assert.strictEqual(doc.get('time'), 42);
+                assert.strictEqual((await c.getLocal(id))?.get('time'), 42);
+
+                c.database.close();
+            });
+            it('should properly handle 409 conflicts and rerun the write when concurrently upserted from another instance', async () => {
+                const name = randomToken(10);
+                const db = await createRxDatabase({
+                    name,
+                    storage: config.storage.getStorage(),
+                    localDocuments: true
+                });
+                const db2 = await createRxDatabase({
+                    name,
+                    storage: config.storage.getStorage(),
+                    ignoreDuplicate: true,
+                    localDocuments: true
+                });
+
+                const id = 'concurrency-test';
+
+                const [doc1, doc2] = await Promise.all([
+                    db.upsertLocal(id, { val: 'from-db1' }),
+                    db2.upsertLocal(id, { val: 'from-db2' })
+                ]);
+
+                assert.ok(doc1);
+                assert.ok(doc2);
+
+                const val1 = (await db.getLocal(id))?.get('val');
+                const val2 = (await db2.getLocal(id))?.get('val');
+
+                assert.ok(val1 === 'from-db1' || val1 === 'from-db2');
+                assert.strictEqual(val1, val2);
+
+                await db.close();
+                await db2.close();
             });
             it('should upsert after remove and create a non-deleted document', async () => {
                 const c = await humansCollection.create(0);
