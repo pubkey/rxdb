@@ -40,6 +40,24 @@ export default function Premium() {
         setOpenConsulting(false);
     };
 
+    const [openPro, setOpenPro] = React.useState(false);
+    const handleOpenProDialog = () => {
+        triggerTrackingEvent('pro_form_open', 0.4);
+        setOpenPro(true);
+    };
+    const handleClosePro = () => {
+        setOpenPro(false);
+    };
+
+    const [openProPlus, setOpenProPlus] = React.useState(false);
+    const handleOpenProPlusDialog = () => {
+        triggerTrackingEvent('pro_plus_form_open', 0.4);
+        setOpenProPlus(true);
+    };
+    const handleCloseProPlus = () => {
+        setOpenProPlus(false);
+    };
+
 
     return (
         <>
@@ -117,17 +135,19 @@ export default function Premium() {
                                     <div className="tier-includes-title">INCLUDES</div>
                                     <ul className="tier-features">
                                         <li>Everything in Free</li>
-                                        <li>RxStorage OPFS - newest browser storage</li>
-                                        <li>RxStorage IndexedDB - most reliable browser storage</li>
-                                        <li>RxStorage SQLite - Electron, React-Native, Capacitor</li>
-                                        <li>RxStorage Filesystem (Node + Expo)</li>
-                                        <li>WebCrypto Encryption</li>
-                                        <li>Fulltext Search</li>
+                                        <li><a href="/rx-storage-opfs.html" target="_blank">RxStorage OPFS</a> - newest browser storage</li>
+                                        <li><a href="/rx-storage-indexeddb.html" target="_blank">RxStorage IndexedDB</a> - most reliable browser storage</li>
+                                        <li><a href="/rx-storage-sqlite.html" target="_blank">RxStorage SQLite</a> - Electron, React-Native, Capacitor</li>
+                                        <li><a href="/rx-storage-filesystem-node.html" target="_blank">RxStorage Filesystem</a> (<a href="/rx-storage-filesystem-node.html" target="_blank">Node</a> + <a href="/rx-storage-filesystem-expo.html" target="_blank">Expo</a>)</li>
+                                        <li><a href="/encryption.html" target="_blank">WebCrypto Encryption</a></li>
+                                        <li><a href="/fulltext-search.html" target="_blank">Fulltext Search</a></li>
                                     </ul>
 
-                                    <Button primary href="https://buy.stripe.com/6oUdRa17p1TbeZb0c1bbG07" target="_blank" style={{ width: '100%', marginBottom: 15 }} icon={<IconChevronsRight />}>Buy Pro</Button>
+                                    <Button primary onClick={(e) => {
+                                        e.preventDefault(); handleOpenProDialog();
+                                    }} style={{ width: '100%', marginBottom: 15 }} icon={<IconChevronsRight />}>Get Pro</Button>
                                     <div style={{ minHeight: 0, display: 'flex', flexDirection: 'column' }}>
-                                        <a href="/license-preview/" className="tier-agreement" target="_blank">Preview License Agreement</a>
+                                        <span className="tier-agreement" style={{ visibility: 'hidden' }}>Preview License Agreement</span>
                                     </div>
                                 </div>
 
@@ -146,19 +166,21 @@ export default function Premium() {
                                     <div className="tier-includes-title">INCLUDES</div>
                                     <ul className="tier-features">
                                         <li>Everything in Pro</li>
-                                        <li>RxStorage Worker - main-thread offload</li>
-                                        <li>RxStorage Shared Worker</li>
-                                        <li>RxStorage Sharding</li>
-                                        <li>RxStorage Memory-Mapped</li>
-                                        <li>Localstorage Meta Optimizer</li>
-                                        <li>Query Optimizer</li>
-                                        <li>RxServer adapters: Fastify, Koa</li>
-                                        <li>Logger plugin (Compatible with Sentry)</li>
+                                        <li><a href="/rx-storage-worker.html" target="_blank">RxStorage Worker</a> - main-thread offload</li>
+                                        <li><a href="/rx-storage-shared-worker.html" target="_blank">RxStorage Shared Worker</a></li>
+                                        <li><a href="/rx-storage-sharding.html" target="_blank">RxStorage Sharding</a></li>
+                                        <li><a href="/rx-storage-memory-mapped.html" target="_blank">RxStorage Memory-Mapped</a></li>
+                                        <li><a href="/rx-storage-localstorage-meta-optimizer.html" target="_blank">Localstorage Meta Optimizer</a></li>
+                                        <li><a href="/query-optimizer.html" target="_blank">Query Optimizer</a></li>
+                                        <li><a href="/rx-server.html" target="_blank">RxServer adapters: Fastify, Koa</a></li>
+                                        <li><a href="/logger.html" target="_blank">Logger plugin</a> (Compatible with Sentry)</li>
                                     </ul>
 
-                                    <Button href="https://buy.stripe.com/14A4gAeYf41j6sF4shbbG08" target="_blank" style={{ width: '100%', marginBottom: 15 }} icon={<IconChevronsRight />}>Buy Pro Plus</Button>
+                                    <Button onClick={(e) => {
+                                        e.preventDefault(); handleOpenProPlusDialog();
+                                    }} style={{ width: '100%', marginBottom: 15 }} icon={<IconChevronsRight />}>Get Pro Plus</Button>
                                     <div style={{ minHeight: 0, display: 'flex', flexDirection: 'column' }}>
-                                        <a href="/license-preview/" className="tier-agreement" target="_blank">Preview License Agreement</a>
+                                        <span className="tier-agreement" style={{ visibility: 'hidden' }}>Preview License Agreement</span>
                                     </div>
                                 </div>
 
@@ -210,41 +232,11 @@ export default function Premium() {
                             <details>
                                 <summary>What is the process for making a purchase?</summary>
                                 <ul>
-                                    <li>Pay on Stripe by clicking one of the purchase buttons above.</li>
-                                    <li>You will be sent a license agreement to sign online.</li>
-                                    <li>Once signed, you will receive an access token to add the Premium plugins to your project following <a href="https://www.npmjs.com/package/rxdb-premium" target="_blank">these instructions</a>.</li>
+                                    <li>Fill out the form by clicking one of the buttons above.</li>
+                                    <li>You will receive a license agreement to sign via email.</li>
+                                    <li>You will receive an invoice to pay.</li>
+                                    <li>You will receive an access token to add the Premium plugins to your project following <a href="https://www.npmjs.com/package/rxdb-premium" target="_blank">these instructions</a>.</li>
                                 </ul>
-                            </details>
-
-                            <details>
-                                <summary>Do I need the Premium Plugins?</summary>
-                                RxDB Core is open source and many use cases can be implemented with the Open Core part of
-                                RxDB. There are many{' '}
-                                <a href="/rx-storage.html" target="_blank">
-                                    RxStorage
-                                </a>{' '}
-                                options and all core plugins that are required for replication, schema
-                                validation, encryption and so on, are totally free. As soon as your
-                                application is more than a side project you can consider using the premium plugins as an easy way
-                                to improve your applications performance and reduce the build size.
-                                <br />
-                                The main benefit of the Premium Plugins is <b>performance</b>. The
-                                Premium RxStorage implementations have a better performance so reading
-                                and writing data is much faster especially on low-end devices. You can
-                                find a performance comparison{' '}
-                                <a href="/rx-storage-performance.html" target="_blank">
-                                    here
-                                </a>
-                                . Also there are additional Premium Plugins that can be used to further
-                                optimize the performance of your application like the{' '}
-                                <a href="/query-optimizer.html" target="_blank">
-                                    Query Optimizer
-                                </a>{' '}
-                                or the{' '}
-                                <a href="/rx-storage-sharding.html" target="_blank">
-                                    Sharding
-                                </a>{' '}
-                                plugin.
                             </details>
                             {/* <details>
                                 <summary>Why is it not for free?</summary>
@@ -345,7 +337,7 @@ export default function Premium() {
                             </details>
                             <details>
                                 <summary>Why do I have to pay taxes?</summary>
-                                Taxation depends on your country and entity type. We recommend that you add a correct address and, importantly, your Tax ID when ordering on the Stripe page.
+                                Taxation depends on your country and entity type. We recommend that you add a correct address and, importantly, your Tax ID when filling out the form.
                             </details>
                         </div>
                     </div>
@@ -370,16 +362,12 @@ export default function Premium() {
                             </BrowserOnly>
                         </div>
                     </div> */}
+                    {/* Commented out: the "RxDB Premium Plugins Overview" section was confusing for users.
                     <div className="block dark">
                         <div className="content centered">
                             <h2>
                                 RxDB Premium Plugins <b>Overview</b>
                             </h2>
-                            {/* <p style={{ width: '80%' }}>
-                                RxDB's premium plugins offer advanced features and optimizations that enhance application <b>performance</b>{' '}
-                                and are backed by dedicated support and regular updates. Using the premium plugins is recommended for users
-                                that use RxDB in a professional context.
-                            </p> */}
                             <div className="premium-blocks">
                                 <a href="/rx-storage-indexeddb.html" target="_blank">
                                     <div className="premium-block hover-shadow-middle bg-gradient-right-top">
@@ -556,7 +544,10 @@ export default function Premium() {
                             </div>
                         </div>
                     </div>
+                    */}
                     <ConsultingFormDialog open={openConsulting} onClose={handleCloseConsulting} />
+                    <ProFormDialog open={openPro} onClose={handleClosePro} />
+                    <ProPlusFormDialog open={openProPlus} onClose={handleCloseProPlus} />
                 </main>
             </Layout >
         </>
@@ -573,5 +564,23 @@ function ConsultingFormDialog({ onClose, open }) {
         open={open}
         iframeUrl='https://webforms.pipedrive.com/f/6UUQvwSg3cy0wizvNdC3pmT378WEHYcwv6tdTlPNRl2HtVm0JjBbj5MQjqVj7ePW3F'
         eventId='consulting_form'
+    />;
+}
+
+function ProFormDialog({ onClose, open }) {
+    return <IframeFormModal
+        onClose={onClose}
+        open={open}
+        iframeUrl='https://webforms.pipedrive.com/f/6NclWCnYX2vvtF69NxoNKttBklqjCFyxArtY3ir4YZfLRDCIrBnCu3iewgluQcx5K3'
+        eventId='pro_form'
+    />;
+}
+
+function ProPlusFormDialog({ onClose, open }) {
+    return <IframeFormModal
+        onClose={onClose}
+        open={open}
+        iframeUrl='https://webforms.pipedrive.com/f/ce8xmRLPWF5wdMuU49wkdta9IFUGbsVGfQpZZnnJUwJHhwztGs6jsqCnOaLFHaHhPJ'
+        eventId='pro_plus_form'
     />;
 }
