@@ -1860,7 +1860,7 @@ describe('migration-schema.test.ts', function () {
             assert.strictEqual(result.status, 'DONE');
             await col.database.close();
         });
-           it('should not resurrect deleted documents when migration strategy returns a new object', async () => {
+        it('should not resurrect deleted documents when migration strategy returns a new object', async () => {
             const dbName = randomToken(10);
             const schema0 = {
                 version: 0,
@@ -2407,6 +2407,97 @@ describe('migration-schema.test.ts', function () {
             assert.strictEqual(attachment.length, attachmentData.length);
             const fetchedData = await attachment.getStringData();
             assert.strictEqual(fetchedData, attachmentData);
+
+            await db2.close();
+        });
+        it('#8607 should throw/reject when migration produces a document that does not match the schema', async () => {
+            const dbName = randomToken(10);
+            const schema0 = {
+                version: 0,
+                primaryKey: 'id',
+                type: 'object' as const,
+                properties: {
+                    id: {
+                        type: 'string',
+                        maxLength: 100
+                    },
+                    name: {
+                        type: 'string'
+                    }
+                },
+                required: ['id', 'name']
+            };
+            const schema1 = {
+                version: 1,
+                primaryKey: 'id',
+                type: 'object' as const,
+                properties: {
+                    id: {
+                        type: 'string',
+                        maxLength: 100
+                    },
+                    name: {
+                        type: 'string'
+                    },
+                    age: {
+                        type: 'number',
+                        minimum: 0
+                    }
+                },
+                required: ['id', 'name', 'age']
+            };
+
+            // create v0 database and insert a document
+            const db = await createRxDatabase({
+                name: dbName,
+                storage: config.storage.getStorage(),
+            });
+            const cols = await db.addCollections({
+                heroes: { schema: schema0 }
+            });
+            await cols.heroes.insert({ id: 'alice', name: 'Alice' });
+            await db.close();
+
+            // reopen with v1 schema but use a migration strategy that returns a document that does not match the schema (e.g. missing age or age is negative)
+            const db2 = await createRxDatabase({
+                name: dbName,
+                storage: config.storage.getStorage(),
+            });
+            const cols2 = await db2.addCollections({
+                heroes: {
+                    schema: schema1,
+                    autoMigrate: false,
+                    migrationStrategies: {
+                        1: (oldDoc: any) => {
+                            // Returns document missing required 'age' field
+                            return {
+                                id: oldDoc.id,
+                                name: oldDoc.name
+                            };
+                        }
+                    }
+                }
+            });
+
+            // The migration should fail because the produced document violates the schema
+            let caughtError: any = null;
+            try {
+                await cols2.heroes.getMigrationState().migratePromise();
+            } catch (err: any) {
+                caughtError = err;
+            }
+            assert.ok(caughtError);
+            console.dir(caughtError, { depth: null });
+
+            // The error should be DM4 (migration error) wrapping a COL20 (schema validation),
+            assert.strictEqual(caughtError.code, 'DM4');
+            const innerError = caughtError.parameters?.error;
+            assert.ok(innerError, 'inner error should exist');
+            // The inner error must be a schema validation error (COL20), not SNH
+            assert.ok(
+                innerError.code === 'COL20' || (innerError.parameters?.writeError?.status === 422),
+                'inner error must be a schema validation error, not SNH. Got: ' + JSON.stringify(innerError?.code)
+            );
 
             await db2.close();
         });
