@@ -531,6 +531,40 @@ await hideLoadingSpinner();
 :::
 
 
+### awaitDocumentPushed()
+
+Returns a `Promise` that resolves when a specific `RxDocument` instance was successfully pushed to the server.
+
+While `awaitInSync()` waits for the whole collection to be in sync, `awaitDocumentPushed()` only waits for a single document. This is useful when you have a sensitive write (like a financial transaction or a value with a uniqueness constraint) and you want to confirm that exactly this write reached the backend, without blocking on every other unrelated change in the collection.
+
+You pass the `RxDocument` instance you got back from a write operation:
+
+```ts
+const doc = await myCollection.insert({ id: 'foobar', value: 10 });
+await myReplicationState.awaitDocumentPushed(doc);
+// here we know that the document state was pushed to the server
+```
+
+It works by comparing the documents internal write time (`_meta.lwt`) with the push checkpoint. The push checkpoint moves forward with each successful push, so once it covers the documents write time, RxDB knows that this version of the document has been replicated to the master.
+
+If the document was overwritten by a newer local write before it could be pushed, the promise resolves as soon as any later state of that document (or any document with a higher write time) has been pushed, because that also proves the given state reached the server.
+
+`awaitDocumentPushed()` does not set a timeout on purpose. If you need one, combine it with `Promise.race()`:
+
+```ts
+function timeout(ms: number) {
+    return new Promise((_res, rej) => setTimeout(() => rej(new Error('push timeout')), ms));
+}
+
+const doc = await myCollection.insert({ id: 'foobar', value: 10 });
+await Promise.race([
+    myReplicationState.awaitDocumentPushed(doc),
+    timeout(5000)
+]);
+```
+
+Calling `awaitDocumentPushed()` on a replication that has no `push` handler (pull-only) throws an error, because such documents are never sent to the server.
+
 ### reSync()
 
 Triggers a `RESYNC` cycle where the replication goes into [checkpoint iteration](#checkpoint-iteration) until the client is in sync with the backend. Used in unit tests or when no proper `pull.stream$` can be implemented so that the client only knows that something has been changed but not what.

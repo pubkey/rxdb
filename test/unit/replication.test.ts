@@ -805,6 +805,131 @@ describe('replication.test.ts', () => {
                 remoteCollection.database.close();
             });
         });
+        describe('.awaitDocumentPushed()', () => {
+            it('should resolve after the document was pushed to the master', async () => {
+                const { localCollection, remoteCollection } = await getTestCollections({ local: 0, remote: 0 });
+
+                const replicationState = replicateRxCollection({
+                    collection: localCollection,
+                    replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                    live: true,
+                    pull: {
+                        handler: getPullHandler(remoteCollection)
+                    },
+                    push: {
+                        handler: getPushHandler(remoteCollection)
+                    }
+                });
+                ensureReplicationHasNoErrors(replicationState);
+
+                const doc = await localCollection.insert(schemaObjects.humanWithTimestampData({
+                    id: 'foobar-local'
+                }));
+
+                await replicationState.awaitDocumentPushed(doc);
+
+                const remoteDoc = await remoteCollection.findOne('foobar-local').exec();
+                assert.ok(remoteDoc, 'document must exist on the remote after awaitDocumentPushed()');
+
+                await localCollection.database.close();
+                await remoteCollection.database.close();
+            });
+            it('should resolve immediately if the document was already pushed', async () => {
+                const { localCollection, remoteCollection } = await getTestCollections({ local: 0, remote: 0 });
+
+                const replicationState = replicateRxCollection({
+                    collection: localCollection,
+                    replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                    live: true,
+                    pull: {
+                        handler: getPullHandler(remoteCollection)
+                    },
+                    push: {
+                        handler: getPushHandler(remoteCollection)
+                    }
+                });
+                ensureReplicationHasNoErrors(replicationState);
+
+                const doc = await localCollection.insert(schemaObjects.humanWithTimestampData({
+                    id: 'foobar-local'
+                }));
+                await replicationState.awaitInSync();
+
+                // must resolve even though the push already happened before.
+                await replicationState.awaitDocumentPushed(doc);
+
+                await localCollection.database.close();
+                await remoteCollection.database.close();
+            });
+            it('should not resolve before the document was pushed', async () => {
+                const { localCollection, remoteCollection } = await getTestCollections({ local: 0, remote: 0 });
+
+                let continuePush: Function = () => { };
+                const pushBlock = new Promise<void>(res => {
+                    continuePush = res;
+                });
+
+                const replicationState = replicateRxCollection<TestDocType, CheckpointType>({
+                    collection: localCollection,
+                    replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                    live: true,
+                    push: {
+                        handler: async (docs) => {
+                            await pushBlock;
+                            return getPushHandler(remoteCollection)(docs);
+                        }
+                    }
+                });
+                ensureReplicationHasNoErrors(replicationState);
+
+                const doc = await localCollection.insert(schemaObjects.humanWithTimestampData({
+                    id: 'foobar-local'
+                }));
+
+                let resolved = false;
+                replicationState.awaitDocumentPushed(doc).then(() => {
+                    resolved = true;
+                });
+                await wait(isFastMode() ? 100 : 400);
+                assert.strictEqual(resolved, false);
+
+                continuePush();
+                await replicationState.awaitDocumentPushed(doc);
+                assert.strictEqual(resolved, true);
+
+                await localCollection.database.close();
+                await remoteCollection.database.close();
+            });
+            it('should throw if the replication has no push handler', async () => {
+                const { localCollection, remoteCollection } = await getTestCollections({ local: 0, remote: 0 });
+
+                const replicationState = replicateRxCollection({
+                    collection: localCollection,
+                    replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                    live: true,
+                    pull: {
+                        handler: getPullHandler(remoteCollection)
+                    }
+                });
+                ensureReplicationHasNoErrors(replicationState);
+
+                const doc = await localCollection.insert(schemaObjects.humanWithTimestampData({
+                    id: 'foobar-local'
+                }));
+
+                let thrown = false;
+                try {
+                    await replicationState.awaitDocumentPushed(doc);
+                } catch (err) {
+                    thrown = true;
+                    assert.ok((err as RxError).code === 'RC_PUSH_AWAIT');
+                }
+                assert.ok(thrown, 'awaitDocumentPushed() must throw without a push handler');
+
+                await localCollection.database.close();
+                await remoteCollection.database.close();
+            });
+        });
         it('should clean up the replication meta storage when the get collection gets removed', async () => {
             const { localCollection, remoteCollection } = await getTestCollections({ local: isFastMode() ? 2 : 5, remote: isFastMode() ? 2 : 5 });
             const localDbName = localCollection.database.name;
