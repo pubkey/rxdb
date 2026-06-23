@@ -1,0 +1,1 @@
+- FIX: queries with `$gt`/`$lt` bounds outside the schema `minimum`/`maximum` now correctly include boundary documents instead of excluding them due to index-string clamping.
