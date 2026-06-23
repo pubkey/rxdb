@@ -549,41 +549,38 @@ export class RxReplicationState<RxDocType, CheckpointType> {
 
         const isPushed = async (): Promise<boolean> => {
             /**
-             * Wait for any in-flight checkpoint write so that
-             * lastCheckpointDoc.up reflects the latest pushed state.
+             * Wait for the currently running upstream cycle and its checkpoint
+             * write to finish so that lastCheckpointDoc.up reflects the latest
+             * pushed state. The checkpoint is written at the end of a push
+             * cycle, so we must not read it while a cycle is still in progress.
              */
+            await internalReplicationState.streamQueue.up;
             await internalReplicationState.checkpointQueue;
             const checkpointDoc = internalReplicationState.lastCheckpointDoc.up;
             if (!checkpointDoc) {
                 return false;
             }
-            return isDocumentStatePushedToMaster(
+            return isDocumentStateOlderThenCheckpoint(
                 checkpointDoc.checkpointData as unknown as RxStorageDefaultCheckpoint,
                 docId,
                 docLwt
             );
         };
 
-        if (await isPushed()) {
-            return;
-        }
-
         return new Promise<void>((resolve, reject) => {
-            const sub = internalReplicationState.events.active.up.subscribe((active: boolean) => {
-                /**
-                 * Only re-check when the upstream became idle,
-                 * because the checkpoint is written after a push cycle finished.
-                 */
-                if (active) {
-                    return;
-                }
+            const maybeResolve = () => {
                 isPushed().then(pushed => {
                     if (pushed) {
                         sub.unsubscribe();
                         resolve();
                     }
                 }).catch(reject);
-            });
+            };
+            /**
+             * Every successfully pushed document is emitted on sent$,
+             * so we re-check the push checkpoint on each emission.
+             */
+            const sub = this.sent$.subscribe({ next: maybeResolve });
             this.onCancel.push(() => {
                 sub.unsubscribe();
                 /**
@@ -598,6 +595,12 @@ export class RxReplicationState<RxDocType, CheckpointType> {
                     }
                 }).catch(reject);
             });
+            /**
+             * Run an initial check after subscribing so that documents that
+             * were already pushed resolve immediately, without missing a
+             * sent$ emission that could happen between check and subscribe.
+             */
+            maybeResolve();
         });
     }
 
@@ -702,7 +705,8 @@ export class RxReplicationState<RxDocType, CheckpointType> {
 
 /**
  * Checks if a given document state (identified by its primary key and its
- * _meta.lwt write time) is already covered by the upstream (push) checkpoint.
+ * _meta.lwt write time) is older than or equal to the upstream (push)
+ * checkpoint, which means it is already covered by the push.
  *
  * The upstream checkpoint has the default RxStorage checkpoint shape
  * { id, lwt } and points to the last document that was processed by the
@@ -711,7 +715,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
  * A document state is considered pushed when it is NOT after the checkpoint,
  * which mirrors the comparison used by getChangedDocumentsSinceQuery().
  */
-export function isDocumentStatePushedToMaster(
+export function isDocumentStateOlderThenCheckpoint(
     checkpoint: RxStorageDefaultCheckpoint,
     docId: string,
     docLwt: number

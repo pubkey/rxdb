@@ -834,6 +834,35 @@ describe('replication.test.ts', () => {
                 await localCollection.database.close();
                 await remoteCollection.database.close();
             });
+            it('should resolve when the insert happened before the replication state was created', async () => {
+                const { localCollection, remoteCollection } = await getTestCollections({ local: 0, remote: 0 });
+
+                // insert BEFORE the replication state exists
+                const doc = await localCollection.insert(schemaObjects.humanWithTimestampData({
+                    id: 'foobar-local'
+                }));
+
+                const replicationState = replicateRxCollection({
+                    collection: localCollection,
+                    replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                    live: true,
+                    pull: {
+                        handler: getPullHandler(remoteCollection)
+                    },
+                    push: {
+                        handler: getPushHandler(remoteCollection)
+                    }
+                });
+                ensureReplicationHasNoErrors(replicationState);
+
+                await replicationState.awaitDocumentPushed(doc);
+
+                const remoteDoc = await remoteCollection.findOne('foobar-local').exec();
+                assert.ok(remoteDoc, 'document must exist on the remote after awaitDocumentPushed()');
+
+                await localCollection.database.close();
+                await remoteCollection.database.close();
+            });
             it('should resolve immediately if the document was already pushed', async () => {
                 const { localCollection, remoteCollection } = await getTestCollections({ local: 0, remote: 0 });
 
