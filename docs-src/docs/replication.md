@@ -552,16 +552,10 @@ If the document was overwritten by a newer local write before it could be pushed
 `awaitDocumentPushed()` does not set a timeout on purpose. If you need one, combine it with `Promise.race()`:
 
 ```ts
-function timeout(ms: number) {
-    return new Promise((_res, reject) => {
-        setTimeout(() => reject(new Error('push timeout')), ms);
-    });
-}
-
 const doc = await myCollection.insert({ id: 'foobar', value: 10 });
 await Promise.race([
     myReplicationState.awaitDocumentPushed(doc),
-    timeout(5000)
+    new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000))
 ]);
 ```
 
