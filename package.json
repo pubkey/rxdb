@@ -613,7 +613,7 @@
     "@eslint/eslintrc": "3.3.5",
     "@eslint/js": "10.0.1",
     "@mcp-b/webmcp-polyfill": "2.3.2",
-    "@preact/signals-core": "1.14.2",
+    "@preact/signals-core": "1.14.3",
     "@rollup/plugin-commonjs": "29.0.3",
     "@rollup/plugin-node-resolve": "16.0.3",
     "@stylistic/eslint-plugin": "5.10.0",
