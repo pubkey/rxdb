@@ -534,9 +534,6 @@ export class RxReplicationState<RxDocType, CheckpointType> {
      * be pushed, the promise resolves as soon as any later state of the
      * document (or any other document with a higher write time) has been
      * pushed, because that also proves the given state reached the server.
-     *
-     * Notice that this does NOT set a timeout. If you need one, combine it
-     * with Promise.race(), see the documentation for an example.
      */
     async awaitDocumentPushed(doc: RxDocument<RxDocType>): Promise<void> {
         if (!this.push) {
@@ -547,8 +544,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
         }
         await this.startPromise;
         const internalReplicationState = ensureNotFalsy(this.internalReplicationState);
-        const primaryPath = this.collection.schema.primaryPath;
-        const docId: string = (doc._data as any)[primaryPath];
+        const docId: string = doc.primary;
         const docLwt: number = doc._data._meta.lwt;
 
         const isPushed = async (): Promise<boolean> => {
