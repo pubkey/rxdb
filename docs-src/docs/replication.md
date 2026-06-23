@@ -561,8 +561,6 @@ await Promise.race([
 ]);
 ```
 
-Calling `awaitDocumentPushed()` on a replication that has no `push` handler (pull-only) throws an error, because such documents are never sent to the server.
-
 ### reSync()
 
 Triggers a `RESYNC` cycle where the replication goes into [checkpoint iteration](#checkpoint-iteration) until the client is in sync with the backend. Used in unit tests or when no proper `pull.stream$` can be implemented so that the client only knows that something has been changed but not what.
