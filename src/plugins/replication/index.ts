@@ -522,18 +522,17 @@ export class RxReplicationState<RxDocType, CheckpointType> {
 
     /**
      * Returns a promise that resolves when the given RxDocument instance
-     * (more precisely: the exact document state with its current _meta.lwt)
      * was successfully pushed to the server.
      *
-     * It works by comparing the documents _meta.lwt with the upstream (push)
-     * checkpoint. The upstream checkpoint moves forward with each successful
-     * push, so once the checkpoint covers the documents write time, we know
-     * that this version of the document has been replicated to the master.
+     * It resolves either when the document is emitted on sent$ (the live
+     * push case) or, for documents that were already pushed before this was
+     * called, when the upstream (push) checkpoint already covers the
+     * documents write time (_meta.lwt).
      *
      * If the document was overwritten by a newer local write before it could
      * be pushed, the promise resolves as soon as any later state of the
-     * document (or any other document with a higher write time) has been
-     * pushed, because that also proves the given state reached the server.
+     * document has been pushed, because that also proves the given state
+     * reached the server.
      */
     async awaitDocumentPushed(doc: RxDocument<RxDocType>): Promise<void> {
         if (!this.push) {
@@ -544,17 +543,16 @@ export class RxReplicationState<RxDocType, CheckpointType> {
         }
         await this.startPromise;
         const internalReplicationState = ensureNotFalsy(this.internalReplicationState);
+        const primaryPath = this.collection.schema.primaryPath;
         const docId: string = doc.primary;
         const docLwt: number = doc._data._meta.lwt;
 
-        const isPushed = async (): Promise<boolean> => {
-            /**
-             * Wait for the currently running upstream cycle and its checkpoint
-             * write to finish so that lastCheckpointDoc.up reflects the latest
-             * pushed state. The checkpoint is written at the end of a push
-             * cycle, so we must not read it while a cycle is still in progress.
-             */
-            await internalReplicationState.streamQueue.up;
+        /**
+         * Detects documents that were already pushed before
+         * awaitDocumentPushed() was called, by comparing the document write
+         * time with the already persisted upstream (push) checkpoint.
+         */
+        const isAlreadyPushed = async (): Promise<boolean> => {
             await internalReplicationState.checkpointQueue;
             const checkpointDoc = internalReplicationState.lastCheckpointDoc.up;
             if (!checkpointDoc) {
@@ -568,19 +566,19 @@ export class RxReplicationState<RxDocType, CheckpointType> {
         };
 
         return new Promise<void>((resolve, reject) => {
-            const maybeResolve = () => {
-                isPushed().then(pushed => {
-                    if (pushed) {
+            /**
+             * Every successfully pushed document is emitted on sent$,
+             * so an emission with our primary key proves that this document
+             * reached the master.
+             */
+            const sub = this.sent$.subscribe({
+                next: (sentDocData) => {
+                    if ((sentDocData as any)[primaryPath] === docId) {
                         sub.unsubscribe();
                         resolve();
                     }
-                }).catch(reject);
-            };
-            /**
-             * Every successfully pushed document is emitted on sent$,
-             * so we re-check the push checkpoint on each emission.
-             */
-            const sub = this.sent$.subscribe({ next: maybeResolve });
+                }
+            });
             this.onCancel.push(() => {
                 sub.unsubscribe();
                 /**
@@ -589,18 +587,23 @@ export class RxReplicationState<RxDocType, CheckpointType> {
                  * If it was not pushed before the cancel, the promise stays
                  * pending, which matches the behavior of awaitInitialReplication().
                  */
-                isPushed().then(pushed => {
+                isAlreadyPushed().then(pushed => {
                     if (pushed) {
                         resolve();
                     }
                 }).catch(reject);
             });
             /**
-             * Run an initial check after subscribing so that documents that
+             * Run the initial check after subscribing so that documents that
              * were already pushed resolve immediately, without missing a
              * sent$ emission that could happen between check and subscribe.
              */
-            maybeResolve();
+            isAlreadyPushed().then(pushed => {
+                if (pushed) {
+                    sub.unsubscribe();
+                    resolve();
+                }
+            }).catch(reject);
         });
     }
 
