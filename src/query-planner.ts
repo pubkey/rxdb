@@ -124,6 +124,33 @@ export function getQueryPlan<RxDocType>(
                 matcherOpts.inclusiveEnd = true;
             }
 
+            /**
+             * When a numeric bound falls outside the schema minimum/maximum,
+             * getNumberIndexString() clamps it to the boundary value.
+             * An exclusive bound clamped to the same string as a boundary
+             * document would incorrectly exclude that document, so we
+             * promote it to inclusive here.
+             */
+            const schemaPart = getSchemaByObjectPath(schema, indexField);
+            if (schemaPart && (schemaPart.type === 'number' || schemaPart.type === 'integer')) {
+                if (
+                    !matcherOpts.inclusiveStart &&
+                    typeof matcherOpts.startKey === 'number' &&
+                    typeof schemaPart.minimum === 'number' &&
+                    matcherOpts.startKey < schemaPart.minimum
+                ) {
+                    matcherOpts.inclusiveStart = true;
+                }
+                if (
+                    !matcherOpts.inclusiveEnd &&
+                    typeof matcherOpts.endKey === 'number' &&
+                    typeof schemaPart.maximum === 'number' &&
+                    matcherOpts.endKey > schemaPart.maximum
+                ) {
+                    matcherOpts.inclusiveEnd = true;
+                }
+            }
+
             if (inclusiveStart && !matcherOpts.inclusiveStart) {
                 inclusiveStart = false;
             }
