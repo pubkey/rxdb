@@ -1,0 +1,1 @@
+- FIX storage-sqlite: removed `console.dir` calls which are `undefined` in production React Native / Hermes runtimes and threw `TypeError: undefined is not a function` inside `openSqliteTransaction`, masking the real SQLite error and bypassing the `BEGIN;` retry loop. [#8635](https://github.com/pubkey/rxdb/issues/8635)
