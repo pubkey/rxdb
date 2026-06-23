@@ -66,6 +66,14 @@ export type SyncOptionsOneDrive<RxDocType> = Omit<
     signalingOptions?: SignalingOptions;
     pull?: OneDriveSyncPullOptions<RxDocType>;
     push?: OneDriveSyncPushOptions<RxDocType>;
+    /**
+     * Set to false to disable attachment replication.
+     * When enabled (default), attachment binary data is stored as base64
+     * directly inside the document JSON file on OneDrive.
+     * Attachment replication only has an effect when the collection schema
+     * has `attachments: {}` defined.
+     */
+    attachments?: false;
 };
 
 export type OneDriveCheckpointType = {

@@ -1,6 +1,6 @@
 import { RxReplicationWriteToMasterRow, WithDeletedAndAttachments } from '../../index.ts';
 import { newRxError, newRxFetchError } from '../../rx-error.ts';
-import { stripAttachmentsDataFromDocument } from '../../rx-storage-helper.ts';
+import { stripAllAttachmentDataForComparison } from '../../replication-protocol/helper.ts';
 import { deepEqual, ensureNotFalsy } from '../utils/index.ts';
 import { fetchDocumentContents, getDocumentFiles, insertDocumentFiles, updateDocumentFiles } from './document-handling.ts';
 import { DRIVE_MAX_BULK_SIZE, fillFileIfEtagMatches, getFileEtag } from './google-drive-helper.ts';
@@ -55,20 +55,10 @@ export async function fetchConflicts<RxDocType>(
             fileContent = contentsByFileId.byId[fileId];
         }
         if (row.assumedMasterState) {
-            /**
-             * Strip binary/serialised attachment data from both sides before
-             * comparing. `assumedMasterState` comes from the replication protocol
-             * which already stores clean stubs (no `data`). `fileContent` comes
-             * from Google Drive and stores base64 data in the separate
-             * `_attachments_data` field — strip that too so the structural
-             * metadata (digest / length / type) is all that is compared.
-             */
-            const stripForComparison = (d: any) => {
-                const s = stripAttachmentsDataFromDocument(d) as any;
-                delete s._attachments_data;
-                return s;
-            };
-            if (!deepEqual(stripForComparison(row.assumedMasterState), stripForComparison(fileContent))) {
+            if (!deepEqual(
+                stripAllAttachmentDataForComparison(row.assumedMasterState),
+                stripAllAttachmentDataForComparison(fileContent)
+            )) {
                 conflicts.push(ensureNotFalsy(fileContent));
             } else {
                 nonConflicts.push(row);

@@ -4,6 +4,7 @@ import Head from '@docusaurus/Head';
 
 import React, { useEffect } from 'react';
 import useIsBrowser from '@docusaurus/useIsBrowser';
+import { NON_PREMIUM_COLLECTION_LIMIT } from '../constants';
 import { triggerTrackingEvent } from '../components/trigger-event';
 import { IframeFormModal } from '../components/modal';
 import { Button } from '../components/button';
@@ -39,6 +40,24 @@ export default function Premium() {
         setOpenConsulting(false);
     };
 
+    const [openPro, setOpenPro] = React.useState(false);
+    const handleOpenProDialog = () => {
+        triggerTrackingEvent('pro_form_open', 0.4);
+        setOpenPro(true);
+    };
+    const handleClosePro = () => {
+        setOpenPro(false);
+    };
+
+    const [openProPlus, setOpenProPlus] = React.useState(false);
+    const handleOpenProPlusDialog = () => {
+        triggerTrackingEvent('pro_plus_form_open', 0.4);
+        setOpenProPlus(true);
+    };
+    const handleCloseProPlus = () => {
+        setOpenProPlus(false);
+    };
+
 
     return (
         <>
@@ -48,7 +67,7 @@ export default function Premium() {
             </Head>
 
             <Layout
-                title={`RxDB Pricing - ${siteConfig.title}`}
+                title={`RxDB for Professionals - ${siteConfig.title}`}
                 description="RxDB plugins for professionals. FAQ, pricing and license"
             >
                 <main>
@@ -56,28 +75,19 @@ export default function Premium() {
                         <div className="content centered">
 
                             <h2>
-                                RxDB <b>Pricing</b>
+                                RxDB for <b>Professionals</b>
                             </h2>
 
                             <p style={{ width: '80%', textAlign: 'center' }}>
-                                RxDB's paid plugins offer advanced features and performance improvements designed for businesses and professionals.
-                                They are ideal for commercial or critical projects, providing <a href="/rx-storage-performance.html" target="_blank">better performance</a>, a smaller build size, flexible storage engines, secure encryption and other features.
+                                While the core of RxDB is free and open-source, we offer paid licenses for businesses and professionals.
+                                Pro and Pro Plus tiers add commercial plugins that provide <a href="/rx-storage-performance.html" target="_blank">better performance</a>, a smaller build size, flexible storage engines, and secure encryption for production workloads.
+                                The Enterprise tier includes the contract terms that larger companies require.
                             </p>
-                            {/* <p style={{ width: '80%' }}>
-                                While most of RxDB is <b>open source</b>, RxDB's Premium plugins offer advanced features and performance improvements designed for businesses and professionals.
-                                They are ideal for commercial or critical projects, providing <a href="/rx-storage-performance.html" target="_blank">better performance</a>, flexible storage engines,
-                                {' '}<a href="https://rxdb.info/encryption.html" target="_blank">secure encryption</a> and other features.
-                            </p>
-                            <p style={{ width: '80%' }}>
-                                By purchasing these plugins, you get powerful tools while supporting RxDB's long-term development.
-                            </p> */}
                         </div>
                     </div>
 
                     <div className="block dark" id="pricing">
                         <div className="content centered">
-                            <h2 style={{ textAlign: 'center' }}>Four tiers. <b>Annual licenses.</b></h2>
-                            <p style={{ width: '80%', textAlign: 'center' }}>Free is the open-source core. Pro and Pro Plus add commercial plugins for production workloads. Enterprise adds the contract terms larger companies need.</p>
                             <div className="pricing-tiers">
                                 {/* FREE TIER */}
                                 <div className="pricing-tier">
@@ -86,7 +96,8 @@ export default function Premium() {
                                         <h3>Free</h3>
                                         <p className="tier-desc">Open-source core. Get started for free.</p>
                                         <span className="tier-price-prefix">&nbsp;</span>
-                                        <div className="tier-price">€0<span>/ forever</span></div>
+                                        <div className="tier-price">$0<span>/ forever</span></div>
+                                        <div className="tier-price-sub">&nbsp;</div>
                                         <div className="tier-license">Open Source license</div>
                                     </div>
 
@@ -96,6 +107,7 @@ export default function Premium() {
                                         <li>Replication & realtime sync</li>
                                         <li>Default RxStorage (Dexie, Memory, LokiJS)</li>
                                         <li>Schema validation & migration</li>
+                                        <li>Up to <a href="/rx-collection.html#faq">{NON_PREMIUM_COLLECTION_LIMIT} open collections</a> in parallel.</li>
                                         <li>Community support on GitHub & Discord</li>
                                         <li className="strikethrough">Premium storages (OPFS, SQLite, Filesystem)</li>
                                         <li className="strikethrough">Performance plugins (Sharding, Memory Mapped)</li>
@@ -115,24 +127,27 @@ export default function Premium() {
                                         <h3>Pro</h3>
                                         <p className="tier-desc">Production-grade storage engines.</p>
                                         <span className="tier-price-prefix">From</span>
-                                        <div className="tier-price">€1,300<span>/ year</span></div>
-                                        <div className="tier-license">unlimited developers</div>
+                                        <div className="tier-price">$99<span>/ month</span></div>
+                                        <div className="tier-price-sub">billed annually, unlimited developers</div>
+                                        <div className="tier-license">&nbsp;</div>
                                     </div>
 
                                     <div className="tier-includes-title">INCLUDES</div>
                                     <ul className="tier-features">
                                         <li>Everything in Free</li>
-                                        <li>RxStorage OPFS - newest browser storage</li>
-                                        <li>RxStorage IndexedDB - most reliable browser storage</li>
-                                        <li>RxStorage SQLite - Electron, React-Native, Capacitor</li>
-                                        <li>RxStorage Filesystem (Node + Expo)</li>
-                                        <li>WebCrypto Encryption</li>
-                                        <li>Fulltext Search</li>
+                                        <li><a href="/rx-storage-opfs.html" target="_blank">RxStorage OPFS</a> - newest browser storage</li>
+                                        <li><a href="/rx-storage-indexeddb.html" target="_blank">RxStorage IndexedDB</a> - most reliable browser storage</li>
+                                        <li><a href="/rx-storage-sqlite.html" target="_blank">RxStorage SQLite</a> - Electron, React-Native, Capacitor</li>
+                                        <li><a href="/rx-storage-filesystem-node.html" target="_blank">RxStorage Filesystem</a> (<a href="/rx-storage-filesystem-node.html" target="_blank">Node</a> + <a href="/rx-storage-filesystem-expo.html" target="_blank">Expo</a>)</li>
+                                        <li><a href="/encryption.html" target="_blank">WebCrypto Encryption</a></li>
+                                        <li><a href="/fulltext-search.html" target="_blank">Fulltext Search</a></li>
                                     </ul>
 
-                                    <Button primary href="https://buy.stripe.com/eVq00k3fx1TbaIV0c1bbG05" target="_blank" style={{ width: '100%', marginBottom: 15 }} icon={<IconChevronsRight />}>Buy Pro</Button>
+                                    <Button primary onClick={(e) => {
+                                        e.preventDefault(); handleOpenProDialog();
+                                    }} style={{ width: '100%', marginBottom: 15 }} icon={<IconChevronsRight />}>Get Pro</Button>
                                     <div style={{ minHeight: 0, display: 'flex', flexDirection: 'column' }}>
-                                        <a href="/license-preview/" className="tier-agreement" target="_blank">Preview License Agreement</a>
+                                        <span className="tier-agreement" style={{ visibility: 'hidden' }}>Preview License Agreement</span>
                                     </div>
                                 </div>
 
@@ -143,26 +158,29 @@ export default function Premium() {
                                         <h3>Pro Plus</h3>
                                         <p className="tier-desc">Performance plugins & server adapters.</p>
                                         <span className="tier-price-prefix">From</span>
-                                        <div className="tier-price">€2,000<span>/ year</span></div>
-                                        <div className="tier-license">unlimited developers</div>
+                                        <div className="tier-price">$239<span>/ month</span></div>
+                                        <div className="tier-price-sub">billed annually, unlimited developers</div>
+                                        <div className="tier-license">&nbsp;</div>
                                     </div>
 
                                     <div className="tier-includes-title">INCLUDES</div>
                                     <ul className="tier-features">
                                         <li>Everything in Pro</li>
-                                        <li>RxStorage Worker - main-thread offload</li>
-                                        <li>RxStorage Shared Worker</li>
-                                        <li>RxStorage Sharding</li>
-                                        <li>RxStorage Memory-Mapped</li>
-                                        <li>Localstorage Meta Optimizer</li>
-                                        <li>Query Optimizer</li>
-                                        <li>RxServer adapters: Fastify, Koa</li>
-                                        <li>Logger plugin (Compatible with Sentry)</li>
+                                        <li><a href="/rx-storage-worker.html" target="_blank">RxStorage Worker</a> - main-thread offload</li>
+                                        <li><a href="/rx-storage-shared-worker.html" target="_blank">RxStorage Shared Worker</a></li>
+                                        <li><a href="/rx-storage-sharding.html" target="_blank">RxStorage Sharding</a></li>
+                                        <li><a href="/rx-storage-memory-mapped.html" target="_blank">RxStorage Memory-Mapped</a></li>
+                                        <li><a href="/rx-storage-localstorage-meta-optimizer.html" target="_blank">Localstorage Meta Optimizer</a></li>
+                                        <li><a href="/query-optimizer.html" target="_blank">Query Optimizer</a></li>
+                                        <li><a href="/rx-server.html" target="_blank">RxServer adapters: Fastify, Koa</a></li>
+                                        <li><a href="/logger.html" target="_blank">Logger plugin</a> (Compatible with Sentry)</li>
                                     </ul>
 
-                                    <Button href="https://buy.stripe.com/3cIcN6aHZcxP6sF5wlbbG06" target="_blank" style={{ width: '100%', marginBottom: 15 }} icon={<IconChevronsRight />}>Buy Pro Plus</Button>
+                                    <Button onClick={(e) => {
+                                        e.preventDefault(); handleOpenProPlusDialog();
+                                    }} style={{ width: '100%', marginBottom: 15 }} icon={<IconChevronsRight />}>Get Pro Plus</Button>
                                     <div style={{ minHeight: 0, display: 'flex', flexDirection: 'column' }}>
-                                        <a href="/license-preview/" className="tier-agreement" target="_blank">Preview License Agreement</a>
+                                        <span className="tier-agreement" style={{ visibility: 'hidden' }}>Preview License Agreement</span>
                                     </div>
                                 </div>
 
@@ -174,6 +192,7 @@ export default function Premium() {
                                         <p className="tier-desc">SLA, custom commercial terms.</p>
                                         <span className="tier-price-prefix">&nbsp;</span>
                                         <div className="tier-price">Custom</div>
+                                        <div className="tier-price-sub">&nbsp;</div>
                                         <div className="tier-license">get in contact</div>
                                     </div>
 
@@ -213,41 +232,11 @@ export default function Premium() {
                             <details>
                                 <summary>What is the process for making a purchase?</summary>
                                 <ul>
-                                    <li>Pay on Stripe by clicking one of the purchase buttons above.</li>
-                                    <li>You will be sent a license agreement to sign online.</li>
-                                    <li>Once signed, you will receive an access token to add the Premium plugins to your project following <a href="https://www.npmjs.com/package/rxdb-premium" target="_blank">these instructions</a>.</li>
+                                    <li>Fill out the form by clicking one of the buttons above.</li>
+                                    <li>You will receive a license agreement to sign via email.</li>
+                                    <li>You will receive an invoice to pay.</li>
+                                    <li>You will receive an access token to add the Premium plugins to your project following <a href="https://www.npmjs.com/package/rxdb-premium" target="_blank">these instructions</a>.</li>
                                 </ul>
-                            </details>
-
-                            <details>
-                                <summary>Do I need the Premium Plugins?</summary>
-                                RxDB Core is open source and many use cases can be implemented with the Open Core part of
-                                RxDB. There are many{' '}
-                                <a href="/rx-storage.html" target="_blank">
-                                    RxStorage
-                                </a>{' '}
-                                options and all core plugins that are required for replication, schema
-                                validation, encryption and so on, are totally free. As soon as your
-                                application is more than a side project you can consider using the premium plugins as an easy way
-                                to improve your applications performance and reduce the build size.
-                                <br />
-                                The main benefit of the Premium Plugins is <b>performance</b>. The
-                                Premium RxStorage implementations have a better performance so reading
-                                and writing data is much faster especially on low-end devices. You can
-                                find a performance comparison{' '}
-                                <a href="/rx-storage-performance.html" target="_blank">
-                                    here
-                                </a>
-                                . Also there are additional Premium Plugins that can be used to further
-                                optimize the performance of your application like the{' '}
-                                <a href="/query-optimizer.html" target="_blank">
-                                    Query Optimizer
-                                </a>{' '}
-                                or the{' '}
-                                <a href="/rx-storage-sharding.html" target="_blank">
-                                    Sharding
-                                </a>{' '}
-                                plugin.
                             </details>
                             {/* <details>
                                 <summary>Why is it not for free?</summary>
@@ -348,7 +337,7 @@ export default function Premium() {
                             </details>
                             <details>
                                 <summary>Why do I have to pay taxes?</summary>
-                                Taxation depends on your country and entity type. We recommend that you add a correct address and, importantly, your Tax ID when ordering on the Stripe page.
+                                Taxation depends on your country and entity type. We recommend that you add a correct address and, importantly, your Tax ID when filling out the form.
                             </details>
                         </div>
                     </div>
@@ -373,16 +362,12 @@ export default function Premium() {
                             </BrowserOnly>
                         </div>
                     </div> */}
+                    {/* Commented out: the "RxDB Premium Plugins Overview" section was confusing for users.
                     <div className="block dark">
                         <div className="content centered">
                             <h2>
                                 RxDB Premium Plugins <b>Overview</b>
                             </h2>
-                            {/* <p style={{ width: '80%' }}>
-                                RxDB's premium plugins offer advanced features and optimizations that enhance application <b>performance</b>{' '}
-                                and are backed by dedicated support and regular updates. Using the premium plugins is recommended for users
-                                that use RxDB in a professional context.
-                            </p> */}
                             <div className="premium-blocks">
                                 <a href="/rx-storage-indexeddb.html" target="_blank">
                                     <div className="premium-block hover-shadow-middle bg-gradient-right-top">
@@ -559,7 +544,10 @@ export default function Premium() {
                             </div>
                         </div>
                     </div>
+                    */}
                     <ConsultingFormDialog open={openConsulting} onClose={handleCloseConsulting} />
+                    <ProFormDialog open={openPro} onClose={handleClosePro} />
+                    <ProPlusFormDialog open={openProPlus} onClose={handleCloseProPlus} />
                 </main>
             </Layout >
         </>
@@ -576,5 +564,23 @@ function ConsultingFormDialog({ onClose, open }) {
         open={open}
         iframeUrl='https://webforms.pipedrive.com/f/6UUQvwSg3cy0wizvNdC3pmT378WEHYcwv6tdTlPNRl2HtVm0JjBbj5MQjqVj7ePW3F'
         eventId='consulting_form'
+    />;
+}
+
+function ProFormDialog({ onClose, open }) {
+    return <IframeFormModal
+        onClose={onClose}
+        open={open}
+        iframeUrl='https://webforms.pipedrive.com/f/6NclWCnYX2vvtF69NxoNKttBklqjCFyxArtY3ir4YZfLRDCIrBnCu3iewgluQcx5K3'
+        eventId='pro_form'
+    />;
+}
+
+function ProPlusFormDialog({ onClose, open }) {
+    return <IframeFormModal
+        onClose={onClose}
+        open={open}
+        iframeUrl='https://webforms.pipedrive.com/f/ce8xmRLPWF5wdMuU49wkdta9IFUGbsVGfQpZZnnJUwJHhwztGs6jsqCnOaLFHaHhPJ'
+        eventId='pro_plus_form'
     />;
 }

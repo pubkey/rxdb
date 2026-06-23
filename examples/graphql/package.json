@@ -25,10 +25,10 @@
   "dependencies": {
     "@apollo/server": "5.5.1",
     "@as-integrations/express5": "1.1.2",
-    "concurrently": "9.2.1",
+    "concurrently": "10.0.3",
     "cors": "2.8.6",
     "express": "5.2.1",
-    "graphql": "16.14.0",
+    "graphql": "16.14.2",
     "graphql-client": "2.0.1",
     "graphql-subscriptions": "3.0.0",
     "graphql-ws": "5.16.2",
@@ -37,13 +37,13 @@
     "pouchdb-adapter-idb": "9.0.0",
     "rxdb": "file:rxdb-local.tgz",
     "rxjs": "7.8.2",
-    "ws": "8.20.1"
+    "ws": "8.21.0"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "async-test-util": "2.5.0",
     "css-loader": "7.1.4",
-    "eslint": "10.4.0",
+    "eslint": "10.5.0",
     "esm": "3.2.25",
     "file-loader": "6.2.0",
     "globals": "^17.3.0",
@@ -55,8 +55,8 @@
     "style-loader": "4.0.0",
     "testcafe": "3.7.4",
     "testcafe-hammerhead": "31.7.8",
-    "webpack": "5.106.2",
-    "webpack-cli": "7.0.2",
-    "webpack-dev-server": "5.2.4"
+    "webpack": "5.107.2",
+    "webpack-cli": "7.0.3",
+    "webpack-dev-server": "5.2.5"
   }
 }

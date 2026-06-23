@@ -117,8 +117,13 @@ export async function isTransactionTimedOut(
     googleDriveOptions: GoogleDriveOptionsWithDefaults,
     init: DriveStructure,
 ) {
+    /**
+     * Use the v2 API so we can get both the modifiedDate and the ETag
+     * in a single request. The v3 API no longer returns etag in the response
+     * body, but the v2 API does return it via the ETag response header.
+     */
     const request = await fetch(
-        googleDriveOptions.apiEndpoint + '/drive/v3/files/' + init.transactionFile.fileId + '?fields=modifiedTime',
+        googleDriveOptions.apiEndpoint + '/drive/v2/files/' + init.transactionFile.fileId,
         {
             headers: {
                 Authorization: 'Bearer ' + googleDriveOptions.authToken
@@ -130,7 +135,8 @@ export async function isTransactionTimedOut(
     const dateHeader = request.headers.get('date');
     let serverTime = Date.parse(ensureNotFalsy(dateHeader, 'header time'));
 
-    const transactionCreation = Date.parse(ensureNotFalsy(data.modifiedTime, 'tx time'));
+    // v2 uses modifiedDate instead of modifiedTime
+    const transactionCreation = Date.parse(ensureNotFalsy(data.modifiedDate, 'tx time'));
 
     /**
      * By definition the HTTP Date header
@@ -148,9 +154,8 @@ export async function isTransactionTimedOut(
     return {
         timeLeft,
         transactionAge,
-        // expired: false
         expired: timeLeft <= 0,
-        etag: ensureNotFalsy(data.etag, 'etag')
+        etag: ensureNotFalsy(request.headers.get('ETag'), 'etag')
     }
 }
 

@@ -1,14 +1,17 @@
 import { newRxError, newRxFetchError } from '../../rx-error.ts';
-import { stripAttachmentsDataFromDocument } from '../../rx-storage-helper.ts';
 import { ById } from '../../types/util';
 import { ensureNotFalsy } from '../utils/index.ts';
-import { blobToBase64String, createBlobFromBase64 } from '../utils/index.ts';
 import { applyDriveSpace, insertMultipartFile } from './google-drive-helper.ts';
 import type {
     DriveFileListResponse,
     GoogleDriveOptionsWithDefaults
 } from './google-drive-types.ts';
 import { DriveStructure } from './init.ts';
+
+export {
+    serializeDocAttachments,
+    deserializeDocAttachments
+} from '../../replication-protocol/helper.ts';
 
 const MAX_DRIVE_PAGE_SIZE = 1000;
 
@@ -217,69 +220,3 @@ export async function fetchDocumentContents<DocType>(
     return { byId, ordered };
 }
 
-/**
- * Serialises attachment data in a document clone so it can safely be stored
- * as JSON in Google Drive.
- *
- * - When `serializeData` is true: Blob values are extracted and stored as
- *   base64 strings in the top-level `_attachments_data` field, while
- *   `_attachments` is stripped to clean stubs via `stripAttachmentsDataFromDocument`.
- * - When `serializeData` is false: `_attachments` is set to `{}` so that
- *   attachment stubs (without binary data) are never stored in Drive.  This
- *   prevents the downstream replication protocol from trying to write attachment
- *   data it does not have when a peer pulls the document.
- *
- * The function returns a NEW document object; the original is not mutated.
- */
-export async function serializeDocAttachments<T>(doc: T, serializeData: boolean): Promise<T> {
-    const d = doc as any;
-    if (!d?._attachments) {
-        return doc;
-    }
-
-    if (!serializeData) {
-        return { ...d, _attachments: {} } as any;
-    }
-
-    const attachmentData: Record<string, string> = {};
-    await Promise.all(
-        Object.entries(d._attachments as Record<string, any>).map(async ([id, att]) => {
-            if (att.data instanceof Blob) {
-                attachmentData[id] = await blobToBase64String(att.data);
-            }
-        })
-    );
-
-    // Strip binary data from _attachments, leaving clean stubs {digest, length, type}.
-    const stripped = stripAttachmentsDataFromDocument(d) as any;
-
-    if (Object.keys(attachmentData).length > 0) {
-        return { ...stripped, _attachments_data: attachmentData } as any;
-    }
-    return stripped as any;
-}
-
-/**
- * Converts attachment data stored in `_attachments_data` back to Blobs in the
- * document, so that the downstream replication protocol can write them to the
- * fork storage instance correctly.
- *
- * Mutates the document in place and removes the `_attachments_data` field.
- */
-export async function deserializeDocAttachments(doc: any): Promise<void> {
-    const attachmentData: Record<string, string> | undefined = doc._attachments_data;
-    if (!attachmentData || !doc._attachments) {
-        return;
-    }
-    await Promise.all(
-        Object.entries(attachmentData).map(async ([id, base64]) => {
-            if (doc._attachments[id]) {
-                doc._attachments[id] = {
-                    ...doc._attachments[id],
-                    data: await createBlobFromBase64(base64, doc._attachments[id].type)
-                };
-            }
-        })
-    );
-    delete doc._attachments_data;
-}

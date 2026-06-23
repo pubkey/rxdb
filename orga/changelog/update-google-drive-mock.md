@@ -1,0 +1,1 @@
+Updated `google-drive-mock` to `1.2.0` and fixed `isTransactionTimedOut` to use the v2 API to fetch the file `modifiedDate` and `ETag` header, since the v3 API no longer returns `etag` in the response body.

@@ -9,6 +9,11 @@ import type {
 import { DriveStructure } from './init.ts';
 import { getDriveBaseUrl } from './microsoft-onedrive-helper.ts';
 
+export {
+    serializeDocAttachments,
+    deserializeDocAttachments
+} from '../../replication-protocol/helper.ts';
+
 const MAX_DRIVE_PAGE_SIZE = 999;
 
 export async function getDocumentFiles(
@@ -214,3 +219,4 @@ export async function fetchDocumentContents<DocType>(
     await Promise.all(Array.from({ length: concurrency }, () => worker()));
     return { byId, ordered };
 }
+
