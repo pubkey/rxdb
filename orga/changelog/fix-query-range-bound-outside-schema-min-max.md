@@ -1,1 +1,1 @@
-- FIX: queries with `$gt`/`$lt` bounds outside the schema `minimum`/`maximum` now correctly include boundary documents instead of excluding them due to index-string clamping.
+- FIX: queries with `$gt`/`$lt` bounds outside the schema `minimum`/`maximum` now correctly include boundary documents instead of excluding them due to index-string clamping. Fixed [#8601](https://github.com/pubkey/rxdb/pull/8601)
