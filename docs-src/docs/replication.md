@@ -553,7 +553,9 @@ If the document was overwritten by a newer local write before it could be pushed
 
 ```ts
 function timeout(ms: number) {
-    return new Promise((_res, rej) => setTimeout(() => rej(new Error('push timeout')), ms));
+    return new Promise((_res, reject) => {
+        setTimeout(() => reject(new Error('push timeout')), ms);
+    });
 }
 
 const doc = await myCollection.insert({ id: 'foobar', value: 10 });
