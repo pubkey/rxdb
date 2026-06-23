@@ -3,7 +3,7 @@ import { Subject } from 'rxjs';
 import {
     DocumentCache,
     mapDocumentsDataToCacheDocs
-} from '../../src/doc-cache.ts';
+} from '../../plugins/core/index.mjs';
 import type {
     RxDocumentData,
     RxStorageChangeEvent
@@ -210,6 +210,35 @@ describeParallel('doc-cache.test.ts', () => {
                 cache.processTasks();
                 const latest = cache.getLatestDocumentData('doc1');
                 assert.strictEqual(latest.name, 'FallbackName');
+            });
+            it('should not downgrade latestDoc when an older change event arrives out of order', () => {
+                /**
+                 * In multiInstance mode the changeStream merges the own writes
+                 * with the events from other instances that arrive over the
+                 * BroadcastChannel. Those events can arrive out of order, so an
+                 * older document state might be received after a newer one.
+                 * The cache must keep the newest state so that two instances
+                 * converge instead of diverging forever.
+                 * @link https://github.com/pubkey/rxdb/issues/8609
+                 */
+                const { cache, changes$ } = createDocumentCache();
+                const docDataOld = createFakeDocData('doc1', EXAMPLE_REVISION_1, 1, 'Alice', 30);
+                const docDataNew = createFakeDocData('doc1', EXAMPLE_REVISION_2, 2, 'Bob', 31);
+                cache.getCachedRxDocuments([docDataNew]);
+
+                // older event arrives after the newer state is already cached
+                changes$.next([{
+                    documentId: 'doc1',
+                    documentData: docDataOld,
+                    previousDocumentData: undefined,
+                    operation: 'INSERT',
+                    isLocal: false
+                } as any]);
+
+                cache.processTasks();
+                const latest = cache.getLatestDocumentData('doc1');
+                assert.strictEqual(latest.name, 'Bob');
+                assert.strictEqual(latest._rev, EXAMPLE_REVISION_2);
             });
             it('should ignore change events for documents not in cache', () => {
                 const { cache, changes$ } = createDocumentCache();

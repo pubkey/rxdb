@@ -9,6 +9,7 @@ import './unit/util.test.ts';
 import './unit/vector-distance.test.ts';
 import './unit/custom-index.test.ts';
 import './unit/query-planner.test.ts';
+import './unit/doc-cache.test.ts';
 
 
 import './unit/internal-indexes.test.ts';

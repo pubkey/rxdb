@@ -1,0 +1,1 @@
+- FIX `DocumentCache` no longer downgrades the cached latest document state when an older change event arrives out of order in multiInstance mode. This prevents two instances from diverging and fixes a flaky `upsertLocal()` concurrency test. Fixes #8609
