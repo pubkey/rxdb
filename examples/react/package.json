@@ -8,7 +8,7 @@
     "@fortawesome/react-fontawesome": "^3.1.1",
     "async-test-util": "2.5.0",
     "babel-polyfill": "6.26.0",
-    "concurrently": "9.2.1",
+    "concurrently": "10.0.3",
     "pouchdb-server": "4.2.0",
     "react": "19.2.7",
     "react-dom": "19.2.7",
