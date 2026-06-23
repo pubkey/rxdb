@@ -78,7 +78,7 @@
     "@types/node": "^24.0.0",
     "async-test-util": "2.5.0",
     "browser-sync": "3.0.4",
-    "concurrently": "9.2.1",
+    "concurrently": "10.0.3",
     "copyfiles": "2.4.1",
     "less": "^4.2.0",
     "local-web-server": "5.4.0",

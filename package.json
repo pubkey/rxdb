@@ -635,7 +635,7 @@
     "babel-plugin-transform-class-properties": "6.24.1",
     "child-process-promise": "2.2.1",
     "clone": "2.1.2",
-    "concurrently": "9.2.1",
+    "concurrently": "10.0.3",
     "copy-webpack-plugin": "14.0.0",
     "cors": "2.8.6",
     "cross-env": "10.1.0",
