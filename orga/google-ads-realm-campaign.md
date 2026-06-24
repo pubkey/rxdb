@@ -148,7 +148,7 @@ Sitelink text max 25 chars, each description line max 35 chars.
 
 ## Target keyword list
 
-Match type guide: `[exact]` = exact match, `"phrase"` = phrase match, `broad` = broad match. Group A and B keywords carry the highest intent and should get the most budget. Group F (broad category terms) should be phrase or exact match to avoid wasting spend on unrelated NoSQL traffic.
+Match type guide: `[exact]` = exact match, `"phrase"` = phrase match, `broad` = broad match. Group A and B keywords carry the highest intent and should get the most budget. Every keyword here is Realm-specific on purpose: generic category terms like `javascript database`, `offline first database`, or `react native local database` are handled by the separate RxDB feature campaigns, so they are intentionally left out to avoid overlap and internal bidding competition.
 
 ### Group A: Direct alternative and replacement intent
 
@@ -190,47 +190,30 @@ Searchers ready to do the work. They want a path, not a pitch. The migration gui
 | how to replace realm database | broad | How-to phrasing indicates someone scoping the work. Good for capturing long-tail variants. |
 | export data from realm | broad | Practical migration step. Signals an active migration where RxDB `bulkInsert` is the next move. |
 
-### Group D: Platform-specific
+### Group D: Platform-specific Realm intent
 
-Realm's largest user base is React Native and mobile JS. These keywords match RxDB's strongest platform stories and pull qualified developers.
+Realm's largest user base is React Native, where native-binding breakage on every upgrade is the most acute pain point. Only the Realm-specific variant is kept here; the generic RN/Electron/Expo database terms live in the separate platform campaigns.
 
 | Keyword | Match type | Why it matters |
 | --- | --- | --- |
 | react native realm alternative | "phrase" | RN is where most Realm pain lives (native binding breakage on upgrades). Direct fit for RxDB's pure-JS pitch. |
-| react native local database | "phrase" | Broader RN audience that may not name Realm but has the same need. Good top-of-funnel for RN devs. |
-| react native offline database | "phrase" | Offline-first intent on the platform RxDB supports well. Strong qualifier. |
-| expo database | broad | Expo users often hit Realm native-module limits. RxDB's JS-only model is an easy win to message. |
-| electron local database | "phrase" | Desktop JS apps with the same offline-first need. RxDB supports Electron first class. |
-
-### Group E: Feature and use-case intent
-
-Searchers describing the capability they need rather than a product. Lower brand awareness, but they match RxDB's feature set and convert when the copy names the feature.
-
-| Keyword | Match type | Why it matters |
-| --- | --- | --- |
-| offline first database javascript | "phrase" | Names RxDB's core model. High fit even when the searcher has never heard of Realm. |
-| local first database | "phrase" | The category RxDB leads in. Attracts the architecturally-aligned users from Ad 2. |
-| reactive database javascript | "phrase" | RxJS observable queries are a headline RxDB feature. Self-selects developers who want reactivity. |
-| sync database offline | broad | Captures the offline-sync need that Realm filled. Broad reach for use-case searchers. |
-| indexeddb wrapper | broad | Devs hitting raw IndexedDB pain. RxDB sits on top of IndexedDB and solves exactly this. |
-
-### Group F: Broad category and competitor-adjacent terms
-
-Wider reach with weaker intent. Keep these on phrase or exact match and watch cost per conversion closely. Use mainly to feed retargeting and discover new search terms.
-
-| Keyword | Match type | Why it matters |
-| --- | --- | --- |
-| javascript database | [exact] | High volume, low specificity. Exact match only, as a discovery and brand-visibility play, not a primary spend. |
-| nosql database for apps | "phrase" | Category awareness. Useful for reaching builders before they pick Realm in the first place. |
-| client side database | "phrase" | Describes the in-browser/in-app niche RxDB fills. Moderate intent, good for net-new audiences. |
-| mobile database for react | "phrase" | Bridges the React and mobile audiences into the RN platform story. |
+| realm react native deprecated | "phrase" | Combines the platform with the deprecation trigger. Very high intent and unambiguously Realm-the-database. |
 
 ### Negative keywords
 
-Add these as campaign negatives to stop wasted spend on unrelated meanings of "realm".
+The word "realm" is heavily used by consumer products, so a tight negative list is essential. The largest single source of junk traffic is **Minecraft Realms**, Mojang's paid server-hosting subscription (Realms Core at $3.99/mo and Realms Plus at $7.99/mo). It has enormous search volume from players, none of whom are developers, so it would otherwise drain budget against high-volume broad and phrase matches.
 
-- `-game` `-gaming` `-mmorpg` `-rune` (Realm of the Mad God and other games)
-- `-vr` `-meta` (Meta/VR "realm" products)
-- `-tarkov` (Escape from Tarkov "realm" servers)
-- `-fantasy` `-kingdom` (fantasy-themed unrelated results)
-- `-jobs` `-salary` `-tutorial pdf` (low commercial intent for this campaign)
+Add these as campaign-level negatives:
+
+- **Minecraft Realms** (highest priority): `-minecraft` `-mojang` `-bedrock` `-"realms plus"` `-"realms core"` `-xbox` `-server` `-survival` `-mods` `-skins` `-"realm code"` `-aternos`
+- **Other games**: `-game` `-gaming` `-mmorpg` `-rune` (Realm of the Mad God), `-tarkov` (Escape from Tarkov realm servers)
+- **VR / Meta products**: `-vr` `-meta` `-quest`
+- **Fantasy / unrelated**: `-fantasy` `-kingdom` `-spiritual` `-anime`
+- **Low commercial intent**: `-jobs` `-salary` `-"tutorial pdf"` `-free download` `-cheats`
+
+Note on `-server`: Minecraft Realms are marketed as private servers, so `-server` blocks a large junk segment. A former Realm-database user who needs a backend would search "realm sync alternative" or "self-host realm", neither of which contains "server", so the keep-list above is unaffected. Review the search-terms report after the first week and promote any new Minecraft or gaming phrasings (for example specific server names or map titles) to negatives.
+
+Sources for the Minecraft Realms research:
+- [Realms Servers for Bedrock & Java (Minecraft.net)](https://www.minecraft.net/en-us/realms)
+- [Realms Plus (Minecraft Wiki)](https://minecraft.fandom.com/wiki/Realms_Plus)
+- [What are Minecraft Realms (Minecraft.net)](https://www.minecraft.net/en-us/article/what-are-minecraft-realms)
