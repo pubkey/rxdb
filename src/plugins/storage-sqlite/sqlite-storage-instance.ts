@@ -46,6 +46,21 @@ import { newRxError } from '../../rx-error.ts';
 let shownNonPremiumLog = false;
 let instanceId = 0;
 
+/**
+ * Limits of the free trial SQLite storage.
+ * Reaching them throws an error, see the error codes SQL2 and SQL3.
+ * Deleted documents are kept as tombstones for the replication but do
+ * NOT count towards the document limit.
+ * Use the premium SQLite storage to remove these limits:
+ * @link https://rxdb.info/premium/
+ */
+export const TRIAL_SQLITE_DOCUMENT_LIMIT = 500;
+export const TRIAL_SQLITE_OPERATION_LIMIT = 500;
+/**
+ * Ratio of the limits at which a loud warning is logged on each write.
+ */
+const TRIAL_SQLITE_WARN_RATIO = 0.8;
+
 export class RxStorageInstanceSQLite<RxDocType> implements RxStorageInstance<
     RxDocType,
     SQLiteInternals,
@@ -98,7 +113,7 @@ export class RxStorageInstanceSQLite<RxDocType> implements RxStorageInstance<
         }
 
         this.opCount = this.opCount + 1;
-        if (this.opCount > 500) {
+        if (this.opCount > TRIAL_SQLITE_OPERATION_LIMIT) {
             throw newRxError('SQL3');
         }
 
@@ -120,15 +135,16 @@ export class RxStorageInstanceSQLite<RxDocType> implements RxStorageInstance<
         const writePromises: Promise<any>[] = [];
         let categorized: CategorizeBulkWriteRowsOutput<RxDocType> = {} as any;
 
+        const isPremium = await hasPremiumFlag();
         if (
             !shownNonPremiumLog &&
-            !(await hasPremiumFlag())
+            !isPremium
         ) {
             console.warn(
                 [
                     '-------------- RxDB SQLite Trial Storage ---------------------------------',
                     'You are using the free *trial* SQLite-based RxStorage implementation: https://rxdb.info/rx-storage-sqlite.html?console=sqlite-trial',
-                    'This storage is intended only for evaluation purposes and comes with strict limitations (no indexes, no attachments, and a ~300-document cap).',
+                    'This storage is intended only for evaluation purposes and comes with strict limitations (no indexes, no attachments, and a ~500-document cap).',
                     'For production use and optimal performance, we strongly recommend upgrading to the premium SQLite storage.',
                     'Premium version: https://rxdb.info/premium/?console=sqlite',
                     'If you already have premium access, you can disable this message by calling setPremiumFlag() from rxdb-premium/plugins/shared.',
@@ -175,7 +191,55 @@ export class RxStorageInstanceSQLite<RxDocType> implements RxStorageInstance<
                 );
                 ret.error = categorized.errors;
 
-                if ((result.length + categorized.bulkInsertDocs.length) > 300) {
+                /**
+                 * Deleted documents are kept as tombstones for the replication
+                 * but must NOT count towards the trial document limit.
+                 * Therefore we count the resulting amount of non-deleted documents.
+                 */
+                let liveDocCount = 0;
+                docsInDb.forEach(doc => {
+                    if (!doc._deleted) {
+                        liveDocCount = liveDocCount + 1;
+                    }
+                });
+                categorized.bulkInsertDocs.forEach(row => {
+                    if (!row.document._deleted) {
+                        liveDocCount = liveDocCount + 1;
+                    }
+                });
+                categorized.bulkUpdateDocs.forEach(row => {
+                    const previous = docsInDb.get(row.document[this.primaryPath]);
+                    const wasLive = !!previous && !previous._deleted;
+                    const isLive = !row.document._deleted;
+                    if (wasLive && !isLive) {
+                        liveDocCount = liveDocCount - 1;
+                    } else if (!wasLive && isLive) {
+                        liveDocCount = liveDocCount + 1;
+                    }
+                });
+
+                if (
+                    !isPremium &&
+                    (
+                        liveDocCount >= Math.floor(TRIAL_SQLITE_DOCUMENT_LIMIT * TRIAL_SQLITE_WARN_RATIO) ||
+                        this.opCount >= Math.floor(TRIAL_SQLITE_OPERATION_LIMIT * TRIAL_SQLITE_WARN_RATIO)
+                    )
+                ) {
+                    console.warn(
+                        [
+                            '-------------- RxDB SQLite Trial Storage - Limit Almost Reached ----------------',
+                            'You are close to the limits of the free *trial* SQLite RxStorage.',
+                            'Current usage: ' + liveDocCount + ' / ' + TRIAL_SQLITE_DOCUMENT_LIMIT + ' documents and ' +
+                            this.opCount + ' / ' + TRIAL_SQLITE_OPERATION_LIMIT + ' operations.',
+                            'When a limit is reached, your read and write operations will start to throw errors.',
+                            'Upgrade to the premium SQLite storage to remove these limits and get full performance:',
+                            'https://rxdb.info/premium/?console=sqlite-trial-limit',
+                            '--------------------------------------------------------------------------------'
+                        ].join('\n')
+                    );
+                }
+
+                if (liveDocCount > TRIAL_SQLITE_DOCUMENT_LIMIT) {
                     throw newRxError('SQL2');
                 }
 

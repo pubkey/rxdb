@@ -1205,8 +1205,8 @@ export const ERROR_MESSAGES = {
         docs: 'https://rxdb.info/rx-storage-sqlite.html?console=errors&code=SQL1'
     },
     SQL2: {
-        message: 'The trial version of the SQLite storage is limited to contain 300 documents',
-        cause: 'You reached the document limit of the trial version.',
+        message: 'The trial version of the SQLite storage is limited to contain 500 non-deleted documents',
+        cause: 'You reached the document limit of the trial version. Deleted documents do not count towards this limit.',
         fix: 'Upgrade to the full version.',
         docs: 'https://rxdb.info/rx-storage-sqlite.html?console=errors&code=SQL2'
     },

@@ -1,0 +1,1 @@
+- IMPROVE trial SQLite storage: raise the document limit from 300 to 500, stop counting deleted (tombstone) documents towards the limit, and log a loud warning on each write once usage reaches ~80% of the document or operation limit. See https://rxdb.info/rx-storage-sqlite.html
