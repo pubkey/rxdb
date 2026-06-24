@@ -146,10 +146,91 @@ Sitelink text max 25 chars, each description line max 35 chars.
 | RxDB vs Realm | Full feature comparison | See why teams switch | https://rxdb.info/articles/mongodb-realm-alternative.html |
 | Pricing & Premium | Open-source core is free | Premium plugins available | https://rxdb.info/premium/ |
 
-## Suggested keyword themes
+## Target keyword list
 
-- realm alternative, realm database alternative, mongodb realm alternative
-- atlas device sync alternative, realm sync replacement
-- realm deprecated, realm end of life, realm shutting down
-- realm react native alternative, offline first javascript database
-- realm migration, migrate off realm
+Match type guide: `[exact]` = exact match, `"phrase"` = phrase match, `broad` = broad match. Group A and B keywords carry the highest intent and should get the most budget. Group F (broad category terms) should be phrase or exact match to avoid wasting spend on unrelated NoSQL traffic.
+
+### Group A: Direct alternative and replacement intent
+
+These searchers have already decided to leave Realm and are comparing options. Highest commercial intent, lowest funnel, best conversion rate.
+
+| Keyword | Match type | Why it matters |
+| --- | --- | --- |
+| realm alternative | "phrase" | The core money term. The searcher wants to leave Realm and is shopping for a replacement right now. |
+| realm database alternative | "phrase" | Same intent, slightly more specific to the database rather than the platform. Filters out non-database Realm meanings. |
+| mongodb realm alternative | "phrase" | Captures people who know Realm as the MongoDB product. Matches the landing page title exactly, so high relevance and Quality Score. |
+| atlas device sdk alternative | "phrase" | Uses the current official product name. These are well-informed devs who know the SDK was rebranded, a strong RxDB fit. |
+| realm replacement | "phrase" | Replacement implies a committed switch, not casual research. High intent. |
+| alternative to realm js | "phrase" | `realm-js` is the JavaScript binding. These users are exactly RxDB's audience: JS/TS developers. |
+| best realm alternative | "phrase" | Comparison intent. Pairs with the "Best Realm Alternative" headline and the RxDB vs Realm sitelink. |
+
+### Group B: Deprecation and end-of-life awareness
+
+These searchers know about the shutdown and feel time pressure. They are motivated to act, which is the campaign's main lever.
+
+| Keyword | Match type | Why it matters |
+| --- | --- | --- |
+| realm deprecated | "phrase" | The searcher just learned Realm is going away and is looking for what to do. Maps to the urgency in Ad 1 and Ad 3. |
+| realm end of life | "phrase" | Explicit EOL awareness. These users have a hard deadline (Sep 2025) and need a destination. |
+| atlas device sync deprecated | "phrase" | Names the exact deprecated service. Highly qualified, knows the sync layer is the part that breaks. |
+| atlas device sync end of life | "phrase" | Same as above with stronger urgency wording. |
+| realm shutting down | broad | Catches worried searches in many phrasings. Broad match widens reach for an emotionally charged, time-sensitive query. |
+| is realm still maintained | broad | Doubt-stage searcher. Reachable with a clear "active, regular releases" message before a competitor catches them. |
+| realm sync alternative | "phrase" | Sync is the capability they are about to lose, and RxDB's replication is the direct answer. |
+
+### Group C: Migration intent
+
+Searchers ready to do the work. They want a path, not a pitch. The migration guide sitelink and Ad 3 serve these directly.
+
+| Keyword | Match type | Why it matters |
+| --- | --- | --- |
+| migrate off realm | "phrase" | Action verb signals a committed, in-progress migration. Very high intent. |
+| realm migration | "phrase" | Broad migration research. Send to the step-by-step migration guide. |
+| realm to rxdb | [exact] | Branded comparison search. Cheap, near-certain conversion, defends the brand term. |
+| how to replace realm database | broad | How-to phrasing indicates someone scoping the work. Good for capturing long-tail variants. |
+| export data from realm | broad | Practical migration step. Signals an active migration where RxDB `bulkInsert` is the next move. |
+
+### Group D: Platform-specific
+
+Realm's largest user base is React Native and mobile JS. These keywords match RxDB's strongest platform stories and pull qualified developers.
+
+| Keyword | Match type | Why it matters |
+| --- | --- | --- |
+| react native realm alternative | "phrase" | RN is where most Realm pain lives (native binding breakage on upgrades). Direct fit for RxDB's pure-JS pitch. |
+| react native local database | "phrase" | Broader RN audience that may not name Realm but has the same need. Good top-of-funnel for RN devs. |
+| react native offline database | "phrase" | Offline-first intent on the platform RxDB supports well. Strong qualifier. |
+| expo database | broad | Expo users often hit Realm native-module limits. RxDB's JS-only model is an easy win to message. |
+| electron local database | "phrase" | Desktop JS apps with the same offline-first need. RxDB supports Electron first class. |
+
+### Group E: Feature and use-case intent
+
+Searchers describing the capability they need rather than a product. Lower brand awareness, but they match RxDB's feature set and convert when the copy names the feature.
+
+| Keyword | Match type | Why it matters |
+| --- | --- | --- |
+| offline first database javascript | "phrase" | Names RxDB's core model. High fit even when the searcher has never heard of Realm. |
+| local first database | "phrase" | The category RxDB leads in. Attracts the architecturally-aligned users from Ad 2. |
+| reactive database javascript | "phrase" | RxJS observable queries are a headline RxDB feature. Self-selects developers who want reactivity. |
+| sync database offline | broad | Captures the offline-sync need that Realm filled. Broad reach for use-case searchers. |
+| indexeddb wrapper | broad | Devs hitting raw IndexedDB pain. RxDB sits on top of IndexedDB and solves exactly this. |
+
+### Group F: Broad category and competitor-adjacent terms
+
+Wider reach with weaker intent. Keep these on phrase or exact match and watch cost per conversion closely. Use mainly to feed retargeting and discover new search terms.
+
+| Keyword | Match type | Why it matters |
+| --- | --- | --- |
+| javascript database | [exact] | High volume, low specificity. Exact match only, as a discovery and brand-visibility play, not a primary spend. |
+| nosql database for apps | "phrase" | Category awareness. Useful for reaching builders before they pick Realm in the first place. |
+| client side database | "phrase" | Describes the in-browser/in-app niche RxDB fills. Moderate intent, good for net-new audiences. |
+| mobile database for react | "phrase" | Bridges the React and mobile audiences into the RN platform story. |
+
+### Negative keywords
+
+Add these as campaign negatives to stop wasted spend on unrelated meanings of "realm".
+
+- `-game` `-gaming` `-mmorpg` `-rune` (Realm of the Mad God and other games)
+- `-vr` `-meta` (Meta/VR "realm" products)
+- `-tarkov` (Escape from Tarkov "realm" servers)
+- `-fantasy` `-kingdom` (fantasy-themed unrelated results)
+- `-jobs` `-salary` `-tutorial pdf` (low commercial intent for this campaign)
