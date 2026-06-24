@@ -23,9 +23,11 @@ import type {
     RxCollection,
     RxDocumentData,
     RxError,
+    RxDocument,
     RxJsonSchema,
     RxReplicationPullStreamItem,
     RxReplicationWriteToMasterRow,
+    RxStorageDefaultCheckpoint,
     RxStorageInstance,
     RxStorageInstanceReplicationState,
     RxStorageReplicationMeta,
@@ -518,6 +520,93 @@ export class RxReplicationState<RxDocType, CheckpointType> {
         return true;
     }
 
+    /**
+     * Returns a promise that resolves when the given RxDocument instance
+     * was successfully pushed to the server.
+     *
+     * It resolves either when the document is emitted on sent$ (the live
+     * push case) or, for documents that were already pushed before this was
+     * called, when the upstream (push) checkpoint already covers the
+     * documents write time (_meta.lwt).
+     *
+     * If the document was overwritten by a newer local write before it could
+     * be pushed, the promise resolves as soon as any later state of the
+     * document has been pushed, because that also proves the given state
+     * reached the server.
+     */
+    async awaitDocumentPushed(doc: RxDocument<RxDocType>): Promise<void> {
+        if (!this.push) {
+            throw newRxError('RC_PUSH_AWAIT', {
+                id: doc.primary,
+                args: { replicationIdentifier: this.replicationIdentifier }
+            });
+        }
+        await this.startPromise;
+        const internalReplicationState = ensureNotFalsy(this.internalReplicationState);
+        const primaryPath = this.collection.schema.primaryPath;
+        const docId: string = doc.primary;
+        const docLwt: number = doc._data._meta.lwt;
+
+        /**
+         * Detects documents that were already pushed before
+         * awaitDocumentPushed() was called, by comparing the document write
+         * time with the already persisted upstream (push) checkpoint.
+         */
+        const isAlreadyPushed = async (): Promise<boolean> => {
+            await internalReplicationState.checkpointQueue;
+            const checkpointDoc = internalReplicationState.lastCheckpointDoc.up;
+            if (!checkpointDoc) {
+                return false;
+            }
+            return isDocumentStateOlderThenCheckpoint(
+                checkpointDoc.checkpointData as unknown as RxStorageDefaultCheckpoint,
+                docId,
+                docLwt
+            );
+        };
+
+        return new Promise<void>((resolve, reject) => {
+            /**
+             * Every successfully pushed document is emitted on sent$,
+             * so an emission with our primary key proves that this document
+             * reached the master.
+             */
+            const sub = this.sent$.subscribe({
+                next: (sentDocData) => {
+                    if ((sentDocData as any)[primaryPath] === docId) {
+                        sub.unsubscribe();
+                        resolve();
+                    }
+                }
+            });
+            this.onCancel.push(() => {
+                sub.unsubscribe();
+                /**
+                 * Run a final check so that a document which was pushed
+                 * in the last cycle before a (non-live) cancel still resolves.
+                 * If it was not pushed before the cancel, the promise stays
+                 * pending, which matches the behavior of awaitInitialReplication().
+                 */
+                isAlreadyPushed().then(pushed => {
+                    if (pushed) {
+                        resolve();
+                    }
+                }).catch(reject);
+            });
+            /**
+             * Run the initial check after subscribing so that documents that
+             * were already pushed resolve immediately, without missing a
+             * sent$ emission that could happen between check and subscribe.
+             */
+            isAlreadyPushed().then(pushed => {
+                if (pushed) {
+                    sub.unsubscribe();
+                    resolve();
+                }
+            }).catch(reject);
+        });
+    }
+
     reSync() {
         this.remoteEvents$.next('RESYNC');
     }
@@ -614,6 +703,33 @@ export class RxReplicationState<RxDocType, CheckpointType> {
         });
         return this.startQueue;
     }
+}
+
+
+/**
+ * Checks if a given document state (identified by its primary key and its
+ * _meta.lwt write time) is older than or equal to the upstream (push)
+ * checkpoint, which means it is already covered by the push.
+ *
+ * The upstream checkpoint has the default RxStorage checkpoint shape
+ * { id, lwt } and points to the last document that was processed by the
+ * push in the sort order [_meta.lwt ASC, primaryKey ASC].
+ *
+ * A document state is considered pushed when it is NOT after the checkpoint,
+ * which mirrors the comparison used by getChangedDocumentsSinceQuery().
+ */
+export function isDocumentStateOlderThenCheckpoint(
+    checkpoint: RxStorageDefaultCheckpoint,
+    docId: string,
+    docLwt: number
+): boolean {
+    if (docLwt < checkpoint.lwt) {
+        return true;
+    }
+    if (docLwt === checkpoint.lwt && docId <= checkpoint.id) {
+        return true;
+    }
+    return false;
 }
 
 

@@ -876,6 +876,12 @@ export const ERROR_MESSAGES = {
         fix: 'Check server permissions and logs.',
         docs: 'https://rxdb.info/replication.html?console=errors&code=RC_FORBIDDEN'
     },
+    RC_PUSH_AWAIT: {
+        message: 'awaitDocumentPushed() can only be used on a replication that has a push handler.',
+        cause: 'The replication was started with pull only, so documents are never pushed to the server.',
+        fix: 'Only call awaitDocumentPushed() on replications that define a push handler.',
+        docs: 'https://rxdb.info/replication.html?console=errors&code=RC_PUSH_AWAIT'
+    },
 
     // plugins/dev-mode/check-schema.js
     SC1: {
