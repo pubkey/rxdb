@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Deploy
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           ref: docs
       # - name: Deploy to Cloudflare Pages
