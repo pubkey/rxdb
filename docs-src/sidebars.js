@@ -602,6 +602,7 @@ const sidebars = {
       items: [
         'articles/browser-database',
         'articles/local-first-future',
+        'articles/local-first-sync-engines-2026',
         'why-nosql',
         'downsides-of-offline-first',
         'nodejs-database',
