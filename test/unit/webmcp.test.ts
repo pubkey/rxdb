@@ -7,7 +7,7 @@ import {
 import { RxDBWebMCPPlugin } from '../../plugins/webmcp/index.mjs';
 import config from './config.ts';
 import { schemaObjects, schemas } from '../../plugins/test-utils/index.mjs';
-import { initializeWebMCPPolyfill } from '@mcp-b/webmcp-polyfill';
+import { cleanupWebMCPPolyfill, initializeWebMCPPolyfill } from '@mcp-b/webmcp-polyfill';
 import { waitUntil } from 'async-test-util';
 
 addRxPlugin(RxDBWebMCPPlugin);
@@ -33,15 +33,8 @@ describe('webmcp.test.ts', () => {
         if (typeof global !== 'undefined' && !(global as any).navigator) {
             (global as any).navigator = {};
         }
+        cleanupWebMCPPolyfill();
         initializeWebMCPPolyfill({ installTestingShim: true, autoInitialize: false });
-        if ((global as any).navigator.modelContext) {
-            const tools = (global as any).navigator.modelContextTesting?.listTools() || [];
-            tools.forEach((tool: any) => {
-                try {
-                    (global as any).navigator.modelContext.unregisterTool(tool.name);
-                } catch (err) { }
-            });
-        }
 
         db = await createRxDatabase({
             name: randomToken(10),
@@ -58,6 +51,7 @@ describe('webmcp.test.ts', () => {
 
     afterEach(async () => {
         try {
+            cleanupWebMCPPolyfill();
             if (originalNavigator) {
                 (global as any).navigator = originalNavigator;
             } else {
