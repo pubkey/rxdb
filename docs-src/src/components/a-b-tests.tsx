@@ -1,117 +1,176 @@
 import { randomOfArray } from '../../../plugins/utils';
-// import { HeroEmojiChat } from './hero-section/T4_hero_b';
-// import { ReplicationDiagram } from './replication-diagram';
-// import { ScrollToSection, SemPage } from '../pages';
-// import { OfflineSection } from './offline-section';
-// import { RealtimeSection } from './realtime-section';
-// import { RuntimesSection } from './runtimes-section';
-// import { SyncSection } from './sync-section';
-// import { ScrollToSection, SemPage } from '../pages';
-// import { HeroSection_B } from './hero-section/T4_hero_b';
-// import { HeroSection_A } from './hero-section/T4_hero_a';
-// import { HeroSection_C } from './hero-section/T4_hero_c';
-// import { HeroSection_D } from './hero-section/T4_hero_d';
 
-const CURRENT_TEST_RUN = {
-    /**
-     * @link https://docs.google.com/spreadsheets/d/1ryPOhhwFHIqkVnIlpup6neV7u1FDnPMTlgzbvE62kB8/edit?gid=1330239462#gid=1330239462
-     */
-    id: 'TX',
-    variations: {
-        A: <>The easiest way to <b>store</b> and <b>sync</b> Data inside of your App</>,
-        // B: <>The local-first <b>Database</b> for <b>JavaScript</b> Applications</>,
-        // C: <>The Reactive Local-First <b>Database</b> for Modern <b>JavaScript</b> Apps</>,
-        // D: <>The Local-First Database to <b>Store</b> and <b>Sync</b> App Data</>,
-        // E: <>The Local-First <b>Database</b> for <b>JavaScript</b> Apps</>
+/**
+ * A/B testing for the search-engine-marketing (SEM) landing pages
+ * in `docs-src/src/pages/sem/*`.
+ *
+ * Each SEM page can A/B-test its hero title, hero paragraph, meta title,
+ * meta description and hero bullets. To create a variation, wrap the field
+ * value in `ab(...)`:
+ *
+ * ```tsx
+ * import { ab } from '../../components/a-b-tests';
+ *
+ * Home({
+ *   sem: {
+ *     id: 'react-database',
+ *     appName: 'React',
+ *     metaTitle: ab(
+ *       'The local Database for React Apps',
+ *       'React Local-First Database'
+ *     ),
+ *     title: ab(
+ *       <>The easiest way to <b>store</b> and <b>sync</b> Data in React</>,
+ *       <>The Local-First <b>Database</b> for <b>React</b> Apps</>
+ *     )
+ *   }
+ * });
+ * ```
+ *
+ * On the first visit a variant index is randomly assigned per page-id and
+ * persisted in localStorage. Every conversion event is then tagged with the
+ * page-id and variant (see `getTestGroupEventPrefix`) so the variants can be
+ * compared in Google Analytics.
+ *
+ * After editing the variations of an existing page, bump `abVersion` on the
+ * SemPage so returning users get re-assigned instead of keeping a stale index.
+ */
+
+/**
+ * Wraps a set of A/B variations for a single SemPage field.
+ * Use the `ab()` helper to create one.
+ */
+export type ABVariants<T> = { variants: T[]; };
+
+/**
+ * A SemPage field that is either a single value or a set of A/B variations.
+ */
+export type Variable<T> = T | ABVariants<T>;
+
+/**
+ * Marks a SemPage field as A/B-testable by listing its variations.
+ * Using an explicit wrapper (instead of a bare array) keeps fields like
+ * `bullets` - which are arrays themselves - unambiguous.
+ */
+export function ab<T>(...variants: T[]): ABVariants<T> {
+    return { variants };
+}
+
+function isABVariants<T>(field: Variable<T>): field is ABVariants<T> {
+    return !!field && typeof field === 'object' && Array.isArray((field as any).variants);
+}
+
+/**
+ * Resolves a possibly-variable field to the value for the given variant index.
+ * Plain (non-`ab`) values are returned unchanged so existing pages keep working.
+ */
+export function resolveVariable<T>(field: Variable<T>, variantIndex: number): T {
+    if (isABVariants(field)) {
+        const variants = field.variants;
+        return variants[variantIndex % variants.length];
     }
+    return field;
+}
+
+/**
+ * The fields of a SemPage that can hold A/B variations.
+ * Typed structurally to avoid importing SemPage (would create an import cycle).
+ */
+type ABTestableSem = {
+    id: string;
+    abVersion?: number;
+    metaTitle?: Variable<any>;
+    metaDescription?: Variable<any>;
+    title?: Variable<any>;
+    text?: Variable<any>;
+    bullets?: Variable<any>;
 };
+
+const AB_TESTABLE_FIELDS: (keyof ABTestableSem)[] = [
+    'metaTitle',
+    'metaDescription',
+    'title',
+    'text',
+    'bullets'
+];
+
+/**
+ * Amount of A/B variations defined for a SemPage,
+ * which is the largest variation count across all testable fields.
+ */
+export function countSemVariants(sem: ABTestableSem): number {
+    let count = 1;
+    for (const field of AB_TESTABLE_FIELDS) {
+        const value = sem[field];
+        if (isABVariants(value) && value.variants.length > count) {
+            count = value.variants.length;
+        }
+    }
+    return count;
+}
 
 export type TestGroup = {
-    variation: string;
+    variation: number;
     deviceType: 'm' | 'd'; // mobile/desktop
-    originId?: string;
+    originId: string;
 };
-let testGroup: TestGroup;
 
-const TEST_GROUP_STORAGE_ID = 'test-group-' + CURRENT_TEST_RUN.id;
+/**
+ * The variant assignment of the currently rendered SEM page.
+ * Set by `getSemVariant` so the tracking events can read it.
+ */
+let currentSemTestGroup: TestGroup | undefined;
 
-export function getTestGroup(originId: string = 'main'): TestGroup {
-    if (testGroup) {
-        return testGroup;
-    }
+/**
+ * Returns the A/B variant index for the given SEM page.
+ * Randomly assigns one on the first visit and persists it in localStorage
+ * so the same user keeps seeing the same variation.
+ */
+export function getSemVariant(sem: ABTestableSem): number {
+    const variantCount = countSemVariants(sem);
 
     if (typeof localStorage === 'undefined') {
-        return {
-            variation: Object.keys(CURRENT_TEST_RUN.variations)[0],
+        currentSemTestGroup = {
+            variation: 0,
             deviceType: 'd',
-            originId: originId ? originId : ''
+            originId: sem.id
         };
-    }
-
-    const groupFromStorage = localStorage.getItem(TEST_GROUP_STORAGE_ID);
-    if (groupFromStorage) {
-        testGroup = JSON.parse(groupFromStorage);
-    } else {
-        testGroup = {
-            variation: randomOfArray(Object.keys(CURRENT_TEST_RUN.variations)),
-            deviceType: window.screen.width <= 900 ? 'm' : 'd',
-            originId: originId ? originId : ''
-        };
-        localStorage.setItem(TEST_GROUP_STORAGE_ID, JSON.stringify(testGroup));
-    }
-    console.log('currentTestGroup:');
-    console.dir(testGroup);
-    return testGroup;
-}
-
-export function getABTestOrder(key: string): number {
-    const group = getTestGroup();
-    const variation = CURRENT_TEST_RUN.variations[group.variation];
-    const order = variation[key];
-    if (!order) {
         return 0;
     }
-    return order;
-}
-export function getABTestDark(key: string): boolean {
-    const order = getABTestOrder(key);
-    return order % 2 !== 0;
-}
-export function ABTestContent(
-    // props: {
-    //     refs: any;
-    //     sem?: SemPage;
-    //     scrollToSection: ScrollToSection;
-    // }
-) {
-    const variationId = getTestGroup().variation;
-    //     return <>
-    //         <RuntimesSection sem={props.sem} runtimesRef={props.refs.runtimesRef} dark={true} />
-    //         <SyncSection sem={props.sem} replicationRef={props.refs.replicationRef} dark={false} />
-    //         <OfflineSection sem={props.sem} offlineRef={props.refs.offlineRef} dark={true} />
-    //         <RealtimeSection sem={props.sem} realtimeRef={props.refs.realtimeRef} dark={false} />
-    //     </>;
-    // return <></>;
-    const VariationElement = CURRENT_TEST_RUN.variations[variationId];
-    // return <VariationElement sem={props.sem} scrollToSection={props.scrollToSection} />;
-    return VariationElement;
-}
 
-
-export function getTestGroupEventPrefix() {
-    const has = localStorage.getItem(TEST_GROUP_STORAGE_ID);
-    if (!has) {
-        return false;
+    const storageId = 'sem-ab-' + sem.id + '-v' + (sem.abVersion ?? 1);
+    const fromStorage = localStorage.getItem(storageId);
+    if (fromStorage) {
+        currentSemTestGroup = JSON.parse(fromStorage);
     } else {
-        const tg = getTestGroup();
-        return [
-            'abt',
-            CURRENT_TEST_RUN.id,
-            Object.keys(CURRENT_TEST_RUN).length > 1 ? 'V:' + tg.variation : undefined,
-            'O:' + tg.originId,
-            'D:' + tg.deviceType,
-        ]
-            .filter(v => !!v)
-            .join('_');
+        const variationKeys = Array.from({ length: variantCount }, (_, i) => i);
+        currentSemTestGroup = {
+            variation: randomOfArray(variationKeys),
+            deviceType: window.screen.width <= 900 ? 'm' : 'd',
+            originId: sem.id
+        };
+        localStorage.setItem(storageId, JSON.stringify(currentSemTestGroup));
     }
+
+    console.log('currentSemTestGroup:');
+    console.dir(currentSemTestGroup);
+    return currentSemTestGroup.variation;
+}
+
+/**
+ * Prefix added to the tracking events so that conversions can be attributed
+ * to a given SEM page and A/B variant in Google Analytics.
+ * Returns false when no SEM A/B page has been rendered.
+ */
+export function getTestGroupEventPrefix(): string | false {
+    if (!currentSemTestGroup) {
+        return false;
+    }
+    const tg = currentSemTestGroup;
+    return [
+        'semab',
+        tg.originId,
+        'V' + tg.variation,
+        'D' + tg.deviceType
+    ].join('_');
 }

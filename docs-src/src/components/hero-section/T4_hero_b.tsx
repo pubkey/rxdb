@@ -1,4 +1,5 @@
 import { ScrollToSection, SemPage } from '@site/src/pages';
+import { resolveVariable } from '../a-b-tests';
 import { triggerTrackingEvent } from '../trigger-event';
 import { CheckedList } from '../checked-list';
 import { Button } from '../button';
@@ -15,10 +16,16 @@ import { VideoPlayButtonArrow } from '../video-button';
 
 export function HeroSection_B(props: {
     sem?: SemPage;
+    /**
+     * Index of the A/B variant assigned to the current visitor.
+     * Used to resolve the variable title/text/bullets fields.
+     */
+    variant?: number;
     scrollToSection: ScrollToSection;
 }) {
     // const [openDemo, setOpenDemo] = useState(false);
     const [openVideo, setOpenVideo] = useState(false);
+    const variant = props.variant ?? 0;
 
     return <div className="block first hero centered dark" style={{
         background: 'linear-gradient(to bottom, rgba(15, 23, 42, 0.8), #05060a)'
@@ -37,7 +44,7 @@ export function HeroSection_B(props: {
                 textAlign: 'center',
             }}>
                 {
-                    props.sem ? props.sem.title : <>The Local-First <b>Database</b> for <b>JavaScript</b> Apps</>
+                    props.sem ? resolveVariable(props.sem.title, variant) : <>The Local-First <b>Database</b> for <b>JavaScript</b> Apps</>
                 }
             </h1>
             <div className="inner">
@@ -46,8 +53,12 @@ export function HeroSection_B(props: {
                         marginTop: 0,
                         marginBottom: 0
                     }} className='centered-mobile-p'>
-                        RxDB is a NoSQL database for JavaScript that runs directly in your app. With a <a href="/articles/local-first-future.html" target="_blank">local-first</a> design,
-                        it delivers zero-latency queries even offline, and syncs seamlessly with any backend.
+                        {
+                            props.sem && props.sem.text
+                                ? resolveVariable(props.sem.text, variant)
+                                : <>RxDB is a NoSQL database for JavaScript that runs directly in your app. With a <a href="/articles/local-first-future.html" target="_blank">local-first</a> design,
+                                    it delivers zero-latency queries even offline, and syncs seamlessly with any backend.</>
+                        }
                     </p>
                     <CheckedList className='centered-mobile padding-right-20-0' style={{
                         paddingTop: 35,
@@ -55,18 +66,24 @@ export function HeroSection_B(props: {
                         paddingBottom: 0,
                         maxWidth: 360
                     }}>
-                        <>
-                            Build apps that work <b onClick={() => props.scrollToSection('offline')}>offline</b>
-                        </>
-                        <>
-                            Sync with <b onClick={() => props.scrollToSection('replication')}>any Backend</b>
-                        </>
-                        <>
-                            Observable <b onClick={() => props.scrollToSection('realtime')}>Realtime Queries</b>
-                        </>
-                        <>
-                            All JavaScript <b onClick={() => props.scrollToSection('runtimes')}>Runtimes</b> Supported
-                        </>
+                        {
+                            props.sem && props.sem.bullets
+                                ? resolveVariable(props.sem.bullets, variant)
+                                : [
+                                    <>
+                                        Build apps that work <b onClick={() => props.scrollToSection('offline')}>offline</b>
+                                    </>,
+                                    <>
+                                        Sync with <b onClick={() => props.scrollToSection('replication')}>any Backend</b>
+                                    </>,
+                                    <>
+                                        Observable <b onClick={() => props.scrollToSection('realtime')}>Realtime Queries</b>
+                                    </>,
+                                    <>
+                                        All JavaScript <b onClick={() => props.scrollToSection('runtimes')}>Runtimes</b> Supported
+                                    </>
+                                ]
+                        }
                     </CheckedList>
                 </div>
 

@@ -24,7 +24,7 @@ import { IconPremium } from '../components/icons/premium';
 import { IconCode } from '../components/icons/code';
 import { IconQuickstart } from '../components/icons/quickstart';
 import { FeaturesSection } from '../components/features-section';
-import { getTestGroup } from '../components/a-b-tests';
+import { Variable, getSemVariant, resolveVariable } from '../components/a-b-tests';
 import { CoreConceptSection } from '../components/core-concept-section';
 
 
@@ -195,11 +195,36 @@ export type ScrollToSection = (section: Section) => void;
  */
 export type SemPage = {
   id: string;
-  metaTitle: string;
+  /**
+   * Browser/SEO title. Wrap in `ab(...)` to A/B-test it.
+   */
+  metaTitle: Variable<string>;
+  /**
+   * Meta description used for SEO and the ad-to-page message match.
+   * Falls back to the generic site description when not set.
+   */
+  metaDescription?: Variable<string>;
   iconUrl?: string;
-  title: any;
-  text?: any;
+  /**
+   * Hero headline (h1). Wrap in `ab(...)` to A/B-test it.
+   */
+  title: Variable<any>;
+  /**
+   * Hero paragraph below the headline. Wrap in `ab(...)` to A/B-test it.
+   */
+  text?: Variable<any>;
+  /**
+   * Hero checked-list bullets. When not set, the default bullets are shown.
+   * Wrap the bullet array in `ab(...)` to A/B-test it.
+   */
+  bullets?: Variable<React.ReactNode[]>;
   appName?: AppName;
+  /**
+   * Bump this when the A/B variations of an existing page change,
+   * so returning visitors get re-assigned a variant instead of keeping
+   * a now-stale index from localStorage.
+   */
+  abVersion?: number;
   /**
    * Additional blocks to be shown
    */
@@ -209,8 +234,8 @@ export type SemPage = {
 export default function Home(props: {
   sem?: SemPage;
 }) {
-  // must be directly called here first, before any A/B-Test content is rendered
-  getTestGroup(props.sem ? props.sem.id : '');
+  // must be directly resolved here first, before any A/B-Test content is rendered
+  const variant = props.sem ? getSemVariant(props.sem) : 0;
 
   const { siteConfig } = useDocusaurusContext();
 
@@ -277,11 +302,13 @@ export default function Home(props: {
         <link rel="canonical" href="https://rxdb.info/" />
       </Head>
       <Layout
-        title={props.sem ? props.sem.metaTitle : siteConfig.title}
-        description="RxDB is a fast, local-first NoSQL-database for JavaScript Applications like Websites, hybrid Apps, Electron-Apps, Progressive Web Apps and Node.js">
+        title={props.sem ? resolveVariable(props.sem.metaTitle, variant) : siteConfig.title}
+        description={props.sem && props.sem.metaDescription
+          ? resolveVariable(props.sem.metaDescription, variant)
+          : 'RxDB is a fast, local-first NoSQL-database for JavaScript Applications like Websites, hybrid Apps, Electron-Apps, Progressive Web Apps and Node.js'}>
         <main>
 
-          <HeroSection_B sem={props.sem} scrollToSection={scrollToSection} />
+          <HeroSection_B sem={props.sem} variant={variant} scrollToSection={scrollToSection} />
 
           {
             props.sem && props.sem.blocks ?
