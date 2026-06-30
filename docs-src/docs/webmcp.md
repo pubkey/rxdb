@@ -86,11 +86,7 @@ WebMCP is uniquely powerful when paired with [local-first](/articles/local-first
 - **Native JSONSchema**: WebMCP relies entirely on JSONSchema to define tools and parameters. Because [RxDB schemas are *already* written in JSONSchema](./rx-schema.md), there is zero translation overhead, meaning the agent receives the exact structural contract it expects.
 
 
-<center>
-    <a href="https://rxdb.info/">
-        <img src="../files/logo/rxdb_javascript_database.svg" alt="JavaScript Browser Database" width="220" />
-    </a>
-</center>
+<RxdbLogo alt="JavaScript Browser Database" />
 
 
 ### Example Use Cases

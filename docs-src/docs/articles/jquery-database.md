@@ -11,11 +11,7 @@ import {VideoBox} from '@site/src/components/video-box';
 
 In the early days of dynamic web development, **jQuery** emerged as a popular library that simplified DOM manipulation and AJAX requests. Despite the rise of modern frameworks, many developers still maintain or extend existing jQuery projects, or leverage jQuery in specific contexts. As jQuery applications grow in complexity, they often require efficient data handling, offline support, and synchronization capabilities. This is where [RxDB](https://rxdb.info/), a reactive JavaScript database for the browser, node.js, and [mobile devices](./mobile-database.md), steps in.
 
-<center>
-    <a href="https://rxdb.info/">
-        <img src="../files/logo/rxdb_javascript_database.svg" alt="JavaScript jQuery Database" width="220" />
-    </a>
-</center>
+<RxdbLogo alt="JavaScript jQuery Database" />
 
 ## jQuery Web Applications
 jQuery provides a simple API for DOM manipulation, event handling, and AJAX calls. It has been widely adopted due to its ease of use and strong community support. Many projects continue to rely on jQuery for handling client-side functionality, UI interactions, and animations. As these applications evolve, the need for a robust database solution that can manage data locally (and offline) becomes increasingly important.

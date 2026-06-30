@@ -9,11 +9,7 @@ image: /headers/firebase-realtime-database-alternative.jpg
 
 Are you on the lookout for a **Firebase Realtime Database alternative** that gives you greater freedom, deeper offline capabilities, and allows you to seamlessly integrate with any backend? **RxDB** (Reactive Database) might be the perfect choice. This [local-first](./local-first-future.md), NoSQL data store runs entirely on the client while supporting real-time updates and robust syncing with any server environment, making it a strong contender against Firebase Realtime Database's limitations and potential vendor lock-in.
 
-<center>
-    <a href="https://rxdb.info/">
-        <img src="/files/logo/rxdb_javascript_database.svg" alt="JavaScript Database" width="220" />
-    </a>
-</center>
+<RxdbLogo alt="JavaScript Database" />
 
 ## Why RxDB Is an Excellent Firebase Realtime Database Alternative
 

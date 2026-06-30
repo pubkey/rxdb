@@ -11,11 +11,7 @@ The Apollo GraphQL platform is built to move data between a server and UI applic
 
 If you need apps that start offline, write while offline, sync reliably when the network returns, and resolve conflicts deterministically, RxDB is a more direct fit. You can keep Apollo for the GraphQL transport and use RxDB for storage and sync, or replace the client cache entirely.
 
-<center>
-    <a href="https://rxdb.info/">
-        <img src="/files/logo/rxdb_javascript_database.svg" alt="JavaScript Database" width="220" />
-    </a>
-</center>
+<RxdbLogo alt="JavaScript Database" />
 
 ## A Short History of Apollo
 

@@ -11,11 +11,7 @@ Teams that adopt [SignalDB](https://signaldb.js.org/) usually want a tiny, react
 
 This page compares SignalDB with **RxDB** and shows when each tool fits. It also covers a hybrid setup where SignalDB handles the reactive UI layer while RxDB takes over persistence, multi-tab coordination, and backend sync.
 
-<center>
-    <a href="https://rxdb.info/">
-        <img src="/files/logo/rxdb_javascript_database.svg" alt="JavaScript Database" width="220" />
-    </a>
-</center>
+<RxdbLogo alt="JavaScript Database" />
 
 ## A Short History of SignalDB
 

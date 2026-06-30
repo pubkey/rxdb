@@ -7,11 +7,7 @@ image: /headers/alternatives/watermelondb-alternative.jpg
 
 # RxDB as a WatermelonDB Alternative
 
-<center>
-    <a href="https://rxdb.info/">
-        <img src="/files/logo/rxdb_javascript_database.svg" alt="JavaScript Database" width="220" />
-    </a>
-</center>
+<RxdbLogo alt="JavaScript Database" />
 
 WatermelonDB set out to solve a real problem: React Native apps slowed down under the weight of large datasets loaded entirely into the JavaScript thread. If you are evaluating WatermelonDB for a new project or looking for alternatives to it, this page explains what WatermelonDB does well, where it falls short, and why RxDB covers more ground for teams building offline-first applications across web and mobile.
 

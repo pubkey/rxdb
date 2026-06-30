@@ -11,11 +11,7 @@ image: /headers/localforage-alternative.jpg
 
 The trouble starts when an app grows past simple caching. As soon as you need indexed queries, schema validation, change subscriptions, replication with a backend, or coordination across browser tabs, you end up rebuilding most of a database on top of localForage. That is when [RxDB](https://rxdb.info/) becomes a better fit.
 
-<center>
-    <a href="https://rxdb.info/">
-        <img src="/files/logo/rxdb_javascript_database.svg" alt="JavaScript Database" width="220" />
-    </a>
-</center>
+<RxdbLogo alt="JavaScript Database" />
 
 ## A Short History of localForage
 

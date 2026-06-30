@@ -24,11 +24,7 @@ So if we did not care about offline first applications in the past, why should w
 In the following I will point out why offline first applications are better, not because they support offline usage, but because of other reasons.
 
 
-<center>
-    <a href="https://rxdb.info/">
-        <img src="../files/logo/rxdb_javascript_database.svg" alt="RxDB" width="220" />
-    </a>
-</center>
+<RxdbLogo alt="RxDB" />
 
 ## UX is better without loading spinners
 

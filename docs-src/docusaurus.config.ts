@@ -273,6 +273,10 @@ Topic-specific documentation files:
                 name: 'custom-webpack-tweaks',
                 configureWebpack(_config, _isServer, _utils) {
                     return {
+                        // Emit source maps in the production build so tools like
+                        // Lighthouse can map the minified bundle back to the source
+                        // and give more detailed optimization tips.
+                        devtool: 'source-map',
                         resolve: {
                             alias: {
                                 // we no longer use prism, and highlight with Shiki on the server
@@ -398,6 +402,8 @@ Topic-specific documentation files:
             logo: {
                 alt: 'RxDB',
                 src: 'files/logo/logo_text_white.svg',
+                width: 107,
+                height: 38,
             },
             items: [
                 {
@@ -431,6 +437,7 @@ Topic-specific documentation files:
                     to: '/chat/',
                     target: '_blank',
                     label: ' ',
+                    'aria-label': 'Discord',
                     position: 'right',
                     className: 'navbar-icon navbar__item navbar-icon-discord'
                 },
@@ -438,6 +445,7 @@ Topic-specific documentation files:
                     to: '/code/',
                     target: '_blank',
                     label: ' ',
+                    'aria-label': 'GitHub',
                     position: 'right',
                     className: 'navbar-icon navbar__item navbar-icon-github'
                 },

@@ -148,11 +148,7 @@ const compressed = {
 
 Sharding data across multiple subdomains or iframes is another trick, though it complicates communication. When you need truly massive offline data, you might store part of the data under `sub1.yoursite.com` and another chunk under `sub2.yoursite.com`, using `postMessage()` to coordinate. This can circumvent single-origin limitations, but it introduces extra complexity. Another effective method is to let data expire automatically, for example, older records can be removed if they haven’t been accessed for a certain period.
 
-<center>
-    <a href="https://rxdb.info/">
-        <img src="../files/logo/rxdb_javascript_database.svg" alt="JavaScript Database" width="220" />
-    </a>
-</center>
+<RxdbLogo alt="JavaScript Database" />
 
 ## IndexedDB Max Size of a Single Object
 

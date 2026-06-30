@@ -33,11 +33,7 @@ For a deeper look at comparing WebRTC with **WebSockets** and **WebTransport**, 
 4. **Resilience** - In some scenarios, if the central server is unreachable, P2P connections remain operational (assuming a functioning signaling path). Apps can still replicate data among local networks like when they are in the same Wifi or LAN.
 5. **Cost Savings** - Reducing the reliance on a high-bandwidth server can cut hosting and bandwidth expenses, particularly in high-traffic or IoT-style use cases.
 
-<center>
-    <a href="https://rxdb.info/">
-        <img src="/files/logo/rxdb_javascript_database.svg" alt="JavaScript Embedded Database" width="220" />
-    </a>
-</center>
+<RxdbLogo alt="JavaScript Embedded Database" />
 
 ## Peer-to-Peer (P2P) WebRTC Replication with the RxDB JavaScript Database
 

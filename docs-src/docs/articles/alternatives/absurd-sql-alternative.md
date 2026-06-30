@@ -11,11 +11,7 @@ image: /headers/absurd-sql-alternative.jpg
 
 This page compares **absurd-sql** with **RxDB** and shows where each one fits. If you already invested time into absurd-sql and now hit limits around reactivity, sync, multi-tab coordination, or schema management, RxDB is worth a look.
 
-<center>
-    <a href="https://rxdb.info/">
-        <img src="/files/logo/rxdb_javascript_database.svg" alt="JavaScript Database" width="220" />
-    </a>
-</center>
+<RxdbLogo alt="JavaScript Database" />
 
 ## A Short History of absurd-sql
 

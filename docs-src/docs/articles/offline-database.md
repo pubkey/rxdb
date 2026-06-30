@@ -44,11 +44,7 @@ In a traditional app, every interaction triggers a request to the server, scalin
 Typical apps require numerous REST endpoints and possibly a client-side state manager (like Redux) to handle data flow. If you adopt an offline database, you can replicate nearly everything to the client. The local DB becomes your single source of truth, and you may skip advanced state libraries altogether.
 
 
-<center>
-    <a href="https://rxdb.info/">
-        <img src="/files/logo/rxdb_javascript_database.svg" alt="RxDB" width="220" />
-    </a>
-</center>
+<RxdbLogo alt="RxDB" />
 
 ## Introducing RxDB - A Powerful Offline Database Solution
 

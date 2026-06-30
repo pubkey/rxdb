@@ -18,11 +18,7 @@ If you are looking for a **React Native Database**, you usually want three thing
 
 RxDB covers all of these requirements out of the box. It is a [local-first](./articles/local-first-future.md) NoSQL database that runs deeply integrated with React Native, giving you the power of a full featured database engine inside your mobile app.
 
-<center>
-    <a href="https://rxdb.info/">
-        <img src="../files/logo/rxdb_javascript_database.svg" alt="RxDB" width="220" />
-    </a>
-</center>
+<RxdbLogo alt="RxDB" />
 
 ## The Storage Layer
 

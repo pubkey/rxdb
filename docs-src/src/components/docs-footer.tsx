@@ -77,16 +77,16 @@ export function DocsFooter(props: Props) {
             <li style={styles.li}>
                 Was this page helpful?
                 <div style={styles.vote}>
-                    <img src="/img/thumbs-up-white.svg" loading="lazy" height="14" onClick={() => vote('up')} />
+                    <img src="/img/thumbs-up-white.svg" loading="lazy" width="14" height="14" onClick={() => vote('up')} />
                 </div>
                 <div style={{ ...styles.vote, ...styles.down }}>
-                    <img src="/img/thumbs-up-white.svg" loading="lazy" height="14" onClick={() => vote('down')} />
+                    <img src="/img/thumbs-up-white.svg" loading="lazy" width="14" height="14" onClick={() => vote('down')} />
                 </div>
             </li> : <li style={styles.li}>Thank you for your vote! <div style={styles.heart}>&#x2665;</div></li>
         }
         <li>
             <a href="/chat/" target="_blank" style={styles.a}>
-                <img src="/img/community-links/discord-logo.svg" style={styles.img} loading="lazy" />
+                <img src="/img/community-links/discord-logo.svg" alt="Discord" width="22" height="18" style={styles.img} loading="lazy" />
                 Ask a question on the forums about {showTitle}
             </a>
         </li>

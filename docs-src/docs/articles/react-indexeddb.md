@@ -42,11 +42,7 @@ While IndexedDB itself is powerful, its native API comes with several drawbacks 
 - **Missing Advanced Features**: Features like [encryption](../encryption.md) or compression aren't built into IndexedDB, but they are available via RxDB.
 - **Limited Platform Support**: IndexedDB exists only in the browser. In contrast, RxDB offers swappable storages to use the same code in [React Native](../react-native-database.md), [Capacitor](../capacitor-database.md), or [Electron](../electron-database.md).
 
-<center>
-    <a href="https://rxdb.info/">
-        <img src="../files/logo/rxdb_javascript_database.svg" alt="JavaScript Database" width="220" />
-    </a>
-</center>
+<RxdbLogo alt="JavaScript Database" />
 
 ## Set up RxDB in React
 

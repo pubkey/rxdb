@@ -7,11 +7,7 @@ image: /headers/alternatives/couchdb-alternative.jpg
 
 # RxDB as a CouchDB Alternative
 
-<center>
-    <a href="https://rxdb.info/">
-        <img src="/files/logo/rxdb_javascript_database.svg" alt="JavaScript Database" width="220" />
-    </a>
-</center>
+<RxdbLogo alt="JavaScript Database" />
 
 Apache CouchDB is a well-known, server-side document database recognized for its multi-master replication protocol and HTTP-based API. Many developers searching for a "CouchDB alternative" are not looking for a different server-side database. They want something that runs on the client, inside a browser or a mobile application, with offline support and reactive queries. That is what [RxDB](https://rxdb.info) is designed to do.
 
