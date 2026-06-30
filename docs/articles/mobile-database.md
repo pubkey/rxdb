@@ -14,11 +14,7 @@ There are various types of mobile databases available, each with its own strengt
 
 ## Introducing RxDB: A Paradigm Shift in Mobile Database Solutions
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="Mobile Database" />
 
 [RxDB](https://rxdb.info/), also known as Reactive Database, has emerged as a game-changer in the realm of mobile databases. Built on top of popular web technologies like JavaScript, TypeScript, and RxJS (Reactive Extensions for JavaScript), RxDB provides an elegant solution for seamless offline-first capabilities and real-time data synchronization in mobile applications.
 

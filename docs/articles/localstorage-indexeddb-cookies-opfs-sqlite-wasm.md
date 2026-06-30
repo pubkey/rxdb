@@ -38,11 +38,7 @@ In this article, we will dive into the various technologies available for storin
 You are reading this in the [RxDB](/) docs. RxDB is a JavaScript database that has different storage adapters which can utilize the different storage APIs.
 **Since 2017** I spend most of my time working with these APIs, doing performance tests and building [hacks](../slow-indexeddb.md) and plugins to reach the limits of browser database operation speed.
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="JavaScript Database" />
 :::
 
 ## The available Storage APIs in a modern Browser

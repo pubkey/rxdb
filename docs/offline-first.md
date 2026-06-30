@@ -19,11 +19,7 @@ While in the past, internet connection was unstable, things are changing especia
 So if we did not care about offline first applications in the past, why should we even care now?
 In the following I will point out why offline first applications are better, not because they support offline usage, but because of other reasons.
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="RxDB" />
 
 ## UX is better without loading spinners
 

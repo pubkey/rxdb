@@ -13,11 +13,7 @@ PWAs bring a plethora of advantages to the table. They eliminate the hassle of a
 ## Introducing RxDB as a Client-Side Database for PWAs
 At the heart of PWAs lies efficient data management, and RxDB steps in as a reliable ally. As a client-side [NoSQL](./in-memory-nosql-database.md) database, RxDB seamlessly integrates into web applications, offering real-time data synchronization and manipulation capabilities. This article sheds light on the transformative potential of RxDB as it collaborates harmoniously with PWAs, enabling local-first strategies and elevating user interactions to a whole new level.
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="Progressive Web App Database" width={228} />
 
 ### Getting Started with RxDB
 RxDB emerges as a reactive, schema-based NoSQL database crafted explicitly for client-side applications. Its real-time data synchronization and responsiveness align seamlessly with the dynamic demands of modern PWAs.

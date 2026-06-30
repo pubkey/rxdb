@@ -8,11 +8,7 @@ Developers who reach for [GUN](https://gun.eco/) usually want one thing: a JavaS
 
 This guide walks through where GUN came from, where it falls short for production JavaScript apps, and how [RxDB](https://rxdb.info/) covers the same [offline-first](../../offline-first.md) and peer-to-peer use cases with a typed API, JSON Schema validation, and well-documented [replication](../../replication.md) plugins.
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="RxDB JavaScript Database" />
 
 ## A Short History of GUN
 

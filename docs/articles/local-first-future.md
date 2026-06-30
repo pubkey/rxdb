@@ -208,11 +208,7 @@ To concretely understand how local-first development works, let's walk through a
 Because you read this on the RxDB website, in the following a local-first setup with RxDB is shown. If you only care about Local-First in general, you can [skip](#partial-sync) this part.
 :::
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="RxDB" />
 
 ### Setting up a Local Database
 
@@ -508,11 +504,7 @@ Yes, applications like WorkFlowy, Capacities, Notion (to an extent), and Linear 
 
 ## See also
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="JavaScript Angular Database" />
 
 - Discuss [this topic on HackerNews](https://news.ycombinator.com/item?id=43289885)
 - [Local-First Technologies](../alternatives.md): A list of databases and technologies (besides [RxDB](/)) that support offline-first or local-first use cases.

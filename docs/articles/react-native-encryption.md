@@ -27,11 +27,7 @@ React Native supports multiple ways to secure local data:
 3. **Custom Encryption**
    If you need more fine-grained control, you can integrate libraries like [`crypto-js`](https://github.com/brix/crypto-js) or the [Web Crypto API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API) to encrypt data before storing it in a database or file.
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="RxDB" width={250} />
 
 ## Setting Up Encryption in RxDB for React Native
 

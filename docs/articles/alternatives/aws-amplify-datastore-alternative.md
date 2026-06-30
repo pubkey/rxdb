@@ -4,11 +4,7 @@
 
 # RxDB as an AWS Amplify DataStore Alternative
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="JavaScript Database" />
 
 AWS Amplify DataStore offered an appealing promise: define a GraphQL schema, run a CLI command, and get automatic offline sync to DynamoDB via AWS AppSync. For teams already embedded in the AWS ecosystem, that promise was compelling. But DataStore was deprecated in Amplify Gen 2, is scheduled for end-of-life on May 1, 2027, and had well-documented limitations around query flexibility, local performance, and its tight coupling to AWS infrastructure. This page explains what DataStore does, where it falls short, and why [RxDB](https://rxdb.info) is a practical alternative for teams building offline-first applications.
 

@@ -5,11 +5,7 @@
 # RxDB JavaScript Frontend Database: Efficient Data Storage in Frontend Applications
 In modern web development, managing data on the front end has become increasingly important. Storing data in the frontend offers numerous advantages, such as offline accessibility, caching, faster application startup, and improved state management. Traditional SQL databases, although widely used on the server-side, are not always the best fit for frontend applications. This is where [RxDB](https://rxdb.info/), a frontend JavaScript database, emerges as a powerful solution. In this article, we will explore why storing data in the frontend is beneficial, the limitations of SQL databases in the frontend, and how [RxDB](https://rxdb.info/) addresses these challenges to become an excellent choice for frontend data storage.
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="JavaScript Frontend Database" />
 
 ## Why you might want to store data in the frontend
 

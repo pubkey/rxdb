@@ -8,11 +8,7 @@ import {VideoBox} from '@site/src/components/video-box';
 
 In modern web development, Angular has emerged as a popular framework for building robust and scalable applications. As Angular applications often require persistent [storage](./browser-storage.md) and efficient data handling, choosing the right database solution is crucial. One such solution is [RxDB](https://rxdb.info/), a reactive JavaScript database for the [browser](./browser-database.md), [node.js](../nodejs-database.md), and [mobile devices](./mobile-database.md). In this article, we will explore the integration of RxDB into an Angular application and examine its various features and techniques.
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="JavaScript Angular Database" />
 
 ## Angular Web Applications
 Angular is a powerful JavaScript framework developed and maintained by Google. It enables developers to build single-page applications (SPAs) with a modular and component-based approach. Angular provides a comprehensive set of tools and features for creating dynamic and responsive web applications.
@@ -33,11 +29,7 @@ To begin our journey with RxDB, let's understand its key concepts and features.
 ### What is RxDB?
 [RxDB](https://rxdb.info/) is a client-side database that follows the principles of reactive programming. It is built on top of IndexedDB, the [native browser database](./browser-database.md), and leverages the RxJS library for reactive data handling. RxDB provides a simple and intuitive API for managing data and offers features like data [replication](../replication.md), multi-tab support, and efficient query handling.
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="JavaScript Angular Database" />
 
 ### Reactive Data Handling
 At the core of RxDB is the concept of reactive data handling. RxDB leverages observables and reactive streams to enable real-time updates and data synchronization. With RxDB, you can easily subscribe to data changes and react to them in a reactive and efficient manner.

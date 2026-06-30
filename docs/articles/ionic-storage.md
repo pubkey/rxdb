@@ -45,11 +45,7 @@ In addition to functioning fully offline, RxDB supports advanced [replication](.
 ### 5. Easy to Adopt and Extend
 RxDB runs with a **NoSQL** approach and integrates seamlessly into [Ionic Angular](https://ionicframework.com/docs/angular/overview) or other frameworks you might use with Ionic. You can extend or replace storage backends, add encryption, or build advanced offline-first features with minimal overhead.
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="Ionic Storage Database" />
 
 ## Quick Start: Implementing RxDB with LocalSTorage Storage
 

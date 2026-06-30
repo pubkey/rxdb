@@ -12,11 +12,7 @@ If you arrived here looking for an **InstantDB alternative**, you most likely wa
 
 **RxDB** (Reactive Database) is a client-side NoSQL database for JavaScript that stores data locally in the browser, mobile runtimes, Electron, or Node.js, and replicates with any backend you control. It is fully open source and has been used in production for offline-first apps for years.
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="JavaScript Database" />
 
 ## A Short History of InstantDB
 

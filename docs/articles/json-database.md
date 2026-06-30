@@ -9,11 +9,7 @@ import { PERFORMANCE_DATA_BROWSER, PERFORMANCE_METRICS } from '@site/src/compone
 
 Storing data as **JSON documents** in a **[NoSQL](./in-memory-nosql-database.md)** database is not just a trend; it's a practical choice. JSON data is highly compatible with various tools and is human-readable, making it an excellent fit for modern applications. JSON documents offer more flexibility compared to traditional SQL table rows, as they can contain nested data structures. This article introduces [RxDB](https://rxdb.info/), an open-source, flexible, performant, and battle-tested NoSQL JSON database specifically designed for **JavaScript** applications.
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="JSON Database" />
 
 ## Why Choose a JSON Database?
 - **JavaScript Friendliness**: JavaScript, a prevalent language for web development, naturally uses JSON for data representation. Using a JSON database aligns seamlessly with JavaScript's native data format.

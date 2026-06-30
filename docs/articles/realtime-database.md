@@ -9,11 +9,7 @@ Often people get confused by the word **realtime database**, because the word **
 
 In this article we will explore what a realtime database is, and more important, what it is not.
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="JavaScript Realtime Database" width={150} />
 
 ## Realtime as in **realtime computing**
 

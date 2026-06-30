@@ -6,11 +6,7 @@
 
 When it comes to client-side storage in web applications, the localStorage API stands out as a simple and widely supported solution. It allows developers to store key-value pairs directly in a user's browser. In this article, we will explore the various aspects of the localStorage API, its advantages, limitations, and alternative storage options available for modern applications.
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="JavaScript Database" />
 
 ## What is the localStorage API?
 
@@ -93,11 +89,7 @@ addEventListener("storage", (event) => {});
 
 For those looking to harness the full power of IndexedDB with added capabilities, using wrapper libraries like [RxDB](https://rxdb.info/) is recommended. These libraries augment IndexedDB with features such as complex queries and observability, enhancing its usability for modern applications by providing a real database instead of only a key-value store.
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="RxDB" />
 
 In summary when you compare IndexedDB vs localStorage, IndexedDB will win at any case where much data is handled while localStorage has better performance on small key-value datasets.
 

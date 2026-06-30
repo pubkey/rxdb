@@ -39,11 +39,7 @@ While IndexedDB itself is powerful, its native API comes with several drawbacks 
 - **Missing Advanced Features**: Features like [encryption](../encryption.md) or [compression](../key-compression.md) aren't built into IndexedDB, but they are available via RxDB.
 - **Limited Platform Support**: IndexedDB is browser-only. RxDB offers [swappable storages](../rx-storage.md) so you can reuse the same data layer code in mobile or desktop environments.
 
-<center>
-  
-    
-  
-</center>
+<RxdbLogo alt="JavaScript Database" />
 
 ## Set up RxDB in Vue
 

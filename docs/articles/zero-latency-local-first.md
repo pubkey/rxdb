@@ -17,11 +17,7 @@ In a traditional architecture, each user action triggers requests to a server fo
 3. **Reduced Backend Load**: Instead of flooding the server with small requests, replication can combine and push or pull changes in batches.
 4. **Simplified Caching**: Instead of implementing multi-layer caching, local first transforms your data layer into a reliable, quickly accessible store for all user actions.
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="RxDB local Database" />
 
 ## RxDB: Your Key to Zero-Latency Local First Apps
 

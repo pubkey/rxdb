@@ -8,11 +8,7 @@ For modern real-time web applications, the ability to send events from the serve
 
 This article aims to delve into these technologies, comparing their performance, highlighting their benefits and limitations, and offering recommendations for various use cases to help developers make informed decisions when building real-time web applications. It is a condensed summary of my gathered experience when I implemented the [RxDB Sync Engine](../replication.md) to be compatible with various backend technologies.
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="JavaScript Database" />
 
 ### What is Long Polling?
 
@@ -175,11 +171,7 @@ In the context of mobile applications running on operating systems like Android 
 
 From consulting many [RxDB](https://rxdb.info/) users, it was shown that in enterprise environments (aka "at work") it is often hard to implement a WebSocket server into the infrastructure because many proxies and firewalls block non-HTTP connections. Therefore using the Server-Sent-Events provides and easier way of enterprise integration. Also long-polling uses only plain HTTP-requests and might be an option.
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="JavaScript Database" />
 
 ## Performance Comparison
 

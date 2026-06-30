@@ -8,11 +8,7 @@
 
 When it comes to building web applications, one essential aspect is the storage of data. Two common methods of storing data directly within the user's web browser are LocalStorage and [IndexedDB](../rx-storage-indexeddb.md). These browser-based storage options serve various purposes and cater to different needs in web development.
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="JavaScript Browser Storage" />
 
 ### LocalStorage
 [LocalStorage](./localstorage.md) is a straightforward way to store small amounts of data in the user's web browser. It operates on a simple key-value basis and is relatively easy to use. While it has limitations, it is suitable for basic data storage requirements.
@@ -65,11 +61,7 @@ SQL databases are optimized for server environments, and their initialization pr
 ## Why RxDB Is a Good Fit as Browser Storage
 RxDB is an excellent choice for browser-based storage due to its numerous features and advantages:
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="JavaScript Browser Storage" />
 
 ### Flexible Storage Layer for Various Platforms
 RxDB offers a flexible storage layer that can seamlessly integrate with different platforms, making it versatile and adaptable to various application needs.

@@ -8,11 +8,7 @@ Teams that adopted **Cloudant** usually picked it because they wanted CouchDB se
 
 This page explains how **RxDB** fits as a Cloudant alternative on the JavaScript client. You can keep your existing Cloudant backend and replace only the client database, or move to a different sync target entirely.
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="JavaScript Database" />
 
 ## A Short History of Cloudant
 

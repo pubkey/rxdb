@@ -8,11 +8,7 @@ PowerSync looks attractive when you already run Postgres or MongoDB on the serve
 
 RxDB takes a different route. It is a [local-first](../../offline-first.md) JavaScript database that stays storage-agnostic, runs MongoDB-style queries against [IndexedDB](../../rx-storage-indexeddb.md), [OPFS](../../rx-storage-opfs.md), [Dexie](../../rx-storage-dexie.md), or [SQLite](../../rx-storage-sqlite.md), and lets you bring your own backend over [HTTP](../../replication-http.md), [GraphQL](../../replication-graphql.md), or any other transport. RxDB is licensed under Apache 2.0, so commercial use is unrestricted.
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="JavaScript Database" />
 
 ## A Short History of PowerSync
 

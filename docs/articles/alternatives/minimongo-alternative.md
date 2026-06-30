@@ -4,11 +4,7 @@
 
 # RxDB as a Minimongo Alternative
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="JavaScript Database" />
 
 Minimongo started as a component inside Meteor.js in 2012 and introduced many developers to the idea of a client-side, MongoDB-compatible data layer. If you have used Minimongo outside of Meteor or are evaluating it for a new project, this page explains what Minimongo does well, where it falls short, and why RxDB is a strong alternative for building offline-first, reactive JavaScript applications.
 

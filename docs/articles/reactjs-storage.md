@@ -75,11 +75,7 @@ While localStorage is simple, it’s limited to string-based key-value lookups a
 - More complicated to use directly (i.e., not as simple as .getItem())
 [RxDB](/), as you’ll see, simplifies [IndexedDB](../rx-storage-indexeddb.md) usage in ReactJS by adding a more intuitive layer for queries, [reactivity](../reactivity.md), and advanced capabilities like [encryption](../encryption.md).
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="RxDB" width={250} />
 
 ## Part 3: Moving Beyond Basic Storage: RxDB for ReactJS
 

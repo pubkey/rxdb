@@ -21,11 +21,7 @@ Optimistic UIs offer a host of advantages, from improving the user experience to
 - **Less server load**: By handling changes locally and syncing in batches, you reduce the volume of server round-trips.
 - **Automated error handling**: If a request fails or a document is in conflict, RxDB's [replication](../replication.md) mechanism can seamlessly retry and resolve conflicts in the background, without requiring a separate endpoint or manual user intervention.
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="RxDB Database" />
 
 ## Building Optimistic UI Apps with RxDB
 

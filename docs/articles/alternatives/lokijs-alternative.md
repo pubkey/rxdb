@@ -8,11 +8,7 @@ Developers reach for **LokiJS** when they want a small, MongoDB-like JavaScript 
 
 This page explains how **RxDB** fits that role and how it covers both the in-memory speed scenarios that drew people to LokiJS and the persistence and sync gaps that pushed them away.
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="JavaScript Database" />
 
 ## A Short History of LokiJS
 

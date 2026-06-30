@@ -5,11 +5,7 @@
 # Using RxDB as an Embedded Database
 In modern UI applications, efficient data storage is a crucial aspect for seamless user experiences. One powerful solution for achieving this is by utilizing an embedded database. In this article, we will explore the concept of an embedded database and delve into the benefits of using [RxDB](https://rxdb.info/) as an embedded database in UI applications. We will also discuss why RxDB stands out as a robust choice for real-time applications with embedded database functionality.
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="JavaScript Embedded Database" />
 
 ## What is an Embedded Database?
 An embedded database refers to a client-side database system that is integrated directly within an application. It is designed to operate within the client environment, such as a web browser or a [mobile](./mobile-database.md) app. This approach eliminates the need for a separate database server and allows the database to run locally on the client device.
@@ -44,11 +40,7 @@ RxDB is a JavaScript-based embedded database that offers numerous advantages for
 - Flexible Storage Layer and Cross-Platform Compatibility: RxDB provides a flexible storage layer that can be reused across various platforms, including [Electron.js](../electron-database.md), [React Native](../react-native-database.md), hybrid apps (via Capacitor.js), and browsers. This cross-platform compatibility simplifies development and enables code reuse across different environments.
 - Replication Algorithm for Backend Compatibility: RxDB's replication algorithm is open-source and can be made compatible with various backend solutions, such as self-hosted servers, Firebase, [CouchDB](../replication-couchdb.md), NATS, WebSockets, and more. This flexibility allows developers to choose their preferred backend infrastructure while benefiting from RxDB's embedded database capabilities.
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="JavaScript Embedded Database" />
 
 ## Follow Up
 To further explore [RxDB](https://rxdb.info/) and leverage its capabilities as an embedded database, the following resources can be helpful:

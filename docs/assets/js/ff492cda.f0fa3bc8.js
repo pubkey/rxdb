@@ -1,0 +1,2 @@
+"use strict";(globalThis.webpackChunkrxdb=globalThis.webpackChunkrxdb||[]).push([[7722],{51382(e,r,t){t.r(r),t.d(r,{default:()=>n});var a=t(72517),l=t(74848);function n(){return(0,a.default)({sem:{id:"gads",metaTitle:"The NoSQL alternative for WatermelonDB",title:(0,l.jsxs)(l.Fragment,{children:["The ",(0,l.jsx)("b",{children:"NoSQL"})," alternative for"," ",(0,l.jsx)("b",{children:"WatermelonDB"})]})}})}}}]);
+//# sourceMappingURL=ff492cda.f0fa3bc8.js.map

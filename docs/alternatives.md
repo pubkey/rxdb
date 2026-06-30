@@ -15,11 +15,7 @@ RxDB has these main benefits:
 - RxDB has a working business model of selling [premium plugins](/premium/) which ensures that RxDB will be maintained and improved continuously while many alternatives are dead already or seem to die soon.
 - RxDB has years (since 2016) of performance optimization, bug fixing and feature adding. It is just working as is and there are close to zero [open issues](https://github.com/pubkey/rxdb/issues).
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="JavaScript Database" />
 
 :::
 

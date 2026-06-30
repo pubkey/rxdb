@@ -8,11 +8,7 @@ Teams that built mobile and web applications on top of [MongoDB Realm](https://w
 
 This page explains why [RxDB](https://rxdb.info/) is a strong replacement for Realm in JavaScript, TypeScript, [React Native](../../react-native-database.md), [Electron](../../electron-database.md), and browser environments. It covers the history of Realm, the technical shortcomings that existed even before the deprecation announcement, the features RxDB provides today, code samples for schema definition and replication to a MongoDB-backed HTTP endpoint, and practical migration notes.
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="RxDB - JavaScript Database" />
 
 ## A short history of Realm
 

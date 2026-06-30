@@ -4,11 +4,7 @@
 
 # RxDB as a RethinkDB Alternative
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="JavaScript Database" />
 
 RethinkDB introduced a compelling idea: instead of polling a database for changes, let the database push updates to your application the moment data changes. That capability, called changefeeds, attracted developers building realtime dashboards, chat applications, and collaborative tools. But the company behind RethinkDB shut down in 2016, and while the project continues as a community effort, the fundamental architecture of RethinkDB is a poor fit for modern offline-first applications. RethinkDB lives on the server and streams data to connected clients, which means your application stops working the moment a user loses network access.
 

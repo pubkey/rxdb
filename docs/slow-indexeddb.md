@@ -17,11 +17,7 @@ For [in-browser data storage](./articles/browser-database.md), you have some opt
 :::note UPDATE April 2023
 Since beginning of 2023, all modern browsers ship the **File System Access API** which allows to persistently store data in the browser with a way better performance. For [RxDB](https://rxdb.info/) you can use the [OPFS RxStorage](./rx-storage-opfs.md) to get about 4x performance improvement compared to IndexedDB.
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="IndexedDB Database" width={250} />
 :::
 
 It becomes clear that the only way to go is IndexedDB. You start developing your app and everything goes fine.

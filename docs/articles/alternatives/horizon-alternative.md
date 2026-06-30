@@ -4,11 +4,7 @@
 
 # RxDB as a Horizon Alternative
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="JavaScript Database" />
 
 Horizon was the official client-side library for RethinkDB, launched in 2016 to let developers build realtime JavaScript applications without writing server code. It offered a clean API for subscribing to live data, built-in authentication, and a permission system. But Horizon's life was short. The company behind RethinkDB shut down just months after Horizon launched, and offline support was never implemented. The project is now archived and receives no maintenance.
 

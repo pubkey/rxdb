@@ -8,11 +8,7 @@ Developers often pick **sql.js** when they want to run SQL inside the browser wi
 
 This page explains why teams that started with sql.js often migrate to **RxDB** once their prototype turns into a product, and how RxDB fills the gaps while still letting you keep SQLite as the underlying storage if you want.
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="RxDB JavaScript Database" />
 
 ## A Short History of sql.js
 

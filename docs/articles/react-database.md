@@ -17,11 +17,7 @@ While React excels at managing the user interface, the need for efficient data s
 ## Introducing RxDB as a JavaScript Database
 RxDB, a powerful JavaScript database, has garnered attention as an optimal solution for managing data in React applications. Built on top of the IndexedDB standard, RxDB combines the principles of reactive programming with database management. Its core features include reactive data handling, offline-first capabilities, and robust data replication.
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="JavaScript React Database" width={221} />
 
 ## What is RxDB?
 RxDB, short for Reactive Database, is an open-source JavaScript database that seamlessly integrates reactive programming with database operations. It offers a comprehensive API for performing database actions and synchronizing data across clients and servers. RxDB's underlying philosophy revolves around observables, allowing developers to reactively manage data changes and create dynamic user interfaces.

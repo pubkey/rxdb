@@ -30,11 +30,7 @@ import { HeadlineWithIcon } from '@site/src/components/headline-with-icon';
 
 Welcome to the RxDB Quickstart. Here we'll learn how to create a simple real-time app with the RxDB database that is able to store and query data persistently in a browser and does realtime updates to the UI on changes.
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="JavaScript Embedded Database" />
 
 <Steps>
 
@@ -3688,7 +3684,7 @@ The SQLite storage is a bit slower compared to other Node.js based storages like
 
 There are two versions of the SQLite storage available for RxDB:
 
-- The **trial version** which comes directly shipped with RxDB Core. It contains an SQLite storage that allows you to try out RxDB on devices that support SQLite, like React Native or Electron. While the trial version does pass the full RxDB storage test-suite, it is not made for production. It is not using indexes, has no [attachment support](./rx-attachment.md), is limited to store 300 documents and fetches the whole storage state to run queries in memory. **Use it for evaluation and prototypes only!**
+- The **trial version** which comes directly shipped with RxDB Core. It contains an SQLite storage that allows you to try out RxDB on devices that support SQLite, like React Native or Electron. While the trial version does pass the full RxDB storage test-suite, it is not made for production. It is not using indexes, has no [attachment support](./rx-attachment.md), is limited to store 500 non-deleted documents and fetches the whole storage state to run queries in memory. **Use it for evaluation and prototypes only!**
 
 - The **[RxDB Premium 👑](/premium/) version** which contains the full production-ready SQLite storage. It contains a full load of performance optimizations and full query support. To use the SQLite storage you have to import `getRxStorageSQLite` from the [RxDB Premium 👑](/premium/) package and then add the correct `sqliteBasics` adapter depending on which sqlite module you want to use. This can then be used as storage when creating the [RxDatabase](./rx-database.md). In the following you can see some examples for some of the most common SQLite packages.
 
@@ -6614,6 +6610,36 @@ await hideLoadingSpinner();
 
 :::
 
+### awaitDocumentPushed()
+
+Returns a `Promise` that resolves when a specific `RxDocument` instance was successfully pushed to the server.
+
+While `awaitInSync()` waits for the whole collection to be in sync, `awaitDocumentPushed()` only waits for a single document. This is useful when you have a sensitive write (like a financial transaction or a value with a uniqueness constraint) and you want to confirm that exactly this write reached the backend, without blocking on every other unrelated change in the collection.
+
+You pass the `RxDocument` instance you got back from a write operation:
+
+```ts
+const doc = await myCollection.insert({ id: 'foobar', value: 10 });
+await myReplicationState.awaitDocumentPushed(doc);
+// here we know that the document state was pushed to the server
+```
+
+A `RxDocument` represents the state of a document at a given point in time, not the document in general. An older or a newer `RxDocument` instance of the same document is not the exact same `RxDocument`, because each instance carries the field values and the internal write time of that specific state. `awaitDocumentPushed()` therefore resolves based on the exact state of the instance you pass in.
+
+It works by comparing the documents internal write time (`_meta.lwt`) with the push checkpoint. The push checkpoint moves forward with each successful push, so once it covers the documents write time, RxDB knows that this version of the document has been replicated to the master.
+
+If the document was overwritten by a newer local write before it could be pushed, the promise resolves as soon as any later state of that document (or any document with a higher write time) has been pushed, because that also proves the given state reached the server.
+
+`awaitDocumentPushed()` does not set a timeout on purpose. If you need one, combine it with `Promise.race()`:
+
+```ts
+const doc = await myCollection.insert({ id: 'foobar', value: 10 });
+await Promise.race([
+    myReplicationState.awaitDocumentPushed(doc),
+    new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000))
+]);
+```
+
 ### reSync()
 
 Triggers a `RESYNC` cycle where the replication goes into [checkpoint iteration](#checkpoint-iteration) until the client is in sync with the backend. Used in unit tests or when no proper `pull.stream$` can be implemented so that the client only knows that something has been changed but not what.
@@ -8075,11 +8101,7 @@ For a deeper look at comparing WebRTC with **WebSockets** and **WebTransport**, 
 4. **Resilience** - In some scenarios, if the central server is unreachable, P2P connections remain operational (assuming a functioning signaling path). Apps can still replicate data among local networks like when they are in the same Wifi or LAN.
 5. **Cost Savings** - Reducing the reliance on a high-bandwidth server can cut hosting and bandwidth expenses, particularly in high-traffic or IoT-style use cases.
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="JavaScript Embedded Database" />
 
 ## Peer-to-Peer (P2P) WebRTC Replication with the RxDB JavaScript Database
 
@@ -13535,11 +13557,7 @@ WebMCP is uniquely powerful when paired with [local-first](/articles/local-first
 - **LLM-Friendly NoSQL**: Writing NoSQL query objects (like [Mongo-style queries](./rx-query.md)) is significantly easier and more deterministic for LLMs to generate and validate than orchestrating complex, string-based SQL JOIN queries.
 - **Native JSONSchema**: WebMCP relies entirely on JSONSchema to define tools and parameters. Because [RxDB schemas are *already* written in JSONSchema](./rx-schema.md), there is zero translation overhead, meaning the agent receives the exact structural contract it expects.
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="JavaScript Browser Database" />
 
 ### Example Use Cases
 
@@ -14108,11 +14126,7 @@ For [in-browser data storage](./articles/browser-database.md), you have some opt
 :::note UPDATE April 2023
 Since beginning of 2023, all modern browsers ship the **File System Access API** which allows to persistently store data in the browser with a way better performance. For [RxDB](https://rxdb.info/) you can use the [OPFS RxStorage](./rx-storage-opfs.md) to get about 4x performance improvement compared to IndexedDB.
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="IndexedDB Database" width={250} />
 :::
 
 It becomes clear that the only way to go is IndexedDB. You start developing your app and everything goes fine.
@@ -14372,11 +14386,7 @@ RxDB has these main benefits:
 - RxDB has a working business model of selling [premium plugins](/premium/) which ensures that RxDB will be maintained and improved continuously while many alternatives are dead already or seem to die soon.
 - RxDB has years (since 2016) of performance optimization, bug fixing and feature adding. It is just working as is and there are close to zero [open issues](https://github.com/pubkey/rxdb/issues).
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="JavaScript Database" />
 
 :::
 
@@ -14661,11 +14671,7 @@ PowerSync is a "framework" for implementing local-first solutions. It centralize
 
 This page compares **absurd-sql** with **RxDB** and shows where each one fits. If you already invested time into absurd-sql and now hit limits around reactivity, sync, multi-tab coordination, or schema management, RxDB is worth a look.
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="JavaScript Database" />
 
 ## A Short History of absurd-sql
 
@@ -14902,11 +14908,7 @@ The Apollo GraphQL platform is built to move data between a server and UI applic
 
 If you need apps that start offline, write while offline, sync reliably when the network returns, and resolve conflicts deterministically, RxDB is a more direct fit. You can keep Apollo for the GraphQL transport and use RxDB for storage and sync, or replace the client cache entirely.
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="JavaScript Database" />
 
 ## A Short History of Apollo
 
@@ -15178,11 +15180,7 @@ More resources:
 
 # RxDB as an AWS Amplify DataStore Alternative
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="JavaScript Database" />
 
 AWS Amplify DataStore offered an appealing promise: define a GraphQL schema, run a CLI command, and get automatic offline sync to DynamoDB via AWS AppSync. For teams already embedded in the AWS ecosystem, that promise was compelling. But DataStore was deprecated in Amplify Gen 2, is scheduled for end-of-life on May 1, 2027, and had well-documented limitations around query flexibility, local performance, and its tight coupling to AWS infrastructure. This page explains what DataStore does, where it falls short, and why [RxDB](https://rxdb.info) is a practical alternative for teams building offline-first applications.
 
@@ -15787,11 +15785,7 @@ Teams that adopted **Cloudant** usually picked it because they wanted CouchDB se
 
 This page explains how **RxDB** fits as a Cloudant alternative on the JavaScript client. You can keep your existing Cloudant backend and replace only the client database, or move to a different sync target entirely.
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="JavaScript Database" />
 
 ## A Short History of Cloudant
 
@@ -16018,11 +16012,7 @@ More resources:
 
 # RxDB as a Couchbase Alternative
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="JavaScript Database" />
 
 Developers building offline-capable JavaScript applications often evaluate Couchbase Mobile as a data layer because of its embedded Couchbase Lite client and its Sync Gateway component for backend replication. In practice, the stack introduces significant infrastructure requirements, a proprietary synchronization protocol, and a tight coupling to the Couchbase Server ecosystem. [RxDB](https://rxdb.info) is a local-first JavaScript database that handles offline storage, reactive queries, and replication without any of that infrastructure dependency.
 
@@ -16546,11 +16536,7 @@ Couchbase has a Community Edition (open source) and an Enterprise Edition (comme
 
 # RxDB as a CouchDB Alternative
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="JavaScript Database" />
 
 Apache CouchDB is a well-known, server-side document database recognized for its multi-master replication protocol and HTTP-based API. Many developers searching for a "CouchDB alternative" are not looking for a different server-side database. They want something that runs on the client, inside a browser or a mobile application, with offline support and reactive queries. That is what [RxDB](https://rxdb.info) is designed to do.
 
@@ -17105,11 +17091,7 @@ Yes. Your application code reads and writes against the local RxDB collection. T
 
 Teams reach for [Dexie.js](https://dexie.org/) when they want a friendlier API on top of IndexedDB without giving up the speed of a native browser store. Dexie does a fine job at that single goal. The trouble starts when an app outgrows simple key range lookups and needs MongoDB-style queries, [strict schemas](../../rx-schema.md), [reactive results](../../reactivity.md) across tabs, or [replication with a backend](../../replication.md). At that point, most projects either build those features from scratch on top of Dexie or move to a database that already provides them. RxDB sits in the second category and can even run on top of Dexie internally through the [Dexie RxStorage](../../rx-storage-dexie.md).
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="JavaScript Database" />
 
 ## A Short History of Dexie.js
 
@@ -17373,11 +17355,7 @@ More resources:
 
 [RxDB](https://rxdb.info/) is a [local-first](../../articles/local-first-future.md) NoSQL database for JavaScript that has been in production since 2016. It runs in the browser, in Node.js, in Electron, and in React Native. It ships a full bidirectional [replication protocol](../../replication.md), [reactive queries](../../reactivity.md), and pluggable storages including SQLite, IndexedDB, OPFS, and in-memory. This page explains what ElectricSQL offers today, where it falls short, and how RxDB fills the same role with fewer surprises.
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="JavaScript Database" />
 
 ## A Short History of ElectricSQL
 
@@ -17621,11 +17599,7 @@ Developers who reach for [GUN](https://gun.eco/) usually want one thing: a JavaS
 
 This guide walks through where GUN came from, where it falls short for production JavaScript apps, and how [RxDB](https://rxdb.info/) covers the same [offline-first](../../offline-first.md) and peer-to-peer use cases with a typed API, JSON Schema validation, and well-documented [replication](../../replication.md) plugins.
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="RxDB JavaScript Database" />
 
 ## A Short History of GUN
 
@@ -17828,11 +17802,7 @@ If you built a project on **Hoodie**, you chose it for a clear reason: ship an [
 
 Teams maintaining Hoodie applications now face a hard question: how do you keep the offline-first developer experience while moving to a stack that is actively maintained, typed, and supported across modern JavaScript runtimes? **RxDB** is a direct answer to that question. It keeps the local-first model, supports CouchDB replication out of the box, and adds reactive queries, multi-tab synchronization, and conflict handling that Hoodie never offered.
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="JavaScript Database" />
 
 ## A Short History of Hoodie
 
@@ -18054,11 +18024,7 @@ More resources:
 
 # RxDB as a Horizon Alternative
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="JavaScript Database" />
 
 Horizon was the official client-side library for RethinkDB, launched in 2016 to let developers build realtime JavaScript applications without writing server code. It offered a clean API for subscribing to live data, built-in authentication, and a permission system. But Horizon's life was short. The company behind RethinkDB shut down just months after Horizon launched, and offline support was never implemented. The project is now archived and receives no maintenance.
 
@@ -18632,11 +18598,7 @@ If you arrived here looking for an **InstantDB alternative**, you most likely wa
 
 **RxDB** (Reactive Database) is a client-side NoSQL database for JavaScript that stores data locally in the browser, mobile runtimes, Electron, or Node.js, and replicates with any backend you control. It is fully open source and has been used in production for offline-first apps for years.
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="JavaScript Database" />
 
 ## A Short History of InstantDB
 
@@ -18870,11 +18832,7 @@ More resources:
 
 The trouble starts when an app grows past simple caching. As soon as you need indexed queries, schema validation, change subscriptions, replication with a backend, or coordination across browser tabs, you end up rebuilding most of a database on top of localForage. That is when [RxDB](https://rxdb.info/) becomes a better fit.
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="JavaScript Database" />
 
 ## A Short History of localForage
 
@@ -19076,11 +19034,7 @@ Developers reach for **LokiJS** when they want a small, MongoDB-like JavaScript 
 
 This page explains how **RxDB** fits that role and how it covers both the in-memory speed scenarios that drew people to LokiJS and the persistence and sync gaps that pushed them away.
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="JavaScript Database" />
 
 ## A Short History of LokiJS
 
@@ -19295,11 +19249,7 @@ Teams tend to outgrow LowDB once the application requires any of the following:
 
 This page walks through where LowDB fits, where it does not, and how [RxDB](https://rxdb.info/) covers the same ground while adding the features needed for production-sized Node.js, Electron, and web applications.
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="JavaScript Database" />
 
 ## A Short History of LowDB
 
@@ -19501,11 +19451,7 @@ For a deeper look at the building blocks, see the [RxCollection guide](../../rx-
 
 # RxDB as a Meteor Alternative
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="JavaScript Database" />
 
 Meteor launched in 2012 and introduced many developers to the concept of full-stack JavaScript with real-time data. For a long time, it stood out as one of the few platforms that offered seamless data synchronization between client and server out of the box. Over a decade later, the JavaScript ecosystem has matured, and the requirements for offline-capable, framework-agnostic applications have grown. RxDB offers a different approach: a dedicated local-first database that works with any backend, any frontend framework, and any storage engine, without requiring a full platform.
 
@@ -19818,7 +19764,7 @@ Meteor's Minimongo is an in-memory database. In-memory operations are fast, but 
 
 RxDB stores data persistently and indexes it for fast lookups. Queries operate on locally indexed data rather than scanning in-memory arrays. With the [OPFS storage](../../rx-storage-opfs.md) (Origin Private File System), RxDB achieves particularly high read and write throughput in modern browsers without needing WebAssembly.
 
-  
+<RxdbLogo alt="RxDB JavaScript Database" width={160} />
 
 RxDB also includes [event-reduce](https://github.com/pubkey/event-reduce) optimization, which reduces the number of re-queries by computing the new query result from the change event directly, without re-running the full query against the storage engine.
 
@@ -19951,11 +19897,7 @@ Yes. RxDB uses indexed storage engines rather than in-memory arrays, which means
 
 # RxDB as a Minimongo Alternative
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="JavaScript Database" />
 
 Minimongo started as a component inside Meteor.js in 2012 and introduced many developers to the idea of a client-side, MongoDB-compatible data layer. If you have used Minimongo outside of Meteor or are evaluating it for a new project, this page explains what Minimongo does well, where it falls short, and why RxDB is a strong alternative for building offline-first, reactive JavaScript applications.
 
@@ -20472,11 +20414,7 @@ Teams that built mobile and web applications on top of [MongoDB Realm](https://w
 
 This page explains why [RxDB](https://rxdb.info/) is a strong replacement for Realm in JavaScript, TypeScript, [React Native](../../react-native-database.md), [Electron](../../electron-database.md), and browser environments. It covers the history of Realm, the technical shortcomings that existed even before the deprecation announcement, the features RxDB provides today, code samples for schema definition and replication to a MongoDB-backed HTTP endpoint, and practical migration notes.
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="RxDB - JavaScript Database" />
 
 ## A short history of Realm
 
@@ -20683,11 +20621,7 @@ For teams currently running on Realm, the EOL date in September 2025 is firm. St
 
 If you arrived here, you are likely running a project that depends on **NeDB** and you are looking for a maintained replacement. NeDB served many Node.js, Electron, and browser applications well during its active years, but the project has been frozen since 2016. Modern apps need schema validation, observable queries, multi-tab coordination, and replication, and a database that still receives security updates. **RxDB** fills that gap while keeping the embedded, document-oriented model that NeDB users are familiar with.
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="RxDB JavaScript Database" />
 
 ## A Short History of NeDB
 
@@ -20888,11 +20822,7 @@ More resources:
 
 # RxDB as a PouchDB Alternative
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="JavaScript Database" />
 
 Many developers start building an offline-first web application and reach for PouchDB because of its well-known CouchDB synchronization capabilities. Over time, those same developers encounter performance bottlenecks, storage bloat, and the absence of reactive queries. [RxDB](https://rxdb.info) is a local-first JavaScript database that solves exactly these problems while keeping the offline-first architecture developers rely on.
 
@@ -21459,11 +21389,7 @@ PowerSync looks attractive when you already run Postgres or MongoDB on the serve
 
 RxDB takes a different route. It is a [local-first](../../offline-first.md) JavaScript database that stays storage-agnostic, runs MongoDB-style queries against [IndexedDB](../../rx-storage-indexeddb.md), [OPFS](../../rx-storage-opfs.md), [Dexie](../../rx-storage-dexie.md), or [SQLite](../../rx-storage-sqlite.md), and lets you bring your own backend over [HTTP](../../replication-http.md), [GraphQL](../../replication-graphql.md), or any other transport. RxDB is licensed under Apache 2.0, so commercial use is unrestricted.
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="JavaScript Database" />
 
 ## A Short History of PowerSync
 
@@ -21695,11 +21621,7 @@ More resources:
 
 Replicache built strong mindshare in the local-first community with its mutator-based sync model and tight focus on collaborative web apps. Teams pick it because it advertises support for many backend stacks and ships a polished developer experience. Once a project grows, the mutator architecture, the source-available license, and the opinionated query API push some teams to look for a Replicache alternative. RxDB is an open source [local-first](../../articles/local-first-future.md), NoSQL database for JavaScript that stores data on the client, runs MongoDB-style queries against a local store, and replicates with any backend you control.
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="RxDB JavaScript Database" />
 
 ## A Short History of Replicache
 
@@ -21961,11 +21883,7 @@ More resources:
 
 # RxDB as a RethinkDB Alternative
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="JavaScript Database" />
 
 RethinkDB introduced a compelling idea: instead of polling a database for changes, let the database push updates to your application the moment data changes. That capability, called changefeeds, attracted developers building realtime dashboards, chat applications, and collaborative tools. But the company behind RethinkDB shut down in 2016, and while the project continues as a community effort, the fundamental architecture of RethinkDB is a poor fit for modern offline-first applications. RethinkDB lives on the server and streams data to connected clients, which means your application stops working the moment a user loses network access.
 
@@ -22486,11 +22404,7 @@ Teams that adopt [SignalDB](https://signaldb.js.org/) usually want a tiny, react
 
 This page compares SignalDB with **RxDB** and shows when each tool fits. It also covers a hybrid setup where SignalDB handles the reactive UI layer while RxDB takes over persistence, multi-tab coordination, and backend sync.
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="JavaScript Database" />
 
 ## A Short History of SignalDB
 
@@ -22702,11 +22616,7 @@ Developers often pick **sql.js** when they want to run SQL inside the browser wi
 
 This page explains why teams that started with sql.js often migrate to **RxDB** once their prototype turns into a product, and how RxDB fills the gaps while still letting you keep SQLite as the underlying storage if you want.
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="RxDB JavaScript Database" />
 
 ## A Short History of sql.js
 
@@ -22934,11 +22844,7 @@ More resources:
 
 # RxDB as a Supabase Alternative
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="JavaScript Database" />
 
 Supabase is a popular backend platform built on PostgreSQL. It provides authentication, storage, auto-generated REST APIs (PostgREST), and a realtime WebSocket layer. What Supabase does not provide is a client-side database. When the network is unavailable, standard Supabase queries fail. When a user opens your app in multiple tabs, each tab reads directly from the server. There is no local data layer, no offline queue, and no reactive query system built into the Supabase client SDK.
 
@@ -23595,11 +23501,7 @@ Yes. Your application code reads and writes against the local RxDB collection. T
 
 # RxDB as a WatermelonDB Alternative
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="JavaScript Database" />
 
 WatermelonDB set out to solve a real problem: React Native apps slowed down under the weight of large datasets loaded entirely into the JavaScript thread. If you are evaluating WatermelonDB for a new project or looking for alternatives to it, this page explains what WatermelonDB does well, where it falls short, and why RxDB covers more ground for teams building offline-first applications across web and mobile.
 
@@ -24176,11 +24078,7 @@ The trouble starts when the application also has lists, settings, user profiles,
 
 This page explains where Yjs ends, where [RxDB](https://rxdb.info/) begins, and how to combine the two when you need both rich-text collaboration and a structured local database.
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="JavaScript Database" />
 
 ## A Short History of Yjs
 
@@ -24401,11 +24299,7 @@ import {VideoBox} from '@site/src/components/video-box';
 
 In modern web development, Angular has emerged as a popular framework for building robust and scalable applications. As Angular applications often require persistent [storage](./browser-storage.md) and efficient data handling, choosing the right database solution is crucial. One such solution is [RxDB](https://rxdb.info/), a reactive JavaScript database for the [browser](./browser-database.md), [node.js](../nodejs-database.md), and [mobile devices](./mobile-database.md). In this article, we will explore the integration of RxDB into an Angular application and examine its various features and techniques.
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="JavaScript Angular Database" />
 
 ## Angular Web Applications
 Angular is a powerful JavaScript framework developed and maintained by Google. It enables developers to build single-page applications (SPAs) with a modular and component-based approach. Angular provides a comprehensive set of tools and features for creating dynamic and responsive web applications.
@@ -24426,11 +24320,7 @@ To begin our journey with RxDB, let's understand its key concepts and features.
 ### What is RxDB?
 [RxDB](https://rxdb.info/) is a client-side database that follows the principles of reactive programming. It is built on top of IndexedDB, the [native browser database](./browser-database.md), and leverages the RxJS library for reactive data handling. RxDB provides a simple and intuitive API for managing data and offers features like data [replication](../replication.md), multi-tab support, and efficient query handling.
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="JavaScript Angular Database" />
 
 ### Reactive Data Handling
 At the core of RxDB is the concept of reactive data handling. RxDB leverages observables and reactive streams to enable real-time updates and data synchronization. With RxDB, you can easily subscribe to data changes and react to them in a reactive and efficient manner.
@@ -24665,11 +24555,7 @@ Despite the advantages, directly working with IndexedDB has several drawbacks:
 
 - **Browser-Only**: IndexedDB works in the browser but not in environments like [React Native](../react-native-database.md) or [Electron](../electron-database.md). RxDB offers storage adapters to seamlessly reuse the same code on different platforms.
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="JavaScript Database" />
 
 ## Set Up RxDB in Angular
 
@@ -24951,11 +24837,7 @@ By combining IndexedDB's local storage with RxDB's powerful features, you can bu
 # RxDB: The benefits of Browser Databases
 In the world of web development, efficient data management is a cornerstone of building successful and performant applications. The ability to store data directly in the browser brings numerous advantages, such as caching, offline accessibility, simplified replication of database state, and real-time application development. In this article, we will explore [RxDB](https://rxdb.info/), a powerful browser JavaScript database, and understand why it is an excellent choice for implementing a browser database solution.
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="JavaScript Browser Database" />
 
 ## Why you might want to store data in the browser
 There are compelling reasons to consider storing data in the browser:
@@ -25075,11 +24957,7 @@ To explore more about RxDB and leverage its capabilities for browser database de
 
 When it comes to building web applications, one essential aspect is the storage of data. Two common methods of storing data directly within the user's web browser are LocalStorage and [IndexedDB](../rx-storage-indexeddb.md). These browser-based storage options serve various purposes and cater to different needs in web development.
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="JavaScript Browser Storage" />
 
 ### LocalStorage
 [LocalStorage](./localstorage.md) is a straightforward way to store small amounts of data in the user's web browser. It operates on a simple key-value basis and is relatively easy to use. While it has limitations, it is suitable for basic data storage requirements.
@@ -25132,11 +25010,7 @@ SQL databases are optimized for server environments, and their initialization pr
 ## Why RxDB Is a Good Fit as Browser Storage
 RxDB is an excellent choice for browser-based storage due to its numerous features and advantages:
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="JavaScript Browser Storage" />
 
 ### Flexible Storage Layer for Various Platforms
 RxDB offers a flexible storage layer that can seamlessly integrate with different platforms, making it versatile and adaptable to various application needs.
@@ -25231,11 +25105,7 @@ To explore more about RxDB and leverage its capabilities for browser storage, ch
 # RxDB as a data base: Empowering Web Applications with Reactive Data Handling
 In the world of web applications, efficient data management plays a crucial role in delivering a seamless user experience. As mobile applications continue to dominate the digital landscape, the importance of robust data bases becomes evident. In this article, we will explore RxDB as a powerful data base solution for web applications. We will delve into its features, advantages, and advanced techniques, highlighting its ability to handle reactive data and enable an [offline-first](../offline-first.md) approach.
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="Data Base" width={240} />
 
 ## Overview of Web Applications that can benefit from RxDB
 Before diving into the specifics of RxDB, let's take a moment to understand the scope of web applications that can leverage its capabilities. Any web application that requires real-time data updates, offline functionality, and synchronization between clients and servers can greatly benefit from RxDB. Whether it's a collaborative document editing tool, a task management app, or a chat application, RxDB offers a robust foundation for building these types of applications.
@@ -25300,11 +25170,7 @@ In scenarios where storage size is a concern, RxDB provides JSON [key compressio
 ## Conclusion
 RxDB provides an exceptional data base solution for web and mobile applications, empowering developers to create reactive, offline-ready, and synchronized applications. With its reactive data handling, offline-first approach, and replication plugins, RxDB simplifies the challenges of building real-time applications with data synchronization requirements. By embracing advanced features like indexing, encryption, change streams, and JSON key compression, developers can optimize performance, enhance security, and reduce storage requirements. As web and [mobile applications](./mobile-database.md) continue to evolve, RxDB proves to be a reliable and powerful
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="Data Base" width={240} />
 
 ---
 
@@ -25313,11 +25179,7 @@ RxDB provides an exceptional data base solution for web and mobile applications,
 # Using RxDB as an Embedded Database
 In modern UI applications, efficient data storage is a crucial aspect for seamless user experiences. One powerful solution for achieving this is by utilizing an embedded database. In this article, we will explore the concept of an embedded database and delve into the benefits of using [RxDB](https://rxdb.info/) as an embedded database in UI applications. We will also discuss why RxDB stands out as a robust choice for real-time applications with embedded database functionality.
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="JavaScript Embedded Database" />
 
 ## What is an Embedded Database?
 An embedded database refers to a client-side database system that is integrated directly within an application. It is designed to operate within the client environment, such as a web browser or a [mobile](./mobile-database.md) app. This approach eliminates the need for a separate database server and allows the database to run locally on the client device.
@@ -25352,11 +25214,7 @@ RxDB is a JavaScript-based embedded database that offers numerous advantages for
 - Flexible Storage Layer and Cross-Platform Compatibility: RxDB provides a flexible storage layer that can be reused across various platforms, including [Electron.js](../electron-database.md), [React Native](../react-native-database.md), hybrid apps (via Capacitor.js), and browsers. This cross-platform compatibility simplifies development and enables code reuse across different environments.
 - Replication Algorithm for Backend Compatibility: RxDB's replication algorithm is open-source and can be made compatible with various backend solutions, such as self-hosted servers, Firebase, [CouchDB](../replication-couchdb.md), NATS, WebSockets, and more. This flexibility allows developers to choose their preferred backend infrastructure while benefiting from RxDB's embedded database capabilities.
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="JavaScript Embedded Database" />
 
 ## Follow Up
 To further explore [RxDB](https://rxdb.info/) and leverage its capabilities as an embedded database, the following resources can be helpful:
@@ -25374,11 +25232,7 @@ By utilizing [RxDB](https://rxdb.info/) as an embedded database in UI applicatio
 
 Are you on the lookout for a **Firebase Realtime Database alternative** that gives you greater freedom, deeper offline capabilities, and allows you to seamlessly integrate with any backend? **RxDB** (Reactive Database) might be the perfect choice. This [local-first](./local-first-future.md), NoSQL data store runs entirely on the client while supporting real-time updates and robust syncing with any server environment, making it a strong contender against Firebase Realtime Database's limitations and potential vendor lock-in.
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="JavaScript Database" />
 
 ## Why RxDB Is an Excellent Firebase Realtime Database Alternative
 
@@ -25584,11 +25438,7 @@ If you're seeking a **Firestore alternative**, you're likely looking for a way t
 
 Enter **RxDB** (Reactive Database) - a [local-first](./local-first-future.md), NoSQL database for JavaScript applications that can sync in real time with **any** backend of your choice. Whether you're tired of the limitations and fees associated with Firebase Cloud Firestore or simply need more flexibility, RxDB might be the Firestore alternative you've been searching for.
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="JavaScript Database" />
 
 ## What Makes RxDB a Great Firestore Alternative?
 
@@ -25820,11 +25670,7 @@ In the world of mobile application development, Flutter has gained significant p
 You can find the source code for an example RxDB Flutter Application [at the github repo](https://github.com/pubkey/rxdb/tree/master/examples/flutter)
 :::
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="RxDB Flutter Database" />
 
 ### Overview of Flutter Mobile Applications
 Flutter is an open-source UI software development kit created by Google that allows developers to build high-performance [mobile](./mobile-database.md) applications for iOS and Android platforms using a single codebase. Flutter's framework provides a wide range of widgets and tools that enable developers to create visually appealing and responsive applications.
@@ -25845,11 +25691,7 @@ To understand how RxDB can be utilized in a Flutter application, let's explore i
 ### What is RxDB?
 [RxDB](https://rxdb.info/) is a client-side database built on top of [IndexedDB](../rx-storage-indexeddb.md), which is a low-level [browser-based database](./browser-database.md) API. It provides a simple and intuitive API for performing CRUD operations (Create, Read, Update, Delete) on documents. RxDB's underlying architecture allows for efficient handling of data synchronization between multiple clients and servers.
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="RxDB Flutter Database" />
 
 ### Reactive Data Handling
 One of the key strengths of RxDB is its reactive data handling. It leverages the power of Observables, a concept from reactive programming, to automatically update the UI in response to data changes. With RxDB, developers can define queries and subscribe to their results, ensuring that the UI is always in sync with the database.
@@ -26037,11 +25879,7 @@ You can find the source code for an example RxDB Flutter Application [at the git
 # RxDB JavaScript Frontend Database: Efficient Data Storage in Frontend Applications
 In modern web development, managing data on the front end has become increasingly important. Storing data in the frontend offers numerous advantages, such as offline accessibility, caching, faster application startup, and improved state management. Traditional SQL databases, although widely used on the server-side, are not always the best fit for frontend applications. This is where [RxDB](https://rxdb.info/), a frontend JavaScript database, emerges as a powerful solution. In this article, we will explore why storing data in the frontend is beneficial, the limitations of SQL databases in the frontend, and how [RxDB](https://rxdb.info/) addresses these challenges to become an excellent choice for frontend data storage.
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="JavaScript Frontend Database" />
 
 ## Why you might want to store data in the frontend
 
@@ -26357,11 +26195,7 @@ X- "reactjs storage"
 
 Real-time applications have become increasingly popular in today's digital landscape. From instant messaging to collaborative editing tools, the demand for responsive and interactive software is on the rise. To meet these requirements, developers need powerful and efficient database solutions that can handle large amounts of data in real-time. [RxDB](https://rxdb.info/), an javascript NoSQL database, is revolutionizing the way developers build and scale their applications by offering exceptional speed, flexibility, and scalability.
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="RxDB Flutter Database" />
 
 ## Speed and Performance Benefits
 One of the key advantages of using RxDB as an in-memory NoSQL database is its ability to leverage in-memory storage for faster database operations. By storing data directly in memory, database operations can be performed significantly faster compared to traditional disk-based databases. This is especially important for real-time applications where every millisecond counts. With RxDB, developers can achieve near-instantaneous data access and manipulation, enabling highly responsive user experiences.
@@ -26709,11 +26543,7 @@ const compressed = {
 
 Sharding data across multiple subdomains or iframes is another trick, though it complicates communication. When you need truly massive offline data, you might store part of the data under `sub1.yoursite.com` and another chunk under `sub2.yoursite.com`, using `postMessage()` to coordinate. This can circumvent single-origin limitations, but it introduces extra complexity. Another effective method is to let data expire automatically, for example, older records can be removed if they haven’t been accessed for a certain period.
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="JavaScript Database" />
 
 ## IndexedDB Max Size of a Single Object
 
@@ -26756,11 +26586,7 @@ RxDB steps in as a powerful solution to address the data management needs of ion
 
 ### Getting Started with RxDB
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="JavaScript Ionic Database Storage" />
 
 ### What is RxDB?
 
@@ -26920,11 +26746,7 @@ In addition to functioning fully offline, RxDB supports advanced [replication](.
 ### 5. Easy to Adopt and Extend
 RxDB runs with a **NoSQL** approach and integrates seamlessly into [Ionic Angular](https://ionicframework.com/docs/angular/overview) or other frameworks you might use with Ionic. You can extend or replace storage backends, add encryption, or build advanced offline-first features with minimal overhead.
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="Ionic Storage Database" />
 
 ## Quick Start: Implementing RxDB with LocalSTorage Storage
 
@@ -27081,11 +26903,7 @@ Ready to learn more?
 
 The [local-first](../offline-first.md) revolution is here, changing the way we build apps! Imagine a world where your app's data lives right on the user's device, always available, even when there's no internet. That's the magic of local-first apps. Not only do they bring faster performance and limitless scalability, but they also empower users to work offline without missing a beat. And leading the charge in this space are local database solutions, like [RxDB](https://rxdb.info/).
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="JavaScript Database" />
 
 But here's where things get even more exciting: when building [local-first](./local-first-future.md) apps, traditional databases often fall short. They're great at searching for exact matches, like `numbers` or `strings`, but what if you want to search by **meaning**, like sifting through emails to find a specific topic? Sure, you could use **RegExp**, but to truly unlock the power of semantic search and similarity-based queries, you need something more cutting-edge. Something that really understands the content of the data.
 
@@ -27621,11 +27439,7 @@ There are multiple other techniques to improve the performance of your local vec
 
 - **Different RxDB Plugins**: RxDB has different storages and plugins that can improve the performance like the [IndexedDB RxStorage](../rx-storage-indexeddb.md), the [OPFS RxStorage](../rx-storage-opfs.md), the [sharding](../rx-storage-sharding.md) plugin and the [Worker](../rx-storage-worker.md) and [SharedWorker](../rx-storage-shared-worker.md) storages.
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="JavaScript Database" />
 
 ## Migrating Data on Model/Index Changes
 
@@ -27687,11 +27501,7 @@ import {VideoBox} from '@site/src/components/video-box';
 
 In the early days of dynamic web development, **jQuery** emerged as a popular library that simplified DOM manipulation and AJAX requests. Despite the rise of modern frameworks, many developers still maintain or extend existing jQuery projects, or leverage jQuery in specific contexts. As jQuery applications grow in complexity, they often require efficient data handling, offline support, and synchronization capabilities. This is where [RxDB](https://rxdb.info/), a reactive JavaScript database for the browser, node.js, and [mobile devices](./mobile-database.md), steps in.
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="JavaScript jQuery Database" />
 
 ## jQuery Web Applications
 jQuery provides a simple API for DOM manipulation, event handling, and AJAX calls. It has been widely adopted due to its ease of use and strong community support. Many projects continue to rely on jQuery for handling client-side functionality, UI interactions, and animations. As these applications evolve, the need for a robust database solution that can manage data locally (and offline) becomes increasingly important.
@@ -27975,11 +27785,7 @@ Some developers consider storing everything in a single JSON file, typically rea
 
 Both relational and NoSQL databases solve these issues by handling concurrency, enabling partial reads/writes, establishing indexes, and ensuring transactional integrity so you don’t lose everything if the process is interrupted mid-write.
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="JavaScript JSON Database" />
 
 ## RxDB: A JSON-Focused Database for JavaScript Apps
 
@@ -28082,11 +27888,7 @@ import { PERFORMANCE_DATA_BROWSER, PERFORMANCE_METRICS } from '@site/src/compone
 
 Storing data as **JSON documents** in a **[NoSQL](./in-memory-nosql-database.md)** database is not just a trend; it's a practical choice. JSON data is highly compatible with various tools and is human-readable, making it an excellent fit for modern applications. JSON documents offer more flexibility compared to traditional SQL table rows, as they can contain nested data structures. This article introduces [RxDB](https://rxdb.info/), an open-source, flexible, performant, and battle-tested NoSQL JSON database specifically designed for **JavaScript** applications.
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="JSON Database" />
 
 ## Why Choose a JSON Database?
 - **JavaScript Friendliness**: JavaScript, a prevalent language for web development, naturally uses JSON for data representation. Using a JSON database aligns seamlessly with JavaScript's native data format.
@@ -28221,11 +28023,7 @@ Storing data on user devices introduces unique security considerations, such as 
 
 ---
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="RxDB Database" />
 
 ## Why RxDB is Optimized for JavaScript Applications
 
@@ -28569,11 +28367,7 @@ To concretely understand how local-first development works, let's walk through a
 Because you read this on the RxDB website, in the following a local-first setup with RxDB is shown. If you only care about Local-First in general, you can [skip](#partial-sync) this part.
 :::
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="RxDB" />
 
 ### Setting up a Local Database
 
@@ -28869,11 +28663,7 @@ Yes, applications like WorkFlowy, Capacities, Notion (to an extent), and Linear 
 
 ## See also
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="JavaScript Angular Database" />
 
 - Discuss [this topic on HackerNews](https://news.ycombinator.com/item?id=43289885)
 - [Local-First Technologies](../alternatives.md): A list of databases and technologies (besides [RxDB](/)) that support offline-first or local-first use cases.
@@ -28921,11 +28711,7 @@ In this article, we will dive into the various technologies available for storin
 You are reading this in the [RxDB](/) docs. RxDB is a JavaScript database that has different storage adapters which can utilize the different storage APIs.
 **Since 2017** I spend most of my time working with these APIs, doing performance tests and building [hacks](../slow-indexeddb.md) and plugins to reach the limits of browser database operation speed.
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="JavaScript Database" />
 :::
 
 ## The available Storage APIs in a modern Browser
@@ -29264,11 +29050,7 @@ The **File System Access API** allows web applications to read and write directl
 
 When it comes to client-side storage in web applications, the localStorage API stands out as a simple and widely supported solution. It allows developers to store key-value pairs directly in a user's browser. In this article, we will explore the various aspects of the localStorage API, its advantages, limitations, and alternative storage options available for modern applications.
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="JavaScript Database" />
 
 ## What is the localStorage API?
 
@@ -29351,11 +29133,7 @@ addEventListener("storage", (event) => {});
 
 For those looking to harness the full power of IndexedDB with added capabilities, using wrapper libraries like [RxDB](https://rxdb.info/) is recommended. These libraries augment IndexedDB with features such as complex queries and observability, enhancing its usability for modern applications by providing a real database instead of only a key-value store.
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="RxDB" />
 
 In summary when you compare IndexedDB vs localStorage, IndexedDB will win at any case where much data is handled while localStorage has better performance on small key-value datasets.
 
@@ -29476,11 +29254,7 @@ There are various types of mobile databases available, each with its own strengt
 
 ## Introducing RxDB: A Paradigm Shift in Mobile Database Solutions
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="Mobile Database" />
 
 [RxDB](https://rxdb.info/), also known as Reactive Database, has emerged as a game-changer in the realm of mobile databases. Built on top of popular web technologies like JavaScript, TypeScript, and RxJS (Reactive Extensions for JavaScript), RxDB provides an elegant solution for seamless offline-first capabilities and real-time data synchronization in mobile applications.
 
@@ -29573,11 +29347,7 @@ In a traditional app, every interaction triggers a request to the server, scalin
 ### 5. Simpler Development: Fewer Endpoints, No Extra State Library
 Typical apps require numerous REST endpoints and possibly a client-side state manager (like Redux) to handle data flow. If you adopt an offline database, you can replicate nearly everything to the client. The local DB becomes your single source of truth, and you may skip advanced state libraries altogether.
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="RxDB" />
 
 ## Introducing RxDB - A Powerful Offline Database Solution
 
@@ -29830,11 +29600,7 @@ Optimistic UIs offer a host of advantages, from improving the user experience to
 - **Less server load**: By handling changes locally and syncing in batches, you reduce the volume of server round-trips.
 - **Automated error handling**: If a request fails or a document is in conflict, RxDB's [replication](../replication.md) mechanism can seamlessly retry and resolve conflicts in the background, without requiring a separate endpoint or manual user intervention.
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="RxDB Database" />
 
 ## Building Optimistic UI Apps with RxDB
 
@@ -30006,11 +29772,7 @@ PWAs bring a plethora of advantages to the table. They eliminate the hassle of a
 ## Introducing RxDB as a Client-Side Database for PWAs
 At the heart of PWAs lies efficient data management, and RxDB steps in as a reliable ally. As a client-side [NoSQL](./in-memory-nosql-database.md) database, RxDB seamlessly integrates into web applications, offering real-time data synchronization and manipulation capabilities. This article sheds light on the transformative potential of RxDB as it collaborates harmoniously with PWAs, enabling local-first strategies and elevating user interactions to a whole new level.
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="Progressive Web App Database" width={228} />
 
 ### Getting Started with RxDB
 RxDB emerges as a reactive, schema-based NoSQL database crafted explicitly for client-side applications. Its real-time data synchronization and responsiveness align seamlessly with the dynamic demands of modern PWAs.
@@ -30104,11 +29866,7 @@ While React excels at managing the user interface, the need for efficient data s
 ## Introducing RxDB as a JavaScript Database
 RxDB, a powerful JavaScript database, has garnered attention as an optimal solution for managing data in React applications. Built on top of the IndexedDB standard, RxDB combines the principles of reactive programming with database management. Its core features include reactive data handling, offline-first capabilities, and robust data replication.
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="JavaScript React Database" width={221} />
 
 ## What is RxDB?
 RxDB, short for Reactive Database, is an open-source JavaScript database that seamlessly integrates reactive programming with database operations. It offers a comprehensive API for performing database actions and synchronizing data across clients and servers. RxDB's underlying philosophy revolves around observables, allowing developers to reactively manage data changes and create dynamic user interfaces.
@@ -30281,11 +30039,7 @@ While IndexedDB itself is powerful, its native API comes with several drawbacks 
 - **Missing Advanced Features**: Features like [encryption](../encryption.md) or compression aren't built into IndexedDB, but they are available via RxDB.
 - **Limited Platform Support**: IndexedDB exists only in the browser. In contrast, RxDB offers swappable storages to use the same code in [React Native](../react-native-database.md), [Capacitor](../capacitor-database.md), or [Electron](../electron-database.md).
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="JavaScript Database" />
 
 ## Set up RxDB in React
 
@@ -30578,11 +30332,7 @@ React Native supports multiple ways to secure local data:
 3. **Custom Encryption**
    If you need more fine-grained control, you can integrate libraries like [`crypto-js`](https://github.com/brix/crypto-js) or the [Web Crypto API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API) to encrypt data before storing it in a database or file.
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="RxDB" width={250} />
 
 ## Setting Up Encryption in RxDB for React Native
 
@@ -30826,11 +30576,7 @@ While localStorage is simple, it’s limited to string-based key-value lookups a
 - More complicated to use directly (i.e., not as simple as .getItem())
 [RxDB](/), as you’ll see, simplifies [IndexedDB](../rx-storage-indexeddb.md) usage in ReactJS by adding a more intuitive layer for queries, [reactivity](../reactivity.md), and advanced capabilities like [encryption](../encryption.md).
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="RxDB" width={250} />
 
 ## Part 3: Moving Beyond Basic Storage: RxDB for ReactJS
 
@@ -31031,11 +30777,7 @@ Often people get confused by the word **realtime database**, because the word **
 
 In this article we will explore what a realtime database is, and more important, what it is not.
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="JavaScript Realtime Database" width={150} />
 
 ## Realtime as in **realtime computing**
 
@@ -31124,11 +30866,7 @@ In the modern web ecosystem, [Vue](https://vuejs.org/) has become a leading choi
 
 This article explores how RxDB works, why it's a perfect match for Vue, and how you can leverage it to build more engaging, performant, and data-resilient Vue applications.
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="JavaScript Vue Database" />
 
 ## Why Vue Applications Need a Database
 Vue is renowned for its lightweight core and flexible architecture centered around reactive state management and reusable components. However, modern Vue applications often require:
@@ -31356,11 +31094,7 @@ While IndexedDB itself is powerful, its native API comes with several drawbacks 
 - **Missing Advanced Features**: Features like [encryption](../encryption.md) or [compression](../key-compression.md) aren't built into IndexedDB, but they are available via RxDB.
 - **Limited Platform Support**: IndexedDB is browser-only. RxDB offers [swappable storages](../rx-storage.md) so you can reuse the same data layer code in mobile or desktop environments.
 
-<center>
-  
-    
-  
-</center>
+<RxdbLogo alt="JavaScript Database" />
 
 ## Set up RxDB in Vue
 
@@ -31573,11 +31307,7 @@ For modern real-time web applications, the ability to send events from the serve
 
 This article aims to delve into these technologies, comparing their performance, highlighting their benefits and limitations, and offering recommendations for various use cases to help developers make informed decisions when building real-time web applications. It is a condensed summary of my gathered experience when I implemented the [RxDB Sync Engine](../replication.md) to be compatible with various backend technologies.
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="JavaScript Database" />
 
 ### What is Long Polling?
 
@@ -31740,11 +31470,7 @@ In the context of mobile applications running on operating systems like Android 
 
 From consulting many [RxDB](https://rxdb.info/) users, it was shown that in enterprise environments (aka "at work") it is often hard to implement a WebSocket server into the infrastructure because many proxies and firewalls block non-HTTP connections. Therefore using the Server-Sent-Events provides and easier way of enterprise integration. Also long-polling uses only plain HTTP-requests and might be an option.
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="JavaScript Database" />
 
 ## Performance Comparison
 
@@ -31854,11 +31580,7 @@ In a traditional architecture, each user action triggers requests to a server fo
 3. **Reduced Backend Load**: Instead of flooding the server with small requests, replication can combine and push or pull changes in batches.
 4. **Simplified Caching**: Instead of implementing multi-layer caching, local first transforms your data layer into a reliable, quickly accessible store for all user actions.
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="RxDB local Database" />
 
 ## RxDB: Your Key to Zero-Latency Local First Apps
 
@@ -32162,7 +31884,7 @@ The downside of SQLite is that it is lacking many features that are handful when
 
 ### RxDB
 
-  
+<RxdbLogo alt="RxDB" width={170} />
 
 [RxDB](https://rxdb.info/) is an local first, NoSQL database for JavaScript Applications like hybrid apps. Because it is reactive, you can subscribe to all state changes like the result of a query or even a single field of a document. This is great for UI-based realtime applications in a way that makes it easy to develop realtime applications like what you need in Capacitor.
 
@@ -32547,7 +32269,7 @@ Another thing is performance. [IndexedDB is slow](./slow-indexeddb.md), mostly b
 
 ### RxDB
 
-  
+<RxdbLogo alt="RxDB" width={170} />
 
 [RxDB](https://rxdb.info/) is a NoSQL database for JavaScript applications. It has many features that come in handy when RxDB is used with UI based applications like your Electron app. For example, it is able to subscribe to query results of single fields of documents. It has [encryption](./encryption.md) and [compression](./key-compression.md) features and most important it has a battle tested [Sync Engine](./replication.md) that can be used to do a realtime sync with your backend.
 
@@ -32645,7 +32367,7 @@ const rows = await ipcRenderer.invoke('db-query', "SELECT * FROM Users");
 
 The downside of SQLite (or SQL in general) is that it is lacking many features that are handful when using a database together with **UI based** applications. It is not possible to observe queries or document fields and there is no replication method to sync data with a server. This makes SQLite a good solution when you just want to store data on the client or process expensive SQL queries on the server, but it is not suitable for more complex operations like two-way replication, encryption, compression and so on. Also developer helpers like TypeScript type safety are totally out of reach.
 
-  
+<RxdbLogo alt="RxDB Electron Database" width={170} />
 
 ## Follow up
 
@@ -32831,11 +32553,7 @@ While in the past, internet connection was unstable, things are changing especia
 So if we did not care about offline first applications in the past, why should we even care now?
 In the following I will point out why offline first applications are better, not because they support offline usage, but because of other reasons.
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="RxDB" />
 
 ## UX is better without loading spinners
 
@@ -33225,11 +32943,7 @@ If you are looking for a **React Native Database**, you usually want three thing
 
 RxDB covers all of these requirements out of the box. It is a [local-first](./articles/local-first-future.md) NoSQL database that runs deeply integrated with React Native, giving you the power of a full featured database engine inside your mobile app.
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="RxDB" />
 
 ## The Storage Layer
 

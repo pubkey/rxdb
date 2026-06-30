@@ -77,11 +77,7 @@ WebMCP is uniquely powerful when paired with [local-first](/articles/local-first
 - **LLM-Friendly NoSQL**: Writing NoSQL query objects (like [Mongo-style queries](./rx-query.md)) is significantly easier and more deterministic for LLMs to generate and validate than orchestrating complex, string-based SQL JOIN queries.
 - **Native JSONSchema**: WebMCP relies entirely on JSONSchema to define tools and parameters. Because [RxDB schemas are *already* written in JSONSchema](./rx-schema.md), there is zero translation overhead, meaning the agent receives the exact structural contract it expects.
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="JavaScript Browser Database" />
 
 ### Example Use Cases
 

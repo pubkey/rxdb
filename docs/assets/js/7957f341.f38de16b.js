@@ -1,0 +1,2 @@
+"use strict";(globalThis.webpackChunkrxdb=globalThis.webpackChunkrxdb||[]).push([[6591],{34913(a,e,t){t.r(e),t.d(e,{default:()=>l});var r=t(72517),s=t(74848);function l(){return(0,r.default)({sem:{id:"ytube",metaTitle:"The local Database for Apps",title:(0,s.jsxs)(s.Fragment,{children:["The Local-First ",(0,s.jsx)("b",{children:"Database"})," for ",(0,s.jsx)("b",{children:"JavaScript"})," Apps"]})}})}}}]);
+//# sourceMappingURL=7957f341.f38de16b.js.map

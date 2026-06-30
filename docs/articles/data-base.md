@@ -5,11 +5,7 @@
 # RxDB as a data base: Empowering Web Applications with Reactive Data Handling
 In the world of web applications, efficient data management plays a crucial role in delivering a seamless user experience. As mobile applications continue to dominate the digital landscape, the importance of robust data bases becomes evident. In this article, we will explore RxDB as a powerful data base solution for web applications. We will delve into its features, advantages, and advanced techniques, highlighting its ability to handle reactive data and enable an [offline-first](../offline-first.md) approach.
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="Data Base" width={240} />
 
 ## Overview of Web Applications that can benefit from RxDB
 Before diving into the specifics of RxDB, let's take a moment to understand the scope of web applications that can leverage its capabilities. Any web application that requires real-time data updates, offline functionality, and synchronization between clients and servers can greatly benefit from RxDB. Whether it's a collaborative document editing tool, a task management app, or a chat application, RxDB offers a robust foundation for building these types of applications.
@@ -74,8 +70,4 @@ In scenarios where storage size is a concern, RxDB provides JSON [key compressio
 ## Conclusion
 RxDB provides an exceptional data base solution for web and mobile applications, empowering developers to create reactive, offline-ready, and synchronized applications. With its reactive data handling, offline-first approach, and replication plugins, RxDB simplifies the challenges of building real-time applications with data synchronization requirements. By embracing advanced features like indexing, encryption, change streams, and JSON key compression, developers can optimize performance, enhance security, and reduce storage requirements. As web and [mobile applications](./mobile-database.md) continue to evolve, RxDB proves to be a reliable and powerful
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="Data Base" width={240} />

@@ -8,11 +8,7 @@ If you built a project on **Hoodie**, you chose it for a clear reason: ship an [
 
 Teams maintaining Hoodie applications now face a hard question: how do you keep the offline-first developer experience while moving to a stack that is actively maintained, typed, and supported across modern JavaScript runtimes? **RxDB** is a direct answer to that question. It keeps the local-first model, supports CouchDB replication out of the box, and adds reactive queries, multi-tab synchronization, and conflict handling that Hoodie never offered.
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="JavaScript Database" />
 
 ## A Short History of Hoodie
 

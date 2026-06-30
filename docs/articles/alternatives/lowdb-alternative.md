@@ -16,11 +16,7 @@ Teams tend to outgrow LowDB once the application requires any of the following:
 
 This page walks through where LowDB fits, where it does not, and how [RxDB](https://rxdb.info/) covers the same ground while adding the features needed for production-sized Node.js, Electron, and web applications.
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="JavaScript Database" />
 
 ## A Short History of LowDB
 

@@ -1,0 +1,2 @@
+"use strict";(globalThis.webpackChunkrxdb=globalThis.webpackChunkrxdb||[]).push([[3015],{28496(e,a,s){s.r(a),s.d(a,{default:()=>l});var t=s(72517),i=s(74848);function l(){return(0,t.default)({sem:{id:"gads",metaTitle:"The local Database for Expo",appName:"Expo",title:(0,i.jsxs)(i.Fragment,{children:["The easiest way to ",(0,i.jsx)("b",{children:"store"})," and ",(0,i.jsx)("b",{children:"sync"})," Data in Expo"]}),iconUrl:"/files/icons/expo_white.svg"}})}}}]);
+//# sourceMappingURL=85caacef.d2b6c0f1.js.map

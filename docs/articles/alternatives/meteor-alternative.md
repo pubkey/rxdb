@@ -4,11 +4,7 @@
 
 # RxDB as a Meteor Alternative
 
-<center>
-    
-        
-    
-</center>
+<RxdbLogo alt="JavaScript Database" />
 
 Meteor launched in 2012 and introduced many developers to the concept of full-stack JavaScript with real-time data. For a long time, it stood out as one of the few platforms that offered seamless data synchronization between client and server out of the box. Over a decade later, the JavaScript ecosystem has matured, and the requirements for offline-capable, framework-agnostic applications have grown. RxDB offers a different approach: a dedicated local-first database that works with any backend, any frontend framework, and any storage engine, without requiring a full platform.
 
@@ -321,7 +317,7 @@ Meteor's Minimongo is an in-memory database. In-memory operations are fast, but 
 
 RxDB stores data persistently and indexes it for fast lookups. Queries operate on locally indexed data rather than scanning in-memory arrays. With the [OPFS storage](../../rx-storage-opfs.md) (Origin Private File System), RxDB achieves particularly high read and write throughput in modern browsers without needing WebAssembly.
 
-  
+<RxdbLogo alt="RxDB JavaScript Database" width={160} />
 
 RxDB also includes [event-reduce](https://github.com/pubkey/event-reduce) optimization, which reduces the number of re-queries by computing the new query result from the change event directly, without re-running the full query against the storage engine.
 
