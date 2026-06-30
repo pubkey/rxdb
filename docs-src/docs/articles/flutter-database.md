@@ -15,11 +15,7 @@ In the world of mobile application development, Flutter has gained significant p
 You can find the source code for an example RxDB Flutter Application [at the github repo](https://github.com/pubkey/rxdb/tree/master/examples/flutter)
 :::
 
-<center>
-    <a href="https://rxdb.info/">
-        <img src="../files/logo/rxdb_javascript_database.svg" alt="RxDB Flutter Database" width="220" />
-    </a>
-</center>
+<RxdbLogo alt="RxDB Flutter Database" />
 
 
 ### Overview of Flutter Mobile Applications
@@ -42,11 +38,7 @@ To understand how RxDB can be utilized in a Flutter application, let's explore i
 ### What is RxDB?
 [RxDB](https://rxdb.info/) is a client-side database built on top of [IndexedDB](../rx-storage-indexeddb.md), which is a low-level [browser-based database](./browser-database.md) API. It provides a simple and intuitive API for performing CRUD operations (Create, Read, Update, Delete) on documents. RxDB's underlying architecture allows for efficient handling of data synchronization between multiple clients and servers.
 
-<center>
-    <a href="https://rxdb.info/">
-        <img src="../files/logo/rxdb_javascript_database.svg" alt="RxDB Flutter Database" width="220" />
-    </a>
-</center>
+<RxdbLogo alt="RxDB Flutter Database" />
 
 
 ### Reactive Data Handling

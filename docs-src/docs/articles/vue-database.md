@@ -11,11 +11,7 @@ In the modern web ecosystem, [Vue](https://vuejs.org/) has become a leading choi
 
 This article explores how RxDB works, why it's a perfect match for Vue, and how you can leverage it to build more engaging, performant, and data-resilient Vue applications.
 
-<center>
-    <a href="https://rxdb.info/">
-        <img src="/files/logo/rxdb_javascript_database.svg" alt="JavaScript Vue Database" width="220" />
-    </a>
-</center>
+<RxdbLogo alt="JavaScript Vue Database" />
 
 ## Why Vue Applications Need a Database
 Vue is renowned for its lightweight core and flexible architecture centered around reactive state management and reusable components. However, modern Vue applications often require:

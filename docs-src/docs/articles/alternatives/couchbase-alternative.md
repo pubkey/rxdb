@@ -7,11 +7,7 @@ image: /headers/alternatives/couchbase-alternative.jpg
 
 # RxDB as a Couchbase Alternative
 
-<center>
-    <a href="https://rxdb.info/">
-        <img src="/files/logo/rxdb_javascript_database.svg" alt="JavaScript Database" width="220" />
-    </a>
-</center>
+<RxdbLogo alt="JavaScript Database" />
 
 Developers building offline-capable JavaScript applications often evaluate Couchbase Mobile as a data layer because of its embedded Couchbase Lite client and its Sync Gateway component for backend replication. In practice, the stack introduces significant infrastructure requirements, a proprietary synchronization protocol, and a tight coupling to the Couchbase Server ecosystem. [RxDB](https://rxdb.info) is a local-first JavaScript database that handles offline storage, reactive queries, and replication without any of that infrastructure dependency.
 

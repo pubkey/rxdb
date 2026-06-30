@@ -1,3 +1,4 @@
 - FIX Reserve explicit `width`/`height` on the docs images that Google Search Console reported with Cumulative Layout Shift (CLS), starting from the [localStorage article](https://rxdb.info/articles/localstorage.html). Covers the two in-article RxDB logos, the navbar logo, the footer logo, the footer community icons, and the "Was this page helpful?" thumbs-up and Discord icons so the browser reserves space before the SVGs load.
 - FIX Add an accessible `aria-label` to the icon-only Discord and GitHub navbar links and an `alt` text to the footer Discord icon.
+- CHANGE Replace the raw centered logo `<img>` HTML in all articles with a reusable `RxdbLogo` MDX component that derives an explicit `height` from the `width`, so every article reserves image space and avoids CLS.
 - CHANGE Emit source maps in the production docs build (`devtool: 'source-map'`) so tools like Lighthouse can map the minified bundle back to the source and give more detailed tips.

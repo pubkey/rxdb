@@ -92,11 +92,7 @@ Some developers consider storing everything in a single JSON file, typically rea
 
 Both relational and NoSQL databases solve these issues by handling concurrency, enabling partial reads/writes, establishing indexes, and ensuring transactional integrity so you don’t lose everything if the process is interrupted mid-write.
 
-<center>
-    <a href="https://rxdb.info/">
-        <img src="../files/logo/rxdb_javascript_database.svg" alt="JavaScript JSON Database" width="220" />
-    </a>
-</center>
+<RxdbLogo alt="JavaScript JSON Database" />
 
 ## RxDB: A JSON-Focused Database for JavaScript Apps
 

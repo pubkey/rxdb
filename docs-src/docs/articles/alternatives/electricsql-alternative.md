@@ -11,11 +11,7 @@ image: /headers/electricsql-alternative.jpg
 
 [RxDB](https://rxdb.info/) is a [local-first](../../articles/local-first-future.md) NoSQL database for JavaScript that has been in production since 2016. It runs in the browser, in Node.js, in Electron, and in React Native. It ships a full bidirectional [replication protocol](../../replication.md), [reactive queries](../../reactivity.md), and pluggable storages including SQLite, IndexedDB, OPFS, and in-memory. This page explains what ElectricSQL offers today, where it falls short, and how RxDB fills the same role with fewer surprises.
 
-<center>
-    <a href="https://rxdb.info/">
-        <img src="/files/logo/rxdb_javascript_database.svg" alt="JavaScript Database" width="220" />
-    </a>
-</center>
+<RxdbLogo alt="JavaScript Database" />
 
 ## A Short History of ElectricSQL
 

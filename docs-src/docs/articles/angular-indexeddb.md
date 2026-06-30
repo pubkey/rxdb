@@ -52,11 +52,7 @@ Despite the advantages, directly working with IndexedDB has several drawbacks:
 
 - **Browser-Only**: IndexedDB works in the browser but not in environments like [React Native](../react-native-database.md) or [Electron](../electron-database.md). RxDB offers storage adapters to seamlessly reuse the same code on different platforms.
 
-<center>
-    <a href="https://rxdb.info/">
-        <img src="../files/logo/rxdb_javascript_database.svg" alt="JavaScript Database" width="220" />
-    </a>
-</center>
+<RxdbLogo alt="JavaScript Database" />
 
 ## Set Up RxDB in Angular
 

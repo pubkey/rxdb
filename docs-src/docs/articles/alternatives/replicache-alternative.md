@@ -9,11 +9,7 @@ image: /headers/replicache-alternative.jpg
 
 Replicache built strong mindshare in the local-first community with its mutator-based sync model and tight focus on collaborative web apps. Teams pick it because it advertises support for many backend stacks and ships a polished developer experience. Once a project grows, the mutator architecture, the source-available license, and the opinionated query API push some teams to look for a Replicache alternative. RxDB is an open source [local-first](../../articles/local-first-future.md), NoSQL database for JavaScript that stores data on the client, runs MongoDB-style queries against a local store, and replicates with any backend you control.
 
-<center>
-    <a href="https://rxdb.info/">
-        <img src="/files/logo/rxdb_javascript_database.svg" alt="RxDB JavaScript Database" width="220" />
-    </a>
-</center>
+<RxdbLogo alt="RxDB JavaScript Database" />
 
 ## A Short History of Replicache
 

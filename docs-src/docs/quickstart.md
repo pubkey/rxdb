@@ -20,11 +20,7 @@ import { HeadlineWithIcon } from '@site/src/components/headline-with-icon';
 Welcome to the RxDB Quickstart. Here we'll learn how to create a simple real-time app with the RxDB database that is able to store and query data persistently in a browser and does realtime updates to the UI on changes.
 
 <br />
-<center>
-    <a href="https://rxdb.info/">
-        <img src="/files/logo/rxdb_javascript_database.svg" alt="JavaScript Embedded Database" width="220" />
-    </a>
-</center>
+<RxdbLogo alt="JavaScript Embedded Database" />
 
 <br />
 

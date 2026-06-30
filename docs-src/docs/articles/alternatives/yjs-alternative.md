@@ -13,11 +13,7 @@ The trouble starts when the application also has lists, settings, user profiles,
 
 This page explains where Yjs ends, where [RxDB](https://rxdb.info/) begins, and how to combine the two when you need both rich-text collaboration and a structured local database.
 
-<center>
-    <a href="https://rxdb.info/">
-        <img src="/files/logo/rxdb_javascript_database.svg" alt="JavaScript Database" width="220" />
-    </a>
-</center>
+<RxdbLogo alt="JavaScript Database" />
 
 ## A Short History of Yjs
 

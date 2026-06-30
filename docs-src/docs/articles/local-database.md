@@ -42,11 +42,7 @@ Storing data on user devices introduces unique security considerations, such as 
 
 ---
 
-<center>
-    <a href="https://rxdb.info/">
-        <img src="../files/logo/rxdb_javascript_database.svg" alt="RxDB Database" width="220" />
-    </a>
-</center>
+<RxdbLogo alt="RxDB Database" />
 
 ## Why RxDB is Optimized for JavaScript Applications
 

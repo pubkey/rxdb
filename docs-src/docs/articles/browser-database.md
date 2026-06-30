@@ -9,11 +9,7 @@ image: /headers/browser-database.jpg
 In the world of web development, efficient data management is a cornerstone of building successful and performant applications. The ability to store data directly in the browser brings numerous advantages, such as caching, offline accessibility, simplified replication of database state, and real-time application development. In this article, we will explore [RxDB](https://rxdb.info/), a powerful browser JavaScript database, and understand why it is an excellent choice for implementing a browser database solution.
 
 
-<center>
-    <a href="https://rxdb.info/">
-        <img src="../files/logo/rxdb_javascript_database.svg" alt="JavaScript Browser Database" width="220" />
-    </a>
-</center>
+<RxdbLogo alt="JavaScript Browser Database" />
 
 ## Why you might want to store data in the browser
 There are compelling reasons to consider storing data in the browser:
