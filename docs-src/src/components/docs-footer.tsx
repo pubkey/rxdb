@@ -77,10 +77,10 @@ export function DocsFooter(props: Props) {
             <li style={styles.li}>
                 Was this page helpful?
                 <div style={styles.vote}>
-                    <img src="/img/thumbs-up-white.svg" loading="lazy" width="14" height="14" onClick={() => vote('up')} />
+                    <img src="/img/thumbs-up-white.svg" alt="Thumbs up" loading="lazy" width="14" height="14" onClick={() => vote('up')} />
                 </div>
                 <div style={{ ...styles.vote, ...styles.down }}>
-                    <img src="/img/thumbs-up-white.svg" loading="lazy" width="14" height="14" onClick={() => vote('down')} />
+                    <img src="/img/thumbs-up-white.svg" alt="Thumbs down" loading="lazy" width="14" height="14" onClick={() => vote('down')} />
                 </div>
             </li> : <li style={styles.li}>Thank you for your vote! <div style={styles.heart}>&#x2665;</div></li>
         }
