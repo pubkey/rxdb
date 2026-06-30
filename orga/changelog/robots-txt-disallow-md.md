@@ -1,0 +1,1 @@
+- Disallow crawling of the published `.md` files (generated for the llms.txt via `generateMarkdownFiles`) in `robots.txt` so the raw markdown sources do not appear as duplicate content in search engines. See https://github.com/pubkey/rxdb
