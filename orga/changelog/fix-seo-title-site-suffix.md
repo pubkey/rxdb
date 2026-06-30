@@ -1,0 +1,1 @@
+Removed the appended `| RxDB - JavaScript Database` site-title suffix from SEO page titles by swizzling the `PageMetadata` theme component, so the `<title>` and `og:title` now contain only the page title. See https://github.com/pubkey/rxdb
