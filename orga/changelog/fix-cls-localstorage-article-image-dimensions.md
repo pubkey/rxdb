@@ -1,0 +1,1 @@
+- FIX Add explicit `height` to the logo images in the [localStorage article](https://rxdb.info/articles/localstorage.html) so the browser reserves vertical space before the SVG loads. This removes the Cumulative Layout Shift (CLS) that Google Search Console reported for that page.

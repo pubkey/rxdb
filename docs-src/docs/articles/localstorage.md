@@ -13,7 +13,7 @@ When it comes to client-side storage in web applications, the localStorage API s
 
 <center>
     <a href="https://rxdb.info/">
-        <img src="../files/logo/rxdb_javascript_database.svg" alt="JavaScript Database" width="220" />
+        <img src="../files/logo/rxdb_javascript_database.svg" alt="JavaScript Database" width="220" height="109" />
     </a>
 </center>
 
@@ -102,7 +102,7 @@ For those looking to harness the full power of IndexedDB with added capabilities
 
 <center>
     <a href="https://rxdb.info/">
-        <img src="../files/logo/rxdb_javascript_database.svg" alt="RxDB" width="220" />
+        <img src="../files/logo/rxdb_javascript_database.svg" alt="RxDB" width="220" height="109" />
     </a>
 </center>
 
