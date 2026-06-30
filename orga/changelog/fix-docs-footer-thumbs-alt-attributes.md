@@ -1,0 +1,1 @@
+- FIX Add accessible `alt` text to the "Was this page helpful?" thumbs-up and thumbs-down icons in the docs footer that an accessibility audit flagged as missing the `alt` attribute.
