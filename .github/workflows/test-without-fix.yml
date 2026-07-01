@@ -68,7 +68,7 @@ jobs:
 
       - name: Reuse npm cache folder
         if: steps.check-changes.outputs.should_run == 'true'
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         env:
           cache-name: cache-node-modules
         with:
