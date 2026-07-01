@@ -1,4 +1,9 @@
 User-agent: *
 Allow: /
 
+# Disallow crawling of the raw .md files that are published for the llms.txt
+# (generateMarkdownFiles in docusaurus-plugin-llms) so the markdown sources
+# do not show up as duplicate content in search engines.
+Disallow: /*.md$
+
 Sitemap: https://rxdb.info/sitemap.xml
