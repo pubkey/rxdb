@@ -201,6 +201,13 @@ export type SemPage = {
   text?: any;
   appName?: AppName;
   /**
+   * Custom bulletpoints shown in the hero sections checklist.
+   * Allows the SEM pages to a/b test different value propositions
+   * like "Build apps that work offline".
+   * When not set, the default bulletpoints are used.
+   */
+  bulletpoints?: React.JSX.Element[];
+  /**
    * Additional blocks to be shown
    */
   blocks?: React.JSX.Element[];
