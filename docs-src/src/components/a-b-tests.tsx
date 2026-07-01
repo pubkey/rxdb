@@ -1,4 +1,4 @@
-import { randomOfArray } from '../../../plugins/utils';
+import { randomNumber, randomOfArray } from '../../../plugins/utils';
 // import { HeroEmojiChat } from './hero-section/T4_hero_b';
 // import { ReplicationDiagram } from './replication-diagram';
 // import { ScrollToSection, SemPage } from '../pages';
@@ -108,10 +108,51 @@ export function getTestGroupEventPrefix() {
             'abt',
             CURRENT_TEST_RUN.id,
             Object.keys(CURRENT_TEST_RUN).length > 1 ? 'V:' + tg.variation : undefined,
+            semVariation ? 'SV:' + semVariation.index : undefined,
             'O:' + tg.originId,
             'D:' + tg.deviceType,
         ]
             .filter(v => !!v)
             .join('_');
     }
+}
+
+/**
+ * SEM landingpages a/b test multiple sets of title, text and
+ * bulletpoints on the same page. getSemVariation() picks one variation
+ * randomly per visitor and stores the choice in localStorage so that the
+ * visitor always sees the same variation on later visits.
+ * The chosen index is also appended to the tracking event prefix
+ * (see getTestGroupEventPrefix) so that conversions can be attributed
+ * to the variation.
+ */
+let semVariation: { pageId: string; index: number; } | undefined;
+export function getSemVariation(pageId: string, variationCount: number): number {
+    if (variationCount <= 1) {
+        return 0;
+    }
+    if (semVariation && semVariation.pageId === pageId) {
+        return semVariation.index;
+    }
+
+    // server side rendering always uses the first variation
+    if (typeof localStorage === 'undefined') {
+        return 0;
+    }
+
+    const storageId = 'sem-variation-' + pageId;
+    let index: number;
+    const fromStorage = localStorage.getItem(storageId);
+    if (fromStorage !== null && !isNaN(parseInt(fromStorage, 10))) {
+        index = parseInt(fromStorage, 10);
+    } else {
+        index = randomNumber(0, variationCount - 1);
+        localStorage.setItem(storageId, index + '');
+    }
+    if (index < 0 || index >= variationCount) {
+        index = 0;
+    }
+
+    semVariation = { pageId, index };
+    return index;
 }
