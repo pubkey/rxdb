@@ -81,6 +81,11 @@ export default function FooterWrapper() {
         href: '/legal-notice/',
       },
       {
+        label: 'Privacy Policy',
+        target: '_blank',
+        href: '/privacy/',
+      },
+      {
         label: 'llms.txt',
         target: '_blank',
         href: '/llms.txt',
