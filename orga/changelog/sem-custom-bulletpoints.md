@@ -1,0 +1,1 @@
+- Add an optional `sem.bulletpoints` field to the landingpage `SemPage` config so SEM pages can customly define and a/b test the hero section bulletpoints like "Build apps that work offline". When not set, the default bulletpoints are used. See https://github.com/pubkey/rxdb

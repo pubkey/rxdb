@@ -55,18 +55,24 @@ export function HeroSection_B(props: {
                         paddingBottom: 0,
                         maxWidth: 360
                     }}>
-                        <>
-                            Build apps that work <b onClick={() => props.scrollToSection('offline')}>offline</b>
-                        </>
-                        <>
-                            Sync with <b onClick={() => props.scrollToSection('replication')}>any Backend</b>
-                        </>
-                        <>
-                            Observable <b onClick={() => props.scrollToSection('realtime')}>Realtime Queries</b>
-                        </>
-                        <>
-                            All JavaScript <b onClick={() => props.scrollToSection('runtimes')}>Runtimes</b> Supported
-                        </>
+                        {
+                            props.sem && props.sem.bulletpoints
+                                ? props.sem.bulletpoints
+                                : [
+                                    <>
+                                        Build apps that work <b onClick={() => props.scrollToSection('offline')}>offline</b>
+                                    </>,
+                                    <>
+                                        Sync with <b onClick={() => props.scrollToSection('replication')}>any Backend</b>
+                                    </>,
+                                    <>
+                                        Observable <b onClick={() => props.scrollToSection('realtime')}>Realtime Queries</b>
+                                    </>,
+                                    <>
+                                        All JavaScript <b onClick={() => props.scrollToSection('runtimes')}>Runtimes</b> Supported
+                                    </>
+                                ]
+                        }
                     </CheckedList>
                 </div>
 
