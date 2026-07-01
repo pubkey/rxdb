@@ -625,6 +625,7 @@ const sidebars = {
         'articles/realtime-database',
         'articles/angular-indexeddb',
         'articles/react-indexeddb',
+        'articles/tanstack-db-indexeddb',
         'capacitor-database',
         'alternatives',
         'electron-database',
