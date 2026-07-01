@@ -512,7 +512,7 @@ jobs:
         uses: codespell-project/actions-codespell@v2.2
         with:
           ignore_words_file: config/codespellignore.txt
-          skip: legal-notice.tsx,custom.css
+          skip: legal-notice.tsx,privacy.tsx,custom.css
           path: docs-src/src
       - name: spelling docs-src/releases
         uses: codespell-project/actions-codespell@v2.2
