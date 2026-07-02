@@ -108,8 +108,7 @@ export function getTestGroupEventPrefix() {
             'abt',
             CURRENT_TEST_RUN.id,
             Object.keys(CURRENT_TEST_RUN).length > 1 ? 'V:' + tg.variation : undefined,
-            semVariation ? 'SV:' + semVariation.index : undefined,
-            'O:' + tg.originId,
+            'O:' + tg.originId + (semVariation ? '-' + semVariation.index : ''),
             'D:' + tg.deviceType,
         ]
             .filter(v => !!v)
@@ -122,9 +121,9 @@ export function getTestGroupEventPrefix() {
  * bulletpoints on the same page. getSemVariation() picks one variation
  * randomly per visitor and stores the choice in localStorage so that the
  * visitor always sees the same variation on later visits.
- * The chosen index is also appended to the tracking event prefix
- * (see getTestGroupEventPrefix) so that conversions can be attributed
- * to the variation.
+ * The chosen index is appended to the origin id of the tracking event
+ * prefix (see getTestGroupEventPrefix), e.g. "O:gads-2", so that
+ * conversions can be attributed to the variation.
  */
 let semVariation: { pageId: string; index: number; } | undefined;
 export function getSemVariation(pageId: string, variationCount: number): number {
