@@ -192,6 +192,32 @@ describe('migration-schema.test.ts', function () {
                 );
                 db.close();
             });
+            it('should report the type of the non-function strategy value', async () => {
+                const db = await createRxDatabase({
+                    name: randomToken(10),
+                    storage: config.storage.getStorage(),
+                });
+                let thrown: any;
+                try {
+                    await db.addCollections({
+                        foobar: {
+                            schema: schemas.simpleHumanV3,
+                            autoMigrate: false,
+                            migrationStrategies: {
+                                1: () => { },
+                                2: 'notAFunction',
+                                3: () => { }
+                            }
+                        }
+                    } as any);
+                } catch (err) {
+                    thrown = err;
+                }
+                assert.ok(thrown);
+                assert.strictEqual(thrown.code, 'COL13');
+                assert.strictEqual(thrown.parameters.type, 'string');
+                db.close();
+            });
             it('throw when strategy missing', async () => {
                 const db = await createRxDatabase({
                     name: randomToken(10),

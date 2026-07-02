@@ -53,7 +53,7 @@ export function checkOrmMethods(
             if (typeof v !== 'function') {
                 throw newRxTypeError('COL16', {
                     name: k,
-                    type: typeof k
+                    type: typeof v
                 });
             }
 

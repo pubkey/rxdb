@@ -28,7 +28,9 @@ import {
     trimDots,
     parseRevision,
     getHeightOfRevision,
-    createRevision
+    createRevision,
+    flattenObject,
+    getFromObjectOrThrow
 } from '../../plugins/core/index.mjs';
 import config from './config.ts';
 
@@ -119,6 +121,34 @@ describe('util.test.js', () => {
             const result = trimDots(str);
             assert.strictEqual(result, str);
             assert.ok(result === str);
+        });
+    });
+    describe('.flattenObject()', () => {
+        it('should flatten nested objects', () => {
+            assert.deepStrictEqual(
+                flattenObject({ a: { b: 1 }, c: 2 }),
+                { 'a.b': 1, c: 2 }
+            );
+        });
+        it('should keep keys with null values', () => {
+            assert.deepStrictEqual(
+                flattenObject({ a: null, b: 1 }),
+                { a: null, b: 1 }
+            );
+            assert.deepStrictEqual(
+                flattenObject({ a: { b: null } }),
+                { 'a.b': null }
+            );
+        });
+    });
+    describe('.getFromObjectOrThrow()', () => {
+        it('should return falsy values that exist in the object', () => {
+            assert.strictEqual(getFromObjectOrThrow({ a: 0 }, 'a'), 0);
+            assert.strictEqual(getFromObjectOrThrow({ a: '' }, 'a'), '');
+            assert.strictEqual(getFromObjectOrThrow({ a: false }, 'a'), false);
+        });
+        it('should throw for missing keys', () => {
+            assert.throws(() => getFromObjectOrThrow({ a: 1 }, 'b'));
         });
     });
     describe('.recursiveDeepCopy()', () => {

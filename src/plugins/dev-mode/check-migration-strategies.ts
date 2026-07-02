@@ -44,7 +44,7 @@ export function checkMigrationStrategies(
         .forEach(strategy => {
             throw newRxTypeError('COL13', {
                 version: strategy.v,
-                type: typeof strategy,
+                type: typeof strategy.s,
                 schema
             });
         });

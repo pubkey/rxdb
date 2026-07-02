@@ -1,0 +1,1 @@
+- FIX dev-mode: `COL13` and `COL16` errors now report the type of the invalid value instead of a constant wrong type, and the field name check no longer accepts square brackets in field names because they cannot be used as javascript variables.
