@@ -458,6 +458,127 @@ describeParallel('query-planner.test.js', () => {
             assert.strictEqual(queryPlan.endKeys[1], INDEX_MAX);
             assert.ok(queryPlan.inclusiveStart);
         });
+        it('should use the min/max of $in values as the scan range', () => {
+            const schema = getHumanSchemaWithIndexes([['firstName']]);
+            const query = normalizeMangoQuery<RxDocumentData<HumanDocumentType>>(
+                schema,
+                {
+                    selector: {
+                        firstName: {
+                            $in: ['carol', 'alice', 'bob']
+                        },
+                        _deleted: false
+                    }
+                }
+            );
+            const queryPlan = getQueryPlan(
+                schema,
+                query
+            );
+            assert.deepStrictEqual(queryPlan.index, ['_deleted', 'firstName', 'passportId']);
+            assert.strictEqual(queryPlan.startKeys[1], 'alice');
+            assert.strictEqual(queryPlan.endKeys[1], 'carol');
+            assert.ok(queryPlan.inclusiveStart);
+            assert.ok(queryPlan.inclusiveEnd);
+            /**
+             * The scanned range can contain documents whose value
+             * lies between the $in values without being one of them,
+             * so the selector must never count as satisfied by the index.
+             */
+            assert.strictEqual(queryPlan.selectorSatisfiedByIndex, false);
+        });
+        it('should use the min/max of numeric $in values as the scan range', () => {
+            const schema = getHumanSchemaWithIndexes([['age']]);
+            const query = normalizeMangoQuery<RxDocumentData<HumanDocumentType>>(
+                schema,
+                {
+                    selector: {
+                        age: {
+                            $in: [30, 10, 20]
+                        },
+                        _deleted: false
+                    }
+                }
+            );
+            const queryPlan = getQueryPlan(
+                schema,
+                query
+            );
+            assert.deepStrictEqual(queryPlan.index, ['_deleted', 'age', 'passportId']);
+            assert.strictEqual(queryPlan.startKeys[1], 10);
+            assert.strictEqual(queryPlan.endKeys[1], 30);
+            assert.strictEqual(queryPlan.selectorSatisfiedByIndex, false);
+        });
+        it('should keep the full scan range for mixed-type or empty $in values', () => {
+            const schema = getHumanSchemaWithIndexes([['firstName']]);
+            const mixedQuery = normalizeMangoQuery<RxDocumentData<HumanDocumentType>>(
+                schema,
+                {
+                    selector: {
+                        firstName: {
+                            $in: ['alice', 5]
+                        } as any,
+                        _deleted: false
+                    }
+                }
+            );
+            const mixedPlan = getQueryPlan(schema, mixedQuery);
+            assert.strictEqual(mixedPlan.startKeys[1], INDEX_MIN);
+            assert.strictEqual(mixedPlan.endKeys[1], INDEX_MAX);
+
+            const emptyQuery = normalizeMangoQuery<RxDocumentData<HumanDocumentType>>(
+                schema,
+                {
+                    selector: {
+                        firstName: {
+                            $in: []
+                        },
+                        _deleted: false
+                    }
+                }
+            );
+            const emptyPlan = getQueryPlan(schema, emptyQuery);
+            assert.strictEqual(emptyPlan.startKeys[1], INDEX_MIN);
+            assert.strictEqual(emptyPlan.endKeys[1], INDEX_MAX);
+        });
+        it('#8631 should rate a $in bounded plan higher than a full scan so the index is used', () => {
+            const schema = getHumanSchemaWithIndexes([['firstName', 'age']]);
+            const queryWithIn = normalizeMangoQuery<RxDocumentData<HumanDocumentType>>(
+                schema,
+                {
+                    selector: {
+                        firstName: {
+                            $in: ['aaron', 'jack', 'carol']
+                        },
+                        age: {
+                            $lt: 5
+                        }
+                    },
+                    index: ['firstName', 'age']
+                }
+            );
+            const planWithIn = getQueryPlan(schema, queryWithIn);
+
+            const queryNoSelector = normalizeMangoQuery<RxDocumentData<HumanDocumentType>>(
+                schema,
+                {
+                    selector: {},
+                    index: ['firstName', 'age']
+                }
+            );
+            const planNoSelector = getQueryPlan(schema, queryNoSelector);
+
+            const ratingWithIn = rateQueryPlan(schema, queryWithIn, planWithIn);
+            const ratingNoSelector = rateQueryPlan(schema, queryNoSelector, planNoSelector);
+
+            assert.strictEqual(planWithIn.startKeys[0], 'aaron');
+            assert.strictEqual(planWithIn.endKeys[0], 'jack');
+            assert.ok(
+                ratingWithIn > ratingNoSelector,
+                'query plan with $in bounds should be rated higher than a full scan. ' +
+                'Got ratingWithIn=' + ratingWithIn + ', ratingNoSelector=' + ratingNoSelector
+            );
+        });
         it('should have the correct start- and end keys when inclusiveStart and inclusiveEnd are false', () => {
             const schema = getHumanSchemaWithIndexes([['age']]);
             const query = normalizeMangoQuery<HumanDocumentType>(

@@ -710,6 +710,89 @@ describeParallel('rx-storage-query-correctness.test.ts', () => {
         ]
     });
     /**
+     * @link https://github.com/pubkey/rxdb/issues/8631
+     * The query planner uses the min/max of the $in values
+     * as scan range on the index. Documents whose value lies
+     * inside that range without being one of the $in values
+     * must still be filtered out.
+     */
+    testCorrectQueries<HumanDocumentType>({
+        testTitle: '$in with index use',
+        data: [
+            schemaObjects.humanData('aa', 3, 'aaron'),
+            schemaObjects.humanData('bb', 10, 'aaron'),
+            schemaObjects.humanData('cc', 4, 'carol'),
+            schemaObjects.humanData('dd', 2, 'dave'),
+            schemaObjects.humanData('ee', 1, 'jack'),
+            schemaObjects.humanData('ff', 30, 'zoe')
+        ],
+        schema: withIndexes(human, [
+            ['firstName', 'age']
+        ]),
+        queries: [
+            {
+                info: '$in combined with range operator and desc sort',
+                query: {
+                    selector: {
+                        firstName: {
+                            $in: ['aaron', 'jack', 'carol']
+                        },
+                        age: {
+                            $lt: 5
+                        }
+                    },
+                    sort: [
+                        { age: 'desc' },
+                        { passportId: 'asc' }
+                    ],
+                    index: ['firstName', 'age'],
+                    limit: 50
+                },
+                selectorSatisfiedByIndex: false,
+                expectedResultDocIds: [
+                    'cc',
+                    'aa',
+                    'ee'
+                ]
+            },
+            {
+                info: '$in values that span the whole index range',
+                query: {
+                    selector: {
+                        firstName: {
+                            $in: ['aaron', 'zoe']
+                        }
+                    },
+                    sort: [{ passportId: 'asc' }],
+                    index: ['firstName', 'age']
+                },
+                selectorSatisfiedByIndex: false,
+                expectedResultDocIds: [
+                    'aa',
+                    'bb',
+                    'ff'
+                ]
+            },
+            {
+                info: '$in with mixed value types must not use the min/max bounds',
+                query: {
+                    selector: {
+                        firstName: {
+                            $in: ['aaron', 42]
+                        } as any
+                    },
+                    sort: [{ passportId: 'asc' }],
+                    index: ['firstName', 'age']
+                },
+                selectorSatisfiedByIndex: false,
+                expectedResultDocIds: [
+                    'aa',
+                    'bb'
+                ]
+            }
+        ]
+    });
+    /**
      * $in must not only work on strings but also on
      * arrays.
      */

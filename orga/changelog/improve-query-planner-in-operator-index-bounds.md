@@ -1,0 +1,1 @@
+- IMPROVE query planner: `$in` queries on indexed fields now limit the scanned index range to the min/max of the given values instead of doing a full scan. This makes `$in` queries with multiple values use the index in all RxStorage implementations that use the RxDB query planner. [#8631](https://github.com/pubkey/rxdb/issues/8631)
