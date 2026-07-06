@@ -22,7 +22,6 @@ env:
   NPM_CONFIG_FETCH_RETRY_FACTOR: 2
   NPM_CONFIG_FETCH_RETRY_MINTIMEOUT: 5000
   NPM_CONFIG_FETCH_RETRY_MAXTIMEOUT: 20000
-  NPM_CONFIG_PREFER_OFFLINE: true
 
 # For a lower total time
 # the jobs which take longes must come before the faster ones
