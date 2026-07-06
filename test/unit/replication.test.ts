@@ -61,6 +61,7 @@ import {
 
 import type {
     ReplicationPullHandlerResult,
+    RxReplicationConflict,
     RxReplicationWriteToMasterRow,
     RxStorage,
     RxStorageDefaultCheckpoint,
@@ -707,6 +708,47 @@ describe('replication.test.ts', () => {
                 values[values.length - 1],
                 false
             );
+
+            localCollection.database.close();
+            remoteCollection.database.close();
+        });
+        it('should emit conflicts reported by the remote on conflict$ together with the conflictHandler output', async () => {
+            const localCollection = await humansCollection.createHumanWithTimestamp(0, randomToken(10), false);
+            const remoteCollection = await humansCollection.createHumanWithTimestamp(0, randomToken(10), false);
+
+            // insert a document with the same id on both sides so that the push creates a conflict
+            await Promise.all([localCollection, remoteCollection].map((c, i) => c.insert({
+                id: 'conflicting-doc',
+                name: 'name-' + i,
+                updatedAt: 1001,
+                age: i
+            })));
+
+            const replicationState = replicateRxCollection({
+                collection: localCollection,
+                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                live: true,
+                pull: {
+                    handler: getPullHandler(remoteCollection)
+                },
+                push: {
+                    handler: getPushHandler(remoteCollection)
+                }
+            });
+            ensureReplicationHasNoErrors(replicationState);
+
+            const emitted: RxReplicationConflict<TestDocType>[] = [];
+            replicationState.conflict$.subscribe(c => emitted.push(c));
+
+            await replicationState.awaitInitialReplication();
+            await waitUntil(() => emitted.length > 0);
+
+            const conflict = emitted[0];
+            // the input contains the conflicting document states
+            assert.strictEqual(conflict.input.newDocumentState.age, 0, 'newDocumentState must be the local state that was pushed');
+            assert.strictEqual(conflict.input.realMasterState.age, 1, 'realMasterState must be the remote state that was reported as conflict');
+            // the default conflict handler resolves conflicts by using the realMasterState
+            assert.strictEqual(conflict.output.age, 1, 'output must be the resolved document state from the conflictHandler');
 
             localCollection.database.close();
             remoteCollection.database.close();

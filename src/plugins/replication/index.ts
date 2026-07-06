@@ -25,6 +25,7 @@ import type {
     RxError,
     RxDocument,
     RxJsonSchema,
+    RxReplicationConflict,
     RxReplicationPullStreamItem,
     RxReplicationWriteToMasterRow,
     RxStorageInstance,
@@ -84,7 +85,8 @@ export class RxReplicationState<RxDocType, CheckpointType> {
         sent: new Subject<WithDeleted<RxDocType>>(), // all documents that are sent to the endpoint
         error: new Subject<RxError | RxTypeError>(), // all errors that are received from the endpoint, emits new Error() objects
         canceled: new BehaviorSubject<boolean>(false), // true when the replication was canceled
-        active: new BehaviorSubject<boolean>(false) // true when something is running, false when not
+        active: new BehaviorSubject<boolean>(false), // true when something is running, false when not
+        conflict: new Subject<RxReplicationConflict<RxDocType>>() // all conflicts that are reported by the remote on pushes, together with the conflictHandler output
     };
 
     readonly received$: Observable<RxDocumentData<RxDocType>> = this.subjects.received.asObservable();
@@ -92,6 +94,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
     readonly error$: Observable<RxError | RxTypeError> = this.subjects.error.asObservable();
     readonly canceled$: Observable<any> = this.subjects.canceled.asObservable();
     readonly active$: Observable<boolean> = this.subjects.active.asObservable();
+    readonly conflict$: Observable<RxReplicationConflict<RxDocType>> = this.subjects.conflict.asObservable();
 
     wasStarted: boolean = false;
 
@@ -409,6 +412,10 @@ export class RxReplicationState<RxDocType, CheckpointType> {
                 .subscribe((writeToMasterRow: RxReplicationWriteToMasterRow<RxDocType>) => {
                     this.subjects.sent.next(writeToMasterRow.newDocumentState);
                 }),
+            this.internalReplicationState.events.resolvedConflicts
+                .subscribe((conflict: RxReplicationConflict<RxDocType>) => {
+                    this.subjects.conflict.next(conflict);
+                }),
             combineLatest([
                 this.internalReplicationState.events.active.down,
                 this.internalReplicationState.events.active.up
@@ -691,6 +698,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
         this.subjects.error.complete();
         this.subjects.received.complete();
         this.subjects.sent.complete();
+        this.subjects.conflict.complete();
 
         /**
          * Remove from the REPLICATION_STATE_BY_COLLECTION registry
