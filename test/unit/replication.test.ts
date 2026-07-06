@@ -947,27 +947,41 @@ describe('replication.test.ts', () => {
                     undefined,
                     conflictHandler
                 );
-                const remoteCollection = await humansCollection.createHumanWithTimestamp(0, randomToken(10), false);
 
-                // the remote already has a different state -> the first push must conflict
-                await remoteCollection.insert(schemaObjects.humanWithTimestampData({
-                    id: 'conflict-doc',
-                    name: 'remote-name'
-                }));
+                // the master already has a different state -> the first push must conflict
+                const masterDocs = new Map<string, WithDeleted<TestDocType>>();
+                masterDocs.set('conflict-doc', Object.assign(
+                    schemaObjects.humanWithTimestampData({
+                        id: 'conflict-doc',
+                        name: 'remote-name'
+                    }),
+                    { _deleted: false }
+                ));
 
                 let hadConflict = false;
-                const pushHandler = getPushHandler(remoteCollection);
                 const replicationState = replicateRxCollection<TestDocType, CheckpointType>({
                     collection: localCollection,
                     replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
                     live: true,
                     push: {
-                        handler: async (rows) => {
-                            const result = await pushHandler(rows);
-                            if (result.length > 0) {
-                                hadConflict = true;
-                            }
-                            return result;
+                        handler: (rows) => {
+                            const conflicts: WithDeleted<TestDocType>[] = [];
+                            rows.forEach(row => {
+                                const currentMasterDoc = masterDocs.get(row.newDocumentState.id);
+                                if (
+                                    currentMasterDoc &&
+                                    (
+                                        !row.assumedMasterState ||
+                                        !conflictHandler.isEqual(currentMasterDoc, row.assumedMasterState, 'push-handler')
+                                    )
+                                ) {
+                                    hadConflict = true;
+                                    conflicts.push(currentMasterDoc);
+                                } else {
+                                    masterDocs.set(row.newDocumentState.id, row.newDocumentState);
+                                }
+                            });
+                            return Promise.resolve(conflicts);
                         }
                     }
                 });
@@ -981,11 +995,10 @@ describe('replication.test.ts', () => {
                 await replicationState.awaitDocumentPushed(doc);
 
                 assert.strictEqual(hadConflict, true, 'the first push must have returned a conflict');
-                const remoteDoc = await remoteCollection.findOne('conflict-doc').exec(true);
-                assert.strictEqual(remoteDoc.name, 'local-name', 'the resolved state must exist on the remote');
+                const masterDoc = ensureNotFalsy(masterDocs.get('conflict-doc'));
+                assert.strictEqual(masterDoc.name, 'local-name', 'the resolved state must exist on the master');
 
                 await localCollection.database.close();
-                await remoteCollection.database.close();
             });
             it('should throw if the replication has no push handler', async () => {
                 const { localCollection, remoteCollection } = await getTestCollections({ local: 0, remote: 0 });
