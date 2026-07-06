@@ -8,7 +8,7 @@ import type {
     RxReplicationPullStreamItem,
     RxReplicationWriteToMasterRow
 } from '../../types';
-import { deepEqual } from '../utils/index.ts';
+import { deepEqual, promiseWait } from '../utils/index.ts';
 
 /**
  * Creates a pull handler that always returns
@@ -52,6 +52,8 @@ export function getPushHandler<RxDocType>(
     const handler: ReplicationPushHandler<RxDocType> = async (
         rows: RxReplicationWriteToMasterRow<RxDocType>[]
     ) => {
+        // add a short sleep to simulate network latency
+        await promiseWait(10);
         const result = await helper.masterWrite(rows);
         return result;
     };
