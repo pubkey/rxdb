@@ -2513,7 +2513,6 @@ describe('migration-schema.test.ts', function () {
                 caughtError = err;
             }
             assert.ok(caughtError);
-            console.dir(caughtError, { depth: null });
 
             // The error should be DM4 (migration error) wrapping a COL20 (schema validation),
             assert.strictEqual(caughtError.code, 'DM4');
