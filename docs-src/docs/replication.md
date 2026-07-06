@@ -547,9 +547,9 @@ await myReplicationState.awaitDocumentPushed(doc);
 
 A `RxDocument` represents the state of a document at a given point in time, not the document in general. An older or a newer `RxDocument` instance of the same document is not the exact same `RxDocument`, because each instance carries the field values and the internal write time of that specific state. `awaitDocumentPushed()` therefore resolves based on the exact state of the instance you pass in.
 
-It works by comparing the documents internal write time (`_meta.lwt`) with the push checkpoint. The push checkpoint moves forward with each successful push, so once it covers the documents write time, RxDB knows that this version of the document has been replicated to the master.
+It works by comparing the given document state with the last state that was written to the server, which RxDB stores in the replication meta data. Once the given state (or a newer one) was written to the server, the promise resolves.
 
-If the document was overwritten by a newer local write before it could be pushed, the promise resolves as soon as any later state of that document (or any document with a higher write time) has been pushed, because that also proves the given state reached the server.
+If the document was overwritten by a newer local write before it could be pushed, the promise resolves as soon as a later state of that document has reached the server.
 
 `awaitDocumentPushed()` does not set a timeout on purpose. If you need one, combine it with `Promise.race()`:
 

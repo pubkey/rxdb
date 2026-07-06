@@ -27,7 +27,6 @@ import type {
     RxJsonSchema,
     RxReplicationPullStreamItem,
     RxReplicationWriteToMasterRow,
-    RxStorageDefaultCheckpoint,
     RxStorageInstance,
     RxStorageInstanceReplicationState,
     RxStorageReplicationMeta,
@@ -51,8 +50,10 @@ import {
     awaitRxStorageReplicationFirstInSync,
     awaitRxStorageReplicationInSync,
     cancelRxStorageReplication,
+    getAssumedMasterState,
     getRxReplicationMetaInstanceSchema,
-    replicateRxStorageInstance
+    replicateRxStorageInstance,
+    writeDocToDocState
 } from '../../replication-protocol/index.ts';
 import { newRxError } from '../../rx-error.ts';
 import {
@@ -526,8 +527,8 @@ export class RxReplicationState<RxDocType, CheckpointType> {
      *
      * It resolves either when the document is emitted on sent$ (the live
      * push case) or, for documents that were already pushed before this was
-     * called, when the upstream (push) checkpoint already covers the
-     * documents write time (_meta.lwt).
+     * called, when the assumed master state in the replication meta instance
+     * already contains the given document state.
      *
      * If the document was overwritten by a newer local write before it could
      * be pushed, the promise resolves as soon as any later state of the
@@ -549,20 +550,63 @@ export class RxReplicationState<RxDocType, CheckpointType> {
 
         /**
          * Detects documents that were already pushed before
-         * awaitDocumentPushed() was called, by comparing the document write
-         * time with the already persisted upstream (push) checkpoint.
+         * awaitDocumentPushed() was called, by comparing the given document
+         * state with the assumed master state from the replication meta
+         * instance. The meta instance stores the last document state that
+         * was successfully written to the master, so this check works
+         * independent of the storage specific checkpoint format.
+         * (For example the sharding RxStorage stacks up partial checkpoints
+         * that do not contain a top level lwt, so the checkpoint cannot
+         * be used for this detection.)
          */
         const isAlreadyPushed = async (): Promise<boolean> => {
-            await internalReplicationState.checkpointQueue;
-            const checkpointDoc = internalReplicationState.lastCheckpointDoc.up;
-            if (!checkpointDoc) {
+            /**
+             * Await the upstream queue first because inside of a push cycle,
+             * the meta instance write happens after the sent$ emission,
+             * so without waiting we could miss the meta state
+             * of a push that just completed.
+             */
+            await internalReplicationState.streamQueue.up;
+            const assumedMasterState = await getAssumedMasterState(
+                internalReplicationState,
+                [docId]
+            );
+            const assumedMasterDoc = assumedMasterState[docId];
+            if (!assumedMasterDoc) {
                 return false;
             }
-            return isDocumentStateOlderThenCheckpoint(
-                checkpointDoc.checkpointData as unknown as RxStorageDefaultCheckpoint,
-                docId,
-                docLwt
+            const isEqual = internalReplicationState.input.conflictHandler.isEqual;
+            const givenDocState = writeDocToDocState(
+                doc._data,
+                internalReplicationState.hasAttachments,
+                !!internalReplicationState.input.keepMeta
             );
+            if (isEqual(assumedMasterDoc.docData, givenDocState, 'replication-await-document-pushed')) {
+                return true;
+            }
+            /**
+             * If the document was overwritten by a newer local write
+             * before it could be pushed, it is enough when a later state
+             * of the document has reached the master.
+             */
+            const currentForkState = (
+                await internalReplicationState.input.forkInstance.findDocumentsById([docId], true)
+            )[0];
+            if (
+                currentForkState &&
+                currentForkState._meta.lwt > docLwt
+            ) {
+                return isEqual(
+                    assumedMasterDoc.docData,
+                    writeDocToDocState(
+                        currentForkState,
+                        internalReplicationState.hasAttachments,
+                        !!internalReplicationState.input.keepMeta
+                    ),
+                    'replication-await-document-pushed'
+                );
+            }
+            return false;
         };
 
         return new Promise<void>((resolve, reject) => {
@@ -703,33 +747,6 @@ export class RxReplicationState<RxDocType, CheckpointType> {
         });
         return this.startQueue;
     }
-}
-
-
-/**
- * Checks if a given document state (identified by its primary key and its
- * _meta.lwt write time) is older than or equal to the upstream (push)
- * checkpoint, which means it is already covered by the push.
- *
- * The upstream checkpoint has the default RxStorage checkpoint shape
- * { id, lwt } and points to the last document that was processed by the
- * push in the sort order [_meta.lwt ASC, primaryKey ASC].
- *
- * A document state is considered pushed when it is NOT after the checkpoint,
- * which mirrors the comparison used by getChangedDocumentsSinceQuery().
- */
-export function isDocumentStateOlderThenCheckpoint(
-    checkpoint: RxStorageDefaultCheckpoint,
-    docId: string,
-    docLwt: number
-): boolean {
-    if (docLwt < checkpoint.lwt) {
-        return true;
-    }
-    if (docLwt === checkpoint.lwt && docId <= checkpoint.id) {
-        return true;
-    }
-    return false;
 }
 
 

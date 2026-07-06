@@ -1,0 +1,1 @@
+FIX `awaitDocumentPushed()` never resolved for documents that were already pushed when the storage uses a non-default checkpoint format, like the sharding RxStorage. It now compares the document state with the assumed master state from the replication meta instance instead of the push checkpoint. (https://github.com/pubkey/rxdb/issues/8632)
