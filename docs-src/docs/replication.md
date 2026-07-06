@@ -459,6 +459,10 @@ myRxReplicationState.sent$.subscribe(doc => console.dir(doc));
 // emits all errors that happen when running the push- & pull-handlers.
 myRxReplicationState.error$.subscribe(error => console.dir(error));
 
+// emits each conflict that was reported by the remote in the response of the push handler,
+// together with the output of the conflictHandler that resolved it.
+myRxReplicationState.conflict$.subscribe(conflict => console.dir(conflict));
+
 // emits true when the replication was canceled, false when not.
 myRxReplicationState.canceled$.subscribe(bool => console.dir(bool));
 
@@ -550,6 +554,28 @@ A `RxDocument` represents the state of a document at a given point in time, not 
 It works by comparing the documents internal write time (`_meta.lwt`) with the push checkpoint. The push checkpoint moves forward with each successful push, so once it covers the documents write time, RxDB knows that this version of the document has been replicated to the master.
 
 If the document was overwritten by a newer local write before it could be pushed, the promise resolves as soon as any later state of that document (or any document with a higher write time) has been pushed, because that also proves the given state reached the server.
+
+`awaitDocumentPushed()` resolves with `void`, so it does not tell you if the server accepted the document state as-is or answered the push with a conflict that was then resolved by the [conflictHandler](./transactions-conflicts-revisions.md). To distinguish these two outcomes, subscribe to `conflict$` and watch for conflicts with the documents primary key until `awaitDocumentPushed()` resolves:
+
+```ts
+const doc = await myCollection.insert({ id: 'foobar', value: 10 });
+
+let conflict;
+const sub = myReplicationState.conflict$.subscribe(c => {
+    if (c.input.newDocumentState.id === doc.primary) {
+        conflict = c;
+    }
+});
+await myReplicationState.awaitDocumentPushed(doc);
+sub.unsubscribe();
+
+if (conflict) {
+    // the server rejected the write, conflict.input.realMasterState
+    // contains the state that the server decided on.
+} else {
+    // the server accepted the write as-is.
+}
+```
 
 `awaitDocumentPushed()` does not set a timeout on purpose. If you need one, combine it with `Promise.race()`:
 

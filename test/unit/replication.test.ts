@@ -1109,6 +1109,57 @@ describe('replication.test.ts', () => {
             remoteCollection.database.close();
         });
     });
+    describe('.awaitDocumentPushed() on push conflicts', () => {
+        it('should resolve when the push was answered with a conflict and emit the conflict on conflict$', async () => {
+            const { localCollection, remoteCollection } = await getTestCollections({ local: 0, remote: 0 });
+
+            // create a conflicting state on the remote
+            await remoteCollection.insert(schemaObjects.humanWithTimestampData({
+                id: 'conflict-doc',
+                age: 1
+            }));
+            const doc = await localCollection.insert(schemaObjects.humanWithTimestampData({
+                id: 'conflict-doc',
+                age: 2
+            }));
+
+            const replicationState = replicateRxCollection({
+                collection: localCollection,
+                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                live: true,
+                pull: {
+                    handler: getPullHandler(remoteCollection)
+                },
+                push: {
+                    handler: getPushHandler(remoteCollection)
+                }
+            });
+            ensureReplicationHasNoErrors(replicationState);
+
+            /**
+             * The userland pattern to distinguish an accepted push
+             * from a rejected one: watch conflict$ for the documents
+             * primary key until awaitDocumentPushed() resolves.
+             */
+            const conflicts: any[] = [];
+            const sub = replicationState.conflict$.subscribe(conflict => {
+                if ((conflict.input.newDocumentState as any).id === 'conflict-doc') {
+                    conflicts.push(conflict);
+                }
+            });
+
+            await replicationState.awaitDocumentPushed(doc);
+            sub.unsubscribe();
+
+            assert.strictEqual(conflicts.length, 1, 'conflict$ must have emitted the push conflict');
+            assert.strictEqual(conflicts[0].input.realMasterState.age, 1);
+            // the default conflict handler drops the local state in favor of the master state
+            assert.strictEqual(conflicts[0].output.age, 1);
+
+            await localCollection.database.close();
+            await remoteCollection.database.close();
+        });
+    });
     describeParallel('RxReplicationState.remove()', () => {
         it('should remove the replication state and start the replication from scratch', async () => {
             const { localCollection, remoteCollection } = await getTestCollections({ local: 1, remote: 1 });

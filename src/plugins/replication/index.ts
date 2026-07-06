@@ -21,6 +21,7 @@ import type {
     ReplicationPullOptions,
     ReplicationPushOptions,
     RxCollection,
+    RxConflictHandlerInput,
     RxDocumentData,
     RxError,
     RxDocument,
@@ -82,6 +83,10 @@ export class RxReplicationState<RxDocType, CheckpointType> {
         received: new Subject<RxDocumentData<RxDocType>>(), // all documents that are received from the endpoint
         sent: new Subject<WithDeleted<RxDocType>>(), // all documents that are sent to the endpoint
         error: new Subject<RxError | RxTypeError>(), // all errors that are received from the endpoint, emits new Error() objects
+        conflict: new Subject<{
+            input: RxConflictHandlerInput<RxDocType>;
+            output: WithDeleted<RxDocType>;
+        }>(), // all push conflicts that were reported by the remote and resolved by the conflictHandler
         canceled: new BehaviorSubject<boolean>(false), // true when the replication was canceled
         active: new BehaviorSubject<boolean>(false) // true when something is running, false when not
     };
@@ -89,6 +94,10 @@ export class RxReplicationState<RxDocType, CheckpointType> {
     readonly received$: Observable<RxDocumentData<RxDocType>> = this.subjects.received.asObservable();
     readonly sent$: Observable<WithDeleted<RxDocType>> = this.subjects.sent.asObservable();
     readonly error$: Observable<RxError | RxTypeError> = this.subjects.error.asObservable();
+    readonly conflict$: Observable<{
+        input: RxConflictHandlerInput<RxDocType>;
+        output: WithDeleted<RxDocType>;
+    }> = this.subjects.conflict.asObservable();
     readonly canceled$: Observable<any> = this.subjects.canceled.asObservable();
     readonly active$: Observable<boolean> = this.subjects.active.asObservable();
 
@@ -408,6 +417,10 @@ export class RxReplicationState<RxDocType, CheckpointType> {
                 .subscribe((writeToMasterRow: RxReplicationWriteToMasterRow<RxDocType>) => {
                     this.subjects.sent.next(writeToMasterRow.newDocumentState);
                 }),
+            this.internalReplicationState.events.resolvedConflicts
+                .subscribe(conflict => {
+                    this.subjects.conflict.next(conflict);
+                }),
             combineLatest([
                 this.internalReplicationState.events.active.down,
                 this.internalReplicationState.events.active.up
@@ -533,6 +546,12 @@ export class RxReplicationState<RxDocType, CheckpointType> {
      * be pushed, the promise resolves as soon as any later state of the
      * document has been pushed, because that also proves the given state
      * reached the server.
+     *
+     * If the push of the document was answered with a conflict by the remote,
+     * the promise also resolves, because the document state reached the server
+     * and was processed there, even if it was not accepted as-is. To detect
+     * that case, subscribe to conflict$ and watch for conflicts with the
+     * documents primary key until awaitDocumentPushed() resolves.
      */
     async awaitDocumentPushed(doc: RxDocument<RxDocType>): Promise<void> {
         if (!this.push) {
@@ -566,21 +585,56 @@ export class RxReplicationState<RxDocType, CheckpointType> {
         };
 
         return new Promise<void>((resolve, reject) => {
+            const subs: Subscription[] = [];
+            const done = () => {
+                subs.forEach(sub => sub.unsubscribe());
+                resolve();
+            };
             /**
              * Every successfully pushed document is emitted on sent$,
              * so an emission with our primary key proves that this document
              * reached the master.
              */
-            const sub = this.sent$.subscribe({
+            subs.push(this.sent$.subscribe({
                 next: (sentDocData) => {
                     if ((sentDocData as any)[primaryPath] === docId) {
-                        sub.unsubscribe();
-                        resolve();
+                        done();
                     }
                 }
-            });
+            }));
+            /**
+             * When the push of the document is answered with a conflict,
+             * the document state also reached the master, so the promise
+             * must resolve to not be pending forever. The conflict itself
+             * is emitted on conflict$ so that callers can distinguish
+             * an accepted push from a conflict.
+             */
+            subs.push(this.conflict$.subscribe({
+                next: (conflict) => {
+                    if ((conflict.input.newDocumentState as any)[primaryPath] === docId) {
+                        done();
+                    }
+                }
+            }));
+            /**
+             * Re-check the checkpoint after each upstream cycle so that
+             * pushes or conflicts which happened between calling
+             * awaitDocumentPushed() and creating the subscriptions above
+             * (for example while awaiting the startPromise) still resolve.
+             */
+            subs.push(internalReplicationState.events.active.up.subscribe({
+                next: (active) => {
+                    if (!active) {
+                        isAlreadyPushed().then(pushed => {
+                            if (pushed) {
+                                done();
+                            }
+                        }).catch(reject);
+                    }
+                }
+            }));
             this.onCancel.push(() => {
-                sub.unsubscribe();
+                subs.forEach(sub => sub.unsubscribe());
                 /**
                  * Run a final check so that a document which was pushed
                  * in the last cycle before a (non-live) cancel still resolves.
@@ -600,8 +654,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
              */
             isAlreadyPushed().then(pushed => {
                 if (pushed) {
-                    sub.unsubscribe();
-                    resolve();
+                    done();
                 }
             }).catch(reject);
         });
@@ -645,6 +698,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
         this.subjects.active.complete();
         this.subjects.canceled.complete();
         this.subjects.error.complete();
+        this.subjects.conflict.complete();
         this.subjects.received.complete();
         this.subjects.sent.complete();
 
