@@ -464,6 +464,11 @@ myRxReplicationState.canceled$.subscribe(bool => console.dir(bool));
 
 // emits true when a replication cycle is running, false when not.
 myRxReplicationState.active$.subscribe(bool => console.dir(bool));
+
+// emits each conflict that was reported by the remote in the response
+// of the push handler, together with the output of the conflictHandler
+// that resolved it.
+myRxReplicationState.conflict$.subscribe(conflict => console.dir(conflict));
 ```
 
 ### awaitInitialReplication()

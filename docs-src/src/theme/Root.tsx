@@ -705,10 +705,10 @@ function trackReturnAfter3to14Days() {
     // Only trigger conversion if between 3 and 14 days
     if (diff >= THREE_DAYS_MS && diff <= FOURTEEN_DAYS_MS) {
         /**
-         * This is a primary google ads event
-         * but no primary reddit event because
-         * on reddit when we retarget, we do no want
-         * to count these as conversion.
+         * This must not be a primary event because
+         * when we retarget, we do no want
+         * to count these as conversion just because
+         * they clicked the ad some days later again.
          */
         triggerTrackingEvent('revisit_3_days', 3.5, 1);
     }

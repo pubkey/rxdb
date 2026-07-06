@@ -1,0 +1,1 @@
+- ADD `replicationState.conflict$` observable that emits each conflict that was reported by the remote in the response of the push handler, together with the output of the conflictHandler that resolved it. (https://github.com/pubkey/rxdb/pull/8742)
