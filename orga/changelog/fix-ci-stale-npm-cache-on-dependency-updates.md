@@ -1,0 +1,1 @@
+- FIX CI failing on dependency-update PRs with `ETARGET No matching version found` by removing `NPM_CONFIG_PREFER_OFFLINE` from the workflows so npm revalidates cached registry metadata.
