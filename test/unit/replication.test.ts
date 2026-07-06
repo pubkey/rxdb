@@ -964,7 +964,9 @@ describe('replication.test.ts', () => {
                     replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
                     live: true,
                     push: {
-                        handler: (rows) => {
+                        handler: async (rows) => {
+                            // short sleep to simulate network latency
+                            await wait(10);
                             const conflicts: WithDeleted<TestDocType>[] = [];
                             rows.forEach(row => {
                                 const currentMasterDoc = masterDocs.get(row.newDocumentState.id);
@@ -981,7 +983,7 @@ describe('replication.test.ts', () => {
                                     masterDocs.set(row.newDocumentState.id, row.newDocumentState);
                                 }
                             });
-                            return Promise.resolve(conflicts);
+                            return conflicts;
                         }
                     }
                 });
