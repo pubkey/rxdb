@@ -61,6 +61,7 @@ import {
 
 import type {
     ReplicationPullHandlerResult,
+    RxConflictHandler,
     RxReplicationWriteToMasterRow,
     RxStorage,
     RxStorageDefaultCheckpoint,
@@ -925,6 +926,63 @@ describe('replication.test.ts', () => {
                 continuePush();
                 await replicationState.awaitDocumentPushed(doc);
                 assert.strictEqual(resolved, true);
+
+                await localCollection.database.close();
+                await remoteCollection.database.close();
+            });
+            it('should resolve after a push conflict was resolved', async () => {
+                /**
+                 * Use a conflict handler that keeps the local state
+                 * so that the resolved document gets pushed to the master
+                 * after the conflict was resolved.
+                 */
+                const conflictHandler: RxConflictHandler<TestDocType> = {
+                    isEqual: defaultConflictHandler.isEqual,
+                    resolve: (i) => Promise.resolve(i.newDocumentState)
+                };
+                const localCollection = await humansCollection.createHumanWithTimestamp(
+                    0,
+                    randomToken(10),
+                    false,
+                    undefined,
+                    conflictHandler
+                );
+                const remoteCollection = await humansCollection.createHumanWithTimestamp(0, randomToken(10), false);
+
+                // the remote already has a different state -> the first push must conflict
+                await remoteCollection.insert(schemaObjects.humanWithTimestampData({
+                    id: 'conflict-doc',
+                    name: 'remote-name'
+                }));
+
+                let hadConflict = false;
+                const pushHandler = getPushHandler(remoteCollection);
+                const replicationState = replicateRxCollection<TestDocType, CheckpointType>({
+                    collection: localCollection,
+                    replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                    live: true,
+                    push: {
+                        handler: async (rows) => {
+                            const result = await pushHandler(rows);
+                            if (result.length > 0) {
+                                hadConflict = true;
+                            }
+                            return result;
+                        }
+                    }
+                });
+                ensureReplicationHasNoErrors(replicationState);
+
+                const doc = await localCollection.insert(schemaObjects.humanWithTimestampData({
+                    id: 'conflict-doc',
+                    name: 'local-name'
+                }));
+
+                await replicationState.awaitDocumentPushed(doc);
+
+                assert.strictEqual(hadConflict, true, 'the first push must have returned a conflict');
+                const remoteDoc = await remoteCollection.findOne('conflict-doc').exec(true);
+                assert.strictEqual(remoteDoc.name, 'local-name', 'the resolved state must exist on the remote');
 
                 await localCollection.database.close();
                 await remoteCollection.database.close();
