@@ -6,8 +6,9 @@ import { PRICE_PRO_MONTHLY, PRICE_PRO_PLUS_MONTHLY } from '../constants';
 /**
  * Thank-you page for the premium forms.
  * The forms redirect here with a ?tier= query param
- * (like ?tier=pro or ?tier=pro-plus) so we can track
+ * (?tier=pro, ?tier=pro-plus or ?tier=custom) so we can track
  * the lead value of the submitted tier.
+ * Custom packages are tracked with the pro-plus price.
  * Missing or unknown values fall back to the pro price.
  */
 export default function PremiumSubmitted() {
@@ -17,10 +18,10 @@ export default function PremiumSubmitted() {
             return;
         }
 
-        const tierParam = new URLSearchParams(location.search).get('tier');
-        const isProPlus = (tierParam || '').includes('plus');
-        const tier = isProPlus ? 'pro_plus' : 'pro';
-        const yearlyPrice = (isProPlus ? PRICE_PRO_PLUS_MONTHLY : PRICE_PRO_MONTHLY) * 12;
+        const tierParam = new URLSearchParams(location.search).get('tier') || '';
+        const tier = tierParam === 'custom' ? 'custom' : (tierParam.includes('plus') ? 'pro_plus' : 'pro');
+        const monthlyPrice = tier === 'pro' ? PRICE_PRO_MONTHLY : PRICE_PRO_PLUS_MONTHLY;
+        const yearlyPrice = monthlyPrice * 12;
 
         /**
          * Trigger conversion tracking with the
