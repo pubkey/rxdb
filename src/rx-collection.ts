@@ -254,7 +254,7 @@ export class RxCollectionBase<
              */
             let count = 0;
             const startTime = Date.now();
-            while (count < 300 && OPEN_COLLECTIONS.size >= NON_PREMIUM_COLLECTION_LIMIT) {
+            while (count < 60 && OPEN_COLLECTIONS.size >= NON_PREMIUM_COLLECTION_LIMIT) {
                 await this.promiseWait(30);
                 count++;
             }
