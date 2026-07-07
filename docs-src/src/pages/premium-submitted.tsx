@@ -1,5 +1,6 @@
 import React from 'react';
 import { PremiumSubmitted } from '../components/premium-submitted';
+import { PRICE_PRO_MONTHLY } from '../constants';
 
 /**
  * Generic thank-you page, used as fallback for form redirects
@@ -9,6 +10,6 @@ import { PremiumSubmitted } from '../components/premium-submitted';
 export default function PremiumSubmittedGeneric() {
     return <PremiumSubmitted
         tierEventId='generic'
-        yearlyPrice={99 * 12}
+        yearlyPrice={PRICE_PRO_MONTHLY * 12}
     />;
 }

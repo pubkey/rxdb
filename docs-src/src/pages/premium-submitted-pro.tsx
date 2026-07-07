@@ -1,13 +1,13 @@
 import React from 'react';
 import { PremiumSubmitted } from '../components/premium-submitted';
+import { PRICE_PRO_MONTHLY } from '../constants';
 
 /**
  * Thank-you page for the Pro tier form.
- * Pro costs $99 per month, billed annually.
  */
 export default function PremiumSubmittedPro() {
     return <PremiumSubmitted
         tierEventId='pro'
-        yearlyPrice={99 * 12}
+        yearlyPrice={PRICE_PRO_MONTHLY * 12}
     />;
 }
