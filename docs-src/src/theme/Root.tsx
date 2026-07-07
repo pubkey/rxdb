@@ -126,6 +126,7 @@ export default function Root({ children }) {
     const DOC_TITLE_PREFIX = '(1) ';
     useEffect(() => {
         // addCommunityChatButton();
+        storeAdClickId();
         setTimeout(() => {
             startAnalytics();
             trackReturnAfter3to14Days();
@@ -301,6 +302,24 @@ function addCallToActionButton() {
         insertAfter(positionReferenceElement, newElementWrapper);
     }
     setCallToActionOnce();
+}
+
+/**
+ * Stores the ad click id (gclid and its iOS-privacy variants gbraid/wbraid)
+ * in localStorage on every page load so it can be used
+ * for conversion tracking later.
+ */
+function storeAdClickId() {
+    if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
+        return;
+    }
+    const p = new URLSearchParams(location.search);
+    for (const k of ['gclid', 'gbraid', 'wbraid']) {
+        const v = p.get(k);
+        if (v) {
+            localStorage.setItem('click_id', JSON.stringify({ k, v, t: Date.now() }));
+        }
+    }
 }
 
 /**
