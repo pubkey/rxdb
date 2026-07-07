@@ -17,8 +17,8 @@ const titles = [
 
 const texts = [
     <>Quota errors, slow bulk writes, data evicted by the browser? RxDB manages storage carefully, keeps queries fast with caching and indexes, and protects your data by syncing it to your server.</>,
-    <>IndexedDB keeps data on one device — RxDB replicates it. Sync browser data to any backend over HTTP, WebSocket or GraphQL, with conflict handling and offline queueing built in.</>,
-    <>RxDB coordinates writes across tabs, validates every document against your schema and migrates data between app versions — so browser storage stops being the scary part of your stack.</>
+    <>IndexedDB keeps data on one device, RxDB replicates it. Sync browser data to any backend over HTTP, WebSocket or GraphQL, with conflict handling and offline queueing built in.</>,
+    <>RxDB coordinates writes across tabs, validates every document against your schema and migrates data between app versions, so browser storage stops being the scary part of your stack.</>
 ];
 
 const bulletpoints = [
@@ -55,7 +55,7 @@ export default function Page() {
     return Home({
         sem: {
             id: 'gads',
-            metaTitle: 'RxDB — Fix IndexedDB Limits, Speed and Sync',
+            metaTitle: 'RxDB: Fix IndexedDB Limits, Speed and Sync',
             appName: 'Browser',
             title: titles[variation],
             text: texts[variation],

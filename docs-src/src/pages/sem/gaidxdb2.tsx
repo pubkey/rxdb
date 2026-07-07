@@ -17,8 +17,8 @@ const titles = [
 
 const texts = [
     <>RxDB is a NoSQL database for JavaScript and TypeScript. Observable queries re-render your React, Angular, Vue or Svelte components on every data change, with your data stored in IndexedDB.</>,
-    <>RxDB&apos;s core is free and open source. Replication works over HTTP, WebSocket or GraphQL against your own servers — no proprietary cloud, no per-read pricing, no lock-in.</>,
-    <>RxDB adds what raw IndexedDB is missing for real products: schema validation, data migrations, encryption, compression and multi-tab handling — with a query API that scales with your app.</>
+    <>RxDB&apos;s core is free and open source. Replication works over HTTP, WebSocket or GraphQL against your own servers. No proprietary cloud, no per-read pricing, no lock-in.</>,
+    <>RxDB adds what raw IndexedDB is missing for real products: schema validation, data migrations, encryption, compression and multi-tab handling, with a query API that scales with your app.</>
 ];
 
 const bulletpoints = [
@@ -55,7 +55,7 @@ export default function Page() {
     return Home({
         sem: {
             id: 'gads',
-            metaTitle: 'RxDB — The Reactive JavaScript Database on IndexedDB',
+            metaTitle: 'RxDB: The Reactive JavaScript Database on IndexedDB',
             appName: 'JavaScript',
             title: titles[variation],
             text: texts[variation],

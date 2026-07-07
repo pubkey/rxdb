@@ -17,7 +17,7 @@ const titles = [
 
 const texts = [
     <>RxDB is a NoSQL database for JavaScript that runs directly in your app. With a local-first design, it delivers zero-latency queries even offline, and syncs seamlessly with any backend.</>,
-    <>RxDB gives you a clean NoSQL API on top of IndexedDB. No transaction boilerplate, no callback chains — just schemas, queries and observables that keep your UI in sync with your data.</>,
+    <>RxDB gives you a clean NoSQL API on top of IndexedDB. No transaction boilerplate, no callback chains, just schemas, queries and observables that keep your UI in sync with your data.</>,
     <>RxDB runs directly inside your app and answers queries with zero network latency. Your data lives in IndexedDB, stays available offline and updates your UI the moment it changes.</>
 ];
 
@@ -55,7 +55,7 @@ export default function Page() {
     return Home({
         sem: {
             id: 'gads',
-            metaTitle: 'RxDB — IndexedDB Without the Pain',
+            metaTitle: 'RxDB: IndexedDB Without the Pain',
             appName: 'JavaScript',
             title: titles[variation],
             text: texts[variation],
