@@ -318,6 +318,7 @@ function storeAdClickId() {
         const v = p.get(k);
         if (v) {
             localStorage.setItem('click_id', JSON.stringify({ k, v, t: Date.now() }));
+            triggerTrackingEvent('click_id_' + k, 0.01, 1);
         }
     }
 }
