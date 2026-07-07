@@ -11,6 +11,117 @@ export type RedditEventType =
     | 'Lead'
     | 'Purchase';
 
+/**
+ * Google Ads primary conversion events.
+ * These are additionally sent to our first-party conversion worker which
+ * Google Ads pulls as offline conversions (ad blockers cannot prevent that).
+ * Keep in sync with the worker's PRIMARY_EVENTS allowlist
+ * (rxdb-internals: google-ads/conversion-worker/src/worker.js).
+ */
+export const GOOGLE_ADS_PRIMARY_EVENTS = new Set([
+    'dev_mode_tracking_iframe',
+    'console-log-click',
+    'premium_lead',
+    'request-demo-sub',
+    'copy_on_page',
+    'visit_x_urls'
+]);
+
+const CONVERSION_WORKER_URL = 'https://rxdb-events.daniel-meyer-e90.workers.dev/api/e';
+/**
+ * Written by storeAdClickId() in Root.tsx when the user lands with a
+ * gclid/gbraid/wbraid URL param. Shape: { k, v, t }.
+ */
+const AD_CLICK_STORAGE_ID = 'click_id';
+// Google Ads click-through window; older click ids can no longer convert.
+const AD_CLICK_MAX_AGE_MS = 90 * 24 * 60 * 60 * 1000;
+
+function getStoredAdClickId(): { k: string; v: string; t: number; } | null {
+    try {
+        const raw = localStorage.getItem(AD_CLICK_STORAGE_ID);
+        if (!raw) {
+            return null;
+        }
+        const parsed = JSON.parse(raw);
+        if (!parsed || !parsed.v || (Date.now() - parsed.t) > AD_CLICK_MAX_AGE_MS) {
+            return null;
+        }
+        return parsed;
+    } catch (err) {
+        return null;
+    }
+}
+
+/**
+ * GA4 client id: the real one from the _ga cookie when google analytics
+ * runs, otherwise a self-minted stable id. Only used when gtag is blocked,
+ * so the GA4 Measurement Protocol can still count the event.
+ */
+function getOrMintClientId(): string {
+    const fromCookie = document.cookie.match(/_ga=GA\d+\.\d+\.(\d+\.\d+)/);
+    if (fromCookie) {
+        return fromCookie[1];
+    }
+    let cid = localStorage.getItem('worker_cid');
+    if (!cid) {
+        cid = Math.floor(Math.random() * 1e10) + '.' + Math.floor(Date.now() / 1000);
+        localStorage.setItem('worker_cid', cid);
+    }
+    return cid;
+}
+
+function getSessionId(): string {
+    try {
+        let sid = sessionStorage.getItem('worker_sid');
+        if (!sid) {
+            sid = Math.floor(Date.now() / 1000) + '';
+            sessionStorage.setItem('worker_sid', sid);
+        }
+        return sid;
+    } catch (err) {
+        return Math.floor(Date.now() / 1000) + '';
+    }
+}
+
+/**
+ * Sends a primary event to the conversion worker:
+ * - with the stored ad click id (if any) so Google Ads can import it as an
+ *   offline conversion, independent of ad blockers,
+ * - and, ONLY when gtag is blocked, with a client id so the worker forwards
+ *   the event to the GA4 Measurement Protocol. Users whose gtag runs already
+ *   report to GA4 client-side; sending both would double-count them.
+ */
+function sendToConversionWorker(type: string, value: number) {
+    try {
+        if (!GOOGLE_ADS_PRIMARY_EVENTS.has(type)) {
+            return;
+        }
+        const adClick = getStoredAdClickId();
+        const gaBlocked = typeof (window as any).gtag !== 'function';
+        if (!adClick && !gaBlocked) {
+            return;
+        }
+        const payload: any = { type, value };
+        if (adClick) {
+            payload.clid = adClick.v;
+            payload.clidKind = adClick.k;
+        }
+        if (gaBlocked) {
+            payload.cid = getOrMintClientId();
+            payload.sid = getSessionId();
+        }
+        const body = JSON.stringify(payload);
+        if (navigator.sendBeacon) {
+            navigator.sendBeacon(CONVERSION_WORKER_URL, body);
+        } else {
+            fetch(CONVERSION_WORKER_URL, { method: 'POST', body, keepalive: true }).catch(() => { });
+        }
+    } catch (err) {
+        console.log('# Error on conversion-worker trigger:');
+        console.dir(err);
+    }
+}
+
 export function triggerTrackingEvent(
     type: string,
     value: number,
@@ -39,6 +150,12 @@ export function triggerTrackingEvent(
     localStorage.setItem(prefix + type, (triggeredBefore + 1) + '');
 
     console.log('triggerTrackingEvent(' + type + ', ' + value + ', redditEventType=' + redditEventType + ' ' + triggeredBefore + '/' + maxPerUser + ')');
+
+    /**
+     * Google Ads conversion worker (runs after the same frequency capping
+     * as the other trackers).
+     */
+    sendToConversionWorker(type, value);
 
     /**
      * Reddit does not have a concept of conversion-value
