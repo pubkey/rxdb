@@ -1,0 +1,1 @@
+- FIX: Increased the `OPEN_COLLECTIONS` retry timeout from 1050ms (35×30ms) to 9000ms (300×30ms) to prevent false COL23 errors when using slow storage backends like MongoDB where tests hold collections open for several seconds. Also fixed `startTime` tracking so `timeInRetry` in the error now reflects the total wait time.
