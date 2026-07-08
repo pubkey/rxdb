@@ -1,0 +1,1 @@
+- Add SEM landingpage `gaencdb1` (encrypted local database for JavaScript apps) that a/b tests 3 title, description and bulletpoint variations at `/sem/gaencdb1.html`.

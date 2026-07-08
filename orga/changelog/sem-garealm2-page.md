@@ -1,0 +1,1 @@
+- Add SEM landingpage `garealm2` (local-first JavaScript database with self-hostable sync) that a/b tests 3 title, description and bulletpoint variations at `/sem/garealm2.html`.
