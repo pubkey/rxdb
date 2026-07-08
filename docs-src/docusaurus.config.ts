@@ -24,7 +24,7 @@ const rehypePrettyCodeOptions: RehypePrettyCodeOptions = {
 const config: Config = {
     title: 'RxDB - JavaScript Database',
     tagline: 'Realtime JavaScript Database',
-    favicon: '/img/favicon.png',
+    favicon: '/files/logo/logo.svg',
     headTags: [
         { tagName: 'meta', attributes: { name: 'theme-color', content: '#ed168f' } },
         { tagName: 'link', attributes: { rel: 'apple-touch-icon', href: '/img/apple-touch-icon.png', sizes: '180x180' } },
