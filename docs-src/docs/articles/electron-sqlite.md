@@ -230,6 +230,49 @@ Local SQLite data becomes more useful when it replicates. With the RxDB [Sync En
   <img src="../files/database-replication.png" alt="SQLite replication Electron" width="200" />
 </p>
 
+A basic [HTTP replication](../replication-http.md) needs two endpoints on your server: one to pull document changes after a given checkpoint and one to push local change rows. On the client you wire them into `replicateRxCollection`:
+
+```ts
+import { replicateRxCollection } from 'rxdb/plugins/replication';
+
+const replicationState = replicateRxCollection({
+    collection: db.heroes,
+    replicationIdentifier: 'my-http-replication',
+    pull: {
+        async handler(checkpointOrNull, batchSize) {
+            const updatedAt = checkpointOrNull
+                ? checkpointOrNull.updatedAt : 0;
+            const id = checkpointOrNull ? checkpointOrNull.id : '';
+            const response = await fetch(
+                'https://example.com/api/pull' +
+                `?updatedAt=${updatedAt}&id=${id}&limit=${batchSize}`
+            );
+            const data = await response.json();
+            return {
+                documents: data.documents,
+                checkpoint: data.checkpoint
+            };
+        }
+    },
+    push: {
+        async handler(changeRows) {
+            const response = await fetch(
+                'https://example.com/api/push',
+                {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(changeRows)
+                }
+            );
+            // the server responds with an array of conflicts
+            return await response.json();
+        }
+    }
+});
+```
+
+The pull handler fetches batches of changed documents from the server until the client is up to date. The push handler sends local writes and receives conflicting server states back, which RxDB then resolves with your conflict handler. For realtime updates from the server and the full server-side implementation, see the [HTTP replication tutorial](../replication-http.md).
+
 ## SQLite vs. the Node Filesystem storage
 
 RxDB offers a second persistent storage for the Electron main process: the [Filesystem Node RxStorage](../rx-storage-filesystem-node.md). Instead of one SQLite file it stores documents as plain JSON text files in a folder via the Node.js filesystem API.
