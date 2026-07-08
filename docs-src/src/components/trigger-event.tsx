@@ -11,22 +11,6 @@ export type RedditEventType =
     | 'Lead'
     | 'Purchase';
 
-/**
- * Google Ads primary conversion events.
- * These are additionally sent to our first-party conversion worker which
- * Google Ads pulls as offline conversions (ad blockers cannot prevent that).
- * Keep in sync with the worker's PRIMARY_EVENTS allowlist
- * (rxdb-internals: google-ads/conversion-worker/src/worker.js).
- */
-export const GOOGLE_ADS_PRIMARY_EVENTS = new Set([
-    'dev_mode_tracking_iframe',
-    'console-log-click',
-    'premium_lead',
-    'request-demo-sub',
-    'copy_on_page',
-    'visit_x_urls'
-]);
-
 const CONVERSION_WORKER_URL = 'https://rxdb-events.daniel-meyer-e90.workers.dev/api/e';
 /**
  * Written by storeAdClickId() in Root.tsx when the user lands with a
@@ -82,18 +66,17 @@ function getSessionId(): string {
 }
 
 /**
- * Sends a primary event to the conversion worker:
- * - with the stored ad click id (if any) so Google Ads can import it as an
- *   offline conversion, independent of ad blockers,
+ * Sends every tracking event to the conversion worker:
+ * - when an ad click id is stored, so Google Ads can import the event as an
+ *   offline conversion, independent of ad blockers (which event names count,
+ *   and whether they are primary or secondary, is decided in Google Ads by
+ *   which conversion actions exist),
  * - and, ONLY when gtag is blocked, with a client id so the worker forwards
  *   the event to the GA4 Measurement Protocol. Users whose gtag runs already
  *   report to GA4 client-side; sending both would double-count them.
  */
 function sendToConversionWorker(type: string, value: number) {
     try {
-        if (!GOOGLE_ADS_PRIMARY_EVENTS.has(type)) {
-            return;
-        }
         const adClick = getStoredAdClickId();
         const gaBlocked = typeof (window as any).gtag !== 'function';
         if (!adClick && !gaBlocked) {
