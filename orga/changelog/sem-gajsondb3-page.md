@@ -1,0 +1,1 @@
+- Added SEM landingpage `gajsondb3` (real JSON database vs JSON files) that a/b tests 3 title, description and bulletpoint variations.
