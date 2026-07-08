@@ -642,7 +642,8 @@ const sidebars = {
         'articles/json-based-database',
         'articles/reactjs-storage',
         'articles/indexeddb-alternative',
-        'articles/generic-prompts'
+        'articles/generic-prompts',
+        'articles/electron-sqlite'
       ],
     },
     'contribute',
