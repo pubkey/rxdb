@@ -33,8 +33,6 @@ const CONVERSION_WORKER_URL = 'https://rxdb-events.daniel-meyer-e90.workers.dev/
  * gclid/gbraid/wbraid URL param. Shape: { k, v, t }.
  */
 const AD_CLICK_STORAGE_ID = 'click_id';
-// Google Ads click-through window; older click ids can no longer convert.
-const AD_CLICK_MAX_AGE_MS = 90 * 24 * 60 * 60 * 1000;
 
 function getStoredAdClickId(): { k: string; v: string; t: number; } | null {
     try {
@@ -43,7 +41,7 @@ function getStoredAdClickId(): { k: string; v: string; t: number; } | null {
             return null;
         }
         const parsed = JSON.parse(raw);
-        if (!parsed || !parsed.v || (Date.now() - parsed.t) > AD_CLICK_MAX_AGE_MS) {
+        if (!parsed || !parsed.v) {
             return null;
         }
         return parsed;
