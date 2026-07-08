@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { onCopy, triggerTrackingEvent } from '../components/trigger-event';
+import { AD_CLICK_STORAGE_ID, onCopy, triggerTrackingEvent } from '../components/trigger-event';
 import { randomNumber } from '../../../plugins/utils';
 import { IconClose } from '../components/icons/close';
 import { Button } from '../components/button';
@@ -317,7 +317,7 @@ function storeAdClickId() {
     for (const k of ['gclid', 'gbraid', 'wbraid']) {
         const v = p.get(k);
         if (v) {
-            localStorage.setItem('click_id', JSON.stringify({ k, v, t: Date.now() }));
+            localStorage.setItem(AD_CLICK_STORAGE_ID, JSON.stringify({ k, v, t: Date.now() }));
             triggerTrackingEvent('click_id_' + k, 0.01, 1);
         }
     }

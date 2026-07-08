@@ -32,7 +32,7 @@ const CONVERSION_WORKER_URL = 'https://rxdb-events.daniel-meyer-e90.workers.dev/
  * Written by storeAdClickId() in Root.tsx when the user lands with a
  * gclid/gbraid/wbraid URL param. Shape: { k, v, t }.
  */
-const AD_CLICK_STORAGE_ID = 'click_id';
+export const AD_CLICK_STORAGE_ID = 'click_id';
 
 function getStoredAdClickId(): { k: string; v: string; t: number; } | null {
     try {
