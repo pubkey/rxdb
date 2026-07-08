@@ -25,10 +25,8 @@ const config: Config = {
     title: 'RxDB - JavaScript Database',
     tagline: 'Realtime JavaScript Database',
     favicon: '/img/favicon.png',
-    // Add multiple sizes + Apple touch icon (+ optional SVG)
     headTags: [
         { tagName: 'meta', attributes: { name: 'theme-color', content: '#ed168f' } },
-        { tagName: 'link', attributes: { rel: 'icon', type: 'image/svg+xml', href: '/files/logo/logo.svg' } },
         { tagName: 'link', attributes: { rel: 'apple-touch-icon', href: '/img/apple-touch-icon.png', sizes: '180x180' } },
         { tagName: 'link', attributes: { rel: 'preconnect', href: 'https://consentcdn.cookiebot.com/' } },
         { tagName: 'link', attributes: { rel: 'preconnect', href: 'https://consent.cookiebot.com/' } },
