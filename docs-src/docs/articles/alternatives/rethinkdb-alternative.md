@@ -1,6 +1,6 @@
 ---
 title: RxDB as a RethinkDB Alternative - Offline-First, Client-Side Reactive Database
-slug: alternatives/rethinkdb-alternative.html
+slug: rethinkdb-alternative.html
 description: Compare RxDB and RethinkDB for realtime JavaScript applications. Learn why RxDB is a strong alternative with true offline-first support, client-side reactive queries, flexible backends, and active long-term maintenance.
 image: /headers/alternatives/rethinkdb-alternative.jpg
 ---

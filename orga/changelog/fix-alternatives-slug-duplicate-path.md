@@ -1,0 +1,1 @@
+FIX broken links on the [alternatives](https://rxdb.info/alternatives.html) page. Ten alternative article pages had a redundant `alternatives/` prefix in their `slug` frontmatter, which Docusaurus resolves relative to the file directory and produced doubled URLs like `/articles/alternatives/alternatives/aws-amplify-datastore-alternative.html`.

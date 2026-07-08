@@ -1,6 +1,6 @@
 ---
 title: RxDB as a Horizon Alternative - Offline-First, Client-Side Reactive Database
-slug: alternatives/horizon-alternative.html
+slug: horizon-alternative.html
 description: Compare RxDB and Horizon (RethinkDB's client library) for realtime JavaScript applications. Learn why RxDB is a strong alternative with true offline-first support, client-side reactive queries, flexible backends, and active long-term maintenance.
 image: /headers/alternatives/horizon-alternative.jpg
 ---

@@ -1,6 +1,6 @@
 ---
 title: RxDB as a Meteor Alternative - Offline-First Without Framework Lock-In
-slug: alternatives/meteor-alternative.html
+slug: meteor-alternative.html
 description: Compare RxDB and Meteor for local-first JavaScript applications. Learn why RxDB is a strong alternative for offline-first, reactive, framework-agnostic database needs.
 image: /files/alternatives/meteor_text.svg
 ---

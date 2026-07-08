@@ -1,6 +1,6 @@
 ---
 title: RxDB as an AWS Amplify DataStore Alternative - Backend-Agnostic, Offline-First
-slug: alternatives/aws-amplify-datastore-alternative.html
+slug: aws-amplify-datastore-alternative.html
 description: Compare RxDB and AWS Amplify DataStore for offline-first JavaScript applications. Learn why RxDB is a strong alternative with pluggable backends, flexible storage, reactive queries, and no vendor lock-in.
 image: /headers/alternatives/aws-amplify-datastore-alternative.jpg
 ---
