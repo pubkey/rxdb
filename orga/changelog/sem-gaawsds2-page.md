@@ -1,0 +1,1 @@
+- Add SEM landingpage `gaawsds2` (a/b testing 3 title/description/bulletpoint variations for the open-source local-first database) at `/sem/gaawsds2.html`.
