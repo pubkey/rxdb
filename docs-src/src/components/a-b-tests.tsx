@@ -124,14 +124,18 @@ export function getTestGroupEventPrefix() {
  * The chosen index is appended to the origin id of the tracking event
  * prefix (see getTestGroupEventPrefix), e.g. "O:gads-2", so that
  * conversions can be attributed to the variation.
+ *
+ * localStorage is the single source of truth for the assigned variation.
+ * The in-memory semVariation value only mirrors what is stored, it must
+ * not short-circuit the storage lookup. Otherwise clearing localStorage
+ * would have no effect until a full page reload resets the module state,
+ * which is not the case on client side navigations (docusaurus is a SPA)
+ * or when a dev server keeps the module alive via hot module replacement.
  */
 let semVariation: { pageId: string; index: number; } | undefined;
 export function getSemVariation(pageId: string, variationCount: number): number {
     if (variationCount <= 1) {
         return 0;
-    }
-    if (semVariation && semVariation.pageId === pageId) {
-        return semVariation.index;
     }
 
     // server side rendering always uses the first variation
@@ -153,5 +157,6 @@ export function getSemVariation(pageId: string, variationCount: number): number 
     }
 
     semVariation = { pageId, index };
+    console.log('currentSemVariation: ' + pageId + ' -> ' + index);
     return index;
 }
