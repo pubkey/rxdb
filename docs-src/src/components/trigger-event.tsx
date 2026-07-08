@@ -11,27 +11,12 @@ export type RedditEventType =
     | 'Lead'
     | 'Purchase';
 
-const CONVERSION_WORKER_URL = 'https://rxdb-events.daniel-meyer-e90.workers.dev/api/e';
+const CONVERSION_WORKER_URL = 'https://rxdb-events.daniel-meyer-e90.workers.dev';
 /**
  * Written by storeAdClickId() in Root.tsx when the user lands with a
  * gclid/gbraid/wbraid URL param. Shape: { k, v, t }.
  */
 export const AD_CLICK_STORAGE_ID = 'click_id';
-
-/**
- * Important conversion events that are ALWAYS sent to the conversion worker,
- * even without an ad click id, so they are never lost to ad blockers.
- * All other events are sent only when a click id is stored (then Google Ads
- * attribution is possible).
- */
-export const IMPORTANT_WORKER_EVENTS = new Set([
-    'dev_mode_tracking_iframe',
-    'console-log-click',
-    'premium_lead',
-    'request-demo-sub',
-    'copy_on_page',
-    'visit_x_urls'
-]);
 
 function getStoredAdClickId(): { k: string; v: string; t: number; } | null {
     try {
@@ -50,15 +35,10 @@ function getStoredAdClickId(): { k: string; v: string; t: number; } | null {
 }
 
 /**
- * GA4 client id: the real one from the _ga cookie when google analytics
- * runs, otherwise a self-minted stable id. The worker uses it to forward
- * the event to the GA4 Measurement Protocol.
+ * Self-minted stable GA4-style client id. Only used when no _ga cookie
+ * exists, so the worker can forward events to the GA4 Measurement Protocol.
  */
 function getOrMintClientId(): string {
-    const fromCookie = document.cookie.match(/_ga=GA\d+\.\d+\.(\d+\.\d+)/);
-    if (fromCookie) {
-        return fromCookie[1];
-    }
     let cid = localStorage.getItem('worker_cid');
     if (!cid) {
         cid = Math.floor(Math.random() * 1e10) + '.' + Math.floor(Date.now() / 1000);
@@ -80,38 +60,45 @@ function getSessionId(): string {
     }
 }
 
+function postToWorker(path: string, payload: any) {
+    const body = JSON.stringify(payload);
+    const url = CONVERSION_WORKER_URL + path;
+    if (navigator.sendBeacon) {
+        navigator.sendBeacon(url, body);
+    } else {
+        fetch(url, { method: 'POST', body, keepalive: true }).catch(() => { });
+    }
+}
+
 /**
- * Sends tracking events to the conversion worker, independent of whether
- * google analytics is blocked or not:
- * - important events are ALWAYS sent,
- * - all other events are sent when an ad click id is stored, so Google Ads
- *   can import them as offline conversions (which event names count, and
+ * Sends every tracking event to the conversion worker:
+ * - to /api/google-ads when an ad click id is stored, so Google Ads can
+ *   import the event as an offline conversion (which event names count, and
  *   whether they are primary or secondary, is decided in Google Ads by which
- *   conversion actions exist).
- * The client id is always attached so the worker can forward the event to
- * the GA4 Measurement Protocol.
+ *   conversion actions exist),
+ * - to /api/google-analytics when no google-analytics cookie exists (gtag
+ *   blocked or never loaded), so the worker forwards the event to the GA4
+ *   Measurement Protocol. Users with a _ga cookie already report via gtag;
+ *   skipping them here prevents double counting.
  */
 function sendToConversionWorker(type: string, value: number) {
     try {
         const adClick = getStoredAdClickId();
-        if (!adClick && !IMPORTANT_WORKER_EVENTS.has(type)) {
-            return;
-        }
-        const payload: any = {
-            type,
-            value,
-            cid: getOrMintClientId(),
-            sid: getSessionId()
-        };
         if (adClick) {
-            payload.clid = adClick.v;
-            payload.clidKind = adClick.k;
+            postToWorker('/api/google-ads', {
+                type,
+                value,
+                clid: adClick.v,
+                clidKind: adClick.k
+            });
         }
-        const body = JSON.stringify(payload);
-        if (navigator.sendBeacon) {
-            navigator.sendBeacon(CONVERSION_WORKER_URL, body);
-        } else {
-            fetch(CONVERSION_WORKER_URL, { method: 'POST', body, keepalive: true }).catch(() => { });
+        if (!document.cookie.includes('_ga=')) {
+            postToWorker('/api/google-analytics', {
+                type,
+                value,
+                cid: getOrMintClientId(),
+                sid: getSessionId()
+            });
         }
     } catch (err) {
         console.log('# Error on conversion-worker trigger:');
