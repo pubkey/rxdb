@@ -2,7 +2,7 @@
 title: Electron SQLite Database - Reactive Local Data with RxDB
 slug: electron-sqlite.html
 description: Use SQLite in Electron the right way. Run the database in the main process with RxDB on top and get reactive queries, encryption and realtime sync in your desktop app.
-image: /headers/electron-database.jpg
+image: /headers/electron-sqlite.jpg
 ---
 
 # Electron SQLite - Building reactive desktop apps with RxDB and SQLite
@@ -52,7 +52,11 @@ ipcMain.handle('db-query', (event, sql, params) => {
 
 ```ts
 // renderer process, without RxDB
-const rows = await ipcRenderer.invoke('db-query', 'SELECT * FROM users WHERE name = ?', ['alice']);
+const rows = await ipcRenderer.invoke(
+    'db-query',
+    'SELECT * FROM users WHERE name = ?',
+    ['alice']
+);
 ```
 
 This works for a prototype, but several problems show up as the app grows:
@@ -78,6 +82,23 @@ This works for a prototype, but several problems show up as the app grows:
         <img src="../files/logo/rxdb_javascript_database.svg" alt="RxDB Electron SQLite" width="220" />
     </a>
 </center>
+
+## Why you should use the RxDB SQLite storage instead of SQLite by itself
+
+With the RxDB SQLite storage you keep everything that makes SQLite attractive. The data still lives in a normal SQLite file on disk and the [Premium SQLite RxStorage](../rx-storage-sqlite.md) runs queries inside SQLite itself, using its JSON functions and real indexes. What changes is the layer your application code talks to:
+
+| Concern | SQLite by itself | RxDB SQLite storage |
+|---|---|---|
+| Observe queries | Not possible | RxJS observables on any query |
+| Access from renderer | Hand-written IPC handlers | [Electron plugin](../electron.md) |
+| Multiple windows | Manual change broadcasting | Built in |
+| Backend sync | Not included | [Sync Engine](../replication.md) |
+| Conflict handling | Not included | [Conflict handlers](../transactions-conflicts-revisions.md) |
+| Schema and migrations | Hand-written SQL | [JSON schema](../rx-schema.md) and [migration plugin](../migration-schema.md) |
+| Encryption on disk | Requires paid SQLite extensions | [Encryption plugin](../encryption.md) |
+| Query results | Untyped rows | Typed documents |
+
+Each row of the left column is code you would write and maintain yourself. The IPC layer alone tends to grow into a custom protocol with one handler per use case, and the change-notification logic that keeps several windows in sync is hard to get right. RxDB replaces all of it with a documented, tested API while SQLite keeps doing what it does best: storing bytes reliably in one file.
 
 ## Setup: RxDB with SQLite in Electron
 
@@ -209,12 +230,43 @@ Local SQLite data becomes more useful when it replicates. With the RxDB [Sync En
   <img src="../files/database-replication.png" alt="SQLite replication Electron" width="200" />
 </p>
 
+## SQLite vs. the Node Filesystem storage
+
+RxDB offers a second persistent storage for the Electron main process: the [Filesystem Node RxStorage](../rx-storage-filesystem-node.md). Instead of one SQLite file it stores documents as plain JSON text files in a folder via the Node.js filesystem API.
+
+In the [performance comparison](../rx-storage-performance.md) the filesystem storage is a bit faster than the SQLite storage. Wrapping SQLite adds overhead, and every operation pays latency for moving data between the JavaScript process and the SQLite engine. The filesystem storage skips that boundary and writes JSON directly to disk.
+
+Reasons to still pick SQLite:
+
+- **Single file**: One portable `.sqlite` file is easier to back up, copy and inspect than a folder tree of JSON files, and many tools can open it.
+- **Same storage across platforms**: If you also ship mobile apps with [Capacitor](../capacitor-database.md) or [React Native](../react-native-database.md), the SQLite storage works there too, so all your apps behave the same.
+
+Reasons to pick the filesystem storage:
+
+- **Speed**: Lower per-operation overhead, see the [performance measurements](../rx-storage-performance.md).
+- **Simpler setup**: No SQLite library and no `sqliteBasics` adapter needed.
+
+Using it looks like this, again combined with the Electron IPC plugin in the main process:
+
+```ts
+import {
+    getRxStorageFilesystemNode
+} from 'rxdb-premium/plugins/storage-filesystem-node';
+import { app } from 'electron';
+import path from 'path';
+
+const storage = getRxStorageFilesystemNode({
+    basePath: path.join(app.getPath('userData'), 'database')
+});
+```
+
+Because the application code only sees the RxDB API, you can start with SQLite and move to the filesystem storage later (or the other way around) by exchanging the storage and running the [storage migration](../migration-storage.md).
+
 ## Alternatives to SQLite in Electron
 
-SQLite in the main process is the recommended default, but RxDB supports other storages that can make sense in specific setups:
+SQLite and the filesystem storage in the main process are the recommended defaults, but RxDB supports other storages that can make sense in specific setups:
 
 - The [IndexedDB RxStorage](../rx-storage-indexeddb.md) or [LocalStorage RxStorage](../rx-storage-localstorage.md) run directly in the renderer without any main-process code. Good for quick prototypes, slower for large datasets because [IndexedDB has performance limits](../slow-indexeddb.md).
-- The [Filesystem RxStorage](../rx-storage-filesystem-node.md) stores data as files via Node.js in the main process and has lower per-operation overhead than wrapping SQLite.
 - The [memory storage](../rx-storage-memory.md) keeps everything in RAM, useful for tests or caches.
 
 A broader comparison of the options is in the [Electron database overview](../electron-database.md).
