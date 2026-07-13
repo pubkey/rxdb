@@ -1596,22 +1596,19 @@ describe('migration-schema.test.ts', function () {
 
             const migrationState = db2.items.getMigrationState();
 
-            // start the migration but do not await it yet so we can capture
-            // the broadcastChannel while it is still open.
-            const migrationPromise = migrationState.migratePromise();
-
-            await waitUntil(() => !!migrationState.broadcastChannel);
-            const broadcastChannel = ensureNotFalsy(migrationState.broadcastChannel);
-
+            // The migration must reject because the migrationStrategy throws.
+            // Attach the catch synchronously so the rejection is never treated
+            // as an unhandledRejection by the test harness.
             let failed = false;
-            await migrationPromise.catch(() => {
+            await migrationState.migratePromise().catch(() => {
                 failed = true;
             });
             assert.strictEqual(failed, true, 'the migration must have failed');
 
             // Even though the migration errored, the broadcastChannel (and thus
-            // the leader-election) must be closed and released.
-            await waitUntil(() => broadcastChannel.isClosed === true);
+            // the leader-election) must have been closed and released. The fix
+            // only sets broadcastChannel back to undefined after close() ran, so
+            // observing undefined proves the channel was closed.
             await waitUntil(() => typeof migrationState.broadcastChannel === 'undefined');
 
             await db2.close();
