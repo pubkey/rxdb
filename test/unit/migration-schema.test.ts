@@ -1523,6 +1523,100 @@ describe('migration-schema.test.ts', function () {
             await db2.close();
         });
 
+        /**
+         * The broadcastChannel that is used for the per-collection
+         * leader-election of the migration must be closed on every code path.
+         * Previously, when the migration threw (for example because a
+         * migrationStrategy failed), the broadcastChannel stayed open and the
+         * tab remained leader forever, blocking other tabs from ever running
+         * the migration.
+         * @link https://github.com/pubkey/rxdb/pull/7827
+         */
+        it('#7827 should close the broadcastChannel/leader-election when the migration errors', async () => {
+            if (!config.storage.hasMultiInstance) {
+                return;
+            }
+            const dbName = randomToken(10);
+
+            const schema0 = {
+                version: 0,
+                primaryKey: 'id',
+                type: 'object',
+                properties: {
+                    id: { type: 'string', maxLength: 100 },
+                    name: { type: 'string' }
+                },
+                required: ['id', 'name']
+            };
+            const schema1 = {
+                version: 1,
+                primaryKey: 'id',
+                type: 'object',
+                properties: {
+                    id: { type: 'string', maxLength: 100 },
+                    name: { type: 'string' },
+                    migrated: { type: 'boolean' }
+                },
+                required: ['id', 'name', 'migrated']
+            };
+
+            const db = await createRxDatabase({
+                name: dbName,
+                storage: config.storage.getStorage(),
+                multiInstance: true,
+                ignoreDuplicate: true
+            });
+            await db.addCollections({
+                items: { schema: schema0 }
+            });
+            await db.items.bulkInsert([
+                { id: 'doc1', name: 'Document 1' },
+                { id: 'doc2', name: 'Document 2' }
+            ]);
+            await db.close();
+
+            const db2 = await createRxDatabase({
+                name: dbName,
+                storage: config.storage.getStorage(),
+                multiInstance: true,
+                ignoreDuplicate: true
+            });
+            await db2.addCollections({
+                items: {
+                    schema: schema1,
+                    autoMigrate: false,
+                    migrationStrategies: {
+                        1: () => {
+                            // force the migration to fail
+                            throw new Error('migrationStrategy failed on purpose');
+                        }
+                    }
+                }
+            });
+
+            const migrationState = db2.items.getMigrationState();
+
+            // start the migration but do not await it yet so we can capture
+            // the broadcastChannel while it is still open.
+            const migrationPromise = migrationState.migratePromise();
+
+            await waitUntil(() => !!migrationState.broadcastChannel);
+            const broadcastChannel = ensureNotFalsy(migrationState.broadcastChannel);
+
+            let failed = false;
+            await migrationPromise.catch(() => {
+                failed = true;
+            });
+            assert.strictEqual(failed, true, 'the migration must have failed');
+
+            // Even though the migration errored, the broadcastChannel (and thus
+            // the leader-election) must be closed and released.
+            await waitUntil(() => broadcastChannel.isClosed === true);
+            await waitUntil(() => typeof migrationState.broadcastChannel === 'undefined');
+
+            await db2.close();
+        });
+
 
         it('#7008 migrate schema with multiple connected storages', async () => {
             // create a schema
