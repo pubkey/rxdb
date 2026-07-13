@@ -48,9 +48,9 @@ Optional:
    `docs-src/src/pages/sem/<slug>.tsx`. If it does, ask before overwriting.
 2. Create `docs-src/src/pages/sem/<slug>.tsx` from the template below, filling
    in the collected values. Keep all 3 arrays the same length (3 entries).
-3. Add a changelog entry file under `orga/changelog/` (see the Changelog Rule in
-   `CLAUDE.md`), e.g. `orga/changelog/sem-<slug>-page.md` with a one line
-   description and a link to the issue or PR if available.
+3. Do NOT add a changelog entry. A SEM landingpage is neither a testcase nor a
+   FIX, so the Changelog Rule in `CLAUDE.md` does not apply. Adding one here is
+   wrong.
 4. If dependencies are installed, run `npm run check-types` and `npm run lint`
    inside the repo to verify the new page compiles. If `node_modules` is not
    installed these will fail for unrelated reasons, so it is fine to skip them
