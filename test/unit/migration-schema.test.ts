@@ -1609,7 +1609,12 @@ describe('migration-schema.test.ts', function () {
             // the leader-election) must have been closed and released. The fix
             // only sets broadcastChannel back to undefined after close() ran, so
             // observing undefined proves the channel was closed.
-            await waitUntil(() => typeof migrationState.broadcastChannel === 'undefined');
+            // A bounded timeout is used so that a regression fails fast with a
+            // clear error instead of polling forever.
+            await waitUntil(
+                () => typeof migrationState.broadcastChannel === 'undefined',
+                5 * 1000
+            );
 
             await db2.close();
         });
