@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { AD_CLICK_STORAGE_ID, onCopy, triggerTrackingEvent } from '../components/trigger-event';
+import { AD_CLICK_STORAGE_ID, onCopy, setTrackingConsent, triggerTrackingEvent } from '../components/trigger-event';
+import { isLikelyEuUser } from './eu-consent';
+import { type ConsentState, initEuConsentBanner, updateGoogleConsent } from './consent-manager';
 import { randomNumber } from '../../../plugins/utils';
 import { IconClose } from '../components/icons/close';
 import { Button } from '../components/button';
@@ -115,6 +117,44 @@ const callToActions: CallToActionItem[] = [
 const NOTIFICATION_SPLIT_TEST_VERSION = 'B';
 const POPUP_DISABLED_IF_CLOSED_TIME = 1000 * 60 * 10; // 10 minutes
 
+/**
+ * Guards so the tracker suite and the marketing pixels are each started only
+ * once, even when the visitor changes the consent multiple times.
+ */
+let trackerSuiteStarted = false;
+let marketingPixelsLoaded = false;
+
+/**
+ * Applies a consent decision: updates Google Consent Mode, unlocks the
+ * in-app tracking guard and starts the trackers that match the granted
+ * categories. Called for every consent change and, for non-EU visitors,
+ * once with everything granted.
+ */
+function applyConsent(state: ConsentState): void {
+    updateGoogleConsent(state);
+
+    const anyTracking = state.analytics || state.marketing;
+    setTrackingConsent(anyTracking);
+
+    if (anyTracking && !trackerSuiteStarted) {
+        trackerSuiteStarted = true;
+        setTimeout(() => {
+            startAnalytics();
+            trackReturnAfter3to14Days();
+            trackCopy();
+            trackUrlChanges();
+            addCallToActionButton();
+            triggerClickEventWhenFromCode();
+            triggerClickEventWhenFromDiscord();
+        }, 0);
+    }
+
+    if (state.marketing && !marketingPixelsLoaded) {
+        marketingPixelsLoaded = true;
+        loadMarketingPixels();
+    }
+}
+
 // Default implementation, that you can customize
 export default function Root({ children }) {
     const [showPopup, setShowPopup] = useState<{
@@ -127,15 +167,20 @@ export default function Root({ children }) {
     useEffect(() => {
         // addCommunityChatButton();
         storeAdClickId();
-        setTimeout(() => {
-            startAnalytics();
-            trackReturnAfter3to14Days();
-            trackCopy();
-            trackUrlChanges();
-            addCallToActionButton();
-            triggerClickEventWhenFromCode();
-            triggerClickEventWhenFromDiscord();
-        }, 0);
+
+        /**
+         * EU/EEA visitors only get trackers after they accepted them in the
+         * consent banner. Everyone else keeps the previous behavior where
+         * everything starts right away.
+         */
+        if (isLikelyEuUser()) {
+            initEuConsentBanner(applyConsent).catch(err => {
+                console.log('# Error while starting the consent banner:');
+                console.dir(err);
+            });
+        } else {
+            applyConsent({ analytics: true, marketing: true });
+        }
 
         const showTime = location.pathname.includes('.html') ? 30 : 60;
         // const showTime = 1;
@@ -399,6 +444,62 @@ function addCommunityChatButton() {
 
 
 
+/**
+ * Loads the marketing pixels that are not aware of Google Consent Mode.
+ * Only called after the visitor granted the "marketing" category (or for
+ * non-EU visitors, where marketing is granted by default).
+ */
+function loadMarketingPixels() {
+    // reddit pixel TODO move into google tag manager
+    // @ts-ignore eslint-disable-next-line
+    (function (w, d) {
+        if (!(w as any).rdt) {
+            // @ts-ignore
+            const rdt: any = (w as any).rdt = function () {
+                // @ts-ignore
+                if (rdt.sendEvent) {
+                    rdt.sendEvent.apply(rdt, arguments);
+                } else {
+                    rdt.callQueue.push(arguments);
+                }
+            };
+            rdt.callQueue = [];
+            const t = d.createElement('script');
+            t.src = 'https://www.redditstatic.com/ads/pixel.js';
+            t.async = true;
+            const s: any = d.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(t, s);
+        }
+
+        // Initialize pixel and track page visit
+        (w as any).rdt('init', 'a2_irjdz88999o9');
+        (w as any).rdt('track', 'PageVisit');
+    })(window, document);
+    // /reddit pixel
+
+
+
+    // pipedrive chat
+    (window as any).pipedriveLeadboosterConfig = {
+        base: 'leadbooster-chat.pipedrive.com', companyId: 11404711, playbookUuid:
+            '16a8caba-6b26-4bb1-a1fa-434c4171d542', version: 2
+    }; (function () {
+        const w = window; if ((w as any).LeadBooster) {
+            console.warn('LeadBooster already exists');
+        } else {
+            (w as any).LeadBooster = {
+                q: [], on: function (n, h) {
+                    this.q.push({ t: 'o', n: n, h: h });
+                }, trigger: function (n) {
+                    this.q.push({ t: 't', n: n });
+                },
+            };
+        }
+    })();
+    // /pipedrive chat
+}
+
+
 function startAnalytics() {
     console.log('load analytics code');
 
@@ -484,57 +585,6 @@ function startAnalytics() {
     // const bc = new BroadcastChannel(DEV_MODE_EVENT_ID);
     // bc.onmessage = () => checkDevModeEvent();
     // /track dev_mode_tracking_iframe event
-
-
-    // reddit pixel TODO move into google tag manager
-    // @ts-ignore eslint-disable-next-line
-    (function (w, d) {
-        if (!(w as any).rdt) {
-            // @ts-ignore
-            const rdt: any = (w as any).rdt = function () {
-                // @ts-ignore
-                if (rdt.sendEvent) {
-                    rdt.sendEvent.apply(rdt, arguments);
-                } else {
-                    rdt.callQueue.push(arguments);
-                }
-            };
-            rdt.callQueue = [];
-            const t = d.createElement('script');
-            t.src = 'https://www.redditstatic.com/ads/pixel.js';
-            t.async = true;
-            const s: any = d.getElementsByTagName('script')[0];
-            s.parentNode.insertBefore(t, s);
-        }
-
-        // Initialize pixel and track page visit
-        (w as any).rdt('init', 'a2_irjdz88999o9');
-        (w as any).rdt('track', 'PageVisit');
-    })(window, document);
-    // /reddit pixel
-
-
-
-    // pipedrive chat
-    (window as any).pipedriveLeadboosterConfig = {
-        base: 'leadbooster-chat.pipedrive.com', companyId: 11404711, playbookUuid:
-            '16a8caba-6b26-4bb1-a1fa-434c4171d542', version: 2
-    }; (function () {
-        const w = window; if ((w as any).LeadBooster) {
-            console.warn('LeadBooster already exists');
-        } else {
-            (w as any).LeadBooster = {
-                q: [], on: function (n, h) {
-                    this.q.push({ t: 'o', n: n, h: h });
-                }, trigger: function (n) {
-                    this.q.push({ t: 't', n: n });
-                },
-            };
-        }
-    })();
-    // /pipedrive chat
-
-
 
 
 

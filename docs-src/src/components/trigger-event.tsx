@@ -1,6 +1,24 @@
 import { useEffect } from 'react';
 import { getTestGroupEventPrefix } from './a-b-tests';
 import ExecutionEnvironment from '@docusaurus/ExecutionEnvironment';
+import { isLikelyEuUser } from '../theme/eu-consent';
+
+/**
+ * Gates all tracking. EU/EEA visitors start blocked and are only unlocked
+ * by setTrackingConsent(true) once they accept via the consent banner.
+ * Everyone else is allowed from the first event, matching the previous
+ * behavior. During SSR we stay blocked (no events fire there anyway).
+ */
+let trackingConsentGranted = ExecutionEnvironment.canUseDOM
+    ? !isLikelyEuUser()
+    : false;
+
+/**
+ * Called by the consent manager once the visitor made a choice.
+ */
+export function setTrackingConsent(granted: boolean): void {
+    trackingConsentGranted = granted;
+}
 
 
 export type RedditEventType =
@@ -122,6 +140,13 @@ export function triggerTrackingEvent(
     redditSearchTerm?: string
 ) {
     if (!ExecutionEnvironment.canUseDOM) {
+        return;
+    }
+    /**
+     * Do not send anything to analytics, ad or conversion services until the
+     * visitor allowed it. For non-EU visitors this is granted by default.
+     */
+    if (!trackingConsentGranted) {
         return;
     }
     const prefix = 'event_count_';

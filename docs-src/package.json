@@ -31,7 +31,8 @@
     "shiki": "3.19.0",
     "to-vfile": "6.1.0",
     "unified": "9.0.0",
-    "unist-util-is": "4.0.2"
+    "unist-util-is": "4.0.2",
+    "vanilla-cookieconsent": "3.1.0"
   },
   "devDependencies": {
     "@docusaurus/module-type-aliases": "3.9.2",

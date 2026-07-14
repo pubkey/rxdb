@@ -8,6 +8,7 @@ import type { Config } from '@docusaurus/types';
 import rehypePrettyCode from 'rehype-pretty-code';
 import type { Options as RehypePrettyCodeOptions, Theme } from 'rehype-pretty-code';
 import { createCssVariablesTheme, ThemeRegistrationAny } from 'shiki';
+import { EU_EEA_REGION_CODES } from './src/theme/eu-consent';
 
 const rehypePrettyCodeOptions: RehypePrettyCodeOptions = {
     theme: createCssVariablesTheme({
@@ -26,10 +27,34 @@ const config: Config = {
     tagline: 'Realtime JavaScript Database',
     favicon: '/files/logo/logo.svg',
     headTags: [
+        /**
+         * Google Consent Mode v2 default. For EU/EEA (and UK) regions the
+         * analytics and ad storage is denied until the visitor accepts in the
+         * client-side consent banner (see src/theme/consent-manager.ts).
+         * Google detects the region server-side from the IP, so this stays
+         * accurate independent of the timezone heuristic used to decide
+         * whether the banner is shown. The commands are queued on dataLayer
+         * before the async gtag/GTM libraries boot, so the default applies to
+         * the very first hit.
+         */
+        {
+            tagName: 'script',
+            innerHTML: `
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('consent', 'default', {
+                    ad_storage: 'denied',
+                    ad_user_data: 'denied',
+                    ad_personalization: 'denied',
+                    analytics_storage: 'denied',
+                    wait_for_update: 500,
+                    region: ${JSON.stringify(EU_EEA_REGION_CODES)}
+                });
+                gtag('set', 'ads_data_redaction', true);
+            `.replace(/\s+/g, ' ').trim(),
+        },
         { tagName: 'meta', attributes: { name: 'theme-color', content: '#ed168f' } },
         { tagName: 'link', attributes: { rel: 'apple-touch-icon', href: '/img/apple-touch-icon.png', sizes: '180x180' } },
-        { tagName: 'link', attributes: { rel: 'preconnect', href: 'https://consentcdn.cookiebot.com/' } },
-        { tagName: 'link', attributes: { rel: 'preconnect', href: 'https://consent.cookiebot.com/' } },
         { tagName: 'link', attributes: { rel: 'preconnect', href: 'https://region1.analytics.google.com/' } },
         { tagName: 'link', attributes: { rel: 'preconnect', href: 'https://www.redditstatic.com/' } },
         { tagName: 'link', attributes: { rel: 'preconnect', href: 'https://pixel-config.reddit.com/' } },
@@ -304,21 +329,6 @@ Topic-specific documentation files:
         },
     ],
     scripts: [
-        // {
-        //   id: 'CookieDeclaration',
-        //   src: 'https://consent.cookiebot.com/c429ebbd-6e92-4150-b700-ca186e06bc7c/cd.js',
-        //   type: 'text/javascript'
-        // }
-
-        // already included via google tag manager
-        // {
-        //   id: 'Cookiebot',
-        //   src: 'https://consent.cookiebot.com/uc.js?cbid=c429ebbd-6e92-4150-b700-ca186e06bc7c',
-        //   'data-cbid': 'c429ebbd-6e92-4150-b700-ca186e06bc7c',
-        //   'data-blockingmode': 'auto',
-        //   type: 'text/javascript',
-        //   async: true
-        // },
         /*
          * Pipedrive embedded chat.
          * Disabled because people should fill out the premium form

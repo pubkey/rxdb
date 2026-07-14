@@ -87,6 +87,20 @@ export default function Privacy() {
                             Analyse- und Marketing-Dienste Cookies setzen. Cookies und Local-Storage-Einträge
                             können Sie jederzeit über die Einstellungen Ihres Browsers löschen.
                         </p>
+                        <p>
+                            Besuchern aus der EU/dem EWR wird beim ersten Aufruf ein Einwilligungsbanner
+                            angezeigt. Analyse- und Marketing-Dienste werden erst nach Ihrer Einwilligung
+                            geladen. Ihre Auswahl können Sie jederzeit ändern oder widerrufen:{' '}
+                            <a
+                                href="#"
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    (window as any).rxdbShowConsentPreferences?.();
+                                }}
+                            >
+                                Cookie-Einstellungen &ouml;ffnen
+                            </a>.
+                        </p>
 
                         <h3>4. Analyse und Reichweitenmessung</h3>
                         <p>
@@ -269,6 +283,20 @@ export default function Privacy() {
                             happens locally in your browser. In addition, the analytics and marketing
                             services listed below may set cookies. You can delete cookies and local storage
                             entries at any time via your browser settings.
+                        </p>
+                        <p>
+                            Visitors from the EU/EEA are shown a consent banner on their first visit.
+                            Analytics and marketing services are only loaded after you consent. You can
+                            change or withdraw your choice at any time:{' '}
+                            <a
+                                href="#"
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    (window as any).rxdbShowConsentPreferences?.();
+                                }}
+                            >
+                                Open cookie settings
+                            </a>.
                         </p>
 
                         <h3>4. Analytics and reach measurement</h3>

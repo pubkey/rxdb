@@ -2782,62 +2782,19 @@ footer a:visited {
 }
 
 /**
- * Change stuff in cookie banner
+ * Theming for the client-side cookie consent banner
+ * (vanilla-cookieconsent, see src/theme/consent-manager.ts).
+ * Maps the library CSS variables to the RxDB brand color.
  */
-#CybotCookiebotDialogHeader {
-    display: none !important;
-}
-
-#CybotCookiebotDialog {
-    padding: 12px !important;
-    font-family: var(--ifm-font-family-monospace) !important;
-}
-
-.CybotCookiebotDialogBodyBottomWrapper {
-    margin-top: 0.5em !important;
-}
-
-#CybotCookiebotDialogBodyLevelButtonLevelOptinAllowAll {
-    background-color: var(--color-top) !important;
-}
-
-#CybotCookiebotDialogBodyLevelButtonCustomize {
-    border-color: var(--color-top) !important;
-}
-
-#CybotCookiebotDialogPoweredByText {
-    display: none !important;
-}
-
-#__docusaurus {
-    position: relative;
-}
-
-/**
- * Change stuff in cookie banner
- */
-#CybotCookiebotDialogHeader {
-    display: none !important;
-}
-
-#CybotCookiebotDialog {
-    padding: 12px !important;
-}
-
-.CybotCookiebotDialogBodyBottomWrapper {
-    margin-top: 0.5em !important;
-}
-
-#CybotCookiebotDialogBodyLevelButtonLevelOptinAllowAll {
-    background-color: var(--color-top) !important;
-}
-
-#CybotCookiebotDialogBodyLevelButtonCustomize {
-    border-color: var(--color-top) !important;
-}
-
-#CybotCookiebotDialogPoweredByText {
-    display: none !important;
+#cc-main {
+    --cc-btn-primary-bg: var(--color-top);
+    --cc-btn-primary-border-color: var(--color-top);
+    --cc-btn-primary-hover-bg: var(--color-middle);
+    --cc-btn-primary-hover-border-color: var(--color-middle);
+    --cc-toggle-on-bg: var(--color-top);
+    --cc-toggle-on-knob-bg: #fff;
+    --cc-link-color: var(--color-top);
+    --cc-font-family: var(--ifm-font-family-base);
 }
 
 
