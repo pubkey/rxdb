@@ -267,7 +267,7 @@ It was meant as replacement for SQLite but is more like an object store than a f
 In 2019 MongoDB bought Realm and changed the projects focus.
 Now Realm is made for replication with the MongoDB Realm Sync based on the MongoDB Atlas Cloud platform. This tight coupling to the MongoDB cloud service is a big downside for most use cases.
 
-[Read more about why RxDB is a good alternative to MongoDB Realm](./articles/alternatives/mongodb-realm-alternative.md).
+[Read more about why RxDB is a good alternative to MongoDB Realm](./articles/alternatives/mongodb-realm-alternative.md). If you plan to switch, follow the [Realm to RxDB migration guide](./articles/realm-to-rxdb-migration.md).
 
 ### Apollo
 

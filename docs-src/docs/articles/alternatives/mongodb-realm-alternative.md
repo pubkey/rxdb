@@ -143,7 +143,7 @@ On the server side, `/api/todos/pull` runs a MongoDB `find({ updatedAt: { $gte: 
 
 ## Migration notes from Realm to RxDB
 
-A migration from Realm typically follows these steps.
+The dedicated [Realm to RxDB migration guide](../realm-to-rxdb-migration.md) covers schema translation, data export, query rewrites, and the replication setup in detail. In short, a migration from Realm typically follows these steps.
 
 1. **Map Realm classes to RxDB schemas**. Each Realm object schema becomes a JSON schema under an [RxCollection](../../rx-collection.md). Relationship properties map to references by primary key, and embedded objects map to nested object types in the schema.
 2. **Export existing data**. Use the Realm SDK to read every object of every type and write them as JSON. This is a one off script that runs on app start during the transition release.
