@@ -39,6 +39,7 @@ const config: Config = {
          */
         {
             tagName: 'script',
+            attributes: { type: 'text/javascript' },
             innerHTML: `
                 window.dataLayer = window.dataLayer || [];
                 function gtag(){dataLayer.push(arguments);}
