@@ -83,7 +83,7 @@ export async function initEuConsentBanner(
                     consentModal: {
                         title: 'We use cookies',
                         description:
-                            'RxDB uses cookies to measure and improve the website and to support our advertising. Everything the database itself does stays on your device. You decide what we may load.',
+                            'We use cookies for analytics and advertising. You decide what we load.',
                         acceptAllBtn: 'Accept all',
                         acceptNecessaryBtn: 'Reject all',
                         showPreferencesBtn: 'Manage preferences',
