@@ -1,6 +1,10 @@
-const plugins = [
-    '@babel/plugin-transform-explicit-resource-management',
-    '@babel/plugin-transform-typescript',
+/**
+ * Transforms that lower modern JS syntax (classes, block-scoping, template-literals, ...)
+ * are only needed for the es5/CJS build. The esm build targets modern browsers
+ * that support this syntax natively, so lowering it there only adds @babel/runtime
+ * helper imports (inheritsLoose, createClass, ...) and bytes for no benefit.
+ */
+const legacySyntaxPlugins = [
     'transform-class-properties',
     ['@babel/transform-template-literals', {
         'loose': true
@@ -13,10 +17,15 @@ const plugins = [
     '@babel/transform-sticky-regex',
     '@babel/transform-unicode-regex',
     '@babel/transform-block-scoping',
+    '@babel/plugin-transform-class-properties'
+];
+
+const plugins = [
+    '@babel/plugin-transform-explicit-resource-management',
+    '@babel/plugin-transform-typescript',
     ['@babel/transform-runtime', {
-        'regenerator': true
+        'regenerator': false
     }],
-    '@babel/plugin-transform-class-properties',
     '@babel/plugin-transform-react-jsx'
 ];
 
@@ -49,7 +58,7 @@ if (process.env['NODE_ENV'] === 'es5') {
                 useBuiltIns: false
             }]
     ];
-    plugins.unshift('@babel/plugin-transform-modules-commonjs');
+    plugins.unshift('@babel/plugin-transform-modules-commonjs', ...legacySyntaxPlugins);
 }
 
 module.exports = {
