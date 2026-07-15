@@ -2,7 +2,7 @@
 title: Realm to RxDB Migration Guide
 slug: realm-to-rxdb-migration.html
 description: Migrate a Realm application to RxDB step by step. Map object schemas to JSON schemas, translate Realm Query Language, move existing data and replace Atlas Device Sync with open replication.
-image: /headers/mongodb-realm-alternative.jpg
+image: /headers/realm-to-rxdb-migration.jpg
 ---
 
 import {Steps} from '@site/src/components/steps';
