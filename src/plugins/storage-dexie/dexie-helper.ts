@@ -59,21 +59,44 @@ export function getDexieDbWithTables(
                     booleanIndexes: getBooleanIndexes(schema)
                 };
             })();
-            DEXIE_STATE_DB_BY_NAME.set(dexieDbName, state);
-            REF_COUNT_PER_DEXIE_DB.set(state, 0);
+            /**
+             * Key the initial count on value, not on state.
+             * This callback runs synchronously inside of the assignment
+             * of state, so state is still unassigned at this point.
+             */
+            REF_COUNT_PER_DEXIE_DB.set(value, 0);
             return value;
         }
     );
+    /**
+     * Count one reference per storage instance.
+     * getDexieDbWithTables() is called once per storage instance
+     * and closeDexieDb() once per storage instance close,
+     * so the counting stays balanced.
+     */
+    REF_COUNT_PER_DEXIE_DB.set(state, (REF_COUNT_PER_DEXIE_DB.get(state) ?? 0) + 1);
     return state;
 }
 
 export async function closeDexieDb(statePromise: DexieStorageInternals) {
     const state = await statePromise;
-    const prevCount = REF_COUNT_PER_DEXIE_DB.get(statePromise);
-    const newCount = (prevCount as any) - 1;
-    if (newCount === 0) {
+    const prevCount = REF_COUNT_PER_DEXIE_DB.get(statePromise) ?? 0;
+    const newCount = prevCount - 1;
+    if (newCount <= 0) {
         state.dexieDb.close();
         REF_COUNT_PER_DEXIE_DB.delete(statePromise);
+        /**
+         * Also evict the state cache entry.
+         * Without this, re-creating a database with the same name
+         * after the underlying IndexedDB was deleted would receive
+         * the cached, closed Dexie instance and fail with
+         * DatabaseClosedError. See #8793
+         */
+        for (const [cachedName, cachedState] of DEXIE_STATE_DB_BY_NAME.entries()) {
+            if (cachedState === statePromise) {
+                DEXIE_STATE_DB_BY_NAME.delete(cachedName);
+            }
+        }
     } else {
         REF_COUNT_PER_DEXIE_DB.set(statePromise, newCount);
     }
