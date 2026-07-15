@@ -9,7 +9,6 @@
  * - 'npm run test:browser' so it runs in the browser
  */
 import assert from 'assert';
-import AsyncTestUtil from 'async-test-util';
 import config from './config.ts';
 
 import {
@@ -17,27 +16,36 @@ import {
     randomToken
 } from '../../plugins/core/index.mjs';
 import {
-    isNode
+    isNode,
+    isDeno
 } from '../../plugins/test-utils/index.mjs';
+import {
+    indexedDB as fakeIndexedDB
+} from 'fake-indexeddb';
+
 describe('bug-report.test.js', () => {
+    /**
+     * Reproduces https://github.com/pubkey/rxdb/issues/8793
+     *
+     * The reference counting in dexie-helper.ts never closes the
+     * underlying Dexie/IndexedDB connections on database close and
+     * never evicts the DEXIE_STATE_DB_BY_NAME cache entry.
+     * When the application afterwards deletes the IndexedDB databases
+     * (for example on logout, to remove user data from a shared device),
+     * the leaked connections get force-closed by the delete request.
+     * Re-creating a database with the same name in the same JS context
+     * then receives the cached, closed Dexie instance and fails with
+     * DatabaseClosedError.
+     */
     it('should fail because it reproduces the bug', async function () {
-
-        /**
-         * If your test should only run in nodejs or only run in the browser,
-         * you should comment in the return operator and adapt the if statement.
-         */
-        if (
-            !isNode // runs only in node
-            // isNode // runs only in the browser
-        ) {
-            // return;
-        }
-
-        if (!config.storage.hasMultiInstance) {
+        // the defect is located in the dexie storage, other storages are not affected
+        if (config.storage.name !== 'dexie') {
             return;
         }
 
-        // create a schema
+        // in node and deno the dexie tests run on fake-indexeddb, see config.ts
+        const idb: any = (isNode || isDeno) ? fakeIndexedDB : (globalThis as any).indexedDB;
+
         const mySchema = {
             version: 0,
             primaryKey: 'passportId',
@@ -61,81 +69,77 @@ describe('bug-report.test.js', () => {
             }
         };
 
-        /**
-         * Always generate a random database-name
-         * to ensure that different test runs do not affect each other.
-         */
         const name = randomToken(10);
+        const collectionName = 'mycollection';
 
-        // create a database
+        // create a database, insert a document, close the database again
         const db = await createRxDatabase({
             name,
-            /**
-             * By calling config.storage.getStorage(),
-             * we can ensure that all variations of RxStorage are tested in the CI.
-             */
-            storage: config.storage.getStorage(),
-            eventReduce: true,
-            ignoreDuplicate: true
+            storage: config.storage.getStorage()
         });
-        // create a collection
         const collections = await db.addCollections({
-            mycollection: {
+            [collectionName]: {
                 schema: mySchema
             }
         });
-
-        // insert a document
-        await collections.mycollection.insert({
+        await collections[collectionName].insert({
             passportId: 'foobar',
             firstName: 'Bob',
             lastName: 'Kelso',
             age: 56
         });
+        await db.close();
 
         /**
-         * to simulate the event-propagation over multiple browser-tabs,
-         * we create the same database again
+         * Delete the underlying per-collection IndexedDB databases,
+         * like an application does on logout to remove user data
+         * from the device. Because close() did not release the Dexie
+         * connections, this delete request first gets blocked and the
+         * connections are force-closed to resume it.
          */
-        const dbInOtherTab = await createRxDatabase({
+        const dexieDbNames = [
+            'rxdb-dexie-' + name + '--' + mySchema.version + '--_rxdb_internal',
+            'rxdb-dexie-' + name + '--' + mySchema.version + '--' + collectionName
+        ];
+        await Promise.all(
+            dexieDbNames.map(dexieDbName => new Promise<void>((res, rej) => {
+                const deleteRequest = idb.deleteDatabase(dexieDbName);
+                deleteRequest.onsuccess = () => res();
+                deleteRequest.onerror = () => rej(deleteRequest.error);
+            }))
+        );
+
+        /**
+         * Re-create a database with the same name in the same JS context.
+         * Without the fix this throws Dexie's DatabaseClosedError
+         * ("Database has been closed") because the state cache still
+         * holds the force-closed Dexie instance.
+         */
+        const db2 = await createRxDatabase({
             name,
-            storage: config.storage.getStorage(),
-            eventReduce: true,
-            ignoreDuplicate: true
+            storage: config.storage.getStorage()
         });
-        // create a collection
-        const collectionInOtherTab = await dbInOtherTab.addCollections({
-            mycollection: {
+        const collections2 = await db2.addCollections({
+            [collectionName]: {
                 schema: mySchema
             }
         });
-
-        // find the document in the other tab
-        const myDocument = await collectionInOtherTab.mycollection
-            .findOne()
-            .where('firstName')
-            .eq('Bob')
-            .exec();
-
-        /*
-         * assert things,
-         * here your tests should fail to show that there is a bug
-         */
+        await collections2[collectionName].insert({
+            passportId: 'foobar',
+            firstName: 'Bob',
+            lastName: 'Kelso',
+            age: 56
+        });
+        const myDocument = await collections2[collectionName]
+            .findOne({
+                selector: {
+                    firstName: 'Bob'
+                }
+            })
+            .exec(true);
         assert.strictEqual(myDocument.age, 56);
 
-
-        // you can also wait for events
-        const emitted: any[] = [];
-        const sub = collectionInOtherTab.mycollection
-            .findOne().$
-            .subscribe(doc => {
-                emitted.push(doc);
-            });
-        await AsyncTestUtil.waitUntil(() => emitted.length === 1);
-
         // clean up afterwards
-        sub.unsubscribe();
-        db.close();
-        dbInOtherTab.close();
+        await db2.remove();
     });
 });
