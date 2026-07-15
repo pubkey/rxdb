@@ -143,37 +143,46 @@ Embedded Realm objects (`embedded: true`) become nested `type: 'object'` propert
 
 ### Move the existing data
 
-Ship one release where both databases are installed. On startup, the app exports all Realm objects, writes them into RxDB and records that the import happened so it runs once per device.
+Ship one release where both databases are installed. On startup, the app reads the Realm file, writes the data into RxDB and records its progress so the import completes once per device. There are three ways to move the data:
+
+1. **Export to JSON and insert as normal documents.** Read all Realm objects, map them to plain JSON and call `bulkInsert`. Simple, but if the app gets killed mid-import, the whole run starts over.
+2. **Use the JSON dump plugin.** If you produce a dump in the RxDB dump format, the [json-dump plugin](../rx-collection.md#importjson) loads it in one call with `collection.importJSON(dump)`.
+3. **Iterate over the Realm data with a checkpoint.** Import in batches and persist a checkpoint after each batch. This is the recommended approach because the import continues where it stopped when the app restarts at any point.
+
+The checkpointed import looks like this:
 
 ```ts
-const MIGRATION_FLAG = 'realm-to-rxdb-migrated';
+const BATCH_SIZE = 500;
+const CHECKPOINT_KEY = 'realm-import-checkpoint';
 
 export async function migrateFromRealm(db: RxDatabase) {
-    if (localStorage.getItem(MIGRATION_FLAG)) {
-        return;
-    }
     const realm = await Realm.open({ schema: [Todo] });
+    // stable order, the Realm file is read only during the migration
+    const all = realm.objects(Todo).sorted('_id');
 
-    const docs = realm.objects(Todo).map(todo => ({
-        id: todo._id.toHexString(),
-        title: todo.title,
-        done: todo.done,
-        priority: todo.priority,
-        createdAt: todo.createdAt.getTime(),
-        tags: Array.from(todo.tags)
-    }));
-    realm.close();
+    // continue where a previous run stopped
+    let imported = parseInt(localStorage.getItem(CHECKPOINT_KEY) ?? '0', 10);
 
-    const result = await db.todos.bulkInsert(docs);
-    if (result.error.length > 0) {
-        console.error('import errors', result.error);
-        return;
+    while (imported < all.length) {
+        const batch = all.slice(imported, imported + BATCH_SIZE).map(todo => ({
+            id: todo._id.toHexString(),
+            title: todo.title,
+            done: todo.done,
+            priority: todo.priority,
+            createdAt: todo.createdAt.getTime(),
+            tags: Array.from(todo.tags)
+        }));
+        // bulkUpsert is idempotent, re-importing a
+        // half-written batch after a restart is safe
+        await db.todos.bulkUpsert(batch);
+        imported += batch.length;
+        localStorage.setItem(CHECKPOINT_KEY, String(imported));
     }
-    localStorage.setItem(MIGRATION_FLAG, 'true');
+    realm.close();
 }
 ```
 
-On React Native, store the flag in the RxDB database itself with a [local document](../rx-local-document.md) instead of `localStorage`. After the import has shipped and your analytics show that active devices have run it, a follow-up release removes the `realm` dependency and deletes the Realm file with `Realm.deleteFile()`.
+On React Native, store the checkpoint in the RxDB database itself with a [local document](../rx-local-document.md) instead of `localStorage`. After the import has shipped and your analytics show that active devices have run it, a follow-up release removes the `realm` dependency and deletes the Realm file with `Realm.deleteFile()`.
 
 ### Translate the queries
 
