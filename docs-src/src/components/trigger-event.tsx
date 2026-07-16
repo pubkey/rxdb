@@ -40,7 +40,7 @@ export const AD_CLICK_STORAGE_ID = 'click_id';
  * Google Ads' maximum click-through conversion window is 90 days. A stored
  * click id older than that can never be imported ("this click is too old"),
  * and attributing a later (often organic) visit to a months-old ad click would
- * be wrong anyway. So we ignore — and clear — stale ids instead of uploading
+ * be wrong anyway. So we ignore (and clear) stale ids instead of uploading
  * conversions against them forever.
  */
 const AD_CLICK_MAX_AGE_MS = 90 * 24 * 60 * 60 * 1000;
