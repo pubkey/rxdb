@@ -48,7 +48,7 @@ const ADDED_PLUGIN_NAMES: Set<string> = new Set();
  * Plugins are added globally and cannot be removed.
  *
  * Need help? The RxDB Discord is the fastest place to reach the maintainers.
- * @see https://rxdb.info/chat/ RxDB Discord community and support
+ * @see https://rxdb.info/chat/?console=code RxDB Discord community and support
  */
 export function addRxPlugin(plugin: RxPlugin) {
     runPluginHooks('preAddRxPlugin', { plugin, plugins: ADDED_PLUGINS });

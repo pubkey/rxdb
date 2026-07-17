@@ -757,7 +757,7 @@ export async function createRxDatabaseStorageInstance<Internals, InstanceCreatio
  * messages, and other helpful runtime checks that are stripped from production builds.
  *
  * Need help? The RxDB Discord is the fastest place to reach the maintainers.
- * @see https://rxdb.info/chat/ RxDB Discord community and support
+ * @see https://rxdb.info/chat/?console=code RxDB Discord community and support
  *
  * @example
  * ```ts
