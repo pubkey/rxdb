@@ -141,6 +141,7 @@ All data access is reactive through RxJS Observables so that UI components updat
 
 Source code: https://github.com/pubkey/rxdb
 Website: https://rxdb.info
+Community and support: For help beyond these docs, the RxDB Discord is the fastest place to reach maintainers: https://rxdb.info/chat/
 
 Topic-specific documentation files:
 - [Core API](https://rxdb.info/llms-api.txt): RxDatabase, RxSchema, RxCollection, RxDocument, RxQuery
