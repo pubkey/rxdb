@@ -55,6 +55,9 @@ const config: Config = {
             `.replace(/\s+/g, ' ').trim(),
         },
         { tagName: 'meta', attributes: { name: 'theme-color', content: '#ed168f' } },
+        // Provide the favicon as .ico in addition to the .svg set via the `favicon`
+        // field above, so browsers that do not support SVG favicons fall back to the .ico.
+        { tagName: 'link', attributes: { rel: 'icon', type: 'image/x-icon', href: '/files/logo/icon.ico' } },
         { tagName: 'link', attributes: { rel: 'apple-touch-icon', href: '/img/apple-touch-icon.png', sizes: '180x180' } },
         { tagName: 'link', attributes: { rel: 'preconnect', href: 'https://region1.analytics.google.com/' } },
         { tagName: 'link', attributes: { rel: 'preconnect', href: 'https://www.redditstatic.com/' } },
