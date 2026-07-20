@@ -35,7 +35,8 @@ The following example wires up an Ionic React todo list. RxDB owns durability th
 ### Install the Packages
 
 ```bash
-npm install rxdb rxjs @capacitor-community/sqlite @tanstack/react-db @tanstack/rxdb-db-collection
+npm install rxdb rxjs @capacitor-community/sqlite
+npm install @tanstack/react-db @tanstack/rxdb-db-collection
 ```
 
 For an Ionic Angular or Vue app, install `@tanstack/angular-db` or `@tanstack/vue-db` instead of the React binding. The RxDB collection works with all of them because it plugs into the framework-independent `createCollection()`.

@@ -167,7 +167,11 @@ export function TodoList() {
     );
 }
 
-todosCollection.insert({ id: 'todo-1', text: 'ship the desktop app', completed: false });
+todosCollection.insert({
+    id: 'todo-1',
+    text: 'ship the desktop app',
+    completed: false
+});
 ```
 
 The mutation applies to the in-memory state instantly, travels over IPC into SQLite, and streams back into every subscribed window. When persisting fails, TanStack DB rolls the optimistic state back.

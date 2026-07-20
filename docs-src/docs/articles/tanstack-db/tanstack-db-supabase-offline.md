@@ -71,7 +71,8 @@ When your columns use different names, the plugin accepts `modifiedField` and `d
 ### Install the Packages
 
 ```bash
-npm install rxdb rxjs @supabase/supabase-js @tanstack/react-db @tanstack/rxdb-db-collection
+npm install rxdb rxjs @supabase/supabase-js
+npm install @tanstack/react-db @tanstack/rxdb-db-collection
 ```
 
 ### Create the RxDatabase and RxCollection

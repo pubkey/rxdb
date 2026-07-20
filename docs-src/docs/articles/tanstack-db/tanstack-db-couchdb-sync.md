@@ -100,8 +100,9 @@ const replicationState = await replicateRxCollection({
         async handler(checkpointOrNull, batchSize) {
             const updatedAt = checkpointOrNull ? checkpointOrNull.updatedAt : 0;
             const id = checkpointOrNull ? checkpointOrNull.id : '';
+            const params = `updatedAt=${updatedAt}&id=${id}&limit=${batchSize}`;
             const response = await fetch(
-                `https://example.com/pull?updatedAt=${updatedAt}&id=${id}&limit=${batchSize}`
+                `https://example.com/pull?${params}`
             );
             const data = await response.json();
             return {

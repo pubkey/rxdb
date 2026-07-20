@@ -155,7 +155,11 @@ function NoteList() {
 }
 
 // Writes are optimistic in memory and persisted to RxDB.
-notesCollection.insert({ id: 'note-1', text: 'compare PGlite and RxDB', archived: false });
+notesCollection.insert({
+    id: 'note-1',
+    text: 'compare PGlite and RxDB',
+    archived: false
+});
 notesCollection.update('note-1', (draft) => {
     draft.archived = true;
 });
