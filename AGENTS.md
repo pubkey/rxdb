@@ -43,6 +43,35 @@
 - MUST format FAQ sections using HTML `<details>` and `<summary>` tags. Ensure there is an empty line before and after the inner markdown content so it parses correctly.
 - SHOULD try to use components from the `docs-src/src/components` folder when writing docs.
 
+### Page Structure and Voice (analyzed from existing docs)
+
+The rules above are word-level constraints. The following patterns describe how existing docs pages in `docs-src/docs/` are actually structured and written. New pages SHOULD match them.
+
+**Page structure**
+- Start every page with YAML frontmatter containing `title`, `slug` (ends in `.html`), `description` (one or two SEO-oriented sentences), and `image` (`/headers/<name>.jpg`).
+- Open the body with a plain-language sentence that defines what the thing is and which problem it solves, before going into detail.
+- Use descriptive, benefit-oriented section headings ("Multi-tab usage just works", "Latency is more important than bandwidth") instead of generic labels.
+- End longer pages with a "Next steps" section that links to further docs, the example repositories, the Discord chat, the GitHub repo, and the 👑 Premium package.
+
+**Voice and sentences**
+- Write in second person ("you can", "you have to"). Use "we" for step-by-step tutorials ("here we'll learn", "now we have an RxCollection").
+- Keep sentences short and direct. Mix short statements with medium explanatory ones.
+- Explain a new concept by comparing it to a familiar one ("similar to an SQL table", "works like git").
+- Bold the key term or phrase the first time it matters (`**realtime**`, `**share the state**`).
+
+**Linking and terminology**
+- Link generously. On first mention, link each RxDB concept (RxDatabase, RxCollection, RxDocument, RxStorage, replication) to its own docs page with a relative link like `./rx-collection.md`.
+- Mark premium-only features with the 👑 emoji and link to `/premium/`.
+
+**Code examples**
+- Follow a short explanation with a minimal, runnable code block. Annotate the language (`ts`, `bash`).
+- Keep imports explicit so a reader can copy and run the example.
+
+**Components** (from `docs-src/src/components`)
+- Use `<HeadlineWithIcon h1 icon={...}>` for the page h1 with a matching icon component from `docs-src/src/components/icons`.
+- Use `<Steps>` for sequential tutorials, `<Tabs>` for alternative options (storages, frameworks, replication targets), and `<details>`/`<summary>` for FAQs.
+- Use `<RxdbLogo />` and other existing components instead of raw markup where one fits.
+
 
 
 ## Development Workflow
