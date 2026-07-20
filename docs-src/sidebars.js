@@ -604,7 +604,7 @@ const sidebars = {
           type: 'category',
           label: 'TanStack DB',
           items: [
-            'articles/rxdb-collection-for-tanstack-db'
+            'articles/tanstack-db/rxdb-collection-for-tanstack-db'
           ],
         },
         'articles/browser-database',

@@ -9,17 +9,17 @@ import {Steps} from '@site/src/components/steps';
 
 # TanStack DB + RxDB: Durable, Offline-First Persistence & Sync
 
-**TanStack DB** is a reactive client store that gives you live queries and optimistic mutations over so called collections. It keeps all data in memory, and it delegates persistence and networking to the collection type you choose. [RxDB](https://rxdb.info/) is a [local-first](./local-first-future.md) NoSQL database with durable [storage engines](../rx-storage.md) and a mature [Sync Engine](../replication.md) for replicating with any backend. The official `@tanstack/rxdb-db-collection` package connects the two: RxDB owns storage and sync, TanStack DB sits on top as the in-memory query layer. This page explains how the integration works, walks through a complete setup, and links to guides for every platform and backend.
+**TanStack DB** is a reactive client store that gives you live queries and optimistic mutations over so called collections. It keeps all data in memory, and it delegates persistence and networking to the collection type you choose. [RxDB](https://rxdb.info/) is a [local-first](../local-first-future.md) NoSQL database with durable [storage engines](../../rx-storage.md) and a mature [Sync Engine](../../replication.md) for replicating with any backend. The official `@tanstack/rxdb-db-collection` package connects the two: RxDB owns storage and sync, TanStack DB sits on top as the in-memory query layer. This page explains how the integration works, walks through a complete setup, and links to guides for every platform and backend.
 
 <RxdbLogo alt="TanStack DB RxDB collection" />
 
 ## How the Integration Works
 
-TanStack DB collections are in-memory by design. When you reload the page, the memory is gone, and TanStack DB itself does not talk to your backend. Both jobs belong to the collection implementation. The [RxDB collection](https://tanstack.com/db/latest/docs/collections/rxdb-collection) fills that role with a real database underneath: data is stored durably in [IndexedDB](../rx-storage-indexeddb.md), [OPFS](../rx-storage-opfs.md), [SQLite](../rx-storage-sqlite.md) or any other [RxStorage](../rx-storage.md), and replication runs through RxDB's [Sync Engine](../replication.md).
+TanStack DB collections are in-memory by design. When you reload the page, the memory is gone, and TanStack DB itself does not talk to your backend. Both jobs belong to the collection implementation. The [RxDB collection](https://tanstack.com/db/latest/docs/collections/rxdb-collection) fills that role with a real database underneath: data is stored durably in [IndexedDB](../../rx-storage-indexeddb.md), [OPFS](../../rx-storage-opfs.md), [SQLite](../../rx-storage-sqlite.md) or any other [RxStorage](../../rx-storage.md), and replication runs through RxDB's [Sync Engine](../../replication.md).
 
 The integration forms two independent loops:
 
-- **A durability and sync loop**, managed by RxDB. It writes documents to disk and replicates them with your backend, including retries, [conflict handling](../transactions-conflicts-revisions.md) and resuming after being offline.
+- **A durability and sync loop**, managed by RxDB. It writes documents to disk and replicates them with your backend, including retries, [conflict handling](../../transactions-conflicts-revisions.md) and resuming after being offline.
 - **A reactive UI loop**, managed by TanStack DB. It mirrors the current state of the RxDB collection in memory and runs live queries and optimistic mutations against it.
 
 Data exists in both layers on purpose. RxDB stores it durably on disk, TanStack DB holds a copy in memory for fast queries. Writes on the TanStack DB collection are persisted to RxDB, and every change in RxDB, no matter if it came from another browser tab, from replication or from direct RxDB code, streams back into the TanStack DB collection through RxDB's change feed.
@@ -28,11 +28,11 @@ Data exists in both layers on purpose. RxDB stores it durably on disk, TanStack 
 
 ### 1. Durable, Storage-Agnostic Persistence
 
-RxDB abstracts the storage layer behind the [RxStorage](../rx-storage.md) interface. The same application code runs on [localStorage](../rx-storage-localstorage.md), [IndexedDB](../rx-storage-indexeddb.md), [OPFS](../rx-storage-opfs.md) in the browser, or [SQLite](../rx-storage-sqlite.md) on [React Native](./tanstack-db-react-native.md), [Electron](./tanstack-db-electron.md) and [Capacitor](./tanstack-db-capacitor.md). Switching storages is a configuration change, not a rewrite. See [How to Persist TanStack DB to IndexedDB & OPFS](./persist-tanstack-db-indexeddb.md) for the browser setup.
+RxDB abstracts the storage layer behind the [RxStorage](../../rx-storage.md) interface. The same application code runs on [localStorage](../../rx-storage-localstorage.md), [IndexedDB](../../rx-storage-indexeddb.md), [OPFS](../../rx-storage-opfs.md) in the browser, or [SQLite](../../rx-storage-sqlite.md) on [React Native](./tanstack-db-react-native.md), [Electron](./tanstack-db-electron.md) and [Capacitor](./tanstack-db-capacitor.md). Switching storages is a configuration change, not a rewrite. See [How to Persist TanStack DB to IndexedDB & OPFS](./persist-tanstack-db-indexeddb.md) for the browser setup.
 
 ### 2. Replication with Any Backend
 
-RxDB's [Sync Engine](../replication.md) has been battle-tested for years and ships plugins for [GraphQL](./tanstack-db-graphql.md), [CouchDB](./tanstack-db-couchdb-sync.md), [Supabase](./tanstack-db-supabase-offline.md), [HTTP/REST](../replication-http.md), [Firestore](../replication-firestore.md), [MongoDB](../replication-mongodb.md) and even serverless [peer-to-peer replication over WebRTC](./tanstack-db-p2p-webrtc.md). Replication is configured on the RxDB collection and TanStack DB picks up the results automatically. The general pattern is described in [How to Sync TanStack DB with Your Backend](./sync-tanstack-db.md).
+RxDB's [Sync Engine](../../replication.md) has been battle-tested for years and ships plugins for [GraphQL](./tanstack-db-graphql.md), [CouchDB](./tanstack-db-couchdb-sync.md), [Supabase](./tanstack-db-supabase-offline.md), [HTTP/REST](../../replication-http.md), [Firestore](../../replication-firestore.md), [MongoDB](../../replication-mongodb.md) and even serverless [peer-to-peer replication over WebRTC](./tanstack-db-p2p-webrtc.md). Replication is configured on the RxDB collection and TanStack DB picks up the results automatically. The general pattern is described in [How to Sync TanStack DB with Your Backend](./sync-tanstack-db.md).
 
 ### 3. Offline-First Behavior
 
@@ -40,15 +40,15 @@ Because all reads and writes go against the local database first, the app keeps 
 
 ### 4. Multi-Tab Support
 
-When the user opens your app in multiple browser tabs, RxDB shares one durable store across them and uses [leader election](../leader-election.md) so that replication runs in exactly one tab. Changes made in one tab stream into the TanStack DB collections of all other tabs. See [Multi-Tab Sync for TanStack DB with RxDB](./tanstack-db-multi-tab.md).
+When the user opens your app in multiple browser tabs, RxDB shares one durable store across them and uses [leader election](../../leader-election.md) so that replication runs in exactly one tab. Changes made in one tab stream into the TanStack DB collections of all other tabs. See [Multi-Tab Sync for TanStack DB with RxDB](./tanstack-db-multi-tab.md).
 
 ### 5. Encryption, Migrations and Other Database Features
 
-RxDB brings features that a cache or in-memory store does not have: [encryption of local data](./tanstack-db-encryption.md), [schema migrations](../migration-schema.md) for when your data model changes, [compression](../key-compression.md), [attachments](../rx-attachment.md) and [backup](../backup.md). All of them apply to the data that backs your TanStack DB collections.
+RxDB brings features that a cache or in-memory store does not have: [encryption of local data](./tanstack-db-encryption.md), [schema migrations](../../migration-schema.md) for when your data model changes, [compression](../../key-compression.md), [attachments](../../rx-attachment.md) and [backup](../../backup.md). All of them apply to the data that backs your TanStack DB collections.
 
 ## Setup
 
-The following example builds a todo app collection. It runs in the browser with the free [localStorage-based storage](../rx-storage-localstorage.md); any other [RxStorage](../rx-storage.md) works the same way.
+The following example builds a todo app collection. It runs in the browser with the free [localStorage-based storage](../../rx-storage-localstorage.md); any other [RxStorage](../../rx-storage.md) works the same way.
 
 <Steps>
 
@@ -150,7 +150,7 @@ Mutations apply to the in-memory state instantly and are persisted to RxDB in th
 
 ### (Optional) Replicate with Your Backend
 
-Replication is set up on the RxDB collection, not on the TanStack DB collection. This example uses the generic [replication protocol](../replication.md) with custom pull and push handlers; the [GraphQL](./tanstack-db-graphql.md), [CouchDB](./tanstack-db-couchdb-sync.md) and [Supabase](./tanstack-db-supabase-offline.md) guides show ready-made plugins instead.
+Replication is set up on the RxDB collection, not on the TanStack DB collection. This example uses the generic [replication protocol](../../replication.md) with custom pull and push handlers; the [GraphQL](./tanstack-db-graphql.md), [CouchDB](./tanstack-db-couchdb-sync.md) and [Supabase](./tanstack-db-supabase-offline.md) guides show ready-made plugins instead.
 
 ```ts
 import { replicateRxCollection } from 'rxdb/plugins/replication';
@@ -190,9 +190,9 @@ Documents pulled from the backend land in RxDB and stream into the TanStack DB c
 
 `rxdbCollectionOptions()` accepts the following options:
 
-- `rxCollection` (required): The [RxCollection](../rx-collection.md) that backs this TanStack DB collection.
+- `rxCollection` (required): The [RxCollection](../../rx-collection.md) that backs this TanStack DB collection.
 - `id` (optional): Unique identifier for the collection.
-- `schema` (optional): A [Standard Schema](https://standardschema.dev/) for validation on the TanStack DB side. RxDB already validates against its [JSON schema](../rx-schema.md), so this is only useful to unify error handling across your TanStack DB collections.
+- `schema` (optional): A [Standard Schema](https://standardschema.dev/) for validation on the TanStack DB side. RxDB already validates against its [JSON schema](../../rx-schema.md), so this is only useful to unify error handling across your TanStack DB collections.
 - `startSync` (optional, default: `true`): Whether the collection starts ingesting RxDB data immediately.
 - `syncBatchSize` (optional, default: `1000`): How many documents are fetched per batch during the initial load from RxDB into memory. Larger values mean fewer round trips to the storage but more memory per batch. This only affects the initial load; ongoing changes are streamed one by one through RxDB's change feed.
 
@@ -209,7 +209,7 @@ TanStack DB is not helpless without RxDB, and it would be dishonest to claim oth
 
 When your app only needs to survive a reload on one platform, or when you are already committed to Electric or PowerSync as a sync service, those options are a good fit and you do not need RxDB.
 
-The RxDB collection is the better choice when you want a full database under your store: one storage abstraction across browser, mobile and desktop, replication that works with [any backend](./sync-tanstack-db.md) instead of a specific sync service, [multi-tab](./tanstack-db-multi-tab.md) leader election, [encryption](./tanstack-db-encryption.md), [conflict resolution](./tanstack-db-conflict-resolution.md) and [schema migrations](../migration-schema.md). You also keep direct access to the underlying RxDB collection for indexed queries and [partial sync](../partial-sync.md) of large datasets.
+The RxDB collection is the better choice when you want a full database under your store: one storage abstraction across browser, mobile and desktop, replication that works with [any backend](./sync-tanstack-db.md) instead of a specific sync service, [multi-tab](./tanstack-db-multi-tab.md) leader election, [encryption](./tanstack-db-encryption.md), [conflict resolution](./tanstack-db-conflict-resolution.md) and [schema migrations](../../migration-schema.md). You also keep direct access to the underlying RxDB collection for indexed queries and [partial sync](../../partial-sync.md) of large datasets.
 
 ## All TanStack DB + RxDB Guides
 
@@ -248,42 +248,42 @@ The RxDB collection is the better choice when you want a full database under you
 <details>
     <summary>Does TanStack DB persist data on its own?</summary>
 
-No. TanStack DB keeps collection data in memory and delegates persistence to the collection implementation. TanStack ships SQLite persistence adapters for some platforms, and the **[RxDB collection](https://tanstack.com/db/latest/docs/collections/rxdb-collection)** persists data through any [RxStorage](../rx-storage.md) like IndexedDB, OPFS or SQLite.
+No. TanStack DB keeps collection data in memory and delegates persistence to the collection implementation. TanStack ships SQLite persistence adapters for some platforms, and the **[RxDB collection](https://tanstack.com/db/latest/docs/collections/rxdb-collection)** persists data through any [RxStorage](../../rx-storage.md) like IndexedDB, OPFS or SQLite.
 
 </details>
 
 <details>
     <summary>Is data duplicated between RxDB and TanStack DB?</summary>
 
-Yes, intentionally. RxDB stores the data durably on disk while TanStack DB holds an in-memory copy for fast live queries. This duplication is what makes UI queries instant while keeping **[local-first](./local-first-future.md)** persistence and sync.
+Yes, intentionally. RxDB stores the data durably on disk while TanStack DB holds an in-memory copy for fast live queries. This duplication is what makes UI queries instant while keeping **[local-first](../local-first-future.md)** persistence and sync.
 
 </details>
 
 <details>
     <summary>Do I still need RxDB indexes when I only query through TanStack DB?</summary>
 
-Usually not. TanStack DB queries run entirely in memory, so RxDB indexes do not affect them. Indexes still matter when you query the **[RxCollection](../rx-collection.md)** directly, when replication uses filtered selectors, or when you load only a subset of the data into memory.
+Usually not. TanStack DB queries run entirely in memory, so RxDB indexes do not affect them. Indexes still matter when you query the **[RxCollection](../../rx-collection.md)** directly, when replication uses filtered selectors, or when you load only a subset of the data into memory.
 
 </details>
 
 <details>
     <summary>Does the RxDB collection work with Vue, Solid, Svelte or Angular?</summary>
 
-Yes. The `rxdbCollectionOptions()` function targets the framework-independent collection API of TanStack DB, so it works with every official framework binding. Only the `useLiveQuery` import changes, for example to `@tanstack/vue-db`. **[RxDB](../rx-database.md)** itself is framework-agnostic as well.
+Yes. The `rxdbCollectionOptions()` function targets the framework-independent collection API of TanStack DB, so it works with every official framework binding. Only the `useLiveQuery` import changes, for example to `@tanstack/vue-db`. **[RxDB](../../rx-database.md)** itself is framework-agnostic as well.
 
 </details>
 
 <details>
     <summary>Which RxDB version do I need?</summary>
 
-The `@tanstack/rxdb-db-collection` package requires `rxdb` version `16.17.2` or later as a peer dependency. No extra RxDB plugin is needed; the integration builds on the public **[RxCollection](../rx-collection.md)** API.
+The `@tanstack/rxdb-db-collection` package requires `rxdb` version `16.17.2` or later as a peer dependency. No extra RxDB plugin is needed; the integration builds on the public **[RxCollection](../../rx-collection.md)** API.
 
 </details>
 
 ## Follow Up
 
 - Read the official [RxDB collection documentation](https://tanstack.com/db/latest/docs/collections/rxdb-collection) at TanStack.
-- Start with the [RxDB Quickstart](../quickstart.md).
-- Learn how the [RxDB Sync Engine](../replication.md) replicates with any backend.
+- Start with the [RxDB Quickstart](../../quickstart.md).
+- Learn how the [RxDB Sync Engine](../../replication.md) replicates with any backend.
 - Check out the [RxDB GitHub repository](/code/) and leave a star ⭐.
 - Join the [RxDB Discord](/chat/) to discuss your setup.
