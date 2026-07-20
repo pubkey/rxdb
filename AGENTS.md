@@ -75,7 +75,7 @@ The docs have one dominant authorial voice: the maintainer, a German native spea
 - Present tense. Imperative for steps. Benchmark-empiricist stance: every claim invites verification ("You can reproduce all performance tests in this repo", "(lower is better)").
 - Be fair to competitors: name what they do well before explaining their limits, link to their official site, and include a section on when the competitor is still the right choice.
 - Be honest about RxDB tradeoffs: Pros/Cons pairs, Limitations sections, and "when not to use this" notes are a house signature.
-- Back claims with specifics: concrete numbers ("saves up to 40% disc space", "3x-4x faster compared to IndexedDB"), dates, named users, GitHub issue links, and links to `rx-storage-performance.md` or benchmark repos. If no numbers exist, keep performance claims qualitative and add a link.
+- Back claims with specifics: concrete numbers ("saves up to 40% disk space", "3x-4x faster compared to IndexedDB"), dates, named users, GitHub issue links, and links to `rx-storage-performance.md` or benchmark repos. If no numbers exist, keep performance claims qualitative and add a link.
 - Humor is dry, deadpan, and rare: state the naive solution, then refute it with facts ("Well, IndexedDB was slow in 2013 and it is still slow today. Waiting is not an option."). Playful code examples are welcome (heroes schema, 'foobar', Alice and Bob, "console.log('Long lives the king!')"). No jokes in reference sections.
 - Direct reader involvement is allowed in articles: blunt commands, "Count them, I will wait..", "you did something wrong". Use sparingly.
 
@@ -197,7 +197,7 @@ Do not reproduce (authentic errors in old pages; write the correct form):
 - RxDB terms: RxDatabase, RxCollection, RxDocument, RxQuery, RxSchema, RxStorage, RxState, and "Sync Engine" (capitalized, linked to `./replication.md`).
 - "local-first" and "offline-first" are hyphenated and lowercase in prose, capitalized as "Local-First"/"Offline-First" in headings and bullet labels. Prefer "local-first" in new pages and link it to `./articles/local-first-future.md` or `./offline-first.md`.
 - "realtime" is written as one word in prose ("realtime replication", "realtime database"); "Real-Time" appears in titles and subtitles. Do not write "real time" as two unhyphenated words.
-- The author writes "disc" for persistence ("saves to disc", "disc space") in most storage pages; this is a corpus-wide quirk. Prefer "disk" in new pages but do not "fix" existing occurrences in unrelated edits.
+- Always write "disk" for hard drive storage ("saves to disk", "disk space"). Older pages contain the misspelling "disc"; do not copy it, and correct it to "disk" when you edit a passage that contains it.
 - Numbers: backticked shorthand for counts and limits (`10k` documents, `2k`), bold for percentages ("**43%** faster"), US date format ("May 1, 2027"), period as decimal separator, comma as thousands separator.
 - RxDB one-liner for "What is RxDB" sections: "RxDB (Reactive Database) is a local-first, NoSQL database for JavaScript applications". Follow with the runtime list: browser, Node.js, Electron, React Native, Capacitor, Deno, and Bun.
 - Query language is described as "MongoDB-style (Mango) queries".
