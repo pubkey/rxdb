@@ -89,21 +89,24 @@ function postToWorker(path: string, payload: any) {
 }
 
 /**
- * Sends every tracking event to the conversion worker:
- * - to /api/google-ads when an ad click id is stored, so Google Ads can
- *   import the event as an offline conversion (which event names count, and
- *   whether they are primary or secondary, is decided in Google Ads by which
- *   conversion actions exist),
- * - to /api/google-analytics when no google-analytics cookie exists (gtag
- *   blocked or never loaded), so the worker forwards the event to the GA4
- *   Measurement Protocol. Users with a _ga cookie already report via gtag;
- *   skipping them here prevents double counting.
+ * Sends every tracking event to the conversion worker. The paths are neutral
+ * slugs (/api/gads, /api/glytics) on purpose: the worker is on a workers.dev
+ * URL, so the path is the only thing an ad blocker can match, and the literal
+ * strings "google-ads"/"google-analytics" are exactly what blocklists look
+ * for, which would drop these beacons for the ad-blocking part of our
+ * audience (the users this worker exists to recover).
+ * - to /api/gads when an ad click id is stored, so Google Ads can import the
+ *   event as an offline conversion,
+ * - to /api/glytics when no google-analytics cookie exists (gtag blocked or
+ *   never loaded), so the worker forwards the event to the GA4 Measurement
+ *   Protocol. Users with a _ga cookie already report via gtag; skipping them
+ *   here prevents double counting.
  */
 function sendToConversionWorker(type: string, value: number) {
     try {
         const adClick = getStoredAdClickId();
         if (adClick) {
-            postToWorker('/api/google-ads', {
+            postToWorker('/api/gads', {
                 type,
                 value,
                 clid: adClick.v,
@@ -111,7 +114,7 @@ function sendToConversionWorker(type: string, value: number) {
             });
         }
         if (!document.cookie.includes('_ga=')) {
-            postToWorker('/api/google-analytics', {
+            postToWorker('/api/glytics', {
                 type,
                 value,
                 cid: getOrMintClientId(),
