@@ -34172,7 +34172,7 @@ Notice that I use major releases to bundle stuff that breaks the RxDB usage in y
 
 In the past, RxDB was build around Pouchdb. Before I started making RxDB I tried to solve the problems of my current project with other existing databases out there. I evaluated all of them and then started using Pouchdb and added many features via plugin. Then I realised it will be easier to create a separate project that wraps around Pouchdb, that was RxDB. Back then pouchdb was the most major browser database out there and it was well maintained and had a big community.
 But in the last 5 years, things have changed. A big part of the RxDB users do not use couchdb in the backend and do not need the couchdb [replication](../replication.md).
-Therefore they do not really need the overhead with revision handling that slows down the performance of pouchdb. Also there where many other problems with using pouchdb. It is not actively developed, many bugs are not fixed and no new features get added. Also there are many unsolved problems like how to finally delete document data or how to replicate more than 6 databases at the same time, how to use replication without [attachments](../rx-attachment.md) data, and so on...
+Therefore they do not really need the overhead with revision handling that slows down the performance of pouchdb. Also there were many other problems with using pouchdb. It is not actively developed, many bugs are not fixed and no new features get added. Also there are many unsolved problems like how to finally delete document data or how to replicate more than 6 databases at the same time, how to use replication without [attachments](../rx-attachment.md) data, and so on...
 
 So for this release, I abstracted all parts that we use from pouchdb into the `RxStorage` interface. RxDB works on top of any implementation of the `RxStorage` interface. This means it is now possible to use RxDB together with other underlying storages like SQLite, PostgreSQL, Minimongo, MongoDB, and so on, as long as someone writes the `RxStorage` class for it.
 
@@ -34359,7 +34359,7 @@ With these changes, RxDB is now ready for the future plans:
 There are many things that can be done by **you** to improve RxDB:
 
 - Check the [BACKLOG](https://github.com/pubkey/rxdb/blob/master/orga/BACKLOG.md) for features that would be great to have.
-- Check the [breaking backlog](https://github.com/pubkey/rxdb/blob/master/orga/before-next-major.md) for breaking changes that must be implemented in the future but where I did not had the time yet.
+- Check the [breaking backlog](https://github.com/pubkey/rxdb/blob/master/orga/before-next-major.md) for breaking changes that must be implemented in the future but where I did not have the time yet.
 - Check the [todos](https://github.com/pubkey/rxdb/search?q=todo) in the code. There are many small improvements that can be done for performance and build size.
 - Review the code and add tests. I am only a single dude with a laptop. My code is not perfect and much small improvements can be done when people review the code and help me to clarify undefined behaviors.
 - Improve the documentation. In the last user survey many users told me that the documentation is not good enough. But I reviewed the docs and could not find clear flaws. The problem is that I am way to deep into RxDB so that I am not able to understand which documentation a newcomer to the project needs. Likely I assume too much knowledge or focus writing about the wrong parts.
@@ -34460,7 +34460,7 @@ The migration should be pretty easy. Nothing in the datalayer has been changed, 
 There are many things that can be done by **you** to improve RxDB:
 
 - Check the [BACKLOG](https://github.com/pubkey/rxdb/blob/master/orga/BACKLOG.md) for features that would be great to have.
-- Check the [breaking backlog](https://github.com/pubkey/rxdb/blob/master/orga/before-next-major.md) for breaking changes that must be implemented in the future but where I did not had the time yet.
+- Check the [breaking backlog](https://github.com/pubkey/rxdb/blob/master/orga/before-next-major.md) for breaking changes that must be implemented in the future but where I did not have the time yet.
 - Check the [todos](https://github.com/pubkey/rxdb/search?q=todo) in the code. There are many small improvements that can be done for performance and build size.
 - Review the code and add tests. I am only a single human with a laptop. My code is not perfect and much small improvements can be done when people review the code and help me to clarify undefined behaviors.
 - Improve the documentation. In the last user survey many users told me that the documentation is not good enough. But I reviewed the docs and could not find clear flaws. The problem is that I am way to deep into RxDB so that I am not able to understand which documentation a newcomer to the project needs. Likely I assume too much knowledge or focus writing about the wrong parts.
@@ -34535,7 +34535,7 @@ const queryResults = await myCollection
 For various performance optimizations, like the [EventReduce](https://github.com/pubkey/event-reduce) algorithm, RxDB needs a **deterministic sort order** for all query results.
 To ensure a deterministic sorting, RxDB now automatically adds the primary key as last sort attribute to every query, if it is not there already. This ensures that all documents that have the same attributes on all query relevant fields, still can be sorted in a deterministic way, not depending on which was written first to the database.
 
-In the past, this often lead to slow queries, because indexes where not constructed with that in mind.
+In the past, this often lead to slow queries, because indexes were not constructed with that in mind.
 Now RxDB will add the `primaryKey` to all indexes that do not contain it already.
 If you have any collection with a custom index set, you need to run a [migration](https://rxdb.info/migration-schema.html) when updating to RxDB version `12.0.0` so that RxDB can rebuild the indexes.
 
@@ -34604,7 +34604,7 @@ For every other RxStorage implementation, it does not really matter if documents
 
 ## Refactor plugin hooks
 
-In the past, an `RxPlugin` could add plugins hooks which where always added as last.
+In the past, an `RxPlugin` could add plugins hooks which were always added as last.
 This meant that some plugins depended on having the correct order when calling `addRxPlugin()`.
 Now each plugin hook can be either defined as `before` or `after` to specify at which position of the current hooks
 the new hook must be added.
@@ -35461,7 +35461,7 @@ There are many things that can be done by **you** to improve RxDB:
 
 # 8.0.0
 
-When I created RxDB, two years ago, there where some things that I did not consider and other things that I just decided wrong.
+When I created RxDB, two years ago, there were some things that I did not consider and other things that I just decided wrong.
 With the breaking version `8.0.0` I rewrote some parts of RxDB and changed the API a bit. The focus laid on **better defaults** and **better performance**.
 
 ## disableKeyCompression by default
@@ -35488,7 +35488,7 @@ But there was the problem that we have no weak pointers in javascript and theref
 
 ## middleware-hooks contain plain json as first parameter and RxDocument as second
 
-When the [middleware](../middleware.md)-hooks where created, the goal was to work equal then [mongoose](http://mongoosejs.com/docs/middleware.html). But this is not possible because mongoose is more 'static' and its documents never change their attributes. RxDB is a reactive database and when the state on disc changes, the attributes of the document also change. This caused some undefined behavior especially with async middleware-hooks. To solve this, hooks now can only modify the plain data, not the `RxDocument` itself.
+When the [middleware](../middleware.md)-hooks were created, the goal was to work equal then [mongoose](http://mongoosejs.com/docs/middleware.html). But this is not possible because mongoose is more 'static' and its documents never change their attributes. RxDB is a reactive database and when the state on disc changes, the attributes of the document also change. This caused some undefined behavior especially with async middleware-hooks. To solve this, hooks now can only modify the plain data, not the `RxDocument` itself.
 
 ```javascript
 myCollection.preSave(function(data, rxDocument) {
@@ -35520,7 +35520,7 @@ console.dir(db);
 
 ## Reuse an RxDocument-prototype per collection instead of adding getters/setters to each document
 
-Because the fields of an `RxDocument` are defined dynamically by the schema and we could not use the `Proxy`-Object because it is not supported in IE11, there was one workaround used: Each time a document is created, all getters and setters where applied on it. This was expensive and now we use a different approach.
+Because the fields of an `RxDocument` are defined dynamically by the schema and we could not use the `Proxy`-Object because it is not supported in IE11, there was one workaround used: Each time a document is created, all getters and setters were applied on it. This was expensive and now we use a different approach.
 Once per collection, a custom [RxDocument](../rx-document.md)-prototype and constructor is created and each RxDocument of this collection is created with the constructor. This change is a rewrite internally and should not change anything for RxDB-users. If you use RxDB with vuejs, you might get some problems that can be fixed by upgrading vuejs to the latest version.
 
 ## Rewritten the inMemory-plugin
