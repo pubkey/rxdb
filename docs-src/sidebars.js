@@ -600,6 +600,13 @@ const sidebars = {
       type: 'category',
       label: 'Articles',
       items: [
+        {
+          type: 'category',
+          label: 'TanStack DB',
+          items: [
+            'articles/rxdb-collection-for-tanstack-db'
+          ],
+        },
         'articles/browser-database',
         'articles/local-first-future',
         'why-nosql',
