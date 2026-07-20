@@ -1,5 +1,5 @@
 ---
-title: TanStack DB + RxDB: Durable, Offline-First Persistence & Sync
+title: 'TanStack DB + RxDB: Durable, Offline-First Persistence & Sync'
 slug: rxdb-collection-for-tanstack-db.html
 description: Add durable offline storage and real backend sync to TanStack DB with the official RxDB collection. See how to wire RxDB under TanStack DB's live queries.
 image: /headers/rxdb-collection-for-tanstack-db.jpg
