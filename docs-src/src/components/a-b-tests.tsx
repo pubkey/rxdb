@@ -1,4 +1,4 @@
-import { randomNumber, randomOfArray } from '../../../plugins/utils';
+import { randomOfArray } from '../../../plugins/utils';
 import { getUtmCampaign, SEM_VARIATION_STORAGE_PREFIX } from './trigger-event';
 // import { HeroEmojiChat } from './hero-section/T4_hero_b';
 // import { ReplicationDiagram } from './replication-diagram';
@@ -105,10 +105,16 @@ export function ABTestContent(
  * randomly per visitor and stores the choice in localStorage so that the
  * visitor always sees the same variation on later visits.
  *
+ * Variations are identified by stable letter keys ('a', 'b', 'c', …), NOT by
+ * their position in an array: a letter keeps its meaning when variations are
+ * added or removed later, so stored assignments and GA events stay comparable
+ * over time. When a page adds a variation it uses the next unused letter;
+ * a removed variation's letter is retired, never re-assigned.
+ *
  * The variation is keyed off the utm_campaign of the ad click (our ad final
  * URLs carry the full utm parameter set), so every sem page of the same
- * campaign shows the same variation index and the tracking events can carry
- * it in their utm-based prefix, e.g. "utm_indexeddb_v2_join_newsletter"
+ * campaign shows the same variation letter and the tracking events can carry
+ * it in their utm-based prefix, e.g. "utm_indexeddb_va_join_newsletter"
  * (see getUtmEventPrefix() in trigger-event.tsx). Visitors without a stored
  * campaign (organic traffic) share the 'organic' key - their variation stays
  * stable too, it is just not attributed to any campaign.
@@ -118,30 +124,33 @@ export function ABTestContent(
  * that could go stale on client side navigations (docusaurus is a SPA) or
  * when a dev server keeps the module alive via hot module replacement.
  */
-export function getSemVariation(variationCount: number): number {
-    if (variationCount <= 1) {
-        return 0;
+export function getSemVariation(variationKeys: string[]): string {
+    const fallback = variationKeys[0];
+    if (variationKeys.length <= 1) {
+        return fallback;
     }
 
     // server side rendering always uses the first variation
     if (typeof localStorage === 'undefined') {
-        return 0;
+        return fallback;
     }
 
     const campaign = getUtmCampaign();
     const storageId = SEM_VARIATION_STORAGE_PREFIX + (campaign ? campaign : 'organic');
-    let index: number;
+    let key: string;
     const fromStorage = localStorage.getItem(storageId);
-    if (fromStorage !== null && !isNaN(parseInt(fromStorage, 10))) {
-        index = parseInt(fromStorage, 10);
+    if (fromStorage !== null && variationKeys.includes(fromStorage)) {
+        key = fromStorage;
     } else {
-        index = randomNumber(0, variationCount - 1);
-        localStorage.setItem(storageId, index + '');
-    }
-    if (index < 0 || index >= variationCount) {
-        index = 0;
+        /**
+         * Either no assignment yet, or the stored variation has been removed
+         * from the page since (or is a numeric index from the pre-letter
+         * system) - assign a fresh one.
+         */
+        key = randomOfArray(variationKeys);
+        localStorage.setItem(storageId, key);
     }
 
-    console.log('currentSemVariation: ' + storageId + ' -> ' + index);
-    return index;
+    console.log('currentSemVariation: ' + storageId + ' -> ' + key);
+    return key;
 }

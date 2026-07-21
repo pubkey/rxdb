@@ -8,57 +8,64 @@ import { getSemVariation } from '../../components/a-b-tests';
  * The variation is picked randomly per visitor and kept stable via localStorage.
  */
 
-const titles = [
-    <>{/* variation 0 */}Stranded by a <b>Deprecated</b> Sync Service?</>,
-    <>{/* variation 1 */}Never Get <b>Locked Into</b> a Sync Cloud Again</>,
-    <>{/* variation 2 */}One <b>Database</b> for Web, Mobile and Desktop</>
-];
-
-const texts = [
-    <>When a managed sync service shuts down, the local database keeps working but your realtime sync is gone. RxDB restores it: local NoSQL storage plus replication to a backend you control.</>,
-    <>RxDB is open source and backend-agnostic. Sync over HTTP, WebSocket or GraphQL to infrastructure you own, with no per-device pricing and no proprietary service that can be discontinued.</>,
-    <>Native mobile databases leave the browser behind. RxDB runs the same code in React Native, the web, Electron and Node.js, so one data layer serves every platform you ship to.</>
-];
-
-const bulletpoints = [
-    [
-        <>Realtime two-way sync restored</>,
-        <>Keep working fully offline</>,
-        <>Your backend, your rules</>,
-        <>Clear migration documentation</>
-    ],
-    [
-        <>No proprietary sync cloud</>,
-        <>No per-device pricing</>,
-        <>Open source, auditable code</>,
-        <>Backend-agnostic replication</>
-    ],
-    [
-        <>Full browser support</>,
-        <>React Native and Capacitor</>,
-        <>Electron and Node.js</>,
-        <>One API on every platform</>
-    ]
-];
+/**
+ * The a/b test variations, identified by stable letter keys - NOT by array
+ * position. Letters keep their meaning when variations are added or removed
+ * later: use the next unused letter for a new variation, retire the letter
+ * of a removed one and never re-assign it to different copy.
+ */
+const variations = {
+    a: {
+        title: <>Stranded by a <b>Deprecated</b> Sync Service?</>,
+        text: <>When a managed sync service shuts down, the local database keeps working but your realtime sync is gone. RxDB restores it: local NoSQL storage plus replication to a backend you control.</>,
+        bulletpoints: [
+            <>Realtime two-way sync restored</>,
+            <>Keep working fully offline</>,
+            <>Your backend, your rules</>,
+            <>Clear migration documentation</>
+        ]
+    },
+    b: {
+        title: <>Never Get <b>Locked Into</b> a Sync Cloud Again</>,
+        text: <>RxDB is open source and backend-agnostic. Sync over HTTP, WebSocket or GraphQL to infrastructure you own, with no per-device pricing and no proprietary service that can be discontinued.</>,
+        bulletpoints: [
+            <>No proprietary sync cloud</>,
+            <>No per-device pricing</>,
+            <>Open source, auditable code</>,
+            <>Backend-agnostic replication</>
+        ]
+    },
+    c: {
+        title: <>One <b>Database</b> for Web, Mobile and Desktop</>,
+        text: <>Native mobile databases leave the browser behind. RxDB runs the same code in React Native, the web, Electron and Node.js, so one data layer serves every platform you ship to.</>,
+        bulletpoints: [
+            <>Full browser support</>,
+            <>React Native and Capacitor</>,
+            <>Electron and Node.js</>,
+            <>One API on every platform</>
+        ]
+    }
+};
 
 export default function Page() {
     /**
-     * Render the first variation on the server and on the first client render
+     * Render variation "a" on the server and on the first client render
      * to avoid a hydration mismatch, then swap to the assigned variation.
      */
-    const [variation, setVariation] = useState(0);
+    const [variationKey, setVariationKey] = useState('a');
     useEffect(() => {
-        setVariation(getSemVariation(titles.length));
+        setVariationKey(getSemVariation(Object.keys(variations)));
     }, []);
+    const variation = variations[variationKey as keyof typeof variations] ?? variations.a;
 
     return Home({
         sem: {
             id: 'gads',
             metaTitle: 'RxDB: Replace Your Deprecated Mobile Sync Stack',
             appName: 'React Native',
-            title: titles[variation],
-            text: texts[variation],
-            bulletpoints: bulletpoints[variation]
+            title: variation.title,
+            text: variation.text,
+            bulletpoints: variation.bulletpoints
         }
     });
 }

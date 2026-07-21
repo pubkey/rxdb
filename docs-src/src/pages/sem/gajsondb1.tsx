@@ -8,56 +8,63 @@ import { getSemVariation } from '../../components/a-b-tests';
  * The variation is picked randomly per visitor and kept stable via localStorage.
  */
 
-const titles = [
-    <>{/* variation 0 */}The Local-First <b>Database</b> for JavaScript Apps</>,
-    <>{/* variation 1 */}The <b>JSON Database</b> Built for JavaScript</>,
-    <>{/* variation 2 */}Instant Queries on <b>JSON Documents</b></>
-];
-
-const texts = [
-    <>RxDB is a NoSQL database for JavaScript that runs directly in your app. With a local-first design, it delivers zero-latency queries even offline, and syncs seamlessly with any backend.</>,
-    <>RxDB is a NoSQL database that stores your data as plain JSON documents. Query them with a Mongo-like syntax, observe changes in realtime and keep your app state JSON from the UI to storage to your backend.</>,
-    <>RxDB runs inside your app and answers JSON queries with zero network latency. Your documents stay available offline and your UI updates the moment the data changes.</>
-];
-
-const bulletpoints = [
-    [
-        <>Build apps that work offline</>,
-        <>Sync with any Backend</>,
-        <>Observable Realtime Queries</>,
-        <>All JavaScript Runtimes Supported</>
-    ],
-    [
-        <>Plain JSON documents</>,
-        <>Mongo-like query syntax</>,
-        <>Realtime observable queries</>,
-        <>Free and open source</>
-    ],
-    [
-        <>Zero-latency local reads</>,
-        <>Works fully offline</>,
-        <>Indexes for fast JSON queries</>,
-        <>Live UI updates</>
-    ]
-];
+/**
+ * The a/b test variations, identified by stable letter keys - NOT by array
+ * position. Letters keep their meaning when variations are added or removed
+ * later: use the next unused letter for a new variation, retire the letter
+ * of a removed one and never re-assign it to different copy.
+ */
+const variations = {
+    a: {
+        title: <>The Local-First <b>Database</b> for JavaScript Apps</>,
+        text: <>RxDB is a NoSQL database for JavaScript that runs directly in your app. With a local-first design, it delivers zero-latency queries even offline, and syncs seamlessly with any backend.</>,
+        bulletpoints: [
+            <>Build apps that work offline</>,
+            <>Sync with any Backend</>,
+            <>Observable Realtime Queries</>,
+            <>All JavaScript Runtimes Supported</>
+        ]
+    },
+    b: {
+        title: <>The <b>JSON Database</b> Built for JavaScript</>,
+        text: <>RxDB is a NoSQL database that stores your data as plain JSON documents. Query them with a Mongo-like syntax, observe changes in realtime and keep your app state JSON from the UI to storage to your backend.</>,
+        bulletpoints: [
+            <>Plain JSON documents</>,
+            <>Mongo-like query syntax</>,
+            <>Realtime observable queries</>,
+            <>Free and open source</>
+        ]
+    },
+    c: {
+        title: <>Instant Queries on <b>JSON Documents</b></>,
+        text: <>RxDB runs inside your app and answers JSON queries with zero network latency. Your documents stay available offline and your UI updates the moment the data changes.</>,
+        bulletpoints: [
+            <>Zero-latency local reads</>,
+            <>Works fully offline</>,
+            <>Indexes for fast JSON queries</>,
+            <>Live UI updates</>
+        ]
+    }
+};
 
 export default function Page() {
     /**
-     * Render the first variation on the server and on the first client render
+     * Render variation "a" on the server and on the first client render
      * to avoid a hydration mismatch, then swap to the assigned variation.
      */
-    const [variation, setVariation] = useState(0);
+    const [variationKey, setVariationKey] = useState('a');
     useEffect(() => {
-        setVariation(getSemVariation(titles.length));
+        setVariationKey(getSemVariation(Object.keys(variations)));
     }, []);
+    const variation = variations[variationKey as keyof typeof variations] ?? variations.a;
 
     return Home({
         sem: {
             id: 'gads',
             metaTitle: 'RxDB: The JSON Database for JavaScript Apps',
-            title: titles[variation],
-            text: texts[variation],
-            bulletpoints: bulletpoints[variation]
+            title: variation.title,
+            text: variation.text,
+            bulletpoints: variation.bulletpoints
         }
     });
 }

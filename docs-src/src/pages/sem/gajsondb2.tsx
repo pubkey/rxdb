@@ -8,56 +8,63 @@ import { getSemVariation } from '../../components/a-b-tests';
  * The variation is picked randomly per visitor and kept stable via localStorage.
  */
 
-const titles = [
-    <>{/* variation 0 */}The NoSQL <b>JSON Database</b> With Schemas</>,
-    <>{/* variation 1 */}An Open-Source <b>JSON Database</b> You Can Self-Host</>,
-    <>{/* variation 2 */}The Reactive <b>JSON Database</b> for Your Framework</>
-];
-
-const texts = [
-    <>RxDB validates every document against your JSON Schema and ships full TypeScript typings. You get NoSQL flexibility without the anything goes chaos, plus versioned migrations when your data model evolves.</>,
-    <>RxDB's core is free and open source. Replicate JSON documents to your own servers over HTTP, WebSocket or GraphQL: no proprietary cloud, no per-read pricing, no lock-in.</>,
-    <>RxDB's observable queries re-render your React, Angular, Vue or Svelte components whenever a JSON document changes. One database, every JavaScript runtime: browser, Node.js, Electron and mobile.</>
-];
-
-const bulletpoints = [
-    [
-        <>JSON Schema validation</>,
-        <>First-class TypeScript support</>,
-        <>Versioned schema migrations</>,
-        <>NoSQL query engine</>
-    ],
-    [
-        <>Free, open-source core</>,
-        <>Self-hostable replication</>,
-        <>Runs on IndexedDB, OPFS or SQLite</>,
-        <>No vendor lock-in</>
-    ],
-    [
-        <>Bindings for major frameworks</>,
-        <>Observable realtime queries</>,
-        <>Browser, Node.js and mobile</>,
-        <>Sync with any backend</>
-    ]
-];
+/**
+ * The a/b test variations, identified by stable letter keys - NOT by array
+ * position. Letters keep their meaning when variations are added or removed
+ * later: use the next unused letter for a new variation, retire the letter
+ * of a removed one and never re-assign it to different copy.
+ */
+const variations = {
+    a: {
+        title: <>The NoSQL <b>JSON Database</b> With Schemas</>,
+        text: <>RxDB validates every document against your JSON Schema and ships full TypeScript typings. You get NoSQL flexibility without the anything goes chaos, plus versioned migrations when your data model evolves.</>,
+        bulletpoints: [
+            <>JSON Schema validation</>,
+            <>First-class TypeScript support</>,
+            <>Versioned schema migrations</>,
+            <>NoSQL query engine</>
+        ]
+    },
+    b: {
+        title: <>An Open-Source <b>JSON Database</b> You Can Self-Host</>,
+        text: <>RxDB's core is free and open source. Replicate JSON documents to your own servers over HTTP, WebSocket or GraphQL: no proprietary cloud, no per-read pricing, no lock-in.</>,
+        bulletpoints: [
+            <>Free, open-source core</>,
+            <>Self-hostable replication</>,
+            <>Runs on IndexedDB, OPFS or SQLite</>,
+            <>No vendor lock-in</>
+        ]
+    },
+    c: {
+        title: <>The Reactive <b>JSON Database</b> for Your Framework</>,
+        text: <>RxDB's observable queries re-render your React, Angular, Vue or Svelte components whenever a JSON document changes. One database, every JavaScript runtime: browser, Node.js, Electron and mobile.</>,
+        bulletpoints: [
+            <>Bindings for major frameworks</>,
+            <>Observable realtime queries</>,
+            <>Browser, Node.js and mobile</>,
+            <>Sync with any backend</>
+        ]
+    }
+};
 
 export default function Page() {
     /**
-     * Render the first variation on the server and on the first client render
+     * Render variation "a" on the server and on the first client render
      * to avoid a hydration mismatch, then swap to the assigned variation.
      */
-    const [variation, setVariation] = useState(0);
+    const [variationKey, setVariationKey] = useState('a');
     useEffect(() => {
-        setVariation(getSemVariation(titles.length));
+        setVariationKey(getSemVariation(Object.keys(variations)));
     }, []);
+    const variation = variations[variationKey as keyof typeof variations] ?? variations.a;
 
     return Home({
         sem: {
             id: 'gads',
             metaTitle: 'RxDB: Open-Source NoSQL JSON Database for JavaScript',
-            title: titles[variation],
-            text: texts[variation],
-            bulletpoints: bulletpoints[variation]
+            title: variation.title,
+            text: variation.text,
+            bulletpoints: variation.bulletpoints
         }
     });
 }

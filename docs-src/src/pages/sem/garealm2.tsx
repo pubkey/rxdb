@@ -8,57 +8,64 @@ import { getSemVariation } from '../../components/a-b-tests';
  * The variation is picked randomly per visitor and kept stable via localStorage.
  */
 
-const titles = [
-    <>{/* variation 0 */}The <b>Local-First</b> Database for <b>JavaScript</b> Apps</>,
-    <>{/* variation 1 */}An <b>Open-Source</b> Database You Can <b>Self-Host</b></>,
-    <>{/* variation 2 */}Built for <b>Production</b> <b>Offline-First</b> Apps</>
-];
-
-const texts = [
-    <>RxDB is a NoSQL database for JavaScript and TypeScript. It runs in React Native, Capacitor, browsers, Electron and Node.js, with observable queries that update your UI in realtime.</>,
-    <>RxDB's core is free and open source. Replication runs over HTTP, WebSocket or GraphQL against your own backend: no proprietary sync cloud, no per-device pricing, no lock-in.</>,
-    <>RxDB ships what a production migration needs: JSON schema validation, data migrations, conflict resolution, encryption and multi-tab support, proven in years of production use.</>
-];
-
-const bulletpoints = [
-    [
-        <>First-class TypeScript support</>,
-        <>React Native and Expo ready</>,
-        <>Observable realtime queries</>,
-        <>NoSQL JSON documents</>
-    ],
-    [
-        <>Free, open-source core</>,
-        <>Self-hostable replication</>,
-        <>Works with any backend</>,
-        <>No vendor lock-in</>
-    ],
-    [
-        <>Schema validation and migrations</>,
-        <>Conflict resolution built in</>,
-        <>Encryption plugin available</>,
-        <>Battle-tested sync protocol</>
-    ]
-];
+/**
+ * The a/b test variations, identified by stable letter keys - NOT by array
+ * position. Letters keep their meaning when variations are added or removed
+ * later: use the next unused letter for a new variation, retire the letter
+ * of a removed one and never re-assign it to different copy.
+ */
+const variations = {
+    a: {
+        title: <>The <b>Local-First</b> Database for <b>JavaScript</b> Apps</>,
+        text: <>RxDB is a NoSQL database for JavaScript and TypeScript. It runs in React Native, Capacitor, browsers, Electron and Node.js, with observable queries that update your UI in realtime.</>,
+        bulletpoints: [
+            <>First-class TypeScript support</>,
+            <>React Native and Expo ready</>,
+            <>Observable realtime queries</>,
+            <>NoSQL JSON documents</>
+        ]
+    },
+    b: {
+        title: <>An <b>Open-Source</b> Database You Can <b>Self-Host</b></>,
+        text: <>RxDB's core is free and open source. Replication runs over HTTP, WebSocket or GraphQL against your own backend: no proprietary sync cloud, no per-device pricing, no lock-in.</>,
+        bulletpoints: [
+            <>Free, open-source core</>,
+            <>Self-hostable replication</>,
+            <>Works with any backend</>,
+            <>No vendor lock-in</>
+        ]
+    },
+    c: {
+        title: <>Built for <b>Production</b> <b>Offline-First</b> Apps</>,
+        text: <>RxDB ships what a production migration needs: JSON schema validation, data migrations, conflict resolution, encryption and multi-tab support, proven in years of production use.</>,
+        bulletpoints: [
+            <>Schema validation and migrations</>,
+            <>Conflict resolution built in</>,
+            <>Encryption plugin available</>,
+            <>Battle-tested sync protocol</>
+        ]
+    }
+};
 
 export default function Page() {
     /**
-     * Render the first variation on the server and on the first client render
+     * Render variation "a" on the server and on the first client render
      * to avoid a hydration mismatch, then swap to the assigned variation.
      */
-    const [variation, setVariation] = useState(0);
+    const [variationKey, setVariationKey] = useState('a');
     useEffect(() => {
-        setVariation(getSemVariation(titles.length));
+        setVariationKey(getSemVariation(Object.keys(variations)));
     }, []);
+    const variation = variations[variationKey as keyof typeof variations] ?? variations.a;
 
     return Home({
         sem: {
             id: 'gads',
             metaTitle: 'RxDB: The Local-First JavaScript Database With Sync',
             appName: 'JavaScript',
-            title: titles[variation],
-            text: texts[variation],
-            bulletpoints: bulletpoints[variation]
+            title: variation.title,
+            text: variation.text,
+            bulletpoints: variation.bulletpoints
         }
     });
 }

@@ -101,7 +101,7 @@ function getSessionId(): string {
 export const UTM_CAMPAIGN_STORAGE_ID = 'utm_campaign';
 /**
  * localStorage key prefix under which getSemVariation() stores the assigned
- * landing-page variation index, keyed by the utm_campaign value.
+ * landing-page variation letter, keyed by the utm_campaign value.
  */
 export const SEM_VARIATION_STORAGE_PREFIX = 'sem-variation-';
 
@@ -130,7 +130,9 @@ export function getUtmCampaign(): string | null {
 
 /**
  * Prefix for the per-campaign a/b-test events, built from the stored
- * utm_campaign plus the sem-page variation index (when one was assigned).
+ * utm_campaign plus the sem-page variation letter (when one was assigned),
+ * e.g. "utm_indexeddb_va". The letter is a stable variation id (see
+ * getSemVariation() in a-b-tests.tsx), not an array position.
  * This replaced the old invented test-group system (getTestGroupEventPrefix).
  * GA4 event names only allow letters, digits and underscores and are capped
  * at 40 chars total, so the campaign part is sanitized and truncated to keep
