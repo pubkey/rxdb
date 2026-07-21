@@ -167,7 +167,8 @@ await db.addCollections({
             primaryKey: 'id',
             type: 'object',
             properties: {
-                id: { type: 'string', maxLength: 100 }, // the primary key must have maxLength
+                // the primary key must have a maxLength
+                id: { type: 'string', maxLength: 100 },
                 name: { type: 'string' },
                 category: { type: 'string' },
                 done: { type: 'boolean' }
