@@ -642,6 +642,7 @@ const sidebars = {
         'articles/json-based-database',
         'articles/reactjs-storage',
         'articles/indexeddb-alternative',
+        'articles/indexeddb/indexeddb-tutorial',
         'articles/indexeddb/best-indexeddb-wrapper',
         'articles/indexeddb/indexeddb-sync',
         'articles/indexeddb/indexeddb-typescript',
