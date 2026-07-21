@@ -9,36 +9,60 @@ export type ComparisonRow = {
 
 /**
  * Feature comparison table, typically with the competitor column
- * first and the RxDB column last. Boolean values render as ✅/❌,
- * the string 'partial' renders as ⚠️, everything else is rendered
- * as-is. The last column is highlighted by default.
+ * first and the RxDB column last. The last column is highlighted.
  *
- * Usage in .md/.mdx files:
+ * Two usage modes:
+ *
+ * 1. Wrap an existing markdown table. The table keeps normal
+ *    markdown processing (links, inline code) and only gets the
+ *    scroll container and the highlighted last column:
+ *
+ * <ComparisonTable>
+ *
+ * | Feature | Dexie.js | RxDB |
+ * | --- | --- | --- |
+ * | Replication | ❌ | ✅ |
+ *
+ * </ComparisonTable>
+ *
+ * 2. Pass data rows. Boolean values render as ✅/❌, the string
+ *    'partial' renders as ⚠️, everything else is rendered as-is:
  *
  * <ComparisonTable
  *   columns={['Feature', 'Dexie.js', 'RxDB']}
  *   rows={[
  *     { feature: 'Offline-First', values: [true, true] },
  *     { feature: 'Replication', values: ['partial', true] },
- *     { feature: 'Query Language', values: ['Custom', 'MongoDB-style (Mango)'] },
  *   ]}
  * />
  */
 export function ComparisonTable(props: {
-    columns: ReactNode[];
-    rows: ComparisonRow[];
+    columns?: ReactNode[];
+    rows?: ComparisonRow[];
     /**
-     * (optional) Index of the value column to highlight.
+     * (optional) Markdown table children, used instead of columns/rows.
+     */
+    children?: ReactNode;
+    /**
+     * (optional) Index of the value column to highlight in data mode.
      * [default=last column]. Set to -1 to disable highlighting.
      */
     highlightColumn?: number;
 }) {
+    if (!props.columns || !props.rows) {
+        return (
+            <div className="rxdb-comparison-table" style={styles.scrollContainer}>
+                {props.children}
+            </div>
+        );
+    }
+
     const highlightIndex = typeof props.highlightColumn === 'number'
         ? props.highlightColumn
         : props.columns.length - 2;
 
     return (
-        <div style={{ overflowX: 'auto', marginTop: 20, marginBottom: 20 }}>
+        <div style={styles.scrollContainer}>
             <table style={{ width: '100%', display: 'table' }}>
                 <thead>
                     <tr>
@@ -89,6 +113,11 @@ function renderCellValue(value: ComparisonCellValue): ReactNode {
 }
 
 const styles = {
+    scrollContainer: {
+        overflowX: 'auto',
+        marginTop: 20,
+        marginBottom: 20,
+    },
     highlightHeader: {
         color: 'var(--color-top)',
     },

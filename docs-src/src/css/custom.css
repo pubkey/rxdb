@@ -3911,3 +3911,24 @@ pre[data-theme] span[style*="--shiki-token-keyword"] {
         width: 300px;
     }
 }
+/**
+ * ComparisonTable component (src/components/comparison-table.tsx)
+ * in markdown-children mode: scrollable container and highlighted
+ * last column (the RxDB column).
+ */
+.rxdb-comparison-table table {
+    width: 100%;
+    display: table;
+}
+
+.rxdb-comparison-table table th:last-child {
+    color: var(--color-top);
+}
+
+.rxdb-comparison-table table td:last-child {
+    background-color: rgba(237, 22, 143, 0.06);
+}
+
+.rxdb-comparison-table table td:first-child {
+    font-weight: 600;
+}

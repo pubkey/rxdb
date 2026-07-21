@@ -5,6 +5,9 @@ description: Compare Dexie.js with RxDB. Get MongoDB-style queries, JSON Schema 
 image: /headers/dexie-alternative.jpg
 ---
 
+import {Faq, FaqItem} from '@site/src/components/faq';
+import {ComparisonTable} from '@site/src/components/comparison-table';
+
 # RxDB as a Dexie.js Alternative with Mango Queries and Replication
 
 Teams reach for [Dexie.js](https://dexie.org/) when they want a friendlier API on top of IndexedDB without giving up the speed of a native browser store. Dexie does a fine job at that single goal. The trouble starts when an app outgrows simple key range lookups and needs MongoDB-style queries, [strict schemas](../../rx-schema.md), [reactive results](../../reactivity.md) across tabs, or [replication with a backend](../../replication.md). At that point, most projects either build those features from scratch on top of Dexie or move to a database that already provides them. RxDB sits in the second category and can even run on top of Dexie internally through the [Dexie RxStorage](../../rx-storage-dexie.md).
@@ -198,42 +201,37 @@ The migration path is small. Documents stored by Dexie use the same IndexedDB da
 
 ## FAQ
 
-<details>
-<summary>Can I use Dexie under RxDB?</summary>
+<Faq>
+<FaqItem question="Can I use Dexie under RxDB?">
 
 Yes. RxDB ships the [Dexie RxStorage](../../rx-storage-dexie.md) which uses Dexie.js as the underlying engine. Pass `getRxStorageDexie()` as the `storage` option when creating the database and Dexie handles the IndexedDB calls while RxDB provides schemas, queries, reactivity, and replication on top.
 
-</details>
-
-<details>
-<summary>Does RxDB cost money?</summary>
+</FaqItem>
+<FaqItem question="Does RxDB cost money?">
 
 The core RxDB library and the open source storages, including the Dexie RxStorage, are free under the Apache 2.0 license. Some advanced plugins are part of the [Premium](/premium/) package for commercial projects. The [replication protocol](../../replication.md) itself is open source, so syncing with your own backend never requires a paid service.
 
-</details>
-
-<details>
-<summary>How do I do MongoDB-style queries against IndexedDB?</summary>
+</FaqItem>
+<FaqItem question="How do I do MongoDB-style queries against IndexedDB?">
 
 Use RxDB on top of an IndexedDB-based storage like the [Dexie RxStorage](../../rx-storage-dexie.md), the [IndexedDB RxStorage](../../rx-storage-indexeddb.md), or [OPFS](../../rx-storage-opfs.md). RxDB exposes a Mango query API with operators like `$gt`, `$in`, `$or`, and `$elemMatch`, plans the query against the declared indexes, and returns either a snapshot or a live observable.
 
-</details>
-
-<details>
-<summary>Is RxDB faster than Dexie?</summary>
+</FaqItem>
+<FaqItem question="Is RxDB faster than Dexie?">
 
 RxDB on the Dexie storage adds a thin layer over Dexie, so raw single-document reads are close to plain Dexie. For multi-condition queries RxDB is often faster because the query planner uses indexes that a hand-written Dexie query would skip. For very large bulk inserts the underlying IndexedDB is the bottleneck for both libraries, see [slow IndexedDB](../../slow-indexeddb.md).
 
-</details>
-
-<details>
-<summary>Can I migrate from Dexie to RxDB?</summary>
+</FaqItem>
+<FaqItem question="Can I migrate from Dexie to RxDB?">
 
 Yes. The common pattern is to keep the existing Dexie database read-only on first start, create an RxCollection with a matching schema, and copy the documents over in batches. After the copy step the app talks to RxDB only. Because the Dexie RxStorage also uses IndexedDB, the data stays inside the same browser storage area.
 
-</details>
+</FaqItem>
+</Faq>
 
 ## Comparison Table
+
+<ComparisonTable>
 
 | Feature | Dexie.js | RxDB |
 | --- | --- | --- |
@@ -250,6 +248,8 @@ Yes. The common pattern is to keep the existing Dexie database read-only on firs
 | Conflict handler | Application code | Pluggable per collection |
 | Runtime targets | Browser only | Browser, Node.js, React Native, Electron |
 | License | Apache 2.0 | Apache 2.0 (Premium plugins separate) |
+
+</ComparisonTable>
 
 ## Follow Up
 

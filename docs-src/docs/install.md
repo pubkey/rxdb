@@ -5,6 +5,7 @@ description: Learn how to install RxDB via npm, configure polyfills, and fix glo
 image: /headers/install.jpg
 ---
 
+import {InstallTabs} from '@site/src/components/install-tabs';
 
 # Install RxDB
 
@@ -12,17 +13,13 @@ image: /headers/install.jpg
 
 To install the latest release of `rxdb` and its dependencies and save it to your `package.json`, run:
 
-```bash
-npm i rxdb --save
-```
+<InstallTabs packageName="rxdb" />
 
 ## peer-dependency
 
 You also need to install the peer-dependency `rxjs` if you have not installed it before.
 
-```bash
-npm i rxjs --save
-```
+<InstallTabs packageName="rxjs" />
 
 ## polyfills
 
