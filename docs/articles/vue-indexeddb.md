@@ -4,6 +4,7 @@
 
 import { PerformanceChart } from '@site/src/components/performance-chart';
 import { PERFORMANCE_DATA_BROWSER, PERFORMANCE_METRICS } from '@site/src/components/performance-data';
+import {CenteredImage} from '@site/src/components/centered-image';
 
 # IndexedDB Database in Vue Apps - The Power of RxDB
 
@@ -13,9 +14,7 @@ Building robust, [offline-capable](../offline-first.md) Vue applications often i
 
 [IndexedDB](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API) is a low-level API for storing significant amounts of structured data in the browser. It provides a transactional database system that can store key-value pairs, complex objects, and more. This storage engine is asynchronous and supports advanced data types, making it suitable for offline storage and complex web applications.
 
-<center>
-  
-</center>
+<CenteredImage src="/files/icons/vuejs.svg" alt="Vue IndexedDB" width={120} />
 
 ## Why Use IndexedDB in Vue
 
@@ -140,7 +139,7 @@ await thorDoc.remove();
 
 RxDB excels in providing reactive data capabilities, ideal for [real-time applications](./realtime-database.md). Subscribing to queries automatically updates your Vue components when underlying data changes - even across [browser](./browser-database.md) tabs.
 
-  
+<CenteredImage src="../files/animations/realtime.gif" alt="realtime ui updates" width={700} />
 
 ### Using RxJS Observables with Vue 3 Composition API
 

@@ -2,6 +2,8 @@
 
 > Learn how to define, secure, and validate your data in RxDB. Master primary keys, indexes, encryption, and more with the RxSchema approach.
 
+import {Faq, FaqItem} from '@site/src/components/faq';
+
 # RxSchema
 
 Schemas define the structure of the documents of a collection. Which field should be used as the primary key, which fields should be used as indexes, and what should be encrypted. Every collection has its own schema. With RxDB, schemas are defined with the [JSON Schema](https://json-schema.org/blog/posts/rxdb-case-study) standard which you might know from other projects.
@@ -355,8 +357,8 @@ Also the following class properties of `RxDocument` cannot be used as top level 
 
 ## FAQ
 
-<details>
-    <summary>How can I store a Date?</summary>
+<Faq>
+<FaqItem question="How can I store a Date?">
 
     With RxDB you can only store plain JSON data inside of a document. You cannot store a JavaScript `new Date()` instance directly. This is for performance reasons and because `Date` is a mutable object where changing it at any time might cause strange problems that are hard to debug.
 
@@ -371,10 +373,8 @@ Also the following class properties of `RxDocument` cannot be used as top level 
     When storing the data you have to first transform your `Date` object into a string `Date.toISOString()`.
     Because the `date-time` is sortable, you can do whatever query operations on that field and even use it as an index.
 
-</details>
-
-<details>
-    <summary>How do I specify nullable in JSON Schema?</summary>
+</FaqItem>
+<FaqItem question="How do I specify nullable in JSON Schema?">
 
     In JSON Schema, you make a field nullable by allowing multiple types with an array:
     ```json
@@ -405,10 +405,8 @@ Also the following class properties of `RxDocument` cannot be used as top level 
     }
     ```
 
-</details>
-
-<details>
-    <summary>How to store schemaless data?</summary>
+</FaqItem>
+<FaqItem question="How to store schemaless data?">
 
     By design, RxDB requires that every collection has a schema. This means you cannot create a truly "schema-less" collection where top-level fields are unknown at schema creation time. RxDB must know about all fields of a document at the top level to perform validation, index creation, and other internal optimizations.
     However, there is a way to store data of arbitrary structure at sub-fields. To do this, define a property with `type: "object"` in your schema. For example:
@@ -432,10 +430,8 @@ Also the following class properties of `RxDocument` cannot be used as top level 
     }
     ```
 
-</details>
-
-<details>
-    <summary>Why does RxDB automatically set `additionalProperties: false` at the top level</summary>
+</FaqItem>
+<FaqItem question="Why does RxDB automatically set additionalProperties: false at the top level">
 
     RxDB automatically sets `additionalProperties: false` at the top level of a schema to ensure that all top-level fields are known in advance. This design choice offers several benefits:
 
@@ -448,10 +444,8 @@ Developers can add custom [ORM methods](./orm.md) to RxDocuments. If top-level p
 - Improves TypeScript typings:
 If RxDB didn't know about all top-level fields, the document type would effectively become `any`. That means a simple typo like `myDocument.toJOSN()` would only be caught at runtime, not at build time. By disallowing unknown properties, TypeScript can provide strict typing and catch errors sooner.
 
-</details>
-
-<details>
-    <summary>Can't change the schema of a collection</summary>
+</FaqItem>
+<FaqItem question="Can't change the schema of a collection">
 
     When you make changes to the schema of a collection, you sometimes can get an error like
 `Error: addCollections(): another instance created this collection with a different schema`.
@@ -478,4 +472,5 @@ In **development**-mode, the schema-change can be simplified by **one of these**
 -   Call `removeRxDatabase('mydatabasename', RxStorage);` before creating a new [RxDatabase](./rx-database.md)-instance
 -   Add a timestamp as suffix to the database-name to create a new one each run like `name: 'heroesDB' + new Date().getTime()`
 
-</details>
+</FaqItem>
+</Faq>

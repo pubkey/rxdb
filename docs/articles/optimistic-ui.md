@@ -2,6 +2,9 @@
 
 > Learn how to build an Optimistic UI with RxDB for instant and reliable UI updates on user interactions
 
+import {Faq, FaqItem} from '@site/src/components/faq';
+import {CenteredImage} from '@site/src/components/centered-image';
+
 # Building an Optimistic UI with RxDB
 
 An **Optimistic User Interface (UI)** is a design pattern that provides instant feedback to the user by **assuming** that an operation or server call will succeed. Instead of showing loading spinners or waiting for server confirmations, the UI immediately reflects the user's intended action and later reconciles the displayed data with the actual server response. This approach drastically improves perceived performance and user satisfaction.
@@ -14,7 +17,7 @@ Optimistic UIs offer a host of advantages, from improving the user experience to
 - **No loading spinners, [near-zero latency](./zero-latency-local-first.md)**: Users perceive their actions as instant. Any actual network delays or slow server operations can be handled behind the scenes.
 - **Offline capability**: Optimistic UI pairs perfectly with offline-first apps. Users can continue to interact with the application even when offline, and changes will be synced automatically once the network is available again.
 
-  
+<CenteredImage src="/files/loading-spinner-not-needed.gif" alt="loading spinner not needed" width={300} />
 
 ### Better Scaling and Easier to Implement
 - **Fewer server endpoints**: Instead of sending a separate HTTP request for every single user interaction, you can batch updates and sync them in bulk.
@@ -42,7 +45,7 @@ RxDB's core is built around observables that react to any state changes - whethe
 - **Automatic UI refresh**: Any query or document subscription in RxDB automatically notifies your UI layer when data changes. There's no need to manually poll or refetch.
 - **Cross-tab updates**: If you have the same RxDB database open in multiple [browser](./browser-database.md) tabs, changes in one tab instantly propagate to the others.
 
-  
+<CenteredImage src="/files/multiwindow.gif" alt="RxDB multi tab" width={450} />
 
 - **Event-Reduce Algorithm**: Under the hood, RxDB uses the [event-reduce algorithm](https://github.com/pubkey/event-reduce) to minimize overhead. Instead of re-running expensive queries, RxDB calculates the smallest possible updates needed to keep query results accurate - further boosting real-time performance.
 
@@ -55,7 +58,7 @@ While local storage is key to an Optimistic UI, most applications ultimately nee
 
 By combining local-first data handling with real-time synchronization, RxDB delivers most of what an Optimistic UI needs - right out of the box. The result is a seamless user experience where interactions never feel blocked by slow networks, and any conflicts or final validations are quietly handled in the background.
 
-  
+<CenteredImage src="/files/animations/realtime.gif" alt="realtime ui updates" width={700} />
 
 #### Handling Offline Changes and Conflicts
 - **Offline-first approach**: All writes are initially stored in the local database. When connectivity returns, RxDB's replication automatically pushes changes to the server.
@@ -70,9 +73,7 @@ To learn more about these protocols and their integration with RxDB, check out [
 ## Optimistic UI in Various Frameworks
 
 ### Angular Example
-<center>
-        
-</center>
+<CenteredImage src="../files/icons/angular.svg" alt="Angular" width={80} />
 
 [Angular](./angular-database.md)'s `async` pipe works smoothly with RxDB's observables. Suppose you have a `myCollection` of documents, you can directly subscribe in the template:
 
@@ -90,9 +91,7 @@ This snippet:
 - Renders each document in a list item, instantly reflecting any changes.
 
 ### React Example
-<center>
-        
-</center>
+<CenteredImage src="../files/icons/react.svg" alt="React" width={80} />
 
 In [React](./react-database.md), you can utilize signals or other state management tools. For instance, if we have an [RxDB extension](../reactivity.md) that exposes a **signal**:
 
@@ -158,11 +157,13 @@ Situations where high success rates of operations are expected (most writes don'
   - Consider the likelihood that a user's action might fail. If it's very low, optimistic UI is often best.
   - If frequent failures or complex validations occur, consider a hybrid approach: partial optimistic updates for some actions, while more critical operations rely on immediate server confirmation.
 
-<details>
-<summary>What is an optimistic UI and how is it implemented?</summary>
+<Faq>
+<FaqItem question="What is an optimistic UI and how is it implemented?">
 
 An Optimistic UI is a frontend design pattern that immediately renders a user's action as successful before the server has actually confirmed it, eliminating loading spinners and ensuring [near-zero latency](./zero-latency-local-first.md). It is implemented by writing the user's interaction directly to a local, offline-first data store (like **[RxDB](../rx-database.md)**), reacting to that local state change instantly in the UI, and then relegating the asynchronous server synchronization to a background replication process that can handle retries and merges silently.
-</details>
+
+</FaqItem>
+</Faq>
 
 ## Follow Up
 

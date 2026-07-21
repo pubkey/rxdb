@@ -2,6 +2,9 @@
 
 > Explore RxDB for browser storage its advantages, limitations, and why it outperforms SQL databases in web applications for enhanced efficiency
 
+import {Faq, FaqItem} from '@site/src/components/faq';
+import {CenteredImage} from '@site/src/components/centered-image';
+
 # Browser Storage - RxDB as a Database for Browsers
 
 **Storing Data in the Browser**
@@ -103,7 +106,7 @@ RxDB provides built-in support for [handling schema changes](../migration-schema
 ### Built-In Multi-Tab Support
 For applications requiring multi-tab support, RxDB natively handles data consistency across different browser tabs, streamlining data synchronization.
 
-  
+<CenteredImage src="../files/multiwindow.gif" alt="multi tab support for browser storage" width={450} />
 
 ### Storing Documents Compressed
 Efficient data storage is achieved through [document compression](../key-compression.md), reducing storage space requirements and enhancing overall performance.
@@ -111,7 +114,7 @@ Efficient data storage is achieved through [document compression](../key-compres
 ### Replication Algorithm for Compatibility with Any Backend
 RxDB's [Replication Algorithm](../replication.md) facilitates compatibility with various backend systems, ensuring seamless data synchronization between the browser and server.
 
-  
+<CenteredImage src="../files/database-replication.png" alt="database replication" width={200} />
 
 ## Summary
 
@@ -119,29 +122,28 @@ In conclusion, RxDB is a powerful and feature-rich solution for browser-based st
 
 ## FAQ
 
-<details>
-<summary>Does chrome.storage.local.get return a promise?</summary>
+<Faq>
+<FaqItem question="Does chrome.storage.local.get return a promise?">
 
 Yes, in modern browser extension development (Manifest V3), the `chrome.storage.local` methods, including `.get()`, `.set()`, and `.remove()`, natively return JavaScript Promises. This allows developers to use clean `await` syntax. This is a significant improvement over standard `localStorage`, which is fully synchronous, and over legacy Chrome APIs that only supported callback functions.
-</details>
 
-<details>
-<summary>Is browser local storage considered secure for sensitive data?</summary>
+</FaqItem>
+<FaqItem question="Is browser local storage considered secure for sensitive data?">
 
 No. Data stored in standard browser native technologies like [LocalStorage](./localstorage.md), [IndexedDB](../rx-storage-indexeddb.md), or Cookies is stored in plain text on the user's hard drive. It can be easily accessed by anyone with physical access to the device or by malicious scripts executing under the same origin (XSS attacks). To store sensitive user information, you must implement [Encryption](../encryption.md) at the application layer before writing data to the browser storage APIs.
-</details>
 
-<details>
-<summary>What is the role of browser storage in modern web applications?</summary>
+</FaqItem>
+<FaqItem question="What is the role of browser storage in modern web applications?">
 
 Browser storage has evolved from merely storing tiny session tokens in Cookies into the backbone of **[Local-First](../offline-first.md)** architecture. Modern web applications utilize powerful APIs like [IndexedDB](../rx-storage-indexeddb.md) or [OPFS](../rx-storage-opfs.md) to store gigabytes of application state directly on the client. This allows applications to offer zero-latency UI interactions, fully function offline, and systematically synchronize changes to a backend only when network conditions permit.
-</details>
 
-<details>
-<summary>Which enterprise databases offer native JSON storage for browser environments?</summary>
+</FaqItem>
+<FaqItem question="Which enterprise databases offer native JSON storage for browser environments?">
 
 While traditional enterprise databases like PostgreSQL or SQL Server run on backend servers, you can achieve enterprise-grade JSON storage natively in the browser using robust client-side databases. **[RxDB](../rx-database.md)** is specifically engineered to provide a fully reactive, NoSQL [document-oriented JSON database](./json-database.md) directly in the browser, capable of interacting seamlessly with various storage endpoints like [IndexedDB](../rx-storage-indexeddb.md) or even bridging to [SQLite via WebAssembly](../rx-storage-sqlite.md).
-</details>
+
+</FaqItem>
+</Faq>
 
 ## Follow Up
 To explore more about RxDB and leverage its capabilities for browser storage, check out the following resources:

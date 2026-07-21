@@ -2,6 +2,9 @@
 
 > Harness RxDB's reactive database to bring real-time, offline-first data storage and syncing to your next Flutter application.
 
+import {Faq, FaqItem} from '@site/src/components/faq';
+import {CenteredImage} from '@site/src/components/centered-image';
+
 # RxDB as a Database in a Flutter Application
 
 In the world of mobile application development, Flutter has gained significant popularity due to its cross-platform capabilities and rich UI framework. When it comes to building feature-rich Flutter applications, the choice of a robust and efficient database is crucial. In this article, we will explore [RxDB](https://rxdb.info/) as a database solution for Flutter applications. We'll delve into the core features of RxDB, its benefits over other database options, and how to integrate it into a Flutter app.
@@ -15,9 +18,7 @@ You can find the source code for an example RxDB Flutter Application [at the git
 ### Overview of Flutter Mobile Applications
 Flutter is an open-source UI software development kit created by Google that allows developers to build high-performance [mobile](./mobile-database.md) applications for iOS and Android platforms using a single codebase. Flutter's framework provides a wide range of widgets and tools that enable developers to create visually appealing and responsive applications.
 
-<center>
-        
-</center>
+<CenteredImage src="../files/icons/flutter.svg" alt="Flutter" width={60} />
 
 ### Importance of Databases in Flutter Applications
 Databases play a vital role in Flutter applications by providing a persistent and reliable storage solution for storing and retrieving data. Whether it's user profiles, app settings, or complex data structures, a database helps in efficiently managing and organizing the application's data. Choosing the right database for a Flutter application can significantly impact the performance, scalability, and user experience of the app.
@@ -202,11 +203,13 @@ RxDB offers a powerful and flexible database solution for Flutter applications. 
 
 ## FAQ
 
-<details>
-<summary>What is the best local-first database for Flutter apps?</summary>
+<Faq>
+<FaqItem question="What is the best local-first database for Flutter apps?">
 
 RxDB provides the best local-first database for Flutter applications. You gain full reactive data handling where observable queries automatically update your Flutter UI. The system stores data locally to ensure complete application functionality without an internet connection. Replication plugins handle background synchronization with your server effortlessly. You eliminate complex state management while maintaining consistent data across platforms.
-</details>
+
+</FaqItem>
+</Faq>
 
 :::note
 You can find the source code for an example RxDB Flutter Application [at the github repo](https://github.com/pubkey/rxdb/tree/master/examples/flutter)

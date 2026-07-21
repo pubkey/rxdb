@@ -4,6 +4,7 @@
 
 import { PerformanceChart } from '@site/src/components/performance-chart';
 import { PERFORMANCE_DATA_NODE, PERFORMANCE_METRICS, PERFORMANCE_DATA_BROWSER, PERFORMANCE_DATA_SERVER } from '@site/src/components/performance-data';
+import {Faq, FaqItem} from '@site/src/components/faq';
 
 ## RxStorage Performance comparison
 
@@ -53,8 +54,10 @@ When using RxDB on backend servers, you have different options compared to clien
 
 ## FAQ
 
-<details>
-<summary>How fast is IndexedDB compared to other browser storage engines?</summary>
+<Faq>
+<FaqItem question="How fast is IndexedDB compared to other browser storage engines?">
 
 IndexedDB sits securely in the middle of browser storage performance. It is significantly slower than the fully synchronous [LocalStorage](./articles/localstorage.md) memory cache, but it completely avoids blocking the main UI thread. However, compared to modern APIs like the **[Origin Private File System (OPFS)](./rx-storage-opfs.md)**, IndexedDB's complex internal B-tree implementations combined with serialization overhead make it significantly slower for high-throughput I/O operations and raw bulk writes.
-</details>
+
+</FaqItem>
+</Faq>

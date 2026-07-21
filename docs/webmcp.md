@@ -7,6 +7,7 @@ import {VideoBox} from '@site/src/components/video-box';
 import {Tabs} from '@site/src/components/tabs';
 import {QuoteBlock} from '@site/src/components/quoteblock';
 import {BetaBlock} from '@site/src/components/beta-block';
+import {Faq, FaqItem} from '@site/src/components/faq';
 
 # How Local-First and WebMCP make your app accessible to agents
 
@@ -305,22 +306,23 @@ APIs and behaviors are subject to change as the official W3C WebMCP specificatio
 
 ## FAQ
 
-<details>
-    <summary>What is WebMCP?</summary>
+<Faq>
+<FaqItem question="What is WebMCP?">
+
     
         WebMCP (Web Model Context Protocol) is an experimental browser API that allows your web application to seamlessly expose "tools" for AI Agents. It acts as a standardized translation layer between your application's functionality and LLMs running within the browser, enabling natural language interactions with your web application's data. Wait for formal browser support for use in production environments.
     
-</details>
 
-<details>
-    <summary>How to mix the RxDB WebMCP with own WebMCP tools?</summary>
+</FaqItem>
+<FaqItem question="How to mix the RxDB WebMCP with own WebMCP tools?">
+
     
         You can easily mix the RxDB WebMCP tools with your own tools. Since <code>db.registerWebMCP()</code> internally just calls <code>navigator.modelContext.registerTool()</code>, you can simply call this native method yourself to register any additional tools that interact with your frontend logic, external APIs, or other non-database components.
     
-</details>
 
-<details>
-    <summary>How to use the WebMCP polyfill for browsers without native support?</summary>
+</FaqItem>
+<FaqItem question="How to use the WebMCP polyfill for browsers without native support?">
+
     
         Since most browsers do not yet natively implement the <code>navigator.modelContext</code> API, you can use the WebMCP-org polyfill package <code>@mcp-b/global</code> to add support in any browser today.
 
@@ -343,10 +345,9 @@ APIs and behaviors are subject to change as the official W3C WebMCP specificatio
 
         The polyfill sets up the <code>navigator.modelContext</code> interface so that your registered tools are accessible to AI agents running in the browser, even without native browser support.
     
-</details>
 
-<details>
-<summary>How can I try WebMCP in Chrome?</summary>
+</FaqItem>
+<FaqItem question="How can I try WebMCP in Chrome?">
 
 WebMCP is currently in an early preview phase. You can test it today in Chrome Canary (version 145+) by following these steps:
 
@@ -354,7 +355,8 @@ WebMCP is currently in an early preview phase. You can test it today in Chrome C
 2. **Install the inspector extension**: Install the [Model Context Tool Inspector Extension](https://chromewebstore.google.com/detail/model-context-tool-inspec/gbpdfapgefenggkahomfgkhfehlcenpd) to view registered tools, execute them manually, and test with an agent using Gemini API integration.
 3. **Use a live demo**: You can test the integration directly on demo pages like the [RxDB WebMCP Quickstart](https://pubkey.github.io/rxdb-quickstart/).
 
-</details>
+</FaqItem>
+</Faq>
 
 ## Follow up
 

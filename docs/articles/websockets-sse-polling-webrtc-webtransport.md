@@ -2,6 +2,8 @@
 
 > Learn the unique benefits and pitfalls of each real-time tech. Make informed decisions on WebSockets, SSE, Polling, WebRTC, and WebTransport.
 
+import {Faq, FaqItem} from '@site/src/components/faq';
+
 # WebSockets vs Server-Sent-Events vs Long-Polling vs WebRTC vs WebTransport
 
 For modern real-time web applications, the ability to send events from the server to the client is indispensable. This necessity has led to the development of several methods over the years, each with its own set of advantages and drawbacks. Initially, [long-polling](#what-is-long-polling) was the only option available. It was then succeeded by [WebSockets](#what-are-websockets), which offered a more robust solution for bidirectional communication. Following WebSockets, [Server-Sent Events (SSE)](#what-are-server-sent-events) provided a simpler method for one-way communication from server to client. Looking ahead, the [WebTransport](#what-is-the-webtransport-api) protocol promises to revolutionize this landscape even further by providing a more efficient, flexible, and scalable approach. For niche use cases, [WebRTC](#what-is-webrtc) might also be considered for server-client events.
@@ -237,23 +239,23 @@ There are many known problems with company infrastructure when using any of the 
 
 ## FAQ
 
-<details>
-<summary>What are the differences between long polling and traditional polling in web development?</summary>
+<Faq>
+<FaqItem question="What are the differences between long polling and traditional polling in web development?">
 
 Traditional polling forces the client to ask the server for updates at fixed intervals. The server responds immediately even when no new data exists. This approach wastes bandwidth and increases server load. Long polling improves this model. The client requests data and the server holds the connection open until it has new information to send. The server then responds and the client immediately opens a new connection. Long polling reduces unnecessary requests and provides updates faster than traditional polling.
-</details>
 
-<details>
-<summary>Are server-sent events or WebSockets suitable for offline notifications?</summary>
+</FaqItem>
+<FaqItem question="Are server-sent events or WebSockets suitable for offline notifications?">
 
 Neither Server-Sent Events (SSE) nor [WebSockets](#what-are-websockets) are suitable for *triggering* offline notifications because they are strictly active, persistent network protocols that inherently drop when the device goes offline. To handle notifications while offline, you must rely on the operating system's native background task schedulers or the browser's Service Worker Push API, which can briefly wake your app to process payloads or evaluate local state before displaying a system-level notification.
-</details>
 
-<details>
-<summary>Is WebRTC faster than WebSockets for peer-to-peer applications?</summary>
+</FaqItem>
+<FaqItem question="Is WebRTC faster than WebSockets for peer-to-peer applications?">
 
 For pure peer-to-peer applications, [WebRTC](../replication-webrtc.md) is technically faster and scales infinitely better than WebSockets because data flows directly between the clients (over UDP) rather than bottlenecking through a central routing server. However, WebRTC is highly complex to configure, requiring ICE, STUN, and TURN servers to traverse enterprise NATs and firewalls. Generally, WebSockets are vastly simpler to implement for client-server topologies, while WebRTC is reserved strictly for specialized, heavily decentralized P2P architectures.
-</details>
+
+</FaqItem>
+</Faq>
 
 ## Follow Up
 

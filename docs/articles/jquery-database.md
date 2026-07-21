@@ -3,6 +3,7 @@
 > Level up your jQuery-based projects with RxDB. Build real-time, resilient, and responsive apps powered by a reactive NoSQL database right in the browser.
 
 import {VideoBox} from '@site/src/components/video-box';
+import {CenteredImage} from '@site/src/components/centered-image';
 
 # RxDB as a Database in a jQuery Application
 
@@ -43,7 +44,7 @@ RxDB (short for Reactive Database) is built on top of [IndexedDB](./browser-data
 ### What is RxDB?
 [RxDB](https://rxdb.info/) is a client-side NoSQL database that stores data in the browser (or [node.js](../nodejs-database.md)) and synchronizes changes with other instances or servers. Its design embraces reactive programming principles, making it well-suited for real-time applications, offline scenarios, and multi-tab use cases.
 
-  
+<CenteredImage src="../files/animations/realtime.gif" alt="real-time ui updates" width={700} />
 
 ### Reactive Data Handling
 RxDB's use of observables enables an event-driven architecture where data mutations automatically trigger UI updates. In a jQuery application, you can subscribe to these changes and update DOM elements as soon as data changes occur - no need for manual refresh or complicated change detection logic.
@@ -60,7 +61,7 @@ Instead of static queries, RxDB provides observable queries. Whenever data relev
 ### Multi-Tab Support
 Running your jQuery app in multiple tabs? RxDB automatically synchronizes changes between those tabs. Users can freely switch windows without missing real-time updates.
 
-  
+<CenteredImage src="../files/multiwindow.gif" alt="multi tab support" width={450} />
 
 ### RxDB vs. Other jQuery Database Options
 Historically, jQuery developers might use `localStorage` or raw `IndexedDB` for storing data. However, these solutions can require significant boilerplate, lack [reactivity](../reactivity.md), and offer no built-in sync or conflict resolution. RxDB fills these gaps with an out-of-the-box solution, abstracting away low-level database complexities and providing an event-driven, offline-capable approach.
@@ -175,7 +176,7 @@ Should multiple clients update the same document, RxDB offers [conflict handling
 ### Bidirectional Synchronization
 With RxDB, data changes flow both ways: from client to server and from server to client. This real-time synchronization ensures that all users or tabs see consistent, up-to-date data.
 
-  
+<CenteredImage src="../files/database-replication.png" alt="database replication" width={200} />
 
 ## Advanced RxDB Features and Techniques
 

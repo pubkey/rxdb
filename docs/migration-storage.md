@@ -2,6 +2,8 @@
 
 > Effortlessly migrate your data between storages in RxDB using the Storage Migration plugin. Retain your documents when switching storages or major versions.
 
+import {Faq, FaqItem} from '@site/src/components/faq';
+
 # Storage Migration
 
 The storage migration plugin can be used to migrate all data from one existing RxStorage into another. This is useful when:
@@ -133,8 +135,10 @@ disableVersionCheck();
 
 ## FAQ
 
-<details>
-<summary>What is storage migration and how to run schema migrations in PouchDB vs RxDB?</summary>
+<Faq>
+<FaqItem question="What is storage migration and how to run schema migrations in PouchDB vs RxDB?">
 
 Storage migration involves physically shifting all existing documents from one underlying RxStorage adapter (e.g., IndexedDB) into an entirely different storage engine (e.g., SQLite), often required during platform upgrades. Unlike PouchDB which lacked robust native migration rails, **[RxDB](./rx-database.md)** enforces distinct boundaries between structural Data Migrations (changing schema formats via the `migrationStrategy` map) and underlying Storage Migrations (`migrateStorage()`). These two distinct mechanisms must *never* be executed simultaneously.
-</details>
+
+</FaqItem>
+</Faq>

@@ -2,6 +2,8 @@
 
 > Use RxDB leader election to coordinate browser tabs so that only one tab manages remote data access, reducing redundant connections and saving resources.
 
+import {CenteredImage} from '@site/src/components/centered-image';
+
 # Leader-Election
 
 RxDB comes with a leader-election which elects a leading instance between different instances in the same javascript runtime.
@@ -83,7 +85,7 @@ leaderElector.onduplicate = async () => {
 
 In this example the leader is marked with the crown ♛
 
-  
+<CenteredImage src="./files/leader-election.gif" alt="Leader Election" width={300} />
 
 ## Try it out
 

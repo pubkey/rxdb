@@ -2,23 +2,21 @@
 
 > Learn how to install RxDB via npm, configure polyfills, and fix global variable errors in Angular or Webpack for a seamless setup.
 
+import {InstallTabs} from '@site/src/components/install-tabs';
+
 # Install RxDB
 
 ## npm
 
 To install the latest release of `rxdb` and its dependencies and save it to your `package.json`, run:
 
-```bash
-npm i rxdb --save
-```
+<InstallTabs packageName="rxdb" />
 
 ## peer-dependency
 
 You also need to install the peer-dependency `rxjs` if you have not installed it before.
 
-```bash
-npm i rxjs --save
-```
+<InstallTabs packageName="rxjs" />
 
 ## polyfills
 

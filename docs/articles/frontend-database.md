@@ -2,6 +2,8 @@
 
 > Discover how RxDB, a powerful JavaScript frontend database, boosts offline access, caching, and real-time updates to supercharge your web apps.
 
+import {CenteredImage} from '@site/src/components/centered-image';
+
 # RxDB JavaScript Frontend Database: Efficient Data Storage in Frontend Applications
 In modern web development, managing data on the front end has become increasingly important. Storing data in the frontend offers numerous advantages, such as offline accessibility, caching, faster application startup, and improved state management. Traditional SQL databases, although widely used on the server-side, are not always the best fit for frontend applications. This is where [RxDB](https://rxdb.info/), a frontend JavaScript database, emerges as a powerful solution. In this article, we will explore why storing data in the frontend is beneficial, the limitations of SQL databases in the frontend, and how [RxDB](https://rxdb.info/) addresses these challenges to become an excellent choice for frontend data storage.
 
@@ -27,7 +29,7 @@ Frontend databases provide an alternative to traditional state management librar
 ### Low-latency local queries
 Frontend databases enable low-latency queries that run entirely on the client's device. Instead of relying on server round-trips for each query, the database executes queries locally, resulting in faster response times. This is particularly beneficial for applications that require real-time updates or frequent data retrieval.
 
-  
+<CenteredImage src="../files/latency-london-san-franzisco.png" alt="latency london san franzisco" width={300} />
 
 ### Building realtime applications with local data
 Realtime applications often require immediate updates based on data changes. By storing data locally and utilizing a frontend database, developers can build [realtime applications](./realtime-database.md) more easily. The database can observe data changes and automatically update the UI, providing a seamless and responsive user experience.
@@ -50,7 +52,7 @@ SQL databases typically rely on a push/pull model, where the server pushes data 
 ### Initialization time and performance
 SQL databases designed for server-side usage tend to have larger build sizes and initialization times, making them less efficient for [browser-based](./browser-database.md) applications. Frontend databases, on the other hand, directly leverage browser APIs like [IndexedDB](../rx-storage-indexeddb.md), [OPFS](../rx-storage-opfs.md), and  [WebWorker](../rx-storage-worker.md), resulting in leaner builds and faster initialization times. Often the queries are such fast, that it is not even necessary to implement a loading spinner.
 
-  
+<CenteredImage src="../files/loading-spinner-not-needed.gif" alt="loading spinner not needed" width={300} />
 
 ### Build size considerations
 Server-side SQL databases typically come with a significant build size, which can be impractical for browser applications where code size optimization is crucial. Frontend databases, on the other hand, are specifically designed to operate within the constraints of browser environments, ensuring efficient resource utilization and smaller build sizes.
@@ -66,7 +68,7 @@ RxDB is designed and optimized for JavaScript applications. Built using JavaScri
 ### NoSQL (JSON) documents for UIs
 RxDB adopts a [NoSQL approach](./in-memory-nosql-database.md), using [JSON documents as its primary data structure](./json-database.md). This aligns well with the JavaScript ecosystem, as JavaScript natively works with JSON objects. By using NoSQL documents, RxDB provides a more natural and intuitive data model for UI-centric applications.
 
-  
+<CenteredImage src="../files/no-sql.png" alt="NoSQL Documents" width={120} />
 
 ### Better TypeScript support compared to SQL
 TypeScript has become increasingly popular for building frontend applications. RxDB provides excellent [TypeScript support](../tutorials/typescript.md), allowing developers to leverage static typing and benefit from enhanced code quality and tooling. This is particularly advantageous when compared to SQL databases, which often have limited TypeScript support.
@@ -74,7 +76,7 @@ TypeScript has become increasingly popular for building frontend applications. R
 ### [Observable Queries](../rx-query.md) for automatic UI updates
 RxDB introduces the concept of observable queries, powered by RxJS. Observable queries automatically update the UI whenever there are changes in the underlying data. This reactive approach eliminates the need for manual UI updates and ensures that the frontend remains synchronized with the database state.
 
-  
+<CenteredImage src="../files/animations/realtime.gif" alt="realtime ui updates" width={700} />
 
 ### Optimized observed queries with the EventReduce Algorithm
 RxDB optimizes observed queries with its EventReduce Algorithm. This algorithm intelligently reduces redundant events and ensures that UI updates are performed efficiently. By minimizing unnecessary re-renders, RxDB significantly improves performance and responsiveness in frontend applications.
@@ -105,12 +107,12 @@ RxDB provides the option to store documents in a [compressed format](../key-comp
 ### Built-in Multi-tab support
 RxDB offers built-in multi-tab support, allowing data synchronization and state management across multiple browser tabs. This feature ensures consistent data access and synchronization, enabling users to work seamlessly across different tabs without conflicts or data inconsistencies.
 
-  
+<CenteredImage src="../files/multiwindow.gif" alt="multi tab support" width={450} />
 
 ### Replication Algorithm can be made compatible with any backend
 RxDB's [realtime replication algorithm](../replication.md) is designed to be flexible and compatible with various backend systems. Whether you're using your own servers, [Firebase](../replication-firestore.md), [CouchDB](../replication-couchdb.md), [NATS](../replication-nats.md), [WebSocket](../replication-websocket.md), or any other backend, RxDB can be seamlessly integrated and synchronized with the backend system of your choice.
 
-  
+<CenteredImage src="../files/database-replication.png" alt="database replication" width={200} />
 
 ### Flexible storage layer for code reuse
 RxDB provides a [flexible storage layer](../rx-storage.md) that enables code reuse across different platforms. Whether you're building applications with [Electron.js](../electron-database.md), [React Native](../react-native-database.md), hybrid apps using [Capacitor.js](../capacitor-database.md), or traditional web browsers, RxDB allows you to reuse the same codebase and leverage the power of a frontend database across different environments.

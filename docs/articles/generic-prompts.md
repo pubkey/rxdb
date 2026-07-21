@@ -1,10 +1,10 @@
-# Generic Prompts for Github Repos
+# Generic Prompts for GitHub Repos - Reusable Agent Prompts for Any Project
 
-> Prompts that are useful for any github or open source project which you can give your agent to improve the project.
+> Generic prompts you can give your AI agent to improve any GitHub or open source project, from build cleanup to bug fixes and performance.
 
-# Generic Prompts for Github Repos
+# Generic Prompts for GitHub Repos
 
-Prompts that are useful for any github or open source project which you can give your agent to improve the project.
+Prompts that are useful for any GitHub or open source project which you can give your agent to improve the project.
 
 ## Clean up
 

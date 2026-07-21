@@ -3,6 +3,7 @@
 > Offload RxDB queries to WebWorkers or Worker Threads, freeing the main thread and boosting performance. Experience smoother apps with Worker RxStorage.
 
 import {PremiumBlock} from '@site/src/components/premium-block';
+import {Faq, FaqItem} from '@site/src/components/faq';
 
 # Worker RxStorage
 
@@ -200,8 +201,10 @@ exposeWorkerRxStorage({
 
 ## FAQ
 
-<details>
-<summary>Do web workers share memory or run in entirely separate processes in Chromium?</summary>
+<Faq>
+<FaqItem question="Do web workers share memory or run in entirely separate processes in Chromium?">
 
 WebWorkers (and Worker Threads in Node.js) execute in entirely separate, wholly isolated V8 JavaScript environments that do *not* share memory heaps with the main UI thread. Because they cannot pass memory pointers, transferring **[RxDB](./rx-database.md)** queries and JSON arrays between the UI and the Worker RxStorage requires structural cloning serialization over IPC channels. While this adds minor IPC latency, it guarantees the main thread's 60fps render loop remains utterly unblocked during extremely heavy database I/O workloads.
-</details>
+
+</FaqItem>
+</Faq>

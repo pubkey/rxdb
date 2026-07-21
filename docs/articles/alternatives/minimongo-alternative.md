@@ -2,6 +2,10 @@
 
 > Compare RxDB and Minimongo for client-side JavaScript databases. Learn why RxDB is a better alternative for offline-first apps with persistent storage, reactive queries, conflict handling, and multi-tab support.
 
+import {Faq, FaqItem} from '@site/src/components/faq';
+import {Timeline} from '@site/src/components/timeline';
+import {ComparisonTable} from '@site/src/components/comparison-table';
+
 # RxDB as a Minimongo Alternative
 
 <RxdbLogo alt="JavaScript Database" />
@@ -20,10 +24,14 @@ The standalone `mWater/minimongo` package (forked from Meteor in January 2014) a
 
 ### A Brief Timeline
 
+<Timeline>
+
 - **2012** - Minimongo is introduced as a core module in Meteor.js, enabling the DDP (Distributed Data Protocol) data sync layer.
 - **2014** - The `mWater/minimongo` project forks the Meteor code to make it usable as an npm package outside of Meteor. It adds geospatial query support and storage adapters.
 - **2016-2020** - Minimongo within Meteor continues to receive updates as part of the larger framework. The standalone fork sees decreasing maintenance activity.
 - **2024-2025** - Within Meteor 3.x, Minimongo is still shipped as the client-side cache layer. Outside of Meteor, the standalone fork is effectively unmaintained. New projects that need a client-side MongoDB-like database generally reach for more capable tools.
+
+</Timeline>
 
 ### Where Minimongo Is Used Today
 
@@ -453,6 +461,8 @@ After the initial setup, you can add [replication](../../replication.md) to sync
 
 ## Comparison Summary
 
+<ComparisonTable>
+
 | Aspect | Minimongo | RxDB |
 |---|---|---|
 | **Type** | In-memory client-side cache | Persistent local-first database |
@@ -473,41 +483,40 @@ After the initial setup, you can add [replication](../../replication.md) to sync
 | **Framework agnostic** | Tied to Meteor ecosystem | Works with React, Vue, Angular, Svelte, plain JS |
 | **License** | MIT | Apache 2.0 |
 
+</ComparisonTable>
+
 ---
 
 ## FAQ
 
-<details>
-<summary>Can I use RxDB with a MongoDB backend?</summary>
+<Faq>
+<FaqItem question="Can I use RxDB with a MongoDB backend?">
 
 Yes. RxDB's replication protocol can communicate with any HTTP server, including a Node.js API backed by MongoDB. You implement pull and push handlers that query your MongoDB API endpoints and return the document format RxDB expects. You do not need to replace your backend to use RxDB on the frontend.
 
-</details>
+</FaqItem>
 
-<details>
-<summary>Does RxDB support the same query syntax as Minimongo?</summary>
+<FaqItem question="Does RxDB support the same query syntax as Minimongo?">
 
 RxDB uses a [MongoDB-compatible query syntax](../../rx-query.md) for selectors, so many queries you have written for Minimongo will work with RxDB with little or no modification. The `selector` field in RxDB queries uses the same operators (`$eq`, `$gt`, `$in`, `$or`, `$and`, etc.) that Minimongo supports. RxDB does not support the full MongoDB aggregation pipeline, but it covers the query patterns needed for client-side filtering, sorting, and pagination.
 
-</details>
+</FaqItem>
 
-<details>
-<summary>Does RxDB work without any backend server?</summary>
+<FaqItem question="Does RxDB work without any backend server?">
 
 Yes. RxDB works entirely as a local database with no server. You create a database, write documents, run queries, and subscribe to reactive changes without any network connection required. Replication is optional. You can start with a local-only setup and add a replication layer later when your application requirements grow.
 
-</details>
+</FaqItem>
 
-<details>
-<summary>How does RxDB handle data when the user has been offline for a long time?</summary>
+<FaqItem question="How does RxDB handle data when the user has been offline for a long time?">
 
 When the device comes back online, RxDB runs a replication cycle. It pulls all documents changed on the server since the last successful checkpoint and pushes all local writes that accumulated while offline. If the same document was changed on both sides, RxDB calls your conflict handler to determine the final state. This process works correctly whether the offline period was five minutes or several weeks.
 
-</details>
+</FaqItem>
 
-<details>
-<summary>Is RxDB suitable for React Native?</summary>
+<FaqItem question="Is RxDB suitable for React Native?">
 
 Yes. RxDB runs on React Native using the [SQLite storage plugin](../../rx-storage-sqlite.md). The same schema definitions, query code, and replication setup you write for your web application can be shared with your React Native application. RxDB also supports [Expo](../../react-native-database.md) through dedicated storage plugins.
 
-</details>
+</FaqItem>
+</Faq>

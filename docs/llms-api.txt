@@ -6,23 +6,21 @@ This file contains all documentation content in a single document following the 
 
 ## Installation
 
+import {InstallTabs} from '@site/src/components/install-tabs';
+
 # Install RxDB
 
 ## npm
 
 To install the latest release of `rxdb` and its dependencies and save it to your `package.json`, run:
 
-```bash
-npm i rxdb --save
-```
+<InstallTabs packageName="rxdb" />
 
 ## peer-dependency
 
 You also need to install the peer-dependency `rxjs` if you have not installed it before.
 
-```bash
-npm i rxjs --save
-```
+<InstallTabs packageName="rxjs" />
 
 ## polyfills
 
@@ -793,6 +791,7 @@ The default compressible types include the following MIME type patterns. Binary 
 ## Master Data - Create and Manage RxCollections
 
 import { NON_PREMIUM_COLLECTION_LIMIT } from '../src/constants';
+import {Faq, FaqItem} from '@site/src/components/faq';
 
 # RxCollection
 A collection stores documents of the same type.
@@ -1123,24 +1122,28 @@ const is = isRxCollection(myObj);
 
 ## FAQ
 
-<details>
-    <summary>When I reload the browser window, will my collections still be in the database?</summary>
+<Faq>
+<FaqItem question="When I reload the browser window, will my collections still be in the database?">
+
     
     No, the javascript instance of the collections will not automatically load into the database on page reloads.
     You have to call the `addCollections()` method each time you create your database. This will create the JavaScript object instance of the RxCollection so that you can use it in the RxDatabase. The persisted data will automatically be available in your RxCollection each time you create it.
     
-</details>
-<details>
-    <summary>How to remove the limit of {NON_PREMIUM_COLLECTION_LIMIT} collections?</summary>
+
+</FaqItem>
+<FaqItem question={'How to remove the limit of ' + NON_PREMIUM_COLLECTION_LIMIT + ' collections?'}>
+
     
-    In the open-source version of RxDB, the amount of RxCollections that can exist in parallel is limited to `{NON_PREMIUM_COLLECTION_LIMIT}`.
+    In the open-source version of RxDB, the amount of RxCollections that can exist in parallel is limited to <code>{NON_PREMIUM_COLLECTION_LIMIT}</code>.
     To remove this limit, you can purchase the [Premium Plugins](/premium/) and call the `setPremiumFlag()` function before creating a database:
     ```ts
     import { setPremiumFlag } from 'rxdb-premium/plugins/shared';
     setPremiumFlag();
     ```
     
-</details>
+
+</FaqItem>
+</Faq>
 
 ---
 
@@ -2094,6 +2097,7 @@ To prevent deadlocks, consider:
 ## RxQuery
 
 import {BetaBlock} from '@site/src/components/beta-block';
+import {Faq, FaqItem} from '@site/src/components/faq';
 
 # RxQuery
 
@@ -2562,29 +2566,23 @@ Like most other noSQL-Databases, RxDB uses the [mango-query-syntax](https://gith
 
 ## FAQ
 
-<details>
-    <summary>Can I specify which document fields are returned by an RxDB query?</summary>
+<Faq>
+<FaqItem question="Can I specify which document fields are returned by an RxDB query?">
 
   No, RxDB does not support partial document retrieval. Because RxDB is a client-side database with limited memory, it caches and de-duplicates entire documents across multiple queries. Even if you only need a few fields, most storages must still fetch the entire JSON data, so subselecting fields would not significantly improve performance. Therefore, RxDB always returns full documents. If you only need certain fields, you can filter them out in your application code or consider storing just the necessary data in a separate collection.
 
-</details>
-
-<details>
-    <summary>Why doesn't RxDB support aggregations on queries?</summary>
+</FaqItem>
+<FaqItem question="Why doesn't RxDB support aggregations on queries?">
 
   RxDB runs entirely on the client side. Any "aggregation" or data processing you might do within RxDB would still happen in the same JavaScript environment as your application code. Therefore, there's no real performance advantage or difference between doing the aggregation in RxDB vs. doing it in your own code after fetching the data. As a result, RxDB doesn't provide built-in aggregation methods. Instead, just query the documents you need and perform any calculations directly in your app's code.
 
-</details>
-
-<details>
-    <summary>Why does RxDB not support cross-collection queries?</summary>
+</FaqItem>
+<FaqItem question="Why does RxDB not support cross-collection queries?">
 
   RxDB is a client-side database and does not provide built-in cross-collection queries or transactions. Instead, you can execute multiple queries in your JavaScript code and combine their results as needed. Because everything runs in the same environment, this approach offers the same performance you would get if cross-collection queries were built in - without the added complexity.
 
-</details>
-
-<details>
-    <summary>Why Doesn't RxDB Support Case-Insensitive Search?</summary>
+</FaqItem>
+<FaqItem question="Why Doesn't RxDB Support Case-Insensitive Search?">
 
   RxDB relies on various storage engines as its backend, and these storage engines generally do not support case-insensitive search natively, like [IndexedDB](./rx-storage-indexeddb.md) or [FoundationDB](./rx-storage-foundationdb.md). This limitation arises from the design of these engines, which prioritize efficiency and flexibility for specific types of queries rather than universal features like case-insensitivity. Although RxDB does not offer built-in support for case-insensitive search, there are two common workarounds:
   - **Store Data in a Meta-Field for Lowercase Search**: To enable case-insensitive search, you can store an additional field in your documents where the relevant text data is preprocessed and saved in lowercase.
@@ -2611,11 +2609,14 @@ const query = myCollection.find({
 ```
 However, this method has a significant downside: regex queries often cannot leverage indexes efficiently. As a result, they may be slower, especially for large datasets.
 
-</details>
+</FaqItem>
+</Faq>
 
 ---
 
 ## Design Perfect Schemas in RxDB
+
+import {Faq, FaqItem} from '@site/src/components/faq';
 
 # RxSchema
 
@@ -2970,8 +2971,8 @@ Also the following class properties of `RxDocument` cannot be used as top level 
 
 ## FAQ
 
-<details>
-    <summary>How can I store a Date?</summary>
+<Faq>
+<FaqItem question="How can I store a Date?">
 
     With RxDB you can only store plain JSON data inside of a document. You cannot store a JavaScript `new Date()` instance directly. This is for performance reasons and because `Date` is a mutable object where changing it at any time might cause strange problems that are hard to debug.
 
@@ -2986,10 +2987,8 @@ Also the following class properties of `RxDocument` cannot be used as top level 
     When storing the data you have to first transform your `Date` object into a string `Date.toISOString()`.
     Because the `date-time` is sortable, you can do whatever query operations on that field and even use it as an index.
 
-</details>
-
-<details>
-    <summary>How do I specify nullable in JSON Schema?</summary>
+</FaqItem>
+<FaqItem question="How do I specify nullable in JSON Schema?">
 
     In JSON Schema, you make a field nullable by allowing multiple types with an array:
     ```json
@@ -3020,10 +3019,8 @@ Also the following class properties of `RxDocument` cannot be used as top level 
     }
     ```
 
-</details>
-
-<details>
-    <summary>How to store schemaless data?</summary>
+</FaqItem>
+<FaqItem question="How to store schemaless data?">
 
     By design, RxDB requires that every collection has a schema. This means you cannot create a truly "schema-less" collection where top-level fields are unknown at schema creation time. RxDB must know about all fields of a document at the top level to perform validation, index creation, and other internal optimizations.
     However, there is a way to store data of arbitrary structure at sub-fields. To do this, define a property with `type: "object"` in your schema. For example:
@@ -3047,10 +3044,8 @@ Also the following class properties of `RxDocument` cannot be used as top level 
     }
     ```
 
-</details>
-
-<details>
-    <summary>Why does RxDB automatically set `additionalProperties: false` at the top level</summary>
+</FaqItem>
+<FaqItem question="Why does RxDB automatically set additionalProperties: false at the top level">
 
     RxDB automatically sets `additionalProperties: false` at the top level of a schema to ensure that all top-level fields are known in advance. This design choice offers several benefits:
 
@@ -3063,10 +3058,8 @@ Developers can add custom [ORM methods](./orm.md) to RxDocuments. If top-level p
 - Improves TypeScript typings:
 If RxDB didn't know about all top-level fields, the document type would effectively become `any`. That means a simple typo like `myDocument.toJOSN()` would only be caught at runtime, not at build time. By disallowing unknown properties, TypeScript can provide strict typing and catch errors sooner.
 
-</details>
-
-<details>
-    <summary>Can't change the schema of a collection</summary>
+</FaqItem>
+<FaqItem question="Can't change the schema of a collection">
 
     When you make changes to the schema of a collection, you sometimes can get an error like
 `Error: addCollections(): another instance created this collection with a different schema`.
@@ -3093,12 +3086,16 @@ In **development**-mode, the schema-change can be simplified by **one of these**
 -   Call `removeRxDatabase('mydatabasename', RxStorage);` before creating a new [RxDatabase](./rx-database.md)-instance
 -   Add a timestamp as suffix to the database-name to create a new one each run like `name: 'heroesDB' + new Date().getTime()`
 
-</details>
+</FaqItem>
+</Faq>
 
 ---
 
 ## RxState - Reactive Persistent State with RxDB
 
+import {Faq, FaqItem} from '@site/src/components/faq';
+
+# RxState - Reactive Persistent State with RxDB
 
 RxState is a flexible state library build on top of the [RxDB Database](https://rxdb.info/). While RxDB stores similar documents inside of collections, RxState can store any complex JSON data without having a predefined schema.
 
@@ -3263,8 +3260,8 @@ const replicationPool = await replicateWebRTC(
 
 ## FAQ
 
-<details>
-<summary>What is the difference between RxState and LocalDocuments?</summary>
+<Faq>
+<FaqItem question="What is the difference between RxState and LocalDocuments?">
 
 RxState can be synced.
 
@@ -3277,25 +3274,24 @@ LocalDocuments can be modified like any other RxDocument with conflict handling 
 RxState is mapped fully into memory while LocalDocuments are in memory only when needed. For big data, LocalDocuments should be used.
 
 RxState is stored per RxDatabase while LocalDocuments can be stored either per RxDatabase or RxCollection.
-</details>
 
-<details>
-<summary>When should I use RxState instead of Redux, Zustand, or Vuex?</summary>
+</FaqItem>
+<FaqItem question="When should I use RxState instead of Redux, Zustand, or Vuex?">
 
 You should use RxState when you need state that automatically persists, synchronizes across browser tabs, or replicates between devices. While traditional in-memory stores require boilerplate replication logic and manual persistence, RxState handles these features out of the box.
-</details>
 
-<details>
-<summary>Why do I have to use a modifier function?</summary>
+</FaqItem>
+<FaqItem question="Why do I have to use a modifier function?">
 
 Using a modifier function guarantees deterministic conflict resolution when multiple JavaScript realms (like WebWorkers or multiple browser tabs) attempt to update the state simultaneously. It ensures the state evaluates correctly even under concurrent modifications.
-</details>
 
-<details>
-<summary>Does RxState validate data against a schema?</summary>
+</FaqItem>
+<FaqItem question="Does RxState validate data against a schema?">
 
 No, RxState is schema-less by default. Unlike standard RxDB collections, it accepts any complex JSON data without requiring a rigid schema definition, allowing for flexible state updates.
-</details>
+
+</FaqItem>
+</Faq>
 
 ---
 

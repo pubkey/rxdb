@@ -2,6 +2,8 @@
 
 > Optimize storage and speed up queries with RxDB's Cleanup Plugin, automatically removing old deleted docs while preserving replication states.
 
+import {Faq, FaqItem} from '@site/src/components/faq';
+
 # 🧹 Cleanup
 
 To make the [replication](./replication.md) work, and for other reasons, RxDB has to keep deleted documents in storage so that it can replicate their deletion state.
@@ -110,9 +112,10 @@ await myRxCollection.cleanup(0);
 
 ## FAQ
 
-<details>
-    <summary>When does the cleanup run</summary>
+<Faq>
+<FaqItem question="When does the cleanup run">
 
   The cleanup cycles are optimized to run only when the database is idle and it is unlikely that another database interaction performance will be decreased in the meantime. For example, by default, the cleanup does not run in the first 60 seconds of the creation of a collection to ensure the initial page load of your website does not slow down. Also, we use mechanisms like the `requestIdleCallback()` API to improve the correct timing of the cleanup cycle.
 
-</details>
+</FaqItem>
+</Faq>

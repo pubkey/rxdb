@@ -3,6 +3,7 @@
 > Launch a secure, high-performance server on top of your RxDB database. Enable REST, replication endpoints, and seamless data syncing with RxServer.
 
 import {HeadlineWithIcon} from '@site/src/components/headline-with-icon';
+import {Faq, FaqItem} from '@site/src/components/faq';
 
 # <HeadlineWithIcon h1 icon={}>RxDB Server</HeadlineWithIcon>
 
@@ -316,8 +317,9 @@ To [detect and handle conflicts](./replication.md#conflict-handling), the confli
 
 ## FAQ
 
-<details>
-    <summary>Why are the server plugins in a different github repo and npm package?</summary>
+<Faq>
+<FaqItem question="Why are the server plugins in a different github repo and npm package?">
+
     
     The RxServer and its other plugins are in a different github repository because:
     
@@ -329,12 +331,14 @@ To [detect and handle conflicts](./replication.md#conflict-handling), the confli
         
     
     
-</details>
 
-<details>
-    <summary>Why can't endpoints be added dynamically?</summary>
+</FaqItem>
+<FaqItem question="Why can't endpoints be added dynamically?">
+
     
     After `RxServer.start()` is called, you can no longer add endpoints. This is because many of the supported
     server libraries do not allow dynamic routing for performance and security reasons. 
     
-</details>
+
+</FaqItem>
+</Faq>
