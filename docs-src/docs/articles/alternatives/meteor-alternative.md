@@ -5,6 +5,8 @@ description: Compare RxDB and Meteor for local-first JavaScript applications. Le
 image: /files/alternatives/meteor_text.svg
 ---
 
+import {Faq, FaqItem} from '@site/src/components/faq';
+
 # RxDB as a Meteor Alternative
 
 <RxdbLogo alt="JavaScript Database" />
@@ -414,8 +416,8 @@ From here, you can add [replication](../../replication.md) to sync with any back
 
 ## FAQ
 
-<details>
-<summary>Can I migrate a Meteor app to RxDB?</summary>
+<Faq>
+<FaqItem question="Can I migrate a Meteor app to RxDB?">
 
 Migration is not a drop-in replacement because RxDB and Meteor have different data models and protocols. However, the general approach is:
 
@@ -426,25 +428,23 @@ Migration is not a drop-in replacement because RxDB and Meteor have different da
 
 The migration can be done incrementally if you wrap RxDB behind the same service layer that previously called Meteor methods.
 
-</details>
+</FaqItem>
 
-<details>
-<summary>Does RxDB need a server?</summary>
+<FaqItem question="Does RxDB need a server?">
 
 No. RxDB works entirely offline with no server. You create a local database, insert and query documents, and use subscriptions to react to changes. Adding replication is optional and requires you to provide pull and push handlers that connect to a server of your choice. Many applications start with a local-only setup and add replication later.
 
-</details>
+</FaqItem>
 
-<details>
-<summary>How does RxDB handle data when the user has been offline for a long time?</summary>
+<FaqItem question="How does RxDB handle data when the user has been offline for a long time?">
 
 When the user reconnects, RxDB runs a full replication cycle. It pulls all documents changed on the server since the last successful checkpoint, and pushes all local changes that were written while offline. If a document was changed on both sides, RxDB calls your [conflict handler](../../transactions-conflicts-revisions.md) to resolve the discrepancy. This cycle works correctly whether the user was offline for five minutes or five weeks.
 
-</details>
+</FaqItem>
 
-<details>
-<summary>Is RxDB suitable for large datasets?</summary>
+<FaqItem question="Is RxDB suitable for large datasets?">
 
 Yes. RxDB uses indexed storage engines rather than in-memory arrays, which means query performance does not degrade linearly with collection size. The OPFS storage backend, in particular, is designed for high read and write throughput. For very large datasets, you can define compound indexes on the fields you query most frequently to keep lookups fast.
 
-</details>
+</FaqItem>
+</Faq>

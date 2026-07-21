@@ -5,6 +5,9 @@ description: Replace MongoDB Realm and Atlas Device SDK with RxDB, a JavaScript 
 image: /headers/mongodb-realm-alternative.jpg
 ---
 
+import {Faq, FaqItem} from '@site/src/components/faq';
+import {ComparisonTable} from '@site/src/components/comparison-table';
+
 # RxDB as a MongoDB Realm Alternative After Atlas Device Sync Deprecation
 
 Teams that built mobile and web applications on top of [MongoDB Realm](https://www.mongodb.com/docs/realm/) and the Atlas Device SDKs are now in a difficult position. In September 2024, MongoDB announced the deprecation of the Atlas Device SDKs and Atlas Device Sync, with end of life targeted for September 2025. Applications that still rely on Realm for client storage and bidirectional sync need a JavaScript friendly replacement that does not lock the project to a single cloud vendor and that will keep receiving updates well past 2025.
@@ -156,42 +159,41 @@ A staged rollout where both databases run side by side for one release is the sa
 
 ## FAQ
 
-<details>
-<summary>Is MongoDB Realm being deprecated?</summary>
+<Faq>
+<FaqItem question="Is MongoDB Realm being deprecated?">
 
 Yes. In September 2024 MongoDB announced the deprecation of the Atlas Device SDKs and Atlas Device Sync. End of life is targeted for September 2025, and new project sign ups have already been closed. Existing apps will continue to function until EOL, after which the service will be shut down.
 
-</details>
+</FaqItem>
 
-<details>
-<summary>Can RxDB still talk to MongoDB?</summary>
+<FaqItem question="Can RxDB still talk to MongoDB?">
 
 Yes, through a server side adapter. The RxDB client uses the [HTTP replication plugin](../../replication-http.md) to call REST endpoints, and those endpoints read from and write to MongoDB on the server. Direct client to MongoDB connections are not supported, which is the correct security boundary for any production app.
 
-</details>
+</FaqItem>
 
-<details>
-<summary>How do I migrate Realm objects to RxDB?</summary>
+<FaqItem question="How do I migrate Realm objects to RxDB?">
 
 Define an [RxSchema](../../rx-schema.md) for each Realm class, export every Realm object to JSON on app launch, and call `collection.bulkInsert(docs)` to load them into RxDB. Track migration completion in persistent storage so the import runs exactly once per device.
 
-</details>
+</FaqItem>
 
-<details>
-<summary>Does RxDB run on React Native?</summary>
+<FaqItem question="Does RxDB run on React Native?">
 
 Yes. RxDB has first class support for [React Native](../../react-native-database.md) using the SQLite or memory storage adapters. The same schema and query code runs in the browser, in Node.js, in Electron, and on React Native without modification.
 
-</details>
+</FaqItem>
 
-<details>
-<summary>Is RxDB free for commercial use?</summary>
+<FaqItem question="Is RxDB free for commercial use?">
 
 The RxDB core is open source under the Apache 2.0 license and free for commercial use. There is also a Premium offering with extra storage adapters, encryption modes, and performance plugins. The free core is sufficient for most applications.
 
-</details>
+</FaqItem>
+</Faq>
 
 ## Comparison table
+
+<ComparisonTable>
 
 | Feature | MongoDB Realm / Atlas Device SDK | RxDB |
 | --- | --- | --- |
@@ -208,5 +210,7 @@ The RxDB core is open source under the Apache 2.0 license and free for commercia
 | Browser | Limited via WebAssembly | First class through IndexedDB, OPFS, Memory |
 | License | Apache 2.0 SDK, proprietary sync | Apache 2.0 core, optional Premium add-ons |
 | Self hosting | Not supported | Fully supported |
+
+</ComparisonTable>
 
 For teams currently running on Realm, the EOL date in September 2025 is firm. Starting the migration to RxDB now leaves time for a staged rollout, a tested HTTP replication layer against MongoDB, and a clean removal of the Atlas Device SDK before support ends.

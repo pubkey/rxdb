@@ -5,6 +5,9 @@ description: Compare RxDB and Horizon (RethinkDB's client library) for realtime 
 image: /headers/alternatives/horizon-alternative.jpg
 ---
 
+import {Faq, FaqItem} from '@site/src/components/faq';
+import {CenteredImage} from '@site/src/components/centered-image';
+
 # RxDB as a Horizon Alternative
 
 <RxdbLogo alt="JavaScript Database" />
@@ -169,9 +172,7 @@ When a user opens an RxDB application without network access, every feature work
 
 When connectivity returns, RxDB's replication plugins synchronize local changes with the remote backend automatically. The application seamlessly transitions between offline and online states without any code change required for individual features.
 
-<center>
-    <img src="/files/offline-ready.png" alt="Offline-ready application with RxDB" width="400" />
-</center>
+<CenteredImage src="/files/offline-ready.png" alt="Offline-ready application with RxDB" width={400} />
 
 This is the [offline-first architecture](../../offline-first.md). RxDB treats local storage as the primary source of truth. The server is a sync target, not a dependency for normal operation. Horizon's architecture was exactly the opposite: the server was the only source of data, and offline operation was not possible.
 
@@ -525,17 +526,16 @@ This works entirely offline. Connect a replication plugin when you need server s
 
 ## FAQ
 
-<details>
-<summary>Can RxDB replace Horizon for an existing RethinkDB-based application?</summary>
+<Faq>
+<FaqItem question="Can RxDB replace Horizon for an existing RethinkDB-based application?">
 
 Yes. RxDB can take over the client-side data layer. You keep RethinkDB on the server and build a thin API (REST or WebSocket) in front of it. Then use RxDB's [custom replication](../../replication.md) or [WebSocket replication](../../replication-websocket.md) plugin to sync data between RxDB on the client and RethinkDB on the server.
 
 The main difference is that Horizon was the entire client-server protocol, while with RxDB you own the API layer. That gives you full control over authentication, rate limiting, and data access rules, instead of depending on Horizon's specific permission model.
 
-</details>
+</FaqItem>
 
-<details>
-<summary>How does RxDB's reactive model compare to Horizon's watch() API?</summary>
+<FaqItem question="How does RxDB's reactive model compare to Horizon's watch() API?">
 
 Horizon's `watch()` connected to RethinkDB's changefeed system and pushed updated result sets to the client. When any document in a collection changed, Horizon sent the entire updated array to the subscriber.
 
@@ -543,27 +543,25 @@ RxDB works similarly at the API level: subscribing to a query gives you the curr
 
 RxDB uses the [event-reduce algorithm](https://github.com/pubkey/event-reduce) to compute result set updates efficiently without re-running the full query on every change, keeping reactive updates fast even in write-heavy applications.
 
-</details>
+</FaqItem>
 
-<details>
-<summary>Does RxDB work with React, Vue, Angular, and other frameworks?</summary>
+<FaqItem question="Does RxDB work with React, Vue, Angular, and other frameworks?">
 
 Yes. RxDB is framework-agnostic. Its reactive queries return RxJS Observables, which integrate with any framework. RxDB provides convenience hooks for React (`useRxQuery`, `useRxDocument`) that wrap Observable subscriptions in React's state model. For Angular, RxJS Observables can be used directly with the async pipe. For Vue, plain Observable subscriptions work with `ref` and `reactive`.
 
 Horizon was also framework-agnostic at the API level, but the outdated state of its dependencies makes integration with modern framework versions difficult without forking the library.
 
-</details>
+</FaqItem>
 
-<details>
-<summary>How does RxDB handle reconnection after going offline?</summary>
+<FaqItem question="How does RxDB handle reconnection after going offline?">
 
 RxDB's replication plugins run continuously with automatic retry. When the network is unavailable, the pull and push handlers fail, and RxDB waits for `retryTime` milliseconds before retrying. When the network returns, replication resumes from the last successful checkpoint. No writes are lost: documents written while offline are stored locally and pushed to the server when the connection is re-established. The reactive queries in the UI stay up to date throughout, reflecting local writes immediately without waiting for server confirmation.
 
-</details>
+</FaqItem>
 
-<details>
-<summary>Is RxDB suitable for production use?</summary>
+<FaqItem question="Is RxDB suitable for production use?">
 
 RxDB has been in active development since 2016 and is used by companies in production applications. It has a working business model through [premium plugins](/premium/), which funds ongoing maintenance. The project has close to zero open bugs and receives regular releases. Unlike Horizon, which has had no maintenance since 2016, RxDB continues to add new storage backends, fix browser compatibility issues, and improve performance.
 
-</details>
+</FaqItem>
+</Faq>

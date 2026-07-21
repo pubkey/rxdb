@@ -5,6 +5,9 @@ description: Replace unmaintained NeDB with RxDB. Get schema validation, MongoDB
 image: /headers/nedb-alternative.jpg
 ---
 
+import {Faq, FaqItem} from '@site/src/components/faq';
+import {ComparisonTable} from '@site/src/components/comparison-table';
+
 # RxDB as a NeDB Alternative for Node.js, Electron, and the Browser
 
 If you arrived here, you are likely running a project that depends on **NeDB** and you are looking for a maintained replacement. NeDB served many Node.js, Electron, and browser applications well during its active years, but the project has been frozen since 2016. Modern apps need schema validation, observable queries, multi-tab coordination, and replication, and a database that still receives security updates. **RxDB** fills that gap while keeping the embedded, document-oriented model that NeDB users are familiar with.
@@ -147,35 +150,35 @@ A migration script that runs once on first launch is often enough. After a succe
 
 ## FAQ
 
-<details>
-<summary>Is NeDB maintained?</summary>
+<Faq>
+<FaqItem question="Is NeDB maintained?">
 
 No. The original NeDB repository has not received commits since 2016 and is archived. Issues remain open, and dependency security advisories are not addressed. Community forks exist, but none provide the long-term support that an active project like RxDB offers.
 
-</details>
+</FaqItem>
 
-<details>
-<summary>Can I keep MongoDB-style queries in RxDB?</summary>
+<FaqItem question="Can I keep MongoDB-style queries in RxDB?">
 
 Yes. RxDB queries use the same selector format as MongoDB and NeDB, including operators like `$gt`, `$lt`, `$in`, `$nin`, `$regex`, and `$elemMatch`, plus `sort`, `skip`, and `limit`. See the [RxQuery documentation](../../rx-query.md) for the full list.
 
-</details>
+</FaqItem>
 
-<details>
-<summary>Is RxDB safe to use in Electron?</summary>
+<FaqItem question="Is RxDB safe to use in Electron?">
 
 Yes. RxDB ships official guidance and storage options for Electron, including SQLite-backed storages that store data on the local filesystem. The [Electron Database](../../electron-database.md) page covers configuration in both the main and renderer processes, including multi-window setups.
 
-</details>
+</FaqItem>
 
-<details>
-<summary>How do I migrate data from NeDB to RxDB?</summary>
+<FaqItem question="How do I migrate data from NeDB to RxDB?">
 
 Read the existing NeDB file with the legacy library, define an RxDB schema that matches the documents, and call `bulkInsert` on the new collection. Rename `_id` to your chosen primary key while you copy the data. After verifying the import, the old NeDB file can be removed.
 
-</details>
+</FaqItem>
+</Faq>
 
 ## Comparison Table
+
+<ComparisonTable>
 
 | Feature | NeDB | RxDB |
 | --- | --- | --- |
@@ -192,6 +195,8 @@ Read the existing NeDB file with the legacy library, define an RxDB schema that 
 | TypeScript support | Community typings | First-class TypeScript |
 | Encryption | None | Optional plugin |
 | Compression | None | Optional plugin |
+
+</ComparisonTable>
 
 ## Follow Up
 

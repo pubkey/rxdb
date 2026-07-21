@@ -5,6 +5,9 @@ description: Compare RxDB and LowDB. See where the JSON-file approach stops scal
 image: /headers/lowdb-alternative.jpg
 ---
 
+import {Faq, FaqItem} from '@site/src/components/faq';
+import {ComparisonTable} from '@site/src/components/comparison-table';
+
 # RxDB as a LowDB Alternative for Node.js and Beyond
 
 [LowDB](https://github.com/typicode/lowdb) is a small JSON file database that fits a specific niche: tiny CLIs, prototypes, configuration stores, and demo servers. The API is straightforward, the data sits in a single `db.json` file, and the whole library is a few kilobytes. For projects where the data set stays small and the access pattern is single-process and synchronous-feeling, LowDB does the job.
@@ -169,35 +172,35 @@ For a `git`-style config file, a personal todo CLI, or a fixture file used in te
 
 ## FAQ
 
-<details>
-<summary>Is RxDB overkill for prototyping?</summary>
+<Faq>
+<FaqItem question="Is RxDB overkill for prototyping?">
 
 No. RxDB runs in a single file with the in-memory storage and adds about a minute of setup. The schema and reactive query features pay off as soon as a UI binds to the data, which usually happens early in a prototype. Teams that start with RxDB avoid rewriting the data layer once the prototype turns into a product.
 
-</details>
+</FaqItem>
 
-<details>
-<summary>Can RxDB read and write a JSON file?</summary>
+<FaqItem question="Can RxDB read and write a JSON file?">
 
 RxDB does not store one big JSON document, but the [import and export helpers](../../rx-database.md) serialize a database to JSON for backup or seeding. For a `db.json` style fixture used in tests, the export output is a drop-in equivalent. For runtime storage, an indexed engine like SQLite or IndexedDB performs better than re-writing a JSON file on every change.
 
-</details>
+</FaqItem>
 
-<details>
-<summary>Does RxDB run server-side?</summary>
+<FaqItem question="Does RxDB run server-side?">
 
 Yes. RxDB runs in [Node.js](../../nodejs-database.md) with adapters for SQLite, MongoDB, filesystem, and in-memory storage. A Node.js process can act as a server, a CLI, or a worker, and replicate with browser clients through HTTP, GraphQL, or WebSocket transports.
 
-</details>
+</FaqItem>
 
-<details>
-<summary>How does RxDB compare on bundle size?</summary>
+<FaqItem question="How does RxDB compare on bundle size?">
 
 LowDB's core is a couple of kilobytes because it does very little. RxDB's core ships around 50 KB gzipped with reactive queries, schema validation, and the replication protocol included. Plugins are tree-shakeable, so an app only pays for the storages and replication adapters it imports.
 
-</details>
+</FaqItem>
+</Faq>
 
 ## Comparison Table
+
+<ComparisonTable>
 
 | Feature | LowDB | RxDB |
 | --- | --- | --- |
@@ -212,5 +215,7 @@ LowDB's core is a couple of kilobytes because it does very little. RxDB's core s
 | Runtimes | Node.js, browser (with adapters) | Node.js, browser, Electron, React Native, Deno, Bun |
 | Bundle size | A few KB | About 50 KB gzipped core, tree-shakeable plugins |
 | Best fit | CLI configs, prototypes, tiny demos | Production apps that need reactivity, sync, or scale |
+
+</ComparisonTable>
 
 For a deeper look at the building blocks, see the [RxCollection guide](../../rx-collection.md), the [RxSchema reference](../../rx-schema.md), and the [replication overview](../../replication.md). For Node.js specific choices, the [Node.js database page](../../nodejs-database.md) covers the available storages.

@@ -5,6 +5,9 @@ description: Outgrowing localForage? RxDB adds schemas, indexed queries, reactiv
 image: /headers/localforage-alternative.jpg
 ---
 
+import {Faq, FaqItem} from '@site/src/components/faq';
+import {ComparisonTable} from '@site/src/components/comparison-table';
+
 # RxDB as a localForage Alternative for Real Database Features
 
 [localForage](https://localforage.github.io/localForage/) gives JavaScript developers a clean promise based wrapper around browser storage. It is a thin key-value layer that picks the best available backend, usually IndexedDB, with fallbacks to WebSQL or localStorage. Teams reach for it when they want a simple `setItem` and `getItem` API that works across browsers without writing IndexedDB transaction code by hand.
@@ -145,35 +148,35 @@ Because storages are swappable, the same RxDB schemas and queries run unchanged 
 
 ## FAQ
 
-<details>
-<summary>Should I use localForage or RxDB for caching?</summary>
+<Faq>
+<FaqItem question="Should I use localForage or RxDB for caching?">
 
 For a flat cache of API responses keyed by URL, localForage is fine and has a smaller footprint. Reach for RxDB when the cache needs queries, indexes, expiry rules expressed as fields, change subscriptions for the UI, or replication back to a server. See the [reactivity guide](../../reactivity.md) for how observable queries replace manual cache invalidation.
 
-</details>
+</FaqItem>
 
-<details>
-<summary>Can RxDB replace localStorage?</summary>
+<FaqItem question="Can RxDB replace localStorage?">
 
 Yes. RxDB ships a localStorage based [storage adapter](../../articles/localstorage.md) for small datasets, and IndexedDB or OPFS adapters for larger ones. Unlike raw localStorage, RxDB gives you schemas, queries, and async APIs that do not block the main thread.
 
-</details>
+</FaqItem>
 
-<details>
-<summary>Does RxDB handle multi-tab?</summary>
+<FaqItem question="Does RxDB handle multi-tab?">
 
 Yes. With `multiInstance: true`, RxDB coordinates across tabs of the same origin. Writes in one tab are visible to queries in other tabs, leader election picks one tab to run replication, and change events propagate over a BroadcastChannel.
 
-</details>
+</FaqItem>
 
-<details>
-<summary>How big can RxDB scale in IndexedDB?</summary>
+<FaqItem question="How big can RxDB scale in IndexedDB?">
 
 RxDB has been used with hundreds of thousands of documents per collection in IndexedDB. For larger datasets or write heavy workloads, the [OPFS storage](../../rx-storage-opfs.md) sidesteps many of the [slow IndexedDB](../../slow-indexeddb.md) bottlenecks and keeps query latency low.
 
-</details>
+</FaqItem>
+</Faq>
 
 ## Comparison Table
+
+<ComparisonTable>
 
 | Feature | localForage | RxDB |
 | --- | --- | --- |
@@ -190,6 +193,8 @@ RxDB has been used with hundreds of thousands of documents per collection in Ind
 | Migrations | Manual | Schema versioning with migration strategies |
 | Offline first | Storage only | Full [offline first](../../offline-first.md) stack |
 | Active development | Low | Active |
+
+</ComparisonTable>
 
 ## When to Pick Which
 

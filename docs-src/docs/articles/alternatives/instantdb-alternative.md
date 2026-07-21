@@ -5,6 +5,9 @@ description: Compare RxDB and InstantDB for local-first apps. Bring your own bac
 image: /headers/instantdb-alternative.jpg
 ---
 
+import {Faq, FaqItem} from '@site/src/components/faq';
+import {ComparisonTable} from '@site/src/components/comparison-table';
+
 # RxDB as an InstantDB Alternative with Custom Backends
 
 If you arrived here looking for an **InstantDB alternative**, you most likely want one of three things:
@@ -175,42 +178,41 @@ If you want to ship fast and a hosted backend is acceptable, InstantDB removes a
 
 ## FAQ
 
-<details>
-<summary>Is InstantDB self-hostable?</summary>
+<Faq>
+<FaqItem question="Is InstantDB self-hostable?">
 
 The InstantDB sync service is a hosted product. There is no supported way to run the production server on your own infrastructure today. If self-hosting is a hard requirement, RxDB plus a backend you already operate is a closer fit.
 
-</details>
+</FaqItem>
 
-<details>
-<summary>Does RxDB use Datalog?</summary>
+<FaqItem question="Does RxDB use Datalog?">
 
 No. RxDB queries use a JSON Mango syntax similar to MongoDB and PouchDB. The format is documented in [RxQuery](../../rx-query.md) and supports selectors, sorting, indexes, and limits without a separate query language.
 
-</details>
+</FaqItem>
 
-<details>
-<summary>How does RxDB handle optimistic updates?</summary>
+<FaqItem question="How does RxDB handle optimistic updates?">
 
 Every write goes to the local storage first and resolves immediately. Observable queries re-emit with the new state, so the UI updates without waiting for the server. The [Sync Engine](../../replication.md) pushes the change in the background, and conflicts are routed through the collection's [conflict handler](../../transactions-conflicts-revisions.md). See [optimistic UI](../../articles/optimistic-ui.md) for an end-to-end example.
 
-</details>
+</FaqItem>
 
-<details>
-<summary>Can I customize storage in RxDB?</summary>
+<FaqItem question="Can I customize storage in RxDB?">
 
 Yes. RxDB has a storage interface with adapters for IndexedDB, OPFS, SQLite, in-memory, LocalStorage, and Dexie. You pick the adapter when you create the database, and the rest of the API stays the same. See [RxCollection](../../rx-collection.md) for how storage plugs into a collection.
 
-</details>
+</FaqItem>
 
-<details>
-<summary>What about real-time collaboration?</summary>
+<FaqItem question="What about real-time collaboration?">
 
 RxDB streams changes from the server through the replication event channel and from other browser tabs through BroadcastChannel. Combined with [observable queries](../../reactivity.md), the UI updates as soon as a remote change lands. For peer-to-peer setups, the WebRTC plugin lets devices sync directly. See [realtime database](../../articles/realtime-database.md) for the architecture.
 
-</details>
+</FaqItem>
+</Faq>
 
 ## Comparison Table
+
+<ComparisonTable>
 
 | Feature | InstantDB | RxDB |
 | --- | --- | --- |
@@ -225,6 +227,8 @@ RxDB streams changes from the server through the replication event channel and f
 | Multi-tab sync | Yes | Yes, via BroadcastChannel or shared worker |
 | P2P sync | No | Yes, via WebRTC plugin |
 | Self-hosting | Not supported | Standard |
+
+</ComparisonTable>
 
 ## Follow Up
 
