@@ -29,7 +29,7 @@ IndexedDB was the answer to that problem. Instead of SQL, it defines a storage e
 - Keep the API **asynchronous**, so a large read or write never blocks the UI thread.
 - Make every change **transactional**, so a failed write does not leave half-written data behind.
 - Support **indexes** for fast lookups by fields other than the primary key.
-- Stay **low-level**, so libraries can build friendlier APIs on top.
+- Stay **low-level**, so libraries (like RxDB) can build friendlier APIs on top.
 
 The last goal is why raw IndexedDB feels so bare. It was designed as a foundation for libraries, not as the thing you use directly.
 
