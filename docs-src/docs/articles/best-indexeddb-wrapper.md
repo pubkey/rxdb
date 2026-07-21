@@ -36,11 +36,13 @@ A wrapper solves some or all of these. The wrappers below sit on a spectrum. On 
 
 [Dexie.js](https://dexie.org/) is the most popular minimalist wrapper. It gives you a clean promise based API, a fluent query builder (`db.users.where('age').above(18).toArray()`), and a schema declaration for indexes. It is small, well documented, and battle-tested in production.
 
+Keep in mind that Dexie's queries are indexed range queries, not full NoSQL-style queries. The `where()` builder works on fields you declared as indexes, with operators like `above()`, `below()`, `between()`, `anyOf()`, and `startsWith()`. Anything beyond an indexed field falls back to `.filter()`, which runs a linear in-memory scan over the matched rows. There is no Mango-style selector language with `$or`, `$gt` on arbitrary fields, or nested field conditions like RxDB has. So Dexie is ergonomic for index-driven lookups, not for rich ad-hoc queries.
+
 Dexie stays close to IndexedDB. It does not add its own document format on top, so writes go almost straight through to the store. It also offers `liveQuery()` for reactive results and a paid add-on for server sync.
 
-**Good for**: apps that want ergonomic IndexedDB access with indexed queries and a small footprint.
+**Good for**: apps that want ergonomic IndexedDB access with indexed range queries and a small footprint.
 
-**Falls short when**: you need built-in replication, conflict handling, or schema validation beyond index declarations.
+**Falls short when**: you need rich NoSQL queries, built-in replication, conflict handling, or schema validation beyond index declarations.
 
 ### idb
 
@@ -158,20 +160,20 @@ Yes. RxDB uses IndexedDB as one storage backend but abstracts it behind [RxStora
 
 ## Comparison Table
 
-| Feature | idb | Dexie.js | localForage | PouchDB | LokiJS | RxDB |
+| Feature | RxDB | idb | Dexie.js | localForage | PouchDB | LokiJS |
 | --- | --- | --- | --- | --- | --- | --- |
-| Data model | Raw stores | Tables + indexes | Key-value | Documents | Documents (in-memory) | Documents in collections |
-| Promise API | ✅ | ✅ | ✅ | ✅ | ⚠️ callback | ✅ |
-| Queries | ❌ | ✅ fluent | ❌ | ✅ map/reduce | ✅ in-memory | ✅ Mango + indexes |
-| Schema validation | ❌ | ⚠️ indexes only | ❌ | ❌ | ❌ | ✅ JSON Schema |
-| Reactivity | ❌ | ⚠️ liveQuery | ❌ | ⚠️ changes feed | ⚠️ events | ✅ observable queries |
-| Multi-tab sync | ❌ | ⚠️ manual | ❌ | ❌ | ❌ | ✅ built in |
-| Replication | ❌ | ⚠️ paid add-on | ❌ | ✅ CouchDB | ❌ | ✅ many backends |
-| Migrations | ❌ | ✅ versioned | ❌ | ⚠️ manual | ❌ | ✅ strategies |
-| Encryption | ❌ | ⚠️ add-on | ❌ | ⚠️ plugin | ❌ | ✅ plugin |
-| Storage backends | IndexedDB | IndexedDB | IndexedDB, WebSQL, localStorage | IndexedDB | IndexedDB, memory, files | IndexedDB, OPFS, SQLite, memory, more |
-| Bundle size | Tiny | Small | Small | Large | Small | Medium |
-| Active development | Low | Active | Low | Moderate | Inactive | Active |
+| Data model | Documents in collections | Raw stores | Tables + indexes | Key-value | Documents | Documents (in-memory) |
+| Promise API | ✅ | ✅ | ✅ | ✅ | ✅ | ⚠️ callback |
+| Queries | ✅ Mango + indexes | ❌ | ⚠️ indexed range + `filter()` | ❌ | ✅ map/reduce | ✅ in-memory |
+| Schema validation | ✅ JSON Schema | ❌ | ⚠️ indexes only | ❌ | ❌ | ❌ |
+| Reactivity | ✅ observable queries | ❌ | ⚠️ liveQuery | ❌ | ⚠️ changes feed | ⚠️ events |
+| Multi-tab sync | ✅ built in | ❌ | ⚠️ manual | ❌ | ❌ | ❌ |
+| Replication | ✅ many backends | ❌ | ⚠️ paid add-on | ❌ | ✅ CouchDB | ❌ |
+| Migrations | ✅ strategies | ❌ | ✅ versioned | ❌ | ⚠️ manual | ❌ |
+| Encryption | ✅ plugin | ❌ | ⚠️ add-on | ❌ | ⚠️ plugin | ❌ |
+| Storage backends | IndexedDB, OPFS, SQLite, memory, more | IndexedDB | IndexedDB | IndexedDB, WebSQL, localStorage | IndexedDB | IndexedDB, memory, files |
+| Bundle size | Medium | Tiny | Small | Small | Large | Small |
+| Active development | Active | Low | Active | Low | Moderate | Inactive |
 
 ## Follow Up
 
