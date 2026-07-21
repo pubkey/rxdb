@@ -6,6 +6,7 @@ image: /headers/why-nosql.jpg
 ---
 
 import {VideoBox} from '@site/src/components/video-box';
+import {CenteredImage} from '@site/src/components/centered-image';
 
 # Why UI applications need NoSQL
 
@@ -25,9 +26,7 @@ the rows with complex subqueries over different tables or collections and then m
 There must be a reason for that. In fact, there are multiple of them and in the following I want to show you why you can neither have, nor want real relational data when you have a client-side database with replication.
 
 
-<p align="center">
-  <img src="./files/no-sql.png" alt="NoSQL" width="100" />
-</p>
+<CenteredImage src="./files/no-sql.png" alt="NoSQL" width={100} />
 
 
 ## Transactions do not work with humans involved
@@ -50,9 +49,7 @@ So whenever a human is involved, this kind of logic has to be implemented using 
 When you want to build an [offline-first](./offline-first.md) application, it is assumed that the user can also read and write data, even when the device has lost the connection to the backend.
 You could use database transactions on writes to the client's database state, but enforcing a transaction boundary across other instances like clients or servers, is not possible when there is no connection.
 
-<p align="center">
-  <img src="./files/why-no-transactions.jpg" alt="offline first vs relational transactions" width="400" />
-</p>
+<CenteredImage src="./files/why-no-transactions.jpg" alt="offline first vs relational transactions" width={400} />
 
 On the client you could run an update query where all `color: red` rows are changed to `color: blue`, but this would not guarantee that there will still be other `red` documents when the client goes online again and restarts the replication with the server. 
 
@@ -95,9 +92,7 @@ So what are the differences? The SQL version would run faster on a remote databa
 
 The main benefit from using SQL is, that the SQL query runs inside of a **single transaction**. When a change to one of our two tables happens, while our query runs, the SQL database will ensure that the write does not affect the result of the query. This could happen with NoSQL, while you retrieve the city document, the customer table gets changed and your result is not correct for the dataset that was there when you started the querying. As a workaround, you could observe the database for changes and if a change happened in between, you have to re-run everything.
 
-<p align="center">
-  <img src="./files/no-relational-data.png" alt="no relational data" width="250" />
-</p>
+<CenteredImage src="./files/no-relational-data.png" alt="no relational data" width={250} />
 
 
 ## Reliable replication
@@ -149,9 +144,7 @@ This kind of replication works great when you replicate between multiple SQL ser
 
 With **NoSQL**, replication works different. A new client downloads all current documents and each time a document changes, that document is downloaded again. Instead of replicating the query that leads to a data change, we just replicate the changed data itself. Of course, we could do the same with SQL and just replicate the affected rows of a query, like WatermelonDB [does it](https://youtu.be/uFvHURTRLxQ?t=1133). This was a clever way to go for WatermelonDB, because it was initially made for React Native and did want to use the fast SQLite instead of the slow [AsyncStorage](https://medium.com/@Sendbird/extreme-optimization-of-asyncstorage-in-react-native-b2a1e0107b34). But in a more general view, it defeats the whole purpose of having a replicating relational database because you have transactions locally, but these transactions become **meaningless** as soon as the data goes through the replication layer.
 
-<p align="center">
-  <img src="./files/database-replication.png" alt="database replication" width="200" />
-</p>
+<CenteredImage src="./files/database-replication.png" alt="database replication" width={200} />
 
 
 ## Server side validation
@@ -207,13 +200,11 @@ When you make a query to a NoSQL collection, you always know how the result will
 Modern web apps are build with TypeScript and you want the transpiler to know the types of your query result so it can give you build time errors when something does not match. This is quite easy on document based systems. The typings of for each document of a collection can be generated from the schema, and all queries to that collection will always return the given document type. With SQL you have to manually write the typings for each query by hand because it can contain all these aggregate functions that affect the type of the query's result.
 
 
-<p align="center">
-  <img src="./files/typescript.png" alt="typescript" width="80" />
-</p>
+<CenteredImage src="./files/typescript.png" alt="typescript" width={80} />
 
-<!-- 
+{/* 
 ## Composable queries
--->
+*/}
 
 
 ## What you lose with NoSQL

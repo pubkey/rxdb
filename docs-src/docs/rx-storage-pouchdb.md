@@ -5,6 +5,8 @@ description: Discover why PouchDB RxStorage is deprecated in RxDB. Learn its leg
 image: /headers/rx-storage-pouchdb.jpg
 ---
 
+import {Faq, FaqItem} from '@site/src/components/faq';
+
 # RxStorage PouchDB
 
 The PouchDB RxStorage is based on the [PouchDB](https://github.com/pouchdb/pouchdb) database. It is the most battle proven RxStorage and has a big ecosystem of adapters. PouchDB does a lot of overhead to enable CouchDB replication which makes the PouchDB RxStorage one of the slowest.
@@ -118,8 +120,10 @@ const pouch = getPouchDBOfRxCollection(myRxCollection);
 
 ## FAQ
 
-<details>
-<summary>Is PouchDB still a viable sync engine in 2024?</summary>
+<Faq>
+<FaqItem question="Is PouchDB still a viable sync engine in 2024?">
 
 No, PouchDB is largely considered legacy and deprecated for modern high-performance architectures. Because PouchDB is forced to maintain full CouchDB compliance, it permanently stores exhaustive revision trees for every document modification, leading to perpetual storage bloat and slow multi-document queries. **[RxDB](./rx-database.md)** aggressively stripped the PouchDB dependency in version 10.0, replacing its legacy sync mechanics with streamlined WebRTC, GraphQL, and [WebSocket replication](./replication-websocket.md) protocols mounted on top of significantly faster modular `RxStorage` engines.
-</details>
+
+</FaqItem>
+</Faq>

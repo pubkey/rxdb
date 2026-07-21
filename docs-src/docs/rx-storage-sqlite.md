@@ -10,6 +10,7 @@ import { PERFORMANCE_DATA_NODE, PERFORMANCE_METRICS } from '@site/src/components
 
 import {Steps} from '@site/src/components/steps';
 import {Tabs} from '@site/src/components/tabs';
+import {Faq, FaqItem} from '@site/src/components/faq';
 
 # SQLite RxStorage
 
@@ -406,17 +407,18 @@ const storage = getRxStorageSQLite({
 
 ## FAQ
 
-<details>
-<summary>Does SQLite natively support querying and parsing JSON objects?</summary>
+<Faq>
+<FaqItem question="Does SQLite natively support querying and parsing JSON objects?">
 
 Yes, starting natively from version `3.38.0`, SQLite includes comprehensive built-in core JSON functions like `JSON_EXTRACT`. The **[RxDB SQLite Storage](./rx-storage.md)** engine utilizes these exact JSON extension methods to seamlessly run complex NoSQL document queries, indexes, and sorting operations directly within the SQLite runtime, bridging the gap between flat tabular paradigms and rich document store flexibility.
-</details>
 
-<details>
-<summary>How can you save and export a SQLite database from a local environment?</summary>
+</FaqItem>
+<FaqItem question="How can you save and export a SQLite database from a local environment?">
 
 You can save and export an active SQLite database by closing the connection and copying its physical `.sqlite` storage file traversing the underlying OS filesystem. If you are operating within a strict sandboxed web environment using WebAssembly, you must extract the SQLite file via exactly matching the `wa-sqlite` export streams, or rely on **[RxDB](./rx-database.md)** JSON export plugins to seamlessly migrate data out of local constraints into raw JSON streams regardless of the active SQLite engine.
-</details>
+
+</FaqItem>
+</Faq>
 
 ## Related
 - [React Native Databases](./react-native-database.md)

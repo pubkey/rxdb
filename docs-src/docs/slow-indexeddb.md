@@ -5,6 +5,8 @@ description: Struggling with IndexedDB performance? Discover hidden bottlenecks,
 image: /headers/slow-indexeddb.jpg
 ---
 
+import {CenteredImage} from '@site/src/components/centered-image';
+
 # Why IndexedDB is slow and what to use instead
 
 
@@ -34,9 +36,7 @@ So before we start complaining, lets analyze what exactly is slow. When you run 
 
 I forked the comparison tool [here](https://pubkey.github.io/client-side-databases/database-comparison/index.html) and changed it to use one transaction per document write. And there we have it. Inserting 1k documents with one transaction per write, takes about 2 seconds. Interestingly if we increase the document size to be 100x bigger, it still takes about the same time to store them. This makes clear that the limiting factor to IndexedDB performance is the transaction handling, not the data throughput.
 
-<p align="center">
-  <img src="./files/indexeddb-transaction-throughput.png" alt="IndexedDB transaction throughput" width="700" />
-</p>
+<CenteredImage src="./files/indexeddb-transaction-throughput.png" alt="IndexedDB transaction throughput" width={700} />
 
 To fix your IndexedDB performance problems you have to make sure to use as less data transfers/transactions as possible.
 Sometimes this is easy, as instead of iterating over a documents list and calling single inserts, with RxDB you could use the [bulk methods](https://rxdb.info/rx-collection.html#bulkinsert) to store many document at once.
@@ -211,9 +211,7 @@ const range = IDBKeyRange.bound(
 ```
 
 
-<p align="center">
-  <img src="./files/indexeddb-custom-index.png" alt="IndexedDB custom index" width="700" />
-</p>
+<CenteredImage src="./files/indexeddb-custom-index.png" alt="IndexedDB custom index" width={700} />
 
 As shown, using a custom index can further improve the performance of running a batched cursor by about `10%`.
 
@@ -274,9 +272,7 @@ The ideal way to solve that problem, is to use a [SharedWorker](https://develope
 
 Instead, we could use the [BroadcastChannel API](https://developer.mozilla.org/en-US/docs/Web/API/Broadcast_Channel_API) to communicate between tabs and then apply a [leader election](https://github.com/pubkey/broadcast-channel#using-the-leaderelection) between them. The [leader election](./leader-election.md) ensures that, no matter how many tabs are open, always one tab is the `Leader`.
 
-<p align="center">
-  <img src="./files/leader-election.gif" alt="Leader Election" width="500" />
-</p>
+<CenteredImage src="./files/leader-election.gif" alt="Leader Election" width={500} />
 
 The disadvantage is that the leader election process takes some time on the initial page load (about 150 milliseconds). Also the leader election can break when a JavaScript process is fully blocked for a longer time. When this happens, a good way is to just reload the browser tab to restart the election process.
 

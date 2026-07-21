@@ -5,6 +5,8 @@ description: Uncover RxDB's approach to modern database needs. From JSON-based q
 image: /headers/rxdb-tradeoffs.jpg
 ---
 
+import {CenteredImage} from '@site/src/components/centered-image';
+
 # RxDB Tradeoffs
 
 [RxDB](https://rxdb.info) is client-side, [offline first](./offline-first.md) Database for JavaScript applications.
@@ -43,9 +45,7 @@ But RxDB is a client-side database that runs **inside** of the application. Ther
 SQL is `string` based and therefore you need additional IDE tooling to ensure that your written database code is valid.
 Using the Mango Query syntax instead, TypeScript can be used validate the queries and to autocomplete code and knows which fields do exist and which do not. By doing so, the correctness of queries can be ensured at compile-time instead of run-time.
 
-<p align="center">
-  <img src="./files/typescript-query-validation.png" alt="TypeScript Query Validation" />
-</p>
+<CenteredImage src="./files/typescript-query-validation.png" alt="TypeScript Query Validation" />
 
 
 ### Composeable queries

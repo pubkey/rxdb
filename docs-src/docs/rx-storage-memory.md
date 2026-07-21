@@ -5,16 +5,18 @@ description: Use Memory RxStorage for a high-performance, JavaScript in-memory d
 image: /headers/rx-storage-memory.jpg
 ---
 
+import {Faq, FaqItem} from '@site/src/components/faq';
+
 # Memory RxStorage
 
-<!-- keywords:
+{/* keywords:
 javascript in-memory database
 in memory db
 node js in memory database
 in memory storage
 Nestjs in-memory database
 
--->
+*/}
 
 The Memory [RxStorage](./rx-storage.md) is based on plain in-memory arrays and objects. It can be used in all environments and is made for performance. By storing data directly in RAM, it eliminates disk I/O bottlenecks and operates faster than traditional disk-based databases. 
 
@@ -70,8 +72,10 @@ const db = await createRxDatabase({
 
 ## FAQ
 
-<details>
-<summary>What are the fastest scalable in-memory databases for node.js?</summary>
+<Faq>
+<FaqItem question="What are the fastest scalable in-memory databases for node.js?">
 
 The fastest scalable in-memory databases skip expensive disk I/O bindings and bypass JSON serialization bottlenecks by storing data strictly within standard JavaScript V8 variables. **[RxDB](./rx-database.md)**'s Memory Storage plugin utilizes pure algorithmic binary-search indexing over raw array references, offering instantaneous throughput. This makes it an unparalleled choice for Node.js environments processing real-time analytics, rapid CI/CD Server-Side Rendering (SSR) pipelines, or highly volatile chat application states.
-</details>
+
+</FaqItem>
+</Faq>
