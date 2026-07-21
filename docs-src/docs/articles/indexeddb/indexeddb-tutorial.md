@@ -17,9 +17,57 @@ We start with plain IndexedDB and no libraries, so you understand what the brows
 
 ## What is IndexedDB?
 
-IndexedDB is a transactional, key-value store built into the browser. Each record is a JavaScript object stored inside an **object store**, addressed by a primary key. You can add secondary **indexes** to look records up by other fields, and every read and write happens inside a **transaction**.
+**IndexedDB** is a transactional database built into every browser. It stores JavaScript objects on disk, inside the user's browser, and lets you look them up by a primary key or by secondary indexes. It is a [low-level building block](../local-database.md), not a developer-facing database engine, so a minute on the core ideas pays off before you write any code.
 
-It is a [low-level building block](../local-database.md), not a developer-facing database engine. The API is old, it predates Promises, and it is built entirely around events and callbacks. That design is the source of most of the pain later on, but the core concepts are small enough to learn in a few minutes.
+### How IndexedDB Was Invented
+
+In the early days of the web, the browser could only keep small strings in cookies. The first attempt at a real client-side database was **Web SQL Database**, a spec that put a full SQL engine (SQLite) into the browser. It was deprecated in 2010, because every browser would have had to ship the exact same SQLite build and there was no independent standard to implement against.
+
+IndexedDB was the answer to that problem. Instead of SQL, it defines a storage engine that each browser can build on its own, and it became a W3C standard in 2015. The goals were clear:
+
+- Store more structured data than cookies or [localStorage](../../rx-storage-localstorage.md) allow.
+- Keep the API **asynchronous**, so a large read or write never blocks the UI thread.
+- Make every change **transactional**, so a failed write does not leave half-written data behind.
+- Support **indexes** for fast lookups by fields other than the primary key.
+- Stay **low-level**, so libraries can build friendlier APIs on top.
+
+The last goal is why raw IndexedDB feels so bare. It was designed as a foundation for libraries, not as the thing you use directly.
+
+### The Core Concepts
+
+- **Database**: a named, versioned container. You open it by name, and the version number controls when its structure is allowed to change.
+- **Object store**: the place where records live, similar to a table in SQL or a collection in a document database. One database can hold many object stores.
+- **Record**: this is the part that trips people up. A record is one complete JavaScript object, stored under a key. It is not a single value like in localStorage, and it is not a row of separate columns like in SQL. Whatever object you put in is the object you get back. So `{ id: 'todo1', name: 'Learn IndexedDB', category: 'work', done: false }` goes in and comes out as one whole record.
+- **Primary key**: the value that uniquely identifies a record inside its store. In the tutorial the key is the `id` field (`keyPath: 'id'`), so every todo needs its own unique `id`.
+- **Index**: a secondary lookup path. By default you can only find a record by its primary key. An index lets you also find records by another field, for example every todo where `category` equals `work`, without reading the whole store. You define indexes once, at the moment the store is created, and the browser keeps them up to date on every write.
+- **Transaction**: every read and write runs inside a transaction. It groups operations and commits them as one unit, and it commits on its own as soon as the browser is done with it.
+
+### Callbacks and Why They Are Harder Than Promises
+
+IndexedDB is older than Promises, so it reports results through **callbacks**. A callback is a function you hand to the API, and the API calls it back later, once the work is done. IndexedDB gives you two on every request: `onsuccess` when the operation worked and `onerror` when it failed. The result never comes back as a return value, it arrives inside the callback.
+
+A **Promise** represents a value that is not ready yet, and you read it with `await` or `.then()`. The difference in practice:
+
+```js
+// callback style: the result lives inside onsuccess
+const request = store.get('todo1');
+request.onsuccess = () => {
+    console.log(request.result);
+};
+
+// promise style: the result is the return value
+const todo = await getTodo('todo1');
+console.log(todo);
+```
+
+Callbacks are harder to work with for a few concrete reasons:
+
+- **Nesting**: when one step depends on the previous one, callbacks nest inside callbacks, the code drifts to the right, and it gets hard to follow.
+- **No await**: you cannot pause on a callback. With Promises you write straight-line code and `await` each step in order.
+- **Scattered errors**: every request needs its own `onerror`, instead of one `try/catch` around the whole flow.
+- **Hard to compose**: combining several async steps by hand is error-prone, while Promises chain and combine cleanly.
+
+Keep this in mind while reading the tutorial below. Every `onsuccess` you see is a place where a Promise-based database would let you `await` the result instead.
 
 ## How to Use IndexedDB - Step by Step
 
@@ -232,6 +280,27 @@ RxDB uses batched cursors and other techniques to work around the slow parts of 
 <summary>How do I use IndexedDB in JavaScript?</summary>
 
 You open a database with `indexedDB.open(name, version)`, create an **object store** inside the `onupgradeneeded` event, and then read and write records inside `readwrite` or `readonly` transactions. Every operation returns a request whose result arrives on an `onsuccess` callback. The [step-by-step tutorial above](#how-to-use-indexeddb---step-by-step) walks through the full create, read, update, and delete cycle.
+
+</details>
+
+<details>
+<summary>What is a record in IndexedDB?</summary>
+
+A record is one complete JavaScript object stored inside an **object store** under a key. It is not a single value like a localStorage string, and it is not a row of separate columns like in SQL. You put an object in and you get the same object back. See [The Core Concepts](#the-core-concepts) above.
+
+</details>
+
+<details>
+<summary>What is an index in IndexedDB?</summary>
+
+An index is a secondary lookup path. Without it you can only find a record by its primary key. An index lets you find records by another field, for example every todo where `category` equals `work`, without scanning the whole store. You create indexes once, inside `onupgradeneeded`, and the browser keeps them current on every write.
+
+</details>
+
+<details>
+<summary>What is the difference between a callback and a promise?</summary>
+
+A callback is a function you pass to an API that gets called later with the result, like IndexedDB's `onsuccess`. A Promise is a value you read with `await` or `.then()`. Promises let you write straight-line code with one `try/catch`, while callbacks nest and need error handling on every step. This is a large part of why raw IndexedDB feels harder than a modern database.
 
 </details>
 
