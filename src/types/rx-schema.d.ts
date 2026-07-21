@@ -49,6 +49,12 @@ export type JsonSchema<RxDocType = any> = {
      * field non-required and keep it undefined.
      */
     type?: JsonSchemaTypes | JsonSchemaTypes[] | readonly JsonSchemaTypes[];
+    /**
+     * Human- and machine-readable description of the field.
+     * Not only for humans: plugins like webmcp pass the JSON schema
+     * to LLMs and AI agents, so a good description helps agents
+     * understand what the field contains and how to query it.
+     */
     description?: string;
     dependencies?: {
         [key: string]: JsonSchema | string[] | readonly string[];
@@ -211,13 +217,17 @@ export type RxJsonSchema<
     RxDocType
 > = {
     /**
-     * Human-readable title of the schema.
-     * Not used by RxDB itself, only for documentation purposes.
+     * Human- and machine-readable title of the schema.
+     * Not used by RxDB core itself, but plugins like webmcp pass the
+     * JSON schema to LLMs and AI agents, so a descriptive title helps
+     * agents understand what the collection stores.
      */
     title?: string;
     /**
-     * Human-readable description of the schema.
-     * Not used by RxDB itself, only for documentation purposes.
+     * Human- and machine-readable description of the schema.
+     * Not used by RxDB core itself, but plugins like webmcp pass the
+     * JSON schema to LLMs and AI agents, so a good description helps
+     * agents understand the purpose of the collection and its documents.
      */
     description?: string;
     /**
