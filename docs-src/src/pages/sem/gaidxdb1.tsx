@@ -10,9 +10,10 @@ import { getSemVariation } from '../../components/a-b-tests';
 
 /**
  * The a/b test variations, identified by stable letter keys - NOT by array
- * position. Letters keep their meaning when variations are added or removed
- * later: use the next unused letter for a new variation, retire the letter
- * of a removed one and never re-assign it to different copy.
+ * position. Letters keep their meaning when variations change over time:
+ * - NEVER reuse a letter: a new variation always gets the next unused letter.
+ * - NEVER delete a variation: comment it out instead, so its letter and copy
+ *   stay on record and cannot be re-assigned by accident.
  */
 const variations = {
     a: {

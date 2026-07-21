@@ -19,8 +19,16 @@ conversions can be attributed to it.
 Variations are identified by **stable letter keys** (`a`, `b`, `c`, …), never
 by array position: a letter keeps its meaning when variations are added or
 removed later, so stored assignments and GA events stay comparable over time.
-When adding a variation, use the next unused letter; when removing one, retire
-its letter — never re-assign a retired letter to different copy.
+Whenever a page's variations (titles, texts, bulletpoints) get updated, two
+hard rules apply:
+
+- **Never reuse a letter.** A new variation always gets the next unused
+  letter — even if an earlier letter is free because its variation was
+  retired. GA events are attributed by letter, so re-assigning one would mix
+  two different copies under one identifier.
+- **Never delete a variation.** Retire it by **commenting it out** in the
+  `variations` object instead, so its letter and copy stay on record in the
+  file and the letter can't be re-assigned by accident.
 
 The a/b test is keyed off the **`utm_campaign`** URL parameter: our ad final
 URLs carry the full utm parameter set, `getUtmCampaign()`
@@ -90,9 +98,10 @@ import { getSemVariation } from '../../components/a-b-tests';
 
 /**
  * The a/b test variations, identified by stable letter keys - NOT by array
- * position. Letters keep their meaning when variations are added or removed
- * later: use the next unused letter for a new variation, retire the letter
- * of a removed one and never re-assign it to different copy.
+ * position. Letters keep their meaning when variations change over time:
+ * - NEVER reuse a letter: a new variation always gets the next unused letter.
+ * - NEVER delete a variation: comment it out instead, so its letter and copy
+ *   stay on record and cannot be re-assigned by accident.
  */
 const variations = {
     a: {

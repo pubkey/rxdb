@@ -108,8 +108,11 @@ export function ABTestContent(
  * Variations are identified by stable letter keys ('a', 'b', 'c', …), NOT by
  * their position in an array: a letter keeps its meaning when variations are
  * added or removed later, so stored assignments and GA events stay comparable
- * over time. When a page adds a variation it uses the next unused letter;
- * a removed variation's letter is retired, never re-assigned.
+ * over time. The rules when a page's variations get updated:
+ * - a new variation always gets the next unused letter - letters are NEVER
+ *   reused for different copy,
+ * - a variation is never deleted from the page file - it gets commented out
+ *   instead, so its letter and copy stay on record.
  *
  * The variation is keyed off the utm_campaign of the ad click (our ad final
  * URLs carry the full utm parameter set), so every sem page of the same
