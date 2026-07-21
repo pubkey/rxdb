@@ -6,6 +6,7 @@ image: /headers/realm-to-rxdb-migration.jpg
 ---
 
 import {Steps} from '@site/src/components/steps';
+import {Faq, FaqItem} from '@site/src/components/faq';
 
 # Realm to RxDB Migration Guide
 
@@ -367,40 +368,33 @@ Realm encrypted the whole database file with a 64 byte key. The RxDB [encryption
 
 ## FAQ
 
-<details>
-<summary>Can I keep MongoDB as my backend?</summary>
+<Faq>
+<FaqItem question="Can I keep MongoDB as my backend?">
 
 Yes. The RxDB client does not connect to MongoDB directly. Your server exposes pull and push endpoints that read from and write to MongoDB, and the client replicates through the [HTTP replication plugin](../replication-http.md). This works with self hosted MongoDB as well as Atlas clusters and removes the dependency on the shut down Device Sync service.
 
-</details>
-
-<details>
-<summary>How do I migrate Realm relationships?</summary>
+</FaqItem>
+<FaqItem question="How do I migrate Realm relationships?">
 
 Store the primary key of the target document in a string field and declare a `ref` in the schema so the [population plugin](../population.md) can resolve it, or embed the related data as a nested object when it always loads together with the parent. Inverse relationships (`linkingObjects`) become a query on the referencing collection.
 
-</details>
-
-<details>
-<summary>What happens to data on devices that never open the app again?</summary>
+</FaqItem>
+<FaqItem question="What happens to data on devices that never open the app again?">
 
 Nothing is lost on the device, but data that was never synced before Device Sync shut down only exists in the local Realm file. The import step in this guide reads that file on the next app start, loads the data into RxDB and syncs it through the new replication. This is why the migration code should stay in the app for several releases.
 
-</details>
-
-<details>
-<summary>Does RxDB support the same platforms as Realm?</summary>
+</FaqItem>
+<FaqItem question="Does RxDB support the same platforms as Realm?">
 
 RxDB covers browsers, Node.js, [Electron](../electron-database.md), [React Native](../react-native-database.md), Expo, Capacitor, Deno and Bun. Because RxDB is plain JavaScript without native bindings, React Native and Electron upgrades do not depend on a binding release. Realm's Kotlin, Swift and .NET SDKs are out of scope for RxDB, which targets JavaScript runtimes.
 
-</details>
-
-<details>
-<summary>How long does a migration take?</summary>
+</FaqItem>
+<FaqItem question="How long does a migration take?">
 
 For a typical app with 5 to 15 Realm classes, plan one to two weeks: schema translation and the data import are a few days, rewriting queries and listeners is mostly find and replace with the tables above, and the largest block is standing up replication endpoints if you used Device Sync. The staged rollout adds calendar time but little engineering effort.
 
-</details>
+</FaqItem>
+</Faq>
 
 ## Follow-up reading
 

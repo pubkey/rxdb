@@ -8,6 +8,7 @@ image: /headers/replication-google-drive.jpg
 import {Steps} from '@site/src/components/steps';
 import {BetaBlock} from '@site/src/components/beta-block';
 import {HeadlineWithIcon} from '@site/src/components/headline-with-icon';
+import {Faq, FaqItem} from '@site/src/components/faq';
 
 # <HeadlineWithIcon h1 icon={<img src="/files/icons/google-drive.svg" alt="Google Drive" />}>Replication with Google Drive</HeadlineWithIcon>
 
@@ -194,8 +195,8 @@ For testing, it is recommended to use [google-drive-mock](https://github.com/pub
 
 ## FAQ
 
-<details>
-<summary>What are the Google Drive API request limits?</summary>
+<Faq>
+<FaqItem question="What are the Google Drive API request limits?">
 
 Google Drive API rate limiting is based on **quota units**, not a flat request count. According to the official Google Drive API usage limits documentation, the default limits are:
 
@@ -213,4 +214,6 @@ The replication plugin already retries with exponential backoff, but for high-tr
 
 - Official limits: https://developers.google.com/workspace/drive/api/guides/limits
 - Error handling guidance: https://developers.google.com/workspace/drive/api/guides/handle-errors
-</details>
+
+</FaqItem>
+</Faq>

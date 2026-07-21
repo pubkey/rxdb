@@ -5,6 +5,10 @@ description: Compare RxDB and PouchDB for offline-first JavaScript applications.
 image: /headers/alternatives/pouchdb-alternative.jpg
 ---
 
+import {Faq, FaqItem} from '@site/src/components/faq';
+import {ComparisonTable} from '@site/src/components/comparison-table';
+import {Timeline} from '@site/src/components/timeline';
+
 # RxDB as a PouchDB Alternative
 
 <RxdbLogo alt="JavaScript Database" />
@@ -27,6 +31,8 @@ PouchDB stores documents in the browser using IndexedDB (or WebSQL in older brow
 
 ### A Brief Timeline
 
+<Timeline>
+
 - **2012** - First published by Dale Harvey; early adoption in the CouchDB community
 - **2013** - PouchDB 1.0 released; gains IndexedDB adapter for modern browser support
 - **2014** - Version 2.0; plugin ecosystem grows with adapters for SQLite, LevelDB, and memory
@@ -36,6 +42,8 @@ PouchDB stores documents in the browser using IndexedDB (or WebSQL in older brow
 - **2022** - Ongoing maintenance with no major feature additions
 - **2024** - PouchDB 9.0.0 released; the project enters incubation at the Apache Software Foundation
 - **2025** - Development continues under Apache incubation; project is maintained but no longer actively gaining new features compared to newer alternatives
+
+</Timeline>
 
 PouchDB played a formative role in popularizing offline-first development. RxDB itself started as a wrapper around PouchDB in 2016. As the limitations of the PouchDB architecture became clear, RxDB version 10.0.0 (released in 2021) introduced the `RxStorage` abstraction and removed the hard dependency on PouchDB. The PouchDB RxStorage was subsequently removed from RxDB because it was too slow and too difficult to maintain.
 
@@ -497,6 +505,8 @@ The main conceptual shift is moving from PouchDB's event-based model (listen to 
 
 ## Comparison Table
 
+<ComparisonTable>
+
 | Feature | PouchDB | RxDB |
 |---|---|---|
 | **Offline-first** | Yes | Yes |
@@ -521,48 +531,41 @@ The main conceptual shift is moving from PouchDB's event-based model (listen to 
 | **Bundle size** | Large | Modular (tree-shakeable) |
 | **Active development** | Apache incubation (maintenance mode) | Active, with commercial support |
 
+</ComparisonTable>
+
 ---
 
 ## FAQ
 
-<details>
-<summary>Can RxDB still replicate with CouchDB?</summary>
+<Faq>
+<FaqItem question="Can RxDB still replicate with CouchDB?">
 
 Yes. RxDB has a dedicated [CouchDB replication plugin](../../replication-couchdb.md) that syncs with any CouchDB-compatible endpoint. The key difference from PouchDB is that RxDB does not use the Couch Replication Protocol internally. It uses RxDB's own sync engine on top of the CouchDB HTTP API. This avoids the revision-tree storage overhead while still replicating correctly with CouchDB servers.
 
-</details>
-
-<details>
-<summary>Do I have to migrate my local PouchDB data when switching to RxDB?</summary>
+</FaqItem>
+<FaqItem question="Do I have to migrate my local PouchDB data when switching to RxDB?">
 
 If your users have existing data in PouchDB's IndexedDB storage, you need to migrate it to RxDB's storage format. The recommended approach is to read all documents from the existing PouchDB database on first launch after the upgrade, insert them into RxDB, and then remove the old PouchDB storage. RxDB's migration strategies handle schema version changes within RxDB itself, but the initial import from PouchDB is a one-time operation that you implement in application code.
 
-</details>
-
-<details>
-<summary>Is PouchDB no longer maintained?</summary>
+</FaqItem>
+<FaqItem question="Is PouchDB no longer maintained?">
 
 PouchDB is in incubation at the Apache Software Foundation as of 2024 and released version 9.0.0 in mid-2024. It is maintained in the sense that critical bugs are addressed, but it is not gaining significant new features. Its architecture is constrained by the requirement to remain compatible with the Couch Replication Protocol, which limits how much the performance and feature set can evolve without breaking backward compatibility.
 
-</details>
-
-<details>
-<summary>What happens to the PouchDB RxStorage in RxDB?</summary>
+</FaqItem>
+<FaqItem question="What happens to the PouchDB RxStorage in RxDB?">
 
 The PouchDB RxStorage was removed from RxDB because of persistent performance issues and bugs that could not be fixed externally. If you were using RxDB with the PouchDB storage, you should migrate to a different RxStorage such as [IndexedDB](../../rx-storage-indexeddb.md) or [OPFS](../../rx-storage-opfs.md). Staying on older versions of RxDB (before version 15) is also possible but means missing out on all improvements since then.
 
-</details>
-
-<details>
-<summary>Is RxDB suitable for React Native, not just browsers?</summary>
+</FaqItem>
+<FaqItem question="Is RxDB suitable for React Native, not just browsers?">
 
 Yes. RxDB works in browsers, React Native, Electron, and Node.js. For React Native, the recommended storage is [SQLite via expo-sqlite or op-sqlite](../../rx-storage-sqlite.md), which provides native performance on both iOS and Android. The same schema definitions, queries, and replication configuration work across all environments.
 
-</details>
-
-<details>
-<summary>Does RxDB require a backend to work?</summary>
+</FaqItem>
+<FaqItem question="Does RxDB require a backend to work?">
 
 No. RxDB is a local-first database. All reads and writes go to local storage. Replication with a backend is optional and can be enabled or disabled at any time. An application using RxDB works fully offline without any backend connection. Replication runs in the background and syncs when connectivity is available.
 
-</details>
+</FaqItem>
+</Faq>

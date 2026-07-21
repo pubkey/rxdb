@@ -5,6 +5,8 @@ description: Discover how RxDB supercharges Progressive Web Apps with real-time 
 image: /headers/progressive-web-app-database.jpg
 ---
 
+import {CenteredImage} from '@site/src/components/centered-image';
+
 # RxDB as a Database for Progressive Web Apps (PWA)
 Progressive Web Apps (PWAs) have revolutionized the digital landscape, offering users an immersive blend of web and native app experiences. At the heart of every successful PWA lies effective data management, and this is where RxDB comes into play. In this article, we'll explore the dynamic synergy between RxDB, a robust client-side database, and Progressive Web Apps, uncovering how RxDB enhances data handling, synchronization, and overall performance, propelling PWAs into a new era of excellence.
 
@@ -44,9 +46,7 @@ await db.heroes.find({
 #### Multi-Tab Support
 RxDB extends its prowess to multi-tab scenarios, guaranteeing data consistency across different tabs or windows of the same PWA. This feature promotes a seamless transition between various sections of the application, while minimizing data conflicts.
 
-<p align="center">
-  <img src="../files/multiwindow.gif" alt="multi tab support" width="450" />
-</p>
+<CenteredImage src="../files/multiwindow.gif" alt="multi tab support" width={450} />
 
 
 ### Using RxDB in a Progressive Web App

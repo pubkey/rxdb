@@ -7,6 +7,8 @@ image: /headers/react-indexeddb.jpg
 
 import { PerformanceChart } from '@site/src/components/performance-chart';
 import { PERFORMANCE_DATA_BROWSER, PERFORMANCE_METRICS } from '@site/src/components/performance-data';
+import {Faq, FaqItem} from '@site/src/components/faq';
+import {CenteredImage} from '@site/src/components/centered-image';
 
 # IndexedDB Database in React Apps - The Power of RxDB
 
@@ -16,9 +18,7 @@ Building robust, [offline-capable](../offline-first.md) React applications often
 
 [IndexedDB](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API) is a low-level API for storing significant amounts of structured data in the browser. It provides a transactional database system that can store key-value pairs, complex objects, and more. This storage engine is asynchronous and supports advanced data types, making it suitable for offline storage and complex web applications.
 
-<center>
-        <img src="../files/icons/react.svg" alt="React IndexedDB" width="120" />
-</center>
+<CenteredImage src="../files/icons/react.svg" alt="React IndexedDB" width={120} />
 
 ## Why Use IndexedDB in React
 
@@ -134,9 +134,7 @@ await doc.remove();
 
 RxDB excels in providing reactive data capabilities, ideal for [real-time applications](./realtime-database.md). There are two main approaches to achieving live queries with RxDB: using RxJS Observables with React Hooks or utilizing Preact Signals.
 
-<p align="center">
-  <img src="../files/animations/realtime.gif" alt="realtime ui updates" width="700" />
-</p>
+<CenteredImage src="../files/animations/realtime.gif" alt="realtime ui updates" width={700} />
 
 ### With RxJS Observables and React Hooks
 
@@ -248,59 +246,53 @@ Here is a [performance overview](../rx-storage-performance.md) of the various br
 
 ## FAQ
 
-<details>
-<summary>Is IDBRequest constructible via new IDBRequest()?</summary>
+<Faq>
+<FaqItem question="Is IDBRequest constructible via new IDBRequest()?">
 
 No, `IDBRequest` is an interface provided by the [IndexedDB](./react-indexeddb.md) API and is not constructible via `new IDBRequest()`. Trying to do so will throw a `TypeError: Illegal constructor`. `IDBRequest` objects are generated automatically by the browser exclusively when you execute an asynchronous database operation, such as calling `.put()`, `.get()`, or `.openCursor()` on an `IDBObjectStore` or `IDBIndex`.
-</details>
 
-<details>
-<summary>How does IndexedDB store data in the browser and how does it compare to LocalStorage?</summary>
+</FaqItem>
+<FaqItem question="How does IndexedDB store data in the browser and how does it compare to LocalStorage?">
 
 IndexedDB is a low-level, transactional NoSQL database native to the browser that stores structured data (including JSON objects and files/blobs) using indexes for high-performance searches. Unlike [LocalStorage](./localstorage.md), which is strictly synchronous, string-only, and capped at around 5 MiB, IndexedDB operates asynchronously, supports complex querying, and can store gigabytes of application state, making it the superior choice for complex web applications.
-</details>
 
-<details>
-<summary>Are there ways to sync LocalStorage and IndexedDB state?</summary>
+</FaqItem>
+<FaqItem question="Are there ways to sync LocalStorage and IndexedDB state?">
 
 Yes, it is a common optimization pattern to sync or split state between the two. Because IndexedDB can be slow to initialize, tools like the [RxDB LocalStorage Meta Optimizer](../rx-storage-localstorage-meta-optimizer.md) specifically store initial fast-boot metadata in LocalStorage while keeping the heavyweight, complex JSON documents inside IndexedDB. You can keep them in sync by subscribing to IndexedDB write events and patching the LocalStorage cache.
-</details>
 
-<details>
-<summary>Does clearing the browser cache delete IndexedDB data?</summary>
+</FaqItem>
+<FaqItem question="Does clearing the browser cache delete IndexedDB data?">
 
 Clearing the standard browser cache (images, CSS, JS files) does *not* necessarily delete IndexedDB data, but clearing "Site Data" or "Cookies and other site data" **will** definitively wipe out your IndexedDB databases. Additionally, browsers like Safari may proactively evict IndexedDB data if the user hasn't interacted with the originating website for 7 days. This is why [Local-First](../offline-first.md) apps must still implement a robust [sync mechanism](../replication.md) to safely back up client data to a server.
-</details>
 
-<details>
-<summary>Is IndexedDB available in service workers?</summary>
+</FaqItem>
+<FaqItem question="Is IndexedDB available in service workers?">
 
 Yes, IndexedDB is fully available in Service Workers, [Web Workers](../rx-storage-worker.md), and Shared Workers. Since workers run on separate background threads and cannot execute synchronous APIs (meaning LocalStorage is completely blocked in workers), IndexedDB is often the primary mechanism for Service Workers to stubbornly cache network requests, queue offline background sync payloads, or manage push notification configurations.
-</details>
 
-<details>
-<summary>Can complex objects like CryptoKey or FileSystemDirectoryHandle be stored in IndexedDB?</summary>
+</FaqItem>
+<FaqItem question="Can complex objects like CryptoKey or FileSystemDirectoryHandle be stored in IndexedDB?">
 
 Yes, one of the massive advantages of IndexedDB over standard string-based storage is its support for the **Structured Clone Algorithm**. This allows you to effortlessly store natively complex JavaScript objects, including `CryptoKey` instances (provided they are marked as extractable), `FileSystemDirectoryHandle` and `FileSystemFileHandle` references (crucial for [OPFS](../rx-storage-opfs.md) and File System Access API), as well as generic `Blob`, `File`, `Map`, and `Set` objects.
-</details>
 
-<details>
-<summary>Does aborting onupgradeneeded prevent database creation in IndexedDB?</summary>
+</FaqItem>
+<FaqItem question="Does aborting onupgradeneeded prevent database creation in IndexedDB?">
 
 Yes, if you abort an IndexedDB transaction during the `onupgradeneeded` event (by calling `event.target.transaction.abort()`), the entire upgrade process is rolled back. If this was the very first time the database was being created (version 1), the database creation itself is entirely canceled, and no database will be persisted to the user's disk.
-</details>
 
-<details>
-<summary>How do you clear IndexedDB data programmatically in JavaScript?</summary>
+</FaqItem>
+<FaqItem question="How do you clear IndexedDB data programmatically in JavaScript?">
 
 You can completely delete an entire IndexedDB database programmatically by calling `indexedDB.deleteDatabase('DatabaseName')`. This method returns an `IDBOpenDBRequest` which you can attach `.onsuccess` and `.onerror` handlers to. If you only want to clear the data *inside* a specific object store without deleting the whole database structure, you should open a `readwrite` transaction and call `.clear()` on the `IDBObjectStore`.
-</details>
 
-<details>
-<summary>How to properly implement IndexedDB in a modern React application?</summary>
+</FaqItem>
+<FaqItem question="How to properly implement IndexedDB in a modern React application?">
 
 You should almost never implement the raw IndexedDB API directly inside React components due to its complex callback architecture, unstructured data streams, and severe lack of native React-friendly reactivity. The proper modern implementation involves wrapping IndexedDB with a reactive abstraction layer like **[RxDB](https://rxdb.info)**. This entirely hides the native `onupgradeneeded` lifecycle complexity, automatically exposes queries as RxJS Observables (or Preact Signals), and allows you to bind live UI state directly to the underlying IndexedDB storage engine.
-</details>
+
+</FaqItem>
+</Faq>
 
 ## Follow Up
 - Learn how to use RxDB with the [RxDB Quickstart](../quickstart.md) for a guided introduction.

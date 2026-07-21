@@ -5,6 +5,8 @@ description: Discover how RxDB merges realtime replication and dynamic updates t
 image: /headers/realtime-database.jpg
 ---
 
+import {Faq, FaqItem} from '@site/src/components/faq';
+import {CenteredImage} from '@site/src/components/centered-image';
 
 # What is a realtime database?
 
@@ -33,27 +35,19 @@ When talking about realtime databases, most people refer to realtime, as in real
 Often they mean a very specific product which is the **Firebase Realtime Database** (not the [Firestore](../replication-firestore.md)).
 
 
-<p align="center">
-  <img src="../files/alternatives/firebase.svg" alt="firebase realtime replication" width="100" />
-</p>
+<CenteredImage src="../files/alternatives/firebase.svg" alt="firebase realtime replication" width={100} />
 
 In the context of the Firebase Realtime Database, "realtime" means that data changes are synchronized and delivered to all connected clients or devices as soon as they occur, typically within milliseconds. This means that when any client updates, adds, or removes data in the database, all other clients that are connected to the same database instance receive those updates instantly, without the need for manual polling or frequent HTTP requests.
 
 In short, when replicating data between databases, instead of polling, we use a [websocket connection](./websockets-sse-polling-webrtc-webtransport.md) to live-stream all changes between the server and the clients, this is labeled as "realtime database". A similar thing can be done with RxDB and the [RxDB Replication Plugins](../replication.md).
 
-<p align="center">
-    <a href="https://rxdb.info/replication.html">
-        <img src="../files/database-replication.png" alt="database replication" width="100" />
-    </a>
-</p>
+<CenteredImage src="../files/database-replication.png" alt="database replication" width={100} href="https://rxdb.info/replication.html" />
 
 ## Realtime as in **realtime applications**
 
 In the context of realtime client-side applications, "realtime" refers to the immediate or near-instantaneous processing and response to events or data inputs. When data changes, the application must directly update to reflect the new data state, without any user interaction or delay. Notice that the change to the data could have come from any source, like a user action, an operation in another browser tab, or even an operation from another device that has been replicated to the client.
 
-<p align="center">
-  <img src="../files/multiwindow.gif" alt="realtime applications" width="400" />
-</p>
+<CenteredImage src="../files/multiwindow.gif" alt="realtime applications" width={400} />
 
 In contrast to push-pull based databases (e.g., MySQL or MongoDB servers), a realtime database contains **features which make it easy to build realtime applications**. For example with RxDB you can not only fetch query results once, but instead you can subscribe to a query and directly update the HTML dom tree whenever the query has a new result set:
 
@@ -80,23 +74,23 @@ A competent realtime application is engineered to offer feedback or results swif
 
 
 
-<details>
-<summary>What is the definition of a real-time database?</summary>
+<Faq>
+<FaqItem question="What is the definition of a real-time database?">
 
 In the context of modern web development, a "real-time database" does not refer to computing with hard millisecond delivery guarantees (like aerospace RTOS), but rather to a database that utilizes push-based replication (like WebSockets) to instantly stream data mutations to connected clients. Architectures like the Firebase Realtime Database or **[RxDB's Replication plugins](../replication.md)** allow frontends to maintain live, reactive UI states without resorting to inefficient, periodic HTTP polling.
-</details>
 
-<details>
-<summary>Which tools and solutions provide real-time data access capability for web apps?</summary>
+</FaqItem>
+<FaqItem question="Which tools and solutions provide real-time data access capability for web apps?">
 
 For managed Cloud solutions, products like Firebase Realtime Database or Supabase provide built-in real-time data subscriptions. For architectures demanding offline-capability or full data ownership, **[RxDB](https://rxdb.info)** is a leading local-first database that provides real-time data access by binding live query Observables directly to major UI frameworks (React, Angular, Vue), ensuring the DOM updates instantly whenever the underlying local or replicated state changes.
-</details>
 
-<details>
-<summary>How do modern frameworks handle real-time JSON mapping and sync rules?</summary>
+</FaqItem>
+<FaqItem question="How do modern frameworks handle real-time JSON mapping and sync rules?">
 
 Modern frameworks rely on JSON-Schema validation and deterministic conflict-resolution algorithms to handle real-time sync. When a local write conflicts with a remote update, systems like RxDB utilize purely mathematical resolution (such as "first write wins" or custom revision-merging logic) rather than computationally expensive CRDTs, ensuring that deeply nested JSON data structures map perfectly across distributed network peers without corrupting.
-</details>
+
+</FaqItem>
+</Faq>
 
 ## Follow Up
 

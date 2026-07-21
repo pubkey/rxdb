@@ -5,6 +5,8 @@ description: Compare RxDB and PowerSync for local-first JavaScript apps. Learn w
 image: /headers/powersync-alternative.jpg
 ---
 
+import {Faq, FaqItem} from '@site/src/components/faq';
+
 # RxDB as a PowerSync Alternative for JavaScript Local-First Apps
 
 PowerSync looks attractive when you already run Postgres or MongoDB on the server and want a managed sync engine on top. For JavaScript teams the practical picture is more mixed. The browser client runs on top of WASM SQLite which adds read and write latency, the FSL source-available license restricts shipping competing products, and the server-authoritative model leaves little room to plug in a custom backend or non-SQL query layer.
@@ -175,40 +177,33 @@ If those constraints match, PowerSync gives you a coherent path. If you need bro
 
 ## FAQ
 
-<details>
-<summary>Why is RxDB faster in the browser?</summary>
+<Faq>
+<FaqItem question="Why is RxDB faster in the browser?">
 
 RxDB queries run in JavaScript directly against [IndexedDB](../../rx-storage-indexeddb.md) or [OPFS](../../rx-storage-opfs.md), so each read returns typed objects without crossing a WASM boundary or decoding a SQLite result set. PowerSync executes queries inside a WASM SQLite build that persists to the same browser primitives, which adds extra serialization on every read and write. See [Slow IndexedDB](../../slow-indexeddb.md) for the underlying constraints both engines have to work around.
 
-</details>
-
-<details>
-<summary>Can RxDB sync with Postgres?</summary>
+</FaqItem>
+<FaqItem question="Can RxDB sync with Postgres?">
 
 Yes. RxDB does not ship a built-in Postgres connector, but the [HTTP replication](../../replication-http.md) plugin lets you put any REST service in front of Postgres and stream changes both ways. You can also use [GraphQL replication](../../replication-graphql.md) with PostGraphile, Hasura, or a custom resolver layer.
 
-</details>
-
-<details>
-<summary>Is PowerSync free?</summary>
+</FaqItem>
+<FaqItem question="Is PowerSync free?">
 
 PowerSync is source-available under the Functional Source License (FSL), which permits non-competing use and converts to Apache 2.0 two years after each release. There is also a hosted cloud tier with usage-based pricing. RxDB core is Apache 2.0 with no field-of-use restriction.
 
-</details>
-
-<details>
-<summary>Does RxDB support Flutter, Kotlin, or Swift?</summary>
+</FaqItem>
+<FaqItem question="Does RxDB support Flutter, Kotlin, or Swift?">
 
 No. RxDB targets JavaScript and TypeScript runtimes, including the browser, Node.js, Electron, Capacitor, and [React Native](../../react-native-database.md). PowerSync ships native SDKs for Flutter, Kotlin, and Swift, so if those platforms are required without a JavaScript bridge, PowerSync covers more ground.
 
-</details>
-
-<details>
-<summary>How are migrations handled?</summary>
+</FaqItem>
+<FaqItem question="How are migrations handled?">
 
 RxDB schemas are versioned. When you bump the version of a [collection schema](../../rx-schema.md), you provide a migration strategy that maps documents from the previous version to the new one. The migration runs on the client when the database opens. PowerSync handles migrations through SQL DDL on the server plus client schema definitions that mirror the SQL tables.
 
-</details>
+</FaqItem>
+</Faq>
 
 ## Comparison Table
 

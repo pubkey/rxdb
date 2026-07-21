@@ -5,6 +5,9 @@ description: Local-First software stores data on client devices for seamless off
 image: /headers/offline-first.jpg
 ---
 
+import {Faq, FaqItem} from '@site/src/components/faq';
+import {CenteredImage} from '@site/src/components/centered-image';
+
 # Local First / Offline First
 
 Local-First (aka offline first) is a software paradigm where the software stores data locally on the client's device and must work as well offline as it does online.
@@ -31,18 +34,14 @@ In the following I will point out why offline first applications are better, not
 In 'normal' web applications, most user interactions like fetching, saving or deleting data, correspond to a request to the backend server. This means that each of these interactions require the user to await the unknown latency to and from a remote server while looking at a loading spinner.
 In offline-first apps, the operations go directly against the local storage which happens almost instantly. There is no perceptible loading time and so it is not even necessary to implement a loading spinner at all. As soon as the user clicks, the UI represents the new state as if it was already changed in the backend.
 
-<p align="center">
-  <img src="./files/loading-spinner-not-needed.gif" alt="loading spinner not needed" width="300" />
-</p>
+<CenteredImage src="./files/loading-spinner-not-needed.gif" alt="loading spinner not needed" width={300} />
 
 ## Multi-tab usage just works
 
 Many, even big websites like Amazon, Reddit and Stack Overflow do not handle multi tab usage correctly. When a user has multiple tabs of the website open and does a login on one of these tabs, the state does not change on the other tabs.
 On offline first applications, there is always exactly one state of the data across all tabs. Offline first databases (like RxDB) store the data inside of IndexedDb and **share the state** between all tabs of the same origin.
 
-<p align="center">
-  <img src="./files/multiwindow.gif" alt="RxDB multi tab" width="450" />
-</p>
+<CenteredImage src="./files/multiwindow.gif" alt="RxDB multi tab" width={450} />
 
 ## Latency is more important than bandwidth
 
@@ -53,9 +52,7 @@ But reducing the latency is not so easy. It is defined by the physical propertie
 
 Offline first applications benefit from that because sending the initial state to the client can be done much faster with more bandwidth. And once the data is there, we no longer have to care about the latency to the backend server because you can run near [zero](./articles/zero-latency-local-first.md) latency queries locally.
 
-<p align="center">
-  <img src="./files/latency-london-san-francisco.png" alt="latency London San Francisco" width="300" />
-</p>
+<CenteredImage src="./files/latency-london-san-francisco.png" alt="latency London San Francisco" width={300} />
 
 
 ## Realtime comes for free
@@ -65,9 +62,7 @@ To overcome this, you could build a realtime website where you create a websocke
 
 With offline first applications, you already have a realtime [replication](./replication.md) with the backend. Most offline first databases provide some concept of changestream or data subscriptions and with [RxDB](https://github.com/pubkey/rxdb) you can even directly subscribe to query results or single fields of documents. This makes it easy to have an always updated UI whenever data on the backend changes.
 
-<p align="center">
-  <img src="./files/animations/realtime.gif" alt="realtime ui updates" width="700" />
-</p>
+<CenteredImage src="./files/animations/realtime.gif" alt="realtime ui updates" width={700} />
 
 
 ## Scales with data size, not with the amount of user interaction
@@ -105,11 +100,13 @@ You do not have to care whether this data came from the UI, another tab, the bac
 
 ## FAQ
 
-<details>
-<summary>What are the best offline-first mobile databases for unreliable network environments?</summary>
+<Faq>
+<FaqItem question="What are the best offline-first mobile databases for unreliable network environments?">
 
 RxDB excels as an offline-first mobile database for unreliable network environments. You build mobile applications using the local-first paradigm to store data directly on the device. RxDB ensures full read and write capabilities regardless of current internet connection status. The sync engine automatically resolves conflicts and pushes local changes to the server once connectivity is restored. This approach eliminates loading spinners and guarantees a consistent user experience during network fluctuations.
-</details>
+
+</FaqItem>
+</Faq>
 
 ## Follow up
 

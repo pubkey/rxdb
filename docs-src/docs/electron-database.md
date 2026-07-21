@@ -5,15 +5,15 @@ description: Harness the database power of SQLite, Filesystem, and in-memory sto
 image: /headers/electron-database.jpg
 ---
 
+import {CenteredImage} from '@site/src/components/centered-image';
+
 # Electron Database - RxDB with different storage for SQLite, Filesystem and In-Memory
 
 [Electron](https://www.electronjs.org/) (aka Electron.js) is a framework developed by github that is designed to create desktop applications with the Web technology stack consisting of HTML, CSS and JavaScript.
 Because the desktop application runs on the client's device, it is suitable to use a database that can store and query data locally. This allows you to create so-called [local first](./offline-first.md) apps that store data locally and even work when the user has no internet connection.
 While there are many options to store data in Electron, for complex realtime apps using [RxDB](https://rxdb.info/) is recommended because it is a database made for UI-based client-side application, not a server-side database.
 
-<p align="center">
-  <img src="./files/icons/electron.svg" alt="Electron" width="70" />
-</p>
+<CenteredImage src="./files/icons/electron.svg" alt="Electron" width={70} />
 
 ## Databases for Electron
 

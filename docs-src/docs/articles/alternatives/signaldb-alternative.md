@@ -5,6 +5,9 @@ description: Compare SignalDB and RxDB for local-first JavaScript apps. See how 
 image: /headers/signaldb-alternative.jpg
 ---
 
+import {Faq, FaqItem} from '@site/src/components/faq';
+import {ComparisonTable} from '@site/src/components/comparison-table';
+
 # RxDB as a SignalDB Alternative for Local-First JavaScript Apps
 
 Teams that adopt [SignalDB](https://signaldb.js.org/) usually want a tiny, reactive store that plays well with framework signals in Vue, Solid, or React. The MongoDB-style API feels familiar, the in-memory engine is fast, and reactive queries plug straight into component re-renders. The trade-offs show up later: persistence is opt-in, replication is left to the developer, and the storage layer has fewer adapters than long-running local-first databases.
@@ -168,35 +171,32 @@ The result keeps the signal-friendly API that Vue, Solid, and React components c
 
 ## FAQ
 
-<details>
-<summary>Does RxDB integrate with framework signals?</summary>
+<Faq>
+<FaqItem question="Does RxDB integrate with framework signals?">
 
 Yes. RxDB ships a [reactivity adapter API](../../reactivity.md) that maps observable queries to Vue refs, Angular signals, Solid signals, Svelte stores, and Preact signals. Component code reads collections through the framework's native primitive while RxDB drives updates underneath.
 
-</details>
-
-<details>
-<summary>Can SignalDB persist with RxDB?</summary>
+</FaqItem>
+<FaqItem question="Can SignalDB persist with RxDB?">
 
 Yes. SignalDB's persistence interface accepts a custom adapter. An RxDB-backed adapter stores documents in an [RxCollection](../../rx-collection.md), which gives SignalDB durable storage on IndexedDB, OPFS, SQLite, or any other RxStorage, plus the full [RxDB sync engine](../../replication.md) for backend replication.
 
-</details>
-
-<details>
-<summary>How mature is each project?</summary>
+</FaqItem>
+<FaqItem question="How mature is each project?">
 
 RxDB has been developed since 2016, ships regular releases, and runs in production across browsers, Node.js, Electron, React Native, Deno, and Bun. SignalDB started in 2023 and is still expanding its adapter and sync surface. For long-lived applications, RxDB's release history and ecosystem are the safer bet.
 
-</details>
-
-<details>
-<summary>How does query syntax compare?</summary>
+</FaqItem>
+<FaqItem question="How does query syntax compare?">
 
 Both libraries use a MongoDB-style selector. RxDB queries return [RxQuery](../../rx-query.md) objects with `.exec()` for one-shot reads and `.$` for an observable that emits on every change, including changes from other tabs and replication. SignalDB returns reactive cursors tied to its signal runtime. Migrating selectors between the two is mostly mechanical.
 
-</details>
+</FaqItem>
+</Faq>
 
 ## Comparison Table
+
+<ComparisonTable>
 
 | Feature | SignalDB | RxDB |
 | --- | --- | --- |
@@ -211,5 +211,7 @@ Both libraries use a MongoDB-style selector. RxDB queries return [RxQuery](../..
 | Multi-tab support | Manual | Built-in leader election and broadcast |
 | Runtimes | Browser, Node.js | Browser, Node.js, Electron, React Native, Deno, Bun, Capacitor |
 | Ecosystem age | New | Decade of releases and plugins |
+
+</ComparisonTable>
 
 For more on the broader shift toward client-side data ownership, see [The Future of Local-First Apps](../../articles/local-first-future.md) and the [offline-first guide](../../offline-first.md).

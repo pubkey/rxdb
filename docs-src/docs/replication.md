@@ -7,6 +7,7 @@ image: /headers/replication.jpg
 
 import { IconGear } from '@site/src/components/icons/gear';
 import { HeadlineWithIcon } from '@site/src/components/headline-with-icon';
+import {Faq, FaqItem} from '@site/src/components/faq';
 
 # <HeadlineWithIcon h1 icon={<IconGear />}>RxDB's realtime Sync Engine for Local-First Apps</HeadlineWithIcon>
 
@@ -710,10 +711,13 @@ RxDB supports partial sync patterns where you dynamically manage multiple replic
 
 ## FAQ
 
-<details>
-    <summary>I have infinite loops in my replication, how to debug?</summary>
+<Faq>
+<FaqItem question="I have infinite loops in my replication, how to debug?">
+
     <div>
     When you have infinite loops in your replication or random re-runs of http requests after some time, the reason is likely that your pull-handler
     is crashing. To debug this, add a log to the error$ handler to debug it. `myRxReplicationState.error$.subscribe(err => console.log('error$', err))`.
     </div>
-</details>
+
+</FaqItem>
+</Faq>

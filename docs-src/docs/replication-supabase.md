@@ -10,6 +10,7 @@ import {Steps} from '@site/src/components/steps';
 import {VideoBox} from '@site/src/components/video-box';
 import {RxdbMongoDiagramPlain} from '@site/src/components/mongodb-sync';
 import {HeadlineWithIcon} from '@site/src/components/headline-with-icon';
+import {Faq, FaqItem} from '@site/src/components/faq';
 
 
 # <HeadlineWithIcon h1 icon={<img src="/files/icons/supabase.svg" alt="Supabase" />} subtitle="Real-Time, Offline-First Sync">Supabase Replication Plugin</HeadlineWithIcon>
@@ -254,35 +255,33 @@ The `RxSupabaseReplicationState` which is returned from `replicateSupabase()` al
 
 ## FAQ
 
-<details>
-<summary>Why use Supabase and RxDB as a cloud document database for Node.js and TypeScript?</summary>
+<Faq>
+<FaqItem question="Why use Supabase and RxDB as a cloud document database for Node.js and TypeScript?">
 
 Supabase and RxDB offer the best of both worlds for Node.js and TypeScript applications. Supabase provides a powerful PostgreSQL backend. You can use PostgreSQL as a document database by storing JSON data. RxDB provides a reactive local document store. You achieve real-time synchronization between the local document store and the Supabase backend. You benefit from strong TypeScript typing on the client and robust SQL querying on the server.
-</details>
 
-<details>
-<summary>How to connect an anonymous key to a Supabase project?</summary>
+</FaqItem>
+<FaqItem question="How to connect an anonymous key to a Supabase project?">
 
 You connect an anonymous key to a Supabase project by initializing the official `@supabase/supabase-js` client utilizing your project's `SUPABASE_URL` and `SUPABASE_ANON_KEY`. In frontend applications interacting with the **[RxDB Supabase Replication](./replication.md)** plugin, you must inject the `anon` key, while simultaneously configuring strict Row Level Security (RLS) policies within your Supabase PostgreSQL backend to prevent unauthorized data manipulation.
-</details>
 
-<details>
-<summary>Does Supabase support full offline sync and [CRDT](./crdt.md) capabilities?</summary>
+</FaqItem>
+<FaqItem question="Does Supabase support full offline sync and CRDT capabilities?">
 
 Natively, the Supabase JavaScript client does not support advanced [offline-first](./offline-first.md) synchronization pipelines or complex Conflict-free Replicated Data Type (CRDT) architectures. To implement full offline sync capable of continuous background disconnected writes, you must attach the **[RxDB](./rx-database.md)** Supabase Replication Plugin. RxDB acts as the offline-first local CRDT-like cache, deferring all local mutations into a unified outbound queue until the Supabase TCP connection is restored.
-</details>
 
-<details>
-<summary>Should Row Level Security (RLS) be enabled when using Supabase real-time sync?</summary>
+</FaqItem>
+<FaqItem question="Should Row Level Security (RLS) be enabled when using Supabase real-time sync?">
 
 Yes, Row Level Security (RLS) is strictly mandatory whenever you expose a Supabase database directly to the frontend. Without RLS, the anonymous `anon` key used by the **[RxDB](./rx-database.md)** client grants full read and write access to your entire PostgreSQL cluster. You must configure RLS policies that enforce `auth.uid() = user_id` checks to guarantee clients only replicate and mutate their own specific documents.
-</details>
 
-<details>
-<summary>How does Supabase Realtime architecture work?</summary>
+</FaqItem>
+<FaqItem question="How does Supabase Realtime architecture work?">
 
 Supabase Realtime acts as an Elixir-based WebSocket broadcasting server that taps directly into PostgreSQL's logical replication stream. When a row changes on the database, the Realtime server parses the WAL (Write-Ahead Log) and pushes the event down to subscribed clients. The **[RxDB Supabase Replication](./replication.md)** plugin leverages this WebSocket channel strictly for live change detection, triggering rapid localized pulls over PostgREST to guarantee no data is dropped during connection turbulence.
-</details>
+
+</FaqItem>
+</Faq>
 
 ## Follow Up
 

@@ -12,6 +12,7 @@ import { PERFORMANCE_DATA_ENCRYPTION, PERFORMANCE_METRICS } from '@site/src/comp
 
 import {HeadlineWithIcon} from '@site/src/components/headline-with-icon';
 import {IconEncryption} from '@site/src/components/icons/encryption';
+import {Faq, FaqItem} from '@site/src/components/faq';
 
 # <HeadlineWithIcon h1 icon={<IconEncryption />}>Encrypted Local Storage with RxDB</HeadlineWithIcon>
 
@@ -213,32 +214,28 @@ As shown in the chart, the WebCrypto based encryption plugins are generally **5 
 
 ## FAQ
 
-<details>
-<summary>What are some JavaScript libraries for client side field encryption?</summary>
+<Faq>
+<FaqItem question="What are some JavaScript libraries for client side field encryption?">
 
 RxDB provides robust plugins for client side field encryption directly within your javascript database. You encrypt sensitive document properties transparently before they save to local storage. The `encryption-crypto-js` plugin utilizes AES algorithms for dependable security. The `encryption-web-crypto` plugin employs native browser APIs to achieve superior performance. You maintain data confidentiality across Web, React Native, and Node.js environments.
-</details>
 
-<details>
-<summary>What options exist for encrypting individual document fields and keys in JavaScript?</summary>
+</FaqItem>
+<FaqItem question="What options exist for encrypting individual document fields and keys in JavaScript?">
 
 You can implement encryption in JavaScript by manually encrypting fields with the native `WebCrypto API` before storing them, but this breaks standard querying. Advanced databases like **[RxDB](./rx-database.md)** simplify this through schema-level encryption plugins (`encryption-web-crypto`). By flagging specific document fields as `encrypted: true` in your JSON Schema, RxDB automatically encrypts the data before writing to the storage engine (like IndexedDB or SQLite) and decrypts it instantly upon retrieval.
-</details>
 
-<details>
-<summary>Is chrome.storage.local encrypted at rest by default?</summary>
+</FaqItem>
+<FaqItem question="Is chrome.storage.local encrypted at rest by default?">
 
 No, `chrome.storage.local` (and standard `IndexedDB` in the browser) is **not** encrypted at rest by default. Any user or potentially malicious extension with adequate local machine access can read the underlying data files. To properly secure sensitive data at rest in a browser extension or Web App, you must explicitly encrypt strings before saving them, a process seamlessly automated by using an encrypted [RxStorage](./rx-storage.md) wrapper.
-</details>
 
-<details>
-<summary>Are there open-source libraries for encrypting personal user data natively?</summary>
+</FaqItem>
+<FaqItem question="Are there open-source libraries for encrypting personal user data natively?">
 
 Yes, libraries like `crypto-js` or wrappers over the native WebCrypto API provide robust open-source encryption. For developers building native mobile apps (React Native, Expo, Ionic) or browser applications, utilizing a database that ships with native encryption wrappers like **[RxDB's Encryption Plugins](https://rxdb.info/encryption.html)** is the most reliable method. It ensures data is never written to disk in plain text while allowing you to effortlessly swap underlying storage layers without rewriting your cryptography logic.
-</details>
 
-<details>
-<summary>Can I encrypt a child field when the parent field is already encrypted?</summary>
+</FaqItem>
+<FaqItem question="Can I encrypt a child field when the parent field is already encrypted?">
 
 No. When you encrypt a parent field, the entire object at that path is encrypted as a single string. You cannot also encrypt a child path of an already-encrypted parent. For example, if you encrypt `nested`, you must **not** also add `nested.secret` to the `encrypted` array. Doing so will throw an error in [dev-mode](./dev-mode.md).
 
@@ -254,4 +251,5 @@ const schema = {
 };
 ```
 
-</details>
+</FaqItem>
+</Faq>

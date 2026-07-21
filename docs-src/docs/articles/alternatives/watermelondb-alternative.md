@@ -5,6 +5,10 @@ description: Compare RxDB and WatermelonDB for offline-first JavaScript and Reac
 image: /headers/alternatives/watermelondb-alternative.jpg
 ---
 
+import {Faq, FaqItem} from '@site/src/components/faq';
+import {ComparisonTable} from '@site/src/components/comparison-table';
+import {Timeline} from '@site/src/components/timeline';
+
 # RxDB as a WatermelonDB Alternative
 
 <RxdbLogo alt="JavaScript Database" />
@@ -21,11 +25,15 @@ The project was open-sourced around 2018. On React Native, WatermelonDB wraps SQ
 
 ### A Brief Timeline
 
+<Timeline>
+
 - **2018** - WatermelonDB is open-sourced by Nozbe, targeting React Native performance.
 - **2019** - Adoption grows in the React Native community. Web support via LokiJS adapter is added.
 - **2020-2021** - A JSI-based SQLite adapter is introduced to remove the async bridge bottleneck on native platforms.
 - **2022-2023** - The React Native ecosystem shifts toward the New Architecture (Fabric, TurboModules). WatermelonDB's integration with this new architecture becomes an ongoing compatibility challenge.
 - **2024-2025** - Community reports accumulate about stagnant maintenance, build failures on recent React Native versions (0.76+), and unresolved issues with the New Architecture. Developers begin migrating to alternatives.
+
+</Timeline>
 
 ### How WatermelonDB Works
 
@@ -514,6 +522,8 @@ To add replication with your backend, import `replicateRxCollection` and point i
 
 ## Comparison Summary
 
+<ComparisonTable>
+
 | Aspect | WatermelonDB | RxDB |
 |---|---|---|
 | **Primary focus** | React Native performance with large datasets | Offline-first across web, mobile, Node.js |
@@ -534,41 +544,36 @@ To add replication with your backend, import `replicateRxCollection` and point i
 | **Backend requirement** | You build it | Optional; many ready-made plugins |
 | **License** | MIT | Apache 2.0 |
 
+</ComparisonTable>
+
 ---
 
 ## FAQ
 
-<details>
-<summary>Can RxDB match WatermelonDB's performance for large datasets on React Native?</summary>
+<Faq>
+<FaqItem question="Can RxDB match WatermelonDB's performance for large datasets on React Native?">
 
 RxDB on React Native uses SQLite through drivers like `op-sqlite`, which is a JSI-based SQLite driver. This puts RxDB in the same performance class as WatermelonDB's native SQLite adapter for most workloads. RxDB also runs queries outside the UI thread when using the [Worker storage plugin](../../rx-storage-worker.md), which prevents database work from blocking React Native's JavaScript thread.
 
-</details>
-
-<details>
-<summary>Does RxDB work with Expo managed workflows?</summary>
+</FaqItem>
+<FaqItem question="Does RxDB work with Expo managed workflows?">
 
 Yes. RxDB supports `expo-sqlite` as a storage backend through the SQLite plugin. This works in Expo managed workflows without ejecting or running `expo prebuild`. You can also use the [Memory storage](../../rx-storage-memory.md) for tests in a Node.js environment without any native dependencies.
 
-</details>
-
-<details>
-<summary>How does RxDB handle schema migrations?</summary>
+</FaqItem>
+<FaqItem question="How does RxDB handle schema migrations?">
 
 RxDB has a built-in [migration system](../../migration-schema.md). When you increment the schema `version` number, you provide migration strategies that transform documents from the old shape to the new shape. RxDB runs these migrations automatically when the database is opened with a newer schema version. No native rebuild is required, and migrations run against the stored documents in the local database.
 
-</details>
-
-<details>
-<summary>Can I replicate RxDB with an existing REST API that I cannot modify?</summary>
+</FaqItem>
+<FaqItem question="Can I replicate RxDB with an existing REST API that I cannot modify?">
 
 Yes, as long as the API can express the two operations RxDB needs: a way to fetch documents changed since a given checkpoint, and a way to submit local changes. The exact endpoint shape and authentication are entirely up to you. The `pull.handler` and `push.handler` functions in the replication config are plain async JavaScript functions that can call any API using `fetch`, Axios, or any other HTTP client.
 
-</details>
-
-<details>
-<summary>Does RxDB support offline-first on the web the same way it does on mobile?</summary>
+</FaqItem>
+<FaqItem question="Does RxDB support offline-first on the web the same way it does on mobile?">
 
 Yes. On the web, RxDB stores all data in IndexedDB or OPFS, both of which are persistent browser storage mechanisms. If the user goes offline, the application continues to read and write data normally. When the connection returns, replication resumes automatically from the last checkpoint. The experience is identical regardless of whether the storage backend is IndexedDB in a browser or SQLite on a mobile device.
 
-</details>
+</FaqItem>
+</Faq>

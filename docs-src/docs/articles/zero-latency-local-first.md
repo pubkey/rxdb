@@ -5,13 +5,13 @@ description: Build blazing-fast, zero-latency local first apps with RxDB. Gain i
 image: /headers/zero-latency-local-first.jpg
 ---
 
+import {CenteredImage} from '@site/src/components/centered-image';
+
 # Zero Latency Local First Apps with RxDB - Sync, Encryption and Compression
 
 Creating a **zero-latency local first** application involves ensuring that most (if not all) user interactions occur instantaneously, without waiting on remote network responses. This design drastically enhances user experience, allowing apps to remain responsive and functional even when offline or experiencing poor connectivity. As developers, we can achieve this by storing data **locally on the client** and synchronizing it to the backend in the background. **RxDB** (Reactive Database) offers a comprehensive set of features - covering replication, offline support, encryption, compression, conflict handling, and more - that make it straightforward to build such high-performing apps.
 
-<p align="center">
-  <img src="/files/loading-spinner-not-needed.gif" alt="loading spinner not needed" width="300" />
-</p>
+<CenteredImage src="/files/loading-spinner-not-needed.gif" alt="loading spinner not needed" width={300} />
 
 ## Why Zero Latency with a Local First Approach?
 
@@ -126,9 +126,7 @@ This replication seamlessly merges server-side and client-side changes. Your app
 
 A local first approach, especially with RxDB, naturally supports an [optimistic UI](./optimistic-ui.md) pattern. Because writes occur on the client, you can instantly reflect changes in the interface as soon as the user performs an action - no need to wait for server confirmation. For example, when a user updates a task document to done: true, the UI can re-render immediately with that new state. This even works across multiple browser tabs.
 
-<p align="center">
-  <img src="/files/multiwindow.gif" alt="RxDB multi tab" width="450" />
-</p>
+<CenteredImage src="/files/multiwindow.gif" alt="RxDB multi tab" width={450} />
 
 If a server conflict arises later during replication, RxDB's [conflict handling](../transactions-conflicts-revisions.md) logic determines which changes to keep, and the UI can be updated accordingly. This is far more efficient than blocking the user or displaying a spinner while the backend processes the request.
 

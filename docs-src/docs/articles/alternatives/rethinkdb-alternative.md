@@ -5,6 +5,10 @@ description: Compare RxDB and RethinkDB for realtime JavaScript applications. Le
 image: /headers/alternatives/rethinkdb-alternative.jpg
 ---
 
+import {Faq, FaqItem} from '@site/src/components/faq';
+import {ComparisonTable} from '@site/src/components/comparison-table';
+import {CenteredImage} from '@site/src/components/centered-image';
+
 # RxDB as a RethinkDB Alternative
 
 <RxdbLogo alt="JavaScript Database" />
@@ -145,9 +149,7 @@ When a user opens an RxDB application without network access, every feature work
 
 When network connectivity becomes available, RxDB's replication plugins synchronize local changes with the remote backend in the background. When the user goes offline again, the local database continues working. This is the [offline-first architecture](../../offline-first.md) pattern.
 
-<center>
-    <img src="/files/offline-ready.png" alt="Offline-ready application with RxDB" width="400" />
-</center>
+<CenteredImage src="/files/offline-ready.png" alt="Offline-ready application with RxDB" width={400} />
 
 RethinkDB's architecture cannot deliver this. Data lives on the server, so offline means no data. There is no path to genuine offline-first operation without adding a separate local storage layer and writing the reconciliation logic yourself, at which point RethinkDB is just a backend, not a realtime client database.
 
@@ -459,6 +461,8 @@ All of this works offline. Connect a replication plugin when you need server syn
 
 ## Comparison Summary
 
+<ComparisonTable>
+
 | Aspect | RethinkDB | RxDB |
 |---|---|---|
 | **Where it runs** | Server-side cluster | Client-side (browser, mobile, desktop) |
@@ -478,43 +482,38 @@ All of this works offline. Connect a replication plugin when you need server syn
 | **Commercial support** | None (company closed 2016) | Premium plugins and active development |
 | **License** | Apache 2.0 | Apache 2.0 |
 
+</ComparisonTable>
+
 ---
 
 ## FAQ
 
-<details>
-<summary>Can RxDB replicate to a RethinkDB backend?</summary>
+<Faq>
+<FaqItem question="Can RxDB replicate to a RethinkDB backend?">
 
 RxDB does not have a native RethinkDB replication plugin. If you run RethinkDB on the server, you can build a custom HTTP or WebSocket API in front of it and use RxDB's [custom replication](../../replication.md) or [WebSocket replication](../../replication-websocket.md) plugin to sync. RxDB's replication protocol only requires that the backend can serve document changes since a given checkpoint and accept pushed documents. Any server-side language with a RethinkDB driver can expose this interface.
 
-</details>
-
-<details>
-<summary>How does RxDB's reactivity compare to RethinkDB changefeeds?</summary>
+</FaqItem>
+<FaqItem question="How does RxDB's reactivity compare to RethinkDB changefeeds?">
 
 RethinkDB changefeeds push individual change events (old value and new value) from the server to the client. The client receives raw events and must maintain its own state from them.
 
 RxDB reactive queries emit the complete, current result set after every relevant change. When a query matches ten documents and one is updated, the subscriber receives all ten current documents. This maps directly to UI rendering: you always have the full state, not a stream of deltas to apply. The [event-reduce](https://github.com/pubkey/event-reduce) algorithm makes this efficient by computing result set updates from change events without re-running the full query against storage.
 
-</details>
-
-<details>
-<summary>Is RxDB suitable for realtime collaborative applications?</summary>
+</FaqItem>
+<FaqItem question="Is RxDB suitable for realtime collaborative applications?">
 
 Yes. RxDB is used in production for collaborative applications. The local database ensures the UI is always responsive. Replication keeps all clients synchronized. For concurrent edits by multiple users on the same document, RxDB supports both custom [conflict handlers](../../replication.md) and [CRDT-based merging](../../crdt.md). The SharedWorker storage mode handles the case of multiple browser tabs in the same session sharing state without duplication.
 
-</details>
-
-<details>
-<summary>How does RxDB handle reconnection after the user comes back online?</summary>
+</FaqItem>
+<FaqItem question="How does RxDB handle reconnection after the user comes back online?">
 
 RxDB's replication plugins run continuously with automatic retry. When the network is unavailable, the pull and push handlers fail, and RxDB waits for `retryTime` milliseconds before trying again. When the network returns, replication resumes automatically from the last successful checkpoint. No changes are lost: writes made while offline are stored locally and pushed to the server as soon as the connection is re-established.
 
-</details>
-
-<details>
-<summary>Does RxDB need a login or user account to work?</summary>
+</FaqItem>
+<FaqItem question="Does RxDB need a login or user account to work?">
 
 No. The local database works without any authentication. Only the replication handlers need credentials, and those are plain async functions where you include whatever headers or tokens your backend requires. If authentication expires while the app is running, replication pauses, and you can re-supply credentials and resume without restarting the database.
 
-</details>
+</FaqItem>
+</Faq>

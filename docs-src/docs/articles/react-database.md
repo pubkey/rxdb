@@ -5,6 +5,8 @@ description: Learn how the RxDB database supercharges React apps with offline ac
 image: /headers/react-database.jpg
 ---
 
+import {CenteredImage} from '@site/src/components/centered-image';
+
 # RxDB as a Database for React Applications
 In the rapidly evolving landscape of web development, React has emerged as a cornerstone technology for building dynamic and responsive user interfaces. With the increasing complexity of modern web applications, efficient data management becomes pivotal. This article delves into the integration of RxDB, a potent client-side database, with React applications to optimize data handling and elevate the overall user experience.
 
@@ -54,9 +56,7 @@ await db.heroes.find({
 ### Multi-Tab Support
 Web applications often operate in multiple browser tabs or windows. RxDB accommodates this scenario by offering built-in multi-tab support. It ensures that data changes made in one tab are efficiently propagated to other tabs, maintaining data consistency and providing a seamless experience for users interacting with the application across different tabs.
 
-<p align="center">
-  <img src="../files/multiwindow.gif" alt="multi tab support" width="450" />
-</p>
+<CenteredImage src="../files/multiwindow.gif" alt="multi tab support" width={450} />
 
 ### RxDB vs. Other React Database Options
 While considering database options for React applications, RxDB stands out due to its unique combination of reactive programming and database capabilities. Unlike traditional solutions such as IndexedDB or Web Storage, which provide basic data storage, RxDB offers a dedicated database solution with advanced features. Additionally, while state management libraries like Redux and MobX can be adapted for database use, RxDB provides an integrated solution specifically designed for handling data.
@@ -132,9 +132,7 @@ The offline-first approach is a fundamental principle of RxDB's design. When dea
 
 RxDB offers a range of [replication plugins](../replication.md) that facilitate data synchronization between clients and servers. These plugins support various synchronization strategies, such as one-way replication, two-way replication, and custom [conflict resolution](../transactions-conflicts-revisions.md). Developers can select the appropriate plugin based on their application's synchronization requirements.
 
-<p align="center">
-  <img src="../files/database-replication.png" alt="database replication" width="200" />
-</p>
+<CenteredImage src="../files/database-replication.png" alt="database replication" width={200} />
 
 ### Advanced RxDB Features and Techniques
 [Encryption](../encryption.md) of Local Data
