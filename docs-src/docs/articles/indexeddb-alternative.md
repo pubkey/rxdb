@@ -5,6 +5,8 @@ description: Looking for an IndexedDB alternative? Discover why RxDB offers supe
 image: /headers/indexeddb-alternative.jpg
 ---
 
+import {ComparisonTable} from '@site/src/components/comparison-table';
+
 # IndexedDB Alternatives
 
 IndexedDB is the standard [browser storage](../articles/browser-storage.md) API for storing significant amounts of structured data, including files/blobs. It is available in every modern browser.
@@ -158,6 +160,8 @@ OPFS is a new high-performance file system API for the web.
 
 ## Comparison
 
+<ComparisonTable>
+
 | Feature | Raw IndexedDB | <img src="../files/logo/logo.svg" alt="RxDB" width="20" /> **RxDB** |
 | :--- | :--- | :--- |
 | **Api Style** | Event-based / Callback | Promise / Observable |
@@ -170,6 +174,8 @@ OPFS is a new high-performance file system API for the web.
 | **Multi-Tab Sync**| ❌ Manual | ✅ Automatic |
 | **Encryption** | ❌ None | ✅ [Built-in](../encryption.md) |
 | **TypeScript** | ⚠️ Partial | ✅ Full Support |
+
+</ComparisonTable>
 
 ## Conclusion
 

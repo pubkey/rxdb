@@ -5,6 +5,8 @@ description: Find out why RxDB is the go-to solution for browser databases. See 
 image: /headers/browser-database.jpg
 ---
 
+import {CenteredImage} from '@site/src/components/centered-image';
+
 # RxDB: The benefits of Browser Databases
 In the world of web development, efficient data management is a cornerstone of building successful and performant applications. The ability to store data directly in the browser brings numerous advantages, such as caching, offline accessibility, simplified replication of database state, and real-time application development. In this article, we will explore [RxDB](https://rxdb.info/), a powerful browser JavaScript database, and understand why it is an excellent choice for implementing a browser database solution.
 
@@ -103,9 +105,7 @@ RxDB employs the EventReduce Algorithm to optimize observed queries. This algori
 ### Built-in multi-tab support
 RxDB natively supports multi-tab applications, allowing data synchronization and replication across different tabs or instances of the same application. This feature ensures consistent data across the application and enhances collaboration and real-time experiences.
 
-<p align="center">
-  <img src="../files/multiwindow.gif" alt="multi tab support" width="450" />
-</p>
+<CenteredImage src="../files/multiwindow.gif" alt="multi tab support" width={450} />
 
 ### Handling of schema changes
 RxDB excels in handling schema changes, even when data is stored on multiple client devices. It provides mechanisms to handle schema migrations seamlessly, ensuring data integrity and compatibility as the application evolves.
@@ -119,9 +119,7 @@ RxDB offers a flexible storage layer, enabling code reuse across different platf
 ### Replication Algorithm for compatibility with any backend
 RxDB incorporates a [Replication Algorithm](../replication.md) that is open-source and can be made compatible with various backend systems. This compatibility allows seamless data synchronization with different backend architectures, such as own servers, [Firebase](../replication-firestore.md), [CouchDB](../replication-couchdb.md), [NATS](../replication-nats.md) or [WebSocket](../replication-websocket.md).
 
-<p align="center">
-  <img src="../files/database-replication.png" alt="database replication" width="200" />
-</p>
+<CenteredImage src="../files/database-replication.png" alt="database replication" width={200} />
 
 
 ## Follow Up

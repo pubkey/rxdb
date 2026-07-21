@@ -5,6 +5,9 @@ description: Use SQLite in Electron the right way. Run the database in the main 
 image: /headers/electron-sqlite.jpg
 ---
 
+import {Faq, FaqItem} from '@site/src/components/faq';
+import {CenteredImage} from '@site/src/components/centered-image';
+
 # Electron SQLite - Building reactive desktop apps with RxDB and SQLite
 
 [Electron](https://www.electronjs.org/) apps run on the user's device, so storing data locally is the natural way to build them. [SQLite](https://www.sqlite.org/) is the most proven embedded database and a great fit for Electron because it runs inside the app process, needs no server and stores everything in a single file.
@@ -77,11 +80,7 @@ This works for a prototype, but several problems show up as the app grows:
 - **Compression**: Reduce storage size with [key compression](../key-compression.md).
 - **TypeScript support**: Typed documents, typed queries and typed results out of the box.
 
-<center>
-    <a href="https://rxdb.info/">
-        <img src="../files/logo/rxdb_javascript_database.svg" alt="RxDB Electron SQLite" width="220" />
-    </a>
-</center>
+<CenteredImage src="../files/logo/rxdb_javascript_database.svg" alt="RxDB Electron SQLite" width={220} href="https://rxdb.info/" />
 
 ## Why you should use the RxDB SQLite storage instead of SQLite by itself
 
@@ -226,9 +225,7 @@ Because the [storage layer](../rx-storage.md) is swappable, none of your applica
 
 Local SQLite data becomes more useful when it replicates. With the RxDB [Sync Engine](../replication.md) your Electron app pulls and pushes changes in realtime and keeps working offline. Writes land in SQLite first, the UI updates instantly and the replication catches up whenever the network allows it. Conflicts are detected and resolved with a [conflict handler](../transactions-conflicts-revisions.md) that you control.
 
-<p align="center">
-  <img src="../files/database-replication.png" alt="SQLite replication Electron" width="200" />
-</p>
+<CenteredImage src="../files/database-replication.png" alt="SQLite replication Electron" width={200} />
 
 A basic [HTTP replication](../replication-http.md) needs two endpoints on your server: one to pull document changes after a given checkpoint and one to push local change rows. On the client you wire them into `replicateRxCollection`:
 
@@ -316,33 +313,28 @@ A broader comparison of the options is in the [Electron database overview](../el
 
 ## FAQ
 
-<details>
-<summary>Can I use SQLite in the Electron renderer process?</summary>
+<Faq>
+<FaqItem question="Can I use SQLite in the Electron renderer process?">
 
 No. SQLite needs Node.js APIs that the renderer does not provide. The database must run in the main process. With the RxDB [Electron plugin](../electron.md) the renderer still gets a full database API because all operations are forwarded over IPC to the SQLite storage in the main process.
 
-</details>
-
-<details>
-<summary>Do I need to rebuild native modules to use SQLite in Electron?</summary>
+</FaqItem>
+<FaqItem question="Do I need to rebuild native modules to use SQLite in Electron?">
 
 Not when you use the `node:sqlite` module that ships with Node.js 22 and newer, which recent Electron versions include. Third-party packages like `sqlite3` or `better-sqlite3` are native addons and must be rebuilt with [@electron/rebuild](https://github.com/electron/rebuild) whenever the Electron version changes.
 
-</details>
-
-<details>
-<summary>Where is the SQLite file stored in an Electron app?</summary>
+</FaqItem>
+<FaqItem question="Where is the SQLite file stored in an Electron app?">
 
 The database name you pass to `createRxDatabase()` maps to a SQLite file on disk. Place it inside Electron's user-data folder (from `app.getPath('userData')`) so it survives app updates and follows platform conventions on Windows, macOS and Linux.
 
-</details>
-
-<details>
-<summary>Does RxDB support multiple Electron windows on one SQLite database?</summary>
+</FaqItem>
+<FaqItem question="Does RxDB support multiple Electron windows on one SQLite database?">
 
 Yes. Each `BrowserWindow` connects to the same main-process storage through `getRxStorageIpcRenderer` with the same `key`. Query subscriptions in one window emit new results when another window writes to the database.
 
-</details>
+</FaqItem>
+</Faq>
 
 ## Follow up
 

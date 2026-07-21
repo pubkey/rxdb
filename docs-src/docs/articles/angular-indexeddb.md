@@ -10,6 +10,8 @@ import { PERFORMANCE_DATA_BROWSER, PERFORMANCE_METRICS } from '@site/src/compone
 
 import {Tabs} from '@site/src/components/tabs';
 import {Steps} from '@site/src/components/steps';
+import {Faq, FaqItem} from '@site/src/components/faq';
+import {CenteredImage} from '@site/src/components/centered-image';
 
 # Build Smarter Offline-First Angular Apps: How RxDB Beats IndexedDB Alone
 
@@ -18,9 +20,7 @@ In modern web applications, offline capabilities and fast interactions are cruci
 ## What Is IndexedDB?
 [IndexedDB](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API) is a low-level JavaScript API for client-side storage of large amounts of structured data. It allows you to create key-value or object store-based data storage right in the user's browser. IndexedDB supports transactions and indexing but lacks a robust query API and can be complex to use due to its callback-based nature.
 
-<center>
-        <img src="../files/icons/angular.svg" alt="Angular IndexedDB" width="120" />
-</center>
+<CenteredImage src="../files/icons/angular.svg" alt="Angular IndexedDB" width={120} />
 
 ## Why Use IndexedDB in Angular
 
@@ -195,9 +195,7 @@ await doc.remove();
 
 A key benefit of RxDB is reactivity. You can subscribe to changes and have your UI automatically reflect updates in [real time](./realtime-database.md) even across browser tabs.
 
-<p align="center">
-  <img src="../files/animations/realtime.gif" alt="realtime ui updates" width="700" />
-</p>
+<CenteredImage src="../files/animations/realtime.gif" alt="realtime ui updates" width={700} />
 
 ### With RxJS Observables and Async Pipes
 
@@ -313,11 +311,13 @@ Here is a [performance overview](../rx-storage-performance.md) of the various br
 
 ## FAQ
 
-<details>
-<summary>How do I properly use IndexedDB in an Angular application?</summary>
+<Faq>
+<FaqItem question="How do I properly use IndexedDB in an Angular application?">
 
 You should avoid interacting with the raw IndexedDB callback API inside Angular components. Instead, you wrap IndexedDB in a reactive abstraction like **[RxDB](https://rxdb.info)**. RxDB seamlessly translates IndexedDB data changes into standard RxJS Observables. By configuring a custom reactivity factory with `toSignal` from `@angular/core/rxjs-interop`, you can extract pure Angular Signals straight from local IndexedDB queries, guaranteeing extremely fast and fully reactive UI renders.
-</details>
+
+</FaqItem>
+</Faq>
 
 ## Follow Up
 

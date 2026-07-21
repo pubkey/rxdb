@@ -7,6 +7,7 @@ image: /headers/best-indexeddb-wrapper.jpg
 
 import { PerformanceChart } from '@site/src/components/performance-chart';
 import { PERFORMANCE_DATA_BROWSER, PERFORMANCE_METRICS } from '@site/src/components/performance-data';
+import {Faq, FaqItem} from '@site/src/components/faq';
 
 # Best IndexedDB Wrapper
 
@@ -123,40 +124,33 @@ The takeaway: if your bottleneck is IndexedDB itself, no wrapper that only wraps
 
 ## FAQ
 
-<details>
-<summary>What is the best IndexedDB wrapper?</summary>
+<Faq>
+<FaqItem question="What is the best IndexedDB wrapper?">
 
 It depends on the job. For a thin promise layer, **[idb](https://github.com/jakearchibald/idb)** is the smallest. For indexed queries with a small footprint, **[Dexie.js](https://dexie.org/)** is the popular choice. For a full client-side database with reactivity and sync, **[RxDB](../../rx-database.md)** does more than wrap IndexedDB and can run faster storages like OPFS underneath.
 
-</details>
-
-<details>
-<summary>Is Dexie.js faster than raw IndexedDB?</summary>
+</FaqItem>
+<FaqItem question="Is Dexie.js faster than raw IndexedDB?">
 
 No. Dexie sits on top of IndexedDB and adds a small overhead per operation, so bulk writes are slower than writing straight to the store. It buys you a cleaner API and query builder, not more speed. To go faster than IndexedDB you need a different storage engine such as the **[OPFS storage](../../rx-storage-opfs.md)**.
 
-</details>
-
-<details>
-<summary>Do I need a wrapper or can I use IndexedDB directly?</summary>
+</FaqItem>
+<FaqItem question="Do I need a wrapper or can I use IndexedDB directly?">
 
 You can use it directly, but the native API is callback based, needs a transaction per operation, and has no real query support. Most teams pick a wrapper to avoid that boilerplate. See the [IndexedDB alternative](../indexeddb-alternative.md) page for a full breakdown of the raw API's problems.
 
-</details>
-
-<details>
-<summary>Which wrapper supports offline sync with a server?</summary>
+</FaqItem>
+<FaqItem question="Which wrapper supports offline sync with a server?">
 
 **PouchDB** syncs with CouchDB, and **[RxDB](../../replication.md)** ships a Sync Engine that replicates with many backends including CouchDB, GraphQL, HTTP, Supabase, Firestore, and its own replication server. Thin wrappers like idb, Dexie, and localForage do not include replication.
 
-</details>
-
-<details>
-<summary>Can RxDB replace IndexedDB entirely?</summary>
+</FaqItem>
+<FaqItem question="Can RxDB replace IndexedDB entirely?">
 
 Yes. RxDB uses IndexedDB as one storage backend but abstracts it behind [RxStorage](../../rx-storage.md). You can switch to OPFS, in-memory, SQLite, or other storages without changing your application code, which is why RxDB is not tied to IndexedDB performance.
 
-</details>
+</FaqItem>
+</Faq>
 
 ## Comparison Table
 

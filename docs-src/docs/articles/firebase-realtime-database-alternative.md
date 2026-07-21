@@ -5,6 +5,8 @@ description: Looking for a Firebase Realtime Database alternative? RxDB offers a
 image: /headers/firebase-realtime-database-alternative.jpg
 ---
 
+import {Faq, FaqItem} from '@site/src/components/faq';
+
 # RxDB - The Firebase Realtime Database Alternative That Can Sync With Your Own Backend
 
 Are you on the lookout for a **Firebase Realtime Database alternative** that gives you greater freedom, deeper offline capabilities, and allows you to seamlessly integrate with any backend? **RxDB** (Reactive Database) might be the perfect choice. This [local-first](./local-first-future.md), NoSQL data store runs entirely on the client while supporting real-time updates and robust syncing with any server environment, making it a strong contender against Firebase Realtime Database's limitations and potential vendor lock-in.
@@ -190,14 +192,15 @@ Use one of the [Replication Plugins](../replication.md) to connect with your pre
 
 ## FAQ
 
-<details>
-<summary>Should I use Firebase or an open-source alternative for real-time syncing?</summary>
+<Faq>
+<FaqItem question="Should I use Firebase or an open-source alternative for real-time syncing?">
 
 You should use Firebase if your primary goal is to offload all backend infrastructure to a fully managed Google Cloud service and your application relies almost entirely on constant internet connectivity. However, if your application requires heavy, complex offline capabilities, true data ownership, or the flexibility to integrate with any existing REST/GraphQL backend, you should opt for an open-source, local-first database alternative like **[RxDB](../rx-database.md)**, which provides Firebase-like real-time UI reactivity without the vendor lock-in.
-</details>
 
-<details>
-<summary>Is Firebase configured as a relational database?</summary>
+</FaqItem>
+<FaqItem question="Is Firebase configured as a relational database?">
 
 No, the Firebase Realtime Database and Cloud Firestore are both strict NoSQL, document-oriented data stores. They do not support strict relational schemas or native SQL `JOIN` operations. Developers must manually denormalize data across multiple JSON branches to establish relationships, a pattern perfectly mirrored by local-first NoSQL solutions like **[RxDB](../rx-database.md)** which map the same JSON topologies securely to client-side storage architectures.
-</details>
+
+</FaqItem>
+</Faq>

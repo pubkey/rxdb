@@ -5,6 +5,8 @@ description: Looking for a Firestore alternative? RxDB is a local-first, NoSQL d
 image: /headers/firestore-alternative.jpg
 ---
 
+import {Faq, FaqItem} from '@site/src/components/faq';
+
 # RxDB - The Firestore Alternative That Can Sync with Your Own Backend
 
 If you're seeking a **Firestore alternative**, you're likely looking for a way to:
@@ -63,11 +65,13 @@ RxDB is designed to run in **any environment** that can execute JavaScript. Whet
 
 ## FAQ
 
-<details>
-<summary>Does Firebase Firestore qualify as a robust offline sync engine?</summary>
+<Faq>
+<FaqItem question="Does Firebase Firestore qualify as a robust offline sync engine?">
 
 While Firestore provides basic offline caching, it is fundamentally a cloud-first database. True [Offline-First](../offline-first.md) architectures demand that the local database acts as the single source of truth, capable of advanced local querying, custom indexing, and deterministic conflict resolution without ever contacting a server. Firestore's heavy reliance on Google Cloud connections makes it unsuitable for applications that must operate reliably in zero-connectivity environments for extended periods.
-</details>
+
+</FaqItem>
+</Faq>
 
 ---
 
