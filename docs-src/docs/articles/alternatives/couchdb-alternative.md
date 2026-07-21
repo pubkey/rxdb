@@ -5,6 +5,9 @@ description: Compare RxDB and CouchDB for local-first JavaScript applications. L
 image: /headers/alternatives/couchdb-alternative.jpg
 ---
 
+import {Faq, FaqItem} from '@site/src/components/faq';
+import {Timeline} from '@site/src/components/timeline';
+
 # RxDB as a CouchDB Alternative
 
 <RxdbLogo alt="JavaScript Database" />
@@ -31,6 +34,8 @@ CouchDB also provides a **changes feed** (`/_changes` endpoint) that streams a l
 
 ### A Brief Timeline
 
+<Timeline>
+
 - **2005** - Damien Katz begins development and publishes initial concepts
 - **2008** - CouchDB open-sourced; joins the Apache Software Foundation
 - **2010** - Version 1.0 released; widespread adoption begins
@@ -40,6 +45,8 @@ CouchDB also provides a **changes feed** (`/_changes` endpoint) that streams a l
 - **2017** - CouchDB 2.1 released with Mango query improvements
 - **2022** - CouchDB 3.x branch brings performance improvements and security updates
 - **2025** - CouchDB 3.5.1 released; the project remains maintained under the Apache Software Foundation
+
+</Timeline>
 
 CouchDB has a stable, dedicated user base, particularly in humanitarian and academic contexts where reliable data synchronization across disconnected field locations is critical. It is not a fast-growing technology in terms of raw market share, but it is not abandoned either. It occupies a specific niche: server-side distributed document storage with built-in replication.
 
@@ -513,46 +520,37 @@ server {
 
 ## FAQ
 
-<details>
-<summary>Does RxDB replace CouchDB?</summary>
+<Faq>
+<FaqItem question="Does RxDB replace CouchDB?">
 
 No. RxDB is a client-side database. It runs in the browser or on a mobile device. CouchDB is a server-side database. They serve different roles. RxDB can sync with CouchDB using the [CouchDB replication plugin](../../replication-couchdb.md), making them complementary parts of an offline-first application stack.
 
-</details>
-
-<details>
-<summary>Is using RxDB with CouchDB faster than PouchDB with CouchDB?</summary>
+</FaqItem>
+<FaqItem question="Is using RxDB with CouchDB faster than PouchDB with CouchDB?">
 
 For initial replication and local queries, yes. PouchDB must store the full document revision tree on the client to stay compatible with the CouchDB replication protocol. RxDB's CouchDB plugin uses a different sync approach that only stores the current document version, reducing storage usage and speeding up reads and initial sync. RxDB also supports storage engines like OPFS that are significantly faster than IndexedDB for write-heavy workloads.
 
-</details>
-
-<details>
-<summary>Can I use RxDB without CouchDB?</summary>
+</FaqItem>
+<FaqItem question="Can I use RxDB without CouchDB?">
 
 Yes. CouchDB is one of many backends RxDB can replicate with. You can use RxDB with a custom HTTP endpoint, a GraphQL server, Supabase, or no backend at all. The [replication protocol](../../replication.md) is designed to be backend-agnostic. If you already have a CouchDB server, the CouchDB replication plugin is a straightforward way to add offline-first capabilities to your client application.
 
-</details>
-
-<details>
-<summary>How does conflict resolution differ between CouchDB and RxDB?</summary>
+</FaqItem>
+<FaqItem question="How does conflict resolution differ between CouchDB and RxDB?">
 
 CouchDB stores all conflicting revisions as branches in the document revision tree. Reading a conflicted document requires fetching the winning and losing revisions, comparing them, and resolving the conflict by deleting the unwanted branch. This logic runs on the application side after the conflict is detected.
 
 RxDB resolves conflicts during replication. When a push is rejected because the server has a newer version, the conflict handler on the collection is called. You define the resolution strategy (last-write-wins, field merge, server-wins, etc.) once per collection. For complex collaborative scenarios, the [CRDT plugin](../../crdt.md) can merge changes from multiple clients automatically.
 
-</details>
-
-<details>
-<summary>Does RxDB work with a self-hosted CouchDB?</summary>
+</FaqItem>
+<FaqItem question="Does RxDB work with a self-hosted CouchDB?">
 
 Yes. The CouchDB replication plugin takes a URL pointing to your CouchDB database. It works with any CouchDB-compatible endpoint, whether hosted on your own server, in a Docker container, or in the cloud. Authentication is handled via a custom `fetch` method that you can configure per-request.
 
-</details>
-
-<details>
-<summary>Can I switch from CouchDB to a different backend later?</summary>
+</FaqItem>
+<FaqItem question="Can I switch from CouchDB to a different backend later?">
 
 Yes. Your application code reads and writes against the local RxDB collection. The replication configuration is separate. If you replace CouchDB with a different backend, you change only the replication plugin configuration. The schema, queries, and UI code remain unchanged.
 
-</details>
+</FaqItem>
+</Faq>

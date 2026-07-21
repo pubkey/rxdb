@@ -5,6 +5,9 @@ description: Compare Apollo Client with RxDB for offline-first apps. Learn why a
 image: /headers/apollo-alternative.jpg
 ---
 
+import {Faq, FaqItem} from '@site/src/components/faq';
+import {ComparisonTable} from '@site/src/components/comparison-table';
+
 # RxDB as an Apollo Client Alternative for Truly Offline-First Apps
 
 The Apollo GraphQL platform is built to move data between a server and UI applications over GraphQL endpoints. It ships with GraphQL clients for several languages, server libraries to build endpoints, and tools for federation and observability. Apollo Client offers caching features that can persist data for offline reads, but caching alone does not make an application fully usable when the user is offline. Teams that start with Apollo Client and try to push the cache into an [offline-first](../../offline-first.md) architecture often hit a wall, because the cache is a transport optimization, not a database.
@@ -216,37 +219,37 @@ This split lets you adopt RxDB collection by collection. Start with the most off
 
 ## FAQ
 
-<details>
-<summary>Is Apollo a database?</summary>
+<Faq>
+<FaqItem question="Is Apollo a database?">
 
 No. Apollo Client is a GraphQL client with an in-memory normalized cache. The cache can be persisted to storage through `apollo-cache-persist`, but it does not offer schema validation, migrations, indexes, or local query planning. RxDB is a database with a pluggable storage layer and replication built in.
-</details>
 
-<details>
-<summary>Can RxDB replicate over GraphQL?</summary>
+</FaqItem>
+<FaqItem question="Can RxDB replicate over GraphQL?">
 
 Yes. The [GraphQL replication plugin](../../replication-graphql.md) implements the RxDB sync protocol on top of GraphQL queries, mutations, and subscriptions. You define a pull query, a push mutation, and an optional subscription for live updates, and RxDB handles checkpoints, batching, retries, and conflict detection.
-</details>
 
-<details>
-<summary>How does RxDB compare to apollo-cache-persist?</summary>
+</FaqItem>
+<FaqItem question="How does RxDB compare to apollo-cache-persist?">
 
 `apollo-cache-persist` serializes the entire normalized cache to a single storage entry on a debounce timer. It is meant to warm the cache after a reload, not to be a source of truth. RxDB writes each document as it changes, validates against a schema, supports per-collection migrations, and exposes [reactive queries](../../reactivity.md) that fire on every change. Crashes between persist intervals do not cost data because every write is durable on commit.
-</details>
 
-<details>
-<summary>What about subscriptions?</summary>
+</FaqItem>
+<FaqItem question="What about subscriptions?">
 
 GraphQL subscriptions still work. The RxDB GraphQL replication plugin can subscribe to a server stream and use each event as a trigger to run a pull. That keeps the protocol resumable through checkpoints while giving you near real-time updates over WebSockets. See the [realtime database](../../articles/realtime-database.md) article for the broader pattern.
-</details>
 
-<details>
-<summary>Can I replace Apollo entirely?</summary>
+</FaqItem>
+<FaqItem question="Can I replace Apollo entirely?">
 
 Yes, if your app's data flow fits the RxDB model of collections, schemas, and replicated documents. Many teams do this for product surfaces that need offline support and keep a thin GraphQL fetch layer (or plain `fetch`) for one-off requests. If you rely heavily on Apollo Federation tooling on the server, you can keep that and only swap the client side.
-</details>
+
+</FaqItem>
+</Faq>
 
 ## Comparison Table
+
+<ComparisonTable>
 
 | Capability | Apollo Client | RxDB |
 | --- | --- | --- |
@@ -261,6 +264,8 @@ Yes, if your app's data flow fits the RxDB model of collections, schemas, and re
 | Migrations | Not provided | Versioned [schema migrations](../../migration-schema.md) |
 | Transport | GraphQL over HTTP and WebSocket | Storage-agnostic; GraphQL, HTTP, CouchDB, Firestore, WebRTC, P2P |
 | Server requirement | GraphQL server | Any backend that implements the pull and push handlers |
+
+</ComparisonTable>
 
 ## Follow Up
 

@@ -5,6 +5,9 @@ description: Looking beyond absurd-sql? RxDB offers schema validation, observabl
 image: /headers/absurd-sql-alternative.jpg
 ---
 
+import {Faq, FaqItem} from '@site/src/components/faq';
+import {ComparisonTable} from '@site/src/components/comparison-table';
+
 # RxDB as an absurd-sql Alternative for JS Apps That Need a Real Database
 
 [absurd-sql](https://github.com/jlongster/absurd-sql) is a clever piece of low-level plumbing. It maps SQLite-on-WASM file I/O onto IndexedDB blocks so SQLite can persist data in the browser with reasonable performance. That trick worked well in 2021, but most product teams do not want to maintain raw SQL boilerplate, hand-written migrations, transaction wrappers, and a custom query subscription layer on top of a SQLite VFS shim. They want indexes, reactive queries, replication, schema validation, and observability out of the box.
@@ -164,35 +167,32 @@ Schemas, queries, replication setup, and reactive subscriptions stay identical. 
 
 ## FAQ
 
-<details>
-<summary>Does RxDB use absurd-sql?</summary>
+<Faq>
+<FaqItem question="Does RxDB use absurd-sql?">
 
 No. RxDB has its own [storage layer abstraction](../../rx-storage-indexeddb.md) and ships several first-party storage adapters. For browser persistence you can pick the [IndexedDB storage](../../rx-storage-indexeddb.md) or the [OPFS storage](../../rx-storage-opfs.md). If you want SQLite specifically, the [SQLite storage](../../rx-storage-sqlite.md) uses `sqlite-wasm` (or native SQLite on Node.js and React Native) without the absurd-sql block-on-IndexedDB trick.
 
-</details>
-
-<details>
-<summary>Is OPFS a better fit than absurd-sql today?</summary>
+</FaqItem>
+<FaqItem question="Is OPFS a better fit than absurd-sql today?">
 
 For most modern browsers, yes. OPFS gives WASM modules synchronous file access through `FileSystemSyncAccessHandle`, which is what SQLite wants. The official `sqlite-wasm` build from the SQLite team uses OPFS as its primary persistent VFS. RxDB exposes this through the [OPFS storage](../../rx-storage-opfs.md). absurd-sql's IndexedDB-as-block-device approach was a workaround for the absence of OPFS, and that absence is mostly gone.
 
-</details>
-
-<details>
-<summary>Can I run SQL in RxDB?</summary>
+</FaqItem>
+<FaqItem question="Can I run SQL in RxDB?">
 
 RxDB's primary query API is a NoSQL Mongo-style selector with sort, skip, and limit, designed for reactive subscriptions. If you specifically need SQL semantics, the [SQLite storage](../../rx-storage-sqlite.md) lets you use SQLite as the underlying engine while still keeping RxDB's schemas, [reactive queries](../../reactivity.md), and replication on top. Most applications find the document API plus indexes covers what they would otherwise write in SQL.
 
-</details>
-
-<details>
-<summary>How does multi-tab work?</summary>
+</FaqItem>
+<FaqItem question="How does multi-tab work?">
 
 RxDB elects a leader tab using the BroadcastChannel API and serializes writes through a single storage instance, then broadcasts change events to every other tab. Reactive queries in all tabs update automatically when one tab writes a document. absurd-sql does not provide cross-tab coordination, so applications using it have to handle concurrent writers themselves.
 
-</details>
+</FaqItem>
+</Faq>
 
 ## Comparison Table
+
+<ComparisonTable>
 
 | Capability | absurd-sql | RxDB |
 | --- | --- | --- |
@@ -207,6 +207,8 @@ RxDB elects a leader tab using the BroadcastChannel API and serializes writes th
 | Multi-tab coordination | None | Leader election plus events |
 | Encryption, attachments, backups | Build yourself | Plugins |
 | Active maintenance | Stagnant | Active |
+
+</ComparisonTable>
 
 ## When absurd-sql Still Makes Sense
 

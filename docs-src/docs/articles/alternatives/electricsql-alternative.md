@@ -5,6 +5,9 @@ description: Need a stable ElectricSQL alternative? RxDB is a local-first JavaSc
 image: /headers/electricsql-alternative.jpg
 ---
 
+import {Faq, FaqItem} from '@site/src/components/faq';
+import {ComparisonTable} from '@site/src/components/comparison-table';
+
 # RxDB as an ElectricSQL Alternative for Local-First JavaScript Apps
 
 [ElectricSQL](https://electric-sql.com/) is in the middle of a major rewrite. The original prototype combined SQLite, Postgres, and CRDT-based bidirectional sync. The new direction, often called Electric Next, drops most of that and focuses on partial sync of "shapes" from a Postgres source database to TypeScript or Elixir clients. The write path is not yet implemented and client-side reactivity is incomplete. Teams that want to ship a [local-first](../../offline-first.md) JavaScript application today need a stable alternative that already supports reads, writes, queries, and live updates.
@@ -181,42 +184,37 @@ This setup mirrors what ElectricSQL provides on the read side, adds the write pa
 
 ## FAQ
 
-<details>
-<summary>Is ElectricSQL stable for production?</summary>
+<Faq>
+<FaqItem question="Is ElectricSQL stable for production?">
 
 The original ElectricSQL is no longer the active product. Electric Next is under active development, the write path is not implemented, and client reactivity is incomplete. For a production deployment that needs both reads and writes today, it is too early.
 
-</details>
-
-<details>
-<summary>Can RxDB sync from a Postgres database?</summary>
+</FaqItem>
+<FaqItem question="Can RxDB sync from a Postgres database?">
 
 Yes. Expose a small pull and push HTTP API in front of Postgres and use the [HTTP replication plugin](../../replication-http.md). The server can be Node.js, Go, Rust, Python, or anything else that speaks HTTP and SQL. RxDB does not require a specific backend runtime.
 
-</details>
-
-<details>
-<summary>Does RxDB use SQLite?</summary>
+</FaqItem>
+<FaqItem question="Does RxDB use SQLite?">
 
 RxDB can use SQLite as a storage backend through the [SQLite RxStorage](../../rx-storage-sqlite.md). It also supports IndexedDB, OPFS, in-memory, and other engines. The choice is per database, and the rest of the API stays the same.
 
-</details>
-
-<details>
-<summary>What about partial sync, the equivalent of ElectricSQL shapes?</summary>
+</FaqItem>
+<FaqItem question="What about partial sync, the equivalent of ElectricSQL shapes?">
 
 RxDB supports partial replication. The pull handler can filter on the server side based on user, tenant, region, or any other dimension. You can also run multiple replications per collection with different filters, which gives the same outcome as subscribing to several shapes.
 
-</details>
-
-<details>
-<summary>Can I use ElectricSQL and RxDB together?</summary>
+</FaqItem>
+<FaqItem question="Can I use ElectricSQL and RxDB together?">
 
 In theory yes. You could let ElectricSQL stream shapes into a service that then feeds an RxDB pull endpoint. In practice this adds two systems to maintain. Most teams pick one. If RxDB covers the read and write path on its own, the simpler choice is to drop the extra layer.
 
-</details>
+</FaqItem>
+</Faq>
 
 ## Comparison Table
+
+<ComparisonTable>
 
 | Feature | ElectricSQL Next | RxDB |
 | --- | --- | --- |
@@ -231,6 +229,8 @@ In theory yes. You could let ElectricSQL stream shapes into a service that then 
 | Conflict handling | Application defined | Pluggable conflict handler with revisions |
 | Mobile support | Limited | React Native, Capacitor, Expo, Electron |
 | Offline-first | Read-only today | Full offline reads and writes |
+
+</ComparisonTable>
 
 ## Next Steps
 

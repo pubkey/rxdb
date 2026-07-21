@@ -5,6 +5,9 @@ description: Replace unmaintained Hoodie with RxDB. Keep CouchDB sync, gain Type
 image: /headers/hoodie-alternative.jpg
 ---
 
+import {Faq, FaqItem} from '@site/src/components/faq';
+import {ComparisonTable} from '@site/src/components/comparison-table';
+
 # RxDB as a Hoodie Alternative for Offline-First JavaScript Apps
 
 If you built a project on **Hoodie**, you chose it for a clear reason: ship an [offline-first](../../offline-first.md) JavaScript application without writing a backend. The "noBackend" promise meant a single API call to store and sync data, with CouchDB and PouchDB doing the heavy lifting underneath. That promise still matters today, but the Hoodie project itself has been inactive for years, the `hood.ie` website is offline, and the GitHub repository has not received a meaningful commit in a long time.
@@ -170,35 +173,32 @@ If you currently use PouchDB directly (with or without Hoodie), the migration is
 
 ## FAQ
 
-<details>
-<summary>Is Hoodie still maintained?</summary>
+<Faq>
+<FaqItem question="Is Hoodie still maintained?">
 
 No. The Hoodie project has not seen meaningful commits for several years, the `hood.ie` website is offline, and the GitHub organization is effectively dormant. Running Hoodie today means relying on frozen dependencies with no security or compatibility updates.
 
-</details>
-
-<details>
-<summary>Can I keep using CouchDB if I move to RxDB?</summary>
+</FaqItem>
+<FaqItem question="Can I keep using CouchDB if I move to RxDB?">
 
 Yes. RxDB ships a [CouchDB replication plugin](../../replication-couchdb.md) that syncs directly with any CouchDB-compatible server. You can migrate the client without touching the server, then decide later whether to keep CouchDB or switch to a different backend.
 
-</details>
-
-<details>
-<summary>Does RxDB give me a noBackend experience?</summary>
+</FaqItem>
+<FaqItem question="Does RxDB give me a noBackend experience?">
 
 RxDB gives you a local-first experience where the client is the source of truth. You still need a sync target, but it can be an existing CouchDB cluster, a managed service, a small custom HTTP endpoint, or even peer-to-peer WebRTC sync. The frontend code stays focused on data, queries, and UI, much like Hoodie's noBackend ideal. See [Local-First](../../articles/local-first-future.md) for the broader pattern.
 
-</details>
-
-<details>
-<summary>How do I migrate Hoodie data?</summary>
+</FaqItem>
+<FaqItem question="How do I migrate Hoodie data?">
 
 Point RxDB at your existing CouchDB databases through the [CouchDB replication plugin](../../replication-couchdb.md). On first run, RxDB pulls documents into the local store, validates them against your new JSON Schema, and keeps syncing on every change. For Hoodie account data, export the relevant `_users` and per-user databases the same way you would back up any CouchDB instance.
 
-</details>
+</FaqItem>
+</Faq>
 
 ## Hoodie vs RxDB Comparison Table
+
+<ComparisonTable>
 
 | Feature | Hoodie | RxDB |
 | --- | --- | --- |
@@ -213,6 +213,8 @@ Point RxDB at your existing CouchDB databases through the [CouchDB replication p
 | Mobile runtimes | Browser focused | Browser, Node.js, Electron, React Native |
 | Account system | Built-in | Bring your own auth |
 | Website / domain | `hood.ie` offline | `rxdb.info` active |
+
+</ComparisonTable>
 
 ## Follow Up
 

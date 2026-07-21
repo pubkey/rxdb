@@ -5,6 +5,9 @@ description: Replace PouchDB with RxDB on the client while keeping Cloudant or a
 image: /headers/cloudant-alternative.jpg
 ---
 
+import {Faq, FaqItem} from '@site/src/components/faq';
+import {ComparisonTable} from '@site/src/components/comparison-table';
+
 # RxDB as a Cloudant Alternative for the JavaScript Client
 
 Teams that adopted **Cloudant** usually picked it because they wanted CouchDB semantics without running their own cluster. The replication protocol, the JSON document model, and the ability to sync with [PouchDB](../../replication-couchdb.md) in the browser made Cloudant a popular choice for offline-capable web and mobile apps. Over time, many of those teams ran into the same set of issues on the client side: PouchDB struggles with large datasets, IBM Cloud pricing is hard to predict, and the developer experience around schemas and reactive UIs feels dated.
@@ -177,35 +180,32 @@ If you later decide to leave IBM Cloud entirely, you can repoint the [CouchDB re
 
 ## FAQ
 
-<details>
-<summary>Can RxDB replicate with Cloudant?</summary>
+<Faq>
+<FaqItem question="Can RxDB replicate with Cloudant?">
 
 Yes. Cloudant exposes the standard CouchDB replication protocol, and RxDB ships an official [CouchDB replication plugin](../../replication-couchdb.md) that targets that protocol. Point the plugin at your Cloudant database URL and authenticate the same way you would with any other CouchDB client. Both pull and push are supported, including continuous live replication.
 
-</details>
-
-<details>
-<summary>Is Cloudant still active?</summary>
+</FaqItem>
+<FaqItem question="Is Cloudant still active?">
 
 Cloudant is still offered as a managed service inside IBM Cloud Databases. The Cloudant Shared Plan was retired in 2018, and current deployments run on dedicated IBM Cloud capacity with throughput-based billing. The CouchDB-compatible API is still the supported way to talk to the service, so client tooling built for CouchDB keeps working against modern Cloudant.
 
-</details>
-
-<details>
-<summary>Why is RxDB faster than PouchDB?</summary>
+</FaqItem>
+<FaqItem question="Why is RxDB faster than PouchDB?">
 
 PouchDB stores a full per-document revision tree to mirror CouchDB on disk, which adds overhead to every read and write on top of [slow IndexedDB](../../slow-indexeddb.md). RxDB separates the storage engine from the replication protocol, so the on-disk format is optimized for the client and replication metadata is kept compact. RxDB also supports faster storage backends like [OPFS](../../rx-storage-opfs.md) and uses event reduction to avoid recomputing observable queries on every change.
 
-</details>
-
-<details>
-<summary>How do I migrate from PouchDB plus Cloudant to RxDB plus Cloudant?</summary>
+</FaqItem>
+<FaqItem question="How do I migrate from PouchDB plus Cloudant to RxDB plus Cloudant?">
 
 Install RxDB and the [CouchDB replication plugin](../../replication-couchdb.md), define schemas for your existing collections, and start replication against the same Cloudant URL you used with PouchDB. RxDB will pull the documents into local storage on first run. You can keep the old PouchDB code path during a rollout window and remove it after users have synced. No server-side changes are required.
 
-</details>
+</FaqItem>
+</Faq>
 
 ## Comparison Table
+
+<ComparisonTable>
 
 | Capability | Cloudant + PouchDB | RxDB |
 | --- | --- | --- |
@@ -220,6 +220,8 @@ Install RxDB and the [CouchDB replication plugin](../../replication-couchdb.md),
 | Conflict handling | Revision-based, manual resolution | Pluggable conflict handler per collection |
 | Offline-first | Yes, with PouchDB caveats | Yes, [offline-first](../../offline-first.md) by design |
 | Vendor lock-in | IBM Cloud account and billing | None, replace replication target at any time |
+
+</ComparisonTable>
 
 ## Follow Up
 

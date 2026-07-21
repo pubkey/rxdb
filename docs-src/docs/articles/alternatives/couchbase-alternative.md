@@ -5,6 +5,9 @@ description: Compare RxDB and Couchbase for JavaScript applications. Learn why R
 image: /headers/alternatives/couchbase-alternative.jpg
 ---
 
+import {Faq, FaqItem} from '@site/src/components/faq';
+import {ComparisonTable} from '@site/src/components/comparison-table';
+
 # RxDB as a Couchbase Alternative
 
 <RxdbLogo alt="JavaScript Database" />
@@ -455,6 +458,8 @@ RxDB is the better fit when:
 
 ## Comparison Table
 
+<ComparisonTable>
+
 | Feature | Couchbase Lite (JS) | RxDB |
 |---|---|---|
 | **Offline-first** | Yes | Yes |
@@ -479,48 +484,41 @@ RxDB is the better fit when:
 | **JavaScript-native** | Recent addition (2025), limited features | Yes, built from the start for JavaScript |
 | **Active development** | Enterprise-focused, acquired 2025 | Active, independent, commercially supported |
 
+</ComparisonTable>
+
 ---
 
 ## FAQ
 
-<details>
-<summary>Can RxDB replace Couchbase Server as a backend?</summary>
+<Faq>
+<FaqItem question="Can RxDB replace Couchbase Server as a backend?">
 
 No. RxDB is a client-side database, not a server-side database. It runs in the browser, in React Native, in Electron, or in Node.js as an embedded database. It does not replace Couchbase Server or any other backend database. What it replaces is the client-side Couchbase Lite layer and the synchronization requirement for Sync Gateway. The backend can remain any system that exposes an API RxDB can replicate with.
 
-</details>
-
-<details>
-<summary>Does RxDB require a backend to work offline?</summary>
+</FaqItem>
+<FaqItem question="Does RxDB require a backend to work offline?">
 
 No. RxDB stores all data locally and operates fully offline without any backend connection. Replication is optional and runs in the background when connectivity is available. An application can be built with RxDB that never replicates with any backend and still has full offline-first functionality.
 
-</details>
-
-<details>
-<summary>How does RxDB handle replication conflicts?</summary>
+</FaqItem>
+<FaqItem question="How does RxDB handle replication conflicts?">
 
 RxDB uses a configurable conflict handler per collection. During replication, when a locally modified document conflicts with a version from the server, the conflict handler receives both document states and returns the winning state. Common strategies include last-write-wins (based on a timestamp field) and merge-based strategies (combining fields from both versions). For text or structured data that requires automatic merging, the [CRDT plugin](../../crdt.md) provides conflict-free replicated data types that merge concurrent changes without any custom handler code.
 
-</details>
-
-<details>
-<summary>Can RxDB work in React Native like Couchbase Lite can?</summary>
+</FaqItem>
+<FaqItem question="Can RxDB work in React Native like Couchbase Lite can?">
 
 Yes. RxDB works in React Native using the [SQLite storage plugin](../../rx-storage-sqlite.md), which wraps either `expo-sqlite` or `op-sqlite`. The same schema definitions, queries, reactive subscriptions, and replication configuration that work in a browser also work in React Native. There is no separate SDK or separate configuration required.
 
-</details>
-
-<details>
-<summary>Is there a path to migrate from Couchbase Lite to RxDB?</summary>
+</FaqItem>
+<FaqItem question="Is there a path to migrate from Couchbase Lite to RxDB?">
 
 Yes. Couchbase Lite stores data as JSON documents, and RxDB stores data as JSON documents. A migration involves reading documents from the Couchbase Lite database (using the Couchbase Lite query API), defining a matching schema in RxDB, and inserting the documents into RxDB. The primary work is defining the schema and setting up RxDB's replication to replace the Sync Gateway connection. If the backend is Couchbase Server, you would also add a new API layer (HTTP, GraphQL, or WebSocket) that RxDB can replicate with.
 
-</details>
-
-<details>
-<summary>What is the licensing difference?</summary>
+</FaqItem>
+<FaqItem question="What is the licensing difference?">
 
 Couchbase has a Community Edition (open source) and an Enterprise Edition (commercial). Some features, including advanced encryption and certain enterprise security options, are only available in the Enterprise Edition. Sync Gateway has its own licensing terms. RxDB's core is open source. Advanced storage plugins like IndexedDB, OPFS, and SQLite are available under a commercial [premium license](https://rxdb.info/premium/). The premium license is a one-time purchase and does not require ongoing cloud service fees.
 
-</details>
+</FaqItem>
+</Faq>
