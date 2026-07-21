@@ -643,6 +643,7 @@ const sidebars = {
         'articles/reactjs-storage',
         'articles/indexeddb-alternative',
         'articles/best-indexeddb-wrapper',
+        'articles/indexeddb-sync',
         'articles/generic-prompts',
         'articles/electron-sqlite',
         'articles/realm-to-rxdb-migration'
