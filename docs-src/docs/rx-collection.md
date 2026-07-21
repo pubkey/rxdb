@@ -357,7 +357,7 @@ const is = isRxCollection(myObj);
 <FaqItem question={'How to remove the limit of ' + NON_PREMIUM_COLLECTION_LIMIT + ' collections?'}>
 
     <div>
-    In the open-source version of RxDB, the amount of RxCollections that can exist in parallel is limited to `{NON_PREMIUM_COLLECTION_LIMIT}`.
+    In the open-source version of RxDB, the amount of RxCollections that can exist in parallel is limited to <code>{NON_PREMIUM_COLLECTION_LIMIT}</code>.
     To remove this limit, you can purchase the [Premium Plugins](/premium/) and call the `setPremiumFlag()` function before creating a database:
     ```ts
     import { setPremiumFlag } from 'rxdb-premium/plugins/shared';
