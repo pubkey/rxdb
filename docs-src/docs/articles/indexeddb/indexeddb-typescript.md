@@ -1,15 +1,15 @@
 ---
 title: IndexedDB with TypeScript - Type-Safe Browser Storage
 slug: indexeddb-typescript.html
-description: Use IndexedDB with TypeScript and get full type safety. Compare typing the native API, idb, Dexie, and schema-derived types with RxDB.
+description: Use IndexedDB with TypeScript and get full type safety. Compare typing the native API, idb, and schema-derived types with RxDB.
 image: /headers/indexeddb-typescript.jpg
 ---
 
 # IndexedDB with TypeScript
 
-[IndexedDB](../rx-storage-indexeddb.md) is the standard [browser storage](./browser-storage.md) API for structured data. It works in every modern browser and can hold large amounts of JSON and binary data. But its TypeScript story is weak. The native API returns loosely typed values, so most reads come back as `any` and you lose the type safety that made you pick TypeScript in the first place.
+[IndexedDB](../../rx-storage-indexeddb.md) is the standard [browser storage](../browser-storage.md) API for structured data. It works in every modern browser and can hold large amounts of JSON and binary data. But its TypeScript story is weak. The native API returns loosely typed values, so most reads come back as `any` and you lose the type safety that made you pick TypeScript in the first place.
 
-This page explains where the native IndexedDB types fall short, how to add types by hand, and how libraries like [idb](https://github.com/jakearchibald/idb), [Dexie.js](https://dexie.org/), and [RxDB](https://rxdb.info/) give you type-safe access, with RxDB deriving the types straight from your schema.
+This page explains where the native IndexedDB types fall short, how to add types by hand, and how libraries like [idb](https://github.com/jakearchibald/idb) and [RxDB](https://rxdb.info/) give you type-safe access, with RxDB deriving the types straight from your schema.
 
 <RxdbLogo alt="IndexedDB with TypeScript" />
 
@@ -90,31 +90,9 @@ const user = await db.get('users', 'user-1');
 
 This is a big step up. Reads are typed, store names are checked, and index names are validated. The type is still a claim about what is stored, not a runtime check, so a corrupted record slips through, but the developer experience is much better than the raw API.
 
-### Dexie.js
-
-[Dexie.js](https://dexie.org/) uses typed `Table<T, Key>` objects. You declare a table's row type and the query builder stays typed through the chain.
-
-```ts
-import Dexie, { Table } from 'dexie';
-
-class MyDB extends Dexie {
-  users!: Table<{ id: string; name: string; age: number }, string>;
-  constructor() {
-    super('mydb');
-    this.version(1).stores({ users: 'id, age' });
-  }
-}
-
-const db = new MyDB();
-const adults = await db.users.where('age').above(17).toArray();
-// adults is typed as { id: string; name: string; age: number }[]
-```
-
-Note that the `stores()` string and the `Table` type are declared separately, so they can drift out of sync. Nothing checks that the index string `'id, age'` matches the row type. As with idb, the types are compile-time only and do not validate the data at runtime.
-
 ### RxDB
 
-[RxDB](https://rxdb.info/) is a local-first database that runs on IndexedDB (or faster storages) and takes a different approach. You define a [JSON Schema](../rx-schema.md) once, and RxDB derives the TypeScript type from it. There is a single source of truth, so the type and the runtime validation cannot drift apart.
+[RxDB](https://rxdb.info/) is a local-first database that runs on IndexedDB (or faster storages) and takes a different approach. You define a [JSON Schema](../../rx-schema.md) once, and RxDB derives the TypeScript type from it. There is a single source of truth, so the type and the runtime validation cannot drift apart.
 
 ```ts
 import {
@@ -159,39 +137,39 @@ first.name; // string, checked
 first.get('naem'); // TypeScript error, unknown field
 ```
 
-The difference is that the type and the validation come from the same schema. With the wrappers above you write the type once and hope the stored data matches. With RxDB the schema drives both the compile-time type and the runtime [schema validation](../schema-validation.md), so a document that does not fit is rejected on write. See the full [TypeScript tutorial](../tutorials/typescript.md) for typing collections, ORM methods, and documents.
+The difference is that the type and the validation come from the same schema. With the wrappers above you write the type once and hope the stored data matches. With RxDB the schema drives both the compile-time type and the runtime [schema validation](../../schema-validation.md), so a document that does not fit is rejected on write. See the full [TypeScript tutorial](../../tutorials/typescript.md) for typing collections, ORM methods, and documents.
 
 ## How the Options Compare
 
-| Typing aspect | Native IndexedDB | idb | Dexie.js | RxDB |
-| --- | --- | --- | --- | --- |
-| Reads typed | ❌ `any` | ✅ via `DBSchema` | ✅ via `Table<T>` | ✅ from schema |
-| Store/collection names checked | ❌ | ✅ | ✅ | ✅ |
-| Query results typed | ❌ | ⚠️ key ranges only | ✅ | ✅ |
-| Single source of truth | ❌ | ❌ type only | ❌ type + store string | ✅ schema |
-| Runtime validation | ❌ | ❌ | ❌ | ✅ schema validation |
-| Type from schema | ❌ | ❌ manual | ❌ manual | ✅ derived |
+| Typing aspect | Native IndexedDB | idb | RxDB |
+| --- | --- | --- | --- |
+| Reads typed | ❌ `any` | ✅ via `DBSchema` | ✅ from schema |
+| Store/collection names checked | ❌ | ✅ | ✅ |
+| Query results typed | ❌ | ⚠️ key ranges only | ✅ |
+| Single source of truth | ❌ | ❌ type only | ✅ schema |
+| Runtime validation | ❌ | ❌ | ✅ schema validation |
+| Type from schema | ❌ | ❌ manual | ✅ derived |
 
 ## FAQ
 
 <details>
 <summary>Does IndexedDB have TypeScript types?</summary>
 
-Yes, but they are weak. The DOM library types `IDBDatabase` and friends, yet reads return an `IDBRequest` whose `result` is `any`. So you get no type safety on the data itself. A wrapper like **[idb](https://github.com/jakearchibald/idb)**, **[Dexie.js](https://dexie.org/)**, or **[RxDB](../rx-schema.md)** is needed for typed reads.
+Yes, but they are weak. The DOM library types `IDBDatabase` and friends, yet reads return an `IDBRequest` whose `result` is `any`. So you get no type safety on the data itself. A wrapper like **[idb](https://github.com/jakearchibald/idb)** or **[RxDB](../../rx-schema.md)** is needed for typed reads.
 
 </details>
 
 <details>
 <summary>How do I get type-safe queries on IndexedDB?</summary>
 
-Use a library that carries types through the query. Dexie types its `Table` query builder, and RxDB types query results as `RxDocument<T>` where `T` is derived from your [schema](../rx-schema.md). The raw API only supports key-range lookups and returns `any`.
+Use a library that carries types through the query. RxDB types query results as `RxDocument<T>` where `T` is derived from your [schema](../../rx-schema.md), so filters and result arrays stay typed. The raw API only supports key-range lookups and returns `any`.
 
 </details>
 
 <details>
 <summary>What is the difference between a typed wrapper and runtime validation?</summary>
 
-A typed wrapper checks your code at compile time. It does not check the data at runtime, so a record that does not match the type still loads. RxDB adds runtime [schema validation](../schema-validation.md) from the same schema that produces the type, so invalid documents are rejected on write.
+A typed wrapper checks your code at compile time. It does not check the data at runtime, so a record that does not match the type still loads. RxDB adds runtime [schema validation](../../schema-validation.md) from the same schema that produces the type, so invalid documents are rejected on write.
 
 </details>
 
@@ -204,8 +182,8 @@ Yes. RxDB derives the document type from its schema with `ExtractDocumentTypeFro
 
 ## Follow Up
 
-- Read the full [RxDB TypeScript tutorial](../tutorials/typescript.md)
-- Learn about the [RxDB schema](../rx-schema.md) and [schema validation](../schema-validation.md)
+- Read the full [RxDB TypeScript tutorial](../../tutorials/typescript.md)
+- Learn about the [RxDB schema](../../rx-schema.md) and [schema validation](../../schema-validation.md)
 - Compare the [best IndexedDB wrappers](./best-indexeddb-wrapper.md)
-- Start with the [RxDB Quickstart](../quickstart.md)
+- Start with the [RxDB Quickstart](../../quickstart.md)
 - Check the [RxDB code on GitHub](/code/) and leave a star ⭐
