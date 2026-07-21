@@ -3932,3 +3932,52 @@ pre[data-theme] span[style*="--shiki-token-keyword"] {
 .rxdb-comparison-table table td:first-child {
     font-weight: 600;
 }
+
+/**
+ * Timeline component (src/components/timeline.tsx) in
+ * markdown-children mode: styles the wrapped bullet list as a
+ * vertical timeline with dots and a connecting line.
+ */
+.rxdb-timeline ul {
+    list-style: none;
+    margin: 0;
+    padding-left: 0;
+}
+
+.rxdb-timeline li {
+    position: relative;
+    padding-left: 30px;
+    padding-bottom: 18px;
+    margin: 0;
+}
+
+.rxdb-timeline li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 7px;
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background: var(--color-top);
+}
+
+.rxdb-timeline li::after {
+    content: '';
+    position: absolute;
+    left: 5px;
+    top: 22px;
+    bottom: -3px;
+    width: 1px;
+    background: var(--color-top);
+    opacity: 0.4;
+}
+
+.rxdb-timeline li:last-child::after {
+    display: none;
+}
+
+.rxdb-timeline li>strong:first-child,
+.rxdb-timeline li>p:first-child>strong:first-child {
+    color: var(--color-top);
+}

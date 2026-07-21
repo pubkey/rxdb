@@ -1,4 +1,4 @@
-import React, { ReactNode } from 'react';
+import { ReactNode } from 'react';
 
 export type TimelineEntry = {
     /**
@@ -16,9 +16,9 @@ export type TimelineEntry = {
  * Two usage modes:
  *
  * 1. Wrap an existing markdown bullet list with bold labels.
- *    Each bullet must start with a bold label, an optional
- *    " - " separator follows. Links and inline code keep
- *    normal markdown processing:
+ *    The list keeps normal markdown processing (links, inline
+ *    code) and is styled purely via CSS (.rxdb-timeline in
+ *    custom.css), so it works with the MDX component mapping:
  *
  * <Timeline>
  *
@@ -38,70 +38,29 @@ export function Timeline(props: {
     items?: TimelineEntry[];
     children?: ReactNode;
 }) {
-    const items: TimelineEntry[] = props.items ?? parseMarkdownChildren(props.children);
+    if (!props.items) {
+        return (
+            <div className="rxdb-timeline" style={{ marginTop: 20, marginBottom: 20 }}>
+                {props.children}
+            </div>
+        );
+    }
     return (
         <div style={{ marginTop: 20, marginBottom: 20 }}>
-            {items.map((item, index) => (
+            {props.items.map((item, index) => (
                 <div key={index} style={styles.row}>
                     <div style={styles.left}>
                         <strong style={styles.label}>{item.label}</strong>
                     </div>
                     <div style={styles.indicator}>
                         <div style={styles.dot} />
-                        {index < items.length - 1 && <div style={styles.line} />}
+                        {index < props.items.length - 1 && <div style={styles.line} />}
                     </div>
                     <div style={styles.content}>{item.content}</div>
                 </div>
             ))}
         </div>
     );
-}
-
-/**
- * Parses a markdown bullet list (rendered as <ul><li>...) into
- * timeline entries. The first <strong> element of each bullet
- * becomes the label, the rest becomes the content. A leading
- * " - " separator after the label is stripped.
- */
-function parseMarkdownChildren(children: ReactNode): TimelineEntry[] {
-    const entries: TimelineEntry[] = [];
-    const visit = (node: ReactNode) => {
-        React.Children.forEach(node, (child) => {
-            if (!React.isValidElement(child)) {
-                return;
-            }
-            if (child.type === 'li') {
-                let liChildren = React.Children.toArray((child.props as any).children);
-                // loose lists wrap the bullet content in a paragraph
-                if (
-                    liChildren.length === 1 &&
-                    React.isValidElement(liChildren[0]) &&
-                    liChildren[0].type === 'p'
-                ) {
-                    liChildren = React.Children.toArray((liChildren[0].props as any).children);
-                }
-                const labelIndex = liChildren.findIndex(
-                    (c) => React.isValidElement(c) && c.type === 'strong'
-                );
-                if (labelIndex === -1) {
-                    entries.push({ label: '', content: liChildren });
-                    return;
-                }
-                const label = (liChildren[labelIndex] as React.ReactElement).props.children;
-                const rest = liChildren.slice(labelIndex + 1).map((c, i) => {
-                    if (i === 0 && typeof c === 'string') {
-                        return c.replace(/^\s*[-–—:]\s*/, '');
-                    }
-                    return c;
-                });
-                entries.push({ label, content: rest });
-            } else {
-                visit((child.props as any).children);
-            }
-        });
-    };
-    visit(children);
-    return entries;
 }
 
 const styles = {
