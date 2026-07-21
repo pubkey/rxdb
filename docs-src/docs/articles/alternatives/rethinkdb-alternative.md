@@ -8,6 +8,7 @@ image: /headers/alternatives/rethinkdb-alternative.jpg
 import {Faq, FaqItem} from '@site/src/components/faq';
 import {ComparisonTable} from '@site/src/components/comparison-table';
 import {CenteredImage} from '@site/src/components/centered-image';
+import {Timeline} from '@site/src/components/timeline';
 
 # RxDB as a RethinkDB Alternative
 
@@ -41,12 +42,16 @@ The changefeed approach was genuinely novel. Before RethinkDB, building a realti
 
 ### RethinkDB's Timeline
 
+<Timeline>
+
 - **2009** - RethinkDB Inc. is founded. The project begins as a storage engine optimized for SSDs.
 - **2012** - Public launch of RethinkDB 1.0 as a realtime document database with ReQL and changefeeds.
 - **2013-2015** - Active development, growing community, and strong interest from teams building realtime applications.
 - **October 2016** - RethinkDB Inc. shuts down. The founders publish a post-mortem explaining they failed to build a sustainable business model competing against MongoDB and cloud-managed databases.
 - **February 2017** - The Linux Foundation (via the Cloud Native Computing Foundation) acquires RethinkDB and relicenses it under the Apache License 2.0. Community maintenance continues.
 - **2018-present** - RethinkDB receives occasional bug fixes and maintenance releases from community contributors, but no significant new feature development. The project is functionally stable but not actively evolving.
+
+</Timeline>
 
 The post-mortem published by the founders is candid: the market for databases rewarded operational simplicity and managed services, and RethinkDB was difficult to operate compared to hosted alternatives like Firebase or later Supabase. Teams already running MongoDB had little reason to migrate just for changefeeds, especially as MongoDB added its own change streams feature.
 

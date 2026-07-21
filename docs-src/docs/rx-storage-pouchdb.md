@@ -6,15 +6,18 @@ image: /headers/rx-storage-pouchdb.jpg
 ---
 
 import {Faq, FaqItem} from '@site/src/components/faq';
+import {DeprecatedBlock} from '@site/src/components/deprecated-block';
 
 # RxStorage PouchDB
 
 The PouchDB RxStorage is based on the [PouchDB](https://github.com/pouchdb/pouchdb) database. It is the most battle proven RxStorage and has a big ecosystem of adapters. PouchDB does a lot of overhead to enable CouchDB replication which makes the PouchDB RxStorage one of the slowest.
 
 
-:::warning
+<DeprecatedBlock>
+
 The PouchDB RxStorage is removed from RxDB and can no longer be used in new projects. You should switch to a different [RxStorage](./rx-storage.md).
-:::
+
+</DeprecatedBlock>
 
 
 ## Why is the PouchDB RxStorage deprecated?

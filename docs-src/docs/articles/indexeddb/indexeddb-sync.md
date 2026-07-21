@@ -5,6 +5,8 @@ description: Learn how to sync IndexedDB across browser tabs, devices, and a bac
 image: /headers/indexeddb-sync.jpg
 ---
 
+import {Faq, FaqItem} from '@site/src/components/faq';
+
 # IndexedDB Sync
 
 [IndexedDB](../../rx-storage-indexeddb.md) stores structured data inside a single browser, on a single device, in a single origin. That is the whole design. It has no concept of syncing that data to another tab, another device, or a backend server. As soon as your app needs the same data in more than one place, you have to build **IndexedDB sync** yourself, or use a library that ships it.
@@ -126,40 +128,33 @@ There are a few ways to get sync onto IndexedDB. They differ in how much they ha
 
 ## FAQ
 
-<details>
-<summary>Can IndexedDB sync across devices on its own?</summary>
+<Faq>
+<FaqItem question="Can IndexedDB sync across devices on its own?">
 
 No. IndexedDB is scoped to one browser on one device and has no network layer. To sync across devices you need a replication process that moves changes through a server or a peer connection. RxDB provides this with its **[Sync Engine](../../replication.md)**.
 
-</details>
-
-<details>
-<summary>How do I sync IndexedDB between browser tabs?</summary>
+</FaqItem>
+<FaqItem question="How do I sync IndexedDB between browser tabs?">
 
 Use the `BroadcastChannel` API to notify other tabs of writes, or let a database handle it. With RxDB and `multiInstance: true`, writes in one tab reach [reactive queries](../../reactivity.md) in every other tab automatically, and [leader election](../../leader-election.md) keeps a single tab responsible for the server connection.
 
-</details>
-
-<details>
-<summary>Does IndexedDB sync work offline?</summary>
+</FaqItem>
+<FaqItem question="Does IndexedDB sync work offline?">
 
 Yes, when the database tracks changes. The client reads and writes to the local IndexedDB copy while offline, and the replication sends the queued changes once the connection returns. This is the core of the [offline-first](../../offline-first.md) approach that RxDB is built for.
 
-</details>
-
-<details>
-<summary>What happens on a conflict when two devices edit the same document?</summary>
+</FaqItem>
+<FaqItem question="What happens on a conflict when two devices edit the same document?">
 
 The sync layer needs per-document revisions to detect that both sides changed. RxDB attaches a revision to every document and runs a [conflict handler](../../transactions-conflicts-revisions.md) that you can customize, so you decide whether the local write, the remote write, or a merge wins.
 
-</details>
-
-<details>
-<summary>Do I need a special backend for IndexedDB sync?</summary>
+</FaqItem>
+<FaqItem question="Do I need a special backend for IndexedDB sync?">
 
 No. RxDB replicates against any infrastructure. There are plugins for [GraphQL](../../replication-graphql.md), plain [HTTP](../../replication-http.md), [CouchDB](../../replication-couchdb.md), [Firestore](../../replication-firestore.md), [Supabase](../../replication-supabase.md), and others, and you can implement the [replication protocol](../../replication.md) against your own server.
 
-</details>
+</FaqItem>
+</Faq>
 
 ## Follow Up
 

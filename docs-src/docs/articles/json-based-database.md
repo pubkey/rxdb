@@ -5,15 +5,16 @@ description: Dive into how JSON-based databases power modern UI-centric apps, wh
 image: /headers/json-based-database.jpg
 ---
 
+import {Faq, FaqItem} from '@site/src/components/faq';
+import {CenteredImage} from '@site/src/components/centered-image';
+
 # JSON-Based Databases: Why NoSQL and RxDB Simplify App Development
 
 Modern applications handle highly dynamic, often deeply nested data structures, commonly represented in **JSON**. Whether you're building a real-time dashboard or a fully offline mobile app, storing and querying data in a JSON-friendly way can reduce overhead and coding complexity. This is where **JSON-based databases** (often part of the **NoSQL** family) come into play, letting you store objects in the same format they're used in your code, eliminating the schema wrangling that can come with a strict relational design.
 
 Below, we explore why JSON-based databases naturally align with **NoSQL** principles, how relational engines (like PostgreSQL or SQLite) handle JSON columns, the pitfalls of storing data in a single plain JSON text file, and the ways [RxDB](https://rxdb.info/) stands out as an offline-first JSON solution for JavaScript developers, complete with advanced features like JSON-Schema and JSON-key-compression.
 
-<p align="center">
-  <img src="/files/no-sql.png" alt="NoSQL" width="100" />
-</p>
+<CenteredImage src="/files/no-sql.png" alt="NoSQL" width={100} />
 
 
 ## Why JSON-Based Databases Are Typically NoSQL
@@ -107,9 +108,7 @@ RxDB stores each record as a JSON document, closely matching how front-end frame
 
 Instead of complex SQL, RxDB uses JSON-based [query](../rx-query.md) definitions. You can subscribe to query results, letting your UI automatically refresh when data changes locally or from remote sync updates:
 
-<p align="center">
-  <img src="../files/animations/realtime.gif" alt="realtime ui updates" width="700" />
-</p>
+<CenteredImage src="../files/animations/realtime.gif" alt="realtime ui updates" width={700} />
 
 3. **Offline-First Sync**
 
@@ -149,29 +148,28 @@ const compressed = {
 The user sees no difference in their code since RxDB automatically decompresses data on read, but the overhead is drastically reduced behind the scenes.
 
 
-<details>
-<summary>Is JSON data considered NoSQL?</summary>
+<Faq>
+<FaqItem question="Is JSON data considered NoSQL?">
 
 Yes, databases that store records as dynamic, nested JSON documents (like MongoDB, CouchDB, or **[RxDB](https://rxdb.info)**) are inherently categorized under the broader "NoSQL" (Not Only SQL) umbrella. This document-oriented approach fundamentally bypasses the strict columns, predetermined schema migrations, and rigid normalization rules enforced by traditional relational SQL databases, prioritizing development speed and seamless alignment with JavaScript application state.
-</details>
 
-<details>
-<summary>Which commercial and open-source databases support schema-less JSON design best?</summary>
+</FaqItem>
+<FaqItem question="Which commercial and open-source databases support schema-less JSON design best?">
 
 MongoDB and Couchbase are robust commercial engines built deliberately around schema-less JSON storage. For open-source, Postgres and SQLite offer impressive hybrid solutions by embedding JSON/JSONB text columns natively. However, for client-side JavaScript applications operating entirely in the browser, **[RxDB](https://rxdb.info)** offers the most comprehensive open-source solution, acting as a fully reactive, Offline-First NoSQL database optimized exclusively for JSON workloads.
-</details>
 
-<details>
-<summary>Why is NoSQL often faster for specific local JSON workloads?</summary>
+</FaqItem>
+<FaqItem question="Why is NoSQL often faster for specific local JSON workloads?">
 
 NoSQL is often faster for local JSON workloads because it stores entire document hierarchies contiguously. Unlike normalized SQL databases that must lock multiple tables and execute computationally expensive `JOIN` operations to reconstruct a nested object, a NoSQL database simply reads or writes the complete JSON Document in a single, atomic disk operation. This significantly reduces I/O wait times and maps flawlessly into local JavaScript application state.
-</details>
 
-<details>
-<summary>What are the advantages of using JSON as a database schema format?</summary>
+</FaqItem>
+<FaqItem question="What are the advantages of using JSON as a database schema format?">
 
 Using JSON as a schema format (specifically the [JSON-Schema standard](https://json-schema.org/)) provides robust type-safety without sacrificing the flexibility of a document store. Because JSON-Schema is machine-readable and heavily utilized by the web ecosystem, tools like [RxDB](../rx-database.md) can parse the schema at runtime to automatically validate document writes, infer TypeScript definitions, and securely compress document keys directly before saving to disk.
-</details>
+
+</FaqItem>
+</Faq>
 
 ## Follow Up
 

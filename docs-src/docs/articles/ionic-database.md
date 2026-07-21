@@ -5,16 +5,15 @@ description: Supercharge your Ionic hybrid apps with RxDB's offline-first databa
 image: /headers/ionic-database.jpg
 ---
 
+import {Faq, FaqItem} from '@site/src/components/faq';
+import {CenteredImage} from '@site/src/components/centered-image';
+
 # Ionic Storage - RxDB as database for hybrid apps
 
 In the fast-paced world of mobile app development, **hybrid applications** have emerged as a versatile solution, offering the best of both worlds - the web and native app experiences. One key challenge these apps face is efficiently storing and querying data on the **client's device**. Enter [RxDB](https://rxdb.info/), a powerful client-side database tailored for ionic hybrid applications. In this article, we'll explore how RxDB addresses the requirements of storing and querying data in ionic apps, and why it stands out as a preferred choice.
 
 
-<center>
-    <a href="https://rxdb.info/">
-        <img src="../files/icons/ionic.svg" alt="Ionic Database Storage" width="120" />
-    </a>
-</center>
+<CenteredImage src="../files/icons/ionic.svg" alt="Ionic Database Storage" width={120} href="https://rxdb.info/" />
 
 ## What are Ionic Hybrid Apps?
 
@@ -42,9 +41,7 @@ The [local-first](../offline-first.md) approach adopted by RxDB is a game-change
 ### Observable Queries
 One of RxDB's standout features is its implementation of [observable queries](../rx-query.md). This concept allows your app's user interface to be dynamically updated in real time as data changes within the database. RxDB's observables create a bridge between your database and user interface, keeping them in sync effortlessly.
 
-<p align="center">
-  <img src="../files/animations/realtime.gif" alt="realtime ui updates" width="700" />
-</p>
+<CenteredImage src="../files/animations/realtime.gif" alt="realtime ui updates" width={700} />
 
 ### NoSQL Query Engine
 RxDB's NoSQL query engine empowers you to perform powerful queries on your app's data, without the constraints imposed by traditional relational databases. This flexibility is particularly valuable when dealing with unstructured or semi-structured data. With the NoSQL query engine, you can retrieve, filter, and manipulate data according to your app's unique requirements.
@@ -148,11 +145,13 @@ In addition to its security features, RxDB offers cost-effective benefits. RxDB 
 
 ## FAQ
 
-<details>
-<summary>What are the best peer-to-peer syncing databases for mobile applications?</summary>
+<Faq>
+<FaqItem question="What are the best peer-to-peer syncing databases for mobile applications?">
 
 RxDB excels as a peer-to-peer syncing database for mobile applications. You build mobile applications using local storage on the user device. RxDB synchronizes changes directly between multiple clients utilizing WebRTC data channels. You connect devices locally without depending on a central server. This approach minimizes latency and ensures continuous data sharing even across isolated network environments.
-</details>
+
+</FaqItem>
+</Faq>
 
 ## Follow Up
 

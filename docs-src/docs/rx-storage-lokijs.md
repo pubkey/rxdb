@@ -6,15 +6,18 @@ image: /headers/rx-storage-lokijs.jpg
 ---
 
 import {Faq, FaqItem} from '@site/src/components/faq';
+import {DeprecatedBlock} from '@site/src/components/deprecated-block';
 
 # RxStorage LokiJS
 
 The LokiJS RxStorage is based on [LokiJS](https://github.com/techfort/LokiJS) which is an **in-memory** database that processes all data in memory and only saves to disc when the app is closed or an interval is reached. This makes it very fast but you have the possibility to lose seemingly persisted writes when the JavaScript process ends before the persistence loop has been done.
 
 
-:::warning LokiJS was removed in RxDB version 16
+<DeprecatedBlock>
+
 The LokiJS project itself is no longer in development or maintained and therefore the lokijs RxStorage is **removed**. There are known bugs like having wrong query results of losing data. LokiJS bugs that occur outside of the RxDB layer will not be fixed and the LokiJS RxStorage was removed in RxDB version 16. Using LokiJS as storage is no longer possible. In production it is recommended to use another [RxStorage](./rx-storage.md) instead. For browsers better use the [IndexedDB](./rx-storage-indexeddb.md) storage. For fast lazy persistence in memory data (similar to how lokijs works) you can use the [Memory Mapped](./rx-storage-memory-mapped.md) storage. If you really need the lokijs RxStorage, you can fork the open-source code from the previous RxDB version.
-:::
+
+</DeprecatedBlock>
 
 ### Pros
 

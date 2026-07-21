@@ -7,6 +7,7 @@ image: /headers/alternatives/minimongo-alternative.jpg
 
 import {Faq, FaqItem} from '@site/src/components/faq';
 import {Timeline} from '@site/src/components/timeline';
+import {ComparisonTable} from '@site/src/components/comparison-table';
 
 # RxDB as a Minimongo Alternative
 
@@ -463,6 +464,8 @@ After the initial setup, you can add [replication](../../replication.md) to sync
 
 ## Comparison Summary
 
+<ComparisonTable>
+
 | Aspect | Minimongo | RxDB |
 |---|---|---|
 | **Type** | In-memory client-side cache | Persistent local-first database |
@@ -482,6 +485,8 @@ After the initial setup, you can add [replication](../../replication.md) to sync
 | **Active maintenance (standalone)** | No (mWater fork unmaintained) | Yes (active development, premium plugin model) |
 | **Framework agnostic** | Tied to Meteor ecosystem | Works with React, Vue, Angular, Svelte, plain JS |
 | **License** | MIT | Apache 2.0 |
+
+</ComparisonTable>
 
 ---
 

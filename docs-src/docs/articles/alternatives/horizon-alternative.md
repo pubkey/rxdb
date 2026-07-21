@@ -7,6 +7,8 @@ image: /headers/alternatives/horizon-alternative.jpg
 
 import {Faq, FaqItem} from '@site/src/components/faq';
 import {CenteredImage} from '@site/src/components/centered-image';
+import {ComparisonTable} from '@site/src/components/comparison-table';
+import {Timeline} from '@site/src/components/timeline';
 
 # RxDB as a Horizon Alternative
 
@@ -65,10 +67,14 @@ Horizon also provided:
 
 ### Horizon's Timeline
 
+<Timeline>
+
 - **May 2016** - Horizon launches publicly with its `hz` CLI and the Horizon client library for JavaScript.
 - **October 2016** - RethinkDB Inc. announces it is shutting down. The company failed to build a sustainable business competing against hosted databases and cloud services.
 - **February 2017** - The Linux Foundation (via the Cloud Native Computing Foundation) acquires RethinkDB and relicenses it as Apache 2.0. Horizon does not receive the same treatment.
 - **2016-present** - Horizon receives no meaningful updates. The GitHub repository is effectively archived. The `rethinkdb/horizon` repository shows no significant activity after 2016.
+
+</Timeline>
 
 The shutdown happened almost immediately after launch. Horizon never had a chance to mature. Key features that were planned but never shipped included offline support, which was requested by the community in an [open GitHub issue from 2016](https://github.com/rethinkdb/horizon/issues/58) and never resolved before the project was abandoned.
 
@@ -502,6 +508,8 @@ This works entirely offline. Connect a replication plugin when you need server s
 
 ## Comparison Summary
 
+<ComparisonTable>
+
 | Aspect | Horizon | RxDB |
 |---|---|---|
 | **Project status** | Abandoned since 2016 | Actively maintained since 2016 |
@@ -521,6 +529,8 @@ This works entirely offline. Connect a replication plugin when you need server s
 | **Permissions** | Horizon-specific rule system | Handled by your existing backend |
 | **Security updates** | None (abandoned) | Ongoing with active development |
 | **License** | Apache 2.0 | Apache 2.0 |
+
+</ComparisonTable>
 
 ---
 

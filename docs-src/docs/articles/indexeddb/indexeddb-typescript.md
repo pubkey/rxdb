@@ -5,6 +5,8 @@ description: Use IndexedDB with TypeScript and get full type safety. Compare typ
 image: /headers/indexeddb-typescript.jpg
 ---
 
+import {Faq, FaqItem} from '@site/src/components/faq';
+
 # IndexedDB with TypeScript
 
 [IndexedDB](../../rx-storage-indexeddb.md) is the standard [browser storage](../browser-storage.md) API for structured data. It works in every modern browser and can hold large amounts of JSON and binary data. But its TypeScript story is weak. The native API returns loosely typed values, so most reads come back as `any` and you lose the type safety that made you pick TypeScript in the first place.
@@ -152,33 +154,28 @@ The difference is that the type and the validation come from the same schema. Wi
 
 ## FAQ
 
-<details>
-<summary>Does IndexedDB have TypeScript types?</summary>
+<Faq>
+<FaqItem question="Does IndexedDB have TypeScript types?">
 
 Yes, but they are weak. The DOM library types `IDBDatabase` and friends, yet reads return an `IDBRequest` whose `result` is `any`. So you get no type safety on the data itself. A wrapper like **[idb](https://github.com/jakearchibald/idb)** or **[RxDB](../../rx-schema.md)** is needed for typed reads.
 
-</details>
-
-<details>
-<summary>How do I get type-safe queries on IndexedDB?</summary>
+</FaqItem>
+<FaqItem question="How do I get type-safe queries on IndexedDB?">
 
 Use a library that carries types through the query. RxDB types query results as `RxDocument<T>` where `T` is derived from your [schema](../../rx-schema.md), so filters and result arrays stay typed. The raw API only supports key-range lookups and returns `any`.
 
-</details>
-
-<details>
-<summary>What is the difference between a typed wrapper and runtime validation?</summary>
+</FaqItem>
+<FaqItem question="What is the difference between a typed wrapper and runtime validation?">
 
 A typed wrapper checks your code at compile time. It does not check the data at runtime, so a record that does not match the type still loads. RxDB adds runtime [schema validation](../../schema-validation.md) from the same schema that produces the type, so invalid documents are rejected on write.
 
-</details>
-
-<details>
-<summary>Can I generate TypeScript types from a JSON schema?</summary>
+</FaqItem>
+<FaqItem question="Can I generate TypeScript types from a JSON schema?">
 
 Yes. RxDB derives the document type from its schema with `ExtractDocumentTypeFromTypedRxJsonSchema`. If your schema lives in a `.json` file, you can also generate types at build time with a tool like [json-schema-to-typescript](https://www.npmjs.com/package/json-schema-to-typescript).
 
-</details>
+</FaqItem>
+</Faq>
 
 ## Follow Up
 

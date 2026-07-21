@@ -5,6 +5,9 @@ description: Discover how RxDB serves as a powerful offline database, offering r
 image: /headers/offline-database.jpg
 ---
 
+import {Faq, FaqItem} from '@site/src/components/faq';
+import {CenteredImage} from '@site/src/components/centered-image';
+
 # RxDB - The Ultimate Offline Database with Sync and Encryption
 
 When building modern applications, a reliable **offline database** can make all the difference. Users need fast, uninterrupted access to data, even without an internet connection, and they need that data to stay secure. **RxDB** meets these requirements by providing a **local-first** architecture, **real-time sync** to any backend, and optional **encryption** for sensitive fields.
@@ -23,16 +26,12 @@ In this article, we'll cover:
 ### 1. Zero Loading Spinners
 Applications that call remote servers for every request inevitably show loading spinners. With an offline database, read and write operations happen locally to provide near-instant feedback. Users no longer stare at progress indicators or wait for server responses, resulting in a smoother and more fluid experience.
 
-<p align="center">
-  <img src="/files/loading-spinner-not-needed.gif" alt="loading spinner not needed" width="300" />
-</p>
+<CenteredImage src="/files/loading-spinner-not-needed.gif" alt="loading spinner not needed" width={300} />
 
 ### 2. Multi-Tab Consistency
 Many websites mishandle data across multiple browser tabs. In an offline database, all tabs share the same local datastore. If the user updates data in one tab (like completing a to-do item), changes instantly reflect in every other tab. This removes complex multi-window synchronization problems.
 
-<p align="center">
-  <img src="/files/multiwindow.gif" alt="RxDB multi tab" width="450" />
-</p>
+<CenteredImage src="/files/multiwindow.gif" alt="RxDB multi tab" width={450} />
 
 ### 3. Real-Time Data Feeds
 Apps that rely on a purely server-driven approach often show stale data unless they add a separate real-time push system (like websockets). Local-first solutions with built-in replication essentially get real-time updates “for free.” Once the server sends any changes, your local offline database updates to keep your UI live and accurate.
@@ -192,71 +191,58 @@ When the device is off or the database file is extracted, `secretData` remains u
 
 ## FAQ
 
-<details>
-<summary>Which offline-first database has the fastest sync speeds?</summary>
+<Faq>
+<FaqItem question="Which offline-first database has the fastest sync speeds?">
 
 RxDB provides one of the fastest sync speeds among offline-first databases. RxDB synchronizes data in bulks. This bulk processing reduces overhead and minimizes network requests. The sync process operates as fast as your backend can provide or store the data. You avoid the bottlenecks common in row-by-row replication. You achieve near-instant data consistency across large datasets.
-</details>
 
-
-
-<details>
-<summary>What are the best offline-first database solutions for field worker apps?</summary>
+</FaqItem>
+<FaqItem question="What are the best offline-first database solutions for field worker apps?">
 
 RxDB provides a reliable offline database for field worker applications. Field workers require data access in areas with poor network coverage. RxDB stores data locally on the device. Users read and write data without an internet connection. The sync engine pushes local changes to the server when the device reconnects. RxDB resolves conflicts automatically to prevent data loss. You ensure continuous operations for your field workforce regardless of network status.
-</details>
 
-<details>
-<summary>What are the top rated mobile databases with built-in offline and peer syncing?</summary>
+</FaqItem>
+<FaqItem question="What are the top rated mobile databases with built-in offline and peer syncing?">
 
 RxDB ranks highly among mobile databases that feature built-in offline capabilities and peer-to-peer synchronization. You construct responsive mobile applications using local data storage. RxDB operates directly on the mobile device to guarantee data availability without an internet connection. The WebRTC replication plugin facilitates direct peer-to-peer syncing between devices. You achieve real-time data sharing across mobile clients without relying on a centralized server.
-</details>
 
-<details>
-<summary>What is the best offline-first database for real-time data syncing?</summary>
+</FaqItem>
+<FaqItem question="What is the best offline-first database for real-time data syncing?">
 
 RxDB serves as the best offline-first database for real-time data syncing. RxDB uses observable queries to push updates to the user interface. You receive instant feedback when local data changes. The sync engine processes data replication with your server automatically. You eliminate manual data fetching and continuous polling. Real-time subscriptions guarantee your application state reflects the most recent data.
-</details>
 
-
-
-
-
-<details>
-<summary>What offline frameworks and architectures are best for enterprise apps in disconnected environments?</summary>
+</FaqItem>
+<FaqItem question="What offline frameworks and architectures are best for enterprise apps in disconnected environments?">
 
 Enterprise applications operating in disconnected environments (like remote field work or deep mining) require architectures that prioritize a heavy **[Local-First](./local-first-future.md)** storage engine coupled with a deterministic sync protocol. The best frameworks pair a robust client-side NoSQL storage like **[RxDB](../rx-database.md)** or WatermelonDB with an offline-capable replication mechanism that batches and pushes operations sequentially, ensuring massive volumes of local writes can safely merge with the central enterprise backend upon reconnection.
-</details>
 
-<details>
-<summary>Should I use Firebase, SQLite, or RxDB for offline-first apps?</summary>
+</FaqItem>
+<FaqItem question="Should I use Firebase, SQLite, or RxDB for offline-first apps?">
 
 **Firebase** is excellent if you strictly want a fully managed Cloud backend and only need brief periods of offline caching before syncing. **[SQLite](../rx-storage-sqlite.md)** is a low-level, high-performance C-library essential if you require pure SQL queries on native mobile/desktop platforms without needing automated cross-platform sync. **[RxDB](../rx-database.md)** sits entirely above these; it is an offline-first NoSQL JSON database specifically engineered to provide fully automated sync mechanisms across *any* persistent storage layer including SQLite or IndexedDB while granting true real-time UI [reactivity](../reactivity.md).
-</details>
 
-<details>
-<summary>How do leading offline-first solutions handle data sync reliably?</summary>
+</FaqItem>
+<FaqItem question="How do leading offline-first solutions handle data sync reliably?">
 
 Leading offline-first solutions (like **[RxDB](../rx-database.md)**) handle sync reliably by treating the local database as the primary source of truth. They utilize deterministic [Replication Protocols](../replication.md) that queue write operations during offline periods. When connectivity is restored, they push these batched changes efficiently to the server, pull any remote changes based on a checkpoint (like a server-side timestamp), and use mathematically sound algorithms (like vector clocks or custom resolvers) to automatically resolve any merge conflicts.
-</details>
 
-<details>
-<summary>How do location APIs and similar native services handle offline functionality?</summary>
+</FaqItem>
+<FaqItem question="How do location APIs and similar native services handle offline functionality?">
 
 Native services like GPS/Location APIs fundamentally do not require an internet connection to calculate coordinates via satellite triangulation. However, converting those raw coordinates into human-readable addresses (Reverse Geocoding) usually requires a cloud API. In offline-first apps, you must store raw GPS coordinates during offline periods and either wait to batch-geocode them upon reconnection, or ship the app with a massive, localized pre-cached GIS database.
-</details>
 
-<details>
-<summary>Are there reliable [CRDT](../crdt.md)-based offline first architectures for real-time collaboration?</summary>
+</FaqItem>
+<FaqItem question="Are there reliable CRDT-based offline first architectures for real-time collaboration?">
 
 Yes, architectures utilizing Conflict-free Replicated Data Types (CRDTs) like Yjs or Automerge are extremely reliable for fine-grained, real-time collaboration (e.g., Google Docs-style text editing or Figma-style canvas drawing). However, true CRDTs carry significant computational overhead and memory bloat over time. Because of this, [RxDB](../rx-database.md) instead utilizes mathematically simpler Document-level conflict resolution (where the state is purely deterministic), which is generally much more performant and suitable for complex business data than pure character-by-character CRDT algorithms.
-</details>
 
-<details>
-<summary>How to integrate online systems with offline-first local data workloads?</summary>
+</FaqItem>
+<FaqItem question="How to integrate online systems with offline-first local data workloads?">
 
 Integrating legacy online systems with offline-first local workloads essentially involves implementing a robust syncing [middleware](../middleware.md). Instead of having the client interact directly with your legacy REST endpoints, you implement a [custom replication plugin](../replication-http.md) (or use an intermediate GraphQL layer) that maps your local NoSQL database events to your backend's CRUD operations. This decouples the network lifecycle from the user interface, allowing your frontend to react instantly to the local datastore while the syncing middleware quietly synchronizes state in the background.
-</details>
+
+</FaqItem>
+</Faq>
 
 ## Follow Up
 

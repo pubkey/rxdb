@@ -7,6 +7,7 @@ image: /headers/json-database.jpg
 
 import { PerformanceChart } from '@site/src/components/performance-chart';
 import { PERFORMANCE_DATA_BROWSER, PERFORMANCE_METRICS } from '@site/src/components/performance-data';
+import {CenteredImage} from '@site/src/components/centered-image';
 
 # RxDB - JSON Database for JavaScript
 
@@ -76,9 +77,7 @@ RxDB offers versatile storage solutions for browser-based applications:
 
 - **Observable Queries**: With RxDB, you can create observable [queries](../rx-query.md) that work seamlessly across multiple browser tabs, providing real-time updates and synchronization.
 
-<p align="center">
-  <img src="../files/multiwindow.gif" alt="multi tab support" width="450" />
-</p>
+<CenteredImage src="../files/multiwindow.gif" alt="multi tab support" width={450} />
 
 ## RxDB JSON Database Performance
 

@@ -6,6 +6,7 @@ image: /headers/lokijs-alternative.jpg
 ---
 
 import {Faq, FaqItem} from '@site/src/components/faq';
+import {ComparisonTable} from '@site/src/components/comparison-table';
 
 # RxDB as a LokiJS Alternative for Persistent JavaScript Apps
 
@@ -189,6 +190,8 @@ Define an [RxCollection](../../rx-collection.md) with a JSON schema that matches
 
 ## RxDB vs LokiJS at a Glance
 
+<ComparisonTable>
+
 | Capability                | LokiJS                                       | RxDB                                                           |
 | ------------------------- | -------------------------------------------- | -------------------------------------------------------------- |
 | Primary storage model     | In-memory object graph                       | Pluggable RxStorage (IndexedDB, OPFS, Dexie, SQLite, Memory)   |
@@ -201,6 +204,8 @@ Define an [RxCollection](../../rx-collection.md) with a JSON schema that matches
 | Conflict resolution       | None                                         | Custom [conflict handlers](../../transactions-conflicts-revisions.md) with revisions |
 | Schema and migrations     | Optional, ad-hoc                             | JSON schema with versioned migrations                          |
 | Project activity          | Low since around 2020                        | Actively maintained                                            |
+
+</ComparisonTable>
 
 ## Follow Up
 

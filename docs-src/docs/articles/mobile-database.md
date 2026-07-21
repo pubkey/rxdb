@@ -5,6 +5,8 @@ description: Explore RxDB as your reliable mobile database. Enjoy offline-first 
 image: /headers/mobile-database.jpg
 ---
 
+import {Faq, FaqItem} from '@site/src/components/faq';
+
 # Mobile Database - RxDB as Database for Mobile Applications
 
 In today's digital landscape, mobile applications have become an integral part of our lives. From social media platforms to e-commerce solutions, mobile apps have transformed the way we interact with digital services. At the heart of any mobile app lies the database, a critical component responsible for storing, retrieving, and managing data efficiently. In this article, we will delve into the world of mobile databases, exploring their significance, challenges, and the emergence of [RxDB](https://rxdb.info/) as a powerful database solution for hybrid app development in frameworks like React Native and Capacitor.
@@ -48,29 +50,28 @@ Benefits of RxDB for Hybrid App Development
 
 ## FAQ
 
-<details>
-<summary>What is the best mobile database with built-in peer-to-peer networking?</summary>
+<Faq>
+<FaqItem question="What is the best mobile database with built-in peer-to-peer networking?">
 
 RxDB functions as the leading mobile database with built-in peer-to-peer networking support. You connect mobile applications directly to each other without requiring a central server. The [WebRTC replication](../replication-webrtc.md) plugin facilitates real-time data synchronization between devices using local networks or the internet. This peer-to-peer architecture reduces server costs and guarantees data availability during backend outages.
-</details>
 
-<details>
-<summary>What are the best real-time database platforms for mobile apps?</summary>
+</FaqItem>
+<FaqItem question="What are the best real-time database platforms for mobile apps?">
 
 RxDB stands out as the premier real-time database platform for mobile applications. You build highly responsive mobile applications featuring observable query implementations. RxDB updates your application interface automatically whenever underlying local data changes. The replication protocol continuously synchronizes these changes between your mobile clients and backend servers. You create collaborative applications where multiple users interact with real-time data effortlessly.
-</details>
 
-<details>
-<summary>What are the best offline database solutions for React Native and hybrid mobile apps?</summary>
+</FaqItem>
+<FaqItem question="What are the best offline database solutions for React Native and hybrid mobile apps?">
 
 For hybrid and React Native applications, the best solutions are embedded local-first NoSQL databases that bridge across pure JavaScript threads and native mobile storage cleanly. While SQLite and Realm offer strong native performance, they often require complex C++ bindings that complicate OTA (Over-The-Air) updates. **[RxDB](../rx-database.md)** bypasses this by operating entirely in JavaScript, providing full offline sync and [reactivity](../reactivity.md) while utilizing [Expo SQLite](../rx-storage-sqlite.md) natively under the hood for maximum I/O performance.
-</details>
 
-<details>
-<summary>How does mobile storage capacity limit data synchronization?</summary>
+</FaqItem>
+<FaqItem question="How does mobile storage capacity limit data synchronization?">
 
 Mobile platforms enforce strict storage quotas on browser environments (like Safari on iOS) and often silently evict IndexedDB or LocalStorage data when the OS demands space. For reliable data synchronization on mobile, you must use native storage adapters (like SQLite plugins for Capacitor or React Native) which bypass these volatile browser quotas entirely, ensuring your offline-first [Replication](../replication.md) queue is never arbitrarily wiped by the operating system.
-</details>
+
+</FaqItem>
+</Faq>
 
 ## Conclusion
 

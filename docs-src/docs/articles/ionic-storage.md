@@ -5,6 +5,7 @@ description: The best Ionic storage solution? RxDB empowers your hybrid apps wit
 image: /headers/ionic-storage.jpg
 ---
 
+import {CenteredImage} from '@site/src/components/centered-image';
 
 # RxDB - Local Ionic Storage with Encryption, Compression & Sync
 
@@ -18,11 +19,7 @@ When building **Ionic** apps, developers face the challenge of choosing a robust
 [RxDB](https://rxdb.info/) (Reactive Database) offers all these features in a single, [local-first](./local-first-future.md) database solution tailored to **Ionic** and other hybrid frameworks. Keep reading to learn how RxDB solves the most common storage pitfalls in hybrid app development while providing unmatched flexibility.
 
 <br />
-<center>
-    <a href="https://rxdb.info/">
-        <img src="../files/icons/ionic.svg" alt="Ionic Database Storage" width="120" />
-    </a>
-</center>
+<CenteredImage src="../files/icons/ionic.svg" alt="Ionic Database Storage" width={120} href="https://rxdb.info/" />
 <br />
 
 ## Why RxDB for Ionic Storage?
@@ -47,9 +44,7 @@ Large or repetitive data can significantly slow down devices with minimal memory
 ### 4. Real-Time Sync & Conflict Handling
 In addition to functioning fully offline, RxDB supports advanced [replication](../replication.md) options. Your Ionic app can instantly sync updates with any backend ([CouchDB](../replication-couchdb.md), [Firestore](../replication-firestore.md), [GraphQL](../replication-graphql.md), or [custom REST](../replication-http.md)), maintaining a [real-time](./realtime-database.md) user experience. Plus, RxDB handles [conflicts](../transactions-conflicts-revisions.md) gracefully - meaning less worry about clashing user edits.
 
-<p align="center">
-  <img src="../files/database-replication.png" alt="database replication" width="200" />
-</p>
+<CenteredImage src="../files/database-replication.png" alt="database replication" width={200} />
 
 ### 5. Easy to Adopt and Extend
 RxDB runs with a **NoSQL** approach and integrates seamlessly into [Ionic Angular](https://ionicframework.com/docs/angular/overview) or other frameworks you might use with Ionic. You can extend or replace storage backends, add encryption, or build advanced offline-first features with minimal overhead.

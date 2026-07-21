@@ -6,6 +6,8 @@ image: /files/alternatives/meteor_text.svg
 ---
 
 import {Faq, FaqItem} from '@site/src/components/faq';
+import {ComparisonTable} from '@site/src/components/comparison-table';
+import {Timeline} from '@site/src/components/timeline';
 
 # RxDB as a Meteor Alternative
 
@@ -31,12 +33,16 @@ When a user writes to the client-side Minimongo database, the change is immediat
 
 ### A Brief History
 
+<Timeline>
+
 - **2012** - Meteor is introduced and quickly attracts attention due to its developer-friendly, real-time-by-default model.
 - **2014-2016** - Peak popularity; Meteor raised $31.2 million in funding. The community grew rapidly.
 - **2016** - Funding from the VC company runs out. The team pivots toward the Galaxy cloud hosting product.
 - **2019** - Tiny Capital acquires Meteor. Development continues under new ownership.
 - **2024** - Meteor 3.0 is released, removing the long-standing dependency on Fibers (a synchronous async abstraction) in favor of native `async/await`. Build tooling is modernized with support for Vite and Rspack.
 - **2025-2026** - Meteor 3.x continues to receive updates. The project is maintained but occupies a much smaller share of the JavaScript ecosystem compared to its peak.
+
+</Timeline>
 
 Meteor's GitHub star count reflects this history. It accumulated a large following during the 2014-2016 era, but new stars and activity have slowed significantly compared to other tools in the space. The framework is not abandoned, but it is also not seeing the level of adoption growth it once did. Most new JavaScript projects choose React or Vue with a separate API layer, rather than reaching for an integrated full-stack framework like Meteor.
 
@@ -340,6 +346,8 @@ RxDB runs in React Native natively using the [SQLite storage plugin](../../rx-st
 
 ## Summary: Key Differences
 
+<ComparisonTable>
+
 | Aspect | Meteor | RxDB |
 |---|---|---|
 | **Type** | Full-stack platform | Client-side database library |
@@ -355,6 +363,8 @@ RxDB runs in React Native natively using the [SQLite storage plugin](../../rx-st
 | **Mobile (native)** | Cordova wrapper only | React Native with SQLite storage |
 | **Open source** | Yes | Yes |
 | **License** | MIT | Apache 2.0 |
+
+</ComparisonTable>
 
 ---
 
