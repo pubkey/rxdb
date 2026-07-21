@@ -13,6 +13,45 @@ import { IconChevronsRight } from '../components/icons/chevrons-right';
 
 
 
+/**
+ * Product structured data for the premium plugins so search
+ * engines can show price-annotated results for this page.
+ * The prices come from the same constants as the visible
+ * pricing tiers, so the markup cannot go out of sync.
+ */
+const PRODUCT_JSON_LD = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    'name': 'RxDB Premium Plugins',
+    'description': 'Commercial RxDB plugins with better performance, a smaller build size, flexible storage engines and secure encryption for production workloads.',
+    'image': 'https://rxdb.info/files/logo/logo.svg',
+    'url': 'https://rxdb.info/premium/',
+    'brand': {
+        '@type': 'Brand',
+        'name': 'RxDB',
+    },
+    'offers': [
+        {
+            '@type': 'Offer',
+            'name': 'Pro',
+            'description': 'Per month, billed annually. Unlimited developers.',
+            'price': String(PRICE_PRO_MONTHLY),
+            'priceCurrency': 'USD',
+            'url': 'https://rxdb.info/premium/',
+            'availability': 'https://schema.org/InStock',
+        },
+        {
+            '@type': 'Offer',
+            'name': 'Pro Plus',
+            'description': 'Per month, billed annually. Unlimited developers.',
+            'price': String(PRICE_PRO_PLUS_MONTHLY),
+            'priceCurrency': 'USD',
+            'url': 'https://rxdb.info/premium/',
+            'availability': 'https://schema.org/InStock',
+        },
+    ],
+};
+
 export default function Premium() {
     const { siteConfig } = useDocusaurusContext();
     const isBrowser = useIsBrowser();
@@ -64,6 +103,9 @@ export default function Premium() {
             <Head>
                 <body className="homepage" />
                 <link rel="canonical" href="/premium/" />
+                <script type="application/ld+json">
+                    {JSON.stringify(PRODUCT_JSON_LD)}
+                </script>
             </Head>
 
             <Layout

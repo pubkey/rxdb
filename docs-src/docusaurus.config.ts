@@ -4,11 +4,21 @@
 // There are various equivalent ways to declare your Docusaurus config.
 // See: https://docusaurus.io/docs/api/docusaurus-config
 
+import { readFileSync } from 'node:fs';
 import type { Config } from '@docusaurus/types';
 import rehypePrettyCode from 'rehype-pretty-code';
 import type { Options as RehypePrettyCodeOptions, Theme } from 'rehype-pretty-code';
 import { createCssVariablesTheme, ThemeRegistrationAny } from 'shiki';
 import { EU_EEA_REGION_CODES } from './src/theme/eu-consent';
+
+/**
+ * The RxDB version from the root package.json, used for the
+ * softwareVersion field of the JSON-LD structured data so it
+ * stays in sync with each release.
+ */
+const rxdbVersion: string = JSON.parse(
+    readFileSync(new URL('../package.json', import.meta.url), 'utf8')
+).version;
 
 const rehypePrettyCodeOptions: RehypePrettyCodeOptions = {
     theme: createCssVariablesTheme({
@@ -73,6 +83,13 @@ const config: Config = {
                 'operatingSystem': 'Any',
                 'description': 'A fast, local-first, reactive NoSQL database for JavaScript applications. Supports offline-first sync, real-time replication, and works across browsers, Node.js, Electron, React Native, and Flutter.',
                 'url': 'https://rxdb.info',
+                'softwareVersion': rxdbVersion,
+                'license': 'https://github.com/pubkey/rxdb/blob/master/LICENSE.txt',
+                'downloadUrl': 'https://www.npmjs.com/package/rxdb',
+                'softwareHelp': {
+                    '@type': 'CreativeWork',
+                    'url': 'https://rxdb.info/quickstart.html',
+                },
                 'offers': {
                     '@type': 'Offer',
                     'price': '0',
