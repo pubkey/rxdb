@@ -16,6 +16,15 @@ description text and the bulletpoints. A visitor is randomly assigned one of the
 visits, and the chosen variation index is attached to the tracking events so
 conversions can be attributed to it.
 
+The a/b test is keyed off the **`utm_campaign`** URL parameter: our ad final
+URLs carry the full utm parameter set, `getUtmCampaign()`
+(`docs-src/src/components/trigger-event.tsx`) persists the campaign in
+`localStorage`, and `getSemVariation()` stores the assigned variation index
+under that campaign. All sem pages of one campaign therefore show the same
+variation index, and the tracking events carry a `utm_<campaign>_v<index>`
+prefix. There is no per-page id anymore — the page file itself needs no
+tracking constant.
+
 ## Inputs to collect
 
 Ask the user for these if they are not already provided:
@@ -68,9 +77,9 @@ import { getSemVariation } from '../../components/a-b-tests';
 /**
  * SEM landingpage for "<<slug>>".
  * A/b tests 3 variations of the title, description and bulletpoints.
- * The variation is picked randomly per visitor and kept stable via localStorage.
+ * The variation is picked randomly per visitor, keyed off the utm_campaign
+ * of the ad click and kept stable via localStorage.
  */
-const PAGE_ID = '<<slug>>';
 
 const titles = [
     <>{/* variation 0 */}<<title 0>></>,
@@ -112,7 +121,7 @@ export default function Page() {
      */
     const [variation, setVariation] = useState(0);
     useEffect(() => {
-        setVariation(getSemVariation(PAGE_ID, titles.length));
+        setVariation(getSemVariation(titles.length));
     }, []);
 
     return Home({
@@ -132,11 +141,13 @@ export default function Page() {
 ## Notes
 
 - The `id: 'gads'` field is the SEM origin id used across the existing pages;
-  keep it unless the user asks for a different tracking origin. The per page
-  a/b variation is keyed off `PAGE_ID`, not `id`.
-- `getSemVariation(pageId, variationCount)` lives in
+  keep it unless the user asks for a different tracking origin. The a/b
+  variation is keyed off the visitor's stored `utm_campaign`, not `id` and not
+  the slug.
+- `getSemVariation(variationCount)` lives in
   `docs-src/src/components/a-b-tests.tsx`. It returns `0` during server side
-  rendering, and a stored random index in the browser.
+  rendering, and a stored random index (keyed off the visitor's `utm_campaign`,
+  falling back to `organic`) in the browser.
 - Look at existing pages like `docs-src/src/pages/sem/indexeddb-database-2.tsx`
   and `docs-src/src/pages/sem/localstorage-database.tsx` for tone and wording.
 - Keep bulletpoints short (a few words). They render inside a checklist, so

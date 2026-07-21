@@ -1,4 +1,5 @@
 import { randomNumber, randomOfArray } from '../../../plugins/utils';
+import { getUtmCampaign, SEM_VARIATION_STORAGE_PREFIX } from './trigger-event';
 // import { HeroEmojiChat } from './hero-section/T4_hero_b';
 // import { ReplicationDiagram } from './replication-diagram';
 // import { ScrollToSection, SemPage } from '../pages';
@@ -98,42 +99,26 @@ export function ABTestContent(
 }
 
 
-export function getTestGroupEventPrefix() {
-    const has = localStorage.getItem(TEST_GROUP_STORAGE_ID);
-    if (!has) {
-        return false;
-    } else {
-        const tg = getTestGroup();
-        return [
-            'abt',
-            CURRENT_TEST_RUN.id,
-            Object.keys(CURRENT_TEST_RUN).length > 1 ? 'V:' + tg.variation : undefined,
-            'O:' + tg.originId + (semVariation ? '-' + semVariation.index : ''),
-            'D:' + tg.deviceType,
-        ]
-            .filter(v => !!v)
-            .join('_');
-    }
-}
-
 /**
  * SEM landingpages a/b test multiple sets of title, text and
  * bulletpoints on the same page. getSemVariation() picks one variation
  * randomly per visitor and stores the choice in localStorage so that the
  * visitor always sees the same variation on later visits.
- * The chosen index is appended to the origin id of the tracking event
- * prefix (see getTestGroupEventPrefix), e.g. "O:gads-2", so that
- * conversions can be attributed to the variation.
  *
- * localStorage is the single source of truth for the assigned variation.
- * The in-memory semVariation value only mirrors what is stored, it must
- * not short-circuit the storage lookup. Otherwise clearing localStorage
- * would have no effect until a full page reload resets the module state,
- * which is not the case on client side navigations (docusaurus is a SPA)
- * or when a dev server keeps the module alive via hot module replacement.
+ * The variation is keyed off the utm_campaign of the ad click (our ad final
+ * URLs carry the full utm parameter set), so every sem page of the same
+ * campaign shows the same variation index and the tracking events can carry
+ * it in their utm-based prefix, e.g. "utm_indexeddb_v2_join_newsletter"
+ * (see getUtmEventPrefix() in trigger-event.tsx). Visitors without a stored
+ * campaign (organic traffic) share the 'organic' key - their variation stays
+ * stable too, it is just not attributed to any campaign.
+ *
+ * localStorage is the single source of truth for the assigned variation -
+ * the event prefix reads it back directly, so there is no in-memory state
+ * that could go stale on client side navigations (docusaurus is a SPA) or
+ * when a dev server keeps the module alive via hot module replacement.
  */
-let semVariation: { pageId: string; index: number; } | undefined;
-export function getSemVariation(pageId: string, variationCount: number): number {
+export function getSemVariation(variationCount: number): number {
     if (variationCount <= 1) {
         return 0;
     }
@@ -143,7 +128,8 @@ export function getSemVariation(pageId: string, variationCount: number): number 
         return 0;
     }
 
-    const storageId = 'sem-variation-' + pageId;
+    const campaign = getUtmCampaign();
+    const storageId = SEM_VARIATION_STORAGE_PREFIX + (campaign ? campaign : 'organic');
     let index: number;
     const fromStorage = localStorage.getItem(storageId);
     if (fromStorage !== null && !isNaN(parseInt(fromStorage, 10))) {
@@ -156,7 +142,6 @@ export function getSemVariation(pageId: string, variationCount: number): number 
         index = 0;
     }
 
-    semVariation = { pageId, index };
-    console.log('currentSemVariation: ' + pageId + ' -> ' + index);
+    console.log('currentSemVariation: ' + storageId + ' -> ' + index);
     return index;
 }

@@ -1,5 +1,4 @@
 import { useEffect } from 'react';
-import { getTestGroupEventPrefix } from './a-b-tests';
 import ExecutionEnvironment from '@docusaurus/ExecutionEnvironment';
 import { isLikelyEuUser } from '../theme/eu-consent';
 
@@ -89,6 +88,68 @@ function getSessionId(): string {
     } catch (err) {
         return Math.floor(Date.now() / 1000) + '';
     }
+}
+
+/**
+ * Our ad final URLs carry the full utm parameter set
+ * (utm_source/medium/campaign/content/term), see the campaign generator in the
+ * internal repo. The utm_campaign value is persisted here so that later events
+ * of the same visitor can still be attributed to the campaign, and so the SEM
+ * landing pages can key their a/b-test variation off it
+ * (getSemVariation() in a-b-tests.tsx).
+ */
+export const UTM_CAMPAIGN_STORAGE_ID = 'utm_campaign';
+/**
+ * localStorage key prefix under which getSemVariation() stores the assigned
+ * landing-page variation index, keyed by the utm_campaign value.
+ */
+export const SEM_VARIATION_STORAGE_PREFIX = 'sem-variation-';
+
+/**
+ * Returns the current utm_campaign: from the URL when present (persisting it,
+ * last touch wins - like storeAdClickId()), otherwise from localStorage.
+ * Reading the URL first matters because a landing page's own effects run
+ * before the Root component's effects, so the sem pages cannot rely on the
+ * value having been stored already.
+ */
+export function getUtmCampaign(): string | null {
+    if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
+        return null;
+    }
+    try {
+        const fromUrl = new URLSearchParams(location.search).get('utm_campaign');
+        if (fromUrl) {
+            localStorage.setItem(UTM_CAMPAIGN_STORAGE_ID, fromUrl);
+            return fromUrl;
+        }
+        return localStorage.getItem(UTM_CAMPAIGN_STORAGE_ID);
+    } catch (err) {
+        return null;
+    }
+}
+
+/**
+ * Prefix for the per-campaign a/b-test events, built from the stored
+ * utm_campaign plus the sem-page variation index (when one was assigned).
+ * This replaced the old invented test-group system (getTestGroupEventPrefix).
+ * GA4 event names only allow letters, digits and underscores and are capped
+ * at 40 chars total, so the campaign part is sanitized and truncated to keep
+ * prefix + '_' + event type within the limit.
+ */
+function getUtmEventPrefix(): string | false {
+    const campaign = getUtmCampaign();
+    if (!campaign) {
+        return false;
+    }
+    let prefix = 'utm_' + campaign
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '_')
+        .substring(0, 12);
+    const semVariation = localStorage.getItem(SEM_VARIATION_STORAGE_PREFIX + campaign);
+    if (semVariation !== null) {
+        prefix += '_v' + semVariation;
+    }
+    return prefix;
 }
 
 function postToWorker(path: string, payload: any) {
@@ -217,11 +278,11 @@ export function triggerTrackingEvent(
             );
 
             // trigger also an event for the A/B Testing
-            const testGroupPrefix = getTestGroupEventPrefix();
-            if (testGroupPrefix) {
+            const utmPrefix = getUtmEventPrefix();
+            if (utmPrefix) {
                 (window as any).gtag(
                     'event',
-                    testGroupPrefix + '_' + type,
+                    utmPrefix + '_' + type,
                     {
                         value: 0,
                         currency: 'EUR'

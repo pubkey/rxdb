@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { AD_CLICK_STORAGE_ID, onCopy, setTrackingConsent, triggerTrackingEvent } from '../components/trigger-event';
+import { AD_CLICK_STORAGE_ID, getUtmCampaign, onCopy, setTrackingConsent, triggerTrackingEvent } from '../components/trigger-event';
 import { isLikelyEuUser } from './eu-consent';
 import { type ConsentState, initEuConsentBanner, updateGoogleConsent } from './consent-manager';
 import { randomNumber } from '../../../plugins/utils';
@@ -167,6 +167,12 @@ export default function Root({ children }) {
     useEffect(() => {
         // addCommunityChatButton();
         storeAdClickId();
+        /**
+         * Persist the utm_campaign of the landing URL so later events on
+         * other pages still attribute to the campaign (used for the a/b-test
+         * event prefix and the sem-page variation keying).
+         */
+        getUtmCampaign();
 
         /**
          * EU/EEA visitors only get trackers after they accepted them in the

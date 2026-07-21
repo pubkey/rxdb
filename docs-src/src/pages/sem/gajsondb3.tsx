@@ -7,7 +7,6 @@ import { getSemVariation } from '../../components/a-b-tests';
  * A/b tests 3 variations of the title, description and bulletpoints.
  * The variation is picked randomly per visitor and kept stable via localStorage.
  */
-const PAGE_ID = 'gajsondb3';
 
 const titles = [
     <>{/* variation 0 */}Outgrown JSON Files? Get a Real <b>JSON Database</b></>,
@@ -49,7 +48,7 @@ export default function Page() {
      */
     const [variation, setVariation] = useState(0);
     useEffect(() => {
-        setVariation(getSemVariation(PAGE_ID, titles.length));
+        setVariation(getSemVariation(titles.length));
     }, []);
 
     return Home({
