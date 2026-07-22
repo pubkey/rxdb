@@ -213,27 +213,50 @@ Use vitest or mocha. Structure:
    - `optimize(optimize(q).query)` equals `optimize(q).query` for all fixtures.
    - Shuffling object key order and `$and` array order of the input produces
      byte-identical normalized output and the identical query shape.
-3. **Property-based equivalence testing (the core safety net)**, with
-   fast-check:
+3. **Fuzzing: randomized equivalence testing (the core safety net, MANDATORY)**
+
+   This is the central correctness mechanism of the whole package. The
+   optimizer claims semantic equivalence, so the test suite must attack that
+   claim with random data and random queries, and require the EXACT equal
+   outcome between the optimized and the non-optimized query on every run.
+
+   - Use fast-check (property-based testing) as the fuzz driver so failing
+     cases get shrunk to a minimal reproduction automatically.
    - Generate a random JSON schema (or use a handful of fixed schemas covering
      strings, numbers, booleans, enums, optional fields, arrays, nested paths).
    - Generate ~1000 random documents per schema, deliberately including missing
-     fields, `null` values, arrays, and boundary values used in the queries.
-   - Generate random selectors from the supported operator set, including
-     nested `$and`/`$or`/`$nor`/`$not` up to depth 3.
-   - Oracle A (`plain-js` semantics): filter the documents with mingo using the
-     ORIGINAL query and with the OPTIMIZED query; the matched document-id sets
-     must be identical. When `neverMatch` is true, the original query must
-     match zero documents.
+     fields, `null` values, empty strings, empty arrays, arrays with mixed
+     element types, and boundary values that also appear in the queries (the
+     fuzzer must draw query operands from the same value pool as the documents,
+     otherwise nothing ever matches and the fuzzing is worthless).
+   - Generate random full queries from the supported operator set: selectors
+     with nested `$and`/`$or`/`$nor`/`$not`/`$elemMatch` up to depth 3, plus
+     random `sort`, `skip` and `limit`.
+   - For every generated (data, query) pair: run the ORIGINAL query and the
+     OPTIMIZED query against the same backend and require the exact equal
+     outcome:
+     - without a `sort`: the matched primary-key SETS must be identical
+     - with a `sort`: the full result LISTS must be identical, including order
+     - with `skip`/`limit`: compare the final paged result lists
+     - when the optimizer reports `neverMatch`: the original query must return
+       exactly zero documents
+   - Oracle A (`plain-js` semantics): filter the documents with mingo.
    - Oracle B (`mongodb` semantics): same equivalence against a real MongoDB
      (see below). This is the authority for missing-field, array and
      type-bracketing semantics; do not trust mingo for those cases.
+   - Oracle C (RxDB): run the same pairs through the RxDB equivalence harness
+     of section 4.5.
+   - Volume: at least 10,000 (data, query) pairs per semantics flag in the
+     nightly run, a reduced count (~500) on every PR. Seed the random generator
+     from an env variable and print the seed on failure so every found bug is
+     reproducible; add each shrunk counterexample to the unit-test fixtures as
+     a permanent regression test.
 4. **MongoDB equivalence harness**: use `mongodb-memory-server` (spawns a real
    `mongod`, no Docker needed) in CI. Insert the generated documents, run
    `collection.find(originalSelector)` and `collection.find(optimizedSelector)`,
-   compare sorted `_id` lists. Run the full property-based suite through this
-   at lower iteration counts (e.g. 200 queries per schema) and nightly at high
-   counts.
+   compare the outcomes exactly as defined in the fuzzing section above. Run
+   the full fuzz suite through this at lower iteration counts (e.g. 200 queries
+   per schema) on every PR and nightly at high counts.
 5. **RxDB equivalence harness**: add `rxdb` as dev dependency, create a
    collection with the memory storage, insert the same documents, run
    `collection.find({selector: original}).exec()` vs the optimized query,
@@ -349,6 +372,8 @@ Workflow for you, the coding agent:
 6. Write a README: what the package does, API, rule table with before/after
    examples, semantics flags, and the perf results table.
 
-Definition of done: all equivalence harnesses green, no rule reachable without
-a unit test, perf report generated, `npm pack` produces a publishable tarball
-with ESM+CJS+types.
+Definition of done: all equivalence harnesses green, the fuzzing suite has run
+at least 10,000 random (data, query) pairs per semantics flag against mingo and
+MongoDB with exact equal outcomes between optimized and non-optimized queries,
+no rule reachable without a unit test, perf report generated, `npm pack`
+produces a publishable tarball with ESM+CJS+types.
