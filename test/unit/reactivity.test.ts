@@ -197,6 +197,13 @@ describeParallel('reactivity.test.ts', () => {
             await waitUntil(() => !!querySignal.value);
             assert.deepStrictEqual(querySignal.value, []);
             await collection.insert(schemaObjects.humanData());
+            /**
+             * The signal updates asynchronously when the change event
+             * has propagated through the query observable. On slow storages
+             * like the MongoDB storage this can happen after the insert()
+             * promise has resolved, so we have to wait instead of asserting directly.
+             */
+            await waitUntil(() => querySignal.value.length === 1);
             assert.deepStrictEqual(querySignal.value.length, 1);
 
             // ensure unsubscribe is called when signal gets garbage collected

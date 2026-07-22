@@ -1,0 +1,1 @@
+- FIX flaky preact-signals reactivity test on slow storages: wait for the signal to emit the inserted document instead of asserting directly after `insert()`, because the change event propagates asynchronously through the query observable. [#8834](https://github.com/pubkey/rxdb/pull/8834)
