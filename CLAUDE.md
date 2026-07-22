@@ -227,6 +227,7 @@ Do not reproduce (authentic errors in old pages; write the correct form):
 - Numbers: backticked shorthand for counts and limits (`10k` documents, `2k`), bold for percentages ("**43%** faster"), US date format ("May 1, 2027"), period as decimal separator, comma as thousands separator.
 - RxDB one-liner for "What is RxDB" sections: "RxDB (Reactive Database) is a local-first, NoSQL database for JavaScript applications". Follow with the runtime list: browser, Node.js, Electron, React Native, Capacitor, Deno, and Bun.
 - Query language is described as "MongoDB-style (Mango) queries".
+- For package names and developer-facing product naming, lead with "NoSQL" instead of "Mango". Most developers do not know the term "mango query", so "Mango" only appears as a clarifier after "MongoDB-style", never as the primary term. Example: the query rewrite package is named `nosql-query-optimizer`.
 - Recurring vocabulary that carries the voice: "out of the box", "under the hood", "battle-tested", "first-class", "vendor lock-in", "source of truth", "The trouble starts when ...", "falls short", "bite back", "Switching storages is a configuration change, not a rewrite". Reuse these; do not invent new marketing vocabulary.
 
 ### SEO

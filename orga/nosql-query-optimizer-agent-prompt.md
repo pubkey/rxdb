@@ -14,6 +14,10 @@ guards, the testing strategy and the performance-test setup.
   `query-normalization` into the package.json `keywords`, and use
   "MongoDB-style (Mango) queries" in the README title line so searches for
   mango queries find the package.
+- Terminology rule for ALL user-facing text (README, docs, error messages,
+  API docs): lead with "NoSQL query". Most developers do not know the term
+  "mango query", so "Mango" only appears as a clarifier in parentheses after
+  "MongoDB-style", never as the primary term.
 - Language: TypeScript. Do not use enums, prefer `type` over `interface`.
 - Zero runtime dependencies. Dev dependencies are fine.
 - Pure functions only. Never mutate the input query object. Deep-clone or build new objects.
