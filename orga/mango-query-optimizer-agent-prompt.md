@@ -1,4 +1,4 @@
-# Agent Prompt: Build the `mango-query-optimizer` npm package
+# Agent Prompt: Build the `nosql-query-optimizer` npm package
 
 You are building a new, standalone npm package that normalizes and optimizes
 MongoDB-style (Mango) queries. It must work for RxDB but also for other NoSQL
@@ -8,7 +8,12 @@ guards, the testing strategy and the performance-test setup.
 
 ## 1. Goal and constraints
 
-- Package name: `mango-query-optimizer` (check npm availability first, fallback `mango-query-normalizer`).
+- Package name: `nosql-query-optimizer` (verified available on npm as of
+  July 2026; publish a placeholder version early to reserve it). Put
+  `mango`, `mango-query`, `mongodb`, `couchdb`, `rxdb`, `query-optimizer` and
+  `query-normalization` into the package.json `keywords`, and use
+  "MongoDB-style (Mango) queries" in the README title line so searches for
+  mango queries find the package.
 - Language: TypeScript. Do not use enums, prefer `type` over `interface`.
 - Zero runtime dependencies. Dev dependencies are fine.
 - Pure functions only. Never mutate the input query object. Deep-clone or build new objects.
@@ -351,7 +356,7 @@ directly under `src/`, one unit-test file per source file under `test/unit/`,
 top-level test files for the cross-cutting suites.
 
 ```
-mango-query-optimizer/
+nosql-query-optimizer/
   src/
     index.ts               // public API, re-exports everything
     types.ts
