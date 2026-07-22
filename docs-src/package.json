@@ -4,7 +4,9 @@
   "private": true,
   "scripts": {
     "docusaurus": "docusaurus",
+    "prestart": "node ../scripts/docs-download-video-thumbnails.mjs",
     "start": "docusaurus start",
+    "prebuild": "node ../scripts/docs-download-video-thumbnails.mjs",
     "build": "docusaurus build",
     "swizzle": "docusaurus swizzle",
     "deploy": "docusaurus deploy",

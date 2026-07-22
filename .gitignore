@@ -28,6 +28,7 @@ plugins/
 *-debug.log
 .vscode
 ai-context.txt
+docs-src/static/files/video-thumbnails/
 ERROR-MESSAGES.md
 .chrome-profile-perf/
 /docs/
