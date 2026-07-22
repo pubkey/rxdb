@@ -13,6 +13,9 @@ guards, the testing strategy and the performance-test setup.
 - Zero runtime dependencies. Dev dependencies are fine.
 - Pure functions only. Never mutate the input query object. Deep-clone or build new objects.
 - Ship ESM and CJS builds plus `.d.ts` typings. Node >= 18. Must also run in browsers.
+- Config and project setup: mirror the repository
+  https://github.com/pubkey/jsonschema-key-compression (same author, same
+  conventions). Section 7 lists the exact setup to copy.
 - The package rewrites query objects BEFORE execution. It never executes queries itself.
 - Input type (subset, keep compatible with RxDB and MongoDB drivers):
 
@@ -204,7 +207,8 @@ include schema and index versions.
 
 ## 4. Correctness tests
 
-Use vitest or mocha. Structure:
+Use mocha with ts-node (`mocha -r ts-node/register`), matching the
+jsonschema-key-compression setup. Structure:
 
 1. **Unit tests per rule**: table-driven before/after pairs, one file per pass.
    Also test that guards HOLD: e.g. `$eq: /x/` is not folded into `$in`,
@@ -269,8 +273,9 @@ Use vitest or mocha. Structure:
    run the optimizer twice, assert predicate order stable; encode the collation
    guard and the `$eq`-regex guard as dedicated fixtures.
 
-CI: lint (eslint), `tsc --noEmit` type check, unit + property tests on Node 18/20/22,
-MongoDB harness job, coverage report (target: 100% branch coverage on the rule passes).
+CI: one GitHub Actions workflow as in section 7, running build, unit tests,
+the fuzz suite at PR iteration counts, the MongoDB and RxDB harnesses, the
+performance tests and lint. Target: 100% branch coverage on the rule passes.
 
 ## 5. Performance tests
 
@@ -281,13 +286,17 @@ Two separate questions, two separate suites:
 The optimizer runs on every query, so its own cost matters, especially for
 client-side databases.
 
-- Use `tinybench` (or `mitata`).
+- Write it as a mocha test file `test/performance.test.ts` in the style of
+  jsonschema-key-compression: a `benchmark` object at the top with an `amount`
+  per operation, loops timed with `performanceNow()` from `async-test-util`,
+  and a final `it()` that prints the filled benchmark object with `console.dir`
+  (`notice: 'times are in milliseconds'`).
 - Benchmark `normalizeMangoQuery` and `optimizeMangoQuery` on: a trivial
   selector (1 field), a typical selector (3 fields, one `$in`, one range), a
-  deep selector (nested `$or`/`$and`, 20 predicates).
+  deep selector (nested `$or`/`$and`, 20 predicates), each `amount: 10000`.
 - Budget: typical query under 20 microseconds, deep query under 200
-  microseconds on a current laptop. Fail the benchmark script when a budget is
-  exceeded by more than 3x (loose gate, hardware varies).
+  microseconds on a current laptop. Fail the test when a budget is exceeded by
+  more than 3x (loose gate, hardware varies).
 - Store results as JSON in `perf-results/` so regressions are visible in PRs.
 
 ### 5.2 Optimization effect vs MongoDB
@@ -337,24 +346,32 @@ Measure that the rewrites make real queries cheaper, not only prettier.
 
 ## 6. Repo layout and workflow
 
+Follow the layout of jsonschema-key-compression: one file per function/pass
+directly under `src/`, one unit-test file per source file under `test/unit/`,
+top-level test files for the cross-cutting suites.
+
 ```
 mango-query-optimizer/
   src/
-    index.ts            // public API
+    index.ts               // public API, re-exports everything
     types.ts
-    normalize/          // one file per normalization pass
-    optimize/           // one file per optimization pass
-    hints/
+    normalize-*.ts         // one file per normalization pass
+    optimize-*.ts          // one file per optimization pass
+    hints.ts
     query-shape.ts
+    util.ts
   test/
     unit/
-    property/
-    mongodb-equivalence/
-    rxdb-equivalence/
-  perf/
-    overhead.bench.ts
-    mongodb-effect.ts
-    rxdb-effect.ts
+      *.test.ts            // one per src file
+      issues.test.ts       // regression tests, including shrunk fuzz findings
+      test-util.ts
+    helper.ts              // schemas + random data/query generators
+    fuzzing.test.ts        // section 4.3
+    mongodb-equivalence.test.ts
+    rxdb-equivalence.test.ts
+    performance.test.ts    // section 5.1
+    performance-mongodb.test.ts  // section 5.2
+    performance-rxdb.test.ts     // section 5.3
   perf-results/
 ```
 
@@ -371,6 +388,60 @@ Workflow for you, the coding agent:
 5. Add both performance suites and produce `perf-results/report.md`.
 6. Write a README: what the package does, API, rule table with before/after
    examples, semantics flags, and the perf results table.
+
+## 7. Project setup and config (copy from pubkey/jsonschema-key-compression)
+
+Model repository: https://github.com/pubkey/jsonschema-key-compression
+Clone it and mirror its setup. The concrete pieces:
+
+- **package.json**
+  - Zero `dependencies`, everything under `devDependencies`.
+  - Dual build with plain `tsc`, no bundler:
+    - `"transpile": "tsc -p ./ && copyfiles -u 1 \"src/**/*.d.ts\" dist/lib"`
+      (CommonJS to `dist/lib`)
+    - `"transpile:es": "tsc -p ./ --target ES6 --module ES6 --outDir ./dist/es"`
+      (ES modules to `dist/es`)
+    - `"build": "rimraf -fr ./dist && npm run transpile && npm run transpile:es"`
+  - Entry points: `"main": "./dist/lib/index.js"`,
+    `"module": "./dist/es/index.js"`, `"types": "./dist/es/index.d.ts"`,
+    `"sideEffects": false`.
+  - Scripts, same names as the model repo:
+    - `"test": "mocha -r ts-node/register test/unit/index.test.ts --bail"`
+    - `"test:fuzzing": "mocha -r ts-node/register --bail --exit test/fuzzing.test.ts"`
+    - `"test:equivalence": "mocha -r ts-node/register --bail --exit test/mongodb-equivalence.test.ts test/rxdb-equivalence.test.ts"`
+    - `"test:performance": "mocha -r ts-node/register --bail --exit test/performance.test.ts"`
+    - `"dev": "mocha -r ts-node/register test/unit/index.test.ts --watch --watch-extensions ts"`
+    - `"lint"` and `"lint:fix"`
+  - Dev dependencies to reuse: `mocha`, `@types/mocha`, `ts-node`, `assert`,
+    `async-test-util`, `faker` (or `@faker-js/faker`) for random data,
+    `copyfiles`, `rimraf`, `typescript`. Add `fast-check`,
+    `mongodb-memory-server`, `mongodb`, `rxdb` and `mingo` as dev dependencies
+    for the harnesses.
+- **tsconfig.json**: copy the model repo's strict settings: `strict`,
+  `strictNullChecks`, `noImplicitAny`, `noImplicitReturns`, `noImplicitThis`,
+  `noUncheckedIndexedAccess`, `declaration: true`, `sourceMap: true`,
+  `outDir: ./dist/lib`, `include: ["src"]`. Use a modern `target` (ES2018 or
+  later, the model repo's ES5 target is legacy).
+- **Linting**: the model repo still uses tslint, which is deprecated. Use
+  eslint with `typescript-eslint` instead, but configure the same style rules:
+  4-space indent, single quotes, semicolons required, `prefer-const`,
+  triple-equals (null-check allowed), max line length 160, no trailing
+  whitespace.
+- **CI**: one GitHub Actions workflow `.github/workflows/main.yml` like the
+  model repo: triggers on push and pull_request for the default branch plus
+  `workflow_dispatch`, a single job on `ubuntu-24.04` with pinned
+  actions/checkout and actions/setup-node, steps in order:
+  `npm install` -> `npm run build` -> `npm run test` -> `npm run test:fuzzing`
+  -> `npm run test:equivalence` -> `npm run test:performance` -> `npm run lint`.
+- **Test structure**: `test/unit/index.test.ts` is the entry that imports the
+  per-file unit tests; `test/unit/issues.test.ts` collects regression cases;
+  `test/helper.ts` exports the shared schemas and the random document/query
+  generators (the model repo's `helper.ts` exports `schema` and
+  `randomObject()`; extend that pattern with `randomQuery()`).
+- **Misc files**: `.npmignore` excluding `test/`, config files and `.github/`;
+  `.npmrc` with `package-lock=false`; `renovate.json` for dependency updates;
+  README with usage examples and the perf table (the model repo tracks
+  benchmark results in `perf.md`, do the same).
 
 Definition of done: all equivalence harnesses green, the fuzzing suite has run
 at least 10,000 random (data, query) pairs per semantics flag against mingo and
