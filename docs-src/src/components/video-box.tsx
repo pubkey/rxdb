@@ -105,14 +105,6 @@ export function VideoBox({ videoId, title, duration, startAt, dark }: VideoBoxPr
                          * (i3.ytimg.com) is blocked in China.
                          */
                         src={`/files/video-thumbnails/${videoId}.jpg`}
-                        onError={(event) => {
-                            // Fallback for dev servers where the download script has not run.
-                            const img = event.currentTarget;
-                            const fallbackSrc = `https://i3.ytimg.com/vi/${videoId}/mqdefault.jpg`;
-                            if (!img.src.includes('ytimg.com')) {
-                                img.src = fallbackSrc;
-                            }
-                        }}
                         alt={title}
                         style={{
                             ...styles.thumbnail,
@@ -121,8 +113,6 @@ export function VideoBox({ videoId, title, duration, startAt, dark }: VideoBoxPr
                         }}
                         loading="lazy"
                         decoding="async"
-                        referrerPolicy="no-referrer"
-                        crossOrigin="anonymous"
                         fetchPriority="low"
                     />
                     <div
