@@ -606,7 +606,7 @@ function CustomFormDialog({ onClose, open }) {
         open={open}
         iframeUrl='https://webforms.pipedrive.com/f/63f2Y0mNbp1veI9X0QPYMmLKq4xeHmvN4OgxfmUyvIzLDQeAsTOFC3yLEP17TQWGNt'
         eventId='custom_package_form'
-        focusEventType='premium_form_focus_10_sec'
+        focusEventType='premium_form_focus_x_sec'
     />;
 }
 
@@ -616,7 +616,7 @@ function ProFormDialog({ onClose, open }) {
         open={open}
         iframeUrl='https://webforms.pipedrive.com/f/6NclWCnYX2vvtF69NxoNKttBklqjCFyxArtY3ir4YZfLRDCIrBnCu3iewgluQcx5K3'
         eventId='pro_form'
-        focusEventType='premium_form_focus_10_sec'
+        focusEventType='premium_form_focus_x_sec'
     />;
 }
 
@@ -626,6 +626,6 @@ function ProPlusFormDialog({ onClose, open }) {
         open={open}
         iframeUrl='https://webforms.pipedrive.com/f/ce8xmRLPWF5wdMuU49wkdta9IFUGbsVGfQpZZnnJUwJHhwztGs6jsqCnOaLFHaHhPJ'
         eventId='pro_plus_form'
-        focusEventType='premium_form_focus_10_sec'
+        focusEventType='premium_form_focus_x_sec'
     />;
 }
