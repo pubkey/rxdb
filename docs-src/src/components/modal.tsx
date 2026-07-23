@@ -1,5 +1,5 @@
 // Modal.tsx
-import React, { forwardRef } from 'react';
+import React, { forwardRef, useEffect, useRef } from 'react';
 import type { ModalProps as AntdModalProps } from 'antd';
 import { Modal as AntdModal } from 'antd';
 import { IconClose } from './icons/close';
@@ -85,11 +85,58 @@ export function IframeFormModal(props: {
      * e.g. 'buy_form' fires 'buy_form_loaded' on success and 'buy_form_error' on failure.
      */
     eventId?: string;
+    /**
+     * When provided, this event is fired once the visitor keeps keyboard
+     * focus inside the form iframe for 10 seconds. The form is a
+     * cross-origin iframe so we cannot observe typing; sustained focus is
+     * the closest measurable signal for "started filling the form" and
+     * separates it from an accidental single click.
+     */
+    focusEventType?: string;
 }) {
     const handleClose = () => {
         props.onClose();
     };
     const eventId = props.eventId;
+    const focusEventType = props.focusEventType;
+    const iframeRef = useRef<HTMLIFrameElement>(null);
+
+    useEffect(() => {
+        if (!props.open || !focusEventType) {
+            return;
+        }
+        let timer: ReturnType<typeof setTimeout> | undefined;
+        const cancel = () => {
+            if (timer) {
+                clearTimeout(timer);
+                timer = undefined;
+            }
+        };
+        const onWindowBlur = () => {
+            // focus moved into the iframe (not to another tab/app)
+            if (document.activeElement === iframeRef.current && !document.hidden) {
+                cancel();
+                timer = setTimeout(() => {
+                    triggerTrackingEvent(focusEventType, 1, 1);
+                }, 10 * 1000);
+            }
+        };
+        const onVisibilityChange = () => {
+            if (document.hidden) {
+                cancel();
+            }
+        };
+        window.addEventListener('blur', onWindowBlur);
+        window.addEventListener('focus', cancel);
+        document.addEventListener('visibilitychange', onVisibilityChange);
+        return () => {
+            cancel();
+            window.removeEventListener('blur', onWindowBlur);
+            window.removeEventListener('focus', cancel);
+            document.removeEventListener('visibilitychange', onVisibilityChange);
+        };
+    }, [props.open, focusEventType]);
+
     return <Modal
         className="modal-consulting-page"
         open={props.open}
@@ -98,6 +145,7 @@ export function IframeFormModal(props: {
         footer={null}
     >
         <iframe
+            ref={iframeRef}
             style={{
                 width: '100%',
                 height: '70vh',

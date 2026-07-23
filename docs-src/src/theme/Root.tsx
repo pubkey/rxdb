@@ -698,7 +698,7 @@ function trackUrlChanges() {
     }
 
     const STORAGE_KEY = 'visited_urls';
-    const URL_EVENT_COUNT = 5;
+    const URL_EVENT_COUNT = 3;
     const stored = localStorage.getItem(STORAGE_KEY);
     const visitedUrls = new Set<string>(stored ? JSON.parse(stored) : []);
 
