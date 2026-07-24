@@ -1,5 +1,6 @@
 import React, { Suspense } from 'react';
 import ExecutionEnvironment from '@docusaurus/ExecutionEnvironment';
+import { JsonLd } from './json-ld';
 
 // Lazy load the chart implementation so recharts isn't in the main bundle
 const PerformanceChartImpl = React.lazy(() => import('./performance-chart-impl'));
@@ -80,12 +81,7 @@ function DatasetJsonLd({ data, metrics, title }: { data: PerformanceDataPoint[];
             value: data.map(row => ({ storage: String(row.name), value: row[metric.key] }))
         }))
     };
-    return (
-        <script
-            type="application/ld+json"
-            dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-        />
-    );
+    return <JsonLd data={jsonLd} />;
 }
 
 export function PerformanceChart({ data, metrics, title, skipMetrics, logScale }: PerformanceChartProps) {

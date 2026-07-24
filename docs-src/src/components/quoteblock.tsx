@@ -1,5 +1,6 @@
 import React, { ReactNode } from 'react';
 import { IconQuoteEnd, IconQuoteStart } from './icons/quote';
+import { JsonLd, nodeText } from './json-ld';
 
 export interface QuoteBlockProps {
   author: string;
@@ -14,6 +15,17 @@ export function QuoteBlock({
   sourceLink,
   children,
 }: QuoteBlockProps) {
+  const quotationJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Quotation',
+    text: nodeText(children).replace(/\s+/g, ' ').trim(),
+    creator: {
+      '@type': 'Person',
+      name: author,
+    },
+    ...(sourceLink ? { citation: sourceLink } : {}),
+    ...(year ? { datePublished: year } : {}),
+  };
   return (
     <div
       style={{
@@ -25,6 +37,7 @@ export function QuoteBlock({
         marginBottom: 30
       }}
     >
+      <JsonLd data={quotationJsonLd} />
       <IconQuoteStart />
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem' }}>
         <p style={{ margin: 0 }}>{children}</p>

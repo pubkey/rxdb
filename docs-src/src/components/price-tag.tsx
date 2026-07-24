@@ -1,10 +1,30 @@
 import React from 'react';
+import { JsonLd } from './json-ld';
+
+const CURRENCY_CODES: Record<string, string> = {
+    '€': 'EUR',
+    '$': 'USD',
+    '£': 'GBP',
+};
 
 /**
  * @link https://codepen.io/uberpwner/pen/xvdJxx
  */
-const PriceTag = ({ price, currency = '€' }) => {
+const PriceTag = ({ price, currency = '€', productName = 'RxDB Premium' }) => {
     const color = 'var(--color-middle)';
+    const priceCurrency = CURRENCY_CODES[currency] || currency;
+    const productJsonLd = {
+        '@context': 'https://schema.org',
+        '@type': 'Product',
+        name: productName,
+        offers: {
+            '@type': 'Offer',
+            price: String(price),
+            priceCurrency,
+            availability: 'https://schema.org/InStock',
+            url: 'https://rxdb.info/premium/',
+        },
+    };
     const styles = {
         cardPrice: {
             display: 'inline-block',
@@ -54,6 +74,7 @@ const PriceTag = ({ price, currency = '€' }) => {
 
     return (
         <div style={styles.cardPrice}>
+            <JsonLd data={productJsonLd} />
             <div style={styles.triangle}></div>
             <div style={styles.circle}></div>
             <div style={styles.text}>

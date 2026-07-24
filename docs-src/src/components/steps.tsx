@@ -1,7 +1,9 @@
+import { JsonLd, nodeText } from './json-ld';
+
 /**
  * @link https://chatgpt.com/c/67af1c3a-4d98-8005-a86c-8f9b4192b519
  */
-export function Steps(props: { children: JSX.Element[]; }) {
+export function Steps(props: { children: JSX.Element[]; name?: string; }) {
     const steps = [];
     let currentStep = null;
 
@@ -25,8 +27,30 @@ export function Steps(props: { children: JSX.Element[]; }) {
         steps.push(currentStep);
     }
 
+    const howToSteps = steps.map((step, index) => {
+        const name = nodeText(step.headline.props.children).replace(/\s+/g, ' ').trim();
+        const text = step.paragraphs
+            .map(paragraph => nodeText(paragraph.props.children))
+            .join(' ')
+            .replace(/\s+/g, ' ')
+            .trim();
+        return {
+            '@type': 'HowToStep',
+            position: index + 1,
+            name,
+            text: text || name,
+        };
+    });
+    const howToJsonLd = {
+        '@context': 'https://schema.org',
+        '@type': 'HowTo',
+        name: props.name || 'How-to guide',
+        step: howToSteps,
+    };
+
     return (
         <div style={styles.stepsContainer}>
+            {howToSteps.length > 0 && <JsonLd data={howToJsonLd} />}
             {steps.map((step, index) => (
                 <div key={index} style={styles.stepWrapper}>
                     <div style={styles.stepIndicator}>

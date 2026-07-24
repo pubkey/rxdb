@@ -1,5 +1,5 @@
 import React, { ReactNode } from 'react';
-import Head from '@docusaurus/Head';
+import { JsonLd, nodeText } from './json-ld';
 
 /**
  * FAQ section that renders its items as the site-wide styled
@@ -32,7 +32,7 @@ export function Faq(props: {
         ) {
             entities.push({
                 question: (child.props as any).question,
-                answer: extractPlainText((child.props as any).children)
+                answer: nodeText((child.props as any).children)
                     .replace(/\s+/g, ' ')
                     .trim(),
             });
@@ -54,13 +54,7 @@ export function Faq(props: {
 
     return (
         <div>
-            {entities.length > 0 && (
-                <Head>
-                    <script type="application/ld+json">
-                        {JSON.stringify(jsonLd)}
-                    </script>
-                </Head>
-            )}
+            {entities.length > 0 && <JsonLd data={jsonLd} />}
             {props.children}
         </div>
     );
@@ -78,32 +72,4 @@ export function FaqItem(props: {
             </div>
         </details>
     );
-}
-
-const BLOCK_LEVEL_TAGS = new Set([
-    'p', 'div', 'li', 'ul', 'ol', 'br',
-    'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-    'blockquote', 'pre', 'table', 'tr',
-]);
-
-/**
- * Recursively extracts the plain text of rendered markdown children
- * so the JSON-LD answer text matches the visible answer.
- * Block-level elements add a separating space so paragraphs
- * do not glue together.
- */
-function extractPlainText(node: ReactNode): string {
-    if (typeof node === 'string' || typeof node === 'number') {
-        return String(node);
-    }
-    if (Array.isArray(node)) {
-        return node.map(extractPlainText).join('');
-    }
-    if (React.isValidElement(node)) {
-        const text = extractPlainText((node.props as any).children);
-        return typeof node.type === 'string' && BLOCK_LEVEL_TAGS.has(node.type)
-            ? text + ' '
-            : text;
-    }
-    return '';
 }
