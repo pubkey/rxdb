@@ -1,0 +1,2 @@
+"use strict";(globalThis.webpackChunkrxdb||=[]).push([[405],{24806(e,t,a){a.r(t),a.d(t,{default:()=>l});var s=a(81239),n=a(74848);function l(){return(0,s.default)({sem:{id:"gads",title:(0,n.jsxs)(n.Fragment,{children:["The easiest way to ",(0,n.jsx)("b",{children:"store"})," and ",(0,n.jsx)("b",{children:"sync"})," Data in Electron"]}),appName:"Electron",iconUrl:"/files/icons/electron.svg",metaTitle:"Local Electron Database"}})}}}]);
+//# sourceMappingURL=38a45a95.2b050d4a.js.map

@@ -128,7 +128,7 @@ console.log(user.age.toFixed(2));
 
 ### 7. Encryption & Compression
 
-Storing sensitive data? RxDB has [Encryption](../encryption.md) built-in. You provide a password, and the data is stored encrypted at rest.
+Storing sensitive data? Raw IndexedDB writes everything to disk in plain text, so RxDB adds [IndexedDB encryption](./indexeddb/indexeddb-encryption.md) with a built-in [encryption plugin](../encryption.md). You provide a password, and the flagged fields are stored encrypted at rest.
 Storing lots of data? The [Key-Compression](../key-compression.md) plugin shrinks your JSON keys to minimize storage usage, often reducing database size by 40%+.
 
 ## Other Alternatives
@@ -169,7 +169,7 @@ OPFS is a new high-performance file system API for the web.
 | **Schema** | ❌ None | ✅ [JSON Schema](../rx-schema.md) |
 | **Migrations** | ⚠️ Manual | ✅ [Declarative](../migration-schema.md) |
 | **Multi-Tab Sync**| ❌ Manual | ✅ Automatic |
-| **Encryption** | ❌ None | ✅ [Built-in](../encryption.md) |
+| **Encryption** | ❌ None | ✅ [Built-in](./indexeddb/indexeddb-encryption.md) |
 | **TypeScript** | ⚠️ Partial | ✅ Full Support |
 
 </ComparisonTable>

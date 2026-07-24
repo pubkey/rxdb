@@ -90,7 +90,7 @@ LokiJS is no longer actively maintained, which matters for a dependency at the c
 
 [RxDB](https://rxdb.info/) (Reactive Database) is a local-first, NoSQL database for JavaScript applications. It runs in the browser, Node.js, Electron, React Native, Capacitor, Deno, and Bun. It uses IndexedDB (or faster storages like [OPFS](../../rx-storage-opfs.md)) under the hood through its [RxStorage](../../rx-storage.md) layer, and adds a full database on top.
 
-RxDB is not only a wrapper. It gives you [JSON Schema](../../rx-schema.md) validation, MongoDB-style (Mango) [queries](../../rx-query.md) with indexes, [reactive queries](../../reactivity.md) that re-emit when data changes, [multi-tab](../../rx-storage-indexeddb.md) coordination, schema [migrations](../../migration-schema.md), encryption, and a [Sync Engine](../../replication.md) for realtime replication with many backends.
+RxDB is not only a wrapper. It gives you [JSON Schema](../../rx-schema.md) validation, MongoDB-style (Mango) [queries](../../rx-query.md) with indexes, [reactive queries](../../reactivity.md) that re-emit when data changes, [multi-tab](../../rx-storage-indexeddb.md) coordination, schema [migrations](../../migration-schema.md), [encryption](./indexeddb-encryption.md), and a [Sync Engine](../../replication.md) for realtime replication with many backends.
 
 The important part for performance is the storage abstraction. RxDB does not lock you to IndexedDB. Switching storages is a configuration change, not a rewrite, so you can start on IndexedDB and move to OPFS when you need more speed.
 

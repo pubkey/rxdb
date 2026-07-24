@@ -1,0 +1,2 @@
+"use strict";(globalThis.webpackChunkrxdb||=[]).push([[5852],{83922(e,a,s){s.r(a),s.d(a,{default:()=>i});var r=s(81239),t=s(74848);function i(){return(0,r.default)({sem:{id:"gads",metaTitle:"The local Database for Browsers",appName:"Browser",title:(0,t.jsxs)(t.Fragment,{children:["The easiest way to ",(0,t.jsx)("b",{children:"store"})," and ",(0,t.jsx)("b",{children:"sync"})," Data in a Browser"]})}})}}}]);
+//# sourceMappingURL=bdd39edd.16ecd56e.js.map

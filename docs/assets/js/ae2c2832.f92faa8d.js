@@ -1,0 +1,2 @@
+"use strict";(globalThis.webpackChunkrxdb||=[]).push([[3321],{6839(e,s,t){t.r(s),t.d(s,{default:()=>i});var a=t(81239),l=t(74848);function i(){return(0,a.default)({sem:{id:"gads",metaTitle:"The local Database for Svelte Apps",appName:"Svelte",title:(0,l.jsxs)(l.Fragment,{children:["The easiest way to ",(0,l.jsx)("b",{children:"store"})," and ",(0,l.jsx)("b",{children:"sync"})," Data in Svelte"]}),iconUrl:"/files/icons/svelte.svg"}})}}}]);
+//# sourceMappingURL=ae2c2832.f92faa8d.js.map

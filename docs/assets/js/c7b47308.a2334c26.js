@@ -1,0 +1,2 @@
+"use strict";(globalThis.webpackChunkrxdb||=[]).push([[7793],{72007(a,e,s){s.r(e),s.d(e,{default:()=>l});var t=s(81239),r=s(74848);function l(){return(0,t.default)({sem:{id:"gads",metaTitle:"The local Database for Apps",title:(0,r.jsxs)(r.Fragment,{children:["The Local-First ",(0,r.jsx)("b",{children:"Database"})," for ",(0,r.jsx)("b",{children:"JavaScript"})," Apps"]})}})}}}]);
+//# sourceMappingURL=c7b47308.a2334c26.js.map

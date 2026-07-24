@@ -1,0 +1,2 @@
+"use strict";(globalThis.webpackChunkrxdb||=[]).push([[8845],{71393(e,a,t){t.r(a),t.d(a,{default:()=>i});var s=t(81239),c=t(74848);function i(){return(0,s.default)({sem:{id:"gads",metaTitle:"The local Database for React Apps",title:(0,c.jsxs)(c.Fragment,{children:["The easiest way to ",(0,c.jsx)("b",{children:"store"})," and ",(0,c.jsx)("b",{children:"sync"})," Data in React"]}),appName:"React",iconUrl:"/files/icons/react.svg"}})}}}]);
+//# sourceMappingURL=f490b64c.59470b69.js.map

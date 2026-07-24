@@ -1,0 +1,2 @@
+"use strict";(globalThis.webpackChunkrxdb||=[]).push([[3325],{42231(e,r,t){t.r(r),t.d(r,{default:()=>n});var i=t(81239),a=t(74848);function n(){return(0,i.default)({sem:{id:"gads",metaTitle:"The Open Source alternative for Firestore",title:(0,a.jsxs)(a.Fragment,{children:["The ",(0,a.jsx)("b",{children:"Open Source"})," alternative for "," ",(0,a.jsx)("b",{children:"Firestore"})]})}})}}}]);
+//# sourceMappingURL=9dae6e71.dc5f9fd1.js.map

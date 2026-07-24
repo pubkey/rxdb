@@ -1,0 +1,2 @@
+"use strict";(globalThis.webpackChunkrxdb||=[]).push([[9111],{95347(e,r,t){t.r(r),t.d(r,{default:()=>d});var a=t(81239),n=t(74848);function d(){return(0,a.default)({sem:{id:"gads",metaTitle:"The modern alternative for NeDB",title:(0,n.jsxs)(n.Fragment,{children:["The ",(0,n.jsx)("b",{children:"modern"})," alternative for"," ",(0,n.jsx)("b",{children:"NeDB"})]}),appName:"Browser"}})}}}]);
+//# sourceMappingURL=1b5fa8ad.4a342d84.js.map

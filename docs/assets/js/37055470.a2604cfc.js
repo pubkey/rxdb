@@ -1,0 +1,2 @@
+"use strict";(globalThis.webpackChunkrxdb||=[]).push([[4970],{9528(a,e,t){t.r(e),t.d(e,{default:()=>i});var r=t(81239),s=t(74848);function i(){return(0,r.default)({sem:{id:"reddit",metaTitle:"The local Database for JavaScript Apps",title:(0,s.jsxs)(s.Fragment,{children:["The Local-First ",(0,s.jsx)("b",{children:"Database"})," for ",(0,s.jsx)("b",{children:"JavaScript"})," Apps"]})}})}}}]);
+//# sourceMappingURL=37055470.a2604cfc.js.map
