@@ -172,7 +172,7 @@ OPFS is a new high-performance file system API for the web.
 | **Schema** | ❌ None | ✅ [JSON Schema](../rx-schema.md) |
 | **Migrations** | ⚠️ Manual | ✅ [Declarative](../migration-schema.md) |
 | **Multi-Tab Sync**| ❌ Manual | ✅ Automatic |
-| **Encryption** | ❌ None | ✅ [Built-in](../encryption.md) |
+| **Encryption** | ❌ None | ✅ [Built-in](./indexeddb/indexeddb-encryption.md) |
 | **TypeScript** | ⚠️ Partial | ✅ Full Support |
 
 </ComparisonTable>

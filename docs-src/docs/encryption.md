@@ -227,7 +227,7 @@ You can implement encryption in JavaScript by manually encrypting fields with th
 </FaqItem>
 <FaqItem question="Is chrome.storage.local encrypted at rest by default?">
 
-No, `chrome.storage.local` (and standard `IndexedDB` in the browser) is **not** encrypted at rest by default. Any user or potentially malicious extension with adequate local machine access can read the underlying data files. To properly secure sensitive data at rest in a browser extension or Web App, you must explicitly encrypt strings before saving them, a process seamlessly automated by using an encrypted [RxStorage](./rx-storage.md) wrapper.
+No, `chrome.storage.local` (and standard `IndexedDB` in the browser) is **not** encrypted at rest by default. Any user or potentially malicious extension with adequate local machine access can read the underlying data files. To properly secure sensitive data at rest in a browser extension or Web App, you must explicitly encrypt strings before saving them, a process seamlessly automated by using an encrypted [RxStorage](./rx-storage.md) wrapper. See [IndexedDB Encryption](./articles/indexeddb/indexeddb-encryption.md) for the details.
 
 </FaqItem>
 <FaqItem question="Are there open-source libraries for encrypting personal user data natively?">

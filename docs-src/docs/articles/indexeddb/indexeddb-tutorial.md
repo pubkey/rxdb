@@ -337,6 +337,7 @@ Yes. **[RxDB](https://rxdb.info/)** can store its data in IndexedDB through the 
 - Start building with the [RxDB Quickstart](../../quickstart.md).
 - Compare wrappers in [Best IndexedDB Wrapper](./best-indexeddb-wrapper.md).
 - Read why the native API is slow in [Slow IndexedDB](../../slow-indexeddb.md).
+- Encrypt your data at rest with [IndexedDB Encryption](./indexeddb-encryption.md).
 - Learn about replication in [IndexedDB Sync](./indexeddb-sync.md).
 - See the full picture in [IndexedDB Alternative](../indexeddb-alternative.md).
 - Check the code on [GitHub](/code/) and leave a star ⭐ if RxDB helps you.

@@ -173,6 +173,7 @@ Yes. RxDB uses IndexedDB as one storage backend but abstracts it behind [RxStora
 
 - Start with the [RxDB Quickstart](../../quickstart.md)
 - Read why [IndexedDB is slow](../../slow-indexeddb.md) and how to work around it
+- Encrypt stored data with [IndexedDB Encryption](./indexeddb-encryption.md)
 - Compare browser storage APIs in [LocalStorage vs. IndexedDB vs. OPFS](../localstorage-indexeddb-cookies-opfs-sqlite-wasm.md)
 - Learn about the [RxStorage](../../rx-storage.md) layer and the [OPFS storage](../../rx-storage-opfs.md)
 - Check the [RxDB code on GitHub](/code/) and leave a star ⭐

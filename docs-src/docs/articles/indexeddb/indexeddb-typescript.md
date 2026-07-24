@@ -181,6 +181,7 @@ Yes. RxDB derives the document type from its schema with `ExtractDocumentTypeFro
 
 - Read the full [RxDB TypeScript tutorial](../../tutorials/typescript.md)
 - Learn about the [RxDB schema](../../rx-schema.md) and [schema validation](../../schema-validation.md)
+- Encrypt stored fields with [IndexedDB Encryption](./indexeddb-encryption.md)
 - Compare the [best IndexedDB wrappers](./best-indexeddb-wrapper.md)
 - Start with the [RxDB Quickstart](../../quickstart.md)
 - Check the [RxDB code on GitHub](/code/) and leave a star ⭐
