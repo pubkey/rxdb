@@ -26,21 +26,14 @@ function toIsoDuration(duration: string): string | undefined {
         return undefined;
     }
     const parts = duration.split(':').map(part => parseInt(part, 10));
-    if (parts.some(part => isNaN(part))) {
+    if (parts.length === 0 || parts.length > 3 || parts.some(part => isNaN(part))) {
         return undefined;
     }
-    let hours = 0;
-    let minutes = 0;
-    let seconds = 0;
-    if (parts.length === 3) {
-        [hours, minutes, seconds] = parts;
-    } else if (parts.length === 2) {
-        [minutes, seconds] = parts;
-    } else if (parts.length === 1) {
-        [seconds] = parts;
-    } else {
-        return undefined;
+    // left-pad to [hours, minutes, seconds]
+    while (parts.length < 3) {
+        parts.unshift(0);
     }
+    const [hours, minutes, seconds] = parts;
     const result = `PT${hours ? hours + 'H' : ''}${minutes ? minutes + 'M' : ''}${seconds ? seconds + 'S' : ''}`;
     return result === 'PT' ? 'PT0S' : result;
 }
