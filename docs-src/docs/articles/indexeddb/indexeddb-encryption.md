@@ -6,6 +6,8 @@ image: /headers/indexeddb-encryption.jpg
 ---
 
 import {Steps} from '@site/src/components/steps';
+import { PerformanceChart } from '@site/src/components/performance-chart';
+import { PERFORMANCE_DATA_ENCRYPTION, PERFORMANCE_METRICS } from '@site/src/components/performance-data';
 
 # IndexedDB Encryption
 
@@ -120,7 +122,12 @@ The overhead comes from a few places you should keep in mind.
 - **A whole field is re-encrypted on every write.** RxDB encrypts each flagged field as one string, and there is no partial update inside it. If you keep a large object or a long text in an encrypted field, the full value is re-encrypted on every single write, even when you only changed one small property.
 - **The build gets bigger with `crypto-js`.** The free plugin bundles the crypto-js module, which adds to your JavaScript bundle. The premium `encryption-web-crypto` plugin uses the browser's native API instead, so it ships less code.
 
-You keep the cost low with a few habits. Encrypt only the fields that hold sensitive data, not the whole document. Keep encrypted fields small and store big encrypted blobs as [attachments](../../rx-attachment.md), because attachments are only decrypted on an explicit fetch and not while a query runs. And for anything heavy, use the WebCrypto plugin inside a worker. You can reproduce the encryption numbers in the [encryption performance chart](../../encryption.md#encryption-performance).
+You keep the cost low with a few habits. Encrypt only the fields that hold sensitive data, not the whole document. Keep encrypted fields small and store big encrypted blobs as [attachments](../../rx-attachment.md), because attachments are only decrypted on an explicit fetch and not while a query runs. And for anything heavy, use the WebCrypto plugin inside a worker.
+
+The chart below shows the difference between the two plugins (lower is better). You can reproduce these numbers yourself in the RxDB repository.
+
+<PerformanceChart title="RxDB Encryption Plugins Performance (on Memory RxStorage)" data={PERFORMANCE_DATA_ENCRYPTION} metrics={PERFORMANCE_METRICS} logScale={false} />
+<br />
 
 ## Choosing an Encryption Plugin
 
