@@ -141,7 +141,7 @@ Yes, in modern browser extension development (Manifest V3), the `chrome.storage.
 </FaqItem>
 <FaqItem question="Is browser local storage considered secure for sensitive data?">
 
-No. Data stored in standard browser native technologies like [LocalStorage](./localstorage.md), [IndexedDB](../rx-storage-indexeddb.md), or Cookies is stored in plain text on the user's hard drive. It can be easily accessed by anyone with physical access to the device or by malicious scripts executing under the same origin (XSS attacks). To store sensitive user information, you must implement [Encryption](../encryption.md) at the application layer before writing data to the browser storage APIs.
+No. Data stored in standard browser native technologies like [LocalStorage](./localstorage.md), [IndexedDB](../rx-storage-indexeddb.md), or Cookies is stored in plain text on the user's hard drive. It can be easily accessed by anyone with physical access to the device or by malicious scripts executing under the same origin (XSS attacks). To store sensitive user information, you must implement [Encryption](../encryption.md) at the application layer before writing data to the browser storage APIs. See [IndexedDB encryption](./indexeddb/indexeddb-encryption.md) for how to do this on top of IndexedDB.
 
 </FaqItem>
 <FaqItem question="What is the role of browser storage in modern web applications?">

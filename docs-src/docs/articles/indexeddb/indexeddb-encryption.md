@@ -109,6 +109,19 @@ console.log(doc.secret); // 'my private token' - decrypted for you
 
 Keep in mind that encrypted fields cannot be used inside a query selector, because on disk they are ciphertext. You query by the primary key or by non-encrypted fields, and you keep the sensitive data in the encrypted fields. If you need to query encrypted values, you can replicate them into a non-encrypted [memory mapped storage](../../rx-storage-memory-mapped.md) and query that.
 
+## The Performance Cost of Encryption
+
+Encryption is not free. Every write has to encrypt the flagged fields before they reach the store, and every read has to decrypt them again. That is extra CPU work on top of the storage access, and [IndexedDB is already slow](../../slow-indexeddb.md), so the cipher adds to a cost that is high to begin with. On the `crypto-js` plugin the WebCrypto based plugin is about 5x faster, and document inserts are about 10x faster, which tells you how much the cipher itself can weigh.
+
+The overhead comes from a few places you should keep in mind.
+
+- **Encryption runs on the main thread by default.** The cipher is CPU-bound, so encrypting many documents on the main thread can block rendering and make the UI stutter. To fix this, move the storage into a [Worker](../../rx-storage-worker.md) or [SharedWorker](../../rx-storage-shared-worker.md) so encryption runs off the main thread.
+- **Encrypted fields cannot use an index.** On disk an encrypted field is a random ciphertext string, so the browser cannot build a useful index over it and a query cannot filter on it. Anything you want to query has to stay unencrypted, and over-encrypting fields quietly pushes those queries into full scans.
+- **A whole field is re-encrypted on every write.** RxDB encrypts each flagged field as one string, and there is no partial update inside it. If you keep a large object or a long text in an encrypted field, the full value is re-encrypted on every single write, even when you only changed one small property.
+- **The build gets bigger with `crypto-js`.** The free plugin bundles the crypto-js module, which adds to your JavaScript bundle. The premium `encryption-web-crypto` plugin uses the browser's native API instead, so it ships less code.
+
+You keep the cost low with a few habits. Encrypt only the fields that hold sensitive data, not the whole document. Keep encrypted fields small and store big encrypted blobs as [attachments](../../rx-attachment.md), because attachments are only decrypted on an explicit fetch and not while a query runs. And for anything heavy, use the WebCrypto plugin inside a worker. You can reproduce the encryption numbers in the [encryption performance chart](../../encryption.md#encryption-performance).
+
 ## Choosing an Encryption Plugin
 
 RxDB ships two encryption plugins, and both wrap the storage the same way.

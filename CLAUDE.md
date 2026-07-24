@@ -53,6 +53,12 @@ npm run check-types
 - Prefer including a link to the root issue or pull request in that changelog line.
 - Do NOT add a changelog entry for changes that are neither a testcase nor a FIX. For example, adding a SEM landingpage under `docs-src/src/pages/sem/` must not produce a changelog entry.
 
+## Article Internal Linking Rule
+- Whenever you CREATE a new article under `docs-src/docs/` (for example a page under `docs-src/docs/articles/`), you MUST also add internal links to it from existing related articles in the same topic cluster. A new article that nothing links to does not rank.
+- The inbound links MUST be in-text links inside existing prose, placed on a relevant keyword phrase where the topic already comes up. Search the related pages for the concept (for example `grep` for "encrypt", "sensitive data", "plain text") and link from that sentence.
+- Do NOT just append a bullet to a `## Follow Up` list. Dumping the link into a Follow Up list is lazy and does not count as satisfying this rule. Find real in-text opportunities.
+- Use a descriptive keyword phrase as the anchor text, never "click here". Do this in the same change that creates the article, not as a follow-up.
+
 ## Documentation Style
 - SHOULD use clear, simple language.
 - SHOULD use data and examples to support claims when possible.
