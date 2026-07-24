@@ -85,7 +85,7 @@ export class RxOneDriveReplicationState<RxDocType> extends RxReplicationState<Rx
      */
     async notifyPeers() {
         if (this.signalingState) {
-            await this.signalingState.pingPeers('RESYNC');
+            await this.signalingState.notifyResync();
         }
     }
 
