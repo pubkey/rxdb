@@ -109,8 +109,15 @@ export class SignalingState {
         // start processing loop
         (async () => {
             while (!this.closed) {
-                const time = BACKOFF_STEPS[this.backoffStepId];
                 await this.processNewMessages();
+                /**
+                 * Read the backoff AFTER processing the messages so that a
+                 * reset triggered by newly arrived messages (see
+                 * _processNewMessages) takes effect on the very next wait.
+                 * When there is active signaling traffic we keep polling fast,
+                 * when things are idle the backoff grows again.
+                 */
+                const time = BACKOFF_STEPS[this.backoffStepId];
                 const skippable = promiseWaitSkippable(time);
                 this.skipBackoffTime = skippable.skip;
                 await skippable.promise;
@@ -158,6 +165,24 @@ export class SignalingState {
         });
     }
 
+    /**
+     * Notify other peers that something changed so that they can pull
+     * from their checkpoints. This uses two channels:
+     * - The WebRTC datachannel for instant delivery to already connected peers.
+     * - A durable signaling message so that peers which are not connected via
+     *   WebRTC (handshake not finished yet or the connection dropped) still
+     *   learn about the change on their next signaling poll and re-sync.
+     *
+     * Relying on the WebRTC ping alone is not reliable: a ping to a peer that
+     * is momentarily not connected is silently dropped and there is no other
+     * trigger that makes the peer pull again, so the change would be stuck
+     * until the next unrelated write. The durable message closes that gap.
+     */
+    async notifyResync() {
+        await this.pingPeers('RESYNC');
+        await this.sendMessage({ i: 'resync' }).catch(() => { });
+    }
+
 
     async resetReadLoop() {
         await this.processNewMessages();
@@ -182,6 +207,14 @@ export class SignalingState {
         );
         if (messages.length > 0) {
             this._resync$.next();
+            /**
+             * New messages mean there is active signaling traffic: a peer
+             * announced itself or pushed a change. Reset the backoff so we
+             * keep polling fast while things are happening, which lets peers
+             * converge quickly even when the WebRTC datachannel is not
+             * connected. Once traffic stops, the backoff grows again.
+             */
+            this.backoffStepId = 0;
         }
         messages.forEach(message => {
             const senderId = message.senderId;
