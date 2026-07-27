@@ -33,7 +33,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Set node version
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version-file: ".nvmrc"
 
@@ -73,7 +73,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Set node version
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version-file: ".nvmrc"
 
@@ -106,7 +106,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Set node version
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version-file: ".nvmrc"
 
@@ -131,7 +131,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Set node version
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version-file: ".nvmrc"
 
@@ -167,7 +167,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Set node version
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version-file: ".nvmrc"
 
@@ -208,7 +208,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Set node version
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version-file: ".nvmrc"
 
@@ -242,7 +242,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Set node version
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version-file: ".nvmrc"
 
@@ -297,7 +297,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Set node version
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version-file: ".nvmrc"
 
@@ -323,7 +323,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Set node version
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version-file: ".nvmrc"
 
@@ -364,7 +364,7 @@ jobs:
         with:
           chrome-version: 141
       - name: Set node version
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version-file: ".nvmrc"
 
@@ -416,7 +416,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Set node version
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version-file: ".nvmrc"
 
@@ -477,7 +477,7 @@ jobs:
           "
 
       - name: Set node version
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version-file: ".nvmrc"
 
@@ -574,7 +574,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Set node version
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version-file: ".nvmrc"
 
@@ -609,7 +609,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Set node version
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version-file: ".nvmrc"
       # install system dependencies that Tauri needs to compile on Linux.
@@ -654,7 +654,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Set node version
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version-file: ".nvmrc"
 
@@ -692,7 +692,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Set node version
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version-file: ".nvmrc"
 
@@ -726,7 +726,7 @@ jobs:
         with:
           chrome-version: 141
       - name: Set node version
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version-file: ".nvmrc"
       - name: prepare RxDB core
@@ -762,7 +762,7 @@ jobs:
         with:
           chrome-version: 141
       - name: Set node version
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version-file: ".nvmrc"
       - name: prepare RxDB core
@@ -796,7 +796,7 @@ jobs:
         with:
           chrome-version: 141
       - name: Set node version
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version-file: ".nvmrc"
       - name: prepare RxDB core
@@ -829,7 +829,7 @@ jobs:
         with:
           chrome-version: 141
       - name: Set node version
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version-file: ".nvmrc"
       - name: prepare RxDB core
@@ -908,7 +908,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Set node version
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version-file: ".nvmrc"
       - name: prepare RxDB core
@@ -994,7 +994,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Set node version
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version-file: ".nvmrc"
 
@@ -1042,7 +1042,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Set node version
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version-file: ".nvmrc"
 
