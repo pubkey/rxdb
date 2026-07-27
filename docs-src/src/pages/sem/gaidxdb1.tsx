@@ -35,17 +35,23 @@ const variations = {
             <>JSON schemas and migrations</>,
             <>Free and open source</>
         ]
-    },
-    c: {
-        title: <><b>Instant Queries</b> on <b>IndexedDB</b></>,
-        text: <>RxDB runs directly inside your app and answers queries with zero network latency. Your data lives in IndexedDB, stays available offline and updates your UI the moment it changes.</>,
-        bulletpoints: [
-            <>Zero-latency local reads</>,
-            <>Works fully offline</>,
-            <>Optimized IndexedDB storage</>,
-            <>Observable realtime queries</>
-        ]
     }
+    /**
+     * Variation 'c' was removed on 2026-07-27 after its first A/B readout:
+     * it was the weakest of the three on engagement. Kept on record (commented
+     * out, not deleted) so its letter and copy stay reserved and 'c' is never
+     * reused for different copy, per the rules in getSemVariation().
+     */
+    // c: {
+    //     title: <><b>Instant Queries</b> on <b>IndexedDB</b></>,
+    //     text: <>RxDB runs directly inside your app and answers queries with zero network latency. Your data lives in IndexedDB, stays available offline and updates your UI the moment it changes.</>,
+    //     bulletpoints: [
+    //         <>Zero-latency local reads</>,
+    //         <>Works fully offline</>,
+    //         <>Optimized IndexedDB storage</>,
+    //         <>Observable realtime queries</>
+    //     ]
+    // }
 };
 
 export default function Page() {
