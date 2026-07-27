@@ -61,7 +61,7 @@ jobs:
 
       - name: Set node version
         if: steps.check-changes.outputs.should_run == 'true'
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version-file: ".nvmrc"
 
