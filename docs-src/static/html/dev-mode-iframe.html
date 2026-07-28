@@ -3,6 +3,41 @@
 <head>
     <script>
         /**
+         * Google Consent Mode v2 default, same as in docs-src/docusaurus.config.ts.
+         * For EU/EEA (and UK) regions the analytics and ad storage is denied.
+         * The commands are queued on dataLayer before the async GTM library
+         * boots, so the default applies to the very first hit.
+         */
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('consent', 'default', {
+            ad_storage: 'denied',
+            ad_user_data: 'denied',
+            ad_personalization: 'denied',
+            analytics_storage: 'denied',
+            wait_for_update: 500,
+            region: [
+                'AT', 'BE', 'BG', 'HR', 'CY', 'CZ', 'DK', 'EE', 'FI', 'FR', 'DE', 'GR',
+                'HU', 'IE', 'IT', 'LV', 'LT', 'LU', 'MT', 'NL', 'PL', 'PT', 'RO', 'SK',
+                'SI', 'ES', 'SE',
+                'IS', 'LI', 'NO',
+                'GB'
+            ]
+        });
+        gtag('set', 'ads_data_redaction', true);
+    </script>
+    <!-- Google Tag Manager -->
+    <script>(function (w, d, s, l, i) {
+            w[l] = w[l] || []; w[l].push({
+                'gtm.start':
+                    new Date().getTime(), event: 'gtm.js'
+            }); var f = d.getElementsByTagName(s)[0],
+                j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : ''; j.async = true; j.src =
+                    'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
+        })(window, document, 'script', 'dataLayer', 'GTM-PL63TR5');</script>
+    <!-- End Google Tag Manager -->
+    <script>
+        /**
          * Instead of directly creating analytics events inside of the iframe,
          * we first set a cookie here that can be later read out when the user
          * visits the RxDB docs page.
@@ -23,6 +58,10 @@
 </head>
 
 <body>
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PL63TR5" height="0" width="0"
+            style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
     <p>
         This is the page is shown in an iframe when the <a
             href="https://rxdb.info/dev-mode.html"
