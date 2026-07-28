@@ -1,5 +1,5 @@
 import assert from 'assert';
-import config, { describeParallel } from './config.ts';
+import config from './config.ts';
 import AsyncTestUtil, { assertThrows, wait, waitUntil } from 'async-test-util';
 
 import {
@@ -62,7 +62,7 @@ describe('migration-schema.test.ts', function () {
         addRxPlugin(RxDBAttachmentsPlugin);
     }
 
-    describeParallel('.create() with migrationStrategies', () => {
+    describe('.create() with migrationStrategies', () => {
         describe('positive', () => {
             it('ok to create with strategies', async () => {
                 const db = await createRxDatabase({
@@ -240,7 +240,7 @@ describe('migration-schema.test.ts', function () {
             });
         });
     });
-    describeParallel('getOldCollectionMeta()', () => {
+    describe('getOldCollectionMeta()', () => {
         it('should NOT get an older version', async () => {
             const colName = 'human';
             const db = await createRxDatabase({
@@ -305,7 +305,7 @@ describe('migration-schema.test.ts', function () {
             db2.close();
         });
     });
-    describeParallel('migration basics', () => {
+    describe('migration basics', () => {
         describe('.remove()', () => {
             it('should delete the old storage instance with all its content', async () => {
                 if (!config.storage.hasMultiInstance) {
@@ -573,7 +573,7 @@ describe('migration-schema.test.ts', function () {
             });
         });
     });
-    describeParallel('integration into collection', () => {
+    describe('integration into collection', () => {
         describe('run', () => {
             it('should auto-run on creation', async () => {
                 const col = await humansCollection.createMigrationCollection(
@@ -761,7 +761,7 @@ describe('migration-schema.test.ts', function () {
             });
         });
     });
-    describeParallel('RxDatabase.migrationStates()', () => {
+    describe('RxDatabase.migrationStates()', () => {
         it('should emit the ongoing migration state', async () => {
             const db = await createRxDatabase({
                 name: randomToken(10),
@@ -810,7 +810,7 @@ describe('migration-schema.test.ts', function () {
             db.close();
         });
     });
-    describeParallel('migration and replication', () => {
+    describe('migration and replication', () => {
         it('should have migrated the replication state', async () => {
             const remoteDb = await createRxDatabase({
                 name: 'remote' + randomToken(10),
@@ -1074,7 +1074,7 @@ describe('migration-schema.test.ts', function () {
 
 
 
-    describeParallel('issues', () => {
+    describe('issues', () => {
         it('#7226 db.addCollections fails after it failed for a missing migration strategy', async () => {
             // create a schema
             const mySchema = {

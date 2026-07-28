@@ -21,7 +21,7 @@ import {
 
 import { LOCAL_DOC_STATE_BY_PARENT_RESOLVED, RxDBLocalDocumentsPlugin } from '../../plugins/local-documents/index.mjs';
 addRxPlugin(RxDBLocalDocumentsPlugin);
-import config, { describeParallel } from './config.ts';
+import config from './config.ts';
 import {
     filter,
     first,
@@ -33,7 +33,7 @@ declare type TestDocType = {
     foo: string;
 };
 
-describeParallel('local-documents.test.ts', () => {
+describe('local-documents.test.ts', () => {
     describe('.insertLocal()', () => {
         describe('positive', () => {
             it('should create a local document', async () => {

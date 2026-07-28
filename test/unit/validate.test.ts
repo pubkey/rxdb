@@ -5,7 +5,7 @@ import {
     deepEqual
 } from 'async-test-util';
 
-import config, { describeParallel } from './config.ts';
+import config from './config.ts';
 import {
     schemaObjects,
     schemas,
@@ -62,7 +62,7 @@ const validationImplementations: {
 
 
 validationImplementations.forEach(
-    validationImplementation => describeParallel('validate.test.js (' + validationImplementation.key + ') ', () => {
+    validationImplementation => describe('validate.test.js (' + validationImplementation.key + ') ', () => {
         const testContext = 'validate' + validationImplementation.key;
         async function assertBulkWriteNoError<RxDocType>(
             instance: RxStorageInstance<RxDocType, any, any>,
@@ -937,7 +937,7 @@ validationImplementations.forEach(
 
 
 
-describeParallel('validate.test.js (custom formats) ', () => {
+describe('validate.test.js (custom formats) ', () => {
     const schemaWithEmail = clone(schemas.human);
     schemaWithEmail.properties.email = {
         type: 'string',

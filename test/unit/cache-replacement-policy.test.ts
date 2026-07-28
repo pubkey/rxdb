@@ -1,6 +1,6 @@
 import assert from 'assert';
 import AsyncTestUtil, { wait, waitUntil } from 'async-test-util';
-import { describeParallel } from './config.ts';
+import './config.ts';
 import {
     schemaObjects,
     humansCollection
@@ -16,7 +16,7 @@ import {
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { mergeMap, shareReplay, switchMap } from 'rxjs/operators';
 
-describeParallel('cache-replacement-policy.test.js', () => {
+describe('cache-replacement-policy.test.js', () => {
     function clearQueryCache(collection: RxCollection) {
         const queryCache = collection._queryCache;
         queryCache._map = new Map();

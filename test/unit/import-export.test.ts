@@ -11,7 +11,7 @@ import {
 } from '../../plugins/core/index.mjs';
 
 import AsyncTestUtil from 'async-test-util';
-import config, { describeParallel } from './config.ts';
+import config from './config.ts';
 import {
     schemaObjects,
     schemas,
@@ -23,7 +23,7 @@ import {
     NestedHumanDocumentType
 } from '../../plugins/test-utils/index.mjs';
 
-describeParallel('import-export.test.js', () => {
+describe('import-export.test.js', () => {
     describe('Collection', () => {
         describe('.exportJSON()', () => {
             it('export the collection', async () => {

@@ -2,7 +2,7 @@
  * this test is for the keycompression-capabilities of rxdb
  */
 import assert from 'assert';
-import config, { describeParallel } from './config.ts';
+import config from './config.ts';
 
 
 import {
@@ -37,7 +37,7 @@ import { replicateRxCollection } from '../../plugins/replication/index.mjs';
 import type { SimpleHumanDocumentType } from '../../src/plugins/test-utils/schema-objects.ts';
 
 
-describeParallel('key-compression.test.js', () => {
+describe('key-compression.test.js', () => {
     async function getCollection() {
         const db = await createRxDatabase<{ human: RxCollection<HumanDocumentType>; }>({
             name: randomToken(10),

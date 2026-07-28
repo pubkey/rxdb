@@ -1,5 +1,5 @@
 import assert from 'assert';
-import config, { describeParallel } from './config.ts';
+import config from './config.ts';
 
 import {
     RxDocument,
@@ -31,7 +31,7 @@ describe('rx-pipeline.test.js', () => {
         // TODO
         return;
     }
-    describeParallel('basics', () => {
+    describe('basics', () => {
         it('add and remove a pipeline', async () => {
             const c1 = await humansCollection.create(0);
             await c1.database.waitForLeadership();
@@ -152,7 +152,7 @@ describe('rx-pipeline.test.js', () => {
             c2.database.close();
         });
     });
-    describeParallel('.awaitIdle()', () => {
+    describe('.awaitIdle()', () => {
         it('should have updated its internal timestamps', async () => {
             const c1 = await humansCollection.create(0);
             await c1.database.waitForLeadership();
@@ -177,7 +177,7 @@ describe('rx-pipeline.test.js', () => {
             c2.database.close();
         });
     });
-    describeParallel('error handling', () => {
+    describe('error handling', () => {
         it('should not swallow the error if the handler throws', async () => {
             const c1 = await humansCollection.create(0);
             await c1.database.waitForLeadership();
@@ -264,7 +264,7 @@ describe('rx-pipeline.test.js', () => {
             await c2.database.close();
         });
     });
-    describeParallel('checkpoints', () => {
+    describe('checkpoints', () => {
         it('should continue from the correct checkpoint', async () => {
             const dbName = randomToken(10);
             const identifier = randomToken(10);
@@ -290,7 +290,7 @@ describe('rx-pipeline.test.js', () => {
             await c1.database.close();
         });
     });
-    describeParallel('multiInstance', () => {
+    describe('multiInstance', () => {
         if (
             !config.storage.hasMultiInstance
             // config.storage.name === 'remote' // TODO
@@ -365,7 +365,7 @@ describe('rx-pipeline.test.js', () => {
             await c2.database.close();
         });
     });
-    describeParallel('transactional behavior', () => {
+    describe('transactional behavior', () => {
         it('should not block reads/writes that come from inside the pipeline handler', async () => {
             const c1 = await humansCollection.create(0);
             await c1.database.waitForLeadership();
@@ -462,7 +462,7 @@ describe('rx-pipeline.test.js', () => {
             c2.database.close();
         });
     });
-    describeParallel('multiple pipelines to same destination', () => {
+    describe('multiple pipelines to same destination', () => {
         it('should not deadlock when two pipelines write to the same destination and both handlers read from it', async () => {
             const source1 = await humansCollection.create(0);
             await source1.database.waitForLeadership();
@@ -520,7 +520,7 @@ describe('rx-pipeline.test.js', () => {
             await dest.database.close();
         });
     });
-    describeParallel('.remove()', () => {
+    describe('.remove()', () => {
         it('should properly clean up checkpoint when remove() is called while pipeline is processing', async () => {
             const c1 = await humansCollection.create(0);
             await c1.database.waitForLeadership();

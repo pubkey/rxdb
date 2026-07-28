@@ -11,7 +11,7 @@ import {
     waitUntil
 } from 'async-test-util';
 
-import config, { describeParallel } from './config.ts';
+import config from './config.ts';
 import {
     schemaObjects,
     schemas,
@@ -128,7 +128,7 @@ describe('replication.test.ts', () => {
             });
         });
     });
-    describeParallel('non-live replication', () => {
+    describe('non-live replication', () => {
         it('should replicate both sides', async () => {
             const docsPerSide = isFastMode() ? 5 : 15;
             const { localCollection, remoteCollection } = await getTestCollections({
@@ -580,7 +580,7 @@ describe('replication.test.ts', () => {
             remoteCollection.database.close();
         });
     });
-    describeParallel('live replication', () => {
+    describe('live replication', () => {
         it('should replicate all writes', async () => {
             const { localCollection, remoteCollection } = await getTestCollections({ local: 0, remote: 0 });
 
@@ -755,7 +755,7 @@ describe('replication.test.ts', () => {
             remoteCollection.database.close();
         });
     });
-    describeParallel('other', () => {
+    describe('other', () => {
         describe('autoStart', () => {
             it('should run first replication by default', async () => {
                 const { localCollection, remoteCollection } = await getTestCollections({ local: 0, remote: 0 });
@@ -1224,7 +1224,7 @@ describe('replication.test.ts', () => {
             remoteCollection.database.close();
         });
     });
-    describeParallel('RxReplicationState.remove()', () => {
+    describe('RxReplicationState.remove()', () => {
         it('should remove the replication state and start the replication from scratch', async () => {
             const { localCollection, remoteCollection } = await getTestCollections({ local: 1, remote: 1 });
             const calledCheckpoints: any[] = [];
@@ -1433,7 +1433,7 @@ describe('replication.test.ts', () => {
             remoteCollection.database.close();
         });
     });
-    describeParallel('attachment replication', () => {
+    describe('attachment replication', () => {
         if (!config.storage.hasAttachments) {
             return;
         }
@@ -1548,7 +1548,7 @@ describe('replication.test.ts', () => {
             await remoteCollection.database.close();
         });
     });
-    describeParallel('start/pause/restart', () => {
+    describe('start/pause/restart', () => {
         it('should sync again after pause->restart', async () => {
             const startDocsAmount = 2;
             const { localCollection, remoteCollection } = await getTestCollections({ local: startDocsAmount, remote: startDocsAmount });
@@ -1598,7 +1598,7 @@ describe('replication.test.ts', () => {
             remoteCollection.database.close();
         });
     });
-    describeParallel('pull-only', () => {
+    describe('pull-only', () => {
         it('should not store document metadata on pull only replications', async () => {
             const startDocsAmount = 2;
             const { localCollection, remoteCollection } = await getTestCollections({ local: startDocsAmount, remote: startDocsAmount });
@@ -1635,7 +1635,7 @@ describe('replication.test.ts', () => {
             remoteCollection.database.close();
         });
     });
-    describeParallel('issues', () => {
+    describe('issues', () => {
         /**
          * @link https://github.com/pubkey/rxdb/pull/7804
          */
@@ -2780,7 +2780,7 @@ describe('replication.test.ts', () => {
             clientCollection.database.close();
         });
     });
-    describeParallel('push-only', () => {
+    describe('push-only', () => {
         it('should push documents written during pause after resume', async () => {
             const { localCollection, remoteCollection } = await getTestCollections({ local: 2, remote: 0 });
 

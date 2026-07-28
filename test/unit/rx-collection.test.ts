@@ -1,6 +1,6 @@
 import assert from 'assert';
 import clone from 'clone';
-import config, { describeParallel } from './config.ts';
+import config from './config.ts';
 import AsyncTestUtil, {
     randomBoolean,
     randomNumber,
@@ -76,7 +76,7 @@ describe('rx-collection.test.ts', () => {
                 db.close();
             });
         });
-        describeParallel('.create()', () => {
+        describe('.create()', () => {
             describe('positive', () => {
                 it('human', async () => {
                     const db = await createRxDatabase({
@@ -148,7 +148,7 @@ describe('rx-collection.test.ts', () => {
                 });
             });
         });
-        describeParallel('.checkCollectionName()', () => {
+        describe('.checkCollectionName()', () => {
             describe('positive', () => {
                 it('allow not allow lodash', async () => {
                     const db = await createRxDatabase({
@@ -227,7 +227,7 @@ describe('rx-collection.test.ts', () => {
         });
     });
     describe('instance', () => {
-        describeParallel('.insert()', () => {
+        describe('.insert()', () => {
             describe('positive', () => {
                 it('should insert a human', async () => {
                     const db = await createRxDatabase({
@@ -458,7 +458,7 @@ describe('rx-collection.test.ts', () => {
                 });
             });
         });
-        describeParallel('.insertIfNotExists()', () => {
+        describe('.insertIfNotExists()', () => {
             it('should insert the document when not exists', async () => {
                 const db = await createRxDatabase({
                     name: randomToken(10),
@@ -491,7 +491,7 @@ describe('rx-collection.test.ts', () => {
                 db.close();
             });
         });
-        describeParallel('.bulkInsert()', () => {
+        describe('.bulkInsert()', () => {
             describe('positive', () => {
                 it('should insert some humans', async () => {
                     const db = await createRxDatabase({
@@ -767,7 +767,7 @@ describe('rx-collection.test.ts', () => {
                     });
                 });
             });
-            describeParallel('$eq', () => {
+            describe('$eq', () => {
                 describe('positive', () => {
                     it('find first by passportId', async () => {
                         const c = await humansCollection.create();
@@ -817,7 +817,7 @@ describe('rx-collection.test.ts', () => {
                 });
                 describe('negative', () => { });
             });
-            describeParallel('.or()', () => {
+            describe('.or()', () => {
                 it('should find the 2 documents with the or-method', async () => {
                     const c = await humansCollection.create(10);
                     // add 2 docs to be found
@@ -865,7 +865,7 @@ describe('rx-collection.test.ts', () => {
                     c.database.close();
                 });
             });
-            describeParallel('.sort()', () => {
+            describe('.sort()', () => {
                 describe('positive', () => {
                     it('sort by age desc (with own index-search)', async () => {
                         const c = await humansCollection.createAgeIndex();
@@ -1020,7 +1020,7 @@ describe('rx-collection.test.ts', () => {
                     });
                 });
             });
-            describeParallel('.limit()', () => {
+            describe('.limit()', () => {
                 describe('positive', () => {
                     it('get first', async () => {
                         const c = await humansCollection.create();
@@ -1058,7 +1058,7 @@ describe('rx-collection.test.ts', () => {
                     });
                 });
             });
-            describeParallel('.skip()', () => {
+            describe('.skip()', () => {
                 describe('positive', () => {
                     it('skip first', async () => {
                         const c = await humansCollection.create(
@@ -1138,7 +1138,7 @@ describe('rx-collection.test.ts', () => {
                     });
                 });
             });
-            describeParallel('.regex()', () => {
+            describe('.regex()', () => {
                 describe('positive', () => {
                     it('find the one where the regex matches', async () => {
                         const c = await humansCollection.create(10);
@@ -1224,7 +1224,7 @@ describe('rx-collection.test.ts', () => {
                     });
                 });
             });
-            describeParallel('.remove()', () => {
+            describe('.remove()', () => {
                 it('should remove one document', async () => {
                     const c = await humansCollection.create(1);
                     const query = c.find();
@@ -1408,7 +1408,7 @@ describe('rx-collection.test.ts', () => {
                     db2.close();
                 });
             });
-            describeParallel('.bulkRemove()', () => {
+            describe('.bulkRemove()', () => {
                 describe('positive', () => {
                     it('should remove some humans', async () => {
                         const amount = 5;
@@ -1433,7 +1433,7 @@ describe('rx-collection.test.ts', () => {
                     });
                 });
             });
-            describeParallel('.update()', () => {
+            describe('.update()', () => {
                 it('sets a field in all documents', async () => {
                     const c = await humansCollection.create(2);
                     const query = c.find();
@@ -1465,7 +1465,7 @@ describe('rx-collection.test.ts', () => {
                 });
             });
         });
-        describeParallel('.findOne()', () => {
+        describe('.findOne()', () => {
             describe('positive', () => {
                 it('find a single document', async () => {
                     const c = await humansCollection.create();
@@ -1572,7 +1572,7 @@ describe('rx-collection.test.ts', () => {
                 });
             });
         });
-        describeParallel('.count()', () => {
+        describe('.count()', () => {
             describe('basics', () => {
                 it('should count one document', async () => {
                     const c = await humansCollection.create(1);
@@ -1721,7 +1721,7 @@ describe('rx-collection.test.ts', () => {
                 db.close();
             });
         });
-        describeParallel('.bulkUpsert()', () => {
+        describe('.bulkUpsert()', () => {
             it('insert and update', async () => {
                 const c = await humansCollection.create(0);
                 const amount = 5;
@@ -1810,7 +1810,7 @@ describe('rx-collection.test.ts', () => {
                 db.close();
             });
         });
-        describeParallel('.upsert()', () => {
+        describe('.upsert()', () => {
             describe('positive', () => {
                 it('insert when not exists', async () => {
                     const db = await createRxDatabase({
@@ -1930,7 +1930,7 @@ describe('rx-collection.test.ts', () => {
             });
         });
         describe('.incrementalUpsert()', () => {
-            describeParallel('positive', () => {
+            describe('positive', () => {
                 it('should work in serial', async () => {
                     const c = await humansCollection.createPrimary(0);
                     const docData = schemaObjects.simpleHumanData();
@@ -2177,7 +2177,7 @@ describe('rx-collection.test.ts', () => {
                 });
             });
         });
-        describeParallel('.remove()', () => {
+        describe('.remove()', () => {
             describe('positive', () => {
                 it('should not crash', async () => {
                     const c = await humansCollection.createPrimary(0);
@@ -2332,7 +2332,7 @@ describe('rx-collection.test.ts', () => {
                 });
             });
         });
-        describeParallel('.findByIds()', () => {
+        describe('.findByIds()', () => {
             it('should not crash', async () => {
                 const c = await humansCollection.create();
                 const res = await c.findByIds([
@@ -2502,7 +2502,7 @@ describe('rx-collection.test.ts', () => {
             });
         });
     });
-    describeParallel('.findByIds.$()', () => {
+    describe('.findByIds.$()', () => {
         it('should not crash and emit a map', async () => {
             const c = await humansCollection.create(5);
             const docs = await c.find().exec();

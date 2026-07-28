@@ -1,6 +1,6 @@
 import assert from 'assert';
 
-import config, { describeParallel } from './config.ts';
+import config from './config.ts';
 import {
     randomToken,
     createRxDatabase
@@ -17,7 +17,7 @@ import { assertThrows } from 'async-test-util';
 /**
  * RxStorageDexie specific tests
  */
-describeParallel('rx-storage-dexie.test.js', () => {
+describe('rx-storage-dexie.test.js', () => {
     if (config.storage.name !== 'dexie') {
         return;
     }

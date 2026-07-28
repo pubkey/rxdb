@@ -4,8 +4,8 @@ import {
     schemaObjects,
     humansCollection
 } from '../../plugins/test-utils/index.mjs';
-import { describeParallel } from './config.ts';
-describeParallel('idle-queue.test.js', () => {
+import './config.ts';
+describe('idle-queue.test.js', () => {
     describe('integration', () => {
         it('should be able to call queue on database', async () => {
             const c = await humansCollection.create(0);

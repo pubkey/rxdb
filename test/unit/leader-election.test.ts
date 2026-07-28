@@ -1,6 +1,6 @@
 import assert from 'assert';
 import AsyncTestUtil from 'async-test-util';
-import config, { describeParallel } from './config.ts';
+import config from './config.ts';
 
 import {
     schemas,
@@ -24,7 +24,7 @@ describe('leader-election.test.js', () => {
         return;
     }
     addRxPlugin(RxDBLeaderElectionPlugin);
-    describeParallel('.die()', () => {
+    describe('.die()', () => {
         it('other instance applies on death of leader', async () => {
             const name = randomToken(10);
             const c = await humansCollection.createMultiInstance(name);
@@ -167,7 +167,7 @@ describe('leader-election.test.js', () => {
             await Promise.all(nonDeadDbs.map(db => db.close()));
         });
     });
-    describeParallel('cleanup', () => {
+    describe('cleanup', () => {
         it('should properly call die() on the elector when the database is closed', async () => {
             const name = randomToken(10);
             const c1 = await humansCollection.createMultiInstance(name);
@@ -193,7 +193,7 @@ describe('leader-election.test.js', () => {
             await db2.close();
         });
     });
-    describeParallel('integration', () => {
+    describe('integration', () => {
         it('non-multiInstance should always be leader', async () => {
             const db = await createRxDatabase({
                 name: randomToken(10),

@@ -1,4 +1,4 @@
-import config, { describeParallel } from './config.ts';
+import config from './config.ts';
 import assert from 'assert';
 
 import {
@@ -29,7 +29,7 @@ import {
     wrappedValidateAjvStorage
 } from '../../plugins/validate-ajv/index.mjs';
 
-describeParallel('rx-database.test.ts', () => {
+describe('rx-database.test.ts', () => {
     describe('createRxDatabase()', () => {
         describe('positive', () => {
             it('normal', async () => {
