@@ -1,5 +1,5 @@
 import assert from 'assert';
-import config, { describeParallel } from './config.ts';
+import config from './config.ts';
 
 import {
     schemaObjects,
@@ -21,7 +21,7 @@ import {
 } from 'rxjs/operators';
 import { firstValueFrom } from 'rxjs';
 
-describeParallel('reactive-collection.test.js', () => {
+describe('reactive-collection.test.js', () => {
     describe('.insert()', () => {
         describe('positive', () => {
             it('should get a valid event on insert', async () => {

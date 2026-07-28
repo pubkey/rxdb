@@ -1,6 +1,6 @@
 import assert from 'assert';
 import AsyncTestUtil, { assertThrows, waitUntil } from 'async-test-util';
-import config, { describeParallel } from './config.ts';
+import config from './config.ts';
 import clone from 'clone';
 
 import {
@@ -31,7 +31,7 @@ import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.mjs'
 import { getRxStorageMemory } from '../../plugins/storage-memory/index.mjs';
 
 describe('rx-query.test.ts', () => {
-    describeParallel('.constructor', () => {
+    describe('.constructor', () => {
         it('should throw dev-mode error on wrong query object', async () => {
             const col = await humansCollection.create(0);
 
@@ -64,7 +64,7 @@ describe('rx-query.test.ts', () => {
             col.database.close();
         });
     });
-    describeParallel('.toJSON()', () => {
+    describe('.toJSON()', () => {
         it('should produce the correct selector-object', async () => {
             const col = await humansCollection.create(0);
             const q = col.find()
@@ -91,7 +91,7 @@ describe('rx-query.test.ts', () => {
             col.database.close();
         });
     });
-    describeParallel('.toString()', () => {
+    describe('.toString()', () => {
         it('should get a valid string-representation', async () => {
             const col = await humansCollection.create(0);
             const q = col.find()
@@ -164,7 +164,7 @@ describe('rx-query.test.ts', () => {
             col.database.close();
         });
     });
-    describeParallel('immutable', () => {
+    describe('immutable', () => {
         it('should not be the same object (sort)', async () => {
             const col = await humansCollection.create(0);
             const q = col.find()
@@ -191,7 +191,7 @@ describe('rx-query.test.ts', () => {
             col.database.close();
         });
     });
-    describeParallel('QueryCache.js', () => {
+    describe('QueryCache.js', () => {
         it('return the same object', async () => {
             const col = await humansCollection.create(0);
             const q = col.find()
@@ -288,7 +288,7 @@ describe('rx-query.test.ts', () => {
             col.database.close();
         });
     });
-    describeParallel('result caching', () => {
+    describe('result caching', () => {
         /**
          * The object stored in the query cache should be
          * exact the same as the object used in a document data.
@@ -320,7 +320,7 @@ describe('rx-query.test.ts', () => {
             col.database.close();
         });
     });
-    describeParallel('.doesDocMatchQuery()', () => {
+    describe('.doesDocMatchQuery()', () => {
         it('should match', async () => {
             const col = await humansCollection.create(0);
             const q = col.find().where('firstName').ne('foobar');
@@ -369,7 +369,7 @@ describe('rx-query.test.ts', () => {
             col.database.close();
         });
     });
-    describeParallel('.exec()', () => {
+    describe('.exec()', () => {
         it('reusing exec should not make a execOverDatabase', async () => {
             const col = await humansCollection.create(2);
             const q = col.find().where('passportId').ne('Alice');
@@ -1143,7 +1143,7 @@ describe('rx-query.test.ts', () => {
         });
 
     });
-    describeParallel('updates to the result of the query', () => {
+    describe('updates to the result of the query', () => {
         describe('RxQuery.update()', () => {
             it('updates a value on a query', async () => {
                 const c = await humansCollection.create(2);
@@ -1323,7 +1323,7 @@ describe('rx-query.test.ts', () => {
             });
         });
     });
-    describeParallel('issues', () => {
+    describe('issues', () => {
         new Array(isFastMode() ? 1 : 2)
             .fill(0).forEach((_v, runIdx) => {
 

@@ -1,7 +1,7 @@
 import assert from 'assert';
 import AsyncTestUtil from 'async-test-util';
 
-import config, { describeParallel } from './config.ts';
+import config from './config.ts';
 import {
     createRxDatabase,
     randomToken,
@@ -16,7 +16,7 @@ import {
     HumanDocumentType
 } from '../../plugins/test-utils/index.mjs';
 
-describeParallel('orm.test.js', () => {
+describe('orm.test.js', () => {
     describe('statics', () => {
         describe('create', () => {
             describe('positive', () => {

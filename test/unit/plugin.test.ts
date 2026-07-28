@@ -11,7 +11,7 @@ import {
     RxPlugin
 } from '../../plugins/core/index.mjs';
 
-import { describeParallel, getRootPath } from './config.ts';
+import { getRootPath } from './config.ts';
 import {
     humansCollection,
     isNode
@@ -23,7 +23,7 @@ import { RxDBCleanupPlugin } from '../../plugins/cleanup/index.mjs';
 addRxPlugin(RxDBCleanupPlugin);
 
 
-describeParallel('plugin.test.js', () => {
+describe('plugin.test.js', () => {
     if (!isNode) return;
     describe('.addRxPlugin()', () => {
         it('should not crash when a new plugin is added', () => {

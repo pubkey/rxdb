@@ -5,7 +5,7 @@ import {
 } from 'async-test-util';
 import AsyncTestUtil from 'async-test-util';
 
-import config, { describeParallel } from './config.ts';
+import config from './config.ts';
 import {
     schemaObjects,
     schemas
@@ -30,7 +30,7 @@ import {
     ensureNotFalsy
 } from '../../plugins/core/index.mjs';
 
-describeParallel('rx-schema.test.ts', () => {
+describe('rx-schema.test.ts', () => {
     describe('static', () => {
         describe('.getIndexes()', () => {
             it('get single indexes', () => {

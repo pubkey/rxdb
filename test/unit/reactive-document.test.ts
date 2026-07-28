@@ -5,7 +5,7 @@
 import assert from 'assert';
 import AsyncTestUtil from 'async-test-util';
 
-import config, { describeParallel } from './config.ts';
+import config from './config.ts';
 import {
     schemaObjects,
     schemas,
@@ -27,7 +27,7 @@ import type {
 } from '../../plugins/core/index.mjs';
 import { firstValueFrom } from 'rxjs';
 
-describeParallel('reactive-document.test.js', () => {
+describe('reactive-document.test.js', () => {
     describe('.save()', () => {
         describe('positive', () => {
             it('should fire on save', async () => {

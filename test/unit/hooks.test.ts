@@ -3,7 +3,7 @@ import {
     first
 } from 'rxjs/operators';
 
-import config, { describeParallel } from './config.ts';
+import config from './config.ts';
 import {
     schemaObjects,
     schemas,
@@ -20,7 +20,7 @@ import {
 
 
 describe('hooks.test.js', () => {
-    describeParallel('get/set', () => {
+    describe('get/set', () => {
         it('should set a hook', async () => {
             const c = await humansCollection.create(0);
             c.preSave(function () { }, false);
@@ -43,7 +43,7 @@ describe('hooks.test.js', () => {
             c.database.close();
         });
     });
-    describeParallel('insert', () => {
+    describe('insert', () => {
         describe('pre', () => {
             describe('positive', () => {
                 it('series', async () => {
@@ -182,7 +182,7 @@ describe('hooks.test.js', () => {
             });
         });
     });
-    describeParallel('save', () => {
+    describe('save', () => {
         describe('pre', () => {
             describe('positive', () => {
                 it('series', async () => {
@@ -325,7 +325,7 @@ describe('hooks.test.js', () => {
             describe('negative', () => { });
         });
     });
-    describeParallel('remove', () => {
+    describe('remove', () => {
         describe('pre', () => {
             describe('positive', () => {
                 it('series', async () => {
@@ -486,7 +486,7 @@ describe('hooks.test.js', () => {
             describe('negative', () => { });
         });
     });
-    describeParallel('postCreate', () => {
+    describe('postCreate', () => {
         describe('positive', () => {
             it('should define a getter', async () => {
                 const db = await createRxDatabase({
@@ -540,7 +540,7 @@ describe('hooks.test.js', () => {
             });
         });
     });
-    describeParallel('issues', () => {
+    describe('issues', () => {
         it('ISSUE #158 : Throwing error in async preInsert does not prevent insert', async () => {
             const c = await humansCollection.create(0);
             c.preInsert(async function () {

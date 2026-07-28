@@ -1,6 +1,6 @@
 import assert from 'assert';
 
-import config, { describeParallel } from './config.ts';
+import config from './config.ts';
 import {
     RxJsonSchema,
     randomToken,
@@ -37,7 +37,7 @@ import {
 } from '../../src/plugins/test-utils/schema-objects.ts';
 
 const TEST_CONTEXT = 'rx-storage-query-correctness.test.ts';
-describeParallel('rx-storage-query-correctness.test.ts', () => {
+describe('rx-storage-query-correctness.test.ts', () => {
     type TestCorrectQueriesInput<RxDocType> = {
         notRunIfTrue?: () => boolean;
         testTitle: string;

@@ -1,6 +1,6 @@
 import assert from 'assert';
 import clone from 'clone';
-import config, { describeParallel } from './config.ts';
+import config from './config.ts';
 
 
 import {
@@ -32,8 +32,8 @@ import {
     first
 } from 'rxjs/operators';
 
-describeParallel('reactive-query.test.js', () => {
-    describeParallel('positive', () => {
+describe('reactive-query.test.js', () => {
+    describe('positive', () => {
         it('get results of array when .subscribe() and filled array later', async () => {
             const c = await humansCollection.create(1);
             const query = c.find();

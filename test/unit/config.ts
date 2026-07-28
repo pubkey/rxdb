@@ -23,12 +23,10 @@ import {
     indexedDB as fakeIndexedDB,
     IDBKeyRange as fakeIDBKeyRange
 } from 'fake-indexeddb';
-import parallel from 'mocha.parallel';
 
 import { createRequire } from 'node:module';
 import {
     DEFAULT_STORAGE,
-    ENV_VARIABLES,
     getConfig,
     isDeno,
     isFastMode,
@@ -48,9 +46,6 @@ export function getRootPath() {
     const rootPath = path.join(__dirname, '../../');
     return rootPath;
 }
-
-
-export const describeParallel: typeof describe = ENV_VARIABLES.NODE_ENV === 'fast' ? parallel : describe;
 
 const localStorageMock = getLocalStorageMock();
 
