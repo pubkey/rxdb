@@ -27,21 +27,33 @@ export function QuoteBlock({
     ...(year ? { datePublished: year } : {}),
   };
   return (
-    <div
+    <figure
       style={{
         borderLeft: '2px solid var(--color-top)',
         paddingLeft: '1rem',
         paddingTop: '0.5rem',
         paddingBottom: '0.5rem',
         marginTop: 30,
-        marginBottom: 30
+        marginBottom: 30,
+        marginLeft: 0,
+        marginRight: 0
       }}
     >
       <JsonLd data={quotationJsonLd} />
       <IconQuoteStart />
-      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem' }}>
+      <blockquote
+        cite={sourceLink}
+        style={{
+          margin: 0,
+          padding: 0,
+          border: 'none',
+          display: 'flex',
+          alignItems: 'flex-start',
+          gap: '0.5rem'
+        }}
+      >
         <p style={{ margin: 0 }}>{children}</p>
-      </div>
+      </blockquote>
       <div style={{
         display: 'flex',
         justifyContent: 'flex-end',
@@ -50,7 +62,7 @@ export function QuoteBlock({
 
         <IconQuoteEnd />
       </div>
-      <p
+      <figcaption
         style={{
           marginTop: '0.75rem',
           marginBottom: 0,
@@ -71,7 +83,7 @@ export function QuoteBlock({
           author
         )}
         {year && `, ${year}`}
-      </p>
-    </div>
+      </figcaption>
+    </figure>
   );
 }
