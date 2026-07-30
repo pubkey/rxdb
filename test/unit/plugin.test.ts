@@ -18,7 +18,8 @@ import {
 } from '../../plugins/test-utils/index.mjs';
 import { assertThrows } from 'async-test-util';
 import { RxDBDevModePlugin, DEV_MODE_PLUGIN_NAME } from '../../plugins/dev-mode/index.mjs';
-import { createRequire } from 'node:module';
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
 import { RxDBCleanupPlugin } from '../../plugins/cleanup/index.mjs';
 addRxPlugin(RxDBCleanupPlugin);
 
@@ -51,28 +52,27 @@ describe('plugin.test.js', () => {
             if (!isNode)
                 return;
 
-            const require = createRequire(import.meta.url);
-            const { spawn } = await require('child-process-promise');
-            const stdout: any[] = [];
-            const stderr: any[] = [];
-            const promise = spawn('mocha', [getRootPath() + 'test_tmp/unit/full.node.js']);
-            const childProcess = promise.childProcess;
-            childProcess.stdout.on('data', (data: any) => stdout.push(data.toString()));
-            childProcess.stderr.on('data', (data: any) => stderr.push(data.toString()));
+            const execFileAsync = promisify(execFile);
+            let stderr = '';
             try {
-                await promise;
-            } catch (err) {
+                const result = await execFileAsync(
+                    'mocha',
+                    [getRootPath() + 'test_tmp/unit/full.node.js'],
+                    { maxBuffer: 1024 * 1024 * 64 }
+                );
+                stderr = result.stderr;
+            } catch (err: any) {
                 console.error('errrrr');
-                console.dir(stdout);
+                console.dir(err.stdout);
                 throw new Error(`could not run full.node.js.
                     # Error: ${err}
-                    # Output: ${stdout}
-                    # ErrOut: ${stderr}
+                    # Output: ${err.stdout}
+                    # ErrOut: ${err.stderr}
                     `, { cause: err });
             }
 
             if (stderr.length > 0) {
-                throw new Error('got stderr: ' + stderr.join(', '));
+                throw new Error('got stderr: ' + stderr);
             }
         });
     });
