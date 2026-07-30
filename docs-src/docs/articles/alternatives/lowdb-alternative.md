@@ -66,6 +66,8 @@ LowDB types come from the TypeScript generic the developer provides at construct
 
 Two Node.js processes opening the same LowDB file race on read and write. The last writer wins and silently overwrites the other process's changes. RxDB storages such as the SQLite or IndexedDB adapters coordinate writes, and the [multi-instance support](../../rx-collection.md) broadcasts changes between tabs and workers.
 
+The numbers reflect this. As of July 30, 2026, [LowDB](https://github.com/typicode/lowdb) has 22,567 GitHub stars while [RxDB](https://github.com/pubkey/rxdb) has 23,296. The last commit to the [LowDB repository](https://github.com/typicode/lowdb) was in March 2026.
+
 ## What RxDB Adds
 
 - **Scalable storages on Node.js.** Pick from SQLite, MongoDB, in-memory, or filesystem-backed engines. See [Node.js database options](../../nodejs-database.md).

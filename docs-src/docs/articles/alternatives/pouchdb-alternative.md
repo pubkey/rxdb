@@ -107,6 +107,8 @@ During RxDB's time as a PouchDB wrapper, many PouchDB bugs were encountered that
 
 ---
 
+Both projects are under active development. As of July 30, 2026, [PouchDB](https://github.com/pouchdb/pouchdb) has 17,598 GitHub stars while [RxDB](https://github.com/pubkey/rxdb) has 23,296.
+
 ## How RxDB Solves These Problems
 
 [RxDB](https://rxdb.info) is a local-first JavaScript database that runs on the client and handles all the challenges described above. It stores data locally, supports reactive queries through RxJS Observables, validates documents against a JSON Schema, and replicates with a wide range of backends without being tied to any single protocol.

@@ -60,6 +60,8 @@ Cloudant pricing is based on provisioned throughput capacity for reads, writes, 
 
 PouchDB ships a small query engine and basic change events. There is no schema validation, no typed collections, no reactive query results out of the box, and no first-class hooks for migrations or encryption. Application code has to fill those gaps.
 
+The numbers reflect this. As of July 30, 2026, [the official Cloudant Node.js client](https://github.com/cloudant/nodejs-cloudant) has 255 GitHub stars while [RxDB](https://github.com/pubkey/rxdb) has 23,296, and the `@cloudant/cloudant` package was downloaded 15,918 times on npm in the last 30 days compared to 269,555 downloads of `rxdb` ([npm trends](https://npmtrends.com/@cloudant/cloudant-vs-rxdb)). The last commit to the [nodejs-cloudant repository](https://github.com/cloudant/nodejs-cloudant) was in January 2022.
+
 ## Why RxDB Works as a Cloudant Alternative
 
 RxDB keeps the parts that made Cloudant attractive and replaces the parts that hurt on the client.

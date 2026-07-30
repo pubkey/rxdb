@@ -75,6 +75,8 @@ Apollo's cache can grow without bound, and garbage collection through `cache.gc(
 
 RxDB documents stay in storage until you delete them. Storage size is bounded by the underlying engine (IndexedDB, OPFS, SQLite) rather than by query reachability.
 
+Both projects are under active development. As of July 30, 2026, [Apollo Client](https://github.com/apollographql/apollo-client) has 19,808 GitHub stars while [RxDB](https://github.com/pubkey/rxdb) has 23,296.
+
 ## What RxDB Brings to the Table
 
 ### A Real Local Database
