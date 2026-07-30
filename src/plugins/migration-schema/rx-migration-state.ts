@@ -465,8 +465,25 @@ export class RxMigrationState {
                     // filter out the documents where the migration strategy returned null
                     migratedRows = migratedRows.filter(row => !!row && !!row.newDocumentState);
 
-                    const result = await replicationHandlerBase.masterWrite(migratedRows as any);
-                    return result;
+                    await replicationHandlerBase.masterWrite(migratedRows as any);
+
+                    /**
+                     * Push-conflicts are ignored on purpose,
+                     * we keep what is already stored in the new storage
+                     * and drop the 'old' document state.
+                     *
+                     * Reporting the conflicts to the upstream would make the migration
+                     * run forever: The rows are pushed with `assumedMasterState: undefined`
+                     * which the replication protocol handles as an insert, so every document
+                     * that already exists in the new storage is a conflict. The upstream then
+                     * resolves these conflicts by writing the master state back into the
+                     * old storage, that write emits on the fork change stream, the same
+                     * documents are read again and the cycle starts over.
+                     * This happens whenever documents are already in the new storage before
+                     * the migration runs, for example when a previous migration was
+                     * interrupted after it has written some documents.
+                     */
+                    return [];
                 },
                 masterChangeStream$: new Subject<any>().asObservable()
             },
