@@ -52,6 +52,8 @@ A NeDB database opened in two browser tabs has no concept of shared state. Write
 ### 6. No Schema Validation
 NeDB is schemaless. Every document can have any shape, which sounds flexible at first but quickly leads to runtime errors when fields drift over time. There is no migration system either, so changing data shape has to be handled by the application.
 
+The numbers reflect this. As of July 30, 2026, [NeDB](https://github.com/louischatriot/nedb) has 13,542 GitHub stars while [RxDB](https://github.com/pubkey/rxdb) has 23,296, and the `nedb` package was downloaded 200,490 times on npm in the last 30 days compared to 269,555 downloads of `rxdb` ([npm trends](https://npmtrends.com/nedb-vs-rxdb)). The last commit to the [NeDB repository](https://github.com/louischatriot/nedb) was in May 2025.
+
 ## How RxDB Solves These Problems
 
 RxDB keeps the document-oriented model that NeDB users like, and adds the features missing from NeDB:

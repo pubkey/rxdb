@@ -99,6 +99,8 @@ ReQL is specific to RethinkDB. Knowledge of ReQL does not transfer to other data
 
 ---
 
+The numbers reflect this. As of July 30, 2026, the `rethinkdb` package was downloaded 65,314 times on npm in the last 30 days compared to 269,555 downloads of `rxdb` ([npm trends](https://npmtrends.com/rethinkdb-vs-rxdb)). The last commit to the [RethinkDB server repository](https://github.com/rethinkdb/rethinkdb) was in March 2026.
+
 ## How RxDB Approaches the Same Problems
 
 [RxDB](https://rxdb.info) is a local-first JavaScript database built for client-side environments: browsers, React Native, Electron, and Node.js. It shares the reactive programming goal of RethinkDB (data changes should automatically propagate to the UI) but implements it on the client side rather than relying on a persistent server connection.

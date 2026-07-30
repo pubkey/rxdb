@@ -65,6 +65,8 @@ Persistence is delegated to providers like `y-indexeddb` or `y-leveldb`. Each pr
 
 Yjs sync moves the entire update stream of a `Y.Doc`. That works for one shared document. For an app with thousands of independent records (orders, messages, contacts), you either pack everything into one giant `Y.Doc` and pay for it on every load, or you manage many small docs and write your own catalog, fan-out, and authorization layer.
 
+Both projects are under active development. As of July 30, 2026, [Yjs](https://github.com/yjs/yjs) has 22,263 GitHub stars while [RxDB](https://github.com/pubkey/rxdb) has 23,296.
+
 ## Where RxDB Fits
 
 RxDB approaches the same problem from the database side:

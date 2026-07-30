@@ -53,6 +53,8 @@ const query = db.tasks.find({
 });
 ```
 
+Both projects are under active development. As of July 30, 2026, [the PowerSync JavaScript SDK](https://github.com/powersync-ja/powersync-js) has 698 GitHub stars while [RxDB](https://github.com/pubkey/rxdb) has 23,296.
+
 ## Why RxDB Works Well as a PowerSync Alternative
 
 ### Storage-Agnostic Client
