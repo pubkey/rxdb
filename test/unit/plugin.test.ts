@@ -53,11 +53,19 @@ describe('plugin.test.js', () => {
                 return;
 
             const execFileAsync = promisify(execFile);
-            let stderr = '';
+            let stderr: string;
             try {
+                /**
+                 * Run the mocha entrypoint with the current node binary
+                 * instead of relying on the `mocha` shim being in the PATH,
+                 * this also works on windows.
+                 */
                 const result = await execFileAsync(
-                    'mocha',
-                    [getRootPath() + 'test_tmp/unit/full.node.js'],
+                    process.execPath,
+                    [
+                        getRootPath() + 'node_modules/mocha/bin/mocha.js',
+                        getRootPath() + 'test_tmp/unit/full.node.js'
+                    ],
                     { maxBuffer: 1024 * 1024 * 64 }
                 );
                 stderr = result.stderr;
