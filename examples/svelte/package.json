@@ -24,7 +24,7 @@
     "rollup-plugin-svelte": "7.2.3",
     "@rollup/plugin-terser": "1.0.0",
     "rxjs": "7.8.2",
-    "svelte": "4.2.20",
+    "svelte": "5.56.8",
     "testcafe": "3.7.6"
   },
   "dependencies": {
