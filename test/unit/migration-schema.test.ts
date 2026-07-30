@@ -2541,6 +2541,7 @@ describe('migration-schema.test.ts', function () {
          * the same documents are read again and the cycle starts over.
          * The result was that `addCollections()` never resolved and the migration
          * spun conflict cycles until the tab ran out of memory.
+         * @link https://rxdb.pipedrive.com/mail/inbox/thread/4958
          */
         describe('interrupted migration', () => {
             /**
