@@ -32,7 +32,6 @@ export default [
             '.transpile_state.json',
             'examples/angular',
             'examples/electron',
-            'examples/electron-remote',
             'examples/graphql',
             'examples/ionic2',
             'examples/flutter',
