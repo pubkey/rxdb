@@ -64,7 +64,7 @@ Hoodie depends on PouchDB for local storage. PouchDB works, but its IndexedDB ad
 
 Hoodie inherits CouchDB's conflict model, which surfaces conflicts but leaves resolution entirely to the application. RxDB lets you supply a [custom conflict handler](../../transactions-conflicts-revisions.md) per collection, so merges happen automatically and consistently across clients.
 
-The numbers reflect this. As of July 30, 2026, [Hoodie](https://github.com/hoodiehq/hoodie) has 4,454 GitHub stars while [RxDB](https://github.com/pubkey/rxdb) has 23,296, and the `hoodie` package was downloaded 989 times on npm in the last 30 days compared to 269,555 downloads of `rxdb` ([npm trends](https://npmtrends.com/hoodie-vs-rxdb)). The last commit to the [Hoodie repository](https://github.com/hoodiehq/hoodie) was in January 2021.
+The numbers reflect this. As of July 30, 2026, [Hoodie](https://github.com/hoodiehq/hoodie) has 4,454 GitHub stars while [RxDB](https://github.com/pubkey/rxdb) has 23,296, and the `hoodie` package was downloaded 996 times on npm in the last 30 days compared to 270,494 downloads of `rxdb` ([npm trends](https://npmtrends.com/hoodie-vs-rxdb)). The last commit to the [Hoodie repository](https://github.com/hoodiehq/hoodie) was in January 2021.
 
 ## Why RxDB is a Strong Hoodie Replacement
 

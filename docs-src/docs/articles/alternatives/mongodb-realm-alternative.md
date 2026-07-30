@@ -40,7 +40,7 @@ The deprecation is the most pressing reason to migrate, but Realm had structural
 - **License and vendor lock in**: While the SDKs are open source, the sync server and conflict resolution logic live inside MongoDB Atlas. Migrating away from Atlas meant rebuilding sync from scratch.
 - **Schema migrations**: Schema changes in Realm required writing imperative migration functions in every client release, with limited tooling for testing migrations against production data.
 
-The numbers reflect this. As of July 30, 2026, [the Realm JavaScript SDK](https://github.com/realm/realm-js) has 6,000 GitHub stars while [RxDB](https://github.com/pubkey/rxdb) has 23,296, and the `realm` package was downloaded 217,771 times on npm in the last 30 days compared to 269,555 downloads of `rxdb` ([npm trends](https://npmtrends.com/realm-vs-rxdb)).
+The numbers reflect this. As of July 30, 2026, [the Realm JavaScript SDK](https://github.com/realm/realm-js) has 6,000 GitHub stars while [RxDB](https://github.com/pubkey/rxdb) has 23,296, and the `realm` package was downloaded 217,533 times on npm in the last 30 days compared to 270,494 downloads of `rxdb` ([npm trends](https://npmtrends.com/realm-vs-rxdb)).
 
 ## RxDB advantages for former Realm users
 

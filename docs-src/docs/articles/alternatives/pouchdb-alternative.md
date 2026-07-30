@@ -107,7 +107,7 @@ During RxDB's time as a PouchDB wrapper, many PouchDB bugs were encountered that
 
 ---
 
-Both projects are under active development. As of July 30, 2026, [PouchDB](https://github.com/pouchdb/pouchdb) has 17,598 GitHub stars while [RxDB](https://github.com/pubkey/rxdb) has 23,296.
+Both projects are under active development. As of July 30, 2026, [PouchDB](https://github.com/apache/pouchdb) has 17,598 GitHub stars while [RxDB](https://github.com/pubkey/rxdb) has 23,296.
 
 ## How RxDB Solves These Problems
 
