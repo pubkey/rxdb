@@ -95,7 +95,6 @@ module.exports = async function (config) {
             'karma-chrome-launcher',
             'karma-safari-launcher',
             'karma-firefox-launcher',
-            'karma-ie-launcher',
             'karma-opera-launcher',
             'karma-detect-browsers',
             'karma-spec-reporter',
