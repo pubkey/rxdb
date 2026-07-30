@@ -1,4 +1,4 @@
-import { ClientOptions } from 'graphql-ws';
+import { ClientOptions } from 'graphql-ws/client';
 import { RxReplicationWriteToMasterRow } from '../replication-protocol.ts';
 import { ById, MaybePromise } from '../util.ts';
 import {

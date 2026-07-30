@@ -12,7 +12,7 @@ import {
 } from 'graphql';
 import { createServer } from 'node:http';
 import { WebSocketServer } from 'ws';
-import { useServer } from 'graphql-ws/lib/use/ws';
+import { useServer } from 'graphql-ws/use/ws';
 import { Request, Response, NextFunction } from 'express';
 
 import express from 'express';

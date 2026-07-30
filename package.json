@@ -82,7 +82,7 @@
     "firebase"
   ],
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   },
   "license": "Apache-2.0",
   "types": "./dist/types/index.d.ts",
@@ -582,7 +582,7 @@
     "event-reduce-js": "6.0.0",
     "get-graphql-from-jsonschema": "8.1.0",
     "graphql": "16.14.2",
-    "graphql-ws": "5.16.2",
+    "graphql-ws": "6.2.0",
     "is-my-json-valid": "2.20.6",
     "js-base64": "3.9.1",
     "jsonschema-key-compression": "1.7.0",
