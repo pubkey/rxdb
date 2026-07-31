@@ -105,7 +105,7 @@ Each browser tab running a Minimongo-based application maintains its own in-memo
 
 ---
 
-The numbers reflect this. As of July 30, 2026, [Minimongo](https://github.com/mWater/minimongo) has 1,212 GitHub stars while [RxDB](https://github.com/pubkey/rxdb) has 23,296, and the `minimongo` package was downloaded 13,810 times on npm in the last 30 days compared to 270,494 downloads of `rxdb` ([npm trends](https://npmtrends.com/minimongo-vs-rxdb)). Development has slowed down as well: the newest commit on the `master` branch of the [mWater/minimongo repository](https://github.com/mWater/minimongo/commits/master/) is from October 2025.
+The numbers reflect this. As of July 30, 2026, [Minimongo](https://github.com/mWater/minimongo) has 1,212 GitHub stars while [RxDB](https://github.com/pubkey/rxdb) has 23,296, and the `minimongo` package was downloaded 13,810 times on npm in the last 30 days compared to 270,494 downloads of `rxdb` ([npm trends](https://npmtrends.com/minimongo-vs-rxdb)). Development has slowed down as well: the newest commit on the `master` branch of the [mWater/minimongo repository](https://github.com/mWater/minimongo/commits/master/) is from October 2025, <TimeSince date="2025-10-14" />.
 
 ## How RxDB Solves These Problems
 

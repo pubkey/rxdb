@@ -67,7 +67,7 @@ If a user opens your app in two tabs, both tabs talk to the same IndexedDB block
 
 These are common requirements for local-first apps. With absurd-sql you build them on top of SQL. RxDB ships them as plugins.
 
-The numbers reflect this. As of July 30, 2026, [absurd-sql](https://github.com/jlongster/absurd-sql) has 4,325 GitHub stars while [RxDB](https://github.com/pubkey/rxdb) has 23,296, and the `absurd-sql` package was downloaded 55,008 times on npm in the last 30 days compared to 270,494 downloads of `rxdb` ([npm trends](https://npmtrends.com/absurd-sql-vs-rxdb)). The last commit to the [absurd-sql repository](https://github.com/jlongster/absurd-sql) was in August 2023.
+The numbers reflect this. As of July 30, 2026, [absurd-sql](https://github.com/jlongster/absurd-sql) has 4,325 GitHub stars while [RxDB](https://github.com/pubkey/rxdb) has 23,296, and the `absurd-sql` package was downloaded 55,008 times on npm in the last 30 days compared to 270,494 downloads of `rxdb` ([npm trends](https://npmtrends.com/absurd-sql-vs-rxdb)). The last commit to the [absurd-sql repository](https://github.com/jlongster/absurd-sql) was in August 2023, <TimeSince date="2023-08-06" />.
 
 ## Why RxDB Fits Better for Most Apps
 
