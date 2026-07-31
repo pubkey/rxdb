@@ -23,7 +23,7 @@ You also need to install the peer-dependency `rxjs` if you have not installed it
 
 ## polyfills
 
-RxDB is coded with ES8 and transpiled to ES5. This means you have to install [polyfills](https://developer.mozilla.org/en-US/docs/Glossary/Polyfill) to support older browsers. In the past this was done with `@babel/polyfill`, but that package is deprecated since babel version `7.4.0`. Use [core-js](https://github.com/zloirock/core-js) instead:
+RxDB is coded with ES8 and transpiled to ES5. This means you have to install [polyfills](https://developer.mozilla.org/en-US/docs/Glossary/Polyfill) to support older browsers. For example you can use [core-js](https://github.com/zloirock/core-js) with:
 
 ```bash
 npm i core-js --save
