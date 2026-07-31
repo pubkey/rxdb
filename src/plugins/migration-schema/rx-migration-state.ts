@@ -90,6 +90,13 @@ export class RxMigrationState {
      * that are ever used in this migration state.
      */
     public replicationStates = new Set<RxStorageInstanceReplicationState<any>>();
+    /**
+     * All storage instances that are opened by the migration itself.
+     * They have to be closed when the migration is canceled,
+     * otherwise they stay open forever when the migration is interrupted,
+     * for example when the database is closed while the migration is running.
+     */
+    public openStorageInstances = new Set<RxStorageInstance<any, any, any>>();
     public canceled: boolean = false;
     public broadcastChannel?: BroadcastChannel;
     constructor(
@@ -188,6 +195,7 @@ export class RxMigrationState {
             password: this.database.password,
             devMode: overwritable.isDevMode()
         });
+        this.openStorageInstances.add(oldStorageInstance);
 
 
         const connectedInstances = await this.getConnectedStorageInstances();
@@ -222,6 +230,7 @@ export class RxMigrationState {
                         connectedInstance.newStorage,
                         batchSize
                     );
+                    this.openStorageInstances.delete(connectedInstance.newStorage);
                     await connectedInstance.newStorage.close();
                 })
             );
@@ -238,6 +247,7 @@ export class RxMigrationState {
                 batchSize
             );
         } catch (err) {
+            this.openStorageInstances.delete(oldStorageInstance);
             await oldStorageInstance.close();
             this.collection.migrationInProgress = false;
             await this.updateStatus(s => {
@@ -394,6 +404,7 @@ export class RxMigrationState {
             password: this.database.password,
             devMode: overwritable.isDevMode()
         });
+        this.openStorageInstances.add(replicationMetaStorageInstance);
 
         const replicationHandlerBase = rxStorageInstanceToReplicationHandler(
             newStorage,
@@ -465,8 +476,25 @@ export class RxMigrationState {
                     // filter out the documents where the migration strategy returned null
                     migratedRows = migratedRows.filter(row => !!row && !!row.newDocumentState);
 
-                    const result = await replicationHandlerBase.masterWrite(migratedRows as any);
-                    return result;
+                    await replicationHandlerBase.masterWrite(migratedRows as any);
+
+                    /**
+                     * Push-conflicts are ignored on purpose,
+                     * we keep what is already stored in the new storage
+                     * and drop the 'old' document state.
+                     *
+                     * Reporting the conflicts to the upstream would make the migration
+                     * run forever: The rows are pushed with `assumedMasterState: undefined`
+                     * which the replication protocol handles as an insert, so every document
+                     * that already exists in the new storage is a conflict. The upstream then
+                     * resolves these conflicts by writing the master state back into the
+                     * old storage, that write emits on the fork change stream, the same
+                     * documents are read again and the cycle starts over.
+                     * This happens whenever documents are already in the new storage before
+                     * the migration runs, for example when a previous migration was
+                     * interrupted after it has written some documents.
+                     */
+                    return [];
                 },
                 masterChangeStream$: new Subject<any>().asObservable()
             },
@@ -496,11 +524,14 @@ export class RxMigrationState {
         await this.updateStatusQueue;
         if (hasError) {
             await cancelRxStorageReplication(replicationState);
+            this.openStorageInstances.delete(replicationMetaStorageInstance);
             await replicationMetaStorageInstance.close();
             throw hasError;
         }
 
         // cleanup old storages
+        this.openStorageInstances.delete(oldStorage);
+        this.openStorageInstances.delete(replicationMetaStorageInstance);
         await Promise.all([
             oldStorage.remove(),
             replicationMetaStorageInstance.remove()
@@ -521,6 +552,18 @@ export class RxMigrationState {
             Array.from(this.replicationStates.values())
                 .map(state => cancelRxStorageReplication(state))
         );
+
+        /**
+         * Close the storage instances that were opened by the migration.
+         * After the replications are canceled, migrateStorage() does not
+         * continue and therefore never closes them on its own.
+         */
+        const openInstances = Array.from(this.openStorageInstances);
+        this.openStorageInstances.clear();
+        await Promise.all(
+            openInstances.map(instance => instance.close().catch(() => { }))
+        );
+
         if (this.broadcastChannel) {
             await this.broadcastChannel.close();
         }
@@ -595,6 +638,8 @@ export class RxMigrationState {
                                 collectionName: connectedStorage.collectionName
                             })
                         ]);
+                        this.openStorageInstances.add(oldStorage);
+                        this.openStorageInstances.add(newStorage);
                         ret.push({ oldStorage, newStorage });
                     })
             )
