@@ -23,3 +23,9 @@ them. The value is calculated when the page renders, so the static HTML carries
 the distance as of the last docs build and the browser corrects it on
 hydration. Keep the absolute date in the sentence as well, because that is the
 part a reader can verify.
+
+On a comparison page, only mention the other project's last commit when it is
+**at least 6 months old**. A project that shipped something three months ago is
+maintained, and pointing at that date reads as looking for something bad to say
+instead of making a point. When the gap is below the threshold, leave the
+sentence out and let the other numbers carry the paragraph.

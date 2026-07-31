@@ -50,7 +50,7 @@ Two browser tabs running sql.js each hold their own copy of the in-memory databa
 ### 6. Manual indexing strategy
 You get SQLite indexes, but you also get the responsibility of designing them around access patterns that change as the app grows.
 
-The numbers reflect this. As of July 30, 2026, [sql.js](https://github.com/sql-js/sql.js) has 13,652 GitHub stars while [RxDB](https://github.com/pubkey/rxdb) has 23,296. The last commit to the [sql.js repository](https://github.com/sql-js/sql.js) was in March 2026, <TimeSince date="2026-03-04" />.
+The numbers reflect this. As of July 30, 2026, [sql.js](https://github.com/sql-js/sql.js) has 13,652 GitHub stars while [RxDB](https://github.com/pubkey/rxdb) has 23,296.
 
 ## Where RxDB Helps
 
