@@ -1,4 +1,10 @@
-import { Client, createClient } from 'graphql-ws';
+/**
+ * Import from 'graphql-ws/client' instead of 'graphql-ws' so that
+ * only the zero-dependency client is bundled. The package root also
+ * contains the server code which pulls in the whole graphql package.
+ * @link https://github.com/enisdenjo/graphql-ws/blob/master/CHANGELOG.md#600
+ */
+import { Client, createClient } from 'graphql-ws/client';
 import { getFromMapOrCreate, getFromMapOrThrow } from '../../plugins/utils/index.ts';
 import { WebSocket } from 'ws';
 import { RxGraphQLPullWSOptions } from '../../types';
