@@ -1,0 +1,33 @@
+# RxDB build that is used by the CI, see package.json
+/rxdb-local.tgz
+
+# compiled output
+/dist
+/tmp
+/out-tsc
+/www
+
+# dependencies
+/node_modules
+
+# capacitor native projects, run 'npx cap add android' to create them
+/android
+/ios
+
+# angular
+/.angular/cache
+
+# IDEs and editors
+/.idea
+.vscode/*
+!.vscode/extensions.json
+.history/*
+
+# misc
+npm-debug.log
+yarn-error.log
+testem.log
+
+# System Files
+.DS_Store
+Thumbs.db

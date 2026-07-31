@@ -1,0 +1,91 @@
+{
+  "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
+  "version": 1,
+  "newProjectRoot": "projects",
+  "projects": {
+    "ionic": {
+      "projectType": "application",
+      "root": "",
+      "sourceRoot": "src",
+      "prefix": "app",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:application",
+          "options": {
+            "outputPath": "dist/ionic",
+            "browser": "src/main.ts",
+            "index": "src/index.html",
+            "polyfills": [
+              "zone.js"
+            ],
+            "tsConfig": "tsconfig.app.json",
+            "assets": [
+              {
+                "glob": "**/*",
+                "input": "src/assets",
+                "output": "assets"
+              },
+              {
+                "glob": "**/*.svg",
+                "input": "node_modules/ionicons/dist/ionicons/svg",
+                "output": "./svg"
+              }
+            ],
+            "styles": [
+              "node_modules/@ionic/angular/css/core.css",
+              "node_modules/@ionic/angular/css/normalize.css",
+              "node_modules/@ionic/angular/css/structure.css",
+              "node_modules/@ionic/angular/css/typography.css",
+              "node_modules/@ionic/angular/css/padding.css",
+              "node_modules/@ionic/angular/css/palettes/dark.system.css",
+              "src/theme/variables.css",
+              "src/global.css"
+            ],
+            "scripts": [],
+            "optimization": false,
+            "sourceMap": true,
+            "namedChunks": true,
+            "extractLicenses": false
+          },
+          "configurations": {
+            "production": {
+              "optimization": true,
+              "outputHashing": "all",
+              "sourceMap": false,
+              "namedChunks": false,
+              "extractLicenses": true,
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "2mb",
+                  "maximumError": "5mb"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "6kb",
+                  "maximumError": "10kb"
+                }
+              ]
+            }
+          },
+          "defaultConfiguration": ""
+        },
+        "serve": {
+          "builder": "@angular/build:dev-server",
+          "options": {
+            "buildTarget": "ionic:build"
+          },
+          "configurations": {
+            "production": {
+              "buildTarget": "ionic:build:production"
+            }
+          },
+          "defaultConfiguration": ""
+        }
+      }
+    }
+  },
+  "cli": {
+    "analytics": false
+  }
+}

@@ -33,7 +33,7 @@ export default [
             'examples/angular',
             'examples/electron',
             'examples/graphql',
-            'examples/ionic2',
+            'examples/ionic',
             'examples/flutter',
             'examples/node',
             'examples/react-native',
