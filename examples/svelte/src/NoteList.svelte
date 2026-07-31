@@ -1,26 +1,38 @@
 <script>
-  import { onMount } from 'svelte';
+  import { db, selectNote } from './store.svelte.js';
 
-  import { db, selectedNote, name, body } from './store';
-  let db$;
-  let noteList = [];
+  let noteList = $state([]);
+  let loaded = $state(false);
 
-  onMount(() => {
-    const getNoteList = async () => {
-      db$ = await db();
-      db$.notes
+  /**
+   * The RxDB query is subscribed inside an $effect
+   * so that the subscription is cleaned up
+   * when the component is destroyed.
+   */
+  $effect(() => {
+    let subscription;
+    let destroyed = false;
+
+    db().then((db$) => {
+      if (destroyed) {
+        return;
+      }
+      subscription = db$.notes
         .find()
         .sort({ updatedAt: 'desc' })
-        .$.subscribe((notes) => (noteList = notes));
-    };
-    getNoteList();
-  });
+        .$.subscribe((notes) => {
+          noteList = notes;
+          loaded = true;
+        });
+    });
 
-  const handleEditNote = (note) => {
-    selectedNote.set(note);
-    name.set(note.name);
-    body.set(note.body);
-  };
+    return () => {
+      destroyed = true;
+      if (subscription) {
+        subscription.unsubscribe();
+      }
+    };
+  });
 
   const deleteNote = async (note) => await note.remove();
 </script>
@@ -28,14 +40,14 @@
 <div>
   <h2>NoteList.svelte</h2>
   <ul id="note-list" class="nostyle">
-    {#await noteList}
+    {#if !loaded}
       Loading Notes...
-    {:then results}
-      {#each results as note}
+    {:else}
+      {#each noteList as note (note.name)}
         <li>
           <span class="elipsis">
-            <button on:click={() => handleEditNote(note)} class="nostyle link">{note.name}</button>
-            {#if note.body !== ''}<span style="color: #757575">—</span>{/if}
+            <button onclick={() => selectNote(note)} class="nostyle link">{note.name}</button>
+            {#if note.body !== ''}<span style="color: #757575">-</span>{/if}
             <span class="mute">
               {note.body ?? ''}
             </span>
@@ -43,11 +55,11 @@
 
           <span class="meta">
             {new Date(note.updatedAt).toLocaleDateString('en-US')}
-            <button on:click={() => deleteNote(note)} class="btn btn-delete">delete</button>
+            <button onclick={() => deleteNote(note)} class="btn btn-delete">delete</button>
           </span>
         </li>
       {/each}
-    {/await}
+    {/if}
   </ul>
 </div>
 

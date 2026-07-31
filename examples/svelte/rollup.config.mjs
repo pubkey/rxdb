@@ -42,7 +42,9 @@ export default {
 		svelte({
 			compilerOptions: {
 				// enable run-time checks when not in production
-				dev: !production
+				dev: !production,
+				// use the Svelte 5 runes mode, no legacy reactivity
+				runes: true
 			}
 		}),
 		builtins(),

@@ -1,4 +1,3 @@
-import { writable } from 'svelte/store';
 import { createRxDatabase, addRxPlugin } from 'rxdb';
 import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
 
@@ -24,17 +23,36 @@ const _create = async () => {
     })
   });
   await db.addCollections({ notes: { schema: noteSchema } });
-  dbPromise = db;
   return db;
 };
 
-export const db = () => dbPromise ? dbPromise : _create();
+export const db = () => dbPromise ? dbPromise : (dbPromise = _create());
 
 /**
- * Svelte Writables ============================================================
+ * Svelte 5 Runes ==============================================================
+ * Shared state lives in this `.svelte.js` module so that the `$state` rune
+ * can be used outside of a component. Every component that reads a field of
+ * `noteForm` re-renders when that field changes.
  */
 
-export const noteList = writable([]);
-export const selectedNote = writable({});
-export const name = writable('');
-export const body = writable('');
+export const noteForm = $state({
+  /**
+   * The RxDocument that is currently edited,
+   * or null when a new note is written.
+   */
+  selectedNote: null,
+  name: '',
+  body: ''
+});
+
+export function selectNote(note) {
+  noteForm.selectedNote = note;
+  noteForm.name = note.name;
+  noteForm.body = note.body ?? '';
+}
+
+export function resetForm() {
+  noteForm.selectedNote = null;
+  noteForm.name = '';
+  noteForm.body = '';
+}
