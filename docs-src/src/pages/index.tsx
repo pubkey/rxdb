@@ -1,4 +1,3 @@
-import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import Layout from '@theme/Layout';
 import Head from '@docusaurus/Head';
 
@@ -26,6 +25,7 @@ import { IconQuickstart } from '../components/icons/quickstart';
 import { FeaturesSection } from '../components/features-section';
 import { getTestGroup } from '../components/a-b-tests';
 import { CoreConceptSection } from '../components/core-concept-section';
+import { HOME_TITLE } from '../constants';
 
 
 export const colors = [
@@ -219,8 +219,6 @@ export default function Home(props: {
   // must be directly called here first, before any A/B-Test content is rendered
   getTestGroup(props.sem ? props.sem.id : '');
 
-  const { siteConfig } = useDocusaurusContext();
-
   const isBrowser = useIsBrowser();
   useEffect(() => {
     if (isBrowser) {
@@ -284,7 +282,7 @@ export default function Home(props: {
         <link rel="canonical" href="https://rxdb.info/" />
       </Head>
       <Layout
-        title={props.sem ? props.sem.metaTitle : siteConfig.title}
+        title={props.sem ? props.sem.metaTitle : HOME_TITLE}
         description="RxDB is a fast, local-first NoSQL-database for JavaScript Applications like Websites, hybrid Apps, Electron-Apps, Progressive Web Apps and Node.js">
         <main>
 

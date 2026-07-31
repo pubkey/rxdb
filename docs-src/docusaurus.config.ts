@@ -33,7 +33,18 @@ const rehypePrettyCodeOptions: RehypePrettyCodeOptions = {
 
 /** @type {import('@docusaurus/types').Config} */
 const config: Config = {
-    title: 'RxDB - JavaScript Database',
+    /**
+     * Docusaurus appends this to every page title as `<page title> | <title>`
+     * (see useTitleFormatter in @docusaurus/theme-common), so it doubles as the
+     * sitewide title suffix. Keep it short: Google truncates titles around 60
+     * characters and treats repeated boilerplate as a reason to rewrite the
+     * title link, which loses us control of the search listing.
+     * @link https://developers.google.com/search/docs/appearance/title-link
+     *
+     * Pages that need the longer descriptive form set it explicitly (the
+     * homepage and /consulting/ pass HOME_TITLE below).
+     */
+    title: 'RxDB',
     tagline: 'Realtime JavaScript Database',
     favicon: '/files/logo/logo.svg',
     headTags: [

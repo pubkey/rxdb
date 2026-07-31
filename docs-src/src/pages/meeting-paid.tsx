@@ -1,11 +1,9 @@
-import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import Layout from '@theme/Layout';
 import React, { useEffect } from 'react';
 import { triggerTrackingEvent } from '../components/trigger-event';
 const FILE_EVENT_ID = 'paid-meeting-link-clicked';
 
 export default function Meeting() {
-    const { siteConfig } = useDocusaurusContext();
     useEffect(() => {
         (() => {
             triggerTrackingEvent(FILE_EVENT_ID, 100, 1);
@@ -14,7 +12,7 @@ export default function Meeting() {
 
     return (
         <Layout
-            title={`Meeting - ${siteConfig.title}`}
+            title={'Meeting'}
             description="RxDB Meeting Scheduler"
         >
             <main>

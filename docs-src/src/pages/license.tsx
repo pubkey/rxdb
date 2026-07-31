@@ -5,7 +5,6 @@
  * Therefore just use a rxdb.info link that redirects to pipedrive.
  * This also allows to track the conversion event.
  */
-import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import Layout from '@theme/Layout';
 import React, { useEffect, useState } from 'react';
 import useIsBrowser from '@docusaurus/useIsBrowser';
@@ -14,7 +13,6 @@ import { triggerTrackingEvent } from '../components/trigger-event';
 const FILE_EVENT_ID = 'premium_license_opened';
 
 export default function LicensePreview() {
-    const { siteConfig } = useDocusaurusContext();
 
     const [goalUrl, setGoalUrl] = useState(null);
     const isBrowser = useIsBrowser();
@@ -44,7 +42,7 @@ export default function LicensePreview() {
 
     return (
         <Layout
-            title={`License Preview - ${siteConfig.title}`}
+            title={'License Preview'}
             description="License Preview"
         >
             <main>
