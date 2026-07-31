@@ -818,6 +818,39 @@ jobs:
           working-directory: ./examples/vite-vanilla-ts
           run: npm run test
 
+  example-ionic:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - name: Setup Chrome to specific version
+        id: chrome
+        uses: browser-actions/setup-chrome@v2
+        with:
+          chrome-version: 141
+      - name: Set node version
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: ".nvmrc"
+      - name: prepare RxDB core
+        run: |
+          npm install --legacy-peer-deps
+          npm run build
+          rm -r node_modules
+      - name: ionic build
+        working-directory: ./examples/ionic
+        run: |
+          npm run preinstall
+          npm install --legacy-peer-deps
+          npm run build
+      - name: ionic test
+        uses: coactions/setup-xvfb@v1
+        env:
+          BROWSER_PATH: ${{ steps.chrome.outputs.chrome-path }}
+        with:
+          working-directory: ./examples/ionic
+          run: npm run test
+
   example-graphql:
     runs-on: ubuntu-22.04
     timeout-minutes: 30

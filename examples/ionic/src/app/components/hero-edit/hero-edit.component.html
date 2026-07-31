@@ -1,0 +1,52 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Edit {{ hero.name }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button
+        id="edit-cancel"
+        (click)="cancel()"
+      >Cancel</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  @if (hero.deleted$ | async) {
+    <ion-item
+      id="edit-deleted"
+      color="danger"
+    >
+      <ion-label class="ion-text-wrap">
+        Someone else has deleted this hero. You can not save anymore.
+      </ion-label>
+    </ion-item>
+  }
+
+  <ion-item>
+    <div
+      class="color-box"
+      slot="start"
+      [style.background-color]="hero.color"
+    ></div>
+    <ion-label>{{ hero.name }}</ion-label>
+  </ion-item>
+
+  <ion-item>
+    <ion-range
+      id="edit-hp"
+      label="HP"
+      min="0"
+      max="100"
+      [pin]="true"
+      [value]="hp()"
+      (ionChange)="hp.set($any($event.detail.value))"
+    ></ion-range>
+  </ion-item>
+
+  <ion-button
+    id="edit-submit"
+    expand="block"
+    [disabled]="(hero.deleted$ | async) === true"
+    (click)="submit()"
+  >Save</ion-button>
+</ion-content>

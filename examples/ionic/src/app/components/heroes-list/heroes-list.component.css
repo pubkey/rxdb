@@ -1,0 +1,16 @@
+.color-box {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  margin-right: 12px;
+}
+
+ion-icon[slot='end'] {
+  cursor: pointer;
+  font-size: 20px;
+  margin-left: 12px;
+}
+
+ion-progress-bar {
+  margin-top: 6px;
+}

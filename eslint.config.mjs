@@ -34,7 +34,7 @@ export default [
             'examples/electron',
             'examples/electron-remote',
             'examples/graphql',
-            'examples/ionic2',
+            'examples/ionic',
             'examples/flutter',
             'examples/node',
             'examples/react-native',

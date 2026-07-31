@@ -1,0 +1,7 @@
+{
+  "name": "rxdb-example-ionic",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular-standalone"
+}

@@ -1,0 +1,19 @@
+/**
+ * Ionic theming
+ * @link https://ionicframework.com/docs/theming/basics
+ */
+:root {
+  --ion-color-primary: #e6008d;
+  --ion-color-primary-rgb: 230, 0, 141;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #ca007c;
+  --ion-color-primary-tint: #e91a98;
+
+  --ion-color-secondary: #8d2089;
+  --ion-color-secondary-rgb: 141, 32, 137;
+  --ion-color-secondary-contrast: #ffffff;
+  --ion-color-secondary-contrast-rgb: 255, 255, 255;
+  --ion-color-secondary-shade: #7c1c79;
+  --ion-color-secondary-tint: #983695;
+}
