@@ -99,7 +99,7 @@ const replicationState = replicateRxCollection({
 });
 ```
 
-Because the replication runs on top of the local database, reads and writes stay [zero-latency](../zero-latency-local-first.md). The user never waits for the network. The sync happens in the background and continues where it left off after the client goes offline and back online.
+Because the replication runs on top of the [local database](../local-database.md), reads and writes stay [zero-latency](../zero-latency-local-first.md). The user never waits for the network. The sync happens in the background and continues where it left off after the client goes offline and back online.
 
 ## Peer-to-Peer Sync
 

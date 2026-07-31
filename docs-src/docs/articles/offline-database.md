@@ -224,7 +224,7 @@ Enterprise applications operating in disconnected environments (like remote fiel
 </FaqItem>
 <FaqItem question="How do leading offline-first solutions handle data sync reliably?">
 
-Leading offline-first solutions (like **[RxDB](../rx-database.md)**) handle sync reliably by treating the local database as the primary source of truth. They utilize deterministic [Replication Protocols](../replication.md) that queue write operations during offline periods. When connectivity is restored, they push these batched changes efficiently to the server, pull any remote changes based on a checkpoint (like a server-side timestamp), and use mathematically sound algorithms (like vector clocks or custom resolvers) to automatically resolve any merge conflicts.
+Leading offline-first solutions (like **[RxDB](../rx-database.md)**) handle sync reliably by treating the [local database](./local-database.md) as the primary source of truth. They utilize deterministic [Replication Protocols](../replication.md) that queue write operations during offline periods. When connectivity is restored, they push these batched changes efficiently to the server, pull any remote changes based on a checkpoint (like a server-side timestamp), and use mathematically sound algorithms (like vector clocks or custom resolvers) to automatically resolve any merge conflicts.
 
 </FaqItem>
 <FaqItem question="How do location APIs and similar native services handle offline functionality?">
