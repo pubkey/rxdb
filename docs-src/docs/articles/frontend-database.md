@@ -27,7 +27,7 @@ Storing data in the frontend decreases the initial application start time becaus
 Security is a crucial aspect of data storage. With a front end database, developers can [encrypt](../encryption.md) sensitive local data, such as user credentials or personal information, using encryption algorithms. This ensures that even if the device is compromised, the data remains securely stored and protected.
 
 ### Local database for state management
-Frontend databases provide an alternative to traditional state management libraries like Redux or NgRx. By utilizing a local database, developers can store and manage application state directly in the frontend, eliminating the need for additional libraries. This approach simplifies the codebase, reduces complexity, and provides a more straightforward data flow within the application.
+Frontend databases provide an alternative to traditional state management libraries like Redux or NgRx. By using a [local database](./local-database.md), developers can store and manage application state directly in the frontend, eliminating the need for additional libraries. This approach simplifies the codebase, reduces complexity, and provides a more straightforward data flow within the application.
 
 ### Low-latency local queries
 Frontend databases enable low-latency queries that run entirely on the client's device. Instead of relying on server round-trips for each query, the database executes queries locally, resulting in faster response times. This is particularly beneficial for applications that require real-time updates or frequent data retrieval.
