@@ -656,7 +656,7 @@
     "graphql-http": "1.22.4",
     "graphql-subscriptions": "3.0.0",
     "gzip-size-cli": "5.1.0",
-    "html-webpack-plugin": "5.6.7",
+    "html-webpack-plugin": "5.6.8",
     "jsdom": "29.1.1",
     "karma": "6.4.4",
     "karma-chrome-launcher": "3.2.0",
