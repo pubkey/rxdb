@@ -1,1 +1,2 @@
-- ADD testcase that reproduces the `InvalidStateError: This BroadcastChannel is closed` error when a database with a running leader election is closed [#8893](https://github.com/pubkey/rxdb/issues/8893)
+- UPDATE `broadcast-channel` to `7.4.0` which stops a dead leader elector from becoming leader and posting on a closed channel [#8893](https://github.com/pubkey/rxdb/issues/8893)
+- ADD testcase that reproduces `RxDatabase.close()` resolving before the broadcast channel is closed [#8893](https://github.com/pubkey/rxdb/issues/8893)

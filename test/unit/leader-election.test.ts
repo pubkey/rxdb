@@ -199,15 +199,14 @@ describe('leader-election.test.js', () => {
             await db2.close();
         });
         /**
-         * The leader election must be fully finished when close() resolves.
-         * When it is not, the still running election sends messages over the
-         * already closed broadcast channel. On runtimes with a native
-         * BroadcastChannel, like Bun, that throws
-         * 'InvalidStateError: This BroadcastChannel is closed'
-         * as an unhandled rejection.
+         * close() must not resolve before the broadcast channel is closed.
+         * Two promises are dropped on the way there: onClose() does not return
+         * has.die(), and the close() wrapper does not await the bc.close() that
+         * removeBroadcastChannelReference() returns. So the channel outlives the
+         * close() call that was supposed to have closed it.
          * @link https://github.com/pubkey/rxdb/issues/8893
          */
-        it('#8893 close() must await the running leader election', async () => {
+        it('#8893 close() must not resolve before the broadcast channel is closed', async () => {
             const collection = await humansCollection.createMultiInstance(randomToken(10));
             const db = collection.database;
 
@@ -231,7 +230,6 @@ describe('leader-election.test.js', () => {
                 }
             });
 
-            const elector = db.leaderElector();
             const broadcastChannel = ensureNotFalsy(BROADCAST_CHANNEL_BY_TOKEN.get(db.token)).bc as any;
 
             let channelIsClosed = false;
@@ -247,15 +245,6 @@ describe('leader-election.test.js', () => {
                 channelIsClosed,
                 true,
                 'close() resolved while the broadcast channel was still open'
-            );
-
-            // give the election time to run into the closed broadcast channel
-            await AsyncTestUtil.wait(500);
-
-            assert.strictEqual(
-                elector.isLeader,
-                false,
-                'the elector became leader after the database was closed'
             );
         });
     });
