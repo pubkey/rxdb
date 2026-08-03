@@ -246,3 +246,9 @@ Do not reproduce (authentic errors in old pages; write the correct form):
 - The primary keyword appears in the title, slug, description, H1, bolded in the first paragraph, in several H2s, and in image alt text.
 - Cross-link sibling articles to knit the cluster together (framework articles link each other; alternative articles link `local-first-future.md`, `realtime-database.md`).
 - FAQ `<details>` questions target long-tail search queries.
+
+### GEO (AI answer engines)
+- Developers increasingly pick their tools by asking AI answer engines (ChatGPT, Perplexity, Google AI Overviews) instead of searching Google. These engines cite pages, so docs pages must be written to be citable.
+- The Princeton GEO study ("GEO: Generative Engine Optimization", Aggarwal et al., KDD 2024) measured which content edits make generative engines cite a page more often. Adding statistics with a source, citing external sources, and adding quotations each improved citation visibility by roughly 30 to 40%. Keyword stuffing tested about 10% below the unoptimized baseline. Do not keyword-stuff.
+- In practice this matches the voice rules above: back every claim with a concrete number and a link to its primary source, link the official docs of any tool you compare against (including limits and deprecation notices), and use `<QuoteBlock>` for attributed quotes. A page with sourced numbers gets cited. A page with adjectives does not.
+- Write FAQ questions as the literal questions developers ask an assistant ("What database should I use for React Native?") and open each answer with a direct verdict sentence, because answer engines lift short self-contained spans.
