@@ -123,7 +123,7 @@ Horizon required a specific project structure, a specific server process (`hz se
 
 ---
 
-The numbers reflect this. As of July 30, 2026, [Horizon](https://github.com/rethinkdb/horizon) has 6,735 GitHub stars while [RxDB](https://github.com/pubkey/rxdb) has 23,296, and the `@horizon/client` package was downloaded 545 times on npm in the last 30 days compared to 269,555 downloads of `rxdb` ([npm trends](https://npmtrends.com/@horizon/client-vs-rxdb)). The last commit to the [Horizon repository](https://github.com/rethinkdb/horizon) was in January 2021.
+The numbers reflect this. As of July 30, 2026, [Horizon](https://github.com/rethinkdb/horizon) has 6,735 GitHub stars while [RxDB](https://github.com/pubkey/rxdb) has 23,296, and the `@horizon/client` package was downloaded 513 times on npm in the last 30 days compared to 270,494 downloads of `rxdb` ([npm trends](https://npmtrends.com/@horizon/client-vs-rxdb)). The last commit to the [Horizon repository](https://github.com/rethinkdb/horizon) was in January 2021, <TimeSince date="2021-01-26" />.
 
 ## How RxDB Covers the Same Ground (and More)
 
