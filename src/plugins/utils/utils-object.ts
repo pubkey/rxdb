@@ -241,7 +241,7 @@ export function sortObject(obj: any, noArraySort = false): any {
  */
 function deepClone<T>(src: T | DeepReadonlyObject<T>): T {
     if (!src || typeof src !== 'object') {
-        return src;
+        return src as T;
     }
     if (Array.isArray(src)) {
         const ret = new Array(src.length);

@@ -1001,11 +1001,15 @@ export class RxCollectionBase<
 
         const runName = parallel ? 'parallel' : 'series';
 
-        this.hooks[key] = this.hooks[key] || {};
-        this.hooks[key][when] = this.hooks[key][when] || {
-            series: [],
-            parallel: []
-        };
+        if (!this.hooks[key]) {
+            this.hooks[key] = {} as any;
+        }
+        if (!this.hooks[key][when]) {
+            this.hooks[key][when] = {
+                series: [],
+                parallel: []
+            };
+        }
         this.hooks[key][when][runName].push(boundFun);
     }
 

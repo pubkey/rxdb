@@ -1,6 +1,12 @@
 {
     "extends": "@docusaurus/tsconfig",
     "compilerOptions": {
-        "baseUrl": "."
+        "baseUrl": ".",
+        /**
+         * The docs import from the RxDB sources in ../src which use
+         * explicit .ts file endings in their imports.
+         * Same setting as in the root tsconfig.json.
+         */
+        "allowImportingTsExtensions": true
     }
 }

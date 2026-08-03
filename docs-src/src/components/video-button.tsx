@@ -1,5 +1,5 @@
 import { CSSProperties } from 'react';
-import { IconProps } from './arrow-right';
+import { IconProps } from './icons/arrow-right';
 
 type VideoPlayButtonProps = {
     size?: number; // diameter in px

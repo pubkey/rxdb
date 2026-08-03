@@ -25,7 +25,7 @@ const PriceTag = ({ price, currency = '€', productName = 'RxDB Premium' }) => 
             url: 'https://rxdb.info/premium/',
         },
     };
-    const styles = {
+    const styles: Record<string, React.CSSProperties> = {
         cardPrice: {
             display: 'inline-block',
             width: 'auto',
