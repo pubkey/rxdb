@@ -241,6 +241,20 @@ describe('leader-election.test.js', () => {
                 return closeBefore.call(this, channelState);
             };
 
+            /**
+             * The still running election posts on the already closed channel,
+             * which rejects on the native BroadcastChannel. Swallow that here,
+             * otherwise the unhandledRejection handler of init.test.ts exits the
+             * whole process before the assertions below can run.
+             * The assertions check the state that causes those posts, so the
+             * reproduction does not depend on the rejection itself.
+             */
+            const postMessageBefore = broadcastChannel.method.postMessage;
+            broadcastChannel.method.postMessage = function (this: any, channelState: any, messageJson: any) {
+                return Promise.resolve(postMessageBefore.call(this, channelState, messageJson))
+                    .catch(() => { });
+            };
+
             let isLeaderAfterClose: boolean;
             try {
                 await db.close();
@@ -250,17 +264,12 @@ describe('leader-election.test.js', () => {
                 isLeaderAfterClose = elector.isLeader;
             } finally {
                 /**
-                 * Always restore the patch, even when the assertions below
+                 * Always restore the patches, even when the assertions below
                  * fail. The method object is shared by all broadcast channels,
                  * so leaving it patched leaks into the rest of the test suite.
                  */
                 broadcastChannel.method.close = closeBefore;
-                /**
-                 * die() sends a 'death' message, which is exactly what throws
-                 * once the channel is closed. That throw is the bug under test,
-                 * so it must not replace the assertion results below.
-                 */
-                await elector.die().catch(() => { });
+                broadcastChannel.method.postMessage = postMessageBefore;
             }
 
             assert.strictEqual(
