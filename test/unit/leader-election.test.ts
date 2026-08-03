@@ -235,42 +235,13 @@ describe('leader-election.test.js', () => {
             const broadcastChannel = ensureNotFalsy(BROADCAST_CHANNEL_BY_TOKEN.get(db.token)).bc as any;
 
             let channelIsClosed = false;
-            const closeBefore = broadcastChannel.method.close;
-            broadcastChannel.method.close = function (this: any, channelState: any) {
+            const closeBefore = broadcastChannel.method.close.bind(broadcastChannel.method);
+            broadcastChannel.method.close = (channelState: any) => {
                 channelIsClosed = true;
-                return closeBefore.call(this, channelState);
+                return closeBefore(channelState);
             };
 
-            /**
-             * The still running election posts on the already closed channel,
-             * which rejects on the native BroadcastChannel. Swallow that here,
-             * otherwise the unhandledRejection handler of init.test.ts exits the
-             * whole process before the assertions below can run.
-             * The assertions check the state that causes those posts, so the
-             * reproduction does not depend on the rejection itself.
-             */
-            const postMessageBefore = broadcastChannel.method.postMessage;
-            broadcastChannel.method.postMessage = function (this: any, channelState: any, messageJson: any) {
-                return Promise.resolve(postMessageBefore.call(this, channelState, messageJson))
-                    .catch(() => { });
-            };
-
-            let isLeaderAfterClose: boolean;
-            try {
-                await db.close();
-
-                // give the election time to run into the closed broadcast channel
-                await AsyncTestUtil.wait(500);
-                isLeaderAfterClose = elector.isLeader;
-            } finally {
-                /**
-                 * Always restore the patches, even when the assertions below
-                 * fail. The method object is shared by all broadcast channels,
-                 * so leaving it patched leaks into the rest of the test suite.
-                 */
-                broadcastChannel.method.close = closeBefore;
-                broadcastChannel.method.postMessage = postMessageBefore;
-            }
+            await db.close();
 
             assert.strictEqual(
                 channelIsClosed,
@@ -278,8 +249,11 @@ describe('leader-election.test.js', () => {
                 'close() resolved while the broadcast channel was still open'
             );
 
+            // give the election time to run into the closed broadcast channel
+            await AsyncTestUtil.wait(500);
+
             assert.strictEqual(
-                isLeaderAfterClose,
+                elector.isLeader,
                 false,
                 'the elector became leader after the database was closed'
             );
