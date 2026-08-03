@@ -161,7 +161,32 @@ export class RxMigrationState {
         }
         this.started = true;
 
+        /**
+         * Ensure the migration is cleaned up when the collection or the
+         * database is closed. Registering this here (instead of inside
+         * migrateStorage()) guarantees the broadcastChannel / leader
+         * election is released even if the migration throws before the
+         * replication is set up.
+         */
+        this.collection.onClose.push(() => this.cancel());
+        this.database.onClose.push(() => this.cancel());
 
+        try {
+            await this.runMigration(batchSize);
+        } finally {
+            /**
+             * Always close the broadcastChannel so that the tab does not
+             * stay leader forever if the migration throws on any code path.
+             * @link https://github.com/pubkey/rxdb/pull/7827
+             */
+            if (this.broadcastChannel) {
+                await this.broadcastChannel.close();
+                this.broadcastChannel = undefined;
+            }
+        }
+    }
+
+    private async runMigration(batchSize: number): Promise<void> {
         /**
          * To ensure that multiple tabs do not migrate the same collection,
          * we use a new broadcastChannel/leaderElector for each collection.
@@ -303,9 +328,6 @@ export class RxMigrationState {
             s.status = 'DONE';
             return s;
         });
-        if (this.broadcastChannel) {
-            await this.broadcastChannel.close();
-        }
     }
 
     public updateStatusHandlers: MigrationStatusUpdate[] = [];
@@ -391,9 +413,6 @@ export class RxMigrationState {
         newStorage: RxStorageInstance<any, any, any>,
         batchSize: number
     ) {
-
-        this.collection.onClose.push(() => this.cancel());
-        this.database.onClose.push(() => this.cancel());
         const replicationMetaStorageInstance = await this.database.storage.createStorageInstance({
             databaseName: this.database.name,
             collectionName: 'rx-migration-state-meta-' + oldStorage.collectionName + '-' + oldStorage.schema.version,
