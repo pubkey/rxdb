@@ -1,0 +1,1 @@
+- ADD testcase that reproduces the `InvalidStateError: This BroadcastChannel is closed` error when a database with a running leader election is closed [#8893](https://github.com/pubkey/rxdb/issues/8893)

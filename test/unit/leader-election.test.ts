@@ -13,7 +13,13 @@ import {
     createRxDatabase,
     randomToken,
     addRxPlugin,
+    ensureNotFalsy,
+    BROADCAST_CHANNEL_BY_TOKEN
 } from '../../plugins/core/index.mjs';
+
+import {
+    replicateRxCollection
+} from '../../plugins/replication/index.mjs';
 
 import {
     RxDBLeaderElectionPlugin
@@ -191,6 +197,66 @@ describe('leader-election.test.js', () => {
             assert.strictEqual(elector.isLeader, false);
 
             await db2.close();
+        });
+        /**
+         * The leader election must be fully finished when close() resolves.
+         * When it is not, the still running election sends messages over the
+         * already closed broadcast channel. On runtimes with a native
+         * BroadcastChannel, like Bun, that throws
+         * 'InvalidStateError: This BroadcastChannel is closed'
+         * as an unhandled rejection.
+         * @link https://github.com/pubkey/rxdb/issues/8893
+         */
+        it('#8893 close() must await the running leader election', async () => {
+            const collection = await humansCollection.createMultiInstance(randomToken(10));
+            const db = collection.database;
+
+            /**
+             * A live replication internally runs database.waitForLeadership().
+             * This starts a leader election that is still running
+             * when close() is called.
+             */
+            replicateRxCollection({
+                collection,
+                replicationIdentifier: randomToken(10),
+                live: true,
+                autoStart: true,
+                pull: {
+                    handler() {
+                        return Promise.resolve({
+                            documents: [],
+                            checkpoint: undefined
+                        });
+                    }
+                }
+            });
+
+            const elector = db.leaderElector();
+            const broadcastChannel = ensureNotFalsy(BROADCAST_CHANNEL_BY_TOKEN.get(db.token)).bc as any;
+
+            let channelIsClosed = false;
+            const closeBefore = broadcastChannel.method.close.bind(broadcastChannel.method);
+            broadcastChannel.method.close = (channelState: any) => {
+                channelIsClosed = true;
+                return closeBefore(channelState);
+            };
+
+            await db.close();
+
+            assert.strictEqual(
+                channelIsClosed,
+                true,
+                'close() resolved while the broadcast channel was still open'
+            );
+
+            // give the election time to run into the closed broadcast channel
+            await AsyncTestUtil.wait(500);
+
+            assert.strictEqual(
+                elector.isLeader,
+                false,
+                'the elector became leader after the database was closed'
+            );
         });
     });
     describe('integration', () => {
