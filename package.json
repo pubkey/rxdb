@@ -690,7 +690,7 @@
     "terser-webpack-plugin": "5.6.1",
     "ts-loader": "9.6.2",
     "tsx": "4.23.1",
-    "typescript": "5.9.3",
+    "typescript": "7.0.2",
     "vue": "3.5.40",
     "webpack": "5.107.2",
     "webpack-bundle-analyzer": "5.3.1",

@@ -48,6 +48,6 @@
     "sass": "^1.80.0",
     "sass-loader": "17.0.0",
     "testcafe": "3.7.6",
-    "typescript": "5.9.3"
+    "typescript": "7.0.2"
   }
 }

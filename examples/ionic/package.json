@@ -47,6 +47,6 @@
     "concurrently": "10.0.4",
     "local-web-server": "5.4.0",
     "testcafe": "3.7.6",
-    "typescript": "5.9.3"
+    "typescript": "7.0.2"
   }
 }
