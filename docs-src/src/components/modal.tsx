@@ -12,10 +12,6 @@ export interface ModalProps
     title?: string;
 }
 
-/**
- * AntD's Modal is a plain function component (React.FC<ModalProps>),
- * it does not accept a ref, so this wrapper does not forward one either.
- */
 export function Modal(
     {
         centered = true,

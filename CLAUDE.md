@@ -34,6 +34,7 @@
 - **Paths**: Source code in `src/`, tests in `test/`, documentation in `docs-src/`.
 - **TypeScript**: Do not use enums. Prefer types instead of interfaces.
 - **Errors**: Do not use `throw new Error()`. Use `throw newRxError()` or `throw newRxTypeError()` instead to reduce build size and do not include full error messages in production builds. Use the error codes from `src/rx-error.ts` and add new error codes if needed like `PL1`, `PL2`. Example: `throw newRxError('PL1', { plugin });`
+- **Comments**: Do NOT write comments that explain why code was changed, replaced, or removed. Nobody reading the code later cares that an API used to be something else or that it was deprecated. Examples of comments that must NOT be added: `// fs.rmdirSync() is deprecated, fs.rmSync() is the replacement`, `// this used to be a forwardRef`, `// renamed from oldName`. That kind of reasoning belongs in the commit message, the pull request, or the changelog entry under `orga/changelog/`. Comments in the code must only explain what the current code does or why the current code has to be this way.
 ## Development Workflow
 
 ```sh
