@@ -1,5 +1,5 @@
 // Modal.tsx
-import React, { forwardRef, useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import type { ModalProps as AntdModalProps } from 'antd';
 import { Modal as AntdModal } from 'antd';
 import { IconClose } from './icons/close';
@@ -12,7 +12,11 @@ export interface ModalProps
     title?: string;
 }
 
-export const Modal = forwardRef<HTMLDivElement, ModalProps>(function RxModal(
+/**
+ * AntD's Modal is a plain function component (React.FC<ModalProps>),
+ * it does not accept a ref, so this wrapper does not forward one either.
+ */
+export function Modal(
     {
         centered = true,
         maskClosable = false,
@@ -23,12 +27,10 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(function RxModal(
         title = '‎',
         children,
         ...rest
-    },
-    ref
+    }: ModalProps
 ) {
     return (
         <AntdModal
-            ref={ref as any}
             centered={centered}
             maskClosable={maskClosable}
             footer={footer}
@@ -72,7 +74,7 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(function RxModal(
             {children}
         </AntdModal>
     );
-});
+}
 
 
 export function IframeFormModal(props: {

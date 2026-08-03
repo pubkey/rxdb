@@ -27,7 +27,12 @@ export function clearFolder(folderPath: string): void {
 export function deleteFolder(folderPath: string): void {
     // only remove if exists to not raise warning
     if (fs.existsSync(folderPath)) {
-        fs.rmdirSync(folderPath, { recursive: true });
+        /**
+         * fs.rmdirSync() with the recursive option is deprecated,
+         * fs.rmSync() is the replacement.
+         * @link https://nodejs.org/api/fs.html#fsrmdirsyncpath-options
+         */
+        fs.rmSync(folderPath, { recursive: true });
     }
 }
 

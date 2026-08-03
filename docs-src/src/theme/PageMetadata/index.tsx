@@ -2,7 +2,13 @@ import React, { type ReactNode } from 'react';
 import Head from '@docusaurus/Head';
 import useBaseUrl from '@docusaurus/useBaseUrl';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
-import type { Props } from '@theme/PageMetadata';
+import type { PageMetadata as PageMetadataOriginal } from '@docusaurus/theme-common';
+
+/**
+ * Docusaurus has no `@theme/PageMetadata` component,
+ * the props are defined at the PageMetadata of the theme-common package.
+ */
+type Props = Parameters<typeof PageMetadataOriginal>[0];
 
 /**
  * Swizzled version of the default Docusaurus PageMetadata.
@@ -37,7 +43,7 @@ export default function PageMetadata({
             {keywords && (
                 <meta
                     name="keywords"
-                    content={Array.isArray(keywords) ? keywords.join(',') : keywords}
+                    content={typeof keywords === 'string' ? keywords : keywords.join(',')}
                 />
             )}
 
