@@ -250,13 +250,17 @@ describe('leader-election.test.js', () => {
                 isLeaderAfterClose = elector.isLeader;
             } finally {
                 /**
-                 * Always clean up, even when the assertions below fail.
-                 * The method object is shared by all channels, and a still
-                 * running elector keeps the process alive, which would hang
-                 * the test runner when it aborts on the first failure.
+                 * Always restore the patch, even when the assertions below
+                 * fail. The method object is shared by all broadcast channels,
+                 * so leaving it patched leaks into the rest of the test suite.
                  */
                 broadcastChannel.method.close = closeBefore;
-                await elector.die();
+                /**
+                 * die() sends a 'death' message, which is exactly what throws
+                 * once the channel is closed. That throw is the bug under test,
+                 * so it must not replace the assertion results below.
+                 */
+                await elector.die().catch(() => { });
             }
 
             assert.strictEqual(
