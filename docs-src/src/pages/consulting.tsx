@@ -1,5 +1,3 @@
-import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
-
 import Layout from '@theme/Layout';
 import Head from '@docusaurus/Head';
 
@@ -10,9 +8,9 @@ const FILE_EVENT_ID = 'consulting-link-clicked';
 import { triggerTrackingEvent } from '../components/trigger-event';
 import { IframeFormModal } from '../components/modal';
 import { Button } from '../components/button';
+import { HOME_TITLE } from '../constants';
 
 export default function Consulting() {
-    const { siteConfig } = useDocusaurusContext();
     useEffect(() => {
         (() => {
             triggerTrackingEvent(FILE_EVENT_ID, 2);
@@ -29,7 +27,7 @@ export default function Consulting() {
                 <link rel="canonical" href="/consulting/" />
             </Head>
             <Layout
-                title={`${siteConfig.title}`}
+                title={HOME_TITLE}
                 description="RxDB is a fast, local-first NoSQL-database for JavaScript Applications like Websites, hybrid Apps, Electron-Apps, Progressive Web Apps and Node.js"
             >
                 <main>

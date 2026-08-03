@@ -1,4 +1,3 @@
-import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import Layout from '@theme/Layout';
 import Head from '@docusaurus/Head';
 
@@ -53,7 +52,6 @@ const PRODUCT_JSON_LD = {
 };
 
 export default function Premium() {
-    const { siteConfig } = useDocusaurusContext();
     const isBrowser = useIsBrowser();
     const [initDone, setInitDone] = React.useState<boolean>(false);
 
@@ -109,7 +107,7 @@ export default function Premium() {
             </Head>
 
             <Layout
-                title={`RxDB for Professionals - ${siteConfig.title}`}
+                title={'RxDB for Professionals'}
                 description="RxDB plugins for professionals. FAQ, pricing and license"
             >
                 <main>
