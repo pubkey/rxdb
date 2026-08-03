@@ -235,13 +235,29 @@ describe('leader-election.test.js', () => {
             const broadcastChannel = ensureNotFalsy(BROADCAST_CHANNEL_BY_TOKEN.get(db.token)).bc as any;
 
             let channelIsClosed = false;
-            const closeBefore = broadcastChannel.method.close.bind(broadcastChannel.method);
-            broadcastChannel.method.close = (channelState: any) => {
+            const closeBefore = broadcastChannel.method.close;
+            broadcastChannel.method.close = function (this: any, channelState: any) {
                 channelIsClosed = true;
-                return closeBefore(channelState);
+                return closeBefore.call(this, channelState);
             };
 
-            await db.close();
+            let isLeaderAfterClose: boolean;
+            try {
+                await db.close();
+
+                // give the election time to run into the closed broadcast channel
+                await AsyncTestUtil.wait(500);
+                isLeaderAfterClose = elector.isLeader;
+            } finally {
+                /**
+                 * Always clean up, even when the assertions below fail.
+                 * The method object is shared by all channels, and a still
+                 * running elector keeps the process alive, which would hang
+                 * the test runner when it aborts on the first failure.
+                 */
+                broadcastChannel.method.close = closeBefore;
+                await elector.die();
+            }
 
             assert.strictEqual(
                 channelIsClosed,
@@ -249,11 +265,8 @@ describe('leader-election.test.js', () => {
                 'close() resolved while the broadcast channel was still open'
             );
 
-            // give the election time to run into the closed broadcast channel
-            await AsyncTestUtil.wait(500);
-
             assert.strictEqual(
-                elector.isLeader,
+                isLeaderAfterClose,
                 false,
                 'the elector became leader after the database was closed'
             );
