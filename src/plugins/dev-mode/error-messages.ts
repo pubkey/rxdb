@@ -882,6 +882,12 @@ export const ERROR_MESSAGES = {
         fix: 'Only call awaitDocumentPushed() on replications that define a push handler.',
         docs: 'https://rxdb.info/replication.html?console=errors&code=RC_PUSH_AWAIT'
     },
+    RC_WEBSOCKET_TIMEOUT: {
+        message: 'RxReplication websocket client could not open the connection in time',
+        cause: 'The websocket server did not accept the connection before the connectionTimeout was reached.',
+        fix: 'Check if the server is reachable. The client retries the connection on its own.',
+        docs: 'https://rxdb.info/replication-websocket.html?console=errors&code=RC_WEBSOCKET_TIMEOUT'
+    },
 
     // plugins/dev-mode/check-schema.js
     SC1: {
