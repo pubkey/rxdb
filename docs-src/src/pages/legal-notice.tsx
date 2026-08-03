@@ -1,17 +1,15 @@
-import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import Head from '@docusaurus/Head';
 import Layout from '@theme/Layout';
 import React from 'react';
 
 export default function LegalNotice() {
-    const { siteConfig } = useDocusaurusContext();
     return (
         <>
             <Head>
                 <meta name="robots" content="noindex"></meta>
             </Head>
             <Layout
-                title={`Legal Notice - ${siteConfig.title}`}
+                title={'Legal Notice'}
                 description="RxDB Legal Notice"
             >
                 <main>

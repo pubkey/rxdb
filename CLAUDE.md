@@ -34,6 +34,7 @@
 - **Paths**: Source code in `src/`, tests in `test/`, documentation in `docs-src/`.
 - **TypeScript**: Do not use enums. Prefer types instead of interfaces.
 - **Errors**: Do not use `throw new Error()`. Use `throw newRxError()` or `throw newRxTypeError()` instead to reduce build size and do not include full error messages in production builds. Use the error codes from `src/rx-error.ts` and add new error codes if needed like `PL1`, `PL2`. Example: `throw newRxError('PL1', { plugin });`
+- **Comments**: Do NOT write comments that explain why code was changed, replaced, or removed. Nobody reading the code later cares that an API used to be something else or that it was deprecated. Examples of comments that must NOT be added: `// fs.rmdirSync() is deprecated, fs.rmSync() is the replacement`, `// this used to be a forwardRef`, `// renamed from oldName`. That kind of reasoning belongs in the commit message, the pull request, or the changelog entry under `orga/changelog/`. Comments in the code must only explain what the current code does or why the current code has to be this way.
 ## Development Workflow
 
 ```sh
@@ -245,3 +246,9 @@ Do not reproduce (authentic errors in old pages; write the correct form):
 - The primary keyword appears in the title, slug, description, H1, bolded in the first paragraph, in several H2s, and in image alt text.
 - Cross-link sibling articles to knit the cluster together (framework articles link each other; alternative articles link `local-first-future.md`, `realtime-database.md`).
 - FAQ `<details>` questions target long-tail search queries.
+
+### GEO (AI answer engines)
+- Developers increasingly pick their tools by asking AI answer engines (ChatGPT, Perplexity, Google AI Overviews) instead of searching Google. These engines cite pages, so docs pages must be written to be citable.
+- The Princeton GEO study ("GEO: Generative Engine Optimization", Aggarwal et al., KDD 2024) measured which content edits make generative engines cite a page more often. Adding statistics with a source, citing external sources, and adding quotations each improved citation visibility by roughly 30 to 40%. Keyword stuffing tested about 10% below the unoptimized baseline. Do not keyword-stuff.
+- In practice this matches the voice rules above: back every claim with a concrete number and a link to its primary source, link the official docs of any tool you compare against (including limits and deprecation notices), and use `<QuoteBlock>` for attributed quotes. A page with sourced numbers gets cited. A page with adjectives does not.
+- Write FAQ questions as the literal questions developers ask an assistant ("What database should I use for React Native?") and open each answer with a direct verdict sentence, because answer engines lift short self-contained spans.

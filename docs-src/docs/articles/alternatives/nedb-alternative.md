@@ -22,7 +22,7 @@ NeDB (Node Embedded Database) was created around 2013 by Louis Chatriot. It beca
 - **Electron and nw.js desktop apps** that needed to persist user data between sessions.
 - **Browser-based applications** through storage adapters that wrote to IndexedDB or localStorage.
 
-The query language mirrored MongoDB, so developers could use operators like `$gt`, `$in`, and `$regex` against documents, build indexes on fields, and project results. The last commit to the original repository landed in 2016, and the project was eventually marked as unmaintained. Several community forks exist, but none have grown into a widely supported successor.
+The query language mirrored MongoDB, so developers could use operators like `$gt`, `$in`, and `$regex` against documents, build indexes on fields, and project results. The last change to the library code landed in May 2016, <TimeSince date="2016-05-21" />, a "not maintained anymore" notice was added to the README in 2021, and the only commits since then are further README edits, the newest from May 2025 ([commit history](https://github.com/louischatriot/nedb/commits/master/), checked July 30, 2026). Community forks kept the code alive. The most used one, `@seald-io/nedb`, had 624,845 npm downloads in the last 30 days ([npm](https://www.npmjs.com/package/@seald-io/nedb), July 30, 2026), but it inherits the same single-file architecture and adds neither replication nor reactive queries.
 
 ## What is RxDB?
 
@@ -52,7 +52,7 @@ A NeDB database opened in two browser tabs has no concept of shared state. Write
 ### 6. No Schema Validation
 NeDB is schemaless. Every document can have any shape, which sounds flexible at first but quickly leads to runtime errors when fields drift over time. There is no migration system either, so changing data shape has to be handled by the application.
 
-The numbers reflect this. As of July 30, 2026, [NeDB](https://github.com/louischatriot/nedb) has 13,542 GitHub stars while [RxDB](https://github.com/pubkey/rxdb) has 23,296, and the `nedb` package was downloaded 200,490 times on npm in the last 30 days compared to 269,555 downloads of `rxdb` ([npm trends](https://npmtrends.com/nedb-vs-rxdb)). The last commit to the [NeDB repository](https://github.com/louischatriot/nedb) was in May 2025.
+The numbers reflect this. As of July 30, 2026, [NeDB](https://github.com/louischatriot/nedb) has 13,542 GitHub stars while [RxDB](https://github.com/pubkey/rxdb) has 23,296, and the `nedb` package was downloaded 202,005 times on npm in the last 30 days compared to 270,494 downloads of `rxdb` ([npm trends](https://npmtrends.com/nedb-vs-rxdb)). The [NeDB repository](https://github.com/louischatriot/nedb/commits/master/) has not received a code change since May 2016, <TimeSince date="2016-05-21" />: the last commits, from May 2025, only touch the README.
 
 ## How RxDB Solves These Problems
 
@@ -184,7 +184,7 @@ Read the existing NeDB file with the legacy library, define an RxDB schema that 
 
 | Feature | NeDB | RxDB |
 | --- | --- | --- |
-| Maintenance status | Last commit 2016, archived | Active, regular releases |
+| Maintenance status | No code change since 2016, README marked unmaintained | Active, regular releases |
 | Query language | MongoDB-like | MongoDB-like ([RxQuery](../../rx-query.md)) |
 | Schema validation | None | JSON Schema based ([RxSchema](../../rx-schema.md)) |
 | Observable queries | No | Yes, via RxJS ([Reactivity](../../reactivity.md)) |

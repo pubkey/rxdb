@@ -41,24 +41,27 @@ import type { AutocompleteState } from '@algolia/autocomplete-core';
 import type { FacetFilters } from 'algoliasearch/lite';
 import type { ThemeConfigAlgolia } from '@docusaurus/theme-search-algolia';
 
+/**
+ * Docusaurus normalizes the AskAI config into its own AskAiConfig shape
+ * while DocSearch expects its own DocSearchAskAi type.
+ * The runtime shape is the same, only the typings differ,
+ * so askAi is taken from the Docusaurus theme config here
+ * and cast back to the DocSearch type where the modal is rendered.
+ */
 type DocSearchProps = Omit<
   DocSearchModalProps,
-  'onClose' | 'initialScrollY'
+  'onClose' | 'initialScrollY' | 'askAi'
 > & {
   contextualSearch?: string;
   externalUrlRegex?: string;
   searchPagePath: boolean | string;
-  askAi?: Exclude<
-    (DocSearchModalProps & { askAi: unknown; })['askAi'],
-    string | undefined
-  >;
+  askAi?: ThemeConfigAlgolia['askAi'];
 };
 
 // extend DocSearchProps for v4 features
 // TODO Docusaurus v4: cleanup after we drop support for DocSearch v3
 interface DocSearchV4Props extends DocSearchProps {
   indexName: string;
-  askAi?: ThemeConfigAlgolia['askAi'];
   translations?: DocSearchTranslations;
 }
 
@@ -330,6 +333,7 @@ function DocSearch({ externalUrlRegex, ...props }: DocSearchV4Props) {
             })}
             placeholder={currentPlaceholder}
             {...props}
+            askAi={props.askAi as DocSearchModalProps['askAi']}
             translations={props.translations?.modal ?? translations.modal}
             searchParameters={searchParameters}
             {...extraAskAiProps}

@@ -1,15 +1,13 @@
-import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import Layout from '@theme/Layout';
 import React from 'react';
 
 export default function Home() {
-    const { siteConfig } = useDocusaurusContext();
 
 
 
     return (
         <Layout
-            title={`RxDB User Survey - ${siteConfig.title}`}
+            title={'RxDB User Survey'}
             description="RxDB User Survey"
         >
             <main>

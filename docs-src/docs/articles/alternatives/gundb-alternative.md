@@ -54,7 +54,7 @@ There is no official devtools panel, no schema explorer, and no migration runner
 
 GUN ships informal type definitions through community packages. The graph traversal API is dynamic enough that type inference rarely catches mistakes. Developers used to typed end-to-end pipelines lose that safety net the moment they touch GUN code.
 
-The numbers reflect this. As of July 30, 2026, [GUN](https://github.com/amark/gun) has 19,086 GitHub stars while [RxDB](https://github.com/pubkey/rxdb) has 23,296, and the `gun` package was downloaded 211,647 times on npm in the last 30 days compared to 269,555 downloads of `rxdb` ([npm trends](https://npmtrends.com/gun-vs-rxdb)). The last commit to the [GUN repository](https://github.com/amark/gun) was in March 2026.
+The numbers reflect this. As of July 30, 2026, [GUN](https://github.com/amark/gun) has 19,086 GitHub stars while [RxDB](https://github.com/pubkey/rxdb) has 23,296, and the `gun` package was downloaded 211,905 times on npm in the last 30 days compared to 270,494 downloads of `rxdb` ([npm trends](https://npmtrends.com/gun-vs-rxdb)).
 
 ## Where RxDB Helps
 

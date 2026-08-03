@@ -1,9 +1,24 @@
+import type { WrapperProps } from '@docusaurus/types';
 import type LayoutType from '@theme/DocItem/Layout';
 import { useState } from 'react';
 import { triggerTrackingEvent } from './trigger-event';
 import { lastOfArray } from '../../../plugins/core';
 
 type Props = WrapperProps<typeof LayoutType>;
+
+/**
+ * The children of the doc item layout are the compiled MDX content component.
+ * Docusaurus attaches the metadata of the page to that component.
+ */
+type MDXContentComponent = {
+    frontMatter: {
+        title?: string;
+    };
+    contentTitle?: string;
+    metadata: {
+        slug: string;
+    };
+};
 
 export function DocsFooter(props: Props) {
     const [voted, setVoted] = useState(false);
@@ -51,9 +66,11 @@ export function DocsFooter(props: Props) {
     } as const;
 
 
-    let showTitle: string = props.children.type.frontMatter.title ? props.children.type.frontMatter.title : '';
-    if (props.children.type.contentTitle && props.children.type.contentTitle.length < showTitle.length) {
-        showTitle = props.children.type.contentTitle;
+    const content = (props.children as any).type as MDXContentComponent;
+
+    let showTitle: string = content.frontMatter.title ? content.frontMatter.title : '';
+    if (content.contentTitle && content.contentTitle.length < showTitle.length) {
+        showTitle = content.contentTitle;
     }
     const maxTitleLength = 23;
     if (showTitle.length > maxTitleLength) {
@@ -64,7 +81,7 @@ export function DocsFooter(props: Props) {
     }
 
     function vote(dir: 'up' | 'down') {
-        const slug = props.children.type.metadata.slug;
+        const slug = content.metadata.slug;
         const name = lastOfArray(slug.split('/'));
         const voteEventId = 'vote_' + name + '_' + dir;
         console.log('vote: ' + voteEventId);

@@ -1,17 +1,15 @@
-import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import Head from '@docusaurus/Head';
 import Layout from '@theme/Layout';
 import React from 'react';
 
 export default function Privacy() {
-    const { siteConfig } = useDocusaurusContext();
     return (
         <>
             <Head>
                 <meta name="robots" content="noindex, nofollow"></meta>
             </Head>
             <Layout
-                title={`Datenschutzerklärung / Privacy Policy - ${siteConfig.title}`}
+                title={'Datenschutzerklärung / Privacy Policy'}
                 description="RxDB Datenschutzerklärung / Privacy Policy"
             >
                 <main>

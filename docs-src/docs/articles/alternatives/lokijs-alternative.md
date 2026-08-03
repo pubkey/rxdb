@@ -39,7 +39,7 @@ The shortcomings below are the ones that show up most often when teams move off 
 - **Dated codebase and low activity.** New runtimes, new browser storage APIs (OPFS, modern IndexedDB usage patterns), and new bundler conventions are not being adopted.
 - **Maintenance mode.** Bug fixes and security patches arrive slowly, if at all.
 
-The numbers reflect this. As of July 30, 2026, [LokiJS](https://github.com/techfort/LokiJS) has 6,830 GitHub stars while [RxDB](https://github.com/pubkey/rxdb) has 23,296. The last commit to the [LokiJS repository](https://github.com/techfort/LokiJS) was in March 2022.
+The numbers reflect this. As of July 30, 2026, [LokiJS](https://github.com/techfort/LokiJS) has 6,830 GitHub stars while [RxDB](https://github.com/pubkey/rxdb) has 23,296. The last commit to the [LokiJS repository](https://github.com/techfort/LokiJS) was in March 2022, <TimeSince date="2022-03-28" />.
 
 ## What RxDB Gives You Instead
 

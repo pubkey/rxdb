@@ -2,15 +2,27 @@ import React, { type ReactNode } from 'react';
 import Head from '@docusaurus/Head';
 import useBaseUrl from '@docusaurus/useBaseUrl';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
-import type { Props } from '@theme/PageMetadata';
+import type { PageMetadata as PageMetadataOriginal } from '@docusaurus/theme-common';
+
+/**
+ * Docusaurus has no `@theme/PageMetadata` component,
+ * the props are defined at the PageMetadata of the theme-common package.
+ */
+type Props = Parameters<typeof PageMetadataOriginal>[0];
 
 /**
  * Swizzled version of the default Docusaurus PageMetadata.
  *
- * The only difference to the original is the page title:
- * Docusaurus appends the site title (`| RxDB - JavaScript Database`)
- * to every page title. This removes that suffix so the SEO title
- * is just the page title itself.
+ * The only difference to the original is the page title: this renders the raw
+ * page title instead of running it through `useTitleFormatter`.
+ *
+ * NOTE: this does NOT remove the ` | <site title>` suffix from rendered pages,
+ * even though it skips the formatter. Docs and plugin pages import
+ * `PageMetadata` from `@docusaurus/theme-common` directly rather than through
+ * `@theme/PageMetadata`, so they never reach this component and the suffix is
+ * still appended. Verified 2026-07-30: every page on the live site ends with
+ * the site title. The suffix is controlled by `title` in docusaurus.config.ts,
+ * which is the only global lever for it.
  * @link https://github.com/pubkey/rxdb
  */
 export default function PageMetadata({
@@ -37,7 +49,7 @@ export default function PageMetadata({
             {keywords && (
                 <meta
                     name="keywords"
-                    content={Array.isArray(keywords) ? keywords.join(',') : keywords}
+                    content={typeof keywords === 'string' ? keywords : keywords.join(',')}
                 />
             )}
 

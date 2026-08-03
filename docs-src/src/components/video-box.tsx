@@ -237,7 +237,6 @@ export function VideoModal({ open, videoId, title, startAt, onClose }: VideoModa
         <Modal
             open={open}
             onCancel={onClose}
-            onClose={onClose}
             onOk={onClose}
             footer={null}
             width="auto"

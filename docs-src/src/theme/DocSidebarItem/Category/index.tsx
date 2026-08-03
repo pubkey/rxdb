@@ -123,7 +123,7 @@ function isCategoryWithHref(category) {
   return typeof category.href === 'string';
 }
 
-function DocSidebarItemCategoryEmpty({item, ...props}) {
+function DocSidebarItemCategoryEmpty({item, ...props}: any) {
   if (!isCategoryWithHref(item)) {
     return null;
   }
