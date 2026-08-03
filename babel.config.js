@@ -17,7 +17,11 @@ const classOnly = (pluginList) => (isEs5 ? pluginList : []);
 const plugins = [
     '@babel/plugin-transform-explicit-resource-management',
     '@babel/plugin-transform-typescript',
-    ...classOnly(['transform-class-properties']),
+    /**
+     * Must run before @babel/plugin-transform-classes,
+     * otherwise babel throws 'Missing class properties transform'.
+     */
+    ...classOnly(['@babel/plugin-transform-class-properties']),
     ['@babel/transform-template-literals', {
         'loose': true
     }],
@@ -34,7 +38,6 @@ const plugins = [
     ['@babel/transform-runtime', {
         'regenerator': false
     }],
-    ...classOnly(['@babel/plugin-transform-class-properties']),
     '@babel/plugin-transform-react-jsx'
 ];
 

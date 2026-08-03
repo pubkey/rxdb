@@ -8,7 +8,7 @@ import {
     WebsocketMessageType
 } from './websocket-types.ts';
 
-import ReconnectingWebSocket from 'reconnecting-websocket';
+import { ReconnectingWebSocket } from './reconnecting-websocket.ts';
 
 import { WebSocket } from 'ws';
 import {
