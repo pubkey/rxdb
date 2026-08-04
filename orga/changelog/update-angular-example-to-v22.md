@@ -1,1 +1,1 @@
-- Updated the Angular example to Angular 22 (from 21.2.x to 22.0.x) and TypeScript 6.0.3
+- Updated the Angular example to Angular 22.1.x (from 21.2.x) and TypeScript 6.0.3
