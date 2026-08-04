@@ -5,6 +5,9 @@ description: Compare Yjs and RxDB for local-first apps. Learn when to use a CRDT
 image: /headers/yjs-alternative.jpg
 ---
 
+import {Faq, FaqItem} from '@site/src/components/faq';
+import {ComparisonTable} from '@site/src/components/comparison-table';
+
 # RxDB as a Yjs Alternative for Local-First Apps with Queries and Persistence
 
 [Yjs](https://github.com/yjs/yjs) is a CRDT runtime that solves one problem well: merging concurrent edits to shared data structures without a central authority. It is the engine behind many collaborative editors built on TipTap, ProseMirror, Slate, and Monaco. When your application is mostly a shared text document, Yjs is an excellent fit.
@@ -13,11 +16,7 @@ The trouble starts when the application also has lists, settings, user profiles,
 
 This page explains where Yjs ends, where [RxDB](https://rxdb.info/) begins, and how to combine the two when you need both rich-text collaboration and a structured local database.
 
-<center>
-    <a href="https://rxdb.info/">
-        <img src="/files/logo/rxdb_javascript_database.svg" alt="JavaScript Database" width="220" />
-    </a>
-</center>
+<RxdbLogo alt="JavaScript Database" />
 
 ## A Short History of Yjs
 
@@ -65,6 +64,8 @@ Persistence is delegated to providers like `y-indexeddb` or `y-leveldb`. Each pr
 ### Sync Is Document Shaped
 
 Yjs sync moves the entire update stream of a `Y.Doc`. That works for one shared document. For an app with thousands of independent records (orders, messages, contacts), you either pack everything into one giant `Y.Doc` and pay for it on every load, or you manage many small docs and write your own catalog, fan-out, and authorization layer.
+
+Both projects are under active development. As of July 30, 2026, [Yjs](https://github.com/yjs/yjs) has 22,263 GitHub stars while [RxDB](https://github.com/pubkey/rxdb) has 23,296.
 
 ## Where RxDB Fits
 
@@ -181,37 +182,37 @@ For real-time fan-out between peers, RxDB's [WebRTC replication](../../replicati
 
 ## FAQ
 
-<details>
-<summary>Is Yjs a database?</summary>
+<Faq>
+<FaqItem question="Is Yjs a database?">
 
 No. Yjs is a CRDT library. It defines shared data types and a merge algorithm, and it leaves persistence, networking, indexing, and queries to providers and to the application. A database stores, indexes, and queries data. Yjs does the merging part of that picture and nothing else.
-</details>
 
-<details>
-<summary>Does RxDB have CRDTs?</summary>
+</FaqItem>
+<FaqItem question="Does RxDB have CRDTs?">
 
 Yes. The optional [CRDT plugin](../../crdt.md) adds operation-based merging on top of regular RxDB documents. You keep schemas, queries, indexes, and replication, and you opt in to CRDT semantics for the fields that need them. For most app data, the default [conflict handler](../../transactions-conflicts-revisions.md) is enough.
-</details>
 
-<details>
-<summary>Can I store a Yjs document inside RxDB?</summary>
+</FaqItem>
+<FaqItem question="Can I store a Yjs document inside RxDB?">
 
 Yes. A `Y.Doc` can be encoded with `Y.encodeStateAsUpdate` and stored as a binary or base64 field inside an RxDB document. RxDB then handles persistence and replication of the encoded blob, while Yjs handles merging in memory when the document is opened.
-</details>
 
-<details>
-<summary>How do RxDB conflict resolvers compare to Yjs CRDTs?</summary>
+</FaqItem>
+<FaqItem question="How do RxDB conflict resolvers compare to Yjs CRDTs?">
 
 Yjs CRDTs guarantee deterministic convergence for the built-in shared types, with no application code involved. RxDB conflict resolvers are per-collection functions that take the local and remote versions and return the merged result. They are more general, since they can express last-write-wins, field-level merges, business rules, or full CRDT logic via the CRDT plugin. They require you to define the merge policy explicitly.
-</details>
 
-<details>
-<summary>Which is better for collaborative text editing?</summary>
+</FaqItem>
+<FaqItem question="Which is better for collaborative text editing?">
 
 Yjs, paired with TipTap, ProseMirror, Slate, or Monaco. The bindings are mature and the merge semantics for text are exactly what editors need. RxDB is the better choice for the surrounding application: the document list, metadata, comments, permissions, offline queue, and search.
-</details>
+
+</FaqItem>
+</Faq>
 
 ## Comparison Table
+
+<ComparisonTable>
 
 | Capability                         | Yjs                                  | RxDB                                                     |
 | ---------------------------------- | ------------------------------------ | -------------------------------------------------------- |
@@ -225,5 +226,7 @@ Yjs, paired with TipTap, ProseMirror, Slate, or Monaco. The bindings are mature 
 | Replication                        | Provider based, per `Y.Doc`          | Generic [replication protocol](../../replication.md), HTTP, GraphQL, WebSocket, CouchDB, [WebRTC](../../replication-webrtc.md) |
 | Conflict resolution                | Built-in CRDT                        | Pluggable [conflict handlers](../../transactions-conflicts-revisions.md) plus optional [CRDT plugin](../../crdt.md) |
 | Best fit                           | Collaborative rich-text editors      | Offline-first apps with structured data and queries      |
+
+</ComparisonTable>
 
 If your product is a collaborative editor, start with Yjs. If your product is an app that happens to need collaboration on some fields, start with RxDB and add the [CRDT plugin](../../crdt.md) or embed Yjs documents where they pay off.

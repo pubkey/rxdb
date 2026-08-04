@@ -5,15 +5,14 @@ description: Compare RxDB and Replicache for local-first web apps. Learn how RxD
 image: /headers/replicache-alternative.jpg
 ---
 
+import {Faq, FaqItem} from '@site/src/components/faq';
+import {ComparisonTable} from '@site/src/components/comparison-table';
+
 # RxDB as a Replicache Alternative for Local-First Web Apps
 
 Replicache built strong mindshare in the local-first community with its mutator-based sync model and tight focus on collaborative web apps. Teams pick it because it advertises support for many backend stacks and ships a polished developer experience. Once a project grows, the mutator architecture, the source-available license, and the opinionated query API push some teams to look for a Replicache alternative. RxDB is an open source [local-first](../../articles/local-first-future.md), NoSQL database for JavaScript that stores data on the client, runs MongoDB-style queries against a local store, and replicates with any backend you control.
 
-<center>
-    <a href="https://rxdb.info/">
-        <img src="/files/logo/rxdb_javascript_database.svg" alt="RxDB JavaScript Database" width="220" />
-    </a>
-</center>
+<RxdbLogo alt="RxDB JavaScript Database" />
 
 ## A Short History of Replicache
 
@@ -57,6 +56,8 @@ Replicache hands you a sync protocol but expects you to maintain the canonical s
 ### 5. No First-Party Peer-to-Peer
 
 Replicache is a client-server protocol. RxDB ships a [WebRTC replication plugin](../../replication.md) so peers can sync directly without a central server.
+
+The numbers reflect this. As of July 30, 2026, [Replicache](https://github.com/rocicorp/replicache) has 1,172 GitHub stars while [RxDB](https://github.com/pubkey/rxdb) has 23,296, and the `replicache` package was downloaded 50,744 times on npm in the last 30 days compared to 270,494 downloads of `rxdb` ([npm trends](https://npmtrends.com/replicache-vs-rxdb)). The last commit to the [Replicache repository](https://github.com/rocicorp/replicache) was in April 2022, <TimeSince date="2022-04-22" />, and the repository is archived and read-only today. Rocicorp's development happens in the Zero monorepo instead.
 
 ## Why Teams Pick RxDB Instead
 
@@ -202,42 +203,37 @@ Neither model is universally better. Mutators are convenient for tightly coupled
 
 ## FAQ
 
-<details>
-<summary>Is RxDB open source?</summary>
+<Faq>
+<FaqItem question="Is RxDB open source?">
 
 Yes. RxDB core is licensed under Apache 2.0 and the source is on GitHub. There are optional premium plugins for advanced storages and enterprise features, but the database, the query engine, and the replication protocol are open source with no revenue gating.
 
-</details>
-
-<details>
-<summary>Do I need to write mutators in RxDB?</summary>
+</FaqItem>
+<FaqItem question="Do I need to write mutators in RxDB?">
 
 No. RxDB uses regular collection methods such as `insert`, `patch`, `bulkUpsert`, and `remove`. The replication protocol forwards the resulting changes to your backend through pull and push handlers. You can still centralize write logic in helper functions if you want to, but the database does not require it.
 
-</details>
-
-<details>
-<summary>Can RxDB scale to many clients?</summary>
+</FaqItem>
+<FaqItem question="Can RxDB scale to many clients?">
 
 Yes. The replication protocol is checkpoint-based, so each client only fetches changes since its last sync. The server can be any system that exposes pull and push endpoints, which means horizontal scaling is the same problem as scaling your existing API. RxDB also ships [WebRTC replication](../../replication.md) for peer-to-peer scenarios.
 
-</details>
-
-<details>
-<summary>What about Zero or Zerosync?</summary>
+</FaqItem>
+<FaqItem question="What about Zero or Zerosync?">
 
 Zero is Rocicorp's successor to Replicache and Reflect. It is a different product with its own protocol and trade-offs. RxDB is not a drop-in port of Zero, but it covers the same use cases of local-first apps with reactive queries and sync. RxDB has been stable for years, ships under Apache 2.0, and works with any backend you already run.
 
-</details>
-
-<details>
-<summary>Does RxDB work with NextJS, Remix, and React Native?</summary>
+</FaqItem>
+<FaqItem question="Does RxDB work with NextJS, Remix, and React Native?">
 
 Yes. RxDB runs anywhere JavaScript runs. In NextJS and Remix you instantiate the database in the browser and use the React bindings to subscribe to queries. In [React Native](../../react-native-database.md) you pick a native storage such as SQLite. The same collection definitions and queries work across all environments.
 
-</details>
+</FaqItem>
+</Faq>
 
 ## Comparison Table
+
+<ComparisonTable>
 
 | Feature                       | Replicache                          | RxDB                                     |
 | ----------------------------- | ----------------------------------- | ---------------------------------------- |
@@ -252,6 +248,8 @@ Yes. RxDB runs anywhere JavaScript runs. In NextJS and Remix you instantiate the
 | Peer-to-peer sync             | No                                  | Yes, [WebRTC](../../replication.md)         |
 | Transports                    | Replicache protocol                 | HTTP, GraphQL, CouchDB, Firestore, WebRTC|
 | Runtimes                      | Browser, React Native               | Browser, Node.js, Electron, React Native |
+
+</ComparisonTable>
 
 ## Follow Up
 

@@ -128,7 +128,8 @@ Since its beginning in 2018, RxDB has gained a huge set of features and plugins 
       <a href="https://rxdb.info/orm.html">ORM</a><br>
       <a href="https://rxdb.info/transactions-conflicts-revisions.html">Conflict Handling</a><br>
       <a href="https://rxdb.info/middleware.html">Middleware</a><br>
-      <a href="https://rxdb.info/reactivity.html">Signals</a>
+      <a href="https://rxdb.info/reactivity.html">Signals</a><br>
+      <a href="https://rxdb.info/articles/tanstack-db/rxdb-collection-for-tanstack-db.html">TanStack DB</a>
     </td>
     <td>
       <a href="https://rxdb.info/rx-state.html">State</a><br>
@@ -166,8 +167,8 @@ npm install rxdb rxjs --save
 #### Store data
 
 ```javascript
-import { 
-  createRxDatabase
+import {
+    createRxDatabase
 } from 'rxdb/plugins/core';
 
 /**
@@ -175,7 +176,9 @@ import {
  * In other JavaScript runtimes, we can use different storages:
  * @link https://rxdb.info/rx-storage.html
  */
-import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
+import {
+    getRxStorageLocalstorage
+} from 'rxdb/plugins/storage-localstorage';
 
 // create a database
 const db = await createRxDatabase({
@@ -261,7 +264,7 @@ Get started now by [reading the docs](https://rxdb.info/quickstart.html) or expl
 -->
 
 #### More content
-[Angular Database](https://rxdb.info/articles/angular-database.html), [Frontend Database](https://rxdb.info/articles/frontend-database.html), [localStorage](https://rxdb.info/articles/localstorage.html), [React Database](https://rxdb.info/articles/react-database.html), [Browser Database](https://rxdb.info/articles/browser-database.html), [React Native Database](https://rxdb.info/react-native-database.html), [PWA Database](https://rxdb.info/articles/progressive-web-app-database.html), [In-memory NoSQL database](https://rxdb.info/articles/in-memory-nosql-database.html), [JSON database](https://rxdb.info/articles/json-database.html), [Angular IndexedDB](https://rxdb.info/articles/angular-indexeddb.html), [React IndexedDB](https://rxdb.info/articles/react-indexeddb.html), [Optimistic UI](https://rxdb.info/articles/optimistic-ui.html), [local database](https://rxdb.info/articles/local-database.html), [React Native Encryption](https://rxdb.info/articles/react-native-encryption.html), [Vue Database](https://rxdb.info/articles/vue-database.html), [jQuery Database](https://rxdb.info/articles/jquery-database.html), [Vue IndexedDB](https://rxdb.info/articles/vue-indexeddb.html), [Firestore Alternative](https://rxdb.info/articles/firestore-alternative.html), [Firebase Realtime Database Alternative](https://rxdb.info/articles/firebase-realtime-database-alternative.html), [Ionic Storage](https://rxdb.info/articles/ionic-storage.html)
+[Angular Database](https://rxdb.info/articles/angular-database.html), [Frontend Database](https://rxdb.info/articles/frontend-database.html), [localStorage](https://rxdb.info/articles/localstorage.html), [React Database](https://rxdb.info/articles/react-database.html), [Browser Database](https://rxdb.info/articles/browser-database.html), [React Native Database](https://rxdb.info/react-native-database.html), [PWA Database](https://rxdb.info/articles/progressive-web-app-database.html), [In-memory NoSQL database](https://rxdb.info/articles/in-memory-nosql-database.html), [JSON database](https://rxdb.info/articles/json-database.html), [Angular IndexedDB](https://rxdb.info/articles/angular-indexeddb.html), [React IndexedDB](https://rxdb.info/articles/react-indexeddb.html), [Optimistic UI](https://rxdb.info/articles/optimistic-ui.html), [local database](https://rxdb.info/articles/local-database.html), [React Native Encryption](https://rxdb.info/articles/react-native-encryption.html), [Vue Database](https://rxdb.info/articles/vue-database.html), [jQuery Database](https://rxdb.info/articles/jquery-database.html), [Vue IndexedDB](https://rxdb.info/articles/vue-indexeddb.html), [Firestore Alternative](https://rxdb.info/articles/firestore-alternative.html), [Firebase Realtime Database Alternative](https://rxdb.info/articles/firebase-realtime-database-alternative.html), [Ionic Storage](https://rxdb.info/articles/ionic-storage.html), [Electron SQLite](https://rxdb.info/articles/electron-sqlite.html), [TanStack DB Offline](https://rxdb.info/articles/tanstack-db/tanstack-db-offline-first.html)
 
 ----------------
 

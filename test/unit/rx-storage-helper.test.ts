@@ -1,5 +1,5 @@
 
-import config, { describeParallel } from './config.ts';
+import config from './config.ts';
 import {
     randomToken,
     now,
@@ -20,7 +20,7 @@ import assert from 'assert';
 
 const testContext = 'rx-storage-helper.test.ts';
 
-describeParallel('rx-storage-helper.test.ts', () => {
+describe('rx-storage-helper.test.ts', () => {
     describe('.categorizeBulkWriteRows()', () => {
         it('performance', async () => {
             const instance = await config.storage.getStorage().createStorageInstance({

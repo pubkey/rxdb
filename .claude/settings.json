@@ -34,6 +34,15 @@
                         "command": "npx block-no-verify@1.1.2"
                     }
                 ]
+            },
+            {
+                "matcher": "Write|Edit|MultiEdit",
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "node .claude/hooks/no-console-dir-storage-sqlite.mjs"
+                    }
+                ]
             }
         ],
         "PostToolUse": [

@@ -5,6 +5,8 @@ description: Discover how to implement reactjs storage using localStorage for qu
 image: /headers/reactjs-storage.jpg
 ---
 
+import {CenteredImage} from '@site/src/components/centered-image';
+
 # ReactJS Storage - From Basic LocalStorage to Advanced Offline Apps with RxDB
 
 Modern **ReactJS** applications often need to store data on the client side. Whether you’re preserving simple user preferences or building offline-ready features, choosing the right **storage** mechanism can make or break your development experience. In this guide, we’ll start with a basic **localStorage** approach for minimal data. Then, we’ll explore more powerful, reactive solutions via [RxDB](/), including offline functionality, indexing, `preact signals`, and even encryption.
@@ -79,11 +81,7 @@ While localStorage is simple, it’s limited to string-based key-value lookups a
 [RxDB](/), as you’ll see, simplifies [IndexedDB](../rx-storage-indexeddb.md) usage in ReactJS by adding a more intuitive layer for queries, [reactivity](../reactivity.md), and advanced capabilities like [encryption](../encryption.md).
 
 
-<center>
-    <a href="https://rxdb.info/">
-        <img src="/files/logo/rxdb_javascript_database.svg" alt="RxDB" width="250" />
-    </a>
-</center>
+<RxdbLogo alt="RxDB" width={250} />
 
 ## Part 3: Moving Beyond Basic Storage: RxDB for ReactJS
 
@@ -158,9 +156,7 @@ function HeroList({ collection }) {
 export default HeroList;
 ```
 
-<p align="center">
-  <img src="../files/animations/realtime.gif" alt="realtime ui updates" width="700" />
-</p>
+<CenteredImage src="../files/animations/realtime.gif" alt="realtime ui updates" width={700} />
 
 By using these reactive queries, your React app knows exactly when data changes locally (or from another browser tab) or from remote sync, keeping your UI in sync effortlessly.
 

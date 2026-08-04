@@ -355,7 +355,7 @@ function entries(value: any) {
     return Object.entries(value);
 }
 
-function stringifyPath(pathSegments: never[]) {
+function stringifyPath(pathSegments: any[]) {
     let result = '';
 
     // eslint-disable-next-line prefer-const
@@ -371,7 +371,7 @@ function stringifyPath(pathSegments: never[]) {
     return result;
 }
 
-function* deepKeysIterator(object: any, currentPath = []): any {
+function* deepKeysIterator(object: any, currentPath: any[] = []): any {
     if (!isObject(object)) {
         if (currentPath.length > 0) {
             yield stringifyPath(currentPath);

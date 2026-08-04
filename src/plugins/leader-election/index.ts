@@ -61,7 +61,7 @@ export function getForDatabase(this: RxDatabase): LeaderElector {
          * with a half-closed database and its collections.
          */
         const ret = await oldClose();
-        removeBroadcastChannelReference(this.token, this);
+        await removeBroadcastChannelReference(this.token, this);
         return ret;
     };
 
@@ -100,11 +100,13 @@ export function waitForLeadership(this: RxDatabase): Promise<boolean> {
 
 /**
  * runs when the database gets closed
+ * Awaits die() so that the election is finished before
+ * the broadcast channel is closed further down in close().
  */
-export function onClose(db: RxDatabase) {
+export async function onClose(db: RxDatabase) {
     const has = LEADER_ELECTORS_OF_DB.get(db);
     if (has) {
-        has.die();
+        await has.die();
         OPEN_LEADER_ELECTORS.delete(has);
     }
 }

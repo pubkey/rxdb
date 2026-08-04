@@ -1,5 +1,5 @@
 import assert from 'assert';
-import { describeParallel } from './config.ts';
+import './config.ts';
 
 
 import {
@@ -34,7 +34,7 @@ addRxPlugin(RxDBLocalDocumentsPlugin);
  * double dollar sign $.
  * Used for stuff like signals etc.
  */
-describeParallel('reactivity.test.ts', () => {
+describe('reactivity.test.ts', () => {
     type ReactivityType = {
         obs: Observable<any>;
         init: any;

@@ -208,7 +208,6 @@ export async function openSqliteTransaction(
             console.log('open transaction error (will retry):');
             const errorAsJson = errorToPlainJson(err);
             console.log(errorAsJson);
-            console.dir(err);
             if (
                 err.message && (
                     err.message.includes('Database is closed') ||

@@ -11,6 +11,7 @@ image: /headers/third-party-plugins.jpg
 * [rxdb-flexsearch](https://github.com/serenysoft/rxdb-flexsearch) The full text search for RxDB using [FlexSearch](https://github.com/nextapps-de/flexsearch).
 * [rxdb-orion](https://github.com/serenysoft/rxdb-orion) Enables [replication](./replication.md) with [Laravel Orion](https://tailflow.github.io/laravel-orion-docs).
 * [rxdb-supabase](https://github.com/marceljuenemann/rxdb-supabase) Enables replication with [Supabase](https://supabase.com/).
+* [rxdb-solid](https://github.com/jeswr/rxdb-solid) Enables replication with [Solid pods](https://solidproject.org/), using a personal Solid pod as backend storage.
 * [rxdb-utils](https://github.com/rafamel/rxdb-utils) Additional features for RxDB like models, timestamps, default values, view and more.
 * [rxdb-extra](https://github.com/serenysoft/rxdb-extra) Additional features for RxDB like timestamps, simple search, strict schema, and more. (Compatible with the latest versions.)
 * [loki-async-reference-adapter](https://github.com/jonnyreeves/loki-async-reference-adapter) Simple async adapter for LokiJS, suitable to use RxDB's [Lokijs RxStorage](./rx-storage-lokijs.md) with React Native.

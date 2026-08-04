@@ -8,6 +8,7 @@ image: /headers/react-native-database.jpg
 import {Steps} from '@site/src/components/steps';
 import {Tabs} from '@site/src/components/tabs';
 import {HeadlineWithIcon} from '@site/src/components/headline-with-icon';
+import {Faq, FaqItem} from '@site/src/components/faq';
 
 # <HeadlineWithIcon h1 icon={<img src="/files/icons/react.svg" alt="React" />}>React Native Database</HeadlineWithIcon>
 
@@ -18,15 +19,11 @@ If you are looking for a **React Native Database**, you usually want three thing
 
 RxDB covers all of these requirements out of the box. It is a [local-first](./articles/local-first-future.md) NoSQL database that runs deeply integrated with React Native, giving you the power of a full featured database engine inside your mobile app.
 
-<center>
-    <a href="https://rxdb.info/">
-        <img src="../files/logo/rxdb_javascript_database.svg" alt="RxDB" width="220" />
-    </a>
-</center>
+<RxdbLogo alt="RxDB" />
 
 ## The Storage Layer
 
-React Native does not have a native database engine. To store data persistently and efficiently, RxDB offers multiple powerful options.
+React Native does not have a native database engine. To store data persistently and efficiently, RxDB offers multiple storage options.
 
 ### 👑 Expo Filesystem (Highest Performance)
 
@@ -123,7 +120,7 @@ export default function App() {
 ```
 
 ### 2. Observe Data
-Use the `useRxQuery` hook (or `useLiveRxQuery` shortcut) to fetch data. The component will **automatically re-render** whenever the data in the database changes. You don't need to manually subscriptions or handling event listeners.
+Use the `useRxQuery` hook (or `useLiveRxQuery` shortcut) to fetch data. The component will **automatically re-render** whenever the data in the database changes. You do not have to manage subscriptions or event listeners manually.
 
 ```tsx
 import { useRxCollection, useLiveRxQuery } from 'rxdb/plugins/react';
@@ -173,7 +170,7 @@ Using signals allows you to update only the specific text node that changed, kee
 
 ## Sync with Backend
 
-A local database is useful, but a synchronized database is powerful.
+A local database alone is useful. But most real-world apps also have to sync their data with a backend.
 RxDB provides a robust [replication](./replication.md) protocol that can sync with **any backend**.
 
 It has dedicated plugins for popular backend solutions:
@@ -203,24 +200,58 @@ Because RxDB handles the sync layer, you can build your app as if it were a pure
 
 ## Comparison with Alternatives
 
-How does RxDB compare to other React Native database solutions?
+In the following you can see how RxDB compares to the most common React Native storage and database solutions. Each of them has valid use cases. The trouble starts when you use a key-value store for document data or a cloud SDK for an offline-first app.
 
-| Feature | **AsyncStorage** | **SQLite** (Raw) | **Realm** | **Firestore** (SDK) | <img src="../files/logo/logo.svg" alt="RxDB" width="20" /> **RxDB** |
-|:--- |:--- |:--- |:--- |:--- |:--- |
-| **Type** | Key-Value Store | Relational (SQL) | Object Store | Cloud Document Store | **NoSQL Document Store** |
-| **Reactivity** | ❌ None | ❌ Manual events | ✅ Local listeners | ✅ Real-time listeners | ✅ **Hooks / Signals / RxJS** |
-| **Persistence** | ✅ File (Slow) | ✅ File (Generic) | ✅ Custom File | ⚠️ Partial Cache | ✅ **SQLite / File** |
-| **Sync** | ❌ Manual | ❌ Manual | ✅ Realm Sync only | ✅ Firebase only | ✅ **Any Backend** |
-| **Query Engine** | ❌ None | ✅ SQL Strings | ✅ Custom API | ✅ Limited | ✅ **Mango JSON Query** |
-| **Schema** | ❌ None | ✅ SQL Schema | ✅ Class Schema | ❌ Loose | ✅ **[JSON Schema](./rx-schema.md)** |
-| **Migration** | ❌ Manual | ❌ Manual SQL | ✅ Migration API | ❌ None | ✅ **Automatic** |
+| Feature | **AsyncStorage** | **MMKV** | **SQLite** (Raw) | **WatermelonDB** | **Realm** | **Firestore** (SDK) | <img src="../files/logo/logo.svg" alt="RxDB" width="20" /> **RxDB** |
+|:--- |:--- |:--- |:--- |:--- |:--- |:--- |:--- |
+| **Type** | Key-Value Store | Key-Value Store | Relational (SQL) | ORM on SQLite | Object Store | Cloud Document Store | **NoSQL Document Store** |
+| **Reactivity** | ❌ None | ⚠️ Per-key listeners | ❌ Manual events | ✅ Observables | ✅ Local listeners | ✅ Real-time listeners | ✅ **Hooks / Signals / RxJS** |
+| **Persistence** | ✅ File (Slow) | ✅ File (memory-mapped) | ✅ File (Generic) | ✅ SQLite | ✅ Custom File | ⚠️ Partial Cache | ✅ **SQLite / File** |
+| **Sync** | ❌ Manual | ❌ Manual | ❌ Manual | ⚠️ Client primitives only | ❌ Shut down 2025 | ✅ Firebase only | ✅ **Any Backend** |
+| **Query Engine** | ❌ None | ❌ None | ✅ SQL Strings | ✅ Query builder | ✅ Custom API | ✅ Limited | ✅ **Mango JSON Query** |
+| **Schema** | ❌ None | ❌ None | ✅ SQL Schema | ✅ Schema + Models | ✅ Class Schema | ❌ Loose | ✅ **[JSON Schema](./rx-schema.md)** |
+| **Migration** | ❌ Manual | ❌ Manual | ❌ Manual SQL | ✅ Migration API | ✅ Migration API | ❌ None | ✅ **Automatic** |
 
 ### Summary
-- **AsyncStorage**: Good for simple key-value pairs (like settings). Too slow for data.
-- **SQLite**: Great foundation, but requires writing raw SQL and manual [reactivity](./reactivity.md)/sync.
-- **Realm**: Fast object store, but locks you into the MongoDB ecosystem for sync. Realm was deprecated in 2024 ([source](https://github.com/realm/realm-swift/discussions/8680)).
-- **Firestore**: Easy networked DB, but poor offline support (cannot start offline) and latency issues.
+- **AsyncStorage**: Good for simple key-value pairs like settings and flags. On Android it stores everything in one SQLite-backed store with a default total size limit of `6 MB` and a read limit of about `2 MB` per entry ([known limits](https://react-native-async-storage.github.io/async-storage/docs/limits/)). Too slow and too limited for document data.
+- **MMKV**: [react-native-mmkv](https://github.com/mrousavy/react-native-mmkv) is a fast, synchronous key-value store that uses JSI to skip the React Native bridge. It is a good AsyncStorage replacement for settings. But it is not a database: there are no queries, no indexes, and no sync.
+- **SQLite**: Great foundation, but requires writing raw SQL and manual [reactivity](./reactivity.md)/sync. RxDB uses it as a [storage layer](./rx-storage-sqlite.md) instead.
+- **WatermelonDB**: [WatermelonDB](https://watermelondb.dev/) is a reactive ORM on top of SQLite, built for large datasets with lazy loading, and it performs well at that job. Its sync feature only ships the client-side primitives, so you have to design and implement the pull/push endpoints on your backend yourself, and the relational schema requires hand-written migrations.
+- **Realm**: Fast object store, but MongoDB deprecated it in September 2024 and shut down the Device Sync service on September 30, 2025 ([deprecation notice](https://www.mongodb.com/community/forums/t/atlas-device-sync-end-of-life-and-deprecation/296687), [community discussion](https://github.com/realm/realm-swift/discussions/8680)). The local database lives on as open source, but without sync you should not start new projects on it. The [Realm migration guide](./articles/realm-to-rxdb-migration.md) shows how to move to RxDB.
+- **Firestore**: Easy networked DB, but poor offline support (cannot start offline), vendor lock-in, and latency issues. RxDB can [replicate with Firestore](./replication-firestore.md) so that reads and writes stay local.
 - **RxDB**: Combines the performance of local SQLite with the ease of NoSQL, automatic reactivity, and backend-agnostic synchronization.
+
+Performance claims are cheap. You can find measured numbers for the different RxDB storages on the [RxStorage performance page](./rx-storage-performance.md), and it is recommended to run your own measurements with the access patterns of your app.
+
+## FAQ
+
+<Faq>
+<FaqItem question="What database should I use for React Native?">
+
+For small key-value data like settings, AsyncStorage or MMKV are enough. When your app stores documents, needs queries and indexes, or has to work offline, you have to use a real database. **[RxDB](./rx-database.md)** combines local SQLite persistence with automatic reactivity and [replication](./replication.md) to any backend, which is why it fits most offline-first React Native apps.
+
+</FaqItem>
+<FaqItem question="Does RxDB work with Expo?">
+
+Yes. RxDB runs in Expo apps with the `expo-sqlite` adapter of the **[SQLite RxStorage](./rx-storage-sqlite.md)**, and for the best performance you can use the **[Expo Filesystem RxStorage](./rx-storage-filesystem-expo.md)** which bypasses the React Native bridge. Both work with the managed Expo workflow.
+
+</FaqItem>
+<FaqItem question="Is AsyncStorage a database?">
+
+No. AsyncStorage is an unencrypted key-value store without queries, indexes, or schemas. On Android its default total size limit is `6 MB` ([known limits](https://react-native-async-storage.github.io/async-storage/docs/limits/)), so storing your app's documents in it will bite back as soon as the dataset grows. Use it for settings and use a **[database](./rx-database.md)** for data.
+
+</FaqItem>
+<FaqItem question="What should I use instead of Realm in React Native?">
+
+MongoDB deprecated Realm in September 2024 and shut down its Device Sync service on September 30, 2025, so new projects should not be started on it. **[RxDB](./rx-database.md)** is the closest replacement because it is also a local, reactive, object-like database, and its [Sync Engine](./replication.md) works with your own backend instead of a proprietary cloud. The **[Realm migration guide](./articles/realm-to-rxdb-migration.md)** describes the migration path.
+
+</FaqItem>
+<FaqItem question="Can RxDB sync with any backend?">
+
+Yes. The RxDB [replication protocol](./replication.md) is backend-agnostic and only requires you to expose pull and push handlers, for example over the [simple HTTP replication](./replication-http.md). There are also prebuilt plugins for [Supabase](./replication-supabase.md), [Firestore](./replication-firestore.md), [GraphQL](./replication-graphql.md), and [CouchDB](./replication-couchdb.md).
+
+</FaqItem>
+</Faq>
 
 ---
 

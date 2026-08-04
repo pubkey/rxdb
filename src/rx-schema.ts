@@ -1,7 +1,8 @@
 import {
     overwriteGetterForCaching,
     isMaybeReadonlyArray,
-    deepEqual
+    deepEqual,
+    flatClone
 } from './plugins/utils/index.ts';
 import {
     newRxError,
@@ -29,7 +30,6 @@ import {
     normalizeRxJsonSchema
 } from './rx-schema-helper.ts';
 import { overwritable } from './overwritable.ts';
-import { flatClone } from 'event-reduce-js';
 
 export class RxSchema<RxDocType = any> {
     public indexes: MaybeReadonly<string[]>[];

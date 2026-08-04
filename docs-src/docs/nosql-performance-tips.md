@@ -91,6 +91,8 @@ const enumQuery = {
 }
 ```
 
+For `$in` queries on an indexed field, the RxDB query planner limits the scanned index space to the range between the smallest and the largest of the given values. Adding a restrictive operator next to an `$in` is only useful when you know a tighter bound than the min/max of the values.
+
 ## Set a specific index
 
 Sometime the query planner of the database itself has no chance in picking the best index of the possible given indexes.

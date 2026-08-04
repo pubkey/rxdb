@@ -7,7 +7,7 @@ Technology           | Status
 -------------------- | ---------------------
 nodeJS               | [done](./node)
 react-native         | [done](./react-native)
-ionic2               | [done](./ionic2)
+ionic + capacitor    | [done](./ionic)
 electron             | [done](./electron)
 angular              | [done](./angular)
 react                | [done](./react)

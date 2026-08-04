@@ -5,6 +5,8 @@ description: Use RxDB leader election to coordinate browser tabs so that only on
 image: /headers/leader-election.jpg
 ---
 
+import {CenteredImage} from '@site/src/components/centered-image';
+
 # Leader-Election
 
 RxDB comes with a leader-election which elects a leading instance between different instances in the same javascript runtime.
@@ -88,9 +90,7 @@ leaderElector.onduplicate = async () => {
 
 In this example the leader is marked with the crown ♛
 
-<p align="center">
-  <img src="./files/leader-election.gif" alt="Leader Election" width="300" />
-</p>
+<CenteredImage src="./files/leader-election.gif" alt="Leader Election" width={300} />
 
 ## Try it out
 

@@ -1,0 +1,10 @@
+ion-card {
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+ion-spinner {
+  display: block;
+  margin: 0 auto;
+}

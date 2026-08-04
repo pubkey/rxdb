@@ -5,17 +5,16 @@ description: Compare RxDB and GUN (gundb) for JavaScript apps. Get typed schemas
 image: /headers/gundb-alternative.jpg
 ---
 
+import {Faq, FaqItem} from '@site/src/components/faq';
+import {ComparisonTable} from '@site/src/components/comparison-table';
+
 # RxDB as a GUN (gundb) Alternative for JavaScript Apps
 
 Developers who reach for [GUN](https://gun.eco/) usually want one thing: a JavaScript database that syncs data peer-to-peer without depending on a central backend. GUN delivers on that promise, and it pairs the graph model with extras like the SEA module for cryptography and authentication. The trouble starts once you move past the first demo. Getting basic features running often takes days of trial and error, the schema story is informal, and the source code is dense enough that tracking down a sync bug can stall a project for a week.
 
 This guide walks through where GUN came from, where it falls short for production JavaScript apps, and how [RxDB](https://rxdb.info/) covers the same [offline-first](../../offline-first.md) and peer-to-peer use cases with a typed API, JSON Schema validation, and well-documented [replication](../../replication.md) plugins.
 
-<center>
-    <a href="https://rxdb.info/">
-        <img src="/files/logo/rxdb_javascript_database.svg" alt="RxDB JavaScript Database" width="220" />
-    </a>
-</center>
+<RxdbLogo alt="RxDB JavaScript Database" />
 
 ## A Short History of GUN
 
@@ -54,6 +53,8 @@ There is no official devtools panel, no schema explorer, and no migration runner
 ### No First-Class TypeScript Story
 
 GUN ships informal type definitions through community packages. The graph traversal API is dynamic enough that type inference rarely catches mistakes. Developers used to typed end-to-end pipelines lose that safety net the moment they touch GUN code.
+
+The numbers reflect this. As of July 30, 2026, [GUN](https://github.com/amark/gun) has 19,086 GitHub stars while [RxDB](https://github.com/pubkey/rxdb) has 23,296, and the `gun` package was downloaded 211,905 times on npm in the last 30 days compared to 270,494 downloads of `rxdb` ([npm trends](https://npmtrends.com/gun-vs-rxdb)).
 
 ## Where RxDB Helps
 
@@ -144,42 +145,37 @@ Peers join a topic, the signaling server pairs them, and from there the data exc
 
 ## FAQ
 
-<details>
-<summary>Does RxDB support P2P like GUN?</summary>
+<Faq>
+<FaqItem question="Does RxDB support P2P like GUN?">
 
 Yes. The [WebRTC replication plugin](../../replication-webrtc.md) syncs collections directly between browser peers. Both run without a central data server, and both reuse the same RxDB sync protocol used for HTTP and GraphQL backends.
 
-</details>
-
-<details>
-<summary>Can RxDB run without a central server?</summary>
+</FaqItem>
+<FaqItem question="Can RxDB run without a central server?">
 
 Yes. RxDB stores data locally in IndexedDB, OPFS, SQLite, or memory, and any [replication](../../replication.md) is optional. With the WebRTC or Nostr plugins, multiple clients can sync directly with each other and never contact a backend you operate.
 
-</details>
-
-<details>
-<summary>How do I migrate data from GUN?</summary>
+</FaqItem>
+<FaqItem question="How do I migrate data from GUN?">
 
 Export your GUN graph to a JSON file by walking the root nodes you care about and serializing each subgraph. Then map the flat documents onto an RxDB collection schema and bulk insert them with `collection.bulkInsert(docs)`. Because GUN graphs use references between nodes, denormalize linked nodes into embedded fields or split them across collections that match your query patterns.
 
-</details>
-
-<details>
-<summary>Does RxDB have built-in user accounts like SEA?</summary>
+</FaqItem>
+<FaqItem question="Does RxDB have built-in user accounts like SEA?">
 
 RxDB does not bundle a full identity module. It pairs with any auth system you already use (JWT, OAuth, custom tokens) by passing credentials into the replication handler headers. For data confidentiality, the [encryption plugin](../../encryption.md) encrypts selected fields with AES, and signed payloads can be added on top in the replication layer when needed.
 
-</details>
-
-<details>
-<summary>How does RxDB handle conflicts in P2P sync?</summary>
+</FaqItem>
+<FaqItem question="How does RxDB handle conflicts in P2P sync?">
 
 Each collection has a conflict handler. The default keeps the newer revision, and you can replace it with a custom function that merges fields, picks a winner based on metadata, or runs CRDT operations through the [CRDT plugin](../../crdt.md). The full model is described in [transactions, conflicts and revisions](../../transactions-conflicts-revisions.md).
 
-</details>
+</FaqItem>
+</Faq>
 
 ## Comparison Table
+
+<ComparisonTable>
 
 | Topic                    | GUN (gundb)                              | RxDB                                                                 |
 | ------------------------ | ---------------------------------------- | -------------------------------------------------------------------- |
@@ -195,6 +191,8 @@ Each collection has a conflict handler. The default keeps the newer revision, an
 | Storage backends         | IndexedDB, file, in-memory               | IndexedDB, OPFS, SQLite, Dexie, LocalStorage, Memory, and more       |
 | Tooling                  | Minimal, source-level debugging          | Devtools, logger, schema validator, migration runner                 |
 | License                  | ZLIB and Apache 2.0                      | Apache 2.0 with paid premium plugins                                 |
+
+</ComparisonTable>
 
 ## Follow Up
 

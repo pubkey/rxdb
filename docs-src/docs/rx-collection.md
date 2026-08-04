@@ -5,6 +5,9 @@ description: Discover how to create, manage, and migrate documents in RxCollecti
 image: /headers/rx-collection.jpg
 ---
 
+import { NON_PREMIUM_COLLECTION_LIMIT } from '../src/constants';
+import {Faq, FaqItem} from '@site/src/components/faq';
+
 # RxCollection
 A collection stores documents of the same type.
 
@@ -36,6 +39,10 @@ const myCollections = await myDatabase.addCollections({
   }
 });
 ```
+
+:::note
+Without the Premium Plugins, RxDB allows up to {NON_PREMIUM_COLLECTION_LIMIT} open collections in parallel. If you hit that limit, see the [FAQ on how to remove it](/rx-collection.html#faq).
+:::
 
 ### name
 
@@ -338,21 +345,25 @@ const is = isRxCollection(myObj);
 
 ## FAQ
 
-<details>
-    <summary>When I reload the browser window, will my collections still be in the database?</summary>
+<Faq>
+<FaqItem question="When I reload the browser window, will my collections still be in the database?">
+
     <div>
     No, the javascript instance of the collections will not automatically load into the database on page reloads.
     You have to call the `addCollections()` method each time you create your database. This will create the JavaScript object instance of the RxCollection so that you can use it in the RxDatabase. The persisted data will automatically be available in your RxCollection each time you create it.
     </div>
-</details>
-<details>
-    <summary>How to remove the limit of 13 collections?</summary>
+
+</FaqItem>
+<FaqItem question={'How to remove the limit of ' + NON_PREMIUM_COLLECTION_LIMIT + ' collections?'}>
+
     <div>
-    In the open-source version of RxDB, the amount of RxCollections that can exist in parallel is limited to `13`.
+    In the open-source version of RxDB, the amount of RxCollections that can exist in parallel is limited to <code>{NON_PREMIUM_COLLECTION_LIMIT}</code>.
     To remove this limit, you can purchase the [Premium Plugins](/premium/) and call the `setPremiumFlag()` function before creating a database:
     ```ts
     import { setPremiumFlag } from 'rxdb-premium/plugins/shared';
     setPremiumFlag();
     ```
     </div>
-</details>
+
+</FaqItem>
+</Faq>

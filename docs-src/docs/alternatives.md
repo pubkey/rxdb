@@ -19,11 +19,7 @@ RxDB has these main benefits:
 - RxDB has a working business model of selling [premium plugins](/premium/) which ensures that RxDB will be maintained and improved continuously while many alternatives are dead already or seem to die soon.
 - RxDB has years (since 2016) of performance optimization, bug fixing and feature adding. It is just working as is and there are close to zero [open issues](https://github.com/pubkey/rxdb/issues).
 
-<center>
-    <a href="https://rxdb.info/">
-        <img src="../files/logo/rxdb_javascript_database.svg" alt="JavaScript Database" width="220" />
-    </a>
-</center>
+<RxdbLogo alt="JavaScript Database" />
 
 :::
 
@@ -271,7 +267,7 @@ It was meant as replacement for SQLite but is more like an object store than a f
 In 2019 MongoDB bought Realm and changed the projects focus.
 Now Realm is made for replication with the MongoDB Realm Sync based on the MongoDB Atlas Cloud platform. This tight coupling to the MongoDB cloud service is a big downside for most use cases.
 
-[Read more about why RxDB is a good alternative to MongoDB Realm](./articles/alternatives/mongodb-realm-alternative.md).
+[Read more about why RxDB is a good alternative to MongoDB Realm](./articles/alternatives/mongodb-realm-alternative.md). If you plan to switch, follow the [Realm to RxDB migration guide](./articles/realm-to-rxdb-migration.md).
 
 ### Apollo
 

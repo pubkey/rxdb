@@ -876,6 +876,18 @@ export const ERROR_MESSAGES = {
         fix: 'Check server permissions and logs.',
         docs: 'https://rxdb.info/replication.html?console=errors&code=RC_FORBIDDEN'
     },
+    RC_PUSH_AWAIT: {
+        message: 'awaitDocumentPushed() can only be used on a replication that has a push handler.',
+        cause: 'The replication was started with pull only, so documents are never pushed to the server.',
+        fix: 'Only call awaitDocumentPushed() on replications that define a push handler.',
+        docs: 'https://rxdb.info/replication.html?console=errors&code=RC_PUSH_AWAIT'
+    },
+    RC_WEBSOCKET_TIMEOUT: {
+        message: 'RxReplication websocket client could not open the connection in time',
+        cause: 'The websocket server did not accept the connection before the connectionTimeout was reached.',
+        fix: 'Check if the server is reachable. The client retries the connection on its own.',
+        docs: 'https://rxdb.info/replication-websocket.html?console=errors&code=RC_WEBSOCKET_TIMEOUT'
+    },
 
     // plugins/dev-mode/check-schema.js
     SC1: {
@@ -1205,8 +1217,8 @@ export const ERROR_MESSAGES = {
         docs: 'https://rxdb.info/rx-storage-sqlite.html?console=errors&code=SQL1'
     },
     SQL2: {
-        message: 'The trial version of the SQLite storage is limited to contain 300 documents',
-        cause: 'You reached the document limit of the trial version.',
+        message: 'The trial version of the SQLite storage is limited to contain 500 non-deleted documents',
+        cause: 'You reached the document limit of the trial version. Deleted documents do not count towards this limit.',
         fix: 'Upgrade to the full version.',
         docs: 'https://rxdb.info/rx-storage-sqlite.html?console=errors&code=SQL2'
     },

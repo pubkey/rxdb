@@ -14,6 +14,8 @@ const externals = {};
     'net',
     'querystring',
     'sqlite',
+    'util',
+    'child_process',
     'zlib'
 ].forEach(k => externals['node:' + k] = '{}');
 

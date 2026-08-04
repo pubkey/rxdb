@@ -32,25 +32,60 @@ export type CompositePrimaryKey<RxDocType> = {
 
 export type PrimaryKey<RxDocType> = StringKeys<RxDocType> | CompositePrimaryKey<RxDocType>;
 
+/**
+ * JSON Schema (draft-04 subset) for a single property of an RxDB document.
+ * RxDB adds a few own fields like 'ref' and 'final' on top of plain JSON Schema.
+ */
 export type JsonSchema<RxDocType = any> = {
     allOf?: JsonSchema[] | readonly JsonSchema[];
     anyOf?: JsonSchema[] | readonly JsonSchema[];
     oneOf?: JsonSchema[] | readonly JsonSchema[];
     additionalItems?: boolean | JsonSchema;
     additionalProperties?: boolean | JsonSchema;
+    /**
+     * Type of the property.
+     * Prefer one single fixed type per property. Avoid type arrays
+     * like ['string', 'null']. Instead of allowing 'null', make the
+     * field non-required and keep it undefined.
+     */
     type?: JsonSchemaTypes | JsonSchemaTypes[] | readonly JsonSchemaTypes[];
+    /**
+     * Human- and machine-readable description of the field.
+     * Not only for humans: plugins like webmcp pass the JSON schema
+     * to LLMs and AI agents, so a good description helps agents
+     * understand what the field contains and how to query it.
+     */
     description?: string;
     dependencies?: {
         [key: string]: JsonSchema | string[] | readonly string[];
     };
     exclusiveMinimum?: number;
     exclusiveMaximum?: number;
+    /**
+     * Sub-schema for array items.
+     * Arrays should always declare an items sub-schema.
+     */
     items?: JsonSchema | JsonSchema[] | readonly JsonSchema[];
+    /**
+     * Required (together with minimum and maximum) when a 'number' or 'integer'
+     * field is used inside of an index or as part of a composite primary key.
+     * Use multipleOf: 1 for integers.
+     */
     multipleOf?: number;
     maxProperties?: number;
+    /**
+     * Required (together with minimum and multipleOf) when a 'number' or 'integer'
+     * field is used inside of an index or as part of a composite primary key.
+     */
     maximum?: number;
+    /**
+     * Required (together with maximum and multipleOf) when a 'number' or 'integer'
+     * field is used inside of an index or as part of a composite primary key.
+     */
     minimum?: number;
     /**
+     * Required for 'string' fields that are used as primary key
+     * or inside of an index.
      * Having a large maxLength for indexed fields and primary keys can negatively
      * impact performance on many storages. Therefore, you should only set it
      * as big as needed.
@@ -60,13 +95,29 @@ export type JsonSchema<RxDocType = any> = {
     maxItems?: number;
     minItems?: number;
     minProperties?: number;
+    /**
+     * Regex pattern the string value must match.
+     * Only enforced when a schema validation plugin
+     * (validate-ajv or validate-z-schema) is used.
+     */
     pattern?: string;
     patternProperties?: {
         [key: string]: JsonSchema;
     };
+    /**
+     * Properties of a nested object.
+     * Do not nest objects more than 3 levels deep.
+     * Field names must not start with an underscore,
+     * underscore-prefixed fields are reserved for RxDB internals
+     * like _deleted, _rev, _meta and _attachments.
+     */
     properties?: {
         [key in StringKeys<RxDocType>]: JsonSchema;
     };
+    /**
+     * Fields that must be defined on documents.
+     * Fields that are used inside of an index must be required.
+     */
     required?: string[] | readonly string[];
     uniqueItems?: boolean;
     enum?: any[] | readonly any[];
@@ -74,15 +125,39 @@ export type JsonSchema<RxDocType = any> = {
     definitions?: {
         [key: string]: JsonSchema;
     };
+    /**
+     * String format like 'date-time' or 'email'.
+     * Only enforced when a schema validation plugin
+     * (validate-ajv or validate-z-schema) is used.
+     * Notice that JSON documents cannot store Date objects,
+     * store dates as ISO 8601 'date-time' strings
+     * or as unix timestamp numbers instead.
+     */
     format?: 'date-time' | 'email' | 'hostname' | 'ipv4' | 'ipv6' | 'uri' | string;
     example?: any;
 
     // RxDB-specific
+    /**
+     * Marks the field as a reference to documents of another collection,
+     * used by the population plugin. Set it to the name of the referenced collection.
+     * @link https://rxdb.info/population.html
+     * @example { type: 'string', ref: 'users' }
+     */
     ref?: string;
+    /**
+     * Final fields can never be changed after the document was inserted.
+     * Final fields are automatically required.
+     * The primary key is always final.
+     * @link https://rxdb.info/rx-schema.html
+     */
     final?: boolean;
 };
 
 export interface TopLevelProperty extends JsonSchema {
+    /**
+     * Default value that is applied on insert when the field is not set.
+     * Only allowed on top-level fields of the schema, not on nested fields.
+     */
     default?: any;
 }
 
@@ -141,8 +216,27 @@ export type RxJsonSchema<
      */
     RxDocType
 > = {
+    /**
+     * Human- and machine-readable title of the schema.
+     * Not used by RxDB core itself, but plugins like webmcp pass the
+     * JSON schema to LLMs and AI agents, so a descriptive title helps
+     * agents understand what the collection stores.
+     */
     title?: string;
+    /**
+     * Human- and machine-readable description of the schema.
+     * Not used by RxDB core itself, but plugins like webmcp pass the
+     * JSON schema to LLMs and AI agents, so a good description helps
+     * agents understand the purpose of the collection and its documents.
+     */
     description?: string;
+    /**
+     * Version number of the schema, starts at 0.
+     * When you change the schema of a collection that already stored data,
+     * you have to increase the version and provide a migration strategy
+     * for each version step in migrationStrategies.
+     * @link https://rxdb.info/migration-schema.html
+     */
     version: number;
 
     /**

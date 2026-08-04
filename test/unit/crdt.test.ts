@@ -35,11 +35,11 @@ import {
 import { RxDBUpdatePlugin } from '../../plugins/update/index.mjs';
 addRxPlugin(RxDBUpdatePlugin);
 addRxPlugin(RxDBcrdtPlugin);
-import config, { describeParallel } from './config.ts';
+import config from './config.ts';
 import { replicateRxCollection } from '../../plugins/replication/index.mjs';
 import { ReplicationPullHandler, ReplicationPushHandler } from '../../plugins/core/index.mjs';
 
-describeParallel('crdt.test.ts', () => {
+describe('crdt.test.ts', () => {
     type WithCRDTs<RxDocType> = RxDocType & {
         crdts?: CRDTDocumentField<RxDocType>;
     };

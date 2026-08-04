@@ -1,7 +1,9 @@
 import React from 'react';
 import MDXComponents from '@theme-original/MDXComponents';
 import CodeInline from '@theme/CodeInline';
-import { Pre } from '@theme/CodeBlock';
+import { Pre } from '@site/src/theme/CodeBlock';
+import { RxdbLogo } from '@site/src/components/rxdb-logo';
+import { TimeSince } from '@site/src/components/time-since';
 
 function Code(props: React.ComponentProps<'code'>) {
     const isInline =
@@ -16,4 +18,6 @@ export default {
     ...MDXComponents,
     code: Code,
     pre: Pre,
+    RxdbLogo,
+    TimeSince,
 };

@@ -5,15 +5,15 @@ description: Harness the database power of SQLite, Filesystem, and in-memory sto
 image: /headers/electron-database.jpg
 ---
 
+import {CenteredImage} from '@site/src/components/centered-image';
+
 # Electron Database - RxDB with different storage for SQLite, Filesystem and In-Memory
 
 [Electron](https://www.electronjs.org/) (aka Electron.js) is a framework developed by github that is designed to create desktop applications with the Web technology stack consisting of HTML, CSS and JavaScript.
 Because the desktop application runs on the client's device, it is suitable to use a database that can store and query data locally. This allows you to create so-called [local first](./offline-first.md) apps that store data locally and even work when the user has no internet connection.
 While there are many options to store data in Electron, for complex realtime apps using [RxDB](https://rxdb.info/) is recommended because it is a database made for UI-based client-side application, not a server-side database.
 
-<p align="center">
-  <img src="./files/icons/electron.svg" alt="Electron" width="70" />
-</p>
+<CenteredImage src="./files/icons/electron.svg" alt="Electron" width={70} />
 
 ## Databases for Electron
 
@@ -39,9 +39,7 @@ Another thing is performance. [IndexedDB is slow](./slow-indexeddb.md), mostly b
 
 ### RxDB
 
-<p align="center">
-  <img src="./files/logo/rxdb_javascript_database.svg" alt="RxDB" width="170" />
-</p>
+<RxdbLogo alt="RxDB" width={170} />
 
 
 [RxDB](https://rxdb.info/) is a NoSQL database for JavaScript applications. It has many features that come in handy when RxDB is used with UI based applications like your Electron app. For example, it is able to subscribe to query results of single fields of documents. It has [encryption](./encryption.md) and [compression](./key-compression.md) features and most important it has a battle tested [Sync Engine](./replication.md) that can be used to do a realtime sync with your backend.
@@ -142,9 +140,7 @@ const rows = await ipcRenderer.invoke('db-query', "SELECT * FROM Users");
 The downside of SQLite (or SQL in general) is that it is lacking many features that are handful when using a database together with **UI based** applications. It is not possible to observe queries or document fields and there is no replication method to sync data with a server. This makes SQLite a good solution when you just want to store data on the client or process expensive SQL queries on the server, but it is not suitable for more complex operations like two-way replication, encryption, compression and so on. Also developer helpers like TypeScript type safety are totally out of reach.
 
 
-<p align="center">
-  <img src="./files/logo/rxdb_javascript_database.svg" alt="RxDB Electron Database" width="170" />
-</p>
+<RxdbLogo alt="RxDB Electron Database" width={170} />
 
 
 ## Follow up

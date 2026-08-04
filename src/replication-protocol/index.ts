@@ -49,7 +49,7 @@ import {
 import { startReplicationUpstream } from './upstream.ts';
 import { fillWriteDataForAttachmentsChange } from '../plugins/attachments/index.ts';
 import { getChangedDocumentsSince } from '../rx-storage-helper.ts';
-import { newRxError } from '../rx-error.ts';
+import { rxStorageWriteErrorToRxError } from '../rx-error.ts';
 
 
 export * from './checkpoint.ts';
@@ -313,10 +313,15 @@ export function rxStorageInstanceToReplicationHandler<RxDocType, MasterCheckpoin
 
                 result.error.forEach(err => {
                     if (err.status !== 409) {
-                        throw newRxError('SNH', {
-                            name: 'non conflict error',
-                            error: err as any
-                        });
+
+                        /**
+                         * Non-conflict write errors (e.g. status 422 schema validation errors)
+                         * are real errors that must be surfaced to the caller with a meaningful
+                         * message. Throwing SNH here hides the actual cause (e.g. a document
+                         * with a null value in a required string field during migration).
+                         * @see https://github.com/pubkey/rxdb/issues/8607
+                         */
+                        throw rxStorageWriteErrorToRxError(err);
                     } else {
                         conflicts.push(
                             writeDocToDocState(ensureNotFalsy(err.documentInDb), hasAttachments, keepMeta)

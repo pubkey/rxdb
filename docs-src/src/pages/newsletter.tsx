@@ -1,10 +1,8 @@
-import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import Layout from '@theme/Layout';
 import React, { useEffect } from 'react';
 import { triggerTrackingEvent } from '../components/trigger-event';
 
 export default function Newsletter() {
-    const { siteConfig } = useDocusaurusContext();
 
     useEffect(() => {
         triggerTrackingEvent('get_newsletter', 0.40);
@@ -12,7 +10,7 @@ export default function Newsletter() {
 
     return (
         <Layout
-            title={`Newsletter - ${siteConfig.title}`}
+            title={'Newsletter'}
             description="RxDB Newsletter"
         >
             <main>

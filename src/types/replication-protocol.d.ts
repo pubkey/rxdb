@@ -1,7 +1,7 @@
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import type {
     RxConflictHandler,
-    RxConflictHandlerInput
+    RxReplicationConflict
 } from './conflict-handling.d.ts';
 import type { RxError, RxTypeError } from './rx-error.d.ts';
 import type {
@@ -187,10 +187,12 @@ export type RxStorageInstanceReplicationState<RxDocType> = {
             up: Subject<RxReplicationWriteToMasterRow<RxDocType>>;
             down: Subject<BulkWriteRow<RxDocType>>;
         };
-        resolvedConflicts: Subject<{
-            input: RxConflictHandlerInput<RxDocType>;
-            output: WithDeleted<RxDocType>;
-        }>;
+        /**
+         * Streams all conflicts that were reported by the remote
+         * on masterWrite() calls together with the output
+         * of the conflictHandler that resolved them.
+         */
+        resolvedConflicts: Subject<RxReplicationConflict<RxDocType>>;
         /**
          * Contains the cancel state.
          * Emit true here to cancel the replication.

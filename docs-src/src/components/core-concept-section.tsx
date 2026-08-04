@@ -14,9 +14,7 @@ const items = [
                 <p>
                     A minimal RxDB schema might define fields, data types, and indexes in a fully declarative way. For example:
                 </p>
-                <CodeBlock
-                    language='js'
-                >{
+                <CodeBlock>{
                         `const heroSchema = {
   title: 'hero schema',
   version: 0,

@@ -1,17 +1,17 @@
 ---
 title: RxDB as a Meteor Alternative - Offline-First Without Framework Lock-In
-slug: alternatives/meteor-alternative.html
+slug: meteor-alternative.html
 description: Compare RxDB and Meteor for local-first JavaScript applications. Learn why RxDB is a strong alternative for offline-first, reactive, framework-agnostic database needs.
 image: /files/alternatives/meteor_text.svg
 ---
 
+import {Faq, FaqItem} from '@site/src/components/faq';
+import {ComparisonTable} from '@site/src/components/comparison-table';
+import {Timeline} from '@site/src/components/timeline';
+
 # RxDB as a Meteor Alternative
 
-<center>
-    <a href="https://rxdb.info/">
-        <img src="/files/logo/rxdb_javascript_database.svg" alt="JavaScript Database" width="220" />
-    </a>
-</center>
+<RxdbLogo alt="JavaScript Database" />
 
 Meteor launched in 2012 and introduced many developers to the concept of full-stack JavaScript with real-time data. For a long time, it stood out as one of the few platforms that offered seamless data synchronization between client and server out of the box. Over a decade later, the JavaScript ecosystem has matured, and the requirements for offline-capable, framework-agnostic applications have grown. RxDB offers a different approach: a dedicated local-first database that works with any backend, any frontend framework, and any storage engine, without requiring a full platform.
 
@@ -33,12 +33,16 @@ When a user writes to the client-side Minimongo database, the change is immediat
 
 ### A Brief History
 
+<Timeline>
+
 - **2012** - Meteor is introduced and quickly attracts attention due to its developer-friendly, real-time-by-default model.
 - **2014-2016** - Peak popularity; Meteor raised $31.2 million in funding. The community grew rapidly.
 - **2016** - Funding from the VC company runs out. The team pivots toward the Galaxy cloud hosting product.
 - **2019** - Tiny Capital acquires Meteor. Development continues under new ownership.
 - **2024** - Meteor 3.0 is released, removing the long-standing dependency on Fibers (a synchronous async abstraction) in favor of native `async/await`. Build tooling is modernized with support for Vite and Rspack.
 - **2025-2026** - Meteor 3.x continues to receive updates. The project is maintained but occupies a much smaller share of the JavaScript ecosystem compared to its peak.
+
+</Timeline>
 
 Meteor's GitHub star count reflects this history. It accumulated a large following during the 2014-2016 era, but new stars and activity have slowed significantly compared to other tools in the space. The framework is not abandoned, but it is also not seeing the level of adoption growth it once did. Most new JavaScript projects choose React or Vue with a separate API layer, rather than reaching for an integrated full-stack framework like Meteor.
 
@@ -326,9 +330,7 @@ Meteor's Minimongo is an in-memory database. In-memory operations are fast, but 
 
 RxDB stores data persistently and indexes it for fast lookups. Queries operate on locally indexed data rather than scanning in-memory arrays. With the [OPFS storage](../../rx-storage-opfs.md) (Origin Private File System), RxDB achieves particularly high read and write throughput in modern browsers without needing WebAssembly.
 
-<p align="center">
-  <img src="/files/logo/rxdb_javascript_database.svg" alt="RxDB JavaScript Database" width="160" />
-</p>
+<RxdbLogo alt="RxDB JavaScript Database" width={160} />
 
 RxDB also includes [event-reduce](https://github.com/pubkey/event-reduce) optimization, which reduces the number of re-queries by computing the new query result from the change event directly, without re-running the full query against the storage engine.
 
@@ -343,6 +345,8 @@ RxDB runs in React Native natively using the [SQLite storage plugin](../../rx-st
 ---
 
 ## Summary: Key Differences
+
+<ComparisonTable>
 
 | Aspect | Meteor | RxDB |
 |---|---|---|
@@ -359,6 +363,8 @@ RxDB runs in React Native natively using the [SQLite storage plugin](../../rx-st
 | **Mobile (native)** | Cordova wrapper only | React Native with SQLite storage |
 | **Open source** | Yes | Yes |
 | **License** | MIT | Apache 2.0 |
+
+</ComparisonTable>
 
 ---
 
@@ -420,8 +426,8 @@ From here, you can add [replication](../../replication.md) to sync with any back
 
 ## FAQ
 
-<details>
-<summary>Can I migrate a Meteor app to RxDB?</summary>
+<Faq>
+<FaqItem question="Can I migrate a Meteor app to RxDB?">
 
 Migration is not a drop-in replacement because RxDB and Meteor have different data models and protocols. However, the general approach is:
 
@@ -432,25 +438,23 @@ Migration is not a drop-in replacement because RxDB and Meteor have different da
 
 The migration can be done incrementally if you wrap RxDB behind the same service layer that previously called Meteor methods.
 
-</details>
+</FaqItem>
 
-<details>
-<summary>Does RxDB need a server?</summary>
+<FaqItem question="Does RxDB need a server?">
 
 No. RxDB works entirely offline with no server. You create a local database, insert and query documents, and use subscriptions to react to changes. Adding replication is optional and requires you to provide pull and push handlers that connect to a server of your choice. Many applications start with a local-only setup and add replication later.
 
-</details>
+</FaqItem>
 
-<details>
-<summary>How does RxDB handle data when the user has been offline for a long time?</summary>
+<FaqItem question="How does RxDB handle data when the user has been offline for a long time?">
 
 When the user reconnects, RxDB runs a full replication cycle. It pulls all documents changed on the server since the last successful checkpoint, and pushes all local changes that were written while offline. If a document was changed on both sides, RxDB calls your [conflict handler](../../transactions-conflicts-revisions.md) to resolve the discrepancy. This cycle works correctly whether the user was offline for five minutes or five weeks.
 
-</details>
+</FaqItem>
 
-<details>
-<summary>Is RxDB suitable for large datasets?</summary>
+<FaqItem question="Is RxDB suitable for large datasets?">
 
 Yes. RxDB uses indexed storage engines rather than in-memory arrays, which means query performance does not degrade linearly with collection size. The OPFS storage backend, in particular, is designed for high read and write throughput. For very large datasets, you can define compound indexes on the fields you query most frequently to keep lookups fast.
 
-</details>
+</FaqItem>
+</Faq>

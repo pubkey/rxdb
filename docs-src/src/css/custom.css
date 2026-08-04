@@ -2782,62 +2782,73 @@ footer a:visited {
 }
 
 /**
- * Change stuff in cookie banner
+ * Theming for the client-side cookie consent banner
+ * (vanilla-cookieconsent, see src/theme/consent-manager.ts).
+ *
+ * The website is a dark theme, but the library ships a light default. Its
+ * stylesheet is injected at runtime (after custom.css), so we use the higher
+ * specificity selector "html #cc-main" to make sure these values win the
+ * cascade regardless of stylesheet order, and map everything to the RxDB
+ * dark palette / brand color.
  */
-#CybotCookiebotDialogHeader {
-    display: none !important;
+html #cc-main {
+    --cc-font-family: var(--ifm-font-family-base);
+    --cc-modal-border-radius: 12px;
+    --cc-btn-border-radius: 8px;
+
+    /* surfaces + text */
+    --cc-bg: var(--bg-color, #20293c);
+    --cc-primary-color: #ffffff;
+    --cc-secondary-color: #c7ccd6;
+    --cc-separator-border-color: rgba(255, 255, 255, 0.1);
+
+    /* primary button = brand color */
+    --cc-btn-primary-bg: var(--color-top, #ed168f);
+    --cc-btn-primary-color: #ffffff;
+    --cc-btn-primary-border-color: var(--color-top, #ed168f);
+    --cc-btn-primary-hover-bg: var(--color-middle, #b2218b);
+    --cc-btn-primary-hover-color: #ffffff;
+    --cc-btn-primary-hover-border-color: var(--color-middle, #b2218b);
+
+    /* secondary button = recessed dark surface */
+    --cc-btn-secondary-bg: var(--bg-color-dark, #0d0f18);
+    --cc-btn-secondary-color: #ffffff;
+    --cc-btn-secondary-border-color: rgba(255, 255, 255, 0.16);
+    --cc-btn-secondary-hover-bg: var(--bg-color-code, #282330);
+    --cc-btn-secondary-hover-color: #ffffff;
+    --cc-btn-secondary-hover-border-color: rgba(255, 255, 255, 0.28);
+
+    /* toggles */
+    --cc-toggle-on-bg: var(--color-top, #ed168f);
+    --cc-toggle-off-bg: #565f78;
+    --cc-toggle-on-knob-bg: #ffffff;
+    --cc-toggle-off-knob-bg: #ffffff;
+    --cc-toggle-enabled-block-bg: var(--color-top, #ed168f);
+    --cc-toggle-readonly-bg: #39415a;
+    --cc-toggle-readonly-knob-bg: #c7ccd6;
+    --cc-toggle-readonly-knob-icon-color: var(--bg-color, #20293c);
+
+    /* preferences category blocks */
+    --cc-cookie-category-block-bg: var(--bg-color-dark, #0d0f18);
+    --cc-cookie-category-block-border: rgba(255, 255, 255, 0.08);
+    --cc-cookie-category-block-hover-bg: var(--bg-color-code, #282330);
+    --cc-cookie-category-block-hover-border: rgba(255, 255, 255, 0.16);
+    --cc-cookie-category-expanded-block-bg: var(--bg-color-code, #282330);
+    --cc-cookie-category-expanded-block-hover-bg: #333044;
+
+    /* misc */
+    --cc-overlay-bg: rgba(0, 0, 0, 0.65);
+    --cc-webkit-scrollbar-bg: #39415a;
+    --cc-webkit-scrollbar-bg-hover: #565f78;
+    --cc-footer-bg: var(--bg-color-dark, #0d0f18);
+    --cc-footer-color: #c7ccd6;
+    --cc-footer-border-color: rgba(255, 255, 255, 0.1);
 }
 
-#CybotCookiebotDialog {
-    padding: 12px !important;
-    font-family: var(--ifm-font-family-monospace) !important;
-}
-
-.CybotCookiebotDialogBodyBottomWrapper {
-    margin-top: 0.5em !important;
-}
-
-#CybotCookiebotDialogBodyLevelButtonLevelOptinAllowAll {
-    background-color: var(--color-top) !important;
-}
-
-#CybotCookiebotDialogBodyLevelButtonCustomize {
-    border-color: var(--color-top) !important;
-}
-
-#CybotCookiebotDialogPoweredByText {
-    display: none !important;
-}
-
-#__docusaurus {
-    position: relative;
-}
-
-/**
- * Change stuff in cookie banner
- */
-#CybotCookiebotDialogHeader {
-    display: none !important;
-}
-
-#CybotCookiebotDialog {
-    padding: 12px !important;
-}
-
-.CybotCookiebotDialogBodyBottomWrapper {
-    margin-top: 0.5em !important;
-}
-
-#CybotCookiebotDialogBodyLevelButtonLevelOptinAllowAll {
-    background-color: var(--color-top) !important;
-}
-
-#CybotCookiebotDialogBodyLevelButtonCustomize {
-    border-color: var(--color-top) !important;
-}
-
-#CybotCookiebotDialogPoweredByText {
-    display: none !important;
+/* Links inside the banner follow the brand color. */
+html #cc-main a,
+html #cc-main .cc__link {
+    color: var(--color-top, #ed168f);
 }
 
 
@@ -3793,6 +3804,14 @@ pre[data-theme] span[style*="--shiki-token-keyword"] {
     white-space: nowrap;
 }
 
+.pricing-tier .tier-price-sub {
+    font-size: 0.85rem;
+    font-weight: normal;
+    color: #a0a4b8;
+    margin-top: 2px;
+    margin-bottom: 10px;
+}
+
 .pricing-tier .tier-license {
     font-size: 12px;
     color: #a0a4b8;
@@ -3891,4 +3910,74 @@ pre[data-theme] span[style*="--shiki-token-keyword"] {
     .pricing-tier {
         width: 300px;
     }
+}
+/**
+ * ComparisonTable component (src/components/comparison-table.tsx)
+ * in markdown-children mode: scrollable container and highlighted
+ * last column (the RxDB column).
+ */
+.rxdb-comparison-table table {
+    width: 100%;
+    display: table;
+}
+
+.rxdb-comparison-table table th:last-child {
+    color: var(--color-top);
+}
+
+.rxdb-comparison-table table td:last-child {
+    background-color: rgba(237, 22, 143, 0.06);
+}
+
+.rxdb-comparison-table table td:first-child {
+    font-weight: 600;
+}
+
+/**
+ * Timeline component (src/components/timeline.tsx) in
+ * markdown-children mode: styles the wrapped bullet list as a
+ * vertical timeline with dots and a connecting line.
+ */
+.rxdb-timeline ul {
+    list-style: none;
+    margin: 0;
+    padding-left: 0;
+}
+
+.rxdb-timeline li {
+    position: relative;
+    padding-left: 30px;
+    padding-bottom: 18px;
+    margin: 0;
+}
+
+.rxdb-timeline li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 7px;
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background: var(--color-top);
+}
+
+.rxdb-timeline li::after {
+    content: '';
+    position: absolute;
+    left: 5px;
+    top: 22px;
+    bottom: -3px;
+    width: 1px;
+    background: var(--color-top);
+    opacity: 0.4;
+}
+
+.rxdb-timeline li:last-child::after {
+    display: none;
+}
+
+.rxdb-timeline li>strong:first-child,
+.rxdb-timeline li>p:first-child>strong:first-child {
+    color: var(--color-top);
 }

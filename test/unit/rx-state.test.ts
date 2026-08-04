@@ -2,7 +2,7 @@ import assert from 'assert';
 import { randomBoolean, randomNumber, wait, waitUntil } from 'async-test-util';
 import { Observable } from 'rxjs';
 
-import config, { describeParallel } from './config.ts';
+import config from './config.ts';
 
 import {
     createRxDatabase,
@@ -35,7 +35,7 @@ addRxPlugin(RxDBJsonDumpPlugin);
  * So we test is once with a schema validator and once without.
  */
 [true, false].forEach(useSchemaValidator => {
-    describeParallel('rx-state.test.ts (useSchemaValidator: ' + useSchemaValidator + ')', () => {
+    describe('rx-state.test.ts (useSchemaValidator: ' + useSchemaValidator + ')', () => {
         type TestState = {
             foo?: string;
             a?: number;

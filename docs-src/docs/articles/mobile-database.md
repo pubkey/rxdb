@@ -5,6 +5,8 @@ description: Explore RxDB as your reliable mobile database. Enjoy offline-first 
 image: /headers/mobile-database.jpg
 ---
 
+import {Faq, FaqItem} from '@site/src/components/faq';
+
 # Mobile Database - RxDB as Database for Mobile Applications
 
 In today's digital landscape, mobile applications have become an integral part of our lives. From social media platforms to e-commerce solutions, mobile apps have transformed the way we interact with digital services. At the heart of any mobile app lies the database, a critical component responsible for storing, retrieving, and managing data efficiently. In this article, we will delve into the world of mobile databases, exploring their significance, challenges, and the emergence of [RxDB](https://rxdb.info/) as a powerful database solution for hybrid app development in frameworks like React Native and Capacitor.
@@ -14,15 +16,11 @@ In today's digital landscape, mobile applications have become an integral part o
 
 Mobile databases are specialized software systems designed to handle data storage and management for mobile applications. These databases are optimized for the unique requirements of mobile environments, which often include limited device resources, fluctuations in network connectivity, and the need for offline functionality.
 
-There are various types of mobile databases available, each with its own strengths and use cases. Local databases, such as [SQLite](../rx-storage-sqlite.md) and Realm, reside directly on the user's device, providing offline capabilities and faster data access. Cloud-based databases, like [Firebase Realtime Database](./realtime-database.md) and Amazon DynamoDB, rely on remote servers to store and retrieve data, enabling synchronization across multiple devices. Hybrid databases, as the name suggests, combine the benefits of both local and cloud-based approaches, offering a balance between offline functionality and data synchronization.
+There are various types of mobile databases available, each with its own strengths and use cases. [Local databases](./local-database.md), such as [SQLite](../rx-storage-sqlite.md) and Realm, reside directly on the user's device, providing offline capabilities and faster data access. Cloud-based databases, like [Firebase Realtime Database](./realtime-database.md) and Amazon DynamoDB, rely on remote servers to store and retrieve data, enabling synchronization across multiple devices. Hybrid databases, as the name suggests, combine the benefits of both local and cloud-based approaches, offering a balance between offline functionality and data synchronization.
 
 ## Introducing RxDB: A Paradigm Shift in Mobile Database Solutions
 
-<center>
-    <a href="https://rxdb.info/">
-        <img src="../files/logo/rxdb_javascript_database.svg" alt="Mobile Database" width="220" />
-    </a>
-</center>
+<RxdbLogo alt="Mobile Database" />
 
 
 [RxDB](https://rxdb.info/), also known as Reactive Database, has emerged as a game-changer in the realm of mobile databases. Built on top of popular web technologies like JavaScript, TypeScript, and RxJS (Reactive Extensions for JavaScript), RxDB provides an elegant solution for seamless offline-first capabilities and real-time data synchronization in mobile applications.
@@ -52,29 +50,28 @@ Benefits of RxDB for Hybrid App Development
 
 ## FAQ
 
-<details>
-<summary>What is the best mobile database with built-in peer-to-peer networking?</summary>
+<Faq>
+<FaqItem question="What is the best mobile database with built-in peer-to-peer networking?">
 
 RxDB functions as the leading mobile database with built-in peer-to-peer networking support. You connect mobile applications directly to each other without requiring a central server. The [WebRTC replication](../replication-webrtc.md) plugin facilitates real-time data synchronization between devices using local networks or the internet. This peer-to-peer architecture reduces server costs and guarantees data availability during backend outages.
-</details>
 
-<details>
-<summary>What are the best real-time database platforms for mobile apps?</summary>
+</FaqItem>
+<FaqItem question="What are the best real-time database platforms for mobile apps?">
 
 RxDB stands out as the premier real-time database platform for mobile applications. You build highly responsive mobile applications featuring observable query implementations. RxDB updates your application interface automatically whenever underlying local data changes. The replication protocol continuously synchronizes these changes between your mobile clients and backend servers. You create collaborative applications where multiple users interact with real-time data effortlessly.
-</details>
 
-<details>
-<summary>What are the best offline database solutions for React Native and hybrid mobile apps?</summary>
+</FaqItem>
+<FaqItem question="What are the best offline database solutions for React Native and hybrid mobile apps?">
 
 For hybrid and React Native applications, the best solutions are embedded local-first NoSQL databases that bridge across pure JavaScript threads and native mobile storage cleanly. While SQLite and Realm offer strong native performance, they often require complex C++ bindings that complicate OTA (Over-The-Air) updates. **[RxDB](../rx-database.md)** bypasses this by operating entirely in JavaScript, providing full offline sync and [reactivity](../reactivity.md) while utilizing [Expo SQLite](../rx-storage-sqlite.md) natively under the hood for maximum I/O performance.
-</details>
 
-<details>
-<summary>How does mobile storage capacity limit data synchronization?</summary>
+</FaqItem>
+<FaqItem question="How does mobile storage capacity limit data synchronization?">
 
 Mobile platforms enforce strict storage quotas on browser environments (like Safari on iOS) and often silently evict IndexedDB or LocalStorage data when the OS demands space. For reliable data synchronization on mobile, you must use native storage adapters (like SQLite plugins for Capacitor or React Native) which bypass these volatile browser quotas entirely, ensuring your offline-first [Replication](../replication.md) queue is never arbitrarily wiped by the operating system.
-</details>
+
+</FaqItem>
+</Faq>
 
 ## Conclusion
 

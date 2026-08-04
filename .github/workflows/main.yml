@@ -22,7 +22,6 @@ env:
   NPM_CONFIG_FETCH_RETRY_FACTOR: 2
   NPM_CONFIG_FETCH_RETRY_MINTIMEOUT: 5000
   NPM_CONFIG_FETCH_RETRY_MAXTIMEOUT: 20000
-  NPM_CONFIG_PREFER_OFFLINE: true
 
 # For a lower total time
 # the jobs which take longes must come before the faster ones
@@ -32,9 +31,9 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Set node version
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version-file: ".nvmrc"
 
@@ -44,7 +43,7 @@ jobs:
           npm -v
 
       - name: Reuse npm cache folder
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         env:
           cache-name: cache-node-modules
         with:
@@ -72,9 +71,9 @@ jobs:
     runs-on: windows-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Set node version
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version-file: ".nvmrc"
 
@@ -84,7 +83,7 @@ jobs:
           npm -v
 
       - name: Reuse npm cache folder
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         env:
           cache-name: cache-node-modules
         with:
@@ -105,14 +104,14 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Set node version
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version-file: ".nvmrc"
 
       - name: Reuse npm cache folder
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         env:
           cache-name: cache-node-modules
         with:
@@ -130,14 +129,14 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Set node version
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version-file: ".nvmrc"
 
       - name: Reuse npm cache folder
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         env:
           cache-name: cache-node-modules
         with:
@@ -166,14 +165,14 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Set node version
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version-file: ".nvmrc"
 
       - name: Reuse npm cache folder
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         env:
           cache-name: cache-node-modules
         with:
@@ -207,14 +206,14 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Set node version
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version-file: ".nvmrc"
 
       - name: Reuse npm cache folder
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         env:
           cache-name: cache-node-modules
         with:
@@ -241,14 +240,14 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Set node version
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version-file: ".nvmrc"
 
       - name: Reuse npm cache folder
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         env:
           cache-name: cache-node-modules
         with:
@@ -259,7 +258,7 @@ jobs:
             ${{ runner.os }}-npm-root-v1-
 
       - name: Reuse docker layers cache
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: /tmp/.buildx-cache
           key: ${{ runner.os }}-buildx-foundationdb-v1-${{ github.sha }}
@@ -296,14 +295,14 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Set node version
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version-file: ".nvmrc"
 
       - name: Reuse npm cache folder
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         env:
           cache-name: cache-node-modules
         with:
@@ -322,14 +321,14 @@ jobs:
     timeout-minutes: 30
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Set node version
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version-file: ".nvmrc"
 
       - name: Reuse npm cache folder
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         env:
           cache-name: cache-node-modules
         with:
@@ -358,19 +357,19 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Setup Chrome to specific version
         id: chrome
         uses: browser-actions/setup-chrome@v2
         with:
           chrome-version: 141
       - name: Set node version
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version-file: ".nvmrc"
 
       - name: Reuse npm cache folder
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         env:
           cache-name: cache-node-modules
         with:
@@ -415,14 +414,14 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Set node version
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version-file: ".nvmrc"
 
       - name: Reuse npm cache folder
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         env:
           cache-name: cache-node-modules
         with:
@@ -458,7 +457,7 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Validate workflow YAML syntax
         run: |
@@ -478,12 +477,12 @@ jobs:
           "
 
       - name: Set node version
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version-file: ".nvmrc"
 
       - name: Reuse npm cache folder
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         env:
           cache-name: cache-node-modules
         with:
@@ -512,7 +511,7 @@ jobs:
         uses: codespell-project/actions-codespell@v2.2
         with:
           ignore_words_file: config/codespellignore.txt
-          skip: legal-notice.tsx,custom.css
+          skip: legal-notice.tsx,privacy.tsx,custom.css
           path: docs-src/src
       - name: spelling docs-src/releases
         uses: codespell-project/actions-codespell@v2.2
@@ -573,9 +572,9 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Set node version
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version-file: ".nvmrc"
 
@@ -608,9 +607,9 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Set node version
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version-file: ".nvmrc"
       # install system dependencies that Tauri needs to compile on Linux.
@@ -653,9 +652,9 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Set node version
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version-file: ".nvmrc"
 
@@ -691,9 +690,9 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Set node version
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version-file: ".nvmrc"
 
@@ -720,14 +719,14 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Setup Chrome to specific version
         id: chrome
         uses: browser-actions/setup-chrome@v2
         with:
           chrome-version: 141
       - name: Set node version
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version-file: ".nvmrc"
       - name: prepare RxDB core
@@ -756,14 +755,14 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Setup Chrome to specific version
         id: chrome
         uses: browser-actions/setup-chrome@v2
         with:
           chrome-version: 141
       - name: Set node version
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version-file: ".nvmrc"
       - name: prepare RxDB core
@@ -790,14 +789,14 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Setup Chrome to specific version
         id: chrome
         uses: browser-actions/setup-chrome@v2
         with:
           chrome-version: 141
       - name: Set node version
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version-file: ".nvmrc"
       - name: prepare RxDB core
@@ -819,18 +818,51 @@ jobs:
           working-directory: ./examples/vite-vanilla-ts
           run: npm run test
 
-  example-graphql:
+  example-ionic:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Setup Chrome to specific version
         id: chrome
         uses: browser-actions/setup-chrome@v2
         with:
           chrome-version: 141
       - name: Set node version
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: ".nvmrc"
+      - name: prepare RxDB core
+        run: |
+          npm install --legacy-peer-deps
+          npm run build
+          rm -r node_modules
+      - name: ionic build
+        working-directory: ./examples/ionic
+        run: |
+          npm run preinstall
+          npm install --legacy-peer-deps
+          npm run build
+      - name: ionic test
+        uses: coactions/setup-xvfb@v1
+        env:
+          BROWSER_PATH: ${{ steps.chrome.outputs.chrome-path }}
+        with:
+          working-directory: ./examples/ionic
+          run: npm run test
+
+  example-graphql:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - name: Setup Chrome to specific version
+        id: chrome
+        uses: browser-actions/setup-chrome@v2
+        with:
+          chrome-version: 141
+      - name: Set node version
+        uses: actions/setup-node@v7
         with:
           node-version-file: ".nvmrc"
       - name: prepare RxDB core
@@ -907,9 +939,9 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Set node version
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version-file: ".nvmrc"
       - name: prepare RxDB core
@@ -993,14 +1025,14 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Set node version
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version-file: ".nvmrc"
 
       - name: Reuse npm cache folder
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         env:
           cache-name: cache-node-modules
         with:
@@ -1041,14 +1073,14 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Set node version
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version-file: ".nvmrc"
 
       - name: Reuse npm cache folder
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         env:
           cache-name: cache-node-modules
         with:
@@ -1071,7 +1103,7 @@ jobs:
 
       # deno (must be last because it messes up with file permissions)
       - name: Reuse deno cache folder
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         env:
           cache-name: cache-deno-modules
         with:

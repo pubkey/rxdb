@@ -106,6 +106,11 @@ export function getQueryPlan<RxDocType>(
                         const operatorValue = matcher[operator];
                         const partialOpts = getMatcherQueryOpts(operator, operatorValue);
                         matcherOpts = Object.assign(matcherOpts, partialOpts);
+                    } else if (operator === '$in') {
+                        const partialOpts = getInQueryRangeOpts(matcher[operator]);
+                        if (partialOpts) {
+                            matcherOpts = Object.assign(matcherOpts, partialOpts);
+                        }
                     }
                 });
             }
@@ -122,6 +127,33 @@ export function getQueryPlan<RxDocType>(
             }
             if (typeof matcherOpts.inclusiveEnd === 'undefined') {
                 matcherOpts.inclusiveEnd = true;
+            }
+
+            /**
+             * When a numeric bound falls outside the schema minimum/maximum,
+             * getNumberIndexString() clamps it to the boundary value.
+             * An exclusive bound clamped to the same string as a boundary
+             * document would incorrectly exclude that document, so we
+             * promote it to inclusive here.
+             */
+            const schemaPart = getSchemaByObjectPath(schema, indexField);
+            if (schemaPart && (schemaPart.type === 'number' || schemaPart.type === 'integer')) {
+                if (
+                    !matcherOpts.inclusiveStart &&
+                    typeof matcherOpts.startKey === 'number' &&
+                    typeof schemaPart.minimum === 'number' &&
+                    matcherOpts.startKey < schemaPart.minimum
+                ) {
+                    matcherOpts.inclusiveStart = true;
+                }
+                if (
+                    !matcherOpts.inclusiveEnd &&
+                    typeof matcherOpts.endKey === 'number' &&
+                    typeof schemaPart.maximum === 'number' &&
+                    matcherOpts.endKey > schemaPart.maximum
+                ) {
+                    matcherOpts.inclusiveEnd = true;
+                }
             }
 
             if (inclusiveStart && !matcherOpts.inclusiveStart) {
@@ -306,6 +338,54 @@ export function isSelectorSatisfiedByIndex(
     }
 
     return true;
+}
+
+/**
+ * $in can use an index by scanning the range between the
+ * smallest and the largest of the given values.
+ * That range can contain non-matching documents, so the
+ * selector is never satisfied by the index alone and the
+ * query matcher must still filter the results.
+ * Only homogeneous arrays of strings or finite numbers are
+ * used because min/max is not defined across mixed types.
+ * @link https://github.com/pubkey/rxdb/issues/8631
+ */
+export function getInQueryRangeOpts(
+    operatorValue: any
+): Partial<RxQueryPlanerOpts> | undefined {
+    if (
+        !Array.isArray(operatorValue) ||
+        operatorValue.length === 0
+    ) {
+        return undefined;
+    }
+    const valueType = typeof operatorValue[0];
+    if (valueType !== 'string' && valueType !== 'number') {
+        return undefined;
+    }
+    let min = operatorValue[0];
+    let max = operatorValue[0];
+    for (let i = 0; i < operatorValue.length; i++) {
+        const value = operatorValue[i];
+        if (
+            typeof value !== valueType ||
+            (valueType === 'number' && !isFinite(value))
+        ) {
+            return undefined;
+        }
+        if (value < min) {
+            min = value;
+        }
+        if (value > max) {
+            max = value;
+        }
+    }
+    return {
+        startKey: min,
+        endKey: max,
+        inclusiveStart: true,
+        inclusiveEnd: true
+    };
 }
 
 export function getMatcherQueryOpts(

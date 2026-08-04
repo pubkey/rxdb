@@ -7,6 +7,7 @@ image: /headers/replication.jpg
 
 import { IconGear } from '@site/src/components/icons/gear';
 import { HeadlineWithIcon } from '@site/src/components/headline-with-icon';
+import {Faq, FaqItem} from '@site/src/components/faq';
 
 # <HeadlineWithIcon h1 icon={<IconGear />}>RxDB's realtime Sync Engine for Local-First Apps</HeadlineWithIcon>
 
@@ -464,6 +465,11 @@ myRxReplicationState.canceled$.subscribe(bool => console.dir(bool));
 
 // emits true when a replication cycle is running, false when not.
 myRxReplicationState.active$.subscribe(bool => console.dir(bool));
+
+// emits each conflict that was reported by the remote in the response
+// of the push handler, together with the output of the conflictHandler
+// that resolved it.
+myRxReplicationState.conflict$.subscribe(conflict => console.dir(conflict));
 ```
 
 ### awaitInitialReplication()
@@ -530,6 +536,36 @@ await hideLoadingSpinner();
 
 :::
 
+
+### awaitDocumentPushed()
+
+Returns a `Promise` that resolves when a specific `RxDocument` instance was successfully pushed to the server.
+
+While `awaitInSync()` waits for the whole collection to be in sync, `awaitDocumentPushed()` only waits for a single document. This is useful when you have a sensitive write (like a financial transaction or a value with a uniqueness constraint) and you want to confirm that exactly this write reached the backend, without blocking on every other unrelated change in the collection.
+
+You pass the `RxDocument` instance you got back from a write operation:
+
+```ts
+const doc = await myCollection.insert({ id: 'foobar', value: 10 });
+await myReplicationState.awaitDocumentPushed(doc);
+// here we know that the document state was pushed to the server
+```
+
+A `RxDocument` represents the state of a document at a given point in time, not the document in general. An older or a newer `RxDocument` instance of the same document is not the exact same `RxDocument`, because each instance carries the field values and the internal write time of that specific state. `awaitDocumentPushed()` therefore resolves based on the exact state of the instance you pass in.
+
+It works by comparing the given document state with the last state that was written to the server, which RxDB stores in the replication meta data. Once the given state (or a newer one) was written to the server, the promise resolves.
+
+If the document was overwritten by a newer local write before it could be pushed, the promise resolves as soon as a later state of that document has reached the server.
+
+`awaitDocumentPushed()` does not set a timeout on purpose. If you need one, combine it with `Promise.race()`:
+
+```ts
+const doc = await myCollection.insert({ id: 'foobar', value: 10 });
+await Promise.race([
+    myReplicationState.awaitDocumentPushed(doc),
+    new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000))
+]);
+```
 
 ### reSync()
 
@@ -675,10 +711,13 @@ RxDB supports partial sync patterns where you dynamically manage multiple replic
 
 ## FAQ
 
-<details>
-    <summary>I have infinite loops in my replication, how to debug?</summary>
+<Faq>
+<FaqItem question="I have infinite loops in my replication, how to debug?">
+
     <div>
     When you have infinite loops in your replication or random re-runs of http requests after some time, the reason is likely that your pull-handler
     is crashing. To debug this, add a log to the error$ handler to debug it. `myRxReplicationState.error$.subscribe(err => console.log('error$', err))`.
     </div>
-</details>
+
+</FaqItem>
+</Faq>

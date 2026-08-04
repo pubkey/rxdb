@@ -1,0 +1,39 @@
+<ion-card>
+  <ion-card-header>
+    <ion-card-title>Add Hero</ion-card-title>
+  </ion-card-header>
+
+  <ion-card-content>
+    <ion-list lines="full">
+      <ion-item>
+        <ion-input
+          id="insert-name"
+          label="Name"
+          labelPlacement="floating"
+          [ngModel]="name()"
+          (ngModelChange)="name.set($event)"
+          name="name"
+          autocomplete="off"
+          (keyup.enter)="submit()"
+        ></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label>Color</ion-label>
+        <input
+          id="insert-color"
+          slot="end"
+          type="color"
+          [ngModel]="color()"
+          (ngModelChange)="color.set($event)"
+          name="color"
+        />
+      </ion-item>
+    </ion-list>
+
+    <ion-button
+      id="insert-button"
+      expand="block"
+      (click)="submit()"
+    >Insert</ion-button>
+  </ion-card-content>
+</ion-card>

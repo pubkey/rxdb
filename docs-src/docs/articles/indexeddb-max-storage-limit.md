@@ -5,17 +5,18 @@ description: Learn how browsers enforce IndexedDB storage size limits, how to te
 image: /headers/indexeddb-max-storage-limit.jpg
 ---
 
-<!--
+{/*
 SEO Keywords:
 - "indexeddb storage limit" - 590
 - "indexeddb size limit" - 260
 - "indexeddb max size" - 590
 - "indexeddb limits" - 170
--->
+*/}
 
 
 
 import {VideoBox} from '@site/src/components/video-box';
+import {CenteredImage} from '@site/src/components/centered-image';
 
 
 
@@ -148,11 +149,7 @@ const compressed = {
 
 Sharding data across multiple subdomains or iframes is another trick, though it complicates communication. When you need truly massive offline data, you might store part of the data under `sub1.yoursite.com` and another chunk under `sub2.yoursite.com`, using `postMessage()` to coordinate. This can circumvent single-origin limitations, but it introduces extra complexity. Another effective method is to let data expire automatically, for example, older records can be removed if they haven’t been accessed for a certain period.
 
-<center>
-    <a href="https://rxdb.info/">
-        <img src="../files/logo/rxdb_javascript_database.svg" alt="JavaScript Database" width="220" />
-    </a>
-</center>
+<RxdbLogo alt="JavaScript Database" />
 
 ## IndexedDB Max Size of a Single Object
 
@@ -163,9 +160,7 @@ There is no explicit cap on how large an individual object or record in IndexedD
 
 IndexedDB data can remain indefinitely as long as the user does not clear the browser’s data or the origin does not run afoul of automated eviction policies (e.g., Safari or Android might remove large caches for sites unused over a long period when space is needed). Typically, there is no “time limit,” but ephemeral modes or incognito sessions have their own rules. If you rely on permanent offline data, request persistent storage and handle the possibility that the user or the OS could still remove your data under extreme conditions. Especially Safari is known to be very fast in deleting local data.
 
-<p align="center">
-  <img src="/files/safari-database.png" alt="safari database" width="200" />
-</p>
+<CenteredImage src="/files/safari-database.png" alt="safari database" width={200} />
 
 ## Follow Up
 

@@ -31,6 +31,16 @@ export type RxConflictHandlerOld<RxDocType> = (
 ) => Promise<RxConflictHandlerOutput<RxDocType>>;
 
 
+/**
+ * A conflict that was reported by the remote in the response
+ * of the push handler, together with the output of the
+ * conflictHandler that resolved it.
+ */
+export type RxReplicationConflict<RxDocType> = {
+    input: RxConflictHandlerInput<RxDocType>;
+    output: WithDeleted<RxDocType>;
+};
+
 export type RxConflictHandler<RxDocType> = {
     /**
      * This must be non-async

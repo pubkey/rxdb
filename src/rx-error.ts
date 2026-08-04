@@ -116,7 +116,8 @@ export function getErrorUrl(code: RxErrorKey) {
 }
 
 export function errorUrlHint(code: RxErrorKey) {
-    return '\nFind out more about this error here: ' + getErrorUrl(code) + ' \n';
+    return '\nFind out more about this error here: ' + getErrorUrl(code) + ' \n' +
+        'Still stuck? Ask in the RxDB Discord: https://rxdb.info/chat \n';
 }
 
 export function newRxError(

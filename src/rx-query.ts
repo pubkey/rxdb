@@ -49,6 +49,7 @@ import type {
     Reactified
 } from './types/index.d.ts';
 import { calculateNewResults } from './event-reduce.ts';
+import type { EventReduceResultPos } from './event-reduce.ts';
 import { triggerCacheReplacement } from './query-cache.ts';
 import {
     getQueryMatcher,
@@ -758,10 +759,13 @@ function __ensureEqual<RxDocType>(rxQuery: RxQueryBase<RxDocType, any>): Promise
                 if (eventReduceResult.runFullQueryAgain) {
                     // could not calculate the new results, execute must be done
                     mustReExec = true;
-                } else if (eventReduceResult.changed) {
-                    // we got the new results, we do not have to re-execute, mustReExec stays false
-                    ret = true; // true because results changed
-                    rxQuery._setResultData(eventReduceResult.newResults as any);
+                } else {
+                    const positiveResult = eventReduceResult as EventReduceResultPos<any>;
+                    if (positiveResult.changed) {
+                        // we got the new results, we do not have to re-execute, mustReExec stays false
+                        ret = true; // true because results changed
+                        rxQuery._setResultData(positiveResult.newResults as any);
+                    }
                 }
             }
         }

@@ -20,14 +20,14 @@ import {
     getPrimaryKeyFromIndexableString,
     ensureNotFalsy
 } from '../../plugins/core/index.mjs';
-import { describeParallel } from './config.ts';
+import './config.ts';
 import {
     schemaObjects,
     schemas,
     EXAMPLE_REVISION_1
 } from '../../plugins/test-utils/index.mjs';
 
-describeParallel('custom-index.test.ts', () => {
+describe('custom-index.test.ts', () => {
 
     type IndexTestDocType = {
         id: string;

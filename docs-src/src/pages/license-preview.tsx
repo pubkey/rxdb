@@ -1,10 +1,8 @@
-import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import Layout from '@theme/Layout';
 import Head from '@docusaurus/Head';
 import React from 'react';
 
 export default function LicensePreview() {
-    const { siteConfig } = useDocusaurusContext();
 
     return (
         <>
@@ -13,7 +11,7 @@ export default function LicensePreview() {
                 <meta name="robots" content="noindex, nofollow" />
             </Head>
             <Layout
-                title={`License Preview - ${siteConfig.title}`}
+                title={'License Preview'}
                 description="Preview the RxDB Premium License Agreement"
             >
                 <main>

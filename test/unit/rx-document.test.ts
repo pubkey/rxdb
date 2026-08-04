@@ -2,7 +2,7 @@ import assert from 'assert';
 import AsyncTestUtil, { wait } from 'async-test-util';
 import { Observable } from 'rxjs';
 
-import config, { describeParallel } from './config.ts';
+import config from './config.ts';
 import {
     schemaObjects,
     schemas,
@@ -40,8 +40,8 @@ addRxPlugin(RxDBUpdatePlugin);
 
 
 describe('rx-document.test.js', () => {
-    describeParallel('statics', () => { });
-    describeParallel('prototype-merge', () => {
+    describe('statics', () => { });
+    describe('prototype-merge', () => {
         describe('RxSchema.getDocumentPrototype()', () => {
             it('should get an object with all main-fields', () => {
                 const schema = createRxSchema(schemas.human, defaultHashSha256);
@@ -130,7 +130,7 @@ describe('rx-document.test.js', () => {
         });
 
     });
-    describeParallel('.get()', () => {
+    describe('.get()', () => {
         it('get a value', async () => {
             const c = await humansCollection.create(1);
             const doc: any = await c.findOne().exec(true);
@@ -155,7 +155,7 @@ describe('rx-document.test.js', () => {
             c.database.close();
         });
     });
-    describeParallel('.remove()', () => {
+    describe('.remove()', () => {
         describe('positive', () => {
             it('delete 1 document', async () => {
                 const c = await humansCollection.create(5);
@@ -302,7 +302,7 @@ describe('rx-document.test.js', () => {
             });
         });
     });
-    describeParallel('.update()', () => {
+    describe('.update()', () => {
         describe('positive', () => {
             it('$set a value with a mongo like query', async () => {
                 const c = await humansCollection.createPrimary(1);
@@ -419,7 +419,7 @@ describe('rx-document.test.js', () => {
             });
         });
     });
-    describeParallel('.modify()', () => {
+    describe('.modify()', () => {
         describe('positive', () => {
             it('run one update', async () => {
                 const c = await humansCollection.createNested(1);
@@ -773,7 +773,7 @@ describe('rx-document.test.js', () => {
             });
         });
     });
-    describeParallel('.patch()', () => {
+    describe('.patch()', () => {
         describe('positive', () => {
             it('run one update', async () => {
                 const c = await humansCollection.createNested(1);
@@ -808,7 +808,7 @@ describe('rx-document.test.js', () => {
             });
         });
     });
-    describeParallel('.toJSON()', () => {
+    describe('.toJSON()', () => {
         it('should get the documents data as json', async () => {
             const c = await humansCollection.create(1);
             const doc: any = await c.findOne().exec();
@@ -882,7 +882,7 @@ describe('rx-document.test.js', () => {
             db.close();
         });
     });
-    describeParallel('.toMutableJSON()', () => {
+    describe('.toMutableJSON()', () => {
         it('should be able to mutate the output', async () => {
             const c = await humansCollection.create(1);
             const doc = await c.findOne().exec(true);
@@ -921,7 +921,7 @@ describe('rx-document.test.js', () => {
             c.database.close();
         });
     });
-    describeParallel('Proxy', () => {
+    describe('Proxy', () => {
         describe('get', () => {
             it('top-value', async () => {
                 const c = await humansCollection.create(1);
@@ -1127,7 +1127,7 @@ describe('rx-document.test.js', () => {
             });
         });
     });
-    describeParallel('issues', () => {
+    describe('issues', () => {
         it('#66 - insert -> remove -> upsert does not give new state', async () => {
             const c = await humansCollection.createPrimary(0);
             const docData = schemaObjects.simpleHumanData();

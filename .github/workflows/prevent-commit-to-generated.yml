@@ -10,6 +10,6 @@ jobs:
   warn-user:
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Warn User to not commit generated files
         run: bash -c 'echo "You have commited generated files (from the dist folder), this is not allowed. You can only commit files that you have manually edited" && exit 1'

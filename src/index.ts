@@ -11,6 +11,7 @@ export * from './overwritable.ts';
 export * from './rx-collection.ts';
 export * from './rx-collection-helper.ts';
 export * from './rx-document.ts';
+export * from './doc-cache.ts';
 export * from './rx-change-event.ts';
 export * from './rx-document-prototype-merge.ts';
 export * from './rx-query.ts';

@@ -1,0 +1,52 @@
+{
+  "name": "rxdb-example-ionic",
+  "version": "1.0.0",
+  "private": true,
+  "author": "pubkey",
+  "license": "MIT",
+  "description": "RxDB example app built with Ionic and Capacitor",
+  "//": "NOTICE: For the Github CI we use the local RxDB build (rxdb-local.tgz). In your app should just install 'rxdb' from npm instead",
+  "scripts": {
+    "preinstall": "npm run preinstall:rxdb",
+    "preinstall:rxdb": "(cd ../../ && npx yarn@1.22.22 pack ../../ --filename ./examples/ionic/rxdb-local.tgz)",
+    "dev": "ng serve --port 8100",
+    "build": "ng build --configuration production",
+    "build:serve": "ws -p 8100 -d dist/ionic/browser --spa index.html",
+    "lint": "ng lint",
+    "test:e2e": "testcafe \"path:$BROWSER_PATH --no-sandbox --disable-dev-shm-usage\" -e test/ --hostname localhost --selector-timeout 30000 --disable-features=LocalNetworkAccessChecks",
+    "test": "npm run build && concurrently \"npm run build:serve\" \"npm run test:e2e\" --kill-others --success first",
+    "cap:add:android": "npx cap add android",
+    "cap:add:ios": "npx cap add ios",
+    "cap:sync": "npm run build && npx cap sync",
+    "cap:open:android": "npm run cap:sync && npx cap open android",
+    "cap:open:ios": "npm run cap:sync && npx cap open ios"
+  },
+  "dependencies": {
+    "@angular/common": "21.2.18",
+    "@angular/compiler": "21.2.18",
+    "@angular/core": "21.2.18",
+    "@angular/forms": "21.2.18",
+    "@angular/platform-browser": "21.2.18",
+    "@angular/router": "21.2.18",
+    "@capacitor/android": "8.4.2",
+    "@capacitor/core": "8.4.2",
+    "@capacitor/ios": "8.4.2",
+    "@ionic/angular": "8.8.16",
+    "ionicons": "8.1.0",
+    "rxdb": "file:rxdb-local.tgz",
+    "rxjs": "7.8.2",
+    "tslib": "2.8.1",
+    "zone.js": "0.16.2"
+  },
+  "devDependencies": {
+    "@angular/build": "21.2.19",
+    "@angular/cli": "21.2.19",
+    "@angular/compiler-cli": "21.2.18",
+    "@capacitor/cli": "8.4.2",
+    "async-test-util": "2.5.0",
+    "concurrently": "10.0.4",
+    "local-web-server": "5.4.0",
+    "testcafe": "3.7.6",
+    "typescript": "5.9.3"
+  }
+}

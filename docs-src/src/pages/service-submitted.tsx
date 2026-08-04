@@ -1,11 +1,9 @@
-import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import Layout from '@theme/Layout';
 import React, { useEffect } from 'react';
 import { triggerTrackingEvent } from '../components/trigger-event';
 const FILE_EVENT_ID = 'paid-meeting-link-clicked';
 
 export default function ServiceSubmitted() {
-    const { siteConfig } = useDocusaurusContext();
 
     useEffect(() => {
         (() => {
@@ -15,7 +13,7 @@ export default function ServiceSubmitted() {
 
     return (
         <Layout
-            title={`Service Request Submitted - ${siteConfig.title}`}
+            title={'Service Request Submitted'}
             description="RxDB Meeting Scheduler"
         >
             <main>

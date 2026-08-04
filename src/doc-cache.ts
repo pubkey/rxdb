@@ -7,6 +7,7 @@ import type {
 } from './types/index.d.ts';
 import {
     getFromMapOrThrow,
+    getHeightOfRevision,
     overwriteGetterForCaching,
     requestIdlePromiseNoQueue
 } from './plugins/utils/index.ts';
@@ -121,7 +122,24 @@ export class DocumentCache<RxDocType, OrmMethods> {
                         if (!documentData) {
                             documentData = event.previousDocumentData as any;
                         }
-                        cacheItem[1] = documentData;
+                        /**
+                         * In multiInstance mode the changeStream merges events
+                         * from the own writes together with the events from other
+                         * instances that arrive over the BroadcastChannel.
+                         * These events can arrive out of order, so an older document
+                         * state might be received after a newer one was already processed.
+                         * We must not downgrade the cached latest document state in that case,
+                         * otherwise two instances can end up with diverging "latest" states
+                         * that never converge.
+                         * @link https://github.com/pubkey/rxdb/issues/8609
+                         */
+                        const currentLatest = cacheItem[1];
+                        if (
+                            !currentLatest ||
+                            !isOlderDocumentState(documentData._rev, currentLatest._rev)
+                        ) {
+                            cacheItem[1] = documentData;
+                        }
                     }
                 }
             });
@@ -182,6 +200,26 @@ export class DocumentCache<RxDocType, OrmMethods> {
             return cacheItem[1];
         }
     }
+}
+
+/**
+ * Determines if the document state of checkRev is older than the one of currentRev.
+ * Compares by revision height first and falls back to a deterministic
+ * comparison of the full revision string so that all instances agree
+ * on the same winner when the heights are equal.
+ * Equal revisions are not considered older so that the cached reference
+ * still gets refreshed, which keeps the previous behavior intact.
+ */
+function isOlderDocumentState(checkRev: string, currentRev: string): boolean {
+    if (checkRev === currentRev) {
+        return false;
+    }
+    const checkHeight = getHeightOfRevision(checkRev);
+    const currentHeight = getHeightOfRevision(currentRev);
+    if (checkHeight !== currentHeight) {
+        return checkHeight < currentHeight;
+    }
+    return checkRev < currentRev;
 }
 
 /**

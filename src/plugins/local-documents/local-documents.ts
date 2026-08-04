@@ -66,28 +66,45 @@ export async function upsertLocal<DocData extends Record<string, any> = any, Rea
     data: DocData
 ): Promise<RxLocalDocument<DocData, any, Reactivity>> {
     const state = await getLocalDocStateByParent(this);
-    const docDataFromCache = state.docCache.getLatestDocumentDataIfExists(id);
+    while (true) {
+        try {
+            const docDataFromCache = state.docCache.getLatestDocumentDataIfExists(id);
 
-    if (!docDataFromCache) {
-        // create new one
-        return this.insertLocal(id, data);
-    } else if (docDataFromCache._deleted) {
-        // document was deleted before, un-delete it via the write queue
-        const writeResult = await state.incrementalWriteQueue.addWrite(
-            docDataFromCache,
-            (docData: any) => {
-                docData.data = data;
-                docData._deleted = false;
-                return docData;
+            if (!docDataFromCache) {
+                // create new one
+                return await this.insertLocal(id, data);
+            } else if (docDataFromCache._deleted) {
+                // document was deleted before, un-delete it via the write queue
+                const writeResult = await state.incrementalWriteQueue.addWrite(
+                    docDataFromCache,
+                    (docData: any) => {
+                        docData.data = data;
+                        docData._deleted = false;
+                        return docData;
+                    }
+                );
+                return state.docCache.getCachedRxDocument(writeResult) as any;
+            } else {
+                // update existing
+                const existing = state.docCache.getCachedRxDocument(docDataFromCache) as any;
+                return await existing.incrementalModify(() => {
+                    return data;
+                });
             }
-        );
-        return state.docCache.getCachedRxDocument(writeResult) as any;
-    } else {
-        // update existing
-        const existing = state.docCache.getCachedRxDocument(docDataFromCache) as any;
-        return existing.incrementalModify(() => {
-            return data;
-        });
+        } catch (err: any) {
+            if (err && err.status === 409) {
+                if (err.documentInDb) {
+                    state.docCache.getCachedRxDocument(err.documentInDb);
+                } else {
+                    const latestDoc = await getSingleDocument(state.storageInstance, id);
+                    if (latestDoc) {
+                        state.docCache.getCachedRxDocument(latestDoc);
+                    }
+                }
+                continue;
+            }
+            throw err;
+        }
     }
 }
 

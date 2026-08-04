@@ -1,10 +1,8 @@
-import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import Layout from '@theme/Layout';
 import React, { useEffect } from 'react';
 import { triggerTrackingEvent } from '../components/trigger-event';
 
 export default function Chat() {
-    const { siteConfig } = useDocusaurusContext();
 
     useEffect(() => {
         triggerTrackingEvent('join_chat', 0.40);
@@ -12,7 +10,7 @@ export default function Chat() {
 
     return (
         <Layout
-            title={`Chat - ${siteConfig.title}`}
+            title={'Chat'}
             description="RxDB Community Chat"
         >
             <main>

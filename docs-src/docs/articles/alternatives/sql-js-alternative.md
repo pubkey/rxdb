@@ -5,17 +5,16 @@ description: Compare RxDB with sql.js for browser data. Get durable storage, rea
 image: /headers/sql-js-alternative.jpg
 ---
 
+import {Faq, FaqItem} from '@site/src/components/faq';
+import {ComparisonTable} from '@site/src/components/comparison-table';
+
 # RxDB as a sql.js Alternative for Browser Persistence
 
 Developers often pick **sql.js** when they want to run SQL inside the browser without a server. It is a faithful port of SQLite compiled to WebAssembly, so any valid SQLite query runs in a JavaScript runtime. The catch shows up the moment a real application needs to keep data around: sql.js holds the entire database as an in-memory buffer. Closing the tab, reloading the page, or losing a process wipes the state. There is no built-in [persistence](../../offline-first.md), no [reactive query](../../reactivity.md) layer, no [replication](../../replication.md), and no awareness of other browser tabs.
 
 This page explains why teams that started with sql.js often migrate to **RxDB** once their prototype turns into a product, and how RxDB fills the gaps while still letting you keep SQLite as the underlying storage if you want.
 
-<center>
-    <a href="https://rxdb.info/">
-        <img src="/files/logo/rxdb_javascript_database.svg" alt="RxDB JavaScript Database" width="220" />
-    </a>
-</center>
+<RxdbLogo alt="RxDB JavaScript Database" />
 
 ## A Short History of sql.js
 
@@ -50,6 +49,8 @@ Two browser tabs running sql.js each hold their own copy of the in-memory databa
 
 ### 6. Manual indexing strategy
 You get SQLite indexes, but you also get the responsibility of designing them around access patterns that change as the app grows.
+
+The numbers reflect this. As of July 30, 2026, [sql.js](https://github.com/sql-js/sql.js) has 13,652 GitHub stars while [RxDB](https://github.com/pubkey/rxdb) has 23,296.
 
 ## Where RxDB Helps
 
@@ -182,35 +183,32 @@ If your goal is to ship a static, read-only SQLite file for full-text search or 
 
 ## FAQ
 
-<details>
-<summary>Does RxDB use SQLite under the hood?</summary>
+<Faq>
+<FaqItem question="Does RxDB use SQLite under the hood?">
 
 RxDB uses a pluggable storage layer. SQLite is one supported backend through the [RxDB SQLite Storage](../../rx-storage-sqlite.md), which can run on a WASM build of SQLite in the browser, on `better-sqlite3` in Node.js, on the native binding in Electron, or on the React Native SQLite module. Other storages such as [IndexedDB](../../rx-storage-indexeddb.md) and [OPFS](../../rx-storage-opfs.md) use no SQLite at all.
 
-</details>
-
-<details>
-<summary>Can I run SQL queries in RxDB?</summary>
+</FaqItem>
+<FaqItem question="Can I run SQL queries in RxDB?">
 
 The primary RxDB query API is [Mango-style](../../rx-query.md), which is JSON based and works the same across every storage backend. When you choose the SQLite storage you can still execute raw SQL through the underlying SQLite handle for reporting or migrations, while keeping the application code on top of [RxCollections](../../rx-collection.md).
 
-</details>
-
-<details>
-<summary>How is data persisted in RxDB?</summary>
+</FaqItem>
+<FaqItem question="How is data persisted in RxDB?">
 
 Each storage backend writes to a durable target. [OPFS](../../rx-storage-opfs.md) and [IndexedDB](../../rx-storage-indexeddb.md) persist inside the browser's storage area for the origin. The [SQLite Storage](../../rx-storage-sqlite.md) writes a SQLite file in Node.js and Electron, and uses OPFS files in the browser. Inserts and updates are flushed by the storage layer; you do not call an export step the way sql.js requires.
 
-</details>
-
-<details>
-<summary>Is RxDB faster than sql.js for app data?</summary>
+</FaqItem>
+<FaqItem question="Is RxDB faster than sql.js for app data?">
 
 For typical application workloads with many small reads and writes, RxDB is faster because changes do not require re-serializing a full database buffer. sql.js stays competitive for one-shot analytical queries over a preloaded dataset, since the whole database already sits in memory. For write-heavy apps that must persist after every mutation, RxDB's storages avoid the export and reimport cycle that dominates sql.js write costs.
 
-</details>
+</FaqItem>
+</Faq>
 
 ## Comparison Table
+
+<ComparisonTable>
 
 | Feature | sql.js | RxDB |
 | --- | --- | --- |
@@ -224,6 +222,8 @@ For typical application workloads with many small reads and writes, RxDB is fast
 | TypeScript types | Manual | Generated from schema |
 | Runtime support | Browser and Node.js | Browser, Node.js, Electron, React Native, Deno, Bun |
 | Conflict handling | Application responsibility | Pluggable conflict handlers |
+
+</ComparisonTable>
 
 ## Follow Up
 

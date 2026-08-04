@@ -1,0 +1,10 @@
+.color-box {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  margin-right: 12px;
+}
+
+ion-button {
+  margin-top: 24px;
+}

@@ -5,6 +5,8 @@ description: Learn how to implement partial sync with RxDB by running multiple s
 image: /headers/partial-sync.jpg
 ---
 
+import {Faq, FaqItem} from '@site/src/components/faq';
+
 # Partial Sync with RxDB
 
 Partial sync is a replication pattern where a client only synchronizes a **subset** of the server's data instead of the full dataset. The subset is defined by a **scope**, for example a geographic region, a project, a tenant, a permission group, or a chunk of a game world. RxDB does not have a single "partial sync" switch; the pattern is built on top of the standard [RxDB Sync Engine](./replication.md) by running **multiple replication states** in parallel, each one filtered to a different scope, and starting or stopping them as the user's context changes.
@@ -231,65 +233,50 @@ In all of these, the building blocks are the same: a stable `replicationIdentifi
 
 ## FAQ
 
-<details>
-<summary>How is partial sync different from running one replication and filtering documents in a query?</summary>
+<Faq>
+<FaqItem question="How is partial sync different from running one replication and filtering documents in a query?">
 
 A single full replication still downloads every document in the collection to the client, even if your queries only read a small subset. Partial sync moves the filter to the server side so the documents are never sent over the wire and never written to local storage in the first place. Queries on the client then operate on a smaller dataset, which is faster and uses less disk.
 
-</details>
-
-<details>
-<summary>Can I run many replication states on the same collection at the same time?</summary>
+</FaqItem>
+<FaqItem question="Can I run many replication states on the same collection at the same time?">
 
 Yes. RxDB does not limit the number of replication states attached to a single `RxCollection`. Each one keeps its own checkpoint metadata under its `replicationIdentifier`. In practice the limit is the number of concurrent network connections and the server's ability to handle parallel pull requests. If you need hundreds of active scopes, consider combining several into one replication on the server side and using a composite scope id.
 
-</details>
-
-<details>
-<summary>Do I need a separate server endpoint per scope?</summary>
+</FaqItem>
+<FaqItem question="Do I need a separate server endpoint per scope?">
 
 No. You typically use one endpoint with a scope parameter, for example `/api/sync/pull?scope=acme`. The handler passes the scope as a query parameter on each pull and push call. The server uses that parameter to filter rows.
 
-</details>
-
-<details>
-<summary>What happens if the same document belongs to two active scopes at once?</summary>
+</FaqItem>
+<FaqItem question="What happens if the same document belongs to two active scopes at once?">
 
 The document is stored once in the local collection because the primary key is shared. Without care, both replications would try to push local changes for that document. Use a `push.modifier` that returns `null` for documents that do not belong to the current scope, so exactly one replication is responsible for pushing each document. For pulls, RxDB de-duplicates by primary key, so receiving the same document from two scopes is safe.
 
-</details>
-
-<details>
-<summary>Does the client re-download everything when the user revisits a scope?</summary>
+</FaqItem>
+<FaqItem question="Does the client re-download everything when the user revisits a scope?">
 
 No. As long as you reuse the same `replicationIdentifier`, RxDB resumes from the last stored checkpoint and only fetches documents that changed since then. This is the same diff sync that the standard [Sync Engine](./replication.md) uses, applied per scope.
 
-</details>
-
-<details>
-<summary>What should happen when a user loses access to a scope?</summary>
+</FaqItem>
+<FaqItem question="What should happen when a user loses access to a scope?">
 
 The server should reject the next pull or push for that scope. On the client, cancel the replication and remove the locally cached documents that belong to it. The [cleanup plugin](./cleanup.md) can handle the physical removal of soft-deleted rows over time.
 
-</details>
-
-<details>
-<summary>Can partial sync use the real-time pull stream?</summary>
+</FaqItem>
+<FaqItem question="Can partial sync use the real-time pull stream?">
 
 Yes, and it should. Each replication's `pull.stream$` must only emit events for its scope, otherwise every client receives events for every scope. Implementations include one WebSocket per scope, a shared WebSocket with server-side subscriptions per scope, or Server-Sent Events with a scope query parameter.
 
-</details>
-
-<details>
-<summary>How do I migrate from full sync to partial sync without losing local data?</summary>
+</FaqItem>
+<FaqItem question="How do I migrate from full sync to partial sync without losing local data?">
 
 Start the new scoped replications with their own `replicationIdentifier` values. The first pull for each scope will see no checkpoint and fetch from the beginning of that scope. Documents already in the local collection from the old full sync are matched by primary key and updated in place. Once the new replications are in sync, cancel the old full replication and call `.remove()` on it to clear its checkpoint metadata.
 
-</details>
-
-<details>
-<summary>Does the scope id need to be part of the document?</summary>
+</FaqItem>
+<FaqItem question="Does the scope id need to be part of the document?">
 
 Not always. If the server can derive the scope from the document's own fields (for example a `chunkId` or `workspaceId` column), no client-side tagging is needed. If the scope is implicit on the server side, use a `pull.modifier` to attach the scope id to each pulled document so the client can identify and clean up data per scope later.
 
-</details>
+</FaqItem>
+</Faq>

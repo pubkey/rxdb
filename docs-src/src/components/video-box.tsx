@@ -2,6 +2,7 @@ import { CSSProperties, useEffect, useRef, useState } from 'react';
 import { triggerTrackingEvent } from './trigger-event';
 import { VideoPlayButton } from './video-button';
 import { Modal } from './modal';
+import { JsonLd } from './json-ld';
 
 export type VideoBoxProps = {
     dark: boolean;
@@ -10,7 +11,32 @@ export type VideoBoxProps = {
     duration: string;
     // in seconds
     startAt?: number;
+    // (optional) longer description of the video, used for the VideoObject JSON-LD
+    description?: string;
+    // (optional) ISO 8601 date the video was published, for example '2024-05-01'
+    uploadDate?: string;
 };
+
+/**
+ * Converts a human duration like '3:45' or '1:02:30' into the ISO 8601
+ * duration format ('PT3M45S') that schema.org VideoObject expects.
+ */
+function toIsoDuration(duration: string): string | undefined {
+    if (!duration) {
+        return undefined;
+    }
+    const parts = duration.split(':').map(part => parseInt(part, 10));
+    if (parts.length === 0 || parts.length > 3 || parts.some(part => isNaN(part))) {
+        return undefined;
+    }
+    // left-pad to [hours, minutes, seconds]
+    while (parts.length < 3) {
+        parts.unshift(0);
+    }
+    const [hours, minutes, seconds] = parts;
+    const result = `PT${hours ? hours + 'H' : ''}${minutes ? minutes + 'M' : ''}${seconds ? seconds + 'S' : ''}`;
+    return result === 'PT' ? 'PT0S' : result;
+}
 
 type VideoModalProps = {
     open: boolean;
@@ -79,9 +105,22 @@ const styles: Record<string, CSSProperties> = {
     },
 };
 
-export function VideoBox({ videoId, title, duration, startAt, dark }: VideoBoxProps) {
+export function VideoBox({ videoId, title, duration, startAt, dark, description, uploadDate }: VideoBoxProps) {
     const [isHovered, setIsHovered] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
+
+    const isoDuration = toIsoDuration(duration);
+    const videoJsonLd = {
+        '@context': 'https://schema.org',
+        '@type': 'VideoObject',
+        name: title,
+        description: description || title,
+        thumbnailUrl: `https://rxdb.info/files/video-thumbnails/${videoId}.jpg`,
+        contentUrl: `https://www.youtube.com/watch?v=${videoId}`,
+        embedUrl: `https://www.youtube.com/embed/${videoId}`,
+        ...(isoDuration ? { duration: isoDuration } : {}),
+        ...(uploadDate ? { uploadDate } : {}),
+    };
 
     return (
         <div
@@ -95,10 +134,17 @@ export function VideoBox({ videoId, title, duration, startAt, dark }: VideoBoxPr
                 setIsOpen(true);
             }}
         >
+            <JsonLd data={videoJsonLd} />
             <div style={{ textDecoration: 'none', color: 'inherit' }}>
                 <div style={{ ...styles.thumbnailWrapper }}>
                     <img
-                        src={`https://i3.ytimg.com/vi/${videoId}/mqdefault.jpg`}
+                        /**
+                         * The thumbnails are downloaded at build time by
+                         * scripts/docs-download-video-thumbnails.mjs and served
+                         * from the docs host itself, because the YouTube CDN
+                         * (i3.ytimg.com) is blocked in China.
+                         */
+                        src={`/files/video-thumbnails/${videoId}.jpg`}
                         alt={title}
                         style={{
                             ...styles.thumbnail,
@@ -107,8 +153,6 @@ export function VideoBox({ videoId, title, duration, startAt, dark }: VideoBoxPr
                         }}
                         loading="lazy"
                         decoding="async"
-                        referrerPolicy="no-referrer"
-                        crossOrigin="anonymous"
                         fetchPriority="low"
                     />
                     <div
@@ -193,7 +237,6 @@ export function VideoModal({ open, videoId, title, startAt, onClose }: VideoModa
         <Modal
             open={open}
             onCancel={onClose}
-            onClose={onClose}
             onOk={onClose}
             footer={null}
             width="auto"

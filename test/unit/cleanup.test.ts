@@ -1,7 +1,7 @@
 import assert from 'assert';
 import { wait, waitUntil } from 'async-test-util';
 
-import config, { describeParallel } from './config.ts';
+import config from './config.ts';
 import {
     schemaObjects,
     schemas,
@@ -25,7 +25,7 @@ import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.mjs'
 import { DEFAULT_CLEANUP_POLICY } from '../../plugins/cleanup/index.mjs';
 addRxPlugin(RxDBCleanupPlugin);
 
-describeParallel('cleanup.test.js', () => {
+describe('cleanup.test.js', () => {
     describe('basics', () => {
         it('should clean up the deleted documents', async () => {
             const db = await createRxDatabase({

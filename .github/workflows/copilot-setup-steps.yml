@@ -14,7 +14,6 @@ env:
   NPM_CONFIG_FETCH_RETRY_FACTOR: 2
   NPM_CONFIG_FETCH_RETRY_MINTIMEOUT: 5000
   NPM_CONFIG_FETCH_RETRY_MAXTIMEOUT: 20000
-  NPM_CONFIG_PREFER_OFFLINE: true
 
 jobs:
     copilot-setup-steps:
@@ -25,10 +24,10 @@ jobs:
 
         steps:
             - name: Checkout code
-              uses: actions/checkout@v6
+              uses: actions/checkout@v7
 
             - name: Set up Node.js
-              uses: actions/setup-node@v6
+              uses: actions/setup-node@v7
               with:
                   node-version-file: ".nvmrc"
 

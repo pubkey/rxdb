@@ -1,5 +1,6 @@
 import { IconQuoteEnd, IconQuoteStart } from './icons/quote';
 import { Slider } from './slider';
+import { JsonLd } from './json-ld';
 
 
 export const REVIEW_ITEMS: {
@@ -111,8 +112,30 @@ export const REVIEW_ITEMS: {
 
 export function ReviewsBlock() {
 
+    // These are real third-party testimonials from named companies, so they are
+    // modelled as schema.org Review entries on the RxDB SoftwareApplication.
+    // No numeric ratings are invented, so no reviewRating is emitted.
+    const reviewsJsonLd = {
+        '@context': 'https://schema.org',
+        '@type': 'SoftwareApplication',
+        name: 'RxDB',
+        applicationCategory: 'DeveloperApplication',
+        operatingSystem: 'Browser, Node.js, Electron, React Native, Capacitor, Deno, Bun',
+        url: 'https://rxdb.info/',
+        review: REVIEW_ITEMS.map(item => ({
+            '@type': 'Review',
+            reviewBody: item.description.replace(/\s+/g, ' ').trim(),
+            author: {
+                '@type': 'Organization',
+                name: item.label,
+                url: item.href,
+            },
+        })),
+    };
+
     return (
         <>
+            <JsonLd data={reviewsJsonLd} />
             <Slider items={
                 REVIEW_ITEMS.map((item) => (
                     <div className="slider-content" key={item.label}>

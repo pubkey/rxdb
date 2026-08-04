@@ -1,0 +1,12 @@
+input[type='color'] {
+  width: 44px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+ion-button {
+  margin-top: 16px;
+}

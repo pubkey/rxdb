@@ -1,5 +1,5 @@
 import assert from 'assert';
-import config, { describeParallel } from './config.ts';
+import config from './config.ts';
 import AsyncTestUtil, { randomBoolean } from 'async-test-util';
 
 import {
@@ -47,7 +47,7 @@ addRxPlugin(RxDBUpdatePlugin);
 
 const STATIC_FILE_SERVER_URL = 'http://localhost:18001/';
 
-describeParallel('attachments.test.ts', () => {
+describe('attachments.test.ts', () => {
     if (!config.storage.hasAttachments) {
         return;
     }

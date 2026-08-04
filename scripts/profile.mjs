@@ -3,8 +3,8 @@
  * @link https://nodejs.org/en/docs/guides/simple-profiling/
  */
 import path from 'path';
-import walkSync from 'walk-sync';
-import shell from 'shelljs';
+import fs from 'node:fs';
+import { spawnSync } from 'node:child_process';
 import del from 'delete';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
@@ -13,12 +13,12 @@ const __dirname = dirname(__filename);
 
 const run = async () => {
     const isolateFolder = path.join(__dirname, '../');
-    const files = walkSync(isolateFolder);
+    const files = fs.readdirSync(isolateFolder);
     const isolateFile = files.find(name => name.startsWith('isolate-'));
     if (!isolateFile) throw new Error('no isolate-* file found');
     const isolatePath = isolateFolder + '/' + isolateFile;
     const cmd = 'node --prof-process ' + isolatePath + ' > processed.txt';
-    if (shell.exec(cmd).code !== 0) {
+    if (spawnSync(cmd, { shell: true, stdio: 'inherit' }).status !== 0) {
         console.error('processing ' + isolatePath + ' failed');
         process.exit(1);
     }

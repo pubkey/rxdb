@@ -142,6 +142,8 @@ export async function createEmptyFile(
 
     // To make idempotent, we always search for the file after creation
     // and take the oldest one in case there are duplicates.
+    // This ensures that when two instances concurrently create the same filename,
+    // they both converge on the same file afterwards.
     const items = await listFilesInFolder(oneDriveState, parentId);
     const matchingFiles = items.filter(i => i.name === fileName);
     const file = ensureNotFalsy(

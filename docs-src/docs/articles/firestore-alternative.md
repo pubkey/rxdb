@@ -5,6 +5,8 @@ description: Looking for a Firestore alternative? RxDB is a local-first, NoSQL d
 image: /headers/firestore-alternative.jpg
 ---
 
+import {Faq, FaqItem} from '@site/src/components/faq';
+
 # RxDB - The Firestore Alternative That Can Sync with Your Own Backend
 
 If you're seeking a **Firestore alternative**, you're likely looking for a way to:
@@ -15,11 +17,7 @@ If you're seeking a **Firestore alternative**, you're likely looking for a way t
 
 Enter **RxDB** (Reactive Database) - a [local-first](./local-first-future.md), NoSQL database for JavaScript applications that can sync in real time with **any** backend of your choice. Whether you're tired of the limitations and fees associated with Firebase Cloud Firestore or simply need more flexibility, RxDB might be the Firestore alternative you've been searching for.
 
-<center>
-    <a href="https://rxdb.info/">
-        <img src="/files/logo/rxdb_javascript_database.svg" alt="JavaScript Database" width="220" />
-    </a>
-</center>
+<RxdbLogo alt="JavaScript Database" />
 
 
 ## What Makes RxDB a Great Firestore Alternative?
@@ -67,11 +65,13 @@ RxDB is designed to run in **any environment** that can execute JavaScript. Whet
 
 ## FAQ
 
-<details>
-<summary>Does Firebase Firestore qualify as a robust offline sync engine?</summary>
+<Faq>
+<FaqItem question="Does Firebase Firestore qualify as a robust offline sync engine?">
 
-While Firestore provides basic offline caching, it is fundamentally a cloud-first database. True [Offline-First](../offline-first.md) architectures demand that the local database acts as the single source of truth, capable of advanced local querying, custom indexing, and deterministic conflict resolution without ever contacting a server. Firestore's heavy reliance on Google Cloud connections makes it unsuitable for applications that must operate reliably in zero-connectivity environments for extended periods.
-</details>
+While Firestore provides basic offline caching, it is fundamentally a cloud-first database. True [Offline-First](../offline-first.md) architectures demand that the [local database](./local-database.md) acts as the single source of truth, capable of advanced local querying, custom indexing, and deterministic conflict resolution without ever contacting a server. Firestore's heavy reliance on Google Cloud connections makes it unsuitable for applications that must operate reliably in zero-connectivity environments for extended periods.
+
+</FaqItem>
+</Faq>
 
 ---
 

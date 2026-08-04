@@ -7,16 +7,13 @@ image: /headers/json-database.jpg
 
 import { PerformanceChart } from '@site/src/components/performance-chart';
 import { PERFORMANCE_DATA_BROWSER, PERFORMANCE_METRICS } from '@site/src/components/performance-data';
+import {CenteredImage} from '@site/src/components/centered-image';
 
 # RxDB - JSON Database for JavaScript
 
 Storing data as **JSON documents** in a **[NoSQL](./in-memory-nosql-database.md)** database is not just a trend; it's a practical choice. JSON data is highly compatible with various tools and is human-readable, making it an excellent fit for modern applications. JSON documents offer more flexibility compared to traditional SQL table rows, as they can contain nested data structures. This article introduces [RxDB](https://rxdb.info/), an open-source, flexible, performant, and battle-tested NoSQL JSON database specifically designed for **JavaScript** applications.
 
-<center>
-    <a href="https://rxdb.info/">
-        <img src="../files/logo/rxdb_javascript_database.svg" alt="JSON Database" width="220" />
-    </a>
-</center>
+<RxdbLogo alt="JSON Database" />
 
 ## Why Choose a JSON Database?
 - **JavaScript Friendliness**: JavaScript, a prevalent language for web development, naturally uses JSON for data representation. Using a JSON database aligns seamlessly with JavaScript's native data format.
@@ -80,9 +77,7 @@ RxDB offers versatile storage solutions for browser-based applications:
 
 - **Observable Queries**: With RxDB, you can create observable [queries](../rx-query.md) that work seamlessly across multiple browser tabs, providing real-time updates and synchronization.
 
-<p align="center">
-  <img src="../files/multiwindow.gif" alt="multi tab support" width="450" />
-</p>
+<CenteredImage src="../files/multiwindow.gif" alt="multi tab support" width={450} />
 
 ## RxDB JSON Database Performance
 

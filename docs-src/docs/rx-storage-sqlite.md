@@ -10,6 +10,7 @@ import { PERFORMANCE_DATA_NODE, PERFORMANCE_METRICS } from '@site/src/components
 
 import {Steps} from '@site/src/components/steps';
 import {Tabs} from '@site/src/components/tabs';
+import {Faq, FaqItem} from '@site/src/components/faq';
 
 # SQLite RxStorage
 
@@ -27,7 +28,7 @@ The SQLite storage is a bit slower compared to other Node.js based storages like
 
 There are two versions of the SQLite storage available for RxDB:
 
-- The **trial version** which comes directly shipped with RxDB Core. It contains an SQLite storage that allows you to try out RxDB on devices that support SQLite, like React Native or Electron. While the trial version does pass the full RxDB storage test-suite, it is not made for production. It is not using indexes, has no [attachment support](./rx-attachment.md), is limited to store 300 documents and fetches the whole storage state to run queries in memory. **Use it for evaluation and prototypes only!**
+- The **trial version** which comes directly shipped with RxDB Core. It contains an SQLite storage that allows you to try out RxDB on devices that support SQLite, like React Native or Electron. While the trial version does pass the full RxDB storage test-suite, it is not made for production. It is not using indexes, has no [attachment support](./rx-attachment.md), is limited to store 500 non-deleted documents and fetches the whole storage state to run queries in memory. **Use it for evaluation and prototypes only!**
 
 - The **[RxDB Premium 👑](/premium/) version** which contains the full production-ready SQLite storage. It contains a full load of performance optimizations and full query support. To use the SQLite storage you have to import `getRxStorageSQLite` from the [RxDB Premium 👑](/premium/) package and then add the correct `sqliteBasics` adapter depending on which sqlite module you want to use. This can then be used as storage when creating the [RxDatabase](./rx-database.md). In the following you can see some examples for some of the most common SQLite packages.
 
@@ -406,17 +407,18 @@ const storage = getRxStorageSQLite({
 
 ## FAQ
 
-<details>
-<summary>Does SQLite natively support querying and parsing JSON objects?</summary>
+<Faq>
+<FaqItem question="Does SQLite natively support querying and parsing JSON objects?">
 
 Yes, starting natively from version `3.38.0`, SQLite includes comprehensive built-in core JSON functions like `JSON_EXTRACT`. The **[RxDB SQLite Storage](./rx-storage.md)** engine utilizes these exact JSON extension methods to seamlessly run complex NoSQL document queries, indexes, and sorting operations directly within the SQLite runtime, bridging the gap between flat tabular paradigms and rich document store flexibility.
-</details>
 
-<details>
-<summary>How can you save and export a SQLite database from a local environment?</summary>
+</FaqItem>
+<FaqItem question="How can you save and export a SQLite database from a local environment?">
 
 You can save and export an active SQLite database by closing the connection and copying its physical `.sqlite` storage file traversing the underlying OS filesystem. If you are operating within a strict sandboxed web environment using WebAssembly, you must extract the SQLite file via exactly matching the `wa-sqlite` export streams, or rely on **[RxDB](./rx-database.md)** JSON export plugins to seamlessly migrate data out of local constraints into raw JSON streams regardless of the active SQLite engine.
-</details>
+
+</FaqItem>
+</Faq>
 
 ## Related
 - [React Native Databases](./react-native-database.md)

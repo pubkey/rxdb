@@ -34,11 +34,7 @@ React Native supports multiple ways to secure local data:
 
 
 
-<center>
-    <a href="https://rxdb.info/">
-        <img src="/files/logo/rxdb_javascript_database.svg" alt="RxDB" width="250" />
-    </a>
-</center>
+<RxdbLogo alt="RxDB" width={250} />
 
 ## Setting Up Encryption in RxDB for React Native
 

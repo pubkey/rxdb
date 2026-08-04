@@ -46,8 +46,14 @@ export function HeroSection_B(props: {
                         marginTop: 0,
                         marginBottom: 0
                     }} className='centered-mobile-p'>
-                        RxDB is a NoSQL database for JavaScript that runs directly in your app. With a <a href="/articles/local-first-future.html" target="_blank">local-first</a> design,
-                        it delivers zero-latency queries even offline, and syncs seamlessly with any backend.
+                        {
+                            props.sem && props.sem.text
+                                ? props.sem.text
+                                : <>
+                                    RxDB is a NoSQL database for JavaScript that runs directly in your app. With a <a href="/articles/local-first-future.html" target="_blank">local-first</a> design,
+                                    it delivers zero-latency queries even offline, and syncs seamlessly with any backend.
+                                </>
+                        }
                     </p>
                     <CheckedList className='centered-mobile padding-right-20-0' style={{
                         paddingTop: 35,
@@ -55,18 +61,24 @@ export function HeroSection_B(props: {
                         paddingBottom: 0,
                         maxWidth: 360
                     }}>
-                        <>
-                            Build apps that work <b onClick={() => props.scrollToSection('offline')}>offline</b>
-                        </>
-                        <>
-                            Sync with <b onClick={() => props.scrollToSection('replication')}>any Backend</b>
-                        </>
-                        <>
-                            Observable <b onClick={() => props.scrollToSection('realtime')}>Realtime Queries</b>
-                        </>
-                        <>
-                            All JavaScript <b onClick={() => props.scrollToSection('runtimes')}>Runtimes</b> Supported
-                        </>
+                        {
+                            props.sem && props.sem.bulletpoints
+                                ? props.sem.bulletpoints
+                                : [
+                                    <>
+                                        Build apps that work <b onClick={() => props.scrollToSection('offline')}>offline</b>
+                                    </>,
+                                    <>
+                                        Sync with <b onClick={() => props.scrollToSection('replication')}>any Backend</b>
+                                    </>,
+                                    <>
+                                        Observable <b onClick={() => props.scrollToSection('realtime')}>Realtime Queries</b>
+                                    </>,
+                                    <>
+                                        All JavaScript <b onClick={() => props.scrollToSection('runtimes')}>Runtimes</b> Supported
+                                    </>
+                                ]
+                        }
                     </CheckedList>
                 </div>
 

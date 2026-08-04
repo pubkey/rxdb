@@ -1,7 +1,7 @@
 
 import assert from 'assert';
 
-import config, { describeParallel } from './config.ts';
+import config from './config.ts';
 import {
     createRxDatabase,
     fillWithDefaultSettings,
@@ -22,7 +22,7 @@ import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.mjs'
 import { assertThrows } from 'async-test-util';
 import { nextPort } from '../helper/port-manager.ts';
 
-describeParallel('rx-storage-remote.test.ts', () => {
+describe('rx-storage-remote.test.ts', () => {
     /**
      * Notice: Most use cases for the remote storage
      * are tests by having a full unit-test run where all
