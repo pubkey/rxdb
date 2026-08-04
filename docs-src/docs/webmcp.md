@@ -264,7 +264,10 @@ const remoteTarget = {
     awaitInSync: () => sendToDevice('awaitInSync'),
     query: query => sendToDevice('query', query),
     count: query => sendToDevice('count', query),
-    changesSince: (limit, checkpoint) => sendToDevice('changesSince', { limit, checkpoint }),
+    changesSince: (limit, checkpoint) => sendToDevice(
+        'changesSince',
+        { limit, checkpoint }
+    ),
     awaitChange: () => sendToDevice('awaitChange'),
     insert: document => sendToDevice('insert', document),
     upsert: document => sendToDevice('upsert', document),
