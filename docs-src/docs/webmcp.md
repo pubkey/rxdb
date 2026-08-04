@@ -229,6 +229,18 @@ If the application is offline and the replication is configured to retry infinit
 :::
 
 
+#### `modelContext` (default: `document.modelContext`)
+
+The tools are registered at the WebMCP registry of the current document. When you need them registered at the registry of another document, for example an iframe, pass that registry directly.
+
+```ts
+db.registerWebMCP({
+    modelContext: myIframe.contentDocument.modelContext
+});
+```
+
+When this option is not set, `document.modelContext` is used with a fallback to `navigator.modelContext` for browsers that still expose the older entrypoint.
+
 ### Logs and Errors
 
 Both `registerWebMCP` methods (`db.registerWebMCP()` and `db.collections.humans.registerWebMCP()`) return an object containing two RxJS Subjects: `log$` and `error$`.
