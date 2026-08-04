@@ -4,10 +4,21 @@
 // There are various equivalent ways to declare your Docusaurus config.
 // See: https://docusaurus.io/docs/api/docusaurus-config
 
+import { readFileSync } from 'node:fs';
 import type { Config } from '@docusaurus/types';
 import rehypePrettyCode from 'rehype-pretty-code';
 import type { Options as RehypePrettyCodeOptions, Theme } from 'rehype-pretty-code';
 import { createCssVariablesTheme, ThemeRegistrationAny } from 'shiki';
+import { EU_EEA_REGION_CODES } from './src/theme/eu-consent';
+
+/**
+ * The RxDB version from the root package.json, used for the
+ * softwareVersion field of the JSON-LD structured data so it
+ * stays in sync with each release.
+ */
+const rxdbVersion: string = JSON.parse(
+    readFileSync(new URL('../package.json', import.meta.url), 'utf8')
+).version;
 
 const rehypePrettyCodeOptions: RehypePrettyCodeOptions = {
     theme: createCssVariablesTheme({
@@ -22,16 +33,53 @@ const rehypePrettyCodeOptions: RehypePrettyCodeOptions = {
 
 /** @type {import('@docusaurus/types').Config} */
 const config: Config = {
-    title: 'RxDB - JavaScript Database',
+    /**
+     * Docusaurus appends this to every page title as `<page title> | <title>`
+     * (see useTitleFormatter in @docusaurus/theme-common), so it doubles as the
+     * sitewide title suffix. Keep it short: Google truncates titles around 60
+     * characters and treats repeated boilerplate as a reason to rewrite the
+     * title link, which loses us control of the search listing.
+     * @link https://developers.google.com/search/docs/appearance/title-link
+     *
+     * Pages that need the longer descriptive form set it explicitly (the
+     * homepage and /consulting/ pass HOME_TITLE below).
+     */
+    title: 'RxDB',
     tagline: 'Realtime JavaScript Database',
-    favicon: '/img/favicon.png',
-    // Add multiple sizes + Apple touch icon (+ optional SVG)
+    favicon: '/files/logo/logo.svg',
     headTags: [
+        /**
+         * Google Consent Mode v2 default. For EU/EEA (and UK) regions the
+         * analytics and ad storage is denied until the visitor accepts in the
+         * client-side consent banner (see src/theme/consent-manager.ts).
+         * Google detects the region server-side from the IP, so this stays
+         * accurate independent of the timezone heuristic used to decide
+         * whether the banner is shown. The commands are queued on dataLayer
+         * before the async gtag/GTM libraries boot, so the default applies to
+         * the very first hit.
+         */
+        {
+            tagName: 'script',
+            attributes: { type: 'text/javascript' },
+            innerHTML: `
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('consent', 'default', {
+                    ad_storage: 'denied',
+                    ad_user_data: 'denied',
+                    ad_personalization: 'denied',
+                    analytics_storage: 'denied',
+                    wait_for_update: 500,
+                    region: ${JSON.stringify(EU_EEA_REGION_CODES)}
+                });
+                gtag('set', 'ads_data_redaction', true);
+            `.replace(/\s+/g, ' ').trim(),
+        },
         { tagName: 'meta', attributes: { name: 'theme-color', content: '#ed168f' } },
-        { tagName: 'link', attributes: { rel: 'icon', type: 'image/svg+xml', href: '/files/logo/logo.svg' } },
+        // Provide the favicon as .ico in addition to the .svg set via the `favicon`
+        // field above, so browsers that do not support SVG favicons fall back to the .ico.
+        { tagName: 'link', attributes: { rel: 'icon', type: 'image/x-icon', href: '/files/logo/icon.ico' } },
         { tagName: 'link', attributes: { rel: 'apple-touch-icon', href: '/img/apple-touch-icon.png', sizes: '180x180' } },
-        { tagName: 'link', attributes: { rel: 'preconnect', href: 'https://consentcdn.cookiebot.com/' } },
-        { tagName: 'link', attributes: { rel: 'preconnect', href: 'https://consent.cookiebot.com/' } },
         { tagName: 'link', attributes: { rel: 'preconnect', href: 'https://region1.analytics.google.com/' } },
         { tagName: 'link', attributes: { rel: 'preconnect', href: 'https://www.redditstatic.com/' } },
         { tagName: 'link', attributes: { rel: 'preconnect', href: 'https://pixel-config.reddit.com/' } },
@@ -46,6 +94,13 @@ const config: Config = {
                 'operatingSystem': 'Any',
                 'description': 'A fast, local-first, reactive NoSQL database for JavaScript applications. Supports offline-first sync, real-time replication, and works across browsers, Node.js, Electron, React Native, and Flutter.',
                 'url': 'https://rxdb.info',
+                'softwareVersion': rxdbVersion,
+                'license': 'https://github.com/pubkey/rxdb/blob/master/LICENSE.txt',
+                'downloadUrl': 'https://www.npmjs.com/package/rxdb',
+                'softwareHelp': {
+                    '@type': 'CreativeWork',
+                    'url': 'https://rxdb.info/quickstart.html',
+                },
                 'offers': {
                     '@type': 'Offer',
                     'price': '0',
@@ -114,6 +169,7 @@ All data access is reactive through RxJS Observables so that UI components updat
 
 Source code: https://github.com/pubkey/rxdb
 Website: https://rxdb.info
+Community and support: For help beyond these docs, the RxDB Discord is the fastest place to reach maintainers: https://rxdb.info/chat/
 
 Topic-specific documentation files:
 - [Core API](https://rxdb.info/llms-api.txt): RxDatabase, RxSchema, RxCollection, RxDocument, RxQuery
@@ -273,6 +329,10 @@ Topic-specific documentation files:
                 name: 'custom-webpack-tweaks',
                 configureWebpack(_config, _isServer, _utils) {
                     return {
+                        // Emit source maps in the production build so tools like
+                        // Lighthouse can map the minified bundle back to the source
+                        // and give more detailed optimization tips.
+                        devtool: 'source-map',
                         resolve: {
                             alias: {
                                 // we no longer use prism, and highlight with Shiki on the server
@@ -302,21 +362,6 @@ Topic-specific documentation files:
         },
     ],
     scripts: [
-        // {
-        //   id: 'CookieDeclaration',
-        //   src: 'https://consent.cookiebot.com/c429ebbd-6e92-4150-b700-ca186e06bc7c/cd.js',
-        //   type: 'text/javascript'
-        // }
-
-        // already included via google tag manager
-        // {
-        //   id: 'Cookiebot',
-        //   src: 'https://consent.cookiebot.com/uc.js?cbid=c429ebbd-6e92-4150-b700-ca186e06bc7c',
-        //   'data-cbid': 'c429ebbd-6e92-4150-b700-ca186e06bc7c',
-        //   'data-blockingmode': 'auto',
-        //   type: 'text/javascript',
-        //   async: true
-        // },
         /*
          * Pipedrive embedded chat.
          * Disabled because people should fill out the premium form
@@ -398,6 +443,8 @@ Topic-specific documentation files:
             logo: {
                 alt: 'RxDB',
                 src: 'files/logo/logo_text_white.svg',
+                width: 107,
+                height: 38,
             },
             items: [
                 {
@@ -431,6 +478,7 @@ Topic-specific documentation files:
                     to: '/chat/',
                     target: '_blank',
                     label: ' ',
+                    'aria-label': 'Discord',
                     position: 'right',
                     className: 'navbar-icon navbar__item navbar-icon-discord'
                 },
@@ -438,6 +486,7 @@ Topic-specific documentation files:
                     to: '/code/',
                     target: '_blank',
                     label: ' ',
+                    'aria-label': 'GitHub',
                     position: 'right',
                     className: 'navbar-icon navbar__item navbar-icon-github'
                 },

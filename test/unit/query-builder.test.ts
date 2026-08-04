@@ -9,12 +9,12 @@ import {
     createQueryBuilder
 } from '../../plugins/query-builder/index.mjs';
 
-import { describeParallel } from './config.ts';
+import './config.ts';
 
 /**
  * This tests the plugin 'query-builder'
  */
-describeParallel('query-builder.test.js', () => {
+describe('query-builder.test.js', () => {
     describe('NoSqlQueryBuilder', () => {
         it('should make a basic roundtrip', () => {
             const startQuery: MangoQuery = {

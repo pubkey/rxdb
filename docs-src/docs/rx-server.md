@@ -6,6 +6,7 @@ image: /headers/rx-server.jpg
 ---
 
 import {HeadlineWithIcon} from '@site/src/components/headline-with-icon';
+import {Faq, FaqItem} from '@site/src/components/faq';
 
 # <HeadlineWithIcon h1 icon={<img src="/files/icons/server.svg" alt="Server" />}>RxDB Server</HeadlineWithIcon>
 
@@ -327,8 +328,9 @@ To [detect and handle conflicts](./replication.md#conflict-handling), the confli
 
 ## FAQ
 
-<details>
-    <summary>Why are the server plugins in a different github repo and npm package?</summary>
+<Faq>
+<FaqItem question="Why are the server plugins in a different github repo and npm package?">
+
     <div>
     The RxServer and its other plugins are in a different github repository because:
     <ul>
@@ -340,12 +342,14 @@ To [detect and handle conflicts](./replication.md#conflict-handling), the confli
         </li>
     </ul>
     </div>
-</details>
 
-<details>
-    <summary>Why can't endpoints be added dynamically?</summary>
+</FaqItem>
+<FaqItem question="Why can't endpoints be added dynamically?">
+
     <div>
     After `RxServer.start()` is called, you can no longer add endpoints. This is because many of the supported
     server libraries do <a href="https://github.com/fastify/fastify/issues/1771">not allow dynamic routing</a> for performance and security reasons. 
     </div>
-</details>
+
+</FaqItem>
+</Faq>

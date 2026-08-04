@@ -23,7 +23,9 @@ import type {
     RxCollection,
     RxDocumentData,
     RxError,
+    RxDocument,
     RxJsonSchema,
+    RxReplicationConflict,
     RxReplicationPullStreamItem,
     RxReplicationWriteToMasterRow,
     RxStorageInstance,
@@ -49,8 +51,10 @@ import {
     awaitRxStorageReplicationFirstInSync,
     awaitRxStorageReplicationInSync,
     cancelRxStorageReplication,
+    getAssumedMasterState,
     getRxReplicationMetaInstanceSchema,
-    replicateRxStorageInstance
+    replicateRxStorageInstance,
+    writeDocToDocState
 } from '../../replication-protocol/index.ts';
 import { newRxError } from '../../rx-error.ts';
 import {
@@ -81,7 +85,8 @@ export class RxReplicationState<RxDocType, CheckpointType> {
         sent: new Subject<WithDeleted<RxDocType>>(), // all documents that are sent to the endpoint
         error: new Subject<RxError | RxTypeError>(), // all errors that are received from the endpoint, emits new Error() objects
         canceled: new BehaviorSubject<boolean>(false), // true when the replication was canceled
-        active: new BehaviorSubject<boolean>(false) // true when something is running, false when not
+        active: new BehaviorSubject<boolean>(false), // true when something is running, false when not
+        conflict: new Subject<RxReplicationConflict<RxDocType>>() // all conflicts that are reported by the remote on pushes, together with the conflictHandler output
     };
 
     readonly received$: Observable<RxDocumentData<RxDocType>> = this.subjects.received.asObservable();
@@ -89,6 +94,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
     readonly error$: Observable<RxError | RxTypeError> = this.subjects.error.asObservable();
     readonly canceled$: Observable<any> = this.subjects.canceled.asObservable();
     readonly active$: Observable<boolean> = this.subjects.active.asObservable();
+    readonly conflict$: Observable<RxReplicationConflict<RxDocType>> = this.subjects.conflict.asObservable();
 
     wasStarted: boolean = false;
 
@@ -406,6 +412,10 @@ export class RxReplicationState<RxDocType, CheckpointType> {
                 .subscribe((writeToMasterRow: RxReplicationWriteToMasterRow<RxDocType>) => {
                     this.subjects.sent.next(writeToMasterRow.newDocumentState);
                 }),
+            this.internalReplicationState.events.resolvedConflicts
+                .subscribe((conflict: RxReplicationConflict<RxDocType>) => {
+                    this.subjects.conflict.next(conflict);
+                }),
             combineLatest([
                 this.internalReplicationState.events.active.down,
                 this.internalReplicationState.events.active.up
@@ -518,6 +528,136 @@ export class RxReplicationState<RxDocType, CheckpointType> {
         return true;
     }
 
+    /**
+     * Returns a promise that resolves when the given RxDocument instance
+     * was successfully pushed to the server.
+     *
+     * It resolves either when the document is emitted on sent$ (the live
+     * push case) or, for documents that were already pushed before this was
+     * called, when the assumed master state in the replication meta instance
+     * already contains the given document state.
+     *
+     * If the document was overwritten by a newer local write before it could
+     * be pushed, the promise resolves as soon as any later state of the
+     * document has been pushed, because that also proves the given state
+     * reached the server.
+     */
+    async awaitDocumentPushed(doc: RxDocument<RxDocType>): Promise<void> {
+        if (!this.push) {
+            throw newRxError('RC_PUSH_AWAIT', {
+                id: doc.primary,
+                args: { replicationIdentifier: this.replicationIdentifier }
+            });
+        }
+        await this.startPromise;
+        const internalReplicationState = ensureNotFalsy(this.internalReplicationState);
+        const primaryPath = this.collection.schema.primaryPath;
+        const docId: string = doc.primary;
+        const docLwt: number = doc._data._meta.lwt;
+
+        /**
+         * Detects documents that were already pushed before
+         * awaitDocumentPushed() was called, by comparing the given document
+         * state with the assumed master state from the replication meta
+         * instance. The meta instance stores the last document state that
+         * was successfully written to the master, so this check works
+         * independent of the storage specific checkpoint format.
+         * (For example the sharding RxStorage stacks up partial checkpoints
+         * that do not contain a top level lwt, so the checkpoint cannot
+         * be used for this detection.)
+         */
+        const isAlreadyPushed = async (): Promise<boolean> => {
+            /**
+             * Await the upstream queue first because inside of a push cycle,
+             * the meta instance write happens after the sent$ emission,
+             * so without waiting we could miss the meta state
+             * of a push that just completed.
+             */
+            await internalReplicationState.streamQueue.up;
+            const assumedMasterState = await getAssumedMasterState(
+                internalReplicationState,
+                [docId]
+            );
+            const assumedMasterDoc = assumedMasterState[docId];
+            if (!assumedMasterDoc) {
+                return false;
+            }
+            const isEqual = internalReplicationState.input.conflictHandler.isEqual;
+            const givenDocState = writeDocToDocState(
+                doc._data,
+                internalReplicationState.hasAttachments,
+                !!internalReplicationState.input.keepMeta
+            );
+            if (isEqual(assumedMasterDoc.docData, givenDocState, 'replication-await-document-pushed')) {
+                return true;
+            }
+            /**
+             * If the document was overwritten by a newer local write
+             * before it could be pushed, it is enough when a later state
+             * of the document has reached the master.
+             */
+            const currentForkState = (
+                await internalReplicationState.input.forkInstance.findDocumentsById([docId], true)
+            )[0];
+            if (
+                currentForkState &&
+                currentForkState._meta.lwt > docLwt
+            ) {
+                return isEqual(
+                    assumedMasterDoc.docData,
+                    writeDocToDocState(
+                        currentForkState,
+                        internalReplicationState.hasAttachments,
+                        !!internalReplicationState.input.keepMeta
+                    ),
+                    'replication-await-document-pushed'
+                );
+            }
+            return false;
+        };
+
+        return new Promise<void>((resolve, reject) => {
+            /**
+             * Every successfully pushed document is emitted on sent$,
+             * so an emission with our primary key proves that this document
+             * reached the master.
+             */
+            const sub = this.sent$.subscribe({
+                next: (sentDocData) => {
+                    if ((sentDocData as any)[primaryPath] === docId) {
+                        sub.unsubscribe();
+                        resolve();
+                    }
+                }
+            });
+            this.onCancel.push(() => {
+                sub.unsubscribe();
+                /**
+                 * Run a final check so that a document which was pushed
+                 * in the last cycle before a (non-live) cancel still resolves.
+                 * If it was not pushed before the cancel, the promise stays
+                 * pending, which matches the behavior of awaitInitialReplication().
+                 */
+                isAlreadyPushed().then(pushed => {
+                    if (pushed) {
+                        resolve();
+                    }
+                }).catch(reject);
+            });
+            /**
+             * Run the initial check after subscribing so that documents that
+             * were already pushed resolve immediately, without missing a
+             * sent$ emission that could happen between check and subscribe.
+             */
+            isAlreadyPushed().then(pushed => {
+                if (pushed) {
+                    sub.unsubscribe();
+                    resolve();
+                }
+            }).catch(reject);
+        });
+    }
+
     reSync() {
         this.remoteEvents$.next('RESYNC');
     }
@@ -558,6 +698,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
         this.subjects.error.complete();
         this.subjects.received.complete();
         this.subjects.sent.complete();
+        this.subjects.conflict.complete();
 
         /**
          * Remove from the REPLICATION_STATE_BY_COLLECTION registry

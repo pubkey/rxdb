@@ -1,6 +1,6 @@
 import assert from 'assert';
 import AsyncTestUtil from 'async-test-util';
-import config, { describeParallel } from './config.ts';
+import config from './config.ts';
 
 import {
     createRxDatabase,
@@ -19,7 +19,7 @@ import { RxDBQueryBuilderPlugin } from '../../plugins/query-builder/index.mjs';
 addRxPlugin(RxDBQueryBuilderPlugin);
 
 
-describeParallel('population.test.js', () => {
+describe('population.test.js', () => {
     describe('createRxSchema', () => {
         describe('positive', () => {
             it('should allow to create a schema with a relation', () => {

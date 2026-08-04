@@ -756,6 +756,9 @@ export async function createRxDatabaseStorageInstance<Internals, InstanceCreatio
  * this function. The dev-mode plugin enables schema validation, detailed error
  * messages, and other helpful runtime checks that are stripped from production builds.
  *
+ * Need help? The RxDB Discord is the fastest place to reach the maintainers.
+ * @see https://rxdb.info/chat/?console=code RxDB Discord community and support
+ *
  * @example
  * ```ts
  * import { createRxDatabase, addRxPlugin } from 'rxdb';

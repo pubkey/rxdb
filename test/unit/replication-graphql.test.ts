@@ -15,7 +15,7 @@ import {
     firstValueFrom
 } from 'rxjs';
 
-import config, { describeParallel } from './config.ts';
+import config from './config.ts';
 import {
     createRxDatabase,
     RxJsonSchema,
@@ -182,7 +182,7 @@ describe('replication-graphql.test.ts', () => {
                 }
             });
         });
-        describeParallel('graphql-server.js', () => {
+        describe('graphql-server.js', () => {
             it('spawn, reach and close a server', async () => {
                 const server = await SpawnServer.spawn();
                 const res = await graphQLRequest(
@@ -352,7 +352,7 @@ describe('replication-graphql.test.ts', () => {
                 server.close();
             });
         });
-        describeParallel('live:false pull only', () => {
+        describe('live:false pull only', () => {
             it('should pull all documents in one batch', async () => {
                 const [c, server] = await Promise.all([
                     humansCollection.createHumanWithTimestamp(0),
@@ -716,7 +716,7 @@ describe('replication-graphql.test.ts', () => {
             });
 
         });
-        describeParallel('live:true pull only', () => {
+        describe('live:true pull only', () => {
             it('should also get documents that come in afterwards', async () => {
                 const [c, server] = await Promise.all([
                     humansCollection.createHumanWithTimestamp(0),
@@ -882,7 +882,7 @@ describe('replication-graphql.test.ts', () => {
             });
         });
 
-        describeParallel('push only', () => {
+        describe('push only', () => {
             it('should send all documents in one batch', async () => {
                 const [c, server] = await Promise.all([
                     humansCollection.createHumanWithTimestamp(batchSize),
@@ -1218,7 +1218,7 @@ describe('replication-graphql.test.ts', () => {
                 c.database.close();
             });
         });
-        describeParallel('push and pull', () => {
+        describe('push and pull', () => {
             it('should push and pull all docs; live: false', async () => {
                 const amount = batchSize * 4;
                 const testData = getTestData(amount);
@@ -1564,7 +1564,7 @@ describe('replication-graphql.test.ts', () => {
             });
         });
 
-        describeParallel('live:true with pull.stream$', () => {
+        describe('live:true with pull.stream$', () => {
             it('should pull all ongoing document writes from the server', async () => {
                 const [c, server] = await Promise.all([
                     humansCollection.createHumanWithTimestamp(0),
@@ -1787,7 +1787,7 @@ describe('replication-graphql.test.ts', () => {
         });
 
 
-        describeParallel('observables', () => {
+        describe('observables', () => {
             it('should emit the received documents when pulling', async () => {
                 const testData = getTestData(batchSize);
                 const [c, server] = await Promise.all([
@@ -1917,7 +1917,7 @@ describe('replication-graphql.test.ts', () => {
             });
         });
 
-        describeParallel('.graphQLSchemaFromRxSchema()', () => {
+        describe('.graphQLSchemaFromRxSchema()', () => {
             it('assumption: buildSchema() fails on non-graphql input', () => {
                 assert.throws(
                     () => buildSchema('foobar')
@@ -1981,7 +1981,7 @@ describe('replication-graphql.test.ts', () => {
                 assert.ok(build);
             });
         });
-        describeParallel('.pullQueryBuilderFromRxSchema()', () => {
+        describe('.pullQueryBuilderFromRxSchema()', () => {
             it('assumption: parseQuery() fails on non-graphql input', () => {
                 assert.throws(
                     () => parseQuery('foobar')
@@ -2078,7 +2078,7 @@ describe('replication-graphql.test.ts', () => {
                 assert.ok(parsed);
             });
         });
-        describeParallel('.pullStreamBuilderFromRxSchema()', () => {
+        describe('.pullStreamBuilderFromRxSchema()', () => {
             it('should create a valid builder', async () => {
                 const builder = pullStreamBuilderFromRxSchema(
                     'human', {
@@ -2155,7 +2155,7 @@ describe('replication-graphql.test.ts', () => {
                 assert.equal(normalizeString(output.query), normalizeString(want));
             });
         });
-        describeParallel('.pushQueryBuilderFromRxSchema()', () => {
+        describe('.pushQueryBuilderFromRxSchema()', () => {
             it('should create a valid builder', async () => {
                 const builder = pushQueryBuilderFromRxSchema(
                     'human', {
@@ -2287,7 +2287,7 @@ describe('replication-graphql.test.ts', () => {
                 assert.ok(pushDoc.deleted);
             });
         });
-        describeParallel('integrations', () => {
+        describe('integrations', () => {
             it('should work with encryption', async () => {
                 const db = await createRxDatabase({
                     name: randomToken(10),
@@ -2548,7 +2548,7 @@ describe('replication-graphql.test.ts', () => {
                 await c.database.close();
             });
         });
-        describeParallel('issues', () => {
+        describe('issues', () => {
             it('push not working on slow db', async () => {
                 if (isBun) {
                     // TODO for somehow bun times out here

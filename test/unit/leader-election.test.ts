@@ -1,6 +1,6 @@
 import assert from 'assert';
 import AsyncTestUtil from 'async-test-util';
-import config, { describeParallel } from './config.ts';
+import config from './config.ts';
 
 import {
     schemas,
@@ -13,7 +13,13 @@ import {
     createRxDatabase,
     randomToken,
     addRxPlugin,
+    ensureNotFalsy,
+    BROADCAST_CHANNEL_BY_TOKEN
 } from '../../plugins/core/index.mjs';
+
+import {
+    replicateRxCollection
+} from '../../plugins/replication/index.mjs';
 
 import {
     RxDBLeaderElectionPlugin
@@ -24,7 +30,7 @@ describe('leader-election.test.js', () => {
         return;
     }
     addRxPlugin(RxDBLeaderElectionPlugin);
-    describeParallel('.die()', () => {
+    describe('.die()', () => {
         it('other instance applies on death of leader', async () => {
             const name = randomToken(10);
             const c = await humansCollection.createMultiInstance(name);
@@ -167,7 +173,7 @@ describe('leader-election.test.js', () => {
             await Promise.all(nonDeadDbs.map(db => db.close()));
         });
     });
-    describeParallel('cleanup', () => {
+    describe('cleanup', () => {
         it('should properly call die() on the elector when the database is closed', async () => {
             const name = randomToken(10);
             const c1 = await humansCollection.createMultiInstance(name);
@@ -192,8 +198,57 @@ describe('leader-election.test.js', () => {
 
             await db2.close();
         });
+        /**
+         * close() must not resolve before the broadcast channel is closed.
+         * Two promises are dropped on the way there: onClose() does not return
+         * has.die(), and the close() wrapper does not await the bc.close() that
+         * removeBroadcastChannelReference() returns. So the channel outlives the
+         * close() call that was supposed to have closed it.
+         * @link https://github.com/pubkey/rxdb/issues/8893
+         */
+        it('#8893 close() must not resolve before the broadcast channel is closed', async () => {
+            const collection = await humansCollection.createMultiInstance(randomToken(10));
+            const db = collection.database;
+
+            /**
+             * A live replication internally runs database.waitForLeadership().
+             * This starts a leader election that is still running
+             * when close() is called.
+             */
+            replicateRxCollection({
+                collection,
+                replicationIdentifier: randomToken(10),
+                live: true,
+                autoStart: true,
+                pull: {
+                    handler() {
+                        return Promise.resolve({
+                            documents: [],
+                            checkpoint: undefined
+                        });
+                    }
+                }
+            });
+
+            const broadcastChannel = ensureNotFalsy(BROADCAST_CHANNEL_BY_TOKEN.get(db.token)).bc as any;
+
+            let channelIsClosed = false;
+            const closeBefore = broadcastChannel.method.close.bind(broadcastChannel.method);
+            broadcastChannel.method.close = (channelState: any) => {
+                channelIsClosed = true;
+                return closeBefore(channelState);
+            };
+
+            await db.close();
+
+            assert.strictEqual(
+                channelIsClosed,
+                true,
+                'close() resolved while the broadcast channel was still open'
+            );
+        });
     });
-    describeParallel('integration', () => {
+    describe('integration', () => {
         it('non-multiInstance should always be leader', async () => {
             const db = await createRxDatabase({
                 name: randomToken(10),

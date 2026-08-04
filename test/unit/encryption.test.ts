@@ -1,5 +1,5 @@
 import assert from 'assert';
-import config, { describeParallel } from './config.ts';
+import config from './config.ts';
 import AsyncTestUtil from 'async-test-util';
 
 import {
@@ -40,7 +40,7 @@ import { getRxStorageMemory } from '../../plugins/storage-memory/index.mjs';
 import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.mjs';
 
 
-describeParallel('encryption.test.ts', () => {
+describe('encryption.test.ts', () => {
     async function createEncryptedCollection(
         amount: number = 10,
         useStorage?: typeof storage

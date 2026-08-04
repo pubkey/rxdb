@@ -1,0 +1,51 @@
+<ion-card>
+  <ion-card-header>
+    <ion-card-title>Heroes</ion-card-title>
+  </ion-card-header>
+
+  <ion-card-content>
+    @if (heroes$ | async; as heroes) {
+      <ion-list id="hero-list" lines="full">
+        @for (hero of heroes; track hero.name) {
+          <ion-item-sliding class="hero-list-item">
+            <ion-item>
+              <div
+                class="color-box"
+                slot="start"
+                [style.background-color]="hero.color"
+              ></div>
+              <ion-label>
+                <h2 class="hero-name">{{ hero.name }}</h2>
+                <ion-progress-bar [value]="hero.hp / 100"></ion-progress-bar>
+              </ion-label>
+              <ion-icon
+                class="edit-hero"
+                slot="end"
+                name="create"
+                (click)="editHero(hero)"
+              ></ion-icon>
+              <ion-icon
+                class="delete-hero"
+                slot="end"
+                name="trash"
+                (click)="deleteHero(hero)"
+              ></ion-icon>
+            </ion-item>
+            <ion-item-options side="end">
+              <ion-item-option
+                color="danger"
+                (click)="deleteHero(hero)"
+              >Delete</ion-item-option>
+            </ion-item-options>
+          </ion-item-sliding>
+        } @empty {
+          <ion-item id="no-heroes">
+            <ion-label>No heroes yet, insert one</ion-label>
+          </ion-item>
+        }
+      </ion-list>
+    } @else {
+      <ion-spinner></ion-spinner>
+    }
+  </ion-card-content>
+</ion-card>

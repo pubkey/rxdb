@@ -2,9 +2,15 @@ import React, { useCallback, useEffect, useRef, useState, type ReactNode } from 
 import clsx from 'clsx';
 import {
     CodeBlockContextProvider,
+    useCodeWordWrap,
     type CodeBlockMetadata,
 } from '@docusaurus/theme-common/internal';
-import type { WordWrap } from '@docusaurus/theme-common/internal';
+
+/**
+ * The WordWrap type itself is not part of the public exports
+ * of @docusaurus/theme-common/internal, so derive it from the hook.
+ */
+type WordWrap = ReturnType<typeof useCodeWordWrap>;
 
 import CopyButton from '@theme-original/CodeBlock/Buttons/CopyButton';
 import WordWrapButton from '@theme-original/CodeBlock/Buttons/WordWrapButton';

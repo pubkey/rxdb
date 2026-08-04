@@ -1,1 +1,0 @@
-- FIX document the non-premium collection limit in the addCollections docs and premium pricing page, linked to #8614

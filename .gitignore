@@ -24,10 +24,12 @@ isolate-*
 release-body.md
 /test-db-*
 dist/
-plugins/
+# only the generated plugins folder in the root, not src/plugins/
+/plugins/
 *-debug.log
 .vscode
 ai-context.txt
+docs-src/static/files/video-thumbnails/
 ERROR-MESSAGES.md
 .chrome-profile-perf/
 /docs/

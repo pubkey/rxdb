@@ -9,6 +9,62 @@
 
 <!-- RELEASE BELOW -->
 
+### 17.4.0 (13 July 2026)
+
+ADD test to ensure `awaitDocumentPushed()` resolves after a document push first had a conflict that was later resolved. (https://github.com/pubkey/rxdb/issues/8632)
+ADD `replicationState.awaitDocumentPushed(rxDocument)` which returns a promise that resolves once the given `RxDocument` state was successfully pushed to the server. (https://github.com/pubkey/rxdb/issues/8632)
+- ADD Datenschutzerklärung / Privacy Policy page (German and English) at `/privacy/`, set to `noindex`, and linked in the docs footer next to the Legal Notice.
+- ADD `replicationState.conflict$` observable that emits each conflict that was reported by the remote in the response of the push handler, together with the output of the conflictHandler that resolved it. (https://github.com/pubkey/rxdb/pull/8742)
+- Add a `create-sem-page` Claude skill that generates a new SEM landingpage under `docs-src/src/pages/sem` from a slug plus 3 titles, 3 descriptions and 3 sets of bulletpoints that are a/b tested against each other. Adds the `getSemVariation()` helper in `docs-src/src/components/a-b-tests.tsx` for stable per visitor variation assignment and tracking. See https://github.com/pubkey/rxdb
+FIX broken links on the [alternatives](https://rxdb.info/alternatives.html) page. Ten alternative article pages had a redundant `alternatives/` prefix in their `slug` frontmatter, which Docusaurus resolves relative to the file directory and produced doubled URLs like `/articles/alternatives/alternatives/aws-amplify-datastore-alternative.html`.
+FIX `awaitDocumentPushed()` never resolved for documents that were already pushed when the storage uses a non-default checkpoint format, like the sharding RxStorage. It now compares the document state with the assumed master state from the replication meta instance instead of the push checkpoint. (https://github.com/pubkey/rxdb/issues/8632)
+- FIX CI failing on dependency-update PRs with `ETARGET No matching version found` by removing `NPM_CONFIG_PREFER_OFFLINE` from the workflows so npm revalidates cached registry metadata.
+- FIX Reserve explicit `width`/`height` on the docs images that Google Search Console reported with Cumulative Layout Shift (CLS), starting from the [localStorage article](https://rxdb.info/articles/localstorage.html). Covers the two in-article RxDB logos, the navbar logo, the footer logo, the footer community icons, and the "Was this page helpful?" thumbs-up and Discord icons so the browser reserves space before the SVGs load.
+- FIX Add an accessible `aria-label` to the icon-only Discord and GitHub navbar links and an `alt` text to the footer Discord icon.
+- CHANGE Replace the raw centered logo `<img>` HTML in all articles with a reusable `RxdbLogo` MDX component that derives an explicit `height` from the `width`, so every article reserves image space and avoids CLS.
+- CHANGE Emit source maps in the production docs build (`devtool: 'source-map'`) so tools like Lighthouse can map the minified bundle back to the source and give more detailed tips.
+- FIX document the non-premium collection limit in the addCollections docs and premium pricing page, linked to #8614
+- FIX dev-mode: `COL13` and `COL16` errors now report the type of the invalid value instead of a constant wrong type, and the field name check no longer accepts square brackets in field names because they cannot be used as javascript variables.
+- FIX `DocumentCache` no longer downgrades the cached latest document state when an older change event arrives out of order in multiInstance mode. This prevents two instances from diverging and fixes a flaky `upsertLocal()` concurrency test. Fixes #8609
+* Fix `npm run docs:build` so it installs `docs-src` dependencies when needed before building the docs.
+- FIX Add accessible `alt` text to the "Was this page helpful?" thumbs-up and thumbs-down icons in the docs footer that an accessibility audit flagged as missing the `alt` attribute.
+- FIX reduce RxDB bundle size by using the internal `flatClone()` helper in `RxSchema` instead of importing it from `event-reduce-js`
+- FIX Handle 409 conflict errors and retry in `upsertLocal` to prevent concurrency hazards with other browser tabs. Fixes #8609
+- FIX: `createEmptyFile()` in the Microsoft OneDrive replication plugin now uses the POST response body directly instead of an extra `listFilesInFolder` call, avoiding a race condition. The test assertion for `fileId.length` was also relaxed to `> 0` since the mock server can generate short IDs.
+- FIX: Increased the `OPEN_COLLECTIONS` retry timeout from 1050ms (35×30ms) to 9000ms (300×30ms) to prevent false COL23 errors when using slow storage backends like MongoDB where tests hold collections open for several seconds. Also fixed `startTime` tracking so `timeInRetry` in the error now reflects the total wait time.
+- FIX: queries with `$gt`/`$lt` bounds outside the schema `minimum`/`maximum` now correctly include boundary documents instead of excluding them due to index-string clamping. Fixed [#8601](https://github.com/pubkey/rxdb/pull/8601)
+- FIX SEM landingpages always showed the first variation after clearing localStorage. `getSemVariation()` in `docs-src/src/components/a-b-tests.tsx` returned an in-memory cached index before reading localStorage, so clearing storage had no effect until a full page reload reset the module state (which does not happen on client side navigations or with dev server hot module replacement). localStorage is now the single source of truth, so a cleared storage reliably re-randomizes one of the variations. See https://github.com/pubkey/rxdb
+Removed the appended `| RxDB - JavaScript Database` site-title suffix from SEO page titles by swizzling the `PageMetadata` theme component, so the `<title>` and `og:title` now contain only the page title. See https://github.com/pubkey/rxdb
+- FIX storage-sqlite: removed `console.dir` calls which are `undefined` in production React Native / Hermes runtimes and threw `TypeError: undefined is not a function` inside `openSqliteTransaction`, masking the real SQLite error and bypassing the `BEGIN;` retry loop. [#8635](https://github.com/pubkey/rxdb/issues/8635)
+- FIX utils: `getFromObjectOrThrow()` no longer throws on existing falsy values like `0`, `''` or `false`, and `flattenObject()` no longer drops keys whose value is `null`.
+Fix WebMCP v3 tests by resetting the WebMCP polyfill state between unit tests so `navigator.modelContextTesting` is reinstalled reliably after each test run. Related to PR https://github.com/pubkey/rxdb/pull/8673
+- IMPROVE query planner: `$in` queries on indexed fields now limit the scanned index range to the min/max of the given values instead of doing a full scan. This makes `$in` queries with multiple values use the index in all RxStorage implementations that use the RxDB query planner. [#8631](https://github.com/pubkey/rxdb/issues/8631)
+- IMPROVE trial SQLite storage: raise the document limit from 300 to 500, stop counting deleted (tombstone) documents towards the limit, and log a loud warning on each write once usage reaches ~80% of the document or operation limit. See https://rxdb.info/rx-storage-sqlite.html
+- CHANGE Display Pro and Pro Plus tier pricing as per-month figures, update title to "RxDB for Professionals", merge subtitles, and clean up redundant header sections.
+- Disallow crawling of the published `.md` files (generated for the llms.txt via `generateMarkdownFiles`) in `robots.txt` so the raw markdown sources do not appear as duplicate content in search engines. See https://github.com/pubkey/rxdb
+- Add an optional `sem.bulletpoints` field to the landingpage `SemPage` config so SEM pages can customly define and a/b test the hero section bulletpoints like "Build apps that work offline". When not set, the default bulletpoints are used. See https://github.com/pubkey/rxdb
+- Add SEM landingpage `gaawsds1` (a/b testing 3 title/description/bulletpoint variations for migrating off deprecated offline sync) at `/sem/gaawsds1.html`.
+- Add SEM landingpage `gaawsds2` (a/b testing 3 title/description/bulletpoint variations for the open-source local-first database) at `/sem/gaawsds2.html`.
+- Add SEM landingpage `gaawsds3` (a/b testing 3 title/description/bulletpoint variations for reliable offline sync you control) at `/sem/gaawsds3.html`.
+- Add SEM landingpage `gaencdb1` (encrypted local database for JavaScript apps) that a/b tests 3 title, description and bulletpoint variations at `/sem/gaencdb1.html`.
+- Add SEM landingpage `gaencdb2` (field-level encryption for JavaScript and TypeScript apps) that a/b tests 3 title, description and bulletpoint variations at `/sem/gaencdb2.html`.
+- Add SEM landingpage `gaencdb3` (encrypt local app data on web and mobile) that a/b tests 3 title, description and bulletpoint variations at `/sem/gaencdb3.html`.
+- ADD SEM landingpages `/sem/gaidxdb1.html`, `/sem/gaidxdb2.html` and `/sem/gaidxdb3.html`, each a/b testing 3 variations of the hero title, description and bulletpoints.
+- Added SEM landingpage `gajsondb1` (JSON database for JavaScript apps) that a/b tests 3 title, description and bulletpoint variations.
+- Added SEM landingpage `gajsondb2` (open-source NoSQL JSON database) that a/b tests 3 title, description and bulletpoint variations.
+- Added SEM landingpage `gajsondb3` (real JSON database vs JSON files) that a/b tests 3 title, description and bulletpoint variations.
+- Add SEM landingpage `garealm1` (maintained local database with realtime sync for teams migrating off deprecated mobile sync) that a/b tests 3 title, description and bulletpoint variations at `/sem/garealm1.html`.
+- Add SEM landingpage `garealm2` (local-first JavaScript database with self-hostable sync) that a/b tests 3 title, description and bulletpoint variations at `/sem/garealm2.html`.
+- Add SEM landingpage `garealm3` (replace a deprecated mobile sync stack with self-hosted RxDB replication) that a/b tests 3 title, description and bulletpoint variations at `/sem/garealm3.html`.
+FIX: The hero section now renders the `text` of a SEM page so that the a/b tested text variations of the `sem` landingpages are shown instead of always displaying the hardcoded default text.
+- Added a test case in `migration-schema.test.ts` to verify how RxDB behaves when a schema migration strategy produces a document that does not match the target schema. Fixes #8607
+Updated `google-drive-mock` to `1.2.0` and fixed `isTransactionTimedOut` to use the v2 API to fetch the file `modifiedDate` and `ETag` header, since the v3 API no longer returns `etag` in the response body.
+
+#
+### RxDB Premium
+- FIX (storage-memory-mapped) Fixed a bug where `bulkUpsert` of an existing document would not survive a database reopen. The background persistence flush used `return` instead of `continue` inside the write-tasks loop, causing any remaining batched writes to be silently dropped whenever one write task produced no written documents (e.g. when a conflicting insert yields an empty result). See [rxdb-premium-issues#24](https://github.com/pubkey/rxdb-premium-issues/pull/24)
+- FIX (storage-indexeddb) Eliminated unhandled `TransactionInactiveError` rejections that occurred during bulk replication pulls when concurrent reads hit the WAL flush window. See [#8497](https://github.com/pubkey/rxdb/issues/8497)
+
 ### 17.3.0 (28 May 2026)
 
 - TEST add reproduction for composite primary key auto-fill when only `name` and `number` are set in a `preInsert` hook without `id` (https://github.com/pubkey/rxdb/pull/8527)
@@ -31,6 +87,7 @@
 - REFACTOR move the attachment serialisation helpers (`serializeDocAttachments`, `deserializeDocAttachments`, `stripAllAttachmentDataForComparison`) to `src/replication-protocol/helper.ts` so they can be shared between the google-drive and microsoft-onedrive replication plugins.
 
 #
+
 ### RxDB Premium
 - FIX (storage-indexeddb) Eliminated unhandled `TransactionInactiveError` rejections that occurred during bulk replication pulls when concurrent reads hit the WAL flush window. See [#8497](https://github.com/pubkey/rxdb/issues/8497)
 

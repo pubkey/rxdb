@@ -1,4 +1,5 @@
 import { randomOfArray } from '../../../plugins/utils';
+import { getUtmCampaign, SEM_VARIATION_STORAGE_PREFIX } from './trigger-event';
 // import { HeroEmojiChat } from './hero-section/T4_hero_b';
 // import { ReplicationDiagram } from './replication-diagram';
 // import { ScrollToSection, SemPage } from '../pages';
@@ -98,20 +99,61 @@ export function ABTestContent(
 }
 
 
-export function getTestGroupEventPrefix() {
-    const has = localStorage.getItem(TEST_GROUP_STORAGE_ID);
-    if (!has) {
-        return false;
-    } else {
-        const tg = getTestGroup();
-        return [
-            'abt',
-            CURRENT_TEST_RUN.id,
-            Object.keys(CURRENT_TEST_RUN).length > 1 ? 'V:' + tg.variation : undefined,
-            'O:' + tg.originId,
-            'D:' + tg.deviceType,
-        ]
-            .filter(v => !!v)
-            .join('_');
+/**
+ * SEM landingpages a/b test multiple sets of title, text and
+ * bulletpoints on the same page. getSemVariation() picks one variation
+ * randomly per visitor and stores the choice in localStorage so that the
+ * visitor always sees the same variation on later visits.
+ *
+ * Variations are identified by stable letter keys ('a', 'b', 'c', …), NOT by
+ * their position in an array: a letter keeps its meaning when variations are
+ * added or removed later, so stored assignments and GA events stay comparable
+ * over time. The rules when a page's variations get updated:
+ * - a new variation always gets the next unused letter - letters are NEVER
+ *   reused for different copy,
+ * - a variation is never deleted from the page file - it gets commented out
+ *   instead, so its letter and copy stay on record.
+ *
+ * The variation is keyed off the utm_campaign of the ad click (our ad final
+ * URLs carry the full utm parameter set), so every sem page of the same
+ * campaign shows the same variation letter and the tracking events can carry
+ * it in their utm-based prefix, e.g. "utm_indexeddb_va_join_newsletter"
+ * (see getUtmEventPrefix() in trigger-event.tsx). Visitors without a stored
+ * campaign (organic traffic) share the 'organic' key - their variation stays
+ * stable too, it is just not attributed to any campaign.
+ *
+ * localStorage is the single source of truth for the assigned variation -
+ * the event prefix reads it back directly, so there is no in-memory state
+ * that could go stale on client side navigations (docusaurus is a SPA) or
+ * when a dev server keeps the module alive via hot module replacement.
+ */
+export function getSemVariation(variationKeys: string[]): string {
+    const fallback = variationKeys[0];
+    if (variationKeys.length <= 1) {
+        return fallback;
     }
+
+    // server side rendering always uses the first variation
+    if (typeof localStorage === 'undefined') {
+        return fallback;
+    }
+
+    const campaign = getUtmCampaign();
+    const storageId = SEM_VARIATION_STORAGE_PREFIX + (campaign ? campaign : 'organic');
+    let key: string;
+    const fromStorage = localStorage.getItem(storageId);
+    if (fromStorage !== null && variationKeys.includes(fromStorage)) {
+        key = fromStorage;
+    } else {
+        /**
+         * Either no assignment yet, or the stored variation has been removed
+         * from the page since (or is a numeric index from the pre-letter
+         * system) - assign a fresh one.
+         */
+        key = randomOfArray(variationKeys);
+        localStorage.setItem(storageId, key);
+    }
+
+    console.log('currentSemVariation: ' + storageId + ' -> ' + key);
+    return key;
 }

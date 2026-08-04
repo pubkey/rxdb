@@ -8,7 +8,7 @@
 import assert from 'assert';
 import AsyncTestUtil, { wait, waitUntil } from 'async-test-util';
 
-import config, { describeParallel } from './config.ts';
+import config from './config.ts';
 import {
     isRxDatabase,
     createRxDatabase,
@@ -28,7 +28,7 @@ import {
     HumanDocumentType
 } from '../../plugins/test-utils/index.mjs';
 
-describeParallel('cross-instance.test.js', () => {
+describe('cross-instance.test.js', () => {
     if (!config.storage.hasMultiInstance) {
         return;
     }

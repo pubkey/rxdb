@@ -1,9 +1,9 @@
-import { describeParallel } from './config.ts';
+import './config.ts';
 
 
 
 
-describeParallel('conflict-handling.test.js', () => {
+describe('conflict-handling.test.js', () => {
     describe('RxStorageInterface', () => {
     });
 });

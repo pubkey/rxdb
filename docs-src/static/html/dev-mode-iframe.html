@@ -1,6 +1,22 @@
 <html>
 
 <head>
+    <!--
+        IMPORTANT: Do NOT add Google Tag Manager (or any other analytics script)
+        to this page. It was added once and reverted on purpose:
+        - This page runs as a cross-site iframe inside the apps of RxDB users.
+          Browser storage partitioning makes any GA client id unjoinable with
+          later rxdb.info visits, so the hits are worthless.
+        - There is no consent UI inside a hidden iframe, so for EU/EEA/UK users
+          consent stays denied forever and for everyone else cookies would be
+          set without any disclosure.
+        - Loading gtm.js inside third-party apps makes this iframe a target for
+          adblockers, which would also break the cookie mechanism below.
+        The only job of this page is to set the cookie. The actual tracking
+        event is fired later on the docs page (docs-src/src/theme/Root.tsx)
+        when the cookie is read. Dev-mode boot counts can be taken from the
+        server logs of this file via the ?version= query parameter.
+    -->
     <script>
         /**
          * Instead of directly creating analytics events inside of the iframe,

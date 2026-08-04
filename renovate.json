@@ -20,7 +20,6 @@
     "docs-src/package.json",
     "docs-src/docusaurus-lunr-search-main/package.json",
     "docs/files/logo/package.json",
-    "examples/ionic2/package.json",
     "examples/tauri/package.json",
     "examples/flutter/pubspec.yaml",
     "src/plugins/flutter/dart/pubspec.yaml",

@@ -1,0 +1,1 @@
+- IMPROVE Serve the docs favicon as `.ico` in addition to the `.svg`, so browsers without SVG favicon support fall back to `/files/logo/icon.ico`.

@@ -1,6 +1,6 @@
 import assert from 'assert';
 import clone from 'clone';
-import config, { describeParallel } from './config.ts';
+import config from './config.ts';
 
 
 import {
@@ -32,8 +32,8 @@ import {
     first
 } from 'rxjs/operators';
 
-describeParallel('reactive-query.test.js', () => {
-    describeParallel('positive', () => {
+describe('reactive-query.test.js', () => {
+    describe('positive', () => {
         it('get results of array when .subscribe() and filled array later', async () => {
             const c = await humansCollection.create(1);
             const query = c.find();
@@ -158,12 +158,13 @@ describeParallel('reactive-query.test.js', () => {
             ) {
                 return;
             }
+            const throttleTime = 300;
             const db = await createRxDatabase({
                 name: randomToken(10),
                 storage: config.storage.getStorage(),
                 multiInstance: false,
                 eventReduce: false,
-                liveQueryUpdateThrottleTime: 100
+                liveQueryUpdateThrottleTime: throttleTime
             });
             const collections = await db.addCollections({
                 humans: {
@@ -177,16 +178,47 @@ describeParallel('reactive-query.test.js', () => {
             try {
                 sub = query.$.subscribe(results => emitted.push(results));
                 await waitUntil(() => emitted.length === 1);
-                const ensureEqualAfterInitialRun = query._lastEnsureEqual;
 
-                await Promise.all(
-                    new Array(5).fill(0).map((_v, index) => {
-                        return c.insert(schemaObjects.humanData('throttle-' + index));
-                    })
+                /**
+                 * The auditTime() window opens with the change event of the first insert,
+                 * not when all writes are done. On a slow storage or on a loaded CI machine
+                 * the write burst itself can take longer than the throttle time, then
+                 * _ensureEqual() legitimately runs while the later inserts are still going on.
+                 * To not have a random failing test, the assertion only runs when the whole
+                 * burst did fit into the throttle window, and the burst is retried otherwise.
+                 */
+                const attempts = 4;
+                let didAssertInsideWindow = false;
+                for (let attempt = 0; attempt < attempts && !didAssertInsideWindow; attempt++) {
+                    if (attempt > 0) {
+                        // wait until the audit window of the previous attempt has flushed.
+                        await promiseWait(throttleTime * 2);
+                    }
+                    const ensureEqualBefore = query._lastEnsureEqual;
+                    const startTime = Date.now();
+                    await Promise.all(
+                        new Array(5).fill(0).map((_v, index) => {
+                            return c.insert(schemaObjects.humanData('throttle-' + attempt + '-' + index));
+                        })
+                    );
+                    await promiseWait(5);
+
+                    /**
+                     * Read the counter before the time so that a measured
+                     * elapsed time inside the window also proves that the
+                     * counter was read inside the window.
+                     */
+                    const ensureEqualAfter = query._lastEnsureEqual;
+                    const elapsed = Date.now() - startTime;
+                    if (elapsed < throttleTime - 20) {
+                        assert.strictEqual(ensureEqualAfter, ensureEqualBefore);
+                        didAssertInsideWindow = true;
+                    }
+                }
+                assert.ok(
+                    didAssertInsideWindow,
+                    'write burst did not fit into the throttle window of ' + throttleTime + 'ms in ' + attempts + ' attempts'
                 );
-                await promiseWait(5);
-
-                assert.strictEqual(query._lastEnsureEqual, ensureEqualAfterInitialRun);
             } finally {
                 if (sub) {
                     sub.unsubscribe();

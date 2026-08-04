@@ -8,6 +8,8 @@ image: /headers/capacitor-database.jpg
 
 import {Tabs} from '@site/src/components/tabs';
 import {Steps} from '@site/src/components/steps';
+import {Faq, FaqItem} from '@site/src/components/faq';
+import {CenteredImage} from '@site/src/components/centered-image';
 
 # Capacitor Database - SQLite, RxDB and others
 
@@ -16,9 +18,7 @@ It is developed by the Ionic Team and provides a great alternative to create hyb
 
 To read and write persistent data in Capacitor, there are multiple solutions which are shown in the following.
 
-<p align="center">
-  <img src="./files/icons/capacitor.svg" alt="Capacitor" width="50" />
-</p>
+<CenteredImage src="./files/icons/capacitor.svg" alt="Capacitor" width={50} />
 
 
 
@@ -109,9 +109,7 @@ The downside of SQLite is that it is lacking many features that are handful when
 
 ### RxDB
 
-<p align="center">
-  <img src="./files/logo/rxdb_javascript_database.svg" alt="RxDB" width="170" />
-</p>
+<RxdbLogo alt="RxDB" width={170} />
 
 
 [RxDB](https://rxdb.info/) is an local first, NoSQL database for JavaScript Applications like hybrid apps. Because it is reactive, you can subscribe to all state changes like the result of a query or even a single field of a document. This is great for UI-based realtime applications in a way that makes it easy to develop realtime applications like what you need in Capacitor.
@@ -263,11 +261,13 @@ await collections.humans.find({
 
 ## FAQ
 
-<details>
-<summary>What is Capacitor.js and how does it compare to React Native or Ionic?</summary>
+<Faq>
+<FaqItem question="What is Capacitor.js and how does it compare to React Native or Ionic?">
 
 Capacitor is a lightweight, open-source JavaScript native runtime engineered by the Ionic team that bridges standard Web APIs into native iOS/Android builds. Unlike React Native, which bundles a proprietary JavaScript engine directly mapping to native UI components, Capacitor mounts a standard platform WebView capable of executing raw HTML/CSS/JS exactly as it runs in modern browsers. This allows seamless utilization of standard Web APIs like **[RxDB](./rx-database.md)** atop IndexedDB or OPFS without requiring platform-specific native C++ module compilation.
-</details>
+
+</FaqItem>
+</Faq>
 
 ## Follow up
 

@@ -1,10 +1,9 @@
-import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import Layout from '@theme/Layout';
 import Head from '@docusaurus/Head';
 
 import React, { useEffect } from 'react';
 import useIsBrowser from '@docusaurus/useIsBrowser';
-import { NON_PREMIUM_COLLECTION_LIMIT } from '../constants';
+import { NON_PREMIUM_COLLECTION_LIMIT, PRICE_PRO_MONTHLY, PRICE_PRO_PLUS_MONTHLY } from '../constants';
 import { triggerTrackingEvent } from '../components/trigger-event';
 import { IframeFormModal } from '../components/modal';
 import { Button } from '../components/button';
@@ -13,8 +12,46 @@ import { IconChevronsRight } from '../components/icons/chevrons-right';
 
 
 
+/**
+ * Product structured data for the premium plugins so search
+ * engines can show price-annotated results for this page.
+ * The prices come from the same constants as the visible
+ * pricing tiers, so the markup cannot go out of sync.
+ */
+const PRODUCT_JSON_LD = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    'name': 'RxDB Premium Plugins',
+    'description': 'Commercial RxDB plugins with better performance, a smaller build size, flexible storage engines and secure encryption for production workloads.',
+    'image': 'https://rxdb.info/files/logo/logo.svg',
+    'url': 'https://rxdb.info/premium/',
+    'brand': {
+        '@type': 'Brand',
+        'name': 'RxDB',
+    },
+    'offers': [
+        {
+            '@type': 'Offer',
+            'name': 'Pro',
+            'description': 'Per month, billed annually. Unlimited developers.',
+            'price': String(PRICE_PRO_MONTHLY),
+            'priceCurrency': 'USD',
+            'url': 'https://rxdb.info/premium/',
+            'availability': 'https://schema.org/InStock',
+        },
+        {
+            '@type': 'Offer',
+            'name': 'Pro Plus',
+            'description': 'Per month, billed annually. Unlimited developers.',
+            'price': String(PRICE_PRO_PLUS_MONTHLY),
+            'priceCurrency': 'USD',
+            'url': 'https://rxdb.info/premium/',
+            'availability': 'https://schema.org/InStock',
+        },
+    ],
+};
+
 export default function Premium() {
-    const { siteConfig } = useDocusaurusContext();
     const isBrowser = useIsBrowser();
     const [initDone, setInitDone] = React.useState<boolean>(false);
 
@@ -31,13 +68,13 @@ export default function Premium() {
     }, [isBrowser, initDone]);
 
     // for dialog
-    const [openConsulting, setOpenConsulting] = React.useState(false);
-    const handleOpenConsultingDialog = () => {
-        triggerTrackingEvent('consulting_form_open', 0.4);
-        setOpenConsulting(true);
+    const [openCustom, setOpenCustom] = React.useState(false);
+    const handleOpenCustomDialog = () => {
+        triggerTrackingEvent('custom_package_form_open', 0.4);
+        setOpenCustom(true);
     };
-    const handleCloseConsulting = () => {
-        setOpenConsulting(false);
+    const handleCloseCustom = () => {
+        setOpenCustom(false);
     };
 
     const [openPro, setOpenPro] = React.useState(false);
@@ -64,10 +101,13 @@ export default function Premium() {
             <Head>
                 <body className="homepage" />
                 <link rel="canonical" href="/premium/" />
+                <script type="application/ld+json">
+                    {JSON.stringify(PRODUCT_JSON_LD)}
+                </script>
             </Head>
 
             <Layout
-                title={`RxDB for Professionals - ${siteConfig.title}`}
+                title={'RxDB for Professionals'}
                 description="RxDB plugins for professionals. FAQ, pricing and license"
             >
                 <main>
@@ -127,7 +167,7 @@ export default function Premium() {
                                         <h3>Pro</h3>
                                         <p className="tier-desc">Production-grade storage engines.</p>
                                         <span className="tier-price-prefix">From</span>
-                                        <div className="tier-price">$99<span>/ month</span></div>
+                                        <div className="tier-price">${PRICE_PRO_MONTHLY}<span>/ month</span></div>
                                         <div className="tier-price-sub">billed annually, unlimited developers</div>
                                         <div className="tier-license">&nbsp;</div>
                                     </div>
@@ -158,7 +198,7 @@ export default function Premium() {
                                         <h3>Pro Plus</h3>
                                         <p className="tier-desc">Performance plugins & server adapters.</p>
                                         <span className="tier-price-prefix">From</span>
-                                        <div className="tier-price">$239<span>/ month</span></div>
+                                        <div className="tier-price">${PRICE_PRO_PLUS_MONTHLY}<span>/ month</span></div>
                                         <div className="tier-price-sub">billed annually, unlimited developers</div>
                                         <div className="tier-license">&nbsp;</div>
                                     </div>
@@ -209,7 +249,7 @@ export default function Premium() {
                                     </ul>
 
                                     <Button onClick={(e) => {
-                                        e.preventDefault(); handleOpenConsultingDialog();
+                                        e.preventDefault(); handleOpenCustomDialog();
                                     }} style={{ width: '100%', marginBottom: 15 }} icon={<IconChevronsRight />}>Contact</Button>
                                     <div style={{ minHeight: 0, display: 'flex', flexDirection: 'column' }}>
                                         <span className="tier-agreement" style={{ visibility: 'hidden' }}>Preview License Agreement</span>
@@ -545,7 +585,7 @@ export default function Premium() {
                         </div>
                     </div>
                     */}
-                    <ConsultingFormDialog open={openConsulting} onClose={handleCloseConsulting} />
+                    <CustomFormDialog open={openCustom} onClose={handleCloseCustom} />
                     <ProFormDialog open={openPro} onClose={handleClosePro} />
                     <ProPlusFormDialog open={openProPlus} onClose={handleCloseProPlus} />
                 </main>
@@ -558,12 +598,13 @@ export default function Premium() {
 // }
 
 
-function ConsultingFormDialog({ onClose, open }) {
+function CustomFormDialog({ onClose, open }) {
     return <IframeFormModal
         onClose={onClose}
         open={open}
-        iframeUrl='https://webforms.pipedrive.com/f/6UUQvwSg3cy0wizvNdC3pmT378WEHYcwv6tdTlPNRl2HtVm0JjBbj5MQjqVj7ePW3F'
-        eventId='consulting_form'
+        iframeUrl='https://webforms.pipedrive.com/f/63f2Y0mNbp1veI9X0QPYMmLKq4xeHmvN4OgxfmUyvIzLDQeAsTOFC3yLEP17TQWGNt'
+        eventId='custom_package_form'
+        focusEventType='premium_form_focus_x_sec'
     />;
 }
 
@@ -573,6 +614,7 @@ function ProFormDialog({ onClose, open }) {
         open={open}
         iframeUrl='https://webforms.pipedrive.com/f/6NclWCnYX2vvtF69NxoNKttBklqjCFyxArtY3ir4YZfLRDCIrBnCu3iewgluQcx5K3'
         eventId='pro_form'
+        focusEventType='premium_form_focus_x_sec'
     />;
 }
 
@@ -582,5 +624,6 @@ function ProPlusFormDialog({ onClose, open }) {
         open={open}
         iframeUrl='https://webforms.pipedrive.com/f/ce8xmRLPWF5wdMuU49wkdta9IFUGbsVGfQpZZnnJUwJHhwztGs6jsqCnOaLFHaHhPJ'
         eventId='pro_plus_form'
+        focusEventType='premium_form_focus_x_sec'
     />;
 }

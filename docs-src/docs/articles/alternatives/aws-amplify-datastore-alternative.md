@@ -1,17 +1,17 @@
 ---
 title: RxDB as an AWS Amplify DataStore Alternative - Backend-Agnostic, Offline-First
-slug: alternatives/aws-amplify-datastore-alternative.html
+slug: aws-amplify-datastore-alternative.html
 description: Compare RxDB and AWS Amplify DataStore for offline-first JavaScript applications. Learn why RxDB is a strong alternative with pluggable backends, flexible storage, reactive queries, and no vendor lock-in.
 image: /headers/alternatives/aws-amplify-datastore-alternative.jpg
 ---
 
+import {Faq, FaqItem} from '@site/src/components/faq';
+import {ComparisonTable} from '@site/src/components/comparison-table';
+import {Timeline} from '@site/src/components/timeline';
+
 # RxDB as an AWS Amplify DataStore Alternative
 
-<center>
-    <a href="https://rxdb.info/">
-        <img src="/files/logo/rxdb_javascript_database.svg" alt="JavaScript Database" width="220" />
-    </a>
-</center>
+<RxdbLogo alt="JavaScript Database" />
 
 AWS Amplify DataStore offered an appealing promise: define a GraphQL schema, run a CLI command, and get automatic offline sync to DynamoDB via AWS AppSync. For teams already embedded in the AWS ecosystem, that promise was compelling. But DataStore was deprecated in Amplify Gen 2, is scheduled for end-of-life on May 1, 2027, and had well-documented limitations around query flexibility, local performance, and its tight coupling to AWS infrastructure. This page explains what DataStore does, where it falls short, and why [RxDB](https://rxdb.info) is a practical alternative for teams building offline-first applications.
 
@@ -58,11 +58,15 @@ DataStore handled conflict resolution server-side via AWS AppSync using one of t
 
 ### A Brief Timeline
 
+<Timeline>
+
 - **December 2019** - DataStore launches as part of AWS Amplify. It targets mobile (iOS, Android) and JavaScript applications.
 - **2020-2021** - Adoption grows among teams building React Native and React apps on AWS. DataStore becomes the recommended offline pattern for Amplify apps.
 - **2022-2023** - AWS begins working on Amplify Gen 2, a ground-up rethink of the Amplify framework built on top of the AWS CDK. DataStore is not included in Gen 2.
 - **2024** - AWS confirms that Amplify Gen 1 (which includes DataStore) has entered maintenance mode. New features are no longer being added.
 - **May 2027** - Amplify Gen 1 reaches end-of-life. DataStore will no longer receive security patches or support.
+
+</Timeline>
 
 This trajectory means that applications built on DataStore today are accumulating technical debt. Teams must plan a migration before May 2027, with no direct drop-in replacement from AWS.
 
@@ -212,6 +216,8 @@ db.posts.find({
 RxDB uses the [event-reduce](https://github.com/pubkey/event-reduce) algorithm internally. When a document write occurs, RxDB checks whether the existing query result can be updated by applying the change event directly, without re-executing the full query against storage. This keeps reactive updates fast even in write-heavy workloads.
 
 ---
+
+Both projects are under active development. As of July 30, 2026, [Amplify](https://github.com/aws-amplify/amplify-js) has 9,555 GitHub stars while [RxDB](https://github.com/pubkey/rxdb) has 23,296.
 
 ## How RxDB Covers the DataStore Use Case
 
@@ -548,6 +554,8 @@ db.posts.find({
 
 ## Comparison Summary
 
+<ComparisonTable>
+
 | Aspect | AWS Amplify DataStore | RxDB |
 |---|---|---|
 | **Current status** | Deprecated (Gen 1 EOL: May 2027) | Actively maintained since 2016 |
@@ -568,41 +576,36 @@ db.posts.find({
 | **Framework support** | React, React Native, iOS, Android | Any JS framework + React Native + Electron |
 | **License** | Apache 2.0 (client SDK) | Apache 2.0 |
 
+</ComparisonTable>
+
 ---
 
 ## FAQ
 
-<details>
-<summary>Can RxDB replicate to AWS AppSync?</summary>
+<Faq>
+<FaqItem question="Can RxDB replicate to AWS AppSync?">
 
 Yes. RxDB's [GraphQL replication plugin](../../replication-graphql.md) can connect to any GraphQL endpoint, including AWS AppSync. You configure the pull and push query builders to match your AppSync schema, and RxDB handles the sync loop, checkpoint tracking, and conflict resolution. This means you can keep AppSync as your backend while replacing the DataStore client with RxDB.
 
-</details>
-
-<details>
-<summary>Is RxDB suitable for applications that require a login before data syncs?</summary>
+</FaqItem>
+<FaqItem question="Is RxDB suitable for applications that require a login before data syncs?">
 
 Yes. RxDB's replication pull and push handlers are plain async functions, so you can include authentication headers (JWT, API key, Cognito tokens) in each request. The local database works without authentication; only the replication to the remote backend requires it. If a user's session expires, replication pauses and resumes once valid credentials are available again.
 
-</details>
-
-<details>
-<summary>How does RxDB handle offline-first on the web?</summary>
+</FaqItem>
+<FaqItem question="How does RxDB handle offline-first on the web?">
 
 All reads and writes go to the local storage (IndexedDB or OPFS) first. The application works fully offline. When network connectivity is available, replication runs in the background and syncs local changes to the server. When the user goes offline again, the local database continues to work normally and RxDB queues any changes for the next sync. See the [offline-first documentation](../../offline-first.md) for details.
 
-</details>
-
-<details>
-<summary>What replaces DataStore in Amplify Gen 2?</summary>
+</FaqItem>
+<FaqItem question="What replaces DataStore in Amplify Gen 2?">
 
 AWS Amplify Gen 2 does not include a DataStore replacement. AWS recommends building offline-first features manually using a local storage library and a GraphQL client like Apollo that connects directly to AppSync. RxDB fills that gap: it provides the local database and the sync engine that Gen 2 does not include.
 
-</details>
-
-<details>
-<summary>How does RxDB perform for large datasets compared to DataStore?</summary>
+</FaqItem>
+<FaqItem question="How does RxDB perform for large datasets compared to DataStore?">
 
 DataStore's startup performance degrades with large local datasets because it performs a full reconciliation scan on initialization. RxDB starts by loading no data; collections are queried on demand. The [OPFS storage](../../rx-storage-opfs.md) option provides significantly faster bulk read and write throughput compared to IndexedDB, which addresses the performance issues many DataStore users experienced with growing local datasets.
 
-</details>
+</FaqItem>
+</Faq>

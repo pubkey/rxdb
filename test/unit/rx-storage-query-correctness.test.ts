@@ -1,6 +1,6 @@
 import assert from 'assert';
 
-import config, { describeParallel } from './config.ts';
+import config from './config.ts';
 import {
     RxJsonSchema,
     randomToken,
@@ -37,7 +37,7 @@ import {
 } from '../../src/plugins/test-utils/schema-objects.ts';
 
 const TEST_CONTEXT = 'rx-storage-query-correctness.test.ts';
-describeParallel('rx-storage-query-correctness.test.ts', () => {
+describe('rx-storage-query-correctness.test.ts', () => {
     type TestCorrectQueriesInput<RxDocType> = {
         notRunIfTrue?: () => boolean;
         testTitle: string;
@@ -706,6 +706,89 @@ describeParallel('rx-storage-query-correctness.test.ts', () => {
                     }
                 },
                 expectedResultDocIds: ['aa', 'cc', 'ee']
+            }
+        ]
+    });
+    /**
+     * @link https://github.com/pubkey/rxdb/issues/8631
+     * The query planner uses the min/max of the $in values
+     * as scan range on the index. Documents whose value lies
+     * inside that range without being one of the $in values
+     * must still be filtered out.
+     */
+    testCorrectQueries<HumanDocumentType>({
+        testTitle: '$in with index use',
+        data: [
+            schemaObjects.humanData('aa', 3, 'aaron'),
+            schemaObjects.humanData('bb', 10, 'aaron'),
+            schemaObjects.humanData('cc', 4, 'carol'),
+            schemaObjects.humanData('dd', 2, 'dave'),
+            schemaObjects.humanData('ee', 1, 'jack'),
+            schemaObjects.humanData('ff', 30, 'zoe')
+        ],
+        schema: withIndexes(human, [
+            ['firstName', 'age']
+        ]),
+        queries: [
+            {
+                info: '$in combined with range operator and desc sort',
+                query: {
+                    selector: {
+                        firstName: {
+                            $in: ['aaron', 'jack', 'carol']
+                        },
+                        age: {
+                            $lt: 5
+                        }
+                    },
+                    sort: [
+                        { age: 'desc' },
+                        { passportId: 'asc' }
+                    ],
+                    index: ['firstName', 'age'],
+                    limit: 50
+                },
+                selectorSatisfiedByIndex: false,
+                expectedResultDocIds: [
+                    'cc',
+                    'aa',
+                    'ee'
+                ]
+            },
+            {
+                info: '$in values that span the whole index range',
+                query: {
+                    selector: {
+                        firstName: {
+                            $in: ['aaron', 'zoe']
+                        }
+                    },
+                    sort: [{ passportId: 'asc' }],
+                    index: ['firstName', 'age']
+                },
+                selectorSatisfiedByIndex: false,
+                expectedResultDocIds: [
+                    'aa',
+                    'bb',
+                    'ff'
+                ]
+            },
+            {
+                info: '$in with mixed value types must not use the min/max bounds',
+                query: {
+                    selector: {
+                        firstName: {
+                            $in: ['aaron', 42]
+                        } as any
+                    },
+                    sort: [{ passportId: 'asc' }],
+                    index: ['firstName', 'age']
+                },
+                selectorSatisfiedByIndex: false,
+                expectedResultDocIds: [
+                    'aa',
+                    'bb'
+                ]
             }
         ]
     });
@@ -2406,6 +2489,50 @@ describeParallel('rx-storage-query-correctness.test.ts', () => {
                     sort: [{ age: 'asc' }]
                 },
                 expectedResultDocIds: ['normal-name', 'space-name']
+            }
+        ]
+    });
+
+    testCorrectQueries<{ id: string; score: number; }>({
+        testTitle: 'range bound outside the schema minimum/maximum must still match the boundary documents',
+        data: [
+            { id: 'aa', score: 0 },
+            { id: 'bb', score: 1 },
+            { id: 'cc', score: 50 },
+            { id: 'dd', score: 99 },
+            { id: 'ee', score: 100 }
+        ],
+        schema: {
+            version: 0,
+            indexes: [['score']],
+            primaryKey: 'id',
+            type: 'object',
+            properties: {
+                id: { type: 'string', maxLength: 2 },
+                score: { type: 'number', minimum: 0, maximum: 100, multipleOf: 1 }
+            },
+            required: ['id', 'score']
+        },
+        queries: [
+            {
+                info: '$gt below the schema minimum must include the minimum document',
+                query: { selector: { score: { $gt: -10 } }, sort: [{ score: 'asc' }] },
+                expectedResultDocIds: ['aa', 'bb', 'cc', 'dd', 'ee']
+            },
+            {
+                info: '$lt above the schema maximum must include the maximum document',
+                query: { selector: { score: { $lt: 110 } }, sort: [{ score: 'asc' }] },
+                expectedResultDocIds: ['aa', 'bb', 'cc', 'dd', 'ee']
+            },
+            {
+                info: '$gt at the exact minimum must still exclude it',
+                query: { selector: { score: { $gt: 0 } }, sort: [{ score: 'asc' }] },
+                expectedResultDocIds: ['bb', 'cc', 'dd', 'ee']
+            },
+            {
+                info: '$lt at the exact maximum must still exclude it',
+                query: { selector: { score: { $lt: 100 } }, sort: [{ score: 'asc' }] },
+                expectedResultDocIds: ['aa', 'bb', 'cc', 'dd']
             }
         ]
     });

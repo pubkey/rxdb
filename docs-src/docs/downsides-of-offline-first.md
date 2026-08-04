@@ -6,6 +6,7 @@ image: /headers/downsides-of-offline-first.jpg
 ---
 
 import {QuoteBlock} from '@site/src/components/quoteblock';
+import {CenteredImage} from '@site/src/components/centered-image';
 
 # Downsides of Local First / Offline First
 
@@ -47,17 +48,13 @@ Apple for example deletes the data when the website was not used in the [last 7 
 The most common way to handle this, is to replicate everything from the backend to the client again.
 Of course, this does not work for state that is not stored at the backend. So if you assume you can store the users private data inside the browser in a secure way, you are [wrong](https://medium.com/universal-ethereum/out-of-gas-were-shutting-down-unilogin-3b544838df1a#4f60).
 
-<p align="center">
-  <img src="./files/safari-database.png" alt="safari database" width="200" />
-</p>
+<CenteredImage src="./files/safari-database.png" alt="safari database" width={200} />
 
 ## There can be conflicts
 
 Imagine two of your users modify the same JSON document, while both are offline. After they go online again, their clients replicate the modified document to the server. Now you have two conflicting versions of the same document, and you need a way to determine how the correct new version of that document should look like. This process is called **[conflict resolution](./transactions-conflicts-revisions.md)**.
 
-<p align="center">
-  <img src="./files/document-replication-conflict.svg" alt="document replication conflict" width="250" />
-</p>
+<CenteredImage src="./files/document-replication-conflict.svg" alt="document replication conflict" width={250} />
 
   1. The default in [many](https://docs.couchdb.org/en/stable/replication/conflicts.html) offline first databases is a deterministic conflict resolution strategy. Both conflicting versions of the document are kept in the storage and when you query for the document, a winner is determined by comparing the hashes of the document and only the winning document is returned. Because the comparison is deterministic, all clients and servers will always pick the same winner. This kind of resolution only works when it is not that important that one of the document changes gets dropped. Because conflicts are rare, this might be a viable solution for some use cases.
 
@@ -85,9 +82,7 @@ There is an internet between your backend and your clients and everything you do
 Even when you run a query against the local database, there is no "real" realtime.
 Client side databases run on JavaScript and JavaScript runs on a single CPU that might be partially blocked because the user is running some background processes. So you can never guarantee a response deadline which violates the time constraint of realtime computing.
 
-<p align="center">
-  <img src="./files/latency-london-san-franzisco.png" alt="latency london san franzisco" width="300" />
-</p>
+<CenteredImage src="./files/latency-london-san-franzisco.png" alt="latency london san franzisco" width={300} />
 
 ## Eventual consistency
 
@@ -96,9 +91,7 @@ The user could update a document based on wrong assumptions because it was not f
 
 And some data is just too important to be "eventual consistent". Create a wire transfer in your online banking app while you are offline. You keep the smartphone laying at your night desk and when you use again in the next morning, it goes online and replicates the transaction. No thank you, do not use offline first for these kinds of things, or at least you have to display the replication state of each document in the UI.
 
-<p align="center">
-  <img src="./files/cap-theorem.png" alt="CAP theorem" width="150" />
-</p>
+<CenteredImage src="./files/cap-theorem.png" alt="CAP theorem" width={150} />
 
 
 ## Permissions and authentication
@@ -149,9 +142,7 @@ So why are there no real relations in offline first databases? I could answer wi
 
 So creating replication for an SQL offline first database is way more work than just adding some network protocols on top of PostgreSQL. It might not even be possible for clients that have no reliable clock.
 
-<p align="center">
-  <img src="./files/no-relational-data.png" alt="no relational data" width="250" />
-</p>
+<CenteredImage src="./files/no-relational-data.png" alt="no relational data" width={250} />
 
 
 

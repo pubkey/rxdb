@@ -14,7 +14,6 @@ env:
   NPM_CONFIG_FETCH_RETRY_FACTOR: 2
   NPM_CONFIG_FETCH_RETRY_MINTIMEOUT: 5000
   NPM_CONFIG_FETCH_RETRY_MAXTIMEOUT: 20000
-  NPM_CONFIG_PREFER_OFFLINE: true
 
 permissions:
   contents: read
@@ -25,7 +24,7 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 60
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -62,13 +61,13 @@ jobs:
 
       - name: Set node version
         if: steps.check-changes.outputs.should_run == 'true'
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version-file: ".nvmrc"
 
       - name: Reuse npm cache folder
         if: steps.check-changes.outputs.should_run == 'true'
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         env:
           cache-name: cache-node-modules
         with:

@@ -6,16 +6,14 @@ image: /headers/angular-database.jpg
 ---
 
 import {VideoBox} from '@site/src/components/video-box';
+import {Faq, FaqItem} from '@site/src/components/faq';
+import {CenteredImage} from '@site/src/components/centered-image';
 
 # RxDB as a Database in an Angular Application
 
 In modern web development, Angular has emerged as a popular framework for building robust and scalable applications. As Angular applications often require persistent [storage](./browser-storage.md) and efficient data handling, choosing the right database solution is crucial. One such solution is [RxDB](https://rxdb.info/), a reactive JavaScript database for the [browser](./browser-database.md), [node.js](../nodejs-database.md), and [mobile devices](./mobile-database.md). In this article, we will explore the integration of RxDB into an Angular application and examine its various features and techniques.
 
-<center>
-    <a href="https://rxdb.info/">
-        <img src="../files/logo/rxdb_javascript_database.svg" alt="JavaScript Angular Database" width="220" />
-    </a>
-</center>
+<RxdbLogo alt="JavaScript Angular Database" />
 
 ## Angular Web Applications
 Angular is a powerful JavaScript framework developed and maintained by Google. It enables developers to build single-page applications (SPAs) with a modular and component-based approach. Angular provides a comprehensive set of tools and features for creating dynamic and responsive web applications.
@@ -38,18 +36,12 @@ To begin our journey with RxDB, let's understand its key concepts and features.
 ### What is RxDB?
 [RxDB](https://rxdb.info/) is a client-side database that follows the principles of reactive programming. It is built on top of IndexedDB, the [native browser database](./browser-database.md), and leverages the RxJS library for reactive data handling. RxDB provides a simple and intuitive API for managing data and offers features like data [replication](../replication.md), multi-tab support, and efficient query handling.
 
-<center>
-    <a href="https://rxdb.info/">
-        <img src="../files/logo/rxdb_javascript_database.svg" alt="JavaScript Angular Database" width="220" />
-    </a>
-</center>
+<RxdbLogo alt="JavaScript Angular Database" />
 
 ### Reactive Data Handling
 At the core of RxDB is the concept of reactive data handling. RxDB leverages observables and reactive streams to enable real-time updates and data synchronization. With RxDB, you can easily subscribe to data changes and react to them in a reactive and efficient manner.
 
-<p align="center">
-  <img src="../files/animations/realtime.gif" alt="realtime ui updates" width="700" />
-</p>
+<CenteredImage src="../files/animations/realtime.gif" alt="realtime ui updates" width={700} />
 
 ### Offline-First Approach
 One of the standout features of RxDB is its offline-first approach. It allows you to build applications that can work seamlessly in offline scenarios. RxDB stores data locally and automatically synchronizes changes with the server when the network becomes available. This capability is particularly useful for applications that need to function in low-connectivity or unreliable network environments.
@@ -63,9 +55,7 @@ RxDB offers a powerful querying mechanism with support for [observable queries](
 ### Multi-Tab Support
 RxDB provides out-of-the-box support for multi-tab scenarios. This means that if your Angular application is running in multiple browser tabs, RxDB automatically keeps the data in sync across all tabs. It ensures that changes made in one tab are immediately reflected in others, providing a seamless user experience.
 
-<p align="center">
-  <img src="../files/multiwindow.gif" alt="multi tab support" width="450" />
-</p>
+<CenteredImage src="../files/multiwindow.gif" alt="multi tab support" width={450} />
 
 ### RxDB vs. Other Angular Database Options
 While there are other database options available for Angular applications, RxDB stands out with its reactive programming model, offline-first approach, and built-in synchronization capabilities. Unlike traditional SQL databases, RxDB's NoSQL-like structure and observables-based API make it well-suited for real-time applications and complex data scenarios.
@@ -134,9 +124,7 @@ You can choose the storage layer that best suits your application's requirements
 
 Data replication between an Angular application and a server is a common requirement. RxDB simplifies this process and provides built-in support for data synchronization. Let's explore how to replicate data between an Angular application and a server using RxDB.
 
-<p align="center">
-  <img src="../files/database-replication.png" alt="database replication" width="200" />
-</p>
+<CenteredImage src="../files/database-replication.png" alt="database replication" width={200} />
 
 ### Offline-First Approach
 One of the key strengths of RxDB is its [offline-first approach](../offline-first.md). It allows Angular applications to function seamlessly even in offline scenarios. RxDB stores data locally and automatically synchronizes changes with the server when the network becomes available. This capability is particularly useful for applications that need to operate in low-connectivity or unreliable network environments.
@@ -217,11 +205,13 @@ When working with data synchronization between clients and servers, it's importa
 
 ## FAQ
 
-<details>
-<summary>How to fetch, save, and manage data robustly in Angular using RxJS?</summary>
+<Faq>
+<FaqItem question="How to fetch, save, and manage data robustly in Angular using RxJS?">
 
 You fetch, save, and manage data robustly in Angular by coupling your UI directly to a reactive local-first database like RxDB. Because RxDB queries return native RxJS `Observable` objects, you can skip writing manual HTTP request management services and instead pipe RxDB observables straight into your Angular components using the `AsyncPipe`. All CRUD operations hit the local IndexedDB instantly, and RxDB synchronizes the data with your remote server automatically in the background.
-</details>
+
+</FaqItem>
+</Faq>
 
 ## Conclusion
 RxDB is a powerful database solution for Angular applications, offering reactive data handling, offline-first capabilities, and seamless data synchronization. By integrating RxDB into your Angular application, you can build responsive and scalable web applications that provide a rich user experience. Whether you're building real-time collaborative apps, progressive web applications, or offline-capable applications, RxDB's features and techniques make it a valuable addition to your Angular development toolkit.

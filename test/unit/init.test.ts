@@ -1,7 +1,12 @@
 console.log('######## init.test.js ########');
 import sourceMapSupport from 'source-map-support';
 sourceMapSupport.install();
-import '@babel/polyfill';
+/**
+ * core-js does not define an `exports` map, so the full path
+ * to the file must be used, otherwise node.js cannot resolve
+ * it from the transpiled ESM tests.
+ */
+import 'core-js/stable/index.js';
 import config from './config.ts';
 import assert from 'assert';
 import {

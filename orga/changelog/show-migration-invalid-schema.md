@@ -1,1 +1,0 @@
-- Added a test case in `migration-schema.test.ts` to verify how RxDB behaves when a schema migration strategy produces a document that does not match the target schema. Fixes #8607

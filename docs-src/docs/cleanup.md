@@ -5,7 +5,7 @@ description: Optimize storage and speed up queries with RxDB's Cleanup Plugin, a
 image: /headers/cleanup.jpg
 ---
 
-
+import {Faq, FaqItem} from '@site/src/components/faq';
 
 # 🧹 Cleanup
 
@@ -119,9 +119,12 @@ await myRxCollection.cleanup(0);
 
 ## FAQ
 
-<details>
-    <summary>When does the cleanup run</summary>
+<Faq>
+<FaqItem question="When does the cleanup run">
+
 <div>
   The cleanup cycles are optimized to run only when the database is idle and it is unlikely that another database interaction performance will be decreased in the meantime. For example, by default, the cleanup does not run in the first 60 seconds of the creation of a collection to ensure the initial page load of your website does not slow down. Also, we use mechanisms like the `requestIdleCallback()` API to improve the correct timing of the cleanup cycle.
 </div>
-</details>
+
+</FaqItem>
+</Faq>

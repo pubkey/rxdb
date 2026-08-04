@@ -1,44 +1,40 @@
 <script>
-  import { db, selectedNote, name, body } from './store';
-
-  const isEmptyObject = (obj) => obj && Object.keys(obj).length === 0 && obj.constructor === Object;
-
-  const resetForm = () => {
-    name.set('');
-    body.set('');
-    selectedNote.set({});
-  };
+  import { db, noteForm, resetForm } from './store.svelte.js';
 
   const saveNote = async () => {
     const db$ = await db();
-    if (isEmptyObject($selectedNote)) {
-      await db$.notes
-        .insert({
-          name: $name,
-          body: $body,
-          createdAt: new Date().getTime(),
-          updatedAt: new Date().getTime(),
-        })
-        .then(resetForm);
+    if (noteForm.selectedNote) {
+      /**
+       * incrementalPatch() is used instead of update() because it does not
+       * need an extra plugin and it retries on conflicts.
+       * The name is the primaryKey of the schema, so it is not patched here.
+       */
+      await noteForm.selectedNote.incrementalPatch({
+        body: noteForm.body,
+        updatedAt: new Date().getTime(),
+      });
     } else {
-      await $selectedNote
-        .update({
-          $set: {
-            name: $name,
-            body: $body,
-            updatedAt: new Date().getTime(),
-          },
-        })
-        .then(resetForm);
+      await db$.notes.insert({
+        name: noteForm.name,
+        body: noteForm.body,
+        createdAt: new Date().getTime(),
+        updatedAt: new Date().getTime(),
+      });
     }
+    resetForm();
   };
 </script>
 
 <div>
   <h2>NoteEditor.svelte</h2>
-  <input bind:value={$name} placeholder="Note Title" />
-  <textarea bind:value={$body} placeholder="Note Content..." />
-  <button on:click={saveNote}>Save Note</button>
+  <!-- The title is the primaryKey of a note, it cannot be changed after the insert. -->
+  <input
+    bind:value={noteForm.name}
+    readonly={!!noteForm.selectedNote}
+    placeholder="Note Title"
+  />
+  <textarea bind:value={noteForm.body} placeholder="Note Content..."></textarea>
+  <button onclick={saveNote}>Save Note</button>
 </div>
 
 <style>

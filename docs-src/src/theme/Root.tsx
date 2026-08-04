@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { onCopy, triggerTrackingEvent } from '../components/trigger-event';
+import { AD_CLICK_STORAGE_ID, getUtmCampaign, onCopy, setTrackingConsent, triggerTrackingEvent } from '../components/trigger-event';
+import { isLikelyEuUser } from './eu-consent';
+import { type ConsentState, initEuConsentBanner, updateGoogleConsent } from './consent-manager';
 import { randomNumber } from '../../../plugins/utils';
 import { IconClose } from '../components/icons/close';
 import { Button } from '../components/button';
@@ -115,6 +117,44 @@ const callToActions: CallToActionItem[] = [
 const NOTIFICATION_SPLIT_TEST_VERSION = 'B';
 const POPUP_DISABLED_IF_CLOSED_TIME = 1000 * 60 * 10; // 10 minutes
 
+/**
+ * Guards so the tracker suite and the marketing pixels are each started only
+ * once, even when the visitor changes the consent multiple times.
+ */
+let trackerSuiteStarted = false;
+let marketingPixelsLoaded = false;
+
+/**
+ * Applies a consent decision: updates Google Consent Mode, unlocks the
+ * in-app tracking guard and starts the trackers that match the granted
+ * categories. Called for every consent change and, for non-EU visitors,
+ * once with everything granted.
+ */
+function applyConsent(state: ConsentState): void {
+    updateGoogleConsent(state);
+
+    const anyTracking = state.analytics || state.marketing;
+    setTrackingConsent(anyTracking);
+
+    if (anyTracking && !trackerSuiteStarted) {
+        trackerSuiteStarted = true;
+        setTimeout(() => {
+            startAnalytics();
+            trackReturnAfter3to14Days();
+            trackCopy();
+            trackUrlChanges();
+            addCallToActionButton();
+            triggerClickEventWhenFromCode();
+            triggerClickEventWhenFromDiscord();
+        }, 0);
+    }
+
+    if (state.marketing && !marketingPixelsLoaded) {
+        marketingPixelsLoaded = true;
+        loadMarketingPixels();
+    }
+}
+
 // Default implementation, that you can customize
 export default function Root({ children }) {
     const [showPopup, setShowPopup] = useState<{
@@ -126,15 +166,27 @@ export default function Root({ children }) {
     const DOC_TITLE_PREFIX = '(1) ';
     useEffect(() => {
         // addCommunityChatButton();
-        setTimeout(() => {
-            startAnalytics();
-            trackReturnAfter3to14Days();
-            trackCopy();
-            trackUrlChanges();
-            addCallToActionButton();
-            triggerClickEventWhenFromCode();
-            triggerClickEventWhenFromDiscord();
-        }, 0);
+        storeAdClickId();
+        /**
+         * Persist the utm_campaign of the landing URL so later events on
+         * other pages still attribute to the campaign (used for the a/b-test
+         * event prefix and the sem-page variation keying).
+         */
+        getUtmCampaign();
+
+        /**
+         * EU/EEA visitors only get trackers after they accepted them in the
+         * consent banner. Everyone else keeps the previous behavior where
+         * everything starts right away.
+         */
+        if (isLikelyEuUser()) {
+            initEuConsentBanner(applyConsent).catch(err => {
+                console.log('# Error while starting the consent banner:');
+                console.dir(err);
+            });
+        } else {
+            applyConsent({ analytics: true, marketing: true });
+        }
 
         const showTime = location.pathname.includes('.html') ? 30 : 60;
         // const showTime = 1;
@@ -304,6 +356,25 @@ function addCallToActionButton() {
 }
 
 /**
+ * Stores the ad click id (gclid and its iOS-privacy variants gbraid/wbraid)
+ * in localStorage on every page load so it can be used
+ * for conversion tracking later.
+ */
+function storeAdClickId() {
+    if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
+        return;
+    }
+    const p = new URLSearchParams(location.search);
+    for (const k of ['gclid', 'gbraid', 'wbraid']) {
+        const v = p.get(k);
+        if (v) {
+            localStorage.setItem(AD_CLICK_STORAGE_ID, JSON.stringify({ k, v, t: Date.now() }));
+            triggerTrackingEvent('click_id_' + k, 0.01, 1);
+        }
+    }
+}
+
+/**
  * There are some logs that RxDB prints out to the console of the developers.
  * These logs can contain links with the query param ?console=foobar
  * which allows us to detect that a user has really installed and started RxDB.
@@ -377,6 +448,62 @@ function addCommunityChatButton() {
     document.body.appendChild(elemDiv);
 }
 
+
+
+/**
+ * Loads the marketing pixels that are not aware of Google Consent Mode.
+ * Only called after the visitor granted the "marketing" category (or for
+ * non-EU visitors, where marketing is granted by default).
+ */
+function loadMarketingPixels() {
+    // reddit pixel TODO move into google tag manager
+    // @ts-ignore eslint-disable-next-line
+    (function (w, d) {
+        if (!(w as any).rdt) {
+            // @ts-ignore
+            const rdt: any = (w as any).rdt = function () {
+                // @ts-ignore
+                if (rdt.sendEvent) {
+                    rdt.sendEvent.apply(rdt, arguments);
+                } else {
+                    rdt.callQueue.push(arguments);
+                }
+            };
+            rdt.callQueue = [];
+            const t = d.createElement('script');
+            t.src = 'https://www.redditstatic.com/ads/pixel.js';
+            t.async = true;
+            const s: any = d.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(t, s);
+        }
+
+        // Initialize pixel and track page visit
+        (w as any).rdt('init', 'a2_irjdz88999o9');
+        (w as any).rdt('track', 'PageVisit');
+    })(window, document);
+    // /reddit pixel
+
+
+
+    // pipedrive chat
+    (window as any).pipedriveLeadboosterConfig = {
+        base: 'leadbooster-chat.pipedrive.com', companyId: 11404711, playbookUuid:
+            '16a8caba-6b26-4bb1-a1fa-434c4171d542', version: 2
+    }; (function () {
+        const w = window; if ((w as any).LeadBooster) {
+            console.warn('LeadBooster already exists');
+        } else {
+            (w as any).LeadBooster = {
+                q: [], on: function (n, h) {
+                    this.q.push({ t: 'o', n: n, h: h });
+                }, trigger: function (n) {
+                    this.q.push({ t: 't', n: n });
+                },
+            };
+        }
+    })();
+    // /pipedrive chat
+}
 
 
 function startAnalytics() {
@@ -464,57 +591,6 @@ function startAnalytics() {
     // const bc = new BroadcastChannel(DEV_MODE_EVENT_ID);
     // bc.onmessage = () => checkDevModeEvent();
     // /track dev_mode_tracking_iframe event
-
-
-    // reddit pixel TODO move into google tag manager
-    // @ts-ignore eslint-disable-next-line
-    (function (w, d) {
-        if (!(w as any).rdt) {
-            // @ts-ignore
-            const rdt: any = (w as any).rdt = function () {
-                // @ts-ignore
-                if (rdt.sendEvent) {
-                    rdt.sendEvent.apply(rdt, arguments);
-                } else {
-                    rdt.callQueue.push(arguments);
-                }
-            };
-            rdt.callQueue = [];
-            const t = d.createElement('script');
-            t.src = 'https://www.redditstatic.com/ads/pixel.js';
-            t.async = true;
-            const s: any = d.getElementsByTagName('script')[0];
-            s.parentNode.insertBefore(t, s);
-        }
-
-        // Initialize pixel and track page visit
-        (w as any).rdt('init', 'a2_irjdz88999o9');
-        (w as any).rdt('track', 'PageVisit');
-    })(window, document);
-    // /reddit pixel
-
-
-
-    // pipedrive chat
-    (window as any).pipedriveLeadboosterConfig = {
-        base: 'leadbooster-chat.pipedrive.com', companyId: 11404711, playbookUuid:
-            '16a8caba-6b26-4bb1-a1fa-434c4171d542', version: 2
-    }; (function () {
-        const w = window; if ((w as any).LeadBooster) {
-            console.warn('LeadBooster already exists');
-        } else {
-            (w as any).LeadBooster = {
-                q: [], on: function (n, h) {
-                    this.q.push({ t: 'o', n: n, h: h });
-                }, trigger: function (n) {
-                    this.q.push({ t: 't', n: n });
-                },
-            };
-        }
-    })();
-    // /pipedrive chat
-
-
 
 
 
@@ -622,7 +698,7 @@ function trackUrlChanges() {
     }
 
     const STORAGE_KEY = 'visited_urls';
-    const URL_EVENT_COUNT = 5;
+    const URL_EVENT_COUNT = 3;
     const stored = localStorage.getItem(STORAGE_KEY);
     const visitedUrls = new Set<string>(stored ? JSON.parse(stored) : []);
 
@@ -705,10 +781,10 @@ function trackReturnAfter3to14Days() {
     // Only trigger conversion if between 3 and 14 days
     if (diff >= THREE_DAYS_MS && diff <= FOURTEEN_DAYS_MS) {
         /**
-         * This is a primary google ads event
-         * but no primary reddit event because
-         * on reddit when we retarget, we do no want
-         * to count these as conversion.
+         * This must not be a primary event because
+         * when we retarget, we do no want
+         * to count these as conversion just because
+         * they clicked the ad some days later again.
          */
         triggerTrackingEvent('revisit_3_days', 3.5, 1);
     }

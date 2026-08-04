@@ -5,17 +5,16 @@ description: Replace LokiJS with RxDB for safe persistence, real replication, re
 image: /headers/lokijs-alternative.jpg
 ---
 
+import {Faq, FaqItem} from '@site/src/components/faq';
+import {ComparisonTable} from '@site/src/components/comparison-table';
+
 # RxDB as a LokiJS Alternative for Persistent JavaScript Apps
 
 Developers reach for **LokiJS** when they want a small, MongoDB-like JavaScript database that lives in memory and feels instant. The trade-off shows up later: writes only become durable when an adapter flushes them on a timer or before the process exits, replication across tabs and devices is missing, and the project itself has slowed down. Teams that ship real applications eventually look for a database that keeps the same ergonomic API but stores data safely, syncs across clients, and is still under active development.
 
 This page explains how **RxDB** fits that role and how it covers both the in-memory speed scenarios that drew people to LokiJS and the persistence and sync gaps that pushed them away.
 
-<center>
-    <a href="https://rxdb.info/">
-        <img src="/files/logo/rxdb_javascript_database.svg" alt="JavaScript Database" width="220" />
-    </a>
-</center>
+<RxdbLogo alt="JavaScript Database" />
 
 ## A Short History of LokiJS
 
@@ -39,6 +38,8 @@ The shortcomings below are the ones that show up most often when teams move off 
 - **No conflict resolution.** Without revisions or a sync engine, there is no defined behavior when two writers touch the same document.
 - **Dated codebase and low activity.** New runtimes, new browser storage APIs (OPFS, modern IndexedDB usage patterns), and new bundler conventions are not being adopted.
 - **Maintenance mode.** Bug fixes and security patches arrive slowly, if at all.
+
+The numbers reflect this. As of July 30, 2026, [LokiJS](https://github.com/techfort/LokiJS) has 6,830 GitHub stars while [RxDB](https://github.com/pubkey/rxdb) has 23,296. The last commit to the [LokiJS repository](https://github.com/techfort/LokiJS) was in March 2022, <TimeSince date="2022-03-28" />.
 
 ## What RxDB Gives You Instead
 
@@ -157,42 +158,41 @@ If you previously used the LokiJS RxStorage, the migration is to pick whichever 
 
 ## FAQ
 
-<details>
-<summary>Why was the LokiJS RxStorage removed?</summary>
+<Faq>
+<FaqItem question="Why was the LokiJS RxStorage removed?">
 
 LokiJS is no longer actively maintained, and bugs that affected RxDB users were not getting fixed upstream. RxDB v16 removed the LokiJS storage and points users at the Memory storage for in-memory use and at IndexedDB, OPFS, or Dexie for persistent browser storage.
 
-</details>
+</FaqItem>
 
-<details>
-<summary>Can RxDB give me LokiJS-like in-memory speed?</summary>
+<FaqItem question="Can RxDB give me LokiJS-like in-memory speed?">
 
 Yes. The [Memory RxStorage](../../rx-storage-memory.md) keeps the dataset in RAM and runs queries against in-memory indexes, which gives the same query latency profile as LokiJS without the broken persistence story.
 
-</details>
+</FaqItem>
 
-<details>
-<summary>Is LokiJS still maintained?</summary>
+<FaqItem question="Is LokiJS still maintained?">
 
 Activity on the project has been minimal since around 2020. New issues and pull requests sit for long periods. For new projects, treating it as feature-frozen is the safer assumption.
 
-</details>
+</FaqItem>
 
-<details>
-<summary>How does RxDB persist data safely?</summary>
+<FaqItem question="How does RxDB persist data safely?">
 
 Each write goes through the configured RxStorage, and storages like [IndexedDB](../../rx-storage-indexeddb.md), [OPFS](../../rx-storage-opfs.md), [Dexie](../../rx-storage-dexie.md), and [SQLite](../../rx-storage-sqlite.md) persist that write before acknowledging it. There is no autosave interval that can drop committed data when the tab is closed.
 
-</details>
+</FaqItem>
 
-<details>
-<summary>How do I migrate from LokiJS to RxDB?</summary>
+<FaqItem question="How do I migrate from LokiJS to RxDB?">
 
 Define an [RxCollection](../../rx-collection.md) with a JSON schema that matches your LokiJS collection, read the existing LokiJS data once on startup, and `bulkInsert` it into the RxDB collection. From that point on, write through RxDB and use a [replication plugin](../../replication.md) if you also need to sync the data with a server.
 
-</details>
+</FaqItem>
+</Faq>
 
 ## RxDB vs LokiJS at a Glance
+
+<ComparisonTable>
 
 | Capability                | LokiJS                                       | RxDB                                                           |
 | ------------------------- | -------------------------------------------- | -------------------------------------------------------------- |
@@ -206,6 +206,8 @@ Define an [RxCollection](../../rx-collection.md) with a JSON schema that matches
 | Conflict resolution       | None                                         | Custom [conflict handlers](../../transactions-conflicts-revisions.md) with revisions |
 | Schema and migrations     | Optional, ad-hoc                             | JSON schema with versioned migrations                          |
 | Project activity          | Low since around 2020                        | Actively maintained                                            |
+
+</ComparisonTable>
 
 ## Follow Up
 

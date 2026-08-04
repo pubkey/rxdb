@@ -1,9 +1,16 @@
 import useIsBrowser from '@docusaurus/useIsBrowser';
 import React, { useEffect } from 'react';
-import { FORM_VALUE_DOCUMENT_ID, FormValueDocData } from './premium';
 import { triggerTrackingEvent } from '../components/trigger-event';
-import { calculatePriceFromFormValueDoc } from '../components/price-calculator';
+import { PRICE_PRO_MONTHLY, PRICE_PRO_PLUS_MONTHLY } from '../constants';
 
+/**
+ * Thank-you page for the premium forms.
+ * The forms redirect here with a ?tier= query param
+ * (?tier=pro, ?tier=pro-plus or ?tier=custom) so we can track
+ * the lead value of the submitted tier.
+ * Custom packages are tracked with the pro-plus price.
+ * Missing or unknown values fall back to the pro price.
+ */
 export default function PremiumSubmitted() {
     const isBrowser = useIsBrowser();
     useEffect(() => {
@@ -11,25 +18,25 @@ export default function PremiumSubmitted() {
             return;
         }
 
+        const tierParam = new URLSearchParams(location.search).get('tier') || '';
+        const tier = tierParam === 'custom' ? 'custom' : (tierParam.includes('plus') ? 'pro_plus' : 'pro');
+        const monthlyPrice = tier === 'pro' ? PRICE_PRO_MONTHLY : PRICE_PRO_PLUS_MONTHLY;
+        const yearlyPrice = monthlyPrice * 12;
+
         /**
-         * Trigger conversion tracking with correct country
-         * and lead value
+         * Trigger conversion tracking with the
+         * lead value of the submitted tier.
+         * Assume a lead-to-sale-rate of 33%.
          */
-        (async () => {
-            const dbModule = await import('../components/database.module');
-            const database = await dbModule.getDatabase();
-            const formValueDoc = await database.getLocal<FormValueDocData>(FORM_VALUE_DOCUMENT_ID);
-            console.log('form value docs:');
-            console.dir(formValueDoc);
-            const price = await calculatePriceFromFormValueDoc(formValueDoc);
-            triggerTrackingEvent(
-                'premium_lead',
-                Math.floor(price.totalPrice / 3), // assume lead-to-sale-rate is 33%.
-                1,
-                'Purchase'
-            );
-        })();
-    });
+        triggerTrackingEvent(
+            'premium_lead',
+            Math.floor(yearlyPrice / 3),
+            1,
+            'Purchase'
+        );
+        // also track the tier so we can compare the form submits per tier.
+        triggerTrackingEvent('premium_lead_' + tier, 0, 1);
+    }, [isBrowser]);
 
     return (
         <main>

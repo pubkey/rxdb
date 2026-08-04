@@ -5,6 +5,8 @@ description: Get real-time, persistent state without the hassle. RxState integra
 image: /headers/rx-state.jpg
 ---
 
+import {Faq, FaqItem} from '@site/src/components/faq';
+
 # RxState - Reactive Persistent State with RxDB
 
 RxState is a flexible state library build on top of the [RxDB Database](https://rxdb.info/). While RxDB stores similar documents inside of collections, RxState can store any complex JSON data without having a predefined schema.
@@ -172,8 +174,8 @@ const replicationPool = await replicateWebRTC(
 
 ## FAQ
 
-<details>
-<summary>What is the difference between RxState and LocalDocuments?</summary>
+<Faq>
+<FaqItem question="What is the difference between RxState and LocalDocuments?">
 
 RxState can be synced.
 
@@ -186,22 +188,21 @@ LocalDocuments can be modified like any other RxDocument with conflict handling 
 RxState is mapped fully into memory while LocalDocuments are in memory only when needed. For big data, LocalDocuments should be used.
 
 RxState is stored per RxDatabase while LocalDocuments can be stored either per RxDatabase or RxCollection.
-</details>
 
-<details>
-<summary>When should I use RxState instead of Redux, Zustand, or Vuex?</summary>
+</FaqItem>
+<FaqItem question="When should I use RxState instead of Redux, Zustand, or Vuex?">
 
 You should use RxState when you need state that automatically persists, synchronizes across browser tabs, or replicates between devices. While traditional in-memory stores require boilerplate replication logic and manual persistence, RxState handles these features out of the box.
-</details>
 
-<details>
-<summary>Why do I have to use a modifier function?</summary>
+</FaqItem>
+<FaqItem question="Why do I have to use a modifier function?">
 
 Using a modifier function guarantees deterministic conflict resolution when multiple JavaScript realms (like WebWorkers or multiple browser tabs) attempt to update the state simultaneously. It ensures the state evaluates correctly even under concurrent modifications.
-</details>
 
-<details>
-<summary>Does RxState validate data against a schema?</summary>
+</FaqItem>
+<FaqItem question="Does RxState validate data against a schema?">
 
 No, RxState is schema-less by default. Unlike standard RxDB collections, it accepts any complex JSON data without requiring a rigid schema definition, allowing for flexible state updates.
-</details>
+
+</FaqItem>
+</Faq>

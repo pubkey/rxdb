@@ -6,6 +6,7 @@ image: /headers/rx-query.jpg
 ---
 
 import {BetaBlock} from '@site/src/components/beta-block';
+import {Faq, FaqItem} from '@site/src/components/faq';
 
 # RxQuery
 
@@ -484,31 +485,30 @@ Like most other noSQL-Databases, RxDB uses the [mango-query-syntax](https://gith
 ## FAQ
 
 
-<details>
-    <summary>Can I specify which document fields are returned by an RxDB query?</summary>
+<Faq>
+<FaqItem question="Can I specify which document fields are returned by an RxDB query?">
+
 <div>
   No, RxDB does not support partial document retrieval. Because RxDB is a client-side database with limited memory, it caches and de-duplicates entire documents across multiple queries. Even if you only need a few fields, most storages must still fetch the entire JSON data, so subselecting fields would not significantly improve performance. Therefore, RxDB always returns full documents. If you only need certain fields, you can filter them out in your application code or consider storing just the necessary data in a separate collection.
 </div>
-</details>
 
+</FaqItem>
+<FaqItem question="Why doesn't RxDB support aggregations on queries?">
 
-<details>
-    <summary>Why doesn't RxDB support aggregations on queries?</summary>
 <div>
   RxDB runs entirely on the client side. Any "aggregation" or data processing you might do within RxDB would still happen in the same JavaScript environment as your application code. Therefore, there's no real performance advantage or difference between doing the aggregation in RxDB vs. doing it in your own code after fetching the data. As a result, RxDB doesn't provide built-in aggregation methods. Instead, just query the documents you need and perform any calculations directly in your app's code.
 </div>
-</details>
 
+</FaqItem>
+<FaqItem question="Why does RxDB not support cross-collection queries?">
 
-<details>
-    <summary>Why does RxDB not support cross-collection queries?</summary>
 <div>
   RxDB is a client-side database and does not provide built-in cross-collection queries or transactions. Instead, you can execute multiple queries in your JavaScript code and combine their results as needed. Because everything runs in the same environment, this approach offers the same performance you would get if cross-collection queries were built in - without the added complexity.
 </div>
-</details>
 
-<details>
-    <summary>Why Doesn't RxDB Support Case-Insensitive Search?</summary>
+</FaqItem>
+<FaqItem question="Why Doesn't RxDB Support Case-Insensitive Search?">
+
 <div>
   RxDB relies on various storage engines as its backend, and these storage engines generally do not support case-insensitive search natively, like [IndexedDB](./rx-storage-indexeddb.md) or [FoundationDB](./rx-storage-foundationdb.md). This limitation arises from the design of these engines, which prioritize efficiency and flexibility for specific types of queries rather than universal features like case-insensitivity. Although RxDB does not offer built-in support for case-insensitive search, there are two common workarounds:
   - **Store Data in a Meta-Field for Lowercase Search**: To enable case-insensitive search, you can store an additional field in your documents where the relevant text data is preprocessed and saved in lowercase.
@@ -535,4 +535,6 @@ const query = myCollection.find({
 ```
 However, this method has a significant downside: regex queries often cannot leverage indexes efficiently. As a result, they may be slower, especially for large datasets.
 </div>
-</details>
+
+</FaqItem>
+</Faq>

@@ -1,17 +1,16 @@
 ---
 title: RxDB as a Supabase Alternative - Offline-First, Local Storage, Reactive Queries
-slug: alternatives/supabase-alternative.html
+slug: supabase-alternative.html
 description: Compare RxDB and Supabase for local-first JavaScript applications. Learn why Supabase lacks offline support, how the RxDB Supabase replication plugin bridges that gap, and when to choose RxDB as a client-side database paired with a Supabase backend.
 image: /headers/alternatives/supabase-alternative.jpg
 ---
 
+import {Faq, FaqItem} from '@site/src/components/faq';
+import {Timeline} from '@site/src/components/timeline';
+
 # RxDB as a Supabase Alternative
 
-<center>
-    <a href="https://rxdb.info/">
-        <img src="/files/logo/rxdb_javascript_database.svg" alt="JavaScript Database" width="220" />
-    </a>
-</center>
+<RxdbLogo alt="JavaScript Database" />
 
 Supabase is a popular backend platform built on PostgreSQL. It provides authentication, storage, auto-generated REST APIs (PostgREST), and a realtime WebSocket layer. What Supabase does not provide is a client-side database. When the network is unavailable, standard Supabase queries fail. When a user opens your app in multiple tabs, each tab reads directly from the server. There is no local data layer, no offline queue, and no reactive query system built into the Supabase client SDK.
 
@@ -39,6 +38,8 @@ The platform is genuinely open source. Its components (PostgREST, GoTrue, Realti
 
 ### A Brief Timeline
 
+<Timeline>
+
 - **2020** - Supabase is founded; initial public beta launches
 - **2021** - Generally available; raises Series A of $30 million
 - **2022** - Adds edge functions, database branching, and self-hosting documentation
@@ -46,6 +47,8 @@ The platform is genuinely open source. Its components (PostgREST, GoTrue, Realti
 - **2024** - Crosses one million hosted databases; Series C at $900 million valuation; becomes a default backend in AI coding tools (Bolt.new, Lovable, Cursor)
 - **2025** - Series D at $2 billion valuation; adds Supabase AI assistant; changes default public schema security to protect new projects
 - **2026** - Continues active development; estimated ARR reaches $70 million
+
+</Timeline>
 
 ### How Supabase Realtime Works
 
@@ -622,44 +625,35 @@ From this point, the application reads and writes to IndexedDB, and the replicat
 
 ## FAQ
 
-<details>
-<summary>Does RxDB replace Supabase?</summary>
+<Faq>
+<FaqItem question="Does RxDB replace Supabase?">
 
 No. RxDB is a client-side database and does not replace a backend. It stores data locally in the browser or on the device. Supabase provides the PostgreSQL backend, authentication, and storage. The two are designed to work together: RxDB handles local data and sync logic, Supabase handles server-side persistence and auth. If you want to sync RxDB with Supabase, use the [Supabase Replication Plugin](../../replication-supabase.md).
 
-</details>
-
-<details>
-<summary>Can I use RxDB with a self-hosted Supabase instance?</summary>
+</FaqItem>
+<FaqItem question="Can I use RxDB with a self-hosted Supabase instance?">
 
 Yes. The Supabase replication plugin uses the official `@supabase/supabase-js` client, which works with both hosted and self-hosted Supabase. Point the client at your self-hosted instance URL and the replication plugin will work without any changes.
 
-</details>
-
-<details>
-<summary>How does conflict resolution work when two clients write to the same document offline?</summary>
+</FaqItem>
+<FaqItem question="How does conflict resolution work when two clients write to the same document offline?">
 
 When both clients reconnect, RxDB detects that the local version and the server version differ. It calls the conflict handler you defined when creating the collection. You decide the resolution strategy: last-write-wins by timestamp, field-level merge, or server-always-wins. For complex collaborative scenarios, RxDB's [CRDT plugin](../../crdt.md) can merge changes from multiple clients automatically without a custom handler.
 
-</details>
-
-<details>
-<summary>Does RxDB work with Supabase Row Level Security?</summary>
+</FaqItem>
+<FaqItem question="Does RxDB work with Supabase Row Level Security?">
 
 Yes. The Supabase replication plugin uses the official Supabase JS client, which sends the user's JWT with every request. Your RLS policies apply normally. The plugin does not bypass or override RLS. Each user's RxDB instance only pulls and pushes the rows that their RLS policies permit.
 
-</details>
-
-<details>
-<summary>How does RxDB handle changes from Supabase Realtime?</summary>
+</FaqItem>
+<FaqItem question="How does RxDB handle changes from Supabase Realtime?">
 
 The replication plugin subscribes to the Supabase Realtime channel for the table. When a row changes in PostgreSQL, Realtime broadcasts the event over WebSocket. The plugin receives the event and triggers a pull from PostgREST to fetch the latest changes since the last checkpoint. This approach is robust: even if the WebSocket event is missed, the next scheduled pull will catch the change. No data is lost during temporary disconnections.
 
-</details>
-
-<details>
-<summary>Can I migrate from Supabase to a different backend later?</summary>
+</FaqItem>
+<FaqItem question="Can I migrate from Supabase to a different backend later?">
 
 Yes. Your application code reads and writes against the local RxDB collection. The replication plugin is configured separately and can be swapped. If you replace Supabase with a different backend (a custom REST API, CouchDB, or a GraphQL server), you change only the replication configuration. The schema, queries, and UI code remain unchanged.
 
-</details>
+</FaqItem>
+</Faq>

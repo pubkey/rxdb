@@ -1,6 +1,6 @@
 import assert from 'assert';
 
-import config, { describeParallel } from './config.ts';
+import config from './config.ts';
 import {
     addRxPlugin,
     randomToken,
@@ -169,7 +169,7 @@ declare type NestedDoc = {
 
 const testContext = 'rx-storage-implementations.test.ts';
 
-describeParallel('rx-storage-implementations.test.ts (implementation: ' + config.storage.name + ')', () => {
+describe('rx-storage-implementations.test.ts (implementation: ' + config.storage.name + ')', () => {
     describe('RxStorageInstance', () => {
         describe('creation', () => {
             it('open and close', async () => {

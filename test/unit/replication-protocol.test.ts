@@ -1,6 +1,6 @@
 import assert from 'assert';
 
-import config, { describeParallel } from './config.ts';
+import config from './config.ts';
 import {
     randomToken,
     now,
@@ -60,8 +60,6 @@ import {
 
 const testContext = 'replication-protocol.test.ts';
 
-const useParallel = describeParallel;
-
 function ensureReplicationHasNoErrors(replicationState: RxStorageInstanceReplicationState<any>) {
     /**
      * We do not have to unsubscribe because the observable will cancel anyway.
@@ -74,7 +72,7 @@ function ensureReplicationHasNoErrors(replicationState: RxStorageInstanceReplica
     });
 }
 
-useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () => {
+describe(testContext + ' (implementation: ' + config.storage.name + ')', () => {
     if (!config.storage.hasReplication) {
         return;
     }

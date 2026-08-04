@@ -7,6 +7,7 @@ image: /headers/schema-validation.jpg
 
 import { PerformanceChart } from '@site/src/components/performance-chart';
 import { PERFORMANCE_DATA_VALIDATION_INDEXEDDB, PERFORMANCE_DATA_VALIDATION_MEMORY } from '@site/src/components/performance-data';
+import {Faq, FaqItem} from '@site/src/components/faq';
 
 # Schema validation
 
@@ -137,8 +138,10 @@ Including a validator library also increases your JavaScript bundle size. Here's
 
 ## FAQ
 
-<details>
-<summary>What is schema validation and does ajv-formats use eval internally?</summary>
+<Faq>
+<FaqItem question="What is schema validation and does ajv-formats use eval internally?">
 
 Schema validation structurally guarantees that all document mutations strictly comply with the statically defined **[RxCollection](./rx-collection.md)** JSON Schema format before data is physically committed to the underlying `RxStorage`. Yes, both `ajv` (via `ajv-formats`) and `is-my-json-valid` rely natively on `eval()` or `new Function()` during compilation to aggressively optimize their validation runtimes. If your deployment environment enforces extremely strict `unsafe-eval` Content Security Policies (CSP), you must explicitly swap the validator wrapper to **`validate-z-schema`**, which strictly avoids `eval()` at the cost of marginally slower execution.
-</details>
+
+</FaqItem>
+</Faq>

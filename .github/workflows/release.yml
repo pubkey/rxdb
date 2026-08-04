@@ -20,7 +20,6 @@ env:
   NPM_CONFIG_FETCH_RETRY_FACTOR: 2
   NPM_CONFIG_FETCH_RETRY_MINTIMEOUT: 5000
   NPM_CONFIG_FETCH_RETRY_MAXTIMEOUT: 20000
-  NPM_CONFIG_PREFER_OFFLINE: true
 
 jobs:
   # This workflow contains a single job called "build"
@@ -36,7 +35,7 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Set prerelease variable
         id: vars
@@ -55,13 +54,13 @@ jobs:
           git config --local user.name "github-actions[bot]"
 
       - name: Setup Node.js environment
-        uses: actions/setup-node@v6.4.0
+        uses: actions/setup-node@v7.0.0
         with:
           node-version-file: ".nvmrc"
           registry-url: "https://registry.npmjs.org"
 
       - name: Reuse npm cache folder
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         env:
           cache-name: cache-node-modules
         with:

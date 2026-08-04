@@ -141,7 +141,7 @@ export function getFromObjectOrThrow<V>(
     key: string
 ): V {
     const val = obj[key];
-    if (!val) {
+    if (typeof val === 'undefined') {
         throw new Error('missing value from object ' + key);
     }
     return val;
@@ -156,7 +156,7 @@ export function flattenObject(ob: any) {
 
     for (const i in ob) {
         if (!Object.prototype.hasOwnProperty.call(ob, i)) continue;
-        if ((typeof ob[i]) === 'object') {
+        if (typeof ob[i] === 'object' && ob[i] !== null) {
             const flatObject = flattenObject(ob[i]);
             for (const x in flatObject) {
                 if (!Object.prototype.hasOwnProperty.call(flatObject, x)) continue;
@@ -241,7 +241,7 @@ export function sortObject(obj: any, noArraySort = false): any {
  */
 function deepClone<T>(src: T | DeepReadonlyObject<T>): T {
     if (!src || typeof src !== 'object') {
-        return src;
+        return src as T;
     }
     if (Array.isArray(src)) {
         const ret = new Array(src.length);

@@ -2,7 +2,7 @@ import assert from 'assert';
 import {
     wait, waitUntil
 } from 'async-test-util';
-import config, { describeParallel } from './config.ts';
+import config from './config.ts';
 import {
     schemaObjects,
     schemas,
@@ -21,7 +21,7 @@ import {
 } from '../../plugins/core/index.mjs';
 import { nextPort } from '../helper/port-manager.ts';
 
-describeParallel('replication-websocket.test.ts', () => {
+describe('replication-websocket.test.ts', () => {
     if (!config.storage.hasReplication) {
         return;
     }

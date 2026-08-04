@@ -8,7 +8,7 @@ import { buildSchema, execute, subscribe } from 'graphql';
 import { WebSocketServer } from 'ws';
 
 
-import { useServer } from 'graphql-ws/lib/use/ws';
+import { useServer } from 'graphql-ws/use/ws';
 import { createServer } from 'http';
 
 import {

@@ -5,17 +5,16 @@ description: Replace MongoDB Realm and Atlas Device SDK with RxDB, a JavaScript 
 image: /headers/mongodb-realm-alternative.jpg
 ---
 
+import {Faq, FaqItem} from '@site/src/components/faq';
+import {ComparisonTable} from '@site/src/components/comparison-table';
+
 # RxDB as a MongoDB Realm Alternative After Atlas Device Sync Deprecation
 
 Teams that built mobile and web applications on top of [MongoDB Realm](https://www.mongodb.com/docs/realm/) and the Atlas Device SDKs are now in a difficult position. In September 2024, MongoDB announced the deprecation of the Atlas Device SDKs and Atlas Device Sync, with end of life targeted for September 2025. Applications that still rely on Realm for client storage and bidirectional sync need a JavaScript friendly replacement that does not lock the project to a single cloud vendor and that will keep receiving updates well past 2025.
 
 This page explains why [RxDB](https://rxdb.info/) is a strong replacement for Realm in JavaScript, TypeScript, [React Native](../../react-native-database.md), [Electron](../../electron-database.md), and browser environments. It covers the history of Realm, the technical shortcomings that existed even before the deprecation announcement, the features RxDB provides today, code samples for schema definition and replication to a MongoDB-backed HTTP endpoint, and practical migration notes.
 
-<center>
-    <a href="https://rxdb.info/">
-        <img src="/files/logo/rxdb_javascript_database.svg" alt="RxDB - JavaScript Database" width="220" />
-    </a>
-</center>
+<RxdbLogo alt="RxDB - JavaScript Database" />
 
 ## A short history of Realm
 
@@ -40,6 +39,8 @@ The deprecation is the most pressing reason to migrate, but Realm had structural
 - **Native bindings on every platform**: Realm uses a C++ core with platform specific bindings. Upgrading React Native versions, Electron versions, or switching to a new architecture like Hermes or the new React Native architecture frequently broke the binding and required waiting for an upstream release.
 - **License and vendor lock in**: While the SDKs are open source, the sync server and conflict resolution logic live inside MongoDB Atlas. Migrating away from Atlas meant rebuilding sync from scratch.
 - **Schema migrations**: Schema changes in Realm required writing imperative migration functions in every client release, with limited tooling for testing migrations against production data.
+
+The numbers reflect this. As of July 30, 2026, [the Realm JavaScript SDK](https://github.com/realm/realm-js) has 6,000 GitHub stars while [RxDB](https://github.com/pubkey/rxdb) has 23,296, and the `realm` package was downloaded 217,533 times on npm in the last 30 days compared to 270,494 downloads of `rxdb` ([npm trends](https://npmtrends.com/realm-vs-rxdb)).
 
 ## RxDB advantages for former Realm users
 
@@ -147,7 +148,7 @@ On the server side, `/api/todos/pull` runs a MongoDB `find({ updatedAt: { $gte: 
 
 ## Migration notes from Realm to RxDB
 
-A migration from Realm typically follows these steps.
+The dedicated [Realm to RxDB migration guide](../realm-to-rxdb-migration.md) covers schema translation, data export, query rewrites, and the replication setup in detail. In short, a migration from Realm typically follows these steps.
 
 1. **Map Realm classes to RxDB schemas**. Each Realm object schema becomes a JSON schema under an [RxCollection](../../rx-collection.md). Relationship properties map to references by primary key, and embedded objects map to nested object types in the schema.
 2. **Export existing data**. Use the Realm SDK to read every object of every type and write them as JSON. This is a one off script that runs on app start during the transition release.
@@ -160,42 +161,41 @@ A staged rollout where both databases run side by side for one release is the sa
 
 ## FAQ
 
-<details>
-<summary>Is MongoDB Realm being deprecated?</summary>
+<Faq>
+<FaqItem question="Is MongoDB Realm being deprecated?">
 
 Yes. In September 2024 MongoDB announced the deprecation of the Atlas Device SDKs and Atlas Device Sync. End of life is targeted for September 2025, and new project sign ups have already been closed. Existing apps will continue to function until EOL, after which the service will be shut down.
 
-</details>
+</FaqItem>
 
-<details>
-<summary>Can RxDB still talk to MongoDB?</summary>
+<FaqItem question="Can RxDB still talk to MongoDB?">
 
 Yes, through a server side adapter. The RxDB client uses the [HTTP replication plugin](../../replication-http.md) to call REST endpoints, and those endpoints read from and write to MongoDB on the server. Direct client to MongoDB connections are not supported, which is the correct security boundary for any production app.
 
-</details>
+</FaqItem>
 
-<details>
-<summary>How do I migrate Realm objects to RxDB?</summary>
+<FaqItem question="How do I migrate Realm objects to RxDB?">
 
 Define an [RxSchema](../../rx-schema.md) for each Realm class, export every Realm object to JSON on app launch, and call `collection.bulkInsert(docs)` to load them into RxDB. Track migration completion in persistent storage so the import runs exactly once per device.
 
-</details>
+</FaqItem>
 
-<details>
-<summary>Does RxDB run on React Native?</summary>
+<FaqItem question="Does RxDB run on React Native?">
 
 Yes. RxDB has first class support for [React Native](../../react-native-database.md) using the SQLite or memory storage adapters. The same schema and query code runs in the browser, in Node.js, in Electron, and on React Native without modification.
 
-</details>
+</FaqItem>
 
-<details>
-<summary>Is RxDB free for commercial use?</summary>
+<FaqItem question="Is RxDB free for commercial use?">
 
 The RxDB core is open source under the Apache 2.0 license and free for commercial use. There is also a Premium offering with extra storage adapters, encryption modes, and performance plugins. The free core is sufficient for most applications.
 
-</details>
+</FaqItem>
+</Faq>
 
 ## Comparison table
+
+<ComparisonTable>
 
 | Feature | MongoDB Realm / Atlas Device SDK | RxDB |
 | --- | --- | --- |
@@ -212,5 +212,7 @@ The RxDB core is open source under the Apache 2.0 license and free for commercia
 | Browser | Limited via WebAssembly | First class through IndexedDB, OPFS, Memory |
 | License | Apache 2.0 SDK, proprietary sync | Apache 2.0 core, optional Premium add-ons |
 | Self hosting | Not supported | Fully supported |
+
+</ComparisonTable>
 
 For teams currently running on Realm, the EOL date in September 2025 is firm. Starting the migration to RxDB now leaves time for a staged rollout, a tested HTTP replication layer against MongoDB, and a clean removal of the Atlas Device SDK before support ends.

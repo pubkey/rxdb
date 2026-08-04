@@ -1,10 +1,8 @@
-import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import Layout from '@theme/Layout';
 import React, { useEffect } from 'react';
 import { triggerTrackingEvent } from '../components/trigger-event';
 
 export default function Home() {
-    const { siteConfig } = useDocusaurusContext();
     useEffect(() => {
         triggerTrackingEvent('goto_code', 0.40);
     });
@@ -12,7 +10,7 @@ export default function Home() {
 
     return (
         <Layout
-            title={`Code - ${siteConfig.title}`}
+            title={'Code'}
             description="RxDB Source Code"
         >
             <main>

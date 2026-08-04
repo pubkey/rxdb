@@ -1,7 +1,7 @@
 import assert from 'assert';
 import AsyncTestUtil from 'async-test-util';
 
-import config, { describeParallel } from './config.ts';
+import config from './config.ts';
 import {
     createRxDatabase,
     randomToken,
@@ -16,7 +16,7 @@ import {
     HumanDocumentType
 } from '../../plugins/test-utils/index.mjs';
 
-describeParallel('orm.test.js', () => {
+describe('orm.test.js', () => {
     describe('statics', () => {
         describe('create', () => {
             describe('positive', () => {
@@ -58,6 +58,29 @@ describeParallel('orm.test.js', () => {
                         'RxTypeError',
                         'cannot start'
                     );
+                    db.close();
+                });
+                it('crash when static is no function and report the type of the value', async () => {
+                    const db = await createRxDatabase({
+                        name: randomToken(10),
+                        storage: config.storage.getStorage(),
+                    });
+                    let thrown: any;
+                    try {
+                        await db.addCollections({
+                            humans: {
+                                schema: schemas.human,
+                                statics: {
+                                    foobar: 123
+                                } as any
+                            }
+                        });
+                    } catch (err) {
+                        thrown = err;
+                    }
+                    assert.ok(thrown);
+                    assert.strictEqual(thrown.code, 'COL16');
+                    assert.strictEqual(thrown.parameters.type, 'number');
                     db.close();
                 });
                 it('crash when name not allowed (name reserved)', async () => {

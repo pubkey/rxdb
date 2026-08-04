@@ -8,12 +8,10 @@ events.EventEmitter.defaultMaxListeners = 0;
  * runs the babel-transpile
  * remembers mtime of files and only transpiles the changed ones
  */
-import nconf from 'nconf';
 import path from 'node:path';
 import fs from 'node:fs';
 import os from 'node:os';
-import walkSync from 'walk-sync';
-import shell from 'shelljs';
+import { spawn } from 'node:child_process';
 import existsFile from 'exists-file';
 import { fileURLToPath } from 'node:url';
 const __filename = fileURLToPath(import.meta.url);
@@ -44,13 +42,36 @@ const TRANSPILE_FOLDERS = [
     }
 ];
 
-nconf.argv()
-    .env()
-    .file({
-        file: confLocation
+/**
+ * The state maps the absolute path of each source file
+ * to the mtime that file had when it was transpiled the last time.
+ */
+function readState() {
+    try {
+        return JSON.parse(fs.readFileSync(confLocation, 'utf-8'));
+    } catch (err) {
+        // no state file yet or a broken one, transpile everything
+        return {};
+    }
+}
+function writeState(state) {
+    fs.writeFileSync(confLocation, JSON.stringify(state, null, 2), 'utf-8');
+}
+
+async function runCommand(cmd) {
+    if (DEBUG) {
+        console.dir(cmd);
+    }
+    const child = spawn(cmd, {
+        shell: true,
+        stdio: 'inherit'
     });
-
-
+    const exitCode = await new Promise(res => child.on('exit', res));
+    if (exitCode !== 0) {
+        console.error('transpiling failed with cmd: ' + cmd);
+        process.exit(1);
+    }
+}
 
 async function transpileFile(
     srcLocations,
@@ -71,8 +92,6 @@ async function transpileFile(
         console.error('# transpile.mjs: could not create directory: ' + folder, err);
     });
 
-    // const outFilePath =
-    // await del.promise([outDir]);
     const cmd = 'cross-env NODE_ENV=' + env +
         ' babel ' +
         srcLocations.join(' ') +
@@ -81,20 +100,7 @@ async function transpileFile(
         ' --out-dir ' +
         outDir;
 
-    if (DEBUG) {
-        console.dir(cmd);
-    }
-
-    const execRes = shell.exec(cmd, {
-        async: true
-    });
-    await new Promise(res => execRes.on('exit', res));
-
-    const exitCode = execRes.exitCode;
-    if (exitCode !== 0) {
-        console.error('transpiling failed with cmd: ' + cmd);
-        process.exit(1);
-    }
+    await runCommand(cmd);
 
     if (DEBUG) {
         console.log('transpiled files: ' + srcLocations.join(', '));
@@ -103,53 +109,66 @@ async function transpileFile(
     return;
 }
 
-async function getFiles() {
-    const files = [];
-    await Promise.all(
-        TRANSPILE_FOLDERS
-            // make all file paths absolute
-            .map(transpileFolder => {
-                transpileFolder.source = path.join(basePath, transpileFolder.source);
-                Object.entries(transpileFolder.goals).forEach(([key, value]) => {
-                    transpileFolder.goals[key] = path.join(basePath, value);
-                });
-                return transpileFolder;
-            })
-            .map(transpileFolder => {
-                const srcFolder = transpileFolder.source;
-                return walkSync.entries(srcFolder)
-                    .filter(entry => !entry.isDirectory())
-                    .filter(entry => entry.relativePath.endsWith('.js') || entry.relativePath.endsWith('.ts') || entry.relativePath.endsWith('.tsx'))
-                    .filter(entry => !entry.relativePath.includes('/node_modules/'))
-                    .map(fileEntry => {
-                        // ensure goal-file-ending is .js
-                        const relativePathSplit = fileEntry.relativePath.split('.');
-                        relativePathSplit.pop();
-                        relativePathSplit.push('js');
-                        Object.entries(transpileFolder.goals).forEach(([env, toFolder]) => {
-                            const goalPath = path.join(toFolder, relativePathSplit.join('.'));
-                            const fullPath = path.join(fileEntry.basePath, fileEntry.relativePath);
+/**
+ * Returns all files of the given folder, recursively,
+ * together with the mtime of each file.
+ */
+function walkFolder(folder) {
+    return fs.readdirSync(folder, { recursive: true, withFileTypes: true })
+        .filter(entry => entry.isFile())
+        .map(entry => {
+            const fullPath = path.join(entry.parentPath ? entry.parentPath : entry.path, entry.name);
+            return {
+                fullPath,
+                relativePath: path.relative(folder, fullPath),
+                mtime: Math.floor(fs.statSync(fullPath).mtimeMs)
+            };
+        });
+}
 
-                            const lastTime = parseInt(nconf.get(fileEntry.fullPath), 10);
-                            const file = {
-                                env,
-                                fullPath,
-                                relativePath: fileEntry.relativePath,
-                                basePath: fileEntry.basePath,
-                                mtime: fileEntry.mtime,
-                                goalFolder: path.dirname(goalPath),
-                                goalPath: goalPath,
-                            };
-                            if (
-                                lastTime !== fileEntry.mtime ||
-                                !existsFile.sync(goalPath)
-                            ) {
-                                files.push(file);
-                            }
-                        });
+function getFiles(state) {
+    const files = [];
+    TRANSPILE_FOLDERS
+        // make all file paths absolute
+        .map(transpileFolder => {
+            const goals = {};
+            Object.entries(transpileFolder.goals).forEach(([env, goalFolder]) => {
+                goals[env] = path.join(basePath, goalFolder);
+            });
+            return {
+                source: path.join(basePath, transpileFolder.source),
+                goals
+            };
+        })
+        .forEach(transpileFolder => {
+            walkFolder(transpileFolder.source)
+                .filter(entry => entry.relativePath.endsWith('.js') || entry.relativePath.endsWith('.ts') || entry.relativePath.endsWith('.tsx'))
+                .filter(entry => !entry.relativePath.split(path.sep).includes('node_modules'))
+                .forEach(fileEntry => {
+                    // ensure goal-file-ending is .js
+                    const relativePathSplit = fileEntry.relativePath.split('.');
+                    relativePathSplit.pop();
+                    relativePathSplit.push('js');
+                    Object.entries(transpileFolder.goals).forEach(([env, toFolder]) => {
+                        const goalPath = path.join(toFolder, relativePathSplit.join('.'));
+
+                        const lastTime = parseInt(state[fileEntry.fullPath], 10);
+                        const file = {
+                            env,
+                            fullPath: fileEntry.fullPath,
+                            mtime: fileEntry.mtime,
+                            goalFolder: path.dirname(goalPath),
+                            goalPath: goalPath,
+                        };
+                        if (
+                            lastTime !== fileEntry.mtime ||
+                            !existsFile.sync(goalPath)
+                        ) {
+                            files.push(file);
+                        }
                     });
-            })
-    );
+                });
+        });
 
     const filesByGoalFolder = {};
     files.forEach(file => {
@@ -167,26 +186,20 @@ async function getFiles() {
 }
 
 async function run() {
-    const files = await getFiles();
-
+    const state = readState();
+    const files = getFiles(state);
 
     let totalFiles = 0;
     Object.values(files).forEach(f => {
- totalFiles += f.length;
-});
+        totalFiles += f.length;
+    });
 
     if (totalFiles > 30) {
         console.log('# Many files changed (' + totalFiles + '), running full build via npm scripts...');
-        const cmd = 'concurrently "npm run build:cjs" "npm run build:esm" "npm run build:test"';
-        const execRes = shell.exec(cmd, { async: true });
-        await new Promise(res => execRes.on('exit', res));
-        if (execRes.exitCode !== 0) {
-            console.error('transpiling failed with cmd: ' + cmd);
-            process.exit(1);
-        }
+        await runCommand('concurrently "npm run build:cjs" "npm run build:esm" "npm run build:test"');
         Object.values(files).forEach(filesWithSameGoalFolder => {
             filesWithSameGoalFolder.forEach(file => {
-                nconf.set(file.fullPath, file.mtime);
+                state[file.fullPath] = file.mtime;
             });
         });
     } else {
@@ -207,23 +220,23 @@ async function run() {
                     Object.entries(byEnv)
                         .map(async ([env, innerFiles]) => {
                             await transpileFile(
-                                innerFiles.map(file => path.join(file.basePath, file.relativePath)),
+                                innerFiles.map(file => file.fullPath),
                                 innerFiles[0].goalFolder,
                                 env
                             );
-                            innerFiles.forEach(file => nconf.set(file.fullPath, file.mtime));
+                            innerFiles.forEach(file => {
+                                state[file.fullPath] = file.mtime;
+                            });
                         })
                 );
             })
         );
     }
 
-    nconf.save(function () {
-        if (DEBUG) {
-            console.log('conf saved');
-        }
-        console.log('# transpiling DONE (' + cpuCount + ' CPUs)');
-    });
+    writeState(state);
+    if (DEBUG) {
+        console.log('conf saved');
+    }
+    console.log('# transpiling DONE (' + cpuCount + ' CPUs)');
 }
 run();
-

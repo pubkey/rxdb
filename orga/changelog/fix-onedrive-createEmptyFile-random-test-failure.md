@@ -1,1 +1,0 @@
-- FIX: `createEmptyFile()` in the Microsoft OneDrive replication plugin now uses the POST response body directly instead of an extra `listFilesInFolder` call, avoiding a race condition. The test assertion for `fileId.length` was also relaxed to `> 0` since the mock server can generate short IDs.

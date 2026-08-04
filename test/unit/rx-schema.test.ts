@@ -5,7 +5,7 @@ import {
 } from 'async-test-util';
 import AsyncTestUtil from 'async-test-util';
 
-import config, { describeParallel } from './config.ts';
+import config from './config.ts';
 import {
     schemaObjects,
     schemas
@@ -30,7 +30,7 @@ import {
     ensureNotFalsy
 } from '../../plugins/core/index.mjs';
 
-describeParallel('rx-schema.test.ts', () => {
+describe('rx-schema.test.ts', () => {
     describe('static', () => {
         describe('.getIndexes()', () => {
             it('get single indexes', () => {
@@ -437,6 +437,40 @@ describeParallel('rx-schema.test.ts', () => {
                                         type: 'string'
                                     }
                                 }
+                            }
+                        }
+                    }), 'RxError', 'SC1');
+                });
+                it('should not allow square brackets in fieldnames', async () => {
+                    await assertThrows(() => checkSchema({
+                        title: 'schema',
+                        version: 0,
+                        primaryKey: 'id',
+                        description: 'square bracket in fieldname',
+                        type: 'object',
+                        properties: {
+                            id: {
+                                type: 'string',
+                                maxLength: 100
+                            },
+                            'foo[bar': {
+                                type: 'string'
+                            }
+                        }
+                    }), 'RxError', 'SC1');
+                    await assertThrows(() => checkSchema({
+                        title: 'schema',
+                        version: 0,
+                        primaryKey: 'id',
+                        description: 'closing square bracket in fieldname',
+                        type: 'object',
+                        properties: {
+                            id: {
+                                type: 'string',
+                                maxLength: 100
+                            },
+                            'foo]bar': {
+                                type: 'string'
                             }
                         }
                     }), 'RxError', 'SC1');

@@ -1,5 +1,5 @@
 import assert from 'assert';
-import config, { describeParallel } from './config.ts';
+import config from './config.ts';
 import AsyncTestUtil from 'async-test-util';
 
 import {
@@ -29,7 +29,7 @@ import {
 
 const modes: CompressionMode[] = ['deflate', 'gzip'];
 modes.forEach(mode => {
-    describeParallel('attachments-compression.test.ts (mode: ' + mode + ')', () => {
+    describe('attachments-compression.test.ts (mode: ' + mode + ')', () => {
         if (
             !config.storage.hasAttachments
         ) {

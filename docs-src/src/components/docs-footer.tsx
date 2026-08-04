@@ -1,9 +1,24 @@
+import type { WrapperProps } from '@docusaurus/types';
 import type LayoutType from '@theme/DocItem/Layout';
 import { useState } from 'react';
 import { triggerTrackingEvent } from './trigger-event';
 import { lastOfArray } from '../../../plugins/core';
 
 type Props = WrapperProps<typeof LayoutType>;
+
+/**
+ * The children of the doc item layout are the compiled MDX content component.
+ * Docusaurus attaches the metadata of the page to that component.
+ */
+type MDXContentComponent = {
+    frontMatter: {
+        title?: string;
+    };
+    contentTitle?: string;
+    metadata: {
+        slug: string;
+    };
+};
 
 export function DocsFooter(props: Props) {
     const [voted, setVoted] = useState(false);
@@ -51,9 +66,11 @@ export function DocsFooter(props: Props) {
     } as const;
 
 
-    let showTitle: string = props.children.type.frontMatter.title ? props.children.type.frontMatter.title : '';
-    if (props.children.type.contentTitle && props.children.type.contentTitle.length < showTitle.length) {
-        showTitle = props.children.type.contentTitle;
+    const content = (props.children as any).type as MDXContentComponent;
+
+    let showTitle: string = content.frontMatter.title ? content.frontMatter.title : '';
+    if (content.contentTitle && content.contentTitle.length < showTitle.length) {
+        showTitle = content.contentTitle;
     }
     const maxTitleLength = 23;
     if (showTitle.length > maxTitleLength) {
@@ -64,7 +81,7 @@ export function DocsFooter(props: Props) {
     }
 
     function vote(dir: 'up' | 'down') {
-        const slug = props.children.type.metadata.slug;
+        const slug = content.metadata.slug;
         const name = lastOfArray(slug.split('/'));
         const voteEventId = 'vote_' + name + '_' + dir;
         console.log('vote: ' + voteEventId);
@@ -77,16 +94,16 @@ export function DocsFooter(props: Props) {
             <li style={styles.li}>
                 Was this page helpful?
                 <div style={styles.vote}>
-                    <img src="/img/thumbs-up-white.svg" loading="lazy" height="14" onClick={() => vote('up')} />
+                    <img src="/img/thumbs-up-white.svg" alt="Thumbs up" loading="lazy" width="14" height="14" onClick={() => vote('up')} />
                 </div>
                 <div style={{ ...styles.vote, ...styles.down }}>
-                    <img src="/img/thumbs-up-white.svg" loading="lazy" height="14" onClick={() => vote('down')} />
+                    <img src="/img/thumbs-up-white.svg" alt="Thumbs down" loading="lazy" width="14" height="14" onClick={() => vote('down')} />
                 </div>
             </li> : <li style={styles.li}>Thank you for your vote! <div style={styles.heart}>&#x2665;</div></li>
         }
         <li>
             <a href="/chat/" target="_blank" style={styles.a}>
-                <img src="/img/community-links/discord-logo.svg" style={styles.img} loading="lazy" />
+                <img src="/img/community-links/discord-logo.svg" alt="Discord" width="22" height="18" style={styles.img} loading="lazy" />
                 Ask a question on the forums about {showTitle}
             </a>
         </li>

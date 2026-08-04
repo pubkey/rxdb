@@ -5,15 +5,14 @@ description: Replace unmaintained NeDB with RxDB. Get schema validation, MongoDB
 image: /headers/nedb-alternative.jpg
 ---
 
+import {Faq, FaqItem} from '@site/src/components/faq';
+import {ComparisonTable} from '@site/src/components/comparison-table';
+
 # RxDB as a NeDB Alternative for Node.js, Electron, and the Browser
 
 If you arrived here, you are likely running a project that depends on **NeDB** and you are looking for a maintained replacement. NeDB served many Node.js, Electron, and browser applications well during its active years, but the project has been frozen since 2016. Modern apps need schema validation, observable queries, multi-tab coordination, and replication, and a database that still receives security updates. **RxDB** fills that gap while keeping the embedded, document-oriented model that NeDB users are familiar with.
 
-<center>
-    <a href="https://rxdb.info/">
-        <img src="/files/logo/rxdb_javascript_database.svg" alt="RxDB JavaScript Database" width="220" />
-    </a>
-</center>
+<RxdbLogo alt="RxDB JavaScript Database" />
 
 ## A Short History of NeDB
 
@@ -23,7 +22,7 @@ NeDB (Node Embedded Database) was created around 2013 by Louis Chatriot. It beca
 - **Electron and nw.js desktop apps** that needed to persist user data between sessions.
 - **Browser-based applications** through storage adapters that wrote to IndexedDB or localStorage.
 
-The query language mirrored MongoDB, so developers could use operators like `$gt`, `$in`, and `$regex` against documents, build indexes on fields, and project results. The last commit to the original repository landed in 2016, and the project was eventually marked as unmaintained. Several community forks exist, but none have grown into a widely supported successor.
+The query language mirrored MongoDB, so developers could use operators like `$gt`, `$in`, and `$regex` against documents, build indexes on fields, and project results. The last change to the library code landed in May 2016, <TimeSince date="2016-05-21" />, a "not maintained anymore" notice was added to the README in 2021, and the only commits since then are further README edits, the newest from May 2025 ([commit history](https://github.com/louischatriot/nedb/commits/master/), checked July 30, 2026). Community forks kept the code alive. The most used one, `@seald-io/nedb`, had 624,845 npm downloads in the last 30 days ([npm](https://www.npmjs.com/package/@seald-io/nedb), July 30, 2026), but it inherits the same single-file architecture and adds neither replication nor reactive queries.
 
 ## What is RxDB?
 
@@ -52,6 +51,8 @@ A NeDB database opened in two browser tabs has no concept of shared state. Write
 
 ### 6. No Schema Validation
 NeDB is schemaless. Every document can have any shape, which sounds flexible at first but quickly leads to runtime errors when fields drift over time. There is no migration system either, so changing data shape has to be handled by the application.
+
+The numbers reflect this. As of July 30, 2026, [NeDB](https://github.com/louischatriot/nedb) has 13,542 GitHub stars while [RxDB](https://github.com/pubkey/rxdb) has 23,296, and the `nedb` package was downloaded 202,005 times on npm in the last 30 days compared to 270,494 downloads of `rxdb` ([npm trends](https://npmtrends.com/nedb-vs-rxdb)). The [NeDB repository](https://github.com/louischatriot/nedb/commits/master/) has not received a code change since May 2016, <TimeSince date="2016-05-21" />: the last commits, from May 2025, only touch the README.
 
 ## How RxDB Solves These Problems
 
@@ -151,39 +152,39 @@ A migration script that runs once on first launch is often enough. After a succe
 
 ## FAQ
 
-<details>
-<summary>Is NeDB maintained?</summary>
+<Faq>
+<FaqItem question="Is NeDB maintained?">
 
 No. The original NeDB repository has not received commits since 2016 and is archived. Issues remain open, and dependency security advisories are not addressed. Community forks exist, but none provide the long-term support that an active project like RxDB offers.
 
-</details>
+</FaqItem>
 
-<details>
-<summary>Can I keep MongoDB-style queries in RxDB?</summary>
+<FaqItem question="Can I keep MongoDB-style queries in RxDB?">
 
 Yes. RxDB queries use the same selector format as MongoDB and NeDB, including operators like `$gt`, `$lt`, `$in`, `$nin`, `$regex`, and `$elemMatch`, plus `sort`, `skip`, and `limit`. See the [RxQuery documentation](../../rx-query.md) for the full list.
 
-</details>
+</FaqItem>
 
-<details>
-<summary>Is RxDB safe to use in Electron?</summary>
+<FaqItem question="Is RxDB safe to use in Electron?">
 
 Yes. RxDB ships official guidance and storage options for Electron, including SQLite-backed storages that store data on the local filesystem. The [Electron Database](../../electron-database.md) page covers configuration in both the main and renderer processes, including multi-window setups.
 
-</details>
+</FaqItem>
 
-<details>
-<summary>How do I migrate data from NeDB to RxDB?</summary>
+<FaqItem question="How do I migrate data from NeDB to RxDB?">
 
 Read the existing NeDB file with the legacy library, define an RxDB schema that matches the documents, and call `bulkInsert` on the new collection. Rename `_id` to your chosen primary key while you copy the data. After verifying the import, the old NeDB file can be removed.
 
-</details>
+</FaqItem>
+</Faq>
 
 ## Comparison Table
 
+<ComparisonTable>
+
 | Feature | NeDB | RxDB |
 | --- | --- | --- |
-| Maintenance status | Last commit 2016, archived | Active, regular releases |
+| Maintenance status | No code change since 2016, README marked unmaintained | Active, regular releases |
 | Query language | MongoDB-like | MongoDB-like ([RxQuery](../../rx-query.md)) |
 | Schema validation | None | JSON Schema based ([RxSchema](../../rx-schema.md)) |
 | Observable queries | No | Yes, via RxJS ([Reactivity](../../reactivity.md)) |
@@ -196,6 +197,8 @@ Read the existing NeDB file with the legacy library, define an RxDB schema that 
 | TypeScript support | Community typings | First-class TypeScript |
 | Encryption | None | Optional plugin |
 | Compression | None | Optional plugin |
+
+</ComparisonTable>
 
 ## Follow Up
 

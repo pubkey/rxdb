@@ -1,6 +1,6 @@
 import assert from 'assert';
 
-import config, { describeParallel } from './config.ts';
+import config from './config.ts';
 
 import {
     createRxDatabase,
@@ -31,7 +31,7 @@ addRxPlugin(RxDBJsonDumpPlugin);
  * In the past many storages had trouble when doing many things
  * and then doing cleanups or reopening themself.
  */
-describeParallel('database-lifecycle.ts', () => {
+describe('database-lifecycle.ts', () => {
     type Collection = RxCollection<HumanDocumentType, {}, {}>;
     type Collections = { humans: RxCollection<HumanDocumentType, {}, {}>; };
 

@@ -13,7 +13,7 @@ import {
     EXAMPLE_REVISION_2,
     EXAMPLE_REVISION_3
 } from '../../plugins/test-utils/index.mjs';
-import { describeParallel } from './config.ts';
+import './config.ts';
 
 type TestDocType = {
     id: string;
@@ -71,7 +71,7 @@ function createDocumentCache(
     return { cache, changes$ };
 }
 
-describeParallel('doc-cache.test.ts', () => {
+describe('doc-cache.test.ts', () => {
     describe('DocumentCache', () => {
         describe('.getCachedRxDocuments()', () => {
             it('should create a new document if not cached', () => {

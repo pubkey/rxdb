@@ -1,10 +1,8 @@
-import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import Layout from '@theme/Layout';
 import React, { useEffect } from 'react';
 import { triggerTrackingEvent } from '../components/trigger-event';
 
 export default function DemoSubmitted() {
-    const { siteConfig } = useDocusaurusContext();
 
     useEffect(() => {
         (() => {
@@ -14,7 +12,7 @@ export default function DemoSubmitted() {
 
     return (
         <Layout
-            title={`Schedule Demo Submitted - ${siteConfig.title}`}
+            title={'Schedule Demo Submitted'}
             description="RxDB Schedule Demo Submitted"
         >
             <main>

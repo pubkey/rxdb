@@ -249,11 +249,12 @@ export class RxCollectionBase<
              * while not awaiting the database.close() call to improve the test times.
              * So when reopening collections and the OPEN_COLLECTIONS size is full,
              * we retry after some times to account for this.
+             * Use a higher retry count to account for slow storage backends like MongoDB
+             * where tests hold collections open for several seconds.
              */
             let count = 0;
-            let startTime = 0;
-            while (count < 35 && OPEN_COLLECTIONS.size >= NON_PREMIUM_COLLECTION_LIMIT) {
-                startTime = Date.now();
+            const startTime = Date.now();
+            while (count < 60 && OPEN_COLLECTIONS.size >= NON_PREMIUM_COLLECTION_LIMIT) {
                 await this.promiseWait(30);
                 count++;
             }
@@ -1000,11 +1001,15 @@ export class RxCollectionBase<
 
         const runName = parallel ? 'parallel' : 'series';
 
-        this.hooks[key] = this.hooks[key] || {};
-        this.hooks[key][when] = this.hooks[key][when] || {
-            series: [],
-            parallel: []
-        };
+        if (!this.hooks[key]) {
+            this.hooks[key] = {} as any;
+        }
+        if (!this.hooks[key][when]) {
+            this.hooks[key][when] = {
+                series: [],
+                parallel: []
+            };
+        }
         this.hooks[key][when][runName].push(boundFun);
     }
 
