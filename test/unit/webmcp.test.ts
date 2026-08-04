@@ -4,7 +4,12 @@ import {
     addRxPlugin,
     randomToken,
 } from '../../plugins/core/index.mjs';
-import { RxDBWebMCPPlugin } from '../../plugins/webmcp/index.mjs';
+import {
+    RxDBWebMCPPlugin,
+    getWebMCPTools,
+    getWebMCPTargetFromCollection,
+    registerWebMCPTarget
+} from '../../plugins/webmcp/index.mjs';
 import config from './config.ts';
 import { schemaObjects, schemas } from '../../plugins/test-utils/index.mjs';
 import { cleanupWebMCPPolyfill, initializeWebMCPPolyfill } from '@mcp-b/webmcp-polyfill';
@@ -261,6 +266,190 @@ describe('webmcp.test.ts', () => {
         await waitUntil(() => {
             const queryTool = getTools().find((t: any) => t.name.includes('aliens') && t.name.startsWith(`rxdb_query_${db.name}`));
             return !!queryTool;
+        });
+    });
+
+    describe('custom targets', () => {
+        /**
+         * A target that is not backed by an RxCollection at all.
+         * This is what a devtool or a viewer uses when the collection
+         * lives in another process or on another device.
+         */
+        const getTestTarget = (documents: any[] = []) => {
+            const closeHandlers: (() => void)[] = [];
+            let awaitInSyncCalls = 0;
+            const target = {
+                databaseName: 'remotedb',
+                collectionName: 'remotehumans',
+                schemaVersion: 0,
+                primaryPath: 'passportId',
+                jsonSchema: schemas.human,
+                awaitInSync: () => {
+                    awaitInSyncCalls++;
+                    return Promise.resolve();
+                },
+                query: () => Promise.resolve(documents.slice()),
+                count: () => Promise.resolve(documents.length),
+                changesSince: (limit: number) => Promise.resolve({
+                    documents: documents.slice(0, limit),
+                    checkpoint: { position: documents.length }
+                }),
+                awaitChange: () => Promise.resolve(),
+                insert: (document: any) => {
+                    documents.push(document);
+                    return Promise.resolve(document);
+                },
+                upsert: (document: any) => {
+                    documents.push(document);
+                    return Promise.resolve(document);
+                },
+                remove: (id: string) => Promise.resolve(documents.find(d => d.passportId === id)),
+                onClose: (fn: () => void) => {
+                    closeHandlers.push(fn);
+                }
+            };
+            return {
+                target,
+                documents,
+                close: () => closeHandlers.forEach(fn => fn()),
+                getAwaitInSyncCalls: () => awaitInSyncCalls
+            };
+        };
+
+        const getTestModelContext = () => {
+            const tools: any[] = [];
+            return {
+                tools,
+                registerTool(tool: any, registerOptions?: any) {
+                    tools.push(tool);
+                    if (registerOptions && registerOptions.signal) {
+                        registerOptions.signal.addEventListener('abort', () => {
+                            const index = tools.indexOf(tool);
+                            if (index >= 0) {
+                                tools.splice(index, 1);
+                            }
+                        });
+                    }
+                }
+            };
+        };
+
+        it('should build the same tools for a target that is not an RxCollection', async () => {
+            const { target, documents } = getTestTarget([schemaObjects.humanData('remote_alice')]);
+            const tools = getWebMCPTools(target);
+
+            assert.strictEqual(tools.length, 7);
+            assert.deepStrictEqual(
+                tools.map(t => t.name),
+                [
+                    'rxdb_query_remotedb_remotehumans_0',
+                    'rxdb_count_remotedb_remotehumans_0',
+                    'rxdb_changes_remotedb_remotehumans_0',
+                    'rxdb_wait_changes_remotedb_remotehumans_0',
+                    'rxdb_insert_remotedb_remotehumans_0',
+                    'rxdb_upsert_remotedb_remotehumans_0',
+                    'rxdb_delete_remotedb_remotehumans_0'
+                ]
+            );
+
+            const queryTool: any = tools.find(t => t.name.startsWith('rxdb_query_'));
+            const queryResult = await queryTool.execute({ query: { selector: {} } });
+            assert.strictEqual(queryResult.length, 1);
+            assert.strictEqual(queryResult[0].passportId, 'remote_alice');
+
+            const countTool: any = tools.find(t => t.name.startsWith('rxdb_count_'));
+            assert.deepStrictEqual(await countTool.execute({ query: { selector: {} } }), { count: 1 });
+
+            const insertTool: any = tools.find(t => t.name.startsWith('rxdb_insert_'));
+            await insertTool.execute({ document: schemaObjects.humanData('remote_bob') });
+            assert.strictEqual(documents.length, 2);
+        });
+
+        it('should throw WMCP1 from a target that has no such document', async () => {
+            const { target } = getTestTarget();
+            const tools = getWebMCPTools(target);
+            const deleteTool: any = tools.find(t => t.name.startsWith('rxdb_delete_'));
+            let hasThrown = false;
+            try {
+                await deleteTool.execute({ id: 'does-not-exist' });
+            } catch (err: any) {
+                hasThrown = true;
+                assert.ok(JSON.stringify(err).includes('WMCP1'));
+            }
+            assert.ok(hasThrown);
+        });
+
+        it('should not build modifier tools for a readOnly target', () => {
+            const { target } = getTestTarget();
+            const tools = getWebMCPTools(target, { readOnly: true });
+            assert.strictEqual(tools.length, 4);
+            assert.ok(!tools.find(t => t.name.startsWith('rxdb_insert_')));
+        });
+
+        it('should respect awaitReplicationsInSync on a target', async () => {
+            const withSync = getTestTarget();
+            const queryTool: any = getWebMCPTools(withSync.target)
+                .find(t => t.name.startsWith('rxdb_query_'));
+            await queryTool.execute({ query: { selector: {} } });
+            assert.strictEqual(withSync.getAwaitInSyncCalls(), 1);
+
+            const withoutSync = getTestTarget();
+            const queryTool2: any = getWebMCPTools(withoutSync.target, { awaitReplicationsInSync: false })
+                .find(t => t.name.startsWith('rxdb_query_'));
+            await queryTool2.execute({ query: { selector: {} } });
+            assert.strictEqual(withoutSync.getAwaitInSyncCalls(), 0);
+        });
+
+        it('should register at a given modelContext and unregister on close', () => {
+            const { target, close } = getTestTarget();
+            const modelContext = getTestModelContext();
+
+            registerWebMCPTarget(target, { modelContext });
+            assert.strictEqual(modelContext.tools.length, 7);
+            // must not touch the global registry
+            assert.strictEqual(getTools().length, 0);
+
+            close();
+            assert.strictEqual(modelContext.tools.length, 0);
+        });
+
+        it('should emit log$ and error$ for a target', async () => {
+            const { target } = getTestTarget();
+            const modelContext = getTestModelContext();
+            const { log$, error$ } = registerWebMCPTarget(target, { modelContext });
+
+            const logs: any[] = [];
+            const errors: any[] = [];
+            const sub1 = log$.subscribe(e => logs.push(e));
+            const sub2 = error$.subscribe(e => errors.push(e));
+
+            const queryTool: any = modelContext.tools.find((t: any) => t.name.startsWith('rxdb_query_'));
+            await queryTool.execute({ query: { selector: {} } });
+            assert.strictEqual(logs.length, 1);
+            assert.strictEqual(logs[0].databaseName, 'remotedb');
+            assert.strictEqual(logs[0].collectionName, 'remotehumans');
+
+            const deleteTool: any = modelContext.tools.find((t: any) => t.name.startsWith('rxdb_delete_'));
+            try {
+                await deleteTool.execute({ id: 'does-not-exist' });
+            } catch (err) { }
+            assert.strictEqual(errors.length, 1);
+
+            sub1.unsubscribe();
+            sub2.unsubscribe();
+        });
+
+        it('should build a working target from an RxCollection', async () => {
+            await collection.insert(schemaObjects.humanData('from_collection'));
+            const target = getWebMCPTargetFromCollection(collection);
+            assert.strictEqual(target.databaseName, db.name);
+            assert.strictEqual(target.collectionName, 'humans');
+
+            const docs = await target.query({ selector: {} });
+            assert.strictEqual(docs.length, 1);
+            assert.strictEqual(docs[0].passportId, 'from_collection');
+            assert.strictEqual(await target.count({ selector: {} }), 1);
+            assert.strictEqual(await target.remove('does-not-exist'), undefined);
         });
     });
 });

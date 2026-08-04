@@ -229,6 +229,62 @@ If the application is offline and the replication is configured to retry infinit
 :::
 
 
+#### `modelContext` (default: `document.modelContext`)
+
+The tools are registered at the WebMCP registry of the current document. When you need them registered somewhere else, for example at the registry of an iframe that renders a devtool panel, pass that registry directly.
+
+```ts
+db.registerWebMCP({
+    modelContext: myIframe.contentDocument.modelContext
+});
+```
+
+When this option is not set, `document.modelContext` is used with a fallback to `navigator.modelContext` for browsers that still expose the older entrypoint.
+
+### Custom Targets
+
+The tools do not have to run against a local [RxCollection](./rx-collection.md). A `WebMCPTarget` is everything the tools need from a collection, so you can register the same seven tools for a collection that lives in another process, in a web worker, or on another device. The agent then sees one interface no matter where the data is.
+
+```ts
+import {
+    getWebMCPTargetFromCollection,
+    registerWebMCPTarget
+} from 'rxdb/plugins/webmcp';
+
+// The local target, this is what registerWebMCP() uses internally.
+const target = getWebMCPTargetFromCollection(myCollection);
+
+// A target that forwards every call to a database on another device.
+const remoteTarget = {
+    databaseName: 'mydb',
+    collectionName: 'humans',
+    schemaVersion: 0,
+    primaryPath: 'passportId',
+    jsonSchema: myJsonSchema,
+    awaitInSync: () => sendToDevice('awaitInSync'),
+    query: query => sendToDevice('query', query),
+    count: query => sendToDevice('count', query),
+    changesSince: (limit, checkpoint) => sendToDevice('changesSince', { limit, checkpoint }),
+    awaitChange: () => sendToDevice('awaitChange'),
+    insert: document => sendToDevice('insert', document),
+    upsert: document => sendToDevice('upsert', document),
+    remove: id => sendToDevice('remove', id),
+    onClose: fn => myConnection.onClose(fn)
+};
+
+const { log$, error$, unregister } = registerWebMCPTarget(remoteTarget, {
+    readOnly: true
+});
+```
+
+`registerWebMCPTarget()` returns `unregister()` next to the two subjects. The tools are also unregistered when the `onClose` handler of the target runs.
+
+Use `getWebMCPTools(target, options)` when you only want the tool definitions and want to register them yourself.
+
+:::warning
+A remote target sends document data to whichever agent is registered in that document. Set `readOnly: true` when the target points at a database you do not own, because document content is attacker-controlled in the general case and reaches the agent's context through query results.
+:::
+
 ### Logs and Errors
 
 Both `registerWebMCP` methods (`db.registerWebMCP()` and `db.collections.humans.registerWebMCP()`) return an object containing two RxJS Subjects: `log$` and `error$`.
