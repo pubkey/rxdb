@@ -57,6 +57,8 @@ The InstantDB client picks its own persistence layer. RxDB exposes a [storage in
 
 InstantDB resolves write conflicts internally. You get optimistic updates and rollback, but the resolution policy is mostly fixed. RxDB lets you write a [custom conflict handler](../../transactions-conflicts-revisions.md) per collection, or opt into [CRDTs](../../crdt.md) when you need automatic merging without server arbitration.
 
+Both projects are under active development. As of July 30, 2026, [InstantDB](https://github.com/instantdb/instant) has 10,366 GitHub stars while [RxDB](https://github.com/pubkey/rxdb) has 23,296.
+
 ## Why Teams Pick RxDB Instead
 
 ### Bring Your Own Backend

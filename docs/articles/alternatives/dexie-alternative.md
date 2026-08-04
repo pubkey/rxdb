@@ -47,6 +47,8 @@ Plain Dexie has no replication. The official answer is Dexie Cloud, a hosted ser
 
 When two tabs or two devices write to the same document, Dexie itself does not resolve the conflict. The application code has to detect it, decide which write wins, and apply the result. There is no [CRDT plugin](../../crdt.md) and no pluggable [conflict handler](../../transactions-conflicts-revisions.md). For a single-user, single-device app this rarely matters. For collaborative or multi-device apps it becomes the central problem.
 
+Both projects are under active development. As of July 30, 2026, [Dexie.js](https://github.com/dexie/Dexie.js) has 14,507 GitHub stars while [RxDB](https://github.com/pubkey/rxdb) has 23,296.
+
 ## What RxDB Adds on Top
 
 RxDB was designed around the gaps above.

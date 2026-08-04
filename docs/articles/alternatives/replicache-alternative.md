@@ -54,6 +54,8 @@ Replicache hands you a sync protocol but expects you to maintain the canonical s
 
 Replicache is a client-server protocol. RxDB ships a [WebRTC replication plugin](../../replication.md) so peers can sync directly without a central server.
 
+The numbers reflect this. As of July 30, 2026, [Replicache](https://github.com/rocicorp/replicache) has 1,172 GitHub stars while [RxDB](https://github.com/pubkey/rxdb) has 23,296, and the `replicache` package was downloaded 50,744 times on npm in the last 30 days compared to 270,494 downloads of `rxdb` ([npm trends](https://npmtrends.com/replicache-vs-rxdb)). The last commit to the [Replicache repository](https://github.com/rocicorp/replicache) was in April 2022, <TimeSince date="2022-04-22" />, and the repository is archived and read-only today. Rocicorp's development happens in the Zero monorepo instead.
+
 ## Why Teams Pick RxDB Instead
 
 - **Apache 2.0 license** with no revenue gates on the core.

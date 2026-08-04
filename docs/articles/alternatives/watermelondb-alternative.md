@@ -127,6 +127,8 @@ WatermelonDB's observable and reactive helpers are primarily designed for React 
 
 ---
 
+The numbers reflect this. As of July 30, 2026, [WatermelonDB](https://github.com/Nozbe/WatermelonDB) has 11,754 GitHub stars while [RxDB](https://github.com/pubkey/rxdb) has 23,296, and the `@nozbe/watermelondb` package was downloaded 247,698 times on npm in the last 30 days compared to 270,494 downloads of `rxdb` ([npm trends](https://npmtrends.com/@nozbe/watermelondb-vs-rxdb)). The last commit to the [WatermelonDB repository](https://github.com/Nozbe/WatermelonDB) was in August 2025, <TimeSince date="2025-08-11" />.
+
 ## How RxDB Addresses These Problems
 
 [RxDB](https://rxdb.info) is a local-first JavaScript database built around the principle that all reads and writes happen against the local storage first, and replication with a server runs in the background. It has been in active development since 2016 and runs on browsers, React Native, Electron, and Node.js with the same API.

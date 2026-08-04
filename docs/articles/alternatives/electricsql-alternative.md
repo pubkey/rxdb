@@ -57,6 +57,8 @@ The sync service is written in Elixir and runs as its own process in front of Po
 
 ElectricSQL assumes Postgres is the source of truth. If your backend uses MongoDB, MySQL, DynamoDB, a custom service, or a mix of stores, ElectricSQL is the wrong fit. The shape model is tied to Postgres replication internals.
 
+Both projects are under active development. As of July 30, 2026, [ElectricSQL](https://github.com/electric-sql/electric) has 10,286 GitHub stars while [RxDB](https://github.com/pubkey/rxdb) has 23,296.
+
 ## RxDB Advantages
 
 ### 1. Stable and Production Tested

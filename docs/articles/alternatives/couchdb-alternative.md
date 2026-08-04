@@ -90,6 +90,8 @@ When using CouchDB from a browser, queries go over the network to the server. Th
 
 ---
 
+Both projects are under active development. As of July 30, 2026, [the CouchDB server](https://github.com/apache/couchdb) has 6,933 GitHub stars while [RxDB](https://github.com/pubkey/rxdb) has 23,296.
+
 ## How RxDB Solves These Problems
 
 [RxDB](https://rxdb.info) is a local-first JavaScript database designed to run on the client. All reads and writes go to local storage. Network replication happens in the background. RxDB includes a [CouchDB replication plugin](../../replication-couchdb.md) so you can use CouchDB as a backend while gaining all the client-side benefits of RxDB.

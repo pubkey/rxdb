@@ -214,6 +214,8 @@ RxDB uses the [event-reduce](https://github.com/pubkey/event-reduce) algorithm i
 
 ---
 
+Both projects are under active development. As of July 30, 2026, [Amplify](https://github.com/aws-amplify/amplify-js) has 9,555 GitHub stars while [RxDB](https://github.com/pubkey/rxdb) has 23,296.
+
 ## How RxDB Covers the DataStore Use Case
 
 ### Replicating with AWS AppSync via GraphQL

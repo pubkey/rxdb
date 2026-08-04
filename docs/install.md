@@ -20,16 +20,16 @@ You also need to install the peer-dependency `rxjs` if you have not installed it
 
 ## polyfills
 
-RxDB is coded with ES8 and transpiled to ES5. This means you have to install [polyfills](https://developer.mozilla.org/en-US/docs/Glossary/Polyfill) to support older browsers. For example you can use the babel-polyfills with:
+RxDB is coded with ES8 and transpiled to ES5. This means you have to install [polyfills](https://developer.mozilla.org/en-US/docs/Glossary/Polyfill) to support older browsers. For example you can use [core-js](https://github.com/zloirock/core-js) with:
 
 ```bash
-npm i @babel/polyfill --save
+npm i core-js --save
 ```
 
 If you need polyfills, you have to import them in your code.
 
 ```typescript
-import '@babel/polyfill';
+import 'core-js/stable';
 ```
 
 ## Polyfill the `global` variable

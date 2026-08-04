@@ -165,6 +165,8 @@ const replicationState = replicateRxCollection({
 
 ---
 
+Couchbase Lite is a native-first product, and its JavaScript footprint is small. As of July 30, 2026, [couchbase-lite-core](https://github.com/couchbase/couchbase-lite-core) has 265 GitHub stars and the biggest per-platform SDK, [couchbase-lite-ios](https://github.com/couchbase/couchbase-lite-ios), has 1,663, while [RxDB](https://github.com/pubkey/rxdb) has 23,296. On npm, the React Native binding `cbl-reactnative` was downloaded 99 times in the last 30 days compared to 270,494 downloads of `rxdb` ([npm trends](https://npmtrends.com/cbl-reactnative-vs-rxdb)). Most Couchbase Lite installs happen through the native iOS, Android and .NET SDKs, so these numbers say nothing about the product's total install base. But they do describe the JavaScript ecosystem around it, and that ecosystem decides how many code examples, blog posts and answered questions exist for the stack you build on.
+
 ## How RxDB Approaches the Same Problems
 
 ### Local-First Storage Without Infrastructure Dependencies

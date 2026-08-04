@@ -36,6 +36,8 @@ SignalDB is well designed for what it covers, but several gaps appear in product
 - **Smaller ecosystem.** Community plugins, examples, and long-term issue history are thinner. For business apps that ship for years, ecosystem depth matters.
 - **No schema-driven migrations.** SignalDB collections are loosely typed at runtime. RxDB enforces JSON Schema and runs versioned migrations on schema changes.
 
+The numbers reflect this. As of July 30, 2026, [SignalDB](https://github.com/maxnowack/signaldb) has 673 GitHub stars while [RxDB](https://github.com/pubkey/rxdb) has 23,296, and the `@signaldb/core` package was downloaded 6,573 times on npm in the last 30 days compared to 270,494 downloads of `rxdb` ([npm trends](https://npmtrends.com/@signaldb/core-vs-rxdb)).
+
 ## Why Teams Pick RxDB Instead
 
 ### Durable storage with a swappable engine

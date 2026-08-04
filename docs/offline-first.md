@@ -86,7 +86,7 @@ Data is hard, especially for UI applications where many things can happen at the
 The user is clicking around. Stuff is loaded from the server. All of these things interact with the global state of the app.
 To manage this complexity it is common to use state management libraries like Redux or MobX. With them, you write all this lasagna code to wrap the mutation of data and to make the UI react to all these changes.
 
-On offline first apps, your global state is already there in a single place stored inside of the local database.
+On offline first apps, your global state is already there in a single place stored inside of the [local database](./articles/local-database.md).
 You do not have to care whether this data came from the UI, another tab, the backend or another device of the same user. You can just make writes to the database and fetch data out of it.
 
 ## FAQ

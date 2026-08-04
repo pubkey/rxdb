@@ -345,7 +345,7 @@ const replicationState = replicateGraphQL(
             // subscription
             // Can be applied anything from the
             // graphql-ws ClientOptions:
-            // https://the-guild.dev/graphql/ws/docs/interfaces/client.ClientOptions
+            // https://the-guild.dev/graphql/ws/docs/client/interfaces/ClientOptions
             // Except these parameters: 'url',
             // 'shouldRetry', 'webSocketImpl' -
             // locked for internal usage

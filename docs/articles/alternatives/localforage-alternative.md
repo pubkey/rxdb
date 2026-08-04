@@ -42,6 +42,8 @@ The places where localForage runs out of road are predictable once you list them
 
 For a cache of avatars or a saved form draft, none of this matters. For an app that wants to feel like a product with offline support, all of it matters.
 
+The numbers reflect this. As of July 30, 2026, the last commit to the [localForage repository](https://github.com/localForage/localForage) was in July 2024, <TimeSince date="2024-07-30" />.
+
 ## What RxDB Adds On Top
 
 RxDB treats the browser like a real database environment.

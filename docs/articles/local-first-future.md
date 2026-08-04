@@ -51,7 +51,7 @@ The push for local-first is driven by a few key new technological capabilities t
 ### User Experience Benefits
 
   
-- **Performance & UX:** Running from local storage means **low latency** and instantaneous interactions. There's no round-trip delay for most operations. Local-first apps aim to provide [near-zero latency](./zero-latency-local-first.md) responses by querying a local database instead of waiting for a server response​. This results in a snappy UX (often no need for loading spinners) because data reads/writes happen immediately on-device. Modern users expect real-time feedback, and local-first delivers that by default.
+- **Performance & UX:** Running from local storage means **low latency** and instantaneous interactions. There's no round-trip delay for most operations. Local-first apps aim to provide [near-zero latency](./zero-latency-local-first.md) responses by querying a [local database](./local-database.md) instead of waiting for a server response​. This results in a snappy UX (often no need for loading spinners) because data reads/writes happen immediately on-device. Modern users expect real-time feedback, and local-first delivers that by default.
 
 - **User Control & Privacy:** Storing data locally can limit how much sensitive information is sent off to remote servers. End users have greater control over their data, and the app can implement [client-side encryption](../encryption.md), thereby reducing the risk of mass data breaches. Its even possible to only replicated encrypted data with a server so that the backend does not know about the data at all and just acts as a backup/replication endpoint.
 
