@@ -13,7 +13,13 @@ import {
     createRxDatabase,
     randomToken,
     addRxPlugin,
+    ensureNotFalsy,
+    BROADCAST_CHANNEL_BY_TOKEN
 } from '../../plugins/core/index.mjs';
+
+import {
+    replicateRxCollection
+} from '../../plugins/replication/index.mjs';
 
 import {
     RxDBLeaderElectionPlugin
@@ -191,6 +197,55 @@ describe('leader-election.test.js', () => {
             assert.strictEqual(elector.isLeader, false);
 
             await db2.close();
+        });
+        /**
+         * close() must not resolve before the broadcast channel is closed.
+         * Two promises are dropped on the way there: onClose() does not return
+         * has.die(), and the close() wrapper does not await the bc.close() that
+         * removeBroadcastChannelReference() returns. So the channel outlives the
+         * close() call that was supposed to have closed it.
+         * @link https://github.com/pubkey/rxdb/issues/8893
+         */
+        it('#8893 close() must not resolve before the broadcast channel is closed', async () => {
+            const collection = await humansCollection.createMultiInstance(randomToken(10));
+            const db = collection.database;
+
+            /**
+             * A live replication internally runs database.waitForLeadership().
+             * This starts a leader election that is still running
+             * when close() is called.
+             */
+            replicateRxCollection({
+                collection,
+                replicationIdentifier: randomToken(10),
+                live: true,
+                autoStart: true,
+                pull: {
+                    handler() {
+                        return Promise.resolve({
+                            documents: [],
+                            checkpoint: undefined
+                        });
+                    }
+                }
+            });
+
+            const broadcastChannel = ensureNotFalsy(BROADCAST_CHANNEL_BY_TOKEN.get(db.token)).bc as any;
+
+            let channelIsClosed = false;
+            const closeBefore = broadcastChannel.method.close.bind(broadcastChannel.method);
+            broadcastChannel.method.close = (channelState: any) => {
+                channelIsClosed = true;
+                return closeBefore(channelState);
+            };
+
+            await db.close();
+
+            assert.strictEqual(
+                channelIsClosed,
+                true,
+                'close() resolved while the broadcast channel was still open'
+            );
         });
     });
     describe('integration', () => {
