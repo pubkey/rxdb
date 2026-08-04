@@ -59,21 +59,43 @@ export function getDexieDbWithTables(
                     booleanIndexes: getBooleanIndexes(schema)
                 };
             })();
-            DEXIE_STATE_DB_BY_NAME.set(dexieDbName, state);
-            REF_COUNT_PER_DEXIE_DB.set(state, 0);
+            /**
+             * This callback runs synchronously inside of the assignment
+             * of state, so the count has to be keyed on value
+             * which is the same promise that getFromMapOrCreate() returns.
+             */
+            REF_COUNT_PER_DEXIE_DB.set(value, 0);
             return value;
         }
     );
+    /**
+     * Count one reference per storage instance.
+     * getDexieDbWithTables() runs once per storage instance
+     * and closeDexieDb() once per storage instance close,
+     * so the counting stays balanced.
+     */
+    REF_COUNT_PER_DEXIE_DB.set(state, (REF_COUNT_PER_DEXIE_DB.get(state) ?? 0) + 1);
     return state;
 }
 
 export async function closeDexieDb(statePromise: DexieStorageInternals) {
     const state = await statePromise;
-    const prevCount = REF_COUNT_PER_DEXIE_DB.get(statePromise);
-    const newCount = (prevCount as any) - 1;
-    if (newCount === 0) {
+    const prevCount = REF_COUNT_PER_DEXIE_DB.get(statePromise) ?? 0;
+    const newCount = prevCount - 1;
+    if (newCount <= 0) {
         state.dexieDb.close();
         REF_COUNT_PER_DEXIE_DB.delete(statePromise);
+        /**
+         * The name cache must be cleaned up together with the connection.
+         * Otherwise the next open of the same name would get
+         * the closed dexie instance and throw a DatabaseClosedError.
+         * @link https://github.com/pubkey/rxdb/issues/8793
+         */
+        for (const [cachedName, cachedState] of DEXIE_STATE_DB_BY_NAME.entries()) {
+            if (cachedState === statePromise) {
+                DEXIE_STATE_DB_BY_NAME.delete(cachedName);
+            }
+        }
     } else {
         REF_COUNT_PER_DEXIE_DB.set(statePromise, newCount);
     }
