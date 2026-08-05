@@ -14,7 +14,7 @@ import {
 import {
     skip
 } from 'rxjs/operators';
-import { RxHeroDocument } from 'src/app/RxDB';
+import { RxHeroDocument } from '../../RxDB';
 import {
     ensureNotFalsy,
     RxError
