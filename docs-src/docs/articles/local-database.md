@@ -1,7 +1,7 @@
 ---
 title: Local Database - What It Is and How to Use One in JavaScript
 slug: local-database.html
-description: A local database stores data on the user's device for instant queries and offline access. Learn how local databases work and how to use one in JavaScript.
+description: A local database like RxDB stores data on the user's device for instant queries and offline access. Learn how local databases work in JavaScript.
 image: /headers/local-database.jpg
 ---
 
@@ -14,7 +14,7 @@ import { PERFORMANCE_DATA_BROWSER, PERFORMANCE_METRICS } from '@site/src/compone
 
 # Local Database
 
-A **local database** stores data directly on the user's device instead of on a remote server. Your application reads and writes through the local database, so every query runs on the device without a network round trip, and the app keeps working when the device goes offline. [RxDB](https://rxdb.info/) is a local database for JavaScript that adds [queries](../rx-query.md), [reactivity](../reactivity.md), and [replication](../replication.md) on top of the raw storage APIs of the browser, mobile, and [Node.js](../nodejs-database.md).
+A **local database** stores data directly on the user's device instead of on a remote server. Common examples are [SQLite](../rx-storage-sqlite.md) in native mobile apps, [IndexedDB](../rx-storage-indexeddb.md) as the raw browser storage API, and [RxDB](https://rxdb.info/) as a full local database for JavaScript applications. Your application reads and writes through the local database, so every query runs on the device without a network round trip, and the app keeps working when the device goes offline. RxDB adds [queries](../rx-query.md), [reactivity](../reactivity.md), and [replication](../replication.md) on top of the raw storage APIs of the browser, mobile, and [Node.js](../nodejs-database.md).
 
 This page explains what a local database is, which options exist in JavaScript, where the raw storage APIs fall short, and how to run a local database in production.
 
@@ -22,7 +22,7 @@ This page explains what a local database is, which options exist in JavaScript, 
 
 ## What is a Local Database?
 
-A local database is a database engine that runs inside the application process on the client device. There is no database server to connect to and no network hop between your code and your data. The engine opens a file or a browser storage API, keeps indexes over the stored records, and answers queries from the same machine the user is holding.
+A local database is a database engine that runs inside the application process on the client device. There is no database server to connect to and no network hop between your code and your data. The engine opens a file or a browser storage API, keeps indexes over the stored records, and answers queries from the same machine the user is holding. Well-known local databases are [SQLite](../rx-storage-sqlite.md) as an embedded file database and [RxDB](../rx-database.md) as a local NoSQL database for JavaScript. The browser APIs IndexedDB and localStorage are the raw storage layers such a database builds on.
 
 Two properties define a local database:
 
@@ -55,6 +55,14 @@ A remote database runs on a server you operate or rent. Every read and write tra
 
 The two are not exclusive. Most production apps run both: a local database on the client for everything the user sees, and a remote database on the server as the durable source of truth that all clients replicate against.
 
+## Key Benefits of a Local Database
+
+- **Works offline**: all reads and writes go to the device, so the app stays usable without a connection. A sync-capable local database like [RxDB](https://rxdb.info/) queues local changes and [replicates](../replication.md) them when the network returns.
+- **Instant data access**: a local query completes in under a millisecond because no network round trip is involved.
+- **Realtime UI**: a reactive local database such as RxDB pushes new [query results](../rx-query.md) to the UI whenever the underlying data changes, across all open browser tabs.
+- **Less backend load**: every query answered on the device is a query your server never runs, which cuts hosting cost as the user count grows.
+- **Simple setup**: there is no database server to install or operate. In JavaScript, `npm install rxdb rxjs` and one `createRxDatabase()` call give you a working local database.
+
 ## Types of Local Databases in JavaScript
 
 JavaScript runtimes ship several storage APIs, and each has a different tradeoff between size, speed, and query support. RxDB runs on top of all of them through the [RxStorage](../rx-storage.md) layer, so the decision is a configuration change, not a rewrite.
@@ -65,6 +73,7 @@ JavaScript runtimes ship several storage APIs, and each has a different tradeoff
 - **[SQLite](../rx-storage-sqlite.md)**: the default local database on mobile and desktop. It is used in [React Native](../react-native-database.md), [Capacitor](../capacitor-database.md), and [Electron](../electron-database.md), and it also runs in the browser compiled to WebAssembly.
 - **[Filesystem](../rx-storage-filesystem-node.md)**: in Node.js, Deno, and Bun a local database can simply write to disk in the same process. See the [Node.js database](../nodejs-database.md) page.
 - **[Memory](../rx-storage-memory.md)**: a non-persistent [in-memory database](./in-memory-nosql-database.md) for tests, short sessions, and caching layers.
+- **[RxDB](../rx-database.md)**: a local-first NoSQL database for JavaScript. It is not another storage engine. It runs on top of the engines above and adds [Mango queries](../rx-query.md), observable results, [schema migrations](../migration-schema.md), [encryption](../encryption.md), and [replication](../replication.md).
 
 A deeper comparison of the browser options with benchmarks is in the [browser storage](./browser-storage.md) overview and in the [localStorage vs IndexedDB vs OPFS vs SQLite](./localstorage-indexeddb-cookies-opfs-sqlite-wasm.md) article.
 
@@ -79,7 +88,7 @@ A deeper comparison of the browser options with benchmarks is in the [browser st
 
 ## Where the Raw Storage APIs Fall Short
 
-IndexedDB, localStorage, and SQLite are storage engines. They store bytes and give them back. The trouble starts when you build an actual application on top of them.
+IndexedDB, localStorage, and SQLite are storage engines. They store bytes and give them back. The trouble starts when you build an actual application on top of them. This is the gap a local database like [RxDB](https://rxdb.info/) closes: it adds queries, reactivity, schema migrations, encryption, and sync on top of the storage engine of your choice.
 
 ### 1. Queries
 
@@ -249,7 +258,12 @@ For everything else, the [downsides of offline-first](../downsides-of-offline-fi
 <Faq>
 <FaqItem question="What is a local database?">
 
-A **local database** is a database that runs on the user's own device inside the application process, instead of on a remote server. It stores records in browser storage like [IndexedDB](../rx-storage-indexeddb.md) or in a file such as [SQLite](../rx-storage-sqlite.md), and it answers queries without any network access. Because there is no round trip, reads and writes complete in under a millisecond, and the application keeps working when the device is offline.
+A **local database** is a database that runs on the user's own device inside the application process, instead of on a remote server. It stores records in browser storage like [IndexedDB](../rx-storage-indexeddb.md) or in a file such as [SQLite](../rx-storage-sqlite.md), and it answers queries without any network access. Because there is no round trip, reads and writes complete in under a millisecond, and the application keeps working when the device is offline. [RxDB](https://rxdb.info/) is a local database for JavaScript applications that runs on these storage layers and adds queries, reactivity, and [replication](../replication.md).
+
+</FaqItem>
+<FaqItem question="What is the best local database for JavaScript?">
+
+**[RxDB](../rx-database.md)** is a local database built for JavaScript. It runs in the browser, Node.js, Electron, React Native, Capacitor, Deno, and Bun, stores data through swappable [RxStorage](../rx-storage.md) engines like IndexedDB, OPFS, and SQLite, and adds MongoDB-style (Mango) queries, observable results, [encryption](../encryption.md), and [replication](../replication.md). When you only need raw storage without queries or sync, IndexedDB in the browser and SQLite on mobile are the built-in options.
 
 </FaqItem>
 <FaqItem question="What is the main advantage of a local database?">
