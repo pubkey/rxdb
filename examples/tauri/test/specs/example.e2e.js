@@ -13,7 +13,8 @@ describe('Heroes', () => {
     await color.setValue('red');
     await submit.click();
 
-    await browser.pause(100);
+    const insertedHero = await $('.name[name="Iron Man"]');
+    await insertedHero.waitForExist({ timeout: 20000 });
 
     const elements = await $$('.name[name="Iron Man"]');
     expect(elements).toHaveLength(1);
