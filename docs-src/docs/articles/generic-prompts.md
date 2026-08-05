@@ -87,6 +87,19 @@ Add the improvement to the changelog.
 
 ## Security
 
+### Find and fix a security issue
+
+Agents tend to report theoretical security problems that no attacker can trigger in practice. This prompt forces the agent to prove each finding with a reproduction before it is allowed to fix anything.
+
+```txt
+Do a security review of FEATURE_NAME and make a list of possible security findings, ranked by severity. For each finding explain how an attacker could exploit it in practice. Findings that require the attacker to already run arbitrary code inside of the same process do not count. Pick the most severe finding and write a test case that reproduces the problem. In the test case you can only use the public API with correct TypeScript type usage. First run the test case without a fix and show me the output. Then apply a fix and run the test case again and show me the output.
+
+- Ensure all other tests run successful.
+- Do not add new dependencies as part of the fix.
+- Add the fix to the changelog.
+- Ensure the linting is ok.
+```
+
 ## SEO
 
 -------------
