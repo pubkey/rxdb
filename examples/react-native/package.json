@@ -15,6 +15,7 @@
   "devDependencies": {
     "@babel/core": "7.29.7",
     "@expo/cli": "57.0.10",
+    "@react-native/jest-preset": "0.86.2",
     "babel-preset-expo": "54.0.9",
     "buffer": "6.0.3",
     "cross-fetch": "4.1.0",
@@ -36,6 +37,11 @@
     "stream": "0.0.3"
   },
   "//": "NOTICE: For the Github CI we use the local RxDB build (rxdb-local.tgz). In your app should just install 'rxdb' from npm instead",
+  "//overrides": "babel-preset-expo pins the react-native codegen packages to a version that cannot parse the react-native sources. They have to match the installed react-native version so that 'expo export' can bundle.",
+  "overrides": {
+    "@react-native/codegen": "0.86.2",
+    "@react-native/babel-plugin-codegen": "0.86.2"
+  },
   "dependencies": {
     "expo-crypto": "57.0.1",
     "expo-sqlite": "57.0.1",
