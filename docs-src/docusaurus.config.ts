@@ -263,6 +263,7 @@ Topic-specific documentation files:
                     'fulltext-search.md',
                     'query-optimizer.md',
                     'webmcp.md',
+                    'dbviewer.md',
                     'third-party-plugins.md',
                     // Performance
                     'rx-storage-performance.md',
