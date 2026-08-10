@@ -96,6 +96,9 @@ export class RxDBDevtool implements DevtoolHandle {
     }
 
     public navigate(navigation: DevtoolNavigation): void {
+        if (navigation.kind === 'collection') {
+            this.store.lastCollectionName = navigation.name;
+        }
         this.store.navigation = navigation;
         this.setOverlay(null);
         this.render();

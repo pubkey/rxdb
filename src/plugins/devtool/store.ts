@@ -116,6 +116,12 @@ export function createCollectionView(): DevtoolCollectionView {
  */
 export class DevtoolStore {
     public navigation: DevtoolNavigation;
+    /**
+     * The collection the user looked at last. The tool panels are scoped
+     * to it, so opening Schema or Query lab keeps analysing the collection
+     * that was on screen instead of jumping to another one.
+     */
+    public lastCollectionName: string | null = null;
     public connection: DevtoolConnection;
     public readonly surface: DevtoolSurface;
     public readonly dump: DevtoolDumpInfo | null;
@@ -168,6 +174,9 @@ export class DevtoolStore {
         this.pageSize = options.pageSize;
         this.connection = options.connection;
         this.navigation = options.navigation;
+        if (options.navigation.kind === 'collection') {
+            this.lastCollectionName = options.navigation.name;
+        }
     }
 
     public get readOnly(): boolean {

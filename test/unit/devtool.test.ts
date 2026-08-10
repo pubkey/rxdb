@@ -14,6 +14,7 @@ import {
     formatBytes,
     getByPath,
     mountRxDBDevtool,
+    pickGridColumns,
     parseCellInput,
     parseSelector,
     setByPath,
@@ -127,6 +128,75 @@ describe('devtool.test.ts', () => {
             const lines = diffJson({ id: 'a1b2c3' }, undefined);
             assert.ok(lines.length > 0);
             assert.ok(lines.every(line => line.kind === 'removed'));
+        });
+    });
+    describe('pickGridColumns()', () => {
+        /**
+         * A filled RxJsonSchema sorts its properties alphabetically, which is
+         * what these fixtures reproduce.
+         */
+        const todoSchema: any = {
+            primaryKey: 'id',
+            properties: {
+                _attachments: { type: 'object' },
+                _deleted: { type: 'boolean' },
+                _meta: { type: 'object' },
+                _rev: { type: 'string' },
+                done: { type: 'boolean' },
+                dueDate: { type: 'string', maxLength: 20 },
+                id: { type: 'string', maxLength: 40 },
+                owner: { type: 'object' },
+                priority: { type: 'number' },
+                tags: { type: 'array' },
+                title: { type: 'string' }
+            },
+            required: ['id', 'title', 'done']
+        };
+
+        it('should give the wide column to the free text field', () => {
+            const columns = pickGridColumns(todoSchema, 'id');
+            const wide = columns.find((column: any) => column.width === '1fr');
+            assert.strictEqual(wide.path, 'title');
+        });
+        it('should not repeat the primary key or internal fields as data columns', () => {
+            const columns = pickGridColumns(todoSchema, 'id');
+            const dataColumns = columns.slice(1, columns.length - 2).map((column: any) => column.path);
+            assert.ok(!dataColumns.includes('id'));
+            assert.ok(!dataColumns.includes('_meta'));
+            assert.ok(!dataColumns.includes('_attachments'));
+        });
+        it('should prefer required fields for the narrow columns', () => {
+            const columns = pickGridColumns(todoSchema, 'id');
+            const paths = columns.map((column: any) => column.path);
+            assert.deepStrictEqual(paths, ['id', 'title', 'done', 'dueDate', '_rev', '_meta.lwt']);
+        });
+        it('should skip objects and arrays', () => {
+            const paths = pickGridColumns(todoSchema, 'id').map((column: any) => column.path);
+            assert.ok(!paths.includes('tags'));
+            assert.ok(!paths.includes('owner'));
+        });
+        it('should fall back to the longest bounded string when there is no free text', () => {
+            const schema: any = {
+                primaryKey: 'id',
+                properties: {
+                    code: { type: 'string', maxLength: 8 },
+                    id: { type: 'string', maxLength: 40 },
+                    label: { type: 'string', maxLength: 120 }
+                },
+                required: ['id']
+            };
+            const wide = pickGridColumns(schema, 'id').find((column: any) => column.width === '1fr');
+            assert.strictEqual(wide.path, 'label');
+        });
+        it('should always end with the revision and the write time', () => {
+            const schema: any = {
+                primaryKey: 'id',
+                properties: { id: { type: 'string', maxLength: 40 } },
+                required: ['id']
+            };
+            const paths = pickGridColumns(schema, 'id').map((column: any) => column.path);
+            assert.deepStrictEqual(paths.slice(-2), ['_rev', '_meta.lwt']);
+            assert.strictEqual(paths.length, 4);
         });
     });
     describe('design tokens', () => {
