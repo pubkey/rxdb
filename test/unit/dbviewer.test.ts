@@ -38,7 +38,7 @@ describe('dbviewer.test.ts', () => {
             assert.deepStrictEqual(result.selector, {});
         });
         it('should return an error with a position on invalid JSON', () => {
-            const result = parseViewerSelector('{ "done": fals }');
+            const result = parseViewerSelector('{ "done": nope }');
             assert.ok(result.error);
             assert.ok(result.error.message.includes('valid JSON'));
             assert.strictEqual(typeof result.error.position, 'number');
