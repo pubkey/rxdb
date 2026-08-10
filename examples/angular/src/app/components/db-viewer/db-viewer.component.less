@@ -1,0 +1,43 @@
+.db-viewer-nub {
+    position: fixed;
+    right: 18px;
+    bottom: 18px;
+    z-index: 1001;
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    border: 0;
+    background: linear-gradient(135deg, #ED168F, #752A8A);
+    color: #FFFFFF;
+    font-weight: 800;
+    font-size: 14px;
+    cursor: pointer;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+}
+
+.db-viewer-nub:active {
+    transform: translateY(1px);
+}
+
+.db-viewer-dock {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 62vh;
+    min-height: 320px;
+    z-index: 1000;
+    display: none;
+    background: #0D0F18;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.5);
+}
+
+.db-viewer-dock.open {
+    display: block;
+}
+
+.db-viewer-host {
+    width: 100%;
+    height: 100%;
+}
