@@ -291,7 +291,7 @@ function describeJsonError(input: string, engineMessage: string): JsonParseFailu
 
 /**
  * Finds an unquoted word outside of strings that is not a JSON literal,
- * which is what an unquoted value or a typo like `fals` looks like.
+ * which is what an unquoted value or a misspelled boolean looks like.
  */
 function findBareWord(input: string): { position: number; word: string; } | null {
     const pattern = /"(?:\\.|[^"\\])*"|([A-Za-z_$][\w$]*)/g;
