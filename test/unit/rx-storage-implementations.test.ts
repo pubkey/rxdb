@@ -1345,7 +1345,7 @@ describe('rx-storage-implementations.test.ts (implementation: ' + config.storage
                         }
                     },
                     sort: [
-                        { _id: 'asc' }
+                        { _id: 'asc' } as any
                     ],
                     skip: 0
                 };

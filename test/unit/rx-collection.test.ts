@@ -1003,7 +1003,7 @@ describe('rx-collection.test.ts', () => {
                         await AsyncTestUtil.assertThrows(
                             () => c.find().sort({
                                 foobar: 'desc'
-                            }).exec(),
+                            } as any).exec(),
                             'RxError',
                             'QU13'
                         );
@@ -1618,7 +1618,7 @@ describe('rx-collection.test.ts', () => {
                             selector: {
                                 age: {
                                     $regex: 'foobar'
-                                }
+                                } as any
                             }
                         }).exec(),
                         'RxError',

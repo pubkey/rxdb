@@ -286,6 +286,68 @@ This works in contrast to most other databases where a query without sorting wou
 :::
 
 
+## Fully Typed Queries in TypeScript
+
+When a collection is typed, like `RxCollection<DocType>`, the whole mango query is type-checked against the document type. This requires TypeScript 4.1 or newer because the dot-path strings are built with template literal types.
+
+The typing works on three levels:
+
+- **Selector keys**: The keys of the `selector` must be fields of the document type. Nested fields are addressed with dot-paths like `'address.city'`. A typo in a field name is a compile error instead of a silently empty result set.
+- **Operators**: The operators are constrained by the type of the field they run on. `$gt`, `$gte`, `$lt` and `$lte` work on numbers and strings, `$regex` only on strings, `$elemMatch` and `$size` only on arrays, `$in` and `$nin` take arrays of the field's type, and `$eq`, `$ne` and `$exists` work everywhere.
+- **Sort fields**: The `sort` parameter accepts only field paths that exist on the document type, with the same dot-path mechanism as the selector keys.
+
+```ts
+type HeroDocType = {
+    passportId: string;
+    age: number;
+    address: {
+        city: string;
+    };
+};
+const collection: RxCollection<HeroDocType> = myDatabase.heroes;
+
+collection.find({
+    selector: {
+        age: { $gt: 18 },
+        'address.city': { $regex: '^B' }
+    },
+    sort: [{ age: 'asc' }]
+}); // <- this compiles
+
+collection.find({
+    selector: {
+        agee: { $gt: 18 } // <- compile error, typo in the field name
+    }
+});
+collection.find({
+    selector: {
+        age: { $regex: 'foo' } // <- compile error, $regex is not allowed on a number field
+    }
+});
+collection.find({
+    sort: [{ 'address.cityy': 'asc' }] // <- compile error, typo in the sort field
+});
+```
+
+Dot-paths are generated for up to 6 levels of nesting. Fields that are nested deeper cannot be addressed with a typed path and need the escape hatch below.
+
+### Escape hatch for dynamic queries
+
+When you build queries dynamically, for example with computed field names, the compiler cannot check them. Cast the query to `MangoQuery<any>` to opt out of the strict typing for that one query:
+
+```ts
+import type { MangoQuery } from 'rxdb';
+
+const dynamicQuery: MangoQuery<any> = {
+    selector: {
+        [someFieldName]: { $gt: 18 }
+    }
+};
+collection.find(dynamicQuery);
+```
+
+Untyped collections like `RxCollection<any>` are not affected by the strict typing and accept the same queries as before.
+
 ## Setting a specific index
 
 By default, the query will be sent to the RxStorage, where a query planner will determine which one of the available indexes must be used.

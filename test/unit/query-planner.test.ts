@@ -640,7 +640,7 @@ describe('query-planner.test.js', () => {
                             $elemMatch: {
                                 foo: 'bar'
                             }
-                        }
+                        } as any
                     }
                 }
             );

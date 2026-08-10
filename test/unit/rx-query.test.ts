@@ -2093,7 +2093,7 @@ describe('rx-query.test.ts', () => {
                                 $eq: 'foobar'
                             }
                         }
-                    }
+                    } as any
                 }
             }).exec();
             assert.strictEqual(result.length, 0);
@@ -2121,7 +2121,7 @@ describe('rx-query.test.ts', () => {
             await c.findOne(docData.passportId).remove();
             const doc2 = await c.findOne(docData.passportId).exec();
             assert.strictEqual(doc2, null);
-            const doc3 = await c.findOne({ selector: { passportId: { $eq: [docData.passportId] } } }).exec();
+            const doc3 = await c.findOne({ selector: { passportId: { $eq: [docData.passportId] } as any } }).exec();
             assert.strictEqual(doc3, null);
             const docs = await c.find({ selector: { passportId: docData.passportId } }).exec();
             assert.strictEqual(docs.length, 0);
