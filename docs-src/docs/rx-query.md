@@ -288,7 +288,7 @@ This works in contrast to most other databases where a query without sorting wou
 
 ## Fully Typed Queries in TypeScript
 
-When a collection is typed, like `RxCollection<DocType>`, the whole mango query is type-checked against the document type. This requires TypeScript 4.1 or newer because the dot-path strings are built with template literal types.
+When a collection is typed, like `RxCollection<DocType>`, the whole mango query is type-checked against the document type.
 
 The typing works on three levels:
 
