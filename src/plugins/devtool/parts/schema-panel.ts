@@ -55,11 +55,11 @@ export class SchemaPanel {
     public destroy(): void { }
 
     private get collectionName(): string {
-        const navigation = this.context.store.navigation;
-        if (navigation.kind === 'collection' || navigation.kind === 'replication') {
-            return navigation.name;
+        const store = this.context.store;
+        if (store.navigation.kind === 'collection' || store.navigation.kind === 'replication') {
+            return store.navigation.name;
         }
-        return this.context.store.collectionNames[0] ?? '';
+        return store.lastCollectionName ?? store.collectionNames[0] ?? '';
     }
 
     public render(): HTMLElement {

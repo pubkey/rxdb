@@ -5,6 +5,7 @@ import type { DevtoolHandle, DevtoolOptions } from '../../types/index.d.ts';
 
 export * from './theme.ts';
 export * from './format.ts';
+export * from './grid-columns.ts';
 export * from './store.ts';
 export { RxDBDevtool } from './devtool.ts';
 

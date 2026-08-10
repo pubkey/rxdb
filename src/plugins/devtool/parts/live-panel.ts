@@ -714,9 +714,17 @@ function instanceKind(): string {
     return 'window';
 }
 
+/**
+ * Only the tail of the path is drawn, so that a long url cannot
+ * push the app node out of its column.
+ */
 function currentPath(): string {
     if (typeof location === 'undefined') {
         return '-';
     }
-    return location.pathname;
+    const path = location.pathname;
+    if (path.length <= 24) {
+        return path;
+    }
+    return '…' + path.slice(path.length - 23);
 }
