@@ -23,6 +23,8 @@ import {
     valueType
 } from '../format.ts';
 import { DEVTOOL_COLORS } from '../theme.ts';
+import { pickGridColumns } from '../grid-columns.ts';
+import type { GridColumn } from '../grid-columns.ts';
 import type { PanelContext } from './context.ts';
 import { downloadJson } from './context.ts';
 
@@ -139,35 +141,11 @@ export class CollectionPanel {
         this.context.render();
     }
 
-    /**
-     * The grid shows the primary key, up to three declared scalar fields,
-     * the revision and the last write time.
-     */
-    private get columns(): { path: string; label: string; width: string; }[] {
-        const collection = this.collection;
-        const primaryPath = collection.schema.primaryPath as string;
-        const properties = collection.schema.jsonSchema.properties ?? {};
-        const scalarFields = Object.keys(properties)
-            .filter(name => name !== primaryPath && !INTERNAL_FIELDS.includes(name))
-            .filter(name => {
-                const type = (properties as any)[name].type;
-                return type === 'string' || type === 'number' || type === 'boolean' || type === 'integer';
-            });
-        const columns = [
-            { path: primaryPath, label: primaryPath, width: '90px' }
-        ];
-        if (scalarFields.length > 0) {
-            columns.push({ path: scalarFields[0], label: scalarFields[0], width: '1fr' });
-        }
-        scalarFields.slice(1, 3).forEach(name => {
-            columns.push({ path: name, label: name, width: '90px' });
-        });
-        if (scalarFields.length === 0) {
-            columns.push({ path: '_deleted', label: '_deleted', width: '1fr' });
-        }
-        columns.push({ path: '_rev', label: '_rev', width: '90px' });
-        columns.push({ path: '_meta.lwt', label: 'updated', width: '100px' });
-        return columns;
+    private get columns(): GridColumn[] {
+        return pickGridColumns(
+            this.collection.schema.jsonSchema,
+            this.collection.schema.primaryPath as string
+        );
     }
 
     private get gridTemplate(): string {
