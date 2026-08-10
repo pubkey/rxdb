@@ -490,6 +490,11 @@ const sidebars = {
         },
         {
           type: 'doc',
+          id: 'devtool',
+          label: 'Devtool'
+        },
+        {
+          type: 'doc',
           id: 'webmcp',
           label: 'WebMCP'
         },
