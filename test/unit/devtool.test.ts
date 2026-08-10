@@ -156,6 +156,7 @@ describe('devtool.test.ts', () => {
         it('should give the wide column to the free text field', () => {
             const columns = pickGridColumns(todoSchema, 'id');
             const wide = columns.find((column: any) => column.width === '1fr');
+            assert.ok(wide);
             assert.strictEqual(wide.path, 'title');
         });
         it('should not repeat the primary key or internal fields as data columns', () => {
@@ -186,6 +187,7 @@ describe('devtool.test.ts', () => {
                 required: ['id']
             };
             const wide = pickGridColumns(schema, 'id').find((column: any) => column.width === '1fr');
+            assert.ok(wide);
             assert.strictEqual(wide.path, 'label');
         });
         it('should always end with the revision and the write time', () => {
