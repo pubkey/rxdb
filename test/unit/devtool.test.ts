@@ -68,10 +68,10 @@ describe('devtool.test.ts', () => {
             assert.deepStrictEqual((parsed as any).value, {});
         });
         it('should point the caret at the broken token', () => {
-            const input = '{ "done": fals }';
+            const input = '{ "done": undefined }';
             const parsed = parseSelector(input);
             assert.strictEqual(parsed.ok, false);
-            assert.strictEqual((parsed as any).error.position, input.indexOf('fals'));
+            assert.strictEqual((parsed as any).error.position, input.indexOf('undefined'));
             assert.ok((parsed as any).error.message.includes('valid JSON'));
         });
         it('should not mistake a quoted value for a broken token', () => {
