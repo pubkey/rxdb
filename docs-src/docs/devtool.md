@@ -118,7 +118,7 @@ It subscribes to the change stream of the database and polls the query cache onc
 <details>
 <summary>Can I inspect a database that runs on another device?</summary>
 
-Yes. Pass a `connection` describing the remote peer and the devtool shows the connection stages while it pairs, a banner with the transport and the write mode once it is connected, and a diagnosis if it fails. When peer to peer traffic is blocked, export the data with [exportJSON()](./rx-database.md#exportjson) on the device and open the file with the `dump` option instead.
+Yes. Pass a `connection` describing the remote peer and the devtool shows the connection stages while it pairs, a banner with the transport and the write mode once it is connected, and a diagnosis if it fails. When peer to peer traffic is blocked, export the data with [exportJSON()](./json-import-export.md) on the device and open the file with the `dump` option instead.
 
 </details>
 

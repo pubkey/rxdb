@@ -3,6 +3,12 @@ import { newRxError } from '../../rx-error.ts';
 import { RxDBDevtool } from './devtool.ts';
 import type { DevtoolHandle, DevtoolOptions } from '../../types/index.d.ts';
 
+/**
+ * Re-exported so that consumers can type their own code against the
+ * devtool without also importing from the rxdb root entry point.
+ */
+export type * from '../../types/plugins/devtool.d.ts';
+
 export * from './theme.ts';
 export * from './format.ts';
 export * from './grid-columns.ts';
