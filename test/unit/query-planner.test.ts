@@ -426,7 +426,7 @@ describe('query-planner.test.js', () => {
             const query = normalizeMangoQuery<HumanDocumentType>(
                 schema,
                 {
-                    index: customSetIndex
+                    index: customSetIndex as any
                 }
             );
             const queryPlan = getQueryPlan(

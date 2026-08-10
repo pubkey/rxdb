@@ -287,4 +287,4 @@ await myDatabase.heroes.find({
 */
 ```
 
-When you build queries dynamically, cast them to `MangoQuery<any>` as an escape hatch. [Read more about typed queries here](../rx-query.md#fully-typed-queries-in-typescript).
+When you build queries dynamically, cast them at the call, like `myDatabase.heroes.find(dynamicQuery as MangoQuery<HeroDocType>)`. [Read more about typed queries here](../rx-query.md#fully-typed-queries-in-typescript).

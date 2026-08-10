@@ -48,7 +48,7 @@ describe('rx-query.test.ts', () => {
             await AsyncTestUtil.assertThrows(
                 () => col.find({
                     selector: {},
-                    index: ['f', 'o', 'b', 'a', 'r']
+                    index: ['f', 'o', 'b', 'a', 'r'] as any
                 }).getPreparedQuery(),
                 'RxError',
                 'not in schem'
@@ -111,7 +111,7 @@ describe('rx-query.test.ts', () => {
             const col = await humansCollection.createAgeIndex();
             const q = col.find().sort({
                 passportId: 'desc', age: 'desc'
-            });
+            } as any);
             const str = q.toString();
             const mustString = '{"op":"find","other":{},"query":{"selector":{},"skip":0,"sort":[{"passportId":"desc"},{"age":"desc"}]}}';
             assert.strictEqual(str, mustString);

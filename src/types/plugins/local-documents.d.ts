@@ -5,7 +5,13 @@ import type { RxCollection } from '../rx-collection.d.ts';
 import type { RxDatabase } from '../rx-database.d.ts';
 import type { RxDocumentBase } from '../rx-document.d.ts';
 import type { RxStorageInstance } from '../rx-storage.interface.d.ts';
-import type { Override } from '../util.d.ts';
+import type { DeepReadonly, Override } from '../util.d.ts';
+import type {
+    MangoQueryPathsOrString,
+    MangoQueryPathValue,
+    PropertyType
+} from '../rx-query.d.ts';
+import type { Reactified } from './reactivity.d.ts';
 
 export type LocalDocumentParent = RxDatabase | RxCollection;
 export type LocalDocumentState = {
@@ -43,6 +49,16 @@ export declare type RxLocalDocument<Parent, Data = any, Reactivity = unknown> = 
              */
         incrementalModify(mutationFunction: LocalDocumentModifyFunction<Data>): Promise<RxLocalDocument<Parent, Data, Reactivity>>;
         incrementalPatch(patch: Partial<Data>): Promise<RxLocalDocument<Parent, Data, Reactivity>>;
+
+        getLatest(): RxLocalDocument<Parent, Data, Reactivity>;
+
+        /**
+         * Same goes for the path based accessors, their
+         * paths are relative to the 'data' property.
+         */
+        get<Path extends MangoQueryPathsOrString<Data>>(objPath: Path): DeepReadonly<MangoQueryPathValue<PropertyType<Data, Path>>>;
+        get$<Path extends MangoQueryPathsOrString<Data>>(path: Path): Observable<MangoQueryPathValue<PropertyType<Data, Path>>>;
+        get$$<Path extends MangoQueryPathsOrString<Data>>(path: Path): Reactified<Reactivity, MangoQueryPathValue<PropertyType<Data, Path>>>;
 
         $: Observable<RxLocalDocument<Parent, Data, Reactivity>>;
     }
