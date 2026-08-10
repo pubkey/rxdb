@@ -321,7 +321,7 @@ collection.find({
 });
 collection.find({
     selector: {
-        age: { $regex: 'foo' } // <- compile error, $regex is not allowed on a number field
+        age: { $regex: 'foo' } // <- compile error, $regex on a number field
     }
 });
 collection.find({
