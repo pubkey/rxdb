@@ -18,6 +18,8 @@ using RxDB in development mode.
 - Adds validation check for validity of schemas, queries, [ORM](./orm.md) methods and document fields.
   - Notice that the `dev-mode` plugin does not perform schema checks against the data see [schema validation](./schema-validation.md) for that.
 
+To also look at the stored data itself during development, mount the [database viewer](./dbviewer.md) which renders a full devtool over the running database.
+
 :::warning
 The dev-mode plugin will increase your build size and decrease the performance. It must **always** be used in development. You should **never** use it in production.
 :::

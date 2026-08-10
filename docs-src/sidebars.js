@@ -515,6 +515,11 @@ const sidebars = {
         },
         {
           type: 'doc',
+          id: 'dbviewer',
+          label: 'Database Viewer'
+        },
+        {
+          type: 'doc',
           id: 'third-party-plugins',
           label: 'Third Party Plugins'
         }
