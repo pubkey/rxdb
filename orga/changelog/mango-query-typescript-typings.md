@@ -5,3 +5,4 @@
 - Typed the `index` option of queries, it only accepts field paths of the document type.
 - Typed `RxDocument.get()`, `get$()` and `get$$()`: the path is checked against the document type and the return value has the type of that field. On local documents the paths are relative to the `data` property, matching the runtime behavior.
 - A sort part now must contain exactly one field. Multiple fields in one sort part were ambiguous because the field order of a JSON object is not deterministic.
+- FIX Flaky test: the preact-signals cleanup test asserted the signal value directly after the insert. The signal updates asynchronously, so the test now waits for the new value.
