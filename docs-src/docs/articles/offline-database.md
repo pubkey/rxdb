@@ -132,9 +132,9 @@ const replicationState = await replicateRxCollection({
         async handler(checkpoint, batchSize) {
             const updatedAt = checkpoint ? checkpoint.updatedAt : 0;
             const id = checkpoint ? checkpoint.id : '';
-            const response = await fetch(
-                `https://example.com/api/sync/pull?updatedAt=${updatedAt}&id=${id}&limit=${batchSize}`
-            );
+            const url = 'https://example.com/api/sync/pull' +
+                `?updatedAt=${updatedAt}&id=${id}&limit=${batchSize}`;
+            const response = await fetch(url);
             const data = await response.json();
             return {
                 documents: data.documents,
