@@ -588,7 +588,7 @@
     "mingo": "7.2.2",
     "oblivious-set": "2.0.0",
     "simple-peer": "9.11.1",
-    "ws": "8.21.1",
+    "ws": "8.21.2",
     "z-schema": "12.4.1"
   },
   "devDependencies": {
