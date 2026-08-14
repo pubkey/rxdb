@@ -581,7 +581,7 @@
     "event-reduce-js": "6.0.0",
     "get-graphql-from-jsonschema": "8.1.0",
     "graphql": "17.0.2",
-    "graphql-ws": "6.2.0",
+    "graphql-ws": "6.2.1",
     "is-my-json-valid": "2.20.6",
     "js-base64": "3.9.2",
     "jsonschema-key-compression": "1.7.0",
