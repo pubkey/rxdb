@@ -637,7 +637,7 @@
     "cross-env": "10.1.0",
     "delete": "1.1.0",
     "dependency-check": "4.1.0",
-    "eslint": "10.8.0",
+    "eslint": "10.8.1",
     "eslint-plugin-import": "2.32.0",
     "eslint-plugin-jsdoc": "63.3.3",
     "exists-file": "3.0.2",
@@ -698,7 +698,7 @@
     "webpack-dev-server": "6.0.0"
   },
   "overrides": {
-    "eslint": "10.8.0",
+    "eslint": "10.8.1",
     "webpack-dev-server": "6.0.0",
     "dexie": "4.4.2",
     "graphql-http": {
