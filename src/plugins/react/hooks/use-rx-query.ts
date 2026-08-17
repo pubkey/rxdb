@@ -134,7 +134,10 @@ export function useRxQueryBase<
             return;
         }
 
-        return runQuery();
+        const cleanup = runQuery();
+        if (typeof cleanup === 'function') {
+            return cleanup;
+        }
     }, [runQuery]);
 
     return { results, loading, error };
