@@ -16,6 +16,7 @@ import {
 } from './dbviewer-dom.ts';
 import {
     analyzeViewerDocuments,
+    colorViewerJson,
     formatByteSize,
     formatInteger,
     parseViewerSelector
@@ -67,13 +68,48 @@ export function renderSchemaPanel(ctx: ViewerContext) {
         return;
     }
     const info = ctx.source.listCollections().find(c => c.name === collectionName);
+    const viewMode = ctx.schemaViewMode.get(collectionName) || 'analysis';
+    const setViewMode = (mode: 'analysis' | 'schema') => {
+        ctx.schemaViewMode.set(collectionName, mode);
+        ctx.renderContent();
+    };
+    const segments = el('div', 'rxdbv-segments', [
+        el('div', 'rxdbv-segment' + (viewMode === 'analysis' ? ' rxdbv-active' : ''), 'Analysis', {
+            onClick: () => setViewMode('analysis')
+        }),
+        el('div', 'rxdbv-segment' + (viewMode === 'schema' ? ' rxdbv-active' : ''), 'JSON schema', {
+            onClick: () => setViewMode('schema')
+        })
+    ]);
     const legend = el('span', 'rxdbv-dim', undefined, { style: 'font-size:10px' });
     legend.innerHTML = (['string', 'number', 'boolean', 'array', 'object', 'missing'] as ViewerFieldType[])
         .map(type => type + ' <span style="display:inline-block;width:8px;height:8px;background:' + TYPE_COLORS[type] + '"></span>')
         .join(' · ');
 
+    if (viewMode === 'schema') {
+        const versionText = info && typeof info.schemaVersion === 'number' ? ' · declared v' + info.schemaVersion : '';
+        panel.appendChild(panelToolbar('Schema', [
+            segments,
+            el('span', 'rxdbv-mono rxdbv-muted', collectionName + versionText, { style: 'font-size:11px' })
+        ]));
+        if (info && info.jsonSchema) {
+            const jsonView = el('div', 'rxdbv-json-view');
+            jsonView.innerHTML = colorViewerJson(info.jsonSchema);
+            panel.appendChild(jsonView);
+        } else {
+            panel.appendChild(el('div', 'rxdbv-empty-state', [
+                el('div', 'rxdbv-empty-inner', [
+                    el('div', 'rxdbv-empty-title', 'No declared schema'),
+                    el('div', 'rxdbv-empty-body', 'A dump does not contain the schema declaration. The Analysis mode still works on the sampled documents.')
+                ])
+            ]));
+        }
+        return;
+    }
+
     const headerText = el('span', 'rxdbv-mono rxdbv-muted', collectionName + ' · sampling…', { style: 'font-size:11px' });
     panel.appendChild(panelToolbar('Schema', [
+        segments,
         headerText,
         el('div', 'rxdbv-flex1'),
         legend

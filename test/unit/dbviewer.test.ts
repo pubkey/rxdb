@@ -11,6 +11,7 @@ import {
     matchesViewerSelector,
     mountRxDBViewer,
     parseViewerSelector,
+    relaxViewerSelectorInput,
     shortRev,
     viewerTypeOf
 } from '../../plugins/dbviewer/index.mjs';
@@ -46,6 +47,32 @@ describe('dbviewer.test.ts', () => {
         it('should reject non-object selectors', () => {
             const result = parseViewerSelector('[1,2]');
             assert.ok(result.error);
+        });
+        it('should accept relaxed javascript object syntax', () => {
+            assert.deepStrictEqual(parseViewerSelector('{ name: "foo" }').selector, { name: 'foo' });
+            assert.deepStrictEqual(parseViewerSelector('{ name: \'foo\', done: true, }').selector, { name: 'foo', done: true });
+            assert.deepStrictEqual(parseViewerSelector('{ age: { $gt: 10 } }').selector, { age: { $gt: 10 } });
+            assert.deepStrictEqual(parseViewerSelector('{ owner.id: "u_1" }').selector, { 'owner.id': 'u_1' });
+            assert.deepStrictEqual(parseViewerSelector('{ tags: [\'a\', \'b\',] }').selector, { tags: ['a', 'b'] });
+        });
+        it('relaxed parsing must not touch string contents', () => {
+            assert.deepStrictEqual(
+                parseViewerSelector('{ url: "http://x, y:z" }').selector,
+                { url: 'http://x, y:z' }
+            );
+        });
+        it('should still error on broken relaxed input', () => {
+            assert.ok(parseViewerSelector('{ name: }').error);
+        });
+    });
+    describe('.relaxViewerSelectorInput()', () => {
+        it('quotes keys, converts quotes and drops trailing commas', () => {
+            assert.strictEqual(relaxViewerSelectorInput('{name: \'a\',}'), '{"name": "a"}');
+            assert.strictEqual(relaxViewerSelectorInput('{a: true, b: [1, 2,]}'), '{"a": true, "b": [1, 2]}');
+        });
+        it('keeps already valid JSON unchanged', () => {
+            const input = '{ "done": false, "tags": ["work"] }';
+            assert.strictEqual(relaxViewerSelectorInput(input), input);
         });
     });
     describe('.matchesViewerSelector()', () => {
