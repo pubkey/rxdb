@@ -6,6 +6,7 @@ import {
     type ViewerDataSource
 } from './dbviewer-data.ts';
 import {
+    DBVIEWER_LOGO_SVG,
     clearChildren,
     el,
     ensureViewerStyles
@@ -318,7 +319,7 @@ function renderTopbar(ctx: ViewerContext) {
     const identity = ctx.source.databaseName + ' / ' + ctx.source.storageName + ' / v' + RXDB_VERSION;
     const topbar = el('div', 'rxdbv-topbar', [
         el('div', '', [
-            el('div', 'rxdbv-logo'),
+            el('div', 'rxdbv-logo', undefined, { html: DBVIEWER_LOGO_SVG }),
         ], { style: 'display:flex;align-items:center;gap:8px' }),
         el('span', 'rxdbv-wordmark', 'RxDB'),
         el('span', 'rxdbv-topbar-divider', '|'),
@@ -691,7 +692,7 @@ function renderPhoneLayout(ctx: ViewerContext) {
 
     if (phone.screen === 'collections' || !phone.collectionName) {
         const header = el('div', 'rxdbv-phone-header', [
-            el('div', 'rxdbv-logo'),
+            el('div', 'rxdbv-logo', undefined, { html: DBVIEWER_LOGO_SVG }),
             el('span', '', 'RxDB', { style: 'font-weight:800' }),
             el('span', 'rxdbv-topbar-identity', ctx.source.databaseName + ' / ' + ctx.source.storageName),
             el('div', 'rxdbv-flex1'),

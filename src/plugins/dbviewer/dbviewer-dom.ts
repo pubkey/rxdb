@@ -6,6 +6,13 @@ import {
 export type ElChild = HTMLElement | string | null | undefined | false;
 
 /**
+ * The official RxDB logo, inlined so the viewer stays
+ * self-contained without asset files or network requests.
+ * Source: docs-src/static/files/logo/logo.svg
+ */
+export const DBVIEWER_LOGO_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 103.33 140" aria-label="RxDB logo"><defs><style>.rxdbv-lg1{fill:#752a8a}.rxdbv-lg4{fill:#ed168f}</style></defs><path d="M98.33 10c-2.76 0-5-2.24-5-5s-2.24-5-5-5H75c-2.76 0-5 2.24-5 5v16.67c0 2.76-2.24 5-5 5H5c-2.76 0-5 2.24-5 5V125c0 2.76 2.24 5 5 5s5 2.24 5 5 2.24 5 5 5h13.33c2.76 0 5-2.24 5-5v-16.67c0-2.76 2.24-5 5-5h60c2.76 0 5-2.24 5-5V15c0-2.76-2.24-5-5-5" style="fill:#fff"/><path d="M6.67 60h90v20h-90z" style="fill:#b2218b" transform="rotate(180 51.665 70)"/><path d="M96.66 53.34h-90v-20h90z" class="rxdbv-lg4"/><path d="M96.66 106.66h-90v-20h90zM26.67 113.33v20h-10v-10h-10v-10z" class="rxdbv-lg1"/><path d="M86.67 6.67v10h10v10h-20v-20z" class="rxdbv-lg4"/></svg>';
+
+/**
  * Small DOM builder so the viewer needs no framework
  * and ships as plain TypeScript.
  */
