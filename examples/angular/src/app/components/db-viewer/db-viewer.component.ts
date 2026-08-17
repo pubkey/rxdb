@@ -76,7 +76,16 @@ export class DbViewerComponent implements OnInit, AfterViewInit, OnDestroy {
                 this.zone.runOutsideAngular(() => {
                     this.viewerHandle = mountRxDBViewer({
                         database: this.dbService.db as any,
-                        parent: host
+                        parent: host,
+                        showCloseButton: true
+                    });
+                    /**
+                     * The close icon lives inside the viewer chrome,
+                     * the host only decides what closing means:
+                     * here it hides the dock.
+                     */
+                    this.viewerHandle.close$.subscribe(() => {
+                        this.zone.run(() => this.open.set(false));
                     });
                 });
             });

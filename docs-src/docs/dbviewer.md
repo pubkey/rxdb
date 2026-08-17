@@ -79,7 +79,18 @@ const viewer = mountRxDBViewer({
      * (optional) Rows per page in grids and results.
      * [default=100]
      */
-    pageSize: 100
+    pageSize: 100,
+    /**
+     * (optional) Renders a close icon in the top bar.
+     * Clicking it emits on the close$ observable of the handle,
+     * the host decides what closing means.
+     * [default=false]
+     */
+    showCloseButton: true
+});
+
+viewer.close$.subscribe(() => {
+    // hide the panel that contains the viewer
 });
 ```
 

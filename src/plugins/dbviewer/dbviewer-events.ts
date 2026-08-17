@@ -37,6 +37,11 @@ export type ViewerEventHub = {
     changed$: Subject<void>;
     writeTimesByCollection: Map<string, number[]>;
     lastWriteByCollection: Map<string, number>;
+    /**
+     * Timestamps of writes made by the app itself,
+     * without the writes that the replication pulled in.
+     */
+    localWriteTimes: number[];
     pullTimes: number[];
     pushTimes: number[];
     readTimes: number[];
@@ -69,6 +74,7 @@ export function createViewerEventHub(database: RxDatabase): ViewerEventHub {
         changed$,
         writeTimesByCollection: new Map(),
         lastWriteByCollection: new Map(),
+        localWriteTimes: [],
         pullTimes: [],
         pushTimes: [],
         readTimes: [],
@@ -91,6 +97,7 @@ export function createViewerEventHub(database: RxDatabase): ViewerEventHub {
             hub.pullTimes.length = 0;
             hub.pushTimes.length = 0;
             hub.readTimes.length = 0;
+            hub.localWriteTimes.length = 0;
             hub.writeTimesByCollection.forEach(times => times.length = 0);
             changed$.next();
         },
@@ -108,26 +115,41 @@ export function createViewerEventHub(database: RxDatabase): ViewerEventHub {
 
     const subscriptions: (() => void)[] = [];
 
-    const changeSub = database.$.subscribe((event: any) => {
-        const entry = changeEntryFromEvent(event);
-        if (hub.firstEventTime === null) {
-            hub.firstEventTime = entry.time;
-        }
-        hub.changes.unshift(entry);
-        if (hub.changes.length > VIEWER_FEED_LIMIT) {
-            hub.changes.length = VIEWER_FEED_LIMIT;
-        }
-        hub.counters.writes = hub.counters.writes + 1;
-        hub.sessionWrites = hub.sessionWrites + 1;
-        const collectionName = entry.collectionName;
-        let times = hub.writeTimesByCollection.get(collectionName);
-        if (!times) {
-            times = [];
-            hub.writeTimesByCollection.set(collectionName, times);
-        }
-        times.push(entry.time);
-        trimWindow(times, entry.time);
-        hub.lastWriteByCollection.set(collectionName, entry.time);
+    /**
+     * eventBulks$ instead of $ because the bulk context states
+     * whether a write was produced by the replication pulling
+     * from a remote ('replication-downstream-...') or by the
+     * app itself.
+     */
+    const changeSub = (database as any).eventBulks$.subscribe((bulk: any) => {
+        const fromReplication = typeof bulk.context === 'string' &&
+            bulk.context.startsWith('replication-downstream');
+        (bulk.events || []).forEach((event: any) => {
+            const entry = changeEntryFromEvent(event);
+            entry.fromReplication = fromReplication;
+            if (hub.firstEventTime === null) {
+                hub.firstEventTime = entry.time;
+            }
+            hub.changes.unshift(entry);
+            if (hub.changes.length > VIEWER_FEED_LIMIT) {
+                hub.changes.length = VIEWER_FEED_LIMIT;
+            }
+            if (!fromReplication) {
+                hub.counters.writes = hub.counters.writes + 1;
+                hub.localWriteTimes.push(entry.time);
+                trimWindow(hub.localWriteTimes, entry.time);
+            }
+            hub.sessionWrites = hub.sessionWrites + 1;
+            const collectionName = entry.collectionName;
+            let times = hub.writeTimesByCollection.get(collectionName);
+            if (!times) {
+                times = [];
+                hub.writeTimesByCollection.set(collectionName, times);
+            }
+            times.push(entry.time);
+            trimWindow(times, entry.time);
+            hub.lastWriteByCollection.set(collectionName, entry.time);
+        });
         changed$.next();
     });
     subscriptions.push(() => changeSub.unsubscribe());

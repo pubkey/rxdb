@@ -1,5 +1,13 @@
 import assert from 'assert';
 import {
+    createRxDatabase,
+    randomToken
+} from '../../plugins/core/index.mjs';
+import { replicateRxCollection } from '../../plugins/replication/index.mjs';
+import { waitUntil } from 'async-test-util';
+import config from './config.ts';
+import {
+    createViewerEventHub,
     analyzeViewerDocuments,
     buildViewerWillRun,
     colorViewerJson,
@@ -234,6 +242,68 @@ describe('dbviewer.test.ts', () => {
             const source = createDumpDataSource(dump);
             await assert.rejects(() => source.upsert('todos', { id: 'x' }));
             await assert.rejects(() => source.removeByIds('todos', ['a1']));
+        });
+    });
+    describe('.createViewerEventHub()', () => {
+        it('marks pulled writes as fromReplication, local writes not', async () => {
+            const db = await createRxDatabase({
+                name: randomToken(10),
+                storage: config.storage.getStorage(),
+                multiInstance: false
+            });
+            await db.addCollections({
+                docs: {
+                    schema: {
+                        version: 0,
+                        primaryKey: 'id',
+                        type: 'object',
+                        properties: {
+                            id: { type: 'string', maxLength: 100 },
+                            name: { type: 'string' }
+                        },
+                        required: ['id', 'name']
+                    }
+                }
+            });
+            const hub = createViewerEventHub(db as any);
+
+            await db.docs.insert({ id: 'local1', name: 'local' });
+            await waitUntil(() => hub.changes.some((c: any) => c.documentId === 'local1'));
+            const localEntry = hub.changes.find((c: any) => c.documentId === 'local1');
+            assert.ok(localEntry);
+            assert.strictEqual(!!localEntry.fromReplication, false);
+
+            let pullDone = false;
+            const replicationState = replicateRxCollection({
+                collection: db.docs,
+                replicationIdentifier: 'dbviewer-test-replication',
+                live: false,
+                pull: {
+                    handler: () => {
+                        if (pullDone) {
+                            return Promise.resolve({ documents: [], checkpoint: { id: 'remote1' } });
+                        }
+                        pullDone = true;
+                        return Promise.resolve({
+                            documents: [{ id: 'remote1', name: 'remote', _deleted: false }],
+                            checkpoint: { id: 'remote1' }
+                        });
+                    }
+                },
+                push: {
+                    handler: () => Promise.resolve([])
+                }
+            });
+            await replicationState.awaitInitialReplication();
+            await waitUntil(() => hub.changes.some((c: any) => c.documentId === 'remote1'));
+            const pulledEntry = hub.changes.find((c: any) => c.documentId === 'remote1');
+            assert.ok(pulledEntry);
+            assert.strictEqual(pulledEntry.fromReplication, true);
+            assert.ok(hub.counters.writes >= 1);
+
+            await replicationState.cancel();
+            hub.destroy();
+            await db.close();
         });
     });
     describe('.mountRxDBViewer()', () => {
