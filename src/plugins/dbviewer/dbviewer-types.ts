@@ -1,4 +1,7 @@
 import type {
+    Observable
+} from 'rxjs';
+import type {
     RxDatabase
 } from '../../index.d.ts';
 
@@ -42,10 +45,24 @@ export type RxDBViewerOptions = {
      * [default=100]
      */
     pageSize?: number;
+    /**
+     * Renders a close icon in the top bar. Clicking it emits
+     * on the close$ observable of the handle, the viewer itself
+     * stays mounted until remove() is called. Use this when the
+     * viewer is embedded in a host panel that decides what
+     * closing means.
+     * [default=false]
+     */
+    showCloseButton?: boolean;
 };
 
 export type RxDBViewerHandle = {
     element: HTMLElement;
+    /**
+     * Emits when the close icon of the top bar is clicked.
+     * Completes when the viewer is removed.
+     */
+    close$: Observable<void>;
     remove: () => void;
 };
 
@@ -105,6 +122,11 @@ export type ViewerChangeEntry = {
     revTo?: string;
     documentData?: any;
     previousDocumentData?: any;
+    /**
+     * True when the write was produced by the replication
+     * pulling from a remote, not by the app itself.
+     */
+    fromReplication?: boolean;
 };
 
 export type ViewerReplicationFeedEntry = {

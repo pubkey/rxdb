@@ -270,7 +270,14 @@ export function renderLivePanel(ctx: ViewerContext) {
             }
             const refs = lanes.get(entry.collectionName);
             if (refs) {
-                spawnParticle(refs, refs.writesTrack, OP_GLYPHS[entry.operation] || '~', true, 'writes');
+                /**
+                 * A pulled document is one particle: it travels the
+                 * remote lane as ↓ and lands in the collection node.
+                 * Only writes of the app itself move app → collection.
+                 */
+                if (!entry.fromReplication) {
+                    spawnParticle(refs, refs.writesTrack, OP_GLYPHS[entry.operation] || '~', true, 'writes');
+                }
                 pulseNode(refs);
             }
         }
@@ -312,8 +319,7 @@ export function renderLivePanel(ctx: ViewerContext) {
                 leaderBadge.style.display = 'none';
             }
         }
-        const totalWriteRate = Array.from(events.writeTimesByCollection.values())
-            .reduce((sum, times) => sum + events.ratePerSecond(times), 0);
+        const totalWriteRate = events.ratePerSecond(events.localWriteTimes);
         const readRate = events.ratePerSecond(events.readTimes);
         appRates.innerHTML = '';
         appRates.appendChild(el('span', '', [el('span', '', 'w ', { style: 'color:var(--rxdbv-pink)' }), totalWriteRate.toFixed(1) + '/s']));

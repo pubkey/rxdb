@@ -1108,15 +1108,18 @@ function openDeleteModal(
 
     const backdrop = el('div', 'rxdbv-modal-backdrop');
     const close = () => backdrop.remove();
+    const modalErrorHost = el('div');
     deleteButton.addEventListener('click', () => {
+        clearChildren(modalErrorHost);
         ctx.source.removeByIds(collectionName, Array.from(uiState.selection)).then(() => {
             uiState.selection.clear();
             ctx.viewerWriteTimes.push(Date.now());
             close();
             ctx.renderContent();
         }).catch(err => {
-            close();
-            alert('Delete failed: ' + String(err && err.message ? err.message : err));
+            modalErrorHost.appendChild(el('div', 'rxdbv-query-error-message', '✕ Delete failed: ' + String(err && err.message ? err.message : err).slice(0, 200), {
+                style: 'margin-top:10px'
+            }));
         });
     });
 
