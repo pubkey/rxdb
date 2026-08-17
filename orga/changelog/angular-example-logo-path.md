@@ -1,0 +1,1 @@
+- FIX The angular example loaded its logo from the outdated path `docs-src/files/logo/logo.svg`, which led to a missing `/assets/logo.svg` in the browser. The postinstall script now copies from `docs-src/static/files/logo/logo.svg`. [#8942](https://github.com/pubkey/rxdb/pull/8942)
