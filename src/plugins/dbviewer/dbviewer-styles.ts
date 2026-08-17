@@ -126,11 +126,12 @@ export const DBVIEWER_STYLES = `
     font-size: 12px;
 }
 .rxdbv-logo {
-    width: 14px;
-    height: 14px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #ED168F, #752A8A);
+    width: 13px;
+    height: 17px;
+    display: inline-flex;
+    align-items: center;
 }
+.rxdbv-logo svg { width: 100%; height: 100%; }
 .rxdbv-wordmark { font-weight: 800; letter-spacing: 0.02em; }
 .rxdbv-topbar-divider { color: rgba(255, 255, 255, 0.25); }
 .rxdbv-topbar-identity { font-family: var(--rxdbv-mono); font-size: 11px; color: var(--rxdbv-fg-muted); }
@@ -585,7 +586,7 @@ export const DBVIEWER_STYLES = `
 .rxdbv-live-col-header { font-size: 9px; letter-spacing: 0.09em; color: var(--rxdbv-fg-dim); font-weight: 600; }
 .rxdbv-live-node { border: 1px solid rgba(255, 255, 255, 0.20); background: var(--rxdbv-bg); padding: 9px 10px; }
 .rxdbv-live-rows { flex: 1; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
-.rxdbv-live-row { display: flex; align-items: center; flex: 1; min-height: 84px; }
+.rxdbv-live-row { display: flex; align-items: center; min-height: 84px; }
 .rxdbv-live-lane { flex: 1; min-width: 70px; display: flex; flex-direction: column; gap: 9px; }
 .rxdbv-live-lane.rxdbv-in { padding-right: 6px; }
 .rxdbv-live-lane.rxdbv-out { padding-left: 6px; }
