@@ -591,22 +591,48 @@ function renderCleanupCard(ctx: ViewerContext, host: HTMLElement, totalTombstone
             style: 'font-size:11.5px;margin-top:4px;line-height:1.55'
         })
     ]);
+    const errorHost = el('div');
+    const showCleanupError = (err: any) => {
+        clearChildren(errorHost);
+        const message = String(err && err.message ? err.message : err);
+        const pluginMissing = message.includes('PL') || message.toLowerCase().includes('plugin');
+        errorHost.appendChild(el('div', 'rxdbv-finding rxdbv-danger-box', [
+            el('div', 'rxdbv-finding-title', '✕ Cleanup failed'),
+            el('div', 'rxdbv-finding-body', [
+                message.length > 300 ? message.slice(0, 300) + '…' : message,
+                pluginMissing
+                    ? el('div', '', [
+                        'Add the cleanup plugin to the database: ',
+                        el('code', '', 'addRxPlugin(RxDBCleanupPlugin)')
+                    ], { style: 'margin-top:6px' })
+                    : null
+            ])
+        ], { style: 'margin:10px 0 0' }));
+    };
     if (cleanupSupported) {
         card.appendChild(el('button', 'rxdbv-btn-danger-outline', 'Run cleanup — purge ' + formatInteger(totalTombstones) + ' tombstones', {
             style: 'margin-top:10px',
             onClick: () => {
-                Promise.all(
-                    collections.map(([, collection]) =>
-                        typeof (collection as any).cleanup === 'function'
-                            ? (collection as any).cleanup(0)
-                            : Promise.resolve()
-                    )
-                ).then(() => ctx.renderContent()).catch(err => {
-                    alert('Cleanup failed: ' + String(err && err.message ? err.message : err) +
-                        '\nAdd the cleanup plugin (RxDBCleanupPlugin) to the database.');
-                });
+                clearChildren(errorHost);
+                /**
+                 * Without the cleanup plugin the method stub throws
+                 * synchronously, so the try/catch is needed in
+                 * addition to the promise catch.
+                 */
+                try {
+                    Promise.all(
+                        collections.map(([, collection]) =>
+                            typeof (collection as any).cleanup === 'function'
+                                ? (collection as any).cleanup(0)
+                                : Promise.resolve()
+                        )
+                    ).then(() => ctx.renderContent()).catch(err => showCleanupError(err));
+                } catch (err) {
+                    showCleanupError(err);
+                }
             }
         }));
+        card.appendChild(errorHost);
     } else {
         card.appendChild(el('div', 'rxdbv-dim', 'Add the cleanup plugin (RxDBCleanupPlugin) to run a cleanup from here.', {
             style: 'margin-top:10px;font-size:11px'

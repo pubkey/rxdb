@@ -1,3 +1,4 @@
+import { Subject } from 'rxjs';
 import { newRxError } from '../../rx-error.ts';
 import { RXDB_VERSION } from '../utils/index.ts';
 import {
@@ -65,6 +66,7 @@ export type ViewerContext = {
     countsCache: Map<string, number | null>;
     viewerWriteTimes: number[];
     isNarrow: boolean;
+    close$: Subject<void>;
     phoneNav: {
         screen: 'collections' | 'list' | 'doc';
         collectionName?: string;
@@ -153,6 +155,7 @@ export function mountRxDBViewer(options: RxDBViewerOptions = {}): RxDBViewerHand
         countsCache: new Map(),
         viewerWriteTimes: [],
         isNarrow: false,
+        close$: new Subject<void>(),
         phoneNav: { screen: 'collections' },
         destroyed: false,
         navigate(nav: ViewerNav) {
@@ -291,8 +294,10 @@ export function mountRxDBViewer(options: RxDBViewerOptions = {}): RxDBViewerHand
 
     return {
         element: root,
+        close$: ctx.close$.asObservable(),
         remove() {
             ctx.destroyed = true;
+            ctx.close$.complete();
             if (contentCleanup) {
                 contentCleanup();
                 contentCleanup = null;
@@ -338,7 +343,13 @@ function renderTopbar(ctx: ViewerContext) {
         el('button', 'rxdbv-btn', '?', {
             title: 'Open the RxDB documentation',
             onClick: () => window.open(VIEWER_DOCS_BASE_URL, '_blank')
-        })
+        }),
+        ctx.options.showCloseButton
+            ? el('button', 'rxdbv-btn', '×', {
+                title: 'Close the viewer',
+                onClick: () => ctx.close$.next()
+            })
+            : null
     ]);
     ctx.topbarHost.appendChild(topbar);
 }
@@ -547,17 +558,21 @@ function renderSettings(ctx: ViewerContext) {
     const fileInput = el('input', '', undefined, { type: 'file' }) as HTMLInputElement;
     fileInput.accept = 'application/json,.json';
     fileInput.style.display = 'none';
+    const dumpErrorHost = el('div');
     fileInput.addEventListener('change', () => {
         const file = fileInput.files && fileInput.files[0];
         if (!file) {
             return;
         }
+        clearChildren(dumpErrorHost);
         file.text().then(text => {
             try {
                 const dump = JSON.parse(text);
                 ctx.openDump(dump, file.name);
             } catch (err) {
-                alert('This file is not a valid JSON dump.');
+                dumpErrorHost.appendChild(el('div', 'rxdbv-query-error-message', '✕ ' + file.name + ' is not a valid JSON dump.', {
+                    style: 'margin-top:8px'
+                }));
             }
         });
     });
@@ -579,7 +594,8 @@ function renderSettings(ctx: ViewerContext) {
                 el('button', 'rxdbv-btn-primary', 'Open dump file…', {
                     onClick: () => fileInput.click()
                 }),
-                fileInput
+                fileInput,
+                dumpErrorHost
             ], { style: 'padding:8px 12px;max-width:520px' }),
             el('div', 'rxdbv-section-label', 'ABOUT'),
             el('div', 'rxdbv-dim', 'RxDB database viewer · rxdb v' + RXDB_VERSION, { style: 'padding:8px 12px' })

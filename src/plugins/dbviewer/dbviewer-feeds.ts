@@ -283,7 +283,9 @@ export function renderChangesPanel(ctx: ViewerContext) {
             return '<span class="rxdbv-diff-line-same">  ' + escapeHtml(line.text) + '</span>';
         }).join('');
         detailHost.appendChild(diffBlock);
-        detailHost.appendChild(el('div', 'rxdbv-dim', 'source: change stream of this database instance', {
+        detailHost.appendChild(el('div', 'rxdbv-dim', entry.fromReplication
+            ? 'source: replication (pulled from the remote)'
+            : 'source: local write of this database instance', {
             style: 'padding:0 12px 12px;font-size:10px'
         }));
     };
