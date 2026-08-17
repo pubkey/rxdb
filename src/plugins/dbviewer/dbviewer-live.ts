@@ -400,8 +400,12 @@ export function renderLivePanel(ctx: ViewerContext) {
                     stateLine('push')
                 ], { style: 'display:flex;flex-direction:column;gap:3px;margin-top:6px;font-size:9.5px' }));
                 if (hasError && info.lastError) {
-                    refs.remoteHost.appendChild(el('div', 'rxdbv-mono', '✕ ' + info.lastError, {
-                        style: 'margin-top:5px;font-size:9px;color:var(--rxdbv-danger);word-break:break-all'
+                    const shortError = info.lastError.length > 90
+                        ? info.lastError.slice(0, 90) + '…'
+                        : info.lastError;
+                    refs.remoteHost.appendChild(el('div', 'rxdbv-mono', '✕ ' + shortError, {
+                        title: info.lastError,
+                        style: 'margin-top:5px;font-size:9px;color:var(--rxdbv-danger);word-break:break-all;max-height:34px;overflow:hidden'
                     }));
                 }
                 const pullRate = events.ratePerSecond(events.pullTimes);
