@@ -105,7 +105,7 @@ export function useRxQueryBase<
         }
     };
 
-    const runQuery = useCallback(async () => {
+    const runQuery = useCallback(() => {
         if (dbCollection == null) {
             return;
         }
@@ -122,11 +122,10 @@ export function useRxQueryBase<
                 subscription.unsubscribe();
             };
         } else {
-            try {
-                emitResults(await rxQuery.exec());
-            } catch (e) {
-                emitError(e as Error);
-            }
+            rxQuery.exec().then(
+                (res) => emitResults(res),
+                (e) => emitError(e as Error)
+            );
         }
     }, [dbCollection, query]);
 
@@ -135,7 +134,7 @@ export function useRxQueryBase<
             return;
         }
 
-        runQuery();
+        return runQuery();
     }, [runQuery]);
 
     return { results, loading, error };
