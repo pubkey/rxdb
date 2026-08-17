@@ -60,6 +60,7 @@ export type ViewerContext = {
     nav: ViewerNav;
     lastCollectionName: string | null;
     collectionState: Map<string, any>;
+    schemaViewMode: Map<string, 'analysis' | 'schema'>;
     countsCache: Map<string, number | null>;
     viewerWriteTimes: number[];
     isNarrow: boolean;
@@ -147,6 +148,7 @@ export function mountRxDBViewer(options: RxDBViewerOptions = {}): RxDBViewerHand
         nav: { view: 'collection' },
         lastCollectionName: null,
         collectionState: new Map(),
+        schemaViewMode: new Map(),
         countsCache: new Map(),
         viewerWriteTimes: [],
         isNarrow: false,

@@ -100,18 +100,114 @@ export function shortRev(rev?: string): string {
 }
 
 /**
+ * Converts relaxed JavaScript object syntax into strict JSON:
+ * unquoted keys are quoted, single quoted strings become double
+ * quoted and trailing commas are dropped. A small character
+ * walker instead of regexes, so string contents stay untouched.
+ */
+export function relaxViewerSelectorInput(input: string): string {
+    let out = '';
+    const stack: string[] = [];
+    let i = 0;
+    const isIdentChar = (c: string) => /[A-Za-z0-9_$.]/.test(c);
+    while (i < input.length) {
+        const char = input[i];
+        if (char === '"') {
+            out = out + char;
+            i = i + 1;
+            while (i < input.length) {
+                const c = input[i];
+                out = out + c;
+                i = i + 1;
+                if (c === '\\' && i < input.length) {
+                    out = out + input[i];
+                    i = i + 1;
+                } else if (c === '"') {
+                    break;
+                }
+            }
+            continue;
+        }
+        if (char === '\'') {
+            i = i + 1;
+            let value = '';
+            while (i < input.length && input[i] !== '\'') {
+                if (input[i] === '\\' && i + 1 < input.length) {
+                    value = value + (input[i + 1] === '\'' ? '\'' : input[i] + input[i + 1]);
+                    i = i + 2;
+                } else {
+                    value = value + input[i];
+                    i = i + 1;
+                }
+            }
+            i = i + 1;
+            out = out + JSON.stringify(value);
+            continue;
+        }
+        if (char === '{' || char === '[') {
+            stack.push(char);
+            out = out + char;
+            i = i + 1;
+            continue;
+        }
+        if (char === '}' || char === ']') {
+            stack.pop();
+            out = out + char;
+            i = i + 1;
+            continue;
+        }
+        if (char === ',') {
+            let j = i + 1;
+            while (j < input.length && /\s/.test(input[j])) {
+                j = j + 1;
+            }
+            if (input[j] === '}' || input[j] === ']') {
+                i = i + 1;
+                continue;
+            }
+            out = out + char;
+            i = i + 1;
+            continue;
+        }
+        if (isIdentChar(char)) {
+            let j = i;
+            while (j < input.length && isIdentChar(input[j])) {
+                j = j + 1;
+            }
+            const word = input.slice(i, j);
+            let k = j;
+            while (k < input.length && /\s/.test(input[k])) {
+                k = k + 1;
+            }
+            const inObject = stack[stack.length - 1] === '{';
+            if (inObject && input[k] === ':') {
+                out = out + '"' + word + '"';
+            } else {
+                out = out + word;
+            }
+            i = j;
+            continue;
+        }
+        out = out + char;
+        i = i + 1;
+    }
+    return out;
+}
+
+/**
  * Parses the Mango selector input of the query bar.
  * An empty input equals the match-all selector.
- * On invalid JSON the character position of the error
- * is extracted so the caret marker can be drawn.
+ * Strict JSON is tried first, then relaxed JavaScript
+ * object syntax like { name: 'foo' }. On invalid input the
+ * character position of the error is extracted so the caret
+ * marker can be drawn.
  */
 export function parseViewerSelector(input: string): ViewerSelectorParseResult {
     const trimmed = input.trim();
     if (trimmed === '') {
         return { selector: {} };
     }
-    try {
-        const parsed = JSON.parse(trimmed);
+    const checkObject = (parsed: any): ViewerSelectorParseResult => {
         if (viewerTypeOf(parsed) !== 'object') {
             return {
                 error: {
@@ -121,16 +217,23 @@ export function parseViewerSelector(input: string): ViewerSelectorParseResult {
             };
         }
         return { selector: parsed };
+    };
+    try {
+        return checkObject(JSON.parse(trimmed));
     } catch (err: any) {
-        const message: string = err && err.message ? err.message : 'Invalid JSON';
-        const positionMatch = message.match(/position (\d+)/);
-        const position = positionMatch ? parseInt(positionMatch[1], 10) : 0;
-        return {
-            error: {
-                message: message + ' — the selector must be valid JSON',
-                position
-            }
-        };
+        try {
+            return checkObject(JSON.parse(relaxViewerSelectorInput(trimmed)));
+        } catch (err2) {
+            const message: string = err && err.message ? err.message : 'Invalid JSON';
+            const positionMatch = message.match(/position (\d+)/);
+            const position = positionMatch ? parseInt(positionMatch[1], 10) : 0;
+            return {
+                error: {
+                    message: message + ' — the selector must be valid JSON',
+                    position
+                }
+            };
+        }
     }
 }
 

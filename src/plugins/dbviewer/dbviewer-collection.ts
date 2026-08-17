@@ -53,7 +53,7 @@ function getUiState(ctx: ViewerContext, collectionName: string): CollectionUiSta
             parseError: null,
             page: 0,
             selection: new Set(),
-            observe: false,
+            observe: ctx.source.kind === 'live',
             drawer: null,
             freshIds: new Map(),
             lastResult: null,
