@@ -4,7 +4,7 @@ import { getSemVariation } from '../../components/a-b-tests';
 
 /**
  * SEM landingpage for "galocal1".
- * A/b tests 3 variations of the title, description and bulletpoints.
+ * A/b tests multiple variations of the title, description and bulletpoints.
  * The variation is picked randomly per visitor and kept stable via localStorage.
  */
 
@@ -16,16 +16,22 @@ import { getSemVariation } from '../../components/a-b-tests';
  *   stay on record and cannot be re-assigned by accident.
  */
 const variations = {
-    a: {
-        title: <>The <b>Local-First</b> Database for <b>JavaScript</b> Apps</>,
-        text: <>RxDB is a NoSQL database for JavaScript that runs directly in your app. With a local-first design, it delivers zero-latency queries even offline, and syncs seamlessly with any backend.</>,
-        bulletpoints: [
-            <>Build apps that work offline</>,
-            <>Sync with any Backend</>,
-            <>Observable Realtime Queries</>,
-            <>All JavaScript Runtimes Supported</>
-        ]
-    },
+    /**
+     * Variations 'a' and 'c' were retired on 2026-08-18 after the first A/B
+     * readout: variation 'b' beat both of them on engagement. Kept on record
+     * (commented out, not deleted) so their letters and copy stay reserved
+     * and are never reused for different copy.
+     */
+    // a: {
+    //     title: <>The <b>Local-First</b> Database for <b>JavaScript</b> Apps</>,
+    //     text: <>RxDB is a NoSQL database for JavaScript that runs directly in your app. With a local-first design, it delivers zero-latency queries even offline, and syncs seamlessly with any backend.</>,
+    //     bulletpoints: [
+    //         <>Build apps that work offline</>,
+    //         <>Sync with any Backend</>,
+    //         <>Observable Realtime Queries</>,
+    //         <>All JavaScript Runtimes Supported</>
+    //     ]
+    // },
     b: {
         title: <><b>Zero Latency</b>. Your Data Is <b>Already There</b>.</>,
         text: <>RxDB keeps your app's data on the device, so every query answers instantly. No request waterfalls, no loading spinners. The network is only used for sync, and your app works with or without it.</>,
@@ -36,28 +42,40 @@ const variations = {
             <>Open source, works with any backend</>
         ]
     },
-    c: {
-        title: <><b>Local-First</b> Is the Future. Build It With <b>RxDB</b>.</>,
-        text: <>You own your data, in spite of the cloud. RxDB brings the local-first architecture to JavaScript: data lives on the device, syncs to any backend you choose, and your app keeps working offline.</>,
+    // c: {
+    //     title: <><b>Local-First</b> Is the Future. Build It With <b>RxDB</b>.</>,
+    //     text: <>You own your data, in spite of the cloud. RxDB brings the local-first architecture to JavaScript: data lives on the device, syncs to any backend you choose, and your app keeps working offline.</>,
+    //     bulletpoints: [
+    //         <>Local-first architecture, ready today</>,
+    //         <>You own your data and your backend</>,
+    //         <>Conflict handling built in</>,
+    //         <>Works with React, Vue, and Angular</>
+    //     ]
+    // },
+    d: {
+        title: <>Writes That Survive a <b>Lost Connection</b></>,
+        text: <>RxDB saves every write to the device first, then replicates it to your backend once the network is back. Conflicts are resolved by a handler you define, and every open tab and every device converges on the same data.</>,
         bulletpoints: [
-            <>Local-first architecture, ready today</>,
-            <>You own your data and your backend</>,
-            <>Conflict handling built in</>,
-            <>Works with React, Vue, and Angular</>
+            <>Offline writes replicate later</>,
+            <>Conflict handling you define</>,
+            <>Tabs and devices stay in sync</>,
+            <>Open source, works with any backend</>
         ]
     }
 };
 
+const variationKeys = Object.keys(variations) as (keyof typeof variations)[];
+
 export default function Page() {
     /**
-     * Render variation "a" on the server and on the first client render
-     * to avoid a hydration mismatch, then swap to the assigned variation.
+     * Render the first live variation on the server and on the first client
+     * render to avoid a hydration mismatch, then swap to the assigned one.
      */
-    const [variationKey, setVariationKey] = useState('a');
+    const [variationKey, setVariationKey] = useState(variationKeys[0] as string);
     useEffect(() => {
-        setVariationKey(getSemVariation(Object.keys(variations)));
+        setVariationKey(getSemVariation(variationKeys));
     }, []);
-    const variation = variations[variationKey as keyof typeof variations] ?? variations.a;
+    const variation = variations[variationKey as keyof typeof variations] ?? variations[variationKeys[0]];
 
     return Home({
         sem: {
