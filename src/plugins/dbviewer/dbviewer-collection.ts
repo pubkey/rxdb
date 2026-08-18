@@ -1,8 +1,10 @@
 import {
     clearChildren,
     downloadJson,
-    el
+    el,
+    withCopyButton
 } from './dbviewer-dom.ts';
+import { showViewerError } from './dbviewer-error.ts';
 import {
     buildViewerWillRun,
     colorViewerJson,
@@ -24,7 +26,6 @@ type DrawerState = {
     doc: any;
     staged: Map<string, string>;
     expanded: Set<string>;
-    applyError?: string;
 };
 
 type CollectionUiState = {
@@ -413,10 +414,7 @@ function runQuery(
         uiState.lastResult = result;
         renderResult(ctx, collectionName, uiState, resultHost, footerHost, primaryPath);
     }).catch(err => {
-        clearChildren(resultHost);
-        resultHost.appendChild(el('div', 'rxdbv-query-error-block', [
-            el('div', 'rxdbv-query-error-message', '✕ ' + String(err && err.message ? err.message : err))
-        ]));
+        showViewerError(ctx.root, 'Query failed', err);
     });
 }
 
@@ -647,7 +645,7 @@ function renderJsonView(
     });
     html = html + ']';
     view.innerHTML = html;
-    resultHost.appendChild(view);
+    resultHost.appendChild(withCopyButton(view, () => JSON.stringify(docs, null, 2)));
 }
 
 function renderFooter(
@@ -972,7 +970,8 @@ function buildDrawer(
             collectionName,
             mergedDoc,
             changedFields,
-            drawer.mode === 'new' ? 'insert' : 'upsert'
+            drawer.mode === 'new' ? 'insert' : 'patch',
+            drawer.docId
         );
         code.innerHTML = '<span class="rxdbv-plain-line"><span class="rxdbv-comment">// applied on save — nothing has run yet</span></span>' +
             lines.map(line => line.changed
@@ -980,24 +979,26 @@ function buildDrawer(
                 : '<span class="rxdbv-plain-line">' + escapeHtml(line.text) + '</span>'
             ).join('');
         container.appendChild(code);
-        if (drawer.applyError) {
-            container.appendChild(el('div', 'rxdbv-query-error-message', '✕ ' + drawer.applyError, { style: 'padding:4px 12px' }));
-        }
         const applyButton = el('button', 'rxdbv-btn-primary', 'Apply changes', {
             onClick: () => {
-                ctx.source.upsert(collectionName, mergedDoc).then(() => {
+                const changedOnly: any = {};
+                changedFields.forEach(field => {
+                    changedOnly[field] = mergedDoc[field];
+                });
+                const write = drawer.mode === 'new'
+                    ? ctx.source.insert(collectionName, mergedDoc)
+                    : ctx.source.update(collectionName, drawer.docId as string, changedOnly);
+                write.then(() => {
                     ctx.viewerWriteTimes.push(Date.now());
                     if (drawer.mode === 'new') {
                         uiState.drawer = null;
                     } else {
                         drawer.staged.clear();
-                        drawer.applyError = undefined;
                     }
                     rerun();
                     ctx.renderContent();
                 }).catch(err => {
-                    drawer.applyError = String(err && err.message ? err.message : err);
-                    renderDrawer();
+                    showViewerError(ctx.root, drawer.mode === 'new' ? 'Insert failed' : 'Update failed', err);
                 });
             }
         }) as HTMLButtonElement;
@@ -1011,7 +1012,6 @@ function buildDrawer(
                         ctx.renderContent();
                     } else {
                         drawer.staged.clear();
-                        drawer.applyError = undefined;
                         renderDrawer();
                     }
                 }
@@ -1108,18 +1108,15 @@ function openDeleteModal(
 
     const backdrop = el('div', 'rxdbv-modal-backdrop');
     const close = () => backdrop.remove();
-    const modalErrorHost = el('div');
     deleteButton.addEventListener('click', () => {
-        clearChildren(modalErrorHost);
         ctx.source.removeByIds(collectionName, Array.from(uiState.selection)).then(() => {
             uiState.selection.clear();
             ctx.viewerWriteTimes.push(Date.now());
             close();
             ctx.renderContent();
         }).catch(err => {
-            modalErrorHost.appendChild(el('div', 'rxdbv-query-error-message', '✕ Delete failed: ' + String(err && err.message ? err.message : err).slice(0, 200), {
-                style: 'margin-top:10px'
-            }));
+            close();
+            showViewerError(ctx.root, 'Delete failed', err);
         });
     });
 
