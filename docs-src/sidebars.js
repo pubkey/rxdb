@@ -504,12 +504,9 @@ const sidebars = {
           label: 'React'
         },
         {
-          type: 'link',
-          label: 'TanStack DB',
-          href: 'https://tanstack.com/db/latest/docs/collections/rxdb-collection',
-          customProps: {
-            target: '_blank'
-          }
+          type: 'ref',
+          id: 'articles/tanstack-db/rxdb-collection-for-tanstack-db',
+          label: 'TanStack DB'
         }
       ]
     },
