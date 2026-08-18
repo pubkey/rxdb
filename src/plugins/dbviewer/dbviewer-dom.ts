@@ -78,6 +78,57 @@ export function ensureViewerStyles(doc: Document) {
     doc.head.appendChild(styleElement);
 }
 
+/**
+ * The same icons the docs use for their code block
+ * copy button (docusaurus copyButtonIcon / copyButtonSuccessIcon).
+ */
+const COPY_ICON_SVG = '<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z"></path></svg>';
+const COPY_SUCCESS_ICON_SVG = '<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,6.58L21,7Z"></path></svg>';
+
+/**
+ * A copy-to-clipboard button for code and JSON views.
+ * Shows the success check for a moment after copying.
+ */
+export function createCopyButton(getText: () => string): HTMLElement {
+    const button = el('button', 'rxdbv-copy-btn', undefined, {
+        title: 'Copy to clipboard',
+        html: COPY_ICON_SVG
+    });
+    button.addEventListener('click', event => {
+        event.stopPropagation();
+        const text = getText();
+        const showSuccess = () => {
+            button.innerHTML = COPY_SUCCESS_ICON_SVG;
+            button.classList.add('rxdbv-copied');
+            setTimeout(() => {
+                button.innerHTML = COPY_ICON_SVG;
+                button.classList.remove('rxdbv-copied');
+            }, 1200);
+        };
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(showSuccess).catch(() => {});
+        } else {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            textarea.remove();
+            showSuccess();
+        }
+    });
+    return button;
+}
+
+/**
+ * Wraps a code or JSON element so a copy button
+ * floats in its top right corner.
+ */
+export function withCopyButton(content: HTMLElement, getText: () => string): HTMLElement {
+    const wrap = el('div', 'rxdbv-json-wrap', [content, createCopyButton(getText)]);
+    return wrap;
+}
+
 export function downloadJson(filename: string, data: any) {
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);

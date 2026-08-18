@@ -135,20 +135,25 @@ export const DBVIEWER_STYLES = `
 .rxdbv-wordmark { font-weight: 800; letter-spacing: 0.02em; }
 .rxdbv-topbar-divider { color: rgba(255, 255, 255, 0.25); }
 .rxdbv-topbar-identity { font-family: var(--rxdbv-mono); font-size: 11px; color: var(--rxdbv-fg-muted); }
-.rxdbv-cmdk {
-    display: flex;
-    align-items: center;
-    gap: 8px;
+/* copy to clipboard */
+.rxdbv-json-wrap { position: relative; flex: 1; display: flex; flex-direction: column; min-height: 0; }
+.rxdbv-copy-btn {
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    z-index: 5;
     border: 1px solid rgba(255, 255, 255, 0.20);
-    padding: 3px 10px;
-    font-size: 11px;
+    background: var(--rxdbv-bg);
     color: var(--rxdbv-fg-muted);
-    font-family: var(--rxdbv-mono);
+    padding: 4px 6px;
+    border-radius: 0;
     cursor: pointer;
-    transition: border-color 180ms ease-in-out;
+    line-height: 0;
+    opacity: 0.6;
+    transition: opacity 180ms ease-in-out, color 180ms ease-in-out;
 }
-.rxdbv-cmdk:hover { border-color: rgba(255, 255, 255, 0.4); }
-.rxdbv-cmdk span { color: rgba(255, 255, 255, 0.45); }
+.rxdbv-json-wrap:hover .rxdbv-copy-btn, .rxdbv-copy-btn:hover { opacity: 1; }
+.rxdbv-copy-btn.rxdbv-copied { color: var(--rxdbv-success); opacity: 1; }
 
 /* banners */
 .rxdbv-banner-dump {
@@ -646,24 +651,29 @@ export const DBVIEWER_STYLES = `
 }
 .rxdbv-empty-actions { display: flex; gap: 8px; justify-content: center; margin-top: 14px; }
 
-/* command palette */
-.rxdbv-palette-backdrop { position: absolute; inset: 0; background: rgba(9, 11, 18, 0.7); z-index: 70; display: flex; justify-content: center; }
-.rxdbv-palette { margin-top: 80px; width: 440px; max-width: 92%; height: fit-content; background: var(--rxdbv-bg-code); border: 1px solid rgba(255, 255, 255, 0.2); }
-.rxdbv-palette-input {
-    width: 100%;
-    background: var(--rxdbv-bg);
-    border: 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.14);
-    color: var(--rxdbv-fg);
+/* error popup */
+.rxdbv-error-modal-message {
     font-family: var(--rxdbv-mono);
-    font-size: 12px;
-    padding: 8px 10px;
-    outline: none;
+    font-size: 11.5px;
+    color: var(--rxdbv-danger);
+    margin-top: 10px;
+    line-height: 1.55;
+    word-break: break-word;
+    max-height: 140px;
+    overflow: auto;
 }
-.rxdbv-palette-list { max-height: 300px; overflow-y: auto; }
-.rxdbv-palette-row { display: flex; gap: 10px; padding: 5px 10px; cursor: pointer; font-size: 11px; align-items: baseline; }
-.rxdbv-palette-row:hover, .rxdbv-palette-row.rxdbv-active { background: rgba(237, 22, 143, 0.10); }
-.rxdbv-palette-row .rxdbv-palette-kind { color: var(--rxdbv-fg-dim); font-size: 10px; width: 80px; }
+.rxdbv-error-modal-params {
+    margin-top: 10px;
+    background: var(--rxdbv-bg-code);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    font-family: var(--rxdbv-mono);
+    font-size: 10.5px;
+    line-height: 1.6;
+    white-space: pre;
+    overflow: auto;
+    max-height: 260px;
+    padding: 8px 10px;
+}
 
 /* phone layout */
 .rxdbv-phone-header {

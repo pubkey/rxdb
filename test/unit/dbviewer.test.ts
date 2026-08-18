@@ -184,6 +184,14 @@ describe('dbviewer.test.ts', () => {
             const lines = buildViewerWillRun('mydb', 'todos', { id: 'a' }, [], 'insert');
             assert.strictEqual(lines[0].text, 'await mydb.todos.insert({');
         });
+        it('previews edits as incrementalPatch with only the changed fields', () => {
+            const lines = buildViewerWillRun('mydb', 'todos', { id: 'a1', title: 'new title', done: true }, ['title'], 'patch', 'a1');
+            assert.strictEqual(lines[0].text, 'await mydb.todos.findOne("a1").incrementalPatch({');
+            const fieldLines = lines.slice(1, -1);
+            assert.strictEqual(fieldLines.length, 1);
+            assert.ok(fieldLines[0].text.includes('"title"'));
+            assert.strictEqual(fieldLines[0].changed, true);
+        });
     });
     describe('formatting helpers', () => {
         it('formatByteSize', () => {
@@ -272,6 +280,7 @@ describe('dbviewer.test.ts', () => {
             const localEntry = hub.changes.find((c: any) => c.documentId === 'local1');
             assert.ok(localEntry);
             assert.strictEqual(!!localEntry.fromReplication, false);
+            assert.strictEqual(localEntry.collectionName, 'docs');
 
             let pullDone = false;
             const replicationState = replicateRxCollection({
