@@ -44,6 +44,13 @@ export type ViewerDataSource = {
     query(collectionName: string, selector: any, skip: number, limit: number): Promise<ViewerQueryResult>;
     getById(collectionName: string, id: string): Promise<any | null>;
     upsert(collectionName: string, doc: any): Promise<void>;
+    insert(collectionName: string, doc: any): Promise<void>;
+    /**
+     * Patches only the changed fields of an existing document
+     * via incrementalPatch(), so hooks of the insert path
+     * never fire for edits.
+     */
+    update(collectionName: string, id: string, changedFields: any): Promise<void>;
     removeByIds(collectionName: string, ids: string[]): Promise<void>;
     exportCollection(collectionName: string): Promise<any>;
 };
@@ -123,6 +130,18 @@ export function createLiveDataSource(database: RxDatabase): ViewerDataSource {
             const collection = getLiveCollection(database, collectionName);
             await collection.upsert(stripInternalFields(doc));
         },
+        async insert(collectionName: string, doc: any) {
+            const collection = getLiveCollection(database, collectionName);
+            await collection.insert(stripInternalFields(doc));
+        },
+        async update(collectionName: string, id: string, changedFields: any) {
+            const collection = getLiveCollection(database, collectionName);
+            const rxDocument = await collection.findOne(id).exec();
+            if (!rxDocument) {
+                throw new Error('document ' + id + ' does not exist anymore');
+            }
+            await rxDocument.incrementalPatch(stripInternalFields(changedFields));
+        },
         async removeByIds(collectionName: string, ids: string[]) {
             const collection = getLiveCollection(database, collectionName);
             await collection.find({
@@ -200,6 +219,12 @@ export function createDumpDataSource(
             return docs.find(doc => String(doc[primaryPath]) === id) || null;
         },
         async upsert() {
+            throw new Error('not available on a dump');
+        },
+        async insert() {
+            throw new Error('not available on a dump');
+        },
+        async update() {
             throw new Error('not available on a dump');
         },
         async removeByIds() {
