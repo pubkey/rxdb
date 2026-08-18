@@ -609,7 +609,7 @@ export const DBVIEWER_STYLES = `
     font-size: 12px;
     font-weight: 700;
 }
-.rxdbv-live-lane-label { font-size: 9px; color: var(--rxdbv-fg-dim); font-family: var(--rxdbv-mono); }
+.rxdbv-live-lane-label { font-size: 10px; color: var(--rxdbv-fg-muted); font-family: var(--rxdbv-mono); }
 .rxdbv-live-coll-node { width: 296px; min-width: 296px; border: 1px solid rgba(255, 255, 255, 0.12); background: var(--rxdbv-bg-detail); padding: 9px 10px; }
 .rxdbv-live-coll-node.rxdbv-pulse { animation: rxdbvNodePulse 0.25s ease-out; }
 .rxdbv-sparkline { display: flex; align-items: flex-end; gap: 1.5px; height: 26px; margin-top: 7px; }
@@ -627,7 +627,13 @@ export const DBVIEWER_STYLES = `
     font-family: var(--rxdbv-mono);
     flex-wrap: wrap;
 }
-.rxdbv-live-idle { opacity: 0.62; }
+/**
+ * Idle rows fade their graphics but never their text,
+ * faded labels on the dark background are unreadable.
+ */
+.rxdbv-live-idle .rxdbv-live-track { opacity: 0.45; }
+.rxdbv-live-idle .rxdbv-live-coll-node,
+.rxdbv-live-idle .rxdbv-live-remote-node { opacity: 0.8; }
 .rxdbv-live-subpanel { position: absolute; inset: 0; background: rgba(9, 11, 18, 0.85); display: flex; align-items: center; justify-content: center; z-index: 50; }
 .rxdbv-live-subpanel-box { width: 780px; max-width: 94%; max-height: 88%; overflow: auto; background: var(--rxdbv-bg-dark); border: 1px solid rgba(255, 255, 255, 0.14); font-size: 12px; }
 .rxdbv-live-compact-bar { height: 6px; background: var(--rxdbv-bg); margin-top: 6px; }

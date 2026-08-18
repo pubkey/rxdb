@@ -102,7 +102,7 @@ export function renderLivePanel(ctx: ViewerContext) {
         style: 'font-size:9px;border:1px solid rgba(62,207,142,0.5);color:var(--rxdbv-success);padding:0 5px;font-family:var(--rxdbv-mono);display:none'
     });
     const appRates = el('div', 'rxdbv-mono rxdbv-muted', '', { style: 'display:flex;gap:8px;margin-top:6px;font-size:9.5px' });
-    const viewerWritesLabel = el('div', 'rxdbv-dim rxdbv-mono', '0 in 60s · from this devtool', { style: 'font-size:9.5px;margin-top:3px' });
+    const viewerWritesLabel = el('div', 'rxdbv-muted rxdbv-mono', '0 in 60s · from this devtool', { style: 'font-size:10px;margin-top:3px' });
     const appColumn = el('div', 'rxdbv-live-col-app', [
         el('div', 'rxdbv-live-col-header', 'APP'),
         el('div', 'rxdbv-live-node', [
@@ -111,13 +111,13 @@ export function renderLivePanel(ctx: ViewerContext) {
                 el('div', 'rxdbv-flex1'),
                 leaderBadge
             ], { style: 'display:flex;align-items:center;gap:6px' }),
-            el('div', 'rxdbv-dim rxdbv-mono', ctx.source.databaseName, { style: 'font-size:9.5px;margin-top:4px' }),
+            el('div', 'rxdbv-muted rxdbv-mono', ctx.source.databaseName, { style: 'font-size:10px;margin-top:4px' }),
             appRates
         ]),
         el('div', '', [
             el('div', 'rxdbv-mono', 'viewer writes', { style: 'font-size:10.5px' }),
             viewerWritesLabel
-        ], { style: 'border:1px dashed rgba(255,255,255,0.16);padding:8px 10px;opacity:0.6' }),
+        ], { style: 'border:1px dashed rgba(255,255,255,0.22);padding:8px 10px;opacity:0.85' }),
         el('div', 'rxdbv-flex1'),
         el('div', 'rxdbv-dim', 'Fixed positions. No document contents are drawn — names, counts and rates only.', { style: 'font-size:9.5px;line-height:1.5' })
     ]);
@@ -168,7 +168,7 @@ export function renderLivePanel(ctx: ViewerContext) {
                 el('span', '', '60s sparkline'),
                 el('div', 'rxdbv-flex1'),
                 queriesLink
-            ], { style: 'display:flex;gap:10px;margin-top:5px;font-size:9.5px;font-family:var(--rxdbv-mono);color:var(--rxdbv-fg-dim)' })
+            ], { style: 'display:flex;gap:10px;margin-top:5px;font-size:10px;font-family:var(--rxdbv-mono);color:var(--rxdbv-fg-muted)' })
         ]);
         const remoteHost = el('div', 'rxdbv-live-remote-node rxdbv-none');
         const row = el('div', 'rxdbv-live-row', [
@@ -377,7 +377,7 @@ export function renderLivePanel(ctx: ViewerContext) {
             clearChildren(refs.remoteHost);
             if (replications.length === 0) {
                 refs.remoteHost.className = 'rxdbv-live-remote-node rxdbv-none';
-                refs.remoteHost.appendChild(el('div', 'rxdbv-dim', [
+                refs.remoteHost.appendChild(el('div', 'rxdbv-muted', [
                     'no replication configured for ',
                     el('span', 'rxdbv-mono', collectionName)
                 ], { style: 'font-size:10px;line-height:1.5' }));
