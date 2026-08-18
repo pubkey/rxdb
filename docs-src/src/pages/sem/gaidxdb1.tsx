@@ -4,7 +4,7 @@ import { getSemVariation } from '../../components/a-b-tests';
 
 /**
  * SEM landingpage for "gaidxdb1".
- * A/b tests 3 variations of the title, description and bulletpoints.
+ * A/b tests multiple variations of the title, description and bulletpoints.
  * The variation is picked randomly per visitor and kept stable via localStorage.
  */
 
@@ -26,16 +26,22 @@ const variations = {
             <>All JavaScript Runtimes Supported</>
         ]
     },
-    b: {
-        title: <><b>IndexedDB</b> Without the <b>Pain</b></>,
-        text: <>RxDB gives you a clean NoSQL API on top of IndexedDB. No transaction boilerplate, no callback chains, just schemas, queries and observables that keep your UI in sync with your data.</>,
-        bulletpoints: [
-            <>No IndexedDB boilerplate</>,
-            <>Reactive queries out of the box</>,
-            <>JSON schemas and migrations</>,
-            <>Free and open source</>
-        ]
-    }
+    /**
+     * Variation 'b' was retired on 2026-08-18 after the second A/B readout:
+     * it lost to variation 'a' on every measured engagement signal. Kept on
+     * record (commented out, not deleted) so its letter and copy stay
+     * reserved and 'b' is never reused for different copy.
+     */
+    // b: {
+    //     title: <><b>IndexedDB</b> Without the <b>Pain</b></>,
+    //     text: <>RxDB gives you a clean NoSQL API on top of IndexedDB. No transaction boilerplate, no callback chains, just schemas, queries and observables that keep your UI in sync with your data.</>,
+    //     bulletpoints: [
+    //         <>No IndexedDB boilerplate</>,
+    //         <>Reactive queries out of the box</>,
+    //         <>JSON schemas and migrations</>,
+    //         <>Free and open source</>
+    //     ]
+    // },
     /**
      * Variation 'c' was removed on 2026-07-27 after its first A/B readout:
      * it was the weakest of the three on engagement. Kept on record (commented
@@ -51,24 +57,36 @@ const variations = {
     //         <>Optimized IndexedDB storage</>,
     //         <>Observable realtime queries</>
     //     ]
-    // }
+    // },
+    d: {
+        title: <><b>IndexedDB</b> With Queries, Schemas and <b>Sync</b></>,
+        text: <>RxDB stores your data in IndexedDB and adds what an app actually needs on top: a NoSQL query API, JSON schemas with migrations, results that update themselves when the data changes, and replication to your own backend.</>,
+        bulletpoints: [
+            <>NoSQL queries over IndexedDB</>,
+            <>JSON schemas and migrations</>,
+            <>Results that update themselves</>,
+            <>Replication to your own backend</>
+        ]
+    }
 };
+
+const variationKeys = Object.keys(variations) as (keyof typeof variations)[];
 
 export default function Page() {
     /**
-     * Render variation "a" on the server and on the first client render
-     * to avoid a hydration mismatch, then swap to the assigned variation.
+     * Render the first live variation on the server and on the first client
+     * render to avoid a hydration mismatch, then swap to the assigned one.
      */
-    const [variationKey, setVariationKey] = useState('a');
+    const [variationKey, setVariationKey] = useState(variationKeys[0] as string);
     useEffect(() => {
-        setVariationKey(getSemVariation(Object.keys(variations)));
+        setVariationKey(getSemVariation(variationKeys));
     }, []);
-    const variation = variations[variationKey as keyof typeof variations] ?? variations.a;
+    const variation = variations[variationKey as keyof typeof variations] ?? variations[variationKeys[0]];
 
     return Home({
         sem: {
             id: 'gads',
-            metaTitle: 'RxDB: IndexedDB Without the Pain',
+            metaTitle: 'RxDB: The JavaScript Database on Top of IndexedDB',
             appName: 'JavaScript',
             title: variation.title,
             text: variation.text,
