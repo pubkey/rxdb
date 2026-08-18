@@ -584,13 +584,16 @@ export function diffViewerJson(before: any, after: any): ViewerDiffLine[] {
  * Builds the WILL RUN preview of the drawer: the exact
  * call that Apply changes would execute, with the lines
  * that belong to changed top-level fields marked.
+ * Edits of existing documents run incrementalPatch() with only
+ * the changed fields, so hooks of insert paths never fire.
  */
 export function buildViewerWillRun(
     databaseName: string,
     collectionName: string,
     doc: any,
     changedFields: string[],
-    operation: 'upsert' | 'insert' | 'remove' = 'upsert'
+    operation: 'upsert' | 'insert' | 'remove' | 'patch' = 'upsert',
+    docId?: string
 ): ViewerWillRunLine[] {
     const lines: ViewerWillRunLine[] = [];
     if (operation === 'remove') {
@@ -600,10 +603,20 @@ export function buildViewerWillRun(
         });
         return lines;
     }
-    const json = JSON.stringify(doc, null, 2);
+    let useDoc = doc;
+    let opener = 'await ' + databaseName + '.' + collectionName + '.' + operation + '({';
+    if (operation === 'patch') {
+        const patchDoc: any = {};
+        changedFields.forEach(field => {
+            patchDoc[field] = doc[field];
+        });
+        useDoc = patchDoc;
+        opener = 'await ' + databaseName + '.' + collectionName + '.findOne(' + JSON.stringify(docId) + ').incrementalPatch({';
+    }
+    const json = JSON.stringify(useDoc, null, 2);
     const jsonLines = json.split('\n');
     lines.push({
-        text: 'await ' + databaseName + '.' + collectionName + '.' + operation + '({',
+        text: opener,
         changed: false
     });
     let currentField = '';
@@ -622,6 +635,40 @@ export function buildViewerWillRun(
     });
     lines.push({ text: '})', changed: false });
     return lines;
+}
+
+/**
+ * Recursively copies a value so it can be JSON stringified
+ * for display: circular structures, deep nesting and huge
+ * strings or arrays are capped instead of throwing.
+ */
+export function sanitizeViewerValue(value: any, depth = 4, seen = new Set<any>()): any {
+    const type = viewerTypeOf(value);
+    if (type === 'string') {
+        return value.length > 500 ? value.slice(0, 500) + '…' : value;
+    }
+    if (type === 'number' || type === 'boolean' || type === 'null') {
+        return value === undefined ? null : value;
+    }
+    if (depth <= 0) {
+        return type === 'array' ? '[…]' : '{…}';
+    }
+    if (seen.has(value)) {
+        return '[circular]';
+    }
+    seen.add(value);
+    if (type === 'array') {
+        const capped = value.slice(0, 20).map((item: any) => sanitizeViewerValue(item, depth - 1, seen));
+        if (value.length > 20) {
+            capped.push('… ' + (value.length - 20) + ' more');
+        }
+        return capped;
+    }
+    const result: any = {};
+    Object.keys(value).slice(0, 40).forEach(key => {
+        result[key] = sanitizeViewerValue(value[key], depth - 1, seen);
+    });
+    return result;
 }
 
 /**

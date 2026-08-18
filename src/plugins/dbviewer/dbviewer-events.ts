@@ -126,6 +126,9 @@ export function createViewerEventHub(database: RxDatabase): ViewerEventHub {
             bulk.context.startsWith('replication-downstream');
         (bulk.events || []).forEach((event: any) => {
             const entry = changeEntryFromEvent(event);
+            if (entry.collectionName === '?' && bulk.collectionName) {
+                entry.collectionName = bulk.collectionName;
+            }
             entry.fromReplication = fromReplication;
             if (hub.firstEventTime === null) {
                 hub.firstEventTime = entry.time;

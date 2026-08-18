@@ -36,8 +36,13 @@ import {
     renderReplicationPanel
 } from './dbviewer-feeds.ts';
 import { renderLivePanel } from './dbviewer-live.ts';
+import {
+    VIEWER_DOCS_BASE_URL,
+    showViewerError
+} from './dbviewer-error.ts';
 
-export const VIEWER_DOCS_BASE_URL = 'https://rxdb.info/';
+export { VIEWER_DOCS_BASE_URL } from './dbviewer-error.ts';
+
 const SETTINGS_STORAGE_KEY = 'rxdb-dbviewer-settings';
 export const NARROW_BREAKPOINT = 640;
 
@@ -270,14 +275,6 @@ export function mountRxDBViewer(options: RxDBViewerOptions = {}): RxDBViewerHand
     applyWidth();
     ctx.renderContent();
 
-    const onKeyDown = (event: KeyboardEvent) => {
-        if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
-            event.preventDefault();
-            openCommandPalette(ctx);
-        }
-    };
-    document.addEventListener('keydown', onKeyDown);
-
     let railTimer: any = null;
     if (events) {
         let lastSeenWrites = -1;
@@ -302,7 +299,6 @@ export function mountRxDBViewer(options: RxDBViewerOptions = {}): RxDBViewerHand
                 contentCleanup();
                 contentCleanup = null;
             }
-            document.removeEventListener('keydown', onKeyDown);
             if (resizeObserver) {
                 resizeObserver.disconnect();
             }
@@ -330,9 +326,6 @@ function renderTopbar(ctx: ViewerContext) {
         el('span', 'rxdbv-topbar-divider', '|'),
         el('span', 'rxdbv-topbar-identity', identity),
         el('div', 'rxdbv-flex1'),
-        el('div', 'rxdbv-cmdk', ['⌘K', el('span', '', 'commands')], {
-            onClick: () => openCommandPalette(ctx)
-        }),
         el('button', 'rxdbv-btn', 'Refresh', {
             onClick: () => {
                 ctx.countsCache.clear();
@@ -342,7 +335,7 @@ function renderTopbar(ctx: ViewerContext) {
         }),
         el('button', 'rxdbv-btn', '?', {
             title: 'Open the RxDB documentation',
-            onClick: () => window.open(VIEWER_DOCS_BASE_URL, '_blank')
+            onClick: () => window.open(VIEWER_DOCS_BASE_URL + 'overview.html', '_blank')
         }),
         ctx.options.showCloseButton
             ? el('button', 'rxdbv-btn', '×', {
@@ -558,21 +551,17 @@ function renderSettings(ctx: ViewerContext) {
     const fileInput = el('input', '', undefined, { type: 'file' }) as HTMLInputElement;
     fileInput.accept = 'application/json,.json';
     fileInput.style.display = 'none';
-    const dumpErrorHost = el('div');
     fileInput.addEventListener('change', () => {
         const file = fileInput.files && fileInput.files[0];
         if (!file) {
             return;
         }
-        clearChildren(dumpErrorHost);
         file.text().then(text => {
             try {
                 const dump = JSON.parse(text);
                 ctx.openDump(dump, file.name);
             } catch (err) {
-                dumpErrorHost.appendChild(el('div', 'rxdbv-query-error-message', '✕ ' + file.name + ' is not a valid JSON dump.', {
-                    style: 'margin-top:8px'
-                }));
+                showViewerError(ctx.root, file.name + ' is not a valid JSON dump', err);
             }
         });
     });
@@ -594,108 +583,12 @@ function renderSettings(ctx: ViewerContext) {
                 el('button', 'rxdbv-btn-primary', 'Open dump file…', {
                     onClick: () => fileInput.click()
                 }),
-                fileInput,
-                dumpErrorHost
+                fileInput
             ], { style: 'padding:8px 12px;max-width:520px' }),
             el('div', 'rxdbv-section-label', 'ABOUT'),
             el('div', 'rxdbv-dim', 'RxDB database viewer · rxdb v' + RXDB_VERSION, { style: 'padding:8px 12px' })
         ])
     ]));
-}
-
-type PaletteEntry = {
-    kind: string;
-    label: string;
-    run: () => void;
-};
-
-function openCommandPalette(ctx: ViewerContext) {
-    const existing = ctx.root.querySelector('.rxdbv-palette-backdrop');
-    if (existing) {
-        existing.remove();
-        return;
-    }
-    const entries: PaletteEntry[] = [];
-    ctx.source.listCollections().forEach(info => {
-        entries.push({
-            kind: 'collection',
-            label: info.name,
-            run: () => ctx.navigate({ view: 'collection', collectionName: info.name })
-        });
-    });
-    ([
-        ['live', 'Live'],
-        ['schema', 'Schema'],
-        ['changes', 'Changes'],
-        ['querylab', 'Query lab'],
-        ['storage', 'Storage'],
-        ['settings', 'Settings']
-    ] as [ViewerNavView, string][]).forEach(([view, label]) => {
-        entries.push({
-            kind: 'tool',
-            label,
-            run: () => ctx.navigate({ view })
-        });
-    });
-
-    let activeIndex = 0;
-    let filtered = entries;
-    const list = el('div', 'rxdbv-palette-list');
-    const input = el('input', 'rxdbv-palette-input', undefined, {
-        placeholder: 'Jump to collection or tool…'
-    }) as HTMLInputElement;
-    const backdrop = el('div', 'rxdbv-palette-backdrop', [
-        el('div', 'rxdbv-palette', [input, list])
-    ]);
-    const close = () => backdrop.remove();
-    backdrop.addEventListener('click', event => {
-        if (event.target === backdrop) {
-            close();
-        }
-    });
-
-    const renderList = () => {
-        clearChildren(list);
-        const term = input.value.toLowerCase();
-        filtered = entries.filter(entry => entry.label.toLowerCase().includes(term));
-        if (activeIndex >= filtered.length) {
-            activeIndex = 0;
-        }
-        filtered.forEach((entry, index) => {
-            list.appendChild(el('div', 'rxdbv-palette-row' + (index === activeIndex ? ' rxdbv-active' : ''), [
-                el('span', 'rxdbv-palette-kind', entry.kind),
-                el('span', 'rxdbv-mono', entry.label)
-            ], {
-                onClick: () => {
-                    close();
-                    entry.run();
-                }
-            }));
-        });
-    };
-    input.addEventListener('input', () => {
-        activeIndex = 0;
-        renderList();
-    });
-    input.addEventListener('keydown', event => {
-        if (event.key === 'Escape') {
-            close();
-        } else if (event.key === 'ArrowDown') {
-            event.preventDefault();
-            activeIndex = Math.min(filtered.length - 1, activeIndex + 1);
-            renderList();
-        } else if (event.key === 'ArrowUp') {
-            event.preventDefault();
-            activeIndex = Math.max(0, activeIndex - 1);
-            renderList();
-        } else if (event.key === 'Enter' && filtered[activeIndex]) {
-            close();
-            filtered[activeIndex].run();
-        }
-    });
-    renderList();
-    ctx.root.appendChild(backdrop);
-    input.focus();
 }
 
 /**

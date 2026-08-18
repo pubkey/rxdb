@@ -13,7 +13,7 @@ Key features:
 
 - **Data grid and JSON view**: Browse documents of any [RxCollection](./rx-collection.md), paginated at 100 rows per page, with multi-select, inline editing and an Observe mode, on by default, that updates the result live as documents change.
 - **Mango query bar**: Run MongoDB-style (Mango) selectors against a collection, with history and favourites. The input also accepts relaxed JavaScript object syntax like `{ name: 'foo' }`, unquoted keys and single quotes are converted to JSON. Syntax errors show the exact character position and previous results stay visible.
-- **Document drawer**: Shows fields, internals (`_rev`, `_meta.lwt`), [attachments](./rx-attachment.md) with inline image previews, and a WILL RUN block that previews the exact `upsert()` call before you apply staged edits.
+- **Document drawer**: Shows fields, internals (`_rev`, `_meta.lwt`), [attachments](./rx-attachment.md) with inline image previews, and a WILL RUN block that previews the exact call before you apply staged edits: `insert()` for new documents, `incrementalPatch()` with only the changed fields for edits.
 - **Live activity map**: Draws the database as a map from app to collections to remote endpoints. Write, query and replication events flow as glyph particles, each collection node shows a 60 second sparkline and its cached [RxQuery](./rx-query.md) count. No document contents are drawn, only names, counts and rates, so the screen is safe to share.
 - **Schema panel**: Samples documents and shows per-field type shares, presence percentages and value details, plus violations against the declared [schema](./rx-schema.md). A toggle switches to the declared JSON schema itself.
 - **Query lab**: Explains a query with the used index, an execution plan derived from the [query planner](./query-optimizer.md) and findings like missing compound indexes or `$regex` full scans.
@@ -111,16 +111,16 @@ A persistent banner states that the data is read-only and frozen at export time.
 
 ## Editing is explicit
 
-The viewer never writes silently. Edits in the grid or the drawer are staged first, and the WILL RUN block always shows the exact call that Apply changes will execute:
+The viewer never writes silently. Edits in the grid or the drawer are staged first, and the WILL RUN block always shows the exact call that Apply changes will execute. Edits of an existing document run `incrementalPatch()` with only the changed fields, so [middleware hooks](./middleware.md) of the insert path never fire for an update:
 
 ```ts
 // applied on save, nothing has run yet
-await mydb.todos.upsert({
-  "id": "a1b2c3",
-  "title": "Buy milk (2%)",
-  "done": false
+await mydb.todos.findOne("a1b2c3").incrementalPatch({
+  "title": "Buy milk (2%)"
 })
 ```
+
+New documents run `insert()`. When a write fails, for example because the [schema validation](./schema-validation.md) rejects the document, the error shows as a popup with the parameters of the [RxError](./errors.md) serialized as JSON.
 
 Deleting documents opens a confirmation that states the blast radius: how many documents match, that deletes replicate to connected peers, and that tombstones remain until [cleanup](./cleanup.md). The delete button stays disabled until you type the collection name.
 
