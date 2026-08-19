@@ -5,7 +5,7 @@ export const SOCIAL_PROOF_VALUES = {
     github: 22869,
     // @link https://x.com/rxdbjs
     twitter: 3039,
-    // @link https://discord.gg/krNZtjZtpu
+    // @link https://discord.gg/AdqM4ckqVF
     discord: 1321
 } as const;
 
