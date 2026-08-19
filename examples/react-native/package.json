@@ -40,7 +40,7 @@
   "//overrides": "babel-preset-expo pins the react-native codegen packages to a version that cannot parse the react-native sources. They have to match the installed react-native version so that 'expo export' can bundle.",
   "overrides": {
     "@react-native/codegen": "0.87.0",
-    "@react-native/babel-plugin-codegen": "0.86.2"
+    "@react-native/babel-plugin-codegen": "0.87.0"
   },
   "dependencies": {
     "expo-crypto": "57.0.1",
