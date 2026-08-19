@@ -126,6 +126,12 @@
       "import": "./dist/esm/plugins/crdt/index.js",
       "default": "./dist/esm/plugins/crdt/index.js"
     },
+    "./plugins/devtool": {
+      "types": "./dist/types/plugins/devtool/index.d.ts",
+      "require": "./dist/cjs/plugins/devtool/index.js",
+      "import": "./dist/esm/plugins/devtool/index.js",
+      "default": "./dist/esm/plugins/devtool/index.js"
+    },
     "./plugins/dev-mode": {
       "types": "./dist/types/plugins/dev-mode/index.d.ts",
       "require": "./dist/cjs/plugins/dev-mode/index.js",

@@ -13,12 +13,13 @@ import {
 import { MatCard, MatCardSubtitle } from '@angular/material/card';
 import { HeroesListComponent } from './components/heroes-list/heroes-list.component';
 import { HeroInsertComponent } from './components/hero-insert/hero-insert.component';
+import { DbViewerComponent } from './components/db-viewer/db-viewer.component';
  
  @Component({
     selector: 'app-root',
     templateUrl: './app.component.html',
     styleUrls: ['./app.component.less'],
-    imports: [MatCard, MatCardSubtitle, HeroesListComponent, HeroInsertComponent]
+    imports: [MatCard, MatCardSubtitle, HeroesListComponent, HeroInsertComponent, DbViewerComponent]
 })
 export class AppComponent {
   title = 'angular';

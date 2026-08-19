@@ -436,6 +436,14 @@ export const ERROR_MESSAGES = {
         docs: ''
     },
 
+    // plugins/devtool
+    DVT1: {
+        message: 'The devtool can only be mounted where a DOM is available',
+        cause: 'mountRxDBDevtool() was called in an environment without a document, for example in Node.js.',
+        fix: 'Mount the devtool from browser code, or connect to the database from a browser instead.',
+        docs: ''
+    },
+
     // plugins/webmcp
     WMCP1: {
         message: 'WebMCP Agent attempted to delete a document that does not exist',

@@ -168,7 +168,7 @@ myDb.$.subscribe(changeEvent => console.dir(changeEvent));
 ```
 
 ### exportJSON()
-Use this function to create a JSON export from every piece of data in every collection of this database. You can pass `true` as a parameter to decrypt the encrypted data fields of your document.
+Use this function to create a JSON export from every piece of data in every collection of this database. You can pass `true` as a parameter to decrypt the encrypted data fields of your document. Such an export can be opened read-only in the [devtool](./devtool.md) when you cannot reach the device the database runs on.
 
 
 Before `exportJSON()` and `importJSON()` can be used, you have to add the `json-dump` plugin.
