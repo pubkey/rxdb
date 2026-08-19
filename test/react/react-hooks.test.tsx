@@ -13,6 +13,7 @@ import {
     addRxPlugin,
     RxDatabase,
     RxCollection,
+    countRxQuerySubscribers,
 } from '../../plugins/core/index.mjs';
 
 import { RxDBDevModePlugin } from '../../plugins/dev-mode/index.mjs';
@@ -244,6 +245,39 @@ describe('react-hooks.test.tsx', () => {
                 assert.strictEqual(result.current.results.length, 1);
             });
             assert.strictEqual(result.current.error, null);
+
+            await db.close();
+        });
+
+        /**
+         * useLiveRxQuery must return unsubscribe from useEffect.
+         * If the subscription is created inside an async callback,
+         * React drops that cleanup and the live query stays subscribed
+         * after unmount.
+         * @link https://github.com/pubkey/rxdb/issues/8964
+         */
+        it('should unsubscribe from the live query when the hook is unmounted', async () => {
+            const db = await createDatabase();
+            const collection: RxCollection<SimpleHumanDocumentType> = db.collections.humans;
+
+            const { result, unmount } = renderHook(
+                () => useLiveRxQuery({
+                    collection,
+                    query: allDocsQuery
+                }),
+                { wrapper: createWrapper(db) }
+            );
+
+            await waitFor(() => {
+                assert.strictEqual(result.current.loading, false);
+            });
+
+            const rxQuery = collection.find(allDocsQuery);
+            assert.strictEqual(countRxQuerySubscribers(rxQuery), 1);
+
+            unmount();
+
+            assert.strictEqual(countRxQuerySubscribers(rxQuery), 0);
 
             await db.close();
         });
