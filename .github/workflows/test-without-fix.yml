@@ -35,8 +35,11 @@ jobs:
           HEAD_SHA="${{ github.event.pull_request.head.sha }}"
           MERGE_BASE=$(git merge-base "$BASE_SHA" "$HEAD_SHA")
 
-          # Get changed test files (only *.test.ts files)
-          CHANGED_TESTS=$(git diff --name-only "$MERGE_BASE" "$HEAD_SHA" -- 'test/' | grep '\.test\.ts$' || true)
+          # Get changed test files. Next to the *.test.ts, *.test.tsx, *.test.js
+          # and *.test.jsx files there are a few test files that carry testcases
+          # without following that naming, they are matched explicitly.
+          CHANGED_TESTS=$(git diff --name-only "$MERGE_BASE" "$HEAD_SHA" -- 'test/' \
+            | grep -E '\.test\.(ts|tsx|js|jsx)$|^test/unit/database-lifecycle\.ts$|^test/unit/full\.node\.ts$' || true)
           # Get changed source files
           CHANGED_SRC=$(git diff --name-only "$MERGE_BASE" "$HEAD_SHA" -- 'src/')
 
@@ -52,12 +55,34 @@ jobs:
             exit 0
           fi
 
+          # Decide which test suites can run the changed test files.
+          # The react tests are not part of the unit test suite, they have
+          # their own entry point that is run with jsdom via npm run test:react.
+          RUN_UNIT=false
+          RUN_REACT=false
+          while IFS= read -r TEST_FILE; do
+            [ -z "$TEST_FILE" ] && continue
+            case "$TEST_FILE" in
+              test/react/*|test/react.test.ts|test/react-ssr.test.ts)
+                RUN_REACT=true
+                ;;
+              *)
+                RUN_UNIT=true
+                ;;
+            esac
+          done <<< "$CHANGED_TESTS"
+
           echo "should_run=true" >> "$GITHUB_OUTPUT"
+          echo "run_unit=$RUN_UNIT" >> "$GITHUB_OUTPUT"
+          echo "run_react=$RUN_REACT" >> "$GITHUB_OUTPUT"
           echo "Changed test files:"
           echo "$CHANGED_TESTS"
           echo ""
           echo "Changed source files:"
           echo "$CHANGED_SRC"
+          echo ""
+          echo "Run unit test suites: $RUN_UNIT"
+          echo "Run react test suite: $RUN_REACT"
 
       - name: Set node version
         if: steps.check-changes.outputs.should_run == 'true'
@@ -112,7 +137,7 @@ jobs:
           npm run build 2>&1 | tee /tmp/build-output.txt
 
       - name: Run test:node (expect failure)
-        if: steps.check-changes.outputs.should_run == 'true' && steps.build.outcome == 'success'
+        if: steps.check-changes.outputs.should_run == 'true' && steps.check-changes.outputs.run_unit == 'true' && steps.build.outcome == 'success'
         id: run-tests-node
         continue-on-error: true
         run: |
@@ -120,7 +145,7 @@ jobs:
           npm run test:node 2>&1 | tee /tmp/test-node-output.txt
 
       - name: Run test:browser:dexie (expect failure)
-        if: steps.check-changes.outputs.should_run == 'true' && steps.build.outcome == 'success'
+        if: steps.check-changes.outputs.should_run == 'true' && steps.check-changes.outputs.run_unit == 'true' && steps.build.outcome == 'success'
         id: run-tests-dexie
         continue-on-error: true
         run: |
@@ -128,6 +153,14 @@ jobs:
           sudo apt-get install -yq xvfb
           set -o pipefail
           xvfb-run --auto-servernum npm run test:browser:dexie -- --browsers ChromeHeadless 2>&1 | tee /tmp/test-dexie-output.txt
+
+      - name: Run test:react (expect failure)
+        if: steps.check-changes.outputs.should_run == 'true' && steps.check-changes.outputs.run_react == 'true' && steps.build.outcome == 'success'
+        id: run-tests-react
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          npm run test:react 2>&1 | tee /tmp/test-react-output.txt
 
       - name: Evaluate results
         if: steps.check-changes.outputs.should_run == 'true'
@@ -147,6 +180,11 @@ jobs:
             cat /tmp/test-dexie-output.txt >> /tmp/test-output.txt
             echo "" >> /tmp/test-output.txt
           fi
+          if [ -f /tmp/test-react-output.txt ]; then
+            echo "=== test:react output ===" >> /tmp/test-output.txt
+            cat /tmp/test-react-output.txt >> /tmp/test-output.txt
+            echo "" >> /tmp/test-output.txt
+          fi
 
           if [ "${{ steps.build.outcome }}" == "failure" ]; then
             echo "✅ Build FAILED without the source changes."
@@ -155,7 +193,7 @@ jobs:
             COMMENT_TITLE="Build FAILED without the source changes (expected)"
             COMMENT_BODY="This confirms the source changes in this PR are required for the build to succeed."
             OUTPUT_FILE="/tmp/build-output.txt"
-          elif [ "${{ steps.run-tests-node.outcome }}" == "failure" ] || [ "${{ steps.run-tests-dexie.outcome }}" == "failure" ]; then
+          elif [ "${{ steps.run-tests-node.outcome }}" == "failure" ] || [ "${{ steps.run-tests-dexie.outcome }}" == "failure" ] || [ "${{ steps.run-tests-react.outcome }}" == "failure" ]; then
             echo "✅ Tests FAILED without the fix."
             echo "This confirms the test correctly reproduces the bug."
             COMMENT_ICON="✅"
