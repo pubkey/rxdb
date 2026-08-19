@@ -258,15 +258,6 @@ This option works with `upsert()`, `bulkUpsert()`, and `incrementalUpsert()`.
 
 
 
-## Export attachments with the json-dump plugin
-
-The [json-dump plugin](./rx-collection.md#exportjson) skips the attachments data by default because the binary data can be way bigger than the documents itself. To create a dump that can be reimported with all attachments, set the `attachments` option to `true`. The attachments data is then exported as base64 strings.
-
-```ts
-const json = await myCollection.exportJSON({ attachments: true });
-await otherCollection.importJSON(json);
-```
-
 ## Attachment compression {#attachment-compression}
 
 Storing many attachments can be a problem when the disc space of the device is exceeded.
