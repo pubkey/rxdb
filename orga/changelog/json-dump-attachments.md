@@ -1,0 +1,1 @@
+- ADD `exportJSON()` of the [json-dump plugin](https://rxdb.info/rx-collection.html#exportjson) now supports the `attachments: true` option to include the attachments data as base64 strings in the dump. `importJSON()` restores these attachments. The default is `false` so that dumps stay small. Added testcases. [#8924](https://github.com/pubkey/rxdb/issues/8924)

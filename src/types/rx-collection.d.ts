@@ -113,14 +113,48 @@ export interface RxCollectionGenerated<RxDocumentType = any, OrmMethods = {}, Re
  */
 export type RxDumpCollectionAsAny<T> = T;
 
+export type RxDumpOptions = {
+    /**
+     * If set to true, the data of the attachments
+     * is exported as base64 strings so that the dump
+     * can be reimported with all attachments.
+     * [default=false]
+     */
+    attachments?: boolean;
+};
+
+/**
+ * The attachment data of a dump.
+ * The binary data is stored as a base64 string
+ * so that the dump stays JSON friendly.
+ */
+export type RxDumpAttachmentData = {
+    /**
+     * Size of the attachments data in bytes.
+     */
+    length: number;
+    /**
+     * Content type like 'plain/text'
+     */
+    type: string;
+    /**
+     * The data of the attachment as base64 string.
+     */
+    data: string;
+};
+
+export type RxDumpDocument<RxDocumentType> = RxDocumentType & {
+    _attachments?: { [attachmentId: string]: RxDumpAttachmentData; };
+};
+
 interface RxDumpCollectionBase {
     name: string;
     passwordHash?: string;
     schemaHash: string;
 }
 export interface RxDumpCollection<RxDocumentType> extends RxDumpCollectionBase {
-    docs: RxDocumentType[];
+    docs: RxDumpDocument<RxDocumentType>[];
 }
 export interface RxDumpCollectionAny<RxDocumentType> extends RxDumpCollectionBase {
-    docs: RxDumpCollectionAsAny<RxDocumentType>[];
+    docs: RxDumpDocument<RxDumpCollectionAsAny<RxDocumentType>>[];
 }

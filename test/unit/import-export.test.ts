@@ -7,7 +7,10 @@ import {
     createRxDatabase,
     RxCollection,
     randomToken,
-    createBlob
+    createBlob,
+    createBlobFromBase64,
+    blobToString,
+    ensureNotFalsy
 } from '../../plugins/core/index.mjs';
 
 import AsyncTestUtil from 'async-test-util';
@@ -369,6 +372,138 @@ describe('import-export.test.js', () => {
 
             sourceCol.database.remove();
             destCol.database.remove();
+        });
+    });
+    describe('attachments', () => {
+        it('should not contain the attachments by default', async () => {
+            if (!config.storage.hasAttachments) {
+                return;
+            }
+            const col = await humansCollection.createAttachments(1);
+            const doc = await col.findOne().exec(true);
+            await doc.putAttachment({
+                id: 'cat.txt',
+                data: createBlob('meow', 'text/plain'),
+                type: 'text/plain'
+            });
+
+            const json = await col.exportJSON();
+            assert.strictEqual(json.docs.length, 1);
+            assert.strictEqual(typeof json.docs[0]._attachments, 'undefined');
+
+            col.database.close();
+        });
+        it('should contain the attachments data as base64', async () => {
+            if (!config.storage.hasAttachments) {
+                return;
+            }
+            const col = await humansCollection.createAttachments(1);
+            const doc = await col.findOne().exec(true);
+            await doc.putAttachment({
+                id: 'cat.txt',
+                data: createBlob('meow', 'text/plain'),
+                type: 'text/plain'
+            });
+
+            const json = await col.exportJSON({ attachments: true });
+            const attachments = ensureNotFalsy(json.docs[0]._attachments);
+            const attachment = attachments['cat.txt'];
+            assert.ok(attachment);
+            assert.strictEqual(attachment.type, 'text/plain');
+            assert.strictEqual(attachment.length, 4);
+            assert.strictEqual(
+                await blobToString(await createBlobFromBase64(attachment.data, attachment.type)),
+                'meow'
+            );
+
+            /**
+             * The dump must be JSON friendly
+             * so that it can be stored in a file.
+             */
+            const stringified = JSON.stringify(json);
+            assert.ok(stringified.includes('cat.txt'));
+
+            col.database.close();
+        });
+        it('should restore the attachments on import', async () => {
+            if (!config.storage.hasAttachments) {
+                return;
+            }
+            const sourceCol = await humansCollection.createAttachments(1);
+            const doc = await sourceCol.findOne().exec(true);
+            await doc.putAttachment({
+                id: 'cat.txt',
+                data: createBlob('meow', 'text/plain'),
+                type: 'text/plain'
+            });
+            await doc.putAttachment({
+                id: 'dog.txt',
+                data: createBlob('wuff', 'text/plain'),
+                type: 'text/plain'
+            });
+
+            const json = await sourceCol.exportJSON({ attachments: true });
+            /**
+             * Ensure that only plain JSON is transferred,
+             * the same way a user would store the dump in a file.
+             */
+            const parsedJson = JSON.parse(JSON.stringify(json));
+
+            const destCol = await humansCollection.createAttachments(0);
+            await destCol.importJSON(parsedJson);
+
+            const importedDoc = await destCol.findOne().exec(true);
+            const importedAttachments = importedDoc.allAttachments();
+            assert.strictEqual(importedAttachments.length, 2);
+
+            const catAttachment = ensureNotFalsy(importedDoc.getAttachment('cat.txt'));
+            assert.strictEqual(catAttachment.type, 'text/plain');
+            assert.strictEqual(catAttachment.length, 4);
+            assert.strictEqual(await catAttachment.getStringData(), 'meow');
+            assert.strictEqual(
+                await ensureNotFalsy(importedDoc.getAttachment('dog.txt')).getStringData(),
+                'wuff'
+            );
+
+            sourceCol.database.close();
+            destCol.database.close();
+        });
+        it('should work on the database level', async () => {
+            if (!config.storage.hasAttachments) {
+                return;
+            }
+            const sourceCol = await humansCollection.createAttachments(1);
+            const doc = await sourceCol.findOne().exec(true);
+            await doc.putAttachment({
+                id: 'cat.txt',
+                data: createBlob('meow', 'text/plain'),
+                type: 'text/plain'
+            });
+
+            const withoutAttachments = await sourceCol.database.exportJSON();
+            assert.strictEqual(typeof withoutAttachments.collections[0].docs[0]._attachments, 'undefined');
+
+            const json = await sourceCol.database.exportJSON({ attachments: true });
+            assert.ok(ensureNotFalsy(json.collections[0].docs[0]._attachments)['cat.txt']);
+
+            const withCollectionNames = await sourceCol.database.exportJSON(
+                [sourceCol.name],
+                { attachments: true }
+            );
+            assert.strictEqual(withCollectionNames.collections.length, 1);
+            assert.ok(ensureNotFalsy(withCollectionNames.collections[0].docs[0]._attachments)['cat.txt']);
+
+            const destCol = await humansCollection.createAttachments(0);
+            await destCol.database.importJSON(JSON.parse(JSON.stringify(json)));
+
+            const importedDoc = await destCol.findOne().exec(true);
+            assert.strictEqual(
+                await ensureNotFalsy(importedDoc.getAttachment('cat.txt')).getStringData(),
+                'meow'
+            );
+
+            sourceCol.database.close();
+            destCol.database.close();
         });
     });
 });

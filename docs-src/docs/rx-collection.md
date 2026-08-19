@@ -298,6 +298,21 @@ myCollection.exportJSON()
   .then(json => console.dir(json));
 ```
 
+By default the [attachments](./rx-attachment.md) of the documents are not part of the dump because their binary data can be way bigger than the documents itself. To create a dump that can be reimported with all attachments, set the `attachments` option to `true`. The attachments data is then stored as base64 strings so that the dump stays JSON friendly.
+
+```js
+const json = await myCollection.exportJSON({ attachments: true });
+console.dir(json.docs[0]._attachments);
+/* > {
+ *     'cat.txt': {
+ *         type: 'text/plain',
+ *         length: 4,
+ *         data: 'bWVvdw=='
+ *     }
+ * }
+ */
+```
+
 ### importJSON()
 To import the JSON dump into your collection, use this function.
 ```js
@@ -305,7 +320,7 @@ To import the JSON dump into your collection, use this function.
 myCollection.importJSON(json)
   .then(() => console.log('done'));
 ```
-Note that importing will fire events for each inserted document.
+Note that importing will fire events for each inserted document. When the dump was created with `attachments: true`, the attachments are written together with the documents.
 
 ### remove()
 
