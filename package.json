@@ -639,7 +639,7 @@
     "dependency-check": "4.1.0",
     "eslint": "10.8.1",
     "eslint-plugin-import": "2.32.0",
-    "eslint-plugin-jsdoc": "64.0.2",
+    "eslint-plugin-jsdoc": "64.1.0",
     "exists-file": "3.0.2",
     "express": "5.2.1",
     "fake-indexeddb": "6.2.5",
