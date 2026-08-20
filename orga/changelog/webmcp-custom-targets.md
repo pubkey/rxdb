@@ -1,4 +1,0 @@
-- Refactored the [WebMCP plugin](https://rxdb.info/webmcp.html) internally so that the tool definitions are built separately from their execution. This does not change the registered tools, their names, descriptions or input schemas. Added testcases for the new internal structure.
-- Added the `modelContext` option to register the WebMCP tools at the registry of another document, for example an iframe.
-- FIX The WebMCP plugin read the tool registry from `navigator.modelContext`, which the [May 27, 2026 WebMCP draft](https://github.com/webmachinelearning/webmcp/pull/184) moved to `document.modelContext`. It now prefers `document.modelContext` and falls back to `navigator.modelContext`.
-- FIX The WebMCP plugin unregistered its tools with `unregisterTool()`, which the April 23, 2026 WebMCP draft removed. Tools are now registered with an `AbortSignal` and unregistered by aborting it.

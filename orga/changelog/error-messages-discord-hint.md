@@ -1,1 +1,0 @@
-- ADD Discord chat hint to RxDB error messages so users can ask for help at https://rxdb.info/chat

@@ -1,1 +1,0 @@
-- FIX `useLiveRxQuery` never unsubscribed from the live query because `useEffect` dropped the cleanup returned by the async `runQuery` callback. Added an unmount test in `test/react/react-hooks.test.tsx`. [#8964](https://github.com/pubkey/rxdb/issues/8964)

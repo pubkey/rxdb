@@ -1,1 +1,0 @@
-FIX schema migration would leave the leader-election `BroadcastChannel` open when the migration threw (for example when a `migrationStrategy` failed), keeping the tab leader forever and blocking other tabs from running the migration. The channel is now closed on every code path. (https://github.com/pubkey/rxdb/pull/7827)
