@@ -711,19 +711,19 @@ export const ERROR_MESSAGES = {
         message: 'You must create the collections before you can import their data',
         cause: 'Importing data into a non-existent collection.',
         fix: 'Create the collection before importing.',
-        docs: 'https://rxdb.info/backup.html?console=errors&code=JD1'
+        docs: 'https://rxdb.info/json-import-export.html?console=errors&code=JD1'
     },
     JD2: {
         message: 'RxCollection.importJSON(): the imported json relies on a different schema',
         cause: 'The imported data schema does not match the collection schema.',
         fix: 'Ensure schemas match.',
-        docs: 'https://rxdb.info/backup.html?console=errors&code=JD2'
+        docs: 'https://rxdb.info/json-import-export.html?console=errors&code=JD2'
     },
     JD3: {
         message: 'RxCollection.importJSON(): json.passwordHash does not match the own',
         cause: 'Password mismatch in import.',
         fix: 'Use the same password.',
-        docs: 'https://rxdb.info/backup.html?console=errors&code=JD3'
+        docs: 'https://rxdb.info/json-import-export.html?console=errors&code=JD3'
     },
 
     // plugins/leader-election.js

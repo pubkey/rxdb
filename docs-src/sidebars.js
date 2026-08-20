@@ -429,6 +429,12 @@ const sidebars = {
 
         {
           type: 'doc',
+          id: 'json-import-export',
+          label: 'JSON Import/Export'
+        },
+
+        {
+          type: 'doc',
           id: 'backup',
           label: 'Backup'
         },

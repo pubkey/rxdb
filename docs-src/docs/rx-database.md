@@ -168,40 +168,19 @@ myDb.$.subscribe(changeEvent => console.dir(changeEvent));
 ```
 
 ### exportJSON()
-Use this function to create a JSON export from every piece of data in every collection of this database.
 
-
-Before `exportJSON()` and `importJSON()` can be used, you have to add the `json-dump` plugin.
+Creates a JSON export of every piece of data in every collection of this database. Needs the `json-dump` plugin. [Read more](./json-import-export.md)
 
 ```javascript
-import { addRxPlugin } from 'rxdb';
-import { RxDBJsonDumpPlugin } from 'rxdb/plugins/json-dump';
-addRxPlugin(RxDBJsonDumpPlugin);
-```
-
-
-```javascript
-myDatabase.exportJSON()
-  .then(json => console.dir(json));
-```
-
-You can limit the export to a set of collections and you can set the `attachments` option to also export the [attachments](./rx-attachment.md) data as base64 strings. The `attachments` option defaults to `false`.
-
-```javascript
-// export everything, including the attachments
-const json = await myDatabase.exportJSON({ attachments: true });
-
-// export only some collections, including the attachments
-const partialJson = await myDatabase.exportJSON(['humans'], { attachments: true });
+const json = await myDatabase.exportJSON();
 ```
 
 ### importJSON()
-To import the JSON dumps into your database, use this function.
+
+Imports a previously exported JSON dump back into the database. The collections have to be created before. [Read more](./json-import-export.md)
 
 ```javascript
-// import the dump to the database
-emptyDatabase.importJSON(json)
-  .then(() => console.log('done'));
+await emptyDatabase.importJSON(json);
 ```
 
 ### backup()
