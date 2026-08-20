@@ -11,6 +11,7 @@ import type {
     RxCollection,
     RxDumpDatabase,
     RxDumpDatabaseAny,
+    RxDumpOptions,
     BackupOptions,
     RxStorage,
     RxStorageInstance,
@@ -527,9 +528,18 @@ export class RxDatabaseBase<
     /**
      * Export database to a JSON friendly format.
      */
-    exportJSON(_collections?: string[]): Promise<RxDumpDatabase<Collections>>;
-    exportJSON(_collections?: string[]): Promise<RxDumpDatabaseAny<Collections>>;
-    exportJSON(_collections?: string[]): Promise<any> {
+    exportJSON(
+        _collectionsOrOptions?: string[] | RxDumpOptions,
+        _options?: RxDumpOptions
+    ): Promise<RxDumpDatabase<Collections>>;
+    exportJSON(
+        _collectionsOrOptions?: string[] | RxDumpOptions,
+        _options?: RxDumpOptions
+    ): Promise<RxDumpDatabaseAny<Collections>>;
+    exportJSON(
+        _collectionsOrOptions?: string[] | RxDumpOptions,
+        _options?: RxDumpOptions
+    ): Promise<any> {
         throw pluginMissing('json-dump');
     }
 

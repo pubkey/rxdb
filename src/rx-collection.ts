@@ -68,6 +68,7 @@ import type {
     RxDocument,
     RxDumpCollection,
     RxDumpCollectionAny,
+    RxDumpOptions,
     MangoQuery,
     MangoQueryNoLimit,
     RxCacheReplacementPolicy,
@@ -937,9 +938,9 @@ export class RxCollectionBase<
     /**
      * Export collection to a JSON friendly format.
      */
-    exportJSON(): Promise<RxDumpCollection<RxDocumentType>>;
-    exportJSON(): Promise<RxDumpCollectionAny<RxDocumentType>>;
-    exportJSON(): Promise<any> {
+    exportJSON(_options?: RxDumpOptions): Promise<RxDumpCollection<RxDocumentType>>;
+    exportJSON(_options?: RxDumpOptions): Promise<RxDumpCollectionAny<RxDocumentType>>;
+    exportJSON(_options?: RxDumpOptions): Promise<any> {
         throw pluginMissing('json-dump');
     }
 
