@@ -436,6 +436,50 @@ export const ERROR_MESSAGES = {
         docs: ''
     },
 
+    // plugins/vector
+    VEC1: {
+        message: 'Unknown vector distance name',
+        cause: 'You passed a distance name that RxDB does not know.',
+        fix: 'Use one of the known distance names or provide an own VectorDistanceMeta object.',
+        docs: 'https://rxdb.info/vector.html?console=errors&code=VEC1'
+    },
+    VEC2: {
+        message: 'The vector index options must contain the vectorPath',
+        cause: 'You created a vector index without setting the vectorPath option.',
+        fix: 'Set vectorPath to the object path of the field that stores the vector.',
+        docs: 'https://rxdb.info/vector.html?console=errors&code=VEC2'
+    },
+    VEC3: {
+        message: 'The vector index options must contain a dimensions value that is bigger than zero',
+        cause: 'You created a vector index without a valid dimensions option.',
+        fix: 'Set dimensions to the amount of numbers that your vectors contain.',
+        docs: 'https://rxdb.info/vector.html?console=errors&code=VEC3'
+    },
+    VEC4: {
+        message: 'The length of the given vector does not match the dimensions of the vector index',
+        cause: 'You used a vector that has a different length than the one defined in the index options.',
+        fix: 'Ensure all vectors are created by the same embedding model and have the same length.',
+        docs: 'https://rxdb.info/vector.html?console=errors&code=VEC4'
+    },
+    VEC5: {
+        message: 'The schema already contains a field with the name of a vector index field',
+        cause: 'The fieldPrefix of the vector index creates a field name that is already used in the schema.',
+        fix: 'Use a different fieldPrefix in the vector index options.',
+        docs: 'https://rxdb.info/vector.html?console=errors&code=VEC5'
+    },
+    VEC6: {
+        message: 'The schema of the collection does not contain the vectorPath of the vector index',
+        cause: 'You added a vector index for a field that does not exist in the schema.',
+        fix: 'Add the vector field to the schema of the collection.',
+        docs: 'https://rxdb.info/vector.html?console=errors&code=VEC6'
+    },
+    VEC7: {
+        message: 'The schema of the collection does not contain the index fields of the vector index',
+        cause: 'You created the collection with a schema that was not extended with the vector index fields.',
+        fix: 'Run extendSchemaWithVectorIndex() with the same options before you create the collection.',
+        docs: 'https://rxdb.info/vector.html?console=errors&code=VEC7'
+    },
+
     // plugins/webmcp
     WMCP1: {
         message: 'WebMCP Agent attempted to delete a document that does not exist',

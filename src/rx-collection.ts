@@ -111,6 +111,7 @@ import { IncrementalWriteQueue } from './incremental-write.ts';
 import { beforeDocumentUpdateWrite } from './rx-document.ts';
 import { overwritable } from './overwritable.ts';
 import type { RxPipeline, RxPipelineOptions } from './plugins/pipeline/index.ts';
+import type { RxVectorIndex, VectorIndexOptions } from './plugins/vector/index.ts';
 import { defaultConflictHandler } from './replication-protocol/default-conflict-handler.ts';
 import { rxChangeEventBulkToRxChangeEvents } from './rx-change-event.ts';
 
@@ -962,6 +963,10 @@ export class RxCollectionBase<
 
     addPipeline(_options: RxPipelineOptions<RxDocumentType>): Promise<RxPipeline<RxDocumentType>> {
         throw pluginMissing('pipeline');
+    }
+
+    addVectorIndex(_options: VectorIndexOptions): RxVectorIndex<RxDocumentType> {
+        throw pluginMissing('vector');
     }
 
     /**
