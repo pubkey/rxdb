@@ -79,7 +79,7 @@ console.dir(json);
  *     collections: [
  *         {
  *             name: 'heroes',
- *             schemaHash: '22b549e064b35a21494eadc441491eeb644bee28aadb0feb9303cb37c0d51b86',
+ *             schemaHash: '22b549e064b35a...',
  *             docs: []
  *         }
  *     ]
