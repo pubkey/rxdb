@@ -477,6 +477,11 @@ const sidebars = {
         },
         {
           type: 'doc',
+          id: 'vector-search',
+          label: 'Vector Search'
+        },
+        {
+          type: 'doc',
           id: 'articles/javascript-vector-database',
           label: 'Vector Database'
         },
