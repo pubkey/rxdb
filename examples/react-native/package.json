@@ -27,7 +27,7 @@
     "random-token": "0.0.8",
     "react": "19.2.8",
     "react-native": "0.86.2",
-    "react-native-gesture-handler": "3.1.0",
+    "react-native-gesture-handler": "3.2.0",
     "react-native-get-random-values": "2.0.0",
     "react-native-quick-base64": "3.0.1",
     "react-test-renderer": "19.2.8",
