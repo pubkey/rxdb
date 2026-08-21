@@ -348,7 +348,9 @@ Yes. The plugin is plain TypeScript on top of typed arrays and has no native dep
 <details>
 <summary>Does the vector search use WebAssembly and SIMD?</summary>
 
-No. The scoring loop is plain TypeScript over typed arrays. A WASM kernel with SIMD runs the inner loop faster, but every search has to copy the query vector into the WASM memory and the results back out, and that boundary cost is paid on each call. **[RxDB](./rx-database.md)** optimizes for latency, so at the corpus sizes that fit on a user device the copying can cost more than SIMD wins back inside the kernel. Plain TypeScript also keeps the plugin free of dependencies and runs on every runtime RxDB supports, including [React Native](./react-native-database.md) and Deno, where WASM support is uneven.
+No. The scoring loop is plain TypeScript over typed arrays. A WASM kernel with SIMD runs the inner loop faster, but every call pays for crossing the JavaScript to WASM boundary: the query is copied into the WASM memory and the results back out. That cost is fixed per call, so it weighs most on operations that are small and frequent, and a search over a local corpus is exactly that.
+
+Embedding models are the opposite case, which is why [transformers.js](https://github.com/huggingface/transformers.js) runs on WASM by default and only uses WebGPU when you pass `device: 'webgpu'`. There one crossing per document is amortized over a few hundred milliseconds of compute. Keeping the scorer of **[RxDB](./rx-database.md)** on the JavaScript side also avoids a dependency and works where WASM support is weak, such as [React Native](./react-native-database.md).
 
 </details>
 
