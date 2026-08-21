@@ -23,6 +23,7 @@ import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.mjs'
 import {
     RxDatabaseProvider,
     useRxDatabase,
+    useRxDocument,
     useRxQuery,
     useLiveRxQuery,
 } from '../../plugins/react/index.mjs';
@@ -278,6 +279,91 @@ describe('react-hooks.test.tsx', () => {
             unmount();
 
             assert.strictEqual(countRxQuerySubscribers(rxQuery), 0);
+
+            await db.close();
+        });
+    });
+
+    describe('useRxDocument', () => {
+        it('should start with loading state as true when collection and primaryKey are provided', async () => {
+            const db = await createDatabase();
+            const collection: RxCollection<SimpleHumanDocumentType> = db.collections.humans;
+            const doc = schemaObjects.simpleHumanAge();
+            await collection.insert(doc);
+
+            const { result } = renderHook(
+                () => useRxDocument(collection, doc.passportId),
+                { wrapper: createWrapper(db) }
+            );
+
+            /**
+             * The initial loading state must be true because
+             * the subscription has not resolved yet.
+             * @link https://github.com/pubkey/rxdb/issues/8965
+             */
+            assert.strictEqual(result.current.loading, true);
+
+            await db.close();
+        });
+
+        it('should start with loading state as false when collection is null', () => {
+            const { result } = renderHook(
+                () => useRxDocument(null as any, 'some-id')
+            );
+            assert.strictEqual(result.current.loading, false);
+            assert.strictEqual(result.current.result, null);
+        });
+
+        it('should start with loading state as false when primaryKey is undefined', async () => {
+            const db = await createDatabase();
+            const collection: RxCollection<SimpleHumanDocumentType> = db.collections.humans;
+
+            const { result } = renderHook(
+                () => useRxDocument(collection, undefined),
+                { wrapper: createWrapper(db) }
+            );
+            assert.strictEqual(result.current.loading, false);
+            assert.strictEqual(result.current.result, null);
+
+            await db.close();
+        });
+
+        it('should return the document and set loading to false after subscription resolves', async () => {
+            const db = await createDatabase();
+            const collection: RxCollection<SimpleHumanDocumentType> = db.collections.humans;
+            const doc = schemaObjects.simpleHumanAge();
+            await collection.insert(doc);
+
+            const { result } = renderHook(
+                () => useRxDocument(collection, doc.passportId),
+                { wrapper: createWrapper(db) }
+            );
+
+            await waitFor(() => {
+                assert.strictEqual(result.current.loading, false);
+            });
+
+            assert.strictEqual(result.current.result?.passportId, doc.passportId);
+            assert.strictEqual(result.current.error, null);
+
+            await db.close();
+        });
+
+        it('should return null result with loading false when document does not exist', async () => {
+            const db = await createDatabase();
+            const collection: RxCollection<SimpleHumanDocumentType> = db.collections.humans;
+
+            const { result } = renderHook(
+                () => useRxDocument(collection, 'non-existent-id'),
+                { wrapper: createWrapper(db) }
+            );
+
+            await waitFor(() => {
+                assert.strictEqual(result.current.loading, false);
+            });
+
+            assert.strictEqual(result.current.result, null);
+            assert.strictEqual(result.current.error, null);
 
             await db.close();
         });

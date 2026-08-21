@@ -1,0 +1,1 @@
+- FIX react plugin `useRxDocument` starting with `loading: false` instead of `loading: true` when valid collection and primaryKey are provided. This caused a false "not found" flash on the first render before the subscription resolved. Added equivalent tests to the existing react-hooks test suite. Fixes #8965.
