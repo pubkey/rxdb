@@ -1,7 +1,7 @@
 {
   "name": "rxdb",
   "description": "A local-first realtime NoSQL Database for JavaScript applications - https://rxdb.info/",
-  "version": "17.4.0",
+  "version": "17.5.0",
   "author": "pubkey",
   "repository": {
     "type": "git",
@@ -595,10 +595,10 @@
     "oblivious-set": "2.0.0",
     "simple-peer": "9.11.1",
     "ws": "8.21.3",
-    "z-schema": "12.4.1"
+    "z-schema": "12.4.2"
   },
   "devDependencies": {
-    "@angular/core": "22.1.1",
+    "@angular/core": "22.1.2",
     "@babel/cli": "7.29.7",
     "@babel/core": "7.29.7",
     "@babel/plugin-external-helpers": "7.29.7",
@@ -629,8 +629,8 @@
     "@types/node": "24.13.3",
     "@types/react": "19.2.18",
     "@types/source-map-support": "0.5.10",
-    "@typescript-eslint/eslint-plugin": "8.66.0",
-    "@typescript-eslint/parser": "8.66.0",
+    "@typescript-eslint/eslint-plugin": "8.67.0",
+    "@typescript-eslint/parser": "8.67.0",
     "appwrite": "26.2.0",
     "assert": "2.1.0",
     "async-test-util": "2.5.0",
@@ -676,7 +676,7 @@
     "mocha": "11.7.6",
     "mongodb": "7.5.0",
     "nats": "2.29.3",
-    "node-appwrite": "27.1.0",
+    "node-appwrite": "28.0.0",
     "node-datachannel": "0.32.3",
     "pre-commit": "2.0.0",
     "process": "0.11.10",
@@ -691,8 +691,8 @@
     "sharp": "0.35.3",
     "source-map-support": "0.5.21",
     "stream": "0.0.3",
-    "supabase": "2.113.0",
-    "terser": "5.49.2",
+    "supabase": "2.114.0",
+    "terser": "5.50.0",
     "terser-webpack-plugin": "5.6.1",
     "ts-loader": "9.6.2",
     "tsx": "4.23.12",

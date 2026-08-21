@@ -1,2 +1,0 @@
-- Update the [Svelte example](https://github.com/pubkey/rxdb/tree/master/examples/svelte) from Svelte 4 to Svelte 5 with runes. Shared state now lives in a `store.svelte.js` module with `$state`, and the RxDB query subscription is created in an `$effect` so it is cleaned up when the component is destroyed.
-- FIX In the Svelte example, saving an already existing note threw because `RxDocument.update()` was used without the `update` plugin being added. The note editor now uses the core `incrementalPatch()` method. Also added an e2e testcase that edits an existing note.
