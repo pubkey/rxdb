@@ -346,6 +346,13 @@ Yes. The plugin is plain TypeScript on top of typed arrays and has no native dep
 </details>
 
 <details>
+<summary>Does the vector search use WebAssembly and SIMD?</summary>
+
+No. The scoring loop is plain TypeScript over typed arrays. A WASM kernel with SIMD runs the inner loop faster, but every search has to copy the query vector into the WASM memory and the results back out, and that boundary cost is paid on each call. **[RxDB](./rx-database.md)** optimizes for latency, so at the corpus sizes that fit on a user device the copying can cost more than SIMD wins back inside the kernel. Plain TypeScript also keeps the plugin free of dependencies and runs on every runtime RxDB supports, including [React Native](./react-native-database.md) and Deno, where WASM support is uneven.
+
+</details>
+
+<details>
 <summary>What is the difference to the vector utils of RxDB?</summary>
 
 The `vector` plugin has exact distance functions that compare two raw vectors. You need them for a full scan over all documents and for rescoring. The `vector-turboquant` plugin adds the index: it holds all vectors in a compressed form and answers a nearest neighbor search without reading the raw embeddings from the [RxStorage](./rx-storage.md).
