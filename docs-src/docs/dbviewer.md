@@ -7,7 +7,7 @@ image: /headers/dbviewer.jpg
 
 # Database Viewer
 
-With the `dbviewer` plugin you can inspect and edit the data of a running [RxDB](https://rxdb.info/) database from inside your own application. The viewer mounts into any DOM element and renders a full devtool: a data grid with a Mango query bar, a JSON view, a document detail drawer, and panels for schema analysis, query analysis, [replication](./replication.md), the change stream and storage statistics. It works over a live [RxDatabase](./rx-database.md) and over a static dump created with the [json-dump plugin](./rx-database.md#exportjson).
+With the `dbviewer` plugin you can inspect and edit the data of a running [RxDB](https://rxdb.info/) database from inside your own application. The viewer mounts into any DOM element and renders a full devtool: a data grid with a Mango query bar, a JSON view, a document detail drawer, and panels for schema analysis, query analysis, [replication](./replication.md), the change stream and storage statistics. It works over a live [RxDatabase](./rx-database.md) and over a static dump created with the [json-dump plugin](./json-import-export.md).
 
 Key features:
 
@@ -96,7 +96,7 @@ viewer.close$.subscribe(() => {
 
 ## Dump mode
 
-When you cannot reach the device that runs the database, work from an export instead. On the device, run `await db.exportJSON()` with the [json-dump plugin](./rx-database.md#exportjson), save the result, and open it in the viewer:
+When you cannot reach the device that runs the database, work from an export instead. On the device, run `await db.exportJSON()` with the [json-dump plugin](./json-import-export.md), save the result, and open it in the viewer:
 
 ```ts
 import { mountRxDBViewer } from 'rxdb/plugins/dbviewer';
@@ -157,7 +157,7 @@ Yes. The Replication panel polls for states created with `replicateRxCollection(
 ## Follow Up
 
 - Start with the [RxDB Quickstart](./quickstart.md)
-- Learn how to [export and import JSON dumps](./rx-database.md#exportjson)
+- Learn how to [export and import JSON dumps](./json-import-export.md)
 - Read about [dev-mode](./dev-mode.md) checks during development
 - Expose your data to AI agents with the [WebMCP plugin](./webmcp.md)
 - If you have not done so yet, leave a star at the [RxDB GitHub repo ⭐](/code/)
