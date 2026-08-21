@@ -346,7 +346,7 @@ describe('reactive-query.test.js', () => {
             let insertLen = 0;
             let addCount = 0;
 
-            const query = c.find({ sort: [{ passportId: 'asc', lastName: 'desc', firstName: 'asc' }] });
+            const query = c.find({ sort: [{ passportId: 'asc', lastName: 'desc', firstName: 'asc' } as any] });
             const sub = query.$.subscribe(r => {
                 done = true;
                 result = r;

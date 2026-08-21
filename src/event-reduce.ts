@@ -9,6 +9,7 @@ import {
 import type {
     RxQuery,
     MangoQuery,
+    FilledMangoQuery,
     StringKeys,
     RxDocumentData,
     RxStorageChangeEvent
@@ -34,7 +35,7 @@ export type EventReduceResult<RxDocumentType> = EventReduceResultNeg | EventRedu
 
 export function getSortFieldsOfQuery<RxDocType>(
     primaryKey: StringKeys<RxDocumentData<RxDocType>>,
-    query: MangoQuery<RxDocType>
+    query: MangoQuery<RxDocType> | FilledMangoQuery<RxDocType>
 ): (string | StringKeys<RxDocType>)[] {
     if (!query.sort || query.sort.length === 0) {
         return [primaryKey];

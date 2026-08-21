@@ -37,6 +37,8 @@ const name = myDocument.get('name'); // returns the name
 const name = myDocument.name;
 ```
 
+In TypeScript the path is checked against the document type, same as the [typed query selectors](./rx-query.md#fully-typed-queries-in-typescript). Nested fields are addressed with dot-paths like `get('address.city')` and the return value has the type of that field. Same goes for `get$()` and `get$$()`.
+
 ### get$()
 This function returns an observable of the given path's value.
 The current value of this path will be emitted each time the document changes.
@@ -98,6 +100,8 @@ await myDocument.update({
     }
 });
 ```
+
+In TypeScript the update operators are typed against the document type, same as the [typed query selectors](./rx-query.md#fully-typed-queries-in-typescript). The field paths must exist on the document type and the operators are constrained by the type of the field, so `$inc` only works on number fields and `$push` only on array fields. Dynamically built updates can be casted to `UpdateQuery<any>`.
 
 ### modify()
 Updates a document's data based on a function that mutates the current data and returns the new value.

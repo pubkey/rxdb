@@ -286,6 +286,80 @@ This works in contrast to most other databases where a query without sorting wou
 :::
 
 
+## Fully Typed Queries in TypeScript
+
+When a collection is typed, like `RxCollection<DocType>`, the whole mango query is type-checked against the document type.
+
+The typing works on several levels:
+
+- **Selector keys**: The keys of the `selector` must be fields of the document type. Nested fields are addressed with dot-paths like `'address.city'`. A typo in a field name is a compile error instead of a silently empty result set.
+- **Operators**: The operators are constrained by the type of the field they run on. `$gt`, `$gte`, `$lt` and `$lte` work on numbers and strings, `$regex` only on strings, `$elemMatch` and `$size` only on arrays, `$in` and `$nin` take arrays of the field's type, and `$eq`, `$ne` and `$exists` work everywhere.
+- **Sort fields**: The `sort` parameter accepts only field paths that exist on the document type, with the same dot-path mechanism as the selector keys. One sort part must contain exactly one field. When you sort by multiple fields, use one sort part per field so that the sort order is deterministic.
+- **Index**: The `index` option accepts only field paths of the document type.
+- **Chained queries**: The [query builder](#query-builder-plugin) methods are typed as well. `.where('age')` only accepts existing field paths and the following operator methods are constrained by the type of that field, so `.where('age').regex('foo')` is a compile error on a number field.
+
+```ts
+type HeroDocType = {
+    passportId: string;
+    age: number;
+    address: {
+        city: string;
+    };
+};
+const collection: RxCollection<HeroDocType> = myDatabase.heroes;
+
+collection.find({
+    selector: {
+        age: { $gt: 18 },
+        'address.city': { $regex: '^B' }
+    },
+    sort: [{ age: 'asc' }]
+}); // <- this compiles
+
+collection.find({
+    selector: {
+        agee: { $gt: 18 } // <- compile error, typo in the field name
+    }
+});
+collection.find({
+    selector: {
+        age: { $regex: 'foo' } // <- compile error, $regex on a number field
+    }
+});
+collection.find({
+    sort: [{ 'address.cityy': 'asc' }] // <- compile error, typo in the sort field
+});
+collection.find({
+    // compile error, one field per sort part:
+    sort: [{ age: 'asc', passportId: 'desc' }]
+});
+collection.find().where('age').gt(10).lte(20); // <- this compiles
+// compile error, $regex on a number field:
+collection.find().where('age').regex('foo');
+```
+
+Dot-paths are generated for up to 6 levels of nesting. Fields that are nested deeper cannot be addressed with a typed path and need the escape hatch below.
+
+### Escape hatch for dynamic queries
+
+When you build queries dynamically, for example with computed field names, the compiler cannot check them. Build the query as `MangoQuery<any>` and cast it at the call to opt out of the strict typing for that one query:
+
+```ts
+import type { MangoQuery } from 'rxdb';
+
+const dynamicQuery: MangoQuery<any> = {
+    selector: {
+        [someFieldName]: { $gt: 18 }
+    },
+    sort: [{ [someFieldName]: 'asc' }]
+};
+collection.find(dynamicQuery as MangoQuery<HeroDocType>);
+```
+
+Same goes for dynamically built update operations, they can be casted to `UpdateQuery<any>`.
+
+Untyped collections like `RxCollection<any>` are not affected by the strict typing and accept the same queries as before.
+
 ## Setting a specific index
 
 By default, the query will be sent to the RxStorage, where a query planner will determine which one of the available indexes must be used.
