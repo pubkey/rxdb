@@ -630,7 +630,7 @@
     "async-test-util": "2.5.0",
     "babel-loader": "10.1.1",
     "clone": "2.1.2",
-    "concurrently": "10.0.4",
+    "concurrently": "10.0.5",
     "copy-webpack-plugin": "14.0.0",
     "core-js": "3.50.0",
     "cors": "2.8.6",
