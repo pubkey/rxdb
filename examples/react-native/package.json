@@ -26,7 +26,7 @@
     "jest-expo": "54.0.16",
     "random-token": "0.0.8",
     "react": "19.2.8",
-    "react-native": "0.86.2",
+    "react-native": "0.87.0",
     "react-native-gesture-handler": "3.2.1",
     "react-native-get-random-values": "2.0.0",
     "react-native-quick-base64": "3.0.1",
