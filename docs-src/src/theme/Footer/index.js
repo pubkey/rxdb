@@ -70,6 +70,10 @@ export default function FooterWrapper() {
         label: 'Become a Partner',
         href: '/consulting#become-partner',
       },
+      {
+        label: 'Jobs',
+        href: '/jobs/',
+      },
       // {
       //   label: 'About us',
       //   target: '_blank',
