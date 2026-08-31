@@ -125,7 +125,10 @@ export default function Jobs() {
                                         return <div
                                             key={'task-' + i}
                                             style={{
-                                                backgroundColor: '#20293C',
+                                                // the plain .block background is
+                                                // var(--bg-color), so a card has to
+                                                // use the darker tone to be visible
+                                                backgroundColor: 'var(--bg-color-dark)',
                                                 borderRadius: 10,
                                                 padding: 24,
                                                 margin: 8,
@@ -193,7 +196,7 @@ export default function Jobs() {
                                             return <div
                                                 key={'customer-' + i}
                                                 style={{
-                                                    backgroundColor: '#20293C',
+                                                    backgroundColor: 'var(--bg-color-dark)',
                                                     borderRadius: 10,
                                                     padding: '12px 20px',
                                                     margin: 6,
