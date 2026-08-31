@@ -16,34 +16,39 @@ import { Button } from '../components/button';
  */
 const JOBS_FORM_IFRAME_URL = 'https://webforms.pipedrive.com/f/REPLACE_ME';
 
+/**
+ * This page is in German on purpose. The position is a German Werkstudenten
+ * job in Stuttgart and the people it is written for study here, so the page
+ * sets its own lang attribute instead of inheriting the site default.
+ */
 const TASKS = [
     {
-        title: 'Build the demo apps',
-        text: 'Every RxDB feature needs a running example. You build small applications in TypeScript that show RxDB inside React, Angular, Vue and React Native, and you keep the existing examples working against the latest release.'
+        title: 'Demo-Anwendungen bauen',
+        text: 'Jedes RxDB-Feature braucht ein lauffähiges Beispiel. Du baust kleine Anwendungen in TypeScript, die RxDB in React, Angular, Vue und React Native zeigen, und hältst die bestehenden Beispiele zur jeweils neuesten Version aktuell.'
     },
     {
-        title: 'Write the page that goes with it',
-        text: 'A demo nobody can find does not help anyone. Each example gets a documentation or blog page that explains what it does and why it is built that way.'
+        title: 'Die passende Seite dazu schreiben',
+        text: 'Eine Demo, die niemand findet, hilft niemandem. Zu jedem Beispiel entsteht eine Doku- oder Blogseite, die erklärt, was es tut und warum es so gebaut ist.'
     },
     {
-        title: 'Answer developers',
-        text: 'RxDB questions come in through GitHub Discussions, Discord and Stack Overflow. You answer the ones you can and you escalate the ones you cannot.'
+        title: 'Entwicklerfragen beantworten',
+        text: 'Fragen zu RxDB kommen über GitHub Discussions, Discord und Stack Overflow herein. Du beantwortest die, die du kannst, und gibst die anderen weiter.'
     },
     {
-        title: 'Keep the examples honest',
-        text: 'When a release changes an API, the examples break. You find that before our users do.'
+        title: 'Die Beispiele ehrlich halten',
+        text: 'Wenn ein Release eine API ändert, gehen die Beispiele kaputt. Du merkst das vor unseren Nutzern.'
     }
 ];
 
 const CUSTOMERS = [
     { name: 'Readwise', country: 'USA' },
-    { name: 'Nutrien', country: 'Canada' },
-    { name: 'SafeEx', country: 'Denmark' },
-    { name: 'MoreApp', country: 'Germany' },
-    { name: 'myAgro', country: 'Africa' },
-    { name: 'WooCommerce POS', country: 'Australia' },
-    { name: 'atroo GmbH', country: 'Germany' },
-    { name: 'WebWare', country: 'Italy' },
+    { name: 'Nutrien', country: 'Kanada' },
+    { name: 'SafeEx', country: 'Dänemark' },
+    { name: 'MoreApp', country: 'Deutschland' },
+    { name: 'myAgro', country: 'Afrika' },
+    { name: 'WooCommerce POS', country: 'Australien' },
+    { name: 'atroo GmbH', country: 'Deutschland' },
+    { name: 'WebWare', country: 'Italien' },
     { name: 'ALTGRAS', country: 'Guinea' }
 ];
 
@@ -64,30 +69,31 @@ export default function Jobs() {
     return (
         <>
             <Head>
+                <html lang="de" />
                 <body className="homepage jobs-page" />
                 <link rel="canonical" href="/jobs/" />
             </Head>
             <Layout
                 title={'Jobs'}
-                description="Open positions at RxDB. We are hiring a working student for developer content in Stuttgart, Germany, remote friendly."
+                description="Offene Stellen bei RxDB. Wir suchen einen Werkstudenten für Developer Content in Stuttgart, überwiegend remote."
             >
                 <main>
 
                     <div className="block first centered">
                         <div className="content">
                             <h1 style={{ textAlign: 'center' }}>
-                                Work on <b>RxDB</b>
+                                Arbeite an <b>RxDB</b>
                             </h1>
                             <div className="inner centered" style={{ flexDirection: 'column' }}>
                                 <p className="centered-mobile-p">
-                                    RxDB is a local-first database for JavaScript applications.
-                                    It runs inside the browser, on mobile and on the server, it keeps
-                                    working when the network does not, and it synchronizes once the
-                                    connection comes back. Companies build their field apps, their
-                                    offline tools and their products on top of it.
+                                    RxDB ist eine Local-First-Datenbank für JavaScript-Anwendungen.
+                                    Sie läuft im Browser, auf dem Handy und auf dem Server, sie
+                                    funktioniert weiter, wenn das Netz ausfällt, und sie synchronisiert,
+                                    sobald die Verbindung zurück ist. Unternehmen bauen darauf ihre
+                                    Außendienst-Apps, ihre Offline-Werkzeuge und ihre Produkte.
                                 </p>
                                 <p className="centered-mobile-p">
-                                    We have one open position.
+                                    Wir haben eine offene Stelle.
                                 </p>
                             </div>
                         </div>
@@ -96,21 +102,21 @@ export default function Jobs() {
                     <div className="block dark">
                         <div className="content">
                             <h2 style={{ textAlign: 'center' }}>
-                                Working Student <b>Developer Content</b>
+                                Werkstudent (m/w/d) <b>Developer Content</b>
                             </h2>
                             <div className="inner centered" style={{ flexDirection: 'column' }}>
                                 <p className="centered-mobile-p">
-                                    <b>20 € per hour</b>, 10 to 20 hours per week, flexible around your
-                                    lecture schedule. Mostly remote with occasional days in Stuttgart,
-                                    Germany. Start whenever you are ready, the middle of a semester is fine.
+                                    <b>20 € pro Stunde</b>, 10 bis 20 Stunden pro Woche, flexibel nach
+                                    deinem Vorlesungsplan. Überwiegend remote, gelegentlich vor Ort in
+                                    Stuttgart. Start nach Absprache, auch mitten im Semester.
                                 </p>
                                 <p className="centered-mobile-p">
-                                    This is a Werkstudent position, so you have to be enrolled at a
-                                    university. Computer science, software engineering, media informatics
-                                    or something close to it.
+                                    Für eine Werkstudentenstelle musst du eingeschrieben sein.
+                                    Informatik, Softwaretechnik, Medieninformatik oder etwas
+                                    Vergleichbares.
                                 </p>
                                 <div className="text-center-mobile">
-                                    <Button primary onClick={openApplicationForm}>Apply now</Button>
+                                    <Button primary onClick={openApplicationForm}>Jetzt bewerben</Button>
                                 </div>
                             </div>
                         </div>
@@ -118,7 +124,7 @@ export default function Jobs() {
 
                     <div className="block">
                         <div className="content">
-                            <h2 style={{ textAlign: 'center' }}>What you will <b>do</b></h2>
+                            <h2 style={{ textAlign: 'center' }}>Deine <b>Aufgaben</b></h2>
                             <div className="inner" style={{ flexWrap: 'wrap' }}>
                                 {
                                     TASKS.map((task, i) => {
@@ -155,23 +161,24 @@ export default function Jobs() {
 
                     <div className="block dark">
                         <div className="content">
-                            <h2 style={{ textAlign: 'center' }}>What you <b>bring</b></h2>
+                            <h2 style={{ textAlign: 'center' }}>Dein <b>Profil</b></h2>
                             <div className="inner centered" style={{ flexDirection: 'column' }}>
                                 <ul style={{ maxWidth: 720, lineHeight: '28px' }}>
-                                    <li>You are comfortable in TypeScript.</li>
+                                    <li>Du bist sicher in TypeScript.</li>
                                     <li>
-                                        You have published something of your own, a side project, a library,
-                                        an app or a pull request to somebody else's repository.
-                                        A GitHub profile tells us more than a cover letter, so send that.
+                                        Du hast schon etwas Eigenes veröffentlicht, ein Nebenprojekt,
+                                        eine Library, eine App oder einen Pull Request in einem fremden
+                                        Repository. Ein GitHub-Profil sagt uns mehr als ein Anschreiben,
+                                        schick uns also das.
                                     </li>
                                     <li>
-                                        You can explain a technical thing in writing. Half of this job is
-                                        code and the other half is the text next to it.
+                                        Du kannst eine technische Sache schriftlich erklären. Die Hälfte
+                                        dieses Jobs ist Code, die andere Hälfte ist der Text daneben.
                                     </li>
-                                    <li>English is enough. German is welcome and not required.</li>
+                                    <li>Deutsch oder Englisch, beides geht.</li>
                                 </ul>
                                 <p className="centered-mobile-p">
-                                    You do not need to know RxDB yet. Nobody does before they start.
+                                    RxDB musst du noch nicht kennen. Das kennt vorher niemand.
                                 </p>
                             </div>
                         </div>
@@ -179,11 +186,11 @@ export default function Jobs() {
 
                     <div className="block">
                         <div className="content">
-                            <h2 style={{ textAlign: 'center' }}>Who <b>uses</b> what you build</h2>
+                            <h2 style={{ textAlign: 'center' }}>Wer <b>nutzt</b>, was du baust</h2>
                             <div className="inner centered" style={{ flexDirection: 'column' }}>
                                 <p className="centered-mobile-p">
-                                    RxDB runs in production at companies on four continents. The examples
-                                    you write are the first thing their developers read.
+                                    RxDB läuft produktiv bei Unternehmen auf vier Kontinenten. Die
+                                    Beispiele, die du schreibst, sind das Erste, was deren Entwickler lesen.
                                 </p>
                                 <div style={{
                                     display: 'flex',
@@ -215,9 +222,9 @@ export default function Jobs() {
                                     }
                                 </div>
                                 <p className="centered-mobile-p" style={{ marginTop: 24 }}>
-                                    MongoDB and Supabase are official RxDB partners. What the companies
-                                    above say about RxDB is on the <a href="/#reviews">customer section</a> of
-                                    the homepage.
+                                    MongoDB und Supabase sind offizielle RxDB-Partner. Was die Firmen
+                                    oben über RxDB sagen, steht im <a href="/#reviews">Kundenbereich</a> der
+                                    Startseite.
                                 </p>
                             </div>
                         </div>
@@ -225,20 +232,20 @@ export default function Jobs() {
 
                     <div className="block dark">
                         <div className="content">
-                            <h2 style={{ textAlign: 'center' }}>What we <b>offer</b></h2>
+                            <h2 style={{ textAlign: 'center' }}>Was wir <b>bieten</b></h2>
                             <div className="inner centered" style={{ flexDirection: 'column' }}>
                                 <ul style={{ maxWidth: 720, lineHeight: '28px' }}>
-                                    <li>20 € per hour.</li>
-                                    <li>10 to 20 hours per week, planned around your lectures and your exams.</li>
-                                    <li>Mostly remote, with occasional days together in Stuttgart.</li>
+                                    <li>20 € pro Stunde.</li>
+                                    <li>10 bis 20 Stunden pro Woche, geplant um deine Vorlesungen und deine Klausuren herum.</li>
+                                    <li>Überwiegend remote, gelegentlich gemeinsame Tage in Stuttgart.</li>
                                     <li>
-                                        Your work is public and carries your name. RxDB is open source under
-                                        the Apache License 2.0, so every example and every page you write
-                                        stays visible after you leave.
+                                        Deine Arbeit ist öffentlich und trägt deinen Namen. RxDB ist Open
+                                        Source unter der Apache License 2.0, jedes Beispiel und jede
+                                        Seite von dir bleibt also sichtbar, auch wenn du längst weg bist.
                                     </li>
                                     <li>
-                                        Short decisions. You talk to the people who build the product,
-                                        because that is everyone here.
+                                        Kurze Wege. Du sprichst mit den Leuten, die das Produkt bauen,
+                                        denn das sind hier alle.
                                     </li>
                                 </ul>
                             </div>
@@ -247,14 +254,14 @@ export default function Jobs() {
 
                     <div className="block centered" style={{ paddingBottom: 124 }}>
                         <div className="content">
-                            <h2 style={{ textAlign: 'center' }}>How to <b>apply</b></h2>
+                            <h2 style={{ textAlign: 'center' }}>So <b>bewirbst</b> du dich</h2>
                             <div className="inner centered" style={{ flexDirection: 'column' }}>
                                 <p className="centered-mobile-p">
-                                    Send a link to your GitHub profile and two sentences about what you
-                                    built there. No cover letter, no photo, no grades.
-                                    We answer every application.
+                                    Schick uns einen Link auf dein GitHub-Profil und zwei Sätze dazu, was
+                                    du dort gebaut hast. Kein Anschreiben, kein Foto, keine Noten.
+                                    Wir antworten auf jede Bewerbung.
                                 </p>
-                                <Button primary onClick={openApplicationForm}>Apply now</Button>
+                                <Button primary onClick={openApplicationForm}>Jetzt bewerben</Button>
                             </div>
                         </div>
                     </div>
