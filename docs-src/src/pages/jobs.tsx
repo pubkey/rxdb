@@ -22,24 +22,26 @@ const JOBS_FORM_IFRAME_URL = 'https://webforms.pipedrive.com/f/czK0WxW1wnP2HOdt6
  */
 const JOBS = [
     {
-        title: 'Werkstudent (m/w/d) Developer Content',
+        title: 'Schwerpunkt Frontend',
+        lead: 'Du baust die Anwendungen, an denen Entwickler RxDB zum ersten Mal ausprobieren.',
         bullets: [
-            'Demo-Anwendungen in TypeScript bauen, die RxDB in React, Angular und Vue zeigen',
+            'Demo-Apps in TypeScript bauen, die RxDB in React, Angular, Vue und Svelte zeigen',
             'die bestehenden Beispiele zu jedem Release aktuell halten',
-            'zu jeder Demo die passende Doku- oder Blogseite schreiben',
+            'die Doku aus der Sicht von jemandem lesen, der RxDB zum ersten Mal benutzt, und aufschreiben, wo es hakt',
             'Entwicklerfragen auf GitHub, Discord und Stack Overflow beantworten'
         ],
-        profile: 'Informatik, Softwaretechnik oder Medieninformatik. Du bist sicher in TypeScript und hast schon etwas Eigenes veröffentlicht. Ein GitHub-Profil sagt uns mehr als ein Anschreiben.'
+        profile: 'Informatik, Softwaretechnik, Medieninformatik oder etwas Vergleichbares. Du kannst TypeScript und mindestens ein Frontend-Framework, und du hast schon etwas Eigenes veröffentlicht. Ein GitHub-Profil sagt uns mehr als ein Anschreiben.'
     },
     {
-        title: 'Werkstudent (m/w/d) Video und Content',
+        title: 'Schwerpunkt Video und Social Media',
+        lead: 'Du machst sichtbar, was die Entwicklerin oder der Entwickler nebenan gebaut hat.',
         bullets: [
-            'unseren YouTube-Kanal übernehmen, von der Aufnahme über den Schnitt bis zu Titel und Thumbnail',
-            'aus jedem langen Video Shorts und einen LinkedIn-Clip schneiden',
-            'kurze Animationen, die Offline-First und Synchronisation erklären',
-            'Kommentare, Playlists und Kanalpflege'
+            'kurze Videos produzieren, die zeigen, wie man mit RxDB etwas baut, von der Idee über Aufnahme und Schnitt bis zu Titel und Thumbnail',
+            'daraus Shorts und Reels für YouTube, LinkedIn, Instagram und TikTok schneiden',
+            'unseren YouTube-Kanal und die Social-Accounts betreuen, Kommentare eingeschlossen',
+            'anschauen, was funktioniert hat, und die nächsten Videos danach ausrichten'
         ],
-        profile: 'Audiovisuelle Medien, Medieninformatik oder Werbung und Marktkommunikation. Wir wollen kein Anschreiben, sondern zwei bis drei Sachen, die du geschnitten hast.'
+        profile: 'Audiovisuelle Medien, Onlinemedien, Werbung und Marktkommunikation, Medieninformatik oder etwas Vergleichbares. Du schneidest selbst und hast Sachen, die man sich ansehen kann. Programmieren musst du nicht können.'
     }
 ];
 
@@ -66,26 +68,31 @@ export default function Jobs() {
             </Head>
             <Layout
                 title={'Jobs'}
-                description="Offene Stellen bei RxDB. Zwei Werkstudentenstellen in Stuttgart, überwiegend remote, 20 € pro Stunde."
+                description="Zwei Werkstudentenstellen für Developer Experience bei RxDB. Stuttgart, überwiegend remote, 20 € pro Stunde."
             >
                 <main>
 
                     <div className="block first centered">
                         <div className="content">
                             <h1 style={{ textAlign: 'center' }}>
-                                Arbeite an <b>RxDB</b>
+                                Werkstudent (m/w/d) für <b>Developer Experience</b>
                             </h1>
                             <div className="inner centered" style={{ flexDirection: 'column' }}>
-                                <p className="centered-mobile-p" style={{ maxWidth: 760 }}>
+                                <p className="centered-mobile-p" style={{ maxWidth: 780 }}>
                                     RxDB ist eine Local-First-Datenbank für JavaScript-Anwendungen.
                                     Sie funktioniert weiter, wenn das Netz ausfällt, und synchronisiert,
                                     sobald die Verbindung zurück ist. Im Einsatz ist sie unter anderem
                                     bei Readwise, Nutrien, MoreApp und myAgro.
                                 </p>
+                                <p className="centered-mobile-p" style={{ maxWidth: 780 }}>
+                                    Developer Experience heißt bei uns: die erste Stunde mit RxDB
+                                    entscheidet, ob jemand dabei bleibt. Daran arbeiten wir, und dafür
+                                    suchen wir <b>zwei Leute</b>. Eine Person baut, die andere zeigt es.
+                                </p>
                                 <p className="centered-mobile-p">
-                                    <b>Zwei offene Stellen</b>, beide 20 € pro Stunde, 10 bis 20 Stunden
-                                    pro Woche, flexibel nach Vorlesungsplan. Überwiegend remote,
-                                    gelegentlich vor Ort in Stuttgart. Start nach Absprache.
+                                    Beide Stellen: <b>20 € pro Stunde</b>, 10 bis 20 Stunden pro Woche,
+                                    flexibel nach Vorlesungsplan. Überwiegend remote, gelegentlich vor
+                                    Ort in Stuttgart. Start nach Absprache.
                                 </p>
                             </div>
                         </div>
@@ -112,8 +119,13 @@ export default function Jobs() {
                                                 fontSize: 20,
                                                 fontWeight: 700,
                                                 lineHeight: '28px',
-                                                marginBottom: 20
+                                                marginBottom: 10
                                             }}>{job.title}</div>
+                                            <div style={{
+                                                fontSize: 15,
+                                                lineHeight: '23px',
+                                                marginBottom: 20
+                                            }}>{job.lead}</div>
                                             <ul style={{ lineHeight: '24px', fontSize: 14 }}>
                                                 {job.bullets.map((b, j) => <li key={'b-' + j}>{b}</li>)}
                                             </ul>
