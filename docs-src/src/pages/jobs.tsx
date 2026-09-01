@@ -8,6 +8,7 @@ const FILE_EVENT_ID = 'jobs-link-clicked';
 import { triggerTrackingEvent } from '../components/trigger-event';
 import { IframeFormModal, Modal } from '../components/modal';
 import { Button } from '../components/button';
+import { JOBS_TITLE } from '../constants';
 
 /**
  * Pipedrive webform for job applications. Both positions use the same form,
@@ -37,7 +38,6 @@ const JOBS = [
     {
         id: 'frontend',
         title: 'Werkstudent (m/w/d) Developer Experience, Schwerpunkt Frontend',
-        short: 'Schwerpunkt Frontend',
         teaser: 'Du arbeitest an RxDB selbst und daran, dass Entwickler schneller damit zurechtkommen.',
         tasks: [
             'Analyse, woran Entwickler beim Einstieg in RxDB hängen bleiben, und Behebung der Ursachen im Code',
@@ -54,7 +54,6 @@ const JOBS = [
     {
         id: 'video',
         title: 'Werkstudent (m/w/d) Developer Experience, Schwerpunkt Video und Social Media',
-        short: 'Schwerpunkt Video und Social Media',
         teaser: 'Du machst die Arbeit sichtbar, die im Frontend-Bereich entsteht.',
         tasks: [
             'Produktion kurzer Videos zur Arbeit mit RxDB, von der Konzeption über Aufnahme und Schnitt bis zu Titel und Thumbnail',
@@ -122,8 +121,8 @@ export default function Jobs() {
                 <link rel="canonical" href="/jobs/" />
             </Head>
             <Layout
-                title={'Jobs'}
-                description="Zwei Werkstudentenstellen für Developer Experience bei RxDB. Stuttgart, überwiegend remote, 20 € pro Stunde."
+                title={JOBS_TITLE}
+                description="Offene Werkstudentenstellen bei RxDB. Stuttgart, überwiegend remote, 20 € pro Stunde."
             >
                 <main>
 
@@ -140,10 +139,8 @@ export default function Jobs() {
                                     Readwise, Nutrien, MoreApp und myAgro setzen RxDB in Produktion ein.
                                 </p>
                                 <p className="centered-mobile-p" style={{ maxWidth: 780 }}>
-                                    Die Developer Experience entscheidet darüber, ob Entwickler nach
-                                    der ersten Stunde mit RxDB weiterarbeiten. Für diesen Bereich
-                                    besetzen wir <b>zwei Werkstudentenstellen</b>. Klick auf eine
-                                    Stelle für die vollständige Anzeige.
+                                    Aktuell besetzen wir <b>zwei Werkstudentenstellen</b> in
+                                    Stuttgart.
                                 </p>
                             </div>
                         </div>
@@ -151,14 +148,24 @@ export default function Jobs() {
 
                     <div className="block dark" style={{ paddingBottom: 124 }}>
                         <div className="content">
-                            <div className="inner" style={{ flexWrap: 'wrap', alignItems: 'stretch' }}>
+                            {/*
+                              * Plain flex row instead of the shared .inner
+                              * class, which turns column-reverse on small
+                              * screens and would show the second advert first.
+                              */}
+                            <div style={{
+                                display: 'flex',
+                                flexWrap: 'wrap',
+                                justifyContent: 'center',
+                                alignItems: 'stretch'
+                            }}>
                                 {
                                     JOBS.map((entry, i) => {
                                         return <div
                                             key={entry.id}
                                             role='button'
                                             tabIndex={0}
-                                            aria-label={'Stellenanzeige öffnen: ' + entry.short}
+                                            aria-label={'Stellenanzeige öffnen: ' + entry.title}
                                             onClick={() => showJob(i)}
                                             onKeyDown={(event) => {
                                                 if (event.key === 'Enter' || event.key === ' ') {
@@ -181,8 +188,8 @@ export default function Jobs() {
                                                 fontSize: 20,
                                                 fontWeight: 700,
                                                 lineHeight: '28px',
-                                                marginBottom: 10
-                                            }}>{entry.short}</div>
+                                                marginBottom: 14
+                                            }}>{entry.title}</div>
                                             <div style={{
                                                 fontSize: 15,
                                                 lineHeight: '23px',

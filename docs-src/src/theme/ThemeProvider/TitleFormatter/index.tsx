@@ -1,6 +1,6 @@
 import React, { type ReactNode } from 'react';
 import { TitleFormatterProvider } from '@docusaurus/theme-common/internal';
-import { HOME_TITLE } from '../../../constants';
+import { HOME_TITLE, JOBS_TITLE } from '../../../constants';
 
 /**
  * Swizzled title formatter.
@@ -11,9 +11,14 @@ import { HOME_TITLE } from '../../../constants';
  *
  * The default formatter skips the suffix only when the page title is exactly
  * equal to `siteConfig.title`. That is too narrow for us: the homepage and
- * /consulting/ carry the longer descriptive HOME_TITLE, which already contains
- * the brand, so appending the suffix would render `RxDB - JavaScript Database
- * | RxDB`. Treat HOME_TITLE the same way Docusaurus treats the site title.
+ * /consulting/ carry the longer descriptive HOME_TITLE, and /jobs/ carries
+ * JOBS_TITLE. Both already contain the brand, so appending the suffix would
+ * render `RxDB - JavaScript Database | RxDB` and `Jobs & Stellenangebote bei
+ * RxDB | RxDB`. Treat them the way Docusaurus treats the site title.
+ *
+ * This is an explicit list rather than a rule such as `ends with RxDB`, because
+ * 13 documentation pages already end with the brand (`Partial Sync with RxDB`
+ * and similar) and rely on the suffix being appended.
  *
  * NOTE: `ThemeProvider/TitleFormatter` is a real theme component (shipped by
  * theme-classic at lib/theme/ThemeProvider/TitleFormatter) but it is not in
@@ -29,8 +34,10 @@ import { HOME_TITLE } from '../../../constants';
 const formatter: React.ComponentProps<
     typeof TitleFormatterProvider
 >['formatter'] = (params) => {
-    if (params.title?.trim() === HOME_TITLE) {
-        return HOME_TITLE;
+    const ownTitle = [HOME_TITLE, JOBS_TITLE]
+        .find((title) => title === params.title?.trim());
+    if (ownTitle) {
+        return ownTitle;
     }
     return params.defaultFormatter(params);
 };
