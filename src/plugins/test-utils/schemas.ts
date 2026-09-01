@@ -1,4 +1,4 @@
-import AsyncTestUtil from 'async-test-util';
+import { randomString } from 'async-test-util';
 
 import {
     SimpleHumanV3DocumentType,
@@ -947,7 +947,7 @@ export const refHumanNested: RxJsonSchema<RefHumanNestedDocumentType> = overwrit
  */
 export function averageSchema(): RxJsonSchema<AverageSchemaDocumentType> {
     const ret: RxJsonSchema<AverageSchemaDocumentType> = {
-        title: 'averageSchema_' + AsyncTestUtil.randomString(5), // randomisation used so hash differs
+        title: 'averageSchema_' + randomString(5), // randomisation used so hash differs
         version: 0,
         primaryKey: 'id',
         type: 'object',
