@@ -140,7 +140,7 @@ export default function Jobs() {
                                 </p>
                                 <p className="centered-mobile-p" style={{ maxWidth: 780 }}>
                                     Aktuell besetzen wir <b>zwei Werkstudentenstellen</b> in
-                                    Stuttgart. Klick auf eine Stelle für die vollständige Anzeige.
+                                    Stuttgart.
                                 </p>
                             </div>
                         </div>
