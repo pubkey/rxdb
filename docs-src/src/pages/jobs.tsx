@@ -22,28 +22,53 @@ const JOBS_FORM_IFRAME_URL = 'https://webforms.pipedrive.com/f/czK0WxW1wnP2HOdt6
  */
 const JOBS = [
     {
-        title: 'Schwerpunkt Frontend',
-        lead: 'Du baust die Anwendungen, an denen Entwickler RxDB zum ersten Mal ausprobieren.',
-        bullets: [
-            'Demo-Apps in TypeScript bauen, die RxDB in React, Angular, Vue und Svelte zeigen',
-            'die bestehenden Beispiele zu jedem Release aktuell halten',
-            'die Doku aus der Sicht von jemandem lesen, der RxDB zum ersten Mal benutzt, und aufschreiben, wo es hakt',
-            'Entwicklerfragen auf GitHub, Discord und Stack Overflow beantworten'
+        title: 'Schwerpunkt Frontend-Entwicklung',
+        lead: 'Du entwickelst die Anwendungen, an denen Entwickler RxDB zum ersten Mal ausprobieren.',
+        tasks: [
+            'Entwicklung von Demo-Anwendungen in TypeScript, die den Einsatz von RxDB in React, Angular, Vue und Svelte zeigen',
+            'Pflege der bestehenden Beispielprojekte über die Releases hinweg',
+            'Prüfung der Dokumentation aus der Perspektive von Erstnutzern und Aufnahme der Schwachstellen',
+            'Beantwortung von Entwicklerfragen auf GitHub, Discord und Stack Overflow'
         ],
-        profile: 'Informatik, Softwaretechnik, Medieninformatik oder etwas Vergleichbares. Du kannst TypeScript und mindestens ein Frontend-Framework, und du hast schon etwas Eigenes veröffentlicht. Ein GitHub-Profil sagt uns mehr als ein Anschreiben.'
+        requirements: [
+            'Studium der Informatik, Softwaretechnik, Medieninformatik oder eines vergleichbaren Fachs',
+            'sicherer Umgang mit TypeScript und mindestens einem Frontend-Framework',
+            'eigene veröffentlichte Projekte, ein GitHub-Profil ersetzt bei uns das Anschreiben'
+        ]
     },
     {
         title: 'Schwerpunkt Video und Social Media',
-        lead: 'Du machst sichtbar, was die Entwicklerin oder der Entwickler nebenan gebaut hat.',
-        bullets: [
-            'kurze Videos produzieren, die zeigen, wie man mit RxDB etwas baut, von der Idee über Aufnahme und Schnitt bis zu Titel und Thumbnail',
-            'daraus Shorts und Reels für YouTube, LinkedIn, Instagram und TikTok schneiden',
-            'unseren YouTube-Kanal und die Social-Accounts betreuen, Kommentare eingeschlossen',
-            'anschauen, was funktioniert hat, und die nächsten Videos danach ausrichten'
+        lead: 'Du machst die Arbeit sichtbar, die im Frontend-Bereich entsteht.',
+        tasks: [
+            'Produktion kurzer Videos zur Arbeit mit RxDB, von der Konzeption über Aufnahme und Schnitt bis zu Titel und Thumbnail',
+            'Aufbereitung der Videos als Shorts und Reels für YouTube, LinkedIn, Instagram und TikTok',
+            'Betreuung des YouTube-Kanals und der Social-Media-Kanäle einschließlich Community-Management',
+            'Auswertung der Reichweiten und Ableitung der nächsten Themen'
         ],
-        profile: 'Audiovisuelle Medien, Onlinemedien, Werbung und Marktkommunikation, Medieninformatik oder etwas Vergleichbares. Du schneidest selbst und hast Sachen, die man sich ansehen kann. Programmieren musst du nicht können.'
+        requirements: [
+            'Studium der Audiovisuellen Medien, Onlinemedien, Werbung und Marktkommunikation, Medieninformatik oder eines vergleichbaren Fachs',
+            'eigenständige Schnittarbeit, belegt durch Arbeitsproben',
+            'Programmierkenntnisse sind nicht erforderlich'
+        ]
     }
 ];
+
+function Section(props: { title: string; items: string[]; }) {
+    return <>
+        <div style={{
+            fontSize: 13,
+            fontWeight: 700,
+            letterSpacing: '0.08em',
+            textTransform: 'uppercase',
+            opacity: 0.65,
+            marginTop: 20,
+            marginBottom: 8
+        }}>{props.title}</div>
+        <ul style={{ lineHeight: '24px', fontSize: 14, marginBottom: 0 }}>
+            {props.items.map((item, i) => <li key={'i-' + i}>{item}</li>)}
+        </ul>
+    </>;
+}
 
 export default function Jobs() {
     useEffect(() => {
@@ -80,19 +105,20 @@ export default function Jobs() {
                             <div className="inner centered" style={{ flexDirection: 'column' }}>
                                 <p className="centered-mobile-p" style={{ maxWidth: 780 }}>
                                     RxDB ist eine Local-First-Datenbank für JavaScript-Anwendungen.
-                                    Sie funktioniert weiter, wenn das Netz ausfällt, und synchronisiert,
-                                    sobald die Verbindung zurück ist. Im Einsatz ist sie unter anderem
-                                    bei Readwise, Nutrien, MoreApp und myAgro.
+                                    Sie arbeitet weiter, wenn die Netzverbindung ausfällt, und
+                                    synchronisiert, sobald sie wiederhergestellt ist. Unternehmen wie
+                                    Readwise, Nutrien, MoreApp und myAgro setzen RxDB in Produktion ein.
                                 </p>
                                 <p className="centered-mobile-p" style={{ maxWidth: 780 }}>
-                                    Developer Experience heißt bei uns: die erste Stunde mit RxDB
-                                    entscheidet, ob jemand dabei bleibt. Daran arbeiten wir, und dafür
-                                    suchen wir <b>zwei Leute</b>. Eine Person baut, die andere zeigt es.
+                                    Die Developer Experience entscheidet darüber, ob Entwickler nach
+                                    der ersten Stunde mit RxDB weiterarbeiten. Für diesen Bereich
+                                    besetzen wir <b>zwei Werkstudentenstellen</b>, eine mit Schwerpunkt
+                                    Frontend-Entwicklung und eine mit Schwerpunkt Video und Social Media.
                                 </p>
-                                <p className="centered-mobile-p">
-                                    Beide Stellen: <b>20 € pro Stunde</b>, 10 bis 20 Stunden pro Woche,
-                                    flexibel nach Vorlesungsplan. Überwiegend remote, gelegentlich vor
-                                    Ort in Stuttgart. Start nach Absprache.
+                                <p className="centered-mobile-p" style={{ maxWidth: 780 }}>
+                                    Konditionen für beide Stellen: <b>20 € pro Stunde</b>, 10 bis 20
+                                    Stunden pro Woche, flexibel nach Vorlesungsplan. Überwiegend remote,
+                                    gelegentlich vor Ort in Stuttgart. Eintritt nach Absprache.
                                 </p>
                             </div>
                         </div>
@@ -123,20 +149,13 @@ export default function Jobs() {
                                             }}>{job.title}</div>
                                             <div style={{
                                                 fontSize: 15,
-                                                lineHeight: '23px',
-                                                marginBottom: 20
+                                                lineHeight: '23px'
                                             }}>{job.lead}</div>
-                                            <ul style={{ lineHeight: '24px', fontSize: 14 }}>
-                                                {job.bullets.map((b, j) => <li key={'b-' + j}>{b}</li>)}
-                                            </ul>
-                                            <div style={{
-                                                fontSize: 14,
-                                                lineHeight: '21px',
-                                                opacity: 0.8,
-                                                marginTop: 12,
-                                                marginBottom: 28,
-                                                flexGrow: 1
-                                            }}>{job.profile}</div>
+
+                                            <Section title='Aufgaben' items={job.tasks} />
+                                            <Section title='Anforderungen' items={job.requirements} />
+
+                                            <div style={{ flexGrow: 1, minHeight: 28 }}></div>
                                             <div style={{ textAlign: 'center' }}>
                                                 <Button primary onClick={openApplicationForm}>
                                                     Jetzt bewerben
