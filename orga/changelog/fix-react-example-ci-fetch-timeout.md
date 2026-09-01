@@ -1,1 +1,0 @@
-- FIX react example CI: add `AbortController` timeout to the pouchdb-server `fetch` call in `Database.jsx` so a slow server startup on Node 24 does not hang database initialization indefinitely
