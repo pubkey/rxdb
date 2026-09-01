@@ -1007,28 +1007,19 @@ myDb.$.subscribe(changeEvent => console.dir(changeEvent));
 ```
 
 ### exportJSON()
-Use this function to create a JSON export from every piece of data in every collection of this database. You can pass `true` as a parameter to decrypt the encrypted data fields of your document.
 
-Before `exportJSON()` and `importJSON()` can be used, you have to add the `json-dump` plugin.
-
-```javascript
-import { addRxPlugin } from 'rxdb';
-import { RxDBJsonDumpPlugin } from 'rxdb/plugins/json-dump';
-addRxPlugin(RxDBJsonDumpPlugin);
-```
+Creates a JSON export of every piece of data in every collection of this database. Needs the `json-dump` plugin. [Read more](./json-import-export.md)
 
 ```javascript
-myDatabase.exportJSON()
-  .then(json => console.dir(json));
+const json = await myDatabase.exportJSON();
 ```
 
 ### importJSON()
-To import the JSON dumps into your database, use this function.
+
+Imports a previously exported JSON dump back into the database. The collections have to be created before. [Read more](./json-import-export.md)
 
 ```javascript
-// import the dump to the database
-emptyDatabase.importJSON(json)
-  .then(() => console.log('done'));
+await emptyDatabase.importJSON(json);
 ```
 
 ### backup()
@@ -1863,29 +1854,20 @@ The `Map` returned by `findByIds` is not guaranteed to return elements in the sa
 :::
 
 ### exportJSON()
-Use this function to create a JSON export from every document in the collection.
 
-Before `exportJSON()` and `importJSON()` can be used, you have to add the `json-dump` plugin.
-
-```javascript
-import { addRxPlugin } from 'rxdb';
-import { RxDBJsonDumpPlugin } from 'rxdb/plugins/json-dump';
-addRxPlugin(RxDBJsonDumpPlugin);
-```
+Creates a JSON export of every document in the collection. Needs the `json-dump` plugin. [Read more](./json-import-export.md)
 
 ```js
-myCollection.exportJSON()
-  .then(json => console.dir(json));
+const json = await myCollection.exportJSON();
 ```
 
 ### importJSON()
-To import the JSON dump into your collection, use this function.
+
+Imports a previously exported JSON dump back into the collection. [Read more](./json-import-export.md)
+
 ```js
-// import the dump to the database
-myCollection.importJSON(json)
-  .then(() => console.log('done'));
+await myCollection.importJSON(json);
 ```
-Note that importing will fire events for each inserted document.
 
 ### remove()
 
@@ -4737,6 +4719,8 @@ Encrypting client-side stored data in RxDB offers numerous advantages:
 
 RxDB handles the encryption and decryption of data internally. This means that when you work with a [RxDocument](./rx-document.md), you can access the properties of the document just like you would with normal, unencrypted data. RxDB automatically decrypts the data for you when you retrieve it, making it transparent to your application code.
 This means the encryption works with all [RxStorage](./rx-storage.md) like **[SQLite](./rx-storage-sqlite.md)**, **[IndexedDB](./rx-storage-indexeddb.md)**, **[OPFS](./rx-storage-opfs.md)** and so on.
+
+Keep in mind that everything which reads the documents through the collection sees the decrypted values. A [JSON dump](./json-import-export.md) therefore contains your encrypted fields in plain text, so treat such a dump as sensitive data.
 
 However, there's a limitation when it comes to querying encrypted fields. **Encrypted fields cannot be used as operators in queries**. This means you cannot perform queries like "find all documents where the encrypted field equals a certain value." RxDB does not expose the encrypted data in a way that allows direct querying based on the encrypted content. To filter or search for documents based on the contents of encrypted fields, you would need to first decrypt the data and then perform the query, which might not be efficient or practical in some cases.
 You could however use the [memory mapped](./rx-storage-memory-mapped.md) RxStorage to replicate the encrypted documents into a non-encrypted in-memory storage and then query them like normal.
@@ -12276,7 +12260,7 @@ This is useful to:
   - Consume the database content with other software that cannot replicate with RxDB
   - Write a backup of the database to a remote server by mounting the backup folder on the other server.
 
-The backup plugin works only in [node.js](./nodejs-database.md), not in a browser. It is intended to have a backup strategy when using RxDB on the server side like with the [RxServer](./rx-server.md). To run backups on the client side, you should use one of the [replication](./replication.md) plugins instead.
+The backup plugin works only in [node.js](./nodejs-database.md), not in a browser. It is intended to have a backup strategy when using RxDB on the server side like with the [RxServer](./rx-server.md). To run backups on the client side, you should use one of the [replication](./replication.md) plugins instead, or write the data into a single [JSON dump](./json-import-export.md) that you can store or hand to the user.
 
 ## Installation
 
@@ -32742,7 +32726,7 @@ Embedded Realm objects (`embedded: true`) become nested `type: 'object'` propert
 Ship one release where both databases are installed. On startup, the app reads the Realm file, writes the data into RxDB and records its progress so the import completes once per device. There are three ways to move the data:
 
 1. **Export to JSON and insert as normal documents.** Read all Realm objects, map them to plain JSON and call `bulkInsert`. Simple, but if the app gets killed mid-import, the whole run starts over.
-2. **Use the JSON dump plugin.** If you produce a dump in the RxDB dump format, the [json-dump plugin](../rx-collection.md#importjson) loads it in one call with `collection.importJSON(dump)`.
+2. **Use the JSON dump plugin.** If you produce a dump in the RxDB dump format, the [json-dump plugin](../json-import-export.md) loads it in one call with `collection.importJSON(dump)`.
 3. **Iterate over the Realm data with a checkpoint.** Import in batches and persist a checkpoint after each batch. This is the recommended approach because the import continues where it stopped when the app restarts at any point.
 
 The checkpointed import looks like this:
@@ -39454,6 +39438,186 @@ The downside of SQLite (or SQL in general) is that it is lacking many features t
 - Learn how to use RxDB as database in electron with the [Quickstart Tutorial](./quickstart.md).
 - Check out the [RxDB Electron example](https://github.com/pubkey/rxdb/tree/master/examples/electron)
 - There is a followup list of other [client side database alternatives](./alternatives.md) that you can try to use with Electron.
+
+---
+
+## JSON Import and Export
+
+import {Faq, FaqItem} from '@site/src/components/faq';
+
+# 📤 JSON Import and Export
+
+With the `json-dump` plugin you can export the data of a [RxDatabase](./rx-database.md) or a single [RxCollection](./rx-collection.md) into a plain JSON object and import that object back later.
+
+The dump is a normal JavaScript object, so you can store it in a file, send it to a server, or keep it in [localStorage](./rx-storage-localstorage.md). It contains the documents in their decrypted form and, when you ask for it, the [attachments](./rx-attachment.md) data as base64 strings.
+
+This is useful to:
+
+- **Seed a database** with a fixed set of documents in tests or demos.
+- **Move data between two databases**, for example when a user switches devices and you have no [replication](./replication.md) backend.
+- **Let users download their own data** and load it back into the app.
+
+The plugin runs in every runtime that RxDB supports. For server side backups that stream to disk instead of building one big object in memory, use the [backup plugin](./backup.md).
+
+## Installation
+
+```ts
+import { addRxPlugin } from 'rxdb';
+import { RxDBJsonDumpPlugin } from 'rxdb/plugins/json-dump';
+addRxPlugin(RxDBJsonDumpPlugin);
+```
+
+## Export a collection
+
+`exportJSON()` creates a dump of every document in the collection.
+
+```ts
+const json = await myCollection.exportJSON();
+console.dir(json);
+/* > {
+ *     name: 'heroes',
+ *     schemaHash: '22b549e064b35a21494eadc441491eeb644bee28aadb0feb9303cb37c0d51b86',
+ *     docs: [
+ *         {
+ *             id: 'alice',
+ *             name: 'Alice',
+ *             color: 'blue',
+ *             _deleted: false,
+ *             _meta: { lwt: 1787225698353.01 }
+ *         }
+ *     ]
+ * }
+ */
+```
+
+The `schemaHash` is written into the dump so that `importJSON()` can refuse a dump that was created from a different schema. The revision `_rev` is not part of the dump, because the importing database creates its own revisions.
+
+## Import into a collection
+
+`importJSON()` writes the documents of a dump into the collection.
+
+```ts
+await myCollection.importJSON(json);
+```
+
+The collection has to exist and its schema has to be the same one the dump was created from. When the hashes do not match, RxDB throws the error `JD2`.
+
+Notice that importing fires a change event for each inserted document, so open [queries](./rx-query.md) and their subscriptions update on their own.
+
+## Export a database
+
+On the database level, `exportJSON()` runs the export for every collection and puts the results into one object.
+
+```ts
+const json = await myDatabase.exportJSON();
+console.dir(json);
+/* > {
+ *     name: 'heroesdb',
+ *     instanceToken: 'ruxpmzxulz',
+ *     collections: [
+ *         {
+ *             name: 'heroes',
+ *             schemaHash: '22b549e064b35a...',
+ *             docs: []
+ *         }
+ *     ]
+ * }
+ */
+```
+
+To export only some of the collections, pass their names as the first argument.
+
+```ts
+const json = await myDatabase.exportJSON(['heroes', 'villains']);
+```
+
+Collections whose name starts with an underscore are internal and are always left out of the database export.
+
+## Import into a database
+
+```ts
+await myDatabase.importJSON(json);
+```
+
+The collections must be created before the import, because the dump does not carry the collection settings like the [schema](./rx-schema.md), the [migration strategies](./migration-schema.md) or the conflict handler. When the dump contains a collection that does not exist in the database, RxDB throws the error `JD1` and nothing is written.
+
+## Attachments
+
+By default the [attachments](./rx-attachment.md) of the documents are not part of the dump, because their binary data can be way bigger than the documents itself. Set the `attachments` option to `true` to include them. The data is then stored as a base64 string so that the dump stays JSON friendly.
+
+```ts
+const json = await myCollection.exportJSON({ attachments: true });
+console.dir(json.docs[0]._attachments);
+/* > {
+ *     'cat.txt': {
+ *         type: 'text/plain',
+ *         length: 4,
+ *         data: 'bWVvdw=='
+ *     }
+ * }
+ */
+```
+
+On the database level you can pass the options either as the first argument or after the list of collection names.
+
+```ts
+// export everything, including the attachments
+const json = await myDatabase.exportJSON({ attachments: true });
+
+// export only some collections, including the attachments
+const partialJson = await myDatabase.exportJSON(['heroes'], { attachments: true });
+```
+
+`importJSON()` turns the base64 strings back into `Blob`s and writes them together with the documents, so no extra option is needed on the import side. The attachment digest is calculated again with the hash function of the importing database, which means a dump can be imported into a database that uses a different `hashFunction`.
+
+Base64 needs about **33%** more space than the raw bytes. When your documents carry big images or videos, the dump grows accordingly and you might want to keep `attachments: false` and move the files with something else.
+
+## Limitations
+
+Keep these in mind before you use a dump as your backup strategy:
+
+- **Encrypted fields are exported in plain text.** The export reads the documents through the collection, so the [encryption](./encryption.md) is already undone at that point. Treat the dump as sensitive data and never write it to a place where the plain values must not appear.
+- **Deleted documents are not part of the dump.** The export runs a normal query, and queries skip deleted documents. Because of that, a dump cannot be used to replicate deletions to another database.
+- **Revisions are not part of the dump.** On import, every document is written as a fresh insert with a new revision and a new `_meta.lwt`. A dump is a snapshot of the current state, not a history.
+- **The whole dump is built in memory.** For a few thousand documents this is fine. For a large dataset, use the [backup plugin](./backup.md) or one of the [replication](./replication.md) plugins instead.
+- **The schema hash must match.** A dump cannot be imported into a collection with a changed schema. To move data across a schema change, import it into a collection with the old schema version and let the [schema migration](./migration-schema.md) run.
+
+## FAQ
+
+<Faq>
+<FaqItem question="How do I export an RxDB database to a JSON file?">
+
+Call `exportJSON()` on the [RxDatabase](./rx-database.md) and write the result with `JSON.stringify()`. The dump is a plain object without class instances, so it survives the round trip through a string. In Node.js you can write it with `fs.writeFileSync()`, in the browser you can offer it to the user as a download.
+
+</FaqItem>
+<FaqItem question="Does exportJSON() include attachments?">
+
+Only when you ask for it. The `attachments` option defaults to `false` so that dumps stay small. Call `exportJSON({ attachments: true })` to get the [attachments](./rx-attachment.md) data as base64 strings, which `importJSON()` writes back together with the documents.
+
+</FaqItem>
+<FaqItem question="Why does importJSON() throw that the schema is different?">
+
+The dump stores the hash of the [schema](./rx-schema.md) it was created from, and the import compares it with the hash of the target collection. Any change to the schema changes the hash, even one that looks harmless like a new optional field. Create the target collection with the exact schema the dump came from, then run a [schema migration](./migration-schema.md) to reach the new version.
+
+</FaqItem>
+<FaqItem question="Should I use the json-dump plugin or the backup plugin?">
+
+Use the json-dump plugin when you need one JSON object that you can move around, for example to seed a database or to hand a user their data. Use the [backup plugin](./backup.md) when you run on the server and want the state written to disk continuously. The backup plugin writes each document as its own file and continues from the last checkpoint, so it also works for datasets that do not fit into memory.
+
+</FaqItem>
+<FaqItem question="Can I use a JSON dump to sync two devices?">
+
+No. A dump has no revisions and no deletions, so importing it a second time overwrites the target state instead of merging it. For two databases that both accept writes, use the [RxDB replication](./replication.md), which handles conflicts, deletions, and checkpoints.
+
+</FaqItem>
+</Faq>
+
+## Follow Up
+
+- Learn how to [back up a database to the filesystem](./backup.md) on the server side.
+- Learn how to [replicate](./replication.md) your data with a backend instead of moving dumps around.
+- Read the [attachments](./rx-attachment.md) docs to learn how binary data is stored.
+- Start with the [RxDB Quickstart](./quickstart.md).
 
 ---
 

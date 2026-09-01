@@ -144,7 +144,7 @@ Embedded Realm objects (`embedded: true`) become nested `type: 'object'` propert
 Ship one release where both databases are installed. On startup, the app reads the Realm file, writes the data into RxDB and records its progress so the import completes once per device. There are three ways to move the data:
 
 1. **Export to JSON and insert as normal documents.** Read all Realm objects, map them to plain JSON and call `bulkInsert`. Simple, but if the app gets killed mid-import, the whole run starts over.
-2. **Use the JSON dump plugin.** If you produce a dump in the RxDB dump format, the [json-dump plugin](../rx-collection.md#importjson) loads it in one call with `collection.importJSON(dump)`.
+2. **Use the JSON dump plugin.** If you produce a dump in the RxDB dump format, the [json-dump plugin](../json-import-export.md) loads it in one call with `collection.importJSON(dump)`.
 3. **Iterate over the Realm data with a checkpoint.** Import in batches and persist a checkpoint after each batch. This is the recommended approach because the import continues where it stopped when the app restarts at any point.
 
 The checkpointed import looks like this:

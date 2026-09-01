@@ -192,6 +192,7 @@ Topic-specific documentation files:
 - [Data Migration](https://rxdb.info/data-migration.md): Learn about data migration in RxDB. This page redirects to the schema migration documentation.
 - [Downsides of Local First / Offline First](https://rxdb.info/downsides-of-offline-first.md): Discover the hidden pitfalls of local-first apps. Learn about storage limits, conflicts, and real-time illusions before building your offline solut...
 - [Electron Database - Storage adapters for SQLite, Filesystem and In-Memory](https://rxdb.info/electron-database.md): Harness the database power of SQLite, Filesystem, and in-memory storage in Electron with RxDB. Build fast, offline-first apps that sync in real time.
+- [JSON Import and Export](https://rxdb.info/json-import-export.md): Export an RxDB database or collection into a plain JSON dump and import it back with the json-dump plugin, including attachments as base64.
 - [RxDB - The Real-Time Database for Node.js](https://rxdb.info/nodejs-database.md): Discover how RxDB brings flexible, reactive NoSQL to Node.js. Scale effortlessly, persist data, and power your server-side apps with ease.
 - [Local First / Offline First](https://rxdb.info/offline-first.md): Local-First software stores data on client devices for seamless offline and online functionality, enhancing user experience and efficiency.
 - [Partial Sync with RxDB](https://rxdb.info/partial-sync.md): Learn how to implement partial sync with RxDB by running multiple scoped replication states, so each client only downloads the slice of data it nee...

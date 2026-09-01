@@ -276,29 +276,20 @@ The `Map` returned by `findByIds` is not guaranteed to return elements in the sa
 :::
 
 ### exportJSON()
-Use this function to create a JSON export from every document in the collection.
 
-Before `exportJSON()` and `importJSON()` can be used, you have to add the `json-dump` plugin.
-
-```javascript
-import { addRxPlugin } from 'rxdb';
-import { RxDBJsonDumpPlugin } from 'rxdb/plugins/json-dump';
-addRxPlugin(RxDBJsonDumpPlugin);
-```
+Creates a JSON export of every document in the collection. Needs the `json-dump` plugin. [Read more](./json-import-export.md)
 
 ```js
-myCollection.exportJSON()
-  .then(json => console.dir(json));
+const json = await myCollection.exportJSON();
 ```
 
 ### importJSON()
-To import the JSON dump into your collection, use this function.
+
+Imports a previously exported JSON dump back into the collection. [Read more](./json-import-export.md)
+
 ```js
-// import the dump to the database
-myCollection.importJSON(json)
-  .then(() => console.log('done'));
+await myCollection.importJSON(json);
 ```
-Note that importing will fire events for each inserted document.
 
 ### remove()
 
