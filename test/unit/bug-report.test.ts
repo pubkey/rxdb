@@ -16,27 +16,8 @@ import {
     createRxDatabase,
     randomToken
 } from '../../plugins/core/index.mjs';
-import {
-    isNode
-} from '../../plugins/test-utils/index.mjs';
 describe('bug-report.test.js', () => {
     it('should fail because it reproduces the bug', async function () {
-
-        /**
-         * If your test should only run in nodejs or only run in the browser,
-         * you should comment in the return operator and adapt the if statement.
-         */
-        if (
-            !isNode // runs only in node
-            // isNode // runs only in the browser
-        ) {
-            // return;
-        }
-
-        if (!config.storage.hasMultiInstance) {
-            return;
-        }
-
         // create a schema
         const mySchema = {
             version: 0,
@@ -70,13 +51,8 @@ describe('bug-report.test.js', () => {
         // create a database
         const db = await createRxDatabase({
             name,
-            /**
-             * By calling config.storage.getStorage(),
-             * we can ensure that all variations of RxStorage are tested in the CI.
-             */
             storage: config.storage.getStorage(),
-            eventReduce: true,
-            ignoreDuplicate: true
+            eventReduce: true
         });
         // create a collection
         const collections = await db.addCollections({
@@ -92,50 +68,46 @@ describe('bug-report.test.js', () => {
             lastName: 'Kelso',
             age: 56
         });
+        const myDocument = await collections.mycollection.findOne().exec(true);
 
-        /**
-         * to simulate the event-propagation over multiple browser-tabs,
-         * we create the same database again
-         */
-        const dbInOtherTab = await createRxDatabase({
-            name,
-            storage: config.storage.getStorage(),
-            eventReduce: true,
-            ignoreDuplicate: true
-        });
-        // create a collection
-        const collectionInOtherTab = await dbInOtherTab.addCollections({
-            mycollection: {
-                schema: mySchema
+        // let the NEXT incremental write fail once at the storage layer,
+        // like a transient io error would
+        const storageInstance = collections.mycollection.storageInstance;
+        const realBulkWrite = storageInstance.bulkWrite.bind(storageInstance);
+        let failedOnce = false;
+        storageInstance.bulkWrite = (rows: any, context: string) => {
+            if (context === 'incremental-write' && !failedOnce) {
+                failedOnce = true;
+                return Promise.reject(new Error('simulated transient storage failure'));
             }
-        });
+            return realBulkWrite(rows, context);
+        };
 
-        // find the document in the other tab
-        const myDocument = await collectionInOtherTab.mycollection
-            .findOne()
-            .where('firstName')
-            .eq('Bob')
-            .exec();
+        // the wedged queue rejects its internal run unhandled - silence that
+        // so the test reaches its assertion instead of crashing the process
+        const silence = () => { };
+        process.on('unhandledRejection', silence);
 
         /*
          * assert things,
          * here your tests should fail to show that there is a bug
+         *
+         * Expected: the first incrementalPatch rejects with the storage error,
+         * the second one runs after the failure is over and succeeds.
+         * Actual: BOTH promises never settle. IncrementalWriteQueue.triggerRun()
+         * has no try/finally around its body, so the rejected bulkWrite leaves
+         * isRunning=true forever and every later addWrite() queues up behind it.
          */
-        assert.strictEqual(myDocument.age, 56);
-
-
-        // you can also wait for events
-        const emitted: any[] = [];
-        const sub = collectionInOtherTab.mycollection
-            .findOne().$
-            .subscribe(doc => {
-                emitted.push(doc);
-            });
-        await AsyncTestUtil.waitUntil(() => emitted.length === 1);
+        const first = myDocument.incrementalPatch({ age: 57 }).then(() => 'settled', () => 'settled');
+        const second = myDocument.incrementalPatch({ age: 58 }).then(() => 'settled', () => 'settled');
+        const outcome = await Promise.race([
+            Promise.all([first, second]).then(() => 'settled'),
+            AsyncTestUtil.wait(2000).then(() => 'still pending after 2 seconds')
+        ]);
+        assert.strictEqual(outcome, 'settled');
 
         // clean up afterwards
-        sub.unsubscribe();
+        process.removeListener('unhandledRejection', silence);
         db.close();
-        dbInOtherTab.close();
     });
 });
