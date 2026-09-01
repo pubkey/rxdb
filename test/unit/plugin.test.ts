@@ -16,7 +16,6 @@ import {
     humansCollection,
     isNode
 } from '../../plugins/test-utils/index.mjs';
-import { assertThrows } from 'async-test-util';
 import { RxDBDevModePlugin, DEV_MODE_PLUGIN_NAME } from '../../plugins/dev-mode/index.mjs';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
@@ -33,18 +32,16 @@ describe('plugin.test.js', () => {
                 name: randomToken(12)
             });
         });
-        it('should crash when a plugin with the same name added already but it is NOT the same object', async () => {
-            await assertThrows(
-                () => addRxPlugin({
-                    name: DEV_MODE_PLUGIN_NAME,
-                    rxdb: true
-                }),
-                'RxError',
-                'PL3'
-            );
+        it('should be a no-op when a plugin with the same name is added again but it is NOT the same object', () => {
+            // Adding a plugin with the same name but a different object reference must not throw.
+            // This happens with ESM/CJS module duplication in bundlers.
+            addRxPlugin({
+                name: DEV_MODE_PLUGIN_NAME,
+                rxdb: true
+            });
         });
-        it('should NOT crash when a plugin with the same name added already but it IS the same object', async () => {
-            await addRxPlugin(RxDBDevModePlugin);
+        it('should NOT crash when a plugin with the same name added already but it IS the same object', () => {
+            addRxPlugin(RxDBDevModePlugin);
         });
     });
     describe('full.node.ts', () => {

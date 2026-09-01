@@ -27,7 +27,7 @@ import {
     HOOKS,
     runPluginHooks
 } from './hooks.ts';
-import { newRxError, newRxTypeError } from './rx-error.ts';
+import { newRxTypeError } from './rx-error.ts';
 
 /**
  * prototypes that can be manipulated with a plugin
@@ -58,12 +58,14 @@ export function addRxPlugin(plugin: RxPlugin) {
         return;
     } else {
 
-        // ensure no other plugin with the same name was already added
+        /**
+         * When the same plugin is added again under a different object reference
+         * (which happens with ESM/CJS module duplication in bundlers), treat it
+         * as a no-op instead of throwing. The hooks from the first registration
+         * are already active.
+         */
         if (ADDED_PLUGIN_NAMES.has(plugin.name)) {
-            throw newRxError('PL3', {
-                name: plugin.name,
-                plugin,
-            });
+            return;
         }
 
         ADDED_PLUGINS.add(plugin);
