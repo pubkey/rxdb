@@ -8,6 +8,7 @@ const FILE_EVENT_ID = 'jobs-link-clicked';
 import { triggerTrackingEvent } from '../components/trigger-event';
 import { IframeFormModal, Modal } from '../components/modal';
 import { Button } from '../components/button';
+import { JOBS_TITLE } from '../constants';
 
 /**
  * Pipedrive webform for job applications. Both positions use the same form,
@@ -120,8 +121,8 @@ export default function Jobs() {
                 <link rel="canonical" href="/jobs/" />
             </Head>
             <Layout
-                title={'Jobs'}
-                description="Zwei Werkstudentenstellen für Developer Experience bei RxDB. Stuttgart, überwiegend remote, 20 € pro Stunde."
+                title={JOBS_TITLE}
+                description="Offene Werkstudentenstellen bei RxDB. Stuttgart, überwiegend remote, 20 € pro Stunde."
             >
                 <main>
 
@@ -138,10 +139,8 @@ export default function Jobs() {
                                     Readwise, Nutrien, MoreApp und myAgro setzen RxDB in Produktion ein.
                                 </p>
                                 <p className="centered-mobile-p" style={{ maxWidth: 780 }}>
-                                    Die Developer Experience entscheidet darüber, ob Entwickler nach
-                                    der ersten Stunde mit RxDB weiterarbeiten. Für diesen Bereich
-                                    besetzen wir <b>zwei Werkstudentenstellen</b>. Klick auf eine
-                                    Stelle für die vollständige Anzeige.
+                                    Aktuell besetzen wir <b>zwei Werkstudentenstellen</b> in
+                                    Stuttgart. Klick auf eine Stelle für die vollständige Anzeige.
                                 </p>
                             </div>
                         </div>
