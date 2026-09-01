@@ -69,15 +69,21 @@ const _create = async () => {
     console.log('DatabaseService: sync');
     await Promise.all(
         Object.values(db.collections).map(async (col) => {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 5000);
             try {
                 // create the CouchDB database
                 await fetch(
                     syncURL + col.name + '/',
                     {
-                        method: 'PUT'
+                        method: 'PUT',
+                        signal: controller.signal
                     }
                 );
             } catch (err) { }
+            finally {
+                clearTimeout(timeoutId);
+            }
         })
     );
     console.log('DatabaseService: sync - start live');
