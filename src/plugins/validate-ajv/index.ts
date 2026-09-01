@@ -4,7 +4,7 @@
  * @link https://github.com/epoberezkin/ajv
  * @link https://github.com/ajv-validator/ajv/issues/2132#issuecomment-1537224620
  */
-import Ajv from 'ajv';
+import { Ajv } from 'ajv';
 import addFormats from 'ajv-formats';
 import type {
     RxDocumentData,
