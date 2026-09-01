@@ -23,16 +23,16 @@ const JOBS_FORM_IFRAME_URL = 'https://webforms.pipedrive.com/f/czK0WxW1wnP2HOdt6
 const JOBS = [
     {
         title: 'Schwerpunkt Frontend-Entwicklung',
-        lead: 'Du entwickelst die Anwendungen, an denen Entwickler RxDB zum ersten Mal ausprobieren.',
+        lead: 'Du arbeitest an RxDB selbst und daran, dass Entwickler schneller damit zurechtkommen.',
         tasks: [
-            'Entwicklung von Demo-Anwendungen in TypeScript, die den Einsatz von RxDB in React, Angular, Vue und Svelte zeigen',
-            'Pflege der bestehenden Beispielprojekte über die Releases hinweg',
-            'Prüfung der Dokumentation aus der Perspektive von Erstnutzern und Aufnahme der Schwachstellen',
-            'Beantwortung von Entwicklerfragen auf GitHub, Discord und Stack Overflow'
+            'Weiterentwicklung der TypeScript-Typen, damit Autovervollständigung und Typprüfung im Editor der Nutzer greifen',
+            'Überarbeitung der Fehlermeldungen und der Dev-Mode-Prüfungen, sodass aus einem Fehler hervorgeht, was zu tun ist',
+            'Abbau von Reibung in den häufigen Abläufen, vom Setup bis zur ersten Query',
+            'Auswertung wiederkehrender Fragen aus GitHub, Discord und Stack Overflow und Rückführung in Code oder Dokumentation'
         ],
         requirements: [
             'Studium der Informatik, Softwaretechnik, Medieninformatik oder eines vergleichbaren Fachs',
-            'sicherer Umgang mit TypeScript und mindestens einem Frontend-Framework',
+            'sicherer Umgang mit TypeScript, Erfahrung mit einem Frontend-Framework ist von Vorteil',
             'eigene veröffentlichte Projekte, ein GitHub-Profil ersetzt bei uns das Anschreiben'
         ]
     },
