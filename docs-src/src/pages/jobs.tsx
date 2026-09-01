@@ -48,7 +48,7 @@ const JOBS = [
         requirements: [
             'Studium der Audiovisuellen Medien, Onlinemedien, Werbung und Marktkommunikation, Medieninformatik oder eines vergleichbaren Fachs',
             'eigenständige Schnittarbeit, belegt durch Arbeitsproben',
-            'Programmierkenntnisse sind nicht erforderlich'
+            'Grundkenntnisse in der Softwareentwicklung. Du entwickelst nicht selbst, solltest aber verstehen, was in einem Video passiert, und einen Codeausschnitt lesen können.'
         ]
     }
 ];
