@@ -37,7 +37,6 @@ const JOBS = [
     {
         id: 'frontend',
         title: 'Werkstudent (m/w/d) Developer Experience, Schwerpunkt Frontend',
-        short: 'Schwerpunkt Frontend',
         teaser: 'Du arbeitest an RxDB selbst und daran, dass Entwickler schneller damit zurechtkommen.',
         tasks: [
             'Analyse, woran Entwickler beim Einstieg in RxDB hängen bleiben, und Behebung der Ursachen im Code',
@@ -54,7 +53,6 @@ const JOBS = [
     {
         id: 'video',
         title: 'Werkstudent (m/w/d) Developer Experience, Schwerpunkt Video und Social Media',
-        short: 'Schwerpunkt Video und Social Media',
         teaser: 'Du machst die Arbeit sichtbar, die im Frontend-Bereich entsteht.',
         tasks: [
             'Produktion kurzer Videos zur Arbeit mit RxDB, von der Konzeption über Aufnahme und Schnitt bis zu Titel und Thumbnail',
@@ -151,14 +149,24 @@ export default function Jobs() {
 
                     <div className="block dark" style={{ paddingBottom: 124 }}>
                         <div className="content">
-                            <div className="inner" style={{ flexWrap: 'wrap', alignItems: 'stretch' }}>
+                            {/*
+                              * Plain flex row instead of the shared .inner
+                              * class, which turns column-reverse on small
+                              * screens and would show the second advert first.
+                              */}
+                            <div style={{
+                                display: 'flex',
+                                flexWrap: 'wrap',
+                                justifyContent: 'center',
+                                alignItems: 'stretch'
+                            }}>
                                 {
                                     JOBS.map((entry, i) => {
                                         return <div
                                             key={entry.id}
                                             role='button'
                                             tabIndex={0}
-                                            aria-label={'Stellenanzeige öffnen: ' + entry.short}
+                                            aria-label={'Stellenanzeige öffnen: ' + entry.title}
                                             onClick={() => showJob(i)}
                                             onKeyDown={(event) => {
                                                 if (event.key === 'Enter' || event.key === ' ') {
@@ -181,8 +189,8 @@ export default function Jobs() {
                                                 fontSize: 20,
                                                 fontWeight: 700,
                                                 lineHeight: '28px',
-                                                marginBottom: 10
-                                            }}>{entry.short}</div>
+                                                marginBottom: 14
+                                            }}>{entry.title}</div>
                                             <div style={{
                                                 fontSize: 15,
                                                 lineHeight: '23px',
