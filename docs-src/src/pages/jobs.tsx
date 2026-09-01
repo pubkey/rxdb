@@ -25,10 +25,10 @@ const JOBS = [
         title: 'Schwerpunkt Frontend-Entwicklung',
         lead: 'Du arbeitest an RxDB selbst und daran, dass Entwickler schneller damit zurechtkommen.',
         tasks: [
-            'Weiterentwicklung der TypeScript-Typen, damit Autovervollständigung und Typprüfung im Editor der Nutzer greifen',
-            'Überarbeitung der Fehlermeldungen und der Dev-Mode-Prüfungen, sodass aus einem Fehler hervorgeht, was zu tun ist',
-            'Abbau von Reibung in den häufigen Abläufen, vom Setup bis zur ersten Query',
-            'Auswertung wiederkehrender Fragen aus GitHub, Discord und Stack Overflow und Rückführung in Code oder Dokumentation'
+            'Analyse, woran Entwickler beim Einstieg in RxDB hängen bleiben, und Behebung der Ursachen im Code',
+            'Mitarbeit an der öffentlichen Schnittstelle der Bibliothek, damit sie sich vorhersehbar verhält',
+            'Verbesserung der Rückmeldungen, die RxDB im Fehlerfall gibt',
+            'Rückführung wiederkehrender Fragen aus der Community in Produkt und Dokumentation'
         ],
         requirements: [
             'Studium der Informatik, Softwaretechnik, Medieninformatik oder eines vergleichbaren Fachs',
