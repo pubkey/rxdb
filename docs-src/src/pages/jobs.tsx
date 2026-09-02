@@ -129,7 +129,7 @@ export default function Jobs() {
                     <div className="block first centered">
                         <div className="content">
                             <h1 style={{ textAlign: 'center' }}>
-                                Arbeite an <b>RxDB</b>
+                                Karriere bei <b>RxDB</b>
                             </h1>
                             <div className="inner centered" style={{ flexDirection: 'column' }}>
                                 <p className="centered-mobile-p" style={{ maxWidth: 780 }}>
