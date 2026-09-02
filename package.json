@@ -668,7 +668,7 @@
     "microsoft-onedrive-mock": "1.0.5",
     "mini-css-extract-plugin": "2.10.2",
     "mocha": "11.7.6",
-    "mongodb": "7.5.0",
+    "mongodb": "7.6.0",
     "nats": "2.29.3",
     "node-appwrite": "28.0.0",
     "node-datachannel": "0.33.1",
