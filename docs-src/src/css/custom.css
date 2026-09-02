@@ -1978,12 +1978,12 @@ ul.checked li:before {
 
 
 .trophy.tanstack {
-    color: #FFA05C;
+    color: #eeebd4;
     background-color: var(--bg-color-dark);
 }
 
 .trophy.tanstack:hover {
-    box-shadow: 2px 2px 13px #FFA05C, -2px -1px 14px #FFA05C;
+    box-shadow: 2px 2px 13px #eeebd4, -2px -1px 14px #eeebd4;
 }
 
 
