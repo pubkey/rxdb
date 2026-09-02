@@ -24,7 +24,7 @@ const JOBS_FORM_IFRAME_URL = 'https://webforms.pipedrive.com/f/czK0WxW1wnP2HOdt6
 const CONDITIONS = [
     '20 € pro Stunde',
     '10 bis 20 Stunden pro Woche, flexibel nach Vorlesungsplan',
-    'überwiegend remote, gelegentlich vor Ort in Stuttgart',
+    'regelmäßig vor Ort in Stuttgart, zeitweise auch aus dem Homeoffice',
     'Eintritt nach Absprache, auch mitten im Semester',
     'deine Arbeit ist Open Source und bleibt unter deinem Namen sichtbar'
 ];
@@ -122,7 +122,7 @@ export default function Jobs() {
             </Head>
             <Layout
                 title={JOBS_TITLE}
-                description="Offene Werkstudentenstellen bei RxDB. Stuttgart, überwiegend remote, 20 € pro Stunde."
+                description="Offene Werkstudentenstellen bei RxDB in Stuttgart, 20 € pro Stunde."
             >
                 <main>
 
@@ -198,7 +198,7 @@ export default function Jobs() {
                                                 flexGrow: 1
                                             }}>
                                                 20 € pro Stunde, 10 bis 20 Stunden pro Woche,
-                                                Stuttgart und remote
+                                                vor Ort in Stuttgart
                                             </div>
                                             <div style={{ textAlign: 'center', marginTop: 28 }}>
                                                 <Button primary onClick={(event) => {
