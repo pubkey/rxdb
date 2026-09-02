@@ -369,7 +369,7 @@ export default function Home(props: {
             href="/articles/tanstack-db/rxdb-collection-for-tanstack-db.html"
             title="TanStack DB"
             slug="tanstack"
-            subTitle="Official Collection"
+            subTitle="Officially integrates with"
             imgUrl="/files/icons/tanstack.svg"
           />
 
