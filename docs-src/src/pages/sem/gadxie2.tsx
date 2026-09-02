@@ -52,14 +52,30 @@ const variations = {
     //         <>Battle-tested replication</>
     //     ]
     // },
-    d: {
-        title: <>Queries That <b>Re-Render</b> Your <b>UI</b></>,
-        text: <>Define a schema, query your local data, and RxDB keeps every subscribed component up to date as the data changes, in every open tab and on every device. Storage is IndexedDB, OPFS or SQLite, whichever fits your app.</>,
+    /**
+     * Variation 'd' was retired on 2026-09-02 after the second A/B readout on
+     * this page: variation 'b' stayed ahead on every engagement signal.
+     * Kept on record (commented out, not deleted) so its letter and copy stay
+     * reserved and are never reused for different copy.
+     */
+    // d: {
+    //     title: <>Queries That <b>Re-Render</b> Your <b>UI</b></>,
+    //     text: <>Define a schema, query your local data, and RxDB keeps every subscribed component up to date as the data changes, in every open tab and on every device. Storage is IndexedDB, OPFS or SQLite, whichever fits your app.</>,
+    //     bulletpoints: [
+    //         <>Observable queries, no refetching</>,
+    //         <>Every open tab stays consistent</>,
+    //         <>IndexedDB, OPFS or SQLite storage</>,
+    //         <>Replication to your own backend</>
+    //     ]
+    // },
+    e: {
+        title: <>Change Your <b>Schema</b> Without Losing <b>Local Data</b></>,
+        text: <>RxDB versions your schema. When you ship a new app version, the migration strategies you define transform the documents already stored on the user's device, so an update never starts from an empty database. Schema validation catches bad writes before they reach storage.</>,
         bulletpoints: [
-            <>Observable queries, no refetching</>,
-            <>Every open tab stays consistent</>,
-            <>IndexedDB, OPFS or SQLite storage</>,
-            <>Replication to your own backend</>
+            <>Versioned schemas with migrations</>,
+            <>Existing device data is migrated</>,
+            <>Validation before every write</>,
+            <>TypeScript types from your schema</>
         ]
     }
 };

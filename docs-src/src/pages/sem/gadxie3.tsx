@@ -36,28 +36,38 @@ const variations = {
             <>No BroadcastChannel plumbing</>
         ]
     },
-    c: {
-        title: <><b>Offline Edits</b> Without <b>Lost Data</b></>,
-        text: <>Users edit offline, reconnect, and expect nothing to be lost. RxDB stores writes locally, replicates them when the network returns, and resolves conflicts with a strategy you control.</>,
-        bulletpoints: [
-            <>Local-first writes, zero latency</>,
-            <>Automatic replication on reconnect</>,
-            <>Custom conflict strategies</>,
-            <>Data survives page reloads</>
-        ]
-    }
+    /**
+     * Variation 'c' was retired on 2026-09-02 after the A/B readout on this
+     * page: variations 'a' and 'b' both beat it on engagement. Kept on record
+     * (commented out, not deleted) so its letter and copy stay reserved and
+     * are never reused for different copy.
+     */
+    // c: {
+    //     title: <><b>Offline Edits</b> Without <b>Lost Data</b></>,
+    //     text: <>Users edit offline, reconnect, and expect nothing to be lost. RxDB stores writes locally, replicates them when the network returns, and resolves conflicts with a strategy you control.</>,
+    //     bulletpoints: [
+    //         <>Local-first writes, zero latency</>,
+    //         <>Automatic replication on reconnect</>,
+    //         <>Custom conflict strategies</>,
+    //         <>Data survives page reloads</>
+    //     ]
+    // }
 };
+
+const variationKeys = Object.keys(variations) as (keyof typeof variations)[];
 
 export default function Page() {
     /**
-     * Render variation "a" on the server and on the first client render
-     * to avoid a hydration mismatch, then swap to the assigned variation.
+     * Render the first live variation on the server and on the first client
+     * render to avoid a hydration mismatch, then swap to the assigned one.
+     * The key comes from Object.keys(), never a hardcoded 'a': once variation
+     * 'a' is retired a hardcoded default renders nothing.
      */
-    const [variationKey, setVariationKey] = useState('a');
+    const [variationKey, setVariationKey] = useState(variationKeys[0] as string);
     useEffect(() => {
-        setVariationKey(getSemVariation(Object.keys(variations)));
+        setVariationKey(getSemVariation(variationKeys));
     }, []);
-    const variation = variations[variationKey as keyof typeof variations] ?? variations.a;
+    const variation = variations[variationKey as keyof typeof variations] ?? variations[variationKeys[0]];
 
     return Home({
         sem: {
