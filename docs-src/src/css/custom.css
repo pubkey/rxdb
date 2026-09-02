@@ -1977,6 +1977,16 @@ ul.checked li:before {
 }
 
 
+.trophy.tanstack {
+    color: #FFA05C;
+    background-color: var(--bg-color-dark);
+}
+
+.trophy.tanstack:hover {
+    box-shadow: 2px 2px 13px #FFA05C, -2px -1px 14px #FFA05C;
+}
+
+
 .samp-wrapper {
     background-color: var(--bg-color-dark);
     border-style: solid;

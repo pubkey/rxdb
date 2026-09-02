@@ -86,15 +86,22 @@ export function PartnerTrophy(props: {
     title: string;
     imgUrl: string;
     order?: number;
+    /**
+     * Used for the css class and the tracking event.
+     * Defaults to the lowercased title.
+     */
+    slug?: string;
+    subTitle?: string;
 }) {
+    const slug = props.slug ? props.slug : props.title.toLowerCase();
     return <a
         href={props.href}
-        onClick={() => triggerTrackingEvent(props.title.toLowerCase() + '_trophy_click', 0.20)}
+        onClick={() => triggerTrackingEvent(slug + '_trophy_click', 0.20)}
         target="_blank"
         rel="noopener noreferrer"
         style={{ order: props.order }}
     >
-        <div className={'trophy ' + props.title.toLowerCase()} style={{
+        <div className={'trophy ' + slug} style={{
             width: 'auto'
         }}>
             <img
@@ -104,7 +111,7 @@ export function PartnerTrophy(props: {
                 alt={'RxDB ' + props.title}
             />
             <div style={{ flex: 1 }}>
-                <div className="subtitle">Official Partner</div>
+                <div className="subtitle">{props.subTitle ? props.subTitle : 'Official Partner'}</div>
                 <div className="title">{props.title}</div>
             </div>
         </div>

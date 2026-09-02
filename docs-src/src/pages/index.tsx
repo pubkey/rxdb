@@ -365,6 +365,14 @@ export default function Home(props: {
 
           <CoreConceptSection dark={true} />
 
+          <PartnerTrophy
+            href="/articles/tanstack-db/rxdb-collection-for-tanstack-db.html"
+            title="TanStack DB"
+            slug="tanstack"
+            subTitle="Official Collection"
+            imgUrl="/files/icons/tanstack.svg"
+          />
+
           <div className="block last trophy-before">
             <div className="content">
               <h2>
