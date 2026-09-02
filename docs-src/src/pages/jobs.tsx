@@ -138,10 +138,6 @@ export default function Jobs() {
                                     synchronisiert, sobald sie wiederhergestellt ist. Unternehmen wie
                                     Readwise, Nutrien, MoreApp und myAgro setzen RxDB in Produktion ein.
                                 </p>
-                                <p className="centered-mobile-p" style={{ maxWidth: 780 }}>
-                                    Aktuell besetzen wir <b>zwei Werkstudentenstellen</b> in
-                                    Stuttgart.
-                                </p>
                             </div>
                         </div>
                     </div>
