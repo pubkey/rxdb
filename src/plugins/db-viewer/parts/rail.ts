@@ -1,10 +1,10 @@
 import { el, spacer } from '../dom.ts';
 import { formatNumber } from '../format.ts';
-import { DEVTOOL_COLORS } from '../theme.ts';
-import type { DevtoolStore } from '../store.ts';
-import type { DevtoolNavigation, DevtoolTool } from '../../../types/index.d.ts';
+import { DB_VIEWER_COLORS } from '../theme.ts';
+import type { DbViewerStore } from '../store.ts';
+import type { DbViewerNavigation, DbViewerTool } from '../../../types/index.d.ts';
 
-const TOOLS: { id: DevtoolTool; label: string; }[] = [
+const TOOLS: { id: DbViewerTool; label: string; }[] = [
     { id: 'live', label: 'Live' },
     { id: 'schema', label: 'Schema' },
     { id: 'changes', label: 'Changes' },
@@ -22,24 +22,24 @@ export type ReplicationGlyph = {
  * ● running, ○ idle, ▲ error, ■ stopped.
  * The glyph carries the state so colour is never the only signal.
  */
-export function replicationGlyph(store: DevtoolStore, collectionName: string): ReplicationGlyph {
+export function replicationGlyph(store: DbViewerStore, collectionName: string): ReplicationGlyph {
     const states = store.getReplicationStates(collectionName);
     if (states.length === 0) {
-        return { glyph: '○', color: DEVTOOL_COLORS.fgDim, state: 'not configured' };
+        return { glyph: '○', color: DB_VIEWER_COLORS.fgDim, state: 'not configured' };
     }
     if (store.replicationErrors.has(collectionName)) {
-        return { glyph: '▲', color: DEVTOOL_COLORS.danger, state: 'error' };
+        return { glyph: '▲', color: DB_VIEWER_COLORS.danger, state: 'error' };
     }
     if (states.some(state => state.subjects.canceled.getValue())) {
-        return { glyph: '■', color: DEVTOOL_COLORS.fgMuted, state: 'stopped' };
+        return { glyph: '■', color: DB_VIEWER_COLORS.fgMuted, state: 'stopped' };
     }
     if (states.some(state => state.subjects.active.getValue())) {
-        return { glyph: '●', color: DEVTOOL_COLORS.success, state: 'running' };
+        return { glyph: '●', color: DB_VIEWER_COLORS.success, state: 'running' };
     }
-    return { glyph: '○', color: DEVTOOL_COLORS.fgDim, state: 'idle' };
+    return { glyph: '○', color: DB_VIEWER_COLORS.fgDim, state: 'idle' };
 }
 
-function isActive(navigation: DevtoolNavigation, candidate: DevtoolNavigation): boolean {
+function isActive(navigation: DbViewerNavigation, candidate: DbViewerNavigation): boolean {
     if (navigation.kind !== candidate.kind) {
         return false;
     }
@@ -56,33 +56,33 @@ function isActive(navigation: DevtoolNavigation, candidate: DevtoolNavigation): 
 }
 
 export function renderRail(
-    store: DevtoolStore,
-    onNavigate: (navigation: DevtoolNavigation) => void
+    store: DbViewerStore,
+    onNavigate: (navigation: DbViewerNavigation) => void
 ): HTMLElement {
-    const rail = el('div', { class: 'rxdt-rail' });
+    const rail = el('div', { class: 'rxdbv-rail' });
     const collectionNames = store.collectionNames;
 
     const item = (
-        navigation: DevtoolNavigation,
+        navigation: DbViewerNavigation,
         children: (Node | string | false)[]
     ) => el('div', {
-        class: 'rxdt-rail-item' + (isActive(store.navigation, navigation) ? ' rxdt-active' : ''),
+        class: 'rxdbv-rail-item' + (isActive(store.navigation, navigation) ? ' rxdbv-active' : ''),
         onClick: () => onNavigate(navigation)
     }, children);
 
-    rail.appendChild(el('div', { class: 'rxdt-rail-head', text: 'COLLECTIONS' }));
+    rail.appendChild(el('div', { class: 'rxdbv-rail-head', text: 'COLLECTIONS' }));
     if (collectionNames.length === 0) {
         rail.appendChild(el('div', {
-            class: 'rxdt-rail-item rxdt-dim',
+            class: 'rxdbv-rail-item rxdbv-dim',
             style: { cursor: 'default' },
             text: 'none yet'
         }));
     }
     collectionNames.forEach(name => {
         rail.appendChild(item({ kind: 'collection', name }, [
-            el('span', { class: 'rxdt-rail-label', text: name }),
+            el('span', { class: 'rxdbv-rail-label', text: name }),
             el('span', {
-                class: 'rxdt-rail-count',
+                class: 'rxdbv-rail-count',
                 text: formatNumber(store.getMetrics(name).documentCount)
             })
         ]));
@@ -90,11 +90,11 @@ export function renderRail(
 
     const replicated = collectionNames.filter(name => store.getReplicationStates(name).length > 0);
     if (replicated.length > 0) {
-        rail.appendChild(el('div', { class: 'rxdt-rail-head', text: 'REPLICATION' }));
+        rail.appendChild(el('div', { class: 'rxdbv-rail-head', text: 'REPLICATION' }));
         replicated.forEach(name => {
             const glyph = replicationGlyph(store, name);
             rail.appendChild(item({ kind: 'replication', name }, [
-                el('span', { class: 'rxdt-rail-label', text: name }),
+                el('span', { class: 'rxdbv-rail-label', text: name }),
                 el('span', {
                     style: { color: glyph.color, fontSize: '10px' },
                     title: glyph.state,
@@ -104,16 +104,16 @@ export function renderRail(
         });
     }
 
-    rail.appendChild(el('div', { class: 'rxdt-rail-head', text: 'TOOLS' }));
+    rail.appendChild(el('div', { class: 'rxdbv-rail-head', text: 'TOOLS' }));
     TOOLS.forEach(tool => {
         rail.appendChild(item({ kind: 'tool', tool: tool.id }, [
-            el('span', { class: 'rxdt-rail-label', text: tool.label })
+            el('span', { class: 'rxdbv-rail-label', text: tool.label })
         ]));
     });
 
     rail.appendChild(spacer());
     rail.appendChild(el('div', {
-        class: 'rxdt-rail-settings',
+        class: 'rxdbv-rail-settings',
         text: 'Settings',
         onClick: () => onNavigate({ kind: 'settings' })
     }));

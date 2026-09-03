@@ -20,7 +20,7 @@ type CollectionStorageRow = {
  * so no estimated on-disk sizes are shown anywhere on this panel.
  */
 export class StoragePanel {
-    public readonly element: HTMLElement = el('div', { class: 'rxdt-main rxdt-scroll' });
+    public readonly element: HTMLElement = el('div', { class: 'rxdbv-main rxdbv-scroll' });
 
     private rows: CollectionStorageRow[] = [];
     private loading = true;
@@ -39,16 +39,16 @@ export class StoragePanel {
         const totalTombstones = this.rows.reduce((sum, row) => sum + row.tombstones, 0);
         const totalAttachmentBytes = this.rows.reduce((sum, row) => sum + row.attachmentBytes, 0);
 
-        this.element.appendChild(el('div', { class: 'rxdt-toolbar' }, [
-            el('span', { class: 'rxdt-panel-title', text: 'Storage' }),
-            this.loading && el('span', { class: 'rxdt-dim', style: { fontSize: '10px' }, text: 'counting…' })
+        this.element.appendChild(el('div', { class: 'rxdbv-toolbar' }, [
+            el('span', { class: 'rxdbv-panel-title', text: 'Storage' }),
+            this.loading && el('span', { class: 'rxdbv-dim', style: { fontSize: '10px' }, text: 'counting…' })
         ]));
 
-        const card = (label: string, value: Node | string) => el('div', { class: 'rxdt-card' }, [
-            el('div', { class: 'rxdt-section-label', text: label }),
-            el('div', { class: 'rxdt-card-value' }, [value])
+        const card = (label: string, value: Node | string) => el('div', { class: 'rxdbv-card' }, [
+            el('div', { class: 'rxdbv-section-label', text: label }),
+            el('div', { class: 'rxdbv-card-value' }, [value])
         ]);
-        this.element.appendChild(el('div', { class: 'rxdt-cards' }, [
+        this.element.appendChild(el('div', { class: 'rxdbv-cards' }, [
             card('ENGINE', store.database.storage.name),
             card('DATABASE', store.database.name + ' · rxdb v' + RXDB_VERSION),
             card('DOCUMENTS', formatNumber(totalDocuments)),
@@ -60,14 +60,14 @@ export class StoragePanel {
         ]));
         this.rows.forEach(row => {
             this.element.appendChild(gridRow(COLUMNS, [
-                el('span', { class: 'rxdt-mono', text: row.collectionName }),
-                el('span', { class: 'rxdt-mono', text: formatNumber(row.documents) }),
-                el('span', { class: 'rxdt-mono rxdt-muted', text: formatNumber(row.tombstones) }),
-                el('span', { class: 'rxdt-mono rxdt-muted', text: formatBytes(row.attachmentBytes) })
-            ], { class: 'rxdt-tr rxdt-static' }));
+                el('span', { class: 'rxdbv-mono', text: row.collectionName }),
+                el('span', { class: 'rxdbv-mono', text: formatNumber(row.documents) }),
+                el('span', { class: 'rxdbv-mono rxdbv-muted', text: formatNumber(row.tombstones) }),
+                el('span', { class: 'rxdbv-mono rxdbv-muted', text: formatBytes(row.attachmentBytes) })
+            ], { class: 'rxdbv-tr rxdbv-static' }));
         });
         this.element.appendChild(el('div', {
-            class: 'rxdt-mono',
+            class: 'rxdbv-mono',
             style: {
                 display: 'grid',
                 gridTemplateColumns: COLUMNS,
@@ -91,16 +91,16 @@ export class StoragePanel {
         const store = this.context.store;
         const canClean = !store.readOnly &&
             store.collectionNames.some(name => typeof (store.database.collections[name] as any).cleanup === 'function');
-        return el('div', { class: 'rxdt-note' }, [
+        return el('div', { class: 'rxdbv-note' }, [
             el('div', { style: { fontWeight: '700', fontSize: '12px' }, text: 'Cleanup' }),
             el('div', {
-                class: 'rxdt-muted',
+                class: 'rxdbv-muted',
                 style: { fontSize: '11.5px', marginTop: '4px', lineHeight: '1.55' },
                 text: 'Purges tombstones older than ' + TOMBSTONE_MAX_AGE_DAYS +
                     ' days. Peers whose replication checkpoint predates the cleanup must re-sync from scratch.'
             }),
             !canClean && el('div', {
-                class: 'rxdt-dim',
+                class: 'rxdbv-dim',
                 style: { fontSize: '11px', marginTop: '6px' },
                 text: store.readOnly
                     ? 'Not available in read-only mode.'

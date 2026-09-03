@@ -1,20 +1,20 @@
 import type { RxCollection, RxDocumentData } from '../../../types/index.d.ts';
 import { clear, el, gridHead, gridRow, spacer } from '../dom.ts';
 import { formatNumber, valueType } from '../format.ts';
-import { DEVTOOL_COLORS } from '../theme.ts';
+import { DB_VIEWER_COLORS } from '../theme.ts';
 import type { PanelContext } from './context.ts';
 
 const SAMPLE_SIZE = 1000;
 
 const TYPE_COLORS: { [type: string]: string; } = {
-    string: DEVTOOL_COLORS.info,
-    number: DEVTOOL_COLORS.warning,
-    integer: DEVTOOL_COLORS.warning,
-    boolean: DEVTOOL_COLORS.success,
-    array: DEVTOOL_COLORS.pinkDeep,
-    object: DEVTOOL_COLORS.purple,
-    null: DEVTOOL_COLORS.neutralBar,
-    missing: DEVTOOL_COLORS.neutralBar
+    string: DB_VIEWER_COLORS.info,
+    number: DB_VIEWER_COLORS.warning,
+    integer: DB_VIEWER_COLORS.warning,
+    boolean: DB_VIEWER_COLORS.success,
+    array: DB_VIEWER_COLORS.pinkDeep,
+    object: DB_VIEWER_COLORS.purple,
+    null: DB_VIEWER_COLORS.neutralBar,
+    missing: DB_VIEWER_COLORS.neutralBar
 };
 
 type FieldStats = {
@@ -42,7 +42,7 @@ const COLUMNS = '130px 260px 90px 1fr';
  * schema declares, and lists the documents that disagree with it.
  */
 export class SchemaPanel {
-    public readonly element: HTMLElement = el('div', { class: 'rxdt-main rxdt-scroll' });
+    public readonly element: HTMLElement = el('div', { class: 'rxdbv-main rxdbv-scroll' });
 
     private fields: FieldStats[] = [];
     private violations: SchemaViolation[] = [];
@@ -67,7 +67,7 @@ export class SchemaPanel {
         const collectionName = this.collectionName;
         if (!collectionName) {
             this.element.appendChild(el('div', {
-                class: 'rxdt-center',
+                class: 'rxdbv-center',
                 text: 'No collections to analyse.'
             }));
             return this.element;
@@ -82,7 +82,7 @@ export class SchemaPanel {
         this.element.appendChild(gridHead(COLUMNS, ['field', 'types', 'presence', 'values']));
         if (this.loading) {
             this.element.appendChild(el('div', {
-                class: 'rxdt-dim',
+                class: 'rxdbv-dim',
                 style: { padding: '8px 12px' },
                 text: 'sampling documents…'
             }));
@@ -97,24 +97,24 @@ export class SchemaPanel {
 
     private renderHeader(collection: RxCollection): HTMLElement {
         const legend = ['string', 'number', 'boolean', 'array', 'object', 'missing'];
-        return el('div', { class: 'rxdt-toolbar' }, [
-            el('span', { class: 'rxdt-panel-title', text: 'Schema' }),
+        return el('div', { class: 'rxdbv-toolbar' }, [
+            el('span', { class: 'rxdbv-panel-title', text: 'Schema' }),
             el('span', {
-                class: 'rxdt-mono rxdt-muted',
+                class: 'rxdbv-mono rxdbv-muted',
                 style: { fontSize: '11px' },
                 text: collection.name + ' · declared v' + collection.schema.version +
                     ' · sampled ' + formatNumber(this.sampled) + ' documents'
             }),
             spacer(),
-            el('span', { class: 'rxdt-dim', style: { fontSize: '10px' } }, legend.flatMap((type, index) => [
+            el('span', { class: 'rxdbv-dim', style: { fontSize: '10px' } }, legend.flatMap((type, index) => [
                 document.createTextNode((index === 0 ? '' : ' · ') + type + ' '),
-                el('span', { class: 'rxdt-swatch', style: { background: TYPE_COLORS[type] } })
+                el('span', { class: 'rxdbv-swatch', style: { background: TYPE_COLORS[type] } })
             ]))
         ]);
     }
 
     private renderFieldRow(field: FieldStats): HTMLElement {
-        const bar = el('div', { class: 'rxdt-typebar' });
+        const bar = el('div', { class: 'rxdbv-typebar' });
         const missing = this.sampled - field.present;
         const shares: [string, number][] = Array.from(field.typeCounts.entries());
         if (missing > 0) {
@@ -124,26 +124,26 @@ export class SchemaPanel {
             bar.appendChild(el('div', {
                 style: {
                     width: ((count / Math.max(1, this.sampled)) * 100) + '%',
-                    background: TYPE_COLORS[type] ?? DEVTOOL_COLORS.neutralBar
+                    background: TYPE_COLORS[type] ?? DB_VIEWER_COLORS.neutralBar
                 },
                 title: type + ': ' + formatNumber(count)
             }));
         });
         const presence = this.sampled === 0 ? 0 : Math.round((field.present / this.sampled) * 100);
         return gridRow(COLUMNS, [
-            el('span', { class: 'rxdt-mono', text: field.name }),
+            el('span', { class: 'rxdbv-mono', text: field.name }),
             bar,
             el('span', {
-                class: 'rxdt-mono',
-                style: { color: presence === 100 ? DEVTOOL_COLORS.success : DEVTOOL_COLORS.warning },
+                class: 'rxdbv-mono',
+                style: { color: presence === 100 ? DB_VIEWER_COLORS.success : DB_VIEWER_COLORS.warning },
                 text: presence + '%'
             }),
             el('span', {
-                class: 'rxdt-mono rxdt-muted',
+                class: 'rxdbv-mono rxdbv-muted',
                 style: { fontSize: '10.5px' },
                 text: describeValues(field)
             })
-        ], { class: 'rxdt-tr rxdt-static' });
+        ], { class: 'rxdbv-tr rxdbv-static' });
     }
 
     private renderViolations(collectionName: string): HTMLElement {
@@ -157,13 +157,13 @@ export class SchemaPanel {
                     style: {
                         fontSize: '10px',
                         background: 'rgba(253,54,110,0.15)',
-                        color: DEVTOOL_COLORS.danger,
+                        color: DB_VIEWER_COLORS.danger,
                         border: '1px solid rgba(253,54,110,0.4)',
                         padding: '1px 7px'
                     },
                     text: formatNumber(this.violations.length) + ' documents'
                 })
-                : el('span', { class: 'rxdt-dim', style: { fontSize: '10px' }, text: 'none in the sample' })
+                : el('span', { class: 'rxdbv-dim', style: { fontSize: '10px' }, text: 'none in the sample' })
         ]));
         this.violations.forEach(violation => {
             container.appendChild(el('div', {
@@ -177,9 +177,9 @@ export class SchemaPanel {
                     alignItems: 'center'
                 }
             }, [
-                el('span', { style: { color: DEVTOOL_COLORS.danger }, text: '▲' }),
-                el('span', { class: 'rxdt-mono rxdt-muted', style: { width: '70px' }, text: violation.documentId }),
-                el('span', { class: 'rxdt-mono rxdt-grow', text: violation.message }),
+                el('span', { style: { color: DB_VIEWER_COLORS.danger }, text: '▲' }),
+                el('span', { class: 'rxdbv-mono rxdbv-muted', style: { width: '70px' }, text: violation.documentId }),
+                el('span', { class: 'rxdbv-mono rxdbv-grow', text: violation.message }),
                 el('a', {
                     style: { fontSize: '10px' },
                     text: 'open',

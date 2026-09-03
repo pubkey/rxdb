@@ -1,8 +1,8 @@
 import type { Subscription } from 'rxjs';
 import type { RxDatabase } from '../../types/index.d.ts';
 import { clear, el } from './dom.ts';
-import { DEVTOOL_CSS, DEVTOOL_NARROW_BREAKPOINT } from './theme.ts';
-import { DevtoolStore } from './store.ts';
+import { DB_VIEWER_CSS, DB_VIEWER_NARROW_BREAKPOINT } from './theme.ts';
+import { DbViewerStore } from './store.ts';
 import { renderConnectionBanner, renderTopBar } from './parts/top-bar.ts';
 import { renderRail } from './parts/rail.ts';
 import { CollectionPanel } from './parts/collection-panel.ts';
@@ -16,12 +16,12 @@ import { NarrowPanel } from './parts/narrow-panel.ts';
 import { renderConnectingScreen, renderFailedScreen } from './parts/connection-screens.ts';
 import type { PanelContext } from './parts/context.ts';
 import type {
-    DevtoolHandle,
-    DevtoolNavigation,
-    DevtoolOptions
+    DbViewerHandle,
+    DbViewerNavigation,
+    DbViewerOptions
 } from '../../types/index.d.ts';
 
-const STYLE_ELEMENT_ID = 'rxdb-devtool-style';
+const STYLE_ELEMENT_ID = 'rxdb-db-viewer-style';
 const DEFAULT_PAGE_SIZE = 100;
 /**
  * The panels re-render at most this often while events stream in,
@@ -36,18 +36,18 @@ type Panel = {
 };
 
 /**
- * The devtool shell: chrome, navigation and the panel that is currently open.
+ * The database viewer shell: chrome, navigation and the panel that is currently open.
  */
-export class RxDBDevtool implements DevtoolHandle {
+export class RxDBDbViewer implements DbViewerHandle {
     public readonly element: HTMLElement;
     public readonly database: RxDatabase;
 
-    private readonly store: DevtoolStore;
+    private readonly store: DbViewerStore;
     private readonly context: PanelContext;
     private readonly ownsElement: boolean;
     private readonly onOpenDumpFile: (() => void) | undefined;
 
-    private readonly bodyElement = el('div', { class: 'rxdt-body' });
+    private readonly bodyElement = el('div', { class: 'rxdbv-body' });
     private readonly overlayHost = el('div');
     private overlay: HTMLElement | null = null;
 
@@ -61,13 +61,13 @@ export class RxDBDevtool implements DevtoolHandle {
     private destroyed = false;
     private resizeObserver: ResizeObserver | null = null;
 
-    constructor(database: RxDatabase, options: DevtoolOptions = {}) {
+    constructor(database: RxDatabase, options: DbViewerOptions = {}) {
         this.database = database;
         this.ownsElement = !options.target;
         this.onOpenDumpFile = options.onOpenDumpFile;
 
         const firstCollection = Object.keys(database.collections).sort()[0];
-        this.store = new DevtoolStore(database, {
+        this.store = new DbViewerStore(database, {
             surface: options.surface ?? (options.dump ? 'dump' : 'tab'),
             dump: options.dump ?? null,
             pageSize: options.pageSize ?? DEFAULT_PAGE_SIZE,
@@ -78,7 +78,7 @@ export class RxDBDevtool implements DevtoolHandle {
         });
 
         this.element = options.target ?? createFullScreenElement();
-        this.element.classList.add('rxdt');
+        this.element.classList.add('rxdbv');
         injectStyle(this.element);
 
         this.context = {
@@ -95,7 +95,7 @@ export class RxDBDevtool implements DevtoolHandle {
         this.render();
     }
 
-    public navigate(navigation: DevtoolNavigation): void {
+    public navigate(navigation: DbViewerNavigation): void {
         if (navigation.kind === 'collection') {
             this.store.lastCollectionName = navigation.name;
         }
@@ -104,7 +104,7 @@ export class RxDBDevtool implements DevtoolHandle {
         this.render();
     }
 
-    public setConnection(connection: DevtoolOptions['connection']): void {
+    public setConnection(connection: DbViewerOptions['connection']): void {
         if (connection) {
             this.store.connection = connection;
             this.render();
@@ -125,16 +125,16 @@ export class RxDBDevtool implements DevtoolHandle {
     }
 
     private notify(message: string): void {
-        this.setOverlay(el('div', { class: 'rxdt-modal-backdrop' }, [
+        this.setOverlay(el('div', { class: 'rxdbv-modal-backdrop' }, [
             el('div', {
-                class: 'rxdt-modal',
+                class: 'rxdbv-modal',
                 style: { borderTopColor: '#EBCB4B' }
             }, [
-                el('div', { class: 'rxdt-modal-title', text: 'The action did not run' }),
-                el('div', { class: 'rxdt-modal-body', text: message }),
-                el('div', { class: 'rxdt-modal-actions' }, [
+                el('div', { class: 'rxdbv-modal-title', text: 'The action did not run' }),
+                el('div', { class: 'rxdbv-modal-body', text: message }),
+                el('div', { class: 'rxdbv-modal-actions' }, [
                     el('button', {
-                        class: 'rxdt-btn',
+                        class: 'rxdbv-btn',
                         text: 'Close',
                         onClick: () => this.setOverlay(null)
                     })
@@ -161,7 +161,7 @@ export class RxDBDevtool implements DevtoolHandle {
 
     private get narrow(): boolean {
         const width = this.element.clientWidth;
-        return width > 0 && width < DEVTOOL_NARROW_BREAKPOINT;
+        return width > 0 && width < DB_VIEWER_NARROW_BREAKPOINT;
     }
 
     private render(): void {
@@ -253,31 +253,31 @@ export class RxDBDevtool implements DevtoolHandle {
 
     private renderSettings(): HTMLElement {
         const store = this.store;
-        return el('div', { class: 'rxdt-main rxdt-scroll' }, [
-            el('div', { class: 'rxdt-toolbar' }, [
-                el('span', { class: 'rxdt-panel-title', text: 'Settings' })
+        return el('div', { class: 'rxdbv-main rxdbv-scroll' }, [
+            el('div', { class: 'rxdbv-toolbar' }, [
+                el('span', { class: 'rxdbv-panel-title', text: 'Settings' })
             ]),
-            el('div', { class: 'rxdt-cards' }, [
-                el('div', { class: 'rxdt-card' }, [
-                    el('div', { class: 'rxdt-section-label', text: 'SURFACE' }),
-                    el('div', { class: 'rxdt-card-value', text: store.surface })
+            el('div', { class: 'rxdbv-cards' }, [
+                el('div', { class: 'rxdbv-card' }, [
+                    el('div', { class: 'rxdbv-section-label', text: 'SURFACE' }),
+                    el('div', { class: 'rxdbv-card-value', text: store.surface })
                 ]),
-                el('div', { class: 'rxdt-card' }, [
-                    el('div', { class: 'rxdt-section-label', text: 'ROWS PER PAGE' }),
-                    el('div', { class: 'rxdt-card-value', text: String(store.pageSize) })
+                el('div', { class: 'rxdbv-card' }, [
+                    el('div', { class: 'rxdbv-section-label', text: 'ROWS PER PAGE' }),
+                    el('div', { class: 'rxdbv-card-value', text: String(store.pageSize) })
                 ]),
-                el('div', { class: 'rxdt-card' }, [
-                    el('div', { class: 'rxdt-section-label', text: 'MODE' }),
-                    el('div', { class: 'rxdt-card-value', text: store.readOnly ? 'read-only' : 'read/write' })
+                el('div', { class: 'rxdbv-card' }, [
+                    el('div', { class: 'rxdbv-section-label', text: 'MODE' }),
+                    el('div', { class: 'rxdbv-card-value', text: store.readOnly ? 'read-only' : 'read/write' })
                 ])
             ]),
-            el('div', { class: 'rxdt-note' }, [
+            el('div', { class: 'rxdbv-note' }, [
                 el('div', { style: { fontWeight: '700', fontSize: '12px' }, text: 'Recorded feeds' }),
                 el('div', {
-                    class: 'rxdt-muted',
+                    class: 'rxdbv-muted',
                     style: { fontSize: '11.5px', marginTop: '4px', lineHeight: '1.55' },
                     text: 'The Changes and Replication feeds keep the most recent entries in memory only. ' +
-                        'Nothing the devtool records is written back into the database.'
+                        'Nothing the database viewer records is written back into the database.'
                 })
             ])
         ]);
@@ -304,7 +304,7 @@ export class RxDBDevtool implements DevtoolHandle {
                 .filter(command => command.label.toLowerCase().includes(filter.toLowerCase()))
                 .forEach(command => {
                     list.appendChild(el('div', {
-                        class: 'rxdt-dropdown-row',
+                        class: 'rxdbv-dropdown-row',
                         text: command.label,
                         onClick: () => {
                             this.setOverlay(null);
@@ -315,7 +315,7 @@ export class RxDBDevtool implements DevtoolHandle {
         };
         renderCommands('');
         const input = el('input', {
-            class: 'rxdt-modal-input',
+            class: 'rxdbv-modal-input',
             placeholder: 'Type a command…',
             onInput: (event: Event) => renderCommands((event.target as HTMLInputElement).value),
             onKeyDown: (event: KeyboardEvent) => {
@@ -325,15 +325,15 @@ export class RxDBDevtool implements DevtoolHandle {
             }
         });
         this.setOverlay(el('div', {
-            class: 'rxdt-modal-backdrop',
+            class: 'rxdbv-modal-backdrop',
             onClick: (event: MouseEvent) => {
                 if (event.target === event.currentTarget) {
                     this.setOverlay(null);
                 }
             }
         }, [
-            el('div', { class: 'rxdt-modal', style: { borderTopColor: '#ED168F' } }, [
-                el('div', { class: 'rxdt-modal-title', text: 'Commands' }),
+            el('div', { class: 'rxdbv-modal', style: { borderTopColor: '#ED168F' } }, [
+                el('div', { class: 'rxdbv-modal-title', text: 'Commands' }),
                 input,
                 el('div', { style: { marginTop: '10px', maxHeight: '260px', overflow: 'auto' } }, [list])
             ])
@@ -343,23 +343,23 @@ export class RxDBDevtool implements DevtoolHandle {
 
     private openHelp(): void {
         this.setOverlay(el('div', {
-            class: 'rxdt-modal-backdrop',
+            class: 'rxdbv-modal-backdrop',
             onClick: (event: MouseEvent) => {
                 if (event.target === event.currentTarget) {
                     this.setOverlay(null);
                 }
             }
         }, [
-            el('div', { class: 'rxdt-modal', style: { borderTopColor: '#ED168F' } }, [
-                el('div', { class: 'rxdt-modal-title', text: 'RxDB devtool' }),
-                el('div', { class: 'rxdt-modal-body' }, [
+            el('div', { class: 'rxdbv-modal', style: { borderTopColor: '#ED168F' } }, [
+                el('div', { class: 'rxdbv-modal-title', text: 'RxDB database viewer' }),
+                el('div', { class: 'rxdbv-modal-body' }, [
                     document.createTextNode(
                         'Inspect and edit the data of a running RxDB database. Rows open in the drawer, ' +
                         'the checkbox selects without opening it, and every edit is previewed as the exact ' +
                         'upsert before it runs. Results are paginated at ' + this.store.pageSize + ' rows.'
                     )
                 ]),
-                el('div', { class: 'rxdt-modal-actions' }, [
+                el('div', { class: 'rxdbv-modal-actions' }, [
                     el('a', {
                         href: 'https://rxdb.info/',
                         target: '_blank',
@@ -368,7 +368,7 @@ export class RxDBDevtool implements DevtoolHandle {
                         text: 'rxdb.info'
                     }),
                     el('button', {
-                        class: 'rxdt-btn',
+                        class: 'rxdbv-btn',
                         text: 'Close',
                         onClick: () => this.setOverlay(null)
                     })
@@ -446,7 +446,7 @@ function createFullScreenElement(): HTMLElement {
 /**
  * The stylesheet ships inside the plugin, there are no external files.
  * It is injected once per document, including into a shadow root
- * when the devtool is mounted inside one.
+ * when the database viewer is mounted inside one.
  */
 function injectStyle(element: HTMLElement): void {
     const root = element.getRootNode() as Document | ShadowRoot;
@@ -456,6 +456,6 @@ function injectStyle(element: HTMLElement): void {
     }
     const style = document.createElement('style');
     style.id = STYLE_ELEMENT_ID;
-    style.textContent = DEVTOOL_CSS;
+    style.textContent = DB_VIEWER_CSS;
     container.appendChild(style);
 }

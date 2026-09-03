@@ -1,16 +1,16 @@
-import type { DevtoolStore } from '../store.ts';
-import type { DevtoolNavigation } from '../../../types/index.d.ts';
+import type { DbViewerStore } from '../store.ts';
+import type { DbViewerNavigation } from '../../../types/index.d.ts';
 
 /**
  * What every panel needs from the shell it is mounted in.
  */
 export type PanelContext = {
-    store: DevtoolStore;
+    store: DbViewerStore;
     /**
-     * Re-renders the whole devtool from the current state.
+     * Re-renders the whole database viewer from the current state.
      */
     render: () => void;
-    navigate: (navigation: DevtoolNavigation) => void;
+    navigate: (navigation: DbViewerNavigation) => void;
     /**
      * Shows a modal or sub panel above the content, `null` closes it.
      */

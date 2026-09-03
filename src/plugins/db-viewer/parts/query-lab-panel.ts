@@ -2,7 +2,7 @@ import { clear, el, primaryButton, spacer } from '../dom.ts';
 import { formatNumber, parseSelector } from '../format.ts';
 import { INDEX_MAX, INDEX_MIN, getQueryPlan } from '../../../query-planner.ts';
 import { normalizeMangoQuery } from '../../../rx-query-helper.ts';
-import { DEVTOOL_COLORS } from '../theme.ts';
+import { DB_VIEWER_COLORS } from '../theme.ts';
 import type { PanelContext } from './context.ts';
 import type { MaybeReadonly } from '../../../types/index.d.ts';
 
@@ -26,7 +26,7 @@ type ExplainResult = {
  * which index was used, how many documents it examined and what it discarded.
  */
 export class QueryLabPanel {
-    public readonly element: HTMLElement = el('div', { class: 'rxdt-main rxdt-scroll' });
+    public readonly element: HTMLElement = el('div', { class: 'rxdbv-main rxdbv-scroll' });
 
     private result: ExplainResult | null = null;
     private error: string | null = null;
@@ -48,12 +48,12 @@ export class QueryLabPanel {
         clear(this.element);
         const collectionName = this.collectionName;
         if (!collectionName) {
-            this.element.appendChild(el('div', { class: 'rxdt-center', text: 'No collections to query.' }));
+            this.element.appendChild(el('div', { class: 'rxdbv-center', text: 'No collections to query.' }));
             return this.element;
         }
         const view = this.context.store.getView(collectionName);
         const input = el('input', {
-            class: 'rxdt-query-input',
+            class: 'rxdbv-query-input',
             value: view.queryInput,
             spellcheck: 'false',
             onInput: (event: Event) => {
@@ -65,16 +65,16 @@ export class QueryLabPanel {
                 }
             }
         });
-        this.element.appendChild(el('div', { class: 'rxdt-toolbar' }, [
-            el('span', { class: 'rxdt-panel-title', text: 'Query lab' }),
-            el('span', { class: 'rxdt-mono rxdt-muted', style: { fontSize: '11px' }, text: collectionName }),
-            el('div', { class: 'rxdt-query-input-wrap' }, [
-                el('span', { class: 'rxdt-dim', text: 'find' }),
+        this.element.appendChild(el('div', { class: 'rxdbv-toolbar' }, [
+            el('span', { class: 'rxdbv-panel-title', text: 'Query lab' }),
+            el('span', { class: 'rxdbv-mono rxdbv-muted', style: { fontSize: '11px' }, text: collectionName }),
+            el('div', { class: 'rxdbv-query-input-wrap' }, [
+                el('span', { class: 'rxdbv-dim', text: 'find' }),
                 input
             ]),
             el('button', {
-                class: 'rxdt-btn',
-                style: { borderColor: DEVTOOL_COLORS.pink, background: 'rgba(237,22,143,0.12)' },
+                class: 'rxdbv-btn',
+                style: { borderColor: DB_VIEWER_COLORS.pink, background: 'rgba(237,22,143,0.12)' },
                 text: 'Explain',
                 onClick: () => this.explain()
             }),
@@ -85,16 +85,16 @@ export class QueryLabPanel {
 
         if (this.error) {
             this.element.appendChild(el('div', {
-                class: 'rxdt-callout rxdt-callout-error'
+                class: 'rxdbv-callout rxdbv-callout-error'
             }, [
-                el('div', { class: 'rxdt-callout-title', style: { color: DEVTOOL_COLORS.danger }, text: '✕ The query could not run' }),
-                el('div', { class: 'rxdt-callout-body', text: this.error })
+                el('div', { class: 'rxdbv-callout-title', style: { color: DB_VIEWER_COLORS.danger }, text: '✕ The query could not run' }),
+                el('div', { class: 'rxdbv-callout-body', text: this.error })
             ]));
             return this.element;
         }
         if (!this.result) {
             this.element.appendChild(el('div', {
-                class: 'rxdt-dim',
+                class: 'rxdbv-dim',
                 style: { padding: '14px 12px' },
                 text: this.running ? 'running…' : 'Press Explain to analyse the selector above.'
             }));
@@ -107,14 +107,14 @@ export class QueryLabPanel {
     }
 
     private renderCards(result: ExplainResult): HTMLElement {
-        const card = (label: string, value: string, color?: string) => el('div', { class: 'rxdt-card' }, [
-            el('div', { class: 'rxdt-section-label', text: label }),
-            el('div', { class: 'rxdt-card-value', style: color ? { color } : {}, text: value })
+        const card = (label: string, value: string, color?: string) => el('div', { class: 'rxdbv-card' }, [
+            el('div', { class: 'rxdbv-section-label', text: label }),
+            el('div', { class: 'rxdbv-card-value', style: color ? { color } : {}, text: value })
         ]);
-        return el('div', { class: 'rxdt-cards' }, [
+        return el('div', { class: 'rxdbv-cards' }, [
             card('INDEX USED', JSON.stringify(result.index)),
-            card('EXAMINED', formatNumber(result.examined), DEVTOOL_COLORS.warning),
-            card('RETURNED', formatNumber(result.returned), DEVTOOL_COLORS.success),
+            card('EXAMINED', formatNumber(result.examined), DB_VIEWER_COLORS.warning),
+            card('RETURNED', formatNumber(result.returned), DB_VIEWER_COLORS.success),
             card('ELAPSED', (Math.round(result.elapsedMs * 10) / 10) + ' ms')
         ]);
     }
@@ -141,12 +141,12 @@ export class QueryLabPanel {
 
         const container = el('div');
         container.appendChild(el('div', {
-            class: 'rxdt-section-label',
+            class: 'rxdbv-section-label',
             style: { padding: '0 12px' },
             text: 'EXECUTION PLAN'
         }));
         const list = el('div', {
-            class: 'rxdt-mono',
+            class: 'rxdbv-mono',
             style: { margin: '6px 12px', border: '1px solid rgba(255,255,255,0.10)', fontSize: '11px' }
         });
         steps.forEach(([number, description, count], index) => {
@@ -158,9 +158,9 @@ export class QueryLabPanel {
                     borderBottom: index === steps.length - 1 ? '' : '1px solid rgba(255,255,255,0.06)'
                 }
             }, [
-                el('span', { class: 'rxdt-dim', style: { width: '14px' }, text: number }),
-                el('span', { class: 'rxdt-grow', text: description }),
-                el('span', { class: 'rxdt-muted', text: count })
+                el('span', { class: 'rxdbv-dim', style: { width: '14px' }, text: number }),
+                el('span', { class: 'rxdbv-grow', text: description }),
+                el('span', { class: 'rxdbv-muted', text: count })
             ]));
         });
         container.appendChild(list);
@@ -170,7 +170,7 @@ export class QueryLabPanel {
     private renderFindings(result: ExplainResult): HTMLElement {
         const container = el('div');
         container.appendChild(el('div', {
-            class: 'rxdt-section-label',
+            class: 'rxdbv-section-label',
             style: { padding: '12px 12px 0' },
             text: 'FINDINGS'
         }));
@@ -180,13 +180,13 @@ export class QueryLabPanel {
 
         if (result.usesRegex) {
             found = true;
-            container.appendChild(el('div', { class: 'rxdt-callout rxdt-callout-error' }, [
+            container.appendChild(el('div', { class: 'rxdbv-callout rxdbv-callout-error' }, [
                 el('div', {
-                    class: 'rxdt-callout-title',
-                    style: { color: DEVTOOL_COLORS.danger },
+                    class: 'rxdbv-callout-title',
+                    style: { color: DB_VIEWER_COLORS.danger },
                     text: '✕ This query cannot use an index'
                 }),
-                el('div', { class: 'rxdt-callout-body' }, [
+                el('div', { class: 'rxdbv-callout-body' }, [
                     document.createTextNode('$regex selectors always scan the whole collection (' +
                         formatNumber(result.examined) + ' documents examined). Prefer a prefix match on an indexed field.')
                 ])
@@ -194,26 +194,26 @@ export class QueryLabPanel {
         }
         if (result.uncoveredFields.length > 0 && discardShare >= 50) {
             found = true;
-            container.appendChild(el('div', { class: 'rxdt-callout rxdt-callout-warning' }, [
+            container.appendChild(el('div', { class: 'rxdbv-callout rxdbv-callout-warning' }, [
                 el('div', {
-                    class: 'rxdt-callout-title',
-                    style: { color: DEVTOOL_COLORS.warning },
+                    class: 'rxdbv-callout-title',
+                    style: { color: DB_VIEWER_COLORS.warning },
                     text: '▲ ' + result.uncoveredFields.join(', ') + ' ' +
                         (result.uncoveredFields.length === 1 ? 'is' : 'are') + ' not covered by the used index'
                 }),
-                el('div', { class: 'rxdt-callout-body' }, [
+                el('div', { class: 'rxdbv-callout-body' }, [
                     document.createTextNode(discardShare + '% of examined documents were discarded after the index scan. '),
                     result.suggestedIndexExists
                         ? el('span', {}, [
                             document.createTextNode('The schema already declares '),
-                            el('span', { class: 'rxdt-mono', style: { color: DEVTOOL_COLORS.fg }, text: JSON.stringify(result.suggestedIndex) }),
+                            el('span', { class: 'rxdbv-mono', style: { color: DB_VIEWER_COLORS.fg }, text: JSON.stringify(result.suggestedIndex) }),
                             document.createTextNode(result.descendingSort
                                 ? ', but the descending sort forced the planner to scan the sort index instead. Sort ascending on that index to use it.'
                                 : ', but the planner picked the sort index instead. Sorting on a field of that index lets the planner use it.')
                         ])
                         : el('span', {}, [
                             document.createTextNode('Add the index '),
-                            el('span', { class: 'rxdt-mono', style: { color: DEVTOOL_COLORS.fg }, text: JSON.stringify(result.suggestedIndex) }),
+                            el('span', { class: 'rxdbv-mono', style: { color: DB_VIEWER_COLORS.fg }, text: JSON.stringify(result.suggestedIndex) }),
                             document.createTextNode(' to the schema to make this query fully indexed.')
                         ])
                 ])
@@ -221,14 +221,14 @@ export class QueryLabPanel {
         }
         if (!result.sortSatisfiedByIndex) {
             found = true;
-            container.appendChild(el('div', { class: 'rxdt-callout rxdt-callout-warning' }, [
+            container.appendChild(el('div', { class: 'rxdbv-callout rxdbv-callout-warning' }, [
                 el('div', {
-                    class: 'rxdt-callout-title',
-                    style: { color: DEVTOOL_COLORS.warning },
+                    class: 'rxdbv-callout-title',
+                    style: { color: DB_VIEWER_COLORS.warning },
                     text: '▲ The results are re-sorted in memory'
                 }),
                 el('div', {
-                    class: 'rxdt-callout-body',
+                    class: 'rxdbv-callout-body',
                     text: result.descendingSort
                         ? 'The sort is descending, and most storages only store ascending indexes, so every matching document is loaded and re-sorted before the page is cut. Sorting ascending on an indexed field avoids that.'
                         : 'All matching documents are loaded and re-sorted in memory before the page is cut. An index that starts with the sort field avoids that.'
@@ -237,7 +237,7 @@ export class QueryLabPanel {
         }
         if (!found) {
             container.appendChild(el('div', {
-                class: 'rxdt-dim',
+                class: 'rxdbv-dim',
                 style: { padding: '6px 12px 16px' },
                 text: 'Nothing to report, the index covers this query.'
             }));

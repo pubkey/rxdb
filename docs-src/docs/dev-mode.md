@@ -11,7 +11,7 @@ import {Steps} from '@site/src/components/steps';
 
 The dev-mode plugin adds many checks and validations to RxDB.
 This ensures that you use the RxDB API properly and so the dev-mode plugin should always be used when
-using RxDB in development mode. To look at the data itself while developing, open the [database viewer](./devtool.md).
+using RxDB in development mode.
 
 - Adds readable error messages.
 - Ensures that `readonly` JavaScript objects are not accidentally mutated.

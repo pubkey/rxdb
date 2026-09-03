@@ -1,7 +1,7 @@
 import type { RxDocumentData } from '../../../types/index.d.ts';
 import { clear, el, spacer } from '../dom.ts';
 import { formatAge, formatNumber, previewValue, shortRevision, valueType } from '../format.ts';
-import { DEVTOOL_COLORS } from '../theme.ts';
+import { DB_VIEWER_COLORS } from '../theme.ts';
 import { replicationGlyph } from './rail.ts';
 import type { PanelContext } from './context.ts';
 
@@ -11,12 +11,12 @@ type NarrowScreen =
     | { kind: 'document'; collectionName: string; documentId: string; };
 
 /**
- * Below 640px the rail and the tool panels do not fit, so the devtool
+ * Below 640px the rail and the tool panels do not fit, so the database viewer
  * becomes three stacked read-only screens with back navigation.
  * Every touch row is at least 44px tall.
  */
 export class NarrowPanel {
-    public readonly element: HTMLElement = el('div', { class: 'rxdt rxdt-narrow' });
+    public readonly element: HTMLElement = el('div', { class: 'rxdbv rxdbv-narrow' });
 
     private screen: NarrowScreen = { kind: 'collections' };
     private documents: RxDocumentData<any>[] = [];
@@ -41,55 +41,55 @@ export class NarrowPanel {
 
     private renderCollections(): void {
         const store = this.context.store;
-        this.element.appendChild(el('div', { class: 'rxdt-narrow-header' }, [
-            el('div', { class: 'rxdt-logo' }),
-            el('span', { class: 'rxdt-wordmark', text: 'RxDB' }),
+        this.element.appendChild(el('div', { class: 'rxdbv-narrow-header' }, [
+            el('div', { class: 'rxdbv-logo' }),
+            el('span', { class: 'rxdbv-wordmark', text: 'RxDB' }),
             el('span', {
-                class: 'rxdt-mono rxdt-muted',
+                class: 'rxdbv-mono rxdbv-muted',
                 style: { fontSize: '11px' },
                 text: store.database.name + ' / ' + store.database.storage.name
             }),
             spacer(),
             el('span', {
-                class: 'rxdt-muted',
+                class: 'rxdbv-muted',
                 style: { fontSize: '12px', cursor: 'pointer' },
                 text: 'Refresh',
                 onClick: () => this.context.render()
             })
         ]));
 
-        this.element.appendChild(el('div', { class: 'rxdt-narrow-head', text: 'COLLECTIONS' }));
-        const scroll = el('div', { class: 'rxdt-scroll' });
+        this.element.appendChild(el('div', { class: 'rxdbv-narrow-head', text: 'COLLECTIONS' }));
+        const scroll = el('div', { class: 'rxdbv-scroll' });
         store.collectionNames.forEach(collectionName => {
             scroll.appendChild(el('div', {
-                class: 'rxdt-narrow-row',
+                class: 'rxdbv-narrow-row',
                 onClick: () => {
                     this.screen = { kind: 'documents', collectionName };
                     this.page = 0;
                     this.loadDocuments(collectionName);
                 }
             }, [
-                el('span', { class: 'rxdt-mono rxdt-grow', text: collectionName }),
+                el('span', { class: 'rxdbv-mono rxdbv-grow', text: collectionName }),
                 el('span', {
-                    class: 'rxdt-mono rxdt-dim',
+                    class: 'rxdbv-mono rxdbv-dim',
                     style: { fontSize: '12px' },
                     text: formatNumber(store.getMetrics(collectionName).documentCount)
                 }),
-                el('span', { class: 'rxdt-dim', text: '›' })
+                el('span', { class: 'rxdbv-dim', text: '›' })
             ]));
         });
 
         const replicated = store.collectionNames
             .filter(name => store.getReplicationStates(name).length > 0);
         if (replicated.length > 0) {
-            scroll.appendChild(el('div', { class: 'rxdt-narrow-head', text: 'REPLICATION' }));
+            scroll.appendChild(el('div', { class: 'rxdbv-narrow-head', text: 'REPLICATION' }));
             replicated.forEach(collectionName => {
                 const glyph = replicationGlyph(store, collectionName);
                 scroll.appendChild(el('div', {
-                    class: 'rxdt-narrow-row',
+                    class: 'rxdbv-narrow-row',
                     style: { cursor: 'default', minHeight: '0', padding: '10px 14px' }
                 }, [
-                    el('span', { class: 'rxdt-mono rxdt-grow', text: collectionName }),
+                    el('span', { class: 'rxdbv-mono rxdbv-grow', text: collectionName }),
                     el('span', {
                         style: { color: glyph.color, fontSize: '11px' },
                         text: glyph.glyph + ' ' + glyph.state
@@ -99,7 +99,7 @@ export class NarrowPanel {
         }
         this.element.appendChild(scroll);
         this.element.appendChild(el('div', {
-            class: 'rxdt-dim',
+            class: 'rxdbv-dim',
             style: { padding: '12px 14px', borderTop: '1px solid rgba(255,255,255,0.08)', fontSize: '11px' },
             text: 'Tools (Schema, Changes, Query lab, Storage) are desktop-only. Reading data works here.'
         }));
@@ -113,18 +113,18 @@ export class NarrowPanel {
         const titleField = Object.keys(collection.schema.jsonSchema.properties ?? {})
             .find(name => name !== primaryPath && !name.startsWith('_')) ?? primaryPath;
 
-        this.element.appendChild(el('div', { class: 'rxdt-narrow-header' }, [
+        this.element.appendChild(el('div', { class: 'rxdbv-narrow-header' }, [
             el('span', {
-                class: 'rxdt-back',
+                class: 'rxdbv-back',
                 text: '‹',
                 onClick: () => {
                     this.screen = { kind: 'collections' };
                     this.context.render();
                 }
             }),
-            el('span', { class: 'rxdt-mono', style: { fontWeight: '700' }, text: collectionName }),
+            el('span', { class: 'rxdbv-mono', style: { fontWeight: '700' }, text: collectionName }),
             el('span', {
-                class: 'rxdt-mono rxdt-dim',
+                class: 'rxdbv-mono rxdbv-dim',
                 style: { fontSize: '11px' },
                 text: formatNumber(this.matchCount)
             })
@@ -133,46 +133,46 @@ export class NarrowPanel {
             style: { padding: '10px 14px', borderBottom: '1px solid rgba(255,255,255,0.08)' }
         }, [
             el('div', {
-                class: 'rxdt-mono',
+                class: 'rxdbv-mono',
                 style: {
                     display: 'flex',
                     gap: '8px',
-                    background: DEVTOOL_COLORS.bg,
+                    background: DB_VIEWER_COLORS.bg,
                     border: '1px solid rgba(255,255,255,0.14)',
                     padding: '8px 10px',
                     fontSize: '12px'
                 }
             }, [
-                el('span', { class: 'rxdt-dim', text: 'find' }),
+                el('span', { class: 'rxdbv-dim', text: 'find' }),
                 el('span', { text: view.queryInput })
             ])
         ]));
 
-        const scroll = el('div', { class: 'rxdt-scroll' });
+        const scroll = el('div', { class: 'rxdbv-scroll' });
         this.documents.forEach(documentData => {
             const documentId = String((documentData as any)[primaryPath]);
             const doneValue = (documentData as any)[titleField];
             scroll.appendChild(el('div', {
-                class: 'rxdt-narrow-row',
+                class: 'rxdbv-narrow-row',
                 style: { padding: '10px 14px' },
                 onClick: () => {
                     this.screen = { kind: 'document', collectionName, documentId };
                     this.context.render();
                 }
             }, [
-                el('div', { class: 'rxdt-grow', style: { minWidth: '0' } }, [
+                el('div', { class: 'rxdbv-grow', style: { minWidth: '0' } }, [
                     el('div', {
                         style: { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
                         text: previewValue(doneValue) || documentId
                     }),
                     el('div', {
-                        class: 'rxdt-mono rxdt-dim',
+                        class: 'rxdbv-mono rxdbv-dim',
                         style: { fontSize: '10px' },
                         text: documentId + ' · ' + shortRevision((documentData as any)._rev) + ' · ' +
                             formatAge((documentData as any)._meta?.lwt ?? Date.now())
                     })
                 ]),
-                el('span', { class: 'rxdt-dim', text: '›' })
+                el('span', { class: 'rxdbv-dim', text: '›' })
             ]));
         });
         this.element.appendChild(scroll);
@@ -187,7 +187,7 @@ export class NarrowPanel {
                 padding: '10px 14px',
                 borderTop: '1px solid rgba(255,255,255,0.08)',
                 fontSize: '12px',
-                color: DEVTOOL_COLORS.fgMuted
+                color: DB_VIEWER_COLORS.fgMuted
             }
         }, [
             el('span', {
@@ -197,7 +197,7 @@ export class NarrowPanel {
             }),
             spacer(),
             el('button', {
-                class: 'rxdt-pager',
+                class: 'rxdbv-pager',
                 style: { padding: '6px 14px', fontSize: '12px' },
                 text: '‹',
                 disabled: this.page === 0,
@@ -207,7 +207,7 @@ export class NarrowPanel {
                 }
             }),
             el('button', {
-                class: 'rxdt-pager',
+                class: 'rxdbv-pager',
                 style: { padding: '6px 14px', fontSize: '12px' },
                 text: '›',
                 disabled: this.page >= lastPage,
@@ -226,42 +226,42 @@ export class NarrowPanel {
             candidate => String((candidate as any)[primaryPath]) === documentId
         );
 
-        this.element.appendChild(el('div', { class: 'rxdt-narrow-header' }, [
+        this.element.appendChild(el('div', { class: 'rxdbv-narrow-header' }, [
             el('span', {
-                class: 'rxdt-back',
+                class: 'rxdbv-back',
                 text: '‹',
                 onClick: () => {
                     this.screen = { kind: 'documents', collectionName };
                     this.context.render();
                 }
             }),
-            el('span', { class: 'rxdt-mono', style: { fontWeight: '700' }, text: documentId }),
-            el('span', { class: 'rxdt-dim', style: { fontSize: '11px' }, text: 'in ' + collectionName })
+            el('span', { class: 'rxdbv-mono', style: { fontWeight: '700' }, text: documentId }),
+            el('span', { class: 'rxdbv-dim', style: { fontSize: '11px' }, text: 'in ' + collectionName })
         ]));
 
         if (!documentData) {
-            this.element.appendChild(el('div', { class: 'rxdt-center', text: 'Document not on this page.' }));
+            this.element.appendChild(el('div', { class: 'rxdbv-center', text: 'Document not on this page.' }));
             return;
         }
 
-        const scroll = el('div', { class: 'rxdt-scroll' });
-        const field = (label: string, value: any) => el('div', { class: 'rxdt-narrow-field' }, [
+        const scroll = el('div', { class: 'rxdbv-scroll' });
+        const field = (label: string, value: any) => el('div', { class: 'rxdbv-narrow-field' }, [
             el('div', { text: label }),
             el('div', {
-                class: valueType(value) === 'string' ? '' : 'rxdt-mono',
+                class: valueType(value) === 'string' ? '' : 'rxdbv-mono',
                 text: typeof value === 'string' ? value : JSON.stringify(value)
             })
         ]);
-        scroll.appendChild(el('div', { class: 'rxdt-narrow-head', text: 'FIELDS' }));
+        scroll.appendChild(el('div', { class: 'rxdbv-narrow-head', text: 'FIELDS' }));
         Object.keys(documentData)
             .filter(name => !name.startsWith('_'))
             .forEach(name => scroll.appendChild(field(name, (documentData as any)[name])));
-        scroll.appendChild(el('div', { class: 'rxdt-narrow-head', text: 'INTERNALS' }));
+        scroll.appendChild(el('div', { class: 'rxdbv-narrow-head', text: 'INTERNALS' }));
         scroll.appendChild(field('_rev', shortRevision((documentData as any)._rev)));
         scroll.appendChild(field('_meta.lwt', (documentData as any)._meta?.lwt));
         this.element.appendChild(scroll);
         this.element.appendChild(el('div', {
-            class: 'rxdt-dim',
+            class: 'rxdbv-dim',
             style: { padding: '12px 14px', borderTop: '1px solid rgba(255,255,255,0.08)', fontSize: '11px' },
             text: 'Read-only at this width. Editing needs the desktop drawer.'
         }));

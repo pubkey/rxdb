@@ -22,7 +22,7 @@ import {
     shortRevision,
     valueType
 } from '../format.ts';
-import { DEVTOOL_COLORS } from '../theme.ts';
+import { DB_VIEWER_COLORS } from '../theme.ts';
 import { pickGridColumns } from '../grid-columns.ts';
 import type { GridColumn } from '../grid-columns.ts';
 import type { PanelContext } from './context.ts';
@@ -41,7 +41,7 @@ const FRESH_HIGHLIGHT_MS = 30000;
  * confirmation that guards a bulk delete.
  */
 export class CollectionPanel {
-    public readonly element: HTMLElement = el('div', { class: 'rxdt-main' });
+    public readonly element: HTMLElement = el('div', { class: 'rxdbv-main' });
 
     private documents: RxDocumentData<any>[] = [];
     private matchCount = 0;
@@ -186,7 +186,7 @@ export class CollectionPanel {
         const view = this.view;
         const store = this.context.store;
         const segment = (label: string, value: 'table' | 'json') => el('div', {
-            class: view.view === value ? 'rxdt-active' : '',
+            class: view.view === value ? 'rxdbv-active' : '',
             text: label,
             onClick: () => {
                 view.view = value;
@@ -194,11 +194,11 @@ export class CollectionPanel {
             }
         });
         const observeDisabled = Boolean(store.dump);
-        return el('div', { class: 'rxdt-toolbar' }, [
-            el('span', { class: 'rxdt-panel-title rxdt-mono', text: this.collectionName }),
-            el('div', { class: 'rxdt-seg' }, [segment('Table', 'table'), segment('JSON', 'json')]),
+        return el('div', { class: 'rxdbv-toolbar' }, [
+            el('span', { class: 'rxdbv-panel-title rxdbv-mono', text: this.collectionName }),
+            el('div', { class: 'rxdbv-seg' }, [segment('Table', 'table'), segment('JSON', 'json')]),
             el('div', {
-                class: 'rxdt-toggle' + (view.observe ? ' rxdt-on' : ''),
+                class: 'rxdbv-toggle' + (view.observe ? ' rxdbv-on' : ''),
                 title: observeDisabled ? 'not available on a dump' : 'Subscribe to the current query',
                 style: observeDisabled ? { opacity: '0.5', cursor: 'not-allowed' } : {},
                 onClick: () => {
@@ -210,11 +210,11 @@ export class CollectionPanel {
                     this.load();
                 }
             }, [
-                el('span', { class: 'rxdt-dot' }),
+                el('span', { class: 'rxdbv-dot' }),
                 document.createTextNode(view.observe ? 'Observing' : 'Observe')
             ]),
             view.observe && el('span', {
-                class: 'rxdt-dim',
+                class: 'rxdbv-dim',
                 style: { fontSize: '10px' },
                 text: 'live — the list updates as documents change'
             }),
@@ -229,7 +229,7 @@ export class CollectionPanel {
     private renderQueryBar(): HTMLElement {
         const view = this.view;
         const input = el('input', {
-            class: 'rxdt-query-input',
+            class: 'rxdbv-query-input',
             value: view.queryInput,
             spellcheck: 'false',
             'aria-label': 'Mango selector',
@@ -247,16 +247,16 @@ export class CollectionPanel {
                     this.context.store.toggleFavourite(view.queryInput);
                 }
             },
-            onFocus: () => wrap.classList.add('rxdt-focus'),
-            onBlur: () => wrap.classList.remove('rxdt-focus')
+            onFocus: () => wrap.classList.add('rxdbv-focus'),
+            onBlur: () => wrap.classList.remove('rxdbv-focus')
         });
         const wrap = el('div', {
-            class: 'rxdt-query-input-wrap' + (view.queryError ? ' rxdt-invalid' : '')
+            class: 'rxdbv-query-input-wrap' + (view.queryError ? ' rxdbv-invalid' : '')
         }, [
-            el('span', { class: 'rxdt-dim', text: 'find' }),
+            el('span', { class: 'rxdbv-dim', text: 'find' }),
             input,
             el('span', {
-                class: 'rxdt-history-btn',
+                class: 'rxdbv-history-btn',
                 text: 'history ▾',
                 onClick: () => {
                     view.historyOpen = !view.historyOpen;
@@ -264,7 +264,7 @@ export class CollectionPanel {
                 }
             })
         ]);
-        const bar = el('div', { class: 'rxdt-querybar' }, [
+        const bar = el('div', { class: 'rxdbv-querybar' }, [
             wrap,
             button('Explain', () => {
                 this.runQuery();
@@ -284,45 +284,45 @@ export class CollectionPanel {
         const favourites = history.filter(entry => entry.favourite);
         const recent = history.filter(entry => !entry.favourite)
             .sort((a, b) => b.usedAt - a.usedAt);
-        const dropdown = el('div', { class: 'rxdt-dropdown' });
+        const dropdown = el('div', { class: 'rxdbv-dropdown' });
         const applyEntry = (selector: string) => {
             view.queryInput = selector;
             view.historyOpen = false;
             this.runQuery();
         };
         if (favourites.length > 0) {
-            dropdown.appendChild(el('div', { class: 'rxdt-dropdown-head', text: 'FAVOURITES' }));
+            dropdown.appendChild(el('div', { class: 'rxdbv-dropdown-head', text: 'FAVOURITES' }));
             favourites.forEach(entry => {
                 dropdown.appendChild(el('div', {
-                    class: 'rxdt-dropdown-row rxdt-fav',
+                    class: 'rxdbv-dropdown-row rxdbv-fav',
                     onClick: () => applyEntry(entry.selector)
                 }, [
-                    el('span', { style: { color: DEVTOOL_COLORS.pink }, text: '★' }),
-                    el('span', { class: 'rxdt-dropdown-name', text: entry.name ?? entry.selector }),
-                    el('span', { class: 'rxdt-mono', text: entry.selector })
+                    el('span', { style: { color: DB_VIEWER_COLORS.pink }, text: '★' }),
+                    el('span', { class: 'rxdbv-dropdown-name', text: entry.name ?? entry.selector }),
+                    el('span', { class: 'rxdbv-mono', text: entry.selector })
                 ]));
             });
         }
         if (recent.length > 0) {
-            dropdown.appendChild(el('div', { class: 'rxdt-dropdown-head', text: 'RECENT' }));
+            dropdown.appendChild(el('div', { class: 'rxdbv-dropdown-head', text: 'RECENT' }));
             recent.forEach(entry => {
                 dropdown.appendChild(el('div', {
-                    class: 'rxdt-dropdown-row',
+                    class: 'rxdbv-dropdown-row',
                     onClick: () => applyEntry(entry.selector)
                 }, [
-                    el('span', { class: 'rxdt-dim', text: '↺' }),
-                    el('span', { class: 'rxdt-mono', text: entry.selector })
+                    el('span', { class: 'rxdbv-dim', text: '↺' }),
+                    el('span', { class: 'rxdbv-mono', text: entry.selector })
                 ]));
             });
         }
         if (favourites.length === 0 && recent.length === 0) {
             dropdown.appendChild(el('div', {
-                class: 'rxdt-dropdown-row rxdt-dim',
+                class: 'rxdbv-dropdown-row rxdbv-dim',
                 text: 'No queries yet. Run one to see it here.'
             }));
         }
         dropdown.appendChild(el('div', {
-            class: 'rxdt-dropdown-foot',
+            class: 'rxdbv-dropdown-foot',
             text: '↑↓ navigate · ↵ run · ⌘S save as favourite'
         }));
         return dropdown;
@@ -331,29 +331,29 @@ export class CollectionPanel {
     private renderQueryError(error: { message: string; position: number; }): HTMLElement {
         const view = this.view;
         const caret = ' '.repeat(Math.max(0, error.position)) + '^';
-        return el('div', { class: 'rxdt-query-error' }, [
+        return el('div', { class: 'rxdbv-query-error' }, [
             el('div', {
-                class: 'rxdt-mono',
-                style: { fontSize: '11px', color: DEVTOOL_COLORS.danger },
+                class: 'rxdbv-mono',
+                style: { fontSize: '11px', color: DB_VIEWER_COLORS.danger },
                 text: '✕ ' + error.message
             }),
             el('div', {
-                class: 'rxdt-mono rxdt-dim',
+                class: 'rxdbv-mono rxdbv-dim',
                 style: { fontSize: '11px', whiteSpace: 'pre', marginTop: '4px' }
             }, [
                 document.createTextNode(view.queryInput + '\n'),
-                el('span', { style: { color: DEVTOOL_COLORS.danger }, text: caret })
+                el('span', { style: { color: DB_VIEWER_COLORS.danger }, text: caret })
             ]),
             el('div', {
-                class: 'rxdt-muted',
+                class: 'rxdbv-muted',
                 style: { fontSize: '11px', marginTop: '10px', lineHeight: '1.55' }
             }, [
                 document.createTextNode('Quote strings, use lowercase '),
-                el('span', { class: 'rxdt-mono', style: { color: DEVTOOL_COLORS.fg }, text: 'true' }),
+                el('span', { class: 'rxdbv-mono', style: { color: DB_VIEWER_COLORS.fg }, text: 'true' }),
                 document.createTextNode('/'),
-                el('span', { class: 'rxdt-mono', style: { color: DEVTOOL_COLORS.fg }, text: 'false' }),
+                el('span', { class: 'rxdbv-mono', style: { color: DB_VIEWER_COLORS.fg }, text: 'false' }),
                 document.createTextNode(', and prefix Mango operators with '),
-                el('span', { class: 'rxdt-mono', style: { color: DEVTOOL_COLORS.fg }, text: '$' }),
+                el('span', { class: 'rxdbv-mono', style: { color: DB_VIEWER_COLORS.fg }, text: '$' }),
                 document.createTextNode('. The previous results stay visible below.')
             ])
         ]);
@@ -380,14 +380,14 @@ export class CollectionPanel {
         const view = this.view;
         const columns = this.columns;
         const template = this.gridTemplate;
-        const container = el('div', { class: 'rxdt-scroll' });
+        const container = el('div', { class: 'rxdbv-scroll' });
 
         const allSelected = this.documents.length > 0 &&
             this.documents.every(documentData => view.selection.has(this.idOf(documentData)));
         const headCells: (Node | string)[] = [
             el('input', {
                 type: 'checkbox',
-                class: 'rxdt-check',
+                class: 'rxdbv-check',
                 checked: allSelected,
                 onChange: (event: Event) => {
                     const checked = (event.target as HTMLInputElement).checked;
@@ -405,8 +405,8 @@ export class CollectionPanel {
         columns.forEach(column => {
             const sorted = view.sort.field === column.path;
             headCells.push(el('span', {
-                class: 'rxdt-th-click' + (sorted ? ' rxdt-sorted' : ''),
-                style: sorted ? { color: DEVTOOL_COLORS.fg } : {},
+                class: 'rxdbv-th-click' + (sorted ? ' rxdbv-sorted' : ''),
+                style: sorted ? { color: DB_VIEWER_COLORS.fg } : {},
                 text: column.label + (sorted ? (view.sort.direction === 'desc' ? ' ↓' : ' ↑') : ''),
                 onClick: () => {
                     if (sorted) {
@@ -426,7 +426,7 @@ export class CollectionPanel {
             const cells: (Node | string)[] = [
                 el('input', {
                     type: 'checkbox',
-                    class: 'rxdt-check',
+                    class: 'rxdbv-check',
                     checked: selected,
                     onClick: (event: MouseEvent) => {
                         event.stopPropagation();
@@ -443,7 +443,7 @@ export class CollectionPanel {
                 cells.push(this.renderCell(documentData, column.path));
             });
             const row = gridRow(template, cells, {
-                class: 'rxdt-tr' + (view.openDocumentId === documentId ? ' rxdt-selected' : ''),
+                class: 'rxdbv-tr' + (view.openDocumentId === documentId ? ' rxdbv-selected' : ''),
                 onClick: () => {
                     view.openDocumentId = documentId;
                     view.stagedEdits = {};
@@ -454,7 +454,7 @@ export class CollectionPanel {
         });
         if (this.loading && this.documents.length === 0) {
             container.appendChild(el('div', {
-                class: 'rxdt-dim rxdt-mono',
+                class: 'rxdbv-dim rxdbv-mono',
                 style: { padding: '8px 12px', fontSize: '10px' },
                 text: 'loading…'
             }));
@@ -467,10 +467,10 @@ export class CollectionPanel {
         const documentId = this.idOf(documentData);
         const raw = getByPath(documentData, path);
         if (path === '_rev') {
-            return el('span', { class: 'rxdt-mono rxdt-dim', text: shortRevision(raw) });
+            return el('span', { class: 'rxdbv-mono rxdbv-dim', text: shortRevision(raw) });
         }
         if (path === '_meta.lwt') {
-            return el('span', { class: 'rxdt-muted', text: raw ? formatAge(raw) : '' });
+            return el('span', { class: 'rxdbv-muted', text: raw ? formatAge(raw) : '' });
         }
         const editable = !this.context.store.readOnly &&
             path !== this.collection.schema.primaryPath &&
@@ -480,7 +480,7 @@ export class CollectionPanel {
             view.editingCell.field === path;
         if (isEditing) {
             const input = el('input', {
-                class: 'rxdt-cell-input',
+                class: 'rxdbv-cell-input',
                 value: typeof raw === 'string' ? raw : JSON.stringify(raw ?? null),
                 onClick: (event: MouseEvent) => event.stopPropagation(),
                 onKeyDown: (event: KeyboardEvent) => {
@@ -500,10 +500,10 @@ export class CollectionPanel {
         }
         const type = valueType(raw);
         const color = path === this.collection.schema.primaryPath
-            ? DEVTOOL_COLORS.fgMuted
-            : (type === 'boolean' ? (raw ? DEVTOOL_COLORS.success : DEVTOOL_COLORS.fgMuted) : undefined);
+            ? DB_VIEWER_COLORS.fgMuted
+            : (type === 'boolean' ? (raw ? DB_VIEWER_COLORS.success : DB_VIEWER_COLORS.fgMuted) : undefined);
         return el('span', {
-            class: type === 'string' && path !== this.collection.schema.primaryPath ? '' : 'rxdt-mono',
+            class: type === 'string' && path !== this.collection.schema.primaryPath ? '' : 'rxdbv-mono',
             style: color ? { color } : {},
             title: editable ? 'double-click to edit' : undefined,
             onDblClick: editable
@@ -532,9 +532,9 @@ export class CollectionPanel {
     }
 
     private renderJson(): HTMLElement {
-        const container = el('div', { class: 'rxdt-json' });
+        const container = el('div', { class: 'rxdbv-json' });
         if (this.documents.length === 0) {
-            container.appendChild(el('span', { class: 'rxdt-dim', text: '[]' }));
+            container.appendChild(el('span', { class: 'rxdbv-dim', text: '[]' }));
             return container;
         }
         const now = Date.now();
@@ -543,7 +543,7 @@ export class CollectionPanel {
             const freshAt = this.freshDocuments.get(this.idOf(documentData));
             const isFresh = freshAt !== undefined && (now - freshAt) < FRESH_HIGHLIGHT_MS;
             const block = el('span', {
-                class: 'rxdt-json-doc' + (isFresh ? ' rxdt-json-fresh' : '')
+                class: 'rxdbv-json-doc' + (isFresh ? ' rxdbv-json-fresh' : '')
             });
             block.appendChild(highlightJson(documentData, 2));
             block.appendChild(document.createTextNode(
@@ -551,7 +551,7 @@ export class CollectionPanel {
             ));
             if (isFresh) {
                 block.appendChild(el('span', {
-                    class: 'rxdt-json-string',
+                    class: 'rxdbv-json-string',
                     text: '  ← updated ' + formatAge(freshAt as number, now)
                 }));
             }
@@ -569,10 +569,10 @@ export class CollectionPanel {
         const lastPage = Math.max(0, Math.ceil(this.matchCount / store.pageSize) - 1);
         const selectionSize = view.selection.size;
 
-        const footer = el('div', { class: 'rxdt-footer' }, [
+        const footer = el('div', { class: 'rxdbv-footer' }, [
             el('span', { text: formatNumber(from) + '–' + formatNumber(to) + ' of ' + formatNumber(this.matchCount) }),
             el('button', {
-                class: 'rxdt-pager',
+                class: 'rxdbv-pager',
                 text: '‹',
                 disabled: view.page === 0,
                 onClick: () => {
@@ -581,7 +581,7 @@ export class CollectionPanel {
                 }
             }),
             el('button', {
-                class: 'rxdt-pager',
+                class: 'rxdbv-pager',
                 text: '›',
                 disabled: view.page >= lastPage,
                 onClick: () => {
@@ -591,7 +591,7 @@ export class CollectionPanel {
             })
         ]);
         if (selectionSize > 0) {
-            footer.appendChild(el('span', { class: 'rxdt-dim' }, [
+            footer.appendChild(el('span', { class: 'rxdbv-dim' }, [
                 document.createTextNode(formatNumber(selectionSize) + ' selected · '),
                 el('a', {
                     text: 'Delete',
@@ -617,15 +617,15 @@ export class CollectionPanel {
     }
 
     private renderEmptyDatabase(): HTMLElement {
-        return el('div', { class: 'rxdt-center' }, [
-            el('div', { class: 'rxdt-center-inner' }, [
-                el('div', { class: 'rxdt-center-title', text: 'No collections yet' }),
-                el('div', { class: 'rxdt-center-body' }, [
-                    el('span', { class: 'rxdt-mono', style: { color: DEVTOOL_COLORS.fg }, text: this.context.store.database.name }),
+        return el('div', { class: 'rxdbv-center' }, [
+            el('div', { class: 'rxdbv-center-inner' }, [
+                el('div', { class: 'rxdbv-center-title', text: 'No collections yet' }),
+                el('div', { class: 'rxdbv-center-body' }, [
+                    el('span', { class: 'rxdbv-mono', style: { color: DB_VIEWER_COLORS.fg }, text: this.context.store.database.name }),
                     document.createTextNode(' is reachable but empty. Collections are declared in your app code:')
                 ]),
                 el('div', {
-                    class: 'rxdt-code',
+                    class: 'rxdbv-code',
                     style: { marginTop: '10px', textAlign: 'left' },
                     text: 'await db.addCollections({\n  todos: { schema: todoSchema }\n})'
                 }),
@@ -643,20 +643,20 @@ export class CollectionPanel {
 
     private renderEmptyCollection(): HTMLElement {
         const store = this.context.store;
-        return el('div', { class: 'rxdt-center' }, [
-            el('div', { class: 'rxdt-center-inner' }, [
-                el('div', { class: 'rxdt-center-title' }, [
-                    el('span', { class: 'rxdt-mono', text: this.collectionName }),
+        return el('div', { class: 'rxdbv-center' }, [
+            el('div', { class: 'rxdbv-center-inner' }, [
+                el('div', { class: 'rxdbv-center-title' }, [
+                    el('span', { class: 'rxdbv-mono', text: this.collectionName }),
                     document.createTextNode(' has no documents')
                 ]),
-                el('div', { class: 'rxdt-center-body' }, [
+                el('div', { class: 'rxdbv-center-body' }, [
                     document.createTextNode('Create the first one here, or insert from the app with '),
                     el('span', {
-                        class: 'rxdt-code-inline',
+                        class: 'rxdbv-code-inline',
                         text: 'db.' + this.collectionName + '.insert({ … })'
                     })
                 ]),
-                !store.readOnly && el('div', { class: 'rxdt-center-actions' }, [
+                !store.readOnly && el('div', { class: 'rxdbv-center-actions' }, [
                     primaryButton('+ New document', () => this.createDocument())
                 ])
             ])
@@ -666,19 +666,19 @@ export class CollectionPanel {
     private renderNoMatches(): HTMLElement {
         const view = this.view;
         const firstField = Object.keys(view.selector)[0];
-        return el('div', { class: 'rxdt-center' }, [
-            el('div', { class: 'rxdt-center-inner' }, [
+        return el('div', { class: 'rxdbv-center' }, [
+            el('div', { class: 'rxdbv-center-inner' }, [
                 el('div', {
-                    class: 'rxdt-center-title',
+                    class: 'rxdbv-center-title',
                     text: '0 of ' + formatNumber(this.totalCount) + ' documents match'
                 }),
-                el('div', { class: 'rxdt-center-body' }, [
+                el('div', { class: 'rxdbv-center-body' }, [
                     document.createTextNode('Values compare case-sensitively and matching is exact'),
                     firstField
                         ? document.createTextNode(' — the value you asked for may not exist in ' + firstField + '.')
                         : document.createTextNode('.')
                 ]),
-                el('div', { class: 'rxdt-center-actions' }, [
+                el('div', { class: 'rxdbv-center-actions' }, [
                     button('Clear query', () => {
                         view.queryInput = '{}';
                         this.runQuery();
@@ -710,17 +710,17 @@ export class CollectionPanel {
         const collection = this.collection;
         const primaryPath = collection.schema.primaryPath as string;
         const edited = Object.keys(view.stagedEdits).length > 0;
-        const drawer = el('div', { class: 'rxdt-drawer' }, [
-            el('div', { class: 'rxdt-drawer-head' }, [
+        const drawer = el('div', { class: 'rxdbv-drawer' }, [
+            el('div', { class: 'rxdbv-drawer-head' }, [
                 el('span', {
-                    class: 'rxdt-mono',
+                    class: 'rxdbv-mono',
                     style: { fontWeight: '700', fontSize: '12px' },
                     text: view.openDocumentId
                 }),
-                edited && el('span', { class: 'rxdt-badge', text: 'edited' }),
+                edited && el('span', { class: 'rxdbv-badge', text: 'edited' }),
                 spacer(),
                 el('span', {
-                    class: 'rxdt-close',
+                    class: 'rxdbv-close',
                     text: '×',
                     onClick: () => {
                         view.openDocumentId = null;
@@ -729,7 +729,7 @@ export class CollectionPanel {
                     }
                 })
             ]),
-            el('div', { class: 'rxdt-drawer-group rxdt-drawer-group-first', text: 'FIELDS' })
+            el('div', { class: 'rxdbv-drawer-group rxdbv-drawer-group-first', text: 'FIELDS' })
         ]);
 
         Object.keys(documentData)
@@ -738,18 +738,18 @@ export class CollectionPanel {
                 this.appendDrawerField(drawer, documentData, field, field === primaryPath);
             });
 
-        drawer.appendChild(el('div', { class: 'rxdt-drawer-group', text: 'INTERNALS' }));
+        drawer.appendChild(el('div', { class: 'rxdbv-drawer-group', text: 'INTERNALS' }));
         [
             ['_rev', shortRevision(documentData._rev)],
             ['_deleted', String(Boolean(documentData._deleted))],
             ['_meta.lwt', String(getByPath(documentData, '_meta.lwt') ?? '')]
         ].forEach(([label, value]) => {
             const lwt = getByPath(documentData, '_meta.lwt');
-            drawer.appendChild(el('div', { class: 'rxdt-field rxdt-mono' }, [
-                el('span', { class: 'rxdt-field-label', text: label }),
-                el('span', { class: 'rxdt-field-value', text: value }),
+            drawer.appendChild(el('div', { class: 'rxdbv-field rxdbv-mono' }, [
+                el('span', { class: 'rxdbv-field-label', text: label }),
+                el('span', { class: 'rxdbv-field-value', text: value }),
                 label === '_meta.lwt' && lwt
-                    ? el('span', { class: 'rxdt-dim', text: formatAge(lwt) })
+                    ? el('span', { class: 'rxdbv-dim', text: formatAge(lwt) })
                     : null
             ]));
         });
@@ -758,7 +758,7 @@ export class CollectionPanel {
         const attachmentIds = Object.keys(attachments);
         if (attachmentIds.length > 0) {
             drawer.appendChild(el('div', {
-                class: 'rxdt-drawer-group',
+                class: 'rxdbv-drawer-group',
                 text: 'ATTACHMENTS · ' + attachmentIds.length
             }));
             attachmentIds.forEach(attachmentId => {
@@ -768,7 +768,7 @@ export class CollectionPanel {
 
         if (!this.context.store.readOnly) {
             drawer.appendChild(el('div', {
-                class: 'rxdt-drawer-group rxdt-drawer-group-run',
+                class: 'rxdbv-drawer-group rxdbv-drawer-group-run',
                 text: 'WILL RUN'
             }));
             drawer.appendChild(this.renderWillRun(documentData));
@@ -796,9 +796,9 @@ export class CollectionPanel {
 
         if (isContainer) {
             const expanded = view.expandedFields.has(field);
-            drawer.appendChild(el('div', { class: 'rxdt-field' }, [
+            drawer.appendChild(el('div', { class: 'rxdbv-field' }, [
                 el('span', {
-                    class: 'rxdt-field-label rxdt-expandable',
+                    class: 'rxdbv-field-label rxdbv-expandable',
                     text: (expanded ? '▾ ' : '▸ ') + field,
                     onClick: () => {
                         if (expanded) {
@@ -809,15 +809,15 @@ export class CollectionPanel {
                         this.context.render();
                     }
                 }),
-                el('span', { class: 'rxdt-dim', text: previewValue(raw) })
+                el('span', { class: 'rxdbv-dim', text: previewValue(raw) })
             ]));
             if (expanded) {
                 Object.keys(raw).forEach(key => {
                     const childValue = raw[key];
-                    drawer.appendChild(el('div', { class: 'rxdt-field-child' }, [
+                    drawer.appendChild(el('div', { class: 'rxdbv-field-child' }, [
                         el('span', { text: key }),
                         el('span', {
-                            style: { color: valueType(childValue) === 'string' ? DEVTOOL_COLORS.success : DEVTOOL_COLORS.fgMuted },
+                            style: { color: valueType(childValue) === 'string' ? DB_VIEWER_COLORS.success : DB_VIEWER_COLORS.fgMuted },
                             text: JSON.stringify(childValue)
                         })
                     ]));
@@ -827,19 +827,19 @@ export class CollectionPanel {
         }
 
         if (isPrimary || this.context.store.readOnly) {
-            drawer.appendChild(el('div', { class: 'rxdt-field' }, [
-                el('span', { class: 'rxdt-field-label', text: field }),
-                el('span', { class: 'rxdt-field-value', text: previewValue(raw) }),
-                isPrimary && el('span', { class: 'rxdt-badge-neutral', text: 'primary' })
+            drawer.appendChild(el('div', { class: 'rxdbv-field' }, [
+                el('span', { class: 'rxdbv-field-label', text: field }),
+                el('span', { class: 'rxdbv-field-value', text: previewValue(raw) }),
+                isPrimary && el('span', { class: 'rxdbv-badge-neutral', text: 'primary' })
             ]));
             return;
         }
 
         const isEdited = field in view.stagedEdits;
-        drawer.appendChild(el('div', { class: 'rxdt-field' }, [
-            el('span', { class: 'rxdt-field-label', text: field }),
+        drawer.appendChild(el('div', { class: 'rxdbv-field' }, [
+            el('span', { class: 'rxdbv-field-label', text: field }),
             el('input', {
-                class: 'rxdt-field-input' + (isEdited ? ' rxdt-edited' : ''),
+                class: 'rxdbv-field-input' + (isEdited ? ' rxdbv-edited' : ''),
                 value: typeof raw === 'string' ? raw : JSON.stringify(raw ?? null),
                 onChange: (event: Event) => {
                     const nextValue = parseCellInput(
@@ -854,16 +854,16 @@ export class CollectionPanel {
                     this.context.render();
                 }
             }),
-            isEdited && el('span', { class: 'rxdt-edited-dot', title: 'modified' })
+            isEdited && el('span', { class: 'rxdbv-edited-dot', title: 'modified' })
         ]));
     }
 
     private renderAttachment(attachmentId: string, meta: any): HTMLElement {
-        const wrapper = el('div', { class: 'rxdt-attachment' }, [
-            el('div', { class: 'rxdt-attachment-head' }, [
-                el('span', { class: 'rxdt-mono', text: attachmentId }),
+        const wrapper = el('div', { class: 'rxdbv-attachment' }, [
+            el('div', { class: 'rxdbv-attachment-head' }, [
+                el('span', { class: 'rxdbv-mono', text: attachmentId }),
                 el('span', {
-                    class: 'rxdt-dim',
+                    class: 'rxdbv-dim',
                     text: (meta.type ?? 'unknown') + ' · ' + formatBytes(meta.length ?? 0)
                 }),
                 spacer(),
@@ -875,7 +875,7 @@ export class CollectionPanel {
             ])
         ]);
         if (typeof meta.type === 'string' && meta.type.startsWith('image/')) {
-            const image = el('img', { class: 'rxdt-attachment-preview', alt: attachmentId });
+            const image = el('img', { class: 'rxdbv-attachment-preview', alt: attachmentId });
             wrapper.appendChild(image);
             this.readAttachment(attachmentId).then(blob => {
                 if (blob) {
@@ -926,8 +926,8 @@ export class CollectionPanel {
                     ? view.stagedEdits[field]
                     : (documentData as any)[field];
             });
-        const block = el('div', { class: 'rxdt-will-run' }, [
-            el('span', { class: 'rxdt-dim', text: '// applied on save — nothing has run yet\n' }),
+        const block = el('div', { class: 'rxdbv-will-run' }, [
+            el('span', { class: 'rxdbv-dim', text: '// applied on save — nothing has run yet\n' }),
             document.createTextNode(
                 'await ' + this.context.store.database.name + '.' + this.collectionName + '.upsert({\n'
             )
@@ -937,7 +937,7 @@ export class CollectionPanel {
             const line = '  ' + JSON.stringify(field) + ': ' + JSON.stringify(merged[field]) +
                 (index === fields.length - 1 ? '' : ',') + '\n';
             if (field in view.stagedEdits) {
-                block.appendChild(el('span', { class: 'rxdt-will-run-changed', text: line }));
+                block.appendChild(el('span', { class: 'rxdbv-will-run-changed', text: line }));
             } else {
                 block.appendChild(document.createTextNode(line));
             }
@@ -960,7 +960,7 @@ export class CollectionPanel {
             if (!rxDocument) {
                 return;
             }
-            this.context.store.markDevtoolWrite(this.collectionName, documentId);
+            this.context.store.markDbViewerWrite(this.collectionName, documentId);
             await rxDocument.incrementalPatch(patch);
         } catch (error) {
             this.context.notify((error as Error).message);
@@ -993,7 +993,7 @@ export class CollectionPanel {
             }
         });
         try {
-            this.context.store.markDevtoolWrite(this.collectionName, draft[primaryPath]);
+            this.context.store.markDbViewerWrite(this.collectionName, draft[primaryPath]);
             await collection.insert(draft);
             this.view.openDocumentId = draft[primaryPath];
             this.view.stagedEdits = {};
@@ -1010,7 +1010,7 @@ export class CollectionPanel {
     private confirmDelete(documentIds: string[]): void {
         const collection = this.collection;
         const confirmInput = el('input', {
-            class: 'rxdt-modal-input',
+            class: 'rxdbv-modal-input',
             placeholder: this.collectionName,
             spellcheck: 'false',
             onInput: (event: Event) => {
@@ -1022,7 +1022,7 @@ export class CollectionPanel {
             async () => {
                 this.context.setOverlay(null);
                 try {
-                    documentIds.forEach(id => this.context.store.markDevtoolWrite(this.collectionName, id));
+                    documentIds.forEach(id => this.context.store.markDbViewerWrite(this.collectionName, id));
                     await collection.bulkRemove(documentIds);
                 } catch (error) {
                     this.context.notify((error as Error).message);
@@ -1033,27 +1033,27 @@ export class CollectionPanel {
             },
             { variant: 'dangerSolid', disabled: true }
         );
-        const modal = el('div', { class: 'rxdt-modal-backdrop' }, [
-            el('div', { class: 'rxdt-modal' }, [
+        const modal = el('div', { class: 'rxdbv-modal-backdrop' }, [
+            el('div', { class: 'rxdbv-modal' }, [
                 el('div', {
-                    class: 'rxdt-modal-title',
+                    class: 'rxdbv-modal-title',
                     text: 'Delete ' + formatNumber(documentIds.length) + ' documents?'
                 }),
-                el('div', { class: 'rxdt-modal-body' }, [
+                el('div', { class: 'rxdbv-modal-body' }, [
                     document.createTextNode('This removes every selected document in '),
-                    el('span', { class: 'rxdt-mono', style: { color: DEVTOOL_COLORS.fg }, text: this.collectionName }),
+                    el('span', { class: 'rxdbv-mono', style: { color: DB_VIEWER_COLORS.fg }, text: this.collectionName }),
                     document.createTextNode(
                         ' — ' + formatNumber(documentIds.length) + ' of ' + formatNumber(this.totalCount) +
                         '. Deletes replicate to all connected peers. Tombstones remain until cleanup.'
                     )
                 ]),
                 el('div', {
-                    class: 'rxdt-dim',
+                    class: 'rxdbv-dim',
                     style: { marginTop: '12px', fontSize: '11px' },
                     text: 'Type the collection name to confirm:'
                 }),
                 confirmInput,
-                el('div', { class: 'rxdt-modal-actions' }, [
+                el('div', { class: 'rxdbv-modal-actions' }, [
                     button('Cancel', () => this.context.setOverlay(null)),
                     deleteButton
                 ])

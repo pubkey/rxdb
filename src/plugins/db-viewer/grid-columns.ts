@@ -15,7 +15,7 @@ const NARROW_COLUMN_COUNT = 2;
  * column, up to two more scalar fields, the revision and the last write time.
  *
  * A filled RxJsonSchema lists its properties alphabetically, so the order a
- * developer wrote them in is gone by the time the devtool sees the schema.
+ * developer wrote them in is gone by the time the database viewer sees the schema.
  * The columns are therefore picked by what they are worth reading:
  *
  * - The wide column goes to a string without a `maxLength`, because that is

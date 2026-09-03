@@ -1,6 +1,6 @@
 import { button, clear, el, gridHead, gridRow, spacer } from '../dom.ts';
 import { formatBytes, formatClock, shortRevision } from '../format.ts';
-import { DEVTOOL_COLORS } from '../theme.ts';
+import { DB_VIEWER_COLORS } from '../theme.ts';
 import type { PanelContext } from './context.ts';
 import type { RxReplicationState } from '../../replication/index.ts';
 
@@ -16,7 +16,7 @@ type DirectionState = {
  * that actually crossed the wire. Pending counts are deliberately absent.
  */
 export class ReplicationPanel {
-    public readonly element: HTMLElement = el('div', { class: 'rxdt-main rxdt-scroll' });
+    public readonly element: HTMLElement = el('div', { class: 'rxdbv-main rxdbv-scroll' });
 
     constructor(private readonly context: PanelContext) { }
 
@@ -28,21 +28,21 @@ export class ReplicationPanel {
         const replicated = store.collectionNames
             .filter(name => store.getReplicationStates(name).length > 0);
 
-        this.element.appendChild(el('div', { class: 'rxdt-toolbar' }, [
-            el('span', { class: 'rxdt-panel-title', text: 'Replication' }),
+        this.element.appendChild(el('div', { class: 'rxdbv-toolbar' }, [
+            el('span', { class: 'rxdbv-panel-title', text: 'Replication' }),
             el('span', {
-                class: 'rxdt-muted',
+                class: 'rxdbv-muted',
                 style: { fontSize: '11px' },
                 text: replicated.length + ' collection' + (replicated.length === 1 ? '' : 's') + ' replicating'
             })
         ]));
 
         if (replicated.length === 0) {
-            this.element.appendChild(el('div', { class: 'rxdt-center' }, [
-                el('div', { class: 'rxdt-center-inner' }, [
-                    el('div', { class: 'rxdt-center-title', text: 'No replication is running' }),
+            this.element.appendChild(el('div', { class: 'rxdbv-center' }, [
+                el('div', { class: 'rxdbv-center-inner' }, [
+                    el('div', { class: 'rxdbv-center-title', text: 'No replication is running' }),
                     el('div', {
-                        class: 'rxdt-center-body',
+                        class: 'rxdbv-center-body',
                         text: 'Start one with a replication plugin and it shows up here with its state, checkpoint and live feed.'
                     })
                 ])
@@ -70,41 +70,41 @@ export class ReplicationPanel {
 
         const direction = (configured: boolean): DirectionState => {
             if (!configured) {
-                return { label: '– none', color: DEVTOOL_COLORS.fgDim };
+                return { label: '– none', color: DB_VIEWER_COLORS.fgDim };
             }
             if (error) {
-                return { label: '▲ error', color: DEVTOOL_COLORS.danger };
+                return { label: '▲ error', color: DB_VIEWER_COLORS.danger };
             }
             if (canceled) {
-                return { label: '■ stopped', color: DEVTOOL_COLORS.fgMuted };
+                return { label: '■ stopped', color: DB_VIEWER_COLORS.fgMuted };
             }
             if (active) {
-                return { label: '● streaming', color: DEVTOOL_COLORS.success };
+                return { label: '● streaming', color: DB_VIEWER_COLORS.success };
             }
-            return { label: '○ idle', color: DEVTOOL_COLORS.fgDim };
+            return { label: '○ idle', color: DB_VIEWER_COLORS.fgDim };
         };
         const pull = direction(Boolean(replicationState.pull));
         const push = direction(Boolean(replicationState.push));
 
         return gridRow(TABLE_COLUMNS, [
-            el('span', { class: 'rxdt-mono', text: collectionName }),
+            el('span', { class: 'rxdbv-mono', text: collectionName }),
             el('span', { style: { color: pull.color }, text: pull.label }),
             el('span', { style: { color: push.color }, text: push.label }),
             el('span', {
-                class: 'rxdt-mono rxdt-muted',
+                class: 'rxdbv-mono rxdbv-muted',
                 style: { fontSize: '10.5px' },
                 title: describeCheckpoint(replicationState),
                 text: describeCheckpoint(replicationState)
             }),
             el('span', {
-                class: 'rxdt-mono',
-                style: { fontSize: '10.5px', color: error ? DEVTOOL_COLORS.danger : DEVTOOL_COLORS.fgDim },
+                class: 'rxdbv-mono',
+                style: { fontSize: '10.5px', color: error ? DB_VIEWER_COLORS.danger : DB_VIEWER_COLORS.fgDim },
                 title: error ? error.message : '',
                 text: error
                     ? '✕ ' + error.message + ' · ' + formatClock(error.time) + ' · ' + error.attempts + ' attempts'
                     : 'none'
             })
-        ], { class: 'rxdt-tr rxdt-static' });
+        ], { class: 'rxdbv-tr rxdbv-static' });
     }
 
     private renderFeed(): HTMLElement {
@@ -114,13 +114,13 @@ export class ReplicationPanel {
         container.appendChild(el('div', {
             style: { display: 'flex', alignItems: 'center', gap: '8px', padding: '14px 12px 4px' }
         }, [
-            el('span', { class: 'rxdt-section-label', text: 'LIVE FEED' }),
+            el('span', { class: 'rxdbv-section-label', text: 'LIVE FEED' }),
             el('span', {
-                class: 'rxdt-dot',
-                style: { background: store.replicationFeedPaused ? DEVTOOL_COLORS.fgDim : DEVTOOL_COLORS.success }
+                class: 'rxdbv-dot',
+                style: { background: store.replicationFeedPaused ? DB_VIEWER_COLORS.fgDim : DB_VIEWER_COLORS.success }
             }),
             el('span', {
-                class: 'rxdt-dim',
+                class: 'rxdbv-dim',
                 style: { fontSize: '10px' },
                 text: disabled
                     ? 'not available on a dump'
@@ -135,16 +135,16 @@ export class ReplicationPanel {
 
         if (store.replicationFeed.length === 0) {
             container.appendChild(el('div', {
-                class: 'rxdt-dim',
+                class: 'rxdbv-dim',
                 style: { padding: '6px 12px', fontSize: '11px' },
-                text: 'Nothing has crossed the wire since the devtool opened.'
+                text: 'Nothing has crossed the wire since the database viewer opened.'
             }));
             return container;
         }
 
         store.replicationFeed.slice(0, store.pageSize).forEach(record => {
             container.appendChild(el('div', {
-                class: 'rxdt-mono',
+                class: 'rxdbv-mono',
                 style: {
                     display: 'flex',
                     gap: '12px',
@@ -159,15 +159,15 @@ export class ReplicationPanel {
                     style: {
                         width: '12px',
                         fontWeight: '700',
-                        color: record.direction === 'pull' ? DEVTOOL_COLORS.info : DEVTOOL_COLORS.pink
+                        color: record.direction === 'pull' ? DB_VIEWER_COLORS.info : DB_VIEWER_COLORS.pink
                     },
                     text: record.direction === 'pull' ? '↓' : '↑'
                 }),
-                el('span', { class: 'rxdt-dim', style: { width: '90px' }, text: formatClock(record.time) }),
+                el('span', { class: 'rxdbv-dim', style: { width: '90px' }, text: formatClock(record.time) }),
                 el('span', { style: { width: '70px' }, text: record.collectionName }),
-                el('span', { class: 'rxdt-muted', style: { width: '70px' }, text: record.documentId }),
+                el('span', { class: 'rxdbv-muted', style: { width: '70px' }, text: record.documentId }),
                 el('span', {
-                    class: 'rxdt-dim rxdt-grow',
+                    class: 'rxdbv-dim rxdbv-grow',
                     text: shortRevision(record.revision) + ' · ' + formatBytes(record.bytes)
                 })
             ]));

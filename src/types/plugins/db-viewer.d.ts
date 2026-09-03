@@ -1,30 +1,30 @@
 import type { RxDatabase } from '../rx-database.d.ts';
 
-export type DevtoolTool = 'live' | 'schema' | 'changes' | 'querylab' | 'storage';
+export type DbViewerTool = 'live' | 'schema' | 'changes' | 'querylab' | 'storage';
 
-export type DevtoolNavigation =
+export type DbViewerNavigation =
     | { kind: 'collection'; name: string; }
     | { kind: 'replication'; name: string; }
-    | { kind: 'tool'; tool: DevtoolTool; }
+    | { kind: 'tool'; tool: DbViewerTool; }
     | { kind: 'settings'; };
 
 /**
- * The devtool renders the same UI on all of its surfaces.
+ * The database viewer renders the same UI on all of its surfaces.
  * The surface only changes the chrome of the top bar and,
  * for `dump`, which actions are available.
  */
-export type DevtoolSurface = 'tab' | 'embedded' | 'tanstack' | 'dump';
+export type DbViewerSurface = 'tab' | 'embedded' | 'tanstack' | 'dump';
 
-export type DevtoolConnectionStage = {
+export type DbViewerConnectionStage = {
     label: string;
     detail?: string;
 };
 
-export type DevtoolConnection =
+export type DbViewerConnection =
     | { state: 'local'; }
     | {
         state: 'connecting';
-        stages: DevtoolConnectionStage[];
+        stages: DbViewerConnectionStage[];
         currentStage: number;
         pairingCode?: string;
         elapsedSeconds?: number;
@@ -39,35 +39,35 @@ export type DevtoolConnection =
     }
     | {
         state: 'failed';
-        stages: DevtoolConnectionStage[];
+        stages: DbViewerConnectionStage[];
         failedStage: number;
         diagnosis: string;
     };
 
-export type DevtoolDumpInfo = {
+export type DbViewerDumpInfo = {
     fileName: string;
     exportedAt: number;
 };
 
-export type DevtoolQueryEntry = {
+export type DbViewerQueryEntry = {
     selector: string;
     name?: string;
     favourite: boolean;
     usedAt: number;
 };
 
-export type DevtoolSort = {
+export type DbViewerSort = {
     field: string;
     direction: 'asc' | 'desc';
 };
 
-export type DevtoolCollectionView = {
+export type DbViewerCollectionView = {
     queryInput: string;
     selector: any;
     queryError: { message: string; position: number; } | null;
     view: 'table' | 'json';
     page: number;
-    sort: DevtoolSort;
+    sort: DbViewerSort;
     selection: Set<string>;
     observe: boolean;
     openDocumentId: string | null;
@@ -77,7 +77,7 @@ export type DevtoolCollectionView = {
     historyOpen: boolean;
 };
 
-export type DevtoolChangeRecord = {
+export type DbViewerChangeRecord = {
     time: number;
     operation: 'INSERT' | 'UPDATE' | 'DELETE';
     collectionName: string;
@@ -86,10 +86,10 @@ export type DevtoolChangeRecord = {
     revision: string;
     documentData: any;
     previousDocumentData: any;
-    source: 'local' | 'devtool';
+    source: 'local' | 'db-viewer';
 };
 
-export type DevtoolReplicationRecord = {
+export type DbViewerReplicationRecord = {
     time: number;
     direction: 'pull' | 'push';
     collectionName: string;
@@ -98,18 +98,18 @@ export type DevtoolReplicationRecord = {
     bytes: number;
 };
 
-export type DevtoolLiveEvent =
-    | { kind: 'insert' | 'update' | 'delete'; collectionName: string; fromDevtool: boolean; }
+export type DbViewerLiveEvent =
+    | { kind: 'insert' | 'update' | 'delete'; collectionName: string; fromDbViewer: boolean; }
     | { kind: 'query' | 'emit'; collectionName: string; }
     | { kind: 'pull' | 'push'; collectionName: string; };
 
-export type DevtoolOptions = {
+export type DbViewerOptions = {
     /**
-     * Where the devtool is mounted. Defaults to `tab`.
+     * Where the database viewer is mounted. Defaults to `tab`.
      */
-    surface?: DevtoolSurface;
+    surface?: DbViewerSurface;
     /**
-     * Element the devtool is rendered into.
+     * Element the database viewer is rendered into.
      * Defaults to a full screen element appended to `document.body`.
      */
     target?: HTMLElement;
@@ -117,12 +117,12 @@ export type DevtoolOptions = {
      * Shown in the top bar next to the database name.
      */
     storageName?: string;
-    connection?: DevtoolConnection;
+    connection?: DbViewerConnection;
     /**
-     * Set when the devtool reads a static export instead of a live database.
+     * Set when the database viewer reads a static export instead of a live database.
      * Writing actions are disabled in that mode.
      */
-    dump?: DevtoolDumpInfo;
+    dump?: DbViewerDumpInfo;
     /**
      * Rows per page in every grid and result list.
      */
@@ -130,14 +130,14 @@ export type DevtoolOptions = {
     onOpenDumpFile?: () => void;
 };
 
-export type DevtoolHandle = {
+export type DbViewerHandle = {
     /**
-     * The element the devtool renders into.
+     * The element the database viewer renders into.
      */
     readonly element: HTMLElement;
     readonly database: RxDatabase;
-    navigate(navigation: DevtoolNavigation): void;
-    setConnection(connection: DevtoolConnection): void;
+    navigate(navigation: DbViewerNavigation): void;
+    setConnection(connection: DbViewerConnection): void;
     refresh(): void;
     destroy(): void;
 };
