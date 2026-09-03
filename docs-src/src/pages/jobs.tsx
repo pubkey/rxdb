@@ -18,7 +18,7 @@ import { JOBS_TITLE } from '../constants';
 const CONDITIONS = [
     '20 € per hour',
     '10 to 20 hours per week, flexible around your lecture timetable',
-    'regularly on site in Stuttgart, part of the time from home',
+    'regularly on site in Stuttgart, Germany 🇩🇪, part of the time from home',
     'start by arrangement, mid-semester is fine',
     'your work is open source and stays visible under your name'
 ];
@@ -55,7 +55,7 @@ const JOBS = [
         id: 'video',
         title: 'Working Student (m/f/d) Developer Experience, Video and Social Media',
         formUrl: 'https://webforms.pipedrive.com/f/6ULD69TOWMqORnAypjPo1bdwhsesN2fDV6KxV3qLLYIPaJhOP8rNnznmTTk7Pojq39',
-        teaser: 'You make the work coming out of the frontend role visible.',
+        teaser: 'You run RxDB\'s YouTube channel and its social media, and decide what gets made next.',
         tasks: [
             'producing short videos about working with RxDB, from the concept through recording and editing to the title and the thumbnail',
             'cutting them into shorts and reels for YouTube, LinkedIn, Instagram and TikTok',
@@ -139,8 +139,8 @@ export default function Jobs() {
                                     RxDB is a local-first database for JavaScript applications. It
                                     keeps working when the network drops and syncs again once the
                                     connection is back. Companies like Readwise, Nutrien, MoreApp and
-                                    myAgro run RxDB in production. Both open positions are German
-                                    Werkstudent roles based in Stuttgart.
+                                    myAgro run RxDB in production. Both open positions are
+                                    Werkstudent roles based in Stuttgart, Germany 🇩🇪.
                                 </p>
                             </div>
                         </div>
@@ -202,7 +202,7 @@ export default function Jobs() {
                                                 flexGrow: 1
                                             }}>
                                                 20 € per hour, 10 to 20 hours per week,
-                                                on site in Stuttgart
+                                                on site in Stuttgart, Germany 🇩🇪
                                             </div>
                                             <div style={{ textAlign: 'center', marginTop: 28 }}>
                                                 <Button primary onClick={(event) => {
