@@ -16,7 +16,7 @@ import { JOBS_TITLE } from '../constants';
  * because a visitor reads one of them and never the other.
  */
 const CONDITIONS = [
-    '20 € per hour',
+    '18 € per hour',
     '10 to 20 hours per week, scheduled around the lecture timetable',
     'Regularly on site in Stuttgart, Germany 🇩🇪, part of the time from home',
     'Start date by arrangement, mid-semester is possible',
@@ -126,7 +126,7 @@ export default function Jobs() {
             </Head>
             <Layout
                 title={JOBS_TITLE}
-                description="Open working student positions at RxDB in Stuttgart, Germany. 20 € per hour."
+                description="Open working student positions at RxDB in Stuttgart, Germany. 18 € per hour."
             >
                 <main>
 
@@ -202,7 +202,7 @@ export default function Jobs() {
                                                 opacity: 0.7,
                                                 flexGrow: 1
                                             }}>
-                                                20 € per hour, 10 to 20 hours per week,
+                                                18 € per hour, 10 to 20 hours per week,
                                                 on site in Stuttgart, Germany 🇩🇪
                                             </div>
                                             <div style={{ textAlign: 'center', marginTop: 28 }}>
