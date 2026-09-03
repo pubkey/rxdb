@@ -12,7 +12,7 @@ export const HOME_TITLE = 'RxDB - JavaScript Database';
  * Title of the /jobs/ page. Like HOME_TITLE it already names the brand, so the
  * swizzled TitleFormatter must not append the ` | RxDB` suffix to it.
  */
-export const JOBS_TITLE = 'Jobs & Stellenangebote bei RxDB';
+export const JOBS_TITLE = 'Jobs & Open Positions at RxDB';
 
 /**
  * Premium tier prices in dollars per month, billed annually.
