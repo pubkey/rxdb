@@ -29,7 +29,7 @@ export function useRxDocument<
     primaryKey: string | undefined
 ): UseRxDocumentResult<RxDocumentType, OrmMethods> {
     const [result, setResult] = useState<RxDocument<RxDocumentType, OrmMethods> | null>(null);
-    const [loading, setLoading] = useState(collection !== null && primaryKey !== undefined);
+    const [loading, setLoading] = useState(Boolean(collection) && primaryKey !== undefined);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
