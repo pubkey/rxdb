@@ -11,12 +11,6 @@ import { Button } from '../components/button';
 import { JOBS_TITLE } from '../constants';
 
 /**
- * Pipedrive webform for job applications. Both positions use the same form,
- * the applicant picks the position inside it.
- */
-const JOBS_FORM_IFRAME_URL = 'https://webforms.pipedrive.com/f/czK0WxW1wnP2HOdt6VkTVENuSfO4WvZsVeFXTCAy1a6wazfJcSa0BHBiWNoj1YKZTZ';
-
-/**
  * The conditions are identical for both positions, so they live in one place
  * and are rendered into each advert. Each advert has to stand on its own,
  * because a visitor reads one of them and never the other.
@@ -24,7 +18,7 @@ const JOBS_FORM_IFRAME_URL = 'https://webforms.pipedrive.com/f/czK0WxW1wnP2HOdt6
 const CONDITIONS = [
     '20 € pro Stunde',
     '10 bis 20 Stunden pro Woche, flexibel nach Vorlesungsplan',
-    'überwiegend remote, gelegentlich vor Ort in Stuttgart',
+    'regelmäßig vor Ort in Stuttgart, zeitweise auch aus dem Homeoffice',
     'Eintritt nach Absprache, auch mitten im Semester',
     'deine Arbeit ist Open Source und bleibt unter deinem Namen sichtbar'
 ];
@@ -38,6 +32,12 @@ const JOBS = [
     {
         id: 'frontend',
         title: 'Werkstudent (m/w/d) Developer Experience, Schwerpunkt Frontend',
+        /**
+         * Each position has its own Pipedrive webform, so an application
+         * arrives already assigned to a position and the form does not have
+         * to ask which one it is for.
+         */
+        formUrl: 'https://webforms.pipedrive.com/f/czK0WxW1wnP2HOdt6VkTVENuSfO4WvZsVeFXTCAy1a6wazfJcSa0BHBiWNoj1YKZTZ',
         teaser: 'Du arbeitest an RxDB selbst und daran, dass Entwickler schneller damit zurechtkommen.',
         tasks: [
             'Analyse, woran Entwickler beim Einstieg in RxDB hängen bleiben, und Behebung der Ursachen im Code',
@@ -54,6 +54,7 @@ const JOBS = [
     {
         id: 'video',
         title: 'Werkstudent (m/w/d) Developer Experience, Schwerpunkt Video und Social Media',
+        formUrl: 'https://webforms.pipedrive.com/f/6ULD69TOWMqORnAypjPo1bdwhsesN2fDV6KxV3qLLYIPaJhOP8rNnznmTTk7Pojq39',
         teaser: 'Du machst die Arbeit sichtbar, die im Frontend-Bereich entsteht.',
         tasks: [
             'Produktion kurzer Videos zur Arbeit mit RxDB, von der Konzeption über Aufnahme und Schnitt bis zu Titel und Thumbnail',
@@ -94,7 +95,9 @@ export default function Jobs() {
     });
 
     const [openJob, setOpenJob] = useState<number | null>(null);
-    const [openForm, setOpenForm] = useState(false);
+    // which position's form to show, kept after closing so the modal can fade out
+    const [formJob, setFormJob] = useState<number | null>(null);
+    const [formOpen, setFormOpen] = useState(false);
 
     const showJob = (index: number) => {
         setOpenJob(index);
@@ -105,10 +108,11 @@ export default function Jobs() {
      * Applying happens from inside an advert. Close that one first so the two
      * modals never stack on top of each other.
      */
-    const openApplicationForm = () => {
+    const openApplicationForm = (index: number) => {
         setOpenJob(null);
-        setOpenForm(true);
-        triggerTrackingEvent('jobs_form_open', 0.5);
+        setFormJob(index);
+        setFormOpen(true);
+        triggerTrackingEvent('jobs_form_open_' + JOBS[index].id, 0.5);
     };
 
     const job = openJob === null ? null : JOBS[openJob];
@@ -122,14 +126,14 @@ export default function Jobs() {
             </Head>
             <Layout
                 title={JOBS_TITLE}
-                description="Offene Werkstudentenstellen bei RxDB. Stuttgart, überwiegend remote, 20 € pro Stunde."
+                description="Offene Werkstudentenstellen bei RxDB in Stuttgart, 20 € pro Stunde."
             >
                 <main>
 
                     <div className="block first centered">
                         <div className="content">
                             <h1 style={{ textAlign: 'center' }}>
-                                Arbeite an <b>RxDB</b>
+                                Karriere bei <b>RxDB</b>
                             </h1>
                             <div className="inner centered" style={{ flexDirection: 'column' }}>
                                 <p className="centered-mobile-p" style={{ maxWidth: 780 }}>
@@ -137,10 +141,6 @@ export default function Jobs() {
                                     Sie arbeitet weiter, wenn die Netzverbindung ausfällt, und
                                     synchronisiert, sobald sie wiederhergestellt ist. Unternehmen wie
                                     Readwise, Nutrien, MoreApp und myAgro setzen RxDB in Produktion ein.
-                                </p>
-                                <p className="centered-mobile-p" style={{ maxWidth: 780 }}>
-                                    Aktuell besetzen wir <b>zwei Werkstudentenstellen</b> in
-                                    Stuttgart.
                                 </p>
                             </div>
                         </div>
@@ -202,7 +202,7 @@ export default function Jobs() {
                                                 flexGrow: 1
                                             }}>
                                                 20 € pro Stunde, 10 bis 20 Stunden pro Woche,
-                                                Stuttgart und remote
+                                                vor Ort in Stuttgart
                                             </div>
                                             <div style={{ textAlign: 'center', marginTop: 28 }}>
                                                 <Button primary onClick={(event) => {
@@ -248,7 +248,11 @@ export default function Jobs() {
                                     textAlign: 'center',
                                     padding: '20px 20px 4px 20px'
                                 }}>
-                                    <Button primary onClick={openApplicationForm}>
+                                    <Button primary onClick={() => {
+                                        if (openJob !== null) {
+                                            openApplicationForm(openJob);
+                                        }
+                                    }}>
                                         Jetzt bewerben
                                     </Button>
                                 </div>
@@ -256,13 +260,17 @@ export default function Jobs() {
                         }
                     </Modal>
 
-                    <IframeFormModal
-                        iframeUrl={JOBS_FORM_IFRAME_URL}
-                        open={openForm}
-                        onClose={() => setOpenForm(false)}
-                        eventId='jobs_form'
-                        focusEventType='jobs_form_focus'
-                    />
+                    {
+                        formJob === null ? null : <IframeFormModal
+                            // remount when the visitor switches position
+                            key={JOBS[formJob].id}
+                            iframeUrl={JOBS[formJob].formUrl}
+                            open={formOpen}
+                            onClose={() => setFormOpen(false)}
+                            eventId={'jobs_form_' + JOBS[formJob].id}
+                            focusEventType={'jobs_form_focus_' + JOBS[formJob].id}
+                        />
+                    }
                 </main>
             </Layout>
         </>
