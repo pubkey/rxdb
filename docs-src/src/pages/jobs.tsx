@@ -55,16 +55,16 @@ const JOBS = [
         id: 'video',
         title: 'Working Student (m/f/d) Developer Experience, Video and Social Media',
         formUrl: 'https://webforms.pipedrive.com/f/6ULD69TOWMqORnAypjPo1bdwhsesN2fDV6KxV3qLLYIPaJhOP8rNnznmTTk7Pojq39',
-        teaser: 'You run RxDB\'s YouTube channel and its social media, and decide what gets made next.',
+        teaser: 'You make the videos yourself, from the idea to the finished cut.',
         tasks: [
-            'producing short videos about working with RxDB, from the concept through recording and editing to the title and the thumbnail',
-            'cutting them into shorts and reels for YouTube, LinkedIn, Instagram and TikTok',
-            'running the YouTube channel and the social media channels, including community management',
-            'reading the reach numbers and deciding what to cover next'
+            'planning and filming your own short videos about working with RxDB',
+            'doing the whole edit yourself, cut, sound, titles and thumbnails',
+            'turning each video into shorts and reels for YouTube, LinkedIn, Instagram and TikTok',
+            'running the YouTube channel, answering the comments, and deciding from the reach numbers what to film next'
         ],
         requirements: [
             'studies in audiovisual media, online media, advertising and market communication, media informatics or a comparable subject',
-            'you edit independently, shown by work samples',
+            'you shoot and cut independently, shown by work samples',
             'basic knowledge of software development. You do not write the code, but you should understand what happens in a video and be able to read a snippet of it.'
         ]
     }
