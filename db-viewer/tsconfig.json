@@ -1,0 +1,28 @@
+{
+    // The viewer page is a React app that is built on its own and is not part
+    // of the rxdb bundle, so it needs the react-jsx runtime and the DOM libs
+    // that the root config does not set up.
+    "compilerOptions": {
+        "target": "es2022",
+        "moduleResolution": "bundler",
+        "module": "es2022",
+        // esnext and the node types are needed because the app imports the
+        // shared protocol out of src/, which is written against those.
+        "lib": ["esnext", "dom", "dom.iterable"],
+        "strict": true,
+        "esModuleInterop": true,
+        "noEmit": true,
+        "allowImportingTsExtensions": true,
+        "skipLibCheck": true,
+        "jsx": "react-jsx",
+        "types": ["react", "mocha", "node"]
+    },
+    "include": [
+        "src",
+        "test"
+    ],
+    "exclude": [
+        "dist",
+        "node_modules"
+    ]
+}

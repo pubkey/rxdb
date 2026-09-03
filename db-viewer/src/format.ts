@@ -1,5 +1,3 @@
-import { el } from './dom.ts';
-
 export function formatNumber(value: number): string {
     return Math.round(value).toLocaleString('en-US');
 }
@@ -138,41 +136,6 @@ export function parseCellInput(input: string, previous: any): any {
     }
 }
 
-/**
- * Syntax highlighted, pretty printed JSON.
- * Keys are dim, strings green, numbers and booleans yellow.
- */
-export function highlightJson(value: any, indent = 2): DocumentFragment {
-    const fragment = document.createDocumentFragment();
-    const source = JSON.stringify(value, null, indent);
-    if (typeof source !== 'string') {
-        fragment.appendChild(document.createTextNode('undefined'));
-        return fragment;
-    }
-    const pattern = /("(?:\\.|[^"\\])*")(\s*:)?|\b(true|false|null)\b|(-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)/g;
-    let lastIndex = 0;
-    let match = pattern.exec(source);
-    while (match !== null) {
-        if (match.index > lastIndex) {
-            fragment.appendChild(document.createTextNode(source.slice(lastIndex, match.index)));
-        }
-        if (match[1] !== undefined && match[2] !== undefined) {
-            fragment.appendChild(el('span', { class: 'rxdbv-json-key', text: match[1] }));
-            fragment.appendChild(document.createTextNode(match[2]));
-        } else if (match[1] !== undefined) {
-            fragment.appendChild(el('span', { class: 'rxdbv-json-string', text: match[1] }));
-        } else {
-            fragment.appendChild(el('span', { class: 'rxdbv-json-literal', text: match[0] }));
-        }
-        lastIndex = match.index + match[0].length;
-        match = pattern.exec(source);
-    }
-    if (lastIndex < source.length) {
-        fragment.appendChild(document.createTextNode(source.slice(lastIndex)));
-    }
-    return fragment;
-}
-
 export type DiffLine = {
     kind: 'context' | 'added' | 'removed';
     text: string;
@@ -188,14 +151,14 @@ export function diffJson(before: any, after: any): DiffLine[] {
     const rows = beforeLines.length;
     const columns = afterLines.length;
     const table: number[][] = [];
-    for (let row = 0; row <= rows; row++) {
+    for (let fill = 0; fill <= rows; fill++) {
         table.push(new Array(columns + 1).fill(0));
     }
-    for (let row = rows - 1; row >= 0; row--) {
-        for (let column = columns - 1; column >= 0; column--) {
-            table[row][column] = beforeLines[row] === afterLines[column]
-                ? table[row + 1][column + 1] + 1
-                : Math.max(table[row + 1][column], table[row][column + 1]);
+    for (let beforeIndex = rows - 1; beforeIndex >= 0; beforeIndex--) {
+        for (let afterIndex = columns - 1; afterIndex >= 0; afterIndex--) {
+            table[beforeIndex][afterIndex] = beforeLines[beforeIndex] === afterLines[afterIndex]
+                ? table[beforeIndex + 1][afterIndex + 1] + 1
+                : Math.max(table[beforeIndex + 1][afterIndex], table[beforeIndex][afterIndex + 1]);
         }
     }
     const result: DiffLine[] = [];
@@ -223,21 +186,6 @@ export function diffJson(before: any, after: any): DiffLine[] {
         column++;
     }
     return result;
-}
-
-export function renderDiff(lines: DiffLine[]): HTMLElement {
-    const container = el('div', { class: 'rxdbv-diff' });
-    lines.forEach(line => {
-        if (line.kind === 'context') {
-            container.appendChild(document.createTextNode('  ' + line.text + '\n'));
-        } else {
-            container.appendChild(el('span', {
-                class: line.kind === 'added' ? 'rxdbv-diff-add' : 'rxdbv-diff-del',
-                text: (line.kind === 'added' ? '+ ' : '- ') + line.text
-            }));
-        }
-    });
-    return container;
 }
 
 export type JsonParseFailure = {

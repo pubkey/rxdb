@@ -1,4 +1,4 @@
-import type { RxJsonSchema } from '../../types/index.d.ts';
+import type { RxJsonSchema } from '../../src/types/index.d.ts';
 
 export type GridColumn = {
     path: string;

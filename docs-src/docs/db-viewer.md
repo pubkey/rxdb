@@ -19,7 +19,29 @@ Key features:
 - **Replication and Changes panels** that show what crossed the wire and the diff of every write.
 - **Storage panel** with document counts, tombstone counts and a button to run the [cleanup](./cleanup.md).
 
-The whole UI ships inside the plugin. There are no external stylesheets, no font files and no network requests.
+## How it works
+
+The UI is **not** part of your bundle. It is a single static HTML file that is
+published with the RxDB docs, and the plugin loads it into an iframe:
+
+```
+your app                          iframe (rxdb.info)
+┌───────────────────────────┐     ┌───────────────────────────┐
+│ RxDatabase                │     │ the viewer UI             │
+│ rxdb/plugins/db-viewer  ──┼────▶│ asks for documents,       │
+│   the bridge              │◀────┼─  counts, schema, plans   │
+└───────────────────────────┘     └───────────────────────────┘
+        postMessage, inside the same browser
+```
+
+Only the bridge ships in your app. It is around **9 KB gzipped**, because it
+contains no UI at all: no stylesheet, no fonts, no components. Everything the
+viewer draws it had to ask the bridge for over `postMessage`.
+
+**Your data never leaves the browser.** `postMessage` is a call between two
+documents in the same browser, not a network request, and the viewer page makes
+no request of its own once it has loaded. The page is served from rxdb.info, and
+that is the only thing that is fetched.
 
 ## Installation
 
@@ -80,7 +102,9 @@ mountRxDBDbViewer(db, {
     // set when reading a static export instead of a live database
     dump: { fileName: 'heroesdb-2026-08-05.json', exportedAt: Date.now() },
     // state of a remote connection, for example over WebRTC
-    connection: { state: 'local' }
+    connection: { state: 'local' },
+    // where the UI is loaded from, see "Hosting the UI yourself"
+    viewerUrl: 'https://rxdb.info/html/db-viewer.html'
 });
 ```
 
@@ -98,15 +122,51 @@ The Live map draws names, counts and rates, never document contents, so the scre
 
 Reads and live query emits are derived from the query cache rather than from a dedicated event stream, so their counters update once per second.
 
+## Hosting the UI yourself
+
+Loading the page from rxdb.info means the viewer does not work offline, and a
+strict [content security policy](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy)
+can block the iframe. For both cases, serve the file yourself.
+
+The page is one self contained file with no further requests, so downloading it
+next to your other static assets is enough:
+
+```bash
+curl -o public/db-viewer.html https://rxdb.info/html/db-viewer.html
+```
+
+```ts
+mountRxDBDbViewer(db, {
+    viewerUrl: '/db-viewer.html'
+});
+```
+
+Re-download it when you update RxDB. The plugin appends `?version=` to the URL,
+and a page that is older than the plugin can refuse to talk to it.
+
+When you keep the default, your `frame-src` must allow `https://rxdb.info`.
+
 ## Limitations
 
 - The database viewer needs a DOM. Calling `mountRxDBDbViewer()` in Node.js throws the error code `DBV1`.
+- The UI is loaded over the network on first open. Host it yourself when your app has to work offline.
+- Because the UI runs in another document, it cannot subscribe to an [RxQuery](./rx-query.md) directly. `Observe` re-runs the query whenever a write to that collection is reported, instead of receiving the query results themselves.
 - Below 640 pixels the rail and the tool panels do not fit. The database viewer switches to three stacked screens that are read-only.
 - Leadership is only known when the [leader election](./leader-election.md) plugin is added. RxDB does not publish a roster of the other open instances, so the Instances panel reports this instance only.
 - The Changes and Replication feeds keep their most recent entries in memory. Nothing the database viewer records is written back into the database.
 - Tombstone counts and the cleanup button need the [cleanup](./cleanup.md) plugin.
 
 ## FAQ
+
+<details>
+<summary>Does my data get sent to rxdb.info?</summary>
+
+No. The only thing that comes from rxdb.info is the HTML file of the UI. Your
+documents are passed to it with `postMessage`, which is a call between two
+documents inside your browser and never touches the network. The page makes no
+request of its own after it has loaded, and it carries no analytics.
+
+</details>
 
 <details>
 <summary>Does the database viewer slow down my app?</summary>

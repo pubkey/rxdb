@@ -6,220 +6,458 @@ import {
     randomToken
 } from '../../plugins/core/index.mjs';
 import {
-    DB_VIEWER_COLORS,
-    METRICS_BUCKET_COUNT,
-    METRICS_BUCKET_MS,
-    RollingWindow,
-    diffJson,
-    formatBytes,
-    getByPath,
+    DB_VIEWER_CHANNEL,
+    DB_VIEWER_PROTOCOL_VERSION,
+    DB_VIEWER_URL,
+    DbViewerBridge,
+    estimateBytes,
+    isDbViewerMessage,
     mountRxDBDbViewer,
-    pickGridColumns,
-    parseCellInput,
-    parseSelector,
-    setByPath,
-    shortRevision,
-    valueType
+    toWireConnection
 } from '../../plugins/db-viewer/index.mjs';
-import { schemas } from '../../plugins/test-utils/index.mjs';
+import { schemaObjects, schemas } from '../../plugins/test-utils/index.mjs';
 
+/**
+ * The UI of the database viewer is a separate static page that is loaded
+ * into an iframe, so what is left to test here is the half that ships inside
+ * RxDB: the message guards, the bridge that answers the page, and the
+ * collectors it answers with.
+ */
 describe('db-viewer.test.ts', () => {
-    describe('RollingWindow', () => {
-        it('should sum only the events inside the window', () => {
-            const start = 1000000;
-            const window = new RollingWindow(start);
-            window.add(start);
-            window.add(start + 1);
-            window.add(start + METRICS_BUCKET_MS);
-            assert.strictEqual(window.total(start + METRICS_BUCKET_MS), 3);
-        });
-        it('should drop events that fell out of the window', () => {
-            const start = 1000000;
-            const window = new RollingWindow(start);
-            window.add(start, 5);
-            const afterWindow = start + (METRICS_BUCKET_MS * METRICS_BUCKET_COUNT) + METRICS_BUCKET_MS;
-            assert.strictEqual(window.total(afterWindow), 0);
-        });
-        it('should return the series oldest bucket first', () => {
-            const start = 1000000;
-            const window = new RollingWindow(start);
-            window.add(start, 2);
-            const now = start + METRICS_BUCKET_MS;
-            window.add(now, 7);
-            const series = window.series(now);
-            assert.strictEqual(series.length, METRICS_BUCKET_COUNT);
-            assert.strictEqual(series[METRICS_BUCKET_COUNT - 1], 7);
-            assert.strictEqual(series[METRICS_BUCKET_COUNT - 2], 2);
-        });
-        it('should not keep stale counts when many buckets are skipped', () => {
-            const start = 1000000;
-            const window = new RollingWindow(start);
-            window.add(start, 3);
-            const later = start + (METRICS_BUCKET_MS * 3);
-            window.add(later, 1);
-            assert.strictEqual(window.total(later), 4);
-            const muchLater = later + (METRICS_BUCKET_MS * METRICS_BUCKET_COUNT);
-            assert.strictEqual(window.total(muchLater), 0);
-        });
-    });
-    describe('selector parsing', () => {
-        it('should treat an empty input as the match-all selector', () => {
-            const parsed = parseSelector('   ');
-            assert.ok(parsed.ok);
-            assert.deepStrictEqual((parsed as any).value, {});
-        });
-        it('should point the caret at the broken token', () => {
-            const input = '{ "done": undefined }';
-            const parsed = parseSelector(input);
-            assert.strictEqual(parsed.ok, false);
-            assert.strictEqual((parsed as any).error.position, input.indexOf('undefined'));
-            assert.ok((parsed as any).error.message.includes('valid JSON'));
-        });
-        it('should not mistake a quoted value for a broken token', () => {
-            const parsed = parseSelector('{ "owner.id": "u_102" }');
-            assert.ok(parsed.ok);
-        });
-        it('should refuse a selector that is not an object', () => {
-            const parsed = parseSelector('[1, 2]');
-            assert.strictEqual(parsed.ok, false);
-        });
-    });
-    describe('value helpers', () => {
-        it('should read and write nested paths', () => {
-            const documentData: any = { owner: { name: 'Anna' } };
-            assert.strictEqual(getByPath(documentData, 'owner.name'), 'Anna');
-            assert.strictEqual(getByPath(documentData, 'owner.missing.deep'), undefined);
-            setByPath(documentData, 'owner.id', 'u_102');
-            assert.strictEqual(documentData.owner.id, 'u_102');
-        });
-        it('should keep plain text edits of string fields as strings', () => {
-            assert.strictEqual(parseCellInput('Buy milk (2%)', 'Buy milk'), 'Buy milk (2%)');
-            assert.strictEqual(parseCellInput('42', 1), 42);
-            assert.strictEqual(parseCellInput('false', true), false);
-        });
-        it('should name the type of a value', () => {
-            assert.strictEqual(valueType(undefined), 'missing');
-            assert.strictEqual(valueType(null), 'null');
-            assert.strictEqual(valueType([1]), 'array');
-            assert.strictEqual(valueType({}), 'object');
-            assert.strictEqual(valueType('a'), 'string');
-        });
-        it('should shorten revisions and format bytes', () => {
-            assert.strictEqual(shortRevision('1-9f2a4c1234'), '1-9f2a4c');
-            assert.strictEqual(formatBytes(512), '512 B');
-            assert.strictEqual(formatBytes(1024 * 1024), '1 MB');
-        });
-    });
-    describe('diff', () => {
-        it('should mark the changed line as removed and added', () => {
-            const lines = diffJson(
-                { id: 'a1b2c3', title: 'Buy milk' },
-                { id: 'a1b2c3', title: 'Buy milk (2%)' }
-            );
-            const removed = lines.filter(line => line.kind === 'removed');
-            const added = lines.filter(line => line.kind === 'added');
-            assert.strictEqual(removed.length, 1);
-            assert.strictEqual(added.length, 1);
-            assert.ok(removed[0].text.includes('Buy milk'));
-            assert.ok(added[0].text.includes('Buy milk (2%)'));
-            assert.ok(lines.some(line => line.kind === 'context' && line.text.includes('a1b2c3')));
-        });
-        it('should mark every line of a deleted document as removed', () => {
-            const lines = diffJson({ id: 'a1b2c3' }, undefined);
-            assert.ok(lines.length > 0);
-            assert.ok(lines.every(line => line.kind === 'removed'));
-        });
-    });
-    describe('pickGridColumns()', () => {
-        /**
-         * A filled RxJsonSchema sorts its properties alphabetically, which is
-         * what these fixtures reproduce.
-         */
-        const todoSchema: any = {
-            primaryKey: 'id',
-            properties: {
-                _attachments: { type: 'object' },
-                _deleted: { type: 'boolean' },
-                _meta: { type: 'object' },
-                _rev: { type: 'string' },
-                done: { type: 'boolean' },
-                dueDate: { type: 'string', maxLength: 20 },
-                id: { type: 'string', maxLength: 40 },
-                owner: { type: 'object' },
-                priority: { type: 'number' },
-                tags: { type: 'array' },
-                title: { type: 'string' }
-            },
-            required: ['id', 'title', 'done']
-        };
 
-        it('should give the wide column to the free text field', () => {
-            const columns = pickGridColumns(todoSchema, 'id');
-            const wide = columns.find((column: any) => column.width === '1fr');
-            assert.ok(wide);
-            assert.strictEqual(wide.path, 'title');
+    async function createDatabase() {
+        const database = await createRxDatabase({
+            name: randomToken(10),
+            storage: config.storage.getStorage(),
+            eventReduce: true,
+            ignoreDuplicate: true
         });
-        it('should not repeat the primary key or internal fields as data columns', () => {
-            const columns = pickGridColumns(todoSchema, 'id');
-            const dataColumns = columns.slice(1, columns.length - 2).map((column: any) => column.path);
-            assert.ok(!dataColumns.includes('id'));
-            assert.ok(!dataColumns.includes('_meta'));
-            assert.ok(!dataColumns.includes('_attachments'));
+        await database.addCollections({
+            humans: { schema: schemas.human }
         });
-        it('should prefer required fields for the narrow columns', () => {
-            const columns = pickGridColumns(todoSchema, 'id');
-            const paths = columns.map((column: any) => column.path);
-            assert.deepStrictEqual(paths, ['id', 'title', 'done', 'dueDate', '_rev', '_meta.lwt']);
+        return database;
+    }
+
+    describe('isDbViewerMessage()', () => {
+        const valid = {
+            channel: DB_VIEWER_CHANNEL,
+            version: DB_VIEWER_PROTOCOL_VERSION,
+            kind: 'request'
+        };
+        it('should accept a message of the current protocol', () => {
+            assert.strictEqual(isDbViewerMessage(valid), true);
         });
-        it('should skip objects and arrays', () => {
-            const paths = pickGridColumns(todoSchema, 'id').map((column: any) => column.path);
-            assert.ok(!paths.includes('tags'));
-            assert.ok(!paths.includes('owner'));
+        it('should reject the other postMessage traffic of the page', () => {
+            assert.strictEqual(isDbViewerMessage(null), false);
+            assert.strictEqual(isDbViewerMessage('hello'), false);
+            assert.strictEqual(isDbViewerMessage({ kind: 'request' }), false);
+            assert.strictEqual(isDbViewerMessage({ ...valid, channel: 'other' }), false);
         });
-        it('should fall back to the longest bounded string when there is no free text', () => {
-            const schema: any = {
-                primaryKey: 'id',
-                properties: {
-                    code: { type: 'string', maxLength: 8 },
-                    id: { type: 'string', maxLength: 40 },
-                    label: { type: 'string', maxLength: 120 }
-                },
-                required: ['id']
-            };
-            const wide = pickGridColumns(schema, 'id').find((column: any) => column.width === '1fr');
-            assert.ok(wide);
-            assert.strictEqual(wide.path, 'label');
-        });
-        it('should always end with the revision and the write time', () => {
-            const schema: any = {
-                primaryKey: 'id',
-                properties: { id: { type: 'string', maxLength: 40 } },
-                required: ['id']
-            };
-            const paths = pickGridColumns(schema, 'id').map((column: any) => column.path);
-            assert.deepStrictEqual(paths.slice(-2), ['_rev', '_meta.lwt']);
-            assert.strictEqual(paths.length, 4);
+        it('should reject a different protocol version', () => {
+            assert.strictEqual(
+                isDbViewerMessage({ ...valid, version: DB_VIEWER_PROTOCOL_VERSION + 1 }),
+                false
+            );
         });
     });
-    describe('design tokens', () => {
-        it('should use the rxdb.info brand colors', () => {
-            assert.strictEqual(DB_VIEWER_COLORS.pink, '#ED168F');
-            assert.strictEqual(DB_VIEWER_COLORS.purpleDeep, '#27022D');
-            assert.strictEqual(DB_VIEWER_COLORS.bgDark, '#0D0F18');
+
+    describe('toWireConnection()', () => {
+        it('should keep a local connection as it is', () => {
+            assert.deepStrictEqual(toWireConnection({ state: 'local' }), { state: 'local' });
+        });
+        /**
+         * A function cannot be structured-cloned into the iframe,
+         * so it has to become a flag on the way out.
+         */
+        it('should replace the disconnect callback with a flag', () => {
+            const wire: any = toWireConnection({
+                state: 'connected',
+                device: 'iPhone',
+                transport: 'webrtc',
+                writeable: true,
+                onDisconnect: () => undefined
+            });
+            assert.strictEqual(wire.canDisconnect, true);
+            assert.strictEqual(typeof wire.onDisconnect, 'undefined');
+        });
+        it('should report that there is nothing to disconnect', () => {
+            const wire: any = toWireConnection({
+                state: 'connected',
+                device: 'iPhone',
+                transport: 'webrtc',
+                writeable: false
+            });
+            assert.strictEqual(wire.canDisconnect, false);
         });
     });
+
+    describe('estimateBytes()', () => {
+        it('should measure the serialized size', () => {
+            assert.strictEqual(estimateBytes({ a: 1 }), JSON.stringify({ a: 1 }).length);
+        });
+        it('should not throw on a circular document', () => {
+            const circular: any = { a: 1 };
+            circular.self = circular;
+            assert.strictEqual(estimateBytes(circular), 0);
+        });
+    });
+
+    describe('the bridge', () => {
+        /**
+         * The bridge only ever talks to the window of its own iframe, so the
+         * test gives it a stand-in that records what was posted.
+         */
+        function createFakeIframe() {
+            const posted: any[] = [];
+            const contentWindow = {
+                postMessage: (message: any) => posted.push(message)
+            };
+            return { posted, iframe: { contentWindow } as any };
+        }
+
+        function createBridge(database: any, iframe: any, overrides: any = {}) {
+            return new DbViewerBridge(database, iframe, 'https://rxdb.info', {
+                surface: 'tab',
+                pageSize: 100,
+                storageName: 'memory',
+                dump: null,
+                connection: { state: 'local' },
+                navigation: { kind: 'collection', name: 'humans' },
+                onClose: () => undefined,
+                ...overrides
+            });
+        }
+
+        /**
+         * Drives a message through the real `message` listener, which is
+         * where the guards of the bridge actually sit.
+         */
+        function send(
+            bridge: any,
+            iframe: any,
+            message: any,
+            overrides: { origin?: string; source?: any; } = {}
+        ) {
+            bridge.receive({
+                source: 'source' in overrides ? overrides.source : iframe.contentWindow,
+                origin: overrides.origin ?? 'https://rxdb.info',
+                data: message
+            });
+        }
+
+        function request(method: string, params: any = {}, id = 1) {
+            return {
+                channel: DB_VIEWER_CHANNEL,
+                version: DB_VIEWER_PROTOCOL_VERSION,
+                kind: 'request',
+                id,
+                method,
+                params
+            };
+        }
+
+        function hello() {
+            return {
+                channel: DB_VIEWER_CHANNEL,
+                version: DB_VIEWER_PROTOCOL_VERSION,
+                kind: 'hello'
+            };
+        }
+
+        function settle() {
+            return new Promise(resolve => setTimeout(resolve, 150));
+        }
+
+        it('should answer the hello with a welcome', async () => {
+            const database = await createDatabase();
+            const { posted, iframe } = createFakeIframe();
+            const bridge = createBridge(database, iframe);
+            send(bridge, iframe, hello());
+            assert.strictEqual(posted.length, 1);
+            assert.strictEqual(posted[0].kind, 'welcome');
+            bridge.destroy();
+            await database.close();
+        });
+
+        it('should ignore a message from a different origin', async () => {
+            const database = await createDatabase();
+            const { posted, iframe } = createFakeIframe();
+            const bridge = createBridge(database, iframe);
+            send(bridge, iframe, hello(), { origin: 'https://evil.example.com' });
+            assert.strictEqual(posted.length, 0);
+            bridge.destroy();
+            await database.close();
+        });
+
+        it('should ignore a message from a window that is not the iframe', async () => {
+            const database = await createDatabase();
+            const { posted, iframe } = createFakeIframe();
+            const bridge = createBridge(database, iframe);
+            send(bridge, iframe, hello(), { source: { postMessage: () => undefined } });
+            assert.strictEqual(posted.length, 0);
+            bridge.destroy();
+            await database.close();
+        });
+
+        it('should answer a snapshot with the collections and the schema', async () => {
+            const database = await createDatabase();
+            const { posted, iframe } = createFakeIframe();
+            const bridge = createBridge(database, iframe);
+            send(bridge, iframe, request('snapshot'));
+            await settle();
+
+            const response = posted.find(message => message.kind === 'response');
+            assert.ok(response, 'the bridge did not answer');
+            assert.strictEqual(response.ok, true);
+            assert.strictEqual(response.result.databaseName, database.name);
+            assert.strictEqual(response.result.protocolVersion, DB_VIEWER_PROTOCOL_VERSION);
+            assert.strictEqual(response.result.collections.length, 1);
+            assert.strictEqual(response.result.collections[0].name, 'humans');
+            assert.strictEqual(response.result.collections[0].primaryPath, 'passportId');
+            assert.ok(response.result.collections[0].jsonSchema.properties.firstName);
+            bridge.destroy();
+            await database.close();
+        });
+
+        /**
+         * Everything the bridge answers is posted into another document, so
+         * nothing it sends may carry a function or a class instance.
+         */
+        it('should only answer with values that survive a structured clone', async () => {
+            const database = await createDatabase();
+            const { posted, iframe } = createFakeIframe();
+            const bridge = createBridge(database, iframe);
+            send(bridge, iframe, request('snapshot'));
+            await settle();
+
+            const response = posted.find(message => message.kind === 'response');
+            assert.ok(response);
+            assert.doesNotThrow(() => structuredClone(response));
+            bridge.destroy();
+            await database.close();
+        });
+
+        it('should read documents through the documents method', async () => {
+            const database = await createDatabase();
+            await database.humans.bulkInsert([
+                schemaObjects.humanData('aa', 20, 'Alice'),
+                schemaObjects.humanData('bb', 30, 'Bob')
+            ]);
+            const { posted, iframe } = createFakeIframe();
+            const bridge = createBridge(database, iframe);
+            send(bridge, iframe, request('documents', {
+                collectionName: 'humans',
+                selector: {},
+                sort: { field: 'passportId', direction: 'asc' },
+                skip: 0,
+                limit: 100
+            }));
+            await settle();
+
+            const response = posted.find(message => message.kind === 'response');
+            assert.strictEqual(response.ok, true);
+            assert.strictEqual(response.result.total, 2);
+            assert.strictEqual(response.result.documents.length, 2);
+            assert.strictEqual(response.result.documents[0].passportId, 'aa');
+            bridge.destroy();
+            await database.close();
+        });
+
+        it('should write a document that the viewer upserted', async () => {
+            const database = await createDatabase();
+            const { posted, iframe } = createFakeIframe();
+            const bridge = createBridge(database, iframe);
+            send(bridge, iframe, request('upsert', {
+                collectionName: 'humans',
+                document: schemaObjects.humanData('cc', 44, 'Carol')
+            }));
+            await settle();
+
+            const response = posted.find(message => message.kind === 'response');
+            assert.strictEqual(response.ok, true);
+            const stored = await database.humans.findOne('cc').exec();
+            assert.ok(stored, 'the document was not written');
+            assert.strictEqual(stored.firstName, 'Carol');
+            bridge.destroy();
+            await database.close();
+        });
+
+        it('should refuse to write while read-only', async () => {
+            const database = await createDatabase();
+            const { posted, iframe } = createFakeIframe();
+            const bridge = createBridge(database, iframe, {
+                surface: 'dump',
+                dump: { fileName: 'dump.json', exportedAt: Date.now() }
+            });
+            send(bridge, iframe, request('upsert', {
+                collectionName: 'humans',
+                document: schemaObjects.humanData('dd', 44, 'Dave')
+            }));
+            await settle();
+
+            const response = posted.find(message => message.kind === 'response');
+            assert.strictEqual(response.ok, false);
+            assert.ok(response.error.includes('read-only'));
+            const stored = await database.humans.findOne('dd').exec();
+            assert.strictEqual(stored, null);
+            bridge.destroy();
+            await database.close();
+        });
+
+        it('should report an unknown method as a failed response', async () => {
+            const database = await createDatabase();
+            const { posted, iframe } = createFakeIframe();
+            const bridge = createBridge(database, iframe);
+            send(bridge, iframe, request('somethingElse'));
+            await settle();
+
+            const response = posted.find(message => message.kind === 'response');
+            assert.strictEqual(response.ok, false);
+            assert.ok(response.error.includes('unknown method'));
+            bridge.destroy();
+            await database.close();
+        });
+
+        it('should explain which index a query used', async () => {
+            const database = await createDatabase();
+            await database.humans.bulkInsert([
+                schemaObjects.humanData('aa', 20, 'Alice'),
+                schemaObjects.humanData('bb', 30, 'Bob')
+            ]);
+            const { posted, iframe } = createFakeIframe();
+            const bridge = createBridge(database, iframe);
+            send(bridge, iframe, request('explain', {
+                collectionName: 'humans',
+                selector: {},
+                sort: { field: 'passportId', direction: 'asc' }
+            }));
+            await settle();
+
+            const response = posted.find(message => message.kind === 'response');
+            assert.strictEqual(response.ok, true);
+            assert.ok(Array.isArray(response.result.index));
+            assert.strictEqual(response.result.returned, 2);
+            assert.ok(Array.isArray(response.result.findings));
+            bridge.destroy();
+            await database.close();
+        });
+
+        it('should report the real types next to the declared ones', async () => {
+            const database = await createDatabase();
+            await database.humans.bulkInsert([
+                schemaObjects.humanData('aa', 20, 'Alice')
+            ]);
+            const { posted, iframe } = createFakeIframe();
+            const bridge = createBridge(database, iframe);
+            send(bridge, iframe, request('schemaReport', {
+                collectionName: 'humans',
+                sampleSize: 100
+            }));
+            await settle();
+
+            const response = posted.find(message => message.kind === 'response');
+            assert.strictEqual(response.ok, true);
+            assert.strictEqual(response.result.sampledCount, 1);
+            const firstName = response.result.fields.find(
+                (field: any) => field.path === 'firstName'
+            );
+            assert.ok(firstName);
+            assert.deepStrictEqual(firstName.seenTypes, ['string']);
+            assert.strictEqual(firstName.declaredType, 'string');
+            assert.strictEqual(firstName.indexed, true);
+            bridge.destroy();
+            await database.close();
+        });
+
+        it('should count the documents of the storage', async () => {
+            const database = await createDatabase();
+            await database.humans.bulkInsert([
+                schemaObjects.humanData('aa', 20, 'Alice'),
+                schemaObjects.humanData('bb', 30, 'Bob')
+            ]);
+            const { posted, iframe } = createFakeIframe();
+            const bridge = createBridge(database, iframe);
+            send(bridge, iframe, request('storageReport', { collectionName: 'humans' }));
+            await settle();
+
+            const response = posted.find(message => message.kind === 'response');
+            assert.strictEqual(response.ok, true);
+            assert.strictEqual(response.result.documentCount, 2);
+            bridge.destroy();
+            await database.close();
+        });
+
+        /**
+         * Pushes only start after the viewer said hello, otherwise the bridge
+         * would post into a document that is not listening yet.
+         */
+        it('should not push before the viewer announced itself', async () => {
+            const database = await createDatabase();
+            const { posted, iframe } = createFakeIframe();
+            const bridge = createBridge(database, iframe);
+            bridge.start();
+            await database.humans.insert(schemaObjects.humanData('ee', 20, 'Erin'));
+            await settle();
+            assert.strictEqual(posted.length, 0);
+            bridge.destroy();
+            await database.close();
+        });
+
+        it('should push a change once the viewer said hello', async () => {
+            const database = await createDatabase();
+            const { posted, iframe } = createFakeIframe();
+            const bridge = createBridge(database, iframe);
+            bridge.start();
+            send(bridge, iframe, hello());
+            await database.humans.insert(schemaObjects.humanData('ff', 20, 'Frank'));
+            await settle();
+
+            const change = posted.find(
+                message => message.kind === 'push' && message.stream === 'change'
+            );
+            assert.ok(change, 'no change was pushed');
+            assert.strictEqual(change.payload.collectionName, 'humans');
+            assert.strictEqual(change.payload.operation, 'INSERT');
+            assert.strictEqual(change.payload.documentId, 'ff');
+            assert.strictEqual(change.payload.source, 'local');
+            bridge.destroy();
+            await database.close();
+        });
+
+        it('should mark a write that the viewer itself made', async () => {
+            const database = await createDatabase();
+            const { posted, iframe } = createFakeIframe();
+            const bridge = createBridge(database, iframe);
+            bridge.start();
+            send(bridge, iframe, hello());
+            send(bridge, iframe, request('upsert', {
+                collectionName: 'humans',
+                document: schemaObjects.humanData('gg', 44, 'Grace')
+            }));
+            await settle();
+
+            const change = posted.find(
+                message => message.kind === 'push' &&
+                    message.stream === 'change' &&
+                    message.payload.documentId === 'gg'
+            );
+            assert.ok(change, 'no change was pushed');
+            assert.strictEqual(change.payload.source, 'db-viewer');
+            bridge.destroy();
+            await database.close();
+        });
+    });
+
     describe('mountRxDBDbViewer()', () => {
-        it('should throw a readable error when there is no DOM', async () => {
+        it('should point at the page that is published with the docs', () => {
+            assert.strictEqual(DB_VIEWER_URL, 'https://rxdb.info/html/db-viewer.html');
+        });
+        it('should throw a readable error when there is no DOM', async function () {
             if (typeof document !== 'undefined') {
+                this.skip();
                 return;
             }
-            const database = await createRxDatabase({
-                name: randomToken(10),
-                storage: config.storage.getStorage()
-            });
-            await database.addCollections({
-                humans: { schema: schemas.human }
-            });
+            const database = await createDatabase();
             assert.throws(
                 () => mountRxDBDbViewer(database),
                 (error: any) => error.code === 'DBV1'
