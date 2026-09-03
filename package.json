@@ -682,7 +682,7 @@
     "rollup": "4.62.4",
     "rxdb-old": "npm:rxdb@16.21.1",
     "rxjs": "7.8.2",
-    "sharp": "0.35.3",
+    "sharp": "0.35.4",
     "source-map-support": "0.5.21",
     "stream": "0.0.3",
     "supabase": "2.115.0",
