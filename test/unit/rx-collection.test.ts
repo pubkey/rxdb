@@ -981,7 +981,7 @@ describe('rx-collection.test.ts', () => {
                         }).sort({
                             age: 'desc',
                             id: 'desc'
-                        });
+                        } as any);
 
                         assert.ok(isRxQuery(query));
                         const docs = await query.exec();
@@ -1003,7 +1003,7 @@ describe('rx-collection.test.ts', () => {
                         await AsyncTestUtil.assertThrows(
                             () => c.find().sort({
                                 foobar: 'desc'
-                            }).exec(),
+                            } as any).exec(),
                             'RxError',
                             'QU13'
                         );
@@ -1012,7 +1012,7 @@ describe('rx-collection.test.ts', () => {
                     it('#146 throw when field not in schema (string)', async () => {
                         const c = await humansCollection.createAgeIndex();
                         await AsyncTestUtil.assertThrows(
-                            () => c.find().sort('foobar').exec(),
+                            () => c.find().sort('foobar' as any).exec(),
                             'RxError',
                             'QU13'
                         );
@@ -1618,7 +1618,7 @@ describe('rx-collection.test.ts', () => {
                             selector: {
                                 age: {
                                     $regex: 'foobar'
-                                }
+                                } as any
                             }
                         }).exec(),
                         'RxError',
@@ -2463,7 +2463,7 @@ describe('rx-collection.test.ts', () => {
                 ]);
 
                 await assertThrows(
-                    () => query.where('foo'),
+                    () => query.where('foo' as any),
                     'RxError',
                     'QU17'
                 );

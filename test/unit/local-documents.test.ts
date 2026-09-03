@@ -137,7 +137,7 @@ describe('local-documents.test.ts', () => {
             const doc = await c.insertLocal('foobar', {
                 foo: 'bar'
             });
-            const emitted: RxLocalDocument<any, any>[] = [];
+            const emitted: RxLocalDocument<any, { foo: string; }>[] = [];
             doc.$.subscribe(fullDoc => {
                 emitted.push(fullDoc);
             });

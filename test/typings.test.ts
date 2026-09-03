@@ -7,6 +7,7 @@
  */
 import * as assert from 'assert';
 import * as React from 'react';
+import type { Observable } from 'rxjs';
 import {
     HumanCompositePrimaryDocType,
     schemas
@@ -26,6 +27,10 @@ import {
     createBlob,
     ReactivityLambda,
     Reactified
+} from '../plugins/core/index.mjs';
+import type {
+    MangoQuery,
+    MangoQuerySelector
 } from '../plugins/core/index.mjs';
 import { getRxStorageMemory } from '../plugins/storage-memory/index.mjs';
 import { RxDatabaseProvider } from '../plugins/react/index.mjs';
@@ -410,6 +415,326 @@ describe('typings.test.ts', function () {
             });
         });
     });
+    describe('mango query', () => {
+        type QueryDocType = {
+            passportId: string;
+            age: number;
+            active: boolean;
+            tags: string[];
+            address: {
+                city: string;
+                geo: {
+                    lat: number;
+                };
+            };
+            skills: {
+                name: string;
+                level: number;
+            }[];
+        };
+        describe('positive', () => {
+            it('should allow valid selectors and operators', () => {
+                const queries: MangoQuery<QueryDocType>[] = [
+                    { selector: { passportId: 'foobar' } },
+                    { selector: { age: { $gt: 18, $lte: 67 } } },
+                    { selector: { passportId: { $regex: '^foo', $options: 'i' } } },
+                    { selector: { age: { $in: [18, 21] }, active: { $eq: true } } },
+                    { selector: { age: { $mod: [2, 0] } } },
+                    { selector: { 'address.city': 'Bremen' } },
+                    { selector: { 'address.geo.lat': { $gte: 50 } } },
+                    { selector: { tags: 'foobar' } },
+                    { selector: { tags: { $elemMatch: { $eq: 'foobar' } } } },
+                    { selector: { tags: { $size: 2 } } },
+                    { selector: { skills: { $elemMatch: { level: { $gt: 5 } } } } },
+                    { selector: { 'skills.0.name': { $exists: true } } },
+                    { selector: { $and: [{ age: { $gt: 10 } }, { age: { $lt: 20 } }] } },
+                    { selector: { $or: [{ passportId: 'a' }, { active: false }] } }
+                ];
+                assert.ok(queries);
+            });
+            it('should allow valid sort fields including nested paths', () => {
+                const query: MangoQuery<QueryDocType> = {
+                    selector: {},
+                    sort: [
+                        { age: 'asc' },
+                        { 'address.city': 'desc' },
+                        { 'address.geo.lat': 'asc' }
+                    ]
+                };
+                assert.ok(query);
+            });
+            it('untyped collections must accept any selector and sort like before', () => {
+                const anyQuery: MangoQuery<any> = {
+                    selector: {
+                        someField: { $regex: 'foo' },
+                        'some.other.path': { $gt: 10 }
+                    },
+                    sort: [{ anything: 'asc' }]
+                };
+                const defaultQuery: MangoQuery = {
+                    selector: { whatever: { $elemMatch: { x: 1 } } }
+                };
+                type LooseDocType = { [key: string]: any; };
+                const looseQuery: MangoQuery<LooseDocType> = {
+                    selector: { dynamicField: { $gt: 10 } },
+                    sort: [{ dynamicField: 'asc' }]
+                };
+                assert.ok(anyQuery && defaultQuery && looseQuery);
+            });
+            it('escape hatch: dynamically built queries are casted at the call', () => {
+                const collection: RxCollection<QueryDocType> = {} as any;
+                const dynamicField: string = 'age' + '';
+                const dynamicQuery: MangoQuery<any> = {
+                    selector: {
+                        [dynamicField]: { $gt: 18 }
+                    },
+                    sort: [{ [dynamicField]: 'asc' }]
+                };
+                const query = collection.find(dynamicQuery as MangoQuery<QueryDocType>);
+                assert.ok(query);
+            });
+        });
+        describe('negative', () => {
+            it('should not allow selectors on non-existing fields', () => {
+                const q1: MangoQuery<QueryDocType> = {
+                    selector: {
+                        // @ts-expect-error typo in field name
+                        pasportId: 'foobar'
+                    }
+                };
+                const q2: MangoQuery<QueryDocType> = {
+                    selector: {
+                        // @ts-expect-error typo in nested path
+                        'address.cty': 'Bremen'
+                    }
+                };
+                const q3: MangoQuery<QueryDocType> = {
+                    selector: {
+                        $or: [{
+                            // @ts-expect-error typo inside $or
+                            agee: 10
+                        }]
+                    }
+                };
+                assert.ok(q1 && q2 && q3);
+            });
+            it('should not allow operators that do not match the field type', () => {
+                const q1: MangoQuery<QueryDocType> = {
+                    selector: {
+                        // @ts-expect-error $regex is not allowed on a number field
+                        age: { $regex: 'foobar' }
+                    }
+                };
+                const q2: MangoQuery<QueryDocType> = {
+                    selector: {
+                        // @ts-expect-error $gt is not allowed on a boolean field
+                        active: { $gt: true }
+                    }
+                };
+                const q3: MangoQuery<QueryDocType> = {
+                    selector: {
+                        // @ts-expect-error $elemMatch is not allowed on a non-array field
+                        age: { $elemMatch: { $eq: 10 } }
+                    }
+                };
+                const q4: MangoQuery<QueryDocType> = {
+                    selector: {
+                        // @ts-expect-error $in must use the type of the field
+                        age: { $in: ['foobar'] }
+                    }
+                };
+                const q5: MangoQuery<QueryDocType> = {
+                    selector: {
+                        // @ts-expect-error $size is not allowed on a non-array field
+                        age: { $size: 1 }
+                    }
+                };
+                assert.ok(q1 && q2 && q3 && q4 && q5);
+            });
+            it('should not allow wrong value types on direct equality', () => {
+                const q1: MangoQuery<QueryDocType> = {
+                    selector: {
+                        // @ts-expect-error age is a number, not a string
+                        age: 'foobar'
+                    }
+                };
+                const q2: MangoQuery<QueryDocType> = {
+                    selector: {
+                        // @ts-expect-error lat is a number, not a string
+                        'address.geo.lat': { $eq: 'foobar' }
+                    }
+                };
+                assert.ok(q1 && q2);
+            });
+            it('should not allow sort on non-existing fields', () => {
+                const q1: MangoQuery<QueryDocType> = {
+                    sort: [
+                        // @ts-expect-error typo in sort field
+                        { agee: 'asc' }
+                    ]
+                };
+                const q2: MangoQuery<QueryDocType> = {
+                    sort: [
+                        // @ts-expect-error typo in nested sort path
+                        { 'address.cty': 'asc' }
+                    ]
+                };
+                assert.ok(q1 && q2);
+            });
+            it('selector typing must also work on the standalone MangoQuerySelector type', () => {
+                const selector: MangoQuerySelector<QueryDocType> = {
+                    // @ts-expect-error typo in field name
+                    pasportId: { $eq: 'foobar' }
+                };
+                assert.ok(selector);
+            });
+        });
+        describe('query builder chain', () => {
+            const collection: RxCollection<QueryDocType> = {} as any;
+            it('should allow valid field paths and matching operators', () => {
+                const q1 = collection.find().where('age').gt(10).lte(20);
+                const q2 = collection.find().where('address.city').regex('^B');
+                const q3 = collection.find().where('tags').elemMatch({ $eq: 'foobar' });
+                const q4 = collection.find().where('skills').elemMatch({ level: { $gt: 3 } });
+                const q5 = collection.find().where('age').in([1, 2]).exists(true);
+                const q6 = collection.find().where('tags').size(2);
+                const q7 = collection.find().where('age').gt(10).where('active').eq(true);
+                const q8 = collection.find().sort('age').sort('-age').sort({ age: 'asc' });
+                const q9 = collection.find().where({ age: { $gt: 10 } });
+                assert.ok(q1 && q2 && q3 && q4 && q5 && q6 && q7 && q8 && q9);
+            });
+            it('untyped collections must accept any chain like before', () => {
+                const anyCollection: RxCollection<any> = {} as any;
+                const q = anyCollection.find().where('anything').regex('foo').sort('whatever');
+                assert.ok(q);
+            });
+            it('should not allow wrong field paths and operators', () => {
+                // @ts-expect-error typo in field name
+                const q1 = collection.find().where('agee');
+                // @ts-expect-error $regex is not allowed on a number field
+                const q2 = collection.find().where('age').regex('foo');
+                // @ts-expect-error $gt value must match the field type
+                const q3 = collection.find().where('age').gt('foo');
+                // @ts-expect-error $gt is not allowed on a boolean field
+                const q4 = collection.find().where('active').gt(true);
+                // @ts-expect-error $elemMatch is not allowed on a non-array field
+                const q5 = collection.find().where('age').elemMatch({ $eq: 10 });
+                // @ts-expect-error typo in the sort field
+                const q6 = collection.find().sort('agee');
+                assert.ok(q1 && q2 && q3 && q4 && q5 && q6);
+            });
+        });
+        describe('index option', () => {
+            it('should allow only known field paths as index', () => {
+                const q1: MangoQuery<QueryDocType> = { selector: {}, index: ['age', 'active'] };
+                const q2: MangoQuery<QueryDocType> = { selector: {}, index: 'age' };
+                const q3: MangoQuery<QueryDocType> = { selector: {}, index: ['age', 'address.city'] as const };
+                // @ts-expect-error typo in index field
+                const q4: MangoQuery<QueryDocType> = { selector: {}, index: 'agee' };
+                // @ts-expect-error typo in one of the index fields
+                const q5: MangoQuery<QueryDocType> = { selector: {}, index: ['age', 'nope'] };
+                assert.ok(q1 && q2 && q3 && q4 && q5);
+            });
+        });
+        describe('one field per sort part', () => {
+            it('should not allow more than one field in a single sort part', () => {
+                const q1: MangoQuery<QueryDocType> = {
+                    sort: [{ age: 'asc' }, { passportId: 'desc' }]
+                };
+                const q2: MangoQuery<QueryDocType> = {
+                    // @ts-expect-error two fields in one sort part
+                    sort: [{ age: 'asc', passportId: 'desc' }]
+                };
+                assert.ok(q1 && q2);
+            });
+        });
+        describe('update operators', () => {
+            const doc: RxDocument<QueryDocType> = {} as any;
+            it('should allow valid update operators', async () => {
+                await doc.update({
+                    $set: {
+                        age: 5,
+                        'address.city': 'Bremen'
+                    },
+                    $inc: {
+                        age: 1,
+                        'address.geo.lat': 0.5
+                    },
+                    $push: {
+                        tags: 'foobar'
+                    },
+                    $addToSet: {
+                        skills: { name: 'foo', level: 1 }
+                    },
+                    $pop: {
+                        tags: 1
+                    },
+                    $pullAll: {
+                        tags: ['foobar']
+                    },
+                    $unset: {
+                        'address.geo': ''
+                    }
+                });
+                // soft-delete via update must know the _deleted field
+                await doc.update({
+                    $set: {
+                        _deleted: true
+                    }
+                });
+            });
+            it('should not allow wrong update operators', async () => {
+                await doc.update({
+                    $set: {
+                        // @ts-expect-error typo in field name
+                        agee: 5
+                    }
+                });
+                await doc.update({
+                    $set: {
+                        // @ts-expect-error age is a number, not a string
+                        age: 'foobar'
+                    }
+                });
+                await doc.update({
+                    $inc: {
+                        // @ts-expect-error $inc is not allowed on a string field
+                        passportId: 1
+                    }
+                });
+                await doc.update({
+                    $push: {
+                        // @ts-expect-error $push is not allowed on a non-array field
+                        age: 1
+                    }
+                });
+                await doc.update({
+                    $push: {
+                        // @ts-expect-error $push value must be the item type of the array
+                        tags: 42
+                    }
+                });
+            });
+        });
+        describe('document path accessors', () => {
+            const doc: RxDocument<QueryDocType> = {} as any;
+            it('should know the value types of paths', () => {
+                const age: number = doc.get('age');
+                const city: string = doc.get('address.city');
+                const age$: Observable<number> = doc.get$('age');
+                assert.ok(age !== undefined || city !== undefined || age$);
+            });
+            it('should not allow unknown paths or wrong value types', () => {
+                // @ts-expect-error typo in field name
+                doc.get('agee');
+                // @ts-expect-error typo in nested path
+                doc.get$('address.cty');
+                // @ts-expect-error age is a number, not a string
+                const wrong: string = doc.get('age');
+                assert.ok(wrong !== undefined);
+            });
+        });
+    });
     describe('reactivity', () => {
         type MyCustomReactivity<T> = Set<T>;
         type DocType = {
@@ -668,8 +993,8 @@ describe('local documents', () => {
             throw new Error('local doc missing');
         }
 
-        const x: string = typedLocalDoc.get('data').foo;
-        const x2: string = typedLocalDocUpsert.get('data').foo;
+        const x: string = typedLocalDoc.get('foo');
+        const x2: string = typedLocalDocUpsert.get('foo');
     });
     it('should allow to access different property', async () => {
         const myDb: RxDatabase = {} as any;
