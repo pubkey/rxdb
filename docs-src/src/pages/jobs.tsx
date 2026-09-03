@@ -16,56 +16,56 @@ import { JOBS_TITLE } from '../constants';
  * because a visitor reads one of them and never the other.
  */
 const CONDITIONS = [
-    '20 € pro Stunde',
-    '10 bis 20 Stunden pro Woche, flexibel nach Vorlesungsplan',
-    'regelmäßig vor Ort in Stuttgart, zeitweise auch aus dem Homeoffice',
-    'Eintritt nach Absprache, auch mitten im Semester',
-    'deine Arbeit ist Open Source und bleibt unter deinem Namen sichtbar'
+    '20 € per hour',
+    '10 to 20 hours per week, flexible around your lecture timetable',
+    'regularly on site in Stuttgart, part of the time from home',
+    'start by arrangement, mid-semester is fine',
+    'your work is open source and stays visible under your name'
 ];
 
 /**
- * This page is in German on purpose. Both positions are German
- * Werkstudenten jobs in Stuttgart, so the page sets its own lang
- * attribute instead of inheriting the site default.
+ * Both positions are German Werkstudent jobs based in Stuttgart. The page is
+ * in English like the rest of the site, so the job titles keep the German
+ * term, which is the actual employment status rather than a translation.
  */
 const JOBS = [
     {
         id: 'frontend',
-        title: 'Werkstudent (m/w/d) Developer Experience, Schwerpunkt Frontend',
+        title: 'Working Student (m/f/d) Developer Experience, Frontend',
         /**
          * Each position has its own Pipedrive webform, so an application
          * arrives already assigned to a position and the form does not have
          * to ask which one it is for.
          */
         formUrl: 'https://webforms.pipedrive.com/f/czK0WxW1wnP2HOdt6VkTVENuSfO4WvZsVeFXTCAy1a6wazfJcSa0BHBiWNoj1YKZTZ',
-        teaser: 'Du arbeitest an RxDB selbst und daran, dass Entwickler schneller damit zurechtkommen.',
+        teaser: 'You work on RxDB itself, and on getting developers productive with it faster.',
         tasks: [
-            'Analyse, woran Entwickler beim Einstieg in RxDB hängen bleiben, und Behebung der Ursachen im Code',
-            'Mitarbeit an der öffentlichen Schnittstelle der Bibliothek, damit sie sich vorhersehbar verhält',
-            'Verbesserung der Rückmeldungen, die RxDB im Fehlerfall gibt',
-            'Rückführung wiederkehrender Fragen aus der Community in Produkt und Dokumentation'
+            'finding where developers get stuck when they start with RxDB, and fixing the causes in the code',
+            'working on the public interface of the library so that it behaves predictably',
+            'improving what RxDB tells you when something goes wrong',
+            'feeding recurring questions from the community back into the product and the documentation'
         ],
         requirements: [
-            'Studium der Informatik, Softwaretechnik, Medieninformatik oder eines vergleichbaren Fachs',
-            'sicherer Umgang mit TypeScript, Erfahrung mit einem Frontend-Framework ist von Vorteil',
-            'eigene veröffentlichte Projekte, ein GitHub-Profil ersetzt bei uns das Anschreiben'
+            'studies in computer science, software engineering, media informatics or a comparable subject',
+            'confident with TypeScript, experience with a frontend framework is an advantage',
+            'published projects of your own. A GitHub profile replaces the cover letter here.'
         ]
     },
     {
         id: 'video',
-        title: 'Werkstudent (m/w/d) Developer Experience, Schwerpunkt Video und Social Media',
+        title: 'Working Student (m/f/d) Developer Experience, Video and Social Media',
         formUrl: 'https://webforms.pipedrive.com/f/6ULD69TOWMqORnAypjPo1bdwhsesN2fDV6KxV3qLLYIPaJhOP8rNnznmTTk7Pojq39',
-        teaser: 'Du machst die Arbeit sichtbar, die im Frontend-Bereich entsteht.',
+        teaser: 'You make the work coming out of the frontend role visible.',
         tasks: [
-            'Produktion kurzer Videos zur Arbeit mit RxDB, von der Konzeption über Aufnahme und Schnitt bis zu Titel und Thumbnail',
-            'Aufbereitung der Videos als Shorts und Reels für YouTube, LinkedIn, Instagram und TikTok',
-            'Betreuung des YouTube-Kanals und der Social-Media-Kanäle einschließlich Community-Management',
-            'Auswertung der Reichweiten und Ableitung der nächsten Themen'
+            'producing short videos about working with RxDB, from the concept through recording and editing to the title and the thumbnail',
+            'cutting them into shorts and reels for YouTube, LinkedIn, Instagram and TikTok',
+            'running the YouTube channel and the social media channels, including community management',
+            'reading the reach numbers and deciding what to cover next'
         ],
         requirements: [
-            'Studium der Audiovisuellen Medien, Onlinemedien, Werbung und Marktkommunikation, Medieninformatik oder eines vergleichbaren Fachs',
-            'eigenständige Schnittarbeit, belegt durch Arbeitsproben',
-            'Grundkenntnisse in der Softwareentwicklung. Du entwickelst nicht selbst, solltest aber verstehen, was in einem Video passiert, und einen Codeausschnitt lesen können.'
+            'studies in audiovisual media, online media, advertising and market communication, media informatics or a comparable subject',
+            'you edit independently, shown by work samples',
+            'basic knowledge of software development. You do not write the code, but you should understand what happens in a video and be able to read a snippet of it.'
         ]
     }
 ];
@@ -120,27 +120,27 @@ export default function Jobs() {
     return (
         <>
             <Head>
-                <html lang="de" />
                 <body className="homepage jobs-page" />
                 <link rel="canonical" href="/jobs/" />
             </Head>
             <Layout
                 title={JOBS_TITLE}
-                description="Offene Werkstudentenstellen bei RxDB in Stuttgart, 20 € pro Stunde."
+                description="Open working student positions at RxDB in Stuttgart, Germany. 20 € per hour."
             >
                 <main>
 
                     <div className="block first centered">
                         <div className="content">
                             <h1 style={{ textAlign: 'center' }}>
-                                Karriere bei <b>RxDB</b>
+                                Careers at <b>RxDB</b>
                             </h1>
                             <div className="inner centered" style={{ flexDirection: 'column' }}>
                                 <p className="centered-mobile-p" style={{ maxWidth: 780 }}>
-                                    RxDB ist eine Local-First-Datenbank für JavaScript-Anwendungen.
-                                    Sie arbeitet weiter, wenn die Netzverbindung ausfällt, und
-                                    synchronisiert, sobald sie wiederhergestellt ist. Unternehmen wie
-                                    Readwise, Nutrien, MoreApp und myAgro setzen RxDB in Produktion ein.
+                                    RxDB is a local-first database for JavaScript applications. It
+                                    keeps working when the network drops and syncs again once the
+                                    connection is back. Companies like Readwise, Nutrien, MoreApp and
+                                    myAgro run RxDB in production. Both open positions are German
+                                    Werkstudent roles based in Stuttgart.
                                 </p>
                             </div>
                         </div>
@@ -165,7 +165,7 @@ export default function Jobs() {
                                             key={entry.id}
                                             role='button'
                                             tabIndex={0}
-                                            aria-label={'Stellenanzeige öffnen: ' + entry.title}
+                                            aria-label={'Open the job advert: ' + entry.title}
                                             onClick={() => showJob(i)}
                                             onKeyDown={(event) => {
                                                 if (event.key === 'Enter' || event.key === ' ') {
@@ -201,8 +201,8 @@ export default function Jobs() {
                                                 opacity: 0.7,
                                                 flexGrow: 1
                                             }}>
-                                                20 € pro Stunde, 10 bis 20 Stunden pro Woche,
-                                                vor Ort in Stuttgart
+                                                20 € per hour, 10 to 20 hours per week,
+                                                on site in Stuttgart
                                             </div>
                                             <div style={{ textAlign: 'center', marginTop: 28 }}>
                                                 <Button primary onClick={(event) => {
@@ -211,7 +211,7 @@ export default function Jobs() {
                                                     event.stopPropagation();
                                                     showJob(i);
                                                 }}>
-                                                    Zur Stellenanzeige
+                                                    Read the full advert
                                                 </Button>
                                             </div>
                                         </div>;
@@ -240,9 +240,9 @@ export default function Jobs() {
                                     overflowY: 'auto'
                                 }}>
                                     <div style={{ fontSize: 15, lineHeight: '23px' }}>{job.teaser}</div>
-                                    <Section title='Aufgaben' items={job.tasks} />
-                                    <Section title='Anforderungen' items={job.requirements} />
-                                    <Section title='Konditionen' items={CONDITIONS} />
+                                    <Section title='Tasks' items={job.tasks} />
+                                    <Section title='Requirements' items={job.requirements} />
+                                    <Section title='Conditions' items={CONDITIONS} />
                                 </div>
                                 <div style={{
                                     textAlign: 'center',
@@ -253,7 +253,7 @@ export default function Jobs() {
                                             openApplicationForm(openJob);
                                         }
                                     }}>
-                                        Jetzt bewerben
+                                        Apply now
                                     </Button>
                                 </div>
                             </> : null

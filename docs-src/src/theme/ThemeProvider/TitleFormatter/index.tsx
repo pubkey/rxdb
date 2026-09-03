@@ -13,7 +13,7 @@ import { HOME_TITLE, JOBS_TITLE } from '../../../constants';
  * equal to `siteConfig.title`. That is too narrow for us: the homepage and
  * /consulting/ carry the longer descriptive HOME_TITLE, and /jobs/ carries
  * JOBS_TITLE. Both already contain the brand, so appending the suffix would
- * render `RxDB - JavaScript Database | RxDB` and `Jobs & Stellenangebote bei
+ * render `RxDB - JavaScript Database | RxDB` and `Jobs & Open Positions at
  * RxDB | RxDB`. Treat them the way Docusaurus treats the site title.
  *
  * This is an explicit list rather than a rule such as `ends with RxDB`, because
