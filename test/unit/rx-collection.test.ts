@@ -2175,6 +2175,38 @@ describe('rx-collection.test.ts', () => {
 
                     db.close();
                 });
+                it('#9026 issue: a rejected bulkWrite permanently wedges the incremental-write queue', async () => {
+                    const collection = await humansCollection.create(1);
+                    const myDocument = await collection.findOne().exec(true);
+
+                    const storageInstance = collection.storageInstance;
+                    const realBulkWrite = storageInstance.bulkWrite.bind(storageInstance);
+                    storageInstance.bulkWrite = (rows: any, context: string) => {
+                        if (context === 'incremental-write' && rows.some((row: any) => row.document.age === 57)) {
+                            return Promise.reject(new Error('simulated transient storage failure'));
+                        }
+                        return realBulkWrite(rows, context);
+                    };
+
+                    let firstError: any;
+                    const first = myDocument.incrementalPatch({ age: 57 }).then(
+                        () => 'settled 0',
+                        (err) => {
+                            firstError = err;
+                        }
+                    );
+                    const second = myDocument.incrementalPatch({ age: 58 }).then(
+                        () => 'settled 1',
+                        () => { }
+                    );
+                    const outcome = await Promise.race([
+                        Promise.all([first, second]).then(() => 'settled'),
+                        AsyncTestUtil.wait(2000).then(() => 'still pending after 2 seconds')
+                    ]);
+                    assert.strictEqual(outcome, 'settled');
+                    assert.strictEqual(firstError.message, 'simulated transient storage failure');
+                    collection.database.close();
+                });
             });
         });
         describe('.remove()', () => {

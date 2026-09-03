@@ -1,0 +1,1 @@
+- FIX `IncrementalWriteQueue`: ensure storage `bulkWrite` errors are properly caught and reset queue runner state so the queue does not wedge on failure.
