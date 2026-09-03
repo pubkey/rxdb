@@ -51,36 +51,21 @@ export class DbViewerComponent implements OnDestroy {
             background: '#0D0F18'
         });
 
-        const bar = document.createElement('div');
-        Object.assign(bar.style, {
-            display: 'flex',
-            justifyContent: 'flex-end',
-            padding: '6px 10px',
-            background: '#27022D',
-            borderBottom: '1px solid rgba(255,255,255,0.10)'
-        });
-        const closeButton = document.createElement('button');
-        closeButton.textContent = 'Close viewer';
-        Object.assign(closeButton.style, {
-            border: '1px solid rgba(255,255,255,0.25)',
-            background: 'transparent',
-            color: '#FFFFFF',
-            font: '11px system-ui, sans-serif',
-            padding: '4px 12px',
-            cursor: 'pointer'
-        });
-        closeButton.addEventListener('click', () => this.close());
-        bar.appendChild(closeButton);
-
         const target = document.createElement('div');
         Object.assign(target.style, { flex: '1', minHeight: '0' });
 
-        overlay.appendChild(bar);
         overlay.appendChild(target);
         document.body.appendChild(overlay);
 
         this.overlay = overlay;
-        this.dbViewer = mountRxDBDbViewer(this.dbService.db as any, { target });
+        /**
+         * The viewer draws its own close button, so closing is reported back
+         * here instead of being wrapped in another bar.
+         */
+        this.dbViewer = mountRxDBDbViewer(this.dbService.db as any, {
+            target,
+            onClose: () => this.close()
+        });
         this.isOpen = true;
     }
 

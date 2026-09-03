@@ -49,32 +49,9 @@ export type DbViewerDumpInfo = {
     exportedAt: number;
 };
 
-export type DbViewerQueryEntry = {
-    selector: string;
-    name?: string;
-    favourite: boolean;
-    usedAt: number;
-};
-
 export type DbViewerSort = {
     field: string;
     direction: 'asc' | 'desc';
-};
-
-export type DbViewerCollectionView = {
-    queryInput: string;
-    selector: any;
-    queryError: { message: string; position: number; } | null;
-    view: 'table' | 'json';
-    page: number;
-    sort: DbViewerSort;
-    selection: Set<string>;
-    observe: boolean;
-    openDocumentId: string | null;
-    stagedEdits: { [fieldPath: string]: any; };
-    expandedFields: Set<string>;
-    editingCell: { documentId: string; field: string; } | null;
-    historyOpen: boolean;
 };
 
 export type DbViewerChangeRecord = {
@@ -128,6 +105,21 @@ export type DbViewerOptions = {
      */
     pageSize?: number;
     onOpenDumpFile?: () => void;
+    /**
+     * Called after the user closed the viewer from its own close button.
+     * The viewer is already destroyed by then, this is where you take down
+     * whatever chrome you put around it.
+     */
+    onClose?: () => void;
+    /**
+     * Where the UI of the database viewer is loaded from.
+     * Defaults to the page that is published with the RxDB docs.
+     *
+     * Point this at your own copy of `db-viewer.html` when your app must work
+     * offline, or when a `frame-src` content security policy does not allow
+     * `https://rxdb.info`. The file ships inside the `rxdb` package.
+     */
+    viewerUrl?: string;
 };
 
 export type DbViewerHandle = {
@@ -135,6 +127,11 @@ export type DbViewerHandle = {
      * The element the database viewer renders into.
      */
     readonly element: HTMLElement;
+    /**
+     * The iframe the UI runs in. It is a cross origin document,
+     * so its content cannot be reached from the app.
+     */
+    readonly iframe: HTMLIFrameElement;
     readonly database: RxDatabase;
     navigate(navigation: DbViewerNavigation): void;
     setConnection(connection: DbViewerConnection): void;
