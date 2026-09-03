@@ -94,87 +94,100 @@ export class IncrementalWriteQueue<RxDocType> {
          */
         const itemsById = this.queueByDocId;
         this.queueByDocId = new Map();
-        await Promise.all(
-            Array.from(itemsById.entries())
-                .map(async ([_docId, items]) => {
-                    const oldData = findNewestOfDocumentStates(
-                        items.map(i => i.lastKnownDocumentState)
-                    );
-                    let newData = oldData;
-                    for (const item of items) {
-                        try {
-                            newData = await item.modifier(
-                                /**
-                                 * We have to clone() each time because the modifier
-                                 * might throw while it already changed some properties
-                                 * of the document.
-                                 */
-                                clone(newData)
-                            ) as any;
-                        } catch (err: any) {
-                            item.reject(err);
-                            item.reject = () => { };
-                            item.resolve = () => { };
+        try {
+            await Promise.all(
+                Array.from(itemsById.entries())
+                    .map(async ([_docId, items]) => {
+                        const oldData = findNewestOfDocumentStates(
+                            items.map(i => i.lastKnownDocumentState)
+                        );
+                        let newData = oldData;
+                        for (const item of items) {
+                            try {
+                                newData = await item.modifier(
+                                    /**
+                                     * We have to clone() each time because the modifier
+                                     * might throw while it already changed some properties
+                                     * of the document.
+                                     */
+                                    clone(newData)
+                                ) as any;
+                            } catch (err: any) {
+                                item.reject(err);
+                                item.reject = () => { };
+                                item.resolve = () => { };
+                            }
                         }
-                    }
 
-                    try {
-                        await this.preWrite(newData, oldData);
-                    } catch (err: any) {
-                        /**
-                         * If the before-hooks fail,
-                         * we reject all of the writes because it is
-                         * not possible to determine which one is to blame.
-                         */
-                        items.forEach(item => item.reject(err));
-                        return;
-                    }
-                    writeRows.push({
-                        previous: oldData,
-                        document: newData
-                    });
-                })
-        );
-        const writeResult: RxStorageBulkWriteResponse<RxDocType> = writeRows.length > 0 ?
-            await this.storageInstance.bulkWrite(writeRows, 'incremental-write') :
-            { error: [] };
-
-        // process success
-        await Promise.all(
-            getWrittenDocumentsFromBulkWriteResponse(this.primaryPath, writeRows, writeResult).map(result => {
-                const docId = result[this.primaryPath] as string;
-                this.postWrite(result);
-                const items = getFromMapOrThrow(itemsById, docId);
-                items.forEach(item => item.resolve(result));
-            })
-        );
-
-        // process errors
-        writeResult.error
-            .forEach(error => {
-                const docId = error.documentId;
-                const items = getFromMapOrThrow(itemsById, docId);
-                const isConflict = isBulkWriteConflictError<RxDocType>(error);
-                if (isConflict) {
-                    // had conflict -> retry afterwards
-                    const ar = getFromMapOrCreate(this.queueByDocId, docId, () => []);
-                    /**
-                     * Add the items back to this.queueByDocId
-                     * by maintaining the original order.
-                     */
-                    items
-                        .reverse()
-                        .forEach(item => {
-                            item.lastKnownDocumentState = ensureNotFalsy(isConflict.documentInDb);
-                            ensureNotFalsy(ar).unshift(item);
+                        try {
+                            await this.preWrite(newData, oldData);
+                        } catch (err: any) {
+                            /**
+                             * If the before-hooks fail,
+                             * we reject all of the writes because it is
+                             * not possible to determine which one is to blame.
+                             */
+                            items.forEach(item => item.reject(err));
+                            return;
+                        }
+                        writeRows.push({
+                            previous: oldData,
+                            document: newData
                         });
-                } else {
-                    // other error -> must be thrown
-                    const rxError = rxStorageWriteErrorToRxError(error);
-                    items.forEach(item => item.reject(rxError));
-                }
-            });
-        this.isRunning = false;
+                    })
+            );
+
+            let writeResult: RxStorageBulkWriteResponse<RxDocType> | undefined;
+            try {
+                writeResult = writeRows.length > 0 ?
+                    await this.storageInstance.bulkWrite(writeRows, 'incremental-write') :
+                    { error: [] };
+            } catch (err: any) {
+                itemsById.forEach(items => {
+                    items.forEach(item => item.reject(err));
+                });
+            }
+
+            if (writeResult) {
+                // process success
+                await Promise.all(
+                    getWrittenDocumentsFromBulkWriteResponse(this.primaryPath, writeRows, writeResult).map(result => {
+                        const docId = result[this.primaryPath] as string;
+                        this.postWrite(result);
+                        const items = getFromMapOrThrow(itemsById, docId);
+                        items.forEach(item => item.resolve(result));
+                    })
+                );
+
+                // process errors
+                writeResult.error
+                    .forEach(error => {
+                        const docId = error.documentId;
+                        const items = getFromMapOrThrow(itemsById, docId);
+                        const isConflict = isBulkWriteConflictError<RxDocType>(error);
+                        if (isConflict) {
+                            // had conflict -> retry afterwards
+                            const ar = getFromMapOrCreate(this.queueByDocId, docId, () => []);
+                            /**
+                             * Add the items back to this.queueByDocId
+                             * by maintaining the original order.
+                             */
+                            items
+                                .reverse()
+                                .forEach(item => {
+                                    item.lastKnownDocumentState = ensureNotFalsy(isConflict.documentInDb);
+                                    ensureNotFalsy(ar).unshift(item);
+                                });
+                        } else {
+                            // other error -> must be thrown
+                            const rxError = rxStorageWriteErrorToRxError(error);
+                            items.forEach(item => item.reject(rxError));
+                        }
+                    });
+            }
+        } finally {
+            this.isRunning = false;
+        }
 
         /**
          * Always trigger another run
