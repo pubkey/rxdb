@@ -1,0 +1,1 @@
+- FIX `storage-denokv` passing `Infinity` as the `limit` of a `Deno.Kv.list()` range when a query has no limit, which Deno rejects with `Limit must be a positive integer` since v2.9.
