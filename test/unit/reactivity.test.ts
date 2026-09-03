@@ -197,7 +197,13 @@ describe('reactivity.test.ts', () => {
             await waitUntil(() => !!querySignal.value);
             assert.deepStrictEqual(querySignal.value, []);
             await collection.insert(schemaObjects.humanData());
-            assert.deepStrictEqual(querySignal.value.length, 1);
+            /**
+             * `insert()` resolves once the write is done, which is before the
+             * query has re-emitted and updated the signal. The new value has
+             * to be waited for, exactly like the initial one above, otherwise
+             * this races and fails with `0 !== 1` on slower storages.
+             */
+            await waitUntil(() => querySignal.value.length === 1);
 
             // ensure unsubscribe is called when signal gets garbage collected
             querySignal = {} as any;
