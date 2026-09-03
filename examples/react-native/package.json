@@ -39,7 +39,7 @@
   "//": "NOTICE: For the Github CI we use the local RxDB build (rxdb-local.tgz). In your app should just install 'rxdb' from npm instead",
   "//overrides": "babel-preset-expo pins the react-native codegen packages to a version that cannot parse the react-native sources. They have to match the installed react-native version so that 'expo export' can bundle.",
   "overrides": {
-    "@react-native/codegen": "0.87.0",
+    "@react-native/codegen": "0.87.1",
     "@react-native/babel-plugin-codegen": "0.87.1"
   },
   "dependencies": {
