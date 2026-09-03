@@ -204,7 +204,7 @@ describe('react-ssr.test.ts', () => {
         function UseRxDocumentComponent() {
             /**
              * In SSR, useEffect does not run so the subscription never starts.
-             * The hook returns its initial state: loading=false, result=null.
+             * With valid collection and primaryKey, initial loading state is true.
              */
             const { result, loading, error } = useRxDocument(collection, 'some-id');
             return React.createElement('div', null,
@@ -220,7 +220,7 @@ describe('react-ssr.test.ts', () => {
             )
         );
 
-        assert.ok(html.includes('loading:false'));
+        assert.ok(html.includes('loading:true'));
         assert.ok(html.includes('result:null'));
         assert.ok(html.includes('error:null'));
 
