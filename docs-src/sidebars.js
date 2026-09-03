@@ -490,8 +490,8 @@ const sidebars = {
         },
         {
           type: 'doc',
-          id: 'devtool',
-          label: 'Devtool'
+          id: 'db-viewer',
+          label: 'Database Viewer'
         },
         {
           type: 'doc',

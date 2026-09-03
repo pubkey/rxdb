@@ -6,24 +6,24 @@ import {
     randomToken
 } from '../../plugins/core/index.mjs';
 import {
-    DEVTOOL_COLORS,
+    DB_VIEWER_COLORS,
     METRICS_BUCKET_COUNT,
     METRICS_BUCKET_MS,
     RollingWindow,
     diffJson,
     formatBytes,
     getByPath,
-    mountRxDBDevtool,
+    mountRxDBDbViewer,
     pickGridColumns,
     parseCellInput,
     parseSelector,
     setByPath,
     shortRevision,
     valueType
-} from '../../plugins/devtool/index.mjs';
+} from '../../plugins/db-viewer/index.mjs';
 import { schemas } from '../../plugins/test-utils/index.mjs';
 
-describe('devtool.test.ts', () => {
+describe('db-viewer.test.ts', () => {
     describe('RollingWindow', () => {
         it('should sum only the events inside the window', () => {
             const start = 1000000;
@@ -203,12 +203,12 @@ describe('devtool.test.ts', () => {
     });
     describe('design tokens', () => {
         it('should use the rxdb.info brand colors', () => {
-            assert.strictEqual(DEVTOOL_COLORS.pink, '#ED168F');
-            assert.strictEqual(DEVTOOL_COLORS.purpleDeep, '#27022D');
-            assert.strictEqual(DEVTOOL_COLORS.bgDark, '#0D0F18');
+            assert.strictEqual(DB_VIEWER_COLORS.pink, '#ED168F');
+            assert.strictEqual(DB_VIEWER_COLORS.purpleDeep, '#27022D');
+            assert.strictEqual(DB_VIEWER_COLORS.bgDark, '#0D0F18');
         });
     });
-    describe('mountRxDBDevtool()', () => {
+    describe('mountRxDBDbViewer()', () => {
         it('should throw a readable error when there is no DOM', async () => {
             if (typeof document !== 'undefined') {
                 return;
@@ -221,8 +221,8 @@ describe('devtool.test.ts', () => {
                 humans: { schema: schemas.human }
             });
             assert.throws(
-                () => mountRxDBDevtool(database),
-                (error: any) => error.code === 'DVT1'
+                () => mountRxDBDbViewer(database),
+                (error: any) => error.code === 'DBV1'
             );
             await database.close();
         });

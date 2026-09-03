@@ -4,15 +4,15 @@ import { countRxQuerySubscribers } from '../../query-cache.ts';
 import { REPLICATION_STATE_BY_COLLECTION } from '../replication/index.ts';
 import type { RxReplicationState } from '../replication/index.ts';
 import type {
-    DevtoolChangeRecord,
-    DevtoolCollectionView,
-    DevtoolConnection,
-    DevtoolDumpInfo,
-    DevtoolLiveEvent,
-    DevtoolNavigation,
-    DevtoolQueryEntry,
-    DevtoolReplicationRecord,
-    DevtoolSurface
+    DbViewerChangeRecord,
+    DbViewerCollectionView,
+    DbViewerConnection,
+    DbViewerDumpInfo,
+    DbViewerLiveEvent,
+    DbViewerNavigation,
+    DbViewerQueryEntry,
+    DbViewerReplicationRecord,
+    DbViewerSurface
 } from '../../types/index.d.ts';
 
 export const METRICS_BUCKET_MS = 2000;
@@ -92,7 +92,7 @@ export type LiveQueryInfo = {
     lastEmitAt: number;
 };
 
-export function createCollectionView(): DevtoolCollectionView {
+export function createCollectionView(): DbViewerCollectionView {
     return {
         queryInput: '{}',
         selector: {},
@@ -114,29 +114,29 @@ export function createCollectionView(): DevtoolCollectionView {
  * Owns everything the panels read: navigation, per collection view state,
  * the recorded feeds and the 60 second activity counters.
  */
-export class DevtoolStore {
-    public navigation: DevtoolNavigation;
+export class DbViewerStore {
+    public navigation: DbViewerNavigation;
     /**
      * The collection the user looked at last. The tool panels are scoped
      * to it, so opening Schema or Query lab keeps analysing the collection
      * that was on screen instead of jumping to another one.
      */
     public lastCollectionName: string | null = null;
-    public connection: DevtoolConnection;
-    public readonly surface: DevtoolSurface;
-    public readonly dump: DevtoolDumpInfo | null;
+    public connection: DbViewerConnection;
+    public readonly surface: DbViewerSurface;
+    public readonly dump: DbViewerDumpInfo | null;
     public readonly pageSize: number;
 
-    public readonly views = new Map<string, DevtoolCollectionView>();
+    public readonly views = new Map<string, DbViewerCollectionView>();
     public readonly metrics = new Map<string, CollectionMetrics>();
-    public readonly queryHistory: DevtoolQueryEntry[] = [];
+    public readonly queryHistory: DbViewerQueryEntry[] = [];
 
-    public changes: DevtoolChangeRecord[] = [];
+    public changes: DbViewerChangeRecord[] = [];
     public changesPaused = false;
     public changesFilter = '';
     public selectedChangeIndex = 0;
 
-    public replicationFeed: DevtoolReplicationRecord[] = [];
+    public replicationFeed: DbViewerReplicationRecord[] = [];
     public replicationFeedPaused = false;
     public replicationErrors = new Map<string, { message: string; time: number; attempts: number; }>();
 
@@ -145,12 +145,12 @@ export class DevtoolStore {
     public viewerWriteCount = 0;
     public sessionWriteCount = 0;
     /**
-     * Ids of documents the devtool itself wrote, so that the Live map
+     * Ids of documents the database viewer itself wrote, so that the Live map
      * can separate them from the writes the app makes.
      */
-    private devtoolWrites = new Set<string>();
+    private viewerWrites = new Set<string>();
 
-    public readonly liveEvents$ = new Subject<DevtoolLiveEvent>();
+    public readonly liveEvents$ = new Subject<DbViewerLiveEvent>();
     public readonly changed$ = new Subject<void>();
 
     private subscriptions: Subscription[] = [];
@@ -162,11 +162,11 @@ export class DevtoolStore {
     constructor(
         public readonly database: RxDatabase,
         options: {
-            surface: DevtoolSurface;
-            dump: DevtoolDumpInfo | null;
+            surface: DbViewerSurface;
+            dump: DbViewerDumpInfo | null;
             pageSize: number;
-            connection: DevtoolConnection;
-            navigation: DevtoolNavigation;
+            connection: DbViewerConnection;
+            navigation: DbViewerNavigation;
         }
     ) {
         this.surface = options.surface;
@@ -190,7 +190,7 @@ export class DevtoolStore {
         return Object.keys(this.database.collections).sort();
     }
 
-    public getView(collectionName: string): DevtoolCollectionView {
+    public getView(collectionName: string): DbViewerCollectionView {
         let view = this.views.get(collectionName);
         if (!view) {
             view = createCollectionView();
@@ -217,8 +217,8 @@ export class DevtoolStore {
         return metrics;
     }
 
-    public markDevtoolWrite(collectionName: string, documentId: string): void {
-        this.devtoolWrites.add(collectionName + '|' + documentId);
+    public markDbViewerWrite(collectionName: string, documentId: string): void {
+        this.viewerWrites.add(collectionName + '|' + documentId);
     }
 
     public rememberQuery(selector: string): void {
@@ -312,15 +312,15 @@ export class DevtoolStore {
         this.sessionWriteCount++;
 
         const key = collectionName + '|' + changeEvent.documentId;
-        const fromDevtool = this.devtoolWrites.delete(key);
-        if (fromDevtool) {
+        const fromDbViewer = this.viewerWrites.delete(key);
+        if (fromDbViewer) {
             this.viewerWriteCount++;
         }
 
         this.liveEvents$.next({
             kind: changeEvent.operation.toLowerCase() as 'insert' | 'update' | 'delete',
             collectionName,
-            fromDevtool
+            fromDbViewer
         });
 
         if (!this.changesPaused) {
@@ -335,7 +335,7 @@ export class DevtoolStore {
                 revision: changeEvent.documentData ? changeEvent.documentData._rev : '',
                 documentData: changeEvent.documentData,
                 previousDocumentData: changeEvent.previousDocumentData,
-                source: fromDevtool ? 'devtool' : 'local'
+                source: fromDbViewer ? 'db-viewer' : 'local'
             });
             if (this.changes.length > CHANGES_BUFFER_SIZE) {
                 this.changes.length = CHANGES_BUFFER_SIZE;

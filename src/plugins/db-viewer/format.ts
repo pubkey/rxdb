@@ -157,12 +157,12 @@ export function highlightJson(value: any, indent = 2): DocumentFragment {
             fragment.appendChild(document.createTextNode(source.slice(lastIndex, match.index)));
         }
         if (match[1] !== undefined && match[2] !== undefined) {
-            fragment.appendChild(el('span', { class: 'rxdt-json-key', text: match[1] }));
+            fragment.appendChild(el('span', { class: 'rxdbv-json-key', text: match[1] }));
             fragment.appendChild(document.createTextNode(match[2]));
         } else if (match[1] !== undefined) {
-            fragment.appendChild(el('span', { class: 'rxdt-json-string', text: match[1] }));
+            fragment.appendChild(el('span', { class: 'rxdbv-json-string', text: match[1] }));
         } else {
-            fragment.appendChild(el('span', { class: 'rxdt-json-literal', text: match[0] }));
+            fragment.appendChild(el('span', { class: 'rxdbv-json-literal', text: match[0] }));
         }
         lastIndex = match.index + match[0].length;
         match = pattern.exec(source);
@@ -226,13 +226,13 @@ export function diffJson(before: any, after: any): DiffLine[] {
 }
 
 export function renderDiff(lines: DiffLine[]): HTMLElement {
-    const container = el('div', { class: 'rxdt-diff' });
+    const container = el('div', { class: 'rxdbv-diff' });
     lines.forEach(line => {
         if (line.kind === 'context') {
             container.appendChild(document.createTextNode('  ' + line.text + '\n'));
         } else {
             container.appendChild(el('span', {
-                class: line.kind === 'added' ? 'rxdt-diff-add' : 'rxdt-diff-del',
+                class: line.kind === 'added' ? 'rxdbv-diff-add' : 'rxdbv-diff-del',
                 text: (line.kind === 'added' ? '+ ' : '- ') + line.text
             }));
         }

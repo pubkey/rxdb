@@ -33,8 +33,8 @@ import type {
     RxCollectionEvent,
     WebMCPOptions,
     WebMCPLogEvent,
-    DevtoolOptions,
-    DevtoolHandle
+    DbViewerOptions,
+    DbViewerHandle
 } from './types/index.d.ts';
 
 import {
@@ -696,8 +696,8 @@ export class RxDatabaseBase<
         throw pluginMissing('webmcp');
     }
 
-    mountDevtool(_options?: DevtoolOptions): DevtoolHandle {
-        throw pluginMissing('devtool');
+    mountDbViewer(_options?: DbViewerOptions): DbViewerHandle {
+        throw pluginMissing('db-viewer');
     }
 }
 

@@ -6,14 +6,14 @@ import {
 import { MatButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 
-import { mountRxDBDevtool } from 'rxdb/plugins/devtool';
-import type { DevtoolHandle } from 'rxdb/plugins/devtool';
+import { mountRxDBDbViewer } from 'rxdb/plugins/db-viewer';
+import type { DbViewerHandle } from 'rxdb/plugins/db-viewer';
 
 import { DatabaseService } from '../../services/database.service';
 
 /**
  * Opens the RxDB database viewer on top of the app.
- * @link https://rxdb.info/devtool.html
+ * @link https://rxdb.info/db-viewer.html
  */
 @Component({
     selector: 'db-viewer',
@@ -26,7 +26,7 @@ export class DbViewerComponent implements OnDestroy {
 
     public isOpen = false;
 
-    private devtool?: DevtoolHandle;
+    private dbViewer?: DbViewerHandle;
     private overlay?: HTMLElement;
 
     constructor(
@@ -80,13 +80,13 @@ export class DbViewerComponent implements OnDestroy {
         document.body.appendChild(overlay);
 
         this.overlay = overlay;
-        this.devtool = mountRxDBDevtool(this.dbService.db as any, { target });
+        this.dbViewer = mountRxDBDbViewer(this.dbService.db as any, { target });
         this.isOpen = true;
     }
 
     close() {
-        this.devtool?.destroy();
-        this.devtool = undefined;
+        this.dbViewer?.destroy();
+        this.dbViewer = undefined;
         this.overlay?.remove();
         this.overlay = undefined;
         this.isOpen = false;

@@ -1,6 +1,6 @@
 /**
  * Minimal DOM helpers.
- * The devtool builds its UI with plain DOM nodes so that it stays
+ * The database viewer builds its UI with plain DOM nodes so that it stays
  * framework free and works on every surface it is mounted into.
  */
 
@@ -82,7 +82,7 @@ export function clear(node: HTMLElement): HTMLElement {
 }
 
 export function spacer(): HTMLElement {
-    return el('div', { class: 'rxdt-grow' });
+    return el('div', { class: 'rxdbv-grow' });
 }
 
 export function button(
@@ -91,13 +91,13 @@ export function button(
     options: { variant?: 'secondary' | 'primary' | 'danger' | 'dangerSolid'; small?: boolean; disabled?: boolean; title?: string; } = {}
 ): HTMLButtonElement {
     const variantClass = {
-        secondary: 'rxdt-btn',
-        primary: 'rxdt-btn-primary',
-        danger: 'rxdt-btn-danger',
-        dangerSolid: 'rxdt-btn-danger-solid'
+        secondary: 'rxdbv-btn',
+        primary: 'rxdbv-btn-primary',
+        danger: 'rxdbv-btn-danger',
+        dangerSolid: 'rxdbv-btn-danger-solid'
     }[options.variant ?? 'secondary'];
     return el('button', {
-        class: variantClass + (options.small && variantClass === 'rxdt-btn' ? ' rxdt-btn-sm' : ''),
+        class: variantClass + (options.small && variantClass === 'rxdbv-btn' ? ' rxdbv-btn-sm' : ''),
         text: label,
         title: options.title,
         disabled: options.disabled,
@@ -143,7 +143,7 @@ export function gridRow(
     return el(
         'div',
         {
-            class: options.class ?? 'rxdt-tr',
+            class: options.class ?? 'rxdbv-tr',
             style: { gridTemplateColumns: columns },
             onClick: options.onClick
         },
@@ -160,7 +160,7 @@ export function gridHead(
 ): HTMLElement {
     return el(
         'div',
-        { class: 'rxdt-thead', style: { gridTemplateColumns: columns } },
+        { class: 'rxdbv-thead', style: { gridTemplateColumns: columns } },
         cells.map(cell => el('div', {}, [cell]))
     );
 }

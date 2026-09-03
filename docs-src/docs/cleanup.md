@@ -12,7 +12,7 @@ import {Faq, FaqItem} from '@site/src/components/faq';
 To make the [replication](./replication.md) work, and for other reasons, RxDB has to keep deleted documents in storage so that it can replicate their deletion state.
 This ensures that when a client is [offline](./offline-first.md), the deletion state is still known and can be replicated with the backend when the client goes online again.
 
-Keeping too many deleted documents in the storage, can slow down queries or fill up too much disc space. The Storage panel of the [devtool](./devtool.md) counts how many of them a collection currently holds and can run a cleanup on demand.
+Keeping too many deleted documents in the storage, can slow down queries or fill up too much disc space.
 With the cleanup plugin, RxDB will run cleanup cycles that clean up deleted documents when it can be done safely.
 
 

@@ -436,11 +436,11 @@ export const ERROR_MESSAGES = {
         docs: ''
     },
 
-    // plugins/devtool
-    DVT1: {
-        message: 'The devtool can only be mounted where a DOM is available',
-        cause: 'mountRxDBDevtool() was called in an environment without a document, for example in Node.js.',
-        fix: 'Mount the devtool from browser code, or connect to the database from a browser instead.',
+    // plugins/db-viewer
+    DBV1: {
+        message: 'The database viewer can only be mounted where a DOM is available',
+        cause: 'mountRxDBDbViewer() was called in an environment without a document, for example in Node.js.',
+        fix: 'Mount the database viewer from browser code, or connect to the database from a browser instead.',
         docs: ''
     },
 

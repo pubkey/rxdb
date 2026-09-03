@@ -169,7 +169,7 @@ myDb.$.subscribe(changeEvent => console.dir(changeEvent));
 
 ### exportJSON()
 
-Creates a JSON export of every piece of data in every collection of this database. Needs the `json-dump` plugin. Such an export can be opened read-only in the [devtool](./devtool.md) when you cannot reach the device the database runs on. [Read more](./json-import-export.md)
+Creates a JSON export of every piece of data in every collection of this database. Needs the `json-dump` plugin. [Read more](./json-import-export.md)
 
 ```javascript
 const json = await myDatabase.exportJSON();

@@ -30,4 +30,4 @@ export type * from './plugins/update.d.ts';
 export type * from './plugins/crdt.d.ts';
 export type * from './plugins/state.d.ts';
 export type * from './plugins/webmcp.d.ts';
-export type * from './plugins/devtool.d.ts';
+export type * from './plugins/db-viewer.d.ts';

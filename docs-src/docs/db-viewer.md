@@ -1,13 +1,13 @@
 ---
-title: Devtool - Database Viewer and Editor for RxDB
-slug: devtool.html
+title: Database Viewer and Editor for RxDB
+slug: db-viewer.html
 description: Inspect and edit a running RxDB database in the browser with a data grid, Mango query bar, schema analysis, query explain, replication and change feeds.
-image: /headers/devtool.jpg
+image: /headers/db-viewer.jpg
 ---
 
-# Devtool
+# Database Viewer
 
-With the `devtool` plugin you can open a **database viewer** for a running [RxDatabase](./rx-database.md) inside your app. It reads the data of the live database, so you see the same documents your code sees, including the ones written a millisecond ago.
+With the `db-viewer` plugin you can open a **database viewer** for a running [RxDatabase](./rx-database.md) inside your app. It reads the data of the live database, so you see the same documents your code sees, including the ones written a millisecond ago.
 
 Key features:
 
@@ -24,17 +24,17 @@ The whole UI ships inside the plugin. There are no external stylesheets, no font
 ## Installation
 
 ```ts
-import { mountRxDBDevtool } from 'rxdb/plugins/devtool';
+import { mountRxDBDbViewer } from 'rxdb/plugins/db-viewer';
 ```
 
 ## Usage
 
-Mount the devtool on a database and it renders as a full screen overlay:
+Mount the database viewer on a database and it renders as a full screen overlay:
 
 ```ts
 import { createRxDatabase } from 'rxdb';
 import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
-import { mountRxDBDevtool } from 'rxdb/plugins/devtool';
+import { mountRxDBDbViewer } from 'rxdb/plugins/db-viewer';
 
 const db = await createRxDatabase({
     name: 'heroesdb',
@@ -44,34 +44,34 @@ await db.addCollections({
     heroes: { schema: heroSchema }
 });
 
-const devtool = mountRxDBDevtool(db);
+const dbViewer = mountRxDBDbViewer(db);
 ```
 
 To render it into your own element instead, pass a `target`:
 
 ```ts
-const devtool = mountRxDBDevtool(db, {
+const dbViewer = mountRxDBDbViewer(db, {
     target: document.querySelector('#rxdb-panel')
 });
 ```
 
-Call `devtool.destroy()` to close it again. Mounting twice for the same database returns the devtool that is already open.
+Call `dbViewer.destroy()` to close it again. Mounting twice for the same database returns the database viewer that is already open.
 
-You can also add the plugin and use the `mountDevtool()` method on the database:
+You can also add the plugin and use the `mountDbViewer()` method on the database:
 
 ```ts
 import { addRxPlugin } from 'rxdb';
-import { RxDBDevtoolPlugin } from 'rxdb/plugins/devtool';
-addRxPlugin(RxDBDevtoolPlugin);
+import { RxDBDbViewerPlugin } from 'rxdb/plugins/db-viewer';
+addRxPlugin(RxDBDbViewerPlugin);
 
-const devtool = db.mountDevtool();
+const dbViewer = db.mountDbViewer();
 ```
 
 ## Options
 
 ```ts
-mountRxDBDevtool(db, {
-    // where the devtool is mounted, changes only the chrome of the top bar
+mountRxDBDbViewer(db, {
+    // where the database viewer is mounted, changes only the chrome of the top bar
     surface: 'tab', // 'tab' | 'embedded' | 'tanstack' | 'dump'
     // element to render into, defaults to a full screen overlay
     target: myElement,
@@ -100,16 +100,16 @@ Reads and live query emits are derived from the query cache rather than from a d
 
 ## Limitations
 
-- The devtool needs a DOM. Calling `mountRxDBDevtool()` in Node.js throws the error code `DVT1`.
-- Below 640 pixels the rail and the tool panels do not fit. The devtool switches to three stacked screens that are read-only.
+- The database viewer needs a DOM. Calling `mountRxDBDbViewer()` in Node.js throws the error code `DBV1`.
+- Below 640 pixels the rail and the tool panels do not fit. The database viewer switches to three stacked screens that are read-only.
 - Leadership is only known when the [leader election](./leader-election.md) plugin is added. RxDB does not publish a roster of the other open instances, so the Instances panel reports this instance only.
-- The Changes and Replication feeds keep their most recent entries in memory. Nothing the devtool records is written back into the database.
+- The Changes and Replication feeds keep their most recent entries in memory. Nothing the database viewer records is written back into the database.
 - Tombstone counts and the cleanup button need the [cleanup](./cleanup.md) plugin.
 
 ## FAQ
 
 <details>
-<summary>Does the devtool slow down my app?</summary>
+<summary>Does the database viewer slow down my app?</summary>
 
 It subscribes to the change stream of the database and polls the query cache once per second. Both are cheap. Ship it behind a flag anyway so it is not bundled into production builds.
 
@@ -118,7 +118,7 @@ It subscribes to the change stream of the database and polls the query cache onc
 <details>
 <summary>Can I inspect a database that runs on another device?</summary>
 
-Yes. Pass a `connection` describing the remote peer and the devtool shows the connection stages while it pairs, a banner with the transport and the write mode once it is connected, and a diagnosis if it fails. When peer to peer traffic is blocked, export the data with [exportJSON()](./json-import-export.md) on the device and open the file with the `dump` option instead.
+Yes. Pass a `connection` describing the remote peer and the database viewer shows the connection stages while it pairs, a banner with the transport and the write mode once it is connected, and a diagnosis if it fails. When peer to peer traffic is blocked, export the data with [exportJSON()](./json-import-export.md) on the device and open the file with the `dump` option instead.
 
 </details>
 
