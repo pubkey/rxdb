@@ -240,6 +240,55 @@ describe('doc-cache.test.ts', () => {
                 assert.strictEqual(latest.name, 'Bob');
                 assert.strictEqual(latest._rev, EXAMPLE_REVISION_2);
             });
+            it('should accept a re-insert that restarts the revision chain after a cleanup', () => {
+                /**
+                 * When the cleanup purges the tombstone of a deleted document,
+                 * a re-insert of the same primary key starts a new revision chain
+                 * at height 1. The out-of-order protection must not treat that
+                 * state as older than the cached tombstone.
+                 * @link https://github.com/pubkey/rxdb/pull/8948
+                 */
+                const { cache, changes$ } = createDocumentCache();
+                const tombstone = createFakeDocData('doc1', EXAMPLE_REVISION_2, 2, 'Alice', 30);
+                tombstone._deleted = true;
+                cache.getCachedRxDocuments([tombstone]);
+
+                const reInserted = createFakeDocData('doc1', EXAMPLE_REVISION_1, 3, 'Bob', 31);
+                changes$.next([{
+                    documentId: 'doc1',
+                    documentData: reInserted,
+                    previousDocumentData: undefined,
+                    operation: 'INSERT',
+                    isLocal: false
+                } as any]);
+
+                cache.processTasks();
+                const latest = cache.getLatestDocumentData('doc1');
+                assert.strictEqual(latest._deleted, false);
+                assert.strictEqual(latest.name, 'Bob');
+                assert.strictEqual(latest._rev, EXAMPLE_REVISION_1);
+            });
+            it('should not resurrect a deleted document by an older change event', () => {
+                const { cache, changes$ } = createDocumentCache();
+                const tombstone = createFakeDocData('doc1', EXAMPLE_REVISION_2, 2, 'Alice', 30);
+                tombstone._deleted = true;
+                cache.getCachedRxDocuments([tombstone]);
+
+                // the insert happened before the delete, so it must not win
+                const staleInsert = createFakeDocData('doc1', EXAMPLE_REVISION_1, 1, 'Bob', 31);
+                changes$.next([{
+                    documentId: 'doc1',
+                    documentData: staleInsert,
+                    previousDocumentData: undefined,
+                    operation: 'INSERT',
+                    isLocal: false
+                } as any]);
+
+                cache.processTasks();
+                const latest = cache.getLatestDocumentData('doc1');
+                assert.strictEqual(latest._deleted, true);
+                assert.strictEqual(latest._rev, EXAMPLE_REVISION_2);
+            });
             it('should ignore change events for documents not in cache', () => {
                 const { cache, changes$ } = createDocumentCache();
                 const docData = createFakeDocData('unknown', EXAMPLE_REVISION_1);
