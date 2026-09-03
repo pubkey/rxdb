@@ -17,10 +17,10 @@ import { JOBS_TITLE } from '../constants';
  */
 const CONDITIONS = [
     '20 € per hour',
-    '10 to 20 hours per week, flexible around your lecture timetable',
-    'regularly on site in Stuttgart, Germany 🇩🇪, part of the time from home',
-    'start by arrangement, mid-semester is fine',
-    'your work is open source and stays visible under your name'
+    '10 to 20 hours per week, scheduled around the lecture timetable',
+    'Regularly on site in Stuttgart, Germany 🇩🇪, part of the time from home',
+    'Start date by arrangement, mid-semester is possible',
+    'All work is open source and credited by name'
 ];
 
 /**
@@ -38,34 +38,35 @@ const JOBS = [
          * to ask which one it is for.
          */
         formUrl: 'https://webforms.pipedrive.com/f/czK0WxW1wnP2HOdt6VkTVENuSfO4WvZsVeFXTCAy1a6wazfJcSa0BHBiWNoj1YKZTZ',
-        teaser: 'You work on RxDB itself, and on getting developers productive with it faster.',
+        teaser: 'Development work on the RxDB library itself, with a focus on the experience of the developers who build with it.',
         tasks: [
-            'finding where developers get stuck when they start with RxDB, and fixing the causes in the code',
-            'working on the public interface of the library so that it behaves predictably',
-            'improving what RxDB tells you when something goes wrong',
-            'feeding recurring questions from the community back into the product and the documentation'
+            'Identifying where developers get stuck when they start with RxDB, and resolving the causes in the code',
+            'Working on the public API of the library so that it behaves predictably',
+            'Improving the messages and diagnostics RxDB produces when something goes wrong',
+            'Feeding recurring questions from the community back into the product and the documentation'
         ],
         requirements: [
-            'studies in computer science, software engineering, media informatics or a comparable subject',
-            'confident with TypeScript, experience with a frontend framework is an advantage',
-            'published projects of your own. A GitHub profile replaces the cover letter here.'
+            'Enrolled in computer science, software engineering, media informatics or a comparable subject',
+            'Confident command of TypeScript, experience with a frontend framework is an advantage',
+            'Own published projects. A GitHub profile takes the place of a cover letter.'
         ]
     },
     {
         id: 'video',
         title: 'Working Student (m/f/d) Developer Experience, Video and Social Media',
         formUrl: 'https://webforms.pipedrive.com/f/6ULD69TOWMqORnAypjPo1bdwhsesN2fDV6KxV3qLLYIPaJhOP8rNnznmTTk7Pojq39',
-        teaser: 'You make the videos yourself, from the idea to the finished cut.',
+        teaser: 'Production of video content about RxDB, from the concept through filming and editing to publication.',
         tasks: [
-            'planning and filming your own short videos about working with RxDB',
-            'doing the whole edit yourself, cut, sound, titles and thumbnails',
-            'turning each video into shorts and reels for YouTube, LinkedIn, Instagram and TikTok',
-            'running the YouTube channel, answering the comments, and deciding from the reach numbers what to film next'
+            'Planning and filming short-form videos about working with RxDB',
+            'Editing them end to end, including cut, sound, titles and thumbnails',
+            'Adapting each video into shorts and reels for YouTube, LinkedIn, Instagram and TikTok',
+            'Running the YouTube channel, including community management',
+            'Evaluating reach and engagement data to decide which topics to produce next'
         ],
         requirements: [
-            'studies in audiovisual media, online media, advertising and market communication, media informatics or a comparable subject',
-            'you shoot and cut independently, shown by work samples',
-            'basic knowledge of software development. You do not write the code, but you should understand what happens in a video and be able to read a snippet of it.'
+            'Enrolled in audiovisual media, online media, advertising and market communication, media informatics or a comparable subject',
+            'Independent filming and editing, demonstrated by work samples',
+            'Basic understanding of software development. Writing code is not part of the role, but the content requires following what happens on screen and reading a short snippet of it.'
         ]
     }
 ];
@@ -240,7 +241,7 @@ export default function Jobs() {
                                     overflowY: 'auto'
                                 }}>
                                     <div style={{ fontSize: 15, lineHeight: '23px' }}>{job.teaser}</div>
-                                    <Section title='Tasks' items={job.tasks} />
+                                    <Section title='Responsibilities' items={job.tasks} />
                                     <Section title='Requirements' items={job.requirements} />
                                     <Section title='Conditions' items={CONDITIONS} />
                                 </div>
