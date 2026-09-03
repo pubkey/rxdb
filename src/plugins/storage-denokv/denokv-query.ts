@@ -108,7 +108,15 @@ export async function queryDenoKV<RxDocType>(
         end: [instance.keySpace, indexMeta.indexId, upperBoundString]
     }, {
         consistency: instance.settings.consistencyLevel,
-        limit: (!mustManuallyResort && queryPlan.selectorSatisfiedByIndex) ? skipPlusLimit : undefined,
+        /**
+         * `skipPlusLimit` is `Infinity` when the query has no limit, and Deno
+         * rejects that with 'Limit must be a positive integer' since v2.9.
+         * Leaving the option out reads the whole range, which is exactly what
+         * a query without a limit asks for.
+         */
+        limit: (!mustManuallyResort && queryPlan.selectorSatisfiedByIndex && isFinite(skipPlusLimit))
+            ? skipPlusLimit
+            : undefined,
         batchSize: instance.settings.batchSize
     });
 

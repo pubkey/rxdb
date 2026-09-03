@@ -490,6 +490,11 @@ const sidebars = {
         },
         {
           type: 'doc',
+          id: 'db-viewer',
+          label: 'Database Viewer'
+        },
+        {
+          type: 'doc',
           id: 'webmcp',
           label: 'WebMCP'
         },

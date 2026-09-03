@@ -536,6 +536,12 @@ jobs:
       - name: test:circular
         run: npm run test:circular
 
+      - name: build the database viewer page
+        run: npm run build:db-viewer
+
+      - name: test:db-viewer
+        run: npm run test:db-viewer
+
       - name: lint
         id: lint
         continue-on-error: true

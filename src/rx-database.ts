@@ -32,7 +32,9 @@ import type {
     RxState,
     RxCollectionEvent,
     WebMCPOptions,
-    WebMCPLogEvent
+    WebMCPLogEvent,
+    DbViewerOptions,
+    DbViewerHandle
 } from './types/index.d.ts';
 
 import {
@@ -692,6 +694,10 @@ export class RxDatabaseBase<
 
     registerWebMCP(_options?: WebMCPOptions): { error$: Subject<Error>; log$: Subject<WebMCPLogEvent>; } {
         throw pluginMissing('webmcp');
+    }
+
+    mountDbViewer(_options?: DbViewerOptions): DbViewerHandle {
+        throw pluginMissing('db-viewer');
     }
 }
 
