@@ -27,6 +27,15 @@
     "config/appwrite/backup/docker-compose.yml",
     "examples/tauri/src-tauri/"
   ],
+  "packageRules": [
+    {
+      "description": "deno 2.6.6 and newer deadlock while resolving the module graph of the test suite, which makes the test-others-runtimes job hang. Keep deno at the newest version that runs the tests.",
+      "matchPackageNames": [
+        "deno"
+      ],
+      "allowedVersions": "<2.6.6"
+    }
+  ],
   "rebaseStalePrs": true,
   "prConcurrentLimit": 10,
   "prHourlyLimit": 2,

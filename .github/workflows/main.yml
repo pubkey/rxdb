@@ -1121,7 +1121,11 @@ jobs:
       - uses: denoland/setup-deno@v2
         with:
           # https://github.com/denoland/deno/releases
-          deno-version: "2.9.5"
+          # deno 2.6.6 and newer deadlock while resolving the module graph of
+          # the test suite, so the run produces no output and never exits.
+          # 2.6.5 is the newest version that runs the tests, renovate is
+          # capped to it in renovate.json.
+          deno-version: "2.6.5"
       - name: run deno tests:dexie
         timeout-minutes: 12
         run: |
