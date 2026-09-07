@@ -205,6 +205,41 @@ describe('cleanup.test.js', () => {
         });
     });
     describe('issues', () => {
+        it('#8948 must find a document that was re-inserted after the cleanup purged its tombstone', async () => {
+            const db = await createRxDatabase({
+                name: randomToken(10),
+                storage: config.storage.getStorage(),
+                eventReduce: true
+            });
+            const cols = await db.addCollections({
+                humans: {
+                    schema: schemas.human
+                }
+            });
+            const collection: RxCollection<HumanDocumentType> = cols.humans;
+
+            const docData = schemaObjects.humanData('foobar');
+            await collection.insert(docData);
+            const doc = await collection.findOne(docData.passportId).exec(true);
+            await doc.remove();
+            await collection.cleanup(0);
+
+            // the cleanup purged the tombstone, so this write starts a new revision chain
+            await collection.insert(docData);
+
+            const byId = await collection.findOne(docData.passportId).exec();
+            assert.ok(byId, 'findOne() by primary key must return the re-inserted document');
+
+            const bySelector = await collection.find({
+                selector: { passportId: docData.passportId }
+            }).exec();
+            assert.strictEqual(bySelector.length, 1);
+
+            const latest = collection._docCache.getLatestDocumentDataIfExists(docData.passportId);
+            assert.strictEqual(ensureNotFalsy(latest)._deleted, false);
+
+            await db.close();
+        });
         it('minimumDeletedTime not respected', async () => {
             const dbName = 'test-cleanup-' + Date.now() + '-' + randomToken(10);
             try {

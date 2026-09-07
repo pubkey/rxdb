@@ -1,0 +1,1 @@
+- FIX `DocumentCache`: a document that is re-inserted after the cleanup purged its tombstone was no longer found by `findOne()` and by primary key queries, because the new revision chain starts at height `1` and the out-of-order protection kept the cached tombstone. [#8948](https://github.com/pubkey/rxdb/pull/8948)

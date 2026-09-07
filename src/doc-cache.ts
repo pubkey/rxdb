@@ -136,7 +136,7 @@ export class DocumentCache<RxDocType, OrmMethods> {
                         const currentLatest = cacheItem[1];
                         if (
                             !currentLatest ||
-                            !isOlderDocumentState(documentData._rev, currentLatest._rev)
+                            isNewerDocumentState(documentData, currentLatest)
                         ) {
                             cacheItem[1] = documentData;
                         }
@@ -200,6 +200,31 @@ export class DocumentCache<RxDocType, OrmMethods> {
             return cacheItem[1];
         }
     }
+}
+
+/**
+ * Determines if the given document state has to overwrite
+ * the currently cached latest state of that document.
+ */
+function isNewerDocumentState<RxDocType>(
+    checkState: RxDocumentData<RxDocType>,
+    currentLatest: RxDocumentData<RxDocType>
+): boolean {
+    /**
+     * When the cleanup has purged the tombstone of a deleted document,
+     * a write to the same primary key starts a new revision chain at height 1.
+     * That state has a lower revision height than the cached tombstone
+     * while still being the newer state, so here we compare by the write time
+     * instead of by the revision.
+     */
+    if (
+        currentLatest._deleted &&
+        !checkState._deleted &&
+        checkState._meta.lwt > currentLatest._meta.lwt
+    ) {
+        return true;
+    }
+    return !isOlderDocumentState(checkState._rev, currentLatest._rev);
 }
 
 /**
