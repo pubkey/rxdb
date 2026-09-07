@@ -304,7 +304,7 @@ Here we can notice a few things:
 
 ## Performance Conclusions
 
-- LocalStorage is really fast but remember that is has some downsides:
+- LocalStorage is really fast but remember that it has some downsides:
   - It blocks the main JavaScript process and therefore should not be used for big bulk operations.
   - Only Key-Value assignments are possible, you cannot use it efficiently when you need to do index based range queries on your data.
 - OPFS is way faster when used in the WebWorker with the `createSyncAccessHandle()` method compare to using it directly in the main thread.
@@ -315,10 +315,10 @@ Here we can notice a few things:
 ## Possible Improvements
 
 There is a wide range of possible improvements and performance hacks to speed up the operations.
-- For IndexedDB I have made a list of [performance hacks here](../slow-indexeddb.md). For example you can do sharding between multiple database and webworkers or use a custom index strategy.
+- For IndexedDB I have made a list of [performance hacks here](../slow-indexeddb.md). For example you can do sharding between multiple database and WebWorkers or use a custom index strategy.
 - OPFS is slow in writing one file per document. But you do not have to do that and instead you can store everything at a single file like a normal database would do. This improves performance dramatically like it was done with the RxDB [OPFS RxStorage](../rx-storage-opfs.md).
 - You can mix up the technologies to optimize for multiple scenarios at once. For example in RxDB there is the [localstorage meta optimizer](../rx-storage-localstorage-meta-optimizer.md) which stores initial metadata in localstorage and "normal" documents inside of IndexedDB. This improves the initial startup time while still having the documents stored in a way to query them efficiently.
-- There is the [memory-mapped](../rx-storage-memory-mapped.md) storage plugin in RxDB which maps data directly to memory. Using this in combination with a shared worker can improve pageloads and query time significantly.
+- There is the [memory-mapped](../rx-storage-memory-mapped.md) storage plugin in RxDB which maps data directly to memory. Using this in combination with a shared worker can improve page loads and query time significantly.
 - [Compressing](../key-compression.md) data before storing it might improve the performance for some of the storages.
 - Splitting work up between [multiple WebWorkers](../rx-storage-worker.md) via [sharding](../rx-storage-sharding.md) can improve performance by utilizing the whole capacity of your users device.
 

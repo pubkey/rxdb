@@ -596,7 +596,7 @@ await myDatabase.addCollections({
 
 For now our vector database works and we are good to go. However there are some things to consider for the future:
 
-- **WebGPU** is [not fully supported](https://caniuse.com/webgpu) yet. When this changes, creating embeddings in the browser have the potential to become faster. You can check if your current chrome supports WebGPU by opening `chrome://gpu/`. Notice that WebGPU has been reported to sometimes be [even slower](https://github.com/xenova/transformers.js/issues/894#issuecomment-2323897485) compared to WASM but likely it will be faster in the long term.
+- **WebGPU** is [not fully supported](https://caniuse.com/webgpu) yet. When this changes, creating embeddings in the browser have the potential to become faster. You can check if your current chrome supports WebGPU by opening `chrome://gpu/`. Notice that WebGPU has been reported to sometimes be [even slower](https://github.com/huggingface/transformers.js/issues/894) compared to WASM but likely it will be faster in the long term.
 - **Cross-Modal AI Models**: While progress is being made, AI models that can understand and integrate multiple modalities are still in development. For example you could query for an **image** together with a **text** prompt to get a more detailed output.
 - **Multi-Step queries**: In this article we only talked about having a single query as input and an ordered list of outputs. But there is big potential in chaining models or queries together where you take the results of one query and input them into a different model with different embeddings or outputs.
 

@@ -133,7 +133,7 @@ RxDB uses batched cursors in the [IndexedDB RxStorage](./rx-storage-indexeddb.md
 
 Sharding is a technique, normally used in server side databases, where the database is partitioned horizontally. Instead of storing all documents at one table/collection, the documents are split into so called **shards** and each shard is stored on one table/collection. This is done in server side architectures to spread the load between multiple physical servers which **increases scalability**.
 
-When you use IndexedDB in a browser, there is of course no way to split the load between the client and other servers. But you can still benefit from sharding. Partitioning the documents horizontally into **multiple IndexedDB stores**, has shown to have a big performance improvement in write- and read operations while only increasing initial pageload slightly.
+When you use IndexedDB in a browser, there is of course no way to split the load between the client and other servers. But you can still benefit from sharding. Partitioning the documents horizontally into **multiple IndexedDB stores**, has shown to have a big performance improvement in write- and read operations while only increasing initial page load slightly.
 
 <p align="center">
   <img src="./files/indexeddb-sharding-performance.png" alt="IndexedDB sharding performance" width="100%" />
@@ -189,10 +189,10 @@ myIndexedDBObjectStore.createIndex(
 
 ```
 
-To iterate over the index, you also use a custom crafted keyrange, depending on the last batched cursor checkpoint. Therefore the `maxLength` of `id` must be known.
+To iterate over the index, you also use a custom crafted key range, depending on the last batched cursor checkpoint. Therefore the `maxLength` of `id` must be known.
 
 ```ts
-// keyrange for normal index
+// key range for normal index
 const range = IDBKeyRange.bound(
     [25, ''],
     [Infinity, Infinity],
@@ -200,7 +200,7 @@ const range = IDBKeyRange.bound(
     false
 );
 
-// keyrange for custom index
+// key range for custom index
 const range = IDBKeyRange.bound(
     // combine both values to a single string
     25 + ''.padStart(idMaxLength, ' '),
@@ -250,7 +250,7 @@ There are some libraries that already do that:
 
 - LokiJS with the [IndexedDB Adapter](https://techfort.github.io/LokiJS/LokiIndexedAdapter.html)
 - [Absurd-SQL](https://github.com/jlongster/absurd-sql)
-- SQL.js with the [empscripten Filesystem API](https://emscripten.org/docs/api_reference/Filesystem-API.html#filesystem-api-idbfs)
+- SQL.js with the [Emscripten Filesystem API](https://emscripten.org/docs/api_reference/Filesystem-API.html#filesystem-api-idbfs)
 - [DuckDB Wasm](https://duckdb.org/2021/10/29/duckdb-wasm.html)
 
 ### In-Memory: Persistence
