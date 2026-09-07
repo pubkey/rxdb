@@ -1,0 +1,1 @@
+- TEST add a Dexie RxStorage regression test for primary-key queries. Refs #9061.

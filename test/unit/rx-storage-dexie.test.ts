@@ -152,6 +152,59 @@ describe('rx-storage-dexie.test.js', () => {
         });
     });
     describe('issues', () => {
+        it('#9061 should query documents by primary key', async () => {
+            const db = await createRxDatabase({
+                name: randomToken(10),
+                storage: config.storage.getStorage()
+            });
+            const collections = await db.addCollections({
+                heroes: {
+                    schema: {
+                        version: 0,
+                        primaryKey: 'id',
+                        type: 'object',
+                        properties: {
+                            id: {
+                                type: 'string',
+                                maxLength: 100
+                            },
+                            name: {
+                                type: 'string'
+                            }
+                        },
+                        required: ['id', 'name']
+                    }
+                }
+            });
+            await collections.heroes.insert({
+                id: 'hero-1',
+                name: 'Alice'
+            });
+
+            const findOneByPrimaryKey = await collections.heroes.findOne('hero-1').exec();
+            assert.ok(findOneByPrimaryKey);
+            assert.strictEqual(findOneByPrimaryKey.primary, 'hero-1');
+
+            const findOneBySelector = await collections.heroes.findOne({
+                selector: {
+                    id: {
+                        $eq: 'hero-1'
+                    }
+                }
+            }).exec();
+            assert.ok(findOneBySelector);
+            assert.strictEqual(findOneBySelector.primary, 'hero-1');
+
+            const findBySelector = await collections.heroes.find({
+                selector: {
+                    id: 'hero-1'
+                }
+            }).exec();
+            assert.strictEqual(findBySelector.length, 1);
+            assert.strictEqual(findBySelector[0].primary, 'hero-1');
+
+            await db.close();
+        });
         /**
          * The reference counting in dexie-helper.ts never closed the
          * underlying Dexie connections and never evicted the state cache entry.
