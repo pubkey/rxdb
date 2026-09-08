@@ -8,7 +8,7 @@ import {PremiumBlock} from '@site/src/components/premium-block';
 
 The [RxStorage](./rx-storage.md) Localstorage Meta Optimizer is a wrapper around any other RxStorage. The wrapper uses the original RxStorage for normal collection documents. But to optimize the initial page load time, it uses [localstorage](https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage?retiredLocale=de) to store the plain key-value metadata that RxDB needs to create databases and collections. This plugin can only be used in browsers.
 
-Depending on your database usage and the collection amount, this can save about 200 milliseconds on the initial pageload. It is recommended to use this when you create more than 4 [RxCollections](./rx-collection.md).
+Depending on your database usage and the collection amount, this can save about 200 milliseconds on the initial page load. It is recommended to use this when you create more than 4 [RxCollections](./rx-collection.md).
 
 <PremiumBlock />
 

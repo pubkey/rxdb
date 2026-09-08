@@ -21,7 +21,7 @@ In the following I will point out the limitations you need to know before you de
 ## It only works with small datasets
 
 Making data available offline means it must be loaded from the server and then stored at the clients device.
-You need to load the full dataset on the first pageload and on every ongoing load you need to download the new changes to that set.
+You need to load the full dataset on the first page load and on every ongoing load you need to download the new changes to that set.
 While in theory you could download in infinite amount of data, in practice you have a limit how long the user can wait before having an up-to-date state.
 You want to display chat messages like Whatsapp? No problem. Syncing all the messages a user could write, can be done with a few HTTP requests.
 Want to make a tool that displays server logs? Good luck downloading terabytes of data to the client just to search for a single string. This will not work.

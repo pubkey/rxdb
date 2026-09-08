@@ -5996,7 +5996,7 @@ import {PremiumBlock} from '@site/src/components/premium-block';
 
 The [RxStorage](./rx-storage.md) Localstorage Meta Optimizer is a wrapper around any other RxStorage. The wrapper uses the original RxStorage for normal collection documents. But to optimize the initial page load time, it uses [localstorage](https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage?retiredLocale=de) to store the plain key-value metadata that RxDB needs to create databases and collections. This plugin can only be used in browsers.
 
-Depending on your database usage and the collection amount, this can save about 200 milliseconds on the initial pageload. It is recommended to use this when you create more than 4 [RxCollections](./rx-collection.md).
+Depending on your database usage and the collection amount, this can save about 200 milliseconds on the initial page load. It is recommended to use this when you create more than 4 [RxCollections](./rx-collection.md).
 
 <PremiumBlock />
 
@@ -8106,7 +8106,7 @@ For a deeper look at comparing WebRTC with **WebSockets** and **WebTransport**, 
 1. **Reduced Latency** - By skipping a central server hop, data travels directly from one client to another, minimizing round-trip times and improving responsiveness.
 2. **Scalability** - New peers can join without overloading a central infrastructure. The sync overhead increases linearly with the number of connections rather than requiring a massive server cluster.
 3. **Privacy & Ownership** - Data stays within the user’s devices, avoiding risks tied to storing data on third-party servers. This design aligns well with [local-first](./articles/local-first-future.md) or "[zero-latency](./articles/zero-latency-local-first.md)" apps.
-4. **Resilience** - In some scenarios, if the central server is unreachable, P2P connections remain operational (assuming a functioning signaling path). Apps can still replicate data among local networks like when they are in the same Wifi or LAN.
+4. **Resilience** - In some scenarios, if the central server is unreachable, P2P connections remain operational (assuming a functioning signaling path). Apps can still replicate data among local networks like when they are in the same Wifi or LAN. Notice that the peers still have to find each other through a signaling server, so this is not a full offline mesh. For [DDIL environments](./articles/ddil-database.md) without any infrastructure at all, compare the transports in the [Ditto alternative](./articles/alternatives/ditto-alternative.md) page.
 5. **Cost Savings** - Reducing the reliance on a high-bandwidth server can cut hosting and bandwidth expenses, particularly in high-traffic or IoT-style use cases.
 
 <RxdbLogo alt="JavaScript Embedded Database" />
@@ -11723,7 +11723,7 @@ const todosSignal = db.todos.find().$$;
 
 ## Accessing custom reactivity objects
 
-All observable data in RxDB is marked by the single dollar sign `$` like [RxCollection](./rx-collection.md).$ for events or `RxDocument.myField$` to get the observable for a document field. To make custom reactivity objects distinguable, they are marked with double-dollar signs `$$` instead. Here are some example on how to get custom reactivity objects from RxDB specific instances:
+All observable data in RxDB is marked by the single dollar sign `$` like [RxCollection](./rx-collection.md).$ for events or `RxDocument.myField$` to get the observable for a document field. To make custom reactivity objects distinguishable, they are marked with double-dollar signs `$$` instead. Here are some example on how to get custom reactivity objects from RxDB specific instances:
 
 ```ts
 // RxDocument
@@ -11814,7 +11814,7 @@ await myState.set('myField', v => v + 1);
 await myState.set('myField', v => 42);
 ```
 
-The modifier is used instead of a direct assignment to ensure correct behavior when other JavaScript realms write to the state at the same time, like other browser tabs or webworkers. On conflicts, the modifier will just be run again to ensure deterministic and correct behavior. Therefore mutation is `async`, you have to `await` the call to the set function when you care about the moment when the change actually happened.
+The modifier is used instead of a direct assignment to ensure correct behavior when other JavaScript realms write to the state at the same time, like other browser tabs or WebWorkers. On conflicts, the modifier will just be run again to ensure deterministic and correct behavior. Therefore mutation is `async`, you have to `await` the call to the set function when you care about the moment when the change actually happened.
 
 ## Get State Data
 
@@ -11854,7 +11854,7 @@ observable.subscribe(newValue => {
     // update the UI
 });
 ```
-Subscription works across multiple JavaScript realms like browser tabs or Webworkers.
+Subscription works across multiple JavaScript realms like browser tabs or WebWorkers.
 
 ## RxState with signals and hooks
 
@@ -14276,7 +14276,7 @@ RxDB uses batched cursors in the [IndexedDB RxStorage](./rx-storage-indexeddb.md
 
 Sharding is a technique, normally used in server side databases, where the database is partitioned horizontally. Instead of storing all documents at one table/collection, the documents are split into so called **shards** and each shard is stored on one table/collection. This is done in server side architectures to spread the load between multiple physical servers which **increases scalability**.
 
-When you use IndexedDB in a browser, there is of course no way to split the load between the client and other servers. But you can still benefit from sharding. Partitioning the documents horizontally into **multiple IndexedDB stores**, has shown to have a big performance improvement in write- and read operations while only increasing initial pageload slightly.
+When you use IndexedDB in a browser, there is of course no way to split the load between the client and other servers. But you can still benefit from sharding. Partitioning the documents horizontally into **multiple IndexedDB stores**, has shown to have a big performance improvement in write- and read operations while only increasing initial page load slightly.
 
   
 
@@ -14325,10 +14325,10 @@ myIndexedDBObjectStore.createIndex(
 
 ```
 
-To iterate over the index, you also use a custom crafted keyrange, depending on the last batched cursor checkpoint. Therefore the `maxLength` of `id` must be known.
+To iterate over the index, you also use a custom crafted key range, depending on the last batched cursor checkpoint. Therefore the `maxLength` of `id` must be known.
 
 ```ts
-// keyrange for normal index
+// key range for normal index
 const range = IDBKeyRange.bound(
     [25, ''],
     [Infinity, Infinity],
@@ -14336,7 +14336,7 @@ const range = IDBKeyRange.bound(
     false
 );
 
-// keyrange for custom index
+// key range for custom index
 const range = IDBKeyRange.bound(
     // combine both values to a single string
     25 + ''.padStart(idMaxLength, ' '),
@@ -14383,7 +14383,7 @@ There are some libraries that already do that:
 
 - LokiJS with the [IndexedDB Adapter](https://techfort.github.io/LokiJS/LokiIndexedAdapter.html)
 - [Absurd-SQL](https://github.com/jlongster/absurd-sql)
-- SQL.js with the [empscripten Filesystem API](https://emscripten.org/docs/api_reference/Filesystem-API.html#filesystem-api-idbfs)
+- SQL.js with the [Emscripten Filesystem API](https://emscripten.org/docs/api_reference/Filesystem-API.html#filesystem-api-idbfs)
 - [DuckDB Wasm](https://duckdb.org/2021/10/29/duckdb-wasm.html)
 
 ### In-Memory: Persistence
@@ -14697,6 +14697,12 @@ Yjs is a [CRDT-based](./crdt.md) (Conflict-free Replicated Data Type) library fo
 SignalDB provides a reactive, in-memory local-first JavaScript database with real-time sync, but it doesn't offer the same level of multi-client replication or flexibility with storage backends that RxDB provides, and through a RxDB persistence adapters you can actually use SignalDB for the front-end reactivity while relying on RxDB for backend sync and persistence.
 
 [Read more about why RxDB is a good alternative to SignalDB](./articles/alternatives/signaldb-alternative.md).
+
+### Ditto
+
+Ditto is a closed-source, edge-native database whose native SDKs sync device-to-device over Bluetooth LE, peer-to-peer WiFi, and LAN without a server, which is a capability RxDB does not have. But the mesh is native only: per the Ditto docs, web browsers cannot use those peer-to-peer transports and the Web SDK connects to Ditto Server over WebSockets, so for a JavaScript client the connection shape is the same as RxDB WebSocket replication. Ditto Cloud is metered per device connection, storage, and data transfer, while the RxDB core is Apache 2.0 with a backend you own.
+
+[Read more about why RxDB is a good alternative to Ditto](./articles/alternatives/ditto-alternative.md).
 
 ### PowerSync
 
@@ -17418,6 +17424,241 @@ More resources:
 - [Reactivity in RxDB](../../reactivity.md)
 - [Dexie RxStorage](../../rx-storage-dexie.md)
 - [Local-First Future](../../articles/local-first-future.md)
+- [RxDB GitHub Repository](/code/)
+
+---
+
+## RxDB as a Ditto Alternative for JavaScript and Browser Apps
+
+import {Faq, FaqItem} from '@site/src/components/faq';
+import {QuoteBlock} from '@site/src/components/quoteblock';
+
+# RxDB as a Ditto Alternative for JavaScript and Browser Apps
+
+Ditto solves a problem that most local-first databases do not even attempt. Its native SDKs let devices discover each other and sync over **Bluetooth LE, peer-to-peer WiFi, and LAN** with no server and no internet in between, which is genuinely hard to build and works in places where nothing else does. If your product is a fleet of native mobile devices that has to keep a shared state inside a plane, a store, or a vehicle with no infrastructure, Ditto is a serious answer and this page will not pretend otherwise.
+
+The picture changes when the client is JavaScript. In the browser the mesh is not available, the engine is closed source, and the pricing meters device connections and transferred data. RxDB takes the other route: an [Apache 2.0](https://github.com/pubkey/rxdb/blob/master/LICENSE.txt) core, [pluggable storage](../../rx-storage.md), MongoDB-style queries, and a [replication protocol](../../replication.md) that syncs with a backend you own. This page compares the two honestly, including where Ditto is still the right choice.
+
+<RxdbLogo alt="Ditto alternative" />
+
+## A Short History of Ditto
+
+Ditto was founded in 2018 by Adam Fish and Max Alexander, who had worked on database and sync products at Realm before it was acquired by MongoDB. That lineage shows in the product: an embedded document store with a sync engine, aimed at enterprises rather than at web developers.
+
+The engine is written in Rust and shipped as compiled SDKs for Swift, Kotlin, JavaScript, C#, C++, and Rust. Ditto sells a cloud sync service on top, and the business is enterprise and sales-led, with airlines, retail, and defense as its named markets.
+
+### A Brief Timeline
+
+- **2018** - Ditto is founded by Adam Fish and Max Alexander.
+- **2021** - The mesh SDKs go into production use with large airline and retail customers.
+- **March 2025** - Ditto raises an [82 million USD Series B](https://techcrunch.com/2025/03/12/ditto-lands-82m-to-synchronize-data-from-the-edge-to-the-cloud/) to expand the edge sync platform.
+- **2026** - The platform is positioned around edge sync in disconnected environments, with `@dittolive/ditto` at **25,688** npm downloads in the last 30 days (npm registry API, checked September 8, 2026).
+
+## What is RxDB?
+
+RxDB (Reactive Database) is a local-first, NoSQL database for JavaScript applications. It runs in the browser, [Node.js](../../nodejs-database.md), [Electron](../../electron-database.md), [React Native](../../react-native-database.md), [Capacitor](../../capacitor-database.md), Deno, and Bun.
+
+Each [collection](../../rx-collection.md) is defined by a JSON [schema](../../rx-schema.md), stored on a swappable [RxStorage](../../rx-storage.md), and queried with a Mango (MongoDB-style) API. Every [query](../../rx-query.md) is observable, so the UI re-renders when data changes, whether the change came from a local write or from an incoming sync. The core is Apache 2.0 with **23,376** GitHub stars and **278,111** npm downloads in the last 30 days (GitHub and npm registry APIs, checked September 8, 2026).
+
+## Where Ditto Falls Short for JavaScript Teams
+
+### The Mesh Does Not Exist in the Browser
+
+This is the part that surprises teams who pick Ditto for its mesh and then build a web client. The Ditto documentation states it directly:
+
+<QuoteBlock
+  author="Ditto Documentation"
+  year="2026"
+  sourceLink="https://docs.ditto.live/key-concepts/mesh-networking"
+>Web browsers do not support peer-to-peer transports (Bluetooth LE, LAN, or P2P Wi-Fi). The browser-based Web SDK can only connect to Ditto Server over WebSockets.</QuoteBlock>
+
+So in a browser you get a client that syncs to a server over WebSockets. That is the same shape as [RxDB WebSocket replication](../../replication-websocket.md), without the open source engine underneath it. The mesh is a native-SDK capability, and it should be evaluated as one.
+
+### The Engine Is Closed Source
+
+Ditto does not publish the source of its sync engine, and the SDKs are distributed as compiled packages. For a database that holds your users' data on their devices, that means the storage format, the merge semantics, and the failure behavior are only observable from the outside. You cannot read the conflict resolution, patch a bug yourself, or keep running a fork if the vendor relationship ends. RxDB is Apache 2.0 with no field-of-use restriction, so all of that stays available to you.
+
+### Pricing Grows With the Fleet
+
+Ditto Cloud is metered. The free tier is **10 cloud device connections, 2 GB of storage, and 5 GB of data transfer with no SLA**. Pro includes **1,000 connections, 50 GB of storage, and 250 GB of transfer** with a 99% uptime SLA and business-hours support, and charges overage per additional 1,000 connections, per 50 GB of storage, and per 50 GB of transfer. Enterprise is custom with a 99.95% SLA (ditto.com pricing page, checked September 8, 2026).
+
+For a fixed fleet of a few hundred devices this is predictable. For a consumer app with a large user base it means cost grows with every device that connects. RxDB has no per-device metering, because the replication endpoint is your own server.
+
+### The Backend Is Ditto
+
+Ditto syncs into Ditto Cloud, with a MongoDB connector on the Pro tier and above. RxDB replicates with whatever you already run, over [HTTP](../../replication-http.md), [GraphQL](../../replication-graphql.md), [WebSocket](../../replication-websocket.md), [CouchDB](../../replication-couchdb.md), [Firestore](../../replication-firestore.md), or a custom transport. The protocol needs a pull handler, a push handler, and an optional event stream. Everything else is yours.
+
+### Queries Are a Second Language
+
+Ditto queries are written in DQL, a SQL-like language embedded in strings. RxDB queries are plain JavaScript objects, checked against the schema, and composable at runtime:
+
+```ts
+const query = db.reports.find({
+    selector: {
+        status: 'open',
+        priority: { $gt: 2 }
+    },
+    sort: [{ updatedAt: 'desc' }]
+});
+
+// The query is observable. It re-emits on every matching change.
+query.$.subscribe(reports => {
+    console.log('open reports: ' + reports.length);
+});
+```
+
+## Why RxDB Works Well as a Ditto Alternative
+
+### Storage Is a Configuration Choice
+
+RxDB does not persist data itself. The same application code runs on [IndexedDB](../../rx-storage-indexeddb.md), [OPFS](../../rx-storage-opfs.md), [Dexie](../../rx-storage-dexie.md), [SQLite](../../rx-storage-sqlite.md), or [memory](../../rx-storage-memory.md). Switching storages is a configuration change, not a rewrite.
+
+### Conflicts Are Resolved Where You Can See Them
+
+When two clients write the same document while both are offline, the first push wins and the second is rejected. RxDB then calls the [conflict handler](../../transactions-conflicts-revisions.md) of that collection on the losing client. You write that function, so the merge rule is code in your repository. The [CRDT plugin](../../crdt.md) merges field by field when you want automatic convergence instead.
+
+### Multi-Tab Is Built In
+
+Web apps run in several tabs at once. RxDB shares one local state across all tabs of an origin, and [leader election](../../leader-election.md) makes sure the replication runs in exactly one of them, so one device means one sync stream.
+
+### Encryption at Rest on Any Storage
+
+The [encryption plugins](../../encryption.md) encrypt marked fields on top of whatever storage you picked. Encrypted fields cannot be used inside of query selectors, so keep the fields you query against unencrypted.
+
+## Code Sample: Replication With Your Own Backend
+
+```ts
+import { createRxDatabase } from 'rxdb/plugins/core';
+import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
+import { replicateRxCollection } from 'rxdb/plugins/replication';
+
+const db = await createRxDatabase({
+    name: 'fielddb',
+    storage: getRxStorageDexie()
+});
+
+await db.addCollections({
+    reports: {
+        schema: {
+            version: 0,
+            primaryKey: 'id',
+            type: 'object',
+            properties: {
+                id: { type: 'string', maxLength: 100 },
+                title: { type: 'string' },
+                status: { type: 'string' },
+                updatedAt: { type: 'number' }
+            },
+            required: ['id', 'title', 'status', 'updatedAt']
+        }
+    }
+});
+
+const replicationState = await replicateRxCollection({
+    collection: db.reports,
+    replicationIdentifier: 'reports-sync-to-https://example.com/api/sync',
+    live: true,
+    pull: {
+        batchSize: 25,
+        async handler(checkpointOrNull, batchSize) {
+            const updatedAt = checkpointOrNull ? checkpointOrNull.updatedAt : 0;
+            const url = 'https://example.com/api/sync'
+                + `?updatedAt=${updatedAt}&limit=${batchSize}`;
+            const response = await fetch(url);
+            const data = await response.json();
+            return { documents: data.documents, checkpoint: data.checkpoint };
+        }
+    },
+    push: {
+        batchSize: 25,
+        async handler(changeRows) {
+            const response = await fetch('https://example.com/api/sync', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(changeRows)
+            });
+            // Return conflicts so RxDB can resolve them on the client.
+            return await response.json();
+        }
+    }
+});
+```
+
+## When Ditto Still Makes Sense
+
+Ditto is the better tool when:
+
+- Devices have to sync **without any server and without any internet**, discovering each other over Bluetooth LE or peer-to-peer WiFi. RxDB has nothing equivalent. The [WebRTC replication](../../replication-webrtc.md) plugin is peer-to-peer over standard web transports and still needs a signaling server.
+- The clients are **native** Swift, Kotlin, C#, C++, or Rust applications, and a JavaScript runtime is not acceptable.
+- You want a **managed cloud sync service with a 24x7 SLA** and a vendor to call, rather than running the sync endpoint yourself.
+- The fleet is a **fixed, known number of enterprise devices**, so per-connection pricing stays predictable.
+
+If instead your client is a browser or a JavaScript runtime, you want to keep the backend you already have, or you need the source of the database you ship, RxDB fits better.
+
+## FAQ
+
+<Faq>
+<FaqItem question="Does Ditto mesh networking work in a web browser?">
+
+No. The Ditto documentation states that web browsers do not support the peer-to-peer transports and that the Web SDK can only connect to Ditto Server over [WebSockets](https://docs.ditto.live/key-concepts/mesh-networking). Bluetooth LE, LAN, and peer-to-peer WiFi are native-SDK capabilities. For a browser client the connection shape is the same as [RxDB WebSocket replication](../../replication-websocket.md).
+
+</FaqItem>
+<FaqItem question="Is Ditto open source?">
+
+No. Ditto does not publish the source of its sync engine, and the SDKs ship as compiled packages under a commercial agreement. **[RxDB](../../rx-database.md)** core is Apache 2.0 on [GitHub](/code/), so you can read the storage and replication code, fork it, and keep using it without a vendor relationship. Some RxDB plugins are [👑 premium](/premium/) and closed, but the database and the [Sync Engine](../../replication.md) are not.
+
+</FaqItem>
+<FaqItem question="How much does Ditto cost compared to RxDB?">
+
+Ditto Cloud is metered per device connection, storage, and data transfer. The free tier covers 10 cloud device connections and 2 GB of storage, Pro includes 1,000 connections and 50 GB with overage charges above that, and Enterprise is custom (ditto.com, checked September 8, 2026). RxDB core is free under Apache 2.0 with no per-device metering, and the paid part is an optional [premium plugin](/premium/) license that does not scale with the number of users.
+
+</FaqItem>
+<FaqItem question="Can RxDB sync between devices without a server?">
+
+Partly. The [WebRTC replication](../../replication-webrtc.md) plugin replicates directly between peers, but the peers still find each other through a signaling server. RxDB has no Bluetooth LE, peer-to-peer WiFi, or MANET transport, so a fully infrastructure-free mesh is out of scope and Ditto covers that case better.
+
+</FaqItem>
+<FaqItem question="What database should I use for disconnected or DDIL environments?">
+
+It depends on the client. For JavaScript and browser clients that sync with a backend you control, use **[RxDB](../ddil-database.md)**, which keeps the working set local, resumes replication from a checkpoint after a dropped link, and runs over any transport. For native device fleets that have to form an ad-hoc radio mesh with no server at all, Ditto is built for that specific case.
+
+</FaqItem>
+<FaqItem question="Does RxDB support Swift, Kotlin, or C++?">
+
+No. RxDB targets JavaScript and TypeScript runtimes, which covers the browser, Node.js, Electron, Capacitor, and [React Native](../../react-native-database.md). Ditto ships native SDKs for Swift, Kotlin, C#, C++, and Rust, so a project that has to run inside a native app without a JavaScript layer is a better fit for Ditto.
+
+</FaqItem>
+</Faq>
+
+## Comparison Table
+
+| Feature | Ditto | RxDB |
+| --- | --- | --- |
+| License | Proprietary, compiled SDKs | Apache 2.0 core, optional [premium plugins](/premium/) |
+| Source access | Sync engine not published | Full client and replication source on [GitHub](/code/) |
+| Peer-to-peer mesh | ✅ Bluetooth LE, P2P WiFi, LAN on native SDKs | ❌ [WebRTC](../../replication-webrtc.md) only, needs signaling |
+| Mesh in the browser | ❌ WebSockets to Ditto Server only | ❌ not offered |
+| Client storage | Ditto engine | Pluggable: [IndexedDB](../../rx-storage-indexeddb.md), [OPFS](../../rx-storage-opfs.md), [Dexie](../../rx-storage-dexie.md), [SQLite](../../rx-storage-sqlite.md), memory |
+| Query language | DQL, SQL-like strings | Mango (MongoDB-style) JSON queries |
+| Backend | Ditto Cloud, MongoDB connector on Pro and above | Bring your own over [HTTP](../../replication-http.md), [GraphQL](../../replication-graphql.md), [WebSocket](../../replication-websocket.md), [CouchDB](../../replication-couchdb.md), [Firestore](../../replication-firestore.md) |
+| Conflict resolution | Handled inside the closed engine | Per-collection [handler](../../transactions-conflicts-revisions.md) you write, or [CRDTs](../../crdt.md) |
+| Pricing model | Per device connection, storage, and transfer | Free core, flat premium license, no per-device metering |
+| Native SDKs | ✅ Swift, Kotlin, C#, C++, Rust | ❌ JavaScript and TypeScript runtimes only |
+| npm downloads, last 30 days | 25,688 | 278,111 |
+
+Both npm figures were read from the npm registry API on September 8, 2026.
+
+## Follow Up
+
+If your client is a browser or a JavaScript runtime, the mesh that makes Ditto special is not part of what you would be buying, and the rest of the comparison is about licensing, storage choice, and who owns the backend. Start with the [RxDB Quickstart](../../quickstart.md), read how the [Sync Engine](../../replication.md) works, and see the [DDIL database](../ddil-database.md) page for the disconnected-environment case in detail. If you do need a radio mesh across native devices, use Ditto.
+
+More resources:
+
+- [RxDB Sync Engine](../../replication.md)
+- [Offline-First Database for DDIL Environments](../ddil-database.md)
+- [WebRTC Replication](../../replication-webrtc.md)
+- [RxStorage overview](../../rx-storage.md)
+- [The Local-First Future](../local-first-future.md)
 - [RxDB GitHub Repository](/code/)
 
 ---
@@ -20570,7 +20811,7 @@ This page explains why [RxDB](https://rxdb.info/) is a strong replacement for Re
 
 Realm started in 2014 as a mobile database for Android and iOS, evolving from an earlier project called TightDB. It was positioned as a replacement for SQLite but the storage model resembled an object store more than a relational database. Realm Mobile Platform later added bidirectional sync between devices and a self-hostable server. Bindings for additional languages followed, including JavaScript through `realm-js` for Node.js and React Native.
 
-In 2019 MongoDB acquired Realm and folded it into the MongoDB Atlas product line. The local database engine and the sync layer were rebranded as the Atlas Device SDKs and Atlas Device Sync, and the focus shifted toward replication against MongoDB Atlas in the cloud. Self-hosting the sync server stopped being a supported path. In September 2024, MongoDB published the deprecation notice for the Atlas Device SDKs and Atlas Device Sync. New project sign ups were closed, and existing customers were given until September 2025 before end of life.
+In 2019 MongoDB acquired Realm and folded it into the MongoDB Atlas product line. Parts of the original team left and later founded other sync companies, which is why the [Ditto alternative](./ditto-alternative.md) page covers a product with a similar embedded-database-plus-sync shape. The local database engine and the sync layer were rebranded as the Atlas Device SDKs and Atlas Device Sync, and the focus shifted toward replication against MongoDB Atlas in the cloud. Self-hosting the sync server stopped being a supported path. In September 2024, MongoDB published the deprecation notice for the Atlas Device SDKs and Atlas Device Sync. New project sign ups were closed, and existing customers were given until September 2025 before end of life.
 
 For JavaScript teams this timeline is short. Migrating client storage, replication, and conflict handling without losing data takes planning, which is why choosing a long term alternative now matters.
 
@@ -25381,6 +25622,229 @@ RxDB provides an exceptional data base solution for web and mobile applications,
 
 ---
 
+## Offline-First Database for DDIL Environments - Sync Without a Network
+
+import {Faq, FaqItem} from '@site/src/components/faq';
+
+# Offline-First Database for DDIL Environments
+
+So you have an application that has to keep working when the network does not. **DDIL** stands for **Denied, Disrupted, Intermittent, and Limited**, and it is the label that defense, maritime, aviation, mining, and emergency-response teams use for exactly this condition. An app built on request and response falls apart there, because every screen depends on a round trip that may never complete. [RxDB](https://rxdb.info/) is a [local-first](./local-first-future.md), NoSQL database for JavaScript applications that keeps the working data on the device and treats the network as an optional background process. This page explains what DDIL means, what a client database has to do to survive it, how the RxDB [Sync Engine](../replication.md) handles a link that keeps dying, and where RxDB is the wrong tool.
+
+<RxdbLogo alt="DDIL database" />
+
+## What DDIL Means
+
+DDIL is an acronym for **Denied, Disrupted, Intermittent, and Limited**. The NIST Computer Security Resource Center lists it in its [glossary](https://csrc.nist.gov/glossary/term/ddil) with the source document NISTIR 8286D-upd1. The four letters are four different failure modes, and they break an application in four different ways:
+
+- **Denied**: there is no link at all. Jamming, a radio-silence order, a basement, a mine shaft, or an air-gapped enclave that has no route to the internet by design.
+- **Disrupted**: the link exists but drops in the middle of a transfer. A request that was accepted by the client is never confirmed by the server.
+- **Intermittent**: connectivity comes in windows. A vehicle passes a relay, a ship comes into range, a technician walks back into WiFi coverage.
+- **Limited**: the link works but is narrow or slow. A geostationary satellite link has a round trip time of roughly **600 ms** ([satsig.net](https://www.satsig.net/latency.htm)), and low-earth-orbit constellations measure roughly an order of magnitude lower ([arXiv large-scale Starlink measurement, 2024](https://arxiv.org/pdf/2412.18243)).
+
+Most software is tested against exactly none of these. The development laptop has WiFi, the staging server is one hop away, and the failure path is a spinner and a retry button.
+
+## Why Request and Response Falls Short
+
+Take a screen that loads eight resources in sequence over a geostationary link. At 600 ms per round trip that is **4.8 seconds** before anything is on screen, and that is the case where nothing fails. When the link is disrupted instead of limited, the retry does not help, because the connection is gone and the retry queue grows. When the link is denied, there is nothing to retry against at all.
+
+The usual mitigations do not survive DDIL either. A cache holds a subset of previous server responses and still treats the server as the source of truth, so writes fail. A service worker can serve assets offline but does not give you a queryable database or a merge strategy. A retry wrapper turns a fast failure into a slow one.
+
+The network is not a detail of the architecture. It is the architecture.
+
+## What a DDIL-Capable Client Has to Do
+
+Working in DDIL is a set of concrete requirements, not a feature flag:
+
+1. **Keep the working set on the device.** Reads must not depend on a link, so the relevant data has to be stored locally in something like [IndexedDB](../rx-storage-indexeddb.md), [OPFS](../rx-storage-opfs.md), or [SQLite](../rx-storage-sqlite.md).
+2. **Accept writes while offline.** The write has to succeed locally and be durable, so that a user can keep working through a full outage.
+3. **Resume instead of restart.** When a transfer dies at 80%, the next attempt has to continue from a checkpoint. Re-downloading the whole dataset on every reconnect is what kills a limited link.
+4. **Transfer in small batches.** A narrow uplink cannot take one large payload. It can take many small ones.
+5. **Resolve conflicts deterministically.** Two people edit the same record during the same outage. Both writes are valid, and the merge has to be a rule, not a surprise.
+6. **Encrypt data at rest.** A device in the field gets lost, and the local copy is a full copy.
+7. **Install and run without the public internet.** In an air-gapped deployment the package has to come from an internal registry, not from a public one at build time.
+
+## How RxDB Handles DDIL
+
+### 1. The Local Database Is the Source of Truth
+
+RxDB stores documents on the client and answers every read and write against that local copy. Reads return in under a millisecond, and a write is durable as soon as it is stored, without asking a server first. This is the [offline-first](../offline-first.md) model, and in a denied environment it is the difference between a usable app and an error page.
+
+### 2. Replication Resumes From a Checkpoint
+
+The RxDB [Sync Engine](../replication.md) is checkpoint-based. The client remembers the last position it successfully pulled, and after a reconnect it asks for the changes since that checkpoint instead of the whole collection. When a batch fails, the checkpoint does not move, so the next attempt repeats one batch and not the entire history. Failed requests are retried after `retryTime`, and RxDB skips the wait when it detects an offline to online switch through `navigator.onLine`.
+
+### 3. Any Transport, Because the Protocol Needs Only Three Things
+
+The [replication protocol](../replication.md) does not care what carries the bytes. It needs a pull handler that returns documents changed after a checkpoint, a push handler that accepts client writes, and an optional event stream for live changes. Everything else is yours. That means it runs over [HTTP](../replication-http.md), [GraphQL](../replication-graphql.md), [WebSockets](../replication-websocket.md), a message queue, or a custom link that a normal web app has never seen, as long as you can implement two functions on top of it.
+
+### 4. Conflicts Are Resolved on the Client
+
+When two clients write the same document during the same outage, the first push wins and the second is rejected. RxDB then calls the [conflict handler](../transactions-conflicts-revisions.md#custom-conflict-handler) of the collection on the losing client, which produces a merged state that is pushed again. The default handler lets the server state win. For field-by-field merging without a central decision you can use the [CRDT plugin](../crdt.md).
+
+### 5. Encryption at Rest
+
+The [encryption plugins](../encryption.md) encrypt marked fields on top of any storage, so the data on a lost device is not readable without the password. Keep in mind that encrypted fields cannot be used inside of query selectors, so fields you have to query against have to stay unencrypted.
+
+### 6. One Syncing Tab per Device
+
+When the app runs in multiple browser tabs, [leader election](../leader-election.md) makes sure that the replication runs in exactly one of them. On a limited link this matters more than it does on broadband, because four tabs syncing in parallel means four times the traffic over the same narrow uplink.
+
+### 7. The Storage Is a Configuration Choice
+
+RxDB itself does not persist data. It runs on a swappable [RxStorage](../rx-storage.md) layer, so the same application code runs on [IndexedDB](../rx-storage-indexeddb.md) in a browser, on [SQLite](../rx-storage-sqlite.md) in a [React Native](../react-native-database.md) or [Electron](../electron-database.md) build, and in [memory](../rx-storage-memory.md) for tests. Switching storages is a configuration change, not a rewrite.
+
+## Code Sample: A Client That Survives a Dying Link
+
+```ts
+import { createRxDatabase } from 'rxdb/plugins/core';
+import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
+import { replicateRxCollection } from 'rxdb/plugins/replication';
+
+const db = await createRxDatabase({
+    name: 'fielddb',
+    storage: getRxStorageDexie()
+});
+
+await db.addCollections({
+    reports: {
+        schema: {
+            version: 0,
+            primaryKey: 'id',
+            type: 'object',
+            properties: {
+                id: { type: 'string', maxLength: 100 },
+                title: { type: 'string' },
+                status: { type: 'string' },
+                updatedAt: { type: 'number' }
+            },
+            required: ['id', 'title', 'status', 'updatedAt']
+        }
+    }
+});
+
+// This write succeeds with no network at all.
+await db.reports.insert({
+    id: 'report-1',
+    title: 'Sensor 4 offline',
+    status: 'open',
+    updatedAt: Date.now()
+});
+
+// Reactive query: emits a new array whenever a matching doc changes,
+// no matter if the change came from this device or from a later sync.
+db.reports.find({
+    selector: { status: 'open' }
+}).$.subscribe(reports => {
+    console.log('open reports: ' + reports.length);
+});
+
+const replicationState = await replicateRxCollection({
+    collection: db.reports,
+    replicationIdentifier: 'reports-sync-to-https://example.com/api/sync',
+    live: true,
+    /**
+     * Retry a failed request after 30 seconds instead of the 5 second default.
+     * On a narrow link, hammering a dead endpoint costs bandwidth you need.
+     */
+    retryTime: 30 * 1000,
+    /**
+     * Only the leading tab replicates, so one device means one uplink stream.
+     * [default=true]
+     */
+    waitForLeadership: true,
+    pull: {
+        /**
+         * Small batches so a dropped transfer loses one batch, not the sync.
+         */
+        batchSize: 25,
+        async handler(checkpointOrNull, batchSize) {
+            const updatedAt = checkpointOrNull ? checkpointOrNull.updatedAt : 0;
+            const url = 'https://example.com/api/sync'
+                + `?updatedAt=${updatedAt}&limit=${batchSize}`;
+            const response = await fetch(url);
+            const data = await response.json();
+            return {
+                documents: data.documents,
+                checkpoint: data.checkpoint
+            };
+        }
+    },
+    push: {
+        batchSize: 25,
+        async handler(changeRows) {
+            const response = await fetch('https://example.com/api/sync', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(changeRows)
+            });
+            // Return the conflicting documents so RxDB can resolve them locally.
+            return await response.json();
+        }
+    }
+});
+
+// Errors are events, not crashes. The app keeps running while the link is down.
+replicationState.error$.subscribe(err => {
+    console.log('replication error, will retry: ' + err.message);
+});
+```
+
+The application code above does not change when the network does. The insert and the query behave the same at a desk and in a tunnel, and the only thing the outage changes is when the data reaches the server.
+
+## Where RxDB Falls Short in DDIL
+
+RxDB is not the right answer for every DDIL problem, and the limits are worth stating before you build on it:
+
+- **There is no radio mesh.** RxDB replicates between a client and an endpoint you provide. It does not form ad-hoc peer-to-peer networks over Bluetooth LE, peer-to-peer WiFi, or MANET radios. The [WebRTC replication](../replication-webrtc.md) plugin does peer-to-peer over standard web transports and still needs a signaling server to introduce the peers. When devices have to find each other with no infrastructure at all, look at [Ditto](./alternatives/ditto-alternative.md), which does that with native SDKs.
+- **JavaScript runtimes only.** RxDB runs in browsers, Node.js, Electron, React Native, Capacitor, Deno, and Bun. It is not a Swift, Kotlin, C++, or Rust library.
+- **It is not a realtime processing engine.** RxDB is the store and sync layer behind an operator interface. Sensor fusion and hard realtime pipelines belong somewhere else.
+- **The working set has to fit on the device.** RxDB syncs the subset you select, so plan the selection. A client cannot hold an unbounded dataset, and [IndexedDB storage limits](./indexeddb-max-storage-limit.md) are real.
+
+## FAQ
+
+<Faq>
+<FaqItem question="What does DDIL stand for?">
+
+DDIL stands for **Denied, Disrupted, Intermittent, and Limited**. It describes network conditions where connectivity is unavailable, drops mid-transfer, comes only in windows, or is too narrow and slow to carry normal traffic. The term is listed in the [NIST CSRC glossary](https://csrc.nist.gov/glossary/term/ddil) and is used across defense, maritime, aviation, mining, and emergency-response software.
+
+</FaqItem>
+<FaqItem question="What database should I use for a disconnected or offline environment?">
+
+Use a client-side database that stores the working set locally and syncs in the background, instead of a client that queries a remote server per interaction. **[RxDB](../rx-database.md)** does this for JavaScript applications with observable queries, [pluggable storage](../rx-storage.md), and a transport-agnostic [Sync Engine](../replication.md). For native mobile stacks without a JavaScript layer, an embedded database with its own sync layer is the better fit.
+
+</FaqItem>
+<FaqItem question="What happens when the network drops in the middle of a sync?">
+
+The replication stops at the last successful checkpoint and retries later. Because the RxDB [Sync Engine](../replication.md) pulls in batches and only advances the checkpoint after a batch succeeds, a dropped transfer costs one batch and not the whole dataset. Failed requests are retried after the configured `retryTime`, and the wait is skipped when an offline to online switch is detected.
+
+</FaqItem>
+<FaqItem question="Can RxDB sync directly between devices without a server?">
+
+Partly. The [WebRTC replication](../replication-webrtc.md) plugin replicates between peers over WebRTC, but the peers still have to find each other through a signaling server first. RxDB has no Bluetooth LE, peer-to-peer WiFi, or MANET transport, so a fully infrastructure-free mesh is out of scope. See the [Ditto alternative](./alternatives/ditto-alternative.md) page for a comparison with a product that is built around that.
+
+</FaqItem>
+<FaqItem question="Can RxDB be installed and run in an air-gapped network?">
+
+Yes. The RxDB core is published on npm under the Apache 2.0 license, so it can be mirrored into an internal registry and installed with no route to the public internet. At runtime the [replication](../replication.md) only talks to the pull and push handlers you write, which means the database contacts exactly the endpoints your own code contacts and nothing else.
+
+</FaqItem>
+<FaqItem question="How do you handle two people editing the same record while both are offline?">
+
+The first write that reaches the server wins, and the second client gets its push rejected. RxDB then runs the [conflict handler](../transactions-conflicts-revisions.md) of that collection on the losing client to build a merged document, which is pushed again. The default resolution lets the server state win, and the [CRDT plugin](../crdt.md) merges field by field when you need both changes kept.
+
+</FaqItem>
+</Faq>
+
+## Follow Up
+
+- Start with the [RxDB Quickstart](../quickstart.md) and build the local part first.
+- Read how the [Sync Engine](../replication.md) replicates with any backend, and what an [offline database](./offline-database.md) changes about your architecture.
+- Learn where [offline-first](../offline-first.md) helps and where it has [downsides](../downsides-of-offline-first.md).
+- Compare with [Ditto](./alternatives/ditto-alternative.md) when you need a device-to-device radio mesh.
+- Ask questions in the [RxDB Chat](/chat/) and leave a star ⭐ on [GitHub](/code/).
+
+---
+
 ## Electron SQLite Database - Reactive Local Data with RxDB
 
 import {Faq, FaqItem} from '@site/src/components/faq';
@@ -27168,6 +27632,417 @@ Not directly. The password is set once per database, and opening the database wi
 - Compare the storages in [IndexedDB Alternative](../indexeddb-alternative.md).
 - Check the code on [GitHub](/code/) and leave a star ⭐ if RxDB helps you.
 - Ask questions in the [community chat](/chat/).
+
+---
+
+## IndexedDB Relationships - Modeling Relations in the Browser
+
+import {QuoteBlock} from '@site/src/components/quoteblock';
+import {ComparisonTable} from '@site/src/components/comparison-table';
+import {Faq, FaqItem} from '@site/src/components/faq';
+
+# IndexedDB Relationships
+
+So you have a JavaScript web application that stores its data in [IndexedDB](../../rx-storage-indexeddb.md), and the data is not flat. Users write posts, posts carry comments, comments belong to users, and posts have tags. On the server you would write a `JOIN` and move on. In the browser you cannot.
+
+IndexedDB has no joins, no foreign keys, and no referential integrity. It stores JSON values in object stores and looks them up by key. Everything above that is your job.
+
+This page explains how to model **one-to-one**, **one-to-many**, and **many-to-many** relations on top of IndexedDB, where the naive implementation falls apart, and how a database like [RxDB](https://rxdb.info/) turns the pattern into a schema field.
+
+<RxdbLogo alt="IndexedDB Relationships" />
+
+## What IndexedDB Gives You and What It Does Not
+
+IndexedDB is a key-value store with indexes. Each object store has a primary key, optionally some indexes, and that is the whole data model. There is no query planner that can walk from one store into another.
+
+The gap is old and known. Nolan Lawson opened [w3c/IndexedDB#92](https://github.com/w3c/IndexedDB/issues/92) on September 22, 2016 asking for join queries across object stores, and described the workaround everyone still uses:
+
+<QuoteBlock
+  author="Nolan Lawson"
+  year="2016"
+  sourceLink="https://github.com/w3c/IndexedDB/issues/92"
+>in IDB we have to use cursors to iterate through two objectStores, using an object value in one store as the foreign key in the other store.</QuoteBlock>
+
+The issue is closed, labeled as a duplicate and a feature request. Ten years later, there is still no join in the API.
+
+What IndexedDB does give you is the two primitives a relation needs:
+
+- **Indexes**: an index on a non-unique field lets you fetch every record that points at a given key with one call. `IDBIndex.getAll()` has been available in all major browsers since January 2020 ([MDN](https://developer.mozilla.org/en-US/docs/Web/API/IDBIndex/getAll)).
+- **Multi-store transactions**: one transaction can span several object stores, so a read across both sides of a relation sees one consistent snapshot.
+
+The scope of a transaction has to be declared when you open it, and it cannot grow later:
+
+```js
+// Both stores are in scope. Reads across them are consistent.
+const tx = db.transaction(['users', 'posts'], 'readonly');
+const users = tx.objectStore('users');
+const posts = tx.objectStore('posts');
+```
+
+Calling `tx.objectStore('comments')` here throws a `NotFoundError`, because `comments` is not in the scope. So you have to know upfront which stores your relation touches. Keep in mind that a wide scope blocks other transactions on those stores, which is why the [MDN docs](https://developer.mozilla.org/en-US/docs/Web/API/IDBDatabase/transaction) tell you to specify only the stores you need.
+
+## One-to-Many With a Foreign Key
+
+The standard model is the same one you would use in SQL. The **many** side stores the key of the **one** side, and that field gets an index.
+
+Object stores and indexes can only be created inside `onupgradeneeded`, so the relation is part of your schema version:
+
+```js
+const request = indexedDB.open('blog', 1);
+
+request.onupgradeneeded = (event) => {
+  const db = event.target.result;
+
+  db.createObjectStore('users', { keyPath: 'id' });
+
+  const posts = db.createObjectStore('posts', { keyPath: 'id' });
+  // The foreign key. Not unique, because one user has many posts.
+  posts.createIndex('by-author', 'authorId', { unique: false });
+};
+```
+
+A **one-to-one** relation is the same thing with `{ unique: true }` on the index, which is the only integrity check IndexedDB will run for you: a second record with the same key fails the write with a `ConstraintError`.
+
+Reading one user's posts is then a single index lookup:
+
+```js
+function getPostsOfUser(db, userId) {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('posts', 'readonly');
+    const request = tx.objectStore('posts').index('by-author').getAll(userId);
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
+```
+
+This is fast and it is the part IndexedDB does well. The trouble starts when you go the other way.
+
+## The N+1 Problem
+
+Loading 100 posts and then the author of each post is the obvious code to write:
+
+```js
+// Do not do this.
+const posts = await promisify(db.transaction('posts').objectStore('posts').getAll());
+
+for (const post of posts) {
+  // A fresh transaction per post. 100 posts means 101 transactions.
+  const tx = db.transaction('users', 'readonly');
+  post.author = await promisify(tx.objectStore('users').get(post.authorId));
+}
+```
+
+Each `await` here opens its own transaction, and transaction setup is what IndexedDB is slow at. The [RxDB IndexedDB performance analysis](../../slow-indexeddb.md) measured inserting `1k` documents in a single transaction at about **80 milliseconds**, and the same `1k` documents with one transaction per write at about **2 seconds**. Same data, same disk, **25x** slower. The bottleneck is transaction handling, not throughput.
+
+The fix has two halves. Open one transaction for the whole operation, and do the join in memory:
+
+```js
+function promisify(request) {
+  return new Promise((resolve, reject) => {
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+async function getPostsWithAuthors(db) {
+  // One transaction for both stores, opened once.
+  const tx = db.transaction(['posts', 'users'], 'readonly');
+  const [posts, users] = await Promise.all([
+    promisify(tx.objectStore('posts').getAll()),
+    promisify(tx.objectStore('users').getAll())
+  ]);
+
+  const usersById = new Map(users.map(u => [u.id, u]));
+  return posts.map(post => ({
+    ...post,
+    author: usersById.get(post.authorId)
+  }));
+}
+```
+
+Two reads instead of 101, and the `Map` lookup is free. When the `users` store is too big to load whole, collect the distinct `authorId` values first and fetch only those, still inside the one transaction. The rule is the same either way: **batch the reads, join in JavaScript**.
+
+Notice that both requests are created before the first `await`. An IndexedDB transaction commits itself as soon as the microtask queue drains without a pending request, so issuing a second round of requests after an `await` fails with a `TransactionInactiveError`. This is the reason the two-phase shape above is not optional: read what you need in one go, then join outside the transaction.
+
+## Many-to-Many With a Junction Store
+
+A post has many tags, and a tag belongs to many posts. There are two ways to model this, and the right one depends on cardinality.
+
+**A junction store** is the relational answer. A third object store holds the pairs, keyed by both sides:
+
+```js
+request.onupgradeneeded = (event) => {
+  const db = event.target.result;
+
+  db.createObjectStore('posts', { keyPath: 'id' });
+  db.createObjectStore('tags', { keyPath: 'id' });
+
+  // Compound primary key, so a pair can only exist once.
+  const postTags = db.createObjectStore('post_tags', {
+    keyPath: ['postId', 'tagId']
+  });
+  postTags.createIndex('by-post', 'postId', { unique: false });
+  postTags.createIndex('by-tag', 'tagId', { unique: false });
+};
+```
+
+Both directions are now one index lookup, and the compound key makes a duplicate pair impossible. Use this when either side can grow without a bound, for example posts per tag.
+
+**An array of keys** on one side is the cheaper answer:
+
+```js
+const post = {
+  id: 'post-1',
+  title: 'Hello',
+  tagIds: ['tag-a', 'tag-b']
+};
+```
+
+With a `multiEntry` index on `tagIds` you can still query posts by tag, and reading a post's tags costs no extra lookup at all. It works when one side has a natural owner and limited cardinality. A post with twelve tags is fine. A tag with 40,000 posts is not, because you would rewrite that array on every single write.
+
+## Nothing Enforces Any of This
+
+The relation exists only in your code. IndexedDB will not stop you from breaking it.
+
+- **No cascade delete.** Deleting a user leaves their posts pointing at a key that no longer resolves. You have to delete or re-parent them yourself, in the same `readwrite` transaction, or the cleanup can fail halfway.
+- **No existence check.** An `authorId` that never pointed at a real user is a valid value, and nothing complains until a render finds `undefined`.
+- **No validation.** IndexedDB stores whatever structured-cloneable value you hand it, so a typo in a foreign key field is written without complaint.
+- **No integrity across schema versions.** A [migration](../../migration-schema.md) that renames a field has to rewrite both sides.
+
+So every relation in an IndexedDB app is a convention that lives in application code, and it breaks the first time someone writes to the store from a path that does not know about it.
+
+## Doing It With a Wrapper
+
+Wrappers help with different parts of the problem, and none of the popular ones adds a join.
+
+- **[idb](https://github.com/jakearchibald/idb)** wraps the callback API in promises and types your stores. Relations are still hand-written, but the promise API makes the batch-and-join pattern above readable. See [IndexedDB with TypeScript](./indexeddb-typescript.md) for the typing side.
+- **[RxDB](https://rxdb.info/)** puts the reference into the schema and resolves it for you, which is the next section.
+
+Compare the full feature matrix in [the best IndexedDB wrapper](./best-indexeddb-wrapper.md).
+
+## Relationships in RxDB
+
+RxDB is a local-first database that runs on top of IndexedDB and other [storages](../../rx-storage-indexeddb.md). It is NoSQL, so it has no joins either. What it has is [population](../../population.md), the same pattern Mongoose uses: a field declares which collection its value points into, and RxDB resolves it on access.
+
+The relation is part of the [schema](../../rx-schema.md):
+
+```js
+const postSchema = {
+  version: 0,
+  primaryKey: 'id',
+  type: 'object',
+  properties: {
+    id: { type: 'string', maxLength: 100 },
+    title: { type: 'string' },
+    authorId: {
+      type: 'string',
+      // Points at the primary key of the 'users' collection.
+      ref: 'users'
+    },
+    tagIds: {
+      type: 'array',
+      ref: 'tags',
+      items: { type: 'string' }
+    }
+  },
+  required: ['id', 'title', 'authorId']
+};
+```
+
+A `ref` value MUST be a string or `['string', 'null']`, because it holds the primary key of the foreign document. Resolving it is one call:
+
+```js
+const post = await db.posts.findOne('post-1').exec();
+
+// Explicit.
+const author = await post.populate('authorId');
+
+// Or the underscore getter, which does the same thing.
+const sameAuthor = await post.authorId_;
+```
+
+The getter also works on nested fields, so `await myDocument.family.mother_` resolves a reference inside an object.
+
+### One-to-Many With an Array of Refs
+
+`tagIds` above is the interesting one. When you put `ref` on an **array of strings**, the field becomes a one-to-many reference: the parent document holds the primary keys of its children, and the getter resolves the whole list at once.
+
+```js
+const userSchema = {
+  version: 0,
+  primaryKey: 'name',
+  type: 'object',
+  properties: {
+    name: { type: 'string', maxLength: 100 },
+    postIds: {
+      type: 'array',
+      // Every entry is the primary key of a document in 'posts'.
+      ref: 'posts',
+      items: { type: 'string' }
+    }
+  },
+  required: ['name']
+};
+```
+
+Writing the relation is writing an array of strings:
+
+```js
+await db.users.insert({
+  name: 'Alice',
+  postIds: ['post-1', 'post-2', 'post-3']
+});
+```
+
+And reading it back gives you documents, not keys:
+
+```js
+const alice = await db.users.findOne('Alice').exec();
+
+const posts = await alice.postIds_;
+console.dir(posts); // > Array.<RxDocument>
+
+// The explicit form does the same.
+const samePosts = await alice.populate('postIds');
+```
+
+Adding a child means rewriting the parent's array, so use an [incremental write](../../rx-document.md) to avoid a conflict when two tabs do it at the same time:
+
+```js
+await alice.incrementalModify(docData => {
+  docData.postIds.push('post-4');
+  return docData;
+});
+```
+
+This shape is worth it when the parent owns a **bounded** list: a user's three addresses, a post's twelve tags, a playlist's tracks. It keeps the relation in one document, so reading it costs one lookup plus one populate, and there is no query to index.
+
+It falls over on unbounded lists, for two reasons. Every added child rewrites the parent document, which creates a new revision and a [conflict](../../transactions-conflicts-revisions.md) point for every writer touching that parent. And the array cannot be indexed: RxDB allows indexes only on fields of type `string`, `integer`, and `number` ([schema docs](../../rx-schema.md)), so there is no efficient way to ask the reverse question of the array itself.
+
+So for the unbounded direction, put the `ref` on the child and index it, exactly like the raw IndexedDB foreign key from earlier:
+
+```js
+const postSchema = {
+  version: 0,
+  primaryKey: 'id',
+  type: 'object',
+  properties: {
+    id: { type: 'string', maxLength: 100 },
+    title: { type: 'string' },
+    authorId: { type: 'string', maxLength: 100, ref: 'users' }
+  },
+  required: ['id', 'title', 'authorId'],
+  // Indexable, because the field is a plain string.
+  indexes: ['authorId']
+};
+
+// One indexed query, any number of posts.
+const postsOfAlice = await db.posts.find({
+  selector: { authorId: 'Alice' }
+}).exec();
+```
+
+The rule of thumb: **array of refs when the parent owns a short list, `ref` on the child when the list can grow.** Both are one-to-many, and they cost different things.
+
+### Populate Is Not a Join
+
+Population does not delete the N+1 problem, it moves it. Populating inside a loop over 100 posts still runs 100 lookups. When you need the other side of a relation in bulk, query it once with `$in`:
+
+```js
+const posts = await db.posts.find().exec();
+const authorIds = [...new Set(posts.map(p => p.authorId))];
+
+const authors = await db.users.find({
+  selector: { id: { $in: authorIds } }
+}).exec();
+
+const authorsById = new Map(authors.map(a => [a.id, a]));
+```
+
+Two things come for free that raw IndexedDB does not give you. The `ref` field is [validated](../../schema-validation.md) against the schema on every write, so a reference field cannot silently become a number. And queries are [reactive](../../reactivity.md), so a view that lists a user's posts re-renders when a post is written, from any tab.
+
+What RxDB does not do is enforce the relation. There is no cascade delete and no check that the referenced document exists. Deleting a user still leaves dangling `authorId` values, and cleaning them up is your code, best placed in a [middleware hook](../../middleware.md) on the collection.
+
+## Comparison
+
+<ComparisonTable>
+
+| | Native IndexedDB | idb | RxDB |
+| --- | --- | --- | --- |
+| Relation declared in schema | ❌ | ❌ | ✅ `ref` |
+| One-to-many in the schema | ❌ | ❌ | ✅ array of `ref` |
+| Resolve a reference | manual `get()` | manual `get()` | ✅ `populate()` |
+| Index on foreign key | ✅ | ✅ | ✅ |
+| Multi-store transaction | ✅ | ✅ | ⚠️ per-collection writes |
+| Foreign key validated | ❌ | ❌ | ✅ schema validation |
+| Cascade delete | ❌ | ❌ | ❌ |
+| Reactive query results | ❌ | ❌ | ✅ RxJS |
+
+</ComparisonTable>
+
+## When to Denormalize Instead
+
+Normalizing is the default for a reason. It keeps one copy of each fact, and an update touches one document. But a browser database is not a server database, and the read path is what your user waits on.
+
+Embed instead of referencing when all of this holds:
+
+- the embedded data is **small and bounded**, like an author's name and avatar URL on a post,
+- it changes **rarely** compared to how often it is read,
+- and you can accept that a change means rewriting every document that copies it.
+
+A comment list that renders 200 comments with author names is a good case for embedding the name. A post that embeds its full author document is not, because a renamed user leaves 400 stale copies behind.
+
+It is recommended to keep the reference as the source of truth and embed only the fields you render. So the post keeps `authorId` and also carries `authorName`, and a rename fixes both. Read more in [why NoSQL](../../why-nosql.md) and the [NoSQL performance tips](../../nosql-performance-tips.md).
+
+## FAQ
+
+<Faq>
+<FaqItem question="Does IndexedDB support joins?">
+
+No. IndexedDB has no join operation and no query language that spans object stores. You fetch from each store and combine the results in JavaScript. A join across two stores was requested in [w3c/IndexedDB#92](https://github.com/w3c/IndexedDB/issues/92) in 2016 and the issue was closed without an API.
+
+</FaqItem>
+<FaqItem question="How do I model a one-to-many relationship in IndexedDB?">
+
+Store the parent's primary key on every child record and put a non-unique index on that field. Then `objectStore.index('by-author').getAll(userId)` returns all children of one parent in a single call. This is the same foreign key pattern used in SQL, without the constraint.
+
+</FaqItem>
+<FaqItem question="Does IndexedDB have foreign keys?">
+
+No. There are no foreign key constraints, no referential integrity, and no cascade delete. A key that points at a deleted record stays in the store and resolves to `undefined`. Cleaning up after a delete is application code, and it should run in the same `readwrite` transaction as the delete.
+
+</FaqItem>
+<FaqItem question="Can one IndexedDB transaction read from multiple object stores?">
+
+Yes. Pass an array of store names to `db.transaction(['users', 'posts'], 'readonly')` and all of them are readable within one consistent snapshot. The scope has to be declared when the transaction is created and cannot be extended afterwards, so accessing a store outside it throws a `NotFoundError`.
+
+</FaqItem>
+<FaqItem question="How do I model many-to-many in IndexedDB?">
+
+Use a junction object store whose primary key is the compound key `['postId', 'tagId']`, with an index on each side. That gives you both directions in one lookup and makes duplicate pairs impossible. When one side has few entries and a natural owner, an array of keys with a `multiEntry` index is cheaper.
+
+</FaqItem>
+<FaqItem question="How do I model a one-to-many relationship in RxDB?">
+
+Two ways, and the choice is about size. For a bounded list, put `ref` on an array of strings in the parent schema (`{ type: 'array', ref: 'posts', items: { type: 'string' } }`) and read it with the underscore getter, which resolves to an array of `RxDocument`. For a list that can grow, put `ref` on a string field of the child and add that field to the collection's `indexes`, then query it. RxDB indexes only `string`, `integer`, and `number` fields, so an array of refs cannot be indexed.
+
+</FaqItem>
+<FaqItem question="Why is loading related records from IndexedDB slow?">
+
+Because of transaction overhead, not data volume. Fetching a related record per row opens one transaction per row, and RxDB's [IndexedDB benchmarks](../../slow-indexeddb.md) measured `1k` writes at about 80ms in one transaction against about 2 seconds with one transaction each. Read both stores inside a single transaction and join them with a `Map`.
+
+</FaqItem>
+</Faq>
+
+## Follow Up
+
+- Learn how [RxDB population](../../population.md) resolves references from the schema
+- Understand [why IndexedDB is slow](../../slow-indexeddb.md) and what to do about it
+- Read the [IndexedDB tutorial](./indexeddb-tutorial.md) for the API basics
+- Compare the [best IndexedDB wrappers](./best-indexeddb-wrapper.md)
+- Start with the [RxDB Quickstart](../../quickstart.md)
+- Check the [RxDB code on GitHub](/code/) and leave a star ⭐
 
 ---
 
@@ -29113,7 +29988,7 @@ await myDatabase.addCollections({
 
 For now our vector database works and we are good to go. However there are some things to consider for the future:
 
-- **WebGPU** is [not fully supported](https://caniuse.com/webgpu) yet. When this changes, creating embeddings in the browser have the potential to become faster. You can check if your current chrome supports WebGPU by opening `chrome://gpu/`. Notice that WebGPU has been reported to sometimes be [even slower](https://github.com/xenova/transformers.js/issues/894#issuecomment-2323897485) compared to WASM but likely it will be faster in the long term.
+- **WebGPU** is [not fully supported](https://caniuse.com/webgpu) yet. When this changes, creating embeddings in the browser have the potential to become faster. You can check if your current chrome supports WebGPU by opening `chrome://gpu/`. Notice that WebGPU has been reported to sometimes be [even slower](https://github.com/huggingface/transformers.js/issues/894) compared to WASM but likely it will be faster in the long term.
 - **Cross-Modal AI Models**: While progress is being made, AI models that can understand and integrate multiple modalities are still in development. For example you could query for an **image** together with a **text** prompt to get a more detailed output.
 - **Multi-Step queries**: In this article we only talked about having a single query as input and an ordered list of outputs. But there is big potential in chaining models or queries together where you take the results of one query and input them into a different model with different embeddings or outputs.
 
@@ -29538,7 +30413,7 @@ Storing data as **JSON documents** in a **[NoSQL](./in-memory-nosql-database.md)
 ## Storage and Access Options for JSON Documents
 When incorporating JSON documents into your application, you have several storage and access options to consider:
 
-- **Local In-App Database with In-Memory Storage**: Ideal for lightweight applications or temporary data storage, this option keeps data in memory, ensuring fast read and write operations. However, data is not persistet beyond the current application session, making it suitable for temporary data storage. With RxDB, the [memory RxStorage](../rx-storage-memory.md) can be utilized to create an in-memory database.
+- **Local In-App Database with In-Memory Storage**: Ideal for lightweight applications or temporary data storage, this option keeps data in memory, ensuring fast read and write operations. However, data is not persisted beyond the current application session, making it suitable for temporary data storage. With RxDB, the [memory RxStorage](../rx-storage-memory.md) can be utilized to create an in-memory database.
 
 - **Local In-App Database with Persistent Storage**: Suitable for applications requiring data retention across sessions. Data is stored on the user's device or inside of the Node.js application, offering persistence between application sessions. It balances speed and data retention, making it versatile for various applications. With RxDB, a whole range of persistent storages is available. As example, for browser there is the [IndexedDB storage](../rx-storage-indexeddb.md). For server side applications, the [Node.js Filesystem storage](../rx-storage-filesystem-node.md) can be used. There are [many more storages](../rx-storage.md) for React-Native, Flutter, Capacitors.js and others.
 
@@ -29598,7 +30473,7 @@ Certainly! Let's delve deeper into the performance aspects of RxDB when it comes
 
 2. **Scalability:** As your application grows and your [JSON dataset](./json-based-database.md) expands, RxDB scales gracefully. Its performance remains consistent, enabling you to handle increasingly larger volumes of data without compromising on speed or responsiveness. This scalability is essential for applications that need to accommodate growing user bases and evolving data needs.
 
-3. **Reduced Latency:** RxDB's streamlined data access mechanisms significantly reduce latency when working with JSON data. Whether you're reading from the database, making updates, or synchronizing data between clients and servers, RxDB's optimized operations help minimize the delays often associated with data access. Observed queries are optimized with the [EventReduce algorithm](https://github.com/pubkey/event-reduce) to provide nearly-instand UI updates on data changes.
+3. **Reduced Latency:** RxDB's streamlined data access mechanisms significantly reduce latency when working with JSON data. Whether you're reading from the database, making updates, or synchronizing data between clients and servers, RxDB's optimized operations help minimize the delays often associated with data access. Observed queries are optimized with the [EventReduce algorithm](https://github.com/pubkey/event-reduce) to provide nearly instant UI updates on data changes.
 
 4. **RxStorage Layer**: Because RxDB allows you to swap out the storage layer. A storage with the most optimal performance can be chosen for each runtime while not touching other database code. Depending on the access patterns, you can pick exactly the storage that is best:
 
@@ -30763,7 +31638,7 @@ Here we can notice a few things:
 
 ## Performance Conclusions
 
-- LocalStorage is really fast but remember that is has some downsides:
+- LocalStorage is really fast but remember that it has some downsides:
   - It blocks the main JavaScript process and therefore should not be used for big bulk operations.
   - Only Key-Value assignments are possible, you cannot use it efficiently when you need to do index based range queries on your data.
 - OPFS is way faster when used in the WebWorker with the `createSyncAccessHandle()` method compare to using it directly in the main thread.
@@ -30774,10 +31649,10 @@ Here we can notice a few things:
 ## Possible Improvements
 
 There is a wide range of possible improvements and performance hacks to speed up the operations.
-- For IndexedDB I have made a list of [performance hacks here](../slow-indexeddb.md). For example you can do sharding between multiple database and webworkers or use a custom index strategy.
+- For IndexedDB I have made a list of [performance hacks here](../slow-indexeddb.md). For example you can do sharding between multiple database and WebWorkers or use a custom index strategy.
 - OPFS is slow in writing one file per document. But you do not have to do that and instead you can store everything at a single file like a normal database would do. This improves performance dramatically like it was done with the RxDB [OPFS RxStorage](../rx-storage-opfs.md).
 - You can mix up the technologies to optimize for multiple scenarios at once. For example in RxDB there is the [localstorage meta optimizer](../rx-storage-localstorage-meta-optimizer.md) which stores initial metadata in localstorage and "normal" documents inside of IndexedDB. This improves the initial startup time while still having the documents stored in a way to query them efficiently.
-- There is the [memory-mapped](../rx-storage-memory-mapped.md) storage plugin in RxDB which maps data directly to memory. Using this in combination with a shared worker can improve pageloads and query time significantly.
+- There is the [memory-mapped](../rx-storage-memory-mapped.md) storage plugin in RxDB which maps data directly to memory. Using this in combination with a shared worker can improve page loads and query time significantly.
 - [Compressing](../key-compression.md) data before storing it might improve the performance for some of the storages.
 - Splitting work up between [multiple WebWorkers](../rx-storage-worker.md) via [sharding](../rx-storage-sharding.md) can improve performance by utilizing the whole capacity of your users device.
 
@@ -31127,7 +32002,7 @@ Applications that call a remote server for every interaction show loading spinne
 
 ### 2. The App Works Without a Network
 
-When the device is offline, in a tunnel, on a plane, or on a flaky mobile connection, the app keeps working. Users can read their data and make changes, and the [Sync Engine](../replication.md) pushes those changes to the server when the connection comes back. For field worker apps, point-of-sale systems, and mobile apps in general, this is the difference between a usable product and an error page.
+When the device is offline, in a tunnel, on a plane, or on a flaky mobile connection, the app keeps working. Users can read their data and make changes, and the [Sync Engine](../replication.md) pushes those changes to the server when the connection comes back. For field worker apps, point-of-sale systems, and mobile apps in general, this is the difference between a usable product and an error page. Teams that work in [DDIL environments](./ddil-database.md), where the network is denied, disrupted, intermittent, or limited by default, have to design for this case from the start.
 
 ### 3. Realtime UI Updates
 
@@ -39180,7 +40055,7 @@ In the following I will point out the limitations you need to know before you de
 ## It only works with small datasets
 
 Making data available offline means it must be loaded from the server and then stored at the clients device.
-You need to load the full dataset on the first pageload and on every ongoing load you need to download the new changes to that set.
+You need to load the full dataset on the first page load and on every ongoing load you need to download the new changes to that set.
 While in theory you could download in infinite amount of data, in practice you have a limit how long the user can wait before having an up-to-date state.
 You want to display chat messages like Whatsapp? No problem. Syncing all the messages a user could write, can be done with a few HTTP requests.
 Want to make a tool that displays server logs? Good luck downloading terabytes of data to the client just to search for a single string. This will not work.
@@ -39670,7 +40545,7 @@ const result = await db.users.find({
 
 ```
 
-Another alternative storage is the [SQLite RxStorage](./rx-storage-sqlite.md) that stores the data inside of a SQLite filebased database. The SQLite storage is faster than FoundationDB and does not require to set up a cluster or anything because SQLite directly stores and reads the data inside of the filesystem. The downside of that is that it only scales vertically.
+Another alternative storage is the [SQLite RxStorage](./rx-storage-sqlite.md) that stores the data inside of a SQLite file-based database. The SQLite storage is faster than FoundationDB and does not require to set up a cluster or anything because SQLite directly stores and reads the data inside of the filesystem. The downside of that is that it only scales vertically.
 
 ```ts
 import { createRxDatabase } from 'rxdb';
@@ -39791,7 +40666,7 @@ import {CenteredImage} from '@site/src/components/centered-image';
 
 Local-First (aka offline first) is a software paradigm where the software stores data locally on the client's device and must work as well offline as it does online.
 To implement this, you have to store data at the client side, so that your application can still access it when the internet connection is lost.
-This can be either done with complex caching strategies, or by using a local-first, [offline database](./articles/offline-database.md) (like [RxDB](https://rxdb.info)) that stores the data inside of a local database like [IndexedDB](./rx-storage-indexeddb.md) and replicates it from and to the backend in the background. This makes the local database, not the server, the gateway for all persistent changes in application state.
+This can be either done with complex caching strategies, or by using a local-first, [offline database](./articles/offline-database.md) (like [RxDB](https://rxdb.info)) that stores the data inside of a local database like [IndexedDB](./rx-storage-indexeddb.md) and replicates it from and to the backend in the background. This makes the local database, not the server, the gateway for all persistent changes in application state. In [DDIL environments](./articles/ddil-database.md), where the connection is denied, disrupted, intermittent, or limited most of the time, this is not an optimization but the only architecture that works.
 
 > **Offline first is not about having no internet connection**
 
@@ -41203,7 +42078,7 @@ There are many things that can be done by **you** to improve RxDB:
 # 13.0.0
 
 So in the last major RxDB versions, the focus was set to **improvements of the storage engine**. This is done. RxDB has now [multiple RxStorage implementations](../rx-storage.md), a better query planner and an improved test suite to ensure everything works correct.
-This let to huge improvements in write and query performance and decreased the initial pageload of RxDB based applications.
+This let to huge improvements in write and query performance and decreased the initial page load of RxDB based applications.
 
 In the new major version `13.0.0`, the focus was set to improvements to the **replication protocol**.
 When I first implemented the [GraphQL replication](../replication-graphql.md) a few years ago, I had a specific use case in mind and designed the whole protocol and replication plugins around that use case.

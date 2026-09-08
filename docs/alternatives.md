@@ -281,6 +281,12 @@ SignalDB provides a reactive, in-memory local-first JavaScript database with rea
 
 [Read more about why RxDB is a good alternative to SignalDB](./articles/alternatives/signaldb-alternative.md).
 
+### Ditto
+
+Ditto is a closed-source, edge-native database whose native SDKs sync device-to-device over Bluetooth LE, peer-to-peer WiFi, and LAN without a server, which is a capability RxDB does not have. But the mesh is native only: per the Ditto docs, web browsers cannot use those peer-to-peer transports and the Web SDK connects to Ditto Server over WebSockets, so for a JavaScript client the connection shape is the same as RxDB WebSocket replication. Ditto Cloud is metered per device connection, storage, and data transfer, while the RxDB core is Apache 2.0 with a backend you own.
+
+[Read more about why RxDB is a good alternative to Ditto](./articles/alternatives/ditto-alternative.md).
+
 ### PowerSync
 
 PowerSync is a "framework" for implementing local-first solutions. It centralizes business logic and conflict resolution on a central, authoritative server (PostgreSQL or MongoDB), vs RxDB that also supports custom backends. Both RxDB and PowerSync can be used with a variety of storage backends, but PowerSync uses SQLite as the front-end database which has shown to be slow because the WASM-SQLite abstraction increases read and write latency. In terms of client SDKs, PowerSync offers Flutter, Kotlin, and Swift in addition to JS/TypeScript. PowerSync offers many client technologies, PowerSync is under a license that restricts commercial use that competes with PowerSync and the JourneyApps Platform.

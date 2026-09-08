@@ -9,7 +9,7 @@ import {CenteredImage} from '@site/src/components/centered-image';
 
 Local-First (aka offline first) is a software paradigm where the software stores data locally on the client's device and must work as well offline as it does online.
 To implement this, you have to store data at the client side, so that your application can still access it when the internet connection is lost.
-This can be either done with complex caching strategies, or by using a local-first, [offline database](./articles/offline-database.md) (like [RxDB](https://rxdb.info)) that stores the data inside of a local database like [IndexedDB](./rx-storage-indexeddb.md) and replicates it from and to the backend in the background. This makes the local database, not the server, the gateway for all persistent changes in application state.
+This can be either done with complex caching strategies, or by using a local-first, [offline database](./articles/offline-database.md) (like [RxDB](https://rxdb.info)) that stores the data inside of a local database like [IndexedDB](./rx-storage-indexeddb.md) and replicates it from and to the backend in the background. This makes the local database, not the server, the gateway for all persistent changes in application state. In [DDIL environments](./articles/ddil-database.md), where the connection is denied, disrupted, intermittent, or limited most of the time, this is not an optimization but the only architecture that works.
 
 > **Offline first is not about having no internet connection**
 

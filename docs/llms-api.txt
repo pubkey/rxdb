@@ -3124,7 +3124,7 @@ await myState.set('myField', v => v + 1);
 await myState.set('myField', v => 42);
 ```
 
-The modifier is used instead of a direct assignment to ensure correct behavior when other JavaScript realms write to the state at the same time, like other browser tabs or webworkers. On conflicts, the modifier will just be run again to ensure deterministic and correct behavior. Therefore mutation is `async`, you have to `await` the call to the set function when you care about the moment when the change actually happened.
+The modifier is used instead of a direct assignment to ensure correct behavior when other JavaScript realms write to the state at the same time, like other browser tabs or WebWorkers. On conflicts, the modifier will just be run again to ensure deterministic and correct behavior. Therefore mutation is `async`, you have to `await` the call to the set function when you care about the moment when the change actually happened.
 
 ## Get State Data
 
@@ -3164,7 +3164,7 @@ observable.subscribe(newValue => {
     // update the UI
 });
 ```
-Subscription works across multiple JavaScript realms like browser tabs or Webworkers.
+Subscription works across multiple JavaScript realms like browser tabs or WebWorkers.
 
 ## RxState with signals and hooks
 
