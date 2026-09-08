@@ -679,7 +679,7 @@
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "rimraf": "6.1.3",
-    "rollup": "4.62.4",
+    "rollup": "4.63.1",
     "rxdb-old": "npm:rxdb@16.21.1",
     "rxjs": "7.8.2",
     "sharp": "0.35.4",
