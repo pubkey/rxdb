@@ -203,7 +203,7 @@ export const ERROR_MESSAGES = {
         docs: ''
     },
     MQ4: {
-        message: 'Invalid argument. Expected instanceof mquery or plain object',
+        message: 'Invalid argument. Expected instance of mquery or plain object',
         cause: '',
         fix: '',
         docs: ''
@@ -265,7 +265,7 @@ export const ERROR_MESSAGES = {
         docs: 'https://rxdb.info/rx-collection.html?console=errors&code=DB5'
     },
     DB6: {
-        message: 'RxDatabase.addCollections(): another instance created this collection with a different schema. Read thishttps://rxdb.info/rx-schema.html?console=qa#faq ',
+        message: 'RxDatabase.addCollections(): another instance created this collection with a different schema. Read this: https://rxdb.info/rx-schema.html?console=qa#faq',
         cause: 'The schema hash does not match the schema stored in the internal database.',
         fix: 'If you changed the schema, you must increment the version number. If not, check why the hash is different.',
         docs: 'https://rxdb.info/rx-schema.html?console=errors&code=DB6#faq'
@@ -1292,7 +1292,7 @@ export const ERROR_MESSAGES = {
         docs: 'https://rxdb.info/replication-google-drive.html?console=errors&code=GDR11'
     },
     GDR18: {
-        message: 'Max batch size exxeeded for google drive sync',
+        message: 'Max batch size exceeded for google drive sync',
         cause: '',
         fix: 'Reduce the batchSize to be lower',
         docs: 'https://rxdb.info/replication-google-drive.html?console=errors&code=GDR18'

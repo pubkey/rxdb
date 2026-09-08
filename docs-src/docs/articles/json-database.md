@@ -27,7 +27,7 @@ Storing data as **JSON documents** in a **[NoSQL](./in-memory-nosql-database.md)
 ## Storage and Access Options for JSON Documents
 When incorporating JSON documents into your application, you have several storage and access options to consider:
 
-- **Local In-App Database with In-Memory Storage**: Ideal for lightweight applications or temporary data storage, this option keeps data in memory, ensuring fast read and write operations. However, data is not persistet beyond the current application session, making it suitable for temporary data storage. With RxDB, the [memory RxStorage](../rx-storage-memory.md) can be utilized to create an in-memory database.
+- **Local In-App Database with In-Memory Storage**: Ideal for lightweight applications or temporary data storage, this option keeps data in memory, ensuring fast read and write operations. However, data is not persisted beyond the current application session, making it suitable for temporary data storage. With RxDB, the [memory RxStorage](../rx-storage-memory.md) can be utilized to create an in-memory database.
 
 - **Local In-App Database with Persistent Storage**: Suitable for applications requiring data retention across sessions. Data is stored on the user's device or inside of the Node.js application, offering persistence between application sessions. It balances speed and data retention, making it versatile for various applications. With RxDB, a whole range of persistent storages is available. As example, for browser there is the [IndexedDB storage](../rx-storage-indexeddb.md). For server side applications, the [Node.js Filesystem storage](../rx-storage-filesystem-node.md) can be used. There are [many more storages](../rx-storage.md) for React-Native, Flutter, Capacitors.js and others.
 
@@ -87,7 +87,7 @@ Certainly! Let's delve deeper into the performance aspects of RxDB when it comes
 
 2. **Scalability:** As your application grows and your [JSON dataset](./json-based-database.md) expands, RxDB scales gracefully. Its performance remains consistent, enabling you to handle increasingly larger volumes of data without compromising on speed or responsiveness. This scalability is essential for applications that need to accommodate growing user bases and evolving data needs.
 
-3. **Reduced Latency:** RxDB's streamlined data access mechanisms significantly reduce latency when working with JSON data. Whether you're reading from the database, making updates, or synchronizing data between clients and servers, RxDB's optimized operations help minimize the delays often associated with data access. Observed queries are optimized with the [EventReduce algorithm](https://github.com/pubkey/event-reduce) to provide nearly-instand UI updates on data changes.
+3. **Reduced Latency:** RxDB's streamlined data access mechanisms significantly reduce latency when working with JSON data. Whether you're reading from the database, making updates, or synchronizing data between clients and servers, RxDB's optimized operations help minimize the delays often associated with data access. Observed queries are optimized with the [EventReduce algorithm](https://github.com/pubkey/event-reduce) to provide nearly instant UI updates on data changes.
 
 4. **RxStorage Layer**: Because RxDB allows you to swap out the storage layer. A storage with the most optimal performance can be chosen for each runtime while not touching other database code. Depending on the access patterns, you can pick exactly the storage that is best:
 
