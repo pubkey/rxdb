@@ -32,7 +32,7 @@ Applications that call a remote server for every interaction show loading spinne
 
 ### 2. The App Works Without a Network
 
-When the device is offline, in a tunnel, on a plane, or on a flaky mobile connection, the app keeps working. Users can read their data and make changes, and the [Sync Engine](../replication.md) pushes those changes to the server when the connection comes back. For field worker apps, point-of-sale systems, and mobile apps in general, this is the difference between a usable product and an error page.
+When the device is offline, in a tunnel, on a plane, or on a flaky mobile connection, the app keeps working. Users can read their data and make changes, and the [Sync Engine](../replication.md) pushes those changes to the server when the connection comes back. For field worker apps, point-of-sale systems, and mobile apps in general, this is the difference between a usable product and an error page. Teams that work in [DDIL environments](./ddil-database.md), where the network is denied, disrupted, intermittent, or limited by default, have to design for this case from the start.
 
 ### 3. Realtime UI Updates
 
