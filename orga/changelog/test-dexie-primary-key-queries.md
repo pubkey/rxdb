@@ -1,1 +1,1 @@
-- TEST add a Dexie RxStorage regression test for primary-key queries. Refs #9061.
+- TEST add a Dexie RxStorage regression test for primary-key queries after cleanup and reinsertion. Refs #9061.
