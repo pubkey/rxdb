@@ -33,7 +33,8 @@ import {
     requestIdlePromise,
     promiseSeries,
     prepareQuery,
-    runXTimes
+    runXTimes,
+    ensureNotFalsy
 } from '../../plugins/core/index.mjs';
 
 
@@ -1391,6 +1392,101 @@ describe(testContext + ' (implementation: ' + config.storage.name + ')', () => {
 
             await awaitRxStorageReplicationFirstInSync(replicationState);
             await cleanUp(replicationState, masterInstance);
+        });
+        /**
+         * The upstream initial sync throttles the reads from the fork instance
+         * by awaiting the running persistToMaster() promises when the master
+         * is slower than the fork. When the replication got canceled while it
+         * waited, the fork instance might already be closed, so it must not
+         * be read from anymore.
+         * This happened with a fast RxStorage (rxdb-premium IndexedDB) during an
+         * interrupted schema migration: RxMigrationState.cancel() canceled the
+         * replication and closed the old storage, the upstream then called
+         * getChangedDocumentsSince() on the closed instance and the
+         * "instance is closed" error ended up as an unhandled rejection.
+         */
+        it('must not read from the fork instance after the replication was canceled', async () => {
+            const masterInstance = await createRxStorageInstance(0);
+            const forkInstance = await createRxStorageInstance(100);
+            const metaInstance = await createMetaInstance(forkInstance.schema);
+
+            /**
+             * Track reads on the fork instance that happen after it was closed.
+             * Return an empty result instead of throwing so that a regression
+             * shows up as a failed assertion and not as an unhandled rejection.
+             */
+            let forkClosed = false;
+            let forkReadsAfterClose = 0;
+            const queryBefore = forkInstance.query.bind(forkInstance);
+            forkInstance.query = (preparedQuery: any) => {
+                if (forkClosed) {
+                    forkReadsAfterClose = forkReadsAfterClose + 1;
+                    return Promise.resolve({ documents: [] });
+                }
+                return queryBefore(preparedQuery);
+            };
+            if (forkInstance.getChangedDocumentsSince) {
+                const getChangedDocumentsSinceBefore = forkInstance.getChangedDocumentsSince.bind(forkInstance);
+                forkInstance.getChangedDocumentsSince = (limit: number, checkpoint?: any) => {
+                    if (forkClosed) {
+                        forkReadsAfterClose = forkReadsAfterClose + 1;
+                        return Promise.resolve({ documents: [], checkpoint });
+                    }
+                    return getChangedDocumentsSinceBefore(limit, checkpoint);
+                };
+            }
+            const closeBefore = forkInstance.close.bind(forkInstance);
+            forkInstance.close = () => {
+                forkClosed = true;
+                return closeBefore();
+            };
+
+            const baseHandler = rxStorageInstanceToReplicationHandler(
+                masterInstance,
+                THROWING_CONFLICT_HANDLER,
+                randomToken(10)
+            );
+            let cancelPromise: Promise<void> | undefined;
+            const replicationState = replicateRxStorageInstance({
+                identifier: randomToken(10),
+                replicationHandler: {
+                    masterChangeStream$: baseHandler.masterChangeStream$,
+                    masterChangesSince: baseHandler.masterChangesSince,
+                    masterWrite: async (rows) => {
+                        // a slow master makes the upstream throttle its reads from the fork
+                        await wait(20);
+                        if (!cancelPromise) {
+                            /**
+                             * Cancel while a batch is pushed and close the fork instance,
+                             * like RxMigrationState.cancel() does when a migration is interrupted.
+                             */
+                            cancelPromise = cancelRxStorageReplication(replicationState)
+                                .then(() => forkInstance.close());
+                            await cancelPromise;
+                        }
+                        return baseHandler.masterWrite(rows);
+                    }
+                },
+                forkInstance,
+                metaInstance,
+                pullBatchSize: 10,
+                pushBatchSize: 10,
+                conflictHandler: THROWING_CONFLICT_HANDLER,
+                skipStoringPullMeta: false,
+                hashFunction: defaultHashSha256
+            });
+            ensureReplicationHasNoErrors(replicationState);
+
+            await waitUntil(() => !!cancelPromise);
+            await ensureNotFalsy(cancelPromise);
+            await awaitRxStorageReplicationInSync(replicationState);
+
+            assert.strictEqual(forkReadsAfterClose, 0, 'the fork instance was read after it was closed');
+
+            await Promise.all([
+                masterInstance.close(),
+                metaInstance.remove()
+            ]);
         });
     });
 });
