@@ -161,6 +161,15 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
              */
             if (promises.size > 3) {
                 await Promise.race(Array.from(promises));
+                /**
+                 * The replication might have been canceled while we waited
+                 * for the master, for example when a schema migration is interrupted.
+                 * The forkInstance can already be closed at this point,
+                 * so we must not read from it anymore.
+                 */
+                if (state.events.canceled.getValue()) {
+                    break;
+                }
             }
             const upResult = await getChangedDocumentsSince(
                 state.input.forkInstance,
