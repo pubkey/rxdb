@@ -1073,7 +1073,7 @@ jobs:
 
   test-others-runtimes:
     runs-on: ubuntu-22.04
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v7
       - name: Set node version
@@ -1121,14 +1121,34 @@ jobs:
       - uses: denoland/setup-deno@v2
         with:
           # https://github.com/denoland/deno/releases
-          deno-version: "2.9.5"
+          # deno 2.6.6 and newer deadlock while resolving the module graph of
+          # the test suite, so the run produces no output and never exits.
+          # 2.6.5 is the newest version that runs the tests, renovate is
+          # capped to it in renovate.json.
+          deno-version: "2.6.5"
       - name: run deno tests:dexie
+        timeout-minutes: 12
         run: |
           sudo npm i -g cross-env
           deno info
-          timeout 30m bash -c 'until npm run test:deno:dexie; do sleep 5; done'
+          for attempt in 1 2; do
+            echo "### deno dexie tests, attempt $attempt"
+            if timeout -k 30s 5m npm run test:deno:dexie; then
+              exit 0
+            fi
+          done
+          echo "deno dexie tests did not pass in 2 attempts"
+          exit 1
       - name: run deno tests:denokv
+        timeout-minutes: 22
         run: |
           sudo npm i -g cross-env
           deno info
-          timeout 30m bash -c 'until npm run test:deno:denokv; do sleep 5; done'
+          for attempt in 1 2; do
+            echo "### deno denokv tests, attempt $attempt"
+            if timeout -k 30s 10m npm run test:deno:denokv; then
+              exit 0
+            fi
+          done
+          echo "deno denokv tests did not pass in 2 attempts"
+          exit 1

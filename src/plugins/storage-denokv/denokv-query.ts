@@ -108,7 +108,15 @@ export async function queryDenoKV<RxDocType>(
         end: [instance.keySpace, indexMeta.indexId, upperBoundString]
     }, {
         consistency: instance.settings.consistencyLevel,
-        limit: (!mustManuallyResort && queryPlan.selectorSatisfiedByIndex) ? skipPlusLimit : undefined,
+        /**
+         * Deno.Kv.list() only accepts a positive integer as limit,
+         * an unlimited query must not pass a limit at all.
+         */
+        limit: (
+            !mustManuallyResort &&
+            queryPlan.selectorSatisfiedByIndex &&
+            Number.isFinite(skipPlusLimit)
+        ) ? skipPlusLimit : undefined,
         batchSize: instance.settings.batchSize
     });
 

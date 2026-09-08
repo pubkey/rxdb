@@ -1,0 +1,1 @@
+- FIX DenoKV [RxStorage](https://rxdb.info/rx-storage.html): a query without a `limit` passed `Infinity` to `Deno.Kv.list()`, which throws `Limit must be a positive integer` since Deno 2.9. Unlimited queries no longer pass a limit at all.
