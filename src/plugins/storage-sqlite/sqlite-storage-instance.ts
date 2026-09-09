@@ -447,20 +447,34 @@ export class RxStorageInstanceSQLite<RxDocType> implements RxStorageInstance<
             throw new Error('closed already');
         }
         const database = await this.internals.databasePromise;
-        const promises = [
-            this.run(
-                database,
-                {
-                    query: `DROP TABLE IF EXISTS "${this.tableName}"`,
-                    params: [],
-                    context: {
-                        method: 'remove',
-                        data: this.tableName
+        /**
+         * The DROP TABLE must run inside of a transaction so that it
+         * goes through TX_QUEUE_BY_DATABASE. All storage instances of one
+         * database share a single connection and adapters like expo-sqlite
+         * throw SQLITE_LOCKED when two statements run on it at the same time.
+         */
+        await sqliteTransaction(
+            database,
+            this.sqliteBasics,
+            async () => {
+                await this.run(
+                    database,
+                    {
+                        query: `DROP TABLE IF EXISTS "${this.tableName}"`,
+                        params: [],
+                        context: {
+                            method: 'remove',
+                            data: this.tableName
+                        }
                     }
-                }
-            )
-        ];
-        await Promise.all(promises);
+                );
+                return 'COMMIT';
+            },
+            {
+                databaseName: this.databaseName,
+                collectionName: this.collectionName
+            }
+        );
         return this.close();
     }
 
