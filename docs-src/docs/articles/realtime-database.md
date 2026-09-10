@@ -104,7 +104,9 @@ const replicationState = await replicateRxCollection({
         async handler(lastCheckpoint, batchSize) {
             const minTimestamp = lastCheckpoint ? lastCheckpoint.updatedAt : 0;
             const response = await fetch(
-                `https://example.com/api/sync/?minUpdatedAt=${minTimestamp}&limit=${batchSize}`
+                `https://example.com/api/sync/` +
+                `?minUpdatedAt=${minTimestamp}` +
+                `&limit=${batchSize}`
             );
             const documents = await response.json();
             return {
