@@ -551,10 +551,14 @@ export class RxMigrationState {
         // cleanup old storages
         this.openStorageInstances.delete(oldStorage);
         this.openStorageInstances.delete(replicationMetaStorageInstance);
-        await Promise.all([
-            oldStorage.remove(),
-            replicationMetaStorageInstance.remove()
-        ]);
+        /**
+         * Remove the storages one after another, not in parallel.
+         * Storages like SQLite share a single connection between all
+         * storage instances of one database and can only run
+         * one operation on it at the same time.
+         */
+        await oldStorage.remove();
+        await replicationMetaStorageInstance.remove();
 
         await cancelRxStorageReplication(replicationState);
     }
