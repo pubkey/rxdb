@@ -173,24 +173,72 @@ A competent realtime application is engineered to offer feedback or results swif
 
 The 16ms budget is also the reason why the two other meanings of realtime matter here. A query that has to cross the network can never hit it. This is what the [optimistic UI](./optimistic-ui.md) pattern and the [local-first](./local-first-future.md) architecture are about: the write goes to the local database first, the UI re-renders from local state, and the replication happens in the background.
 
-## Server-Authoritative Realtime vs Local-First Realtime
+## Managed, Self-Hosted and Local-First Realtime
 
-Two architectures both call themselves realtime, and the difference decides what your app can do when the network is bad.
+Three architectures all call themselves realtime, and the word "server-authoritative" covers two of them that behave differently in practice.
 
-**Server-authoritative** means the server holds the truth and the client holds a cache. Reads that miss the cache go to the server, and a write is confirmed when the server accepted it. The Firebase Realtime Database, Firestore and most hosted realtime backends work this way.
+**Managed realtime backend**: a vendor runs the server and you rent access to it. The truth lives in their cloud, the query engine runs there, and you are billed per operation. The Firebase Realtime Database and Firestore work this way.
 
-**Local-first** means the client holds a full database that is the source of truth for the UI. Reads and writes are local and synchronous from the app's point of view, and the [replication](../replication.md) moves data in the background.
+**Self-hosted server-authoritative**: your own server, on a VPS, on bare metal, or on a Raspberry Pi in the office, holds the truth. The client keeps a cache. Nothing here is metered by a vendor, and the data stays on hardware you control.
 
-| Property | Server-authoritative | Local-first |
-| --- | --- | --- |
-| Read latency | Network round trip on a cache miss | Local storage access |
-| Writes while offline | Queued, often with limits | Normal writes, persisted locally |
-| Query engine | Runs in the cloud, billed per operation | Runs on the device |
-| Cold start without network | Blocked or empty | Full app with all cached data |
-| Cost driver | Reads, writes and transferred bytes | The device the user already paid for |
-| Backend choice | The vendor's | Any, or none |
+**Local-first**: the client holds a full database that is the source of truth for the UI. Reads and writes are local and synchronous from the app's point of view, and the [replication](../replication.md) moves data in the background.
 
-The tradeoff is real in both directions. A local-first database has to ship data to the device, so [initial sync, storage limits and conflict handling](../downsides-of-offline-first.md) become your problem. Local-first is not free. It moves the cost from the bill to the design.
+| Property | Managed realtime backend | Self-hosted server-authoritative | Local-first |
+| --- | --- | --- | --- |
+| Source of truth | The vendor's cloud | Your server | The client, reconciled with your server |
+| Read latency | Round trip when the cache misses | Round trip when the cache misses | Local storage access |
+| Writes while offline | Queued by the SDK, within the vendor's limits | Whatever you implement | Normal writes, persisted locally |
+| Query engine | The vendor's cloud, billed per operation | Your server, bounded by your hardware | The device |
+| Cost driver | Reads, writes and transferred bytes | The machine you run | The device the user already paid for |
+| Scaling ceiling | The vendor's documented limits | Your hardware and your tuning | The client device |
+| Data ownership | The vendor's storage | Yours | Yours, on the device and on your server |
+
+Notice that the metering and the lock-in belong to the first column only. They are properties of renting a backend, not of keeping the truth on a server. When you run the server yourself, "server-authoritative" costs you a machine and the latency of a round trip, and nothing else from that list.
+
+The tradeoff is real in all three directions. A local-first database has to ship data to the device, so [initial sync, storage limits and conflict handling](../downsides-of-offline-first.md) become your problem. Local-first is not free. It moves the cost from the bill to the design.
+
+### RxDB as a Cached Materialized View of Your Backend
+
+The middle column is a valid target, and it is a common one. There are good reasons to keep the server authoritative: access rules that have to be enforced on every read, a dataset that is too large to ship to a browser, or a consistency requirement that no client-side merge can satisfy. Full local-first is then off the table.
+
+RxDB still fits there. Instead of being the source of truth, the local database becomes a **cached materialized view** of the server state:
+
+- The server owns the data. Your API decides what a given user is allowed to see, and it decides the final state of every write.
+- RxDB holds the subset that this user needs, kept current by a [pull-only replication](../replication.md#pull-only-replication) over your own change stream.
+- The UI reads from the local storage, so [reactive queries](../reactivity.md) stay inside the 16ms budget without touching the network.
+- Writes go to your API. The accepted state comes back through the same pull stream, so the client never invents a state the server did not confirm.
+- [Partial sync](../partial-sync.md) scopes the view: several replication states for several slices of data, started and stopped as the user navigates.
+
+```ts
+const replicationState = await replicateRxCollection({
+    collection: myRxCollection,
+    replicationIdentifier: 'view-of-https://example.com/api/heroes',
+    live: true,
+    /**
+     * No push handler.
+     * The server stays the source of truth, so the client
+     * only pulls. RxDB skips the server metadata it would
+     * otherwise store for local writes.
+     */
+    pull: {
+        handler: pullHandler,
+        stream$: pullStream$.asObservable()
+    }
+});
+
+// Writes go through your API, not through the replication.
+async function renameHero(id: string, name: string) {
+    await fetch('/api/heroes/' + id, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name })
+    });
+    // The change comes back on the pull stream and RxDB
+    // updates every subscribed query.
+}
+```
+
+What you keep in this setup: local queries, reactive UI updates, one connection per client instead of one per view, and multi-tab handling through [leader election](../leader-election.md). What you give up: writes while offline, and a staleness window bounded by how fast your stream delivers changes.
 
 ## Where the Hosted Realtime Databases Fall Short
 
@@ -217,7 +265,7 @@ That matters, because downloaded data is what you pay for. On the Blaze plan the
 
 So for a new project, do not start on the Firebase Realtime Database. Google points new customers at Firestore instead of it, the query engine pushes filtering back onto the client without giving that client a real database, the scaling ceiling ends in a manual sharding job, and the data lives in one vendor you cannot move away from.
 
-This is not a Google-specific problem. Every server-authoritative hosted realtime database shares the same structure: the truth is remote, the queries are metered, and the offline story is a cache.
+This is not a Google-specific problem. Every managed realtime database shares the same structure: the truth is remote, the queries are metered, and the offline story is a cache. A server you run yourself keeps the first part and drops the rest.
 
 ## When a Hosted Realtime Backend Still Makes Sense
 
@@ -259,6 +307,11 @@ No. Google's own documentation states "We recommend new customers start with Clo
 <FaqItem question="Which database gives real-time data access in a web app without vendor lock-in?">
 
 **[RxDB](https://rxdb.info)** is a [local-first](./local-first-future.md) database that stores data in the browser through [IndexedDB, OPFS or SQLite](../rx-storage.md) and binds live query Observables directly to React, Angular, Vue and Svelte. The DOM updates whenever local or replicated state changes, and the [replication](../replication.md) works against your own HTTP, GraphQL, CouchDB, MongoDB or WebRTC backend, so the data and the backend stay yours.
+
+</FaqItem>
+<FaqItem question="Can I use RxDB as a cache in front of my own server instead of going fully local-first?">
+
+Yes. When your server has to stay the source of truth, run a [pull-only replication](../replication.md#pull-only-replication) and treat the local database as a cached materialized view: reads and [reactive queries](../reactivity.md) come from local storage, writes go through your API, and the accepted state comes back on the pull stream. You keep local query speed and reactive UI updates, and you give up offline writes. **[Partial sync](../partial-sync.md)** scopes how much of the backend each client holds.
 
 </FaqItem>
 <FaqItem question="How fast does a realtime database have to be?">
