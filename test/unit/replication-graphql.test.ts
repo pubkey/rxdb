@@ -388,7 +388,7 @@ describe('replication-graphql.test.ts', () => {
                     SpawnServer.spawn(testData)
                 ]);
 
-                replicateGraphQL({
+                const replicationState = replicateGraphQL({
                     replicationIdentifier: randomToken(10),
                     collection: c,
                     url: server.url,
@@ -399,11 +399,8 @@ describe('replication-graphql.test.ts', () => {
                     live: false,
                     deletedField: 'deleted'
                 });
-
-                await waitUntil(async () => {
-                    const ds = await c.find().exec();
-                    return ds.length === amount;
-                });
+                ensureReplicationHasNoErrors(replicationState);
+                await replicationState.awaitInitialReplication();
 
                 // all of test-data should be in the database
                 const docs = await c.find().exec();
