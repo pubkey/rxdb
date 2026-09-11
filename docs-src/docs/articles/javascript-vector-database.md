@@ -56,7 +56,7 @@ Vector databases are highly effective in various types of applications:
 - **Anomaly Detection**: Identifies outliers that differ from the norm.
 - **Classification**: Assigns categories to data based on its vector's nearest neighbors.
 
-In this tutorial, we will build a vector database designed as a **Similarity Search** for **text**. For other use cases, the setup can be adapted accordingly. This flexibility is why [RxDB](https://rxdb.info/) doesn't provide a dedicated vector-database plugin, but rather offers utility functions to help you build your own vector search system.
+In this tutorial, we will build a vector database designed as a **Similarity Search** for **text**. For other use cases, the setup can be adapted accordingly. This flexibility is why [RxDB](https://rxdb.info/) offers utility functions to help you build your own vector search system on top of your data. When you do not want to build the index yourself, the [vector search plugin](../vector-search.md) ships a ready to use quantized index that keeps itself in sync with your collection.
 
 <center>
         <img src="../files/icons/transformers.js.svg" alt="transformers.js" width="40" />
@@ -253,7 +253,7 @@ This setup allows us to utilize the full hardware capacity of the client's machi
 
 ## Comparing Vectors by calculating the distance
 
-Now that we have stored our embeddings in the database, the next step is to compare these vectors to each other. Various methods are available to measure the similarity or difference between two vectors, such as [Euclidean distance](https://en.wikipedia.org/wiki/Euclidean_distance), [Manhattan distance](https://www.singlestore.com/blog/distance-metrics-in-machine-learning-simplfied/), [Cosine similarity](https://tomhazledine.com/cosine-similarity/), and **Jaccard similarity** (and more). RxDB provides utility functions for each of these methods, making it easy to choose the most suitable method for your application. In this tutorial, we will use **Euclidean distance** to compare vectors. However, the ideal algorithm may vary depending on your data's distribution and the specific type of query you are performing. To find the optimal method for your app, it is up to you to try out all of these and compare the results.
+Now that we have stored our embeddings in the database, the next step is to compare these vectors to each other. Various methods are available to measure the similarity or difference between two vectors, such as [Euclidean distance](https://en.wikipedia.org/wiki/Euclidean_distance), [Manhattan distance](https://www.singlestore.com/blog/distance-metrics-in-machine-learning-simplfied/), [Cosine similarity](https://tomhazledine.com/cosine-similarity/), and **Jaccard similarity** (and more). RxDB provides utility functions for each of these methods, and the same methods can be used on a compressed index with the [vector search plugin](../vector-search.md), making it easy to choose the most suitable method for your application. In this tutorial, we will use **Euclidean distance** to compare vectors. However, the ideal algorithm may vary depending on your data's distribution and the specific type of query you are performing. To find the optimal method for your app, it is up to you to try out all of these and compare the results.
 
 Each method gets two vectors as input and returns a single number. Here's how to calculate the Euclidean distance between two embeddings with the vector utilities from RxDB:
 
@@ -310,6 +310,7 @@ To address the scalability issue, we need to store embeddings in a way that allo
 
 Various methods exist for indexing these vectors to improve query efficiency and performance:
 
+- **Quantization**: Instead of avoiding comparisons, quantization makes each comparison cheaper by storing an approximation of every vector. The [TurboQuant vector search plugin](../vector-search.md) stores 4 bits per dimension instead of 32, so a full scan reads 8 times less data and still finds the true nearest neighbor in nearly all cases.
 - [Locality Sensitive Hashing (LSH)](https://www.youtube.com/watch?v=Arni-zkqMBA): LSH hashes data so that similar items are likely to fall into the same bucket, optimizing approximate nearest neighbor searches in high-dimensional spaces by reducing the number of comparisons.
 - [Hierarchical Small World](https://www.youtube.com/watch?v=77QH0Y2PYKg): HSW is a graph structure designed for efficient navigation, allowing quick jumps across the graph while maintaining short paths between nodes, forming the basis for HNSW's optimization.
 - [Hierarchical Navigable Small Worlds (HNSW)](https://www.youtube.com/watch?v=77QH0Y2PYKg): HNSW builds a hierarchical graph for fast approximate nearest neighbor search. It uses multiple layers where higher layers represent fewer, more connected nodes, improving search efficiency in large datasets​.
