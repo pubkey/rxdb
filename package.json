@@ -662,7 +662,7 @@
     "karma-opera-launcher": "1.0.0",
     "karma-safari-launcher": "1.0.0",
     "karma-sourcemap-loader": "0.4.0",
-    "karma-spec-reporter": "0.0.36",
+    "karma-spec-reporter": "0.0.37",
     "karma-webpack": "5.0.1",
     "madge": "8.0.0",
     "microsoft-onedrive-mock": "1.0.5",
