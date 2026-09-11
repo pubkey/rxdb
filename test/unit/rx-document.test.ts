@@ -150,7 +150,7 @@ describe('rx-document.test.js', () => {
         it('get undefined on undefined value', async () => {
             const c = await humansCollection.createNested(5);
             const doc = await c.findOne().exec(true);
-            const value = doc.get('foobar');
+            const value = doc.get('foobar' as any);
             assert.strictEqual(value, undefined);
             c.database.close();
         });

@@ -1445,7 +1445,7 @@ describe('rx-storage-query-correctness.test.ts', () => {
                             },
                         ],
                     },
-                    sort: [{ number: 'desc', integer: 'desc' }],
+                    sort: [{ number: 'desc', integer: 'desc' } as any],
                 },
                 expectedResultDocIds: ['one|1|1'],
             },

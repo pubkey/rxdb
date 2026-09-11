@@ -199,7 +199,7 @@ export function getSortComparator<RxDocType>(
     }[] = [];
     query.sort.forEach(sortBlock => {
         const key = Object.keys(sortBlock)[0];
-        const direction = Object.values(sortBlock)[0];
+        const direction = Object.values(sortBlock)[0] as MangoQuerySortDirection;
         sortParts.push({
             key,
             direction,

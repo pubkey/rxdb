@@ -168,7 +168,7 @@ describe('key-compression.test.js', () => {
                     selector: {},
                     skip: 0,
                     sort: [{ id: 'asc' }]
-                } as FilledMangoQuery<SimpleHumanDocumentType>
+                } as any as FilledMangoQuery<SimpleHumanDocumentType>
             );
             const metaDocs = await replicationMetaStorage.query(preparedQuery);
 

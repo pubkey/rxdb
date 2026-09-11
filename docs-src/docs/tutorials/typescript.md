@@ -14,7 +14,7 @@ import {Steps} from '@site/src/components/steps';
 In this tutorial you will learn how to use RxDB with TypeScript.
 We will create a basic database with one collection and several [ORM](../orm.md)-methods, fully typed!
 
-RxDB directly comes with its typings and you do not have to install anything else, however the latest version of RxDB requires that you are using Typescript v3.8 or newer.
+RxDB directly comes with its typings and you do not have to install anything else, however the latest version of RxDB requires that you are using TypeScript v4.1 or newer. This is because the [query typings](../rx-query.md#fully-typed-queries-in-typescript) build the dot-path strings of nested fields with template literal types which were added in TypeScript 4.1.
 Our way to go is
 
 - First define what the documents look like
@@ -263,3 +263,28 @@ console.log(amount);
  */
 myDatabase.close();
 ```
+
+## Typed queries
+
+Queries on a typed collection are type-checked against the document type. The selector keys, the operators and the sort fields must match the fields of `HeroDocType`. A typo in a field name is a compile error instead of a silently empty result set.
+
+```typescript
+// this compiles
+await myDatabase.heroes.find({
+    selector: {
+        age: { $gt: 18 },
+        firstName: { $regex: '^p' }
+    },
+    sort: [{ age: 'asc' }]
+}).exec();
+
+/*
+await myDatabase.heroes.find({
+    selector: {
+        agee: { $gt: 18 } // <- compile error, typo in the field name
+    }
+}).exec();
+*/
+```
+
+When you build queries dynamically, cast them at the call, like `myDatabase.heroes.find(dynamicQuery as MangoQuery<HeroDocType>)`. [Read more about typed queries here](../rx-query.md#fully-typed-queries-in-typescript).

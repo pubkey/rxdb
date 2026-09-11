@@ -81,7 +81,7 @@ describe('internal-indexes.test.js', () => {
                             firstName: 'alice',
                             lastName: 'bob'
                         },
-                        index: myIdx
+                        index: myIdx as any
                     }
                 )
             );

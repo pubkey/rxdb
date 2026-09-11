@@ -1,12 +1,18 @@
 import type { MangoQuerySelector } from '../rx-query.d.ts';
 import type { StringKeys } from '../util.d.ts';
 import type { UpdateQuery } from './update.d.ts';
+import type { WithDeleted } from '../rx-storage.d.ts';
 
 
+/**
+ * CRDT operations run on WithDeleted<RxDocType>
+ * because they also handle the soft-deletion
+ * by setting the _deleted field.
+ */
 export type CRDTEntry<RxDocType> = {
-    selector?: MangoQuerySelector<RxDocType>;
-    ifMatch?: UpdateQuery<RxDocType>;
-    ifNotMatch?: UpdateQuery<RxDocType>;
+    selector?: MangoQuerySelector<WithDeleted<RxDocType>>;
+    ifMatch?: UpdateQuery<WithDeleted<RxDocType>>;
+    ifNotMatch?: UpdateQuery<WithDeleted<RxDocType>>;
 };
 
 /**
