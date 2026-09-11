@@ -35,6 +35,8 @@ Also it uses **angular-universal** to enable server side rendering.
 import 'zone.js/plugins/zone-patch-rxjs';
 ```
 
+- The example includes the [database viewer devtool](https://rxdb.info/dbviewer.html). Click the round button in the bottom right corner to inspect the database. The viewer is mounted outside of the angular zone (see `src/app/components/db-viewer/`), so its internal timers do not trigger change detection.
+
 
 ## Screenshot
 

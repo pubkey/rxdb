@@ -171,6 +171,8 @@ myDb.$.subscribe(changeEvent => console.dir(changeEvent));
 
 Creates a JSON export of every piece of data in every collection of this database. Needs the `json-dump` plugin. [Read more](./json-import-export.md)
 
+An export can also be opened read-only in the [database viewer](./dbviewer.md), which is useful when you cannot reach the device that runs the database.
+
 ```javascript
 const json = await myDatabase.exportJSON();
 ```
