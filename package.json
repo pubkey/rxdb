@@ -606,7 +606,7 @@
     "@babel/plugin-transform-typescript": "7.29.7",
     "@babel/preset-env": "7.29.7",
     "@babel/preset-typescript": "7.29.7",
-    "@eslint/compat": "2.1.0",
+    "@eslint/compat": "2.1.1",
     "@eslint/eslintrc": "3.3.7",
     "@eslint/js": "10.0.1",
     "@mcp-b/webmcp-polyfill": "4.0.0",
