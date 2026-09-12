@@ -493,22 +493,22 @@ jobs:
             ${{ runner.os }}-npm-root-v1-
 
       - name: spelling readme
-        uses: codespell-project/actions-codespell@v2.2
+        uses: codespell-project/actions-codespell@v2.4.3
         with:
           ignore_words_file: config/codespellignore.txt
           path: README.md
       - name: spelling src
-        uses: codespell-project/actions-codespell@v2.2
+        uses: codespell-project/actions-codespell@v2.4.3
         with:
           ignore_words_file: config/codespellignore.txt
           path: src
       - name: spelling docs-src/docs
-        uses: codespell-project/actions-codespell@v2.2
+        uses: codespell-project/actions-codespell@v2.4.3
         with:
           ignore_words_file: config/codespellignore.txt
           path: docs-src/docs
       - name: spelling docs-src/src
-        uses: codespell-project/actions-codespell@v2.2
+        uses: codespell-project/actions-codespell@v2.4.3
         with:
           ignore_words_file: config/codespellignore.txt
           # legal-notice.tsx and privacy.tsx are German, and codespell only
@@ -516,12 +516,12 @@ jobs:
           skip: legal-notice.tsx,privacy.tsx,custom.css
           path: docs-src/src
       - name: spelling docs-src/releases
-        uses: codespell-project/actions-codespell@v2.2
+        uses: codespell-project/actions-codespell@v2.4.3
         with:
           ignore_words_file: config/codespellignore.txt
           path: docs-src/releases
       - name: spelling test
-        uses: codespell-project/actions-codespell@v2.2
+        uses: codespell-project/actions-codespell@v2.4.3
         with:
           ignore_words_file: config/codespellignore.txt
           path: test
