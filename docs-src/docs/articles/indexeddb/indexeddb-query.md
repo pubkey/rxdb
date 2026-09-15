@@ -424,7 +424,7 @@ For picking that index from measurements instead of intuition, the premium [Quer
 
 ### 4. Query Results Are Reactive
 
-Every RxQuery has an observable. You subscribe once, and it emits a new result whenever a write changes the result set, including writes from another browser tab or from replication.
+Every RxQuery has an observable. You subscribe once, and it emits a new result whenever a write changes the result set, including writes from another browser tab or from [syncing IndexedDB with a backend](./indexeddb-sync.md).
 
 ```ts
 db.todos.find({
@@ -478,19 +478,6 @@ A Mango query is written against RxDB, not against IndexedDB. The same query run
 | Schema validation | ❌ | ✅ |
 
 </ComparisonTable>
-
-## When Raw IndexedDB Queries Are Enough
-
-Adding a database on top of IndexedDB is not always the right call. Stay with the native API when all of this holds:
-
-- You read by primary key, or by one index with one condition.
-- Your result sets are small enough that an `Array.filter()` after `getAll()` is not measurable.
-- Your index design is settled, so you will not need a version bump per release.
-- You care about bundle size more than about developer time, because the native API costs zero bytes.
-
-A wrapper is the middle ground. Libraries like [Dexie.js](https://dexie.org/) and `idb` keep the IndexedDB model and give you Promises and a nicer syntax, without a query engine or reactivity. The trade-offs are compared in [the best IndexedDB wrapper](./best-indexeddb-wrapper.md).
-
-Reach for RxDB when queries are the part that hurts: several conditions at once, sorting that no single index covers, pagination, results that have to stay in sync with the UI, or data that also has to [replicate to a server](./indexeddb-sync.md).
 
 ## FAQ
 
