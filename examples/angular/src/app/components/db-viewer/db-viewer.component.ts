@@ -77,7 +77,13 @@ export class DbViewerComponent implements OnInit, AfterViewInit, OnDestroy {
                     this.viewerHandle = mountRxDBViewer({
                         database: this.dbService.db as any,
                         parent: host,
-                        showCloseButton: true
+                        showCloseButton: true,
+                        /**
+                         * Local copy of the hosted viewer page
+                         * (see postinstall:dbviewer), so the example
+                         * works offline and against unreleased builds.
+                         */
+                        viewerUrl: 'assets/dbviewer.html'
                     });
                     /**
                      * The close icon lives inside the viewer chrome,

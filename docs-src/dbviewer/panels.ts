@@ -1,33 +1,20 @@
-import type {
-    RxCollection
-} from '../../index.d.ts';
-import {
-    normalizeMangoQuery,
-    prepareQuery
-} from '../../rx-query-helper.ts';
-import {
-    INDEX_MAX,
-    INDEX_MIN
-} from '../../query-planner.ts';
-import { RXDB_VERSION } from '../utils/index.ts';
-import {
-    clearChildren,
-    el,
-    withCopyButton
-} from './dbviewer-dom.ts';
-import { showViewerError } from './dbviewer-error.ts';
 import {
     analyzeViewerDocuments,
     colorViewerJson,
     formatByteSize,
     formatInteger,
     parseViewerSelector
-} from './dbviewer-helpers.ts';
-import type { ViewerContext } from './dbviewer.ts';
-import type { ViewerFieldType } from './dbviewer-types.ts';
+} from '../../src/plugins/dbviewer/dbviewer-helpers.ts';
+import type { ViewerFieldType } from '../../src/plugins/dbviewer/dbviewer-types.ts';
+import type { PageContext } from './context.ts';
+import {
+    clearChildren,
+    el,
+    withCopyButton
+} from './dom.ts';
+import { showViewerError } from './error.ts';
 
 const SCHEMA_SAMPLE_LIMIT = 1000;
-const STORAGE_SCAN_LIMIT = 5000;
 
 const TYPE_COLORS: { [key in ViewerFieldType]: string } = {
     string: '#199BF1',
@@ -61,7 +48,7 @@ function statCard(label: string, value: string | HTMLElement, color?: string): H
  * presence and value details, plus violations against
  * the declared schema.
  */
-export function renderSchemaPanel(ctx: ViewerContext) {
+export function renderSchemaPanel(ctx: PageContext) {
     const collectionName = ctx.currentCollectionName();
     const panel = el('div', 'rxdbv-panel-scroll');
     ctx.contentHost.appendChild(panel);
@@ -194,7 +181,7 @@ export function renderSchemaPanel(ctx: ViewerContext) {
  * the execution plan derived from the query planner
  * and findings about unindexed parts.
  */
-export function renderQueryLabPanel(ctx: ViewerContext) {
+export function renderQueryLabPanel(ctx: PageContext) {
     const collectionName = ctx.currentCollectionName();
     const panel = el('div', 'rxdbv-panel-scroll');
     ctx.contentHost.appendChild(panel);
@@ -260,131 +247,57 @@ export function renderQueryLabPanel(ctx: ViewerContext) {
     explain();
 }
 
-function collectSelectorFields(selector: any, target: Set<string>) {
-    Object.entries(selector || {}).forEach(([key, value]) => {
-        if (key === '$and' || key === '$or' || key === '$nor') {
-            if (Array.isArray(value)) {
-                value.forEach(sub => collectSelectorFields(sub, target));
-            }
-            return;
-        }
-        if (!key.startsWith('$')) {
-            target.add(key);
-        }
-    });
-}
-
-function selectorHasRegex(selector: any): boolean {
-    if (selector === null || typeof selector !== 'object') {
-        return false;
-    }
-    return Object.entries(selector).some(([key, value]) => {
-        if (key === '$regex') {
-            return true;
-        }
-        return selectorHasRegex(value);
-    });
-}
-
 function runExplain(
-    ctx: ViewerContext,
+    ctx: PageContext,
     collectionName: string,
     selector: any,
     resultHost: HTMLElement
 ) {
-    const database = ctx.source.rawDatabase;
-    const dumpMode = !database;
+    const dumpMode = ctx.source.kind === 'dump';
 
     const started = performance.now();
-    ctx.source.query(collectionName, selector, 0, ctx.pageSize).then(result => {
+    Promise.all([
+        ctx.source.query(collectionName, selector, 0, ctx.pageSize),
+        ctx.source.explain(collectionName, selector)
+    ]).then(([result, plan]) => {
         if (ctx.destroyed) {
             return;
         }
         const elapsed = performance.now() - started;
         const returned = result.total !== null ? result.total : result.docs.length;
 
-        let queryPlan: any = null;
-        let storageInstance: any = null;
-        if (database) {
-            const collection = (database.collections as any)[collectionName] as RxCollection<any>;
-            storageInstance = (collection as any).storageInstance;
-            try {
-                const normalized = normalizeMangoQuery(storageInstance.schema, { selector });
-                const prepared = prepareQuery(storageInstance.schema, normalized as any);
-                queryPlan = (prepared as any).queryPlan;
-            } catch (err) {
-                queryPlan = null;
-            }
-        }
-
         const cards = el('div', 'rxdbv-stat-cards');
-        cards.appendChild(statCard('INDEX USED', queryPlan ? JSON.stringify(queryPlan.index) : (dumpMode ? 'n/a (dump scan)' : 'n/a')));
-        const examinedCard = statCard('EXAMINED', '…', 'var(--rxdbv-warning)');
-        cards.appendChild(examinedCard);
+        cards.appendChild(statCard('INDEX USED', plan.index ? JSON.stringify(plan.index) : (dumpMode ? 'n/a (dump scan)' : 'n/a')));
+        cards.appendChild(statCard('EXAMINED', plan.examined === null ? 'n/a' : formatInteger(plan.examined), 'var(--rxdbv-warning)'));
         cards.appendChild(statCard('RETURNED', formatInteger(returned), 'var(--rxdbv-success)'));
         cards.appendChild(statCard('ELAPSED', elapsed.toFixed(1) + ' ms'));
         resultHost.appendChild(cards);
 
-        const selectorFields = new Set<string>();
-        collectSelectorFields(selector, selectorFields);
-        const unindexedFields = queryPlan
-            ? Array.from(selectorFields).filter(field => !queryPlan.index.includes(field))
-            : [];
-
-        if (queryPlan) {
+        if (plan.index) {
             resultHost.appendChild(el('div', 'rxdbv-section-label', 'EXECUTION PLAN', { style: 'padding-top:0' }));
-            const plan = el('div', 'rxdbv-plan-box');
-            const bounds = queryPlan.index
-                .map((field: string, index: number) => {
-                    const start = queryPlan.startKeys[index];
-                    const end = queryPlan.endKeys[index];
-                    if (start === INDEX_MIN && end === INDEX_MAX) {
-                        return null;
-                    }
-                    if (start === end) {
-                        return field + ' = ' + JSON.stringify(start);
-                    }
-                    return field + ' in [' + JSON.stringify(start) + ' … ' + JSON.stringify(end) + ']';
-                })
-                .filter((entry: string | null) => entry !== null);
-            plan.appendChild(el('div', 'rxdbv-plan-step', [
+            const planBox = el('div', 'rxdbv-plan-box');
+            planBox.appendChild(el('div', 'rxdbv-plan-step', [
                 el('span', 'rxdbv-plan-num', '1'),
-                el('span', 'rxdbv-plan-desc', 'index scan on ' + JSON.stringify(queryPlan.index) + (bounds.length > 0 ? ' — bounds: ' + bounds.join(', ') : ' — full index range'))
+                el('span', 'rxdbv-plan-desc', 'index scan on ' + JSON.stringify(plan.index) + (plan.bounds.length > 0 ? ' — bounds: ' + plan.bounds.join(', ') : ' — full index range'))
             ]));
-            if (!queryPlan.selectorSatisfiedByIndex) {
-                plan.appendChild(el('div', 'rxdbv-plan-step', [
+            if (!plan.selectorSatisfiedByIndex) {
+                planBox.appendChild(el('div', 'rxdbv-plan-step', [
                     el('span', 'rxdbv-plan-num', '2'),
-                    el('span', 'rxdbv-plan-desc', 'in-memory filter — ' + (unindexedFields.length > 0 ? unindexedFields.join(', ') : 'selector re-checked per document'))
+                    el('span', 'rxdbv-plan-desc', 'in-memory filter — ' + (plan.unindexedFields.length > 0 ? plan.unindexedFields.join(', ') : 'selector re-checked per document'))
                 ]));
             }
             const sortStep = el('div', 'rxdbv-plan-step', [
-                el('span', 'rxdbv-plan-num', queryPlan.selectorSatisfiedByIndex ? '2' : '3'),
-                el('span', 'rxdbv-plan-desc', queryPlan.sortSatisfiedByIndex ? 'sort — skipped, index order reused' : 'sort — done in memory after fetching'),
-                el('span', '', queryPlan.sortSatisfiedByIndex ? '0 ms' : '', { style: 'color:var(--rxdbv-success)' })
+                el('span', 'rxdbv-plan-num', plan.selectorSatisfiedByIndex ? '2' : '3'),
+                el('span', 'rxdbv-plan-desc', plan.sortSatisfiedByIndex ? 'sort — skipped, index order reused' : 'sort — done in memory after fetching'),
+                el('span', '', plan.sortSatisfiedByIndex ? '0 ms' : '', { style: 'color:var(--rxdbv-success)' })
             ]);
-            plan.appendChild(sortStep);
-            resultHost.appendChild(plan);
-        }
-
-        // examined: count the documents inside the index bounds
-        const setExamined = (value: string) => {
-            (examinedCard.querySelector('.rxdbv-stat-value') as HTMLElement).textContent = value;
-        };
-        if (queryPlan && queryPlan.selectorSatisfiedByIndex) {
-            setExamined(formatInteger(returned));
-        } else if (storageInstance && queryPlan) {
-            countIndexBounds(storageInstance, queryPlan)
-                .then(count => setExamined(count === null ? 'n/a' : formatInteger(count)))
-                .catch(() => setExamined('n/a'));
-        } else if (dumpMode) {
-            ctx.source.count(collectionName).then(count => setExamined(count === null ? 'n/a' : formatInteger(count)));
-        } else {
-            setExamined('n/a');
+            planBox.appendChild(sortStep);
+            resultHost.appendChild(planBox);
         }
 
         resultHost.appendChild(el('div', 'rxdbv-section-label', 'FINDINGS'));
         let findings = 0;
-        if (selectorHasRegex(selector)) {
+        if (plan.hasRegex) {
             findings = findings + 1;
             resultHost.appendChild(el('div', 'rxdbv-finding rxdbv-danger-box', [
                 el('div', 'rxdbv-finding-title', '✕ This query cannot use an index'),
@@ -394,11 +307,12 @@ function runExplain(
                 ])
             ]));
         }
-        if (unindexedFields.length > 0 && !selectorHasRegex(selector)) {
+        if (plan.index && plan.unindexedFields.length > 0 && !plan.hasRegex) {
             findings = findings + 1;
-            const suggested = JSON.stringify(queryPlan.index.filter((f: string) => selectorFields.has(f)).concat(unindexedFields));
+            const indexedSelectorFields = plan.index.filter(field => !plan.unindexedFields.includes(field) && field !== '_deleted');
+            const suggested = JSON.stringify(indexedSelectorFields.concat(plan.unindexedFields));
             resultHost.appendChild(el('div', 'rxdbv-finding rxdbv-warning-box', [
-                el('div', 'rxdbv-finding-title', '▲ ' + unindexedFields.join(', ') + ' is not covered by the used index'),
+                el('div', 'rxdbv-finding-title', '▲ ' + plan.unindexedFields.join(', ') + ' is not covered by the used index'),
                 el('div', 'rxdbv-finding-body', [
                     'Documents matching the index bounds are re-checked in memory. Add a compound index ',
                     el('code', '', suggested),
@@ -413,56 +327,24 @@ function runExplain(
                     : 'No findings. The selector is fully covered by the used index.')
             ]));
         }
+    }).catch(err => {
+        showViewerError(ctx.root, 'Explain failed', err);
     });
-}
-
-async function countIndexBounds(storageInstance: any, queryPlan: any): Promise<number | null> {
-    try {
-        const boundsSelector: any = {};
-        queryPlan.index.forEach((field: string, index: number) => {
-            if (field === '_deleted') {
-                return;
-            }
-            const start = queryPlan.startKeys[index];
-            const end = queryPlan.endKeys[index];
-            const condition: any = {};
-            if (start === end && start !== INDEX_MIN && start !== INDEX_MAX) {
-                boundsSelector[field] = { $eq: start };
-                return;
-            }
-            if (start !== INDEX_MIN && typeof start !== 'undefined') {
-                condition.$gte = start;
-            }
-            if (end !== INDEX_MAX && typeof end !== 'undefined') {
-                condition.$lte = end;
-            }
-            if (Object.keys(condition).length > 0) {
-                boundsSelector[field] = condition;
-            }
-        });
-        const normalized = normalizeMangoQuery(storageInstance.schema, { selector: boundsSelector });
-        const prepared = prepareQuery(storageInstance.schema, normalized as any);
-        const result = await storageInstance.count(prepared);
-        return typeof result.count === 'number' ? result.count : null;
-    } catch (err) {
-        return null;
-    }
 }
 
 /**
  * Storage panel: engine, per-collection document counts,
- * tombstones and attachment bytes read from the storage
- * instances, plus the cleanup action.
+ * tombstones and attachment bytes collected on the host side,
+ * plus the cleanup action.
  */
-export function renderStoragePanel(ctx: ViewerContext) {
+export function renderStoragePanel(ctx: PageContext) {
     const panel = el('div', 'rxdbv-panel-scroll');
     ctx.contentHost.appendChild(panel);
     panel.appendChild(panelToolbar('Storage'));
 
     const cards = el('div', 'rxdbv-stat-cards');
-    const engineValue = el('span', '', ctx.source.storageName);
-    cards.appendChild(statCard('ENGINE', engineValue as any));
-    cards.appendChild(statCard('DATABASE', ctx.source.databaseName + ' · rxdb v' + RXDB_VERSION));
+    cards.appendChild(statCard('ENGINE', ctx.source.storageName));
+    cards.appendChild(statCard('DATABASE', ctx.source.databaseName + ' · rxdb v' + ctx.source.rxdbVersion));
     const documentsCard = statCard('DOCUMENTS', '…');
     cards.appendChild(documentsCard);
     const attachmentsCard = statCard('ATTACHMENT BYTES', '…');
@@ -483,15 +365,14 @@ export function renderStoragePanel(ctx: ViewerContext) {
     const cleanupHost = el('div');
     panel.appendChild(cleanupHost);
 
-    const collections = ctx.source.listCollections();
-    Promise.all(collections.map(info => collectStorageRow(ctx, info.name))).then(rows => {
+    ctx.source.storageStats().then(stats => {
         if (ctx.destroyed) {
             return;
         }
         let totalDocs = 0;
         let totalTombstones = 0;
         let totalAttachmentBytes = 0;
-        rows.forEach(row => {
+        stats.rows.forEach(row => {
             totalDocs = totalDocs + (row.documents || 0);
             totalTombstones = totalTombstones + (row.tombstones || 0);
             totalAttachmentBytes = totalAttachmentBytes + row.attachmentBytes;
@@ -521,72 +402,22 @@ export function renderStoragePanel(ctx: ViewerContext) {
         (attachmentsCard.querySelector('.rxdbv-stat-value') as HTMLElement).textContent =
             totalAttachmentBytes > 0 ? formatByteSize(totalAttachmentBytes) : '—';
 
-        renderCleanupCard(ctx, cleanupHost, totalTombstones);
+        renderCleanupCard(ctx, cleanupHost, totalTombstones, stats.cleanupSupported);
+    }).catch(err => {
+        showViewerError(ctx.root, 'Reading storage stats failed', err);
     });
 }
 
-type StorageRow = {
-    name: string;
-    documents: number | null;
-    tombstones: number | null;
-    attachmentBytes: number;
-    attachmentCount: number;
-};
-
-async function collectStorageRow(ctx: ViewerContext, collectionName: string): Promise<StorageRow> {
-    const documents = await ctx.source.count(collectionName);
-    const row: StorageRow = {
-        name: collectionName,
-        documents,
-        tombstones: null,
-        attachmentBytes: 0,
-        attachmentCount: 0
-    };
-    const database = ctx.source.rawDatabase;
-    if (!database) {
-        row.tombstones = 0;
-        return row;
-    }
-    const collection = (database.collections as any)[collectionName] as RxCollection<any>;
-    const storageInstance = (collection as any).storageInstance;
-    try {
-        const normalized = normalizeMangoQuery(storageInstance.schema, {
-            selector: { _deleted: { $eq: true } } as any
-        });
-        const prepared = prepareQuery(storageInstance.schema, normalized as any);
-        const countResult = await storageInstance.count(prepared);
-        row.tombstones = typeof countResult.count === 'number' ? countResult.count : null;
-    } catch (err) {
-        row.tombstones = null;
-    }
-    if (collection.schema.jsonSchema.attachments) {
-        try {
-            const normalized = normalizeMangoQuery(storageInstance.schema, { selector: {} });
-            (normalized as any).limit = STORAGE_SCAN_LIMIT;
-            const prepared = prepareQuery(storageInstance.schema, normalized as any);
-            const queryResult = await storageInstance.query(prepared);
-            queryResult.documents.forEach((doc: any) => {
-                Object.values(doc._attachments || {}).forEach((attachment: any) => {
-                    row.attachmentBytes = row.attachmentBytes + (attachment.length || 0);
-                    row.attachmentCount = row.attachmentCount + 1;
-                });
-            });
-        } catch (err) {
-            // attachment sizes stay at 0 when the storage cannot be scanned
-        }
-    }
-    return row;
-}
-
-function renderCleanupCard(ctx: ViewerContext, host: HTMLElement, totalTombstones: number) {
+function renderCleanupCard(
+    ctx: PageContext,
+    host: HTMLElement,
+    totalTombstones: number,
+    cleanupSupported: boolean
+) {
     clearChildren(host);
-    const database = ctx.source.rawDatabase;
-    if (!database) {
+    if (ctx.source.kind === 'dump') {
         return;
     }
-    const collections = Object.entries(database.collections)
-        .filter(([name]) => !name.startsWith('_'));
-    const cleanupSupported = collections.some(([, collection]) => typeof (collection as any).cleanup === 'function');
     const card = el('div', 'rxdbv-cleanup-card', [
         el('div', '', 'Cleanup', { style: 'font-weight:700;font-size:12px' }),
         el('div', 'rxdbv-muted', 'Purges tombstones of deleted documents. Peers whose replication checkpoint predates the cleanup must re-sync from scratch.', {
@@ -597,22 +428,9 @@ function renderCleanupCard(ctx: ViewerContext, host: HTMLElement, totalTombstone
         card.appendChild(el('button', 'rxdbv-btn-danger-outline', 'Run cleanup — purge ' + formatInteger(totalTombstones) + ' tombstones', {
             style: 'margin-top:10px',
             onClick: () => {
-                /**
-                 * Without the cleanup plugin the method stub throws
-                 * synchronously, so the try/catch is needed in
-                 * addition to the promise catch.
-                 */
-                try {
-                    Promise.all(
-                        collections.map(([, collection]) =>
-                            typeof (collection as any).cleanup === 'function'
-                                ? (collection as any).cleanup(0)
-                                : Promise.resolve()
-                        )
-                    ).then(() => ctx.renderContent()).catch(err => showViewerError(ctx.root, 'Cleanup failed', err));
-                } catch (err) {
-                    showViewerError(ctx.root, 'Cleanup failed', err);
-                }
+                ctx.source.cleanup()
+                    .then(() => ctx.renderContent())
+                    .catch(err => showViewerError(ctx.root, 'Cleanup failed', err));
             }
         }));
     } else {
