@@ -23,6 +23,7 @@ import { RxDBMigrationSchemaPlugin } from '../../plugins/migration-schema/index.
 import { RxDBPipelinePlugin } from '../../plugins/pipeline/index.mjs';
 import { RxDBQueryBuilderPlugin } from '../../plugins/query-builder/index.mjs';
 import { RxDBUpdatePlugin } from '../../plugins/update/index.mjs';
+import { RxDBVectorTurboQuantPlugin } from '../../plugins/vector-turboquant/index.mjs';
 
 addRxPlugin(RxDBDevModePlugin);
 
@@ -42,6 +43,7 @@ addRxPlugin(RxDBMigrationSchemaPlugin);
 addRxPlugin(RxDBPipelinePlugin);
 addRxPlugin(RxDBQueryBuilderPlugin);
 addRxPlugin(RxDBUpdatePlugin);
+addRxPlugin(RxDBVectorTurboQuantPlugin);
 
 /**
  * exit with non-zero on unhandledRejection,

@@ -1358,6 +1358,56 @@ export const ERROR_MESSAGES = {
         docs: ''
     },
 
+    // plugins/vector-turboquant
+    VQ1: {
+        message: 'Unsupported bit width for the TurboQuant quantizer',
+        cause: 'The given bitWidth is not one of the supported values.',
+        fix: 'Use one of the supported bit widths, for example 4 for the best recall or 1 for the smallest memory usage.',
+        docs: 'https://rxdb.info/vector-search.html'
+    },
+    VQ2: {
+        message: 'Amount of dimensions must be a positive integer',
+        cause: 'The dimensions option of the vector index is missing or not a positive integer.',
+        fix: 'Set dimensions to the length of the vectors that you want to store, for example 384 for the all-MiniLM-L6-v2 model.',
+        docs: 'https://rxdb.info/vector-search.html'
+    },
+    VQ3: {
+        message: 'Vector has the wrong amount of dimensions',
+        cause: 'The given vector does not have the length that the index was created with.',
+        fix: 'Make sure all vectors come from the same embedding model. Vectors of different models cannot be stored in the same index.',
+        docs: 'https://rxdb.info/vector-search.html'
+    },
+    VQ4: {
+        message: 'The index must be empty when it is calibrated',
+        cause: 'calibrate() changes how the coordinates are mapped to the codebook, so all vectors that were stored before would be read wrong.',
+        fix: 'Run calibrate() before the first vector is added, or clear() the index first.',
+        docs: 'https://rxdb.info/vector-search.html'
+    },
+    VQ5: {
+        message: 'Given data is not a serialized TurboQuant index',
+        cause: 'The magic bytes at the start of the data do not match.',
+        fix: 'Only pass data that was created by serializeTurboQuantIndex().',
+        docs: 'https://rxdb.info/vector-search.html'
+    },
+    VQ6: {
+        message: 'Serialized TurboQuant index is not compatible',
+        cause: 'The data was written by another version of the plugin or with other index settings.',
+        fix: 'Rebuild the index from the source documents and serialize it again.',
+        docs: 'https://rxdb.info/vector-search.html'
+    },
+    VQ7: {
+        message: 'A vector index with this identifier already exists on the collection',
+        cause: 'addVectorIndex() was called twice with the same identifier.',
+        fix: 'Use a different identifier or get the existing index with getVectorIndex().',
+        docs: 'https://rxdb.info/vector-search.html'
+    },
+    VQ8: {
+        message: 'No vector index with this identifier exists on the collection',
+        cause: 'getVectorIndex() was called with an identifier that was never added or that was closed already.',
+        fix: 'Add the vector index with addVectorIndex() before you use it.',
+        docs: 'https://rxdb.info/vector-search.html'
+    },
+
     // custom-index errors
     CI1: {
         message: 'Field not in schema',

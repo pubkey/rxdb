@@ -7,6 +7,7 @@ import './unit/util.test.ts';
  * just single methods
  */
 import './unit/vector-distance.test.ts';
+import './unit/vector-turboquant.test.ts';
 import './unit/custom-index.test.ts';
 import './unit/query-planner.test.ts';
 import './unit/doc-cache.test.ts';

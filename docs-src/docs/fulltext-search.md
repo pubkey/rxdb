@@ -12,7 +12,7 @@ import {Steps} from '@site/src/components/steps';
 # Fulltext Search
 
 To run fulltext search queries on the local data, RxDB has a fulltext search plugin based on [flexsearch](https://github.com/nextapps-de/flexsearch) and [RxPipeline](./rx-pipeline.md). On each write to a given source [RxCollection](./rx-collection.md), an indexer is running to map the written document data into a fulltext search index.
-The index can then be queried efficiently with complex fulltext search operations.
+The index can then be queried efficiently with complex fulltext search operations. Fulltext search matches the words that a user typed. To search by meaning instead of by words, use the [vector search plugin](./vector-search.md) which compares the embeddings of your documents.
 
 
 
