@@ -1,17 +1,14 @@
 import {
-    clearChildren,
-    el
-} from './dbviewer-dom.ts';
-import {
-    readQueryCache
-} from './dbviewer-events.ts';
-import {
     formatInteger,
     formatTimeAgo
-} from './dbviewer-helpers.ts';
-import type { ViewerContext } from './dbviewer.ts';
+} from '../../src/plugins/dbviewer/dbviewer-helpers.ts';
+import type { PageContext } from './context.ts';
+import {
+    clearChildren,
+    el
+} from './dom.ts';
 
-const PARTICLE_COLORS: { [glyph: string]: string } = {
+const PARTICLE_COLORS: { [glyph: string]: string; } = {
     '+': 'var(--rxdbv-success)',
     '~': 'var(--rxdbv-warning)',
     '-': 'var(--rxdbv-danger)',
@@ -21,7 +18,7 @@ const PARTICLE_COLORS: { [glyph: string]: string } = {
     '↓': 'var(--rxdbv-violet)'
 };
 
-const OP_GLYPHS: { [operation: string]: string } = {
+const OP_GLYPHS: { [operation: string]: string; } = {
     INSERT: '+',
     UPDATE: '~',
     DELETE: '-'
@@ -42,7 +39,7 @@ type LaneRefs = {
     sparkHost: HTMLElement;
     remoteHost: HTMLElement;
     row: HTMLElement;
-    lastParticleAt: { [laneKey: string]: number };
+    lastParticleAt: { [laneKey: string]: number; };
     lastPulseAt: number;
     lastExecCount: number;
 };
@@ -52,11 +49,11 @@ type LaneRefs = {
  * real change events, replication feeds and query cache counters.
  * No document contents are drawn, only names, counts and rates.
  */
-export function renderLivePanel(ctx: ViewerContext) {
+export function renderLivePanel(ctx: PageContext) {
     const panel = el('div', 'rxdbv-content', undefined, { style: 'position:relative' });
     ctx.contentHost.appendChild(panel);
     const events = ctx.events;
-    if (!events) {
+    if (!events || ctx.source.kind === 'dump') {
         panel.appendChild(el('div', 'rxdbv-toolbar', [el('span', 'rxdbv-toolbar-title', 'Live')]));
         panel.appendChild(el('div', 'rxdbv-empty-state', [
             el('div', 'rxdbv-empty-inner', [
@@ -97,7 +94,6 @@ export function renderLivePanel(ctx: ViewerContext) {
     panel.appendChild(map);
 
     // app column
-    const database = ctx.source.rawDatabase as any;
     const leaderBadge = el('span', '', 'leader', {
         style: 'font-size:9px;border:1px solid rgba(62,207,142,0.5);color:var(--rxdbv-success);padding:0 5px;font-family:var(--rxdbv-mono);display:none'
     });
@@ -312,13 +308,7 @@ export function renderLivePanel(ctx: ViewerContext) {
         const nothingYet = events.firstEventTime === null;
         emptyHint.style.display = nothingYet ? '' : 'none';
 
-        if (database && typeof database.isLeader === 'function') {
-            try {
-                leaderBadge.style.display = database.isLeader() ? '' : 'none';
-            } catch (err) {
-                leaderBadge.style.display = 'none';
-            }
-        }
+        leaderBadge.style.display = events.isLeader === true ? '' : 'none';
         const totalWriteRate = events.ratePerSecond(events.localWriteTimes);
         const readRate = events.ratePerSecond(events.readTimes);
         appRates.innerHTML = '';
@@ -360,17 +350,15 @@ export function renderLivePanel(ctx: ViewerContext) {
                     ? (lastWrite ? 'last write ' + formatTimeAgo(lastWrite) : 'no write this session')
                     : 'writes ' + rate.toFixed(1) + '/s');
 
-            // live queries from the query cache
-            const collection = database ? database.collections[collectionName] : null;
-            const cachedQueries = collection ? readQueryCache(collection) : [];
-            refs.queriesLink.textContent = cachedQueries.length + ' queries ›';
-            const execCount = cachedQueries.reduce((sum, q) => sum + q.execCount, 0);
-            const hasQueries = cachedQueries.length > 0;
+            // live queries from the polled query cache stats
+            const queryStats = events.liveQueryStats.get(collectionName) || { count: 0, execCount: 0 };
+            refs.queriesLink.textContent = queryStats.count + ' queries ›';
+            const hasQueries = queryStats.count > 0;
             refs.queryLine.classList.toggle('rxdbv-thread', hasQueries);
-            if (refs.lastExecCount >= 0 && execCount > refs.lastExecCount) {
+            if (refs.lastExecCount >= 0 && queryStats.execCount > refs.lastExecCount) {
                 spawnParticle(refs, refs.queryTrack, '◆', false, 'query');
             }
-            refs.lastExecCount = execCount;
+            refs.lastExecCount = queryStats.execCount;
 
             // remote node
             const replications = events.replications.filter(r => r.collectionName === collectionName);
@@ -438,60 +426,58 @@ export function renderLivePanel(ctx: ViewerContext) {
  * Sub-panel listing the cached queries of one collection with
  * subscriber-relevant counters, opened from a collection node.
  */
-function openLiveQueriesSubPanel(ctx: ViewerContext, panel: HTMLElement, collectionName: string) {
-    const database = ctx.source.rawDatabase as any;
-    if (!database) {
+function openLiveQueriesSubPanel(ctx: PageContext, panel: HTMLElement, collectionName: string) {
+    if (ctx.source.kind === 'dump') {
         return;
     }
-    const collection = database.collections[collectionName];
-    if (!collection) {
-        return;
-    }
-    const queries = readQueryCache(collection);
-
-    const backdrop = el('div', 'rxdbv-live-subpanel');
-    const close = () => backdrop.remove();
-    backdrop.addEventListener('click', event => {
-        if (event.target === backdrop) {
-            close();
+    ctx.source.liveQueries(collectionName).then(queries => {
+        if (ctx.destroyed) {
+            return;
         }
-    });
-    const box = el('div', 'rxdbv-live-subpanel-box');
-    box.appendChild(el('div', '', [
-        el('span', '', 'Live queries', { style: 'font-weight:700;font-size:12px' }),
-        el('span', 'rxdbv-dim rxdbv-mono', collectionName + ' · ' + queries.length + ' cached', { style: 'font-size:10px' }),
-        el('div', 'rxdbv-flex1'),
-        el('span', 'rxdbv-close', '×', { onClick: close })
-    ], { style: 'display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid rgba(255,255,255,0.08)' }));
+        const backdrop = el('div', 'rxdbv-live-subpanel');
+        const close = () => backdrop.remove();
+        backdrop.addEventListener('click', event => {
+            if (event.target === backdrop) {
+                close();
+            }
+        });
+        const box = el('div', 'rxdbv-live-subpanel-box');
+        box.appendChild(el('div', '', [
+            el('span', '', 'Live queries', { style: 'font-weight:700;font-size:12px' }),
+            el('span', 'rxdbv-dim rxdbv-mono', collectionName + ' · ' + queries.length + ' cached', { style: 'font-size:10px' }),
+            el('div', 'rxdbv-flex1'),
+            el('span', 'rxdbv-close', '×', { onClick: close })
+        ], { style: 'display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid rgba(255,255,255,0.08)' }));
 
-    const template = '1fr 80px 80px 110px';
-    const header = el('div', 'rxdbv-table-header', [
-        el('div', '', 'query'),
-        el('div', '', 'results'),
-        el('div', '', 'execs'),
-        el('div', '', 'last emit')
-    ]);
-    header.style.gridTemplateColumns = template;
-    box.appendChild(header);
-    queries.forEach(query => {
-        const stale = query.lastEmitTime && Date.now() - query.lastEmitTime > 60 * 1000;
-        const row = el('div', 'rxdbv-table-row rxdbv-mono', [
-            el('div', '', query.queryString, { title: query.queryString }),
-            el('div', 'rxdbv-muted', query.resultCount === null ? '—' : formatInteger(query.resultCount)),
-            el('div', 'rxdbv-muted', formatInteger(query.execCount)),
-            el('div', '', query.lastEmitTime ? formatTimeAgo(query.lastEmitTime) : '—', {
-                style: stale ? 'color:var(--rxdbv-warning)' : ''
-            })
+        const template = '1fr 80px 80px 110px';
+        const header = el('div', 'rxdbv-table-header', [
+            el('div', '', 'query'),
+            el('div', '', 'results'),
+            el('div', '', 'execs'),
+            el('div', '', 'last emit')
         ]);
-        row.style.gridTemplateColumns = template;
-        if (stale) {
-            row.style.background = 'rgba(235,203,75,0.07)';
+        header.style.gridTemplateColumns = template;
+        box.appendChild(header);
+        queries.forEach(query => {
+            const stale = query.lastEmitTime && Date.now() - query.lastEmitTime > 60 * 1000;
+            const row = el('div', 'rxdbv-table-row rxdbv-mono', [
+                el('div', '', query.queryString, { title: query.queryString }),
+                el('div', 'rxdbv-muted', query.resultCount === null ? '—' : formatInteger(query.resultCount)),
+                el('div', 'rxdbv-muted', formatInteger(query.execCount)),
+                el('div', '', query.lastEmitTime ? formatTimeAgo(query.lastEmitTime) : '—', {
+                    style: stale ? 'color:var(--rxdbv-warning)' : ''
+                })
+            ]);
+            row.style.gridTemplateColumns = template;
+            if (stale) {
+                row.style.background = 'rgba(235,203,75,0.07)';
+            }
+            box.appendChild(row);
+        });
+        if (queries.length === 0) {
+            box.appendChild(el('div', 'rxdbv-dim', 'No cached queries on this collection right now.', { style: 'padding:10px 12px;font-size:11px' }));
         }
-        box.appendChild(row);
+        backdrop.appendChild(box);
+        panel.appendChild(backdrop);
     });
-    if (queries.length === 0) {
-        box.appendChild(el('div', 'rxdbv-dim', 'No cached queries on this collection right now.', { style: 'padding:10px 12px;font-size:11px' }));
-    }
-    backdrop.appendChild(box);
-    panel.appendChild(backdrop);
 }

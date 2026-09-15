@@ -1,11 +1,11 @@
 import {
-    createCopyButton,
-    el
-} from './dbviewer-dom.ts';
-import {
     colorViewerJson,
     sanitizeViewerValue
-} from './dbviewer-helpers.ts';
+} from '../../src/plugins/dbviewer/dbviewer-helpers.ts';
+import {
+    createCopyButton,
+    el
+} from './dom.ts';
 
 export const VIEWER_DOCS_BASE_URL = 'https://rxdb.info/';
 

@@ -1,22 +1,23 @@
-import {
-    clearChildren,
-    downloadJson,
-    el,
-    withCopyButton
-} from './dbviewer-dom.ts';
-import { showViewerError } from './dbviewer-error.ts';
+import { stripInternalFields } from '../../src/plugins/dbviewer/dbviewer-data.ts';
 import {
     buildViewerWillRun,
-    colorViewerJson,
     escapeHtml,
+    colorViewerJson,
     formatInteger,
     formatTimeAgo,
     parseViewerSelector,
     shortRev,
     viewerTypeOf
-} from './dbviewer-helpers.ts';
-import { stripInternalFields } from './dbviewer-data.ts';
-import type { ViewerContext } from './dbviewer.ts';
+} from '../../src/plugins/dbviewer/dbviewer-helpers.ts';
+import type { PageContext } from './context.ts';
+import {
+    base64ToBlob,
+    clearChildren,
+    downloadJson,
+    el,
+    withCopyButton
+} from './dom.ts';
+import { showViewerError } from './error.ts';
 
 const HISTORY_STORAGE_KEY = 'rxdb-dbviewer-queries';
 
@@ -44,7 +45,7 @@ type CollectionUiState = {
     historyOpen: boolean;
 };
 
-function getUiState(ctx: ViewerContext, collectionName: string): CollectionUiState {
+function getUiState(ctx: PageContext, collectionName: string): CollectionUiState {
     let state = ctx.collectionState.get(collectionName);
     if (!state) {
         state = {
@@ -102,7 +103,7 @@ function rememberRecentQuery(query: string) {
     writeStoredQueries(stored);
 }
 
-export function renderCollectionScreen(ctx: ViewerContext) {
+export function renderCollectionScreen(ctx: PageContext) {
     const collectionName = ctx.currentCollectionName();
     if (!collectionName) {
         return;
@@ -163,7 +164,7 @@ export function renderCollectionScreen(ctx: ViewerContext) {
             onClick: () => {
                 ctx.source.exportCollection(collectionName).then(data => {
                     downloadJson(ctx.source.databaseName + '-' + collectionName + '.json', data);
-                });
+                }).catch(err => showViewerError(ctx.root, 'Export failed', err));
             }
         })
     ]);
@@ -399,7 +400,7 @@ function pickGridFields(docs: any[], jsonSchema: any, primaryPath: string): stri
 }
 
 function runQuery(
-    ctx: ViewerContext,
+    ctx: PageContext,
     collectionName: string,
     uiState: CollectionUiState,
     resultHost: HTMLElement,
@@ -419,7 +420,7 @@ function runQuery(
 }
 
 function renderResult(
-    ctx: ViewerContext,
+    ctx: PageContext,
     collectionName: string,
     uiState: CollectionUiState,
     resultHost: HTMLElement,
@@ -443,7 +444,7 @@ function renderResult(
         return;
     }
 
-    let docs = result.docs.slice();
+    const docs = result.docs.slice();
     if (uiState.sortField) {
         const field = uiState.sortField;
         const direction = uiState.sortDirection;
@@ -466,7 +467,7 @@ function renderResult(
 }
 
 function renderTableView(
-    ctx: ViewerContext,
+    ctx: PageContext,
     collectionName: string,
     uiState: CollectionUiState,
     resultHost: HTMLElement,
@@ -560,7 +561,7 @@ function renderTableView(
 }
 
 function buildSelectAllCheckbox(
-    ctx: ViewerContext,
+    ctx: PageContext,
     uiState: CollectionUiState,
     docs: any[],
     primaryPath: string
@@ -581,7 +582,7 @@ function buildSelectAllCheckbox(
 }
 
 function startInlineEdit(
-    ctx: ViewerContext,
+    ctx: PageContext,
     collectionName: string,
     uiState: CollectionUiState,
     doc: any,
@@ -617,7 +618,7 @@ function startInlineEdit(
 }
 
 function renderJsonView(
-    ctx: ViewerContext,
+    ctx: PageContext,
     uiState: CollectionUiState,
     resultHost: HTMLElement,
     docs: any[],
@@ -649,7 +650,7 @@ function renderJsonView(
 }
 
 function renderFooter(
-    ctx: ViewerContext,
+    ctx: PageContext,
     collectionName: string,
     uiState: CollectionUiState,
     footerHost: HTMLElement,
@@ -712,7 +713,7 @@ function renderFooter(
 }
 
 function renderEmptyCollection(
-    ctx: ViewerContext,
+    ctx: PageContext,
     collectionName: string,
     uiState: CollectionUiState,
     resultHost: HTMLElement
@@ -737,7 +738,7 @@ function renderEmptyCollection(
 }
 
 function renderNoMatches(
-    ctx: ViewerContext,
+    ctx: PageContext,
     collectionName: string,
     uiState: CollectionUiState,
     resultHost: HTMLElement
@@ -772,7 +773,7 @@ function renderNoMatches(
 }
 
 function openDrawer(
-    ctx: ViewerContext,
+    ctx: PageContext,
     collectionName: string,
     uiState: CollectionUiState,
     doc: any,
@@ -789,7 +790,7 @@ function openDrawer(
 }
 
 function openNewDocumentDrawer(
-    ctx: ViewerContext,
+    ctx: PageContext,
     collectionName: string,
     uiState: CollectionUiState
 ) {
@@ -849,7 +850,7 @@ function buildDrawerDocument(drawer: DrawerState): { doc: any; changedFields: st
 }
 
 function buildDrawer(
-    ctx: ViewerContext,
+    ctx: PageContext,
     collectionName: string,
     primaryPath: string,
     uiState: CollectionUiState,
@@ -1022,30 +1023,17 @@ function buildDrawer(
 }
 
 function renderDrawerAttachments(
-    ctx: ViewerContext,
+    ctx: PageContext,
     collectionName: string,
     drawer: DrawerState,
     container: HTMLElement
 ) {
-    const database = ctx.source.rawDatabase;
-    if (!database || !drawer.docId) {
+    if (ctx.source.kind !== 'live' || !drawer.docId) {
         return;
     }
-    const collection = (database.collections as any)[collectionName];
-    if (!collection) {
-        return;
-    }
-    collection.findOne(drawer.docId).exec().then((rxDocument: any) => {
-        if (!rxDocument || typeof rxDocument.allAttachments !== 'function' || ctx.destroyed) {
-            return;
-        }
-        let attachments: any[] = [];
-        try {
-            attachments = rxDocument.allAttachments();
-        } catch (err) {
-            return;
-        }
-        if (attachments.length === 0) {
+    const docId = drawer.docId;
+    ctx.source.getAttachments(collectionName, docId).then(attachments => {
+        if (ctx.destroyed || attachments.length === 0) {
             return;
         }
         container.appendChild(el('div', 'rxdbv-drawer-section rxdbv-bordered', 'ATTACHMENTS · ' + attachments.length));
@@ -1058,8 +1046,11 @@ function renderDrawerAttachments(
                 el('a', '', 'download', {
                     style: 'font-size:10px',
                     onClick: () => {
-                        attachment.getData().then((blobData: Blob) => {
-                            const url = URL.createObjectURL(blobData);
+                        ctx.source.getAttachmentData(collectionName, docId, attachment.id).then(data => {
+                            if (!data) {
+                                return;
+                            }
+                            const url = URL.createObjectURL(base64ToBlob(data.base64, data.type));
                             const link = document.createElement('a');
                             link.href = url;
                             link.download = attachment.id;
@@ -1071,8 +1062,11 @@ function renderDrawerAttachments(
             ]));
             if (attachment.type && String(attachment.type).startsWith('image/')) {
                 const preview = el('div', 'rxdbv-attachment-preview');
-                attachment.getData().then((blobData: Blob) => {
-                    const url = URL.createObjectURL(blobData);
+                ctx.source.getAttachmentData(collectionName, docId, attachment.id).then(data => {
+                    if (!data) {
+                        return;
+                    }
+                    const url = URL.createObjectURL(base64ToBlob(data.base64, data.type));
                     const image = document.createElement('img');
                     image.src = url;
                     image.alt = attachment.id;
@@ -1086,7 +1080,7 @@ function renderDrawerAttachments(
 }
 
 function openDeleteModal(
-    ctx: ViewerContext,
+    ctx: PageContext,
     collectionName: string,
     uiState: CollectionUiState
 ) {

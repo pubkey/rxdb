@@ -1,23 +1,23 @@
 import {
-    clearChildren,
-    el
-} from './dbviewer-dom.ts';
-import {
     diffViewerJson,
     escapeHtml,
     formatByteSize,
     formatClockTime,
     formatInteger,
     shortRev
-} from './dbviewer-helpers.ts';
-import type { ViewerChangeEntry } from './dbviewer-types.ts';
-import type { ViewerContext } from './dbviewer.ts';
+} from '../../src/plugins/dbviewer/dbviewer-helpers.ts';
+import type { ViewerChangeEntry } from '../../src/plugins/dbviewer/dbviewer-types.ts';
+import type { PageContext } from './context.ts';
+import {
+    clearChildren,
+    el
+} from './dom.ts';
 
 /**
  * Replication panel: per-collection pull/push states with
  * last errors, and the live feed of replicated documents.
  */
-export function renderReplicationPanel(ctx: ViewerContext) {
+export function renderReplicationPanel(ctx: PageContext) {
     const panel = el('div', 'rxdbv-panel-scroll');
     ctx.contentHost.appendChild(panel);
     const events = ctx.events;
@@ -149,7 +149,7 @@ export function renderReplicationPanel(ctx: ViewerContext) {
  * Changes panel: master/detail split with the live write feed
  * on the left and a unified diff of the selected change on the right.
  */
-export function renderChangesPanel(ctx: ViewerContext) {
+export function renderChangesPanel(ctx: PageContext) {
     const panel = el('div', 'rxdbv-content');
     ctx.contentHost.appendChild(panel);
     const events = ctx.events;
