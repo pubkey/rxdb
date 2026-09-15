@@ -54,6 +54,13 @@ export type RxDBViewerOptions = {
      * [default=false]
      */
     showCloseButton?: boolean;
+    /**
+     * Url of the viewer page that is loaded into the iframe.
+     * The page is a single self-contained html file, so the
+     * viewer UI is not part of the rxdb build.
+     * [default='https://rxdb.info/dbviewer/index.html']
+     */
+    viewerUrl?: string;
 };
 
 export type RxDBViewerHandle = {
@@ -136,4 +143,126 @@ export type ViewerReplicationFeedEntry = {
     documentId: string;
     rev?: string;
     byteSize: number;
+};
+
+/**
+ * Info handed from the host to the viewer page
+ * in the rxdbv-init message.
+ */
+export type ViewerInfo = {
+    databaseName: string;
+    storageName: string;
+    rxdbVersion: string;
+    readOnly: boolean;
+    /**
+     * 0 when the host did not set a page size, the page
+     * then falls back to its stored setting or 100.
+     */
+    pageSize: number;
+    showCloseButton: boolean;
+    dump?: RxDBViewerDump;
+    dumpFilename?: string;
+};
+
+export type ViewerExplainResult = {
+    index: string[] | null;
+    bounds: string[];
+    selectorSatisfiedByIndex: boolean;
+    sortSatisfiedByIndex: boolean;
+    unindexedFields: string[];
+    hasRegex: boolean;
+    examined: number | null;
+};
+
+export type ViewerStorageStatsRow = {
+    name: string;
+    documents: number | null;
+    tombstones: number | null;
+    attachmentBytes: number;
+    attachmentCount: number;
+};
+
+export type ViewerStorageStats = {
+    rows: ViewerStorageStatsRow[];
+    cleanupSupported: boolean;
+};
+
+export type ViewerReplicationSnapshot = {
+    collectionName: string;
+    identifier: string;
+    active: boolean;
+    stopped: boolean;
+    lastError: string | null;
+    lastErrorTime: number | null;
+};
+
+export type ViewerLiveQuerySnapshot = {
+    queryString: string;
+    resultCount: number | null;
+    execCount: number;
+    lastEmitTime: number | null;
+};
+
+export type ViewerLiveQueryCollectionStats = {
+    count: number;
+    execCount: number;
+};
+
+export type ViewerStatsSnapshot = {
+    replications: ViewerReplicationSnapshot[];
+    isLeader: boolean | null;
+    reads: number;
+    liveQueries: { [collectionName: string]: ViewerLiveQueryCollectionStats; };
+};
+
+/**
+ * Events recorded on the host side before the viewer page
+ * was ready, fetched once so the page starts with
+ * the same buffers as the host.
+ */
+export type ViewerBacklog = {
+    changes: ViewerChangeEntry[];
+    replicationFeed: ViewerReplicationFeedEntry[];
+};
+
+export type ViewerAttachmentInfo = {
+    id: string;
+    type: string;
+    length: number;
+};
+
+/**
+ * The postMessage protocol between the host window
+ * (rxdb plugin) and the viewer page inside the iframe.
+ */
+export type ViewerBridgeRequestMessage = {
+    type: 'rxdbv-request';
+    requestId: number;
+    method: string;
+    params: any[];
+};
+export type ViewerBridgeResponseMessage = {
+    type: 'rxdbv-response';
+    requestId: number;
+    result?: any;
+    error?: {
+        message: string;
+        code?: string;
+        parameters?: any;
+    };
+};
+export type ViewerBridgeEventMessage = {
+    type: 'rxdbv-event';
+    name: 'change' | 'replication-feed';
+    payload: any;
+};
+export type ViewerReadyMessage = {
+    type: 'rxdbv-ready';
+};
+export type ViewerCloseMessage = {
+    type: 'rxdbv-close';
+};
+export type ViewerInitMessage = {
+    type: 'rxdbv-init';
+    info: ViewerInfo;
 };

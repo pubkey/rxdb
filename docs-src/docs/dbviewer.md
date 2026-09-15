@@ -20,9 +20,15 @@ Key features:
 - **Changes and replication feeds**: A network-tab style list of all writes with a unified diff per change, and per-collection pull/push states with a live feed of replicated documents.
 - **Storage panel**: Engine, document counts, tombstones and attachment bytes per collection, with a button to run a [cleanup](./cleanup.md) when the cleanup plugin is loaded.
 
+## How it works
+
+The plugin itself contains no UI code. `mountRxDBViewer()` creates an iframe that loads the viewer page, a single self-contained html file hosted at [rxdb.info/dbviewer/index.html](https://rxdb.info/dbviewer/index.html), and serves the database to it over `postMessage`. This keeps the whole viewer UI out of the rxdb build, so the plugin adds only the small bridge to your bundle. Data access, the [query planner](./query-optimizer.md) analysis and the event streams run in your application window, the page inside the iframe is plain UI and never gets direct access to the database object.
+
+When your app has to work without network access, download the page once and serve it from your own origin via the `viewerUrl` option.
+
 ## Usage
 
-The viewer ships as a normal plugin without any framework dependency. Mount it into an element and remove it when you are done:
+Mount the viewer into an element and remove it when you are done:
 
 ```ts
 import { createRxDatabase } from 'rxdb';
@@ -86,7 +92,14 @@ const viewer = mountRxDBViewer({
      * the host decides what closing means.
      * [default=false]
      */
-    showCloseButton: true
+    showCloseButton: true,
+    /**
+     * (optional) Url of the viewer page that is loaded
+     * into the iframe. Point this to a self-hosted copy
+     * when your app must work without network access.
+     * [default='https://rxdb.info/dbviewer/index.html']
+     */
+    viewerUrl: 'assets/dbviewer.html'
 });
 
 viewer.close$.subscribe(() => {
@@ -127,6 +140,7 @@ Deleting documents opens a confirmation that states the blast radius: how many d
 ## Limitations
 
 - The viewer renders into the DOM, so it runs in browsers, Electron renderers and webviews, but not in plain Node.js.
+- By default the viewer page is loaded from rxdb.info, which needs network access on first load. For offline apps, host the page yourself and set `viewerUrl`.
 - Sorting in the grid orders the current page, not the whole collection, because arbitrary fields are not guaranteed to be indexed.
 - The reads counter of the Live map is derived from the query cache counters, so reads that bypass the cache are not counted.
 - Remote pairing to a database on another device is not part of this plugin yet. Use [dump mode](#dump-mode) or the [remote storage](./rx-storage-remote.md) instead.
@@ -137,6 +151,20 @@ Deleting documents opens a confirmation that states the blast radius: how many d
     <summary>Can I inspect an RxDB database in production?</summary>
 
 Yes. The viewer is a normal plugin and mounts wherever you decide to render it, for example behind a feature flag or an admin route. Keep in mind that everyone who can open the viewer can read and edit all data of the local database.
+
+</details>
+
+<details>
+    <summary>Does the dbviewer plugin increase my build size?</summary>
+
+No, not in a relevant way. The viewer UI is a hosted static page that loads inside an iframe, only the mount function and the postMessage bridge are part of the rxdb build. Apps that never call `mountRxDBViewer()` do not load the page at all.
+
+</details>
+
+<details>
+    <summary>Can the viewer page read my database when I do not open it?</summary>
+
+No. The page only receives data through the postMessage bridge that `mountRxDBViewer()` attaches, and the bridge only answers requests of the iframe it created. Without a mount there is no iframe and no bridge.
 
 </details>
 

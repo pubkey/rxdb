@@ -518,6 +518,7 @@
     "build:types": "npm run build:version && rimraf -rf --max-retries=3 ./dist/types && tsc --project ./config/tsconfig.types.json && cp -r ./src/types ./dist/types/types && node ./scripts/fix-types.mjs",
     "build": "npm run clear && npm run build:version && concurrently \"npm run build:cjs\" \"npm run build:esm\" \"npm run build:types\" \"npm run build:plugins\"",
     "build:plugins": "node ./scripts/generate-plugins-package-json.mjs",
+    "build:dbviewer": "node ./scripts/build-dbviewer.mjs",
     "build:webpack": "npm run build && cross-env NODE_ENV=build webpack --config ./config/webpack.config.js",
     "build:rollup": "npm run build && rollup --config ./config/rollup.config.mjs",
     "build:size": "npm run build:webpack && echo \"Build-Size (minified+gzip):\" && gzip-size --raw ./test_tmp/webpack.bundle.js",

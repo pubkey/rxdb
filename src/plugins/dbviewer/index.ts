@@ -8,7 +8,12 @@ export * from './dbviewer-types.ts';
 export * from './dbviewer-helpers.ts';
 export * from './dbviewer-data.ts';
 export * from './dbviewer-events.ts';
-export { mountRxDBViewer } from './dbviewer.ts';
+export * from './dbviewer-analyze.ts';
+export * from './dbviewer-remote.ts';
+export {
+    mountRxDBViewer,
+    DBVIEWER_DEFAULT_URL
+} from './dbviewer.ts';
 
 /**
  * Convenience plugin that adds launchDbViewer()
