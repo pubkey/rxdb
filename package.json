@@ -625,7 +625,7 @@
     "@types/source-map-support": "0.5.10",
     "@typescript-eslint/eslint-plugin": "8.70.0",
     "@typescript-eslint/parser": "8.70.0",
-    "appwrite": "26.2.0",
+    "appwrite": "27.0.0",
     "assert": "2.1.0",
     "async-test-util": "2.5.0",
     "babel-loader": "10.1.1",
