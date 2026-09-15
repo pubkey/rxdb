@@ -41,7 +41,7 @@ Another solution is to just not care about performance at all. In a few releases
 
 Switching to WebSQL (even if it is deprecated) is also not an option because, like [the comparison tool shows](https://pubkey.github.io/client-side-databases/database-comparison/index.html), it has even slower transactions.
 
-So you need a way to **make IndexedDB faster**. In the following I lay out some performance optimizations than can be made to have faster reads and writes in IndexedDB.
+So you need a way to **make IndexedDB faster**. Reading less data by [picking the right index for a query](./articles/indexeddb/indexeddb-query.md) is one part of that. In the following I lay out some performance optimizations than can be made to have faster reads and writes in IndexedDB.
 
 **HINT:** You can reproduce all performance tests [in this repo](https://github.com/pubkey/indexeddb-performance-tests). In all tests we work on a dataset of 40000 `human` documents with a random `age` between `1` and `100`.
 

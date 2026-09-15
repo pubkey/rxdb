@@ -279,7 +279,7 @@ This works in contrast to most other databases where a query without sorting wou
 
 ## Setting a specific index
 
-By default, the query will be sent to the RxStorage, where a query planner will determine which one of the available indexes must be used.
+By default, the query will be sent to the RxStorage, where a query planner will determine which one of the available indexes must be used. This is the step you would otherwise write by hand, as shown in [IndexedDB query](./articles/indexeddb/indexeddb-query.md).
 But the query planner cannot know everything and sometimes will not pick the most optimal index.
 To improve query performance, you can specify which index must be used, when running the query.
 

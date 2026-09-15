@@ -22,7 +22,7 @@ The native IndexedDB API was designed as a building block for library authors, n
 
 - **Callback based**: You handle `onsuccess` and `onerror` on every request, which nests control flow and makes error handling hard.
 - **Manual transactions**: Every operation needs an explicit transaction and object store lookup, which is repetitive boilerplate.
-- **No real queries**: You can only match by key or key range. Anything like "find users older than 18 sorted by name" means iterating a cursor by hand. See [Slow IndexedDB](../../slow-indexeddb.md) for why this also hurts performance.
+- **No real queries**: You can only match by key or key range. Anything like "find users older than 18 sorted by name" means [iterating a cursor by hand](./indexeddb-query.md). See [Slow IndexedDB](../../slow-indexeddb.md) for why this also hurts performance.
 - **No schema**: IndexedDB stores anything. That sounds flexible until inconsistent documents crash your app at runtime.
 - **No change events**: There is no way to subscribe to data changes, so you build your own event bus to keep the UI in sync.
 
