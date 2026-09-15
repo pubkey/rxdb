@@ -8,6 +8,8 @@ image: /headers/indexeddb-query.jpg
 import {Steps} from '@site/src/components/steps';
 import {ComparisonTable} from '@site/src/components/comparison-table';
 import {Faq, FaqItem} from '@site/src/components/faq';
+import { PerformanceChart } from '@site/src/components/performance-chart';
+import { PERFORMANCE_DATA_BROWSER, PERFORMANCE_METRICS } from '@site/src/components/performance-data';
 
 # IndexedDB Query
 
@@ -118,6 +120,48 @@ And three ways to move:
 
 When you only need the keys, `openKeyCursor()` walks the same range without deserializing the record bodies.
 
+### A Query Only Lives as Long as Its Transaction
+
+Every read runs inside a transaction, and that transaction closes itself. There is no `commit()` to call. The browser marks it inactive as soon as control returns to the event loop, and commits it once its outstanding requests are done.
+
+This makes a transaction a bad place to wait for anything that is not IndexedDB. The moment you await a `fetch`, a timer, or a Promise that resolves somewhere else, the transaction goes inactive, and the next read on it throws `TransactionInactiveError`.
+
+```js
+function promisify(request) {
+    return new Promise((resolve, reject) => {
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+    });
+}
+
+// wrong: the transaction is no longer active at the second read
+const tx = db.transaction('todos', 'readonly');
+const store = tx.objectStore('todos');
+
+const first = await promisify(store.get('todo1'));
+await fetch('/api/sync');                            // control leaves IndexedDB
+const second = await promisify(store.get('todo2'));  // TransactionInactiveError
+```
+
+Queue every read you need first, then do the slow work once the transaction is gone.
+
+```js
+// right: both reads are placed before control leaves the transaction
+const tx = db.transaction('todos', 'readonly');
+const store = tx.objectStore('todos');
+
+const [first, second] = await Promise.all([
+    promisify(store.get('todo1')),
+    promisify(store.get('todo2'))
+]);
+
+await fetch('/api/sync');
+```
+
+A cursor walk survives this because each `onsuccess` starts the next request synchronously, which keeps the transaction active. That is why the paging function further down calls `cursor.continue()` inside the handler and never after an `await`.
+
+Two more rules follow from the same mechanism. Several `readonly` transactions over the same store can run at the same time, so concurrent reads do not queue behind each other. But a `readwrite` transaction on that store has to wait for them, so a long cursor walk delays every write to the store it holds.
+
 ### The Result Order Is the Index Order
 
 There is no `sort` parameter anywhere in the API. Records come back in ascending order of the key that was used to read them, or in descending order when the cursor direction is `prev`. That is the only ordering you get for free.
@@ -213,6 +257,48 @@ async function timeQuery(label, run) {
 ```
 
 Run it with the number of documents your heaviest user will have, not with the ten rows in your seed data.
+
+## Running Queries in a Web Worker
+
+IndexedDB is asynchronous, so reading from disk does not block the main thread. The JavaScript around the read does. Deserializing `50k` records, filtering them with `Array.filter()`, and ordering them with `Array.sort()` all run on the main thread, and while they run the page does not render, does not scroll, and does not answer input.
+
+Moving that work into a [Web Worker](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API) removes the freeze. IndexedDB is available inside workers, so the whole query can live there and only the finished result crosses back.
+
+```js
+// query-worker.js
+self.onmessage = async (event) => {
+    const db = await openDatabase(); // the same indexedDB API, inside the worker
+    const tx = db.transaction('todos', 'readonly');
+    const index = tx.objectStore('todos').index('category');
+    const request = index.getAll(IDBKeyRange.only(event.data.category));
+
+    request.onsuccess = () => {
+        // the expensive part runs on the worker thread, not on the main thread
+        const page = request.result
+            .sort((a, b) => b.priority - a.priority)
+            .slice(0, 20);
+        self.postMessage(page);
+    };
+};
+```
+
+```js
+// main thread
+const worker = new Worker('/query-worker.js');
+
+worker.onmessage = (event) => renderList(event.data);
+worker.postMessage({ category: 'work' });
+```
+
+Notice that the result crosses the thread boundary by structured clone, which costs time proportional to how much you send. Sending `50k` documents back to the main thread moves the work instead of removing it. Return the page you render, not the result set you scanned.
+
+A **SharedWorker** goes one step further. It is created once per origin instead of once per tab, so ten open tabs share one worker, one database connection, and one cache, rather than running the same query ten times. It works in Chrome, Firefox, and Safari 16 and later ([MDN](https://developer.mozilla.org/en-US/docs/Web/API/SharedWorker)), and WebKit shipped it, removed it, and brought it back, so a fallback to a dedicated Worker is still worth keeping.
+
+But there is no free lunch. A worker does not make a query faster, it changes what has to wait for it. RxDB's [storage benchmarks](../../rx-storage-performance.md) show the shape of the trade on the OPFS storage: time to first insert goes from `4ms` on the main thread to `27.2ms` in a worker, because the worker has to start and open the database there, while `find-by-query` stays at about `21ms` either way.
+
+So a worker pays off when queries are big enough to drop frames, and it costs you startup time when they are not.
+
+RxDB ships this as a storage option instead of a rewrite. The [👑 Worker RxStorage](../../rx-storage-worker.md) and the [👑 SharedWorker RxStorage](../../rx-storage-shared-worker.md) run any RxStorage in a worker process, and your query code does not change.
 
 ## Code Sample: A Complex Query in Raw IndexedDB
 
@@ -455,6 +541,21 @@ Relations are resolved from the schema with [population](../../population.md), a
 ### 6. The Same Query Runs on Every Storage
 
 A Mango query is written against RxDB, not against IndexedDB. The same query runs on [OPFS](../../rx-storage-opfs.md), [SQLite](../../rx-storage-sqlite.md), [localStorage](../../rx-storage-localstorage.md), or the [memory storage](../../rx-storage-memory.md) in your unit tests. Switching storages is a configuration change, not a rewrite.
+
+## Query Performance Across Storages
+
+Changing the storage moves query performance more than any index tweak, so RxDB measures every storage with the same benchmark. The chart below shows the read-side metrics for the browser storages over a dataset of `3000` documents (lower is better).
+
+<PerformanceChart
+    title="Browser Storage Query Performance"
+    data={PERFORMANCE_DATA_BROWSER}
+    metrics={PERFORMANCE_METRICS}
+    skipMetrics={['time-to-first-insert', 'insert-documents-500', 'serial-inserts-50']}
+/>
+
+Two things are worth reading off it. Fetching all `3000` documents with a single query takes about **58.7ms** on the IndexedDB storage and about **21.2ms** on OPFS, so the storage sets the floor that no index can get you under. And counting stays cheap everywhere: four `count()` runs over the same `3000` documents cost about **18.5ms** on IndexedDB, against **58.7ms** for one query that fetches them. That is the same effect as the raw `index.count(range)` further up, and it is why a count query is the right tool when you only need a number.
+
+The metric definitions, the methodology, and the numbers for Node.js and server storages are on the [storage performance](../../rx-storage-performance.md) page.
 
 ## Comparison Table
 
