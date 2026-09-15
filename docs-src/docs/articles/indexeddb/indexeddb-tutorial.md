@@ -134,7 +134,7 @@ request.onsuccess = () => {
 
 ### Query Records With an Index
 
-To fetch many records by a field, you go through the index you created. `IDBKeyRange.only('work')` limits the result to records where `category` equals `work`.
+To fetch many records by a field, you go through the index you created. `IDBKeyRange.only('work')` limits the result to records where `category` equals `work`. Every condition you want to express has to become a key range like this one, which is covered in [how to query IndexedDB with indexes](./indexeddb-query.md).
 
 ```js
 const tx = db.transaction('todos', 'readonly');
@@ -181,7 +181,7 @@ The tutorial above works, but as soon as your app grows past a demo, the native 
 
 - **Callback-based API**: IndexedDB is built on events, not Promises. You cannot `await` a request, and a transaction auto-commits as soon as control returns to the event loop, so it cannot survive an `await` in the middle. Real code turns into nested `onsuccess` handlers or a pile of manual Promise wrappers.
 - **No reactivity**: The native API has no way to tell you when data changes. If you want your UI to update after a write, you have to build your own event bus and call it from every place that touches the store.
-- **Limited querying**: You can only query by a key or a single-field index range. Anything like "find all not-done todos in category 'work', sorted by name, skip 20, limit 10" means opening a cursor and iterating and filtering by hand. There is no combined filter, sort, skip, and limit. Booleans and plain objects are also not valid IndexedDB keys, so a `done: true/false` field cannot be indexed directly.
+- **Limited querying**: You can only query by a key or a single-field index range. Anything like "find all not-done todos in category 'work', sorted by name, skip 20, limit 10" means [opening a cursor and iterating and filtering by hand](./indexeddb-query.md). There is no combined filter, sort, skip, and limit. Booleans and plain objects are also not valid IndexedDB keys, so a `done: true/false` field cannot be indexed directly.
 - **No schema or validation**: Object stores are schemaless. You can write any shape into them, which feels convenient until one wrong write puts a malformed record on disk and a later read crashes your app.
 - **Slow for many operations**: IndexedDB is not fast, and bulk reads and writes have a lot of overhead. See [Slow IndexedDB](../../slow-indexeddb.md) for the numbers and the reasons.
 - **Storage limits and eviction**: The browser controls the quota, and it can evict your data under storage pressure. Safari wipes script-writable storage after 7 days of inactivity. See [IndexedDB max storage limit](../indexeddb-max-storage-limit.md).

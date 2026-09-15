@@ -35,7 +35,7 @@ The issue is closed, labeled as a duplicate and a feature request. Ten years lat
 
 What IndexedDB does give you is the two primitives a relation needs:
 
-- **Indexes**: an index on a non-unique field lets you fetch every record that points at a given key with one call. `IDBIndex.getAll()` has been available in all major browsers since January 2020 ([MDN](https://developer.mozilla.org/en-US/docs/Web/API/IDBIndex/getAll)).
+- **Indexes**: [an index on a non-unique field](./indexeddb-query.md) lets you fetch every record that points at a given key with one call. `IDBIndex.getAll()` has been available in all major browsers since January 2020 ([MDN](https://developer.mozilla.org/en-US/docs/Web/API/IDBIndex/getAll)).
 - **Multi-store transactions**: one transaction can span several object stores, so a read across both sides of a relation sees one consistent snapshot.
 
 The scope of a transaction has to be declared when you open it, and it cannot grow later:
