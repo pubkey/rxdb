@@ -25,7 +25,7 @@ Because of that, relying on raw IndexedDB (or thin wrappers) often leads to sign
 2.  **Missing Observability**: Standard IndexedDB provides no way to listen to data changes. You have to build your own event bus to update the UI when data changes.
 3.  **Complex Transaction Management**: You must explicitly create transactions for every read or write, which is repetitive and error-prone.
 4.  **No Schema Enforcement**: IndexedDB is schema-less. You can store anything, which sounds good until your app crashes because of inconsistent data structures.
-5.  **Limited Querying**: You can only query by simple key ranges. Complex queries (like "find users older than 18 and sort by name") require manually iterating over cursors, which is slow and code-heavy. See [Slow IndexedDB](../slow-indexeddb.md).
+5.  **Limited Querying**: You can only query by simple key ranges. Complex queries (like "find users older than 18 and sort by name") require [manually iterating over cursors](./indexeddb/indexeddb-query.md), which is slow and code-heavy. See [Slow IndexedDB](../slow-indexeddb.md).
 
 RxDB solves all of these problems while maintaining the benefits of a local database.
 

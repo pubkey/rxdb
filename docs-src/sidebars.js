@@ -677,6 +677,7 @@ const sidebars = {
         'articles/indexeddb/indexeddb-typescript',
         'articles/indexeddb/indexeddb-encryption',
         'articles/indexeddb/indexeddb-relationships',
+        'articles/indexeddb/indexeddb-query',
         'articles/generic-prompts',
         'articles/electron-sqlite',
         'articles/realm-to-rxdb-migration'
