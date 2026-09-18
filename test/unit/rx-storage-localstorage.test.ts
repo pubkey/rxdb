@@ -137,7 +137,7 @@ describe('rx-storage-localstorage.test.ts', () => {
                     age: { $gte: 20 }
                 } as any,
                 sort: [
-                    { _deleted: 'asc' as const },
+                    { _deleted: 'asc' as const } as any,
                     { age: 'asc' as const },
                     { id: 'asc' as const }
                 ],

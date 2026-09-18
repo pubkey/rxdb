@@ -19,7 +19,7 @@ export type PlainSimpleJsonObject = {
 /**
  * @link https://stackoverflow.com/a/49670389/3443137
  */
-type DeepReadonly<T> =
+export type DeepReadonly<T> =
     T extends (infer R)[] ? DeepReadonlyArray<R> :
     T extends Function ? T :
     T extends object ? DeepReadonlyObject<T> :
@@ -151,7 +151,10 @@ type Join<K, P> = K extends string | number ?
     `${K}${'' extends P ? '' : '.'}${P}`
     : never : never;
 
-export type Paths<T, D extends number = 10> = [D] extends [never] ? never : T extends object ?
+export type Paths<T, D extends number = 10> = [D] extends [never] ? never :
+    T extends ReadonlyArray<infer ArrayItemType> ?
+    `${number}` | (Paths<ArrayItemType, Prev[D]> extends infer R ? Join<number, R> : never)
+    : T extends object ?
     { [K in keyof T]-?: K extends string | number ?
         `${K}` | (Paths<T[K], Prev[D]> extends infer R ? Join<K, R> : never)
         : never

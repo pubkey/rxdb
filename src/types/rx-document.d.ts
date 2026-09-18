@@ -14,6 +14,11 @@ import type { RxDocumentData, WithDeleted } from './rx-storage.d.ts';
 import type { RxChangeEvent } from './rx-change-event.d.ts';
 import type { DeepReadonly, MaybePromise, PlainJsonValue } from './util.d.ts';
 import type { UpdateQuery } from './plugins/update.d.ts';
+import type {
+    MangoQueryPathsOrString,
+    MangoQueryPathValue,
+    PropertyType
+} from './rx-query.d.ts';
 import type { CRDTEntry } from './plugins/crdt.d.ts';
 import type { Reactified } from './plugins/reactivity.d.ts';
 
@@ -108,9 +113,9 @@ export declare interface RxDocumentBase<RxDocType, OrmMethods = {}, Reactivity =
     getLatest(): RxDocument<RxDocType, OrmMethods, Reactivity>;
 
 
-    get$(path: string): Observable<any>;
-    get$$(path: string): Reactified<Reactivity, any>;
-    get(objPath: string): DeepReadonly<any>;
+    get$<Path extends MangoQueryPathsOrString<RxDocType>>(path: Path): Observable<MangoQueryPathValue<PropertyType<RxDocType, Path>>>;
+    get$$<Path extends MangoQueryPathsOrString<RxDocType>>(path: Path): Reactified<Reactivity, MangoQueryPathValue<PropertyType<RxDocType, Path>>>;
+    get<Path extends MangoQueryPathsOrString<RxDocType>>(objPath: Path): DeepReadonly<MangoQueryPathValue<PropertyType<RxDocType, Path>>>;
     populate(objPath: string): Promise<RxDocument<RxDocType, OrmMethods, Reactivity> | any | null>;
 
     /**
@@ -125,8 +130,13 @@ export declare interface RxDocumentBase<RxDocType, OrmMethods = {}, Reactivity =
     patch(patch: Partial<RxDocType>): Promise<RxDocument<RxDocType, OrmMethods, Reactivity>>;
     incrementalPatch(patch: Partial<RxDocType>): Promise<RxDocument<RxDocType, OrmMethods, Reactivity>>;
 
-    update(updateObj: UpdateQuery<RxDocType>): Promise<RxDocument<RxDocType, OrmMethods, Reactivity>>;
-    incrementalUpdate(updateObj: UpdateQuery<RxDocType>): Promise<RxDocument<RxDocType, OrmMethods, Reactivity>>;
+    /**
+     * Update operators also run on the _deleted field
+     * so that a document can be soft-deleted
+     * by setting _deleted to true.
+     */
+    update(updateObj: UpdateQuery<WithDeleted<RxDocType>>): Promise<RxDocument<RxDocType, OrmMethods, Reactivity>>;
+    incrementalUpdate(updateObj: UpdateQuery<WithDeleted<RxDocType>>): Promise<RxDocument<RxDocType, OrmMethods, Reactivity>>;
 
     updateCRDT(updateObj: CRDTEntry<RxDocType> | CRDTEntry<RxDocType>[]): Promise<RxDocument<RxDocType, OrmMethods, Reactivity>>;
 
