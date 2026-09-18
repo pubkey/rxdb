@@ -39,8 +39,8 @@
     "zone.js": "0.16.3"
   },
   "devDependencies": {
-    "@angular/build": "22.1.7",
-    "@angular/cli": "22.1.7",
+    "@angular/build": "22.1.8",
+    "@angular/cli": "22.1.8",
     "@angular/compiler-cli": "22.1.6",
     "@capacitor/cli": "8.5.1",
     "async-test-util": "2.5.0",
