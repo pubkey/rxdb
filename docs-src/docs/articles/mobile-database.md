@@ -9,6 +9,8 @@ import {Faq, FaqItem} from '@site/src/components/faq';
 
 # Mobile Database - RxDB as Database for Mobile Applications
 
+<ArticleByline published="2023-06-19" />
+
 In today's digital landscape, mobile applications have become an integral part of our lives. From social media platforms to e-commerce solutions, mobile apps have transformed the way we interact with digital services. At the heart of any mobile app lies the database, a critical component responsible for storing, retrieving, and managing data efficiently. In this article, we will delve into the world of mobile databases, exploring their significance, challenges, and the emergence of [RxDB](https://rxdb.info/) as a powerful database solution for hybrid app development in frameworks like React Native and Capacitor.
 
 

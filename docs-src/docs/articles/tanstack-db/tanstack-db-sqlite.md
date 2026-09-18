@@ -9,6 +9,8 @@ import {Steps} from '@site/src/components/steps';
 
 # TanStack DB with SQLite: Native & WASM Storage via RxDB
 
+<ArticleByline published="2026-07-21" />
+
 **TanStack DB** is an in-memory reactive client store with live queries and optimistic mutations, and it delegates persistence and sync to the collection type you choose. The official `@tanstack/rxdb-db-collection` package puts [RxDB](https://rxdb.info/) underneath, as described in the [TanStack DB + RxDB overview](./rxdb-collection-for-tanstack-db.md). With the [SQLite RxStorage](../../rx-storage-sqlite.md), that RxDB layer writes your **TanStack DB SQLite** data into a real SQLite database: native on Node.js, [Electron](./tanstack-db-electron.md), [React Native](./tanstack-db-react-native.md), and [Capacitor](./tanstack-db-capacitor.md), or compiled to WebAssembly in the browser. This page explains the two versions of the SQLite storage, lists the `sqliteBasics` adapters for the common SQLite bundles, walks through a runnable Node.js example, and compares the setup with TanStack DB's own SQLite persistence packages.
 
 <RxdbLogo alt="TanStack DB SQLite storage" />

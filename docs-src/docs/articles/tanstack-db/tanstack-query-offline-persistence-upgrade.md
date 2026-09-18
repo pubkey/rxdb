@@ -9,6 +9,8 @@ import {Steps} from '@site/src/components/steps';
 
 # Outgrowing TanStack Query's Offline Persistence? Use RxDB
 
+<ArticleByline published="2026-07-21" />
+
 **TanStack Query offline persistence** with `persistQueryClient` saves the dehydrated query cache to a storage like [localStorage](../localstorage.md) and restores it on the next page load. For caching server responses across reloads this is often all you need. But a cache snapshot is not a database, and when local data becomes the source of truth of your app, the snapshot model bites back. TanStack DB is the in-memory reactive client store from the same TanStack family, with live queries and optimistic mutations, and it delegates persistence and sync to the collection type you choose. The official `@tanstack/rxdb-db-collection` package puts [RxDB](https://rxdb.info/) underneath it, as described in [TanStack DB + RxDB](./rxdb-collection-for-tanstack-db.md). This page explains what `persistQueryClient` does well, where the snapshot model ends, and how to upgrade to durable offline storage with TanStack DB and RxDB.
 
 <RxdbLogo alt="TanStack Query offline persistence upgrade" />

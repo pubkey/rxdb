@@ -10,6 +10,8 @@ import {ComparisonTable} from '@site/src/components/comparison-table';
 
 # RxDB as an absurd-sql Alternative for JS Apps That Need a Real Database
 
+<ArticleByline published="2026-05-08" />
+
 [absurd-sql](https://github.com/jlongster/absurd-sql) is a clever piece of low-level plumbing. It maps SQLite-on-WASM file I/O onto IndexedDB blocks so SQLite can persist data in the browser with reasonable performance. That trick worked well in 2021, but most product teams do not want to maintain raw SQL boilerplate, hand-written migrations, transaction wrappers, and a custom query subscription layer on top of a SQLite VFS shim. They want indexes, reactive queries, replication, schema validation, and observability out of the box.
 
 This page compares **absurd-sql** with **RxDB** and shows where each one fits. If you already invested time into absurd-sql and now hit limits around reactivity, sync, multi-tab coordination, or schema management, RxDB is worth a look.

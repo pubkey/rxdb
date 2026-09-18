@@ -9,6 +9,8 @@ import {Faq, FaqItem} from '@site/src/components/faq';
 
 # RxDB - The Firestore Alternative That Can Sync with Your Own Backend
 
+<ArticleByline published="2025-02-07" />
+
 If you're seeking a **Firestore alternative**, you're likely looking for a way to:
 - **Avoid vendor lock-in** while still enjoying real-time replication.
 - **Reduce cloud usage costs** by reading data locally instead of constantly fetching from the server.

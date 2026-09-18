@@ -10,6 +10,8 @@ import {Faq, FaqItem} from '@site/src/components/faq';
 
 # Realm to RxDB Migration Guide
 
+<ArticleByline published="2026-07-15" />
+
 MongoDB deprecated the Atlas Device SDKs in September 2024 and shut down Atlas Device Sync in September 2025. Applications that still ship the Realm SDK run on an archived codebase without security fixes, new platform support or a working sync backend. This guide walks through a complete migration from [Realm](https://www.mongodb.com/docs/atlas/device-sdks/) (`realm` / `realm-js`) to [RxDB](https://rxdb.info/) for JavaScript, TypeScript and [React Native](../react-native-database.md) projects: schema translation, data export, query rewrites, reactivity and the replacement of Device Sync with [RxDB replication](../replication.md).
 
 If you first want to understand why RxDB is the recommended replacement, read the [MongoDB Realm alternative](./alternatives/mongodb-realm-alternative.md) comparison. This page assumes the decision is made and focuses on the mechanical steps of the migration.

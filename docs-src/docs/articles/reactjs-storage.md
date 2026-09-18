@@ -9,6 +9,8 @@ import {CenteredImage} from '@site/src/components/centered-image';
 
 # ReactJS Storage - From Basic LocalStorage to Advanced Offline Apps with RxDB
 
+<ArticleByline published="2025-02-25" />
+
 Modern **ReactJS** applications often need to store data on the client side. Whether you’re preserving simple user preferences or building offline-ready features, choosing the right **storage** mechanism can make or break your development experience. In this guide, we’ll start with a basic **localStorage** approach for minimal data. Then, we’ll explore more powerful, reactive solutions via [RxDB](/), including offline functionality, indexing, `preact signals`, and even encryption.
 
 ---

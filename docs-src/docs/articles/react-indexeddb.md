@@ -12,6 +12,8 @@ import {CenteredImage} from '@site/src/components/centered-image';
 
 # IndexedDB Database in React Apps - The Power of RxDB
 
+<ArticleByline published="2025-01-10" />
+
 Building robust, [offline-capable](../offline-first.md) React applications often involves leveraging browser storage solutions to manage data. IndexedDB is one such powerful tool, but its raw API can be challenging to work with directly. RxDB abstracts away much of IndexedDB's complexity, providing a more developer-friendly experience. In this article, we'll explore what IndexedDB is, why it's beneficial in React applications, the challenges of using plain IndexedDB, and how [RxDB](https://rxdb.info/) can simplify your development process while adding advanced features.
 
 ## What is IndexedDB?

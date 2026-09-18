@@ -10,6 +10,8 @@ import {ComparisonTable} from '@site/src/components/comparison-table';
 
 # RxDB as a sql.js Alternative for Browser Persistence
 
+<ArticleByline published="2026-05-08" />
+
 Developers often pick **sql.js** when they want to run SQL inside the browser without a server. It is a faithful port of SQLite compiled to WebAssembly, so any valid SQLite query runs in a JavaScript runtime. The catch shows up the moment a real application needs to keep data around: sql.js holds the entire database as an in-memory buffer. Closing the tab, reloading the page, or losing a process wipes the state. There is no built-in [persistence](../../offline-first.md), no [reactive query](../../reactivity.md) layer, no [replication](../../replication.md), and no awareness of other browser tabs.
 
 This page explains why teams that started with sql.js often migrate to **RxDB** once their prototype turns into a product, and how RxDB fills the gaps while still letting you keep SQLite as the underlying storage if you want.

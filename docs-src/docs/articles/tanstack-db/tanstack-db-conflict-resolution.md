@@ -9,6 +9,8 @@ import {Steps} from '@site/src/components/steps';
 
 # Conflict Resolution in TanStack DB with RxDB
 
+<ArticleByline published="2026-07-21" />
+
 **TanStack DB conflict resolution** works on two levels that are easy to mix up. TanStack DB is an in-memory reactive client store with live queries and optimistic mutations, and when a local write fails to persist, it rolls the optimistic state back on its own. But when two offline clients change the same document and later sync, someone has to decide which state wins. That decision belongs to the persistence layer, and with the official `@tanstack/rxdb-db-collection` package described in [TanStack DB + RxDB](./rxdb-collection-for-tanstack-db.md), that layer is [RxDB](https://rxdb.info/) with its [Sync Engine](../../replication.md) and a pluggable conflict handler. This page separates the two failure modes, explains how RxDB detects and resolves replication conflicts, and shows a runnable custom conflict handler.
 
 <RxdbLogo alt="TanStack DB conflict resolution with RxDB" />

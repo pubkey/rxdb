@@ -9,6 +9,8 @@ import {Steps} from '@site/src/components/steps';
 
 # Multi-Tab Sync for TanStack DB with RxDB
 
+<ArticleByline published="2026-07-21" />
+
 **TanStack DB** is an in-memory reactive client store with live queries and optimistic mutations, and it delegates persistence and sync to the collection type you choose. Because each browser tab runs its own JavaScript process, each tab also holds its own in-memory TanStack DB state. [RxDB](https://rxdb.info/) fixes the **multi-tab** problem underneath: with the official `@tanstack/rxdb-db-collection` package from the [TanStack DB + RxDB integration](./rxdb-collection-for-tanstack-db.md), every tab reads from the same durable store, changes stream between tabs, and [leader election](../../leader-election.md) makes sure replication runs in exactly one tab. This page explains why tabs drift apart, how the `multiInstance` option and leader election work, and walks through a runnable cross-tab setup.
 
 <RxdbLogo alt="TanStack DB multi tab sync" />

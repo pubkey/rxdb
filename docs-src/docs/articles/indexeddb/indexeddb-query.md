@@ -13,6 +13,8 @@ import { PERFORMANCE_DATA_BROWSER, PERFORMANCE_METRICS } from '@site/src/compone
 
 # IndexedDB Query
 
+<ArticleByline published="2026-09-15" />
+
 An **IndexedDB query** is not a query in the sense you know from SQL or MongoDB. There is no query language, no `WHERE` clause, and no query planner that figures things out for you. [IndexedDB](../../rx-storage-indexeddb.md) gives you a primary key, a set of secondary indexes, and a way to walk one sorted range of one of them. Everything above that is JavaScript you write by hand.
 
 This page explains how querying works in IndexedDB, how the right index changes the runtime of a query, how to implement a filtered, sorted, and paginated query with the raw API, where that approach stops working, and how [RxDB](https://rxdb.info/) puts a complete [NoSQL query engine](../../rx-query.md) on top of the same [browser storage](../browser-storage.md).

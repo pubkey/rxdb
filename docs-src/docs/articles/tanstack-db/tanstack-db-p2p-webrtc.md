@@ -9,6 +9,8 @@ import {Steps} from '@site/src/components/steps';
 
 # Peer-to-Peer Sync for TanStack DB with WebRTC & RxDB
 
+<ArticleByline published="2026-07-21" />
+
 **TanStack DB** is an in-memory reactive client store with live queries and optimistic mutations. Persistence and networking come from the collection implementation, and the official `@tanstack/rxdb-db-collection` package puts [RxDB](https://rxdb.info/) underneath as described in the [TanStack DB + RxDB](./rxdb-collection-for-tanstack-db.md) overview. Because replication is configured on the RxDB side, you can pick any plugin of the [Sync Engine](../../replication.md), including the [WebRTC replication plugin](../../replication-webrtc.md) that syncs data **peer-to-peer** between devices without a central database server. This page explains how P2P sync works under TanStack DB, what it does and does not give you, and walks through a runnable two-peer todo example.
 
 <RxdbLogo alt="TanStack DB peer-to-peer WebRTC sync" />

@@ -9,6 +9,8 @@ import {Faq, FaqItem} from '@site/src/components/faq';
 
 # IndexedDB Sync
 
+<ArticleByline published="2026-07-21" />
+
 [IndexedDB](../../rx-storage-indexeddb.md) stores structured data inside a single browser, on a single device, in a single origin. That is the whole design. It has no concept of syncing that data to another tab, another device, or a backend server. As soon as your app needs the same data in more than one place, you have to build **IndexedDB sync** yourself, or use a library that ships it.
 
 This page explains what IndexedDB sync means, why the native API gives you nothing for it, the different levels of sync you might need, and how [RxDB](https://rxdb.info/) adds realtime replication on top of IndexedDB.

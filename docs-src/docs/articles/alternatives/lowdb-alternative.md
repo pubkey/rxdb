@@ -10,6 +10,8 @@ import {ComparisonTable} from '@site/src/components/comparison-table';
 
 # RxDB as a LowDB Alternative for Node.js and Beyond
 
+<ArticleByline published="2026-05-08" />
+
 [LowDB](https://github.com/typicode/lowdb) is a small JSON file database that fits a specific niche: tiny CLIs, prototypes, configuration stores, and demo servers. The API is straightforward, the data sits in a single `db.json` file, and the whole library is a few kilobytes. For projects where the data set stays small and the access pattern is single-process and synchronous-feeling, LowDB does the job.
 
 Teams tend to outgrow LowDB once the application requires any of the following:

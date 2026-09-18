@@ -10,6 +10,8 @@ import {CenteredImage} from '@site/src/components/centered-image';
 
 # RxDB as a Database in a Vue Application
 
+<ArticleByline published="2025-02-06" />
+
 In the modern web ecosystem, [Vue](https://vuejs.org/) has become a leading choice for building highly performant, reactive single-page applications (SPAs). However, while Vue excels at managing and updating the user interface, robust and efficient data handling also plays a pivotal role in delivering a great user experience. Enter [RxDB](https://rxdb.info/), a reactive JavaScript database that runs in the browser (and beyond), offering significant capabilities such as offline-first data handling, real-time synchronization, and straightforward integration with Vue's reactivity system.
 
 This article explores how RxDB works, why it's a perfect match for Vue, and how you can leverage it to build more engaging, performant, and data-resilient Vue applications.

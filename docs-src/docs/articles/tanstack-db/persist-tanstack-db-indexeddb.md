@@ -9,6 +9,8 @@ import {Steps} from '@site/src/components/steps';
 
 # How to Persist TanStack DB to IndexedDB & OPFS
 
+<ArticleByline published="2026-07-21" />
+
 **TanStack DB** keeps all collection data in memory. When the user reloads the page, that memory is gone and the store starts empty. Persistence belongs to the collection implementation you choose, and the official `@tanstack/rxdb-db-collection` package puts [RxDB](https://rxdb.info/), a local-first NoSQL database with swappable [storage engines](../../rx-storage.md), underneath your collections. With RxDB in place, the question "how to **persist TanStack DB**" turns into a configuration choice between localStorage, IndexedDB, and OPFS. The integration itself is described in the [TanStack DB + RxDB](./rxdb-collection-for-tanstack-db.md) overview. This page explains the browser storage options, walks through a runnable setup on the free localStorage-based storage, and shows that moving to IndexedDB or OPFS only swaps the `storage:` line.
 
 <RxdbLogo alt="Persist TanStack DB to IndexedDB and OPFS" />

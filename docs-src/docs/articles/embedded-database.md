@@ -6,6 +6,8 @@ image: /headers/embedded-database.jpg
 ---
 
 # Using RxDB as an Embedded Database
+
+<ArticleByline published="2023-06-16" />
 In modern UI applications, efficient data storage is a crucial aspect for seamless user experiences. One powerful solution for achieving this is by utilizing an embedded database. In this article, we will explore the concept of an embedded database and delve into the benefits of using [RxDB](https://rxdb.info/) as an embedded database in UI applications. We will also discuss why RxDB stands out as a robust choice for real-time applications with embedded database functionality.
 
 <RxdbLogo alt="JavaScript Embedded Database" />

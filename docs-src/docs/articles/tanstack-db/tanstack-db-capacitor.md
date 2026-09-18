@@ -9,6 +9,8 @@ import {Steps} from '@site/src/components/steps';
 
 # TanStack DB with Capacitor & Ionic: Offline Storage Guide
 
+<ArticleByline published="2026-07-21" />
+
 **TanStack DB** gives your [Capacitor](../../capacitor-database.md) or [Ionic](../ionic-database.md) app live queries and optimistic mutations, but it is an in-memory reactive store: persistence and sync come from the collection implementation you choose. [RxDB](https://rxdb.info/) is a [local-first](../local-first-future.md) NoSQL database that runs inside the Capacitor webview and stores data in [SQLite](../../rx-storage-sqlite.md) on the device filesystem, and the official `@tanstack/rxdb-db-collection` package puts it underneath TanStack DB as described in [TanStack DB + RxDB](./rxdb-collection-for-tanstack-db.md). This page explains which storages are safe in a hybrid app, walks through a complete Capacitor setup with the SQLite storage, and shows where backend sync fits in.
 
 <RxdbLogo alt="TanStack DB Capacitor Ionic" />

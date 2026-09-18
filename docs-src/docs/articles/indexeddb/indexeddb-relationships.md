@@ -11,6 +11,8 @@ import {Faq, FaqItem} from '@site/src/components/faq';
 
 # IndexedDB Relationships
 
+<ArticleByline published="2026-09-08" />
+
 So you have a JavaScript web application that stores its data in [IndexedDB](../../rx-storage-indexeddb.md), and the data is not flat. Users write posts, posts carry comments, comments belong to users, and posts have tags. On the server you would write a `JOIN` and move on. In the browser you cannot.
 
 IndexedDB has no joins, no foreign keys, and no referential integrity. It stores JSON values in object stores and looks them up by key. Everything above that is your job.

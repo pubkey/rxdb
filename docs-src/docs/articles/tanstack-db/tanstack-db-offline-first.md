@@ -9,6 +9,8 @@ import {Steps} from '@site/src/components/steps';
 
 # Building an Offline-First App with TanStack DB and RxDB
 
+<ArticleByline published="2026-07-21" />
+
 An **offline-first** app with **TanStack DB** keeps working when the network is gone: queries read from local data, writes are stored locally and pushed to the server later. TanStack DB itself is an in-memory reactive client store with live queries and optimistic mutations, and it delegates persistence and networking to the collection type you choose. The official `@tanstack/rxdb-db-collection` package puts [RxDB](https://rxdb.info/) underneath, as described in the [TanStack DB + RxDB overview](./rxdb-collection-for-tanstack-db.md). This page explains the full offline-first pattern: durable storage across reloads, replication that resumes from a checkpoint, queued offline writes, and the downsides you have to plan for.
 
 <RxdbLogo alt="TanStack DB offline first" />

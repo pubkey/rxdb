@@ -14,6 +14,8 @@ import { PERFORMANCE_DATA_BROWSER, PERFORMANCE_METRICS } from '@site/src/compone
 
 # Local Database
 
+<ArticleByline published="2025-01-22" />
+
 A **local database** stores data directly on the user's device instead of on a remote server. Common examples are [SQLite](../rx-storage-sqlite.md) in native mobile apps, [IndexedDB](../rx-storage-indexeddb.md) as the raw browser storage API, and [RxDB](https://rxdb.info/) as a full local database for JavaScript applications. Your application reads and writes through the local database, so every query runs on the device without a network round trip, and the app keeps working when the device goes offline. RxDB adds [queries](../rx-query.md), [reactivity](../reactivity.md), and [replication](../replication.md) on top of the raw storage APIs of the browser, mobile, and [Node.js](../nodejs-database.md).
 
 This page explains what a local database is, which options exist in JavaScript, where the raw storage APIs fall short, and how to run a local database in production.

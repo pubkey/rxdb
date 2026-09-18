@@ -9,6 +9,8 @@ import {Steps} from '@site/src/components/steps';
 
 # How to Sync TanStack DB with Your Backend
 
+<ArticleByline published="2026-07-21" />
+
 **TanStack DB** is an in-memory reactive client store with live queries and optimistic mutations. It does not talk to your backend on its own, because persistence and networking are the job of the collection implementation you choose. The official `@tanstack/rxdb-db-collection` package puts [RxDB](https://rxdb.info/) underneath, and with it the RxDB [Sync Engine](../../replication.md) that replicates local data with **any backend**. The basics of the integration are described in the [TanStack DB + RxDB](./rxdb-collection-for-tanstack-db.md) overview. This page explains how to **sync TanStack DB** with your backend: how the two layers split the work, how RxDB's replication protocol works, a runnable HTTP example, and the list of ready-made replication plugins.
 
 <RxdbLogo alt="sync TanStack DB with your backend" />

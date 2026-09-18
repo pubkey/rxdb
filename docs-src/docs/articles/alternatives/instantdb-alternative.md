@@ -10,6 +10,8 @@ import {ComparisonTable} from '@site/src/components/comparison-table';
 
 # RxDB as an InstantDB Alternative with Custom Backends
 
+<ArticleByline published="2026-05-08" />
+
 If you arrived here looking for an **InstantDB alternative**, you most likely want one of three things:
 
 - A real [offline-first](../../offline-first.md) local database, not just a network cache that flushes when storage gets tight.

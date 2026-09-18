@@ -15,6 +15,8 @@ import {CenteredImage} from '@site/src/components/centered-image';
 
 # Build Smarter Offline-First Angular Apps: How RxDB Beats IndexedDB Alone
 
+<ArticleByline published="2025-01-10" />
+
 In modern web applications, offline capabilities and fast interactions are crucial. IndexedDB, the [browser](./browser-database.md)'s built-in database, allows you to store data locally, making your Angular application more robust and responsive. However, IndexedDB can be cumbersome to work with directly. That's where RxDB (Reactive Database) shines. In this article, we'll walk you through how to utilize IndexedDB in your Angular project using [RxDB](https://rxdb.info/) as a convenient abstraction layer.
 
 ## What Is IndexedDB?

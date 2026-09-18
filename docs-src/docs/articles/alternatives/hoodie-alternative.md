@@ -10,6 +10,8 @@ import {ComparisonTable} from '@site/src/components/comparison-table';
 
 # RxDB as a Hoodie Alternative for Offline-First JavaScript Apps
 
+<ArticleByline published="2026-05-08" />
+
 If you built a project on **Hoodie**, you chose it for a clear reason: ship an [offline-first](../../offline-first.md) JavaScript application without writing a backend. The "noBackend" promise meant a single API call to store and sync data, with CouchDB and PouchDB doing the heavy lifting underneath. That promise still matters today, but the Hoodie project itself has been inactive for years, the `hood.ie` website is offline, and the GitHub repository has not received a meaningful commit in a long time.
 
 Teams maintaining Hoodie applications now face a hard question: how do you keep the offline-first developer experience while moving to a stack that is actively maintained, typed, and supported across modern JavaScript runtimes? **RxDB** is a direct answer to that question. It keeps the local-first model, supports CouchDB replication out of the box, and adds reactive queries, multi-tab synchronization, and conflict handling that Hoodie never offered.

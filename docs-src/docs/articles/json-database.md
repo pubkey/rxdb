@@ -11,6 +11,8 @@ import {CenteredImage} from '@site/src/components/centered-image';
 
 # RxDB - JSON Database for JavaScript
 
+<ArticleByline published="2023-09-20" />
+
 Storing data as **JSON documents** in a **[NoSQL](./in-memory-nosql-database.md)** database is not just a trend; it's a practical choice. JSON data is highly compatible with various tools and is human-readable, making it an excellent fit for modern applications. JSON documents offer more flexibility compared to traditional SQL table rows, as they can contain nested data structures. This article introduces [RxDB](https://rxdb.info/), an open-source, flexible, performant, and battle-tested NoSQL JSON database specifically designed for **JavaScript** applications.
 
 <RxdbLogo alt="JSON Database" />

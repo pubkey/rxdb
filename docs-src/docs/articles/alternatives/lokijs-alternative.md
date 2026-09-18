@@ -10,6 +10,8 @@ import {ComparisonTable} from '@site/src/components/comparison-table';
 
 # RxDB as a LokiJS Alternative for Persistent JavaScript Apps
 
+<ArticleByline published="2026-05-08" />
+
 Developers reach for **LokiJS** when they want a small, MongoDB-like JavaScript database that lives in memory and feels instant. The trade-off shows up later: writes only become durable when an adapter flushes them on a timer or before the process exits, replication across tabs and devices is missing, and the project itself has slowed down. Teams that ship real applications eventually look for a database that keeps the same ergonomic API but stores data safely, syncs across clients, and is still under active development.
 
 This page explains how **RxDB** fits that role and how it covers both the in-memory speed scenarios that drew people to LokiJS and the persistence and sync gaps that pushed them away.

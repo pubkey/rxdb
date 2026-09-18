@@ -9,6 +9,8 @@ import {Faq, FaqItem} from '@site/src/components/faq';
 
 # WebSockets vs Server-Sent-Events vs Long-Polling vs WebRTC vs WebTransport
 
+<ArticleByline published="2024-03-18" />
+
 
 For modern real-time web applications, the ability to send events from the server to the client is indispensable. This necessity has led to the development of several methods over the years, each with its own set of advantages and drawbacks. Initially, [long-polling](#what-is-long-polling) was the only option available. It was then succeeded by [WebSockets](#what-are-websockets), which offered a more robust solution for bidirectional communication. Following WebSockets, [Server-Sent Events (SSE)](#what-are-server-sent-events) provided a simpler method for one-way communication from server to client. Looking ahead, the [WebTransport](#what-is-the-webtransport-api) protocol promises to revolutionize this landscape even further by providing a more efficient, flexible, and scalable approach. For niche use cases, [WebRTC](#what-is-webrtc) might also be considered for server-client events.
 

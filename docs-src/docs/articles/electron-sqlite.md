@@ -10,6 +10,8 @@ import {CenteredImage} from '@site/src/components/centered-image';
 
 # Electron SQLite - Building reactive desktop apps with RxDB and SQLite
 
+<ArticleByline published="2026-07-08" />
+
 [Electron](https://www.electronjs.org/) apps run on the user's device, so storing data locally is the natural way to build them. [SQLite](https://www.sqlite.org/) is the most proven embedded database and a great fit for Electron because it runs inside the app process, needs no server and stores everything in a single file.
 
 But plain SQLite alone is not enough for a modern desktop application. It has no way to observe queries, no sync to a backend, no encryption and it can only run in the Electron **main** process, not in the **renderer** where your UI lives. This article shows how to combine SQLite with [RxDB](https://rxdb.info/) to get the reliability of SQLite together with reactive queries, [replication](../replication.md) and [encryption](../encryption.md), while keeping all heavy database work out of the UI process.

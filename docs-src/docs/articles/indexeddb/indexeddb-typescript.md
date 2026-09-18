@@ -9,6 +9,8 @@ import {Faq, FaqItem} from '@site/src/components/faq';
 
 # IndexedDB with TypeScript
 
+<ArticleByline published="2026-07-21" />
+
 [IndexedDB](../../rx-storage-indexeddb.md) is the standard [browser storage](../browser-storage.md) API for structured data. It works in every modern browser and can hold large amounts of JSON and binary data. But its TypeScript story is weak. The native API returns loosely typed values, so most reads come back as `any` and you lose the type safety that made you pick TypeScript in the first place.
 
 This page explains where the native IndexedDB types fall short, how to add types by hand, and how libraries like [idb](https://github.com/jakearchibald/idb) and [RxDB](https://rxdb.info/) give you type-safe access, with RxDB deriving the types straight from your schema.

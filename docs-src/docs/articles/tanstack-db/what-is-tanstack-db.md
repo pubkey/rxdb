@@ -9,6 +9,8 @@ import {Steps} from '@site/src/components/steps';
 
 # What Is TanStack DB? A Beginner's Guide with Persistence
 
+<ArticleByline published="2026-07-21" />
+
 **TanStack DB** is a reactive client store for JavaScript applications. It holds your data in memory as typed collections, runs live queries that update automatically when the data changes, and applies mutations optimistically with rollback on error. Persistence and sync are not part of the core: they come from the collection type you choose, and the official `@tanstack/rxdb-db-collection` package puts [RxDB](https://rxdb.info/), a [local-first](../local-first-future.md) NoSQL database, underneath as the durable layer. This page explains what TanStack DB is, how collections and live queries work, which collection types exist, and how the [RxDB collection for TanStack DB](./rxdb-collection-for-tanstack-db.md) makes your data survive a page reload.
 
 <RxdbLogo alt="what is TanStack DB beginner guide" />

@@ -9,6 +9,8 @@ import {Steps} from '@site/src/components/steps';
 
 # IndexedDB Tutorial
 
+<ArticleByline published="2026-07-21" />
+
 **IndexedDB** is the standard [browser storage](../browser-storage.md) API for storing larger amounts of structured data on the client, including files and blobs. It runs in every modern browser and keeps your data on disk, so it survives page reloads and works offline. This tutorial teaches you how to use IndexedDB from scratch with the raw API, then shows where the native API falls short, and how [RxDB](https://rxdb.info/) adds the missing database layer on top of it.
 
 <RxdbLogo alt="IndexedDB tutorial" />

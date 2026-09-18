@@ -7,6 +7,8 @@ image: /headers/generic-prompts.jpg
 
 # Generic Prompts for GitHub Repos
 
+<ArticleByline published="2026-03-31" />
+
 Prompts that are useful for any GitHub or open source project which you can give your agent to improve the project.
 
 

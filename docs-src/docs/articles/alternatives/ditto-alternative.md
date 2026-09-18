@@ -10,6 +10,8 @@ import {QuoteBlock} from '@site/src/components/quoteblock';
 
 # RxDB as a Ditto Alternative for JavaScript and Browser Apps
 
+<ArticleByline published="2026-09-08" />
+
 Ditto solves a problem that most local-first databases do not even attempt. Its native SDKs let devices discover each other and sync over **Bluetooth LE, peer-to-peer WiFi, and LAN** with no server and no internet in between, which is genuinely hard to build and works in places where nothing else does. If your product is a fleet of native mobile devices that has to keep a shared state inside a plane, a store, or a vehicle with no infrastructure, Ditto is a serious answer and this page will not pretend otherwise.
 
 The picture changes when the client is JavaScript. In the browser the mesh is not available, the engine is closed source, and the pricing meters device connections and transferred data. RxDB takes the other route: an [Apache 2.0](https://github.com/pubkey/rxdb/blob/master/LICENSE.txt) core, [pluggable storage](../../rx-storage.md), MongoDB-style queries, and a [replication protocol](../../replication.md) that syncs with a backend you own. This page compares the two honestly, including where Ditto is still the right choice.

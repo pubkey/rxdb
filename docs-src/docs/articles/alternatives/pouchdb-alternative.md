@@ -11,6 +11,8 @@ import {Timeline} from '@site/src/components/timeline';
 
 # RxDB as a PouchDB Alternative
 
+<ArticleByline published="2026-05-08" />
+
 <RxdbLogo alt="JavaScript Database" />
 
 Many developers start building an offline-first web application and reach for PouchDB because of its well-known CouchDB synchronization capabilities. Over time, those same developers encounter performance bottlenecks, storage bloat, and the absence of reactive queries. [RxDB](https://rxdb.info) is a local-first JavaScript database that solves exactly these problems while keeping the offline-first architecture developers rely on.

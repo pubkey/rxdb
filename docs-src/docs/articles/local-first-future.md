@@ -13,6 +13,8 @@ import {Faq, FaqItem} from '@site/src/components/faq';
 
 # Why Local-First Software Is the Future and what are its Limitations
 
+<ArticleByline published="2025-03-03" />
+
 Imagine a web app that behaves seamlessly even with zero internet access, provides sub-millisecond response times, and keeps most of the user's data on their device. This is the **local-first** or [offline-first](../offline-first.md) approach. Although it has been around for a while, local-first has recently become more practical because of **maturing browser storage APIs** and new frameworks that simplify **data synchronization**. By allowing data to live on the client and only syncing with a server or other peers when needed, local-first apps can deliver a user experience that is **fast, resilient**, and **privacy-friendly**.
 
 However, local-first is no silver bullet. It introduces tricky distributed-data challenges like conflict resolution and schema migrations on client devices. In this article, we'll dive deep into what local-first means, why it's trending, its pros and cons, and how to implement it in real applications. We'll also discuss other tools, criticisms, backend considerations, and how local-first compares to traditional cloud-centric approaches.

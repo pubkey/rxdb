@@ -10,6 +10,8 @@ import {ComparisonTable} from '@site/src/components/comparison-table';
 
 # RxDB as a localForage Alternative for Real Database Features
 
+<ArticleByline published="2026-05-08" />
+
 [localForage](https://localforage.github.io/localForage/) gives JavaScript developers a clean promise based wrapper around browser storage. It is a thin key-value layer that picks the best available backend, usually IndexedDB, with fallbacks to WebSQL or localStorage. Teams reach for it when they want a simple `setItem` and `getItem` API that works across browsers without writing IndexedDB transaction code by hand.
 
 The trouble starts when an app grows past simple caching. As soon as you need indexed queries, schema validation, change subscriptions, replication with a backend, or coordination across browser tabs, you end up rebuilding most of a database on top of localForage. That is when [RxDB](https://rxdb.info/) becomes a better fit.

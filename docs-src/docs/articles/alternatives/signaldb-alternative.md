@@ -10,6 +10,8 @@ import {ComparisonTable} from '@site/src/components/comparison-table';
 
 # RxDB as a SignalDB Alternative for Local-First JavaScript Apps
 
+<ArticleByline published="2026-05-08" />
+
 Teams that adopt [SignalDB](https://signaldb.js.org/) usually want a tiny, reactive store that plays well with framework signals in Vue, Solid, or React. The MongoDB-style API feels familiar, the in-memory engine is fast, and reactive queries plug straight into component re-renders. The trade-offs show up later: persistence is opt-in, replication is left to the developer, and the storage layer has fewer adapters than long-running local-first databases.
 
 This page compares SignalDB with **RxDB** and shows when each tool fits. It also covers a hybrid setup where SignalDB handles the reactive UI layer while RxDB takes over persistence, multi-tab coordination, and backend sync.

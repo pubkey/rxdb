@@ -10,6 +10,8 @@ import {CenteredImage} from '@site/src/components/centered-image';
 
 # Offline Database - Local Data Storage and Sync with RxDB
 
+<ArticleByline published="2025-02-12" />
+
 An **offline database** stores your application data directly on the client device and syncs it with a server in the background. Instead of sending a request over the network for every read and write, your app talks to a [local database](./local-database.md) that responds in microseconds, no matter if the device is online or not. [RxDB](https://rxdb.info/) is a [local-first](./local-first-future.md), NoSQL database for JavaScript applications that was built for exactly this pattern. This page explains what an offline database is, how the RxDB [Sync Engine](../replication.md) replicates data with any backend, and how you can improve your offline database setup step by step.
 
 <RxdbLogo alt="offline database" />

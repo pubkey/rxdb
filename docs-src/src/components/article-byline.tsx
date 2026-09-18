@@ -49,12 +49,11 @@ export function ArticleByline({
     published,
 }: ArticleBylineProps) {
     const { metadata, frontMatter } = useDoc();
+    // `lastUpdatedAt` is a millisecond timestamp read from `git log`.
     const updated = metadata.lastUpdatedAt
-        ? isoDate(new Date(metadata.lastUpdatedAt * 1000))
+        ? isoDate(new Date(metadata.lastUpdatedAt))
         : undefined;
-    const image = typeof (frontMatter as { image?: unknown; }).image === 'string'
-        ? (frontMatter as { image: string; }).image
-        : undefined;
+    const image = typeof frontMatter.image === 'string' ? frontMatter.image : undefined;
 
     const jsonLd = {
         '@context': 'https://schema.org',

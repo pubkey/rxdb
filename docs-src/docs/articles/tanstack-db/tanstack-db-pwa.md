@@ -9,6 +9,8 @@ import {Steps} from '@site/src/components/steps';
 
 # Building an Offline PWA with TanStack DB and RxDB
 
+<ArticleByline published="2026-07-21" />
+
 Building an **offline PWA with TanStack DB** means solving a problem that TanStack DB alone does not cover: TanStack DB is an in-memory reactive client store with live queries and optimistic mutations, and persistence comes from the collection implementation you choose. [RxDB](https://rxdb.info/) is a [local-first](../local-first-future.md) NoSQL database with durable browser storage and a [Sync Engine](../../replication.md), and the official `@tanstack/rxdb-db-collection` package puts it underneath TanStack DB, as described in the [TanStack DB + RxDB](./rxdb-collection-for-tanstack-db.md) overview. This page explains what a PWA needs to work offline, how RxDB keeps your TanStack DB data alive across reloads and home-screen restarts, and how replication, multiple tabs, and browser storage limits behave in an installed app.
 
 <RxdbLogo alt="TanStack DB offline PWA" />

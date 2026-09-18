@@ -30,6 +30,8 @@ GOALS:
 
 # LocalStorage vs. IndexedDB vs. Cookies vs. OPFS vs. WASM-SQLite
 
+<ArticleByline published="2024-05-11" />
+
 So you are building that web application and you want to **store data inside of your users browser**. Maybe you just need to store some small flags or you even need a fully fledged database.
 
 The types of web applications we build have changed significantly. In the early years of the web we served static html files. Then we served dynamically rendered html and later we build **single page applications** that run most logic on the client. And for the coming years you might want to build so called [local first apps](../offline-first.md) that handle big and complex data operations solely on the client and even work when offline, which gives you the opportunity to build **zero-latency** user interactions.

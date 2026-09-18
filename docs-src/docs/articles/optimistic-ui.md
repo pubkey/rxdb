@@ -10,6 +10,8 @@ import {CenteredImage} from '@site/src/components/centered-image';
 
 # Building an Optimistic UI with RxDB
 
+<ArticleByline published="2025-01-22" />
+
 An **Optimistic User Interface (UI)** is a design pattern that provides instant feedback to the user by **assuming** that an operation or server call will succeed. Instead of showing loading spinners or waiting for server confirmations, the UI immediately reflects the user's intended action and later reconciles the displayed data with the actual server response. This approach drastically improves perceived performance and user satisfaction.
 
 ## Benefits of an Optimistic UI

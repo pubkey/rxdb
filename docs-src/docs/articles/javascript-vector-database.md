@@ -8,6 +8,8 @@ image: /headers/javascript-vector-database.jpg
 
 # Local Vector Database with RxDB and transformers.js in JavaScript
 
+<ArticleByline published="2024-09-10" />
+
 The [local-first](../offline-first.md) revolution is here, changing the way we build apps! Imagine a world where your app's data lives right on the user's device, always available, even when there's no internet. That's the magic of local-first apps. Not only do they bring faster performance and limitless scalability, but they also empower users to work offline without missing a beat. And leading the charge in this space are local database solutions, like [RxDB](https://rxdb.info/).
 
 <RxdbLogo alt="JavaScript Database" />

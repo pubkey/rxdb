@@ -10,6 +10,8 @@ import {ComparisonTable} from '@site/src/components/comparison-table';
 
 # RxDB as an Apollo Client Alternative for Truly Offline-First Apps
 
+<ArticleByline published="2026-05-08" />
+
 The Apollo GraphQL platform is built to move data between a server and UI applications over GraphQL endpoints. It ships with GraphQL clients for several languages, server libraries to build endpoints, and tools for federation and observability. Apollo Client offers caching features that can persist data for offline reads, but caching alone does not make an application fully usable when the user is offline. Teams that start with Apollo Client and try to push the cache into an [offline-first](../../offline-first.md) architecture often hit a wall, because the cache is a transport optimization, not a database.
 
 If you need apps that start offline, write while offline, sync reliably when the network returns, and resolve conflicts deterministically, RxDB is a more direct fit. You can keep Apollo for the GraphQL transport and use RxDB for storage and sync, or replace the client cache entirely.

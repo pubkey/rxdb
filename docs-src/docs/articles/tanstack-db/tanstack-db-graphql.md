@@ -9,6 +9,8 @@ import {Steps} from '@site/src/components/steps';
 
 # TanStack DB + GraphQL: Offline-First Sync with RxDB
 
+<ArticleByline published="2026-07-21" />
+
 **TanStack DB** is a reactive client store with live queries and optimistic mutations, and it keeps its collections in memory while persistence and networking come from the collection implementation you choose. The official `@tanstack/rxdb-db-collection` package puts [RxDB](https://rxdb.info/) underneath, as described in [TanStack DB + RxDB](./rxdb-collection-for-tanstack-db.md). Because RxDB owns storage and sync, a **TanStack DB GraphQL** setup becomes a configuration task: you run RxDB's [GraphQL replication plugin](../../replication-graphql.md) on the underlying collection and the synced data streams into TanStack DB automatically. This page explains what your GraphQL server must provide, how to set up pull, push, and subscriptions, and how the result wires into `createCollection()` and `useLiveQuery`.
 
 <RxdbLogo alt="TanStack DB GraphQL sync with RxDB" />

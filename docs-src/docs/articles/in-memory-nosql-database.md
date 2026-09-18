@@ -7,6 +7,8 @@ image: /headers/in-memory-nosql-database.jpg
 
 # RxDB as In-memory NoSQL Database: Empowering Real-Time Applications
 
+<ArticleByline published="2023-06-19" />
+
 Real-time applications have become increasingly popular in today's digital landscape. From instant messaging to collaborative editing tools, the demand for responsive and interactive software is on the rise. To meet these requirements, developers need powerful and efficient database solutions that can handle large amounts of data in real-time. [RxDB](https://rxdb.info/), an javascript NoSQL database, is revolutionizing the way developers build and scale their applications by offering exceptional speed, flexibility, and scalability.
 
 

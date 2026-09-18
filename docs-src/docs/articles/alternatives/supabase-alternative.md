@@ -10,6 +10,8 @@ import {Timeline} from '@site/src/components/timeline';
 
 # RxDB as a Supabase Alternative
 
+<ArticleByline published="2026-05-08" />
+
 <RxdbLogo alt="JavaScript Database" />
 
 Supabase is a popular backend platform built on PostgreSQL. It provides authentication, storage, auto-generated REST APIs (PostgREST), and a realtime WebSocket layer. What Supabase does not provide is a client-side database. When the network is unavailable, standard Supabase queries fail. When a user opens your app in multiple tabs, each tab reads directly from the server. There is no local data layer, no offline queue, and no reactive query system built into the Supabase client SDK.

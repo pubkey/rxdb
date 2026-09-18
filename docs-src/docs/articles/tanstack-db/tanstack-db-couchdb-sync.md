@@ -9,6 +9,8 @@ import {Steps} from '@site/src/components/steps';
 
 # Sync TanStack DB with CouchDB & Self-Hosted Backends
 
+<ArticleByline published="2026-07-21" />
+
 **TanStack DB** is an in-memory reactive client store with live queries and optimistic mutations, and it delegates persistence and networking to the collection type you choose. The official `@tanstack/rxdb-db-collection` package puts [RxDB](https://rxdb.info/) underneath: RxDB owns durable [storage](../../rx-storage.md) and replication, TanStack DB stays the reactive query layer on top, as described in the [TanStack DB + RxDB overview](./rxdb-collection-for-tanstack-db.md). This page shows three ways to **sync TanStack DB with CouchDB** and other self-hosted backends: the [CouchDB replication plugin](../../replication-couchdb.md), plain [HTTP replication](../../replication-http.md) against your own REST endpoints, and [RxServer](../../rx-server.md) as a ready-made sync server you host yourself.
 
 <RxdbLogo alt="TanStack DB CouchDB self-hosted sync" />

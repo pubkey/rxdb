@@ -9,6 +9,8 @@ import {Steps} from '@site/src/components/steps';
 
 # TanStack DB + RxDB: Durable, Offline-First Persistence & Sync
 
+<ArticleByline published="2026-07-21" />
+
 **TanStack DB** is a reactive client store that gives you live queries and optimistic mutations over so called collections. It keeps all data in memory, and it delegates persistence and networking to the collection type you choose. [RxDB](https://rxdb.info/) is a [local-first](../local-first-future.md) NoSQL database with durable [storage engines](../../rx-storage.md) and a mature [Sync Engine](../../replication.md) for replicating with any backend. The official `@tanstack/rxdb-db-collection` package connects the two: RxDB owns storage and sync, TanStack DB sits on top as the in-memory query layer. This page explains how the integration works, walks through a complete setup, and links to guides for every platform and backend.
 
 <RxdbLogo alt="TanStack DB RxDB collection" />

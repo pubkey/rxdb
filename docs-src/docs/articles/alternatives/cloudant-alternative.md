@@ -10,6 +10,8 @@ import {ComparisonTable} from '@site/src/components/comparison-table';
 
 # RxDB as a Cloudant Alternative for the JavaScript Client
 
+<ArticleByline published="2026-05-08" />
+
 Teams that adopted **Cloudant** usually picked it because they wanted CouchDB semantics without running their own cluster. The replication protocol, the JSON document model, and the ability to sync with [PouchDB](../../replication-couchdb.md) in the browser made Cloudant a popular choice for offline-capable web and mobile apps. Over time, many of those teams ran into the same set of issues on the client side: PouchDB struggles with large datasets, IBM Cloud pricing is hard to predict, and the developer experience around schemas and reactive UIs feels dated.
 
 This page explains how **RxDB** fits as a Cloudant alternative on the JavaScript client. You can keep your existing Cloudant backend and replace only the client database, or move to a different sync target entirely.

@@ -9,6 +9,8 @@ import {Steps} from '@site/src/components/steps';
 
 # TanStack DB + Supabase: Adding True Offline Support
 
+<ArticleByline published="2026-07-21" />
+
 **TanStack DB + Supabase** is a natural pairing: TanStack DB is an in-memory reactive client store with live queries and optimistic mutations, and Supabase provides hosted Postgres with realtime change streams. But TanStack DB delegates persistence and sync to the collection implementation, and Supabase apps typically load data through `supabase-js` queries and realtime channels, which need a network connection. [RxDB](https://rxdb.info/) closes that gap: the official `@tanstack/rxdb-db-collection` package described in the [TanStack DB + RxDB guide](./rxdb-collection-for-tanstack-db.md) puts a durable local database under TanStack DB, and the RxDB [Supabase Replication Plugin](../../replication-supabase.md) keeps that local data in sync with your Postgres tables. This page explains why plain Supabase setups stop working offline, how the RxDB layer fixes that, and walks through a complete runnable setup.
 
 <RxdbLogo alt="TanStack DB Supabase offline sync" />

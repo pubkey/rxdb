@@ -11,6 +11,8 @@ import {QuoteBlock} from '@site/src/components/quoteblock';
 
 # What is a realtime database?
 
+<ArticleByline published="2023-09-24" />
+
 A **realtime database** is a database that pushes data changes to whoever is interested in them, instead of waiting to be asked again and again.
 I have been building [RxDB](https://rxdb.info/), a [NoSQL](./in-memory-nosql-database.md) **realtime** JavaScript database, for many years.
 Often people get confused by the word **realtime database**, because the word **realtime** is so vaguely defined that it can mean everything and nothing at the same time.

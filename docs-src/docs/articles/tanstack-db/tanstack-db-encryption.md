@@ -9,6 +9,8 @@ import {Steps} from '@site/src/components/steps';
 
 # Encrypting Local Data in TanStack DB with RxDB
 
+<ArticleByline published="2026-07-21" />
+
 **TanStack DB encryption** is not something the store handles itself: TanStack DB is an in-memory reactive client store with live queries and optimistic mutations, and persistence belongs to the collection implementation underneath. When that implementation is the official `@tanstack/rxdb-db-collection` package, [RxDB](https://rxdb.info/) owns the storage layer, and the RxDB [encryption plugins](../../encryption.md) can encrypt sensitive document fields before they are written to disk. The [TanStack DB + RxDB integration](./rxdb-collection-for-tanstack-db.md) needs no changes for this, because encryption happens below the collection. This page explains why local data needs encryption at rest, how the RxDB encryption plugins work under TanStack DB, and walks through a runnable setup with an encrypted field.
 
 <RxdbLogo alt="TanStack DB encrypted storage" />

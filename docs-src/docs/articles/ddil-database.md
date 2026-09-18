@@ -9,6 +9,8 @@ import {Faq, FaqItem} from '@site/src/components/faq';
 
 # Offline-First Database for DDIL Environments
 
+<ArticleByline published="2026-09-08" />
+
 So you have an application that has to keep working when the network does not. **DDIL** stands for **Denied, Disrupted, Intermittent, and Limited**, and it is the label that defense, maritime, aviation, mining, and emergency-response teams use for exactly this condition. An app built on request and response falls apart there, because every screen depends on a round trip that may never complete. [RxDB](https://rxdb.info/) is a [local-first](./local-first-future.md), NoSQL database for JavaScript applications that keeps the working data on the device and treats the network as an optional background process. This page explains what DDIL means, what a client database has to do to survive it, how the RxDB [Sync Engine](../replication.md) handles a link that keeps dying, and where RxDB is the wrong tool.
 
 <RxdbLogo alt="DDIL database" />

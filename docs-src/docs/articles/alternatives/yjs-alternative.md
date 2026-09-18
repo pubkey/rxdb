@@ -10,6 +10,8 @@ import {ComparisonTable} from '@site/src/components/comparison-table';
 
 # RxDB as a Yjs Alternative for Local-First Apps with Queries and Persistence
 
+<ArticleByline published="2026-05-08" />
+
 [Yjs](https://github.com/yjs/yjs) is a CRDT runtime that solves one problem well: merging concurrent edits to shared data structures without a central authority. It is the engine behind many collaborative editors built on TipTap, ProseMirror, Slate, and Monaco. When your application is mostly a shared text document, Yjs is an excellent fit.
 
 The trouble starts when the application also has lists, settings, user profiles, attachments, search, and reporting. Those features need indexes, schemas, queries, durable storage, and a sync model that goes beyond merging characters into a rope. Yjs does not provide any of that on its own. You assemble it from third party providers, and you write the indexing and query layer yourself.

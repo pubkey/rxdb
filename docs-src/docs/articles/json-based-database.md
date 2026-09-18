@@ -10,6 +10,8 @@ import {CenteredImage} from '@site/src/components/centered-image';
 
 # JSON-Based Databases: Why NoSQL and RxDB Simplify App Development
 
+<ArticleByline published="2025-02-24" />
+
 Modern applications handle highly dynamic, often deeply nested data structures, commonly represented in **JSON**. Whether you're building a real-time dashboard or a fully offline mobile app, storing and querying data in a JSON-friendly way can reduce overhead and coding complexity. This is where **JSON-based databases** (often part of the **NoSQL** family) come into play, letting you store objects in the same format they're used in your code, eliminating the schema wrangling that can come with a strict relational design.
 
 Below, we explore why JSON-based databases naturally align with **NoSQL** principles, how relational engines (like PostgreSQL or SQLite) handle JSON columns, the pitfalls of storing data in a single plain JSON text file, and the ways [RxDB](https://rxdb.info/) stands out as an offline-first JSON solution for JavaScript developers, complete with advanced features like JSON-Schema and JSON-key-compression.

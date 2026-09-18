@@ -11,6 +11,8 @@ import {Timeline} from '@site/src/components/timeline';
 
 # RxDB as a Meteor Alternative
 
+<ArticleByline published="2026-05-08" />
+
 <RxdbLogo alt="JavaScript Database" />
 
 Meteor launched in 2012 and introduced many developers to the concept of full-stack JavaScript with real-time data. For a long time, it stood out as one of the few platforms that offered seamless data synchronization between client and server out of the box. Over a decade later, the JavaScript ecosystem has matured, and the requirements for offline-capable, framework-agnostic applications have grown. RxDB offers a different approach: a dedicated local-first database that works with any backend, any frontend framework, and any storage engine, without requiring a full platform.

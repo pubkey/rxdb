@@ -11,6 +11,8 @@ import {Faq, FaqItem} from '@site/src/components/faq';
 
 # Best IndexedDB Wrapper
 
+<ArticleByline published="2026-07-21" />
+
 [IndexedDB](../../rx-storage-indexeddb.md) is the standard [browser storage](../browser-storage.md) API for structured data. Every modern browser ships it, it can store megabytes to gigabytes of JSON and binary data, and it works offline. But the native API is low-level and verbose. It relies on event callbacks, forces you to open a transaction for every read and write, and gives you nothing to query with beyond simple key ranges.
 
 That is why almost nobody uses raw IndexedDB directly. Instead you pick an **IndexedDB wrapper**: a library that hides the callbacks, adds promises, and often layers queries, schemas, and reactivity on top.

@@ -9,6 +9,8 @@ import {Steps} from '@site/src/components/steps';
 
 # TanStack DB in Electron: A Local Database for Desktop Apps
 
+<ArticleByline published="2026-07-21" />
+
 **TanStack DB in Electron** gives your desktop app live queries and optimistic mutations, but TanStack DB itself is an in-memory store: persistence and sync belong to the collection implementation you choose. The official `@tanstack/rxdb-db-collection` package puts [RxDB](https://rxdb.info/) underneath, a [local-first](../local-first-future.md) NoSQL database with [storage engines](../../rx-storage.md) for SQLite and the Node.js filesystem and a [Sync Engine](../../replication.md) for any backend. The combination is described in the [TanStack DB + RxDB](./rxdb-collection-for-tanstack-db.md) hub article. This page explains where the database belongs in Electron's process model, which storages the repo recommends for desktop, and how to wire a complete example with the free SQLite trial storage and `useLiveQuery` in the renderer.
 
 <RxdbLogo alt="TanStack DB Electron reactive database" />

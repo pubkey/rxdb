@@ -9,6 +9,8 @@ import {Steps} from '@site/src/components/steps';
 
 # TanStack DB in React Native & Expo: Offline Storage Guide
 
+<ArticleByline published="2026-07-21" />
+
 **TanStack DB in React Native** works out of the box because TanStack DB is plain JavaScript: an in-memory reactive client store with live queries and optimistic mutations that runs fine inside Hermes. But on mobile, in-memory is not enough, because the operating system evicts apps from memory all the time, and persistence and sync come from the collection implementation you choose. The official `@tanstack/rxdb-db-collection` package puts [RxDB](https://rxdb.info/) underneath as a durable, [local-first](../local-first-future.md) backend, as described in the [TanStack DB + RxDB](./rxdb-collection-for-tanstack-db.md) overview. This page explains which RxDB storages work in React Native and Expo, how the SQLite storage is configured, and walks through a runnable Expo example.
 
 <RxdbLogo alt="TanStack DB React Native offline storage" />

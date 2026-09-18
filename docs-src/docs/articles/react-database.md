@@ -8,6 +8,8 @@ image: /headers/react-database.jpg
 import {CenteredImage} from '@site/src/components/centered-image';
 
 # RxDB as a Database for React Applications
+
+<ArticleByline published="2023-08-05" />
 In the rapidly evolving landscape of web development, React has emerged as a cornerstone technology for building dynamic and responsive user interfaces. With the increasing complexity of modern web applications, efficient data management becomes pivotal. This article delves into the integration of RxDB, a potent client-side database, with React applications to optimize data handling and elevate the overall user experience.
 
 React has revolutionized the way web applications are built by introducing a component-based architecture. This approach enables developers to create reusable UI components that efficiently update in response to changes in data. The virtual DOM mechanism, a key feature of React, facilitates optimized rendering, enhancing performance and user interactivity.

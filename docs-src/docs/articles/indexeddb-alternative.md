@@ -9,6 +9,8 @@ import {ComparisonTable} from '@site/src/components/comparison-table';
 
 # IndexedDB Alternatives
 
+<ArticleByline published="2026-01-28" />
+
 IndexedDB is the standard [browser storage](../articles/browser-storage.md) API for storing significant amounts of structured data, including files/blobs. It is available in every modern browser.
 However, using the native IndexedDB API is **verbose**, **low-level**, and lacks many features modern applications need.
 

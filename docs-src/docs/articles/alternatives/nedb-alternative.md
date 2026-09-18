@@ -10,6 +10,8 @@ import {ComparisonTable} from '@site/src/components/comparison-table';
 
 # RxDB as a NeDB Alternative for Node.js, Electron, and the Browser
 
+<ArticleByline published="2026-05-08" />
+
 If you arrived here, you are likely running a project that depends on **NeDB** and you are looking for a maintained replacement. NeDB served many Node.js, Electron, and browser applications well during its active years, but the project has been frozen since 2016. Modern apps need schema validation, observable queries, multi-tab coordination, and replication, and a database that still receives security updates. **RxDB** fills that gap while keeping the embedded, document-oriented model that NeDB users are familiar with.
 
 <RxdbLogo alt="RxDB JavaScript Database" />

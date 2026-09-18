@@ -10,6 +10,8 @@ import {ComparisonTable} from '@site/src/components/comparison-table';
 
 # RxDB as a MongoDB Realm Alternative After Atlas Device Sync Deprecation
 
+<ArticleByline published="2026-05-08" />
+
 Teams that built mobile and web applications on top of [MongoDB Realm](https://www.mongodb.com/docs/realm/) and the Atlas Device SDKs are now in a difficult position. In September 2024, MongoDB announced the deprecation of the Atlas Device SDKs and Atlas Device Sync, with end of life targeted for September 2025. Applications that still rely on Realm for client storage and bidirectional sync need a JavaScript friendly replacement that does not lock the project to a single cloud vendor and that will keep receiving updates well past 2025.
 
 This page explains why [RxDB](https://rxdb.info/) is a strong replacement for Realm in JavaScript, TypeScript, [React Native](../../react-native-database.md), [Electron](../../electron-database.md), and browser environments. It covers the history of Realm, the technical shortcomings that existed even before the deprecation announcement, the features RxDB provides today, code samples for schema definition and replication to a MongoDB-backed HTTP endpoint, and practical migration notes.

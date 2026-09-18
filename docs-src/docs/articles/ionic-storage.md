@@ -9,6 +9,8 @@ import {CenteredImage} from '@site/src/components/centered-image';
 
 # RxDB - Local Ionic Storage with Encryption, Compression & Sync
 
+<ArticleByline published="2025-02-09" />
+
 
 When building **Ionic** apps, developers face the challenge of choosing a robust **Ionic storage** mechanism that supports:
 - **Offline-First** usage

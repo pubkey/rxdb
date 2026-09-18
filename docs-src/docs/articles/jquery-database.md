@@ -10,6 +10,8 @@ import {CenteredImage} from '@site/src/components/centered-image';
 
 # RxDB as a Database in a jQuery Application
 
+<ArticleByline published="2025-02-06" />
+
 In the early days of dynamic web development, **jQuery** emerged as a popular library that simplified DOM manipulation and AJAX requests. Despite the rise of modern frameworks, many developers still maintain or extend existing jQuery projects, or leverage jQuery in specific contexts. As jQuery applications grow in complexity, they often require efficient data handling, offline support, and synchronization capabilities. This is where [RxDB](https://rxdb.info/), a reactive JavaScript database for the browser, node.js, and [mobile devices](./mobile-database.md), steps in.
 
 <RxdbLogo alt="JavaScript jQuery Database" />

@@ -10,6 +10,8 @@ import {CenteredImage} from '@site/src/components/centered-image';
 
 # Browser Storage - RxDB as a Database for Browsers
 
+<ArticleByline published="2024-01-10" />
+
 **Storing Data in the Browser**
 
 When it comes to building web applications, one essential aspect is the storage of data. Two common methods of storing data directly within the user's web browser are LocalStorage and [IndexedDB](../rx-storage-indexeddb.md). These browser-based storage options serve various purposes and cater to different needs in web development.

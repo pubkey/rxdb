@@ -9,6 +9,8 @@ import {Steps} from '@site/src/components/steps';
 
 # TanStack DB with PGlite: Postgres-in-Browser Storage
 
+<ArticleByline published="2026-07-21" />
+
 **PGlite** is a WASM build of Postgres that runs in the browser, and a common idea is to use it as the durable storage layer under **TanStack DB**. TanStack DB is an in-memory reactive client store with live queries and optimistic mutations, and it delegates persistence and sync to the collection type you choose. There is no official PGlite collection for TanStack DB today. [RxDB](https://rxdb.info/) on the other hand has an official, maintained integration through the `@tanstack/rxdb-db-collection` package, described in [TanStack DB + RxDB](./rxdb-collection-for-tanstack-db.md). This page explains what PGlite is, what wiring it under TanStack DB would take, when PGlite is the right tool, and when an RxDB-backed collection fits better.
 
 <RxdbLogo alt="TanStack DB PGlite Postgres in the browser" />

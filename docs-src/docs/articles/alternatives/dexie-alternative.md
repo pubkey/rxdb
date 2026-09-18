@@ -10,6 +10,8 @@ import {ComparisonTable} from '@site/src/components/comparison-table';
 
 # RxDB as a Dexie.js Alternative with Mango Queries and Replication
 
+<ArticleByline published="2026-05-08" />
+
 Teams reach for [Dexie.js](https://dexie.org/) when they want a friendlier API on top of IndexedDB without giving up the speed of a native browser store. Dexie does a fine job at that single goal. The trouble starts when an app outgrows simple key range lookups and needs MongoDB-style queries, [strict schemas](../../rx-schema.md), [reactive results](../../reactivity.md) across tabs, or [replication with a backend](../../replication.md). At that point, most projects either build those features from scratch on top of Dexie or move to a database that already provides them. RxDB sits in the second category and can even run on top of Dexie internally through the [Dexie RxStorage](../../rx-storage-dexie.md).
 
 <RxdbLogo alt="JavaScript Database" />

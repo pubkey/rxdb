@@ -11,6 +11,8 @@ import { PERFORMANCE_DATA_ENCRYPTION, PERFORMANCE_METRICS } from '@site/src/comp
 
 # IndexedDB Encryption
 
+<ArticleByline published="2026-07-24" />
+
 **IndexedDB encryption** means protecting the data your app stores in the browser so that it cannot be read from disk without the right key. By default, [IndexedDB](../indexeddb-alternative.md) writes everything as plain text on the user's device, which is fine for a todo demo and a real problem for anything sensitive. This page explains what IndexedDB stores on disk, why the native API cannot encrypt it for you, and how [RxDB](https://rxdb.info/) adds transparent field-level encryption on top of IndexedDB.
 
 <RxdbLogo alt="IndexedDB encryption" />

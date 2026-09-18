@@ -9,6 +9,8 @@ import {Faq, FaqItem} from '@site/src/components/faq';
 
 # RxDB as a PowerSync Alternative for JavaScript Local-First Apps
 
+<ArticleByline published="2026-05-08" />
+
 PowerSync looks attractive when you already run Postgres or MongoDB on the server and want a managed sync engine on top. For JavaScript teams the practical picture is more mixed. The browser client runs on top of WASM SQLite which adds read and write latency, the FSL source-available license restricts shipping competing products, and the server-authoritative model leaves little room to plug in a custom backend or non-SQL query layer.
 
 RxDB takes a different route. It is a [local-first](../../offline-first.md) JavaScript database that stays storage-agnostic, runs MongoDB-style queries against [IndexedDB](../../rx-storage-indexeddb.md), [OPFS](../../rx-storage-opfs.md), [Dexie](../../rx-storage-dexie.md), or [SQLite](../../rx-storage-sqlite.md), and lets you bring your own backend over [HTTP](../../replication-http.md), [GraphQL](../../replication-graphql.md), or any other transport. RxDB is licensed under Apache 2.0, so commercial use is unrestricted.

@@ -6,6 +6,8 @@ image: /headers/data-base.jpg
 ---
 
 # RxDB as a data base: Empowering Web Applications with Reactive Data Handling
+
+<ArticleByline published="2023-06-20" />
 In the world of web applications, efficient data management plays a crucial role in delivering a seamless user experience. As mobile applications continue to dominate the digital landscape, the importance of robust data bases becomes evident. In this article, we will explore RxDB as a powerful data base solution for web applications. We will delve into its features, advantages, and advanced techniques, highlighting its ability to handle reactive data and enable an [offline-first](../offline-first.md) approach.
 
 <RxdbLogo alt="Data Base" width={240} />

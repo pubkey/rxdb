@@ -10,6 +10,8 @@ import {ComparisonTable} from '@site/src/components/comparison-table';
 
 # RxDB as a GUN (gundb) Alternative for JavaScript Apps
 
+<ArticleByline published="2026-05-08" />
+
 Developers who reach for [GUN](https://gun.eco/) usually want one thing: a JavaScript database that syncs data peer-to-peer without depending on a central backend. GUN delivers on that promise, and it pairs the graph model with extras like the SEA module for cryptography and authentication. The trouble starts once you move past the first demo. Getting basic features running often takes days of trial and error, the schema story is informal, and the source code is dense enough that tracking down a sync bug can stall a project for a week.
 
 This guide walks through where GUN came from, where it falls short for production JavaScript apps, and how [RxDB](https://rxdb.info/) covers the same [offline-first](../../offline-first.md) and peer-to-peer use cases with a typed API, JSON Schema validation, and well-documented [replication](../../replication.md) plugins.

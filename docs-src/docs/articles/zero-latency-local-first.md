@@ -9,6 +9,8 @@ import {CenteredImage} from '@site/src/components/centered-image';
 
 # Zero Latency Local First Apps with RxDB - Sync, Encryption and Compression
 
+<ArticleByline published="2025-02-12" />
+
 Creating a **zero-latency local first** application involves ensuring that most (if not all) user interactions occur instantaneously, without waiting on remote network responses. This design drastically enhances user experience, allowing apps to remain responsive and functional even when offline or experiencing poor connectivity. As developers, we can achieve this by storing data **locally on the client** and synchronizing it to the backend in the background. **RxDB** (Reactive Database) offers a comprehensive set of features - covering replication, offline support, encryption, compression, conflict handling, and more - that make it straightforward to build such high-performing apps.
 
 <CenteredImage src="/files/loading-spinner-not-needed.gif" alt="loading spinner not needed" width={300} />

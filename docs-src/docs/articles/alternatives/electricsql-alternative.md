@@ -10,6 +10,8 @@ import {ComparisonTable} from '@site/src/components/comparison-table';
 
 # RxDB as an ElectricSQL Alternative for Local-First JavaScript Apps
 
+<ArticleByline published="2026-05-08" />
+
 [ElectricSQL](https://electric-sql.com/) is in the middle of a major rewrite. The original prototype combined SQLite, Postgres, and CRDT-based bidirectional sync. The new direction, often called Electric Next, drops most of that and focuses on partial sync of "shapes" from a Postgres source database to TypeScript or Elixir clients. The write path is not yet implemented and client-side reactivity is incomplete. Teams that want to ship a [local-first](../../offline-first.md) JavaScript application today need a stable alternative that already supports reads, writes, queries, and live updates.
 
 [RxDB](https://rxdb.info/) is a [local-first](../../articles/local-first-future.md) NoSQL database for JavaScript that has been in production since 2016. It runs in the browser, in Node.js, in Electron, and in React Native. It ships a full bidirectional [replication protocol](../../replication.md), [reactive queries](../../reactivity.md), and pluggable storages including SQLite, IndexedDB, OPFS, and in-memory. This page explains what ElectricSQL offers today, where it falls short, and how RxDB fills the same role with fewer surprises.
