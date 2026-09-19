@@ -12,7 +12,7 @@ import {Steps} from '@site/src/components/steps';
 
 With the logger plugin you can log all operations to the [storage layer](./rx-storage.md) of your [RxDatabase](./rx-database.md).
 
-This is useful to debug performance problems and for monitoring with Application Performance Monitoring (APM) tools like **Bugsnag**, **Datadog**, **Elastic**, **Sentry** and others.
+This is useful to debug performance problems and for monitoring with Application Performance Monitoring (APM) tools like **Bugsnag**, **Datadog**, **Elastic**, **Sentry** and others. When you want to browse and edit the stored documents instead of logging operations, use the [database viewer](./dbviewer.md).
 
 <PremiumBlock />
 

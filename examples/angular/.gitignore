@@ -11,6 +11,7 @@
 /node_modules
 
 src/assets/logo.svg
+src/assets/dbviewer.html
 
 
 # profiling files
