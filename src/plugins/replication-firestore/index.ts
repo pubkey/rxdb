@@ -52,6 +52,7 @@ import type {
     SyncOptionsFirestore
 } from './firestore-types.ts';
 import { Subject } from 'rxjs';
+import { awaitRetry } from '../replication/replication-helper.ts';
 import {
     firestoreRowToDocData,
     getContentByIds,
@@ -153,7 +154,8 @@ export function replicateFirestore<RxDocType>(
 
                 let mustsReRun = true;
                 let useDocs: QueryDocumentSnapshot<RxDocType>[] = [];
-                while (mustsReRun) {
+                while (mustsReRun && !replicationState.isStoppedOrPaused()) {
+                    let fromCache = false;
                     /**
                      * Local writes that have not been persisted to the server
                      * are in pending state and do not have a correct serverTimestamp set.
@@ -170,6 +172,12 @@ export function replicateFirestore<RxDocType>(
                             getDocs(newerQuery),
                             sameTimeQuery ? getDocs(sameTimeQuery) : undefined
                         ]);
+
+                        // Cached queries can omit documents and must not advance the checkpoint.
+                        fromCache = newerQueryResult.metadata.fromCache || !!sameTimeQueryResult?.metadata.fromCache;
+                        if (fromCache) {
+                            return;
+                        }
 
                         if (
                             newerQueryResult.metadata.hasPendingWrites ||
@@ -189,6 +197,9 @@ export function replicateFirestore<RxDocType>(
                             }
                         }
                     });
+                    if (fromCache && !replicationState.isStoppedOrPaused()) {
+                        await awaitRetry(collection, replicationState.retryTime);
+                    }
                 }
 
                 if (useDocs.length === 0) {
