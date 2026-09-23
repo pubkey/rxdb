@@ -1,0 +1,9 @@
+- FIX WebRTC replication was flaky and could spin or stop syncing:
+  - The simple-peer connection handler reconnected to the signaling server in a tight loop without delay and crashed in Node.js when the server was not reachable. Reconnects now use an exponential backoff.
+  - A failed peer connection was recreated in an endless loop. Peer connections now have a connect timeout, reconnect with a backoff, and signals of outdated connection attempts are ignored instead of throwing.
+  - The first replication request of a peer could get lost when it arrived before the own handshake was done, which made the sync hang forever. Requests are now answered independently of the handshake state.
+  - Requests to a disconnected peer never resolved. They now fail on disconnect, on timeout (new `requestTimeout` option) and when the remote peer throws, so the replication retries.
+  - With three or more peers, change stream events of one master were applied to the replications of all other masters.
+  - Messages bigger than the data channel size limit failed. They are now split into chunks.
+  - The signaling server now tells the other peers of a room when a peer leaves.
+  - Re-enabled the WebRTC replication tests and added tests for an unreachable signaling server, a signaling server restart and big documents with three peers.

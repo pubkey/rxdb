@@ -1,6 +1,7 @@
 import { Observable, Subscription } from 'rxjs';
 import type {
     MaybePromise,
+    PlainJsonError,
     ReplicationOptions,
     ReplicationPullOptions,
     ReplicationPushOptions,
@@ -19,7 +20,12 @@ export type WebRTCReplicationCheckpoint = RxStorageDefaultCheckpoint;
 export type WebRTCMessage = Omit<WebsocketMessageType, 'method' | 'collection'> & {
     method: StringKeys<RxReplicationHandler<any, any>> | 'token';
 };
-export type WebRTCResponse = Omit<WebsocketMessageResponseType, 'collection'>;
+export type WebRTCResponse = Omit<WebsocketMessageResponseType, 'collection'> & {
+    /**
+     * Set when the remote peer could not process the request.
+     */
+    error?: PlainJsonError;
+};
 export type PeerWithMessage<PeerType> = {
     peer: PeerType;
     message: WebRTCMessage;
@@ -75,6 +81,12 @@ export type SyncOptionsWebRTC<RxDocType, PeerType> = Omit<
      * If returns false, it will drop the peer.
      */
     isPeerValid?: (peer: PeerType) => MaybePromise<boolean>;
+    /**
+     * Time in milliseconds after which a request
+     * to another peer fails when no answer was received.
+     * [default=20000]
+     */
+    requestTimeout?: number;
     pull?: WebRTCSyncPullOptions<RxDocType>;
     push?: WebRTCSyncPushOptions<RxDocType>;
 };
@@ -84,6 +96,8 @@ export type RxWebRTCReplicationState<RxDocType> = RxReplicationState<RxDocType, 
 
 export type WebRTCPeerState<RxDocType, PeerType> = {
     peer: PeerType;
+    // the storage token of the remote peer
+    peerToken: string;
     // only exists when the peer was picked as master and the own client was picked as fork.
     replicationState?: RxWebRTCReplicationState<RxDocType>;
     // clean this up when removing the peer

@@ -17,19 +17,22 @@ import type {
 } from '../../types/index.d.ts';
 import {
     ensureNotFalsy,
-    getFromMapOrThrow,
+    errorToPlainJson,
+    PROMISE_RESOLVE_TRUE,
     randomToken
 } from '../../plugins/utils/index.ts';
 import { RxDBLeaderElectionPlugin } from '../leader-election/index.ts';
 import { replicateRxCollection } from '../replication/index.ts';
 import {
     isMasterInWebRTCReplication,
-    sendMessageAndAwaitAnswer
+    sendMessageAndAwaitAnswer,
+    WEBRTC_DEFAULT_REQUEST_TIMEOUT
 } from './webrtc-helper.ts';
 import type {
     PeerWithMessage,
     PeerWithResponse,
     WebRTCConnectionHandler,
+    WebRTCMessage,
     WebRTCPeerState,
     WebRTCReplicationCheckpoint,
     WebRTCResponse,
@@ -38,6 +41,15 @@ import type {
 } from './webrtc-types.ts';
 import { newRxError } from '../../rx-error.ts';
 
+
+/**
+ * The methods of the master replication handler
+ * that remote peers are allowed to call.
+ */
+const WEBRTC_MASTER_METHODS: string[] = [
+    'masterChangesSince',
+    'masterWrite'
+];
 
 export async function replicateWebRTC<RxDocType, PeerType>(
     options: SyncOptionsWebRTC<RxDocType, PeerType>
@@ -75,24 +87,68 @@ export async function replicateWebRTC<RxDocType, PeerType>(
         options,
         await options.connectionHandlerCreator(options)
     );
+    const requestTimeout = options.requestTimeout ? options.requestTimeout : WEBRTC_DEFAULT_REQUEST_TIMEOUT;
+    const masterHandler = pool.masterReplicationHandler;
 
+    function sendToPeer(peer: PeerType, messageOrResponse: WebRTCMessage | WebRTCResponse) {
+        return Promise.resolve()
+            .then(() => pool.connectionHandler.send(peer, messageOrResponse))
+            .catch(() => {
+                /**
+                 * Sending fails when the peer disconnected in the meantime.
+                 * This is handled by the disconnect$ stream so it can be ignored here.
+                 */
+            });
+    }
 
     pool.subs.push(
         pool.connectionHandler.error$.subscribe((err: RxError | RxTypeError) => pool.error$.next(err)),
-        pool.connectionHandler.disconnect$.subscribe((peer: PeerType) => pool.removePeer(peer))
+        pool.connectionHandler.disconnect$.subscribe((peer: PeerType) => {
+            pool.connectedPeers.delete(peer);
+            pool.peerValidity.delete(peer);
+            pool.removePeer(peer);
+        })
     );
 
     /**
-     * Answer if someone requests our storage token
+     * Answer the requests of other peers.
+     * This is subscribed once for all peers
+     * and independent of which side is master,
+     * so that no request gets lost when the remote peer
+     * finishes its handshake before the own side has finished it.
      */
     pool.subs.push(
-        pool.connectionHandler.message$.pipe(
-            filter((data: PeerWithMessage<PeerType>) => data.message.method === 'token')
-        ).subscribe((data: PeerWithMessage<PeerType>) => {
-            pool.connectionHandler.send(data.peer, {
-                id: data.message.id,
-                result: storageToken
-            });
+        pool.connectionHandler.message$.subscribe(async (data: PeerWithMessage<PeerType>) => {
+            const { peer, message } = data;
+            if (message.method === 'token') {
+                sendToPeer(peer, {
+                    id: message.id,
+                    result: storageToken
+                });
+                return;
+            }
+            if (!WEBRTC_MASTER_METHODS.includes(message.method)) {
+                return;
+            }
+            const isValid = await pool.isPeerValid(peer);
+            if (!isValid || pool.canceled) {
+                return;
+            }
+            let response: WebRTCResponse;
+            try {
+                const result = await (masterHandler as any)[message.method](...message.params);
+                response = {
+                    id: message.id,
+                    result
+                };
+            } catch (err: any) {
+                response = {
+                    id: message.id,
+                    result: null,
+                    error: errorToPlainJson(err)
+                };
+            }
+            sendToPeer(peer, response);
         })
     );
 
@@ -101,11 +157,10 @@ export async function replicateWebRTC<RxDocType, PeerType>(
             filter(() => !pool.canceled)
         )
         .subscribe(async (peer: PeerType) => {
-            if (options.isPeerValid) {
-                const isValid = await options.isPeerValid(peer);
-                if (!isValid) {
-                    return;
-                }
+            pool.connectedPeers.add(peer);
+            const isValid = await pool.isPeerValid(peer);
+            if (!isValid || !pool.isPeerConnected(peer)) {
+                return;
             }
 
             let peerToken: string;
@@ -117,7 +172,8 @@ export async function replicateWebRTC<RxDocType, PeerType>(
                         id: getRequestId(),
                         method: 'token',
                         params: []
-                    }
+                    },
+                    requestTimeout
                 );
                 peerToken = tokenResponse.result;
             } catch (error: any) {
@@ -125,52 +181,38 @@ export async function replicateWebRTC<RxDocType, PeerType>(
                  * If could not get the tokenResponse,
                  * just ignore that peer.
                  */
-                pool.error$.next(newRxError('RC_WEBRTC_PEER', {
-                    error
-                }));
+                if (pool.isPeerConnected(peer)) {
+                    pool.error$.next(newRxError('RC_WEBRTC_PEER', {
+                        error: errorToPlainJson(error)
+                    }));
+                }
                 return;
             }
             const isMaster = await isMasterInWebRTCReplication(collection.database.hashFunction, storageToken, peerToken);
+            if (!pool.isPeerConnected(peer)) {
+                return;
+            }
 
             let replicationState: RxWebRTCReplicationState<RxDocType> | undefined;
+            const subs: Subscription[] = [];
             if (isMaster) {
-                const masterHandler = pool.masterReplicationHandler;
-                const masterChangeStreamSub = masterHandler.masterChangeStream$.subscribe((ev: any) => {
-                    const streamResponse: WebRTCResponse = {
-                        id: 'masterChangeStream$',
-                        result: ev
-                    };
-                    pool.connectionHandler.send(peer, streamResponse);
-                });
-
-                // clean up the subscription
-                pool.subs.push(
-                    masterChangeStreamSub,
-                    pool.connectionHandler.disconnect$.pipe(
-                        filter((p: PeerType) => p === peer)
-                    ).subscribe(() => masterChangeStreamSub.unsubscribe())
+                subs.push(
+                    masterHandler.masterChangeStream$.subscribe((ev: any) => {
+                        sendToPeer(peer, {
+                            id: 'masterChangeStream$',
+                            result: ev
+                        });
+                    })
                 );
-
-                const messageSub = pool.connectionHandler.message$
-                    .pipe(
-                        filter((data: PeerWithMessage<PeerType>) => data.peer === peer),
-                        filter((data: PeerWithMessage<PeerType>) => data.message.method !== 'token')
-                    )
-                    .subscribe(async (data: PeerWithMessage<PeerType>) => {
-                        const { peer: msgPeer, message } = data;
-                        /**
-                         * If it is not a function,
-                         * it means that the client requested the masterChangeStream$
-                         */
-                        const method = (masterHandler as any)[message.method].bind(masterHandler);
-                        const result = await (method as any)(...message.params);
-                        const response: WebRTCResponse = {
-                            id: message.id,
-                            result
-                        };
-                        pool.connectionHandler.send(msgPeer, response);
-                    });
-                pool.subs.push(messageSub);
+                /**
+                 * Changes that happened between the initial pull of the
+                 * remote fork and the start of the change stream would be missed.
+                 * So we tell the fork to run a checkpoint iteration.
+                 */
+                sendToPeer(peer, {
+                    id: 'masterChangeStream$',
+                    result: 'RESYNC'
+                });
             } else {
                 replicationState = replicateRxCollection({
                     replicationIdentifier: [collection.name, options.topic, peerToken].join('||'),
@@ -192,11 +234,13 @@ export async function replicateWebRTC<RxDocType, PeerType>(
                                         ensureNotFalsy(options.pull).batchSize
                                     ],
                                     id: getRequestId()
-                                }
+                                },
+                                requestTimeout
                             );
                             return answer.result;
                         },
                         stream$: pool.connectionHandler.response$.pipe(
+                            filter((m: PeerWithResponse<PeerType>) => m.peer === peer),
                             filter((m: PeerWithResponse<PeerType>) => m.response.id === 'masterChangeStream$'),
                             map((m: PeerWithResponse<PeerType>) => m.response.result)
                         )
@@ -211,14 +255,15 @@ export async function replicateWebRTC<RxDocType, PeerType>(
                                     method: 'masterWrite',
                                     params: [docs],
                                     id: getRequestId()
-                                }
+                                },
+                                requestTimeout
                             );
                             return answer.result;
                         }
                     }) : undefined
                 });
             }
-            pool.addPeer(peer, replicationState);
+            pool.addPeer(peer, peerToken, replicationState, subs);
         });
     pool.subs.push(connectSub);
     return pool;
@@ -234,6 +279,8 @@ export class RxWebRTCReplicationPool<RxDocType, PeerType> {
     canceled: boolean = false;
     masterReplicationHandler: RxReplicationHandler<RxDocType, WebRTCReplicationCheckpoint>;
     subs: Subscription[] = [];
+    peerValidity = new Map<PeerType, Promise<boolean>>();
+    connectedPeers = new Set<PeerType>();
 
     public error$ = new Subject<RxError | RxTypeError>();
 
@@ -250,27 +297,75 @@ export class RxWebRTCReplicationPool<RxDocType, PeerType> {
         );
     }
 
+    /**
+     * Returns true if the peer is valid.
+     * The result is cached per peer so that
+     * options.isPeerValid() is only called once.
+     */
+    isPeerValid(peer: PeerType): Promise<boolean> {
+        let ret = this.peerValidity.get(peer);
+        if (!ret) {
+            const isPeerValidFn = this.options.isPeerValid;
+            ret = isPeerValidFn ?
+                Promise.resolve()
+                    .then(() => isPeerValidFn(peer))
+                    .catch(() => false) :
+                PROMISE_RESOLVE_TRUE;
+            this.peerValidity.set(peer, ret);
+        }
+        return ret;
+    }
+
+    isPeerConnected(peer: PeerType): boolean {
+        return !this.canceled && this.connectedPeers.has(peer);
+    }
+
     addPeer(
         peer: PeerType,
+        peerToken: string,
         // only if isMaster=false it has a replicationState
-        replicationState?: RxWebRTCReplicationState<RxDocType>
+        replicationState?: RxWebRTCReplicationState<RxDocType>,
+        subs: Subscription[] = []
     ) {
         const peerState: WebRTCPeerState<RxDocType, PeerType> = {
             peer,
+            peerToken,
             replicationState,
-            subs: []
+            subs
         };
-        this.peerStates$.next(this.peerStates$.getValue().set(peer, peerState));
+        if (!this.isPeerConnected(peer)) {
+            this.cleanupPeerState(peerState);
+            return;
+        }
+
         if (replicationState) {
+            /**
+             * When the connection to the signaling server is re-established,
+             * it can happen that a second connection to the same remote instance is created.
+             * Running two replications with the same replicationIdentifier would conflict,
+             * so the replication of the outdated connection is canceled.
+             */
+            (Array.from(this.peerStates$.getValue().values()) as WebRTCPeerState<RxDocType, PeerType>[])
+                .filter(otherState => otherState.peerToken === peerToken && otherState.replicationState)
+                .forEach(otherState => this.removePeer(otherState.peer));
+
             peerState.subs.push(
                 replicationState.error$.subscribe((ev: RxError | RxTypeError) => this.error$.next(ev))
             );
         }
+        this.peerStates$.next(this.peerStates$.getValue().set(peer, peerState));
     }
     removePeer(peer: PeerType) {
-        const peerState: WebRTCPeerState<RxDocType, PeerType> = getFromMapOrThrow(this.peerStates$.getValue(), peer) as WebRTCPeerState<RxDocType, PeerType>;
-        this.peerStates$.getValue().delete(peer);
-        this.peerStates$.next(this.peerStates$.getValue());
+        const peerStates = this.peerStates$.getValue();
+        const peerState = peerStates.get(peer);
+        if (!peerState) {
+            return;
+        }
+        peerStates.delete(peer);
+        this.peerStates$.next(peerStates);
+        this.cleanupPeerState(peerState);
+    }
+    private cleanupPeerState(peerState: WebRTCPeerState<RxDocType, PeerType>) {
         peerState.subs.forEach((sub: Subscription) => sub.unsubscribe());
         if (peerState.replicationState) {
             peerState.replicationState.cancel();
@@ -292,6 +387,8 @@ export class RxWebRTCReplicationPool<RxDocType, PeerType> {
         }
         this.canceled = true;
         this.subs.forEach((sub: Subscription) => sub.unsubscribe());
+        this.connectedPeers.clear();
+        this.peerValidity.clear();
         (Array.from(this.peerStates$.getValue().keys()) as PeerType[]).forEach((peer: PeerType) => {
             this.removePeer(peer);
         });

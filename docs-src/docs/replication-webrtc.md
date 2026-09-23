@@ -222,6 +222,26 @@ const replicationPool = await replicateWebRTC(
 );
 ```
 
+## Connection Handling and Timeouts
+
+The simple-peer connection handler reconnects on its own when the connection to the signaling server or to another peer breaks. Reconnects run with an exponential backoff that starts at `500ms` and is capped at `15s`, so that an unreachable signaling server does not cause a busy loop. A peer connection that is not established within `15s` is dropped and a new attempt is started. Existing WebRTC connections keep replicating while the signaling server is offline.
+
+Messages that are bigger than the message size limit of the WebRTC data channel (which can be as low as `64 KiB` depending on the browser) are split into chunks, so you can replicate big documents.
+
+Each request to another peer fails when no answer arrives in time. The replication then retries after `retryTime`. You can change the timeout with the `requestTimeout` option:
+
+```ts
+const replicationPool = await replicateWebRTC(
+    {
+        /* ... */
+        // (optional) time in milliseconds [default=20000]
+        requestTimeout: 30000,
+        pull: {},
+        push: {}
+    }
+);
+```
+
 ## Conflict detection in WebRTC replication
 
 RxDB's conflict handling works by detecting and resolving conflicts that may arise when multiple clients in a decentralized database system attempt to modify the same data concurrently.
