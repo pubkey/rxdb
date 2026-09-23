@@ -15,13 +15,7 @@ import config from './config.ts';
 import {
     createRxDatabase,
     randomToken,
-    getPrimaryKeyOfInternalDocument,
-    _collectionNamePrimary,
-    INTERNAL_CONTEXT_COLLECTION,
-    getSingleDocument,
-    writeSingle,
-    createRevision,
-    now
+    RxStorage
 } from '../../plugins/core/index.mjs';
 import {
     isNode
@@ -41,53 +35,45 @@ describe('bug-report.test.js', () => {
         const onUnhandled = (reason: any) => unhandled.push(reason);
         process.on('unhandledRejection', onUnhandled);
 
-        const mySchema = {
-            version: 0,
-            primaryKey: 'passportId',
-            type: 'object',
-            properties: {
-                passportId: {
-                    type: 'string',
-                    maxLength: 100
-                },
-                firstName: {
-                    type: 'string'
+        /**
+         * Make the first start() fail by letting the storage reject
+         * the creation of the replication meta instance once.
+         * Any other rejection inside of RxReplicationState._start() behaves the same.
+         */
+        const storage = config.storage.getStorage();
+        let failNextMetaInstance = true;
+        const failingStorage: RxStorage<any, any> = Object.assign({}, storage, {
+            createStorageInstance(params: any) {
+                if (failNextMetaInstance && params.collectionName.startsWith('rx-replication-meta-')) {
+                    failNextMetaInstance = false;
+                    return Promise.reject(new Error('meta instance could not be created'));
                 }
+                return storage.createStorageInstance(params);
             }
-        };
+        });
+
         const db = await createRxDatabase({
             name: randomToken(10),
-            storage: config.storage.getStorage()
+            storage: failingStorage
         });
         const collections = await db.addCollections({
             mycollection: {
-                schema: mySchema
+                schema: {
+                    version: 0,
+                    primaryKey: 'passportId',
+                    type: 'object',
+                    properties: {
+                        passportId: {
+                            type: 'string',
+                            maxLength: 100
+                        }
+                    }
+                }
             }
         });
-        const collection = collections.mycollection;
-
-        /**
-         * Make the first start() fail.
-         * Here this is done by removing the collection document from the internal store,
-         * so addConnectedStorageToCollection() throws "ensureNotFalsy() is falsy".
-         * Any other rejection inside of RxReplicationState._start() behaves the same.
-         */
-        const collectionDocId = getPrimaryKeyOfInternalDocument(
-            _collectionNamePrimary(collection.name, collection.schema.jsonSchema),
-            INTERNAL_CONTEXT_COLLECTION
-        );
-        const collectionDoc: any = await getSingleDocument(db.internalStore, collectionDocId);
-        const deletedDoc: any = await writeSingle(db.internalStore, {
-            previous: collectionDoc,
-            document: Object.assign({}, collectionDoc, {
-                _deleted: true,
-                _rev: createRevision(db.token, collectionDoc),
-                _meta: { lwt: now() }
-            })
-        }, 'bug-report');
 
         const replicationState = replicateRxCollection({
-            collection,
+            collection: collections.mycollection,
             replicationIdentifier: randomToken(10),
             live: true,
             autoStart: true,
@@ -101,15 +87,7 @@ describe('bug-report.test.js', () => {
         await AsyncTestUtil.wait(500);
         const unhandledAfterAutoStart = unhandled.length;
 
-        // Remove the cause, then start again.
-        await writeSingle(db.internalStore, {
-            previous: deletedDoc,
-            document: Object.assign({}, collectionDoc, {
-                _deleted: false,
-                _rev: createRevision(db.token, deletedDoc),
-                _meta: { lwt: now() }
-            })
-        }, 'bug-report');
+        // the storage works again, so the next start() should succeed
         let restartError: any;
         try {
             await replicationState.start();
