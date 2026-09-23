@@ -7,3 +7,5 @@
   - Messages bigger than the data channel size limit failed. They are now split into chunks.
   - The signaling server now tells the other peers of a room when a peer leaves.
   - Re-enabled the WebRTC replication tests and added tests for an unreachable signaling server, a signaling server restart and big documents with three peers.
+  - `RxWebRTCReplicationPool.cancel()` now awaits the cancelation of all replications, so they do not write to the storage after the database was closed.
+- FIX replication-protocol: when the upstream had push conflicts, `persistToMaster()` wrote the resolved conflicts to the fork and meta instance even when the replication was canceled while the conflicts were resolved. This caused "already closed" errors when a database was closed during a replication.

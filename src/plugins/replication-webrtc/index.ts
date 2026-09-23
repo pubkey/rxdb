@@ -19,6 +19,7 @@ import {
     ensureNotFalsy,
     errorToPlainJson,
     PROMISE_RESOLVE_TRUE,
+    PROMISE_RESOLVE_VOID,
     randomToken
 } from '../../plugins/utils/index.ts';
 import { RxDBLeaderElectionPlugin } from '../leader-election/index.ts';
@@ -355,21 +356,22 @@ export class RxWebRTCReplicationPool<RxDocType, PeerType> {
         }
         this.peerStates$.next(this.peerStates$.getValue().set(peer, peerState));
     }
-    removePeer(peer: PeerType) {
+    removePeer(peer: PeerType): Promise<any> {
         const peerStates = this.peerStates$.getValue();
         const peerState = peerStates.get(peer);
         if (!peerState) {
-            return;
+            return PROMISE_RESOLVE_VOID;
         }
         peerStates.delete(peer);
         this.peerStates$.next(peerStates);
-        this.cleanupPeerState(peerState);
+        return this.cleanupPeerState(peerState);
     }
-    private cleanupPeerState(peerState: WebRTCPeerState<RxDocType, PeerType>) {
+    private cleanupPeerState(peerState: WebRTCPeerState<RxDocType, PeerType>): Promise<any> {
         peerState.subs.forEach((sub: Subscription) => sub.unsubscribe());
         if (peerState.replicationState) {
-            peerState.replicationState.cancel();
+            return peerState.replicationState.cancel();
         }
+        return PROMISE_RESOLVE_VOID;
     }
 
     // often used in unit tests
@@ -389,9 +391,14 @@ export class RxWebRTCReplicationPool<RxDocType, PeerType> {
         this.subs.forEach((sub: Subscription) => sub.unsubscribe());
         this.connectedPeers.clear();
         this.peerValidity.clear();
-        (Array.from(this.peerStates$.getValue().keys()) as PeerType[]).forEach((peer: PeerType) => {
-            this.removePeer(peer);
-        });
+        /**
+         * The replications must be fully canceled before the cancel() promise resolves,
+         * otherwise they could still write to the storage after the database was closed.
+         */
+        await Promise.all(
+            (Array.from(this.peerStates$.getValue().keys()) as PeerType[])
+                .map((peer: PeerType) => this.removePeer(peer))
+        );
         await this.connectionHandler.close();
     }
 }
