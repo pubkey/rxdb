@@ -413,11 +413,16 @@ describe('replication-webrtc.test.ts', function () {
             await waitUntil(() => pools.every(pool => pool.peerStates$.getValue().size === 2), 1000 * 30);
             await awaitCollectionsInSync(collections);
 
-            // documents that do not fit into a single data channel message
-            const bigBody = randomString(SIMPLE_PEER_MAX_MESSAGE_LENGTH * 20);
+            /**
+             * A single document must stay below 100KB because some storages
+             * like FoundationDB have a value size limit.
+             * Many medium sized documents make a replication batch
+             * that is bigger than the data channel message size limit.
+             */
+            const bigBody = randomString(SIMPLE_PEER_MAX_MESSAGE_LENGTH * 5);
             await collections[2].insert({ id: 'big-2', body: bigBody });
             await collections[0].bulkInsert(
-                new Array(30).fill(0).map((_, i) => ({ id: 'bulk-' + i, body: randomString(2000) }))
+                new Array(30).fill(0).map((_, i) => ({ id: 'bulk-' + i, body: randomString(15000) }))
             );
             await awaitCollectionsInSync(collections);
             for (const collection of collections) {
