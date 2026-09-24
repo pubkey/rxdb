@@ -30,7 +30,8 @@ import {
     getHeightOfRevision,
     createRevision,
     flattenObject,
-    getFromObjectOrThrow
+    getFromObjectOrThrow,
+    sortObject
 } from '../../plugins/core/index.mjs';
 import config from './config.ts';
 
@@ -80,6 +81,21 @@ describe('util.test.js', () => {
         });
     });
     describe('.sortObject()', () => {
+        it('should sort keys in the same order regardless of the default locale', () => {
+            const originalLocaleCompare = String.prototype.localeCompare;
+            const czechByDefault = function (this: string, that: string, locales?: any, options?: any) {
+                return originalLocaleCompare.call(this, that, locales ?? 'cs', options);
+            };
+            const englishOrder = Object.keys(sortObject({ hint: 1, chunk_id: 1, answer: 1 }));
+            String.prototype.localeCompare = czechByDefault as any;
+            try {
+                const czechDeviceOrder = Object.keys(sortObject({ hint: 1, chunk_id: 1, answer: 1 }));
+                assert.deepStrictEqual(czechDeviceOrder, englishOrder);
+                assert.deepStrictEqual(czechDeviceOrder, ['answer', 'chunk_id', 'hint']);
+            } finally {
+                String.prototype.localeCompare = originalLocaleCompare;
+            }
+        });
     });
     describe('.trimDots()', () => {
         it('should return the same string when no boundary dots exist', () => {
