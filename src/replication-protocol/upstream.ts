@@ -515,6 +515,14 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
                         })
                 );
 
+                /**
+                 * The replication might have been canceled while the conflicts
+                 * were resolved. Then the storage instances might already be closed.
+                 */
+                if (state.events.canceled.getValue()) {
+                    return false;
+                }
+
                 if (conflictWriteFork.length > 0) {
                     hadConflictWrites = true;
 
@@ -559,7 +567,7 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
                                 conflictWriteMeta[docId]
                             );
                         });
-                    if (useMetaWrites.length > 0) {
+                    if (useMetaWrites.length > 0 && !state.events.canceled.getValue()) {
                         await state.input.metaInstance.bulkWrite(
                             stripAttachmentsDataFromMetaWriteRows(state, useMetaWrites),
                             'replication-up-write-conflict-meta'

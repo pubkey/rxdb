@@ -61,17 +61,41 @@ export async function startSignalingServerSimplePeer(
     function disconnectSocket(peerId: string, reason: string) {
         console.log('# disconnect peer ' + peerId + ' reason: ' + reason);
         const peer = peerById.get(peerId);
+        peerById.delete(peerId);
         if (peer) {
-            peer.socket.close && peer.socket.close(undefined, reason);
+            try {
+                peer.socket.close && peer.socket.close(undefined, reason);
+            } catch (err) { }
             peer.rooms.forEach(roomId => {
                 const room = peersByRoom.get(roomId);
-                room?.delete(peerId);
-                if (room && room.size === 0) {
+                if (!room) {
+                    return;
+                }
+                room.delete(peerId);
+                if (room.size === 0) {
                     peersByRoom.delete(roomId);
+                } else {
+                    // tell the remaining peers about the new room state
+                    sendRoomState(room);
                 }
             });
         }
-        peerById.delete(peerId);
+    }
+
+    function sendRoomState(room: Set<string>) {
+        const otherPeerIds = Array.from(room);
+        room.forEach(otherPeerId => {
+            const otherPeer = peerById.get(otherPeerId);
+            if (otherPeer) {
+                sendMessage(
+                    otherPeer.socket,
+                    {
+                        type: 'joined',
+                        otherPeerIds
+                    }
+                );
+            }
+        });
     }
 
     wss.on('connection', function (ws: WebSocket) {
@@ -102,7 +126,13 @@ export async function startSignalingServerSimplePeer(
 
         ws.on('message', (msgEvent: any) => {
             peer.lastPing = Date.now();
-            const message = JSON.parse(msgEvent.toString());
+            let message: any;
+            try {
+                message = JSON.parse(msgEvent.toString());
+            } catch (err) {
+                disconnectSocket(peerId, 'invalid message');
+                return;
+            }
             const type = message.type;
             switch (type) {
                 case 'join':
@@ -115,7 +145,7 @@ export async function startSignalingServerSimplePeer(
                         return;
                     }
 
-                    if (peer.rooms.has(peerId)) {
+                    if (peer.rooms.has(roomId)) {
                         return;
                     }
                     peer.rooms.add(roomId);
@@ -130,18 +160,7 @@ export async function startSignalingServerSimplePeer(
                     room.add(peerId);
 
                     // tell everyone about new room state
-                    room.forEach(otherPeerId => {
-                        const otherPeer = peerById.get(otherPeerId);
-                        if (otherPeer) {
-                            sendMessage(
-                                otherPeer.socket,
-                                {
-                                    type: 'joined',
-                                    otherPeerIds: Array.from(room)
-                                }
-                            );
-                        }
-                    });
+                    sendRoomState(room);
                     break;
                 case 'signal':
                     if (
@@ -175,7 +194,11 @@ export async function startSignalingServerSimplePeer(
 }
 
 
+const WEBSOCKET_STATE_OPEN = 1;
 function sendMessage(ws: WebSocket, message: PeerMessage) {
+    if (ws.readyState !== WEBSOCKET_STATE_OPEN) {
+        return;
+    }
     const msgString = JSON.stringify(message);
     ws.send(msgString);
 }
