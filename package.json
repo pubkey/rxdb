@@ -603,7 +603,7 @@
     "@babel/plugin-transform-react-jsx": "7.29.7",
     "@babel/plugin-transform-runtime": "7.29.7",
     "@babel/plugin-transform-template-literals": "7.29.7",
-    "@babel/plugin-transform-typescript": "7.29.7",
+    "@babel/plugin-transform-typescript": "7.29.9",
     "@babel/preset-env": "7.29.7",
     "@babel/preset-typescript": "7.29.7",
     "@eslint/compat": "2.1.1",
