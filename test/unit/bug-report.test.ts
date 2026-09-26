@@ -14,128 +14,103 @@ import config from './config.ts';
 
 import {
     createRxDatabase,
-    randomToken
+    randomToken,
+    RxStorage
 } from '../../plugins/core/index.mjs';
 import {
     isNode
 } from '../../plugins/test-utils/index.mjs';
+import {
+    replicateRxCollection
+} from '../../plugins/replication/index.mjs';
+
 describe('bug-report.test.js', () => {
-    it('should fail because it reproduces the bug', async function () {
-
-        /**
-         * If your test should only run in nodejs or only run in the browser,
-         * you should comment in the return operator and adapt the if statement.
-         */
-        if (
-            !isNode // runs only in node
-            // isNode // runs only in the browser
-        ) {
-            // return;
-        }
-
-        if (!config.storage.hasMultiInstance) {
+    it('a rejection in the first start() of a replication is unhandled and every later start() rejects with it', async function () {
+        if (!isNode) {
+            // uses process.on('unhandledRejection')
             return;
         }
 
-        // create a schema
-        const mySchema = {
-            version: 0,
-            primaryKey: 'passportId',
-            type: 'object',
-            properties: {
-                passportId: {
-                    type: 'string',
-                    maxLength: 100
-                },
-                firstName: {
-                    type: 'string'
-                },
-                lastName: {
-                    type: 'string'
-                },
-                age: {
-                    type: 'integer',
-                    minimum: 0,
-                    maximum: 150
-                }
-            }
-        };
+        const unhandled: any[] = [];
+        const onUnhandled = (reason: any) => unhandled.push(reason);
+        process.on('unhandledRejection', onUnhandled);
 
         /**
-         * Always generate a random database-name
-         * to ensure that different test runs do not affect each other.
+         * Make the first start() fail by letting the storage reject
+         * the creation of the replication meta instance once.
+         * Any other rejection inside of RxReplicationState._start() behaves the same.
          */
-        const name = randomToken(10);
-
-        // create a database
-        const db = await createRxDatabase({
-            name,
-            /**
-             * By calling config.storage.getStorage(),
-             * we can ensure that all variations of RxStorage are tested in the CI.
-             */
-            storage: config.storage.getStorage(),
-            eventReduce: true,
-            ignoreDuplicate: true
+        const storage = config.storage.getStorage();
+        let failNextMetaInstance = true;
+        const failingStorage: RxStorage<any, any> = Object.assign({}, storage, {
+            createStorageInstance(params: any) {
+                if (failNextMetaInstance && params.collectionName.startsWith('rx-replication-meta-')) {
+                    failNextMetaInstance = false;
+                    return Promise.reject(new Error('meta instance could not be created'));
+                }
+                return storage.createStorageInstance(params);
+            }
         });
-        // create a collection
+
+        const db = await createRxDatabase({
+            name: randomToken(10),
+            storage: failingStorage
+        });
         const collections = await db.addCollections({
             mycollection: {
-                schema: mySchema
+                schema: {
+                    version: 0,
+                    primaryKey: 'passportId',
+                    type: 'object',
+                    properties: {
+                        passportId: {
+                            type: 'string',
+                            maxLength: 100
+                        }
+                    }
+                }
             }
         });
 
-        // insert a document
-        await collections.mycollection.insert({
-            passportId: 'foobar',
-            firstName: 'Bob',
-            lastName: 'Kelso',
-            age: 56
-        });
-
-        /**
-         * to simulate the event-propagation over multiple browser-tabs,
-         * we create the same database again
-         */
-        const dbInOtherTab = await createRxDatabase({
-            name,
-            storage: config.storage.getStorage(),
-            eventReduce: true,
-            ignoreDuplicate: true
-        });
-        // create a collection
-        const collectionInOtherTab = await dbInOtherTab.addCollections({
-            mycollection: {
-                schema: mySchema
+        const replicationState = replicateRxCollection({
+            collection: collections.mycollection,
+            replicationIdentifier: randomToken(10),
+            live: true,
+            autoStart: true,
+            waitForLeadership: false,
+            pull: {
+                handler: () => Promise.resolve({ documents: [], checkpoint: null })
             }
         });
+        const errors: any[] = [];
+        replicationState.error$.subscribe(err => errors.push(err));
+        await AsyncTestUtil.wait(500);
+        const unhandledAfterAutoStart = unhandled.length;
 
-        // find the document in the other tab
-        const myDocument = await collectionInOtherTab.mycollection
-            .findOne()
-            .where('firstName')
-            .eq('Bob')
-            .exec();
+        // the storage works again, so the next start() should succeed
+        let restartError: any;
+        try {
+            await replicationState.start();
+            await replicationState.awaitInitialReplication();
+        } catch (err) {
+            restartError = err;
+        }
 
-        /*
-         * assert things,
-         * here your tests should fail to show that there is a bug
-         */
-        assert.strictEqual(myDocument.age, 56);
+        process.off('unhandledRejection', onUnhandled);
+        await replicationState.cancel();
+        await db.close();
 
-
-        // you can also wait for events
-        const emitted: any[] = [];
-        const sub = collectionInOtherTab.mycollection
-            .findOne().$
-            .subscribe(doc => {
-                emitted.push(doc);
-            });
-        await AsyncTestUtil.waitUntil(() => emitted.length === 1);
-
-        // clean up afterwards
-        sub.unsubscribe();
-        db.close();
-        dbInOtherTab.close();
+        assert.deepStrictEqual(
+            {
+                unhandledRejectionsFromAutoStart: unhandledAfterAutoStart,
+                errorsEmittedOnErrorStream: errors.length,
+                startAfterCauseRemoved: restartError ? 'rejected: ' + restartError.message : 'resolved'
+            },
+            {
+                unhandledRejectionsFromAutoStart: 0,
+                errorsEmittedOnErrorStream: 1,
+                startAfterCauseRemoved: 'resolved'
+            }
+        );
     });
 });

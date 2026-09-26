@@ -822,6 +822,12 @@ export const ERROR_MESSAGES = {
         fix: 'Check the error details in the .errors observable.',
         docs: 'https://rxdb.info/replication.html?console=errors&code=RC_PULL'
     },
+    RC_START: {
+        message: 'RxReplication could not be started - see .errors for more details',
+        cause: 'An error was thrown while the replication was starting, for example while setting up its meta storage.',
+        fix: 'Check the error details in .errors. Calling start() again retries the start.',
+        docs: 'https://rxdb.info/replication.html?console=errors&code=RC_START'
+    },
     RC_STREAM: {
         message: 'RxReplication pull stream$ threw an error - see .errors for more details',
         cause: 'The pull stream of the replication threw an error.',
