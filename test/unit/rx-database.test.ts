@@ -534,6 +534,64 @@ describe('rx-database.test.ts', () => {
             });
         });
     });
+    describe('schema hash compatibility', () => {
+        it('should open a collection whose stored schema hash was created with a different key order', async () => {
+            if (!config.storage.hasPersistence) {
+                return;
+            }
+            const name = randomToken(10);
+            const storage = config.storage.getStorage();
+            const schema = {
+                version: 0,
+                primaryKey: 'id',
+                type: 'object',
+                properties: {
+                    id: { type: 'string', maxLength: 100 },
+                    hint: { type: 'string' },
+                    chunk_id: { type: 'number' }
+                },
+                required: ['id']
+            } as const;
+
+            const originalLocaleCompare = String.prototype.localeCompare;
+            String.prototype.localeCompare = function (this: string, that: string) {
+                return originalLocaleCompare.call(this, that, 'cs');
+            } as any;
+            let db1;
+            try {
+                db1 = await createRxDatabase({ name, storage });
+                await db1.addCollections({ items: { schema } });
+            } finally {
+                String.prototype.localeCompare = originalLocaleCompare;
+            }
+            await db1.items.insert({ id: 'a', hint: 'h', chunk_id: 1 });
+            await db1.close();
+
+            const db2 = await createRxDatabase({ name, storage });
+            await db2.addCollections({ items: { schema } });
+            const doc = await db2.items.findOne('a').exec(true);
+            assert.strictEqual(doc.hint, 'h');
+            await db2.remove();
+        });
+        it('should still throw DB6 when the stored schema has a different content', async () => {
+            if (!config.storage.hasPersistence) {
+                return;
+            }
+            const name = randomToken(10);
+            const storage = config.storage.getStorage();
+            const db1 = await createRxDatabase({ name, storage });
+            await db1.addCollections({ items: { schema: schemas.human } });
+            await db1.close();
+
+            const db2 = await createRxDatabase({ name, storage });
+            await AsyncTestUtil.assertThrows(
+                () => db2.addCollections({ items: { schema: { ...schemas.human, description: 'changed' } } }),
+                'RxError',
+                'DB6'
+            );
+            await db2.remove();
+        });
+    });
     describe('.close()', () => {
         describe('positive', () => {
             it('should not crash on close', async () => {
