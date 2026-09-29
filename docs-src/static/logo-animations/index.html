@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>RxDB Logo Motion</title>
-<meta name="description" content="Animated versions of the RxDB logo: a wink, a build-in, reactive streams, replication, offline-first, storage swap, and a loader.">
+<meta name="description" content="Animated versions of the RxDB logo: a wink, a document swarm, reactive streams, replication, offline-first, encryption, leader election, and more.">
 <style>
 @font-face {
   font-family: "Atkinson Hyperlegible Mono";
@@ -23,6 +23,8 @@
   --pink: #ED168F;
   --magenta: #B2218B;
   --purple: #752A8A;
+  --cyan: #3FE0FF;
+  --cipher-bg: #2A2E45;
   --font: "Atkinson Hyperlegible Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
   --ease-pop: cubic-bezier(.2, 1.4, .4, 1);
   --ease-out: cubic-bezier(.16, 1, .3, 1);
@@ -352,6 +354,158 @@ p { margin: 0; max-width: 62ch; }
 .dots::after { content: ""; animation: dots 1.8s steps(4) infinite; }
 @keyframes dots { 0% { content: ""; } 25% { content: "."; } 50% { content: ".."; } 75% { content: "..."; } }
 
+/* Sleep mode for the character */
+.logo .zzz { fill: var(--fg); font-size: 11px; font-weight: 800; opacity: 0; transform-box: fill-box; transform-origin: center; }
+.sleeping .zzz { animation: zzz 2.4s ease-out infinite; }
+.sleeping .z2 { animation-delay: .8s; }
+.sleeping .z3 { animation-delay: 1.6s; }
+@keyframes zzz {
+  0% { opacity: 0; transform: translate(0, 0) scale(.6); }
+  20% { opacity: 1; }
+  100% { opacity: 0; transform: translate(12px, -26px) scale(1.2); }
+}
+
+/* Document swarm */
+.swarm { aspect-ratio: 21 / 9; cursor: crosshair; touch-action: pan-y; }
+.swarm canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+.swarm-meta { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; }
+
+/* 8. Isometric stack */
+.v-iso { perspective: 800px; }
+.iso {
+  position: relative;
+  height: 58%;
+  aspect-ratio: 103.33 / 140;
+  max-width: 100%;
+  transform-style: preserve-3d;
+  animation: iso 6s var(--ease-out) infinite;
+}
+.iso > svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; animation: lift 6s var(--ease-out) infinite; }
+.iso .frame .bar { fill: var(--line); }
+@keyframes iso {
+  0%, 12% { transform: none; }
+  32%, 72% { transform: rotateX(58deg) rotateZ(-38deg); }
+  92%, 100% { transform: none; }
+}
+@keyframes lift {
+  0%, 22% { transform: translateZ(0); }
+  42%, 66% { transform: translateZ(var(--z, 0)); }
+  84%, 100% { transform: translateZ(0); }
+}
+
+/* 9. Conflict handling */
+.v-conflict .b2 { animation: resolved 4s var(--ease-out) infinite; }
+.v-conflict .ca, .v-conflict .cb { transform-box: fill-box; opacity: 0; }
+.v-conflict .ca { fill: var(--pink); animation: edit-a 4s var(--ease-out) infinite; }
+.v-conflict .cb { fill: var(--purple); animation: edit-b 4s var(--ease-out) infinite; }
+.v-conflict .alert { transform-box: fill-box; transform-origin: center; opacity: 0; animation: alert 4s var(--ease-pop) infinite; }
+.v-conflict .alert circle { fill: var(--white); }
+.v-conflict .alert text { fill: var(--bg); font-size: 11px; font-weight: 800; }
+@keyframes resolved {
+  0%, 54% { opacity: 0; transform: none; fill: var(--white); }
+  58% { opacity: 1; transform: scaleX(1.08); fill: var(--white); }
+  70%, 88% { opacity: 1; transform: none; fill: var(--c); }
+  96%, 100% { opacity: 0; fill: var(--c); }
+}
+@keyframes edit-a {
+  0% { opacity: 0; transform: translateX(-50%); }
+  10% { opacity: .85; }
+  32% { transform: translateX(-8%); }
+  36% { transform: translateX(-3%); }
+  40% { transform: translateX(-7%); }
+  44% { transform: translateX(-2%); }
+  48% { transform: translateX(-6%); }
+  54% { opacity: .85; transform: none; }
+  60%, 100% { opacity: 0; transform: none; }
+}
+@keyframes edit-b {
+  0% { opacity: 0; transform: translateX(50%); }
+  10% { opacity: .85; }
+  32% { transform: translateX(8%); }
+  36% { transform: translateX(3%); }
+  40% { transform: translateX(7%); }
+  44% { transform: translateX(2%); }
+  48% { transform: translateX(6%); }
+  54% { opacity: .85; transform: none; }
+  60%, 100% { opacity: 0; transform: none; }
+}
+@keyframes alert {
+  0%, 36% { opacity: 0; transform: scale(0); }
+  40%, 52% { opacity: 1; transform: none; }
+  56%, 100% { opacity: 0; transform: scale(.5); }
+}
+
+/* 10. Encryption */
+.v-crypt .bar { animation: enc 5s var(--ease-out) infinite; }
+.v-crypt .b2 { animation-delay: .08s; }
+.v-crypt .b3 { animation-delay: .16s; }
+.v-crypt .cipher { fill: var(--fg); font-size: 8px; opacity: 0; animation: cipher 5s infinite; }
+.v-crypt .shackle {
+  fill: none;
+  stroke: var(--white);
+  stroke-width: 3;
+  stroke-linecap: round;
+  transform-box: fill-box;
+  opacity: 0;
+  animation: shackle 5s var(--ease-pop) infinite;
+}
+@keyframes enc { 0%, 18% { fill: var(--c); } 26%, 70% { fill: var(--cipher-bg); } 80%, 100% { fill: var(--c); } }
+@keyframes cipher { 0%, 20% { opacity: 0; } 28%, 68% { opacity: 1; } 76%, 100% { opacity: 0; } }
+@keyframes shackle {
+  0%, 12% { opacity: 0; transform: translateY(-6px); }
+  22%, 70% { opacity: 1; transform: none; }
+  78%, 100% { opacity: 0; transform: translateY(-6px); }
+}
+
+/* 11. Key compression */
+.v-compress .bar { transform-origin: left center; animation: squeeze 4.4s var(--ease-pop) infinite; }
+.v-compress .b2 { animation-delay: .1s; }
+.v-compress .b3 { animation-delay: .2s; }
+@keyframes squeeze { 0%, 22% { transform: none; } 36%, 74% { transform: scaleX(.6); } 88%, 100% { transform: none; } }
+.readout { display: grid; font-size: 11px; max-width: 92%; }
+.readout span { grid-area: 1 / 1; text-align: center; }
+.readout .raw { animation: raw 4.4s infinite; }
+.readout .min { opacity: 0; color: var(--pink); animation: min 4.4s infinite; }
+@keyframes raw { 0%, 28% { opacity: 1; } 34%, 78% { opacity: 0; } 84%, 100% { opacity: 1; } }
+@keyframes min { 0%, 28% { opacity: 0; } 34%, 78% { opacity: 1; } 84%, 100% { opacity: 0; } }
+
+/* 12. Leader election */
+.v-leader .tabl { fill: var(--muted); font-size: 9px; letter-spacing: .06em; }
+.v-leader .crown { fill: var(--pink); }
+.v-leader .tab { transform-box: fill-box; transform-origin: center bottom; }
+
+/* 13. Glitch */
+.v-glitch .gl { mix-blend-mode: screen; opacity: 0; }
+.v-glitch .gl-a .part { fill: var(--cyan); }
+.v-glitch .gl-b .part { fill: var(--pink); }
+.v-glitch .gl-a { animation: glitch-a 3.2s steps(1) infinite; }
+.v-glitch .gl-b { animation: glitch-b 3.2s steps(1) infinite; }
+.v-glitch .main { animation: glitch-main 3.2s steps(1) infinite; }
+.v-glitch:hover .gl, .v-glitch:hover .main, .v-glitch:focus-visible .gl, .v-glitch:focus-visible .main { animation-duration: .9s; }
+@keyframes glitch-a {
+  0%, 78% { opacity: 0; transform: none; clip-path: none; }
+  80% { opacity: .9; transform: translate(-4px, 0); clip-path: inset(10% 0 55% 0); }
+  83% { transform: translate(3px, 0); clip-path: inset(60% 0 12% 0); }
+  86% { transform: translate(-2px, 0); clip-path: inset(30% 0 40% 0); }
+  89% { transform: translate(5px, 0); clip-path: inset(0 0 80% 0); }
+  92%, 100% { opacity: 0; transform: none; clip-path: none; }
+}
+@keyframes glitch-b {
+  0%, 78% { opacity: 0; transform: none; clip-path: none; }
+  80% { opacity: .9; transform: translate(4px, 0); clip-path: inset(50% 0 20% 0); }
+  83% { transform: translate(-3px, 0); clip-path: inset(5% 0 70% 0); }
+  86% { transform: translate(2px, 0); clip-path: inset(70% 0 5% 0); }
+  89% { transform: translate(-5px, 0); clip-path: inset(40% 0 35% 0); }
+  92%, 100% { opacity: 0; transform: none; clip-path: none; }
+}
+@keyframes glitch-main {
+  0%, 78% { transform: none; }
+  80% { transform: translate(2px, 0); }
+  84% { transform: translate(-1px, 0) skewX(-6deg); }
+  88% { transform: translate(1px, 0); }
+  92%, 100% { transform: none; }
+}
+
 /* Tokens */
 .tokens {
   display: grid;
@@ -374,6 +528,7 @@ footer { font-size: 13px; color: var(--muted); display: flex; flex-direction: co
 
 @media (max-width: 820px) {
   .hero, .wink-grid { grid-template-columns: minmax(0, 1fr); }
+  .swarm { aspect-ratio: 4 / 3; }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
@@ -387,7 +542,7 @@ footer { font-size: 13px; color: var(--muted); display: flex; flex-direction: co
     <div class="intro">
       <p class="eyebrow">Motion study for the RxDB brand mark</p>
       <h1>RxDB Logo <b>Motion</b></h1>
-      <p class="muted">Nine animated versions of the RxDB logo. Each one is built from the five shapes of the original mark (frame, three layers, two corner pieces) and ties the motion to something the database does.</p>
+      <p class="muted">Sixteen animated versions of the RxDB logo. Each one is built from the five shapes of the original mark (frame, three layers, two corner pieces) and ties the motion to something the database does.</p>
     </div>
     <button class="btn" id="pause-all" type="button" aria-pressed="false">Pause all</button>
   </header>
@@ -444,6 +599,9 @@ footer { font-size: 13px; color: var(--muted); display: flex; flex-direction: co
               </g>
               <path class="lash" id="lash" d="M62 45.5 q7 -6 14 0"/>
               <path class="mouth" id="mouth" d="M40 66 q11.67 8 23.33 0"/>
+              <text class="zzz z1" x="100" y="6">z</text>
+              <text class="zzz z2" x="100" y="6">z</text>
+              <text class="zzz z3" x="100" y="6">z</text>
               <path class="sparkle" id="sparkle" d="M112 16 q1.2 6 7 7 q-5.8 1 -7 7 q-1.2 -6 -7 -7 q5.8 -1 7 -7z"/>
             </g>
           </svg>
@@ -451,7 +609,7 @@ footer { font-size: 13px; color: var(--muted); display: flex; flex-direction: co
         </button>
         <div class="meta">
           <div class="row"><h3>Character wink</h3><span class="spec">0.7s · on click + every 3rd blink</span></div>
-          <p>The right eye closes into an arc, the corner piece lifts, the smile turns into a smirk and a spark pops out. Blinks run on a random 2.5 to 5 second interval.</p>
+          <p>The right eye closes into an arc, the corner piece lifts, the smile turns into a smirk and a spark pops out. Blinks run on a random 2.5 to 5 second interval. Leave the pointer still for 8 seconds and it falls asleep. Move or tap to wake it.</p>
         </div>
       </div>
       <div class="card">
@@ -463,6 +621,25 @@ footer { font-size: 13px; color: var(--muted); display: flex; flex-direction: co
           <div class="row"><h3>Minimal wink</h3><span class="spec">3.2s · loop · ease-out</span></div>
           <p>No added features. The top layer squeezes to 8% height, overshoots to 110% on the way back, and the middle layer squashes as follow-through.</p>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Document swarm -->
+  <section aria-labelledby="swarm-title">
+    <div class="section-head">
+      <p class="eyebrow">Interactive</p>
+      <h2 id="swarm-title">Document <b>Swarm</b></h2>
+      <p class="muted">The mark rebuilt from squares, where each square stands for one document. Move your pointer through it to push documents away. Click the artboard or press Scatter to throw them all, then watch every document find its place again.</p>
+    </div>
+    <div class="card">
+      <div class="stage swarm" id="swarm" role="img" aria-label="RxDB logo made of small squares that react to the pointer">
+        <canvas aria-hidden="true"></canvas>
+        <span class="tag" id="swarm-count">documents</span>
+      </div>
+      <div class="swarm-meta">
+        <span class="spec">spring 0.06 · damping 0.82 · repel radius 70px · canvas 2D</span>
+        <button class="btn" id="scatter" type="button">Scatter</button>
       </div>
     </div>
   </section>
@@ -588,6 +765,102 @@ footer { font-size: 13px; color: var(--muted); display: flex; flex-direction: co
         </div>
       </article>
 
+      <article class="card">
+        <div class="stage v-iso">
+          <div class="iso" role="img" aria-label="RxDB logo tilting into an isometric view with its layers lifting like a stack">
+            <svg class="frame" viewBox="0 0 103.33 140" data-logo></svg>
+            <svg class="logo" viewBox="0 0 103.33 140" style="--z: 18px"><rect class="bar b3" x="6.66" y="86.66" width="90" height="20"/></svg>
+            <svg class="logo" viewBox="0 0 103.33 140" style="--z: 36px"><rect class="bar b2" x="6.67" y="60" width="90" height="20"/></svg>
+            <svg class="logo" viewBox="0 0 103.33 140" style="--z: 54px"><rect class="bar b1" x="6.66" y="33.34" width="90" height="20"/></svg>
+          </div>
+          <span class="tag">storage layers</span>
+        </div>
+        <div class="meta">
+          <div class="row"><h3>Isometric stack</h3><span class="spec">6s · loop · CSS 3D</span></div>
+          <p>The mark tilts into an isometric view and the three layers lift off the frame like a stack of storage layers, then settle back.</p>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="stage v-conflict">
+          <svg class="logo" viewBox="-50 0 203.33 140" data-logo role="img" aria-label="Two conflicting edits of the middle layer merging into one">
+            <rect class="ca" x="6.67" y="60" width="90" height="20"/>
+            <rect class="cb" x="6.67" y="60" width="90" height="20"/>
+            <g class="alert"><circle cx="116" cy="70" r="8"/><text x="116" y="74" text-anchor="middle">!</text></g>
+          </svg>
+          <span class="tag">conflict handler</span>
+        </div>
+        <div class="meta">
+          <div class="row"><h3>Conflict handling</h3><span class="spec">4s · loop · ease-out</span></div>
+          <p>Two offline edits of the same document collide on the middle layer, shake, and resolve into one revision.</p>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="stage v-crypt">
+          <svg class="logo" viewBox="0 -12 103.33 152" data-logo role="img" aria-label="RxDB logo locking and encrypting its layers">
+            <path class="shackle" d="M80 6 V1 a6.5 6.5 0 0 1 13 0 V6"/>
+            <text class="cipher" x="11" y="46.3">&#160;</text>
+            <text class="cipher" x="11" y="73">&#160;</text>
+            <text class="cipher" x="11" y="99.7">&#160;</text>
+          </svg>
+          <span class="tag">encryption</span>
+        </div>
+        <div class="meta">
+          <div class="row"><h3>Encryption</h3><span class="spec">5s · loop · JS scramble</span></div>
+          <p>The corner piece locks, the layers go dark and fill with ciphertext, then decrypt back to the brand colors.</p>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="stage v-compress">
+          <svg class="logo" viewBox="0 0 103.33 140" data-logo role="img" aria-label="RxDB logo layers compressing to 60 percent width"></svg>
+          <div class="readout" aria-hidden="true">
+            <span class="raw">{"firstName":"Alice"}</span>
+            <span class="min">{"|a":"Alice"} · up to 40% less disk</span>
+          </div>
+          <span class="tag">key compression</span>
+        </div>
+        <div class="meta">
+          <div class="row"><h3>Key compression</h3><span class="spec">4.4s · loop · ease-pop</span></div>
+          <p>The layers squeeze to 60% of their width while the field names shrink. The key compression plugin saves up to 40% disk space.</p>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="stage v-leader">
+          <svg class="logo" viewBox="0 0 300 150" role="img" aria-label="Three browser tabs passing the leader crown">
+            <g class="tab"><svg x="20" y="36" width="70" height="95" viewBox="0 0 103.33 140" data-logo></svg></g>
+            <g class="tab"><svg x="115" y="36" width="70" height="95" viewBox="0 0 103.33 140" data-logo></svg></g>
+            <g class="tab"><svg x="210" y="36" width="70" height="95" viewBox="0 0 103.33 140" data-logo></svg></g>
+            <text class="tabl" x="55" y="146" text-anchor="middle">tab 1</text>
+            <text class="tabl" x="150" y="146" text-anchor="middle">tab 2</text>
+            <text class="tabl" x="245" y="146" text-anchor="middle">tab 3</text>
+            <g transform="translate(0 12)"><path class="crown" id="crown" d="M0 16 V3 l5 5 5 -8 5 8 5 -5 V16z" style="transform: translate(45px, 0)"/></g>
+          </svg>
+          <span class="tag">leader election</span>
+        </div>
+        <div class="meta">
+          <div class="row"><h3>Leader election</h3><span class="spec">2.4s · loop · WAAPI</span></div>
+          <p>Three tabs share one database. When the leader tab closes, the crown moves to the next tab, so only one tab talks to the server.</p>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="stage v-glitch" tabindex="0">
+          <svg class="logo" viewBox="0 0 103.33 140" role="img" aria-label="RxDB logo with an RGB split glitch">
+            <g class="main" data-logo></g>
+            <g class="gl gl-a" data-logo></g>
+            <g class="gl gl-b" data-logo></g>
+          </svg>
+          <span class="tag">hover to glitch</span>
+        </div>
+        <div class="meta">
+          <div class="row"><h3>Glitch</h3><span class="spec">3.2s · loop · steps(1)</span></div>
+          <p>An RGB split with sliced offsets. Hover to speed it up. Fits error states, 404 pages, and dev-mode warnings.</p>
+        </div>
+      </article>
+
     </div>
   </section>
 
@@ -619,6 +892,8 @@ footer { font-size: 13px; color: var(--muted); display: flex; flex-direction: co
           <li>Layer slide <span>750ms, 120ms stagger</span></li>
           <li>Loader cycle <span>1.8s</span></li>
           <li>Hero cycle <span>9s</span></li>
+          <li>Isometric cycle <span>6s</span></li>
+          <li>Sleep after idle <span>8s</span></li>
         </ul>
       </div>
     </div>
@@ -668,7 +943,9 @@ footer { font-size: 13px; color: var(--muted); display: flex; flex-direction: co
       if (paused && a.playState === 'running') a.pause();
       else if (!paused && a.playState === 'paused') a.play();
     });
+    if (!paused) onResume.forEach(function (fn) { fn(); });
   });
+  var onResume = [];
 
   /* Hero */
   var hero = document.getElementById('hero-mark');
@@ -741,8 +1018,41 @@ footer { font-size: 13px; color: var(--muted); display: flex; flex-direction: co
   var pupils = face.querySelectorAll('.pupil');
   var winking = false;
 
+  var winkBtn = document.getElementById('wink-btn');
+  var lastActive = performance.now();
+  var sleeping = false;
+
+  function fallAsleep() {
+    sleeping = true;
+    winkBtn.classList.add('sleeping');
+    pupils.forEach(function (p) { p.style.transform = ''; });
+    [eyeL, eyeR].forEach(function (eye) {
+      eye.animate([{ transform: 'scaleY(1)' }, { transform: 'scaleY(.1)' }], { duration: 900, easing: 'ease-in', fill: 'forwards' });
+    });
+  }
+
+  function wake() {
+    lastActive = performance.now();
+    if (!sleeping) return false;
+    sleeping = false;
+    winkBtn.classList.remove('sleeping');
+    [eyeL, eyeR].forEach(function (eye) {
+      eye.getAnimations().forEach(function (a) { a.cancel(); });
+      eye.animate([{ transform: 'scaleY(.1)' }, { transform: 'scale(1.25)', offset: .4 }, { transform: 'none' }],
+        { duration: 450, easing: POP });
+    });
+    return true;
+  }
+
+  async function idleLoop() {
+    for (;;) {
+      await wait(500);
+      if (!sleeping && !winking && performance.now() - lastActive > 8000) fallAsleep();
+    }
+  }
+
   function wink() {
-    if (winking) return;
+    if (winking || sleeping) return;
     winking = true;
     var d = 700;
     eyeR.animate([
@@ -788,16 +1098,19 @@ footer { font-size: 13px; color: var(--muted); display: flex; flex-direction: co
     var n = 0;
     for (;;) {
       await wait(2500 + Math.random() * 2500);
-      if (winking) continue;
+      if (winking || sleeping) continue;
       n++;
       if (n % 3 === 0) wink(); else blink();
     }
   }
 
-  document.getElementById('wink-btn').addEventListener('click', wink);
+  winkBtn.addEventListener('click', function () {
+    if (!wake()) wink();
+  });
 
   var winkSvg = document.querySelector('#wink-btn svg');
   window.addEventListener('pointermove', function (e) {
+    wake();
     var r = winkSvg.getBoundingClientRect();
     var dx = e.clientX - (r.left + r.width / 2);
     var dy = e.clientY - (r.top + r.height * .35);
@@ -859,6 +1172,195 @@ footer { font-size: 13px; color: var(--muted); display: flex; flex-direction: co
       '<circle class="dot" cx="' + X(0) + '" cy="' + Y(0) + '" r="2"/><circle class="dot" cx="' + X(1) + '" cy="' + Y(1) + '" r="2"/>' +
       '</svg><span>' + c[0] + '</span><span>' + p.join(', ') + '</span></div>';
   }).join('');
+
+  /* Encryption scramble */
+  var CIPHER_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+  var cipherEls = document.querySelectorAll('.v-crypt .cipher');
+  function scramble() {
+    cipherEls.forEach(function (t) {
+      var out = '';
+      for (var i = 0; i < 17; i++) out += CIPHER_CHARS[Math.floor(Math.random() * CIPHER_CHARS.length)];
+      t.textContent = out;
+    });
+  }
+  scramble();
+  async function cipherLoop() {
+    for (;;) { await wait(90); scramble(); }
+  }
+
+  /* Leader election */
+  async function leaderLoop() {
+    var tabs = document.querySelectorAll('.v-leader .tab');
+    var crown = document.getElementById('crown');
+    var X = [45, 140, 235];
+    var leader = 0;
+    for (;;) {
+      await wait(1400);
+      var closing = tabs[leader];
+      closing.animate([{ opacity: 1, transform: 'none' }, { opacity: .18, transform: 'translateY(6px) scale(.94)' }],
+        { duration: 380, easing: OUT, fill: 'forwards' });
+      await wait(300);
+      var next = (leader + 1) % tabs.length;
+      var mid = (X[leader] + X[next]) / 2;
+      await crown.animate([
+        { transform: 'translate(' + X[leader] + 'px, 0)' },
+        { transform: 'translate(' + mid + 'px, -14px)' },
+        { transform: 'translate(' + X[next] + 'px, 0)' }
+      ], { duration: 560, easing: 'ease-in-out', fill: 'forwards' }).finished.catch(function () {});
+      crown.getAnimations().forEach(function (a) { a.cancel(); });
+      crown.style.transform = 'translate(' + X[next] + 'px, 0)';
+      crown.animate([{ transform: 'translate(' + X[next] + 'px, 0) scale(1.15, .8)' }, { transform: 'translate(' + X[next] + 'px, 0)' }],
+        { duration: 260, easing: POP });
+      tabs[next].animate([{ transform: 'none' }, { transform: 'translateY(-4px)' }, { transform: 'none' }], { duration: 360, easing: OUT });
+      var reopen = closing;
+      wait(700).then(function () {
+        reopen.getAnimations().forEach(function (a) { a.cancel(); });
+        reopen.animate([{ opacity: .18, transform: 'translateY(6px) scale(.94)' }, { opacity: 1, transform: 'none' }],
+          { duration: 420, easing: POP });
+      });
+      leader = next;
+    }
+  }
+
+  /* Document swarm */
+  function initSwarm() {
+    var stage = document.getElementById('swarm');
+    var cv = stage.querySelector('canvas');
+    var ctx = cv.getContext('2d');
+    var countEl = document.getElementById('swarm-count');
+    var COLORS = [[255, 255, 255], [237, 22, 143], [178, 33, 139], [117, 42, 138]];
+    var PATHS = [
+      [OUTLINE, '#FFFFFF'],
+      ['M6.67 60h90v20h-90z', '#B2218B'],
+      ['M96.66 53.34h-90v-20h90z', '#ED168F'],
+      ['M96.66 106.66h-90v-20h90zM26.67 113.33v20h-10v-10h-10v-10z', '#752A8A'],
+      ['M86.67 6.67v10h10v10h-20v-20z', '#ED168F']
+    ];
+    var parts = [];
+    var W = 0, H = 0, size = 4;
+    var mouse = { x: -1e4, y: -1e4 };
+    var visible = false, running = false, entered = false;
+
+    function nearest(r, g, b) {
+      var best = 0, bestD = Infinity;
+      COLORS.forEach(function (c, i) {
+        var d = (c[0] - r) * (c[0] - r) + (c[1] - g) * (c[1] - g) + (c[2] - b) * (c[2] - b);
+        if (d < bestD) { bestD = d; best = i; }
+      });
+      return 'rgb(' + COLORS[best].join(',') + ')';
+    }
+
+    function build() {
+      var rect = stage.getBoundingClientRect();
+      if (!rect.width) return;
+      var dpr = Math.min(2, window.devicePixelRatio || 1);
+      W = rect.width; H = rect.height;
+      cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      var scale = (H * .8) / 140;
+      var ox = (W - 103.33 * scale) / 2, oy = (H - 140 * scale) / 2;
+      var off = document.createElement('canvas');
+      off.width = Math.ceil(W); off.height = Math.ceil(H);
+      var o = off.getContext('2d');
+      o.setTransform(scale, 0, 0, scale, ox, oy);
+      PATHS.forEach(function (p) { o.fillStyle = p[1]; o.fill(new Path2D(p[0])); });
+      var data = o.getImageData(0, 0, off.width, off.height).data;
+      var step = Math.max(5, scale * 3.2);
+      size = Math.max(3, step - 1.5);
+      var old = parts;
+      parts = [];
+      for (var y = oy; y < oy + 140 * scale; y += step) {
+        for (var x = ox; x < ox + 103.33 * scale; x += step) {
+          var cx = Math.round(x + step / 2), cy = Math.round(y + step / 2);
+          if (cx >= off.width || cy >= off.height) continue;
+          var i = (cy * off.width + cx) * 4;
+          if (data[i + 3] < 200) continue;
+          var prev = old[parts.length];
+          parts.push({
+            tx: x, ty: y,
+            x: prev ? prev.x : x, y: prev ? prev.y : y,
+            vx: 0, vy: 0,
+            c: nearest(data[i], data[i + 1], data[i + 2])
+          });
+        }
+      }
+      countEl.textContent = parts.length.toLocaleString('en-US') + ' documents';
+      draw();
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, W, H);
+      for (var i = 0; i < parts.length; i++) {
+        var p = parts[i];
+        ctx.fillStyle = p.c;
+        ctx.fillRect(p.x, p.y, size, size);
+      }
+    }
+
+    function tick() {
+      if (!visible || paused || reduce) { running = false; return; }
+      var R = 70, R2 = R * R;
+      for (var i = 0; i < parts.length; i++) {
+        var p = parts[i];
+        p.vx += (p.tx - p.x) * .06;
+        p.vy += (p.ty - p.y) * .06;
+        var dx = p.x - mouse.x, dy = p.y - mouse.y, d2 = dx * dx + dy * dy;
+        if (d2 < R2 && d2 > .01) {
+          var d = Math.sqrt(d2), f = (1 - d / R) * 7;
+          p.vx += dx / d * f;
+          p.vy += dy / d * f;
+        }
+        p.vx *= .82; p.vy *= .82;
+        p.x += p.vx; p.y += p.vy;
+      }
+      draw();
+      requestAnimationFrame(tick);
+    }
+
+    function start() {
+      if (running || !visible || paused || reduce) return;
+      running = true;
+      requestAnimationFrame(tick);
+    }
+
+    function scatter(strength) {
+      parts.forEach(function (p) {
+        var a = Math.random() * Math.PI * 2, s = (0.4 + Math.random()) * strength;
+        p.vx += Math.cos(a) * s;
+        p.vy += Math.sin(a) * s;
+      });
+      start();
+    }
+
+    stage.addEventListener('pointermove', function (e) {
+      var r = stage.getBoundingClientRect();
+      mouse.x = e.clientX - r.left; mouse.y = e.clientY - r.top;
+    });
+    stage.addEventListener('pointerleave', function () { mouse.x = -1e4; mouse.y = -1e4; });
+    stage.addEventListener('click', function () { scatter(26); });
+    document.getElementById('scatter').addEventListener('click', function () { scatter(26); });
+    onResume.push(start);
+
+    build();
+    if ('ResizeObserver' in window) new ResizeObserver(build).observe(stage);
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver(function (entries) {
+        visible = entries[0].isIntersecting;
+        if (visible && !entered && !reduce) {
+          entered = true;
+          parts.forEach(function (p) { p.x = Math.random() * W; p.y = Math.random() * H; });
+        }
+        start();
+      }, { threshold: .2 }).observe(stage);
+    }
+  }
+  initSwarm();
+
+  if (!reduce) {
+    cipherLoop();
+    leaderLoop();
+    idleLoop();
+  }
 
   if (!reduce) {
     heroLoop();
