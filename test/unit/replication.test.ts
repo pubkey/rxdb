@@ -1584,6 +1584,30 @@ describe('replication.test.ts', () => {
         });
     });
     describe('start/pause/restart', () => {
+        it('should reject start() with the error from _start()', async () => {
+            const { localCollection, remoteCollection } = await getTestCollections({ local: 0, remote: 0 });
+            const replicationState = replicateRxCollection({
+                collection: localCollection,
+                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                live: false,
+                autoStart: false,
+                pull: {
+                    handler: getPullHandler(remoteCollection)
+                }
+            });
+            const originalStart = replicationState._start.bind(replicationState);
+            const startError = new Error('start failed');
+            replicationState._start = () => Promise.reject(startError);
+
+            await assert.rejects(replicationState.start(), err => err === startError);
+
+            replicationState._start = originalStart;
+            await replicationState.start();
+            await replicationState.awaitInitialReplication();
+
+            await localCollection.database.close();
+            await remoteCollection.database.close();
+        });
         it('should sync again after pause->restart', async () => {
             const startDocsAmount = 2;
             const { localCollection, remoteCollection } = await getTestCollections({ local: startDocsAmount, remote: startDocsAmount });
