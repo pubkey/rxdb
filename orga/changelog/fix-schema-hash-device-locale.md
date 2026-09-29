@@ -1,0 +1,1 @@
+- FIX schema hash depended on the device locale because `sortObject()` uses `localeCompare()` without a fixed locale. When the schema hash differs but the stored schema is deeply equal to the current schema, `addCollections()` now updates the stored hash instead of throwing `DB6`. [#9129](https://github.com/pubkey/rxdb/pull/9129)

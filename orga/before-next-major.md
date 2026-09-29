@@ -31,6 +31,11 @@ RxDB only uses `new Peer({initiator, config, trickle})`, the `signal`, `connect`
 A full implementation with green CI is at https://github.com/pubkey/rxdb/pull/8900
 
 
+## Remove the schema hash deep-equality fallback
+
+Remove the temporary deep-equality check that accepts a stored schema when its hash differs but its content is unchanged. Also optimize `sortObject()` to compare strings with a faster `a > b` comparison instead of `localeCompare()`.
+
+
 ---------------------------------
 ## Maybe later (not sure if should be done)
 
