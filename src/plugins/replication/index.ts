@@ -171,10 +171,24 @@ export class RxReplicationState<RxDocType, CheckpointType> {
 
 
     public start(): Promise<void> {
-        this.startQueue = this.startQueue.then(() => {
+        const startPromise = this.startQueue.then(() => {
             return this._start();
         });
-        return this.startQueue;
+        /**
+         * A failed start must not leave the startQueue rejected,
+         * otherwise every later start(), pause() and remove() rejects
+         * with the same error and the replication can never be started again.
+         * The error is emitted on error$ instead.
+         */
+        this.startQueue = startPromise.catch((err: any) => {
+            if (!this.internalReplicationState) {
+                this.wasStarted = false;
+            }
+            this.subjects.error.next(newRxError('RC_START', {
+                errors: toArray(err).map(er => errorToPlainJson(er))
+            }));
+        });
+        return startPromise;
     }
 
     public async _start(): Promise<void> {
@@ -208,7 +222,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
         const database = this.collection.database;
         const metaInfo = await this.metaInfoPromise;
 
-        const [metaInstance] = await Promise.all([
+        const [metaInstanceResult, connectedStorageResult] = await Promise.allSettled([
             this.collection.database.storage.createStorageInstance<RxStorageReplicationMeta<RxDocType, CheckpointType>>({
                 databaseName: database.name,
                 collectionName: metaInfo.collectionName,
@@ -225,7 +239,17 @@ export class RxReplicationState<RxDocType, CheckpointType> {
                 metaInfo.schema
             )
         ]);
-        this.metaInstance = metaInstance;
+        if (metaInstanceResult.status === 'rejected' || connectedStorageResult.status === 'rejected') {
+            /**
+             * Close the meta instance if only the other part failed,
+             * so that a later start() can open it again.
+             */
+            if (metaInstanceResult.status === 'fulfilled') {
+                await metaInstanceResult.value.close();
+            }
+            throw metaInstanceResult.status === 'rejected' ? metaInstanceResult.reason : (connectedStorageResult as PromiseRejectedResult).reason;
+        }
+        this.metaInstance = metaInstanceResult.value;
 
         this.internalReplicationState = replicateRxStorageInstance({
             pushBatchSize: this.push && this.push.batchSize ? this.push.batchSize : 100,
@@ -813,7 +837,8 @@ export function replicateRxCollection<RxDocType, CheckpointType>(
             }
             const isVisible = document.visibilityState === 'visible';
             if (isVisible) {
-                replicationState.start();
+                // errors of start() are emitted on error$
+                replicationState.start().catch(() => { });
             } else {
                 /**
                  * Only pause if not the current leader.
@@ -852,7 +877,8 @@ export function startReplicationOnLeaderShip(
             return;
         }
         if (replicationState.autoStart) {
-            replicationState.start();
+            // errors of start() are emitted on error$
+            replicationState.start().catch(() => { });
         }
     });
 }
