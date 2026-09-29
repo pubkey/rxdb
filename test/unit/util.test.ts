@@ -107,10 +107,16 @@ describe('util.test.js', () => {
                 '{"a":{"c":null,"d":"x","e":{"f":false,"g":true}},"b":1}'
             );
         });
-        it('should sort keys with localeCompare', () => {
-            const sorted = sortObject({ b: 1, B: 2, _id: 3, a: 4, A: 5 });
-            const expected = ['b', 'B', '_id', 'a', 'A'].sort((a, b) => a.localeCompare(b));
-            assert.deepStrictEqual(Object.keys(sorted), expected);
+        it('should sort keys by UTF-16 code units, independent of the locale', () => {
+            const sorted = sortObject({ b: 1, B: 2, _id: 3, a: 4, A: 5, maximum: 6, maxLength: 7, z: 8, s: 9, 'ä': 10 });
+            assert.deepStrictEqual(
+                Object.keys(sorted),
+                ['A', 'B', '_id', 'a', 'b', 'maxLength', 'maximum', 's', 'z', 'ä']
+            );
+        });
+        it('should sort string arrays by UTF-16 code units', () => {
+            const sorted = sortObject(['b', 'B', 'a', 'A', 'ä', 'z']);
+            assert.deepStrictEqual(sorted, ['A', 'B', 'a', 'b', 'z', 'ä']);
         });
         it('should sort arrays and the objects inside of them', () => {
             const sorted = sortObject({

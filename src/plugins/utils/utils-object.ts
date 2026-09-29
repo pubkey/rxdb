@@ -193,7 +193,8 @@ export function firstPropertyValueOfObject<T>(obj: { [k: string]: T; }): T {
 
 
 /**
- * deep-sort an object so its attributes are in lexical order.
+ * deep-sort an object so its attributes are in lexical order
+ * by UTF-16 code units.
  * Also sorts the arrays inside of the object if no-array-sort not set
  */
 export function sortObject(obj: any, noArraySort = false): any {
@@ -207,7 +208,7 @@ export function sortObject(obj: any, noArraySort = false): any {
         }
         obj.sort((a, b) => {
             if (typeof a === 'string' && typeof b === 'string')
-                return a.localeCompare(b);
+                return a < b ? -1 : a > b ? 1 : 0;
 
             if (typeof a === 'object') return 1;
             else return -1;
@@ -221,7 +222,11 @@ export function sortObject(obj: any, noArraySort = false): any {
     }
 
     // object
-    const keys = Object.keys(obj).sort((a, b) => a.localeCompare(b));
+    /**
+     * Sort keys by UTF-16 code units (the default of Array.prototype.sort())
+     * so that the result does not depend on the locale of the JavaScript runtime.
+     */
+    const keys = Object.keys(obj).sort();
     const out: any = {};
     for (let i = 0; i < keys.length; i++) {
         const key = keys[i];

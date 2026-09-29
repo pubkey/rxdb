@@ -1,1 +1,2 @@
-- IMPROVE performance of `sortObject()` (used for schema normalization and query cache keys) by returning primitives early and replacing `forEach()`/`map()` with plain `for` loops. Up to 1.2x-1.5x faster on small query objects.
+- IMPROVE performance of `sortObject()` (used for schema normalization and query cache keys) by returning primitives early, replacing `forEach()`/`map()` with plain `for` loops and sorting keys by UTF-16 code units instead of `localeCompare()`. Up to 1.3x-1.9x faster. [#9153](https://github.com/pubkey/rxdb/pull/9153)
+- CHANGE `sortObject()` sorts object keys and string array items by UTF-16 code units so the result no longer depends on the locale of the JavaScript runtime. This changes the schema hash of most schemas.
