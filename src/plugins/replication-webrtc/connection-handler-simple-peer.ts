@@ -32,6 +32,10 @@ import { newRxError } from '../../rx-error.ts';
 export type SimplePeer = SimplePeerInstance & {
     // add id to make debugging easier
     id: string;
+    /**
+     * The id of the remote peer as given by the signaling.
+     */
+    remotePeerId: string;
 };
 
 export type SimplePeerInitMessage = {
@@ -341,6 +345,7 @@ export function getConnectionHandlerSimplePeer({
                 trickle: true
             }) as any;
             newSimplePeer.id = randomToken(10);
+            newSimplePeer.remotePeerId = remotePeerId;
             const state: SimplePeerState = {
                 remotePeerId,
                 connectionId,

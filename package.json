@@ -586,6 +586,7 @@
     "js-base64": "3.9.4",
     "jsonschema-key-compression": "1.7.0",
     "mingo": "7.2.4",
+    "nostr-tools": "2.25.2",
     "oblivious-set": "2.0.0",
     "simple-peer": "9.11.1",
     "ws": "8.21.3",

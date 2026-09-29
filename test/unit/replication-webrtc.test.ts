@@ -23,8 +23,14 @@ import {
     createSimplePeerWrtc,
     SimplePeer,
     SimplePeerWebSocketConstructor,
-    SimplePeerWrtc
+    SimplePeerWrtc,
+    getConnectionHandlerNostr,
+    getNostrPublicKeyOfPeer
 } from '../../plugins/replication-webrtc/index.mjs';
+import {
+    generateSecretKey,
+    getPublicKey
+} from 'nostr-tools/pure';
 import {
     schemaObjects,
     humansCollection,
@@ -434,6 +440,177 @@ describe('replication-webrtc.test.ts', function () {
 
             await Promise.all(pools.map(pool => pool.cancel()));
             await Promise.all(collections.map(c => c.database.close()));
+        });
+    });
+    describe('nostr signaling', () => {
+        /**
+         * Minimal Nostr relay that forwards events to all matching subscriptions
+         * and does not store anything, which is how relays handle ephemeral events.
+         */
+        async function startTestNostrRelay(port: number) {
+            const wsModule = await import('ws');
+            const server = new wsModule.WebSocketServer({ port });
+            let eventCount = 0;
+            const subscriptions = new Map<any, Map<string, any[]>>();
+            function matches(filter: any, event: any): boolean {
+                if (filter.kinds && !filter.kinds.includes(event.kind)) {
+                    return false;
+                }
+                return Object.keys(filter)
+                    .filter(key => key.startsWith('#'))
+                    .every(key => event.tags.some((tag: string[]) => tag[0] === key.slice(1) && filter[key].includes(tag[1])));
+            }
+            server.on('connection', (socket: any) => {
+                const subs = new Map<string, any[]>();
+                subscriptions.set(socket, subs);
+                socket.on('close', () => subscriptions.delete(socket));
+                socket.on('message', (raw: any) => {
+                    const msg = JSON.parse(raw.toString());
+                    if (msg[0] === 'REQ') {
+                        subs.set(msg[1], msg.slice(2));
+                        socket.send(JSON.stringify(['EOSE', msg[1]]));
+                    } else if (msg[0] === 'CLOSE') {
+                        subs.delete(msg[1]);
+                    } else if (msg[0] === 'EVENT') {
+                        eventCount++;
+                        const event = msg[1];
+                        socket.send(JSON.stringify(['OK', event.id, true, '']));
+                        subscriptions.forEach((otherSubs, otherSocket) => {
+                            otherSubs.forEach((filters, subId) => {
+                                if (filters.some(filter => matches(filter, event))) {
+                                    otherSocket.send(JSON.stringify(['EVENT', subId, event]));
+                                }
+                            });
+                        });
+                    }
+                });
+            });
+            await new Promise<void>(res => server.on('listening', () => res()));
+            return {
+                url: 'ws://localhost:' + port,
+                getEventCount: () => eventCount,
+                async close() {
+                    server.clients.forEach((client: any) => client.terminate());
+                    await new Promise<void>(res => server.close(() => res()));
+                }
+            };
+        }
+
+        it('should throw on invalid options', () => {
+            assert.throws(
+                () => getConnectionHandlerNostr({ relays: [] }),
+                (err: RxError) => err.code === 'RC_WEBRTC_NOSTR'
+            );
+            assert.throws(
+                () => getConnectionHandlerNostr({ relays: ['ws://localhost:1'], eventKind: 1 }),
+                (err: RxError) => err.code === 'RC_WEBRTC_NOSTR'
+            );
+        });
+        it('should sync over Nostr relays and only accept allowed public keys', async () => {
+            if (!isNode || isFastMode()) {
+                return;
+            }
+            /**
+             * Peer 1 only uses relay A, peer 3 only relay B,
+             * peer 2 uses both. So peer 1 and 3 can only find each other
+             * because peer 2 bridges the signaling.
+             */
+            const relayA = await startTestNostrRelay(18020);
+            const relayB = await startTestNostrRelay(18021);
+            const keys = [generateSecretKey(), generateSecretKey(), generateSecretKey()];
+            const allowedPublicKeys = keys.map(key => getPublicKey(key));
+            const unknownKey = generateSecretKey();
+
+            const topic = randomToken(10);
+            function startSync(
+                collection: RxCollection<any>,
+                secretKey: Uint8Array,
+                relays: string[]
+            ) {
+                return replicateWebRTC<any, SimplePeer>({
+                    collection,
+                    topic,
+                    connectionHandlerCreator: getConnectionHandlerNostr({
+                        relays,
+                        secretKey,
+                        wrtc,
+                        webSocketConstructor
+                    }),
+                    isPeerValid: peer => allowedPublicKeys.includes(getNostrPublicKeyOfPeer(peer)),
+                    pull: {},
+                    push: {}
+                });
+            }
+
+            const c1 = await humansCollection.create(1, 'nostr1');
+            const c2 = await humansCollection.create(1, 'nostr2');
+            const pool1 = await startSync(c1, keys[0], [relayA.url]);
+            const pool2 = await startSync(c2, keys[1], [relayA.url, relayB.url]);
+            await Promise.all([pool1.awaitFirstPeer(), pool2.awaitFirstPeer()]);
+            await awaitCollectionsInSync([c1, c2]);
+
+            const firstPeer = Array.from(pool1.peerStates$.getValue().keys())[0];
+            assert.strictEqual(getNostrPublicKeyOfPeer(firstPeer), allowedPublicKeys[1]);
+
+            await c1.insert(schemaObjects.humanData('inserted-over-nostr-signaling'));
+            await awaitCollectionsInSync([c1, c2]);
+
+            /**
+             * The same key on another instance must work
+             * because each instance has its own session id.
+             */
+            const c3 = await humansCollection.create(1, 'nostr3');
+            const pool3 = await startSync(c3, keys[1], [relayB.url]);
+            await pool3.awaitFirstPeer();
+            await awaitCollectionsInSync([c1, c2, c3]);
+
+            // a peer with an unknown key must not get the data
+            const cUnknown = await humansCollection.create(0, 'nostr-unknown');
+            const poolUnknown = await startSync(cUnknown, unknownKey, [relayA.url]);
+            await waitUntil(() => pool1.connectedPeers.size + pool2.connectedPeers.size >= 4, 1000 * 20);
+            await cUnknown.insert(schemaObjects.humanData('from-unknown-peer'));
+            await wait(1000);
+            assert.strictEqual(await cUnknown.count().exec(), 1);
+            assert.strictEqual(await c1.findOne('from-unknown-peer').exec(), null);
+            assert.strictEqual(await c2.findOne('from-unknown-peer').exec(), null);
+
+            await Promise.all([pool1, pool2, pool3, poolUnknown].map(pool => pool.cancel()));
+            await Promise.all([c1, c2, c3, cUnknown].map(c => c.database.close()));
+            await relayA.close();
+            await relayB.close();
+        });
+        it('should not spin when the relays are not reachable', async () => {
+            if (!isNode || isFastMode()) {
+                return;
+            }
+            let socketCount = 0;
+            const WsConstructor = webSocketConstructor as any;
+            class CountingWebSocket extends WsConstructor {
+                constructor(url: string) {
+                    super(url);
+                    socketCount++;
+                }
+            }
+            const collection = await humansCollection.create(1, 'nostr-unreachable');
+            const pool = await replicateWebRTC<any, SimplePeer>({
+                collection,
+                topic: randomToken(10),
+                connectionHandlerCreator: getConnectionHandlerNostr({
+                    relays: ['ws://localhost:18997', 'ws://localhost:18996'],
+                    wrtc,
+                    webSocketConstructor: CountingWebSocket as any
+                }),
+                pull: {},
+                push: {}
+            });
+            await wait(1500);
+            assert.ok(socketCount >= 2, 'must have tried to connect');
+            assert.ok(socketCount <= 8, 'too many connection attempts: ' + socketCount);
+            await pool.cancel();
+            const countAfterCancel = socketCount;
+            await wait(1500);
+            assert.strictEqual(socketCount, countAfterCancel, 'must not reconnect after cancel');
+            await collection.database.close();
         });
     });
     describe('ISSUES', () => { });
