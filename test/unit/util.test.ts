@@ -30,7 +30,8 @@ import {
     getHeightOfRevision,
     createRevision,
     flattenObject,
-    getFromObjectOrThrow
+    getFromObjectOrThrow,
+    sortObject
 } from '../../plugins/core/index.mjs';
 import config from './config.ts';
 
@@ -80,6 +81,60 @@ describe('util.test.js', () => {
         });
     });
     describe('.sortObject()', () => {
+        it('should return primitives unchanged', () => {
+            assert.strictEqual(sortObject(null), null);
+            assert.strictEqual(sortObject(undefined), undefined);
+            assert.strictEqual(sortObject(false), false);
+            assert.strictEqual(sortObject(0), 0);
+            assert.strictEqual(sortObject(''), '');
+            assert.strictEqual(sortObject('foo'), 'foo');
+            assert.strictEqual(sortObject(42), 42);
+        });
+        it('should deep-sort the object keys', () => {
+            const sorted = sortObject({
+                b: 1,
+                a: {
+                    d: 'x',
+                    c: null,
+                    e: { g: true, f: false }
+                }
+            });
+            assert.deepStrictEqual(Object.keys(sorted), ['a', 'b']);
+            assert.deepStrictEqual(Object.keys(sorted.a), ['c', 'd', 'e']);
+            assert.deepStrictEqual(Object.keys(sorted.a.e), ['f', 'g']);
+            assert.strictEqual(
+                JSON.stringify(sorted),
+                '{"a":{"c":null,"d":"x","e":{"f":false,"g":true}},"b":1}'
+            );
+        });
+        it('should sort keys with localeCompare', () => {
+            const sorted = sortObject({ b: 1, B: 2, _id: 3, a: 4, A: 5 });
+            const expected = ['b', 'B', '_id', 'a', 'A'].sort((a, b) => a.localeCompare(b));
+            assert.deepStrictEqual(Object.keys(sorted), expected);
+        });
+        it('should sort arrays and the objects inside of them', () => {
+            const sorted = sortObject({
+                list: ['c', { z: 1, y: 2 }, 'a', 'b']
+            });
+            assert.strictEqual(
+                JSON.stringify(sorted),
+                '{"list":["a","b","c",{"y":2,"z":1}]}'
+            );
+        });
+        it('should not sort arrays when noArraySort is set', () => {
+            const arr = ['c', 'a', { z: 1, y: 2 }, 'b'];
+            const sorted = sortObject({ b: arr, a: 1 }, true);
+            assert.deepStrictEqual(Object.keys(sorted), ['a', 'b']);
+            assert.ok(sorted.b === arr);
+            assert.deepStrictEqual(arr, ['c', 'a', { z: 1, y: 2 }, 'b']);
+        });
+        it('should not modify the keys of the input object', () => {
+            const input = { b: 1, a: { d: 1, c: 2 } };
+            const output = sortObject(input);
+            assert.deepStrictEqual(Object.keys(input), ['b', 'a']);
+            assert.deepStrictEqual(Object.keys(input.a), ['d', 'c']);
+            assert.ok(output !== input);
+        });
     });
     describe('.trimDots()', () => {
         it('should return the same string when no boundary dots exist', () => {

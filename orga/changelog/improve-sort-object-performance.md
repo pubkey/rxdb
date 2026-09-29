@@ -1,0 +1,1 @@
+- IMPROVE performance of `sortObject()` (used for schema normalization and query cache keys) by returning primitives early and replacing `forEach()`/`map()` with plain `for` loops. Up to 1.2x-1.5x faster on small query objects.

@@ -197,35 +197,37 @@ export function firstPropertyValueOfObject<T>(obj: { [k: string]: T; }): T {
  * Also sorts the arrays inside of the object if no-array-sort not set
  */
 export function sortObject(obj: any, noArraySort = false): any {
-    if (!obj) return obj; // do not sort null, false or undefined
+    // do not sort null, false, undefined or other primitives
+    if (!obj || typeof obj !== 'object') return obj;
 
     // array
-    if (!noArraySort && Array.isArray(obj)) {
-        return obj
-            .sort((a, b) => {
-                if (typeof a === 'string' && typeof b === 'string')
-                    return a.localeCompare(b);
+    if (Array.isArray(obj)) {
+        if (noArraySort) {
+            return obj;
+        }
+        obj.sort((a, b) => {
+            if (typeof a === 'string' && typeof b === 'string')
+                return a.localeCompare(b);
 
-                if (typeof a === 'object') return 1;
-                else return -1;
-            })
-            .map(i => sortObject(i, noArraySort));
+            if (typeof a === 'object') return 1;
+            else return -1;
+        });
+        const len = obj.length;
+        const ret = new Array(len);
+        for (let i = 0; i < len; i++) {
+            ret[i] = sortObject(obj[i], noArraySort);
+        }
+        return ret;
     }
 
     // object
-    // array is also of type object
-    if (typeof obj === 'object' && !Array.isArray(obj)) {
-        const out: any = {};
-        Object.keys(obj)
-            .sort((a, b) => a.localeCompare(b))
-            .forEach(key => {
-                out[key] = sortObject(obj[key], noArraySort);
-            });
-        return out;
+    const keys = Object.keys(obj).sort((a, b) => a.localeCompare(b));
+    const out: any = {};
+    for (let i = 0; i < keys.length; i++) {
+        const key = keys[i];
+        out[key] = sortObject(obj[key], noArraySort);
     }
-
-    // everything else
-    return obj;
+    return out;
 }
 
 
