@@ -1,0 +1,8 @@
+- Added end-to-end TypeScript typings for [mango queries](https://rxdb.info/rx-query.html): selector keys and sort fields are checked against the document type including nested dot-paths, and query operators are constrained by the type of the field they run on, for example `$regex` on a number field is now a compile error. Dot-paths are generated for up to 6 levels of nesting. Dynamically built queries can opt out by casting to `MangoQuery<any>` at the call. Added type tests for valid and invalid queries.
+- The minimum supported TypeScript version is now 4.1 because the query typings use template literal types.
+- Typed the chained [query builder](https://rxdb.info/rx-query.html): `.where()` only accepts field paths of the document type and the following operator methods are constrained by the type of that field.
+- Typed the [update operators](https://rxdb.info/rx-document.html): the field paths of `$set`, `$inc`, `$push` and the other operators are checked against the document type and their values against the field type.
+- Typed the `index` option of queries, it only accepts field paths of the document type.
+- Typed `RxDocument.get()`, `get$()` and `get$$()`: the path is checked against the document type and the return value has the type of that field. On local documents the paths are relative to the `data` property, matching the runtime behavior.
+- A sort part now must contain exactly one field. Multiple fields in one sort part were ambiguous because the field order of a JSON object is not deterministic.
+- FIX Flaky test: the preact-signals cleanup test asserted the signal value directly after the insert. The signal updates asynchronously, so the test now waits for the new value.

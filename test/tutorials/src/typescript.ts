@@ -135,6 +135,26 @@ async function run() {
     const amount: number = await myDatabase.heroes.countAllDocuments();
     console.log(amount);
 
+    /**
+     * typed queries
+     */
+
+    // this compiles
+    await myDatabase.heroes.find({
+        selector: {
+            age: { $gt: 18 },
+            firstName: { $regex: '^p' }
+        },
+        sort: [{ age: 'asc' }]
+    }).exec();
+
+    /*
+    await myDatabase.heroes.find({
+        selector: {
+            agee: { $gt: 18 } // <- compile error, typo in the field name
+        }
+    }).exec();
+    */
 
     /**
      * clean up
