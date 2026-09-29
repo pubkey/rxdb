@@ -25,6 +25,10 @@
   --purple: #752A8A;
   --cyan: #3FE0FF;
   --cipher-bg: #2A2E45;
+  --invalid: #5A5F78;
+  --old-1: #4B4F66;
+  --old-2: #3F4358;
+  --old-3: #34374A;
   --font: "Atkinson Hyperlegible Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
   --ease-pop: cubic-bezier(.2, 1.4, .4, 1);
   --ease-out: cubic-bezier(.16, 1, .3, 1);
@@ -506,6 +510,224 @@ p { margin: 0; max-width: 62ch; }
   92%, 100% { transform: none; }
 }
 
+.doclink { font-size: 12px; color: var(--muted); align-self: flex-start; }
+.doclink:hover { color: var(--pink); }
+
+/* F1. Schema validation */
+.v-schema .b2 { animation: valid 4.4s var(--ease-pop) infinite; }
+.v-schema .bad { transform-box: fill-box; transform-origin: center; opacity: 0; animation: invalid 4.4s var(--ease-out) infinite; }
+.v-schema .bad rect { fill: var(--invalid); }
+.v-schema .bad path { stroke: var(--white); stroke-width: 2.4; stroke-linecap: round; fill: none; }
+@keyframes invalid {
+  0% { opacity: 0; transform: translateX(-70%); }
+  8% { opacity: 1; }
+  22% { transform: translateX(-6%); }
+  25% { transform: translateX(-14%); }
+  28% { transform: translateX(-7%); }
+  31% { transform: translateX(-11%); }
+  34% { opacity: 1; transform: translateX(-9%); }
+  48%, 100% { opacity: 0; transform: translate(-24%, 150%) rotate(-24deg); }
+}
+@keyframes valid {
+  0%, 52% { opacity: 0; transform: translateX(-70%); }
+  56% { opacity: 1; }
+  68%, 90% { opacity: 1; transform: none; }
+  97%, 100% { opacity: 0; transform: none; }
+}
+.readout .ok { color: var(--pink); }
+.v-schema .r1 { animation: sv1 4.4s infinite; }
+.v-schema .r2 { opacity: 0; animation: sv2 4.4s infinite; }
+@keyframes sv1 { 0%, 46% { opacity: 1; } 50%, 100% { opacity: 0; } }
+@keyframes sv2 { 0%, 52% { opacity: 0; } 56%, 92% { opacity: 1; } 97%, 100% { opacity: 0; } }
+
+/* F2. Schema migration */
+.v-migrate .bar { animation: migrate 4.8s var(--ease-out) infinite both; }
+.v-migrate .b1 { --o: var(--old-1); }
+.v-migrate .b2 { --o: var(--old-2); animation-delay: .15s; }
+.v-migrate .b3 { --o: var(--old-3); animation-delay: .3s; }
+@keyframes migrate {
+  0%, 18% { transform: scaleY(1); fill: var(--o); }
+  24% { transform: scaleY(0); fill: var(--o); }
+  24.1% { transform: scaleY(0); fill: var(--c); }
+  30%, 76% { transform: scaleY(1); fill: var(--c); }
+  82% { transform: scaleY(0); fill: var(--c); }
+  82.1% { transform: scaleY(0); fill: var(--o); }
+  88%, 100% { transform: scaleY(1); fill: var(--o); }
+}
+.v-migrate .ver { font-size: 10px; font-weight: 700; }
+.v-migrate .v1 { fill: var(--muted); opacity: 0; animation: ver1 4.8s infinite; }
+.v-migrate .v2 { fill: var(--pink); animation: ver2 4.8s infinite; }
+@keyframes ver1 { 0%, 26% { opacity: 1; } 30%, 84% { opacity: 0; } 88%, 100% { opacity: 1; } }
+@keyframes ver2 { 0%, 26% { opacity: 0; } 30%, 84% { opacity: 1; } 88%, 100% { opacity: 0; } }
+
+/* F3. RxQuery */
+.v-query .part { transition: opacity .45s var(--ease-out); }
+.v-query .dim { opacity: .14; }
+.v-query .caption { font-size: 11px; text-align: center; max-width: 92%; }
+.v-query #q-count { color: var(--pink); }
+
+/* F4. Revisions */
+.v-rev .rev { fill: var(--fg); font-size: 10px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.v-rev .rev tspan.k { fill: var(--muted); font-weight: 400; }
+.v-rev .bar.hit { animation: flash .6s; }
+
+/* F5. Attachments */
+.v-attach .file { transform-box: fill-box; transform-origin: center; opacity: 0; animation: attach 4.4s var(--ease-out) infinite; }
+.v-attach .file-body { fill: var(--white); }
+.v-attach .file-fold { fill: none; stroke: var(--line); stroke-width: 1.2; }
+.v-attach .file-img { fill: var(--pink); }
+.v-attach .file-img2 { fill: var(--purple); }
+.v-attach .clip { fill: none; stroke: var(--pink); stroke-width: 2.2; stroke-linecap: round; stroke-dasharray: 1; stroke-dashoffset: 1; animation: clip-on 4.4s ease-in-out infinite; }
+.v-attach .corner { animation: nudge 4.4s var(--ease-pop) infinite; }
+@keyframes attach {
+  0% { opacity: 0; transform: translate(40px, -30px) rotate(20deg); }
+  8% { opacity: 1; }
+  28% { transform: none; }
+  32% { transform: translateY(2px); }
+  36%, 86% { opacity: 1; transform: none; }
+  94%, 100% { opacity: 0; transform: translateY(-10px); }
+}
+@keyframes clip-on {
+  0%, 34% { stroke-dashoffset: 1; opacity: 1; }
+  48%, 86% { stroke-dashoffset: 0; opacity: 1; }
+  94%, 100% { stroke-dashoffset: 0; opacity: 0; }
+}
+@keyframes nudge { 0%, 28% { transform: none; } 32% { transform: translateY(3px) scale(.94); } 40%, 100% { transform: none; } }
+
+/* F6. CRDT */
+.v-crdt .op { transform-box: fill-box; transform-origin: center; opacity: 0; }
+.v-crdt .op text { fill: var(--white); font-size: 8px; font-weight: 800; }
+.v-crdt .op-a rect { fill: var(--pink); }
+.v-crdt .op-b rect { fill: var(--purple); }
+.v-crdt .op-a { animation: crdt-a 4.4s var(--ease-out) infinite; }
+.v-crdt .op-b { animation: crdt-b 4.4s var(--ease-out) infinite; }
+.v-crdt .b2 { animation: absorb 4.4s var(--ease-pop) infinite; }
+.v-crdt .count { font-size: 10px; font-weight: 700; }
+.v-crdt .c1 { fill: var(--muted); animation: sv1 4.4s infinite; }
+.v-crdt .c2 { fill: var(--pink); opacity: 0; animation: crdt-c2 4.4s infinite; }
+@keyframes crdt-a {
+  0% { opacity: 0; transform: none; }
+  10% { opacity: 1; }
+  40% { opacity: 1; transform: translateX(64px); }
+  46%, 100% { opacity: 0; transform: translateX(66px) scale(.3); }
+}
+@keyframes crdt-b {
+  0% { opacity: 0; transform: none; }
+  10% { opacity: 1; }
+  40% { opacity: 1; transform: translateX(-62px); }
+  46%, 100% { opacity: 0; transform: translateX(-64px) scale(.3); }
+}
+@keyframes absorb {
+  0%, 40% { transform: none; fill: var(--c); }
+  44% { transform: scale(1.08, 1.25); fill: var(--white); }
+  56%, 100% { transform: none; fill: var(--c); }
+}
+@keyframes crdt-c2 { 0%, 46% { opacity: 0; } 50%, 94% { opacity: 1; } 98%, 100% { opacity: 0; } }
+
+/* F7. Fulltext search */
+.v-search .lens, .v-search .lens-c, .v-search .lens-bg, .v-search .zoom { transform-box: view-box; transform-origin: 0 0; }
+.v-search .lens, .v-search .lens-c, .v-search .lens-bg { animation: lens-move 6s ease-in-out infinite; }
+.v-search .zoom { animation: lens-zoom 6s ease-in-out infinite; }
+.v-search .lens-wrap { animation: lens-fade 6s infinite; }
+.v-search .lens { animation: lens-move 6s ease-in-out infinite, lens-fade 6s infinite; }
+.v-search .lens-bg { fill: var(--surface); }
+.v-search .ring { fill: none; stroke: var(--white); stroke-width: 2.5; }
+.v-search .handle { stroke: var(--white); stroke-width: 4.5; stroke-linecap: round; }
+.v-search .b2 { animation: match 6s infinite; }
+@keyframes lens-move {
+  0% { transform: translate(-5px, 20px); }
+  12% { transform: translate(25px, 43px); }
+  26% { transform: translate(78px, 43px); }
+  40% { transform: translate(25px, 70px); }
+  50%, 70% { transform: translate(55px, 70px); }
+  82% { transform: translate(78px, 97px); }
+  94%, 100% { transform: translate(120px, 130px); }
+}
+@keyframes lens-zoom {
+  0% { transform: translate(4px, -16px) scale(1.8); }
+  12% { transform: translate(-20px, -34.4px) scale(1.8); }
+  26% { transform: translate(-62.4px, -34.4px) scale(1.8); }
+  40% { transform: translate(-20px, -56px) scale(1.8); }
+  50%, 70% { transform: translate(-44px, -56px) scale(1.8); }
+  82% { transform: translate(-62.4px, -77.6px) scale(1.8); }
+  94%, 100% { transform: translate(-96px, -104px) scale(1.8); }
+}
+@keyframes lens-fade { 0% { opacity: 0; } 8%, 86% { opacity: 1; } 94%, 100% { opacity: 0; } }
+@keyframes match {
+  0%, 50% { fill: var(--c); }
+  53% { fill: var(--white); }
+  58% { fill: var(--c); }
+  61% { fill: var(--white); }
+  66%, 100% { fill: var(--c); }
+}
+
+/* F8. Vector database */
+.v-vector .dot { opacity: 0; transition: transform 1s var(--ease-out), opacity .25s; }
+.v-vector .bar, .v-vector .outline, .v-vector .corner, .v-vector .foot { transition: opacity .35s; }
+.v-vector.embed .dot { opacity: 1; }
+.v-vector.embed .bar { opacity: 0; }
+.v-vector.embed .outline, .v-vector.embed .corner, .v-vector.embed .foot { opacity: .16; }
+.v-vector .nn { stroke: var(--white); stroke-width: 1; stroke-dasharray: 2 2; opacity: 0; transition: opacity .4s; }
+.v-vector .qpt { fill: var(--white); opacity: 0; transition: opacity .4s; }
+.v-vector .qlbl { fill: var(--fg); font-size: 8px; opacity: 0; transition: opacity .4s; }
+.v-vector.found .nn, .v-vector.found .qpt, .v-vector.found .qlbl { opacity: 1; }
+
+/* F9. Sharding */
+.v-shard .shard { animation: 4.4s var(--ease-pop) infinite; }
+.v-shard .s1 { animation-name: shard-1; }
+.v-shard .s2 { animation-name: shard-2; }
+.v-shard .s3 { animation-name: shard-3; }
+.v-shard .slbl { fill: var(--muted); font-size: 8px; opacity: 0; animation: shard-lbl 4.4s infinite; }
+@keyframes shard-1 { 0%, 18% { transform: none; } 36%, 72% { transform: translate(-14px, -6px); } 90%, 100% { transform: none; } }
+@keyframes shard-2 { 0%, 18% { transform: none; } 36%, 72% { transform: translate(0, 8px); } 90%, 100% { transform: none; } }
+@keyframes shard-3 { 0%, 18% { transform: none; } 36%, 72% { transform: translate(14px, -4px); } 90%, 100% { transform: none; } }
+@keyframes shard-lbl { 0%, 32% { opacity: 0; } 40%, 70% { opacity: 1; } 78%, 100% { opacity: 0; } }
+
+/* F10. WebRTC P2P */
+.v-p2p .mesh { stroke: var(--muted); stroke-width: 1; stroke-dasharray: 3 4; opacity: .5; }
+.v-p2p .hop { opacity: 0; animation: hop 2.4s linear infinite; }
+.v-p2p .peer { fill: var(--muted); font-size: 8px; letter-spacing: .06em; }
+@keyframes hop {
+  0% { opacity: 0; transform: translate(0, 0); }
+  10% { opacity: 1; }
+  85% { opacity: 1; transform: translate(var(--dx), var(--dy)); }
+  95%, 100% { opacity: 0; transform: translate(var(--dx), var(--dy)); }
+}
+
+/* F11. Cleanup */
+.v-cleanup .b2, .v-cleanup .b3 { transform-origin: right center; animation: tomb 5s var(--ease-out) infinite both; }
+.v-cleanup .b3 { animation-delay: .1s; }
+.v-cleanup .sweep { fill: var(--white); opacity: 0; animation: sweep 5s linear infinite; }
+.v-cleanup .tlbl { fill: var(--muted); font-size: 8px; opacity: 0; animation: tlbl 5s infinite; }
+@keyframes tomb {
+  0%, 12% { fill: var(--c); transform: none; }
+  20%, 46% { fill: var(--cipher-bg); transform: none; }
+  62%, 78% { fill: var(--cipher-bg); transform: scaleX(0); }
+  90%, 100% { fill: var(--c); transform: none; }
+}
+@keyframes sweep {
+  0%, 44% { opacity: 0; transform: none; }
+  46% { opacity: 1; transform: none; }
+  62% { opacity: 1; transform: translateX(90px); }
+  64%, 100% { opacity: 0; transform: translateX(90px); }
+}
+@keyframes tlbl { 0%, 18% { opacity: 0; } 24%, 46% { opacity: 1; } 52%, 100% { opacity: 0; } }
+
+/* F12. Backup */
+.v-backup .ghostcopy .part { fill: none; stroke: var(--muted); stroke-width: 1.2; stroke-dasharray: 3 3; }
+.v-backup .ghostcopy, .v-backup .blbl { animation: ghost 4.4s infinite; }
+.v-backup .blbl { fill: var(--muted); font-size: 8.5px; }
+.v-backup .fly { animation: fly 4.4s var(--ease-pop) infinite both; }
+.v-backup .fly.b2 { animation-delay: .18s; }
+.v-backup .fly.b3 { animation-delay: .36s; }
+@keyframes ghost { 0%, 4% { opacity: 0; } 12%, 88% { opacity: 1; } 96%, 100% { opacity: 0; } }
+@keyframes fly {
+  0%, 16% { opacity: 0; transform: none; }
+  18% { opacity: 1; transform: none; }
+  40%, 88% { opacity: 1; transform: translateX(125px); }
+  96%, 100% { opacity: 0; transform: translateX(125px); }
+}
+
 /* Tokens */
 .tokens {
   display: grid;
@@ -542,7 +764,7 @@ footer { font-size: 13px; color: var(--muted); display: flex; flex-direction: co
     <div class="intro">
       <p class="eyebrow">Motion study for the RxDB brand mark</p>
       <h1>RxDB Logo <b>Motion</b></h1>
-      <p class="muted">Sixteen animated versions of the RxDB logo. Each one is built from the five shapes of the original mark (frame, three layers, two corner pieces) and ties the motion to something the database does.</p>
+      <p class="muted">Twenty-eight animated versions of the RxDB logo. Each one is built from the five shapes of the original mark (frame, three layers, two corner pieces) and ties the motion to something the database does.</p>
     </div>
     <button class="btn" id="pause-all" type="button" aria-pressed="false">Pause all</button>
   </header>
@@ -682,6 +904,7 @@ footer { font-size: 13px; color: var(--muted); display: flex; flex-direction: co
         <div class="meta">
           <div class="row"><h3>Reactive stream</h3><span class="spec">2.4s · loop · ease-out</span></div>
           <p>Each layer emits in turn with a ripple, like results from an observable query. Subscribe once and every change arrives.</p>
+          <a class="doclink" href="https://rxdb.info/rx-query.html" target="_blank" rel="noopener">Docs: RxQuery</a>
         </div>
       </article>
 
@@ -708,6 +931,7 @@ footer { font-size: 13px; color: var(--muted); display: flex; flex-direction: co
         <div class="meta">
           <div class="row"><h3>Replication</h3><span class="spec">3s · loop · linear</span></div>
           <p>Documents travel between a client and a server. Pushes go right, pulls come back, and the receiving layer lights up on arrival.</p>
+          <a class="doclink" href="https://rxdb.info/replication.html" target="_blank" rel="noopener">Docs: Sync Engine</a>
         </div>
       </article>
 
@@ -728,6 +952,7 @@ footer { font-size: 13px; color: var(--muted); display: flex; flex-direction: co
         <div class="meta">
           <div class="row"><h3>Offline-first</h3><span class="spec">6s · loop · ease-out</span></div>
           <p>The connection drops, the logo keeps writing locally and queues three changes. When the connection returns, the queue flushes upstream.</p>
+          <a class="doclink" href="https://rxdb.info/offline-first.html" target="_blank" rel="noopener">Docs: Offline-First</a>
         </div>
       </article>
 
@@ -750,6 +975,7 @@ footer { font-size: 13px; color: var(--muted); display: flex; flex-direction: co
         <div class="meta">
           <div class="row"><h3>Storage swap</h3><span class="spec">2.2s · loop · WAAPI</span></div>
           <p>The bottom layer slides out and a different storage slides in. Switching storages is a configuration change, not a rewrite.</p>
+          <a class="doclink" href="https://rxdb.info/rx-storage.html" target="_blank" rel="noopener">Docs: RxStorage</a>
         </div>
       </article>
 
@@ -762,6 +988,7 @@ footer { font-size: 13px; color: var(--muted); display: flex; flex-direction: co
         <div class="meta">
           <div class="row"><h3>Loader</h3><span class="spec">1.8s · loop · ease-out</span></div>
           <p>The layers fill and drain in sequence while the corner piece turns. For the moment an app waits on the first sync.</p>
+          <a class="doclink" href="https://rxdb.info/replication.html" target="_blank" rel="noopener">Docs: Sync Engine</a>
         </div>
       </article>
 
@@ -778,6 +1005,7 @@ footer { font-size: 13px; color: var(--muted); display: flex; flex-direction: co
         <div class="meta">
           <div class="row"><h3>Isometric stack</h3><span class="spec">6s · loop · CSS 3D</span></div>
           <p>The mark tilts into an isometric view and the three layers lift off the frame like a stack of storage layers, then settle back.</p>
+          <a class="doclink" href="https://rxdb.info/rx-storage.html" target="_blank" rel="noopener">Docs: RxStorage</a>
         </div>
       </article>
 
@@ -793,6 +1021,7 @@ footer { font-size: 13px; color: var(--muted); display: flex; flex-direction: co
         <div class="meta">
           <div class="row"><h3>Conflict handling</h3><span class="spec">4s · loop · ease-out</span></div>
           <p>Two offline edits of the same document collide on the middle layer, shake, and resolve into one revision.</p>
+          <a class="doclink" href="https://rxdb.info/transactions-conflicts-revisions.html" target="_blank" rel="noopener">Docs: Conflicts</a>
         </div>
       </article>
 
@@ -809,6 +1038,7 @@ footer { font-size: 13px; color: var(--muted); display: flex; flex-direction: co
         <div class="meta">
           <div class="row"><h3>Encryption</h3><span class="spec">5s · loop · JS scramble</span></div>
           <p>The corner piece locks, the layers go dark and fill with ciphertext, then decrypt back to the brand colors.</p>
+          <a class="doclink" href="https://rxdb.info/encryption.html" target="_blank" rel="noopener">Docs: Encryption</a>
         </div>
       </article>
 
@@ -824,6 +1054,7 @@ footer { font-size: 13px; color: var(--muted); display: flex; flex-direction: co
         <div class="meta">
           <div class="row"><h3>Key compression</h3><span class="spec">4.4s · loop · ease-pop</span></div>
           <p>The layers squeeze to 60% of their width while the field names shrink. The key compression plugin saves up to 40% disk space.</p>
+          <a class="doclink" href="https://rxdb.info/key-compression.html" target="_blank" rel="noopener">Docs: Key Compression</a>
         </div>
       </article>
 
@@ -843,6 +1074,7 @@ footer { font-size: 13px; color: var(--muted); display: flex; flex-direction: co
         <div class="meta">
           <div class="row"><h3>Leader election</h3><span class="spec">2.4s · loop · WAAPI</span></div>
           <p>Three tabs share one database. When the leader tab closes, the crown moves to the next tab, so only one tab talks to the server.</p>
+          <a class="doclink" href="https://rxdb.info/leader-election.html" target="_blank" rel="noopener">Docs: Leader Election</a>
         </div>
       </article>
 
@@ -858,6 +1090,238 @@ footer { font-size: 13px; color: var(--muted); display: flex; flex-direction: co
         <div class="meta">
           <div class="row"><h3>Glitch</h3><span class="spec">3.2s · loop · steps(1)</span></div>
           <p>An RGB split with sliced offsets. Hover to speed it up. Fits error states, 404 pages, and dev-mode warnings.</p>
+          <a class="doclink" href="https://rxdb.info/dev-mode.html" target="_blank" rel="noopener">Docs: Dev Mode</a>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- Feature library -->
+  <section aria-labelledby="features-title">
+    <div class="section-head">
+      <p class="eyebrow">Feature library</p>
+      <h2 id="features-title">One Animation per <b>Core Feature</b></h2>
+      <p class="muted">Twelve more loops, each tied to one feature from the RxDB docs. Every card links to the docs page it illustrates.</p>
+    </div>
+    <div class="grid">
+
+      <article class="card">
+        <div class="stage v-schema">
+          <svg class="logo" viewBox="-50 0 153.33 160" data-logo role="img" aria-label="An invalid document bounces off the RxDB logo and a valid one slides in">
+            <g class="bad"><rect x="6.67" y="60" width="90" height="20"/><path d="M46.7 65 l10 10 M56.7 65 l-10 10"/></g>
+          </svg>
+          <div class="readout" aria-hidden="true">
+            <span class="r1">{ age: "abc" } · rejected</span>
+            <span class="r2 ok">{ age: 42 } · valid</span>
+          </div>
+          <span class="tag">jsonschema</span>
+        </div>
+        <div class="meta">
+          <div class="row"><h3>Schema validation</h3><span class="spec">4.4s · loop</span></div>
+          <p>A document with the wrong type hits the frame, shakes, and falls out. The valid document slides into its slot.</p>
+          <a class="doclink" href="https://rxdb.info/schema-validation.html" target="_blank" rel="noopener">Docs: Schema Validation</a>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="stage v-migrate">
+          <svg class="logo" viewBox="0 -22 103.33 162" data-logo role="img" aria-label="RxDB logo layers flipping from schema version 1 to version 2">
+            <text class="ver v1" x="0" y="-8">schema v1</text>
+            <text class="ver v2" x="0" y="-8">schema v2 · migrated</text>
+          </svg>
+          <span class="tag">migrationStrategies</span>
+        </div>
+        <div class="meta">
+          <div class="row"><h3>Schema migration</h3><span class="spec">4.8s · loop · ease-out</span></div>
+          <p>Each layer flips like a split-flap display and comes back in the version 2 colors, one document after another.</p>
+          <a class="doclink" href="https://rxdb.info/migration-schema.html" target="_blank" rel="noopener">Docs: Schema Migration</a>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="stage v-query">
+          <svg class="logo" viewBox="0 0 103.33 140" data-logo role="img" aria-label="RxDB logo parts matching a query stay lit while the rest dims"></svg>
+          <span class="caption"><code id="q-text">find({})</code> <span id="q-count">3 docs</span></span>
+          <span class="tag">mango query</span>
+        </div>
+        <div class="meta">
+          <div class="row"><h3>RxQuery</h3><span class="spec">1.8s per query · JS</span></div>
+          <p>MongoDB-style selectors run against the mark. Parts that match stay lit, the rest dims, and the result count updates.</p>
+          <a class="doclink" href="https://rxdb.info/rx-query.html" target="_blank" rel="noopener">Docs: RxQuery</a>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="stage v-rev">
+          <svg class="logo" viewBox="0 0 230 140" role="img" aria-label="Each write to an RxDB logo layer increments its revision">
+            <svg x="0" y="0" width="103.33" height="140" viewBox="0 0 103.33 140" data-logo id="rev-mark"></svg>
+            <text class="rev" x="114" y="46.3"><tspan class="k">_rev </tspan><tspan class="v">1-a3f2</tspan></text>
+            <text class="rev" x="114" y="73"><tspan class="k">_rev </tspan><tspan class="v">1-c81e</tspan></text>
+            <text class="rev" x="114" y="99.7"><tspan class="k">_rev </tspan><tspan class="v">1-07bd</tspan></text>
+          </svg>
+          <span class="tag">revisions</span>
+        </div>
+        <div class="meta">
+          <div class="row"><h3>Revisions</h3><span class="spec">0.9s per write · JS</span></div>
+          <p>Every write flashes a layer and bumps its revision height and hash. This is how RxDB detects conflicts.</p>
+          <a class="doclink" href="https://rxdb.info/transactions-conflicts-revisions.html" target="_blank" rel="noopener">Docs: Transactions, Conflicts and Revisions</a>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="stage v-attach">
+          <svg class="logo" viewBox="-10 -30 150 175" data-logo role="img" aria-label="A file flies onto the RxDB logo and gets clipped on">
+            <g class="file"><path class="file-body" d="M96 -20 h14 l6 6 v22 h-20z"/><path class="file-fold" d="M110 -20 v6 h6"/><rect class="file-img" x="99" y="-8" width="14" height="4"/><rect class="file-img2" x="99" y="-2" width="10" height="4"/></g>
+            <path class="clip" pathLength="1" d="M104 -14 v-8 a3.5 3.5 0 0 1 7 0 v14 a5.5 5.5 0 0 1 -11 0 v-10"/>
+          </svg>
+          <span class="caption"><code>putAttachment({ id: 'cat.jpg' })</code></span>
+          <span class="tag">putAttachment()</span>
+        </div>
+        <div class="meta">
+          <div class="row"><h3>Attachments</h3><span class="spec">4.4s · loop · ease-out</span></div>
+          <p>A file flies in, lands on the corner piece, and a paperclip draws itself over it. Binary data stored next to the document.</p>
+          <a class="doclink" href="https://rxdb.info/rx-attachment.html" target="_blank" rel="noopener">Docs: Attachments</a>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="stage v-crdt">
+          <svg class="logo" viewBox="-50 -26 203.33 166" data-logo role="img" aria-label="Two concurrent increments merge into the middle layer without a conflict">
+            <g class="op op-a"><rect x="-44" y="64" width="26" height="12" rx="6"/><text x="-31" y="73" text-anchor="middle">+1</text></g>
+            <g class="op op-b"><rect x="122" y="64" width="26" height="12" rx="6"/><text x="135" y="73" text-anchor="middle">+1</text></g>
+            <text class="count c1" x="51.66" y="-10" text-anchor="middle">likes: 3</text>
+            <text class="count c2" x="51.66" y="-10" text-anchor="middle">likes: 5</text>
+          </svg>
+          <span class="tag">both edits kept</span>
+        </div>
+        <div class="meta">
+          <div class="row"><h3>CRDT</h3><span class="spec">4.4s · loop · ease-pop</span></div>
+          <p>Two clients send $inc at the same time. Both operations merge into the middle layer and the count goes from 3 to 5, with no conflict.</p>
+          <a class="doclink" href="https://rxdb.info/crdt.html" target="_blank" rel="noopener">Docs: CRDT</a>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="stage v-search">
+          <svg class="logo" viewBox="-12 -12 127.33 164" data-logo role="img" aria-label="A magnifying lens searches the RxDB logo and finds a match">
+            <defs><clipPath id="lens-clip"><circle class="lens-c" r="15"/></clipPath></defs>
+            <g class="lens-wrap" clip-path="url(#lens-clip)">
+              <circle class="lens-bg" r="15"/>
+              <g class="zoom" data-logo></g>
+            </g>
+            <g class="lens"><circle class="ring" r="15"/><path class="handle" d="M11 11 L20 20"/></g>
+          </svg>
+          <span class="caption"><code>search('offline')</code> · 1 match</span>
+          <span class="tag">flexsearch</span>
+        </div>
+        <div class="meta">
+          <div class="row"><h3>Fulltext search</h3><span class="spec">6s · loop · ease-in-out</span></div>
+          <p>A lens scans the layers with a 1.8x zoom and stops on the match. Search runs locally, on data that is already on the device.</p>
+          <a class="doclink" href="https://rxdb.info/fulltext-search.html" target="_blank" rel="noopener">Docs: Fulltext Search</a>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="stage v-vector">
+          <svg class="logo" viewBox="-40 -10 183.33 160" data-logo role="img" aria-label="RxDB logo layers turning into vectors and finding nearest neighbors">
+            <g class="nns"></g>
+            <circle class="dot" r="6.2" data-k="0" data-i="0"/><circle class="dot" r="6.2" data-k="0" data-i="1"/><circle class="dot" r="6.2" data-k="0" data-i="2"/><circle class="dot" r="6.2" data-k="0" data-i="3"/><circle class="dot" r="6.2" data-k="0" data-i="4"/><circle class="dot" r="6.2" data-k="0" data-i="5"/><circle class="dot" r="6.2" data-k="1" data-i="0"/><circle class="dot" r="6.2" data-k="1" data-i="1"/><circle class="dot" r="6.2" data-k="1" data-i="2"/><circle class="dot" r="6.2" data-k="1" data-i="3"/><circle class="dot" r="6.2" data-k="1" data-i="4"/><circle class="dot" r="6.2" data-k="1" data-i="5"/><circle class="dot" r="6.2" data-k="2" data-i="0"/><circle class="dot" r="6.2" data-k="2" data-i="1"/><circle class="dot" r="6.2" data-k="2" data-i="2"/><circle class="dot" r="6.2" data-k="2" data-i="3"/><circle class="dot" r="6.2" data-k="2" data-i="4"/><circle class="dot" r="6.2" data-k="2" data-i="5"/>
+            <path class="qpt" d="M0 -6 L1.8 -1.8 L6 0 L1.8 1.8 L0 6 L-1.8 1.8 L-6 0 L-1.8 -1.8z"/>
+            <text class="qlbl" x="0" y="0">query</text>
+          </svg>
+          <span class="tag">embeddings</span>
+        </div>
+        <div class="meta">
+          <div class="row"><h3>Vector database</h3><span class="spec">5s · loop · JS</span></div>
+          <p>Each layer breaks into document vectors that move into embedding space. A query point finds its three nearest neighbors, then the vectors fall back into place.</p>
+          <a class="doclink" href="https://rxdb.info/articles/javascript-vector-database.html" target="_blank" rel="noopener">Docs: Vector Database</a>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="stage v-shard">
+          <svg class="logo" viewBox="-22 -14 147.33 172" role="img" aria-label="RxDB logo splitting into three shards">
+            <defs>
+              <clipPath id="sh1"><rect x="-1" y="-1" width="35.4" height="142"/></clipPath>
+              <clipPath id="sh2"><rect x="34.4" y="-1" width="34.5" height="142"/></clipPath>
+              <clipPath id="sh3"><rect x="68.9" y="-1" width="35.5" height="142"/></clipPath>
+            </defs>
+            <g class="shard s1" clip-path="url(#sh1)" data-logo></g>
+            <g class="shard s2" clip-path="url(#sh2)" data-logo></g>
+            <g class="shard s3" clip-path="url(#sh3)" data-logo></g>
+            <text class="slbl" x="3" y="152" text-anchor="middle">shard 1</text>
+            <text class="slbl" x="51.66" y="158" text-anchor="middle">shard 2</text>
+            <text class="slbl" x="100" y="152" text-anchor="middle">shard 3</text>
+          </svg>
+          <span class="tag">sharding</span>
+        </div>
+        <div class="meta">
+          <div class="row"><h3>Sharding</h3><span class="spec">4.4s · loop · ease-pop</span></div>
+          <p>The mark splits into three vertical slices that drift apart and snap back. One collection, stored across several shards.</p>
+          <a class="doclink" href="https://rxdb.info/rx-storage-sharding.html" target="_blank" rel="noopener">Docs: Sharding</a>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="stage v-p2p">
+          <svg class="logo" viewBox="0 0 300 170" role="img" aria-label="Three RxDB peers replicating directly with each other">
+            <line class="mesh" x1="55" y1="45" x2="245" y2="45"/>
+            <line class="mesh" x1="55" y1="45" x2="150" y2="125"/>
+            <line class="mesh" x1="245" y1="45" x2="150" y2="125"/>
+            <rect class="hop" x="51" y="42" width="8" height="6" rx="1.5" fill="#ED168F" style="--dx: 190px; --dy: 0px"/>
+            <rect class="hop" x="241" y="42" width="8" height="6" rx="1.5" fill="#752A8A" style="--dx: -190px; --dy: 0px; animation-delay: -1.2s"/>
+            <rect class="hop" x="51" y="42" width="8" height="6" rx="1.5" fill="#B2218B" style="--dx: 95px; --dy: 80px; animation-delay: -.6s"/>
+            <rect class="hop" x="146" y="122" width="8" height="6" rx="1.5" fill="#ED168F" style="--dx: -95px; --dy: -80px; animation-delay: -1.8s"/>
+            <rect class="hop" x="241" y="42" width="8" height="6" rx="1.5" fill="#B2218B" style="--dx: -95px; --dy: 80px; animation-delay: -.4s"/>
+            <rect class="hop" x="146" y="122" width="8" height="6" rx="1.5" fill="#752A8A" style="--dx: 95px; --dy: -80px; animation-delay: -1.6s"/>
+            <svg x="33" y="15" width="44" height="60" viewBox="0 0 103.33 140" data-logo></svg>
+            <svg x="223" y="15" width="44" height="60" viewBox="0 0 103.33 140" data-logo></svg>
+            <svg x="128" y="95" width="44" height="60" viewBox="0 0 103.33 140" data-logo></svg>
+            <text class="peer" x="55" y="86" text-anchor="middle">peer</text>
+            <text class="peer" x="245" y="86" text-anchor="middle">peer</text>
+            <text class="peer" x="150" y="166" text-anchor="middle">peer</text>
+          </svg>
+          <span class="tag">webrtc · no server</span>
+        </div>
+        <div class="meta">
+          <div class="row"><h3>P2P replication</h3><span class="spec">2.4s · loop · linear</span></div>
+          <p>Three peers replicate directly with each other over WebRTC. Documents move along every edge of the mesh, with no server in the middle.</p>
+          <a class="doclink" href="https://rxdb.info/replication-webrtc.html" target="_blank" rel="noopener">Docs: WebRTC P2P Replication</a>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="stage v-cleanup">
+          <svg class="logo" viewBox="0 0 103.33 140" data-logo role="img" aria-label="Deleted documents in the RxDB logo get swept away">
+            <text class="tlbl" x="12" y="73">_deleted: true</text>
+            <text class="tlbl" x="12" y="99.7">_deleted: true</text>
+            <rect class="sweep" x="5" y="30" width="2.5" height="80"/>
+          </svg>
+          <span class="tag">cleanup()</span>
+        </div>
+        <div class="meta">
+          <div class="row"><h3>Cleanup</h3><span class="spec">5s · loop · linear sweep</span></div>
+          <p>Deleted documents stay as dark tombstones until the cleanup sweep passes and removes them. New documents take their slots.</p>
+          <a class="doclink" href="https://rxdb.info/cleanup.html" target="_blank" rel="noopener">Docs: Cleanup</a>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="stage v-backup">
+          <svg class="logo" viewBox="0 -4 233.33 164" data-logo role="img" aria-label="RxDB logo layers copied into a backup">
+            <g class="ghostcopy" transform="translate(125 0)" data-logo></g>
+            <rect class="bar b1 fly" x="6.66" y="33.34" width="90" height="20"/>
+            <rect class="bar b2 fly" x="6.67" y="60" width="90" height="20"/>
+            <rect class="bar b3 fly" x="6.66" y="86.66" width="90" height="20"/>
+            <text class="blbl" x="176.66" y="156" text-anchor="middle">backup/2026-09-29.json</text>
+          </svg>
+          <span class="tag">backup()</span>
+        </div>
+        <div class="meta">
+          <div class="row"><h3>Backup</h3><span class="spec">4.4s · loop · ease-pop</span></div>
+          <p>An empty dashed copy appears and each layer is copied into it, one after another. A backup written to plain JSON files.</p>
+          <a class="doclink" href="https://rxdb.info/backup.html" target="_blank" rel="noopener">Docs: Backup</a>
         </div>
       </article>
 
@@ -894,6 +1358,7 @@ footer { font-size: 13px; color: var(--muted); display: flex; flex-direction: co
           <li>Hero cycle <span>9s</span></li>
           <li>Isometric cycle <span>6s</span></li>
           <li>Sleep after idle <span>8s</span></li>
+          <li>Query switch <span>1.8s</span></li>
         </ul>
       </div>
     </div>
@@ -1355,6 +1820,113 @@ footer { font-size: 13px; color: var(--muted); display: flex; flex-direction: co
     }
   }
   initSwarm();
+
+  /* RxQuery */
+  var QUERIES = [
+    ["find({ color: 'pink' })", ['b1', 'corner'], 1],
+    ["find({ color: 'purple' })", ['b3', 'foot'], 1],
+    ["find({ color: { $ne: 'magenta' } })", ['b1', 'corner', 'b3', 'foot'], 2],
+    ["find({ color: 'magenta' })", ['b2'], 1],
+    ['find({})', ['b1', 'b2', 'b3', 'corner', 'foot'], 3]
+  ];
+  async function queryLoop() {
+    var stage = document.querySelector('.v-query');
+    var qText = document.getElementById('q-text');
+    var qCount = document.getElementById('q-count');
+    var i = QUERIES.length - 1;
+    for (;;) {
+      await wait(1800);
+      i = (i + 1) % QUERIES.length;
+      var q = QUERIES[i];
+      qText.textContent = q[0];
+      qCount.textContent = q[2] + (q[2] === 1 ? ' doc' : ' docs');
+      ['b1', 'b2', 'b3', 'corner', 'foot'].forEach(function (name) {
+        var el = stage.querySelector('.' + name);
+        var hit = q[1].indexOf(name) !== -1;
+        el.classList.toggle('dim', !hit);
+        if (hit && el.classList.contains('bar')) {
+          el.animate([{ transform: 'none' }, { transform: 'translateX(5px)' }, { transform: 'none' }], { duration: 420, easing: OUT });
+        }
+      });
+    }
+  }
+
+  /* Revisions */
+  function hex4() { return Math.floor(Math.random() * 65536).toString(16).padStart(4, '0'); }
+  async function revLoop() {
+    var mark = document.getElementById('rev-mark');
+    var bars = mark.querySelectorAll('.bar');
+    var vals = document.querySelectorAll('.v-rev .rev .v');
+    var heights = [1, 1, 1];
+    for (;;) {
+      await wait(900);
+      var i = Math.floor(Math.random() * 3);
+      heights[i]++;
+      bars[i].classList.remove('hit');
+      void bars[i].getBoundingClientRect();
+      bars[i].classList.add('hit');
+      vals[i].textContent = heights[i] + '-' + hex4();
+      vals[i].parentNode.animate([{ opacity: 0, transform: 'translateY(4px)' }, { opacity: 1, transform: 'none' }], { duration: 300, easing: OUT });
+    }
+  }
+
+  /* Vector database */
+  function initVector() {
+    var stage = document.querySelector('.v-vector');
+    var dotsEl = stage.querySelectorAll('.dot');
+    var nns = stage.querySelector('.nns');
+    var qpt = stage.querySelector('.qpt');
+    var qlbl = stage.querySelector('.qlbl');
+    var BAR_Y = [33.34, 60, 86.66];
+    var FILL = ['#ED168F', '#B2218B', '#752A8A'];
+    var CLUSTER = [[108, 22], [-18, 74], [104, 124]];
+    var QUERY = [86, 44];
+    function seeded(n) { var x = Math.sin(n * 12.9898) * 43758.5453; return x - Math.floor(x); }
+    var home = [], embed = [];
+    dotsEl.forEach(function (d, n) {
+      var k = +d.dataset.k, i = +d.dataset.i;
+      d.setAttribute('fill', FILL[k]);
+      home.push([6.66 + 7.5 + i * 15, BAR_Y[k] + 10]);
+      var a = seeded(n + 1) * Math.PI * 2, r = 6 + seeded(n + 7) * 16;
+      embed.push([CLUSTER[k][0] + Math.cos(a) * r, CLUSTER[k][1] + Math.sin(a) * r]);
+      d.style.transitionDelay = (n * 22) + 'ms';
+    });
+    var order = embed.map(function (p, n) { return [Math.hypot(p[0] - QUERY[0], p[1] - QUERY[1]), n]; })
+      .sort(function (a, b) { return a[0] - b[0]; }).slice(0, 3);
+    nns.innerHTML = order.map(function (o) {
+      var p = embed[o[1]];
+      return '<line class="nn" x1="' + QUERY[0] + '" y1="' + QUERY[1] + '" x2="' + p[0].toFixed(1) + '" y2="' + p[1].toFixed(1) + '"/>';
+    }).join('');
+    qpt.setAttribute('transform', 'translate(' + QUERY[0] + ' ' + QUERY[1] + ')');
+    qlbl.setAttribute('x', QUERY[0] - 8);
+    qlbl.setAttribute('y', QUERY[1] - 10);
+    function place(set) {
+      dotsEl.forEach(function (d, n) { d.style.transform = 'translate(' + set[n][0] + 'px,' + set[n][1] + 'px)'; });
+    }
+    place(home);
+    return async function vectorLoop() {
+      for (;;) {
+        await wait(1200);
+        stage.classList.add('embed');
+        await wait(60);
+        place(embed);
+        await wait(1300);
+        stage.classList.add('found');
+        await wait(1800);
+        stage.classList.remove('found');
+        place(home);
+        await wait(1200);
+        stage.classList.remove('embed');
+      }
+    };
+  }
+  var vectorLoop = initVector();
+
+  if (!reduce) {
+    queryLoop();
+    revLoop();
+    vectorLoop();
+  }
 
   if (!reduce) {
     cipherLoop();
