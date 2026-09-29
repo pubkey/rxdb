@@ -56,7 +56,8 @@ import {
 import {
     RxReplicationState,
     replicateRxCollection,
-    REPLICATION_STATE_BY_COLLECTION
+    REPLICATION_STATE_BY_COLLECTION,
+    startReplicationOnLeaderShip
 } from '../../plugins/replication/index.mjs';
 
 import type {
@@ -757,6 +758,40 @@ describe('replication.test.ts', () => {
     });
     describe('other', () => {
         describe('autoStart', () => {
+            it('should handle and recover from a failed start', async () => {
+                const { localCollection, remoteCollection } = await getTestCollections({ local: 0, remote: 0 });
+                const replicationState = replicateRxCollection({
+                    collection: localCollection,
+                    replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                    live: false,
+                    autoStart: false,
+                    pull: {
+                        handler: getPullHandler(remoteCollection)
+                    }
+                });
+                const originalStart = replicationState._start.bind(replicationState);
+                let firstStart = true;
+                replicationState._start = () => {
+                    if (firstStart) {
+                        firstStart = false;
+                        return Promise.reject(new Error('start failed'));
+                    }
+                    return originalStart();
+                };
+                replicationState.autoStart = true;
+
+                const errorPromise = firstValueFrom(replicationState.error$);
+                await startReplicationOnLeaderShip(false, replicationState);
+                const emittedError = await errorPromise;
+                assert.strictEqual(emittedError.code, 'RC_START');
+
+                await replicationState.start();
+                await replicationState.awaitInitialReplication();
+                assert.ok(replicationState.internalReplicationState);
+
+                await localCollection.database.close();
+                await remoteCollection.database.close();
+            });
             it('should run first replication by default', async () => {
                 const { localCollection, remoteCollection } = await getTestCollections({ local: 0, remote: 0 });
                 const replicationState = replicateRxCollection({
