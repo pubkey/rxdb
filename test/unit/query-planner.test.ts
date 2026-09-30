@@ -897,6 +897,7 @@ describe('query-planner.test.js', () => {
             });
             const schema = clone(schemas.human);
             schema.indexes = [['firstName', 'age']];
+            schema.required = ['firstName', 'lastName', 'passportId', 'age'];
             const collections = await db.addCollections({
                 humans: {
                     schema
