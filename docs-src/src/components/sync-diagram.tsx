@@ -319,7 +319,6 @@ export function SyncDiagram(props: SyncDiagramProps) {
       if (timeout) clearTimeout(timeout);
       if (interval) clearInterval(interval);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [simulateOffline, isAnimated, clients.length, period, d]);
 
   const isOffline = (i: number) => offlineIndex === i;
@@ -806,7 +805,6 @@ function ReconnectBurst({
     const total = (visible * gap + duration * 2.2) * 1000;
     const timeout = setTimeout(onDone, total);
     return () => clearTimeout(timeout);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const packets: { kind: 'push' | 'pull'; offset: number; }[] = [];
