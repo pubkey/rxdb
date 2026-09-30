@@ -867,6 +867,71 @@ p { margin: 0; max-width: 62ch; }
 @keyframes cq1 { 0%, 48% { opacity: 1; } 52%, 100% { opacity: 0; } }
 @keyframes cq2 { 0%, 50% { opacity: 0; } 54%, 94% { opacity: 1; } 98%, 100% { opacity: 0; } }
 
+/* Wordmark */
+.wordmark-stage { aspect-ratio: auto; padding: clamp(24px, 5vw, 56px) clamp(12px, 4vw, 48px); }
+.wordmark-stage > svg { width: 100%; height: auto; max-width: 760px; }
+.logo .letter { fill: var(--white); transform-box: fill-box; transform-origin: center; }
+.v-wordmark .letter { stroke: var(--white); stroke-width: 1.2; stroke-dasharray: 1; stroke-dashoffset: 0; }
+.v-wordmark .xg { transform-box: fill-box; transform-origin: center; }
+.v-wordmark .uline { fill: var(--pink); transform-box: fill-box; transform-origin: left center; }
+.v-wordmark .tagline { fill: var(--muted); font-size: 13px; }
+.word-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 40px 28px; margin-top: 28px; }
+.word-grid .stage > svg { width: 88%; height: auto; }
+
+/* Typewriter */
+.v-type .l1 { animation: type-1 5s infinite; }
+.v-type .l2 { animation: type-2 5s infinite; }
+.v-type .l3 { animation: type-3 5s infinite; }
+.v-type .l4 { animation: type-4 5s infinite; }
+.v-type .cursor { fill: var(--pink); animation: cur-move 5s infinite; }
+.v-type .cursor rect { animation: blink .8s steps(1) infinite; }
+@keyframes type-1 { 0%, 12% { opacity: 0; } 12.1%, 88% { opacity: 1; } 92%, 100% { opacity: 0; } }
+@keyframes type-2 { 0%, 26% { opacity: 0; } 26.1%, 88% { opacity: 1; } 92%, 100% { opacity: 0; } }
+@keyframes type-3 { 0%, 40% { opacity: 0; } 40.1%, 88% { opacity: 1; } 92%, 100% { opacity: 0; } }
+@keyframes type-4 { 0%, 54% { opacity: 0; } 54.1%, 88% { opacity: 1; } 92%, 100% { opacity: 0; } }
+@keyframes cur-move {
+  0%, 12% { transform: translateX(0); }
+  12.1%, 26% { transform: translateX(64px); }
+  26.1%, 40% { transform: translateX(119px); }
+  40.1%, 54% { transform: translateX(196px); }
+  54.1%, 90% { transform: translateX(250px); }
+  92%, 100% { transform: translateX(0); }
+}
+@keyframes blink { 0% { opacity: 1; } 50% { opacity: 0; } }
+
+/* Reactive x */
+.v-rx .letter { animation: wave 3s var(--ease-pop) infinite; }
+.v-rx .l2 { animation-delay: .1s; }
+.v-rx .l3 { animation-delay: .2s; }
+.v-rx .l4 { animation-delay: .3s; }
+.v-rx .xg { transform-box: fill-box; transform-origin: center; animation: rx-spin 3s var(--ease-pop) infinite; }
+.v-rx .xg .letter { animation-name: wave, rx-fill; }
+.v-rx .b1 { animation: flash 3s .55s infinite; }
+.v-rx .b2 { animation: flash 3s .65s infinite; }
+.v-rx .b3 { animation: flash 3s .75s infinite; }
+@keyframes wave { 0%, 30%, 100% { transform: none; } 10% { transform: translateY(-10px); } 20% { transform: translateY(2px); } }
+@keyframes rx-spin { 0%, 42% { transform: none; } 58%, 100% { transform: rotate(180deg); } }
+@keyframes rx-fill { 0%, 42% { fill: var(--white); } 50% { fill: var(--pink); } 70%, 100% { fill: var(--white); } }
+
+/* Color sweep */
+.v-sweep .letter { fill: url(#sweep-grad); }
+
+/* MongoDB sync */
+.v-mongo .device { fill: var(--bg); stroke: var(--line); stroke-width: 1.2; }
+.v-mongo .dname { fill: var(--fg); font-size: 11px; font-weight: 700; }
+.v-mongo .dsub { fill: var(--muted); font-size: 9px; }
+.v-mongo .mlane { fill: none; stroke: var(--muted); stroke-width: 1; stroke-dasharray: 3 4; opacity: .5; }
+.v-mongo .cyl { fill: var(--bg); stroke: var(--white); stroke-width: 2; }
+.v-mongo .stripe { fill: none; stroke: var(--white); stroke-width: 1.4; animation: stripe .8s 2.4s infinite; }
+.v-mongo .stripe.s2 { animation-delay: 2.5s; }
+.v-mongo .mname { fill: var(--fg); font-size: 14px; font-weight: 800; }
+.v-mongo .msub { fill: var(--muted); font-size: 9px; }
+.v-mongo .legend { fill: var(--muted); font-size: 9px; }
+.v-mongo .c1 .b1 { animation: flash 2.4s 5.2s infinite; }
+.v-mongo .c2 .b2 { animation: flash 2.4s 3.6s infinite; }
+.v-mongo .c3 .b3 { animation: flash 2.4s 4.4s infinite; }
+@keyframes stripe { 0% { stroke: var(--pink); } 50%, 100% { stroke: var(--white); } }
+
 /* Tokens */
 .tokens {
   display: grid;
@@ -903,7 +968,7 @@ footer { font-size: 13px; color: var(--muted); display: flex; flex-direction: co
     <div class="intro">
       <p class="eyebrow">Motion study for the RxDB brand mark</p>
       <h1>RxDB Logo <b>Motion</b></h1>
-      <p class="muted">Thirty-seven animated versions of the RxDB logo. Each one is built from the five shapes of the original mark (frame, three layers, two corner pieces) and ties the motion to something the database does.</p>
+      <p class="muted">Forty-two animated versions of the RxDB logo and wordmark. Each one is built from the five shapes of the original mark (frame, three layers, two corner pieces) and ties the motion to something the database does.</p>
     </div>
     <button class="btn" id="pause-all" type="button" aria-pressed="false">Pause all</button>
   </header>
@@ -982,6 +1047,128 @@ footer { font-size: 13px; color: var(--muted); display: flex; flex-direction: co
           <div class="row"><h3>Minimal wink</h3><span class="spec">3.2s · loop · ease-out</span></div>
           <p>No added features. The top layer squeezes to 8% height, overshoots to 110% on the way back, and the middle layer squashes as follow-through.</p>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Wordmark -->
+  <section aria-labelledby="word-title">
+    <div class="section-head">
+      <p class="eyebrow">Logo + text</p>
+      <h2 id="word-title">The <b>Wordmark</b></h2>
+      <p class="muted">The full lockup from <code>logo_text_white.svg</code>. The icon builds itself, then each letter of "RxDB" draws its outline and fills in. The x spins like a reactive stream, an underline sweeps in, and the tagline follows.</p>
+    </div>
+    <div class="card">
+      <div class="stage wordmark-stage v-wordmark">
+        <svg class="logo" viewBox="0 0 400 172" role="img" aria-label="Animated RxDB wordmark: the icon builds, the letters R x D B draw in, and the tagline appears">
+          <g id="word-root">
+            <g id="word-icon" data-logo></g>
+            <path class="letter l1" pathLength="1" d="M143.33 106.67V33.33h29.31c4.98 0 9.57.79 13.78 2.36s7.59 4.06 10.15 7.47c2.56 3.4 3.84 7.85 3.84 13.34 0 5.86-1.46 10.48-4.39 13.89-2.93 3.4-6.62 5.84-11.09 7.3l18.88 28.98h-19.87l-16.69-26.9h-6.92v26.9h-17.02Zm17.02-41.61h12.19c1.98 0 3.71-.29 5.21-.88 1.5-.58 2.69-1.5 3.57-2.74s1.32-2.89 1.32-4.94-.44-3.68-1.32-4.89-2.07-2.1-3.57-2.69c-1.5-.58-3.24-.88-5.21-.88h-12.19z"/>
+            <g class="xg"><path class="letter l2" pathLength="1" d="M206.02 106.67l20.64-28.54-18.88-25.91h19.76l8.78 12.19h.44l8.56-12.19h19.54l-18.77 25.91 20.53 28.54h-19.65l-10.43-14.82h-.44l-10.43 14.82z"/></g>
+            <path class="letter l3" pathLength="1" d="M271.22 106.67V33.33h21.52c5.2 0 10.04.6 14.55 1.81 4.5 1.21 8.45 3.22 11.86 6.04 3.4 2.82 6.06 6.59 7.96 11.31s2.85 10.56 2.85 17.51-.95 12.88-2.85 17.56-4.56 8.44-7.96 11.25c-3.4 2.82-7.36 4.83-11.86 6.04s-9.35 1.81-14.55 1.81h-21.52Zm17.02-15.15h4.06c2.63 0 5.16-.26 7.57-.77 2.42-.51 4.56-1.5 6.42-2.96 1.87-1.46 3.35-3.62 4.45-6.48q1.65-4.275 1.65-11.31c0-7.035-.55-8.47-1.65-11.36s-2.58-5.09-4.45-6.59-4.01-2.51-6.42-3.02c-2.42-.51-4.94-.77-7.57-.77h-4.06v43.25Z"/>
+            <path class="letter l4" pathLength="1" d="M335.56 106.67V33.33h29.75c5.49 0 10.15.68 14 2.03 3.84 1.36 6.79 3.42 8.84 6.2s3.07 6.37 3.07 10.76c0 2.42-.37 4.59-1.1 6.53q-1.095 2.91-3.18 5.1c-1.39 1.46-3.07 2.71-5.05 3.73 1.98.66 3.9 1.7 5.76 3.13 1.87 1.43 3.38 3.29 4.56 5.6 1.17 2.31 1.76 5.14 1.76 8.51q0 7.8-3.51 12.57c-2.34 3.18-5.6 5.51-9.77 6.97s-8.97 2.2-14.38 2.2h-30.74Zm17.01-44.9h12.95q3.84 0 6.15-1.92t2.31-5.1c0-3.18-.73-3.77-2.2-4.94-1.46-1.17-3.48-1.76-6.04-1.76h-13.17zm0 30.19h13.83c2.12 0 3.93-.29 5.43-.88 1.5-.58 2.63-1.48 3.4-2.69s1.15-2.65 1.15-4.34c0-2.49-.86-4.37-2.58-5.65q-2.58-1.92-7.41-1.92h-13.83v15.48Z"/>
+            <rect class="uline" x="143.33" y="118" width="248.5" height="4"/>
+            <text class="tagline" x="143.33" y="150">The local-first database for JavaScript</text>
+          </g>
+        </svg>
+        <span class="tag">wordmark reveal · 6.4s loop</span>
+      </div>
+    </div>
+    <div class="word-grid">
+      <article class="card">
+        <div class="stage v-type">
+          <svg class="logo" viewBox="0 0 404 140" data-logo role="img" aria-label="RxDB wordmark typed letter by letter with a blinking cursor">
+            <path class="letter l1" d="M143.33 106.67V33.33h29.31c4.98 0 9.57.79 13.78 2.36s7.59 4.06 10.15 7.47c2.56 3.4 3.84 7.85 3.84 13.34 0 5.86-1.46 10.48-4.39 13.89-2.93 3.4-6.62 5.84-11.09 7.3l18.88 28.98h-19.87l-16.69-26.9h-6.92v26.9h-17.02Zm17.02-41.61h12.19c1.98 0 3.71-.29 5.21-.88 1.5-.58 2.69-1.5 3.57-2.74s1.32-2.89 1.32-4.94-.44-3.68-1.32-4.89-2.07-2.1-3.57-2.69c-1.5-.58-3.24-.88-5.21-.88h-12.19z"/><path class="letter l2" d="M206.02 106.67l20.64-28.54-18.88-25.91h19.76l8.78 12.19h.44l8.56-12.19h19.54l-18.77 25.91 20.53 28.54h-19.65l-10.43-14.82h-.44l-10.43 14.82z"/><path class="letter l3" d="M271.22 106.67V33.33h21.52c5.2 0 10.04.6 14.55 1.81 4.5 1.21 8.45 3.22 11.86 6.04 3.4 2.82 6.06 6.59 7.96 11.31s2.85 10.56 2.85 17.51-.95 12.88-2.85 17.56-4.56 8.44-7.96 11.25c-3.4 2.82-7.36 4.83-11.86 6.04s-9.35 1.81-14.55 1.81h-21.52Zm17.02-15.15h4.06c2.63 0 5.16-.26 7.57-.77 2.42-.51 4.56-1.5 6.42-2.96 1.87-1.46 3.35-3.62 4.45-6.48q1.65-4.275 1.65-11.31c0-7.035-.55-8.47-1.65-11.36s-2.58-5.09-4.45-6.59-4.01-2.51-6.42-3.02c-2.42-.51-4.94-.77-7.57-.77h-4.06v43.25Z"/><path class="letter l4" d="M335.56 106.67V33.33h29.75c5.49 0 10.15.68 14 2.03 3.84 1.36 6.79 3.42 8.84 6.2s3.07 6.37 3.07 10.76c0 2.42-.37 4.59-1.1 6.53q-1.095 2.91-3.18 5.1c-1.39 1.46-3.07 2.71-5.05 3.73 1.98.66 3.9 1.7 5.76 3.13 1.87 1.43 3.38 3.29 4.56 5.6 1.17 2.31 1.76 5.14 1.76 8.51q0 7.8-3.51 12.57c-2.34 3.18-5.6 5.51-9.77 6.97s-8.97 2.2-14.38 2.2h-30.74Zm17.01-44.9h12.95q3.84 0 6.15-1.92t2.31-5.1c0-3.18-.73-3.77-2.2-4.94-1.46-1.17-3.48-1.76-6.04-1.76h-13.17zm0 30.19h13.83c2.12 0 3.93-.29 5.43-.88 1.5-.58 2.63-1.48 3.4-2.69s1.15-2.65 1.15-4.34c0-2.49-.86-4.37-2.58-5.65q-2.58-1.92-7.41-1.92h-13.83v15.48Z"/>
+            <g class="cursor"><rect x="145" y="33.33" width="7" height="73.34"/></g>
+          </svg>
+          <span class="tag">typewriter</span>
+        </div>
+        <div class="meta">
+          <div class="row"><h3>Typewriter</h3><span class="spec">5s · loop · steps</span></div>
+          <p>The letters appear one keystroke at a time behind a blinking pink cursor, like typing <code>npm install rxdb</code>.</p>
+        </div>
+      </article>
+      <article class="card">
+        <div class="stage v-rx">
+          <svg class="logo" viewBox="0 -14 394 160" data-logo role="img" aria-label="RxDB wordmark letters bouncing in a wave while the x spins">
+            <path class="letter l1" d="M143.33 106.67V33.33h29.31c4.98 0 9.57.79 13.78 2.36s7.59 4.06 10.15 7.47c2.56 3.4 3.84 7.85 3.84 13.34 0 5.86-1.46 10.48-4.39 13.89-2.93 3.4-6.62 5.84-11.09 7.3l18.88 28.98h-19.87l-16.69-26.9h-6.92v26.9h-17.02Zm17.02-41.61h12.19c1.98 0 3.71-.29 5.21-.88 1.5-.58 2.69-1.5 3.57-2.74s1.32-2.89 1.32-4.94-.44-3.68-1.32-4.89-2.07-2.1-3.57-2.69c-1.5-.58-3.24-.88-5.21-.88h-12.19z"/>
+            <g class="xg"><path class="letter l2" d="M206.02 106.67l20.64-28.54-18.88-25.91h19.76l8.78 12.19h.44l8.56-12.19h19.54l-18.77 25.91 20.53 28.54h-19.65l-10.43-14.82h-.44l-10.43 14.82z"/></g>
+            <path class="letter l3" d="M271.22 106.67V33.33h21.52c5.2 0 10.04.6 14.55 1.81 4.5 1.21 8.45 3.22 11.86 6.04 3.4 2.82 6.06 6.59 7.96 11.31s2.85 10.56 2.85 17.51-.95 12.88-2.85 17.56-4.56 8.44-7.96 11.25c-3.4 2.82-7.36 4.83-11.86 6.04s-9.35 1.81-14.55 1.81h-21.52Zm17.02-15.15h4.06c2.63 0 5.16-.26 7.57-.77 2.42-.51 4.56-1.5 6.42-2.96 1.87-1.46 3.35-3.62 4.45-6.48q1.65-4.275 1.65-11.31c0-7.035-.55-8.47-1.65-11.36s-2.58-5.09-4.45-6.59-4.01-2.51-6.42-3.02c-2.42-.51-4.94-.77-7.57-.77h-4.06v43.25Z"/>
+            <path class="letter l4" d="M335.56 106.67V33.33h29.75c5.49 0 10.15.68 14 2.03 3.84 1.36 6.79 3.42 8.84 6.2s3.07 6.37 3.07 10.76c0 2.42-.37 4.59-1.1 6.53q-1.095 2.91-3.18 5.1c-1.39 1.46-3.07 2.71-5.05 3.73 1.98.66 3.9 1.7 5.76 3.13 1.87 1.43 3.38 3.29 4.56 5.6 1.17 2.31 1.76 5.14 1.76 8.51q0 7.8-3.51 12.57c-2.34 3.18-5.6 5.51-9.77 6.97s-8.97 2.2-14.38 2.2h-30.74Zm17.01-44.9h12.95q3.84 0 6.15-1.92t2.31-5.1c0-3.18-.73-3.77-2.2-4.94-1.46-1.17-3.48-1.76-6.04-1.76h-13.17zm0 30.19h13.83c2.12 0 3.93-.29 5.43-.88 1.5-.58 2.63-1.48 3.4-2.69s1.15-2.65 1.15-4.34c0-2.49-.86-4.37-2.58-5.65q-2.58-1.92-7.41-1.92h-13.83v15.48Z"/>
+          </svg>
+          <span class="tag">reactive x</span>
+        </div>
+        <div class="meta">
+          <div class="row"><h3>Reactive x</h3><span class="spec">3s · loop · ease-pop</span></div>
+          <p>A wave runs through the letters and into the layers of the icon. The x of Rx turns half a circle and flashes pink.</p>
+        </div>
+      </article>
+      <article class="card">
+        <div class="stage v-sweep">
+          <svg class="logo" viewBox="0 0 394 140" data-logo role="img" aria-label="RxDB wordmark with a brand color gradient sweeping through the letters">
+            <defs>
+              <linearGradient id="sweep-grad" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="400" y2="0" spreadMethod="repeat">
+                <stop offset="0" stop-color="#FFFFFF"/>
+                <stop offset=".35" stop-color="#FFFFFF"/>
+                <stop offset=".5" stop-color="#ED168F"/>
+                <stop offset=".6" stop-color="#B2218B"/>
+                <stop offset=".7" stop-color="#752A8A"/>
+                <stop offset=".85" stop-color="#FFFFFF"/>
+                <stop offset="1" stop-color="#FFFFFF"/>
+                <animateTransform attributeName="gradientTransform" type="translate" from="-400 0" to="400 0" dur="3.2s" repeatCount="indefinite"/>
+              </linearGradient>
+            </defs>
+            <path class="letter l1" d="M143.33 106.67V33.33h29.31c4.98 0 9.57.79 13.78 2.36s7.59 4.06 10.15 7.47c2.56 3.4 3.84 7.85 3.84 13.34 0 5.86-1.46 10.48-4.39 13.89-2.93 3.4-6.62 5.84-11.09 7.3l18.88 28.98h-19.87l-16.69-26.9h-6.92v26.9h-17.02Zm17.02-41.61h12.19c1.98 0 3.71-.29 5.21-.88 1.5-.58 2.69-1.5 3.57-2.74s1.32-2.89 1.32-4.94-.44-3.68-1.32-4.89-2.07-2.1-3.57-2.69c-1.5-.58-3.24-.88-5.21-.88h-12.19z"/><path class="letter l2" d="M206.02 106.67l20.64-28.54-18.88-25.91h19.76l8.78 12.19h.44l8.56-12.19h19.54l-18.77 25.91 20.53 28.54h-19.65l-10.43-14.82h-.44l-10.43 14.82z"/><path class="letter l3" d="M271.22 106.67V33.33h21.52c5.2 0 10.04.6 14.55 1.81 4.5 1.21 8.45 3.22 11.86 6.04 3.4 2.82 6.06 6.59 7.96 11.31s2.85 10.56 2.85 17.51-.95 12.88-2.85 17.56-4.56 8.44-7.96 11.25c-3.4 2.82-7.36 4.83-11.86 6.04s-9.35 1.81-14.55 1.81h-21.52Zm17.02-15.15h4.06c2.63 0 5.16-.26 7.57-.77 2.42-.51 4.56-1.5 6.42-2.96 1.87-1.46 3.35-3.62 4.45-6.48q1.65-4.275 1.65-11.31c0-7.035-.55-8.47-1.65-11.36s-2.58-5.09-4.45-6.59-4.01-2.51-6.42-3.02c-2.42-.51-4.94-.77-7.57-.77h-4.06v43.25Z"/><path class="letter l4" d="M335.56 106.67V33.33h29.75c5.49 0 10.15.68 14 2.03 3.84 1.36 6.79 3.42 8.84 6.2s3.07 6.37 3.07 10.76c0 2.42-.37 4.59-1.1 6.53q-1.095 2.91-3.18 5.1c-1.39 1.46-3.07 2.71-5.05 3.73 1.98.66 3.9 1.7 5.76 3.13 1.87 1.43 3.38 3.29 4.56 5.6 1.17 2.31 1.76 5.14 1.76 8.51q0 7.8-3.51 12.57c-2.34 3.18-5.6 5.51-9.77 6.97s-8.97 2.2-14.38 2.2h-30.74Zm17.01-44.9h12.95q3.84 0 6.15-1.92t2.31-5.1c0-3.18-.73-3.77-2.2-4.94-1.46-1.17-3.48-1.76-6.04-1.76h-13.17zm0 30.19h13.83c2.12 0 3.93-.29 5.43-.88 1.5-.58 2.63-1.48 3.4-2.69s1.15-2.65 1.15-4.34c0-2.49-.86-4.37-2.58-5.65q-2.58-1.92-7.41-1.92h-13.83v15.48Z"/>
+          </svg>
+          <span class="tag">color sweep</span>
+        </div>
+        <div class="meta">
+          <div class="row"><h3>Color sweep</h3><span class="spec">3.2s · loop · linear</span></div>
+          <p>The three layer colors sweep through the letters from left to right. The icon stays still, so the brand mark reads first.</p>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- MongoDB sync -->
+  <section aria-labelledby="mongo-title">
+    <div class="section-head">
+      <p class="eyebrow">Sync</p>
+      <h2 id="mongo-title">Sync with <b>MongoDB</b></h2>
+      <p class="muted">Three clients each run RxDB on a different storage. Local writes are pushed to a MongoDB server, and MongoDB Change Streams pull every change back out to the other clients. Each client's layer lights up when a change arrives.</p>
+    </div>
+    <div class="card">
+      <div class="stage wordmark-stage v-mongo">
+        <svg class="logo" viewBox="0 0 640 262" role="img" aria-label="Three RxDB clients syncing documents with a MongoDB server in both directions">
+            <path id="mp1" class="mlane" d="M172 45 C 300 45, 360 125, 482 125"/>
+            <path id="mp2" class="mlane" d="M172 125 C 300 125, 360 125, 482 125"/>
+            <path id="mp3" class="mlane" d="M172 205 C 300 205, 360 125, 482 125"/>
+            <g class="c1"><rect class="device" x="20" y="14" width="150" height="62" rx="8"/><svg x="30" y="21" width="35.4" height="48" viewBox="0 0 103.33 140" data-logo></svg><text class="dname" x="76" y="42">Browser</text><text class="dsub" x="76" y="58">IndexedDB storage</text></g>
+            <g class="c2"><rect class="device" x="20" y="94" width="150" height="62" rx="8"/><svg x="30" y="101" width="35.4" height="48" viewBox="0 0 103.33 140" data-logo></svg><text class="dname" x="76" y="122">Mobile</text><text class="dsub" x="76" y="138">SQLite storage</text></g>
+            <g class="c3"><rect class="device" x="20" y="174" width="150" height="62" rx="8"/><svg x="30" y="181" width="35.4" height="48" viewBox="0 0 103.33 140" data-logo></svg><text class="dname" x="76" y="202">Desktop</text><text class="dsub" x="76" y="218">Filesystem</text></g>
+            <rect x="-6" y="-3.5" width="12" height="7" rx="2" fill="#ED168F" opacity="0"><animateMotion dur="2.4s" begin="0s" repeatCount="indefinite" keyPoints="0;1" keyTimes="0;1" calcMode="linear"><mpath href="#mp1"/></animateMotion><animate attributeName="opacity" values="0;1;1;0" keyTimes="0;.08;.9;1" dur="2.4s" begin="0s" repeatCount="indefinite"/></rect>
+            <rect x="-6" y="-3.5" width="12" height="7" rx="2" fill="#B2218B" opacity="0"><animateMotion dur="2.4s" begin="0.8s" repeatCount="indefinite" keyPoints="0;1" keyTimes="0;1" calcMode="linear"><mpath href="#mp2"/></animateMotion><animate attributeName="opacity" values="0;1;1;0" keyTimes="0;.08;.9;1" dur="2.4s" begin="0.8s" repeatCount="indefinite"/></rect>
+            <rect x="-6" y="-3.5" width="12" height="7" rx="2" fill="#752A8A" opacity="0"><animateMotion dur="2.4s" begin="1.6s" repeatCount="indefinite" keyPoints="0;1" keyTimes="0;1" calcMode="linear"><mpath href="#mp3"/></animateMotion><animate attributeName="opacity" values="0;1;1;0" keyTimes="0;.08;.9;1" dur="2.4s" begin="1.6s" repeatCount="indefinite"/></rect>
+            <rect x="-6" y="-3.5" width="12" height="7" rx="2" fill="#FFFFFF" opacity="0"><animateMotion dur="2.4s" begin="1.2s" repeatCount="indefinite" keyPoints="1;0" keyTimes="0;1" calcMode="linear"><mpath href="#mp2"/></animateMotion><animate attributeName="opacity" values="0;1;1;0" keyTimes="0;.08;.9;1" dur="2.4s" begin="1.2s" repeatCount="indefinite"/></rect>
+            <rect x="-6" y="-3.5" width="12" height="7" rx="2" fill="#FFFFFF" opacity="0"><animateMotion dur="2.4s" begin="2s" repeatCount="indefinite" keyPoints="1;0" keyTimes="0;1" calcMode="linear"><mpath href="#mp3"/></animateMotion><animate attributeName="opacity" values="0;1;1;0" keyTimes="0;.08;.9;1" dur="2.4s" begin="2s" repeatCount="indefinite"/></rect>
+            <rect x="-6" y="-3.5" width="12" height="7" rx="2" fill="#FFFFFF" opacity="0"><animateMotion dur="2.4s" begin="2.8s" repeatCount="indefinite" keyPoints="1;0" keyTimes="0;1" calcMode="linear"><mpath href="#mp1"/></animateMotion><animate attributeName="opacity" values="0;1;1;0" keyTimes="0;.08;.9;1" dur="2.4s" begin="2.8s" repeatCount="indefinite"/></rect>
+            <path class="cyl" d="M483 55 v140 a62 16 0 0 0 124 0 v-140"/>
+            <ellipse class="cyl" cx="545" cy="55" rx="62" ry="16"/>
+            <path class="stripe" d="M483 92 a62 16 0 0 0 124 0"/>
+            <path class="stripe s2" d="M483 158 a62 16 0 0 0 124 0"/>
+            <text class="mname" x="545" y="130" text-anchor="middle">MongoDB</text>
+            <text class="msub" x="545" y="145" text-anchor="middle">change streams</text>
+            <text class="msub" x="545" y="186" text-anchor="middle" id="mongo-cp">checkpoint 1024</text>
+            <rect x="248" y="248" width="10" height="6" rx="1.5" fill="#ED168F"/>
+            <text class="legend" x="263" y="254">push (local write)</text>
+            <rect x="370" y="248" width="10" height="6" rx="1.5" fill="#FFFFFF"/>
+            <text class="legend" x="385" y="254">pull (change stream)</text>
+        </svg>
+        <span class="tag">replicateMongoDB()</span>
+      </div>
+      <div class="swarm-meta">
+        <span class="spec">2.4s per trip · SMIL animateMotion along bezier lanes</span>
+        <a class="doclink" href="https://rxdb.info/replication-mongodb.html" target="_blank" rel="noopener">Docs: MongoDB Replication</a>
       </div>
     </div>
   </section>
@@ -1686,6 +1873,7 @@ footer { font-size: 13px; color: var(--muted); display: flex; flex-direction: co
           <li>Isometric cycle <span>6s</span></li>
           <li>Sleep after idle <span>8s</span></li>
           <li>Query switch <span>1.8s</span></li>
+          <li>Wordmark reveal <span>6.4s</span></li>
         </ul>
       </div>
     </div>
@@ -1734,6 +1922,10 @@ footer { font-size: 13px; color: var(--muted); display: flex; flex-direction: co
     document.getAnimations().forEach(function (a) {
       if (paused && a.playState === 'running') a.pause();
       else if (!paused && a.playState === 'paused') a.play();
+    });
+    document.querySelectorAll('svg').forEach(function (svg) {
+      if (!svg.pauseAnimations) return;
+      if (paused) svg.pauseAnimations(); else if (!reduce) svg.unpauseAnimations();
     });
     if (!paused) onResume.forEach(function (fn) { fn(); });
   });
@@ -2277,6 +2469,66 @@ footer { font-size: 13px; color: var(--muted); display: flex; flex-direction: co
       bars[st[0]].style.transform = 'scaleX(' + st[1] + ')';
       call.textContent = "state.set('" + names[st[0]] + "', " + st[1].toFixed(2) + ')';
     }
+  }
+
+  /* Wordmark reveal */
+  async function wordLoop() {
+    var root = document.getElementById('word-root');
+    var icon = document.getElementById('word-icon');
+    var outline = icon.querySelector('.outline');
+    var bars = icon.querySelectorAll('.bar');
+    var small = [icon.querySelector('.corner'), icon.querySelector('.foot')];
+    var ls = root.querySelectorAll('.letter');
+    var xg = root.querySelector('.xg');
+    var uline = root.querySelector('.uline');
+    var tag = root.querySelector('.tagline');
+    var all = [root, outline, xg, uline, tag].concat([].slice.call(bars), small, [].slice.call(ls));
+    for (;;) {
+      all.forEach(function (el) { el.getAnimations().forEach(function (a) { a.cancel(); }); });
+      outline.animate([{ transform: 'scale(0)' }, { transform: 'none' }], { duration: 520, easing: POP, fill: 'both' });
+      bars.forEach(function (b, i) {
+        b.animate([{ transform: 'translateX(-140%)', opacity: 0 }, { transform: 'none', opacity: 1 }],
+          { duration: 650, delay: 280 + i * 120, easing: POP, fill: 'both' });
+      });
+      small.forEach(function (el, i) {
+        el.animate([{ transform: 'scale(0) rotate(-180deg)' }, { transform: 'none' }],
+          { duration: 520, delay: 640 + i * 110, easing: POP, fill: 'both' });
+      });
+      ls.forEach(function (l, i) {
+        var t = 950 + i * 190;
+        l.animate([{ strokeDashoffset: 1, fillOpacity: 0 }, { strokeDashoffset: 0, fillOpacity: 0, offset: .7 }, { strokeDashoffset: 0, fillOpacity: 1 }],
+          { duration: 900, delay: t, easing: 'ease-in-out', fill: 'both' });
+      });
+      xg.animate([{ transform: 'none' }, { transform: 'rotate(180deg)' }], { duration: 700, delay: 2300, easing: POP, fill: 'both' });
+      ls[1].animate([{ fill: '#FFFFFF' }, { fill: '#ED168F', offset: .4 }, { fill: '#FFFFFF' }], { duration: 900, delay: 2300 });
+      uline.animate([{ transform: 'scaleX(0)' }, { transform: 'none' }], { duration: 600, delay: 2700, easing: OUT, fill: 'both' });
+      tag.animate([{ opacity: 0, transform: 'translateY(6px)' }, { opacity: 1, transform: 'none' }], { duration: 500, delay: 3000, easing: OUT, fill: 'both' });
+      var out = root.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 450, delay: 5700, fill: 'forwards' });
+      await out.finished.catch(function () {});
+      await wait(300);
+    }
+  }
+
+  /* MongoDB checkpoint counter */
+  async function mongoLoop() {
+    var cp = document.getElementById('mongo-cp');
+    var n = 1024;
+    await wait(2400);
+    for (;;) {
+      n++;
+      cp.textContent = 'checkpoint ' + n;
+      await wait(800);
+    }
+  }
+
+  if (!reduce) {
+    mongoLoop();
+  }
+
+  if (reduce) {
+    document.querySelectorAll('svg').forEach(function (svg) { if (svg.pauseAnimations) svg.pauseAnimations(); });
+  } else {
+    wordLoop();
   }
 
   if (!reduce) {
