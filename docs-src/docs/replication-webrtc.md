@@ -219,10 +219,11 @@ const replicationPool = await replicateWebRTC(
         collection: myRxCollection,
         topic: 'my-users-pool',
         connectionHandlerCreator: getConnectionHandlerNostr({
-            // All peers of a topic must share at least one relay.
+            // Public relays, all peers of a topic must share at least one.
             relays: [
-                'wss://relay.example.com',
-                'wss://relay2.example.com'
+                'wss://nos.lol',
+                'wss://relay.primal.net',
+                'wss://nostr.mom'
             ],
             /**
              * (optional) Nostr secret key (32 bytes) of this peer.
@@ -254,7 +255,7 @@ How the signaling works:
 
 The same secret key can be used on multiple devices or browser tabs at the same time, because each connection handler adds its own random session id to the peer id.
 
-Public relays are run by third parties and can be offline or rate limit your app at any time. For production, run your own relay or pick relays that you trust, and pass more than one relay url.
+The public relays `wss://nos.lol`, `wss://relay.primal.net`, and `wss://nostr.mom` from the example above were tested with this handler on September 30, 2026. Public relays are run by third parties and can be offline, change their policies, or rate limit your app at any time. For production, run your own relay or pick relays that you trust, and pass more than one relay url.
 
 
 ## Peer Validation
@@ -297,10 +298,13 @@ const replicationPool = await replicateWebRTC(
         collection: myRxCollection,
         topic: 'my-users-pool',
         connectionHandlerCreator: getConnectionHandlerNostr({
-            relays: ['wss://relay.example.com'],
+            relays: ['wss://nos.lol', 'wss://relay.primal.net'],
             secretKey: mySecretKey
         }),
-        isPeerValid: (peer) => allowedPublicKeys.includes(getNostrPublicKeyOfPeer(peer)),
+        isPeerValid: (peer) => {
+            const publicKey = getNostrPublicKeyOfPeer(peer);
+            return allowedPublicKeys.includes(publicKey);
+        },
         pull: {},
         push: {}
     }

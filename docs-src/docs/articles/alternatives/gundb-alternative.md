@@ -154,7 +154,8 @@ const replicationPool = await replicateWebRTC({
   collection: db.notes,
   topic: 'notes-room-42',
   connectionHandlerCreator: getConnectionHandlerNostr({
-    relays: ['wss://relay.example.com', 'wss://relay2.example.com']
+    // public Nostr relays
+    relays: ['wss://nos.lol', 'wss://relay.primal.net', 'wss://nostr.mom']
   }),
   pull: {},
   push: {}
