@@ -916,22 +916,6 @@ p { margin: 0; max-width: 62ch; }
 /* Color sweep */
 .v-sweep .letter { fill: url(#sweep-grad); }
 
-/* MongoDB sync */
-.v-mongo .device { fill: var(--bg); stroke: var(--line); stroke-width: 1.2; }
-.v-mongo .dname { fill: var(--fg); font-size: 11px; font-weight: 700; }
-.v-mongo .dsub { fill: var(--muted); font-size: 9px; }
-.v-mongo .mlane { fill: none; stroke: var(--muted); stroke-width: 1; stroke-dasharray: 3 4; opacity: .5; }
-.v-mongo .cyl { fill: var(--bg); stroke: var(--white); stroke-width: 2; }
-.v-mongo .stripe { fill: none; stroke: var(--white); stroke-width: 1.4; animation: stripe .8s 2.4s infinite; }
-.v-mongo .stripe.s2 { animation-delay: 2.5s; }
-.v-mongo .mname { fill: var(--fg); font-size: 14px; font-weight: 800; }
-.v-mongo .msub { fill: var(--muted); font-size: 9px; }
-.v-mongo .legend { fill: var(--muted); font-size: 9px; }
-.v-mongo .c1 .b1 { animation: flash 2.4s 5.2s infinite; }
-.v-mongo .c2 .b2 { animation: flash 2.4s 3.6s infinite; }
-.v-mongo .c3 .b3 { animation: flash 2.4s 4.4s infinite; }
-@keyframes stripe { 0% { stroke: var(--pink); } 50%, 100% { stroke: var(--white); } }
-
 /* Tokens */
 .tokens {
   display: grid;
@@ -968,7 +952,7 @@ footer { font-size: 13px; color: var(--muted); display: flex; flex-direction: co
     <div class="intro">
       <p class="eyebrow">Motion study for the RxDB brand mark</p>
       <h1>RxDB Logo <b>Motion</b></h1>
-      <p class="muted">Forty-two animated versions of the RxDB logo and wordmark. Each one is built from the five shapes of the original mark (frame, three layers, two corner pieces) and ties the motion to something the database does.</p>
+      <p class="muted">Forty-one animated versions of the RxDB logo and wordmark. Each one is built from the five shapes of the original mark (frame, three layers, two corner pieces) and ties the motion to something the database does.</p>
     </div>
     <button class="btn" id="pause-all" type="button" aria-pressed="false">Pause all</button>
   </header>
@@ -1127,49 +1111,6 @@ footer { font-size: 13px; color: var(--muted); display: flex; flex-direction: co
           <p>The three layer colors sweep through the letters from left to right. The icon stays still, so the brand mark reads first.</p>
         </div>
       </article>
-    </div>
-  </section>
-
-  <!-- MongoDB sync -->
-  <section aria-labelledby="mongo-title">
-    <div class="section-head">
-      <p class="eyebrow">Sync</p>
-      <h2 id="mongo-title">Sync with <b>MongoDB</b></h2>
-      <p class="muted">Three clients each run RxDB on a different storage. Local writes are pushed to a MongoDB server, and MongoDB Change Streams pull every change back out to the other clients. Each client's layer lights up when a change arrives.</p>
-    </div>
-    <div class="card">
-      <div class="stage wordmark-stage v-mongo">
-        <svg class="logo" viewBox="0 0 640 262" role="img" aria-label="Three RxDB clients syncing documents with a MongoDB server in both directions">
-            <path id="mp1" class="mlane" d="M172 45 C 300 45, 360 125, 482 125"/>
-            <path id="mp2" class="mlane" d="M172 125 C 300 125, 360 125, 482 125"/>
-            <path id="mp3" class="mlane" d="M172 205 C 300 205, 360 125, 482 125"/>
-            <g class="c1"><rect class="device" x="20" y="14" width="150" height="62" rx="8"/><svg x="30" y="21" width="35.4" height="48" viewBox="0 0 103.33 140" data-logo></svg><text class="dname" x="76" y="42">Browser</text><text class="dsub" x="76" y="58">IndexedDB storage</text></g>
-            <g class="c2"><rect class="device" x="20" y="94" width="150" height="62" rx="8"/><svg x="30" y="101" width="35.4" height="48" viewBox="0 0 103.33 140" data-logo></svg><text class="dname" x="76" y="122">Mobile</text><text class="dsub" x="76" y="138">SQLite storage</text></g>
-            <g class="c3"><rect class="device" x="20" y="174" width="150" height="62" rx="8"/><svg x="30" y="181" width="35.4" height="48" viewBox="0 0 103.33 140" data-logo></svg><text class="dname" x="76" y="202">Desktop</text><text class="dsub" x="76" y="218">Filesystem</text></g>
-            <rect x="-6" y="-3.5" width="12" height="7" rx="2" fill="#ED168F" opacity="0"><animateMotion dur="2.4s" begin="0s" repeatCount="indefinite" keyPoints="0;1" keyTimes="0;1" calcMode="linear"><mpath href="#mp1"/></animateMotion><animate attributeName="opacity" values="0;1;1;0" keyTimes="0;.08;.9;1" dur="2.4s" begin="0s" repeatCount="indefinite"/></rect>
-            <rect x="-6" y="-3.5" width="12" height="7" rx="2" fill="#B2218B" opacity="0"><animateMotion dur="2.4s" begin="0.8s" repeatCount="indefinite" keyPoints="0;1" keyTimes="0;1" calcMode="linear"><mpath href="#mp2"/></animateMotion><animate attributeName="opacity" values="0;1;1;0" keyTimes="0;.08;.9;1" dur="2.4s" begin="0.8s" repeatCount="indefinite"/></rect>
-            <rect x="-6" y="-3.5" width="12" height="7" rx="2" fill="#752A8A" opacity="0"><animateMotion dur="2.4s" begin="1.6s" repeatCount="indefinite" keyPoints="0;1" keyTimes="0;1" calcMode="linear"><mpath href="#mp3"/></animateMotion><animate attributeName="opacity" values="0;1;1;0" keyTimes="0;.08;.9;1" dur="2.4s" begin="1.6s" repeatCount="indefinite"/></rect>
-            <rect x="-6" y="-3.5" width="12" height="7" rx="2" fill="#FFFFFF" opacity="0"><animateMotion dur="2.4s" begin="1.2s" repeatCount="indefinite" keyPoints="1;0" keyTimes="0;1" calcMode="linear"><mpath href="#mp2"/></animateMotion><animate attributeName="opacity" values="0;1;1;0" keyTimes="0;.08;.9;1" dur="2.4s" begin="1.2s" repeatCount="indefinite"/></rect>
-            <rect x="-6" y="-3.5" width="12" height="7" rx="2" fill="#FFFFFF" opacity="0"><animateMotion dur="2.4s" begin="2s" repeatCount="indefinite" keyPoints="1;0" keyTimes="0;1" calcMode="linear"><mpath href="#mp3"/></animateMotion><animate attributeName="opacity" values="0;1;1;0" keyTimes="0;.08;.9;1" dur="2.4s" begin="2s" repeatCount="indefinite"/></rect>
-            <rect x="-6" y="-3.5" width="12" height="7" rx="2" fill="#FFFFFF" opacity="0"><animateMotion dur="2.4s" begin="2.8s" repeatCount="indefinite" keyPoints="1;0" keyTimes="0;1" calcMode="linear"><mpath href="#mp1"/></animateMotion><animate attributeName="opacity" values="0;1;1;0" keyTimes="0;.08;.9;1" dur="2.4s" begin="2.8s" repeatCount="indefinite"/></rect>
-            <path class="cyl" d="M483 55 v140 a62 16 0 0 0 124 0 v-140"/>
-            <ellipse class="cyl" cx="545" cy="55" rx="62" ry="16"/>
-            <path class="stripe" d="M483 92 a62 16 0 0 0 124 0"/>
-            <path class="stripe s2" d="M483 158 a62 16 0 0 0 124 0"/>
-            <text class="mname" x="545" y="130" text-anchor="middle">MongoDB</text>
-            <text class="msub" x="545" y="145" text-anchor="middle">change streams</text>
-            <text class="msub" x="545" y="186" text-anchor="middle" id="mongo-cp">checkpoint 1024</text>
-            <rect x="248" y="248" width="10" height="6" rx="1.5" fill="#ED168F"/>
-            <text class="legend" x="263" y="254">push (local write)</text>
-            <rect x="370" y="248" width="10" height="6" rx="1.5" fill="#FFFFFF"/>
-            <text class="legend" x="385" y="254">pull (change stream)</text>
-        </svg>
-        <span class="tag">replicateMongoDB()</span>
-      </div>
-      <div class="swarm-meta">
-        <span class="spec">2.4s per trip · SMIL animateMotion along bezier lanes</span>
-        <a class="doclink" href="https://rxdb.info/replication-mongodb.html" target="_blank" rel="noopener">Docs: MongoDB Replication</a>
-      </div>
     </div>
   </section>
 
@@ -2507,22 +2448,6 @@ footer { font-size: 13px; color: var(--muted); display: flex; flex-direction: co
       await out.finished.catch(function () {});
       await wait(300);
     }
-  }
-
-  /* MongoDB checkpoint counter */
-  async function mongoLoop() {
-    var cp = document.getElementById('mongo-cp');
-    var n = 1024;
-    await wait(2400);
-    for (;;) {
-      n++;
-      cp.textContent = 'checkpoint ' + n;
-      await wait(800);
-    }
-  }
-
-  if (!reduce) {
-    mongoLoop();
   }
 
   if (reduce) {
