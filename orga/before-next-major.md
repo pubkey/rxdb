@@ -2,6 +2,10 @@
 
 This list contains things that have to be done but will create breaking changes.
 
+## sortObject() performance improvements
+
+https://github.com/pubkey/rxdb/pull/9153
+
 ## Add end-to-end TypeScript typings for mango queries
 
 https://github.com/pubkey/rxdb/pull/8941
