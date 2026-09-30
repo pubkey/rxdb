@@ -8,7 +8,7 @@ image: /headers/replication-mongodb.jpg
 import {Tabs} from '@site/src/components/tabs';
 import {Steps} from '@site/src/components/steps';
 import {VideoBox} from '@site/src/components/video-box';
-import {RxdbMongoDiagramPlain} from '@site/src/components/mongodb-sync';
+import {SyncDiagram} from '@site/src/components/sync-diagram';
 import {HeadlineWithIcon} from '@site/src/components/headline-with-icon';
 
 # <HeadlineWithIcon h1 icon={<img src="/files/icons/mongodb-icon.svg" alt="MongoDB" />} subtitle="Real-Time, Offline-First Sync">MongoDB Replication Plugin</HeadlineWithIcon>
@@ -37,7 +37,7 @@ For the client side, RxServer exposes a [replication endpoint](./rx-server.md#re
 
 The following diagram illustrates the flow of updates between clients, RxServer, and MongoDB in a live synchronization setup:
 
-<RxdbMongoDiagramPlain dbIcon="/files/icons/mongodb-icon.svg" dbLabel="MongoDB" />
+<SyncDiagram backend={{ label: "MongoDB", icon: "/files/icons/mongodb-icon.svg" }} clientConnectionLabel="HTTP" backendConnectionLabel="Change Stream" simulateOffline />
 <br />
 <br />
 
