@@ -2200,4 +2200,85 @@ describe('rx-query.test.ts', () => {
             c.database.close();
         });
     });
+    describe('sort by nested field', () => {
+        it('should not throw when a parent object of the sort field is null', async () => {
+            type DocType = {
+                id: string;
+                address: {
+                    city: string;
+                } | null;
+            };
+            const schema: RxJsonSchema<DocType> = {
+                version: 0,
+                primaryKey: 'id',
+                type: 'object',
+                properties: {
+                    id: {
+                        type: 'string',
+                        maxLength: 100
+                    },
+                    address: {
+                        type: ['object', 'null'],
+                        properties: {
+                            city: {
+                                type: 'string'
+                            }
+                        },
+                        required: ['city']
+                    }
+                },
+                required: ['id', 'address']
+            };
+            const db = await createRxDatabase({
+                name: randomToken(10),
+                storage: config.storage.getStorage()
+            });
+            const collections = await db.addCollections({
+                docs: {
+                    schema
+                }
+            });
+            const collection = collections.docs;
+            await collection.bulkInsert([
+                { id: 'a', address: { city: 'Tokyo' } },
+                { id: 'b', address: null },
+                { id: 'c', address: { city: 'Berlin' } }
+            ]);
+
+            const query = collection.find({
+                sort: [{ 'address.city': 'asc' }]
+            });
+            const results = await query.exec();
+            assert.deepStrictEqual(
+                results.map(d => d.id).sort(),
+                ['a', 'b', 'c']
+            );
+            assert.deepStrictEqual(
+                results.filter(d => d.address !== null).map(d => d.id),
+                ['c', 'a']
+            );
+
+            /**
+             * Inserting a document with a null parent object
+             * while the query is subscribed must also work.
+             */
+            const emitted: string[][] = [];
+            const sub = query.$.subscribe(docs => emitted.push(docs.map(d => d.id)));
+            await waitUntil(() => emitted.length === 1);
+            await collection.insert({ id: 'd', address: null });
+            await collection.insert({ id: 'e', address: { city: 'Amsterdam' } });
+            await waitUntil(() => {
+                const last = emitted[emitted.length - 1];
+                return last.length === 5;
+            });
+            const lastResult = await query.exec();
+            assert.deepStrictEqual(
+                lastResult.filter(d => d.address !== null).map(d => d.id),
+                ['e', 'c', 'a']
+            );
+
+            sub.unsubscribe();
+            await db.close();
+        });
+    });
 });

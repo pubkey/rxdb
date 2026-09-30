@@ -65,7 +65,7 @@ export function objectPathMonad<T, R = any>(objectPath: string): ObjectPathMonad
         const key1 = split[1];
         fn = (obj: T) => {
             const v = (obj as any)[key0];
-            return v === undefined ? v : v[key1];
+            return v === undefined || v === null ? undefined : v[key1];
         };
     } else if (splitLength === 3) {
         /**
@@ -77,9 +77,9 @@ export function objectPathMonad<T, R = any>(objectPath: string): ObjectPathMonad
         const key2 = split[2];
         fn = (obj: T) => {
             const v = (obj as any)[key0];
-            if (v === undefined) return v;
+            if (v === undefined || v === null) return undefined;
             const v2 = v[key1];
-            return v2 === undefined ? v2 : v2[key2];
+            return v2 === undefined || v2 === null ? undefined : v2[key2];
         };
     } else if (splitLength === 4) {
         /**
@@ -92,11 +92,11 @@ export function objectPathMonad<T, R = any>(objectPath: string): ObjectPathMonad
         const key3 = split[3];
         fn = (obj: T) => {
             const v = (obj as any)[key0];
-            if (v === undefined) return v;
+            if (v === undefined || v === null) return undefined;
             const v2 = v[key1];
-            if (v2 === undefined) return v2;
+            if (v2 === undefined || v2 === null) return undefined;
             const v3 = v2[key2];
-            return v3 === undefined ? v3 : v3[key3];
+            return v3 === undefined || v3 === null ? undefined : v3[key3];
         };
     } else if (splitLength === 5) {
         /**
@@ -110,22 +110,22 @@ export function objectPathMonad<T, R = any>(objectPath: string): ObjectPathMonad
         const key4 = split[4];
         fn = (obj: T) => {
             const v = (obj as any)[key0];
-            if (v === undefined) return v;
+            if (v === undefined || v === null) return undefined;
             const v2 = v[key1];
-            if (v2 === undefined) return v2;
+            if (v2 === undefined || v2 === null) return undefined;
             const v3 = v2[key2];
-            if (v3 === undefined) return v3;
+            if (v3 === undefined || v3 === null) return undefined;
             const v4 = v3[key3];
-            return v4 === undefined ? v4 : v4[key4];
+            return v4 === undefined || v4 === null ? undefined : v4[key4];
         };
     } else {
         fn = (obj: T) => {
             let currentVal: any = obj;
             for (let i = 0; i < splitLength; ++i) {
-                currentVal = currentVal[split[i]];
-                if (currentVal === undefined) {
-                    return currentVal;
+                if (currentVal === undefined || currentVal === null) {
+                    return undefined;
                 }
+                currentVal = currentVal[split[i]];
             }
             return currentVal;
         };
