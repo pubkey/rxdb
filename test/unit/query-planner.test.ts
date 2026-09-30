@@ -853,6 +853,77 @@ describe('query-planner.test.js', () => {
             );
             assert.strictEqual(queryPlan.sortSatisfiedByIndex, false);
         });
+        it('should treat string and number fields with $eq as sort-irrelevant', () => {
+            const schema = getHumanSchemaWithIndexes([
+                ['firstName', 'age'],
+                ['age', 'lastName']
+            ]);
+            const stringEqQuery = normalizeMangoQuery<RxDocumentData<HumanDocumentType>>(
+                schema,
+                {
+                    selector: {
+                        firstName: 'alice',
+                        _deleted: false
+                    },
+                    sort: [
+                        { age: 'asc' }
+                    ]
+                }
+            );
+            const stringEqPlan = getQueryPlan(schema, stringEqQuery);
+            assert.deepStrictEqual(stringEqPlan.index, ['_deleted', 'firstName', 'age', 'passportId']);
+            assert.strictEqual(stringEqPlan.sortSatisfiedByIndex, true);
+
+            const numberEqQuery = normalizeMangoQuery<RxDocumentData<HumanDocumentType>>(
+                schema,
+                {
+                    selector: {
+                        age: 20,
+                        _deleted: false
+                    },
+                    sort: [
+                        { lastName: 'asc' }
+                    ]
+                }
+            );
+            const numberEqPlan = getQueryPlan(schema, numberEqQuery);
+            assert.deepStrictEqual(numberEqPlan.index, ['_deleted', 'age', 'lastName', 'passportId']);
+            assert.strictEqual(numberEqPlan.sortSatisfiedByIndex, true);
+        });
+        it('should return correctly sorted results when a $eq field makes the index order match the sort', async () => {
+            const db = await createRxDatabase({
+                name: randomToken(10),
+                storage: config.storage.getStorage()
+            });
+            const schema = clone(schemas.human);
+            schema.indexes = [['firstName', 'age']];
+            const collections = await db.addCollections({
+                humans: {
+                    schema
+                }
+            });
+            const collection = collections.humans;
+            await collection.bulkInsert([
+                { passportId: 'a', firstName: 'alice', lastName: 'x', age: 30 },
+                { passportId: 'b', firstName: 'bob', lastName: 'x', age: 10 },
+                { passportId: 'c', firstName: 'alice', lastName: 'x', age: 10 },
+                { passportId: 'd', firstName: 'alice', lastName: 'x', age: 20 },
+                { passportId: 'e', firstName: 'carol', lastName: 'x', age: 5 }
+            ]);
+            const result = await collection.find({
+                selector: {
+                    firstName: 'alice'
+                },
+                sort: [
+                    { age: 'asc' }
+                ]
+            }).exec();
+            assert.deepStrictEqual(
+                result.map(doc => doc.passportId),
+                ['c', 'd', 'a']
+            );
+            await db.close();
+        });
         it('rateQueryPlan should rate endKeys constraints ($lte) higher than no constraint', () => {
             const schema = getHumanSchemaWithIndexes([['age']]);
 

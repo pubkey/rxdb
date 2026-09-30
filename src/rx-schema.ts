@@ -31,6 +31,14 @@ import {
 } from './rx-schema-helper.ts';
 import { overwritable } from './overwritable.ts';
 
+/**
+ * @performance Hashing is expensive and the same schema is often
+ * hashed many times, for example when the same schema is used in multiple
+ * collections or when a database is closed and created again.
+ */
+const SCHEMA_HASH_CACHE_MAX_SIZE = 100;
+const SCHEMA_HASH_CACHE = new WeakMap<HashFunction, Map<string, Promise<string>>>();
+
 export class RxSchema<RxDocType = any> {
     public indexes: MaybeReadonly<string[]>[];
     public readonly primaryPath: StringKeys<RxDocumentData<RxDocType>>;
@@ -103,10 +111,25 @@ export class RxSchema<RxDocType = any> {
      * @overrides itself on the first call
      */
     public get hash(): Promise<string> {
+        const hashFunction = this.hashFunction;
+        let hashByInput = SCHEMA_HASH_CACHE.get(hashFunction);
+        if (!hashByInput) {
+            hashByInput = new Map();
+            SCHEMA_HASH_CACHE.set(hashFunction, hashByInput);
+        }
+        const input = JSON.stringify(this.jsonSchema);
+        let hash = hashByInput.get(input);
+        if (!hash) {
+            hash = hashFunction(input);
+            if (hashByInput.size >= SCHEMA_HASH_CACHE_MAX_SIZE) {
+                hashByInput.delete(hashByInput.keys().next().value as string);
+            }
+            hashByInput.set(input, hash);
+        }
         return overwriteGetterForCaching(
             this,
             'hash',
-            this.hashFunction(JSON.stringify(this.jsonSchema))
+            hash
         );
     }
 

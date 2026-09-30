@@ -434,13 +434,16 @@ export class RxQueryBase<
          * to avoid the expensive normalizeMangoQuery + sortObject + JSON.stringify.
          * The selector structure is guaranteed by findByIds() which always creates
          * { [primaryPath]: { $in: ids } }
+         *
+         * @performance The ids are not sorted because sorting
+         * is expensive for many ids. Also the order of the ids
+         * defines the iteration order of the result Map, so queries
+         * with a different id order must not share the same cache key.
          */
         let value: string;
         if (this.op === 'findByIds') {
             const ids: string[] = (this.mangoQuery.selector as any)[this.collection.schema.primaryPath].$in;
-            // slice() is needed because sort() mutates the array in-place
-            const sortedIds = ids.slice().sort();
-            value = '|findByIds|' + JSON.stringify(sortedIds);
+            value = '|findByIds|' + JSON.stringify(ids);
         } else {
             const stringObj = sortObject({
                 op: this.op,

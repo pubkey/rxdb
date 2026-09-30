@@ -138,6 +138,16 @@ describe('doc-cache.test.ts', () => {
                 const result2 = cache.getCachedRxDocument(docData);
                 assert.strictEqual(result1, result2);
             });
+            it('should differentiate by lwt even with the same revision', () => {
+                const { cache } = createDocumentCache();
+                const docData1 = createFakeDocData('doc1', EXAMPLE_REVISION_1, 100);
+                const docData2 = createFakeDocData('doc1', EXAMPLE_REVISION_1, 200);
+                const result1 = cache.getCachedRxDocument(docData1);
+                const result2 = cache.getCachedRxDocument(docData2);
+                assert.notStrictEqual(result1, result2);
+                assert.strictEqual((result2 as any)._data._meta.lwt, 200);
+                assert.strictEqual(cache.getCachedRxDocument(docData2), result2);
+            });
         });
 
         describe('.getLatestDocumentData()', () => {

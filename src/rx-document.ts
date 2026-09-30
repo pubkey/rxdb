@@ -18,7 +18,6 @@ import {
     PROMISE_RESOLVE_NULL,
     RXJS_SHARE_REPLAY_DEFAULTS,
     getProperty,
-    getFromMapOrCreate,
     ensureNotFalsy
 } from './plugins/utils/index.ts';
 import {
@@ -520,76 +519,102 @@ function getDocumentProperty(doc: RxDocument, objPath: string): any | null {
      * @performance Lazy-initialize _propertyCache on first access
      * to avoid creating a Map for documents that never use it.
      */
-    if (!doc._propertyCache) {
-        doc._propertyCache = new Map<string, any>();
+    let propertyCache = doc._propertyCache;
+    if (!propertyCache) {
+        propertyCache = new Map<string, any>();
+        doc._propertyCache = propertyCache;
     }
-    return getFromMapOrCreate(
-        doc._propertyCache,
-        objPath,
-        () => {
-            const valueObj = getProperty(doc._data, objPath);
+    let ret = propertyCache.get(objPath);
+    if (ret === undefined) {
+        ret = createDocumentPropertyValue(doc, objPath, getProperty(doc._data, objPath));
+        propertyCache.set(objPath, ret);
+    }
+    return ret;
+}
 
-            // direct return if array or non-object
-            if (
-                typeof valueObj !== 'object' ||
-                valueObj === null ||
-                Array.isArray(valueObj)
-            ) {
-                return overwritable.deepFreezeWhenDevMode(valueObj);
-            }
-            const proxy = new Proxy(
-                /**
-                 * In dev-mode, the _data is deep-frozen
-                 * so we have to flat clone here so that
-                 * the proxy can work.
-                 */
-                flatClone(valueObj),
-                {
-                    /**
-                     * @performance is really important here
-                     * because people access nested properties very often
-                     * and might not be aware that this is internally using a Proxy
-                     */
-                    get(target, property: any) {
-                        if (typeof property !== 'string') {
-                            return target[property];
-                        }
+/**
+ * Same as getDocumentProperty() but used when the value
+ * at the objPath is already known.
+ * @performance This avoids walking the whole objPath
+ * from the document root again on each nested property access.
+ */
+function getNestedDocumentProperty(doc: RxDocument, objPath: string, valueObj: any): any | null {
+    const propertyCache = doc._propertyCache as Map<string, any>;
+    let ret = propertyCache.get(objPath);
+    if (ret === undefined) {
+        ret = createDocumentPropertyValue(doc, objPath, valueObj);
+        propertyCache.set(objPath, ret);
+    }
+    return ret;
+}
+
+function createDocumentPropertyValue(doc: RxDocument, objPath: string, valueObj: any): any {
+    // direct return if array or non-object
+    if (
+        typeof valueObj !== 'object' ||
+        valueObj === null ||
+        Array.isArray(valueObj)
+    ) {
+        return overwritable.deepFreezeWhenDevMode(valueObj);
+    }
+    return new Proxy(
+        /**
+         * In dev-mode, the _data is deep-frozen
+         * so we have to flat clone here so that
+         * the proxy can work.
+         */
+        flatClone(valueObj),
+        {
+            /**
+             * @performance is really important here
+             * because people access nested properties very often
+             * and might not be aware that this is internally using a Proxy
+             */
+            get(target, property: any) {
+                if (typeof property !== 'string') {
+                    return target[property];
+                }
 
 
-                        const lastChar = property.charAt(property.length - 1);
-                        if (lastChar === '$') {
-                            if (property.endsWith('$$')) {
-                                const key = property.slice(0, -2);
-                                return doc.get$$(trimDots(objPath + '.' + key));
-                            } else {
-                                const key = property.slice(0, -1);
-                                return doc.get$(trimDots(objPath + '.' + key));
-                            }
-                        } else if (lastChar === '_') {
-                            const key = property.slice(0, -1);
-                            return doc.populate(trimDots(objPath + '.' + key));
-                        } else {
-
-                            /**
-                             * Performance shortcut
-                             * In most cases access to nested properties
-                             * will only access simple values which can be directly returned
-                             * without creating a new Proxy or utilizing the cache.
-                             */
-                            const plainValue = target[property];
-                            if (
-                                typeof plainValue === 'number' ||
-                                typeof plainValue === 'string' ||
-                                typeof plainValue === 'boolean'
-                            ) {
-                                return plainValue;
-                            }
-
-                            return getDocumentProperty(doc, trimDots(objPath + '.' + property));
-                        }
+                const lastChar = property.charAt(property.length - 1);
+                if (lastChar === '$') {
+                    if (property.endsWith('$$')) {
+                        const key = property.slice(0, -2);
+                        return doc.get$$(trimDots(objPath + '.' + key));
+                    } else {
+                        const key = property.slice(0, -1);
+                        return doc.get$(trimDots(objPath + '.' + key));
                     }
-                });
-            return proxy;
-        }
-    );
-};
+                } else if (lastChar === '_') {
+                    const key = property.slice(0, -1);
+                    return doc.populate(trimDots(objPath + '.' + key));
+                } else {
+
+                    /**
+                     * Performance shortcut
+                     * In most cases access to nested properties
+                     * will only access simple values which can be directly returned
+                     * without creating a new Proxy or utilizing the cache.
+                     */
+                    const plainValue = target[property];
+                    if (
+                        typeof plainValue === 'number' ||
+                        typeof plainValue === 'string' ||
+                        typeof plainValue === 'boolean'
+                    ) {
+                        return plainValue;
+                    }
+
+                    const nestedPath = trimDots(objPath + '.' + property);
+                    if (
+                        typeof plainValue === 'object' &&
+                        property !== '__proto__'
+                    ) {
+                        return getNestedDocumentProperty(doc, nestedPath, plainValue);
+                    }
+                    return getDocumentProperty(doc, nestedPath);
+                }
+            }
+        });
+}
+
