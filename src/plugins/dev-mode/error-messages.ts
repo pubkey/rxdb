@@ -852,6 +852,12 @@ export const ERROR_MESSAGES = {
         fix: 'Check the network connection and WebRTC configuration.',
         docs: 'https://rxdb.info/replication-webrtc.html?console=errors&code=RC_WEBRTC_PEER'
     },
+    RC_WEBRTC_NOSTR: {
+        message: 'getConnectionHandlerNostr() was called with invalid options',
+        cause: 'No relay url was given or the eventKind is not in the ephemeral range of 20000-29999.',
+        fix: 'Pass at least one relay url and use an eventKind between 20000 and 29999.',
+        docs: 'https://rxdb.info/replication-webrtc.html?console=errors&code=RC_WEBRTC_NOSTR'
+    },
     RC_COUCHDB_1: {
         message: 'replicateCouchDB() url must end with a slash like \'https://example.com/mydatabase/\'',
         cause: 'The CouchDB URL is missing a trailing slash.',

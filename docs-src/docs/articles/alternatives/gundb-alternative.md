@@ -1,7 +1,7 @@
 ---
 title: RxDB as a GUN (gundb) Alternative for JavaScript Apps
 slug: gundb-alternative.html
-description: Compare RxDB and GUN (gundb) for JavaScript apps. Get typed schemas, MongoDB-style queries, encryption, and P2P replication via WebRTC and Nostr.
+description: Compare RxDB and GUN (gundb) for JavaScript apps. Get typed schemas, MongoDB-style queries, encryption, and P2P WebRTC replication with Nostr signaling.
 image: /headers/gundb-alternative.jpg
 ---
 
@@ -65,7 +65,7 @@ RxDB targets the same set of use cases (offline reads, real time updates, peer-t
 - **MongoDB-style queries**: Use `$gt`, `$in`, `$regex`, sorting, and compound indexes through the [RxQuery](../../rx-query.md) API. Queries return observables that re-emit when matching data changes.
 - **CRDT plugin**: For collaborative apps that need formal merge semantics, the [CRDT plugin](../../crdt.md) provides documented operations on counters, sets, and lists.
 - **Encryption**: The [encryption plugin](../../encryption.md) encrypts selected fields at rest using AES.
-- **WebRTC P2P replication**: The [WebRTC replication plugin](../../replication-webrtc.md) syncs collections directly between browser peers without a central data server.
+- **WebRTC P2P replication**: The [WebRTC replication plugin](../../replication-webrtc.md) syncs collections directly between browser peers without a central data server. Peers find each other over a signaling server or over [Nostr relays](../../replication-webrtc.md#signaling-over-nostr-relays).
 - **Conflict handling**: Custom conflict resolution is configured per collection through the [revisions and conflict handler API](../../transactions-conflicts-revisions.md).
 
 ## Code Sample: Schema and Reactive Query
@@ -121,16 +121,15 @@ The [WebRTC replication plugin](../../replication-webrtc.md) gives you the same 
 ```ts
 import {
   replicateWebRTC,
-  getConnectionHandlerSimplePeer,
-  createSimplePeerWrtc
+  getConnectionHandlerSimplePeer
 } from 'rxdb/plugins/replication-webrtc';
 
 const replicationPool = await replicateWebRTC({
   collection: db.notes,
   topic: 'notes-room-42', // peers sharing a topic sync with each other
   connectionHandlerCreator: getConnectionHandlerSimplePeer({
-    signalingServerUrl: 'wss://signaling.rxdb.info/',
-    wrtc: createSimplePeerWrtc(),
+    // your own signaling server, see startSignalingServerSimplePeer()
+    signalingServerUrl: 'wss://signaling.example.com/'
   }),
   pull: {},
   push: {}
@@ -141,19 +140,39 @@ replicationPool.error$.subscribe(err => {
 });
 ```
 
-Peers join a topic, the signaling server pairs them, and from there the data exchange runs directly between browsers. For a transport that does not require running your own signaling server, the Nostr replication plugin routes updates through public Nostr relays.
+Peers join a topic, the [signaling server](../../replication-webrtc.md#signaling-server) pairs them, and from there the data exchange runs directly between browsers.
+
+If you do not want to run a signaling server, the peers can find each other over [Nostr relays](../../replication-webrtc.md#signaling-over-nostr-relays) instead. Only the WebRTC offers, answers, and ICE candidates go over the relays, as signed and encrypted ephemeral events. The documents themselves still go directly from peer to peer.
+
+```ts
+import {
+  replicateWebRTC,
+  getConnectionHandlerNostr
+} from 'rxdb/plugins/replication-webrtc';
+
+const replicationPool = await replicateWebRTC({
+  collection: db.notes,
+  topic: 'notes-room-42',
+  connectionHandlerCreator: getConnectionHandlerNostr({
+    // public Nostr relays
+    relays: ['wss://nos.lol', 'wss://relay.primal.net', 'wss://nostr.mom']
+  }),
+  pull: {},
+  push: {}
+});
+```
 
 ## FAQ
 
 <Faq>
 <FaqItem question="Does RxDB support P2P like GUN?">
 
-Yes. The [WebRTC replication plugin](../../replication-webrtc.md) syncs collections directly between browser peers. Both run without a central data server, and both reuse the same RxDB sync protocol used for HTTP and GraphQL backends.
+Yes. The [WebRTC replication plugin](../../replication-webrtc.md) syncs collections directly between browser peers. It runs without a central data server and reuses the same RxDB sync protocol that is used for HTTP and GraphQL backends. The peers find each other over a signaling server or over public or self-hosted Nostr relays.
 
 </FaqItem>
 <FaqItem question="Can RxDB run without a central server?">
 
-Yes. RxDB stores data locally in IndexedDB, OPFS, SQLite, or memory, and any [replication](../../replication.md) is optional. With the WebRTC or Nostr plugins, multiple clients can sync directly with each other and never contact a backend you operate.
+Yes. RxDB stores data locally in IndexedDB, OPFS, SQLite, or memory, and any [replication](../../replication.md) is optional. With the WebRTC plugin and signaling over public [Nostr relays](../../replication-webrtc.md#signaling-over-nostr-relays), multiple clients can sync directly with each other and never contact a backend you operate.
 
 </FaqItem>
 <FaqItem question="How do I migrate data from GUN?">
@@ -186,7 +205,7 @@ Each collection has a conflict handler. The default keeps the newer revision, an
 | Reactivity               | Subscriptions on nodes                   | RxJS observables on documents and queries                            |
 | Conflict resolution      | Built-in HAM merge, opaque rules         | Pluggable handler plus optional [CRDT plugin](../../crdt.md)            |
 | Encryption               | SEA module                               | [Encryption plugin](../../encryption.md), AES on selected fields        |
-| P2P transport            | Built-in WebSocket and WebRTC peers      | [WebRTC](../../replication-webrtc.md) plugins |
+| P2P transport            | Built-in WebSocket and WebRTC peers      | [WebRTC](../../replication-webrtc.md) plugin, signaling server or Nostr relays |
 | Server-based sync        | Optional relay peers                     | HTTP, GraphQL, CouchDB, Firestore, and custom backends               |
 | Storage backends         | IndexedDB, file, in-memory               | IndexedDB, OPFS, SQLite, Dexie, LocalStorage, Memory, and more       |
 | Tooling                  | Minimal, source-level debugging          | Devtools, logger, schema validator, migration runner                 |

@@ -409,3 +409,4 @@ export * from './webrtc-types.ts';
 // export * from './connection-handler-webtorrent';
 // export * from './connection-handler-p2pcf';
 export * from './connection-handler-simple-peer.ts';
+export * from './connection-handler-nostr.ts';
