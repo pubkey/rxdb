@@ -74,6 +74,14 @@ export default function FooterWrapper() {
         label: 'Jobs',
         href: '/jobs/',
       },
+      {
+        label: 'Library',
+        href: '/library/',
+      },
+      {
+        label: 'Logo',
+        href: '/logo/',
+      },
       // {
       //   label: 'About us',
       //   target: '_blank',

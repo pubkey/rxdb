@@ -10,6 +10,7 @@ import rehypePrettyCode from 'rehype-pretty-code';
 import type { Options as RehypePrettyCodeOptions, Theme } from 'rehype-pretty-code';
 import { createCssVariablesTheme, ThemeRegistrationAny } from 'shiki';
 import { EU_EEA_REGION_CODES } from './src/theme/eu-consent';
+import remarkArticleByline from './src/remark/article-byline';
 
 /**
  * The RxDB version from the root package.json, used for the
@@ -405,6 +406,7 @@ Topic-specific documentation files:
                     path: './docs',
                     showLastUpdateTime: true,
                     breadcrumbs: false,
+                    remarkPlugins: [remarkArticleByline],
                     // I disabled the editUrl because it just confuses users and does not look professional
                     // editUrl: 'https://github.com/pubkey/rxdb/tree/master/docs-src/',
                     beforeDefaultRehypePlugins: [
