@@ -774,6 +774,27 @@ p { margin: 0; max-width: 62ch; }
   56%, 100% { transform: translate(-54px, 10px); opacity: 0; }
 }
 
+/* F14b. Partial sync by chunk */
+.stage.v-chunks > svg { height: 90%; max-width: 94%; }
+.v-chunks .chunk .base { transform-box: fill-box; transform-origin: center; fill: #191C2C; stroke: var(--line); stroke-width: 1; transition: fill .35s, stroke .35s; }
+.v-chunks .chunk .px { fill: var(--line); transition: fill .35s; }
+.v-chunks .chunk .ck { fill: var(--purple); opacity: 0; transition: opacity .35s; }
+.v-chunks .chunk.seen .base { fill: #1F2234; }
+.v-chunks .chunk.seen .ck { opacity: 1; }
+.v-chunks .chunk.on .base { fill: #2B1A34; stroke: var(--pink); }
+.v-chunks .chunk.on .px { fill: var(--magenta); }
+.v-chunks .chunk.on .ck { opacity: 0; }
+.v-chunks .link { stroke: var(--pink); stroke-width: .8; stroke-dasharray: 2 3; opacity: 0; transition: opacity .35s; animation: chunk-flow .6s linear infinite; }
+.v-chunks .link.on { opacity: .5; }
+.v-chunks .pkt { transform-box: fill-box; }
+.v-chunks .clbl { fill: var(--muted); font-size: 8px; letter-spacing: .04em; }
+.v-chunks .clog { font-size: 8px; letter-spacing: .02em; }
+.v-chunks .clog .start { fill: var(--pink); }
+.v-chunks .clog .stop { fill: var(--muted); }
+.v-chunks .clog .resume { fill: var(--white); }
+.v-chunks .avatar .limb { transform-box: fill-box; transform-origin: 50% 0; }
+@keyframes chunk-flow { to { stroke-dashoffset: -5; } }
+
 /* F15. Worker */
 .v-worker .strip { fill: var(--bg); stroke: var(--line); }
 .v-worker .tick { fill: var(--magenta); }
@@ -952,7 +973,7 @@ footer { font-size: 13px; color: var(--muted); display: flex; flex-direction: co
     <div class="intro">
       <p class="eyebrow">Motion study for the RxDB brand mark</p>
       <h1>RxDB Logo <b>Motion</b></h1>
-      <p class="muted">Forty-one animated versions of the RxDB logo and wordmark. Each one is built from the five shapes of the original mark (frame, three layers, two corner pieces) and ties the motion to something the database does.</p>
+      <p class="muted">Forty-two animated versions of the RxDB logo and wordmark. Each one is built from the five shapes of the original mark (frame, three layers, two corner pieces) and ties the motion to something the database does.</p>
     </div>
     <button class="btn" id="pause-all" type="button" aria-pressed="false">Pause all</button>
   </header>
@@ -1369,7 +1390,7 @@ footer { font-size: 13px; color: var(--muted); display: flex; flex-direction: co
     <div class="section-head">
       <p class="eyebrow">Feature library</p>
       <h2 id="features-title">One Animation per <b>Core Feature</b></h2>
-      <p class="muted">Twenty-one loops, each tied to one feature from the RxDB docs. Every card links to the docs page it illustrates.</p>
+      <p class="muted">Twenty-two loops, each tied to one feature from the RxDB docs. Every card links to the docs page it illustrates.</p>
     </div>
     <div class="grid">
 
@@ -1640,6 +1661,40 @@ footer { font-size: 13px; color: var(--muted); display: flex; flex-direction: co
       </article>
 
       <article class="card">
+        <div class="stage v-chunks">
+          <svg class="logo" viewBox="0 0 300 200" role="img" aria-label="A blocky avatar walks across world chunks; chunks within its render distance start syncing to the RxDB logo and chunks it leaves stop syncing">
+            <text class="clbl" x="12" y="24">render distance 1 · <tspan id="chunk-count">0</tspan> active</text>
+            <g id="chunk-grid"></g>
+            <g id="chunk-links"></g>
+            <g id="chunk-pkts"></g>
+            <g class="avatar" id="chunk-avatar">
+              <g class="mover"><g class="sprite">
+                <rect class="limb leg-l" x="-4" y="-7" width="4" height="7" fill="#3B47A8"/>
+                <rect class="limb leg-r" x="0" y="-7" width="4" height="7" fill="#323C91"/>
+                <rect class="limb arm-l" x="-6" y="-15" width="2" height="7" fill="#C99A6E"/>
+                <rect class="limb arm-r" x="4" y="-15" width="2" height="7" fill="#B88A5F"/>
+                <rect x="-4" y="-15" width="8" height="8" fill="#3FB6C2"/>
+                <rect x="-4" y="-23" width="8" height="8" fill="#C99A6E"/>
+                <rect x="-4" y="-23" width="8" height="2.5" fill="#4B3220"/>
+                <rect x="-4" y="-21" width="1.2" height="2" fill="#4B3220"/>
+                <rect x="1.2" y="-19.5" width="1.6" height="1.4" fill="#FFFFFF"/>
+                <rect x="2.2" y="-19.5" width=".8" height="1.4" fill="#3B2A8A"/>
+              </g></g>
+            </g>
+            <svg id="chunk-logo" x="222" y="46" width="60" height="81" viewBox="0 0 103.33 140" data-logo></svg>
+            <text class="clbl" x="252" y="140" text-anchor="middle">db.voxels</text>
+            <g class="clog"><text id="chunk-log-1" x="12" y="172"></text><text id="chunk-log-2" x="12" y="184"></text></g>
+          </svg>
+          <span class="tag">partial sync · chunks</span>
+        </div>
+        <div class="meta">
+          <div class="row"><h3>Partial sync by chunk</h3><span class="spec">650ms per chunk · WAAPI</span></div>
+          <p>A player walks a voxel world. Every chunk in render distance runs its own replication into one collection. Chunks left behind are cancelled but keep their checkpoint, so a revisit only pulls what changed.</p>
+          <a class="doclink" href="https://rxdb.info/partial-sync.html" target="_blank" rel="noopener">Docs: Partial Sync</a>
+        </div>
+      </article>
+
+      <article class="card">
         <div class="stage v-worker">
           <svg class="logo" viewBox="0 0 260 150" role="img" aria-label="RxDB logo working inside a worker while the main thread keeps a steady frame rate">
             <defs><clipPath id="strip-clip"><rect x="10" y="8" width="240" height="14" rx="3"/></clipPath></defs>
@@ -1814,6 +1869,7 @@ footer { font-size: 13px; color: var(--muted); display: flex; flex-direction: co
           <li>Isometric cycle <span>6s</span></li>
           <li>Sleep after idle <span>8s</span></li>
           <li>Query switch <span>1.8s</span></li>
+          <li>Chunk step <span>650ms</span></li>
           <li>Wordmark reveal <span>6.4s</span></li>
         </ul>
       </div>
@@ -2311,6 +2367,156 @@ footer { font-size: 13px; color: var(--muted); display: flex; flex-direction: co
     }
   }
 
+  /* Partial sync by chunk */
+  var CHUNK = { cols: 6, rows: 4, size: 24, pitch: 27, x: 12, y: 34 };
+  var CHUNK_TARGET = { x: 224, y: 87 };
+  var CHUNK_PATH = [[0, 0], [1, 0], [2, 0], [2, 1], [3, 1], [4, 1], [5, 1], [5, 2], [5, 3], [4, 3], [3, 3], [2, 3], [1, 3], [1, 2], [0, 2], [0, 1]];
+  var CHUNK_COLORS = ['#ED168F', '#B2218B', '#752A8A'];
+  var chunkState = [];
+  function chunkId(c, r) { return r * CHUNK.cols + c; }
+  function chunkCenter(c, r) {
+    return { x: CHUNK.x + c * CHUNK.pitch + CHUNK.size / 2, y: CHUNK.y + r * CHUNK.pitch + CHUNK.size / 2 };
+  }
+  function buildChunks() {
+    var ns = 'http://www.w3.org/2000/svg';
+    var grid = document.getElementById('chunk-grid');
+    var links = document.getElementById('chunk-links');
+    var seed = 7;
+    function rnd() { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; }
+    for (var r = 0; r < CHUNK.rows; r++) {
+      for (var c = 0; c < CHUNK.cols; c++) {
+        var x = CHUNK.x + c * CHUNK.pitch;
+        var y = CHUNK.y + r * CHUNK.pitch;
+        var g = document.createElementNS(ns, 'g');
+        g.setAttribute('class', 'chunk');
+        var html = '<rect class="base" x="' + x + '" y="' + y + '" width="' + CHUNK.size + '" height="' + CHUNK.size + '" rx="2"/>';
+        for (var k = 0; k < 3; k++) {
+          html += '<rect class="px" x="' + (x + 3 + Math.floor(rnd() * 5) * 3.6) + '" y="' + (y + 3 + Math.floor(rnd() * 5) * 3.6) + '" width="3.6" height="3.6"/>';
+        }
+        html += '<rect class="ck" x="' + (x + CHUNK.size - 6) + '" y="' + (y + 2) + '" width="4" height="4" rx=".8"/>';
+        g.innerHTML = html;
+        grid.appendChild(g);
+        var p = chunkCenter(c, r);
+        var line = document.createElementNS(ns, 'line');
+        line.setAttribute('class', 'link');
+        line.setAttribute('x1', p.x); line.setAttribute('y1', p.y);
+        line.setAttribute('x2', CHUNK_TARGET.x); line.setAttribute('y2', CHUNK_TARGET.y);
+        links.appendChild(line);
+        chunkState.push({ c: c, r: r, el: g, link: line, on: false, seen: false });
+      }
+    }
+  }
+  function chunkLog(kind, text) {
+    var a = document.getElementById('chunk-log-1');
+    var b = document.getElementById('chunk-log-2');
+    b.textContent = a.textContent;
+    b.setAttribute('class', a.getAttribute('class') || '');
+    a.textContent = text;
+    a.setAttribute('class', kind);
+    a.animate([{ opacity: 0, transform: 'translateX(-6px)' }, { opacity: 1, transform: 'none' }], { duration: 300, easing: OUT });
+  }
+  function reconcileChunks(pc, pr) {
+    var started = [], stopped = [];
+    chunkState.forEach(function (s) {
+      var near = Math.abs(s.c - pc) <= 1 && Math.abs(s.r - pr) <= 1;
+      if (near && !s.on) {
+        started.push(s);
+        s.on = true;
+      } else if (!near && s.on) {
+        stopped.push(s);
+        s.on = false;
+        s.seen = true;
+      }
+      s.el.classList.toggle('on', s.on);
+      s.el.classList.toggle('seen', s.seen && !s.on);
+      s.link.classList.toggle('on', s.on);
+    });
+    started.forEach(function (s) {
+      s.el.querySelector('.base').animate([{ transform: 'scale(.82)' }, { transform: 'none' }], { duration: 420, easing: POP });
+    });
+    document.getElementById('chunk-count').textContent = chunkState.filter(function (s) { return s.on; }).length;
+    if (stopped.length) chunkLog('stop', 'cancel  voxels-chunk-' + stopped.map(function (s) { return chunkId(s.c, s.r); }).join(', '));
+    var resumed = started.filter(function (s) { return s.seen; });
+    var fresh = started.filter(function (s) { return !s.seen; });
+    if (fresh.length) chunkLog('start', 'start   voxels-chunk-' + fresh.map(function (s) { return chunkId(s.c, s.r); }).join(', '));
+    if (resumed.length) chunkLog('resume', 'resume  voxels-chunk-' + resumed.map(function (s) { return chunkId(s.c, s.r); }).join(', ') + ' from checkpoint');
+  }
+  function chunkPacket() {
+    var active = chunkState.filter(function (s) { return s.on; });
+    if (!active.length) return;
+    var s = active[Math.floor(Math.random() * active.length)];
+    var p = chunkCenter(s.c, s.r);
+    var push = Math.random() < .25;
+    var color = push ? '#FFFFFF' : CHUNK_COLORS[Math.floor(Math.random() * 3)];
+    var rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    rect.setAttribute('class', 'pkt');
+    rect.setAttribute('x', p.x - 2.5); rect.setAttribute('y', p.y - 2);
+    rect.setAttribute('width', 5); rect.setAttribute('height', 4); rect.setAttribute('rx', 1);
+    rect.setAttribute('fill', color);
+    document.getElementById('chunk-pkts').appendChild(rect);
+    var d = 'translate(' + (CHUNK_TARGET.x - p.x) + 'px, ' + (CHUNK_TARGET.y - p.y) + 'px)';
+    var frames = push
+      ? [{ transform: d, opacity: 0 }, { transform: d, opacity: 1, offset: .1 }, { transform: 'none', opacity: 1, offset: .9 }, { transform: 'none', opacity: 0 }]
+      : [{ transform: 'none', opacity: 0 }, { transform: 'none', opacity: 1, offset: .1 }, { transform: d, opacity: 1, offset: .9 }, { transform: d, opacity: 0 }];
+    var anim = rect.animate(frames, { duration: 1000, easing: 'ease-in-out' });
+    anim.finished.then(function () {
+      rect.remove();
+      if (!push) {
+        var bar = document.querySelector('#chunk-logo .b' + (CHUNK_COLORS.indexOf(color) + 1));
+        bar.animate([{ transform: 'none' }, { transform: 'translateX(-4px)' }, { transform: 'none' }], { duration: 320, easing: OUT });
+      }
+    }).catch(function () { rect.remove(); });
+  }
+  function placeAvatar(c, r) {
+    var p = chunkCenter(c, r);
+    document.getElementById('chunk-avatar').setAttribute('transform', 'translate(' + p.x + ' ' + (p.y + 8) + ')');
+  }
+  async function chunkWalkLoop() {
+    var avatar = document.getElementById('chunk-avatar');
+    var sprite = avatar.querySelector('.sprite');
+    var mover = avatar.querySelector('.mover');
+    var limbs = [['.leg-l', 1], ['.leg-r', -1], ['.arm-l', -1], ['.arm-r', 1]];
+    var swings = [];
+    function walk(on) {
+      swings.forEach(function (a) { a.cancel(); });
+      swings = [];
+      if (!on) return;
+      limbs.forEach(function (l) {
+        swings.push(avatar.querySelector(l[0]).animate(
+          [{ transform: 'rotate(' + (30 * l[1]) + 'deg)' }, { transform: 'rotate(' + (-30 * l[1]) + 'deg)' }],
+          { duration: 260, iterations: Infinity, direction: 'alternate', easing: 'ease-in-out' }));
+      });
+    }
+    var i = 0;
+    for (;;) {
+      await wait(i % 4 === 0 ? 1400 : 250);
+      var from = CHUNK_PATH[i];
+      var to = CHUNK_PATH[(i + 1) % CHUNK_PATH.length];
+      var a = chunkCenter(from[0], from[1]);
+      var b = chunkCenter(to[0], to[1]);
+      if (to[0] !== from[0]) sprite.setAttribute('transform', to[0] < from[0] ? 'scale(-1 1)' : '');
+      walk(true);
+      var dx = b.x - a.x, dy = b.y - a.y;
+      var step = mover.animate([{ transform: 'none' }, { transform: 'translate(' + dx + 'px, ' + dy + 'px)' }], { duration: 650, easing: 'linear', fill: 'forwards' });
+      await wait(325);
+      reconcileChunks(to[0], to[1]);
+      await step.finished.catch(function () {});
+      step.cancel();
+      placeAvatar(to[0], to[1]);
+      walk(false);
+      i = (i + 1) % CHUNK_PATH.length;
+    }
+  }
+  async function chunkPacketLoop() {
+    for (;;) {
+      await wait(220);
+      chunkPacket();
+    }
+  }
+  buildChunks();
+  placeAvatar(CHUNK_PATH[0][0], CHUNK_PATH[0][1]);
+  reconcileChunks(CHUNK_PATH[0][0], CHUNK_PATH[0][1]);
+
   /* Revisions */
   function hex4() { return Math.floor(Math.random() * 65536).toString(16).padStart(4, '0'); }
   async function revLoop() {
@@ -2462,6 +2668,8 @@ footer { font-size: 13px; color: var(--muted); display: flex; flex-direction: co
 
   if (!reduce) {
     queryLoop();
+    chunkWalkLoop();
+    chunkPacketLoop();
     revLoop();
     vectorLoop();
   }
