@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>RxDB Logo Motion</title>
-<meta name="description" content="Animated versions of the RxDB logo: a wink, a document swarm, reactive streams, replication, offline-first, encryption, leader election, and more.">
+<meta name="description" content="Animated versions of the RxDB logo: a wordmark reveal, a document swarm, reactive streams, replication, offline-first, encryption, leader election, and more.">
 <style>
 @font-face {
   font-family: "Atkinson Hyperlegible Mono";
@@ -12,7 +12,7 @@
   font-weight: 200 800;
   font-display: swap;
 }
-/* Layout: one centered column of artboards. Hero (logo + rxdb.info copy), wink spotlight, grid of motion cards, motion tokens. */
+/* Layout: one centered column of artboards. Hero (logo + rxdb.info copy), wordmark, grid of motion cards, motion tokens. */
 :root {
   --bg: #0D0F18;
   --surface: #141725;
@@ -147,29 +147,6 @@ p { margin: 0; max-width: 62ch; }
 .hero .runtime { fill: var(--muted); font-size: 10px; }
 .hero .runtime tspan.rt { fill: var(--fg); font-weight: 700; }
 
-/* Wink spotlight */
-.wink-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
-  gap: 28px;
-}
-.wink-btn {
-  font: inherit;
-  color: inherit;
-  padding: 0;
-  cursor: pointer;
-  width: 100%;
-}
-.wink-btn:hover { border-color: var(--pink); }
-.wink-btn > svg { height: 78%; }
-.logo .eye, .logo .lash, .logo .mouth, .logo .sparkle, .logo .face { transform-box: fill-box; transform-origin: center; }
-.logo .face { transform-origin: center bottom; }
-.logo .eye rect { fill: var(--white); }
-.logo .pupil circle { fill: var(--bg); }
-.logo .lash, .logo .mouth { fill: none; stroke: var(--white); stroke-width: 2.8; stroke-linecap: round; }
-.logo .lash { opacity: 0; }
-.logo .sparkle { fill: var(--white); opacity: 0; }
-
 /* Cards */
 .grid {
   display: grid;
@@ -185,27 +162,6 @@ p { margin: 0; max-width: 62ch; }
   font-variant-numeric: tabular-nums;
 }
 .card p { font-size: 14px; color: var(--muted); }
-
-/* 1. Minimal wink: only the original shapes */
-.v-blink .b1 { animation: lid 3.2s var(--ease-out) infinite; }
-.v-blink .corner { animation: brow 3.2s var(--ease-out) infinite; }
-.v-blink .b2 { animation: follow 3.2s var(--ease-out) infinite; }
-@keyframes lid {
-  0%, 60%, 100% { transform: scaleY(1); }
-  66%, 74% { transform: scaleY(.08); }
-  84% { transform: scaleY(1.1); }
-  90% { transform: scaleY(1); }
-}
-@keyframes brow {
-  0%, 58%, 100% { transform: none; }
-  66%, 76% { transform: translate(1px, -7px) rotate(-14deg); }
-  88% { transform: translateY(1px); }
-}
-@keyframes follow {
-  0%, 64%, 100% { transform: none; }
-  72% { transform: scale(1.04, .88); }
-  86% { transform: none; }
-}
 
 /* 2. Build-in */
 .v-build.play .outline {
@@ -357,17 +313,6 @@ p { margin: 0; max-width: 62ch; }
 .caption code { color: var(--fg); }
 .dots::after { content: ""; animation: dots 1.8s steps(4) infinite; }
 @keyframes dots { 0% { content: ""; } 25% { content: "."; } 50% { content: ".."; } 75% { content: "..."; } }
-
-/* Sleep mode for the character */
-.logo .zzz { fill: var(--fg); font-size: 11px; font-weight: 800; opacity: 0; transform-box: fill-box; transform-origin: center; }
-.sleeping .zzz { animation: zzz 2.4s ease-out infinite; }
-.sleeping .z2 { animation-delay: .8s; }
-.sleeping .z3 { animation-delay: 1.6s; }
-@keyframes zzz {
-  0% { opacity: 0; transform: translate(0, 0) scale(.6); }
-  20% { opacity: 1; }
-  100% { opacity: 0; transform: translate(12px, -26px) scale(1.2); }
-}
 
 /* Document swarm */
 .swarm { aspect-ratio: 21 / 9; cursor: crosshair; touch-action: pan-y; }
@@ -572,27 +517,20 @@ p { margin: 0; max-width: 62ch; }
 .v-rev .bar.hit { animation: flash .6s; }
 
 /* F5. Attachments */
-.v-attach .file { transform-box: fill-box; transform-origin: center; opacity: 0; animation: attach 4.4s var(--ease-out) infinite; }
-.v-attach .file-body { fill: var(--white); }
-.v-attach .file-fold { fill: none; stroke: var(--line); stroke-width: 1.2; }
-.v-attach .file-img { fill: var(--pink); }
-.v-attach .file-img2 { fill: var(--purple); }
-.v-attach .clip { fill: none; stroke: var(--pink); stroke-width: 2.2; stroke-linecap: round; stroke-dasharray: 1; stroke-dashoffset: 1; animation: clip-on 4.4s ease-in-out infinite; }
-.v-attach .corner { animation: nudge 4.4s var(--ease-pop) infinite; }
-@keyframes attach {
-  0% { opacity: 0; transform: translate(40px, -30px) rotate(20deg); }
-  8% { opacity: 1; }
-  28% { transform: none; }
-  32% { transform: translateY(2px); }
-  36%, 86% { opacity: 1; transform: none; }
-  94%, 100% { opacity: 0; transform: translateY(-10px); }
-}
-@keyframes clip-on {
-  0%, 34% { stroke-dashoffset: 1; opacity: 1; }
-  48%, 86% { stroke-dashoffset: 0; opacity: 1; }
-  94%, 100% { stroke-dashoffset: 0; opacity: 0; }
-}
-@keyframes nudge { 0%, 28% { transform: none; } 32% { transform: translateY(3px) scale(.94); } 40%, 100% { transform: none; } }
+.v-attach .mail { fill: #171A29; stroke: var(--muted); stroke-width: 1.2; }
+.v-attach .rule { stroke: var(--line); stroke-width: 1; }
+.v-attach .hd { fill: var(--fg); font-size: 8px; }
+.v-attach .sub { fill: var(--muted); font-size: 7px; }
+.v-attach .fld { fill: var(--fg); font-size: 8px; }
+.v-attach .fld tspan.k { fill: var(--muted); }
+.v-attach .paperclip { fill: none; stroke: var(--muted); stroke-width: 1.3; stroke-linecap: round; }
+.v-attach .chip rect.box { fill: #1E2236; stroke: var(--line); stroke-width: 1; transition: stroke .2s; }
+.v-attach .chip.hot rect.box { stroke: var(--pink); }
+.v-attach .chip text { font-size: 7px; fill: var(--fg); }
+.v-attach .chip text.size { fill: var(--muted); font-size: 6px; }
+.v-attach .chip .ficon { fill: var(--white); }
+.v-attach .caption { font-size: 11px; }
+.v-attach .caption code { color: var(--pink); }
 
 /* F6. CRDT */
 .v-crdt .op { transform-box: fill-box; transform-origin: center; opacity: 0; }
@@ -771,31 +709,34 @@ p { margin: 0; max-width: 62ch; }
 @keyframes chunk-flow { to { stroke-dashoffset: -5; } }
 
 /* F15. Worker */
+.v-worker .lane-box { fill: none; stroke: var(--muted); stroke-width: 1; stroke-dasharray: 4 3; }
+.v-worker .wlbl { fill: var(--muted); font-size: 8px; letter-spacing: .06em; }
+.v-worker .wsub { fill: var(--muted); font-size: 7px; }
+.v-worker .chan { stroke: var(--line); stroke-width: 1; stroke-dasharray: 2 3; }
 .v-worker .strip { fill: var(--bg); stroke: var(--line); }
 .v-worker .tick { fill: var(--magenta); }
 .v-worker .ticks { animation: ticks .25s linear infinite; }
-.v-worker .box { fill: none; stroke: var(--muted); stroke-width: 1; stroke-dasharray: 4 3; }
-.v-worker .wlbl { fill: var(--muted); font-size: 8px; letter-spacing: .06em; }
-.v-worker .msg { transform-box: fill-box; opacity: 0; }
-.v-worker .msg-up { fill: var(--pink); animation: msg-up 1.8s ease-in-out infinite; }
-.v-worker .msg-down { fill: var(--white); animation: msg-down 1.8s .9s ease-in-out infinite; }
-.v-worker .bar { animation: load 1.8s var(--ease-out) infinite both; }
-.v-worker .b2 { animation-delay: .12s; }
-.v-worker .b3 { animation-delay: .24s; }
+.v-worker .cyl { fill: #20243A; stroke: var(--muted); stroke-width: 1.2; transition: stroke .2s; }
+.v-worker .cyl-line { fill: none; stroke: var(--muted); stroke-width: 1; opacity: .6; }
+.v-worker .cyl.busy { stroke: var(--pink); }
+.v-worker .cpu-bg { fill: var(--bg); stroke: var(--line); }
+.v-worker .cpu { fill: var(--pink); transform-box: fill-box; transform-origin: 0 50%; transform: scaleX(0); }
+.v-worker .pill rect { stroke-width: 1; }
+.v-worker .pill text { font-size: 7px; }
 @keyframes ticks { from { transform: none; } to { transform: translateX(-12px); } }
-@keyframes msg-up { 0% { opacity: 0; transform: none; } 15% { opacity: 1; } 70% { opacity: 1; transform: translateY(-16px); } 85%, 100% { opacity: 0; transform: translateY(-16px); } }
-@keyframes msg-down { 0% { opacity: 0; transform: none; } 15% { opacity: 1; } 70% { opacity: 1; transform: translateY(16px); } 85%, 100% { opacity: 0; transform: translateY(16px); } }
 
 /* F16. Population */
-.v-populate .link { fill: none; stroke: var(--pink); stroke-width: 1.8; stroke-linecap: round; stroke-dasharray: 1; stroke-dashoffset: 1; animation: link 4s ease-in-out infinite; }
-.v-populate .end { fill: var(--pink); opacity: 0; animation: link-end 4s infinite; }
-.v-populate .src .b2 { animation: flash 4s infinite; }
-.v-populate .dst { transform-box: fill-box; transform-origin: center; animation: dst 4s var(--ease-pop) infinite; }
-.v-populate .plbl { fill: var(--muted); font-size: 9px; letter-spacing: .04em; }
-.v-populate .ref { fill: var(--fg); font-size: 8px; }
-@keyframes link { 0%, 10% { stroke-dashoffset: 1; opacity: 1; } 40%, 85% { stroke-dashoffset: 0; opacity: 1; } 95%, 100% { stroke-dashoffset: 0; opacity: 0; } }
-@keyframes link-end { 0%, 38% { opacity: 0; } 42%, 85% { opacity: 1; } 95%, 100% { opacity: 0; } }
-@keyframes dst { 0%, 40% { transform: none; } 48% { transform: scale(1.08); } 58%, 100% { transform: none; } }
+.v-populate .panel { fill: #171A29; stroke: var(--line); stroke-width: 1; }
+.v-populate .plbl { fill: var(--muted); font-size: 7.5px; letter-spacing: .04em; }
+.v-populate .row-bg { fill: #1E2236; stroke: var(--line); stroke-width: 1; transition: stroke .25s; }
+.v-populate .prow.hot .row-bg { stroke: var(--pink); }
+.v-populate .name { fill: var(--fg); font-size: 8px; }
+.v-populate .ref { fill: var(--muted); font-size: 6px; }
+.v-populate .person { fill: var(--white); }
+.v-populate .paw { transform-box: fill-box; transform-origin: center; }
+.v-populate .link { fill: none; stroke: var(--pink); stroke-width: 1.4; stroke-linecap: round; stroke-dasharray: 1; stroke-dashoffset: 1; }
+.v-populate .caption { font-size: 11px; }
+.v-populate .caption code { color: var(--pink); }
 
 /* F17. RxState */
 .v-state .bar { transform-origin: left center; transition: transform .7s var(--ease-pop); }
@@ -818,17 +759,20 @@ p { margin: 0; max-width: 62ch; }
 @keyframes halo { 0% { opacity: .9; transform: scale(.8); } 70%, 100% { opacity: 0; transform: scale(1.5); } }
 
 /* F19. RxServer */
-.v-server .client { fill: var(--white); }
-.v-server .req { fill: var(--white); transform-box: fill-box; opacity: 0; animation: req 2.4s ease-in infinite; }
-.v-server .resp { transform-box: fill-box; opacity: 0; animation: resp 2.4s ease-out infinite; }
-.v-server .ep { font-size: 9px; animation: ep 2.4s infinite; fill: var(--muted); }
-.v-server .bar { animation: srv-flash 2.4s infinite; }
-.v-server .b2, .v-server .r2 { animation-delay: .8s; }
-.v-server .b3, .v-server .r3 { animation-delay: 1.6s; }
-@keyframes req { 0% { opacity: 0; transform: none; } 5% { opacity: 1; } 35% { opacity: 1; transform: translateX(66px); } 40%, 100% { opacity: 0; transform: translateX(66px); } }
-@keyframes resp { 0%, 44% { opacity: 0; transform: translateX(66px); } 50% { opacity: 1; } 82% { opacity: 1; transform: none; } 88%, 100% { opacity: 0; transform: none; } }
-@keyframes srv-flash { 0%, 36% { fill: var(--c); } 40% { fill: var(--white); } 55%, 100% { fill: var(--c); } }
-@keyframes ep { 0%, 36% { fill: var(--muted); } 40%, 70% { fill: var(--pink); } 80%, 100% { fill: var(--muted); } }
+.v-server .device { fill: none; stroke: var(--white); stroke-width: 1.2; }
+.v-server .device-fill { fill: var(--white); }
+.v-server .lane { stroke: var(--line); stroke-width: 1; stroke-dasharray: 2 3; }
+.v-server .chassis { fill: #171A29; stroke: var(--muted); stroke-width: 1.2; }
+.v-server .unit { fill: #1E2236; stroke: var(--line); stroke-width: 1; }
+.v-server .screw { fill: var(--line); }
+.v-server .vent { stroke: var(--line); stroke-width: 1.4; }
+.v-server .led { fill: var(--old-1); }
+.v-server .power { fill: var(--white); animation: power 2.4s ease-in-out infinite; }
+.v-server .slbl { fill: var(--muted); font-size: 7px; letter-spacing: .04em; }
+.v-server .spath { fill: var(--fg); font-size: 8px; }
+.v-server .dlbl { fill: var(--muted); font-size: 6.5px; }
+.v-server .link { stroke: var(--pink); stroke-width: 1; stroke-dasharray: 2 2; opacity: 0; }
+@keyframes power { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
 
 /* F20. RxPipeline */
 .v-pipe .pipe { stroke: var(--line); stroke-width: 8; stroke-linecap: round; fill: none; }
@@ -933,7 +877,7 @@ p { margin: 0; max-width: 62ch; }
 footer { font-size: 13px; color: var(--muted); display: flex; flex-direction: column; gap: 6px; }
 
 @media (max-width: 820px) {
-  .hero, .wink-grid { grid-template-columns: minmax(0, 1fr); }
+  .hero { grid-template-columns: minmax(0, 1fr); }
   .swarm { aspect-ratio: 4 / 3; }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -948,7 +892,7 @@ footer { font-size: 13px; color: var(--muted); display: flex; flex-direction: co
     <div class="intro">
       <p class="eyebrow">Motion study for the RxDB brand mark</p>
       <h1>RxDB Logo <b>Motion</b></h1>
-      <p class="muted">Forty-one animated versions of the RxDB logo and wordmark. Each one is built from the five shapes of the original mark (frame, three layers, two corner pieces) and ties the motion to something the database does.</p>
+      <p class="muted">Thirty-nine animated versions of the RxDB logo and wordmark. Each one is built from the five shapes of the original mark (frame, three layers, two corner pieces) and ties the motion to something the database does.</p>
     </div>
     <button class="btn" id="pause-all" type="button" aria-pressed="false">Pause all</button>
   </header>
@@ -965,7 +909,7 @@ footer { font-size: 13px; color: var(--muted); display: flex; flex-direction: co
         <li style="--c: var(--purple)">Observable realtime queries</li>
         <li style="--c: var(--white)">All JavaScript runtimes supported</li>
       </ul>
-      <p class="muted" style="font-size: 13px">The three layers break out of the frame and become the feature list, the foot piece carries the runtimes, then the logo winks. Copy from <a href="https://rxdb.info/" target="_blank" rel="noopener">rxdb.info</a>.</p>
+      <p class="muted" style="font-size: 13px">The three layers break out of the frame and become the feature list, and the foot piece carries the runtimes. Copy from <a href="https://rxdb.info/" target="_blank" rel="noopener">rxdb.info</a>.</p>
     </div>
     <div class="stage">
       <svg class="logo" id="hero-logo" viewBox="0 0 360 150" role="img" aria-label="Animated RxDB logo whose three layers extend into the features: works offline, syncs with any backend, observable realtime queries">
@@ -980,54 +924,6 @@ footer { font-size: 13px; color: var(--muted); display: flex; flex-direction: co
         </g>
       </svg>
       <span class="tag">hero · 9s loop</span>
-    </div>
-  </section>
-
-  <!-- Wink spotlight -->
-  <section aria-labelledby="wink-title">
-    <div class="section-head">
-      <p class="eyebrow">Signature moment</p>
-      <h2 id="wink-title">The <b>Wink</b></h2>
-      <p class="muted">Two takes on the wink. The character version adds eyes to the top layer and a smile to the middle layer, and the pupils follow your pointer. The minimal version uses only the original shapes: the top layer closes like an eyelid and the corner piece lifts like an eyebrow.</p>
-    </div>
-    <div class="wink-grid">
-      <div class="card">
-        <button class="stage wink-btn" id="wink-btn" type="button" aria-label="Make the RxDB logo wink">
-          <svg class="logo" viewBox="-26 -26 155.33 192" aria-hidden="true">
-            <g class="face" id="face" data-logo>
-              <g class="eye" id="eye-l">
-                <rect x="27" y="37" width="12" height="13" rx="3.5"/>
-                <g class="pupil"><circle cx="33" cy="44" r="3"/></g>
-              </g>
-              <g class="eye" id="eye-r">
-                <rect x="63" y="37" width="12" height="13" rx="3.5"/>
-                <g class="pupil"><circle cx="69" cy="44" r="3"/></g>
-              </g>
-              <path class="lash" id="lash" d="M62 45.5 q7 -6 14 0"/>
-              <path class="mouth" id="mouth" d="M40 66 q11.67 8 23.33 0"/>
-              <text class="zzz z1" x="100" y="6">z</text>
-              <text class="zzz z2" x="100" y="6">z</text>
-              <text class="zzz z3" x="100" y="6">z</text>
-              <path class="sparkle" id="sparkle" d="M112 16 q1.2 6 7 7 q-5.8 1 -7 7 q-1.2 -6 -7 -7 q5.8 -1 7 -7z"/>
-            </g>
-          </svg>
-          <span class="tag">click or tap to wink</span>
-        </button>
-        <div class="meta">
-          <div class="row"><h3>Character wink</h3><span class="spec">0.7s · on click + every 3rd blink</span></div>
-          <p>The right eye closes into an arc, the corner piece lifts, the smile turns into a smirk and a spark pops out. Blinks run on a random 2.5 to 5 second interval. Leave the pointer still for 8 seconds and it falls asleep. Move or tap to wake it.</p>
-        </div>
-      </div>
-      <div class="card">
-        <div class="stage v-blink">
-          <svg class="logo" viewBox="0 -10 103.33 150" data-logo role="img" aria-label="RxDB logo winking with its top layer"></svg>
-          <span class="tag">minimal wink</span>
-        </div>
-        <div class="meta">
-          <div class="row"><h3>Minimal wink</h3><span class="spec">3.2s · loop · ease-out</span></div>
-          <p>No added features. The top layer squeezes to 8% height, overshoots to 110% on the way back, and the middle layer squashes as follow-through.</p>
-        </div>
-      </div>
     </div>
   </section>
 
@@ -1434,16 +1330,27 @@ footer { font-size: 13px; color: var(--muted); display: flex; flex-direction: co
 
       <article class="card">
         <div class="stage v-attach">
-          <svg class="logo" viewBox="-10 -30 150 175" data-logo role="img" aria-label="A file flies onto the RxDB logo and gets clipped on">
-            <g class="file"><path class="file-body" d="M96 -20 h14 l6 6 v22 h-20z"/><path class="file-fold" d="M110 -20 v6 h6"/><rect class="file-img" x="99" y="-8" width="14" height="4"/><rect class="file-img2" x="99" y="-2" width="10" height="4"/></g>
-            <path class="clip" pathLength="1" d="M104 -14 v-8 a3.5 3.5 0 0 1 7 0 v14 a5.5 5.5 0 0 1 -11 0 v-10"/>
+          <svg class="logo" viewBox="0 0 300 160" role="img" aria-label="An RxDocument shown like an email: files get attached to it with putAttachment, read with getData, and removed again">
+            <rect class="mail" x="40" y="6" width="220" height="148" rx="6"/>
+            <svg x="50" y="14" width="14" height="19" viewBox="0 0 103.33 140" data-logo></svg>
+            <text class="hd" x="70" y="23">RxDocument</text>
+            <text class="sub" x="70" y="32">heroes / alice</text>
+            <text class="sub" id="att-rev" x="250" y="23" text-anchor="end">_rev 1-a3f9</text>
+            <line class="rule" x1="48" y1="42" x2="252" y2="42"/>
+            <text class="fld" x="52" y="58"><tspan class="k">name:</tspan> 'Alice'</text>
+            <text class="fld" x="52" y="72"><tspan class="k">age:</tspan> 32</text>
+            <line class="rule" x1="48" y1="84" x2="252" y2="84"/>
+            <path class="paperclip" d="M55 102v-8a2.6 2.6 0 0 1 5.2 0v10a4 4 0 0 1-8 0v-7"/>
+            <text class="sub" id="att-count" x="66" y="101">_attachments (0)</text>
+            <g id="att-chips"></g>
+            <g id="att-out"></g>
           </svg>
-          <span class="caption"><code>putAttachment({ id: 'cat.jpg' })</code></span>
-          <span class="tag">putAttachment()</span>
+          <span class="caption"><code id="att-call">doc.putAttachment()</code></span>
+          <span class="tag">rx-attachment</span>
         </div>
         <div class="meta">
-          <div class="row"><h3>Attachments</h3><span class="spec">4.4s · loop · ease-out</span></div>
-          <p>A file flies in, lands on the corner piece, and a paperclip draws itself over it. Binary data stored next to the document.</p>
+          <div class="row"><h3>Attachments</h3><span class="spec">call loop · WAAPI</span></div>
+          <p>An attachment hangs on a document the way a file hangs on an email. putAttachment() adds a file and writes a new revision, getData() reads it back as a Blob, and remove() takes it off again.</p>
           <a class="doclink" href="https://rxdb.info/rx-attachment.html" target="_blank" rel="noopener">Docs: Attachments</a>
         </div>
       </article>
@@ -1615,7 +1522,6 @@ footer { font-size: 13px; color: var(--muted); display: flex; flex-direction: co
       <article class="card">
         <div class="stage v-chunks">
           <svg class="logo" viewBox="0 0 300 200" role="img" aria-label="A blocky avatar walks across world chunks; chunks within its render distance start syncing to the RxDB logo and chunks it leaves stop syncing">
-            <text class="clbl" x="12" y="24">render distance 1 · <tspan id="chunk-count">0</tspan> active</text>
             <g id="chunk-grid"></g>
             <g id="chunk-links"></g>
             <g id="chunk-pkts"></g>
@@ -1648,42 +1554,61 @@ footer { font-size: 13px; color: var(--muted); display: flex; flex-direction: co
 
       <article class="card">
         <div class="stage v-worker">
-          <svg class="logo" viewBox="0 0 260 150" role="img" aria-label="RxDB logo working inside a worker while the main thread keeps a steady frame rate">
-            <defs><clipPath id="strip-clip"><rect x="10" y="8" width="240" height="14" rx="3"/></clipPath></defs>
-            <rect class="strip" x="10" y="8" width="240" height="14" rx="3"/>
+          <svg class="logo" viewBox="0 0 300 160" role="img" aria-label="RxDB on the main thread sends storage calls as messages to a worker, where the wrapped IndexedDB storage runs them and answers, while the main thread keeps rendering frames">
+            <defs><clipPath id="strip-clip"><rect x="14" y="132" width="98" height="10" rx="2"/></clipPath></defs>
+            <rect class="lane-box" x="6" y="6" width="114" height="148" rx="6"/>
+            <rect class="lane-box" x="180" y="6" width="114" height="148" rx="6"/>
+            <text class="wlbl" x="14" y="20">main thread</text>
+            <text class="wlbl" x="188" y="20">worker</text>
+            <svg id="worker-db" x="35" y="30" width="56" height="75.9" viewBox="0 0 103.33 140" data-logo></svg>
+            <text class="wsub" x="63" y="118" text-anchor="middle">RxDatabase</text>
+            <rect class="strip" x="14" y="132" width="98" height="10" rx="2"/>
             <g clip-path="url(#strip-clip)"><g class="ticks" id="ticks"></g></g>
-            <text class="wlbl" x="10" y="33">main thread · 60 fps</text>
-            <rect class="box" x="80" y="40" width="100" height="106" rx="6"/>
-            <text class="wlbl" x="176" y="141" text-anchor="end">worker</text>
-            <svg x="104" y="46" width="52" height="70.4" viewBox="0 0 103.33 140" data-logo></svg>
-            <rect class="msg msg-up" x="126" y="36" width="8" height="5" rx="1.5"/>
-            <rect class="msg msg-down" x="126" y="24" width="8" height="5" rx="1.5"/>
+            <text class="wsub" x="14" y="128">UI frames</text>
+            <line class="chan" x1="120" y1="56" x2="180" y2="56"/>
+            <line class="chan" x1="120" y1="92" x2="180" y2="92"/>
+            <text class="wsub" x="150" y="76" text-anchor="middle">postMessage</text>
+            <path class="cyl" id="worker-cyl" d="M215 46v40a22 6 0 0 0 44 0V46a22 6 0 0 0-44 0a22 6 0 0 0 44 0"/>
+            <path class="cyl-line" d="M215 59a22 6 0 0 0 44 0M215 72a22 6 0 0 0 44 0"/>
+            <text class="wsub" x="237" y="108" text-anchor="middle">IndexedDB</text>
+            <rect class="cpu-bg" x="188" y="132" width="98" height="10" rx="2"/>
+            <rect class="cpu" id="worker-cpu" x="189" y="133" width="96" height="8" rx="1.5"/>
+            <text class="wsub" x="188" y="128">CPU</text>
+            <g id="worker-msgs"></g>
           </svg>
           <span class="tag">rx-storage-worker</span>
         </div>
         <div class="meta">
-          <div class="row"><h3>Worker storage</h3><span class="spec">1.8s · loop · linear</span></div>
-          <p>The database runs inside a worker and exchanges messages with the page. The main thread timeline keeps scrolling at a steady rate.</p>
+          <div class="row"><h3>Worker storage</h3><span class="spec">message loop · WAAPI</span></div>
+          <p>RxDB stays on the main thread and sends every storage call (bulkWrite, query, count) as a message with a request id. The worker runs it on the wrapped IndexedDB storage, answers by id, and streams change events back. The UI frames never stall.</p>
           <a class="doclink" href="https://rxdb.info/rx-storage-worker.html" target="_blank" rel="noopener">Docs: Worker RxStorage</a>
         </div>
       </article>
 
       <article class="card">
         <div class="stage v-populate">
-          <svg class="logo" viewBox="0 0 300 150" role="img" aria-label="A reference from one RxDB document resolves to another document">
-            <svg class="src" x="10" y="12" width="90" height="122" viewBox="0 0 103.33 140" data-logo></svg>
-            <g class="dst"><svg x="200" y="12" width="90" height="122" viewBox="0 0 103.33 140" data-logo></svg></g>
-            <path class="link" pathLength="1" d="M96 73 C 130 18, 170 18, 202 60"/>
-            <circle class="end" cx="202" cy="60" r="3"/>
-            <text class="ref" x="150" y="96" text-anchor="middle">bestFriend: 'bob'</text>
-            <text class="plbl" x="55" y="146" text-anchor="middle">alice</text>
-            <text class="plbl" x="245" y="146" text-anchor="middle">bob</text>
+          <svg class="logo" viewBox="0 0 300 160" role="img" aria-label="People documents hold the ids of their pets; populate() follows each id into the pets collection and resolves the pet documents">
+            <rect class="panel" x="8" y="6" width="116" height="148" rx="5"/>
+            <rect class="panel" x="176" y="6" width="116" height="148" rx="5"/>
+            <svg x="14" y="11" width="8" height="10.8" viewBox="0 0 103.33 140" data-logo></svg>
+            <text class="plbl" x="26" y="19">db.humans</text>
+            <svg x="182" y="11" width="8" height="10.8" viewBox="0 0 103.33 140" data-logo></svg>
+            <text class="plbl" x="194" y="19">db.pets</text>
+            <g class="prow" data-person="alice"><rect class="row-bg" x="14" y="28" width="104" height="30" rx="3"/><circle class="person" cx="27" cy="39" r="3.6"/><path class="person" d="M20.5 52 a6.5 6.5 0 0 1 13 0z"/><text class="name" x="36" y="41">alice</text><text class="ref" x="36" y="51">pets: ['rex']</text></g>
+            <g class="prow" data-person="bob"><rect class="row-bg" x="14" y="68" width="104" height="30" rx="3"/><circle class="person" cx="27" cy="79" r="3.6"/><path class="person" d="M20.5 92 a6.5 6.5 0 0 1 13 0z"/><text class="name" x="36" y="81">bob</text><text class="ref" x="36" y="91">pets: ['tom', 'mimi']</text></g>
+            <g class="prow" data-person="carol"><rect class="row-bg" x="14" y="108" width="104" height="30" rx="3"/><circle class="person" cx="27" cy="119" r="3.6"/><path class="person" d="M20.5 132 a6.5 6.5 0 0 1 13 0z"/><text class="name" x="36" y="121">carol</text><text class="ref" x="36" y="131">pets: ['kiki']</text></g>
+            <g class="prow" data-pet="rex"><rect class="row-bg" x="182" y="28" width="104" height="22" rx="3"/><g class="paw" fill="#ED168F"><ellipse cx="195" cy="41.5" rx="3.4" ry="2.8"/><circle cx="190.6" cy="36.5" r="1.4"/><circle cx="193.6" cy="34.8" r="1.4"/><circle cx="196.6" cy="34.8" r="1.4"/><circle cx="199.4" cy="36.5" r="1.4"/></g><text class="name" x="206" y="42">rex</text><text class="ref" x="280" y="42" text-anchor="end">dog</text></g>
+            <g class="prow" data-pet="tom"><rect class="row-bg" x="182" y="58" width="104" height="22" rx="3"/><g class="paw" fill="#B2218B"><ellipse cx="195" cy="71.5" rx="3.4" ry="2.8"/><circle cx="190.6" cy="66.5" r="1.4"/><circle cx="193.6" cy="64.8" r="1.4"/><circle cx="196.6" cy="64.8" r="1.4"/><circle cx="199.4" cy="66.5" r="1.4"/></g><text class="name" x="206" y="72">tom</text><text class="ref" x="280" y="72" text-anchor="end">cat</text></g>
+            <g class="prow" data-pet="mimi"><rect class="row-bg" x="182" y="88" width="104" height="22" rx="3"/><g class="paw" fill="#B2218B"><ellipse cx="195" cy="101.5" rx="3.4" ry="2.8"/><circle cx="190.6" cy="96.5" r="1.4"/><circle cx="193.6" cy="94.8" r="1.4"/><circle cx="196.6" cy="94.8" r="1.4"/><circle cx="199.4" cy="96.5" r="1.4"/></g><text class="name" x="206" y="102">mimi</text><text class="ref" x="280" y="102" text-anchor="end">cat</text></g>
+            <g class="prow" data-pet="kiki"><rect class="row-bg" x="182" y="118" width="104" height="22" rx="3"/><g class="paw" fill="#752A8A"><ellipse cx="195" cy="131.5" rx="3.4" ry="2.8"/><circle cx="190.6" cy="126.5" r="1.4"/><circle cx="193.6" cy="124.8" r="1.4"/><circle cx="196.6" cy="124.8" r="1.4"/><circle cx="199.4" cy="126.5" r="1.4"/></g><text class="name" x="206" y="132">kiki</text><text class="ref" x="280" y="132" text-anchor="end">bird</text></g>
+            <g id="pop-links"></g>
           </svg>
-          <span class="tag">populate('bestFriend')</span>
+          <span class="caption"><code id="pop-call">alice.populate('pets')</code></span>
+          <span class="tag">population</span>
         </div>
         <div class="meta">
-          <div class="row"><h3>Population</h3><span class="spec">4s · loop · ease-in-out</span></div>
-          <p>A field on one document holds the id of another. populate() follows the reference and resolves the second document.</p>
+          <div class="row"><h3>Population</h3><span class="spec">3.2s per person · WAAPI</span></div>
+          <p>Each person stores only the ids of their pets. The schema marks the field with ref: 'pets', so populate('pets') follows each id into the pets collection and returns the pet documents.</p>
           <a class="doclink" href="https://rxdb.info/population.html" target="_blank" rel="noopener">Docs: Population</a>
         </div>
       </article>
@@ -1723,26 +1648,45 @@ footer { font-size: 13px; color: var(--muted); display: flex; flex-direction: co
 
       <article class="card">
         <div class="stage v-server">
-          <svg class="logo" viewBox="0 0 250 146" role="img" aria-label="RxDB logo as a server answering requests on three endpoints">
-            <circle class="client" cx="12" cy="45.6" r="4"/>
-            <circle class="client" cx="12" cy="68" r="4"/>
-            <circle class="client" cx="12" cy="90.4" r="4"/>
-            <rect class="req r1" x="16" y="43.6" width="6" height="4" rx="1"/>
-            <rect class="req r2" x="16" y="66" width="6" height="4" rx="1"/>
-            <rect class="req r3" x="16" y="88.4" width="6" height="4" rx="1"/>
-            <rect class="resp r1" x="16" y="43" width="9" height="5" rx="1.5" fill="#ED168F"/>
-            <rect class="resp r2" x="16" y="65.5" width="9" height="5" rx="1.5" fill="#B2218B"/>
-            <rect class="resp r3" x="16" y="88" width="9" height="5" rx="1.5" fill="#752A8A"/>
-            <svg x="86" y="10" width="86.8" height="117.6" viewBox="0 0 103.33 140" data-logo></svg>
-            <text class="ep r1" x="186" y="47">/query</text>
-            <text class="ep r2" x="186" y="71">/replication</text>
-            <text class="ep r3" x="186" y="94">/rest</text>
+          <svg class="logo" viewBox="0 0 300 150" role="img" aria-label="Client devices send requests to an RxServer rack with a replication endpoint and a REST endpoint, both backed by the RxDB database inside the rack">
+            <line class="lane" x1="27" y1="34" x2="104" y2="56"/>
+            <line class="lane" x1="34" y1="74" x2="104" y2="56"/>
+            <line class="lane" x1="33" y1="112" x2="104" y2="104"/>
+            <rect class="device" x="12" y="22" width="14" height="24" rx="2.5"/>
+            <rect class="device-fill" x="17" y="42" width="4" height="1.4" rx=".7"/>
+            <rect class="device" x="8" y="65" width="22" height="14" rx="1.5"/>
+            <rect class="device-fill" x="4" y="80" width="30" height="2.6" rx="1"/>
+            <rect class="device" x="8" y="102" width="24" height="18" rx="1.5"/>
+            <line class="device" x1="8" y1="106.5" x2="32" y2="106.5"/>
+            <text class="dlbl" x="11" y="116">&gt;_</text>
+            <text class="dlbl" x="19" y="54" text-anchor="middle">app</text>
+            <text class="dlbl" x="19" y="91" text-anchor="middle">app</text>
+            <text class="dlbl" x="20" y="130" text-anchor="middle">curl</text>
+            <rect class="chassis" x="98" y="8" width="194" height="134" rx="5"/>
+            <circle class="screw" cx="104" cy="14" r="1.6"/><circle class="screw" cx="286" cy="14" r="1.6"/>
+            <circle class="screw" cx="104" cy="136" r="1.6"/><circle class="screw" cx="286" cy="136" r="1.6"/>
+            <text class="slbl" x="112" y="23">RxServer · :80</text>
+            <circle class="power" cx="278" cy="20" r="2"/>
+            <rect class="unit" x="104" y="32" width="96" height="46" rx="2.5"/>
+            <rect class="unit" x="104" y="84" width="96" height="46" rx="2.5"/>
+            <text class="slbl" x="112" y="48">replication</text>
+            <text class="spath" x="112" y="62">/heroes/0</text>
+            <text class="slbl" x="112" y="100">rest</text>
+            <text class="spath" x="112" y="114">/rest/0/query</text>
+            <circle class="led" id="srv-led-a" cx="192" cy="40" r="2.2"/>
+            <circle class="led" id="srv-led-b" cx="192" cy="92" r="2.2"/>
+            <path class="vent" d="M180 52v18M184 52v18M188 52v18M192 52v18M180 104v18M184 104v18M188 104v18M192 104v18"/>
+            <line class="link" id="srv-link-a" x1="200" y1="55" x2="216" y2="70"/>
+            <line class="link" id="srv-link-b" x1="200" y1="107" x2="216" y2="88"/>
+            <svg id="srv-db" x="214" y="34" width="66" height="89.4" viewBox="0 0 103.33 140" data-logo></svg>
+            <text class="slbl" x="247" y="134" text-anchor="middle">db.heroes</text>
+            <g id="srv-pkts"></g>
           </svg>
           <span class="tag">rxserver</span>
         </div>
         <div class="meta">
-          <div class="row"><h3>RxServer</h3><span class="spec">2.4s · loop · ease-in</span></div>
-          <p>The logo acts as a server. Requests from clients hit the query, replication, and REST endpoints, and each one answers with a document.</p>
+          <div class="row"><h3>RxServer</h3><span class="spec">request loop · WAAPI</span></div>
+          <p>An RxServer rack serves one collection through two endpoints. Apps replicate through the replication endpoint and get live updates when another client writes. A curl call to the REST endpoint gets a plain answer.</p>
           <a class="doclink" href="https://rxdb.info/rx-server.html" target="_blank" rel="noopener">Docs: RxServer</a>
         </div>
       </article>
@@ -1813,13 +1757,10 @@ footer { font-size: 13px; color: var(--muted); display: flex; flex-direction: co
       <div class="card">
         <h3>Durations</h3>
         <ul class="durations">
-          <li>Blink <span>160ms</span></li>
-          <li>Wink <span>700ms</span></li>
           <li>Layer slide <span>750ms, 120ms stagger</span></li>
           <li>Loader cycle <span>1.8s</span></li>
           <li>Hero cycle <span>9s</span></li>
           <li>Isometric cycle <span>6s</span></li>
-          <li>Sleep after idle <span>8s</span></li>
           <li>Query switch <span>1.8s</span></li>
           <li>Chunk step <span>650ms</span></li>
           <li>Wordmark reveal <span>6.4s</span></li>
@@ -1905,9 +1846,7 @@ footer { font-size: 13px; color: var(--muted); display: flex; flex-direction: co
   }
 
   async function heroLoop() {
-    var b1 = hero.querySelector('.b1:not(.rail)');
-    var corner = hero.querySelector('.corner');
-    var els = [].concat([].slice.call(rails), [].slice.call(texts), [b1, corner]);
+    var els = [].concat([].slice.call(rails), [].slice.call(texts));
     for (;;) {
       els.forEach(function (el) { el.getAnimations().forEach(function (a) { a.cancel(); }); });
       var t = 300;
@@ -1918,16 +1857,7 @@ footer { font-size: 13px; color: var(--muted); display: flex; flex-direction: co
           { duration: 380, delay: t + 260, easing: OUT, fill: 'both' });
         t += 850;
       });
-      t += 1600;
-      b1.animate([
-        { transform: 'scaleY(1)' }, { transform: 'scaleY(.08)', offset: .25 },
-        { transform: 'scaleY(.08)', offset: .6 }, { transform: 'scaleY(1.1)', offset: .85 }, { transform: 'scaleY(1)' }
-      ], { duration: 650, delay: t, easing: 'ease-in-out' });
-      corner.animate([
-        { transform: 'none' }, { transform: 'translate(1px,-7px) rotate(-14deg)', offset: .3 },
-        { transform: 'translate(1px,-7px) rotate(-14deg)', offset: .65 }, { transform: 'none' }
-      ], { duration: 650, delay: t, easing: OUT });
-      t += 2200;
+      t += 3200;
       var last;
       for (var i = rails.length - 1; i >= 0; i--) {
         texts[i].animate([{ opacity: 1 }, { opacity: 0 }], { duration: 200, delay: t, fill: 'forwards' });
@@ -1939,120 +1869,6 @@ footer { font-size: 13px; color: var(--muted); display: flex; flex-direction: co
       await wait(500);
     }
   }
-
-  /* Character wink */
-  var face = document.getElementById('face');
-  var eyeL = document.getElementById('eye-l');
-  var eyeR = document.getElementById('eye-r');
-  var lash = document.getElementById('lash');
-  var mouth = document.getElementById('mouth');
-  var sparkle = document.getElementById('sparkle');
-  var faceCorner = face.querySelector('.corner');
-  var pupils = face.querySelectorAll('.pupil');
-  var winking = false;
-
-  var winkBtn = document.getElementById('wink-btn');
-  var lastActive = performance.now();
-  var sleeping = false;
-
-  function fallAsleep() {
-    sleeping = true;
-    winkBtn.classList.add('sleeping');
-    pupils.forEach(function (p) { p.style.transform = ''; });
-    [eyeL, eyeR].forEach(function (eye) {
-      eye.animate([{ transform: 'scaleY(1)' }, { transform: 'scaleY(.1)' }], { duration: 900, easing: 'ease-in', fill: 'forwards' });
-    });
-  }
-
-  function wake() {
-    lastActive = performance.now();
-    if (!sleeping) return false;
-    sleeping = false;
-    winkBtn.classList.remove('sleeping');
-    [eyeL, eyeR].forEach(function (eye) {
-      eye.getAnimations().forEach(function (a) { a.cancel(); });
-      eye.animate([{ transform: 'scaleY(.1)' }, { transform: 'scale(1.25)', offset: .4 }, { transform: 'none' }],
-        { duration: 450, easing: POP });
-    });
-    return true;
-  }
-
-  async function idleLoop() {
-    for (;;) {
-      await wait(500);
-      if (!sleeping && !winking && performance.now() - lastActive > 8000) fallAsleep();
-    }
-  }
-
-  function wink() {
-    if (winking || sleeping) return;
-    winking = true;
-    var d = 700;
-    eyeR.animate([
-      { transform: 'scaleY(1)' }, { transform: 'scaleY(0)', offset: .18 },
-      { transform: 'scaleY(0)', offset: .74 }, { transform: 'scaleY(1)' }
-    ], { duration: d, easing: 'ease-in-out' });
-    lash.animate([
-      { opacity: 0 }, { opacity: 0, offset: .16 }, { opacity: 1, offset: .22 },
-      { opacity: 1, offset: .7 }, { opacity: 0, offset: .76 }, { opacity: 0 }
-    ], { duration: d });
-    faceCorner.animate([
-      { transform: 'none' }, { transform: 'translate(2px,-8px) rotate(-16deg)', offset: .25 },
-      { transform: 'translate(2px,-8px) rotate(-16deg)', offset: .7 }, { transform: 'none' }
-    ], { duration: d, easing: OUT });
-    mouth.animate([
-      { d: 'path("M40 66 q11.67 8 23.33 0")' },
-      { d: 'path("M42 67 q13 7 25 -4")', offset: .25 },
-      { d: 'path("M42 67 q13 7 25 -4")', offset: .7 },
-      { d: 'path("M40 66 q11.67 8 23.33 0")' }
-    ], { duration: d, easing: 'ease-in-out' });
-    face.animate([
-      { transform: 'none' }, { transform: 'rotate(-5deg)', offset: .25 },
-      { transform: 'rotate(-5deg)', offset: .7 }, { transform: 'none' }
-    ], { duration: d, easing: OUT });
-    sparkle.animate([
-      { opacity: 0, transform: 'scale(0) rotate(0)' },
-      { opacity: 0, transform: 'scale(0) rotate(0)', offset: .2 },
-      { opacity: 1, transform: 'scale(1.2) rotate(45deg)', offset: .42 },
-      { opacity: 0, transform: 'scale(0) rotate(90deg)', offset: .8 },
-      { opacity: 0, transform: 'scale(0)' }
-    ], { duration: d, easing: OUT });
-    setTimeout(function () { winking = false; }, d + 60);
-  }
-
-  function blink() {
-    [eyeL, eyeR].forEach(function (eye) {
-      eye.animate([{ transform: 'scaleY(1)' }, { transform: 'scaleY(.1)', offset: .45 }, { transform: 'scaleY(1)' }],
-        { duration: 160, easing: 'ease-in-out' });
-    });
-  }
-
-  async function blinkLoop() {
-    var n = 0;
-    for (;;) {
-      await wait(2500 + Math.random() * 2500);
-      if (winking || sleeping) continue;
-      n++;
-      if (n % 3 === 0) wink(); else blink();
-    }
-  }
-
-  winkBtn.addEventListener('click', function () {
-    if (!wake()) wink();
-  });
-
-  var winkSvg = document.querySelector('#wink-btn svg');
-  window.addEventListener('pointermove', function (e) {
-    wake();
-    var r = winkSvg.getBoundingClientRect();
-    var dx = e.clientX - (r.left + r.width / 2);
-    var dy = e.clientY - (r.top + r.height * .35);
-    var len = Math.max(1, Math.hypot(dx, dy));
-    var k = Math.min(1, len / 240);
-    var x = (dx / len) * k * 2.8;
-    var y = (dy / len) * k * 2.4;
-    pupils.forEach(function (p) { p.style.transform = 'translate(' + x.toFixed(2) + 'px,' + y.toFixed(2) + 'px)'; });
-  }, { passive: true });
 
   /* Build-in: play when it scrolls into view, replay on demand */
   var build = document.getElementById('build');
@@ -2319,6 +2135,202 @@ footer { font-size: 13px; color: var(--muted); display: flex; flex-direction: co
     }
   }
 
+  /* SVG packet helper */
+  var SVGNS = 'http://www.w3.org/2000/svg';
+  function flyPacket(parent, x1, y1, x2, y2, color, duration, label) {
+    var g = document.createElementNS(SVGNS, 'g');
+    g.setAttribute('class', 'pill');
+    var w = label ? label.length * 4.3 + 8 : 6;
+    var h = label ? 11 : 4;
+    g.innerHTML = '<rect x="' + (x1 - w / 2) + '" y="' + (y1 - h / 2) + '" width="' + w + '" height="' + h + '" rx="' + (label ? 5.5 : 1) + '" fill="' + (label ? '#0D0F18' : color) + '" stroke="' + (label ? color : 'none') + '"/>' +
+      (label ? '<text x="' + x1 + '" y="' + (y1 + 2.4) + '" text-anchor="middle" fill="' + color + '">' + label + '</text>' : '');
+    parent.appendChild(g);
+    var d = 'translate(' + (x2 - x1) + 'px, ' + (y2 - y1) + 'px)';
+    var anim = g.animate([{ transform: 'none', opacity: 0 }, { transform: 'none', opacity: 1, offset: .08 }, { transform: d, opacity: 1, offset: .92 }, { transform: d, opacity: 0 }],
+      { duration: duration, easing: 'ease-in-out' });
+    return anim.finished.catch(function () {}).then(function () { g.remove(); });
+  }
+
+  /* Attachments */
+  async function attachLoop() {
+    var chips = document.getElementById('att-chips');
+    var out = document.getElementById('att-out');
+    var call = document.getElementById('att-call');
+    var revEl = document.getElementById('att-rev');
+    var countEl = document.getElementById('att-count');
+    var FILES = [['cat.jpg', '42 kB', '#ED168F'], ['notes.pdf', '118 kB', '#B2218B'], ['song.mp3', '3.1 MB', '#752A8A']];
+    var rev = 1, list = [];
+    function hash() { return Math.floor(Math.random() * 65536).toString(16).padStart(4, '0'); }
+    function bump() {
+      rev++;
+      revEl.textContent = '_rev ' + rev + '-' + hash();
+      revEl.animate([{ fill: '#ED168F' }, { fill: '#A29DB6' }], { duration: 700 });
+    }
+    function say(text) {
+      call.textContent = text;
+      call.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 250 });
+    }
+    function count() { countEl.textContent = '_attachments (' + list.length + ')'; }
+    for (;;) {
+      for (var i = 0; i < FILES.length; i++) {
+        var f = FILES[i];
+        say("doc.putAttachment({ id: '" + f[0] + "' })");
+        await wait(500);
+        var x = 52 + i * 66;
+        var g = document.createElementNS(SVGNS, 'g');
+        g.setAttribute('class', 'chip');
+        g.innerHTML = '<rect class="box" x="' + x + '" y="110" width="60" height="30" rx="3"/>' +
+          '<path class="ficon" d="M' + (x + 6) + ' 116h7l3 3v12h-10z"/><rect x="' + (x + 7.5) + '" y="123" width="7" height="3" fill="' + f[2] + '"/>' +
+          '<text x="' + (x + 20) + '" y="123">' + f[0] + '</text><text class="size" x="' + (x + 20) + '" y="133">' + f[1] + '</text>';
+        chips.appendChild(g);
+        list.push(g);
+        await g.animate([{ transform: 'translate(70px, -90px) rotate(10deg)', opacity: 0 }, { opacity: 1, offset: .3 }, { transform: 'none', opacity: 1 }],
+          { duration: 650, easing: OUT }).finished.catch(function () {});
+        bump();
+        count();
+        await wait(700);
+      }
+      say('await attachment.getData()');
+      await wait(400);
+      list[0].classList.add('hot');
+      await flyPacket(out, 82, 125, 82, 172, '#ED168F', 800, 'Blob');
+      list[0].classList.remove('hot');
+      await wait(500);
+      while (list.length) {
+        var c = list.pop();
+        say('attachment.remove()');
+        c.classList.add('hot');
+        await wait(350);
+        await c.animate([{ opacity: 1, transform: 'none' }, { opacity: 0, transform: 'translateY(8px)' }], { duration: 400, easing: 'ease-in' }).finished.catch(function () {});
+        c.remove();
+        bump();
+        count();
+        await wait(300);
+      }
+      await wait(600);
+    }
+  }
+
+  /* Population */
+  async function populateLoop() {
+    var stage = document.querySelector('.v-populate');
+    var links = document.getElementById('pop-links');
+    var callEl = document.getElementById('pop-call');
+    var OWNERS = [['alice', ['rex']], ['bob', ['tom', 'mimi']], ['carol', ['kiki']]];
+    for (var i = 0; ; i++) {
+      var o = OWNERS[i % OWNERS.length];
+      var pRow = stage.querySelector('[data-person="' + o[0] + '"]');
+      var pBox = pRow.querySelector('.row-bg');
+      var py = +pBox.getAttribute('y') + 15;
+      callEl.textContent = "await " + o[0] + ".populate('pets')";
+      callEl.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 250 });
+      pRow.classList.add('hot');
+      await wait(450);
+      var drawn = [];
+      o[1].forEach(function (pid, k) {
+        var row = stage.querySelector('[data-pet="' + pid + '"]');
+        var ty = +row.querySelector('.row-bg').getAttribute('y') + 11;
+        var path = document.createElementNS(SVGNS, 'path');
+        path.setAttribute('class', 'link');
+        path.setAttribute('pathLength', '1');
+        path.setAttribute('d', 'M118 ' + py + ' C 150 ' + py + ', 150 ' + ty + ', 182 ' + ty);
+        links.appendChild(path);
+        drawn.push(path);
+        path.animate([{ strokeDashoffset: 1 }, { strokeDashoffset: 0 }], { duration: 600, delay: k * 160, easing: 'ease-in-out', fill: 'forwards' });
+        wait(600 + k * 160).then(function () {
+          row.classList.add('hot');
+          row.querySelector('.paw').animate([{ transform: 'none' }, { transform: 'scale(1.5)' }, { transform: 'none' }], { duration: 450, easing: POP });
+        });
+      });
+      await wait(900 + (o[1].length - 1) * 160);
+      callEl.textContent = '//> [' + o[1].map(function (p) { return 'RxDocument ' + p; }).join(', ') + ']';
+      await wait(1500);
+      drawn.forEach(function (path) {
+        path.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 300, fill: 'forwards' }).finished.catch(function () {}).then(function () { path.remove(); });
+      });
+      stage.querySelectorAll('.prow.hot').forEach(function (r) { r.classList.remove('hot'); });
+      await wait(400);
+    }
+  }
+
+  /* Worker storage */
+  async function workerLoop() {
+    var msgs = document.getElementById('worker-msgs');
+    var cyl = document.getElementById('worker-cyl');
+    var cpu = document.getElementById('worker-cpu');
+    var db = document.getElementById('worker-db');
+    var CALLS = [
+      ['bulkWrite', 'ok', true],
+      ['query', '3 docs', false],
+      ['count', '42', false],
+      ['bulkWrite', 'ok', true],
+      ['findDocumentsById', '1 doc', false]
+    ];
+    var id = 11, k = 0;
+    for (;;) {
+      await wait(500);
+      var call = CALLS[k++ % CALLS.length];
+      id++;
+      await flyPacket(msgs, 92, 56, 208, 56, '#FFFFFF', 900, call[0] + ' #' + id);
+      cyl.classList.add('busy');
+      cpu.animate([{ transform: 'scaleX(0)' }, { transform: 'scaleX(1)', offset: .7 }, { transform: 'scaleX(.15)' }], { duration: 700, easing: 'ease-out' });
+      await wait(700);
+      cyl.classList.remove('busy');
+      var answer = flyPacket(msgs, 208, 92, 92, 92, '#ED168F', 900, '#' + id + ' ' + call[1]);
+      if (call[2]) {
+        await wait(260);
+        flyPacket(msgs, 208, 92, 92, 92, '#B2218B', 900, 'changeStream');
+      }
+      await answer;
+      ['b1', 'b2', 'b3'].forEach(function (name, i) {
+        db.querySelector('.' + name).animate([{ transform: 'none' }, { transform: 'translateX(4px)' }, { transform: 'none' }], { duration: 380, delay: i * 70, easing: OUT });
+      });
+    }
+  }
+
+  /* RxServer */
+  async function serverLoop() {
+    var pkts = document.getElementById('srv-pkts');
+    var db = document.getElementById('srv-db');
+    var DEV = { phone: [27, 34], laptop: [34, 74], curl: [33, 112] };
+    var A = [104, 56], B = [104, 104];
+    function hit(unit, bar) {
+      document.getElementById('srv-led-' + unit).animate([{ fill: '#ED168F' }, { fill: '#ED168F', offset: .6 }, { fill: '#4B4F66' }], { duration: 700 });
+      document.getElementById('srv-link-' + unit).animate([{ opacity: 0 }, { opacity: .9, offset: .2 }, { opacity: 0 }], { duration: 700 });
+      db.querySelector('.' + bar).animate([{ transform: 'none' }, { transform: 'translateX(-4px)' }, { transform: 'none' }], { duration: 380, delay: 120, easing: OUT });
+    }
+    var STEPS = [
+      async function () {
+        await flyPacket(pkts, DEV.laptop[0], DEV.laptop[1], A[0], A[1], '#FFFFFF', 700);
+        hit('a', 'b2');
+        await wait(350);
+        await Promise.all([
+          flyPacket(pkts, A[0], A[1], DEV.phone[0], DEV.phone[1], '#B2218B', 700),
+          flyPacket(pkts, A[0], A[1], DEV.laptop[0], DEV.laptop[1], '#B2218B', 700)
+        ]);
+      },
+      async function () {
+        await flyPacket(pkts, DEV.curl[0], DEV.curl[1], B[0], B[1], '#FFFFFF', 700);
+        hit('b', 'b3');
+        await wait(350);
+        await flyPacket(pkts, B[0], B[1], DEV.curl[0], DEV.curl[1], '#752A8A', 700);
+      },
+      async function () {
+        await flyPacket(pkts, DEV.phone[0], DEV.phone[1], A[0], A[1], '#FFFFFF', 700);
+        hit('a', 'b1');
+        await wait(350);
+        await Promise.all([
+          flyPacket(pkts, A[0], A[1], DEV.phone[0], DEV.phone[1], '#ED168F', 700),
+          flyPacket(pkts, A[0], A[1], DEV.laptop[0], DEV.laptop[1], '#ED168F', 700)
+        ]);
+      }
+    ];
+    for (var i = 0; ; i++) {
+      await wait(500);
+      await STEPS[i % STEPS.length]();
+    }
+  }
+
   /* Partial sync by chunk */
   var CHUNK = { cols: 6, rows: 4, size: 24, pitch: 27, x: 12, y: 34 };
   var CHUNK_TARGET = { x: 224, y: 87 };
@@ -2385,7 +2397,6 @@ footer { font-size: 13px; color: var(--muted); display: flex; flex-direction: co
     started.forEach(function (s) {
       s.el.querySelector('.base').animate([{ transform: 'scale(.82)' }, { transform: 'none' }], { duration: 420, easing: POP });
     });
-    document.getElementById('chunk-count').textContent = chunkState.filter(function (s) { return s.on; }).length;
     if (stopped.length) chunkLog('stop', 'cancel  voxels-chunk-' + stopped.map(function (s) { return chunkId(s.c, s.r); }).join(', '));
     var resumed = started.filter(function (s) { return s.seen; });
     var fresh = started.filter(function (s) { return !s.seen; });
@@ -2547,7 +2558,7 @@ footer { font-size: 13px; color: var(--muted); display: flex; flex-direction: co
 
   /* Worker: main thread ticks */
   document.getElementById('ticks').innerHTML = Array.from({ length: 24 }, function (_, i) {
-    return '<rect class="tick" x="' + (12 + i * 12) + '" y="11" width="6" height="8" rx="1"/>';
+    return '<rect class="tick" x="' + (14 + i * 12) + '" y="134" width="6" height="6" rx="1"/>';
   }).join('');
 
   /* RxState */
@@ -2621,6 +2632,10 @@ footer { font-size: 13px; color: var(--muted); display: flex; flex-direction: co
     queryLoop();
     chunkWalkLoop();
     chunkPacketLoop();
+    workerLoop();
+    serverLoop();
+    attachLoop();
+    populateLoop();
     revLoop();
     vectorLoop();
   }
@@ -2628,13 +2643,11 @@ footer { font-size: 13px; color: var(--muted); display: flex; flex-direction: co
   if (!reduce) {
     cipherLoop();
     leaderLoop();
-    idleLoop();
   }
 
   if (!reduce) {
     heroLoop();
     runtimeLoop();
-    blinkLoop();
     storageLoop();
     if ('IntersectionObserver' in window) {
       var io = new IntersectionObserver(function (entries) {
