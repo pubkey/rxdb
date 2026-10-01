@@ -469,7 +469,7 @@
     "test:replication-google-drive": "npm run transpile && cross-env DEFAULT_STORAGE=dexie tsx ./node_modules/mocha/bin/mocha --config ./config/.mocharc.cjs ./test/replication-google-drive.test.ts",
     "test:replication-microsoft-onedrive": "npm run transpile && cross-env DEFAULT_STORAGE=dexie tsx ./node_modules/mocha/bin/mocha --config ./config/.mocharc.cjs ./test/replication-microsoft-onedrive.test.ts",
     "test:full": "npm run transpile && mocha ./test_tmp/unit/full.node.js",
-    "test:typings": "npm run build:plugins && tsc --allowImportingTsExtensions --noEmit --skipLibCheck --lib \"ES2022,DOM\" ./test/typings.test.ts",
+    "test:typings": "npm run build:plugins && tsc --ignoreConfig --allowImportingTsExtensions --noEmit --skipLibCheck --lib \"ES2022,DOM\" ./test/typings.test.ts",
     "test:deps": "npm run build && dependency-check ./package.json ./dist/cjs/index.js ./dist/cjs/plugins/validate-is-my-json-valid/index.js ./dist/cjs/plugins/attachments-compression/index.js ./dist/cjs/plugins/validate-ajv/index.js ./dist/cjs/plugins/update/index.js ./dist/cjs/plugins/key-compression/index.js ./dist/cjs/plugins/dev-mode/index.js ./dist/cjs/plugins/encryption-crypto-js/index.js ./dist/cjs/plugins/replication-graphql/index.js ./dist/cjs/plugins/replication-webrtc/index.js ./dist/cjs/plugins/replication-websocket/index.js ./dist/cjs/plugins/replication-firestore/index.js ./dist/cjs/plugins/replication-nats/index.js ./dist/cjs/plugins/validate-z-schema/index.js ./dist/cjs/plugins/storage-dexie/index.js ./dist/cjs/plugins/storage-memory/index.js ./dist/cjs/plugins/storage-mongodb/index.js ./dist/cjs/plugins/reactivity-angular/index.js ./dist/cjs/plugins/reactivity-vue/index.js ./dist/cjs/plugins/react/index.js ./dist/cjs/plugins/reactivity-preact-signals/index.js --no-dev --ignore-module url --ignore-module ws --ignore-module graphql --ignore-module as-typed --ignore-module \"@types/*\"",
     "test:circular": "npm run build && npm run build:test && madge --circular ./dist/esm/index.js && madge --circular ./dist/esm/plugins/storage-dexie/index.js && madge --circular test_tmp",
     "test:performance:dexie": "npm run transpile && cross-env DEFAULT_STORAGE=dexie CI=true karma start ./config/karma.performance.conf.cjs --single-run",
@@ -567,7 +567,7 @@
     }
   },
   "dependencies": {
-    "@babel/runtime": "7.29.7",
+    "@babel/runtime": "8.0.5",
     "@types/simple-peer": "9.11.9",
     "@types/ws": "8.18.1",
     "ajv": "8.20.0",
@@ -594,19 +594,19 @@
   },
   "devDependencies": {
     "@angular/core": "22.2.0",
-    "@babel/cli": "7.29.7",
-    "@babel/core": "7.29.7",
-    "@babel/plugin-external-helpers": "7.29.7",
-    "@babel/plugin-transform-class-properties": "7.29.7",
-    "@babel/plugin-transform-explicit-resource-management": "7.29.7",
-    "@babel/plugin-transform-literals": "7.29.7",
-    "@babel/plugin-transform-modules-commonjs": "7.29.7",
-    "@babel/plugin-transform-react-jsx": "7.29.7",
-    "@babel/plugin-transform-runtime": "7.29.7",
-    "@babel/plugin-transform-template-literals": "7.29.7",
-    "@babel/plugin-transform-typescript": "7.29.9",
-    "@babel/preset-env": "7.29.7",
-    "@babel/preset-typescript": "7.29.7",
+    "@babel/cli": "8.0.6",
+    "@babel/core": "8.0.6",
+    "@babel/plugin-external-helpers": "8.0.1",
+    "@babel/plugin-transform-class-properties": "8.0.1",
+    "@babel/plugin-transform-explicit-resource-management": "8.0.5",
+    "@babel/plugin-transform-literals": "8.0.1",
+    "@babel/plugin-transform-modules-commonjs": "8.0.1",
+    "@babel/plugin-transform-react-jsx": "8.0.1",
+    "@babel/plugin-transform-runtime": "8.0.6",
+    "@babel/plugin-transform-template-literals": "8.0.1",
+    "@babel/plugin-transform-typescript": "8.0.6",
+    "@babel/preset-env": "8.0.6",
+    "@babel/preset-typescript": "8.0.1",
     "@eslint/compat": "2.1.1",
     "@eslint/eslintrc": "3.3.7",
     "@eslint/js": "10.0.1",
@@ -621,7 +621,7 @@
     "@types/cors": "2.8.19",
     "@types/crypto-js": "4.2.2",
     "@types/mocha": "10.0.10",
-    "@types/node": "24.13.6",
+    "@types/node": "26.6.2",
     "@types/react": "19.3.0",
     "@types/source-map-support": "0.5.10",
     "@typescript-eslint/eslint-plugin": "8.70.1",
@@ -691,7 +691,7 @@
     "terser-webpack-plugin": "5.6.1",
     "ts-loader": "9.6.2",
     "tsx": "4.23.15",
-    "typescript": "5.9.3",
+    "typescript": "6.0.3",
     "vue": "3.5.43",
     "webpack": "5.111.1",
     "webpack-bundle-analyzer": "5.4.0",
@@ -707,6 +707,9 @@
     },
     "graphql-subscriptions": {
       "graphql": "$graphql"
+    },
+    "madge": {
+      "typescript": "$typescript"
     }
   }
 }
