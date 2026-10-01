@@ -1,0 +1,1 @@
+- FIX queries that sort by a nested field (for example `sort: [{ 'address.city': 'asc' }]`) threw `TypeError: Cannot read properties of null` when a document had `null` as the value of the parent object (`address: null`). The nested path lookup now treats a `null` parent like a missing one. Added a test case in `test/unit/rx-query.test.ts`.
