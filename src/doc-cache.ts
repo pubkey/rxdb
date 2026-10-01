@@ -33,7 +33,8 @@ declare type CacheItem<RxDocType, OrmMethods> = [
      * because when cleanup is used, two document states can end up with
      * the same revision but different _meta.lwt.
      * Therefore on each lookup the _meta.lwt of the cached RxDocument
-     * is compared with the _meta.lwt of the requested document state.
+     * is compared with the _meta.lwt of the requested document state,
+     * and the other states are stored in the third element of the CacheItem.
      * @performance The _meta.lwt is not part of the Map key
      * because converting the float lwt to a string is slow.
      */
@@ -52,7 +53,15 @@ declare type CacheItem<RxDocType, OrmMethods> = [
      * To not prevent the whole cacheItem from being garbage collected,
      * we store only the document data here, but not the RxDocument.
      */
-    RxDocumentData<RxDocType>
+    RxDocumentData<RxDocType>,
+
+    /**
+     * Document states that have the same revision as the state
+     * in the first Map but a different _meta.lwt.
+     * Stored by [revision|_meta.lwt].
+     * Only created when such a state exists, which is rare.
+     */
+    Map<string, WeakRef<RxDocument<RxDocType, OrmMethods>>>?
 ];
 
 
@@ -98,14 +107,25 @@ export class DocumentCache<RxDocType, OrmMethods> {
                 const byRev = cacheItem[0];
                 const weakRef = byRev.get(docMeta.rev);
                 /**
-                 * The entry might already have been replaced
-                 * by a document state with the same revision but a different lwt
+                 * Only remove entries whose RxDocument is garbage collected.
+                 * An entry might already have been replaced by another document state
                  * which must not be removed.
                  */
                 if (weakRef && !weakRef.deref()) {
                     byRev.delete(docMeta.rev);
                 }
-                if (cacheItem[0].size === 0) {
+                const byRevAndLwt = cacheItem[2];
+                if (byRevAndLwt) {
+                    const key = revAndLwtKey(docMeta.rev, docMeta.lwt);
+                    const otherWeakRef = byRevAndLwt.get(key);
+                    if (otherWeakRef && !otherWeakRef.deref()) {
+                        byRevAndLwt.delete(key);
+                    }
+                    if (byRevAndLwt.size === 0) {
+                        cacheItem[2] = undefined;
+                    }
+                }
+                if (byRev.size === 0 && !cacheItem[2]) {
                     /**
                      * No state of the document is cached anymore,
                      * so we can clean up.
@@ -260,6 +280,53 @@ function isOlderDocumentState(checkRev: string, currentRev: string): boolean {
     return checkRev < currentRev;
 }
 
+function revAndLwtKey(rev: string, lwt: number): string {
+    return rev + '|' + lwt;
+}
+
+/**
+ * Returns the cached RxDocument of a document state
+ * that has the same revision as the one in the revision Map
+ * but a different _meta.lwt.
+ */
+function getFromOtherStates<RxDocType, OrmMethods>(
+    cacheItem: CacheItem<RxDocType, OrmMethods>,
+    rev: string,
+    lwt: number
+): RxDocument<RxDocType, OrmMethods> | undefined {
+    const byRevAndLwt = cacheItem[2];
+    if (!byRevAndLwt) {
+        return undefined;
+    }
+    const weakRef = byRevAndLwt.get(revAndLwtKey(rev, lwt));
+    return weakRef ? weakRef.deref() : undefined;
+}
+
+function addToCacheItem<RxDocType, OrmMethods>(
+    cacheItem: CacheItem<RxDocType, OrmMethods>,
+    rev: string,
+    lwt: number,
+    rxDocument: RxDocument<RxDocType, OrmMethods>
+) {
+    const byRev = cacheItem[0];
+    const existingWeakRef = byRev.get(rev);
+    const existing = existingWeakRef ? existingWeakRef.deref() : undefined;
+    if (existing && existing._data._meta.lwt !== lwt) {
+        /**
+         * Another state with the same revision is still in use,
+         * so it must not be replaced.
+         */
+        let byRevAndLwt = cacheItem[2];
+        if (!byRevAndLwt) {
+            byRevAndLwt = new Map();
+            cacheItem[2] = byRevAndLwt;
+        }
+        byRevAndLwt.set(revAndLwtKey(rev, lwt), createWeakRefWithFallback(rxDocument));
+    } else {
+        byRev.set(rev, createWeakRefWithFallback(rxDocument));
+    }
+}
+
 /**
  * @hotPath Dedicated single-document function that avoids array allocations.
  * Used by getCachedRxDocument which is called from many call sites.
@@ -302,13 +369,15 @@ function getCachedRxDocumentSingle<RxDocType, OrmMethods>(
             return newDoc;
         }
 
-        const byRev = cacheItem[0];
-        const cachedRxDocumentWeakRef = byRev.get(rev);
+        const cachedRxDocumentWeakRef = cacheItem[0].get(rev);
         let cachedRxDocument = cachedRxDocumentWeakRef ? cachedRxDocumentWeakRef.deref() : undefined;
-        if (!cachedRxDocument || cachedRxDocument._data._meta.lwt !== lwt) {
+        if (
+            (!cachedRxDocument || cachedRxDocument._data._meta.lwt !== lwt) &&
+            !(cachedRxDocument = getFromOtherStates(cacheItem, rev, lwt))
+        ) {
             docData = deepFreezeWhenDevMode(docData) as any;
             cachedRxDocument = documentCreator(docData) as RxDocument<RxDocType, OrmMethods>;
-            byRev.set(rev, createWeakRefWithFallback(cachedRxDocument));
+            addToCacheItem(cacheItem, rev, lwt, cachedRxDocument);
             if (registry) {
                 const registeredDoc = cachedRxDocument;
                 docCache.tasks.add(() => {
@@ -372,13 +441,15 @@ function getCachedRxDocumentMonad<RxDocType, OrmMethods>(
                     registryTasks.push({ doc: cachedRxDocument, rev, lwt });
                 }
             } else {
-                const byRev = cacheItem[0];
-                const cachedRxDocumentWeakRef = byRev.get(rev);
+                const cachedRxDocumentWeakRef = cacheItem[0].get(rev);
                 let cachedRxDocument = cachedRxDocumentWeakRef ? cachedRxDocumentWeakRef.deref() : undefined;
-                if (!cachedRxDocument || cachedRxDocument._data._meta.lwt !== lwt) {
+                if (
+                    (!cachedRxDocument || cachedRxDocument._data._meta.lwt !== lwt) &&
+                    !(cachedRxDocument = getFromOtherStates(cacheItem, rev, lwt))
+                ) {
                     docData = deepFreezeWhenDevMode(docData) as any;
                     cachedRxDocument = documentCreator(docData) as RxDocument<RxDocType, OrmMethods>;
-                    byRev.set(rev, createWeakRefWithFallback(cachedRxDocument));
+                    addToCacheItem(cacheItem, rev, lwt, cachedRxDocument);
                     if (registry) {
                         if (!registryTasks) {
                             registryTasks = [];
