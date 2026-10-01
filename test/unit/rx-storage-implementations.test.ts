@@ -1121,6 +1121,59 @@ describe('rx-storage-implementations.test.ts (implementation: ' + config.storage
                 assert.strictEqual(error.status, 409);
                 storageInstance.close();
             });
+            /**
+             * The schema migration and the replication push
+             * run multiple bulkWrite() calls in parallel.
+             * @link https://github.com/pubkey/rxdb/issues/9145
+             */
+            it('#9145 must persist all documents of parallel bulkWrite() calls with multiInstance: false', async () => {
+                const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
+                    databaseInstanceToken: randomToken(10),
+                    databaseName: randomToken(12),
+                    collectionName: randomToken(12),
+                    schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
+                    options: {},
+                    multiInstance: false,
+                    devMode: true
+                });
+
+                /**
+                 * Run a read first so that storages which cache
+                 * their internal state already have it initialized,
+                 * like it is the case when the migration writes.
+                 */
+                await storageInstance.findDocumentsById(['foobar'], false);
+
+                const batchAmount = 5;
+                const docsPerBatch = 50;
+                const allIds: string[] = [];
+                const results = await Promise.all(
+                    new Array(batchAmount).fill(0).map((_v, batchNr) => {
+                        const writeRows = new Array(docsPerBatch).fill(0).map((_v2, i) => {
+                            const key = 'b' + batchNr + '-d' + (i + '').padStart(3, '0');
+                            allIds.push(key);
+                            const document: RxDocumentWriteData<TestDocType> = {
+                                key,
+                                value: 'value-' + key,
+                                _deleted: false,
+                                _attachments: {},
+                                _rev: EXAMPLE_REVISION_1,
+                                _meta: {
+                                    lwt: now()
+                                }
+                            };
+                            return { document };
+                        });
+                        return storageInstance.bulkWrite(writeRows, testContext);
+                    })
+                );
+                results.forEach(result => assert.deepStrictEqual(result.error, []));
+
+                const found = await storageInstance.findDocumentsById(allIds, false);
+                assert.strictEqual(found.length, batchAmount * docsPerBatch);
+
+                await storageInstance.close();
+            });
         });
         describe('.prepareQuery()', () => {
             it('must not crash', () => {

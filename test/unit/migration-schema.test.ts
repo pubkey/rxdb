@@ -2626,6 +2626,70 @@ describe('migration-schema.test.ts', function () {
             await db2.close();
         });
         /**
+         * The migration pushes multiple batches in parallel into the new storage.
+         * With multiInstance: false, the premium IndexedDB storage lost
+         * whole batches when three or more batches were needed.
+         * @link https://github.com/pubkey/rxdb/issues/9145
+         */
+        it('#9145 must keep all documents when the migration needs multiple batches with multiInstance: false', async () => {
+            const name = randomToken(10);
+            const docsAmount = 90;
+            const batchSize = 20;
+            const getSchema = (version: number) => ({
+                version,
+                primaryKey: 'id',
+                type: 'object' as const,
+                properties: {
+                    id: {
+                        type: 'string',
+                        maxLength: 100
+                    },
+                    n: {
+                        type: 'number'
+                    }
+                },
+                required: ['id', 'n']
+            });
+
+            const db = await createRxDatabase({
+                name,
+                storage: config.storage.getStorage(),
+                multiInstance: false
+            });
+            await db.addCollections({
+                docs: {
+                    schema: getSchema(0)
+                }
+            });
+            await db.docs.bulkInsert(
+                new Array(docsAmount).fill(0).map((_v, i) => ({
+                    id: 'd' + (i + '').padStart(5, '0'),
+                    n: i
+                }))
+            );
+            await db.close();
+
+            const db2 = await createRxDatabase({
+                name,
+                storage: config.storage.getStorage(),
+                multiInstance: false
+            });
+            await db2.addCollections({
+                docs: {
+                    schema: getSchema(1),
+                    autoMigrate: false,
+                    migrationStrategies: {
+                        1: (doc: any) => doc
+                    }
+                }
+            });
+            await db2.docs.getMigrationState().migratePromise(batchSize);
+            const count = await db2.docs.count().exec();
+            assert.strictEqual(count, docsAmount);
+
+            await db2.remove();
+        });
+        /**
          * An interrupted schema migration could never complete.
          * As soon as a document was already stored in the new storage,
          * the migration ran in an endless cycle:
