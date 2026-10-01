@@ -125,6 +125,17 @@ export class RxSchema<RxDocType = any> {
                 hashByInput.delete(hashByInput.keys().next().value as string);
             }
             hashByInput.set(input, hash);
+            /**
+             * A failed hashing must not be cached
+             * so that the next call can try again.
+             */
+            const cachedHash = hash;
+            const cache = hashByInput;
+            Promise.resolve(cachedHash).catch(() => {
+                if (cache.get(input) === cachedHash) {
+                    cache.delete(input);
+                }
+            });
         }
         return overwriteGetterForCaching(
             this,
