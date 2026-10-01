@@ -1,0 +1,1 @@
+- ADD tests that parallel `bulkWrite()` calls and a schema migration with multiple batches keep all documents when `multiInstance: false` is used. See [#9145](https://github.com/pubkey/rxdb/issues/9145)
