@@ -519,18 +519,12 @@ p { margin: 0; max-width: 62ch; }
 /* F5. Attachments */
 .v-attach .mail { fill: #171A29; stroke: var(--muted); stroke-width: 1.2; }
 .v-attach .rule { stroke: var(--line); stroke-width: 1; }
-.v-attach .hd { fill: var(--fg); font-size: 8px; }
-.v-attach .sub { fill: var(--muted); font-size: 7px; }
-.v-attach .fld { fill: var(--fg); font-size: 8px; }
-.v-attach .fld tspan.k { fill: var(--muted); }
-.v-attach .paperclip { fill: none; stroke: var(--muted); stroke-width: 1.3; stroke-linecap: round; }
-.v-attach .chip rect.box { fill: #1E2236; stroke: var(--line); stroke-width: 1; transition: stroke .2s; }
-.v-attach .chip.hot rect.box { stroke: var(--pink); }
+.v-attach .hd { fill: var(--fg); font-size: 9px; }
+.v-attach .line { fill: var(--line); }
+.v-attach .paperclip { fill: none; stroke: var(--muted); stroke-width: 1.4; stroke-linecap: round; }
+.v-attach .chip rect.box { fill: #1E2236; stroke: var(--line); stroke-width: 1; }
 .v-attach .chip text { font-size: 7px; fill: var(--fg); }
-.v-attach .chip text.size { fill: var(--muted); font-size: 6px; }
 .v-attach .chip .ficon { fill: var(--white); }
-.v-attach .caption { font-size: 11px; }
-.v-attach .caption code { color: var(--pink); }
 
 /* F6. CRDT */
 .v-crdt .op { transform-box: fill-box; transform-origin: center; opacity: 0; }
@@ -701,10 +695,6 @@ p { margin: 0; max-width: 62ch; }
 .v-chunks .link.on { opacity: .5; }
 .v-chunks .pkt { transform-box: fill-box; }
 .v-chunks .clbl { fill: var(--muted); font-size: 8px; letter-spacing: .04em; }
-.v-chunks .clog { font-size: 8px; letter-spacing: .02em; }
-.v-chunks .clog .start { fill: var(--pink); }
-.v-chunks .clog .stop { fill: var(--muted); }
-.v-chunks .clog .resume { fill: var(--white); }
 .v-chunks .avatar .limb { transform-box: fill-box; transform-origin: 50% 0; }
 @keyframes chunk-flow { to { stroke-dashoffset: -5; } }
 
@@ -1330,27 +1320,23 @@ footer { font-size: 13px; color: var(--muted); display: flex; flex-direction: co
 
       <article class="card">
         <div class="stage v-attach">
-          <svg class="logo" viewBox="0 0 300 160" role="img" aria-label="An RxDocument shown like an email: files get attached to it with putAttachment, read with getData, and removed again">
-            <rect class="mail" x="40" y="6" width="220" height="148" rx="6"/>
-            <svg x="50" y="14" width="14" height="19" viewBox="0 0 103.33 140" data-logo></svg>
-            <text class="hd" x="70" y="23">RxDocument</text>
-            <text class="sub" x="70" y="32">heroes / alice</text>
-            <text class="sub" id="att-rev" x="250" y="23" text-anchor="end">_rev 1-a3f9</text>
-            <line class="rule" x1="48" y1="42" x2="252" y2="42"/>
-            <text class="fld" x="52" y="58"><tspan class="k">name:</tspan> 'Alice'</text>
-            <text class="fld" x="52" y="72"><tspan class="k">age:</tspan> 32</text>
-            <line class="rule" x1="48" y1="84" x2="252" y2="84"/>
-            <path class="paperclip" d="M55 102v-8a2.6 2.6 0 0 1 5.2 0v10a4 4 0 0 1-8 0v-7"/>
-            <text class="sub" id="att-count" x="66" y="101">_attachments (0)</text>
+          <svg class="logo" viewBox="0 0 300 160" role="img" aria-label="Files get attached to an RxDocument like attachments to an email">
+            <rect class="mail" x="50" y="10" width="200" height="140" rx="6"/>
+            <svg x="62" y="20" width="16" height="21.7" viewBox="0 0 103.33 140" data-logo></svg>
+            <text class="hd" x="86" y="35">RxDocument alice</text>
+            <line class="rule" x1="58" y1="50" x2="242" y2="50"/>
+            <rect class="line" x="64" y="62" width="120" height="5" rx="2.5"/>
+            <rect class="line" x="64" y="74" width="90" height="5" rx="2.5"/>
+            <line class="rule" x1="58" y1="92" x2="242" y2="92"/>
+            <path class="paperclip" d="M66 116v-10a3 3 0 0 1 6 0v12a4.6 4.6 0 0 1-9.2 0v-8"/>
             <g id="att-chips"></g>
-            <g id="att-out"></g>
           </svg>
-          <span class="caption"><code id="att-call">doc.putAttachment()</code></span>
+          <span class="caption"><code>doc.putAttachment(file)</code></span>
           <span class="tag">rx-attachment</span>
         </div>
         <div class="meta">
-          <div class="row"><h3>Attachments</h3><span class="spec">call loop · WAAPI</span></div>
-          <p>An attachment hangs on a document the way a file hangs on an email. putAttachment() adds a file and writes a new revision, getData() reads it back as a Blob, and remove() takes it off again.</p>
+          <div class="row"><h3>Attachments</h3><span class="spec">loop · WAAPI</span></div>
+          <p>Files hang on a document the way attachments hang on an email. Each putAttachment() clips one more file to the document.</p>
           <a class="doclink" href="https://rxdb.info/rx-attachment.html" target="_blank" rel="noopener">Docs: Attachments</a>
         </div>
       </article>
@@ -1521,7 +1507,7 @@ footer { font-size: 13px; color: var(--muted); display: flex; flex-direction: co
 
       <article class="card">
         <div class="stage v-chunks">
-          <svg class="logo" viewBox="0 0 300 200" role="img" aria-label="A blocky avatar walks across world chunks; chunks within its render distance start syncing to the RxDB logo and chunks it leaves stop syncing">
+          <svg class="logo" viewBox="0 0 300 150" role="img" aria-label="A blocky avatar walks across world chunks; chunks within its render distance start syncing to the RxDB logo and chunks it leaves stop syncing">
             <g id="chunk-grid"></g>
             <g id="chunk-links"></g>
             <g id="chunk-pkts"></g>
@@ -1541,7 +1527,6 @@ footer { font-size: 13px; color: var(--muted); display: flex; flex-direction: co
             </g>
             <svg id="chunk-logo" x="222" y="46" width="60" height="81" viewBox="0 0 103.33 140" data-logo></svg>
             <text class="clbl" x="252" y="140" text-anchor="middle">db.voxels</text>
-            <g class="clog"><text id="chunk-log-1" x="12" y="172"></text><text id="chunk-log-2" x="12" y="184"></text></g>
           </svg>
           <span class="tag">partial sync · chunks</span>
         </div>
@@ -2154,60 +2139,29 @@ footer { font-size: 13px; color: var(--muted); display: flex; flex-direction: co
   /* Attachments */
   async function attachLoop() {
     var chips = document.getElementById('att-chips');
-    var out = document.getElementById('att-out');
-    var call = document.getElementById('att-call');
-    var revEl = document.getElementById('att-rev');
-    var countEl = document.getElementById('att-count');
-    var FILES = [['cat.jpg', '42 kB', '#ED168F'], ['notes.pdf', '118 kB', '#B2218B'], ['song.mp3', '3.1 MB', '#752A8A']];
-    var rev = 1, list = [];
-    function hash() { return Math.floor(Math.random() * 65536).toString(16).padStart(4, '0'); }
-    function bump() {
-      rev++;
-      revEl.textContent = '_rev ' + rev + '-' + hash();
-      revEl.animate([{ fill: '#ED168F' }, { fill: '#A29DB6' }], { duration: 700 });
-    }
-    function say(text) {
-      call.textContent = text;
-      call.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 250 });
-    }
-    function count() { countEl.textContent = '_attachments (' + list.length + ')'; }
+    var FILES = [['cat.jpg', '#ED168F'], ['notes.pdf', '#B2218B'], ['song.mp3', '#752A8A']];
     for (;;) {
+      var list = [];
       for (var i = 0; i < FILES.length; i++) {
         var f = FILES[i];
-        say("doc.putAttachment({ id: '" + f[0] + "' })");
-        await wait(500);
-        var x = 52 + i * 66;
+        var x = 76 + i * 58;
         var g = document.createElementNS(SVGNS, 'g');
         g.setAttribute('class', 'chip');
-        g.innerHTML = '<rect class="box" x="' + x + '" y="110" width="60" height="30" rx="3"/>' +
-          '<path class="ficon" d="M' + (x + 6) + ' 116h7l3 3v12h-10z"/><rect x="' + (x + 7.5) + '" y="123" width="7" height="3" fill="' + f[2] + '"/>' +
-          '<text x="' + (x + 20) + '" y="123">' + f[0] + '</text><text class="size" x="' + (x + 20) + '" y="133">' + f[1] + '</text>';
+        g.innerHTML = '<rect class="box" x="' + x + '" y="102" width="55" height="22" rx="3"/>' +
+          '<path class="ficon" d="M' + (x + 5) + ' 107h6l3 3v9h-9z"/><rect x="' + (x + 6) + '" y="113" width="6" height="3" fill="' + f[1] + '"/>' +
+          '<text x="' + (x + 16) + '" y="116">' + f[0] + '</text>';
         chips.appendChild(g);
         list.push(g);
-        await g.animate([{ transform: 'translate(70px, -90px) rotate(10deg)', opacity: 0 }, { opacity: 1, offset: .3 }, { transform: 'none', opacity: 1 }],
-          { duration: 650, easing: OUT }).finished.catch(function () {});
-        bump();
-        count();
+        await g.animate([{ transform: 'translate(60px, -80px) rotate(10deg)', opacity: 0 }, { opacity: 1, offset: .3 }, { transform: 'none', opacity: 1 }],
+          { duration: 700, easing: OUT }).finished.catch(function () {});
         await wait(700);
       }
-      say('await attachment.getData()');
-      await wait(400);
-      list[0].classList.add('hot');
-      await flyPacket(out, 82, 125, 82, 172, '#ED168F', 800, 'Blob');
-      list[0].classList.remove('hot');
+      await wait(1500);
+      await Promise.all(list.map(function (c) {
+        return c.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 400 }).finished.catch(function () {});
+      }));
+      list.forEach(function (c) { c.remove(); });
       await wait(500);
-      while (list.length) {
-        var c = list.pop();
-        say('attachment.remove()');
-        c.classList.add('hot');
-        await wait(350);
-        await c.animate([{ opacity: 1, transform: 'none' }, { opacity: 0, transform: 'translateY(8px)' }], { duration: 400, easing: 'ease-in' }).finished.catch(function () {});
-        c.remove();
-        bump();
-        count();
-        await wait(300);
-      }
-      await wait(600);
     }
   }
 
@@ -2369,24 +2323,14 @@ footer { font-size: 13px; color: var(--muted); display: flex; flex-direction: co
       }
     }
   }
-  function chunkLog(kind, text) {
-    var a = document.getElementById('chunk-log-1');
-    var b = document.getElementById('chunk-log-2');
-    b.textContent = a.textContent;
-    b.setAttribute('class', a.getAttribute('class') || '');
-    a.textContent = text;
-    a.setAttribute('class', kind);
-    a.animate([{ opacity: 0, transform: 'translateX(-6px)' }, { opacity: 1, transform: 'none' }], { duration: 300, easing: OUT });
-  }
   function reconcileChunks(pc, pr) {
-    var started = [], stopped = [];
+    var started = [];
     chunkState.forEach(function (s) {
       var near = Math.abs(s.c - pc) <= 1 && Math.abs(s.r - pr) <= 1;
       if (near && !s.on) {
         started.push(s);
         s.on = true;
       } else if (!near && s.on) {
-        stopped.push(s);
         s.on = false;
         s.seen = true;
       }
@@ -2397,11 +2341,6 @@ footer { font-size: 13px; color: var(--muted); display: flex; flex-direction: co
     started.forEach(function (s) {
       s.el.querySelector('.base').animate([{ transform: 'scale(.82)' }, { transform: 'none' }], { duration: 420, easing: POP });
     });
-    if (stopped.length) chunkLog('stop', 'cancel  voxels-chunk-' + stopped.map(function (s) { return chunkId(s.c, s.r); }).join(', '));
-    var resumed = started.filter(function (s) { return s.seen; });
-    var fresh = started.filter(function (s) { return !s.seen; });
-    if (fresh.length) chunkLog('start', 'start   voxels-chunk-' + fresh.map(function (s) { return chunkId(s.c, s.r); }).join(', '));
-    if (resumed.length) chunkLog('resume', 'resume  voxels-chunk-' + resumed.map(function (s) { return chunkId(s.c, s.r); }).join(', ') + ' from checkpoint');
   }
   function chunkPacket() {
     var active = chunkState.filter(function (s) { return s.on; });
