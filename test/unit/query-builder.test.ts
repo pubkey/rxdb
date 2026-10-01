@@ -1,13 +1,18 @@
 import assert from 'assert';
 
-import type {
-    MangoQuery
+import {
+    addRxPlugin,
+    type MangoQuery
 } from '../../plugins/core/index.mjs';
 
 import {
     NoSqlQueryBuilder,
-    createQueryBuilder
+    createQueryBuilder,
+    RxDBQueryBuilderPlugin
 } from '../../plugins/query-builder/index.mjs';
+addRxPlugin(RxDBQueryBuilderPlugin);
+
+import { humansCollection } from '../../plugins/test-utils/index.mjs';
 
 import './config.ts';
 
@@ -178,6 +183,40 @@ describe('query-builder.test.js', () => {
                     $ne: 'bar'
                 }
             });
+        });
+    });
+    describe('RxQuery', () => {
+        it('should merge an operator into a selector shorthand value via .where(object)', async () => {
+            const c = await humansCollection.create(0);
+            await c.bulkInsert([
+                { passportId: 'a', firstName: 'Alice', lastName: 'A', age: 5 },
+                { passportId: 'b', firstName: 'Bob', lastName: 'B', age: 7 },
+                { passportId: 'c', firstName: 'Carol', lastName: 'C', age: 7 }
+            ]);
+
+            const shorthandFirst = await c.find({
+                selector: {
+                    age: 7
+                }
+            }).where({
+                age: {
+                    $gt: 3
+                }
+            }).exec();
+            assert.deepStrictEqual(shorthandFirst.map(d => d.passportId), ['b', 'c']);
+
+            const operatorFirst = await c.find({
+                selector: {
+                    age: {
+                        $lt: 7
+                    }
+                }
+            }).where({
+                age: 7
+            }).exec();
+            assert.deepStrictEqual(operatorFirst.map(d => d.passportId), []);
+
+            c.database.close();
         });
     });
 });
