@@ -16,9 +16,9 @@ let portQueue: Promise<number> = PROMISE_RESOLVE_VOID as any;
  */
 export function nextPort(): Promise<number> {
     portQueue = portQueue.then(async () => {
-        const { default: getPort, makeRange } = await import('get-port' + '');
+        const { default: getPort, portNumbers } = await import('get-port' + '');
         const port = await getPort({
-            port: makeRange(startPort, PORT_MAX),
+            port: portNumbers(startPort, PORT_MAX),
             host: '0.0.0.0',
         });
         startPort = port + 1;
