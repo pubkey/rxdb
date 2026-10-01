@@ -275,10 +275,25 @@ export function registerWebMCPTarget(
      * Registries that do not support signals are served by unregisterTool().
      */
     const controller = typeof AbortController !== 'undefined' ? new AbortController() : undefined;
-    tools.forEach(tool => modelContext.registerTool(
-        tool,
-        controller ? { signal: controller.signal } : undefined
-    ));
+    tools.forEach(tool => {
+        const registration = modelContext.registerTool(
+            tool,
+            controller ? { signal: controller.signal } : undefined
+        );
+        /**
+         * Spec-conformant registries return a promise that rejects
+         * with the abort reason when the tool is unregistered
+         * before the registration has finished.
+         */
+        if (registration && typeof registration.then === 'function') {
+            registration.then(undefined, (err: any) => {
+                if (controller && controller.signal.aborted && err === controller.signal.reason) {
+                    return;
+                }
+                error$.next(err);
+            });
+        }
+    });
 
     const unregister = () => {
         if (controller) {

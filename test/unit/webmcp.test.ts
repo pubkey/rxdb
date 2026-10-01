@@ -11,7 +11,7 @@ import {
     registerWebMCPTarget
 } from '../../plugins/webmcp/index.mjs';
 import config from './config.ts';
-import { schemaObjects, schemas } from '../../plugins/test-utils/index.mjs';
+import { schemaObjects, schemas, isDeno } from '../../plugins/test-utils/index.mjs';
 import { cleanupWebMCPPolyfill, initializeWebMCPPolyfill } from '@mcp-b/webmcp-polyfill';
 import { waitUntil } from 'async-test-util';
 
@@ -23,23 +23,41 @@ describe('webmcp.test.ts', () => {
 
     const executeTool = async (name: string, args: any) => {
         const res = await (global as any).navigator.modelContextTesting.executeTool(name, JSON.stringify(args));
-        const parsed = JSON.parse(res);
-        if (parsed.isError) throw new Error(parsed.content[0].text);
-        return JSON.parse(parsed.content[0].text);
+        return JSON.parse(res);
     };
 
     const getTools = () => {
-        return (global as any).navigator.modelContextTesting.listTools() || [];
+        return (global as any).navigator.modelContextTesting?.listTools() || [];
     };
 
     const originalNavigator = typeof navigator !== 'undefined' ? navigator : undefined;
+
+    /**
+     * The polyfill only installs itself when a DOM exists,
+     * so on non-browser runtimes a jsdom environment is provided.
+     * jsdom cannot be loaded in Deno, so the tests that need
+     * the polyfill only run on the other runtimes.
+     */
+    const itWithDom = isDeno ? it.skip : it;
+    let removeDom: (() => void) | undefined;
+    before(async () => {
+        if (typeof document === 'undefined' && !isDeno) {
+            const { default: globalJsdom } = await import(/* webpackIgnore: true */ 'global-jsdom');
+            removeDom = globalJsdom();
+        }
+    });
+    after(() => {
+        if (removeDom) {
+            removeDom();
+        }
+    });
 
     beforeEach(async () => {
         if (typeof global !== 'undefined' && !(global as any).navigator) {
             (global as any).navigator = {};
         }
         cleanupWebMCPPolyfill();
-        initializeWebMCPPolyfill({ installTestingShim: true, autoInitialize: false });
+        initializeWebMCPPolyfill({ installTestingShim: true });
 
         db = await createRxDatabase({
             name: randomToken(10),
@@ -66,7 +84,7 @@ describe('webmcp.test.ts', () => {
         await db.close();
     });
 
-    it('should register query tool when registerWebMCP is called', async () => {
+    itWithDom('should register query tool when registerWebMCP is called', async () => {
         db.registerWebMCP();
 
         const tools = getTools();
@@ -101,7 +119,7 @@ describe('webmcp.test.ts', () => {
 
     });
 
-    it('should wait for changes using wait_changes tool', async () => {
+    itWithDom('should wait for changes using wait_changes tool', async () => {
         db.registerWebMCP();
         const tools = getTools();
         const waitTool = tools.find((t: any) => t.name.startsWith(`rxdb_wait_changes_${db.name}_humans`));
@@ -121,7 +139,7 @@ describe('webmcp.test.ts', () => {
         assert.strictEqual(waitResolved, true);
     });
 
-    it('changes tool should return documents without internal meta fields', async () => {
+    itWithDom('changes tool should return documents without internal meta fields', async () => {
         db.registerWebMCP();
         const tools = getTools();
         const queryTool = tools.find((t: any) => t.name.startsWith(`rxdb_query_${db.name}_humans`));
@@ -155,7 +173,7 @@ describe('webmcp.test.ts', () => {
         );
     });
 
-    it('should iterate over changes using checkpoint', async () => {
+    itWithDom('should iterate over changes using checkpoint', async () => {
         db.registerWebMCP();
         const tools = getTools();
         const changesTool = tools.find((t: any) => t.name.startsWith(`rxdb_changes_${db.name}_humans`));
@@ -173,7 +191,7 @@ describe('webmcp.test.ts', () => {
         assert.strictEqual(changesResult2.documents[0].passportId, 'c_bob');
     });
 
-    it('should execute modifier tools successfully (insert/upsert/delete)', async () => {
+    itWithDom('should execute modifier tools successfully (insert/upsert/delete)', async () => {
         db.registerWebMCP();
         const tools = getTools();
         const insertTool = tools.find((t: any) => t.name.startsWith(`rxdb_insert_${db.name}_humans`));
@@ -205,7 +223,7 @@ describe('webmcp.test.ts', () => {
         assert.strictEqual(docs.length, 0);
     });
 
-    it('should unregister tools when collection is closed', async () => {
+    itWithDom('should unregister tools when collection is closed', async () => {
         db.registerWebMCP();
         let tools = getTools();
         assert.strictEqual(tools.length, 7);
@@ -214,7 +232,7 @@ describe('webmcp.test.ts', () => {
         assert.strictEqual(tools.length, 0);
     });
 
-    it('should not register modifier tools when readOnly is true', () => {
+    itWithDom('should not register modifier tools when readOnly is true', () => {
         db.registerWebMCP({ readOnly: true });
 
         const tools = getTools();
@@ -223,7 +241,7 @@ describe('webmcp.test.ts', () => {
         assert.ok(!insertTool);
     });
 
-    it('should emit log$ and error$ events for executed tools', async () => {
+    itWithDom('should emit log$ and error$ events for executed tools', async () => {
         const { log$, error$ } = db.registerWebMCP();
         const logs: any[] = [];
         const errors: any[] = [];
@@ -253,7 +271,7 @@ describe('webmcp.test.ts', () => {
         sub2.unsubscribe();
     });
 
-    it('should register tools for newly added collections dynamically', async () => {
+    itWithDom('should register tools for newly added collections dynamically', async () => {
         db.registerWebMCP();
         assert.ok(!getTools().find((t: any) => t.name.includes('aliens')));
 
