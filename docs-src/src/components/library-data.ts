@@ -52,7 +52,7 @@ export const CITATIONS: Citation[] = [
         'summary': 'Conference talk that names RxDB among local-first sync engines and among third-party collection implementations for TanStack DB.'
     },
     {
-        'title': 'Web Development Tools – 8 innovative Optionen',
+        'title': 'Web Development Tools - 8 innovative Optionen',
         'source': 'Matthew Tyson, Computerwoche',
         'type': 'news',
         'date': '2026-06-16',
