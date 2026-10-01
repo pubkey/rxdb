@@ -27,7 +27,8 @@ import {
     fillWithDefaultSettings,
     fillObjectWithDefaults,
     defaultHashSha256,
-    ensureNotFalsy
+    ensureNotFalsy,
+    HashFunction
 } from '../../plugins/core/index.mjs';
 
 describe('rx-schema.test.ts', () => {
@@ -896,6 +897,37 @@ describe('rx-schema.test.ts', () => {
                     const hash = await schema.hash;
                     assert.strictEqual(typeof hash, 'string');
                     assert.ok(hash.length >= 5);
+                });
+                it('should not reuse a failed hash for another schema instance', async () => {
+                    let calls = 0;
+                    const hashFunction: HashFunction = (input) => {
+                        calls++;
+                        if (calls === 1) {
+                            return Promise.reject(new Error('hashing failed'));
+                        }
+                        return defaultHashSha256(input);
+                    };
+                    const schema1 = createRxSchema(schemas.human, hashFunction);
+                    await assert.rejects(() => schema1.hash);
+                    await AsyncTestUtil.wait(0);
+
+                    const schema2 = createRxSchema(schemas.human, hashFunction);
+                    const hash = await schema2.hash;
+                    assert.strictEqual(typeof hash, 'string');
+                    assert.ok(hash.length >= 5);
+                    assert.strictEqual(calls, 2);
+                });
+                it('should return the same hash for the same schema and hash function', async () => {
+                    let calls = 0;
+                    const hashFunction: HashFunction = (input) => {
+                        calls++;
+                        return defaultHashSha256(input);
+                    };
+                    const hash1 = await createRxSchema(schemas.human, hashFunction).hash;
+                    const hash2 = await createRxSchema(schemas.human, hashFunction).hash;
+                    assert.strictEqual(hash1, hash2);
+                    assert.strictEqual(hash1, await createRxSchema(schemas.human, defaultHashSha256).hash);
+                    assert.strictEqual(calls, 1);
                 });
                 it('should normalize one schema with two different orders and generate for each the same hash', async () => {
                     const schema1 = createRxSchema(schemas.humanNormalizeSchema1, defaultHashSha256);

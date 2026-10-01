@@ -52,19 +52,36 @@ export function getQueryPlan<RxDocType>(
      * because their selector operators specify that in all cases all matching docs
      * would have the same value.
      * For example the boolean field _deleted or enum fields.
+     * Same goes for string and number fields that are matched with $eq
+     * to a string or number value.
+     * @performance Not having these fields in the compare strings
+     * makes it possible to use the index order as sort order
+     * so that the storage does not have to re-sort the results.
      */
     const sortIrrelevevantFields = new Set();
     Object.keys(selector).forEach(fieldName => {
         const schemaPart = getSchemaByObjectPath(schema, fieldName);
+        const fieldSelector = (selector as any)[fieldName];
         if (
-            schemaPart &&
-            (
-                schemaPart.type === 'boolean' ||
-                schemaPart.enum
-            ) &&
-            Object.prototype.hasOwnProperty.call((selector as any)[fieldName], '$eq')
+            !schemaPart ||
+            !Object.prototype.hasOwnProperty.call(fieldSelector, '$eq')
+        ) {
+            return;
+        }
+        if (
+            schemaPart.type === 'boolean' ||
+            schemaPart.enum
         ) {
             sortIrrelevevantFields.add(fieldName);
+        } else if (
+            schemaPart.type === 'string' ||
+            schemaPart.type === 'number' ||
+            schemaPart.type === 'integer'
+        ) {
+            const eqValueType = typeof fieldSelector.$eq;
+            if (eqValueType === 'string' || eqValueType === 'number') {
+                sortIrrelevevantFields.add(fieldName);
+            }
         }
     });
 

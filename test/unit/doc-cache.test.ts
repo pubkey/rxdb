@@ -138,6 +138,40 @@ describe('doc-cache.test.ts', () => {
                 const result2 = cache.getCachedRxDocument(docData);
                 assert.strictEqual(result1, result2);
             });
+            it('should differentiate by lwt even with the same revision', () => {
+                const { cache } = createDocumentCache();
+                const docData1 = createFakeDocData('doc1', EXAMPLE_REVISION_1, 100);
+                const docData2 = createFakeDocData('doc1', EXAMPLE_REVISION_1, 200);
+                const result1 = cache.getCachedRxDocument(docData1);
+                const result2 = cache.getCachedRxDocument(docData2);
+                assert.notStrictEqual(result1, result2);
+                assert.strictEqual((result2 as any)._data._meta.lwt, 200);
+                assert.strictEqual(cache.getCachedRxDocument(docData2), result2);
+            });
+            it('should keep caching both states when two states have the same revision but a different lwt', () => {
+                const { cache } = createDocumentCache();
+                const docData1 = createFakeDocData('doc1', EXAMPLE_REVISION_1, 100);
+                const docData2 = createFakeDocData('doc1', EXAMPLE_REVISION_1, 200);
+                const result1 = cache.getCachedRxDocument(docData1);
+                const result2 = cache.getCachedRxDocument(docData2);
+
+                /**
+                 * Adding the second state must not replace the first one,
+                 * otherwise the cache item could be removed while the first
+                 * RxDocument is still in use.
+                 */
+                assert.strictEqual(cache.getCachedRxDocument(docData1), result1);
+                assert.strictEqual(cache.getCachedRxDocument(docData2), result2);
+                assert.strictEqual(cache.getCachedRxDocuments([docData1])[0], result1);
+                assert.strictEqual(cache.getCachedRxDocuments([docData2])[0], result2);
+
+                const docData3 = createFakeDocData('doc1', EXAMPLE_REVISION_1, 300);
+                const result3 = cache.getCachedRxDocuments([docData3])[0];
+                assert.notStrictEqual(result3, result1);
+                assert.notStrictEqual(result3, result2);
+                assert.strictEqual(cache.getCachedRxDocument(docData3), result3);
+                assert.strictEqual(cache.getCachedRxDocument(docData1), result1);
+            });
         });
 
         describe('.getLatestDocumentData()', () => {

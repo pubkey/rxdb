@@ -147,6 +147,42 @@ describe('rx-document.test.js', () => {
             assert.strictEqual(typeof value2, 'number');
             c.database.close();
         });
+        it('nested property access must not mix up a key with a dot and the nested path of the same name', async () => {
+            const db = await createRxDatabase({
+                name: randomToken(10),
+                storage: config.storage.getStorage()
+            });
+            const collections = await db.addCollections({
+                docs: {
+                    schema: {
+                        version: 0,
+                        primaryKey: 'id',
+                        type: 'object',
+                        properties: {
+                            id: {
+                                type: 'string',
+                                maxLength: 100
+                            },
+                            meta: {
+                                type: 'object'
+                            }
+                        }
+                    }
+                }
+            });
+            const doc: any = await collections.docs.insert({
+                id: 'foobar',
+                meta: {
+                    'a.b': { x: 1 },
+                    a: { b: { x: 2 } }
+                }
+            });
+            const viaKeyWithDot = doc.meta['a.b'].x;
+            assert.ok(typeof viaKeyWithDot === 'number');
+            assert.strictEqual(doc.meta.a.b.x, 2);
+            assert.strictEqual(doc.get('meta.a.b').x, 2);
+            await db.close();
+        });
         it('get undefined on undefined value', async () => {
             const c = await humansCollection.createNested(5);
             const doc = await c.findOne().exec(true);
