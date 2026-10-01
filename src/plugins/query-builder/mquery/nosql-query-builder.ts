@@ -333,8 +333,9 @@ export class NoSqlQueryBuilderClass<DocType> {
         if (source instanceof NoSqlQueryBuilderClass) {
             // if source has a feature, apply it to ourselves
 
-            if (source._conditions)
-                merge(this._conditions, source._conditions);
+            if (source._conditions) {
+                merge(this._conditions, normalizeShorthandsBeforeMerge(this._conditions, source._conditions));
+            }
 
             if (source._fields) {
                 if (!this._fields) this._fields = {};
@@ -353,7 +354,7 @@ export class NoSqlQueryBuilderClass<DocType> {
         }
 
         // plain object
-        merge(this._conditions, source);
+        merge(this._conditions, normalizeShorthandsBeforeMerge(this._conditions, source));
 
         return this as any;
     }
@@ -582,6 +583,40 @@ function _pushArr(opts: any, field: string, value: any) {
     opts.sort.push([field, value]);
 }
 
+
+function isOperatorObject(value: any): boolean {
+    return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+/**
+ * A selector field can either have a shorthand value like { age: 5 }
+ * or an operator object like { age: { $gt: 3 } }.
+ * When one side of a merge has the shorthand and the other side
+ * has the operator object, the shorthand is converted to { $eq: value }
+ * so that both conditions can be merged into the same operator object.
+ * Returns a flat copy of the source so the input object is not mutated.
+ */
+function normalizeShorthandsBeforeMerge(conditions: any, source: any): any {
+    const ret = { ...source };
+    Object.keys(ret).forEach(field => {
+        if (field.startsWith('$')) {
+            return;
+        }
+        const existing = conditions[field];
+        const incoming = ret[field];
+        if (existing === undefined || incoming === undefined) {
+            return;
+        }
+        const existingIsOperator = isOperatorObject(existing);
+        const incomingIsOperator = isOperatorObject(incoming);
+        if (existingIsOperator && !incomingIsOperator) {
+            ret[field] = { $eq: incoming };
+        } else if (!existingIsOperator && incomingIsOperator) {
+            conditions[field] = { $eq: existing };
+        }
+    });
+    return ret;
+}
 
 /**
  * Determines if `conds` can be merged using `mquery().merge()`
