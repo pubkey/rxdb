@@ -752,29 +752,7 @@ p { margin: 0; max-width: 62ch; }
   96%, 100% { opacity: 0; transform: none; }
 }
 
-/* F14. Partial sync */
-.v-partial .lane { stroke: var(--muted); stroke-width: 1; stroke-dasharray: 3 4; opacity: .55; }
-.v-partial .lbl { fill: var(--muted); font-size: 9px; letter-spacing: .06em; }
-.v-partial .filter { stroke: var(--white); stroke-width: 1.4; }
-.v-partial .cli .b2, .v-partial .cli .b3 { fill: var(--line); }
-.v-partial .cli .b1 { animation: flash 3s 2.64s infinite; }
-.v-partial .pass, .v-partial .block { transform-box: fill-box; opacity: 0; }
-.v-partial .pass { animation: pass 3s linear infinite; }
-.v-partial .block { animation: block 3s linear infinite; }
-@keyframes pass {
-  0% { transform: translateX(0); opacity: 0; }
-  8% { opacity: 1; }
-  88% { transform: translateX(-116px); opacity: 1; }
-  92%, 100% { transform: translateX(-120px); opacity: 0; }
-}
-@keyframes block {
-  0% { transform: translateX(0); opacity: 0; }
-  8% { opacity: 1; }
-  44% { transform: translateX(-54px); opacity: 1; }
-  56%, 100% { transform: translate(-54px, 10px); opacity: 0; }
-}
-
-/* F14b. Partial sync by chunk */
+/* F14. Partial sync by chunk */
 .stage.v-chunks > svg { height: 90%; max-width: 94%; }
 .v-chunks .chunk .base { transform-box: fill-box; transform-origin: center; fill: #191C2C; stroke: var(--line); stroke-width: 1; transition: fill .35s, stroke .35s; }
 .v-chunks .chunk .px { fill: var(--line); transition: fill .35s; }
@@ -970,7 +948,7 @@ footer { font-size: 13px; color: var(--muted); display: flex; flex-direction: co
     <div class="intro">
       <p class="eyebrow">Motion study for the RxDB brand mark</p>
       <h1>RxDB Logo <b>Motion</b></h1>
-      <p class="muted">Forty-two animated versions of the RxDB logo and wordmark. Each one is built from the five shapes of the original mark (frame, three layers, two corner pieces) and ties the motion to something the database does.</p>
+      <p class="muted">Forty-one animated versions of the RxDB logo and wordmark. Each one is built from the five shapes of the original mark (frame, three layers, two corner pieces) and ties the motion to something the database does.</p>
     </div>
     <button class="btn" id="pause-all" type="button" aria-pressed="false">Pause all</button>
   </header>
@@ -1387,7 +1365,7 @@ footer { font-size: 13px; color: var(--muted); display: flex; flex-direction: co
     <div class="section-head">
       <p class="eyebrow">Feature library</p>
       <h2 id="features-title">One Animation per <b>Core Feature</b></h2>
-      <p class="muted">Twenty-two loops, each tied to one feature from the RxDB docs. Every card links to the docs page it illustrates.</p>
+      <p class="muted">Twenty-one loops, each tied to one feature from the RxDB docs. Every card links to the docs page it illustrates.</p>
     </div>
     <div class="grid">
 
@@ -1631,29 +1609,6 @@ footer { font-size: 13px; color: var(--muted); display: flex; flex-direction: co
           <div class="row"><h3>Middleware</h3><span class="spec">4.4s · loop · ease-out</span></div>
           <p>A raw document passes through the preInsert hook and comes out changed before it lands in its slot.</p>
           <a class="doclink" href="https://rxdb.info/middleware.html" target="_blank" rel="noopener">Docs: Middleware</a>
-        </div>
-      </article>
-
-      <article class="card">
-        <div class="stage v-partial">
-          <svg class="logo" viewBox="0 0 300 145" role="img" aria-label="Only documents that match the client query sync from the server">
-            <svg class="cli" x="12" y="18" width="70" height="95" viewBox="0 0 103.33 140" data-logo></svg>
-            <svg class="srv" x="218" y="18" width="70" height="95" viewBox="0 0 103.33 140" data-logo></svg>
-            <line class="lane" x1="88" y1="65" x2="212" y2="65"/>
-            <line class="filter" x1="150" y1="52" x2="150" y2="78"/>
-            <text class="lbl" x="150" y="46" text-anchor="middle">where: pink</text>
-            <rect class="pass" x="204" y="62" width="10" height="6" rx="1.5" fill="#ED168F"/>
-            <rect class="block" x="204" y="62" width="10" height="6" rx="1.5" fill="#B2218B" style="animation-delay: -1s"/>
-            <rect class="block" x="204" y="62" width="10" height="6" rx="1.5" fill="#752A8A" style="animation-delay: -2s"/>
-            <text class="lbl" x="47" y="134" text-anchor="middle">client</text>
-            <text class="lbl" x="253" y="134" text-anchor="middle">server</text>
-          </svg>
-          <span class="tag">partial sync</span>
-        </div>
-        <div class="meta">
-          <div class="row"><h3>Partial sync</h3><span class="spec">3s · loop · linear</span></div>
-          <p>The server holds every layer, but only documents that match the client query make it through. The rest stop at the filter.</p>
-          <a class="doclink" href="https://rxdb.info/partial-sync.html" target="_blank" rel="noopener">Docs: Partial Sync</a>
         </div>
       </article>
 
