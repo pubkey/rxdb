@@ -84,6 +84,7 @@ const PAD_Y = 30;
 const CLIENT_H = 64;
 const CLIENT_GAP = 26;
 const LINK_INSET = 7;
+const ARROW_LEN = 12;
 
 /**
  * On narrow screens the boxes and links are shrunk
@@ -323,6 +324,13 @@ export function SyncDiagram(props: SyncDiagramProps) {
 
   const isOffline = (i: number) => offlineIndex === i;
   const involvesOffline = (idx: number[]) => offlineIndex !== null && idx.includes(offlineIndex);
+
+  /**
+   * The lines end where the arrowheads begin so that
+   * the line does not show through the semi-transparent arrowheads.
+   */
+  const startTrim = flow !== 'push' ? ARROW_LEN : 0;
+  const endTrim = flow !== 'pull' ? ARROW_LEN : 0;
 
   const pathOf = (a: Point, b: Point) => `M ${a.x} ${a.y} L ${b.x} ${b.y}`;
   const fmt = (v: number) => Number(v.toFixed(4));
@@ -614,10 +622,11 @@ export function SyncDiagram(props: SyncDiagramProps) {
           <marker
             id={`${uid}-arrow`}
             viewBox="0 0 10 10"
-            refX="8"
+            refX="0"
             refY="5"
-            markerWidth="7"
-            markerHeight="7"
+            markerUnits="userSpaceOnUse"
+            markerWidth={ARROW_LEN}
+            markerHeight={ARROW_LEN}
             orient="auto-start-reverse"
           >
             <path d="M 0 0 L 10 5 L 0 10 z" className="arrow-head" />
@@ -637,9 +646,9 @@ export function SyncDiagram(props: SyncDiagramProps) {
             <g key={`link-${i}`}>
               <line
                 className={`link${offline ? ' is-offline' : ''}`}
-                x1={from.x}
+                x1={from.x + startTrim}
                 y1={from.y}
-                x2={to.x}
+                x2={to.x - endTrim}
                 y2={to.y}
                 markerStart={flow !== 'push' ? `url(#${uid}-arrow)` : undefined}
                 markerEnd={flow !== 'pull' ? `url(#${uid}-arrow)` : undefined}
@@ -656,9 +665,9 @@ export function SyncDiagram(props: SyncDiagramProps) {
         {hasServer && (
           <line
             className="link"
-            x1={serverLinkFrom.x}
+            x1={serverLinkFrom.x + startTrim}
             y1={serverLinkFrom.y}
-            x2={serverLinkTo.x}
+            x2={serverLinkTo.x - endTrim}
             y2={serverLinkTo.y}
             markerStart={flow !== 'push' ? `url(#${uid}-arrow)` : undefined}
             markerEnd={flow !== 'pull' ? `url(#${uid}-arrow)` : undefined}
