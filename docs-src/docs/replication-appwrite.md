@@ -8,7 +8,7 @@ image: /headers/replication-appwrite.jpg
 import {Tabs} from '@site/src/components/tabs';
 import {Steps} from '@site/src/components/steps';
 import {VideoBox} from '@site/src/components/video-box';
-import {RxdbMongoDiagramPlain} from '@site/src/components/mongodb-sync';
+import {SyncDiagram} from '@site/src/components/sync-diagram';
 import {HeadlineWithIcon} from '@site/src/components/headline-with-icon';
 import {Faq, FaqItem} from '@site/src/components/faq';
 
@@ -42,7 +42,7 @@ Combining the two provides several benefits:
 <br />
 <br />
 
-<RxdbMongoDiagramPlain showServer={false} dbIcon="/files/icons/appwrite.svg" dbLabel="" />
+<SyncDiagram server={false} backend={{ icon: "/files/icons/appwrite.svg" }} clientConnectionLabel="Realtime API" simulateOffline />
 
 
 ## Preparing the Appwrite Server
