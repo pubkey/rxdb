@@ -5,7 +5,7 @@
 import {Tabs} from '@site/src/components/tabs';
 import {Steps} from '@site/src/components/steps';
 import {VideoBox} from '@site/src/components/video-box';
-import {RxdbMongoDiagramPlain} from '@site/src/components/mongodb-sync';
+import {SyncDiagram} from '@site/src/components/sync-diagram';
 import {HeadlineWithIcon} from '@site/src/components/headline-with-icon';
 
 # <HeadlineWithIcon h1 icon={} subtitle="Real-Time, Offline-First Sync">MongoDB Replication Plugin</HeadlineWithIcon>
@@ -30,7 +30,7 @@ For the client side, RxServer exposes a [replication endpoint](./rx-server.md#re
 
 The following diagram illustrates the flow of updates between clients, RxServer, and MongoDB in a live synchronization setup:
 
-<RxdbMongoDiagramPlain dbIcon="/files/icons/mongodb-icon.svg" dbLabel="MongoDB" />
+<SyncDiagram backend={{ label: "MongoDB", icon: "/files/icons/mongodb-icon.svg" }} clientConnectionLabel="HTTP" backendConnectionLabel="Change Stream" simulateOffline />
 
 :::note
 The MongoDB Replication Plugin is optimized for Node.js environments (e.g., when RxDB runs within RxServer or other backend services). Direct connections from browsers or mobile apps to MongoDB are not supported because MongoDB does not use HTTP as its wire protocol and requires a driver-level connection to a replica set or sharded cluster.

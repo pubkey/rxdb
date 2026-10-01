@@ -5,7 +5,7 @@
 import {Tabs} from '@site/src/components/tabs';
 import {Steps} from '@site/src/components/steps';
 import {VideoBox} from '@site/src/components/video-box';
-import {RxdbMongoDiagramPlain} from '@site/src/components/mongodb-sync';
+import {SyncDiagram} from '@site/src/components/sync-diagram';
 import {HeadlineWithIcon} from '@site/src/components/headline-with-icon';
 import {Faq, FaqItem} from '@site/src/components/faq';
 
@@ -30,7 +30,7 @@ Under the hood, the plugin is powered by the RxDB [Sync Engine](./replication.md
 
 ## Architecture Overview
 
-<RxdbMongoDiagramPlain showServer={false} dbIcon="/files/icons/supabase.svg" dbLabel="Supabase" />
+<SyncDiagram server={false} backend={{ label: "Supabase", icon: "/files/icons/supabase.svg" }} clientConnectionLabel="PostgREST + Realtime" simulateOffline />
 
 Clients connect **directly to Supabase** using the official JS client. The plugin:
 

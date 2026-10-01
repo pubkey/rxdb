@@ -5,7 +5,7 @@
 import {Tabs} from '@site/src/components/tabs';
 import {Steps} from '@site/src/components/steps';
 import {VideoBox} from '@site/src/components/video-box';
-import {RxdbMongoDiagramPlain} from '@site/src/components/mongodb-sync';
+import {SyncDiagram} from '@site/src/components/sync-diagram';
 import {HeadlineWithIcon} from '@site/src/components/headline-with-icon';
 import {Faq, FaqItem} from '@site/src/components/faq';
 
@@ -34,7 +34,7 @@ Combining the two provides several benefits:
 
 5. **Simplicity & Modularity**: RxDB’s plugin-based architecture, combined with Appwrite’s Cloud offering makes it one of the easiest way to build local-first [realtime apps](./articles/realtime-database.md) that scale.
 
-<RxdbMongoDiagramPlain showServer={false} dbIcon="/files/icons/appwrite.svg" dbLabel="" />
+<SyncDiagram server={false} backend={{ icon: "/files/icons/appwrite.svg" }} clientConnectionLabel="Realtime API" simulateOffline />
 
 ## Preparing the Appwrite Server
 

@@ -24,8 +24,8 @@
 <link rel="preconnect" href="https://www.redditstatic.com/">
 <link rel="preconnect" href="https://pixel-config.reddit.com/">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"RxDB","applicationCategory":"DeveloperApplication","operatingSystem":"Any","description":"A fast, local-first, reactive NoSQL database for JavaScript applications. Supports offline-first sync, real-time replication, and works across browsers, Node.js, Electron, React Native, and Flutter.","url":"https://rxdb.info","softwareVersion":"17.5.0","license":"https://github.com/pubkey/rxdb/blob/master/LICENSE.txt","downloadUrl":"https://www.npmjs.com/package/rxdb","softwareHelp":{"@type":"CreativeWork","url":"https://rxdb.info/quickstart.html"},"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"author":{"@type":"Organization","name":"RxDB","url":"https://rxdb.info","logo":"https://rxdb.info/files/logo/logo.svg","sameAs":["https://github.com/pubkey/rxdb","https://twitter.com/rxdbjs","https://www.linkedin.com/company/rxdb"]}}</script><link rel="stylesheet" href="/assets/css/styles.49071e41.css">
-<script src="/assets/js/runtime~main.b70318a3.js" defer="defer"></script>
-<script src="/assets/js/main.4bb837aa.js" defer="defer"></script>
+<script src="/assets/js/runtime~main.6d798c86.js" defer="defer"></script>
+<script src="/assets/js/main.d5d4edf7.js" defer="defer"></script>
 </head>
 <body class="navigation-with-keyboard">
 <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PL63TR5" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
@@ -49,106 +49,183 @@
 <p>The plugin operates in a three-tier architecture: Clients connect to <a class="" href="/rx-server.html">RxServer</a>, which in turn connects to MongoDB. RxServer streams changes from MongoDB to connected clients and pushes client-side updates back to MongoDB.</p>
 <p>For the client side, RxServer exposes a <a class="" href="/rx-server.html#replication-endpoint">replication endpoint</a> over WebSocket or HTTP, which your RxDB-powered applications can consume.</p>
 <p>The following diagram illustrates the flow of updates between clients, RxServer, and MongoDB in a live synchronization setup:</p>
-<div class="rxdb-diagram"><style>
-    .rxdb-diagram {
-      padding-top: 20px;
-      padding-bottom: 20px;
-      box-sizing: border-box;
-      color: inherit;
-      width: 100%;
-      max-width: 100%;
-      overflow: hidden;
-      margin: 0 auto;
-      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI",
-                   Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
-    }
-
-    /* Stage keeps fixed aspect ratio and scales */
-    .rxdb-diagram .stage {
-      width: 100%;
-      aspect-ratio: 816 / 336;
-      position: relative;
-    }
-
-    /* Grid fills the stage completely */
-    .rxdb-diagram .grid {
-      position: absolute;
-      inset: 0;
-      display: grid;
-      grid-template-columns:
-        26.960784% 5.882353% 31.862745% 5.882353% 29.411765%;
-      grid-template-rows:
-        23.809524% 14.285714% 23.809524% 14.285714% 23.809524%;
-      align-items: center;
-      justify-items: stretch;
-    }
-
-    .rxdb-diagram {
-      --stroke: clamp(1px, 0.35vmin, 2px);
-      --radius: clamp(8px, 1.2vmin, 14px);
-      --pad: clamp(8px, 1.2vmin, 18px);
-      --line: currentColor;
-    }
-
-    .rxdb-diagram .logo {
-      height: 1.2em;
-      width: auto;
-      display: inline-block;
-      object-fit: contain;
-      margin-right: 10px;
-    }
-
-    .rxdb-diagram .box {
-      border: var(--stroke) dashed var(--line);
-      border-radius: var(--radius);
-      background: transparent;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      font-weight: 600;
-      padding: var(--pad);
-      line-height: 1.2;
-      user-select: none;
-    }
-
-    /* Server and DB take full height of stage */
-    .rxdb-diagram .server,
-    .rxdb-diagram .db {
-      grid-row: 1 / -1;
-      height: 100%;
-    }
-
-    /* Horizontal arrows */
-    .rxdb-diagram .arrow {
-      position: relative;
-      height: 0;
-      border-top: var(--stroke) solid var(--line);
-      width: calc(100% - 20%);
-      margin-left: 10%;
-      margin-right: -1.5%;
-    }
-
-    .rxdb-diagram .arrow::before,
-    .rxdb-diagram .arrow::after {
-      content: "";
-      position: absolute;
-      top: 50%;
-      width: clamp(6px, 1.2vmin, 10px);
-      height: clamp(6px, 1.2vmin, 10px);
-      border-top: var(--stroke) solid var(--line);
-      border-right: var(--stroke) solid var(--line);
-      transform-origin: center;
-    }
-    .rxdb-diagram .arrow::before {
-      left: 0;
-      transform: translate(-0%, -60%) rotate(-135deg);
-    }
-    .rxdb-diagram .arrow::after {
-      right: 0;
-      transform: translate(0%, -60%) rotate(45deg);
-    }
-  </style><div class="stage" aria-label="Clients to RxServer to MongoDB diagram"><div class="grid"><div class="box" style="grid-column:1;grid-row:1"><img src="/files/logo/logo.svg" alt="" class="logo" aria-hidden="true">Client A</div><div class="arrow" style="grid-column:2;grid-row:1" aria-hidden="true"></div><div class="box server" style="grid-column:3"><img src="/files/logo/logo.svg" alt="" class="logo" aria-hidden="true">RxServer</div><div class="arrow" style="grid-column:4;grid-row:3" aria-hidden="true"></div><div class="box db" style="grid-column:5"><img src="/files/icons/mongodb-icon.svg" alt="" class="logo" aria-hidden="true">MongoDB</div><div class="box" style="grid-column:1;grid-row:3"><img src="/files/logo/logo.svg" alt="" class="logo" aria-hidden="true">Client B</div><div class="arrow" style="grid-column:2;grid-row:3" aria-hidden="true"></div><div class="box" style="grid-column:1;grid-row:5"><img src="/files/logo/logo.svg" alt="" class="logo" aria-hidden="true">Client C</div><div class="arrow" style="grid-column:2;grid-row:5" aria-hidden="true"></div></div></div></div>
+<figure class="sync-diagram"><style>
+        .sync-diagram {
+          --sd-push: var(--color-top, #ED168F);
+          --sd-pull: #b98cff;
+          --sd-line: rgba(255, 255, 255, 0.28);
+          --sd-box: var(--bg-color, #20293C);
+          --sd-text: var(--ifm-font-color-base, #fff);
+          margin: 24px auto;
+          padding: 0;
+          width: 100%;
+          max-width: 100%;
+          color: var(--sd-text);
+        }
+        .sync-diagram svg {
+          display: block;
+          width: 100%;
+          height: auto;
+          overflow: visible;
+        }
+        .sync-diagram .box {
+          fill: var(--sd-box);
+          stroke-width: 1.5;
+          transition: opacity 0.4s ease;
+        }
+        .sync-diagram .box-client { stroke: url(#sdR178tlalda5-grad-client); }
+        .sync-diagram .box-server { stroke: url(#sdR178tlalda5-grad-server); }
+        .sync-diagram .box-backend { stroke: url(#sdR178tlalda5-grad-backend); }
+        .sync-diagram .client.is-offline .box {
+          stroke-dasharray: 6 5;
+          opacity: 0.55;
+        }
+        .sync-diagram .client.is-offline foreignObject { opacity: 0.75; }
+        .sync-diagram .link {
+          stroke: var(--sd-line);
+          stroke-width: 2;
+          fill: none;
+          transition: stroke 0.4s ease, opacity 0.4s ease;
+        }
+        .sync-diagram .link.is-offline {
+          stroke-dasharray: 4 6;
+          opacity: 0.45;
+        }
+        .sync-diagram .arrow-head { fill: var(--sd-line); }
+        .sync-diagram .packet-push .packet-core { fill: var(--sd-push); }
+        .sync-diagram .packet-push .packet-glow { fill: var(--sd-push); opacity: 0.3; }
+        .sync-diagram .packet-pull .packet-core { fill: var(--sd-pull); }
+        .sync-diagram .packet-pull .packet-glow { fill: var(--sd-pull); opacity: 0.3; }
+        .sync-diagram .halo {
+          fill: none;
+          stroke-width: 3;
+          filter: url(#sdR178tlalda5-blur);
+        }
+        .sync-diagram .halo-push { stroke: var(--sd-push); }
+        .sync-diagram .halo-pull { stroke: var(--sd-pull); }
+        .sync-diagram .conn-label {
+          fill: var(--sd-text);
+          opacity: 0.6;
+          font-size: 13px;
+          font-family: var(--ifm-font-family-monospace, monospace);
+        }
+        .sync-diagram .offline-badge circle {
+          fill: var(--sd-box);
+          stroke: #ff6b6b;
+          stroke-width: 1.5;
+        }
+        .sync-diagram .offline-badge path {
+          stroke: #ff6b6b;
+          stroke-width: 2;
+          stroke-linecap: round;
+        }
+        .sync-diagram .offline-badge {
+          animation: sdR178tlalda5-pop 0.35s ease-out;
+          transform-box: fill-box;
+          transform-origin: center;
+        }
+        .sync-diagram .node-content {
+          width: 100%;
+          height: 100%;
+          box-sizing: border-box;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          text-align: center;
+          padding: 4px 10px;
+          font-family: inherit;
+          color: var(--sd-text);
+          line-height: 1.15;
+          user-select: none;
+        }
+        .sync-diagram .node-main {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 10px;
+          max-width: 100%;
+        }
+        .sync-diagram .node-icon {
+          height: 26px;
+          width: auto;
+          flex-shrink: 0;
+          object-fit: contain;
+        }
+        .sync-diagram .node-content.big .node-icon { height: 34px; }
+        .sync-diagram .node-content.icon-only .node-icon {
+          height: auto;
+          width: 78%;
+          max-height: 60px;
+        }
+        .sync-diagram .node-label {
+          font-weight: 700;
+          font-size: 19px;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        .sync-diagram .node-content.big .node-label { font-size: 22px; }
+        .sync-diagram.is-compact .node-content.big .node-label { font-size: 19px; }
+        .sync-diagram.is-compact .node-main { gap: 6px; }
+        .sync-diagram.is-compact .node-icon { height: 22px; }
+        .sync-diagram.is-compact .node-content.big .node-icon { height: 26px; }
+        .sync-diagram.is-compact .node-content.big .node-main { flex-direction: column; }
+        .sync-diagram .node-sub {
+          margin-top: 4px;
+          font-size: 13px;
+          opacity: 0.65;
+        }
+        .sync-diagram .node-status {
+          margin-top: 3px;
+          font-size: 12px;
+          font-weight: 600;
+          color: #ff6b6b;
+          white-space: nowrap;
+        }
+        .sync-diagram .node-status.is-syncing { color: var(--sd-push); }
+        .sync-diagram figcaption {
+          margin-top: 10px;
+          text-align: center;
+          font-size: 0.9em;
+          opacity: 0.8;
+        }
+        .sync-diagram .legend {
+          display: flex;
+          flex-wrap: wrap;
+          justify-content: center;
+          gap: 6px 22px;
+          margin-top: 12px;
+          font-size: 0.85em;
+          opacity: 0.85;
+        }
+        .sync-diagram .legend-item {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+        }
+        .sync-diagram .legend-dot {
+          width: 10px;
+          height: 10px;
+          border-radius: 50%;
+          display: inline-block;
+        }
+        .sync-diagram .legend-dot.push { background: var(--sd-push); box-shadow: 0 0 8px var(--sd-push); }
+        .sync-diagram .legend-dot.pull { background: var(--sd-pull); box-shadow: 0 0 8px var(--sd-pull); }
+        .sync-diagram .legend-dot.offline {
+          background: transparent;
+          border: 1.5px dashed #ff6b6b;
+          box-shadow: none;
+        }
+        @keyframes sdR178tlalda5-pop {
+          from { transform: scale(0.2); opacity: 0; }
+          to { transform: scale(1); opacity: 1; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .sync-diagram .packet,
+          .sync-diagram .halo { display: none; }
+        }
+      </style><svg viewBox="0 0 880 304" role="img" aria-label="Sync diagram: Client A, Client B, Client C sync with RxServer sync with MongoDB" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="sdR178tlalda5-grad-client" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" style="stop-color:var(--color-top, #ED168F)"></stop><stop offset="100%" style="stop-color:var(--color-middle, #b2218b)"></stop></linearGradient><linearGradient id="sdR178tlalda5-grad-server" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" style="stop-color:var(--color-middle, #b2218b)"></stop><stop offset="100%" style="stop-color:var(--color-bottom, #752a8a)"></stop></linearGradient><linearGradient id="sdR178tlalda5-grad-backend" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" style="stop-color:#b98cff"></stop><stop offset="100%" style="stop-color:var(--color-bottom, #752a8a)"></stop></linearGradient><marker id="sdR178tlalda5-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" class="arrow-head"></path></marker><filter id="sdR178tlalda5-blur" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="3"></feGaussianBlur></filter></defs><g><line class="link" x1="237" y1="62" x2="343" y2="62" marker-start="url(#sdR178tlalda5-arrow)" marker-end="url(#sdR178tlalda5-arrow)"></line></g><g><line class="link" x1="237" y1="152" x2="343" y2="152" marker-start="url(#sdR178tlalda5-arrow)" marker-end="url(#sdR178tlalda5-arrow)"></line></g><g><line class="link" x1="237" y1="242" x2="343" y2="242" marker-start="url(#sdR178tlalda5-arrow)" marker-end="url(#sdR178tlalda5-arrow)"></line></g><line class="link" x1="557" y1="152" x2="663" y2="152" marker-start="url(#sdR178tlalda5-arrow)" marker-end="url(#sdR178tlalda5-arrow)"></line><text class="conn-label" x="290" y="44" text-anchor="middle">HTTP</text><text class="conn-label" x="610" y="134" text-anchor="middle">Change Stream</text><g class="client"><rect class="box box-client" x="0" y="30" width="230" height="64" rx="14"></rect><foreignObject x="0" y="30" width="230" height="64"><div class="node-content"><div class="node-main"><img src="/files/logo/logo.svg" alt="" aria-hidden="true" class="node-icon"/><span class="node-label">Client A</span></div></div></foreignObject></g><g class="client"><rect class="box box-client" x="0" y="120" width="230" height="64" rx="14"></rect><foreignObject x="0" y="120" width="230" height="64"><div class="node-content"><div class="node-main"><img src="/files/logo/logo.svg" alt="" aria-hidden="true" class="node-icon"/><span class="node-label">Client B</span></div></div></foreignObject></g><g class="client"><rect class="box box-client" x="0" y="210" width="230" height="64" rx="14"></rect><foreignObject x="0" y="210" width="230" height="64"><div class="node-content"><div class="node-main"><img src="/files/logo/logo.svg" alt="" aria-hidden="true" class="node-icon"/><span class="node-label">Client C</span></div></div></foreignObject></g><g class="server"><rect class="box box-server" x="350" y="30" width="200" height="244" rx="14"></rect><foreignObject x="350" y="30" width="200" height="244"><div class="node-content big"><div class="node-main"><img src="/files/logo/logo.svg" alt="" aria-hidden="true" class="node-icon"/><span class="node-label">RxServer</span></div></div></foreignObject></g><g class="backend"><rect class="box box-backend" x="670" y="30" width="210" height="244" rx="14"></rect><foreignObject x="670" y="30" width="210" height="244"><div class="node-content big"><div class="node-main"><img src="/files/icons/mongodb-icon.svg" alt="" aria-hidden="true" class="node-icon"/><span class="node-label">MongoDB</span></div></div></foreignObject></g><g aria-hidden="true"><rect class="halo halo-push" x="350" y="30" width="200" height="244" rx="14" opacity="0"><animate attributeName="opacity" dur="5.4s" begin="0.9s" repeatCount="indefinite" values="0;1;0;0" keyTimes="0;0.0175;0.1167;1"></animate></rect><rect class="halo halo-push" x="670" y="30" width="210" height="244" rx="14" opacity="0"><animate attributeName="opacity" dur="5.4s" begin="1.8s" repeatCount="indefinite" values="0;1;0;0" keyTimes="0;0.0175;0.1167;1"></animate></rect><rect class="halo halo-pull" x="350" y="30" width="200" height="244" rx="14" opacity="0"><animate attributeName="opacity" dur="5.4s" begin="2.88s" repeatCount="indefinite" values="0;1;0;0" keyTimes="0;0.0175;0.1167;1"></animate></rect><rect class="halo halo-pull" x="0" y="120" width="230" height="64" rx="14" opacity="0"><animate attributeName="opacity" dur="5.4s" begin="3.78s" repeatCount="indefinite" values="0;1;0;0" keyTimes="0;0.0175;0.1167;1"></animate></rect><rect class="halo halo-pull" x="0" y="210" width="230" height="64" rx="14" opacity="0"><animate attributeName="opacity" dur="5.4s" begin="3.78s" repeatCount="indefinite" values="0;1;0;0" keyTimes="0;0.0175;0.1167;1"></animate></rect><rect class="halo halo-push" x="350" y="30" width="200" height="244" rx="14" opacity="0"><animate attributeName="opacity" dur="5.4s" begin="2.7s" repeatCount="indefinite" values="0;1;0;0" keyTimes="0;0.0175;0.1167;1"></animate></rect><rect class="halo halo-push" x="670" y="30" width="210" height="244" rx="14" opacity="0"><animate attributeName="opacity" dur="5.4s" begin="3.6s" repeatCount="indefinite" values="0;1;0;0" keyTimes="0;0.0175;0.1167;1"></animate></rect><rect class="halo halo-pull" x="350" y="30" width="200" height="244" rx="14" opacity="0"><animate attributeName="opacity" dur="5.4s" begin="4.68s" repeatCount="indefinite" values="0;1;0;0" keyTimes="0;0.0175;0.1167;1"></animate></rect><rect class="halo halo-pull" x="0" y="30" width="230" height="64" rx="14" opacity="0"><animate attributeName="opacity" dur="5.4s" begin="5.58s" repeatCount="indefinite" values="0;1;0;0" keyTimes="0;0.0175;0.1167;1"></animate></rect><rect class="halo halo-pull" x="0" y="210" width="230" height="64" rx="14" opacity="0"><animate attributeName="opacity" dur="5.4s" begin="5.58s" repeatCount="indefinite" values="0;1;0;0" keyTimes="0;0.0175;0.1167;1"></animate></rect><rect class="halo halo-push" x="350" y="30" width="200" height="244" rx="14" opacity="0"><animate attributeName="opacity" dur="5.4s" begin="4.5s" repeatCount="indefinite" values="0;1;0;0" keyTimes="0;0.0175;0.1167;1"></animate></rect><rect class="halo halo-push" x="670" y="30" width="210" height="244" rx="14" opacity="0"><animate attributeName="opacity" dur="5.4s" begin="5.4s" repeatCount="indefinite" values="0;1;0;0" keyTimes="0;0.0175;0.1167;1"></animate></rect><rect class="halo halo-pull" x="350" y="30" width="200" height="244" rx="14" opacity="0"><animate attributeName="opacity" dur="5.4s" begin="6.48s" repeatCount="indefinite" values="0;1;0;0" keyTimes="0;0.0175;0.1167;1"></animate></rect><rect class="halo halo-pull" x="0" y="30" width="230" height="64" rx="14" opacity="0"><animate attributeName="opacity" dur="5.4s" begin="7.38s" repeatCount="indefinite" values="0;1;0;0" keyTimes="0;0.0175;0.1167;1"></animate></rect><rect class="halo halo-pull" x="0" y="120" width="230" height="64" rx="14" opacity="0"><animate attributeName="opacity" dur="5.4s" begin="7.38s" repeatCount="indefinite" values="0;1;0;0" keyTimes="0;0.0175;0.1167;1"></animate></rect><g class="packet packet-push" opacity="0"><circle r="9" class="packet-glow"></circle><circle r="5" class="packet-core"></circle><animateMotion path="M 237 62 L 343 62" dur="5.4s" begin="0s" repeatCount="indefinite" keyPoints="0;1;1" keyTimes="0;0.1667;1" calcMode="linear"></animateMotion><animate attributeName="opacity" dur="5.4s" begin="0s" repeatCount="indefinite" values="0;1;1;0;0" keyTimes="0;0.0167;0.1567;0.1667;1"></animate></g><g class="packet packet-push" opacity="0"><circle r="9" class="packet-glow"></circle><circle r="5" class="packet-core"></circle><animateMotion path="M 557 152 L 663 152" dur="5.4s" begin="0.9s" repeatCount="indefinite" keyPoints="0;1;1" keyTimes="0;0.1667;1" calcMode="linear"></animateMotion><animate attributeName="opacity" dur="5.4s" begin="0.9s" repeatCount="indefinite" values="0;1;1;0;0" keyTimes="0;0.0167;0.1567;0.1667;1"></animate></g><g class="packet packet-pull" opacity="0"><circle r="9" class="packet-glow"></circle><circle r="5" class="packet-core"></circle><animateMotion path="M 663 152 L 557 152" dur="5.4s" begin="1.98s" repeatCount="indefinite" keyPoints="0;1;1" keyTimes="0;0.1667;1" calcMode="linear"></animateMotion><animate attributeName="opacity" dur="5.4s" begin="1.98s" repeatCount="indefinite" values="0;1;1;0;0" keyTimes="0;0.0167;0.1567;0.1667;1"></animate></g><g class="packet packet-pull" opacity="0"><circle r="9" class="packet-glow"></circle><circle r="5" class="packet-core"></circle><animateMotion path="M 343 152 L 237 152" dur="5.4s" begin="2.88s" repeatCount="indefinite" keyPoints="0;1;1" keyTimes="0;0.1667;1" calcMode="linear"></animateMotion><animate attributeName="opacity" dur="5.4s" begin="2.88s" repeatCount="indefinite" values="0;1;1;0;0" keyTimes="0;0.0167;0.1567;0.1667;1"></animate></g><g class="packet packet-pull" opacity="0"><circle r="9" class="packet-glow"></circle><circle r="5" class="packet-core"></circle><animateMotion path="M 343 242 L 237 242" dur="5.4s" begin="2.88s" repeatCount="indefinite" keyPoints="0;1;1" keyTimes="0;0.1667;1" calcMode="linear"></animateMotion><animate attributeName="opacity" dur="5.4s" begin="2.88s" repeatCount="indefinite" values="0;1;1;0;0" keyTimes="0;0.0167;0.1567;0.1667;1"></animate></g><g class="packet packet-push" opacity="0"><circle r="9" class="packet-glow"></circle><circle r="5" class="packet-core"></circle><animateMotion path="M 237 152 L 343 152" dur="5.4s" begin="1.8s" repeatCount="indefinite" keyPoints="0;1;1" keyTimes="0;0.1667;1" calcMode="linear"></animateMotion><animate attributeName="opacity" dur="5.4s" begin="1.8s" repeatCount="indefinite" values="0;1;1;0;0" keyTimes="0;0.0167;0.1567;0.1667;1"></animate></g><g class="packet packet-push" opacity="0"><circle r="9" class="packet-glow"></circle><circle r="5" class="packet-core"></circle><animateMotion path="M 557 152 L 663 152" dur="5.4s" begin="2.7s" repeatCount="indefinite" keyPoints="0;1;1" keyTimes="0;0.1667;1" calcMode="linear"></animateMotion><animate attributeName="opacity" dur="5.4s" begin="2.7s" repeatCount="indefinite" values="0;1;1;0;0" keyTimes="0;0.0167;0.1567;0.1667;1"></animate></g><g class="packet packet-pull" opacity="0"><circle r="9" class="packet-glow"></circle><circle r="5" class="packet-core"></circle><animateMotion path="M 663 152 L 557 152" dur="5.4s" begin="3.78s" repeatCount="indefinite" keyPoints="0;1;1" keyTimes="0;0.1667;1" calcMode="linear"></animateMotion><animate attributeName="opacity" dur="5.4s" begin="3.78s" repeatCount="indefinite" values="0;1;1;0;0" keyTimes="0;0.0167;0.1567;0.1667;1"></animate></g><g class="packet packet-pull" opacity="0"><circle r="9" class="packet-glow"></circle><circle r="5" class="packet-core"></circle><animateMotion path="M 343 62 L 237 62" dur="5.4s" begin="4.68s" repeatCount="indefinite" keyPoints="0;1;1" keyTimes="0;0.1667;1" calcMode="linear"></animateMotion><animate attributeName="opacity" dur="5.4s" begin="4.68s" repeatCount="indefinite" values="0;1;1;0;0" keyTimes="0;0.0167;0.1567;0.1667;1"></animate></g><g class="packet packet-pull" opacity="0"><circle r="9" class="packet-glow"></circle><circle r="5" class="packet-core"></circle><animateMotion path="M 343 242 L 237 242" dur="5.4s" begin="4.68s" repeatCount="indefinite" keyPoints="0;1;1" keyTimes="0;0.1667;1" calcMode="linear"></animateMotion><animate attributeName="opacity" dur="5.4s" begin="4.68s" repeatCount="indefinite" values="0;1;1;0;0" keyTimes="0;0.0167;0.1567;0.1667;1"></animate></g><g class="packet packet-push" opacity="0"><circle r="9" class="packet-glow"></circle><circle r="5" class="packet-core"></circle><animateMotion path="M 237 242 L 343 242" dur="5.4s" begin="3.6s" repeatCount="indefinite" keyPoints="0;1;1" keyTimes="0;0.1667;1" calcMode="linear"></animateMotion><animate attributeName="opacity" dur="5.4s" begin="3.6s" repeatCount="indefinite" values="0;1;1;0;0" keyTimes="0;0.0167;0.1567;0.1667;1"></animate></g><g class="packet packet-push" opacity="0"><circle r="9" class="packet-glow"></circle><circle r="5" class="packet-core"></circle><animateMotion path="M 557 152 L 663 152" dur="5.4s" begin="4.5s" repeatCount="indefinite" keyPoints="0;1;1" keyTimes="0;0.1667;1" calcMode="linear"></animateMotion><animate attributeName="opacity" dur="5.4s" begin="4.5s" repeatCount="indefinite" values="0;1;1;0;0" keyTimes="0;0.0167;0.1567;0.1667;1"></animate></g><g class="packet packet-pull" opacity="0"><circle r="9" class="packet-glow"></circle><circle r="5" class="packet-core"></circle><animateMotion path="M 663 152 L 557 152" dur="5.4s" begin="5.58s" repeatCount="indefinite" keyPoints="0;1;1" keyTimes="0;0.1667;1" calcMode="linear"></animateMotion><animate attributeName="opacity" dur="5.4s" begin="5.58s" repeatCount="indefinite" values="0;1;1;0;0" keyTimes="0;0.0167;0.1567;0.1667;1"></animate></g><g class="packet packet-pull" opacity="0"><circle r="9" class="packet-glow"></circle><circle r="5" class="packet-core"></circle><animateMotion path="M 343 62 L 237 62" dur="5.4s" begin="6.48s" repeatCount="indefinite" keyPoints="0;1;1" keyTimes="0;0.1667;1" calcMode="linear"></animateMotion><animate attributeName="opacity" dur="5.4s" begin="6.48s" repeatCount="indefinite" values="0;1;1;0;0" keyTimes="0;0.0167;0.1567;0.1667;1"></animate></g><g class="packet packet-pull" opacity="0"><circle r="9" class="packet-glow"></circle><circle r="5" class="packet-core"></circle><animateMotion path="M 343 152 L 237 152" dur="5.4s" begin="6.48s" repeatCount="indefinite" keyPoints="0;1;1" keyTimes="0;0.1667;1" calcMode="linear"></animateMotion><animate attributeName="opacity" dur="5.4s" begin="6.48s" repeatCount="indefinite" values="0;1;1;0;0" keyTimes="0;0.0167;0.1567;0.1667;1"></animate></g></g></svg><div class="legend" aria-hidden="true"><span class="legend-item"><span class="legend-dot push"></span>Push: local writes</span><span class="legend-item"><span class="legend-dot pull"></span>Pull: remote changes</span><span class="legend-item"><span class="legend-dot offline"></span>Offline: writes are queued and synced on reconnect</span></div></figure>
 <br>
 <br>
 <div class="theme-admonition theme-admonition-note admonition_xJq3 alert alert--secondary"><div class="admonitionHeading_Gvgb"><span class="admonitionIcon_Rf37"><svg viewBox="0 0 14 16"><path fill-rule="evenodd" d="M6.3 5.69a.942.942 0 0 1-.28-.7c0-.28.09-.52.28-.7.19-.18.42-.28.7-.28.28 0 .52.09.7.28.18.19.28.42.28.7 0 .28-.09.52-.28.7a1 1 0 0 1-.7.3c-.28 0-.52-.11-.7-.3zM8 7.99c-.02-.25-.11-.48-.31-.69-.2-.19-.42-.3-.69-.31H6c-.27.02-.48.13-.69.31-.2.2-.3.44-.31.69h1v3c.02.27.11.5.31.69.2.2.42.31.69.31h1c.27 0 .48-.11.69-.31.2-.19.3-.42.31-.69H8V7.98v.01zM7 2.3c-3.14 0-5.7 2.54-5.7 5.68 0 3.14 2.56 5.7 5.7 5.7s5.7-2.55 5.7-5.7c0-3.15-2.56-5.69-5.7-5.69v.01zM7 .98c3.86 0 7 3.14 7 7s-3.14 7-7 7-7-3.12-7-7 3.14-7 7-7z"></path></svg></span>note</div><div class="admonitionContent_BuS1"><p>The MongoDB Replication Plugin is optimized for Node.js environments (e.g., when RxDB runs within RxServer or other backend services). Direct connections from browsers or mobile apps to MongoDB are not supported because MongoDB does not use HTTP as its wire protocol and requires a driver-level connection to a replica set or sharded cluster.</p></div></div>
@@ -306,6 +383,6 @@ Edge Apps with RxDB + MongoDB</a></li>
 <li class=""><a class="" href="/replication.html">Replication API Reference</a></li>
 <li class=""><a class="" href="/rx-server.html">RxServer Documentation</a></li>
 <li class="">Join our <a class="" href="/chat">Discord Forum</a> for questions and feedback</li>
-</ul></div><footer class="theme-doc-footer docusaurus-mt-lg"><div class="row margin-top--sm theme-doc-footer-edit-meta-row"><div class="col noPrint_WFHX"></div><div class="col lastUpdated_JAkA"><span class="theme-last-updated">Last updated<!-- --> on <b><time datetime="2026-03-31T11:23:05.000Z" itemprop="dateModified">Mar 31, 2026</time></b></span></div></div></footer></article><ul style="margin-top:25px;list-style-type:none"><li style="line-height:4;color:var(--expo-theme-text-secondary)">Was this page helpful?<div style="border-radius:3px;border-color:var(--fontColor-offwhite);border-style:solid;border-width:1px;vertical-align:middle;padding:5px;padding-left:8px;padding-right:8px;text-align:center;justify-content:center;display:inline-flex;margin-left:20px;cursor:pointer"><img src="/img/thumbs-up-white.svg" alt="Thumbs up" loading="lazy" width="14" height="14"></div><div style="border-radius:3px;border-color:var(--fontColor-offwhite);border-style:solid;border-width:1px;vertical-align:middle;padding:5px;padding-left:8px;padding-right:8px;text-align:center;justify-content:center;display:inline-flex;margin-left:20px;cursor:pointer;transform:scale(1, -1)"><img src="/img/thumbs-up-white.svg" alt="Thumbs down" loading="lazy" width="14" height="14"></div></li><li><a href="/chat/" target="_blank" style="color:var(--fontColor-offwhite)"><img src="/img/community-links/discord-logo.svg" alt="Discord" width="22" height="18" style="padding-right:16px;height:18px;vertical-align:middle" loading="lazy">Ask a question on the forums about <!-- -->MongoDB Replication...</a></li></ul><nav class="docusaurus-mt-lg pagination-nav" aria-label="Docs pages"><a href="/replication-firestore.html" class="padding-button" style="display:inline-flex;height:auto;flex-direction:row;justify-content:left;align-items:center;gap:10px;font-size:1rem;font-weight:500;cursor:pointer;text-align:left;transition:all 0.2s ease-in-out;line-height:initial;user-select:none;box-sizing:border-box;text-decoration:none;position:relative;overflow:hidden;background:transparent;color:#fff;border:2px solid #fff;padding-top:14px;padding-bottom:14px"><span style="font-size:80%;display:contents">Previous</span><br>« <!-- -->Firestore Replication</a><a href="/replication-supabase.html" class="padding-button" style="display:inline-flex;height:auto;flex-direction:row;justify-content:right;align-items:center;gap:10px;font-size:1rem;font-weight:500;cursor:pointer;text-align:right;transition:all 0.2s ease-in-out;line-height:initial;user-select:none;box-sizing:border-box;text-decoration:none;position:relative;overflow:hidden;background:transparent;color:#fff;border:2px solid #fff;padding-top:14px;padding-bottom:14px"><span style="font-size:80%;display:contents">Next</span><br>Supabase Replication<!-- --> »</a></nav></div></div><div class="col col--3"><div class="tableOfContents_bqdL thin-scrollbar theme-doc-toc-desktop"><ul class="table-of-contents table-of-contents__left-border"><li><a href="#key-features" class="table-of-contents__link toc-highlight">Key Features</a></li><li><a href="#architecture-overview" class="table-of-contents__link toc-highlight">Architecture Overview</a></li><li><a href="#setting-up-the-client-rxserver-mongodb-sync" class="table-of-contents__link toc-highlight">Setting up the Client-RxServer-MongoDB Sync</a><ul><li><a href="#install-the-client-dependencies" class="table-of-contents__link toc-highlight">Install the Client Dependencies</a></li><li><a href="#set-up-a-mongodb-server" class="table-of-contents__link toc-highlight">Set up a MongoDB Server</a></li><li><a href="#shell" class="table-of-contents__link toc-highlight">Shell</a></li><li><a href="#docker" class="table-of-contents__link toc-highlight">Docker</a></li><li><a href="#mongodb-atlas" class="table-of-contents__link toc-highlight">MongoDB Atlas</a></li><li><a href="#create-a-mongodb-database-and-collection" class="table-of-contents__link toc-highlight">Create a MongoDB Database and Collection</a></li><li><a href="#create-a-rxdb-database-and-collection" class="table-of-contents__link toc-highlight">Create a RxDB Database and Collection</a></li><li><a href="#sync-the-collection-with-the-mongodb-server" class="table-of-contents__link toc-highlight">Sync the Collection with the MongoDB Server</a></li><li><a href="#start-a-rxserver" class="table-of-contents__link toc-highlight">Start a RxServer</a></li><li><a href="#sync-a-client-with-the-rxserver" class="table-of-contents__link toc-highlight">Sync a Client with the RxServer</a></li></ul></li><li><a href="#follow-up" class="table-of-contents__link toc-highlight">Follow Up</a></li></ul></div></div></div></div></main></div></div></div><div class="block footer dark"><div style="display:flex;flex-wrap:wrap;gap:44px" class="content"><div class="half left"><span><a variant="text" href="/" class="footer-logo-button"><img src="/files/logo/logo_text_white.svg" alt="RxDB" loading="lazy" width="140" height="50" class="width-140-120"></a><div class="footer-community-links"><a variant="text" href="/newsletter/" target="_blank" aria-label="Newsletter"><svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="none"><path stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M22.5 13.5v-7a2 2 0 0 0-2-2h-16a2 2 0 0 0-2 2v12c0 1.1.9 2 2 2h8"></path><path stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m22.5 7.5-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2.5 7.5M19.5 16.5v6M16.5 19.5h6"></path></svg></a><a variant="text" href="https://twitter.com/intent/user?screen_name=rxdbjs" target="_blank" aria-label="Twitter"><img src="/files/icons/twitter-blue.svg" alt="Twitter" width="24" height="22" loading="lazy"></a><a variant="text" href="https://www.linkedin.com/company/rxdb" target="_blank" aria-label="LinkedIn"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 21"><g clip-path="url(#a)"><path fill="#fff" d="M17.3 17.6h-3V13c0-1 0-2.5-1.6-2.5-1.5 0-1.8 1.2-1.8 2.5v4.7H8V8h2.9v1.3a3 3 0 0 1 2.9-1.6c3 0 3.6 2 3.6 4.6zM4.5 6.6a1.7 1.7 0 1 1 0-3.5 1.7 1.7 0 0 1 0 3.5m1.5 11H3V8h3zM18.8.4H1.5A1.5 1.5 0 0 0 0 1.8v17.4a1.5 1.5 0 0 0 1.5 1.4h17.3a1.5 1.5 0 0 0 1.5-1.4V1.8A1.5 1.5 0 0 0 18.8.4"></path></g><defs><clipPath id="a"><path fill="#fff" d="M0 .4h24v20.5H0z"></path></clipPath></defs></svg></a><a variant="text" href="/code/" target="_blank" aria-label="Github"><span class="navbar-icon-github" style="width:22px;height:22px;display:inline-block"></span></a><a variant="text" href="/chat/" target="_blank" aria-label="Discord"><span class="navbar-icon-discord" style="width:22px;height:22px;display:inline-block"></span></a></div></span></div><div class="half right" style="display:flex;flex:1"><div style="display:flex"><div class="footer-links min-width-180-135"><a variant="text" href="/overview.html" target="">Docs</a><a variant="text" href="/replication.html" target="">Sync</a><a variant="text" href="/rx-storage.html" target="">Storages</a><a variant="text" href="/premium/" target="_blank">Premium</a><a variant="text" href="/consulting/" target="_blank">Support</a></div><div class="footer-links min-width-180-135"><a variant="text" href="/#reviews" target="">Our Customers</a><a variant="text" href="/consulting#become-partner" target="">Become a Partner</a><a variant="text" href="/jobs/" target="">Jobs</a><a variant="text" href="/legal-notice/" target="_blank">Legal Notice</a><a variant="text" href="/privacy/" target="_blank">Privacy Policy</a><a variant="text" href="/llms.txt" target="_blank">llms.txt</a></div></div></div></div></div><div class="navbar-line" style="display:block;z-index:10;height:1.5px;background-color:var(--color-top);border-top-right-radius:2px;border-bottom-right-radius:2px;width:100%"></div><div class="call-to-action-popup"><div class="close-popup"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none" class="" style="transform:scale(1);transition:transform 0.2s ease-in-out;display:inline-block;cursor:pointer"><path d="M4 16H8L8 12H4L4 16Z" fill="white"></path><path d="M0 20H4L4 16H0L0 20Z" fill="white"></path><path d="M8 11.9999H12V7.99992H8L8 11.9999Z" fill="white"></path><path d="M4 8.00008H8L8 4.00008H4L4 8.00008Z" fill="white"></path><path d="M0 4.00004L4 4.00004L4 3.8147e-05L0 3.8147e-05L0 4.00004Z" fill="white"></path><path d="M16 11.9999H12V15.9999H16V11.9999Z" fill="white"></path><path d="M20 16H16V20H20V16Z" fill="white"></path><path d="M16 4.00004H12V8.00004H16V4.00004Z" fill="white"></path><path d="M20 0H16V4H20V0Z" fill="white"></path></svg></div></div></div>
+</ul></div><footer class="theme-doc-footer docusaurus-mt-lg"><div class="row margin-top--sm theme-doc-footer-edit-meta-row"><div class="col noPrint_WFHX"></div><div class="col lastUpdated_JAkA"><span class="theme-last-updated">Last updated<!-- --> on <b><time datetime="2026-10-01T09:17:30.000Z" itemprop="dateModified">Oct 1, 2026</time></b></span></div></div></footer></article><ul style="margin-top:25px;list-style-type:none"><li style="line-height:4;color:var(--expo-theme-text-secondary)">Was this page helpful?<div style="border-radius:3px;border-color:var(--fontColor-offwhite);border-style:solid;border-width:1px;vertical-align:middle;padding:5px;padding-left:8px;padding-right:8px;text-align:center;justify-content:center;display:inline-flex;margin-left:20px;cursor:pointer"><img src="/img/thumbs-up-white.svg" alt="Thumbs up" loading="lazy" width="14" height="14"></div><div style="border-radius:3px;border-color:var(--fontColor-offwhite);border-style:solid;border-width:1px;vertical-align:middle;padding:5px;padding-left:8px;padding-right:8px;text-align:center;justify-content:center;display:inline-flex;margin-left:20px;cursor:pointer;transform:scale(1, -1)"><img src="/img/thumbs-up-white.svg" alt="Thumbs down" loading="lazy" width="14" height="14"></div></li><li><a href="/chat/" target="_blank" style="color:var(--fontColor-offwhite)"><img src="/img/community-links/discord-logo.svg" alt="Discord" width="22" height="18" style="padding-right:16px;height:18px;vertical-align:middle" loading="lazy">Ask a question on the forums about <!-- -->MongoDB Replication...</a></li></ul><nav class="docusaurus-mt-lg pagination-nav" aria-label="Docs pages"><a href="/replication-firestore.html" class="padding-button" style="display:inline-flex;height:auto;flex-direction:row;justify-content:left;align-items:center;gap:10px;font-size:1rem;font-weight:500;cursor:pointer;text-align:left;transition:all 0.2s ease-in-out;line-height:initial;user-select:none;box-sizing:border-box;text-decoration:none;position:relative;overflow:hidden;background:transparent;color:#fff;border:2px solid #fff;padding-top:14px;padding-bottom:14px"><span style="font-size:80%;display:contents">Previous</span><br>« <!-- -->Firestore Replication</a><a href="/replication-supabase.html" class="padding-button" style="display:inline-flex;height:auto;flex-direction:row;justify-content:right;align-items:center;gap:10px;font-size:1rem;font-weight:500;cursor:pointer;text-align:right;transition:all 0.2s ease-in-out;line-height:initial;user-select:none;box-sizing:border-box;text-decoration:none;position:relative;overflow:hidden;background:transparent;color:#fff;border:2px solid #fff;padding-top:14px;padding-bottom:14px"><span style="font-size:80%;display:contents">Next</span><br>Supabase Replication<!-- --> »</a></nav></div></div><div class="col col--3"><div class="tableOfContents_bqdL thin-scrollbar theme-doc-toc-desktop"><ul class="table-of-contents table-of-contents__left-border"><li><a href="#key-features" class="table-of-contents__link toc-highlight">Key Features</a></li><li><a href="#architecture-overview" class="table-of-contents__link toc-highlight">Architecture Overview</a></li><li><a href="#setting-up-the-client-rxserver-mongodb-sync" class="table-of-contents__link toc-highlight">Setting up the Client-RxServer-MongoDB Sync</a><ul><li><a href="#install-the-client-dependencies" class="table-of-contents__link toc-highlight">Install the Client Dependencies</a></li><li><a href="#set-up-a-mongodb-server" class="table-of-contents__link toc-highlight">Set up a MongoDB Server</a></li><li><a href="#shell" class="table-of-contents__link toc-highlight">Shell</a></li><li><a href="#docker" class="table-of-contents__link toc-highlight">Docker</a></li><li><a href="#mongodb-atlas" class="table-of-contents__link toc-highlight">MongoDB Atlas</a></li><li><a href="#create-a-mongodb-database-and-collection" class="table-of-contents__link toc-highlight">Create a MongoDB Database and Collection</a></li><li><a href="#create-a-rxdb-database-and-collection" class="table-of-contents__link toc-highlight">Create a RxDB Database and Collection</a></li><li><a href="#sync-the-collection-with-the-mongodb-server" class="table-of-contents__link toc-highlight">Sync the Collection with the MongoDB Server</a></li><li><a href="#start-a-rxserver" class="table-of-contents__link toc-highlight">Start a RxServer</a></li><li><a href="#sync-a-client-with-the-rxserver" class="table-of-contents__link toc-highlight">Sync a Client with the RxServer</a></li></ul></li><li><a href="#follow-up" class="table-of-contents__link toc-highlight">Follow Up</a></li></ul></div></div></div></div></main></div></div></div><div class="block footer dark"><div style="display:flex;flex-wrap:wrap;gap:44px" class="content"><div class="half left"><span><a variant="text" href="/" class="footer-logo-button"><img src="/files/logo/logo_text_white.svg" alt="RxDB" loading="lazy" width="140" height="50" class="width-140-120"></a><div class="footer-community-links"><a variant="text" href="/newsletter/" target="_blank" aria-label="Newsletter"><svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="none"><path stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M22.5 13.5v-7a2 2 0 0 0-2-2h-16a2 2 0 0 0-2 2v12c0 1.1.9 2 2 2h8"></path><path stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m22.5 7.5-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2.5 7.5M19.5 16.5v6M16.5 19.5h6"></path></svg></a><a variant="text" href="https://twitter.com/intent/user?screen_name=rxdbjs" target="_blank" aria-label="Twitter"><img src="/files/icons/twitter-blue.svg" alt="Twitter" width="24" height="22" loading="lazy"></a><a variant="text" href="https://www.linkedin.com/company/rxdb" target="_blank" aria-label="LinkedIn"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 21"><g clip-path="url(#a)"><path fill="#fff" d="M17.3 17.6h-3V13c0-1 0-2.5-1.6-2.5-1.5 0-1.8 1.2-1.8 2.5v4.7H8V8h2.9v1.3a3 3 0 0 1 2.9-1.6c3 0 3.6 2 3.6 4.6zM4.5 6.6a1.7 1.7 0 1 1 0-3.5 1.7 1.7 0 0 1 0 3.5m1.5 11H3V8h3zM18.8.4H1.5A1.5 1.5 0 0 0 0 1.8v17.4a1.5 1.5 0 0 0 1.5 1.4h17.3a1.5 1.5 0 0 0 1.5-1.4V1.8A1.5 1.5 0 0 0 18.8.4"></path></g><defs><clipPath id="a"><path fill="#fff" d="M0 .4h24v20.5H0z"></path></clipPath></defs></svg></a><a variant="text" href="/code/" target="_blank" aria-label="Github"><span class="navbar-icon-github" style="width:22px;height:22px;display:inline-block"></span></a><a variant="text" href="/chat/" target="_blank" aria-label="Discord"><span class="navbar-icon-discord" style="width:22px;height:22px;display:inline-block"></span></a></div></span></div><div class="half right" style="display:flex;flex:1"><div style="display:flex"><div class="footer-links min-width-180-135"><a variant="text" href="/overview.html" target="">Docs</a><a variant="text" href="/replication.html" target="">Sync</a><a variant="text" href="/rx-storage.html" target="">Storages</a><a variant="text" href="/premium/" target="_blank">Premium</a><a variant="text" href="/consulting/" target="_blank">Support</a></div><div class="footer-links min-width-180-135"><a variant="text" href="/#reviews" target="">Our Customers</a><a variant="text" href="/consulting#become-partner" target="">Become a Partner</a><a variant="text" href="/jobs/" target="">Jobs</a><a variant="text" href="/legal-notice/" target="_blank">Legal Notice</a><a variant="text" href="/privacy/" target="_blank">Privacy Policy</a><a variant="text" href="/llms.txt" target="_blank">llms.txt</a></div></div></div></div></div><div class="navbar-line" style="display:block;z-index:10;height:1.5px;background-color:var(--color-top);border-top-right-radius:2px;border-bottom-right-radius:2px;width:100%"></div><div class="call-to-action-popup"><div class="close-popup"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none" class="" style="transform:scale(1);transition:transform 0.2s ease-in-out;display:inline-block;cursor:pointer"><path d="M4 16H8L8 12H4L4 16Z" fill="white"></path><path d="M0 20H4L4 16H0L0 20Z" fill="white"></path><path d="M8 11.9999H12V7.99992H8L8 11.9999Z" fill="white"></path><path d="M4 8.00008H8L8 4.00008H4L4 8.00008Z" fill="white"></path><path d="M0 4.00004L4 4.00004L4 3.8147e-05L0 3.8147e-05L0 4.00004Z" fill="white"></path><path d="M16 11.9999H12V15.9999H16V11.9999Z" fill="white"></path><path d="M20 16H16V20H20V16Z" fill="white"></path><path d="M16 4.00004H12V8.00004H16V4.00004Z" fill="white"></path><path d="M20 0H16V4H20V0Z" fill="white"></path></svg></div></div></div>
 </body>
 </html>

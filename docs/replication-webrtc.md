@@ -197,6 +197,61 @@ const serverState = await startSignalingServerSimplePeer({
 
 For custom signaling servers with more complex logic, you can check the [source code of the default one](https://github.com/pubkey/rxdb/blob/master/src/plugins/replication-webrtc/signaling-server.ts).
 
+## Signaling over Nostr Relays
+
+Instead of running your own signaling server, you can let the peers find each other over [Nostr](https://nostr.how/en/what-is-nostr) relays. Nostr is an open protocol where clients publish signed JSON events to relays, which are plain WebSocket servers. There are many public relays, and you can run your own with open source software like [strfry](https://github.com/hoytech/strfry) or [nostr-rs-relay](https://github.com/scsibug/nostr-rs-relay).
+
+The connection handler from `getConnectionHandlerNostr()` sends the WebRTC offers, answers, and ICE candidates as Nostr events. After the peers are connected, the replicated documents go directly over the WebRTC data channel and never touch a relay.
+
+```ts
+import {
+    replicateWebRTC,
+    getConnectionHandlerNostr
+} from 'rxdb/plugins/replication-webrtc';
+
+const replicationPool = await replicateWebRTC(
+    {
+        collection: myRxCollection,
+        topic: 'my-users-pool',
+        connectionHandlerCreator: getConnectionHandlerNostr({
+            // Public relays, all peers of a topic must share at least one.
+            relays: [
+                'wss://nos.lol',
+                'wss://relay.primal.net',
+                'wss://nostr.mom'
+            ],
+            /**
+             * (optional) Nostr secret key (32 bytes) of this peer.
+             * If not set, a random key is generated on each start.
+             */
+            // secretKey: mySecretKey,
+            /**
+             * (optional) kind of the Nostr events that are used for signaling.
+             * Must be an ephemeral kind between 20000 and 29999.
+             * [default=25050]
+             */
+            // eventKind: 25050
+        }),
+        pull: {},
+        push: {}
+    }
+);
+```
+
+How the signaling works:
+
+- **Ephemeral events**: All signaling events use an ephemeral kind, so relays forward them to the subscribers but do not store them.
+- **Hashed topic**: The events are tagged with a SHA-256 hash of the `topic`, so the topic name is not readable on the relays.
+- **Presence**: Each peer publishes a presence event every `10s`. A peer that sends no presence for `35s` is removed from the room.
+- **Encrypted signals**: Offers, answers, and ICE candidates are encrypted with [NIP-44](https://github.com/nostr-protocol/nips/blob/master/44.md) to the public key of the receiving peer. Only the receiving peer can read them.
+- **Signed events**: Every event is signed with the key of the sending peer, and events with an invalid signature are ignored. Because the signals that set up the WebRTC connection are signed, the public key of a connected peer is verified.
+- **Batched signals**: Many public relays rate limit how many events a client can send per second. Trickle ICE creates many signals at once, so the signals to the same peer are collected for `200ms` and sent together in one event.
+- **Multiple relays**: The handler connects to all given relays and reconnects each of them with the same backoff as the signaling server connection. Events that arrive from more than one relay are only processed once.
+
+The same secret key can be used on multiple devices or browser tabs at the same time, because each connection handler adds its own random session id to the peer id.
+
+The public relays `wss://nos.lol`, `wss://relay.primal.net`, and `wss://nostr.mom` from the example above were tested with this handler on September 30, 2026. Public relays are run by third parties and can be offline, change their policies, or rate limit your app at any time. For production, run your own relay or pick relays that you trust, and pass more than one relay url.
+
 ## Peer Validation
 
 By default the replication will replicate with every peer the signaling server tells them about.
@@ -212,6 +267,60 @@ const replicationPool = await replicateWebRTC(
         pull: {},
         push: {}
         /* ... */
+    }
+);
+```
+
+With the [Nostr connection handler](#signaling-over-nostr-relays), each peer has a verified Nostr public key. You can use it to only replicate with known peers. Give each device its own `secretKey` and store the public keys of the allowed devices:
+
+```ts
+import {
+    replicateWebRTC,
+    getConnectionHandlerNostr,
+    getNostrPublicKeyOfPeer
+} from 'rxdb/plugins/replication-webrtc';
+import { getPublicKey } from 'nostr-tools/pure';
+
+// hex public keys of the devices that are allowed to replicate
+const allowedPublicKeys = [
+    getPublicKey(mySecretKey),
+    publicKeyOfOtherDevice
+];
+
+const replicationPool = await replicateWebRTC(
+    {
+        collection: myRxCollection,
+        topic: 'my-users-pool',
+        connectionHandlerCreator: getConnectionHandlerNostr({
+            relays: ['wss://nos.lol', 'wss://relay.primal.net'],
+            secretKey: mySecretKey
+        }),
+        isPeerValid: (peer) => {
+            const publicKey = getNostrPublicKeyOfPeer(peer);
+            return allowedPublicKeys.includes(publicKey);
+        },
+        pull: {},
+        push: {}
+    }
+);
+```
+
+## Connection Handling and Timeouts
+
+The simple-peer connection handler reconnects on its own when the connection to the signaling server or to another peer breaks. Reconnects run with an exponential backoff that starts at `500ms` and is capped at `15s`, so that an unreachable signaling server does not cause a busy loop. A peer connection that is not established within `15s` is dropped and a new attempt is started. Existing WebRTC connections keep replicating while the signaling server is offline.
+
+Messages that are bigger than the message size limit of the WebRTC data channel (which can be as low as `64 KiB` depending on the browser) are split into chunks, so you can replicate big documents.
+
+Each request to another peer fails when no answer arrives in time. The replication then retries after `retryTime`. You can change the timeout with the `requestTimeout` option:
+
+```ts
+const replicationPool = await replicateWebRTC(
+    {
+        /* ... */
+        // (optional) time in milliseconds [default=20000]
+        requestTimeout: 30000,
+        pull: {},
+        push: {}
     }
 );
 ```
@@ -284,12 +393,12 @@ The WebRTC replication plugin seamlessly integrates with the [RxDB encryption pl
 <Faq>
 <FaqItem question="How can WebRTC enable real-time peer-to-peer communications between browsers?">
 
-WebRTC enables true peer-to-peer (P2P) communication by establishing direct UDP/TCP data channels between browsers, completely bypassing centralized database architectures. Because the WebRTC connection requires initial IP discovery, clients must briefly connect to a centralized WebSocket Signaling Server to exchange SDP offers and ICE candidates. Once peered, the **[RxDB WebRTC Replication](./replication.md)** plugin streams NoSQL document diffs and [CRDT](./crdt.md) operations instantly across the channel, providing decentralized real-time sync with absolute zero cloud latency.
+WebRTC enables true peer-to-peer (P2P) communication by establishing direct UDP/TCP data channels between browsers, completely bypassing centralized database architectures. Because the WebRTC connection requires initial IP discovery, clients must briefly connect to a WebSocket signaling server or to [Nostr relays](#signaling-over-nostr-relays) to exchange SDP offers and ICE candidates. Once peered, the **[RxDB WebRTC Replication](./replication.md)** plugin streams NoSQL document diffs and [CRDT](./crdt.md) operations instantly across the channel, providing decentralized real-time sync with absolute zero cloud latency.
 
 </FaqItem>
 <FaqItem question="Which distributed database services offer peer discovery and sync plugins?">
 
-RxDB offers comprehensive peer discovery and sync plugins for distributed applications. The WebRTC replication plugin facilitates direct peer-to-peer data synchronization. A signaling server handles initial peer discovery and connection establishment. You connect browsers and mobile apps without a central database server. The sync engine automatically replicates local changes across all discovered peers.
+RxDB offers comprehensive peer discovery and sync plugins for distributed applications. The WebRTC replication plugin facilitates direct peer-to-peer data synchronization. A signaling server or a set of [Nostr relays](#signaling-over-nostr-relays) handles initial peer discovery and connection establishment. You connect browsers and mobile apps without a central database server. The sync engine automatically replicates local changes across all discovered peers.
 
 </FaqItem>
 <FaqItem question="What are the top databases that sync directly between devices without cloud dependency?">
