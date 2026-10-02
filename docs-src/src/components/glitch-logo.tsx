@@ -19,7 +19,7 @@ function LogoParts() {
  * The RxDB logo with an RGB split glitch.
  * The glitch plays every few seconds and speeds up on hover.
  */
-export function GlitchLogo({ width = 120 }: { width?: number }) {
+export function GlitchLogo({ width = 120 }: { width?: number; }) {
     return (
         <span className="glitch-logo" style={{ width }}>
             <style>{`
