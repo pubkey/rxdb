@@ -91,7 +91,7 @@ function SubmitSourceForm() {
             </label>
             <label>
                 URL *
-                <input style={styles.input} type="url" required placeholder="https://" value={url} onChange={e => setUrl(e.target.value)} />
+                <input style={styles.input} type="url" required placeholder="https:// (for example a YouTube link)" value={url} onChange={e => setUrl(e.target.value)} />
             </label>
             <label>
                 Type
@@ -227,7 +227,7 @@ export default function LibraryPage() {
                         <div className="content">
                             <h2>Submit a Publication</h2>
                             <p>
-                                When you wrote or found an article, paper, thesis, book, talk, or podcast that mentions RxDB,
+                                When you wrote or found an article, paper, thesis, book, talk, video, or podcast that mentions RxDB,
                                 fill out the form so it can be reviewed and added to the list.
                                 If you want to show the RxDB logo in your publication, read the <a href="/brand-guidelines/">RxDB brand guidelines</a>.
                             </p>

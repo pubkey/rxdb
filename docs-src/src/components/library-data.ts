@@ -1,4 +1,4 @@
-export type CitationType = 'paper' | 'thesis' | 'book' | 'news' | 'article' | 'talk' | 'podcast' | 'report';
+export type CitationType = 'paper' | 'thesis' | 'book' | 'news' | 'article' | 'talk' | 'video' | 'podcast' | 'report';
 
 export const CITATION_TYPE_LABELS: Record<CitationType, string> = {
     paper: 'Research Paper',
@@ -7,6 +7,7 @@ export const CITATION_TYPE_LABELS: Record<CitationType, string> = {
     news: 'News',
     article: 'Article',
     talk: 'Talk',
+    video: 'Video',
     podcast: 'Podcast',
     report: 'Report',
 };
