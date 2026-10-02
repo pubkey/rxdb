@@ -65,6 +65,14 @@ jobs:
       - name: test:react
         run: npm run test:react
 
+      # The release workflow attaches an SBOM to each GitHub release.
+      # Generating it here keeps a broken dependency tree from surfacing
+      # for the first time during a release.
+      - name: sbom
+        run: |
+          npm sbom --sbom-format cyclonedx --sbom-type library --omit dev > /dev/null
+          npm sbom --sbom-format spdx --sbom-type library --omit dev > /dev/null
+
   # We have to run all major scripts once on windows to ensure windows-devs can
   # run the test suite.
   windows:

@@ -125,6 +125,17 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           branch: ${{ github.ref }}
 
+      # Software Bill of Materials for the released version.
+      # Lists every runtime dependency with its version, license and integrity
+      # hash. Dev dependencies are omitted because they are not shipped to users.
+      # Both formats are generated because consumers' tooling reads one or the other.
+      - name: generate SBOM
+        run: |
+          npm sbom --sbom-format cyclonedx --sbom-type library --omit dev > rxdb-sbom.cdx.json
+          npm sbom --sbom-format spdx --sbom-type library --omit dev > rxdb-sbom.spdx.json
+          node -e "JSON.parse(require('fs').readFileSync('rxdb-sbom.cdx.json'))"
+          node -e "JSON.parse(require('fs').readFileSync('rxdb-sbom.spdx.json'))"
+
       # must run after the push
       # because it otherwise does not know
       # about the tag and add the old source code to the release.
@@ -134,6 +145,7 @@ jobs:
           prerelease: ${{ steps.vars.outputs.prerelease }}
           tag: ${{github.event.inputs.version}}
           bodyFile: "./release-body.md"
+          artifacts: "rxdb-sbom.cdx.json,rxdb-sbom.spdx.json"
           token: ${{ secrets.GITHUB_TOKEN }}
 
 
