@@ -1,7 +1,7 @@
 import Head from '@docusaurus/Head';
 import Layout from '@theme/Layout';
 import React, { useState } from 'react';
-import { CITATIONS, CITATION_TYPE_LABELS, type CitationType } from '../components/library-data';
+import { CITATIONS, CITATION_TYPE_LABELS, type CitationType } from '../components/press-data';
 import { JsonLd } from '../components/json-ld';
 
 const NEW_ISSUE_URL = 'https://github.com/pubkey/rxdb/issues/new';
@@ -65,7 +65,7 @@ function SubmitSourceForm() {
     function onSubmit(event: React.FormEvent) {
         event.preventDefault();
         const body = [
-            'A publication that cites or mentions RxDB, for the list at https://rxdb.info/library/',
+            'A publication that cites or mentions RxDB, for the list at https://rxdb.info/press/',
             '',
             '- **Title**: ' + title,
             '- **URL**: ' + url,
@@ -78,7 +78,7 @@ function SubmitSourceForm() {
             context,
         ].join('\n');
         const issueUrl = NEW_ISSUE_URL +
-            '?title=' + encodeURIComponent('[Library] ' + title) +
+            '?title=' + encodeURIComponent('[Press] ' + title) +
             '&body=' + encodeURIComponent(body);
         window.open(issueUrl, '_blank', 'noopener');
     }
@@ -126,7 +126,7 @@ function SubmitSourceForm() {
     );
 }
 
-export default function LibraryPage() {
+export default function PressPage() {
     const [filter, setFilter] = useState<CitationType | 'all'>('all');
     const [search, setSearch] = useState('');
     const usedTypes = (Object.keys(CITATION_TYPE_LABELS) as CitationType[])
@@ -141,7 +141,7 @@ export default function LibraryPage() {
     const itemListJsonLd = {
         '@context': 'https://schema.org',
         '@type': 'ItemList',
-        name: 'RxDB Library',
+        name: 'RxDB in the Press',
         itemListElement: CITATIONS.map((citation, index) => ({
             '@type': 'ListItem',
             position: index + 1,
@@ -162,17 +162,17 @@ export default function LibraryPage() {
                 <body className="homepage" />
             </Head>
             <Layout
-                title="RxDB Library - Papers, Articles, Books, and Talks About RxDB"
-                description="The RxDB Library is a curated collection of research papers, theses, books, news articles, and talks that cite or mention RxDB."
+                title="RxDB in the Press - Articles, Papers, Books, Talks, and Videos"
+                description="RxDB in the Press is a curated collection of news articles, research papers, theses, books, talks, and videos that cite or mention RxDB."
             >
                 <JsonLd data={itemListJsonLd} />
                 <main>
                     <div className="block first">
                         <div className="content">
-                            <h1>RxDB Library</h1>
+                            <h1>RxDB in the Press</h1>
                             <p>
-                                The <b>RxDB Library</b> is a curated collection of research papers, theses, books,
-                                news articles, and talks that cite or mention <a href="/">RxDB</a>. Every entry is written
+                                <b>RxDB in the Press</b> is a curated collection of news articles, research papers, theses, books,
+                                talks, and videos that cite or mention <a href="/">RxDB</a>. Every entry is written
                                 by a third party and links to the original source. The list currently has <b>{CITATIONS.length}</b> entries.
                                 If you know a publication that is missing, <a href="#submit">submit it with the form below</a>.
                             </p>
@@ -185,7 +185,7 @@ export default function LibraryPage() {
                                 style={{ ...styles.input, maxWidth: 640 }}
                                 type="search"
                                 placeholder="Search by title, author, or publisher"
-                                aria-label="Search the RxDB Library"
+                                aria-label="Search press mentions of RxDB"
                                 value={search}
                                 onChange={e => setSearch(e.target.value)}
                             />

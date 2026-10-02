@@ -75,8 +75,8 @@ export default function FooterWrapper() {
         href: '/jobs/',
       },
       {
-        label: 'Library',
-        href: '/library/',
+        label: 'Press',
+        href: '/press/',
       },
       {
         label: 'Brand Guidelines',

@@ -245,7 +245,7 @@ export default function BrandGuidelinesPage() {
                                 or partner badges, ask in the <a href="/chat/">RxDB Discord</a> or
                                 via the <a href="/consulting/">contact form</a> before you publish it.
                                 If you wrote an article, paper, or talk that mentions RxDB, add it to
-                                the <a href="/library/">list of publications that cite RxDB</a>.
+                                the <a href="/press/">RxDB in the Press</a> list.
                             </p>
                         </div>
                     </div>

@@ -32,8 +32,8 @@ export type Citation = {
 
 /**
  * Third-party publications that cite or mention RxDB, newest first.
- * Rendered in the RxDB Library at /library/. New entries come in via the form on that page,
- * which opens a GitHub issue with the "[Library]" title prefix.
+ * Rendered on the "RxDB in the Press" page at /press/. New entries come in via the form on that page,
+ * which opens a GitHub issue with the "[Press]" title prefix.
  */
 export const CITATIONS: Citation[] = [
     {
