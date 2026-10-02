@@ -18,7 +18,10 @@ const LOGOS: LogoAsset[] = [
         usage: 'The default logo. Use it on dark backgrounds, for example in headers, slides, and footers.',
         width: 394,
         height: 140,
-        formats: [{ label: 'SVG', href: '/files/logo/logo_text_white.svg' }],
+        formats: [
+            { label: 'SVG', href: '/files/logo/logo_text_white.svg' },
+            { label: 'PNG', href: '/files/logo/png/logo_text_white.png' },
+        ],
         background: 'dark',
     },
     {
@@ -29,7 +32,7 @@ const LOGOS: LogoAsset[] = [
         height: 140,
         formats: [
             { label: 'SVG', href: '/files/logo/logo_text.svg' },
-            { label: 'PNG', href: '/files/logo/logo_text.png' },
+            { label: 'PNG', href: '/files/logo/png/logo_text.png' },
         ],
         background: 'light',
     },
@@ -41,7 +44,7 @@ const LOGOS: LogoAsset[] = [
         height: 140,
         formats: [
             { label: 'SVG', href: '/files/logo/logo.svg' },
-            { label: 'PNG', href: '/files/logo/icon.png' },
+            { label: 'PNG', href: '/files/logo/png/logo.png' },
             { label: 'ICO', href: '/files/logo/icon.ico' },
         ],
         background: 'dark',
@@ -52,7 +55,10 @@ const LOGOS: LogoAsset[] = [
         usage: 'Use it when your readers do not know RxDB yet, for example in articles, talks, and comparison tables.',
         width: 282,
         height: 140,
-        formats: [{ label: 'SVG', href: '/files/logo/rxdb_javascript_database.svg' }],
+        formats: [
+            { label: 'SVG', href: '/files/logo/rxdb_javascript_database.svg' },
+            { label: 'PNG', href: '/files/logo/png/rxdb_javascript_database.png' },
+        ],
         background: 'dark',
     },
 ];
@@ -139,7 +145,7 @@ export default function LogoPage() {
                         <h2>Download the RxDB Logo</h2>
                         <p>
                             Prefer the SVG files because they scale to any size without losing quality.
-                            Use the PNG files only when a tool does not accept SVG.
+                            Use the PNG files (512px high, transparent background) only when a tool does not accept SVG.
                         </p>
                         <div style={styles.grid}>
                             {LOGOS.map(logo => (

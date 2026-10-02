@@ -13,7 +13,8 @@ export const ARTICLE_AUTHOR = {
     name: 'Daniel Meyer',
     jobTitle: 'Creator of RxDB',
     url: 'https://github.com/pubkey',
-    image: 'https://github.com/pubkey.png',
+    image: 'https://rxdb.info/files/authors/daniel-meyer.jpg',
+    avatar: '/files/authors/daniel-meyer.jpg',
     sameAs: [
         'https://github.com/pubkey',
         'https://www.linkedin.com/in/danielmeyerdev',
@@ -106,7 +107,7 @@ export function ArticleByline(props: ArticleBylineProps) {
             <div className="article-byline">
                 <img
                     className="article-byline-avatar"
-                    src={ARTICLE_AUTHOR.image}
+                    src={ARTICLE_AUTHOR.avatar}
                     alt={ARTICLE_AUTHOR.name}
                     width={44}
                     height={44}
