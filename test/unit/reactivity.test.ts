@@ -197,7 +197,7 @@ describe('reactivity.test.ts', () => {
             await waitUntil(() => !!querySignal.value);
             assert.deepStrictEqual(querySignal.value, []);
             await collection.insert(schemaObjects.humanData());
-            assert.deepStrictEqual(querySignal.value.length, 1);
+            await waitUntil(() => querySignal.value.length === 1);
 
             // ensure unsubscribe is called when signal gets garbage collected
             querySignal = {} as any;

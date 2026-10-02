@@ -1,8 +1,13 @@
 const webpack = require('webpack');
 
 
-const externals = {};
-[
+/**
+ * Only the node:-prefixed imports are replaced with an empty object.
+ * Webpack also applies object-style externals to the matching bare
+ * import (e.g. 'assert'), which would replace the browser polyfills,
+ * so a function is used that matches the exact request string.
+ */
+const nodeExternals = new Set([
     'path',
     'events',
     'url',
@@ -17,7 +22,13 @@ const externals = {};
     'util',
     'child_process',
     'zlib'
-].forEach(k => externals['node:' + k] = '{}');
+].map(k => 'node:' + k));
+function externals({ request }, callback) {
+    if (nodeExternals.has(request)) {
+        return callback(null, '{}');
+    }
+    callback();
+}
 
 module.exports = {
     target: 'web',

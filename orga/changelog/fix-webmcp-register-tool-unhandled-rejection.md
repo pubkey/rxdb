@@ -1,0 +1,1 @@
+- FIX webmcp plugin causing an unhandled promise rejection when a collection is closed directly after `registerWebMCP()` on a spec-conformant `modelContext` whose `registerTool()` returns a promise [#9172](https://github.com/pubkey/rxdb/pull/9172)

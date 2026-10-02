@@ -16,7 +16,9 @@ const classOnly = (pluginList) => (isEs5 ? pluginList : []);
 
 const plugins = [
     '@babel/plugin-transform-explicit-resource-management',
-    '@babel/plugin-transform-typescript',
+    ['@babel/plugin-transform-typescript', {
+        onlyRemoveTypeImports: false
+    }],
     /**
      * Must run before @babel/plugin-transform-classes,
      * otherwise babel throws 'Missing class properties transform'.
@@ -35,10 +37,10 @@ const plugins = [
     '@babel/transform-sticky-regex',
     '@babel/transform-unicode-regex',
     '@babel/transform-block-scoping',
-    ['@babel/transform-runtime', {
-        'regenerator': false
-    }],
-    '@babel/plugin-transform-react-jsx'
+    '@babel/transform-runtime',
+    ['@babel/plugin-transform-react-jsx', {
+        runtime: 'classic'
+    }]
 ];
 
 let presets = [
@@ -46,8 +48,7 @@ let presets = [
         '@babel/typescript',
         {
             rewriteImportExtensions: true,
-            loose: true,
-            modules: false
+            onlyRemoveTypeImports: false
         }
     ]
 ];
@@ -60,14 +61,7 @@ if (isEs5) {
             '@babel/typescript',
             {
                 rewriteImportExtensions: true,
-                loose: true,
-                targets: {
-                    edge: '107',
-                    firefox: '107',
-                    chrome: '108',
-                    safari: '16.2'
-                },
-                useBuiltIns: false
+                onlyRemoveTypeImports: false
             }]
     ];
     plugins.unshift('@babel/plugin-transform-modules-commonjs');

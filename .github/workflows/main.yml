@@ -1032,6 +1032,12 @@ jobs:
         uses: actions/setup-node@v7
         with:
           node-version-file: ".nvmrc"
+      # the firestore emulator of firebase-tools requires Java 21 or newer
+      - name: Set java version
+        uses: actions/setup-java@v6
+        with:
+          distribution: 'temurin'
+          java-version: '21'
 
       - name: Reuse npm cache folder
         uses: actions/cache@v6

@@ -29,6 +29,11 @@ module.exports = async function (config) {
             '../test_tmp/unit.test.js'
         ],
         port: 9876,
+        /**
+         * WebMCP requires an origin-keyed agent cluster.
+         * Chrome enables it by default, Firefox only with this header.
+         */
+        customHeaders: [{ match: '.*', name: 'Origin-Agent-Cluster', value: '?1' }],
         colors: true,
         autoWatch: false,
 
