@@ -420,7 +420,7 @@ p { margin: 0; max-width: 62ch; }
 
 /* 12. Leader election */
 .v-leader .tabl { fill: var(--muted); font-size: 9px; letter-spacing: .06em; }
-.v-leader .crown { fill: var(--pink); }
+.v-leader .crown { fill: var(--pink); stroke: var(--white); stroke-width: 3; stroke-linejoin: round; paint-order: stroke; }
 .v-leader .tab { transform-box: fill-box; transform-origin: center bottom; }
 
 /* 13. Glitch */
@@ -802,7 +802,6 @@ p { margin: 0; max-width: 62ch; }
 .wordmark-stage > svg { width: 100%; height: auto; max-width: 760px; }
 .logo .letter { fill: var(--white); transform-box: fill-box; transform-origin: center; }
 .v-wordmark .letter { stroke: var(--white); stroke-width: 1.2; stroke-dasharray: 1; stroke-dashoffset: 0; }
-.v-wordmark .xg { transform-box: fill-box; transform-origin: center; }
 .v-wordmark .uline { fill: var(--pink); transform-box: fill-box; transform-origin: left center; }
 .v-wordmark .tagline { fill: var(--muted); font-size: 13px; }
 .word-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 40px 28px; margin-top: 28px; }
@@ -834,13 +833,11 @@ p { margin: 0; max-width: 62ch; }
 .v-rx .l2 { animation-delay: .1s; }
 .v-rx .l3 { animation-delay: .2s; }
 .v-rx .l4 { animation-delay: .3s; }
-.v-rx .xg { transform-box: fill-box; transform-origin: center; animation: rx-spin 3s var(--ease-pop) infinite; }
 .v-rx .xg .letter { animation-name: wave, rx-fill; }
 .v-rx .b1 { animation: flash 3s .55s infinite; }
 .v-rx .b2 { animation: flash 3s .65s infinite; }
 .v-rx .b3 { animation: flash 3s .75s infinite; }
 @keyframes wave { 0%, 30%, 100% { transform: none; } 10% { transform: translateY(-10px); } 20% { transform: translateY(2px); } }
-@keyframes rx-spin { 0%, 42% { transform: none; } 58%, 100% { transform: rotate(180deg); } }
 @keyframes rx-fill { 0%, 42% { fill: var(--white); } 50% { fill: var(--pink); } 70%, 100% { fill: var(--white); } }
 
 /* Color sweep */
@@ -904,13 +901,13 @@ footer { font-size: 13px; color: var(--muted); display: flex; flex-direction: co
     <div class="stage">
       <svg class="logo" id="hero-logo" viewBox="0 0 360 150" role="img" aria-label="Animated RxDB logo whose three layers extend into the features: works offline, syncs with any backend, observable realtime queries">
         <g transform="translate(4 5)" id="hero-mark" data-logo>
-          <rect class="rail b1" x="96.66" y="33.34" height="20" width="120"/>
-          <rect class="rail b2" x="96.67" y="60" height="20" width="180"/>
-          <rect class="rail b3" x="96.66" y="86.66" height="20" width="220"/>
+          <rect class="rail b1" x="95.66" y="33.34" height="20" width="120"/>
+          <rect class="rail b2" x="95.67" y="60" height="20" width="180"/>
+          <rect class="rail b3" x="95.66" y="86.66" height="20" width="220"/>
           <text class="rail-text" x="110" y="47.3">works offline</text>
           <text class="rail-text" x="110" y="74">syncs with any backend</text>
           <text class="rail-text" x="110" y="100.7">observable realtime queries</text>
-          <text class="runtime" x="34" y="127.5">runs in <tspan class="rt" id="runtime">Browsers</tspan></text>
+          <text class="runtime" x="40" y="127.5">runs in <tspan class="rt" id="runtime">Browsers</tspan></text>
         </g>
       </svg>
       <span class="tag">hero · 9s loop</span>
@@ -922,7 +919,7 @@ footer { font-size: 13px; color: var(--muted); display: flex; flex-direction: co
     <div class="section-head">
       <p class="eyebrow">Logo + text</p>
       <h2 id="word-title">The <b>Wordmark</b></h2>
-      <p class="muted">The full lockup from <code>logo_text_white.svg</code>. The icon builds itself, then each letter of "RxDB" draws its outline and fills in. The x spins like a reactive stream, an underline sweeps in, and the tagline follows.</p>
+      <p class="muted">The full lockup from <code>logo_text_white.svg</code>. The icon builds itself, then each letter of "RxDB" draws its outline and fills in. The x flashes pink, an underline sweeps in, and the tagline follows.</p>
     </div>
     <div class="card">
       <div class="stage wordmark-stage v-wordmark">
@@ -956,7 +953,7 @@ footer { font-size: 13px; color: var(--muted); display: flex; flex-direction: co
       </article>
       <article class="card">
         <div class="stage v-rx">
-          <svg class="logo" viewBox="0 -14 394 160" data-logo role="img" aria-label="RxDB wordmark letters bouncing in a wave while the x spins">
+          <svg class="logo" viewBox="0 -14 394 160" data-logo role="img" aria-label="RxDB wordmark letters bouncing in a wave while the x flashes pink">
             <path class="letter l1" d="M143.33 106.67V33.33h29.31c4.98 0 9.57.79 13.78 2.36s7.59 4.06 10.15 7.47c2.56 3.4 3.84 7.85 3.84 13.34 0 5.86-1.46 10.48-4.39 13.89-2.93 3.4-6.62 5.84-11.09 7.3l18.88 28.98h-19.87l-16.69-26.9h-6.92v26.9h-17.02Zm17.02-41.61h12.19c1.98 0 3.71-.29 5.21-.88 1.5-.58 2.69-1.5 3.57-2.74s1.32-2.89 1.32-4.94-.44-3.68-1.32-4.89-2.07-2.1-3.57-2.69c-1.5-.58-3.24-.88-5.21-.88h-12.19z"/>
             <g class="xg"><path class="letter l2" d="M206.02 106.67l20.64-28.54-18.88-25.91h19.76l8.78 12.19h.44l8.56-12.19h19.54l-18.77 25.91 20.53 28.54h-19.65l-10.43-14.82h-.44l-10.43 14.82z"/></g>
             <path class="letter l3" d="M271.22 106.67V33.33h21.52c5.2 0 10.04.6 14.55 1.81 4.5 1.21 8.45 3.22 11.86 6.04 3.4 2.82 6.06 6.59 7.96 11.31s2.85 10.56 2.85 17.51-.95 12.88-2.85 17.56-4.56 8.44-7.96 11.25c-3.4 2.82-7.36 4.83-11.86 6.04s-9.35 1.81-14.55 1.81h-21.52Zm17.02-15.15h4.06c2.63 0 5.16-.26 7.57-.77 2.42-.51 4.56-1.5 6.42-2.96 1.87-1.46 3.35-3.62 4.45-6.48q1.65-4.275 1.65-11.31c0-7.035-.55-8.47-1.65-11.36s-2.58-5.09-4.45-6.59-4.01-2.51-6.42-3.02c-2.42-.51-4.94-.77-7.57-.77h-4.06v43.25Z"/>
@@ -966,7 +963,7 @@ footer { font-size: 13px; color: var(--muted); display: flex; flex-direction: co
         </div>
         <div class="meta">
           <div class="row"><h3>Reactive x</h3><span class="spec">3s · loop · ease-pop</span></div>
-          <p>A wave runs through the letters and into the layers of the icon. The x of Rx turns half a circle and flashes pink.</p>
+          <p>A wave runs through the letters and into the layers of the icon. The x of Rx flashes pink.</p>
         </div>
       </article>
       <article class="card">
@@ -2000,7 +1997,7 @@ footer { font-size: 13px; color: var(--muted); display: flex; flex-direction: co
       PATHS.forEach(function (p) { o.fillStyle = p[1]; o.fill(new Path2D(p[0])); });
       var data = o.getImageData(0, 0, off.width, off.height).data;
       var step = Math.max(5, scale * 3.2);
-      size = Math.max(3, step - 1.5);
+      size = step + 0.5;
       var old = parts;
       parts = [];
       for (var y = oy; y < oy + 140 * scale; y += step) {
@@ -2009,12 +2006,22 @@ footer { font-size: 13px; color: var(--muted); display: flex; flex-direction: co
           if (cx >= off.width || cy >= off.height) continue;
           var i = (cy * off.width + cx) * 4;
           if (data[i + 3] < 200) continue;
+          var q = step / 4, votes = {}, color = null, top = 0;
+          [[0, 0], [-q, -q], [q, -q], [-q, q], [q, q]].forEach(function (d) {
+            var sx = Math.round(cx + d[0]), sy = Math.round(cy + d[1]);
+            if (sx < 0 || sy < 0 || sx >= off.width || sy >= off.height) return;
+            var j = (sy * off.width + sx) * 4;
+            if (data[j + 3] < 200) return;
+            var c = nearest(data[j], data[j + 1], data[j + 2]);
+            votes[c] = (votes[c] || 0) + 1;
+            if (votes[c] > top) { top = votes[c]; color = c; }
+          });
           var prev = old[parts.length];
           parts.push({
             tx: x, ty: y,
             x: prev ? prev.x : x, y: prev ? prev.y : y,
             vx: 0, vy: 0,
-            c: nearest(data[i], data[i + 1], data[i + 2])
+            c: color
           });
         }
       }
@@ -2547,7 +2554,6 @@ footer { font-size: 13px; color: var(--muted); display: flex; flex-direction: co
         l.animate([{ strokeDashoffset: 1, fillOpacity: 0 }, { strokeDashoffset: 0, fillOpacity: 0, offset: .7 }, { strokeDashoffset: 0, fillOpacity: 1 }],
           { duration: 900, delay: t, easing: 'ease-in-out', fill: 'both' });
       });
-      xg.animate([{ transform: 'none' }, { transform: 'rotate(180deg)' }], { duration: 700, delay: 2300, easing: POP, fill: 'both' });
       ls[1].animate([{ fill: '#FFFFFF' }, { fill: '#ED168F', offset: .4 }, { fill: '#FFFFFF' }], { duration: 900, delay: 2300 });
       uline.animate([{ transform: 'scaleX(0)' }, { transform: 'none' }], { duration: 600, delay: 2700, easing: OUT, fill: 'both' });
       tag.animate([{ opacity: 0, transform: 'translateY(6px)' }, { opacity: 1, transform: 'none' }], { duration: 500, delay: 3000, easing: OUT, fill: 'both' });
