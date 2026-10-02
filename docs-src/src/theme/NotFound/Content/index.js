@@ -2,6 +2,7 @@ import React from 'react';
 import clsx from 'clsx';
 import Translate from '@docusaurus/Translate';
 import Heading from '@theme/Heading';
+import { GlitchLogo } from '@site/src/components/glitch-logo';
 export default function NotFoundContent({ className }) {
   return (
     <main className={clsx('container margin-vert--xl', className)}>
@@ -10,11 +11,7 @@ export default function NotFoundContent({ className }) {
           <Heading as="h1" className="hero__title">
             <a href="/">
               <div style={{ textAlign: 'center' }}>
-                <img
-                  src="https://rxdb.info/files/logo/rxdb_javascript_database.svg"
-                  alt="RxDB"
-                  width="160"
-                />
+                <GlitchLogo width={120} />
               </div>
             </a>
             <Translate
