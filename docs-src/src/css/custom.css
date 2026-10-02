@@ -3991,3 +3991,40 @@ pre[data-theme] span[style*="--shiki-token-keyword"] {
 .rxdb-timeline li>p:first-child>strong:first-child {
     color: var(--color-top);
 }
+
+/* Author byline below the H1 of pages in docs/articles/ */
+.article-byline {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: -8px 0 28px 0;
+    padding-bottom: 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    font-size: 0.9rem;
+}
+
+.article-byline-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.article-byline-author a {
+    color: var(--fontColor-offwhite);
+    font-weight: 600;
+}
+
+.article-byline-role,
+.article-byline-meta {
+    color: var(--expo-theme-text-secondary, #b0b0b0);
+}
+
+.article-byline-role {
+    margin-left: 8px;
+}
+
+.article-byline-meta span:not(:last-child)::after {
+    content: '·';
+    margin: 0 8px;
+}
