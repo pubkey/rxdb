@@ -33,3 +33,5 @@ docs-src/static/files/video-thumbnails/
 ERROR-MESSAGES.md
 .chrome-profile-perf/
 /docs/
+rxdb-sbom.cdx.json
+rxdb-sbom.spdx.json
