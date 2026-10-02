@@ -1,3 +1,4 @@
+import Head from '@docusaurus/Head';
 import Layout from '@theme/Layout';
 import React, { useState } from 'react';
 import { CITATIONS, CITATION_TYPE_LABELS, type CitationType } from '../components/library-data';
@@ -6,7 +7,6 @@ import { JsonLd } from '../components/json-ld';
 const NEW_ISSUE_URL = 'https://github.com/pubkey/rxdb/issues/new';
 
 const styles = {
-    content: { maxWidth: 1000, margin: '0 auto', padding: '0 16px' },
     filters: { display: 'flex', flexWrap: 'wrap', gap: 8, margin: '16px 0 24px 0' },
     list: { listStyle: 'none', padding: 0 },
     item: {
@@ -28,7 +28,7 @@ const styles = {
         padding: 8,
         borderRadius: 4,
         border: '1px solid rgba(255, 255, 255, 0.3)',
-        background: 'var(--bg-color-dark)',
+        background: 'rgba(255, 255, 255, 0.06)',
         color: 'var(--fontColor-offwhite)',
         fontSize: '1rem',
     },
@@ -157,72 +157,85 @@ export default function LibraryPage() {
     };
 
     return (
-        <Layout
-            title="RxDB Library - Papers, Articles, Books, and Talks About RxDB"
-            description="The RxDB Library is a curated collection of research papers, theses, books, news articles, and talks that cite or mention RxDB."
-        >
-            <JsonLd data={itemListJsonLd} />
-            <main>
-                <div className="block first">
-                    <div className="content" style={styles.content}>
-                        <h1>RxDB Library</h1>
-                        <p>
-                            The <b>RxDB Library</b> is a curated collection of research papers, theses, books,
-                            news articles, and talks that cite or mention <a href="/">RxDB</a>. Every entry is written
-                            by a third party and links to the original source. The list currently has <b>{CITATIONS.length}</b> entries.
-                            If you know a publication that is missing, <a href="#submit">submit it with the form below</a>.
-                        </p>
+        <>
+            <Head>
+                <body className="homepage" />
+            </Head>
+            <Layout
+                title="RxDB Library - Papers, Articles, Books, and Talks About RxDB"
+                description="The RxDB Library is a curated collection of research papers, theses, books, news articles, and talks that cite or mention RxDB."
+            >
+                <JsonLd data={itemListJsonLd} />
+                <main>
+                    <div className="block first">
+                        <div className="content">
+                            <h1>RxDB Library</h1>
+                            <p>
+                                The <b>RxDB Library</b> is a curated collection of research papers, theses, books,
+                                news articles, and talks that cite or mention <a href="/">RxDB</a>. Every entry is written
+                                by a third party and links to the original source. The list currently has <b>{CITATIONS.length}</b> entries.
+                                If you know a publication that is missing, <a href="#submit">submit it with the form below</a>.
+                            </p>
+                        </div>
+                    </div>
 
-                        <input
-                            style={{ ...styles.input, maxWidth: 640 }}
-                            type="search"
-                            placeholder="Search by title, author, or publisher"
-                            aria-label="Search the RxDB Library"
-                            value={search}
-                            onChange={e => setSearch(e.target.value)}
-                        />
-                        <div style={styles.filters}>
-                            <FilterButton active={filter === 'all'} onClick={() => setFilter('all')}>
-                                All ({CITATIONS.length})
-                            </FilterButton>
-                            {usedTypes.map(type => (
-                                <FilterButton key={type} active={filter === type} onClick={() => setFilter(type)}>
-                                    {CITATION_TYPE_LABELS[type]} ({CITATIONS.filter(c => c.type === type).length})
+                    <div className="block dark">
+                        <div className="content">
+                            <input
+                                style={{ ...styles.input, maxWidth: 640 }}
+                                type="search"
+                                placeholder="Search by title, author, or publisher"
+                                aria-label="Search the RxDB Library"
+                                value={search}
+                                onChange={e => setSearch(e.target.value)}
+                            />
+                            <div style={styles.filters}>
+                                <FilterButton active={filter === 'all'} onClick={() => setFilter('all')}>
+                                    All ({CITATIONS.length})
                                 </FilterButton>
+                                {usedTypes.map(type => (
+                                    <FilterButton key={type} active={filter === type} onClick={() => setFilter(type)}>
+                                        {CITATION_TYPE_LABELS[type]} ({CITATIONS.filter(c => c.type === type).length})
+                                    </FilterButton>
+                                ))}
+                            </div>
+
+                            {shown.length === 0 && <p>No entries match your search.</p>}
+                            {years.map(year => (
+                                <section key={year}>
+                                    <h2>{year}</h2>
+                                    <ul style={styles.list}>
+                                        {shown.filter(citation => citation.date.startsWith(year)).map(citation => (
+                                            <li key={citation.url} style={styles.item}>
+                                                <div style={styles.meta}>
+                                                    <span style={styles.tag}>{CITATION_TYPE_LABELS[citation.type]}</span>
+                                                    {citation.source} · <time dateTime={citation.date}>{citation.date}</time>
+                                                </div>
+                                                <h3 style={{ margin: '8px 0' }}>
+                                                    <a href={citation.url} target="_blank" rel="noopener">{citation.title}</a>
+                                                </h3>
+                                                <p style={{ margin: 0 }}>{citation.summary}</p>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </section>
                             ))}
                         </div>
-
-                        {shown.length === 0 && <p>No entries match your search.</p>}
-                        {years.map(year => (
-                            <section key={year}>
-                                <h2>{year}</h2>
-                                <ul style={styles.list}>
-                                    {shown.filter(citation => citation.date.startsWith(year)).map(citation => (
-                                        <li key={citation.url} style={styles.item}>
-                                            <div style={styles.meta}>
-                                                <span style={styles.tag}>{CITATION_TYPE_LABELS[citation.type]}</span>
-                                                {citation.source} · <time dateTime={citation.date}>{citation.date}</time>
-                                            </div>
-                                            <h3 style={{ margin: '8px 0' }}>
-                                                <a href={citation.url} target="_blank" rel="noopener">{citation.title}</a>
-                                            </h3>
-                                            <p style={{ margin: 0 }}>{citation.summary}</p>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </section>
-                        ))}
-
-                        <h2 id="submit">Submit a Publication</h2>
-                        <p>
-                            When you wrote or found an article, paper, thesis, book, talk, or podcast that mentions RxDB,
-                            fill out the form so it can be reviewed and added to the list.
-                            If you want to show the RxDB logo in your publication, read the <a href="/logo/">logo usage guidelines</a>.
-                        </p>
-                        <SubmitSourceForm />
                     </div>
-                </div>
-            </main>
-        </Layout>
+
+                    <div className="block" id="submit">
+                        <div className="content">
+                            <h2>Submit a Publication</h2>
+                            <p>
+                                When you wrote or found an article, paper, thesis, book, talk, or podcast that mentions RxDB,
+                                fill out the form so it can be reviewed and added to the list.
+                                If you want to show the RxDB logo in your publication, read the <a href="/brand-guidelines/">RxDB brand guidelines</a>.
+                            </p>
+                            <SubmitSourceForm />
+                        </div>
+                    </div>
+                </main>
+            </Layout>
+        </>
     );
 }

@@ -79,8 +79,8 @@ export default function FooterWrapper() {
         href: '/library/',
       },
       {
-        label: 'Logo',
-        href: '/logo/',
+        label: 'Brand Guidelines',
+        href: '/brand-guidelines/',
       },
       // {
       //   label: 'About us',
