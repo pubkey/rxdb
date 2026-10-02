@@ -165,12 +165,28 @@ export const CITATIONS: Citation[] = [
         'summary': 'Discusses the RxDB CRDT plugin in its related work and includes RxDB in a comparison table of CRDT systems.'
     },
     {
+        'title': 'Nuxt Nation 2024: Ben Hong - Get Your Head Out of the Cloud - Embracing Local-First Apps with Nuxt',
+        'source': 'Ben Hong, Nuxt Nation 2024 (Vue School)',
+        'type': 'video',
+        'date': '2024-11-27',
+        'url': 'https://www.youtube.com/watch?v=qRKWD1T5CD4',
+        'summary': 'Conference talk on local-first software that builds a realtime, offline-capable app with Nuxt and RxDB.'
+    },
+    {
         'title': 'Unlocking the Power of Real-Time Data Management with RxDB',
         'source': 'alex7842, DEV Community',
         'type': 'article',
         'date': '2024-10-10',
         'url': 'https://dev.to/alex7842/unlocking-the-power-of-real-time-data-management-with-rxdb-npm',
         'summary': 'Blog post introducing RxDB and its reactive approach to data changes.'
+    },
+    {
+        'title': 'Say goodbye to REST APIs with RxDB',
+        'source': 'Today I learned (YouTube)',
+        'type': 'video',
+        'date': '2023-12-10',
+        'url': 'https://www.youtube.com/watch?v=6t6IansQ7xo',
+        'summary': 'Walkthrough of a realtime collaborative to-do app that uses RxDB instead of a traditional REST API.'
     },
     {
         'title': 'Exploring RxDB: The Concepts It Holds',
