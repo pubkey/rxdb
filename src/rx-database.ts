@@ -44,7 +44,10 @@ import {
     getDefaultRevision,
     getDefaultRxDocumentMeta,
     defaultHashSha256,
-    RXDB_VERSION
+    RXDB_VERSION,
+    deepEqual,
+    createRevision,
+    now
 } from './plugins/utils/index.ts';
 import {
     newRxError
@@ -461,6 +464,31 @@ export class RxDatabaseBase<
                     const schema = (schemas as any)[collectionName];
                     // collection already exists but has different schema
                     if (docInDb.data.schemaHash !== await schema.hash) {
+                        /**
+                         * The stored schema has the same content but was hashed with a different key order,
+                         * for example when the keys were sorted with another locale collation.
+                         * The stored hash is updated instead of throwing.
+                         */
+                        if (deepEqual(docInDb.data.schema, schema.jsonSchema)) {
+                            const updateResult = await this.internalStore.bulkWrite([{
+                                previous: docInDb,
+                                document: Object.assign({}, docInDb, {
+                                    data: Object.assign({}, docInDb.data, {
+                                        schemaHash: await schema.hash,
+                                        schema: schema.jsonSchema
+                                    }),
+                                    _rev: createRevision(this.token, docInDb),
+                                    _meta: { lwt: now() }
+                                })
+                            }], 'rx-database-update-schema-hash');
+                            if (updateResult.error.length > 0) {
+                                throw newRxError('DB12', {
+                                    database: this.name,
+                                    writeError: updateResult.error[0]
+                                });
+                            }
+                            return;
+                        }
                         throw newRxError('DB6', {
                             database: this.name,
                             collection: collectionName,

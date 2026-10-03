@@ -194,7 +194,9 @@ export function firstPropertyValueOfObject<T>(obj: { [k: string]: T; }): T {
 
 /**
  * deep-sort an object so its attributes are in lexical order.
- * Also sorts the arrays inside of the object if no-array-sort not set
+ * Also sorts the arrays inside of the object if no-array-sort not set.
+ * Uses a fixed 'en' collation so the order, and with it the schema hash,
+ * is the same on every device locale.
  */
 export function sortObject(obj: any, noArraySort = false): any {
     if (!obj) return obj; // do not sort null, false or undefined
@@ -204,7 +206,7 @@ export function sortObject(obj: any, noArraySort = false): any {
         return obj
             .sort((a, b) => {
                 if (typeof a === 'string' && typeof b === 'string')
-                    return a.localeCompare(b);
+                    return a.localeCompare(b, 'en');
 
                 if (typeof a === 'object') return 1;
                 else return -1;
@@ -217,7 +219,7 @@ export function sortObject(obj: any, noArraySort = false): any {
     if (typeof obj === 'object' && !Array.isArray(obj)) {
         const out: any = {};
         Object.keys(obj)
-            .sort((a, b) => a.localeCompare(b))
+            .sort((a, b) => a.localeCompare(b, 'en'))
             .forEach(key => {
                 out[key] = sortObject(obj[key], noArraySort);
             });
