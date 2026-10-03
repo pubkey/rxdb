@@ -13,7 +13,7 @@
     "test:bundle": "rimraf -rf ./dist && rimraf -rf ./expo && EXPO_DEBUG=true expo export"
   },
   "devDependencies": {
-    "@babel/core": "7.29.7",
+    "@babel/core": "8.0.6",
     "@expo/cli": "57.0.27",
     "@react-native/jest-preset": "0.86.2",
     "babel-preset-expo": "54.0.9",
