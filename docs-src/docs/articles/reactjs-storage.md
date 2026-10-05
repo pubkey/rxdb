@@ -65,7 +65,7 @@ For “remember user preference” use cases, localStorage is excellent. But if 
 
 ## Part 2: LocalStorage vs. IndexedDB
 
-While localStorage is simple, it’s limited to string-based key-value lookups and can be synchronous for all reads/writes. For more robust ReactJS storage needs, browsers also provide IndexedDB, a low-level asynchronous API that can store larger amounts of JSON data with indexing.
+While localStorage is simple, it’s limited to string-based key-value lookups and can be synchronous for all reads/writes. For more robust ReactJS storage needs, browsers also provide [IndexedDB](./react-indexeddb.md), a low-level asynchronous API that can store larger amounts of JSON data with indexing.
 
 **LocalStorage:**
 

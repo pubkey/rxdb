@@ -39,7 +39,7 @@ A wrapper solves some or all of these. The wrappers below sit on a spectrum. On 
 
 Keep in mind that Dexie's queries are indexed range queries, not full NoSQL-style queries. The `where()` builder works on fields you declared as indexes, with operators like `above()`, `below()`, `between()`, `anyOf()`, and `startsWith()`. Anything beyond an indexed field falls back to `.filter()`, which runs a linear in-memory scan over the matched rows. There is no Mango-style selector language with `$or`, `$gt` on arbitrary fields, or nested field conditions like RxDB has. So Dexie is ergonomic for index-driven lookups, not for rich ad-hoc queries.
 
-Dexie stays close to IndexedDB. It does not add its own document format on top, so writes go almost straight through to the store. It also offers `liveQuery()` for reactive results and a paid add-on for server sync.
+Dexie stays close to IndexedDB. It does not add its own document format on top, so writes go almost straight through to the store. It also offers `liveQuery()` for reactive results (and a `useLiveQuery()` hook for [IndexedDB in React](../react-indexeddb.md)) and a paid add-on for server sync.
 
 **Good for**: apps that want ergonomic IndexedDB access with indexed range queries and a small footprint.
 
