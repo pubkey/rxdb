@@ -592,7 +592,7 @@ describe('rx-database.test.ts', () => {
                 'RxError',
                 'DB6'
             );
-            await db2.remove();
+            await db2.close();
         });
     });
     describe('.close()', () => {
