@@ -1,0 +1,1 @@
+- FIX the storage test `should clean up all deleted documents when multiple are deleted` failed from time to time when the storage uses another instance of `now()` than the test, like the premium storages in their integration tests. The test now waits until the deletion time is in the past before it runs `cleanup(0)`.
