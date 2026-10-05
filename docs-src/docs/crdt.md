@@ -7,6 +7,8 @@ image: /headers/crdt.jpg
 
 import {Faq, FaqItem} from '@site/src/components/faq';
 import {CenteredImage} from '@site/src/components/centered-image';
+import {DocsAnimation} from '@site/src/components/docs-animation';
+import {CrdtMerge} from '@site/src/components/animations/crdt-merge';
 
 # RxDB CRDT Plugin
 
@@ -22,6 +24,10 @@ With CRDTs (short for [Conflict-free replicated data type](https://en.wikipedia.
 writes are represented as CRDT operations in plain JSON. The CRDT operations are stored together with the document and each time a conflict arises, the CRDT conflict handler will automatically merge the operations in a deterministic way. Using CRDTs is an easy way to "magically" handle all conflict problems in your application by storing the deltas of writes together with the document data.
 
 <CenteredImage src="./files/crdt-conflict-free-replicated-data-type.svg" alt="CRDT Conflict-free replicated data type" width={300} />
+
+<DocsAnimation subtitle="Concurrent increments merged without a conflict">
+<CrdtMerge />
+</DocsAnimation>
 
 ## RxDB CRDT operations
 

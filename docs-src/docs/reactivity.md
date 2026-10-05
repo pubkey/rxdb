@@ -7,6 +7,8 @@ image: /headers/reactivity.jpg
 
 import {Tabs} from '@site/src/components/tabs';
 import {Steps} from '@site/src/components/steps';
+import {DocsAnimation} from '@site/src/components/docs-animation';
+import {ReactiveStream} from '@site/src/components/animations/reactive-stream';
 
 # Signals & Co. - Custom reactivity adapters instead of RxJS Observables
 
@@ -16,6 +18,10 @@ However there are many reasons to use other reactivity libraries that use a diff
 
 RxDB allows you to pass a custom reactivity factory on [RxDatabase](./rx-database.md) creation so that you can easily access values wrapped with your custom datatype in a convenient way.
 
+
+<DocsAnimation subtitle="Observable query results streaming to the UI">
+<ReactiveStream />
+</DocsAnimation>
 
 ## Adding a reactivity factory
 

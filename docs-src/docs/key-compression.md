@@ -6,6 +6,8 @@ image: /headers/key-compression.jpg
 ---
 
 import {Steps} from '@site/src/components/steps';
+import {DocsAnimation} from '@site/src/components/docs-animation';
+import {KeyCompressionLogo} from '@site/src/components/animations/key-compression-logo';
 
 # Key Compression
 
@@ -14,6 +16,10 @@ For compression the npm module [jsonschema-key-compression](https://github.com/p
 It compresses json-data based on its json-schema while still having valid json. It works by compressing long attribute-names into smaller ones and backwards.
 
 The compression and decompression happens internally, so when you work with a [RxDocument](./rx-document.md), you can access any property like normal.
+
+<DocsAnimation subtitle="Long JSON keys compressed into short tokens">
+<KeyCompressionLogo />
+</DocsAnimation>
 
 ## Enable key compression
 

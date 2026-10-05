@@ -5,6 +5,9 @@ description: Create a blazing-fast vector database in JavaScript. Leverage RxDB 
 image: /headers/javascript-vector-database.jpg
 ---
 
+import {DocsAnimation} from '@site/src/components/docs-animation';
+import {VectorDatabase} from '@site/src/components/animations/vector-database';
+
 
 # Local Vector Database with RxDB and transformers.js in JavaScript
 
@@ -37,6 +40,10 @@ A local vector database offers several key benefits:
 :::note
 In this article only the important source code parts are shown. You can find the full open-source vector database implementation at the [github repository](https://github.com/pubkey/javascript-vector-database).
 :::
+
+<DocsAnimation subtitle="Similarity search by cosine distance between vectors">
+<VectorDatabase />
+</DocsAnimation>
 
 ## What is a Vector Database?
 

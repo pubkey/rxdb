@@ -5,9 +5,16 @@ description: Learn RxDB's approach to local and replication conflicts. Discover 
 image: /headers/transactions-conflicts-revisions.jpg
 ---
 
+import {DocsAnimation} from '@site/src/components/docs-animation';
+import {ConflictHandling} from '@site/src/components/animations/conflict-handling';
+
 # Transactions, Conflicts and Revisions
 
 In contrast to most SQL databases, RxDB does not have the concept of relational ACID transactions. Instead, RxDB has to apply different techniques that better suit the offline-first, client-side world where it is not possible to create a transaction between multiple maybe-offline client devices.
+
+<DocsAnimation subtitle="Two offline edits of the same document resolved into one revision">
+<ConflictHandling />
+</DocsAnimation>
 
 ## Why RxDB does not have transactions
 
