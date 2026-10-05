@@ -35,6 +35,9 @@ export default function LegalNotice() {
                         <h6>Umsatzsteuer-ID nach §27a Umsatzsteuergesetz</h6>
                         DE357840955
 
+                        <h6>NCAGE Code (NATO Commercial and Government Entity Code)</h6>
+                        CNP90
+
                         <h6>Verantwortlich für den Inhalt (gem. § 55 Abs. 2 RStV)</h6>
                         Der oben genannte Eigentümer.
 
