@@ -149,6 +149,28 @@ export async function mustMigrate(
 }
 export const MIGRATION_DEFAULT_BATCH_SIZE = 200;
 
+/**
+ * With multiInstance: true, only the leader tab runs the migration.
+ * The leader refreshes the migration status document every
+ * `heartbeatInterval` milliseconds. When the status document of a migration
+ * was not written for `timeout` milliseconds, the waiting tabs assume
+ * that the leader is frozen, throttled or discarded by the browser
+ * and take over the migration.
+ * @link https://github.com/pubkey/rxdb/issues/9191
+ */
+export const MIGRATION_LEADER_TIMING = {
+    timeout: 60 * 1000,
+    heartbeatInterval: 5 * 1000
+};
+
+export function setMigrationLeaderTiming(
+    timeout: number,
+    heartbeatInterval: number = Math.max(1, Math.floor(timeout / 4))
+) {
+    MIGRATION_LEADER_TIMING.timeout = timeout;
+    MIGRATION_LEADER_TIMING.heartbeatInterval = heartbeatInterval;
+}
+
 
 export type MigrationStateWithCollection = {
     collection: RxCollection;
