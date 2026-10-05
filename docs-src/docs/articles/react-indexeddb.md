@@ -1,7 +1,7 @@
 ---
 title: IndexedDB in React - Hooks, Libraries, and Live Queries
 slug: react-indexeddb.html
-description: Learn how to use IndexedDB in React with a custom hook or with RxDB and live query hooks. Covers Next.js SSR, StrictMode, testing, and storage limits.
+description: Learn how to use IndexedDB in React with a custom hook, idb, localForage, or RxDB. Covers live queries, Next.js SSR, StrictMode, testing, and storage limits.
 image: /headers/react-indexeddb.jpg
 ---
 
@@ -13,7 +13,7 @@ import {Steps} from '@site/src/components/steps';
 
 # IndexedDB in React
 
-**IndexedDB** is the built-in browser database that lets a React app store megabytes or gigabytes of structured data on the user's device, so the app loads instantly and keeps working [offline](../offline-first.md). The raw API was designed for library authors, not for React components: it is callback-based, has no change events, and knows nothing about renders. This page shows you two ways to use **IndexedDB in React**: with the plain API and a custom hook, and with [RxDB](https://rxdb.info/) and its [React hooks](../react.md). It also covers the problems that only show up in React projects, like Next.js server rendering, StrictMode, and Jest tests.
+**IndexedDB** is the built-in browser database that lets a React app store megabytes or gigabytes of structured data on the user's device, so the app loads instantly and keeps working [offline](../offline-first.md). The raw API was designed for library authors, not for React components: it is callback-based, has no change events, and knows nothing about renders. This page shows you three ways to use **IndexedDB in React**: with the plain API and a custom hook, with a wrapper library like idb, and with [RxDB](https://rxdb.info/) and its [React hooks](../react.md). It also covers the problems that only show up in React projects, like Next.js server rendering, StrictMode, and Jest tests.
 
 <RxdbLogo alt="IndexedDB in React" />
 
@@ -135,9 +135,36 @@ This works for a todo list. But the trouble starts as soon as the app grows:
 - **No types at runtime**: TypeScript types are only a promise. Nothing stops old or broken data from being stored, see [IndexedDB with TypeScript](./indexeddb/indexeddb-typescript.md).
 - **Slow when used wrong**: Each transaction has a fixed cost. Writing 1k documents in one transaction takes about 80 milliseconds, but the same 1k documents written with one transaction each take about 2 seconds ([benchmark details](../slow-indexeddb.md)).
 
-Writing all of this by hand is the reason most React projects put a database layer on top of IndexedDB.
+Writing all of this by hand is the reason most React projects use a library.
 
-## Option 2: IndexedDB in React with RxDB
+## Option 2: IndexedDB Libraries for React
+
+There are many [IndexedDB wrappers](./indexeddb/best-indexeddb-wrapper.md). These are the ones that come up most often in React projects (npm versions checked on October 5, 2026):
+
+- **[idb](https://github.com/jakearchibald/idb)**: A thin promise wrapper by Jake Archibald that mirrors the raw API. It removes the callbacks but adds no queries, no reactivity, and no React hooks.
+- **[idb-keyval](https://github.com/jakearchibald/idb-keyval)**: A key-value store with `get()` and `set()`, built on IndexedDB. It fits small things like settings or a persisted Zustand store, and nothing that needs queries.
+- **[localForage](https://github.com/localForage/localForage)**: A localStorage-like API that uses IndexedDB under the hood. Its last release (`1.10.0`) was published on [August 18, 2021](https://www.npmjs.com/package/localforage?activeTab=versions).
+- **[RxDB](https://rxdb.info/)**: A local-first NoSQL database that stores data in IndexedDB (or [other storages](../rx-storage.md)) and adds JSON schema validation, MongoDB-style (Mango) queries, React hooks, [replication](../replication.md) with any backend, [encryption](../encryption.md), and [schema migrations](../migration-schema.md).
+
+| Feature | idb | idb-keyval | localForage | RxDB |
+| --- | --- | --- | --- | --- |
+| Promise API | ✅ | ✅ | ✅ | ✅ |
+| Queries beyond key lookups | ⚠️ index ranges | ❌ | ❌ | ✅ Mango queries |
+| React hook for live data | ❌ | ❌ | ❌ | ✅ `useLiveRxQuery()` |
+| Updates across browser tabs | ❌ | ❌ | ❌ | ✅ |
+| Schema validation | ❌ | ❌ | ❌ | ✅ JSON Schema |
+| Data migrations | ⚠️ manual | ❌ | ❌ | ✅ |
+| Sync with your own backend | ❌ | ❌ | ❌ | ✅ HTTP, GraphQL, CouchDB, Supabase, and more |
+| Encryption | ❌ | ❌ | ❌ | ✅ |
+| Same code in React Native | ❌ | ❌ | ❌ | ✅ with the SQLite storage |
+
+### When a Simpler Library is Enough
+
+You do not need a full database for every use case. When you only persist a few values like a theme, a draft, or a cached API response, idb-keyval is the smallest option and works well as the storage adapter for Zustand's `persist` middleware. When you want a thin layer over the raw API and plan to handle reactivity yourself, use idb.
+
+RxDB makes sense when the data is the core of your app: many collections, queries that change with the UI, data that must sync with a server, or a codebase that also targets [React Native](../react-native-database.md), [Electron](../electron-database.md), or [Capacitor](../capacitor-database.md).
+
+## Option 3: IndexedDB in React with RxDB
 
 RxDB ships a [React integration](../react.md) with a context provider and hooks. Components read data through `useLiveRxQuery()` and re-render whenever the result changes, no matter if the change came from the same component, another component, another browser tab, or the [replication](../replication.md) with your server.
 
@@ -388,7 +415,7 @@ const todosSignal = db.todos.find().$$;
 
 ## IndexedDB with Next.js and Server-Side Rendering
 
-IndexedDB exists only in the browser. When code that touches it runs on the server, Next.js (and every other SSR framework like Remix or Astro) fails with `ReferenceError: indexedDB is not defined`. This happens with the raw API and with every library built on top of it, RxDB included.
+IndexedDB exists only in the browser. When code that touches it runs on the server, Next.js (and every other SSR framework like Remix or Astro) fails with `ReferenceError: indexedDB is not defined`. This happens with the raw API, idb, localForage, and RxDB alike.
 
 To fix this:
 
@@ -409,7 +436,7 @@ In development, React 18 and newer mount, unmount, and mount every component aga
 
 Jest and Vitest run in Node.js with jsdom, and jsdom does not implement IndexedDB. Tests fail with `indexedDB is not defined`. There are two ways to fix it:
 
-- For the raw API, add the [fake-indexeddb](https://github.com/dumbmatter/fakeIndexedDB) package and import `fake-indexeddb/auto` in your test setup file. It adds an in-memory IndexedDB to the global scope.
+- For the raw API, idb, or localForage, add the [fake-indexeddb](https://github.com/dumbmatter/fakeIndexedDB) package and import `fake-indexeddb/auto` in your test setup file. It adds an in-memory IndexedDB to the global scope.
 - With RxDB, swap the storage instead. The [memory RxStorage](../rx-storage-memory.md) keeps data in memory, and starts empty for every test. The components do not change because they only use the hooks.
 
 ```ts
@@ -479,7 +506,7 @@ Yes. IndexedDB is a browser API and works in any React app that runs in the brow
 </FaqItem>
 <FaqItem question="What is the best IndexedDB library for React?">
 
-For apps where local data is the core of the product, use **[RxDB](../react.md)**. It stores data in IndexedDB and adds JSON schema validation, MongoDB-style (Mango) queries, React hooks that re-render on every change, multi-tab support, and [replication](../replication.md) with any backend. The same code also runs in React Native, Electron, and Capacitor by switching the storage.
+It depends on the data. idb-keyval is enough for a few key-value pairs. idb is a thin promise wrapper without React hooks. **[RxDB](../react.md)** adds JSON schema validation, Mango queries, React hooks, and replication with any backend, which fits apps where local data is the core of the product. The [IndexedDB wrapper comparison](./indexeddb/best-indexeddb-wrapper.md) lists all options.
 
 </FaqItem>
 <FaqItem question="How do I make React re-render when IndexedDB data changes?">
