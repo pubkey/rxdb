@@ -3273,6 +3273,15 @@ describe('rx-storage-implementations.test.ts (implementation: ' + config.storage
                 assert.deepStrictEqual(deleteResult.error, [], 'all deletes must succeed');
 
                 /**
+                 * cleanup(0) only removes documents with a lwt below the now() of the storage.
+                 * The storage can use another instance of now() with its own sub-millisecond counter
+                 * (like the premium storages in the integration tests), so wait until the
+                 * deletion time is in the past.
+                 */
+                const maxDeletedLwt = Math.max(...deleteRows.map(row => row.document._meta.lwt));
+                await waitUntil(() => Date.now() > maxDeletedLwt);
+
+                /**
                  * Run cleanup(0) to remove all deleted docs.
                  */
                 while (!await storageInstance.cleanup(0)) { }
