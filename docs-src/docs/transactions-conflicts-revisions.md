@@ -12,10 +12,6 @@ import {ConflictHandling} from '@site/src/components/animations/conflict-handlin
 
 In contrast to most SQL databases, RxDB does not have the concept of relational ACID transactions. Instead, RxDB has to apply different techniques that better suit the offline-first, client-side world where it is not possible to create a transaction between multiple maybe-offline client devices.
 
-<DocsAnimation subtitle="Two offline edits of the same document resolved into one revision">
-<ConflictHandling />
-</DocsAnimation>
-
 ## Why RxDB does not have transactions
 
 When talking about transactions, we mean [ACID transactions](https://en.wikipedia.org/wiki/ACID) that guarantee the properties of atomicity, consistency, isolation and durability.
@@ -64,6 +60,10 @@ Instead of handling local conflicts, in most cases it is easier to ensure that t
 ## Replication conflicts
 
 A replication conflict appears when multiple clients write to the same documents at once and these documents are then replicated to the backend server. 
+
+<DocsAnimation subtitle="Two offline edits of the same document resolved into one revision">
+<ConflictHandling />
+</DocsAnimation>
 
 When you replicate with the [GraphQL replication](./replication-graphql.md) and the [replication primitives](./replication.md), RxDB assumes that conflicts are **detected** and **resolved** at the client side.
 
