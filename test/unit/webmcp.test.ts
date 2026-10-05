@@ -40,13 +40,33 @@ describe('webmcp.test.ts', () => {
      */
     const itWithDom = isDeno ? it.skip : it;
     let removeDom: (() => void) | undefined;
+
+    /**
+     * Browsers with native WebMCP support (like Chromium 154) provide
+     * document.modelContext. The polyfill does not install itself
+     * and its testing shim when a native registry exists, so the native
+     * getter is removed while these tests run and restored afterwards.
+     */
+    let nativeModelContextDescriptor: PropertyDescriptor | undefined;
     before(async () => {
         if (typeof document === 'undefined' && !isDeno) {
             const { default: globalJsdom } = await import(/* webpackIgnore: true */ 'global-jsdom');
             removeDom = globalJsdom();
         }
+        cleanupWebMCPPolyfill();
+        if (typeof Document !== 'undefined') {
+            const descriptor = Object.getOwnPropertyDescriptor(Document.prototype, 'modelContext');
+            if (descriptor && descriptor.configurable) {
+                nativeModelContextDescriptor = descriptor;
+                delete (Document.prototype as any).modelContext;
+            }
+        }
     });
     after(() => {
+        cleanupWebMCPPolyfill();
+        if (nativeModelContextDescriptor) {
+            Object.defineProperty(Document.prototype, 'modelContext', nativeModelContextDescriptor);
+        }
         if (removeDom) {
             removeDom();
         }
