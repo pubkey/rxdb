@@ -2,7 +2,7 @@ import React from 'react';
 
 const OUTLINE = 'M98.33 10c-2.76 0-5-2.24-5-5s-2.24-5-5-5H75c-2.76 0-5 2.24-5 5v16.67c0 2.76-2.24 5-5 5H5c-2.76 0-5 2.24-5 5V125c0 2.76 2.24 5 5 5s5 2.24 5 5 2.24 5 5 5h13.33c2.76 0 5-2.24 5-5v-16.67c0-2.76 2.24-5 5-5h60c2.76 0 5-2.24 5-5V15c0-2.76-2.24-5-5-5';
 
-function LogoParts() {
+export function LogoParts() {
     return (
         <>
             <path className="part outline" d={OUTLINE} />

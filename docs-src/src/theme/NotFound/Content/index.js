@@ -3,6 +3,7 @@ import clsx from 'clsx';
 import Translate from '@docusaurus/Translate';
 import Heading from '@theme/Heading';
 import { GlitchLogo } from '@site/src/components/glitch-logo';
+import SearchBar from '@theme/SearchBar';
 export default function NotFoundContent({ className }) {
   return (
     <main className={clsx('container margin-vert--xl', className)}>
@@ -28,6 +29,11 @@ export default function NotFoundContent({ className }) {
               If you have found this page through a link, you should tell the link author to update it.
             </Translate>
           </p>
+
+          <p>Search the documentation:</p>
+          <div className="sidebar-search-container" style={{ marginBottom: 30 }}>
+            <SearchBar />
+          </div>
 
           <p>Maybe one of these can help you to find the desired content:</p>
           <div className="ul-container">

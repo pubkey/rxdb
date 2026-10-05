@@ -6,6 +6,7 @@ image: /headers/partial-sync.jpg
 ---
 
 import {Faq, FaqItem} from '@site/src/components/faq';
+import {PartialSyncChunks} from '@site/src/components/partial-sync-chunks';
 
 # Partial Sync with RxDB
 
@@ -26,6 +27,8 @@ A full sync, where every client downloads the entire collection, works well when
 ## Example Use Cases for Partial Sync
 
 The pattern shows up in very different products, but the shape of the solution stays the same: pick a scope id, run one replication per active scope, stop replications when the scope is no longer in use.
+
+<PartialSyncChunks />
 
 ### Minecraft-like Voxel World
 
