@@ -1,6 +1,8 @@
 import Head from '@docusaurus/Head';
 import Layout from '@theme/Layout';
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import type { ReactNode } from 'react';
+import { ANIMATION_GROUPS } from '@site/src/components/animations';
 
 type LogoAsset = {
     title: string;
@@ -126,6 +128,29 @@ const styles = {
     },
 } as const;
 
+/**
+ * Renders the children only while they are near the viewport,
+ * so that only the visible animations run at the same time.
+ */
+function MountWhenVisible({ children }: { children: ReactNode; }) {
+    const ref = useRef<HTMLDivElement>(null);
+    const [visible, setVisible] = useState(false);
+    useEffect(() => {
+        const el = ref.current;
+        if (!el || typeof IntersectionObserver === 'undefined') {
+            setVisible(true);
+            return;
+        }
+        const observer = new IntersectionObserver(
+            entries => setVisible(entries.some(entry => entry.isIntersecting)),
+            { rootMargin: '200px' }
+        );
+        observer.observe(el);
+        return () => observer.disconnect();
+    }, []);
+    return <div ref={ref} className="brand-animation-preview">{visible ? children : null}</div>;
+}
+
 export default function BrandGuidelinesPage() {
     return (
         <>
@@ -247,6 +272,53 @@ export default function BrandGuidelinesPage() {
                                 If you wrote an article, paper, or talk that mentions RxDB, add it to
                                 the <a href="/press/">RxDB in the Press</a> list.
                             </p>
+                        </div>
+                    </div>
+                    <div className="block dark">
+                        <div className="content">
+                            <h2>Logo Animations</h2>
+                            <p>
+                                These <b>animated versions of the RxDB logo</b> are built from the shapes of the original mark and each one shows something the database does.
+                                They are React components in <code>docs-src/src/components/animations/</code>, respect <code>prefers-reduced-motion</code>,
+                                and can be used in talks, videos, and articles about RxDB. In the RxDB docs, wrap an animation in the <code>DocsAnimation</code> frame
+                                which centers it, limits its size, and shows a one-line subtitle below it:
+                            </p>
+                            <pre style={{ marginTop: 16 }}><code>{`import {DocsAnimation} from '@site/src/components/docs-animation';
+import {ReplicationPushPull} from '@site/src/components/animations/replication-push-pull';
+
+<DocsAnimation subtitle="Pushing and pulling documents between client and server">
+<ReplicationPushPull />
+</DocsAnimation>`}</code></pre>
+                            <style>{`
+                                .brand-animation-preview { height: 200px; background: #0D0F18; display: flex; align-items: center; justify-content: center; line-height: 0; }
+                                .brand-animation-preview > * { width: 100%; }
+                                .brand-animation-preview > * > svg,
+                                .brand-animation-preview > * > .stage,
+                                .brand-animation-preview > * > .dsw-stage { max-height: 200px; }
+                                .brand-animation-preview > .glitch-logo { width: 110px !important; }
+                            `}</style>
+                            {ANIMATION_GROUPS.map(group => (
+                                <div key={group.title}>
+                                    <h3 style={{ marginTop: 32 }}>{group.title}</h3>
+                                    <div style={styles.grid}>
+                                        {group.animations.map(animation => {
+                                            const Animation = animation.component;
+                                            return (
+                                                <div key={animation.name} style={styles.card}>
+                                                    <MountWhenVisible>
+                                                        <Animation />
+                                                    </MountWhenVisible>
+                                                    <div style={styles.cardBody}>
+                                                        <h4 style={{ marginBottom: 8 }}>{animation.title}</h4>
+                                                        <p style={{ fontSize: '0.9rem' }}>{animation.description}</p>
+                                                        <code style={{ fontSize: '0.8rem' }}>{'<' + animation.name + ' />'}</code>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            ))}
                         </div>
                     </div>
                 </main>
