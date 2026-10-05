@@ -24,7 +24,6 @@ import {
     WithAttachmentsData,
     RxCollection,
     ensureNotFalsy,
-    b64DecodeUnicode,
     RxStorageInstance,
     blobToBase64String,
     createBlobFromBase64,
@@ -521,12 +520,15 @@ describe('attachments.test.ts', () => {
             });
 
 
-            // the data stored in the storage must be encrypted
+            /**
+             * The data stored in the storage must be encrypted.
+             * Encryption plugins can store the ciphertext as binary
+             * which is not valid base64, so the raw stored data is compared.
+             */
             const lowLevelStorage: RxStorageInstance<HumanDocumentType, any, any> = (doc.collection.storageInstance.originalStorageInstance as any).originalStorageInstance;
             const encryptedData = await lowLevelStorage.getAttachmentData(doc.primary, 'cat.txt', attachment.digest);
-            const dataStringBase64 = await blobToString(encryptedData);
-            const dataString = b64DecodeUnicode(dataStringBase64);
-            assert.notStrictEqual(dataString, insertData);
+            const storedString = await blobToString(encryptedData);
+            assert.ok(!storedString.includes(insertData));
 
             // getting the data again must be decrypted
             const data = await attachment.getStringData();
