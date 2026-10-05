@@ -1,19 +1,5 @@
 import React from 'react';
-
-const OUTLINE = 'M98.33 10c-2.76 0-5-2.24-5-5s-2.24-5-5-5H75c-2.76 0-5 2.24-5 5v16.67c0 2.76-2.24 5-5 5H5c-2.76 0-5 2.24-5 5V125c0 2.76 2.24 5 5 5s5 2.24 5 5 2.24 5 5 5h13.33c2.76 0 5-2.24 5-5v-16.67c0-2.76 2.24-5 5-5h60c2.76 0 5-2.24 5-5V15c0-2.76-2.24-5-5-5';
-
-export function LogoParts() {
-    return (
-        <>
-            <path className="part outline" d={OUTLINE} />
-            <rect className="part b1" x="6.66" y="33.34" width="90" height="20" />
-            <rect className="part b2" x="6.67" y="60" width="90" height="20" />
-            <rect className="part b3" x="6.66" y="86.66" width="90" height="20" />
-            <path className="part corner" d="M86.67 6.67v10h10v10h-20v-20z" />
-            <path className="part foot" d="M26.67 113.33v20h-10v-10h-10v-10z" />
-        </>
-    );
-}
+import { LogoParts } from './shared';
 
 /**
  * The RxDB logo with an RGB split glitch.

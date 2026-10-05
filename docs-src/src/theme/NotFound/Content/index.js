@@ -2,7 +2,7 @@ import React from 'react';
 import clsx from 'clsx';
 import Translate from '@docusaurus/Translate';
 import Heading from '@theme/Heading';
-import { GlitchLogo } from '@site/src/components/glitch-logo';
+import { GlitchLogo } from '@site/src/components/animations/glitch-logo';
 import SearchBar from '@theme/SearchBar';
 export default function NotFoundContent({ className }) {
   return (

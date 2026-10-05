@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { LogoParts } from '../glitch-logo';
+import { LogoParts } from './shared';
 
 const SVGNS = 'http://www.w3.org/2000/svg';
 const GRID = { cols: 6, rows: 4, size: 24, pitch: 27, x: 12, y: 34 };
