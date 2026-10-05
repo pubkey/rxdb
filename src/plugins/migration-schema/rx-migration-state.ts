@@ -393,7 +393,7 @@ export class RxMigrationState {
                 }
             }
             /**
-             * Waiting has ended because of leadership or cancelation,
+             * Waiting has ended because of leadership or cancellation,
              * the other promise of the race decides the result.
              */
             return new Promise<never>(() => { });
