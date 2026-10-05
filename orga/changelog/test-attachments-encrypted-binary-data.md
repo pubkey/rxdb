@@ -1,0 +1,1 @@
+- FIX flaky `attachments.test.ts` encryption test that decoded binary ciphertext as base64 and failed about 1 in 4 runs with storages that store the encrypted attachment data as binary [#9193](https://github.com/pubkey/rxdb/pull/9193)
