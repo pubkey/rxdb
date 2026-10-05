@@ -373,7 +373,12 @@ The collection API works the same inside and outside of components, for example 
 const db = await getDatabase();
 
 // insert
-await db.todos.insert({ id: 'a1', title: 'Buy milk', done: false, createdAt: Date.now() });
+await db.todos.insert({
+  id: 'a1',
+  title: 'Buy milk',
+  done: false,
+  createdAt: Date.now()
+});
 
 // bulk insert, one IndexedDB transaction for all documents
 await db.todos.bulkInsert([
@@ -401,7 +406,9 @@ await doc?.remove();
 RxDB can also return [signals](../reactivity.md) instead of RxJS Observables. With the Preact Signals reactivity plugin, a query exposes its result as a signal through the double-dollar property (`$$`):
 
 ```ts
-import { PreactSignalsRxReactivityFactory } from 'rxdb/plugins/reactivity-preact-signals';
+import {
+  PreactSignalsRxReactivityFactory
+} from 'rxdb/plugins/reactivity-preact-signals';
 
 const db = await createRxDatabase({
   name: 'tododb',
