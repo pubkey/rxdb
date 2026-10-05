@@ -2,6 +2,9 @@
 
 > Enhance your RxDB workflow with pre and post hooks. Quickly add custom validations, triggers, and events to streamline your asynchronous operations.
 
+import {DocsAnimation} from '@site/src/components/docs-animation';
+import {MiddlewareHook} from '@site/src/components/animations/middleware-hook';
+
 # Middleware
 RxDB middleware-hooks (also called pre and post hooks) are functions which are passed control during execution of asynchronous functions.
 The hooks are specified on RxCollection-level and help to create a clear what-happens-when-structure of your code.
@@ -9,6 +12,10 @@ The hooks are specified on RxCollection-level and help to create a clear what-ha
 Hooks can be defined to run **parallel** or **in series** one after another.
 Hooks can be **synchronous** or **asynchronous** when they return a `Promise`.
 To stop the operation at a specific hook, throw an error.
+
+<DocsAnimation subtitle="A preInsert hook changing a document before it is stored">
+<MiddlewareHook />
+</DocsAnimation>
 
 ## List
 RxDB supports the following hooks:

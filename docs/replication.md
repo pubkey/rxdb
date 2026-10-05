@@ -5,6 +5,8 @@
 import { IconGear } from '@site/src/components/icons/gear';
 import { HeadlineWithIcon } from '@site/src/components/headline-with-icon';
 import {Faq, FaqItem} from '@site/src/components/faq';
+import {DocsAnimation} from '@site/src/components/docs-animation';
+import {ReplicationPushPull} from '@site/src/components/animations/replication-push-pull';
 
 # <HeadlineWithIcon h1 icon={<IconGear />}>RxDB's realtime Sync Engine for Local-First Apps</HeadlineWithIcon>
 
@@ -14,6 +16,10 @@ The backend server does not have to be an RxDB instance; you can build a replica
 For example you can replicate with a [custom GraphQL endpoint](./replication-graphql.md) or an [HTTP server](./replication-http.md) on top of a PostgreSQL or MongoDB database.
 
 The replication is made to support the [Local-First](./articles/local-first-future.md) paradigm, so that when the client goes [offline](./offline-first.md), the RxDB [database](./rx-database.md) can still read and write [locally](./articles/local-database.md) and will continue the replication when the client goes online again.
+
+<DocsAnimation subtitle="Pushing and pulling documents between client and server">
+<ReplicationPushPull />
+</DocsAnimation>
 
 ## Design Decisions of the Sync Engine
 

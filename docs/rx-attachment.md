@@ -3,6 +3,8 @@
 > Learn how to store and manage binary data like images or files in RxDB using attachments. Discover features, performance benefits, encryption, compression, and usage examples with code.
 
 import { DefaultCompressibleTypes } from '@site/src/components/default-compressible-types';
+import {DocsAnimation} from '@site/src/components/docs-animation';
+import {AttachmentsMail} from '@site/src/components/animations/attachments-mail';
 
 # Attachments
 
@@ -16,6 +18,10 @@ Using attachments instead of adding the data to the normal document, ensures tha
 - Attachments can be stored [encrypted](./encryption.md).
 
 Internally, attachment data is stored as `Blob` objects. Blob is the canonical internal type because it is immutable, carries MIME type metadata via `Blob.type`, provides synchronous size via `Blob.size`, and is [structured-cloneable](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm) (works with Worker/Electron `postMessage` and IndexedDB). Conversion to `ArrayBuffer` only happens at system boundaries that require it: encryption (Web Crypto), compression (CompressionStream), digest hashing, and WebSocket serialization.
+
+<DocsAnimation subtitle="Binary files attached to a document">
+<AttachmentsMail />
+</DocsAnimation>
 
 ## Add the attachments plugin
 

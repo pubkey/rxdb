@@ -2,10 +2,17 @@
 
 > Discover how RxPipeline automates your data workflows. Seamlessly process writes, manage leader election, and ensure crash-safe operations in RxDB.
 
+import {DocsAnimation} from '@site/src/components/docs-animation';
+import {RxPipelineFlow} from '@site/src/components/animations/rx-pipeline-flow';
+
 # RxPipeline
 
 The RxPipeline plugin enables you to run operations depending on writes to a collection.
 Whenever a write happens on the source collection of a pipeline, a handler is called to process the writes and run operations on another collection.
+
+<DocsAnimation subtitle="Documents processed from a source into a destination collection">
+<RxPipelineFlow />
+</DocsAnimation>
 
 You could have a similar behavior by observing the collection stream and process data on emits:
 

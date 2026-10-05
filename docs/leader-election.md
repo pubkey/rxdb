@@ -3,6 +3,8 @@
 > Use RxDB leader election to coordinate browser tabs so that only one tab manages remote data access, reducing redundant connections and saving resources.
 
 import {CenteredImage} from '@site/src/components/centered-image';
+import {DocsAnimation} from '@site/src/components/docs-animation';
+import {LeaderElectionTabs} from '@site/src/components/animations/leader-election-tabs';
 
 # Leader-Election
 
@@ -10,6 +12,10 @@ RxDB comes with a leader-election which elects a leading instance between differ
 Before you read this, please check out on how many of your open browser-tabs you have opened the same website more than once. Count them, I will wait..
 
 So if you would now inspect the traffic that these open tabs produce, you can see that many of them send exact the same data over wire for every tab. No matter if the data is sent with an open websocket or by polling.
+
+<DocsAnimation subtitle="One browser tab elected as the leader">
+<LeaderElectionTabs />
+</DocsAnimation>
 
 ## Use-case-example
 

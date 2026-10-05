@@ -4,11 +4,17 @@
 
 import {PremiumBlock} from '@site/src/components/premium-block';
 import {Steps} from '@site/src/components/steps';
+import {DocsAnimation} from '@site/src/components/docs-animation';
+import {FulltextSearchLens} from '@site/src/components/animations/fulltext-search-lens';
 
 # Fulltext Search
 
 To run fulltext search queries on the local data, RxDB has a fulltext search plugin based on [flexsearch](https://github.com/nextapps-de/flexsearch) and [RxPipeline](./rx-pipeline.md). On each write to a given source [RxCollection](./rx-collection.md), an indexer is running to map the written document data into a fulltext search index.
 The index can then be queried efficiently with complex fulltext search operations.
+
+<DocsAnimation subtitle="Fulltext search over local documents">
+<FulltextSearchLens />
+</DocsAnimation>
 
 ## Benefits of using a local fulltext search
 

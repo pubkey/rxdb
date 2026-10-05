@@ -2,6 +2,9 @@
 
 > Upgrade your RxDB collections without losing data. Learn how to seamlessly migrate schema changes and keep your apps running smoothly.
 
+import {DocsAnimation} from '@site/src/components/docs-animation';
+import {SchemaMigrationLogo} from '@site/src/components/animations/schema-migration-logo';
+
 # Migrate Database Data on schema changes
 
 The RxDB Data Migration Plugin helps developers easily update stored data in their apps when they make changes to the data structure by changing the schema of a [RxCollection](./rx-collection.md). This is useful when developers release a new version of the app with a different schema.
@@ -9,6 +12,10 @@ The RxDB Data Migration Plugin helps developers easily update stored data in the
 Imagine you have your awesome messenger-app distributed to many users. After a while, you decide that in your new version, you want to change the schema of the messages-collection. Instead of saving the message-date like `2017-02-12T23:03:05+00:00` you want to have the unix-timestamp like `1486940585` to make it easier to compare dates. To accomplish this, you change the schema and **increase the version-number** and you also change your code where you save the incoming messages. But one problem remains: what happens with the messages which are already stored in the database on the user's device in the old schema?
 
 With RxDB you can provide migrationStrategies for your collections that automatically (or on call) transform your existing data from older to newer schemas. This assures that the client's data always matches your newest code-version.
+
+<DocsAnimation subtitle="Stored documents migrated to a new schema version">
+<SchemaMigrationLogo />
+</DocsAnimation>
 
 ## Add the migration plugin
 

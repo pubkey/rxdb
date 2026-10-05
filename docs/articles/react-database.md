@@ -60,7 +60,7 @@ While considering database options for React applications, RxDB stands out due t
 
 ### IndexedDB in React and the Advantage of RxDB
 
-Using IndexedDB directly in React can be challenging due to its low-level, callback-based API which doesn't align neatly with modern React's Promise and async/await patterns. This intricacy often leads to bulky and complex implementations for developers. Also, when used wrong, IndexedDB can have a worse [performance profile](../slow-indexeddb.md) than it could have. In contrast, RxDB, with the [IndexedDB RxStorage](../rx-storage-indexeddb.md) and the [LocalStorage RxStorage](../rx-storage-localstorage.md), abstracts these complexities, integrating reactive programming and providing a more streamlined experience for data management in React applications. Thus, RxDB offers a more intuitive approach, eliminating much of the manual overhead required with IndexedDB.
+Using [IndexedDB directly in React](./react-indexeddb.md) can be challenging due to its low-level, callback-based API which doesn't align neatly with modern React's Promise and async/await patterns. This intricacy often leads to bulky and complex implementations for developers. Also, when used wrong, IndexedDB can have a worse [performance profile](../slow-indexeddb.md) than it could have. In contrast, RxDB, with the [IndexedDB RxStorage](../rx-storage-indexeddb.md) and the [LocalStorage RxStorage](../rx-storage-localstorage.md), abstracts these complexities, integrating reactive programming and providing a more streamlined experience for data management in React applications. Thus, RxDB offers a more intuitive approach, eliminating much of the manual overhead required with IndexedDB.
 
 ### Using RxDB in a React Application
 

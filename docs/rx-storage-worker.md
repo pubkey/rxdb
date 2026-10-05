@@ -4,12 +4,18 @@
 
 import {PremiumBlock} from '@site/src/components/premium-block';
 import {Faq, FaqItem} from '@site/src/components/faq';
+import {DocsAnimation} from '@site/src/components/docs-animation';
+import {WorkerStorage} from '@site/src/components/animations/worker-storage';
 
 # Worker RxStorage
 
 With the worker plugin, you can put the [RxStorage](./rx-storage.md) of your database inside of a WebWorker (in browsers) or a Worker Thread (in node.js). By doing so, you can take CPU load from the main process and move it into the worker's process which can improve the perceived performance of your application. Notice that for browsers, it is recommended to use the [SharedWorker](./rx-storage-shared-worker.md) instead to get a better performance.
 
 <PremiumBlock />
+
+<DocsAnimation subtitle="The storage running in a worker, off the main thread">
+<WorkerStorage />
+</DocsAnimation>
 
 ## On the worker process
 

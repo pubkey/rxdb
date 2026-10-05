@@ -4,10 +4,16 @@
 
 import {HeadlineWithIcon} from '@site/src/components/headline-with-icon';
 import {Faq, FaqItem} from '@site/src/components/faq';
+import {DocsAnimation} from '@site/src/components/docs-animation';
+import {RxServerRack} from '@site/src/components/animations/rx-server-rack';
 
 # <HeadlineWithIcon h1 icon={}>RxDB Server</HeadlineWithIcon>
 
 The RxDB Server Plugin makes it possible to spawn a server on top of a RxDB database that offers multiple types of endpoints for various usages. It can spawn basic CRUD REST endpoints or even realtime replication endpoints that can be used by the client devices to replicate data. The RxServer plugin is designed to be used in Node.js but you can also use it in Deno, Bun or the [Electron](./electron-database.md) "main" process. You can use it either as a **standalone server** or add it on top of an **existing http server** (like express) in nodejs.
+
+<DocsAnimation subtitle="Clients replicating and querying through RxServer endpoints">
+<RxServerRack />
+</DocsAnimation>
 
 ## Starting a RxServer
 

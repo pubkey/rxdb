@@ -2621,10 +2621,16 @@ import {Steps} from '@site/src/components/steps';
 import {HeadlineWithIcon} from '@site/src/components/headline-with-icon';
 import {Faq, FaqItem} from '@site/src/components/faq';
 import {CenteredImage} from '@site/src/components/centered-image';
+import {DocsAnimation} from '@site/src/components/docs-animation';
+import {P2pReplicationMesh} from '@site/src/components/animations/p2p-replication-mesh';
 
 # <HeadlineWithIcon h1 icon={} subtitle="Sync Data between Browsers and Devices in JavaScript">P2P WebRTC Replication with RxDB</HeadlineWithIcon>
 
 WebRTC P2P data connections are revolutionizing real-time web and mobile development by **eliminating central servers** in scenarios where clients can communicate directly. With the **RxDB** [Sync Engine](./replication.md), you can sync your local database state across multiple browsers or devices via **WebRTC P2P (Peer-to-Peer)** connections, ensuring scalable, secure, and **low-latency** data flows without traditional server bottlenecks.
+
+<DocsAnimation subtitle="Peers replicating directly with each other over WebRTC">
+<P2pReplicationMesh />
+</DocsAnimation>
 
 ## What is WebRTC?
 
@@ -3147,6 +3153,8 @@ According to the HTTP/1.1 specification (RFC 2616), browsers traditionally limit
 import { IconGear } from '@site/src/components/icons/gear';
 import { HeadlineWithIcon } from '@site/src/components/headline-with-icon';
 import {Faq, FaqItem} from '@site/src/components/faq';
+import {DocsAnimation} from '@site/src/components/docs-animation';
+import {ReplicationPushPull} from '@site/src/components/animations/replication-push-pull';
 
 # <HeadlineWithIcon h1 icon={<IconGear />}>RxDB's realtime Sync Engine for Local-First Apps</HeadlineWithIcon>
 
@@ -3156,6 +3164,10 @@ The backend server does not have to be an RxDB instance; you can build a replica
 For example you can replicate with a [custom GraphQL endpoint](./replication-graphql.md) or an [HTTP server](./replication-http.md) on top of a PostgreSQL or MongoDB database.
 
 The replication is made to support the [Local-First](./articles/local-first-future.md) paradigm, so that when the client goes [offline](./offline-first.md), the RxDB [database](./rx-database.md) can still read and write [locally](./articles/local-database.md) and will continue the replication when the client goes online again.
+
+<DocsAnimation subtitle="Pushing and pulling documents between client and server">
+<ReplicationPushPull />
+</DocsAnimation>
 
 ## Design Decisions of the Sync Engine
 

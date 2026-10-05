@@ -5,11 +5,17 @@
 import { PerformanceChart } from '@site/src/components/performance-chart';
 import { PERFORMANCE_DATA_VALIDATION_INDEXEDDB, PERFORMANCE_DATA_VALIDATION_MEMORY } from '@site/src/components/performance-data';
 import {Faq, FaqItem} from '@site/src/components/faq';
+import {DocsAnimation} from '@site/src/components/docs-animation';
+import {SchemaValidationLogo} from '@site/src/components/animations/schema-validation-logo';
 
 # Schema validation
 
 RxDB has multiple validation implementations that can be used to ensure that your document data is always matching the provided JSON 
 schema of your [RxCollection](./rx-collection.md).
+
+<DocsAnimation subtitle="An invalid document rejected by the schema">
+<SchemaValidationLogo />
+</DocsAnimation>
 
 The schema validation is **not a plugin** but comes in as a wrapper around any other `RxStorage` and it will then validate all data that is written into that storage. This is required for multiple reasons:
 - It allows us to run the validation inside of a [Worker RxStorage](./rx-storage-worker.md) instead of running it in the main JavaScript process.

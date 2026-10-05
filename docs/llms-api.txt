@@ -476,6 +476,8 @@ You are now ready to dive deeper into RxDB.
 ## Attachments
 
 import { DefaultCompressibleTypes } from '@site/src/components/default-compressible-types';
+import {DocsAnimation} from '@site/src/components/docs-animation';
+import {AttachmentsMail} from '@site/src/components/animations/attachments-mail';
 
 # Attachments
 
@@ -489,6 +491,10 @@ Using attachments instead of adding the data to the normal document, ensures tha
 - Attachments can be stored [encrypted](./encryption.md).
 
 Internally, attachment data is stored as `Blob` objects. Blob is the canonical internal type because it is immutable, carries MIME type metadata via `Blob.type`, provides synchronous size via `Blob.size`, and is [structured-cloneable](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm) (works with Worker/Electron `postMessage` and IndexedDB). Conversion to `ArrayBuffer` only happens at system boundaries that require it: encryption (Web Crypto), compression (CompressionStream), digest hashing, and WebSocket serialization.
+
+<DocsAnimation subtitle="Binary files attached to a document">
+<AttachmentsMail />
+</DocsAnimation>
 
 ## Add the attachments plugin
 
@@ -1864,10 +1870,17 @@ const foo: string = localDoc.toJSON().foo;
 
 ## RxPipeline - Automate Data Flows in RxDB
 
+import {DocsAnimation} from '@site/src/components/docs-animation';
+import {RxPipelineFlow} from '@site/src/components/animations/rx-pipeline-flow';
+
 # RxPipeline
 
 The RxPipeline plugin enables you to run operations depending on writes to a collection.
 Whenever a write happens on the source collection of a pipeline, a handler is called to process the writes and run operations on another collection.
+
+<DocsAnimation subtitle="Documents processed from a source into a destination collection">
+<RxPipelineFlow />
+</DocsAnimation>
 
 You could have a similar behavior by observing the collection stream and process data on emits:
 
@@ -3076,12 +3089,18 @@ In **development**-mode, the schema-change can be simplified by **one of these**
 ## RxState - Reactive Persistent State with RxDB
 
 import {Faq, FaqItem} from '@site/src/components/faq';
+import {DocsAnimation} from '@site/src/components/docs-animation';
+import {RxStateBars} from '@site/src/components/animations/rx-state-bars';
 
 # RxState - Reactive Persistent State with RxDB
 
 RxState is a flexible state library build on top of the [RxDB Database](https://rxdb.info/). While RxDB stores similar documents inside of collections, RxState can store any complex JSON data without having a predefined schema.
 
 The state is automatically persisted through RxDB and states changes are propagated between browser tabs. Even setting up replication is simple by using the RxDB [Replication feature](./replication.md).
+
+<DocsAnimation subtitle="Reactive state values updated with set()">
+<RxStateBars />
+</DocsAnimation>
 
 ## Creating a RxState
 

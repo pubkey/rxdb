@@ -3,6 +3,8 @@
 > Learn how to implement partial sync with RxDB by running multiple scoped replication states, so each client only downloads the slice of data it needs while keeping full offline-first behavior.
 
 import {Faq, FaqItem} from '@site/src/components/faq';
+import {PartialSyncChunks} from '@site/src/components/animations/partial-sync-chunks';
+import {DocsAnimation} from '@site/src/components/docs-animation';
 
 # Partial Sync with RxDB
 
@@ -23,6 +25,10 @@ A full sync, where every client downloads the entire collection, works well when
 ## Example Use Cases for Partial Sync
 
 The pattern shows up in very different products, but the shape of the solution stays the same: pick a scope id, run one replication per active scope, stop replications when the scope is no longer in use.
+
+<DocsAnimation subtitle="Partially syncing Chunks in a voxel game">
+<PartialSyncChunks />
+</DocsAnimation>
 
 ### Minecraft-like Voxel World
 

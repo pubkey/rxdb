@@ -75,6 +75,8 @@ import { PERFORMANCE_DATA_ENCRYPTION, PERFORMANCE_METRICS } from '@site/src/comp
 import {HeadlineWithIcon} from '@site/src/components/headline-with-icon';
 import {IconEncryption} from '@site/src/components/icons/encryption';
 import {Faq, FaqItem} from '@site/src/components/faq';
+import {DocsAnimation} from '@site/src/components/docs-animation';
+import {EncryptionLogo} from '@site/src/components/animations/encryption-logo';
 
 # <HeadlineWithIcon h1 icon={<IconEncryption />}>Encrypted Local Storage with RxDB</HeadlineWithIcon>
 
@@ -93,6 +95,10 @@ Encrypting client-side stored data in RxDB offers numerous advantages:
 - **Enhanced Security**: In the unfortunate event of a user's device being stolen, the encrypted data remains safeguarded on the hard drive, inaccessible without the correct password.
 - **Access Control**: You can retain control over stored data by revoking access at any time simply by withholding the password.
 - **Tamper proof** Other applications on the device cannot read out the stored data when the password is only kept in the process-specific memory
+
+<DocsAnimation subtitle="Document fields encrypted before they are stored">
+<EncryptionLogo />
+</DocsAnimation>
 
 ## Querying encrypted data
 
@@ -317,6 +323,8 @@ const schema = {
 ## Key Compression
 
 import {Steps} from '@site/src/components/steps';
+import {DocsAnimation} from '@site/src/components/docs-animation';
+import {KeyCompressionLogo} from '@site/src/components/animations/key-compression-logo';
 
 # Key Compression
 
@@ -325,6 +333,10 @@ For compression the npm module [jsonschema-key-compression](https://github.com/p
 It compresses json-data based on its json-schema while still having valid json. It works by compressing long attribute-names into smaller ones and backwards.
 
 The compression and decompression happens internally, so when you work with a [RxDocument](./rx-document.md), you can access any property like normal.
+
+<DocsAnimation subtitle="Long JSON keys compressed into short tokens">
+<KeyCompressionLogo />
+</DocsAnimation>
 
 ## Enable key compression
 
@@ -2314,6 +2326,8 @@ console.dir(answer); // > { foo: 'bar' }
 import {PremiumBlock} from '@site/src/components/premium-block';
 import { PerformanceChart } from '@site/src/components/performance-chart';
 import { PERFORMANCE_BROWSER_SHARDING_INDEXEDDB, PERFORMANCE_BROWSER_INDEXEDDB } from '@site/src/components/performance-data';
+import {DocsAnimation} from '@site/src/components/docs-animation';
+import {ShardingSplit} from '@site/src/components/animations/sharding-split';
 
 # Sharding RxStorage
 
@@ -2323,6 +2337,10 @@ For example on [slow IndexedDB](./slow-indexeddb.md), a performance gain of **30
 The sharding plugin works as a wrapper around any other `RxStorage`. The sharding plugin will automatically create multiple shards per storage instance and it will merge and split read and write calls to it.
 
 <PremiumBlock />
+
+<DocsAnimation subtitle="One collection split across multiple shards">
+<ShardingSplit />
+</DocsAnimation>
 
 ## Using the sharding plugin
 
@@ -3009,12 +3027,18 @@ You can save and export an active SQLite database by closing the connection and 
 
 import {PremiumBlock} from '@site/src/components/premium-block';
 import {Faq, FaqItem} from '@site/src/components/faq';
+import {DocsAnimation} from '@site/src/components/docs-animation';
+import {WorkerStorage} from '@site/src/components/animations/worker-storage';
 
 # Worker RxStorage
 
 With the worker plugin, you can put the [RxStorage](./rx-storage.md) of your database inside of a WebWorker (in browsers) or a Worker Thread (in node.js). By doing so, you can take CPU load from the main process and move it into the worker's process which can improve the perceived performance of your application. Notice that for browsers, it is recommended to use the [SharedWorker](./rx-storage-shared-worker.md) instead to get a better performance.
 
 <PremiumBlock />
+
+<DocsAnimation subtitle="The storage running in a worker, off the main thread">
+<WorkerStorage />
+</DocsAnimation>
 
 ## On the worker process
 
@@ -3391,11 +3415,17 @@ To use RxDB on the server side, the FoundationDB RxStorage provides a way of hav
 import { PerformanceChart } from '@site/src/components/performance-chart';
 import { PERFORMANCE_DATA_VALIDATION_INDEXEDDB, PERFORMANCE_DATA_VALIDATION_MEMORY } from '@site/src/components/performance-data';
 import {Faq, FaqItem} from '@site/src/components/faq';
+import {DocsAnimation} from '@site/src/components/docs-animation';
+import {SchemaValidationLogo} from '@site/src/components/animations/schema-validation-logo';
 
 # Schema validation
 
 RxDB has multiple validation implementations that can be used to ensure that your document data is always matching the provided JSON 
 schema of your [RxCollection](./rx-collection.md).
+
+<DocsAnimation subtitle="An invalid document rejected by the schema">
+<SchemaValidationLogo />
+</DocsAnimation>
 
 The schema validation is **not a plugin** but comes in as a wrapper around any other `RxStorage` and it will then validate all data that is written into that storage. This is required for multiple reasons:
 - It allows us to run the validation inside of a [Worker RxStorage](./rx-storage-worker.md) instead of running it in the main JavaScript process.
