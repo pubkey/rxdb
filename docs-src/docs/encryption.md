@@ -13,6 +13,8 @@ import { PERFORMANCE_DATA_ENCRYPTION, PERFORMANCE_METRICS } from '@site/src/comp
 import {HeadlineWithIcon} from '@site/src/components/headline-with-icon';
 import {IconEncryption} from '@site/src/components/icons/encryption';
 import {Faq, FaqItem} from '@site/src/components/faq';
+import {DocsAnimation} from '@site/src/components/docs-animation';
+import {EncryptionLogo} from '@site/src/components/animations/encryption-logo';
 
 # <HeadlineWithIcon h1 icon={<IconEncryption />}>Encrypted Local Storage with RxDB</HeadlineWithIcon>
 
@@ -32,6 +34,10 @@ Encrypting client-side stored data in RxDB offers numerous advantages:
 - **Access Control**: You can retain control over stored data by revoking access at any time simply by withholding the password.
 - **Tamper proof** Other applications on the device cannot read out the stored data when the password is only kept in the process-specific memory
 
+
+<DocsAnimation subtitle="Document fields encrypted before they are stored">
+<EncryptionLogo />
+</DocsAnimation>
 
 ## Querying encrypted data
 

@@ -6,6 +6,8 @@ image: /headers/cleanup.jpg
 ---
 
 import {Faq, FaqItem} from '@site/src/components/faq';
+import {DocsAnimation} from '@site/src/components/docs-animation';
+import {CleanupSweep} from '@site/src/components/animations/cleanup-sweep';
 
 # 🧹 Cleanup
 
@@ -15,6 +17,10 @@ This ensures that when a client is [offline](./offline-first.md), the deletion s
 Keeping too many deleted documents in the storage, can slow down queries or fill up too much disc space.
 With the cleanup plugin, RxDB will run cleanup cycles that clean up deleted documents when it can be done safely.
 
+
+<DocsAnimation subtitle="Deleted documents removed by the cleanup">
+<CleanupSweep />
+</DocsAnimation>
 
 ## Installation
 

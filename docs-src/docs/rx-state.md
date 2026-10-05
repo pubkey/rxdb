@@ -6,12 +6,18 @@ image: /headers/rx-state.jpg
 ---
 
 import {Faq, FaqItem} from '@site/src/components/faq';
+import {DocsAnimation} from '@site/src/components/docs-animation';
+import {RxStateBars} from '@site/src/components/animations/rx-state-bars';
 
 # RxState - Reactive Persistent State with RxDB
 
 RxState is a flexible state library build on top of the [RxDB Database](https://rxdb.info/). While RxDB stores similar documents inside of collections, RxState can store any complex JSON data without having a predefined schema.
 
 The state is automatically persisted through RxDB and states changes are propagated between browser tabs. Even setting up replication is simple by using the RxDB [Replication feature](./replication.md).
+
+<DocsAnimation subtitle="Reactive state values updated with set()">
+<RxStateBars />
+</DocsAnimation>
 
 ## Creating a RxState
 

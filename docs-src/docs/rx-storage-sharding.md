@@ -8,6 +8,8 @@ image: /headers/rx-storage-sharding.jpg
 import {PremiumBlock} from '@site/src/components/premium-block';
 import { PerformanceChart } from '@site/src/components/performance-chart';
 import { PERFORMANCE_BROWSER_SHARDING_INDEXEDDB, PERFORMANCE_BROWSER_INDEXEDDB } from '@site/src/components/performance-data';
+import {DocsAnimation} from '@site/src/components/docs-animation';
+import {ShardingSplit} from '@site/src/components/animations/sharding-split';
 
 # Sharding RxStorage
 
@@ -17,6 +19,10 @@ For example on [slow IndexedDB](./slow-indexeddb.md), a performance gain of **30
 The sharding plugin works as a wrapper around any other `RxStorage`. The sharding plugin will automatically create multiple shards per storage instance and it will merge and split read and write calls to it.
 
 <PremiumBlock />
+
+<DocsAnimation subtitle="One collection split across multiple shards">
+<ShardingSplit />
+</DocsAnimation>
 
 ## Using the sharding plugin
 

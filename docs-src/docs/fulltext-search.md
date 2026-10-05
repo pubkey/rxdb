@@ -7,6 +7,8 @@ image: /headers/fulltext-search.jpg
 
 import {PremiumBlock} from '@site/src/components/premium-block';
 import {Steps} from '@site/src/components/steps';
+import {DocsAnimation} from '@site/src/components/docs-animation';
+import {FulltextSearchLens} from '@site/src/components/animations/fulltext-search-lens';
 
 
 # Fulltext Search
@@ -15,6 +17,10 @@ To run fulltext search queries on the local data, RxDB has a fulltext search plu
 The index can then be queried efficiently with complex fulltext search operations.
 
 
+
+<DocsAnimation subtitle="Fulltext search over local documents">
+<FulltextSearchLens />
+</DocsAnimation>
 
 ## Benefits of using a local fulltext search
 
