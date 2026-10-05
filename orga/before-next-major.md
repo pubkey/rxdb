@@ -6,6 +6,16 @@ This list contains things that have to be done but will create breaking changes.
 
 https://github.com/pubkey/rxdb/pull/9153
 
+## Schema normalization must not depend on the device locale
+
+`sortObject()` sorts the keys with `localeCompare()` without a fixed locale. The order, and with it the schema hash, depends on the device locale. For example in Czech and Slovak "ch" sorts after "h", so a schema with the keys `chunk_id` and `hint` gets a different hash when the device or app language changes. See https://github.com/pubkey/rxdb/issues/9128
+
+For now `addCollections()` runs a `deepEqual()` check on the stored schema when the hashes differ and does not throw `DB6` when the content is equal.
+
+In the next major:
+- Change the normalization in `sortObject()` to no longer use `localeCompare()`, for example a plain code unit comparison (`a < b`). This is faster and does not depend on the locale, but it changes the hash of existing schemas, which is why it is a breaking change.
+- Remove the `deepEqual()` fallback check in `addCollections()` again.
+
 ## Add end-to-end TypeScript typings for mango queries
 
 https://github.com/pubkey/rxdb/pull/8941

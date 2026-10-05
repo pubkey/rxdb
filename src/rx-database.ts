@@ -44,7 +44,8 @@ import {
     getDefaultRevision,
     getDefaultRxDocumentMeta,
     defaultHashSha256,
-    RXDB_VERSION
+    RXDB_VERSION,
+    deepEqual
 } from './plugins/utils/index.ts';
 import {
     newRxError
@@ -460,7 +461,17 @@ export class RxDatabaseBase<
                     const collectionName = docInDb.data.name;
                     const schema = (schemas as any)[collectionName];
                     // collection already exists but has different schema
-                    if (docInDb.data.schemaHash !== await schema.hash) {
+                    if (
+                        docInDb.data.schemaHash !== await schema.hash &&
+                        /**
+                         * sortObject() uses localeCompare() which depends on the device locale,
+                         * so the same schema can produce a different key order and hash
+                         * on another device. Only when the hashes differ, we compare the content
+                         * so that this expensive check does not run on each startup.
+                         * @link https://github.com/pubkey/rxdb/issues/9128
+                         */
+                        !deepEqual(docInDb.data.schema, schema.jsonSchema)
+                    ) {
                         throw newRxError('DB6', {
                             database: this.name,
                             collection: collectionName,
