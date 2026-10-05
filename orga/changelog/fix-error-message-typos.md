@@ -1,1 +1,0 @@
-- FIX typos in the dev-mode error messages: `DB6` had the docs URL glued to the sentence (`Read thishttps://...`), `GDR18` said `exxeeded` instead of `exceeded`, and `MQ4` said `instanceof` instead of `instance of`.

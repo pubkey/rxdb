@@ -1,1 +1,0 @@
-- FIX `webmcp.test.ts` failed in browsers with native WebMCP support (like Chromium 154) because the polyfill does not install its testing shim when `document.modelContext` already exists. The test now removes the native getter while it runs and restores it afterwards.
