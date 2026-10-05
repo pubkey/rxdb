@@ -12,7 +12,7 @@ import type { ReactNode } from 'react';
  * import {DocsAnimation} from '@site/src/components/docs-animation';
  * import {PartialSyncChunks} from '@site/src/components/animations/partial-sync-chunks';
  *
- * <DocsAnimation>
+ * <DocsAnimation subtitle="Each chunk in render distance runs its own replication">
  * <PartialSyncChunks />
  * </DocsAnimation>
  */
@@ -24,20 +24,19 @@ export function DocsAnimation(props: {
      */
     maxWidth?: number;
     /**
-     * (optional) Short text shown centered below the animation.
+     * Short text shown centered below the animation
+     * that explains what the animation shows.
      */
-    caption?: ReactNode;
+    subtitle: ReactNode;
 }) {
     return (
         <figure style={{ margin: '24px auto', maxWidth: props.maxWidth ?? 480, textAlign: 'center' }}>
             <div style={{ borderRadius: 8, background: '#0D0F18', overflow: 'hidden', lineHeight: 0 }}>
                 {props.children}
             </div>
-            {props.caption ? (
-                <figcaption style={{ marginTop: 8, fontSize: '0.9em', opacity: 0.8 }}>
-                    {props.caption}
-                </figcaption>
-            ) : null}
+            <figcaption style={{ marginTop: 8, fontSize: '0.9em', opacity: 0.8, textAlign: 'center' }}>
+                {props.subtitle}
+            </figcaption>
         </figure>
     );
 }

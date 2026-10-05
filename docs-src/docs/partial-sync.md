@@ -29,7 +29,7 @@ A full sync, where every client downloads the entire collection, works well when
 
 The pattern shows up in very different products, but the shape of the solution stays the same: pick a scope id, run one replication per active scope, stop replications when the scope is no longer in use.
 
-<DocsAnimation>
+<DocsAnimation subtitle="Every chunk within the render distance runs its own replication. Chunks that fall out of range are stopped but keep their checkpoint.">
 <PartialSyncChunks />
 </DocsAnimation>
 
