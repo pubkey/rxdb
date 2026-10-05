@@ -29,7 +29,7 @@ A full sync, where every client downloads the entire collection, works well when
 
 The pattern shows up in very different products, but the shape of the solution stays the same: pick a scope id, run one replication per active scope, stop replications when the scope is no longer in use.
 
-<DocsAnimation subtitle="Partial sync in a voxel game that only syncs the chunks near the player.">
+<DocsAnimation subtitle="Partial sync in a voxel game that replicates the relevant chunks the player">
 <PartialSyncChunks />
 </DocsAnimation>
 

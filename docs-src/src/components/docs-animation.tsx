@@ -12,7 +12,7 @@ import type { ReactNode } from 'react';
  * import {DocsAnimation} from '@site/src/components/docs-animation';
  * import {PartialSyncChunks} from '@site/src/components/animations/partial-sync-chunks';
  *
- * <DocsAnimation subtitle="Partial sync in a voxel game that only syncs the chunks near the player.">
+ * <DocsAnimation subtitle="Partial sync in a voxel game that replicates the relevant chunks the player">
  * <PartialSyncChunks />
  * </DocsAnimation>
  */
@@ -26,6 +26,7 @@ export function DocsAnimation(props: {
     /**
      * One-line caption shown centered below the animation that
      * describes what it shows, like the text below an image on Wikipedia.
+     * It is a title, not a sentence, so it has no dot at the end.
      */
     subtitle: ReactNode;
 }) {
