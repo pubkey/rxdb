@@ -78,7 +78,7 @@ export function LeaderElectionTabs() {
                 .leader-election-tabs > svg { display: block; width: 100%; height: auto; }
                 .leader-election-tabs .part { transform-box: fill-box; transform-origin: center; }
                 ${logoColorsCss('.leader-election-tabs')}
-                .leader-election-tabs .tabl {
+                .leader-election-tabs .tab-label {
                     fill: #A29DB6;
                     font-family: "Atkinson Hyperlegible Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
                     font-size: 9px;
@@ -101,7 +101,7 @@ export function LeaderElectionTabs() {
                     </g>
                 ))}
                 {TABS.map((x, i) => (
-                    <text key={x} className="tabl" x={x + 35} y="146" textAnchor="middle">{'tab ' + (i + 1)}</text>
+                    <text key={x} className="tab-label" x={x + 35} y="146" textAnchor="middle">{'tab ' + (i + 1)}</text>
                 ))}
                 <g transform="translate(0 12)">
                     <path className="crown" d="M0 16 V3 l5 5 5 -8 5 8 5 -5 V16z" style={{ transform: 'translate(45px, 0)' }} />
