@@ -12,7 +12,7 @@ import type { ReactNode } from 'react';
  * import {DocsAnimation} from '@site/src/components/docs-animation';
  * import {PartialSyncChunks} from '@site/src/components/animations/partial-sync-chunks';
  *
- * <DocsAnimation subtitle="Partial sync in a voxel game that replicates the relevant chunks the player">
+ * <DocsAnimation subtitle="Partial Sync in a voxel game">
  * <PartialSyncChunks />
  * </DocsAnimation>
  */
