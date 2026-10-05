@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { LogoParts } from './glitch-logo';
+import { LogoParts } from '../glitch-logo';
 
 const SVGNS = 'http://www.w3.org/2000/svg';
 const GRID = { cols: 6, rows: 4, size: 24, pitch: 27, x: 12, y: 34 };
@@ -233,7 +233,7 @@ export function PartialSyncChunks() {
     return (
         <div className="partial-sync-chunks">
             <style>{`
-                .partial-sync-chunks { margin: 24px 0; border: 1px solid #262B40; border-radius: 8px; background: #0D0F18; line-height: 0; }
+                .partial-sync-chunks { line-height: 0; }
                 .partial-sync-chunks > svg { display: block; width: 100%; height: auto; }
                 .partial-sync-chunks .psc-base { transform-box: fill-box; transform-origin: center; fill: #191C2C; stroke: #262B40; stroke-width: 1; transition: fill .35s, stroke .35s; }
                 .partial-sync-chunks .psc-px { fill: #262B40; transition: fill .35s; }

@@ -6,7 +6,8 @@ image: /headers/partial-sync.jpg
 ---
 
 import {Faq, FaqItem} from '@site/src/components/faq';
-import {PartialSyncChunks} from '@site/src/components/partial-sync-chunks';
+import {PartialSyncChunks} from '@site/src/components/animations/partial-sync-chunks';
+import {DocsAnimation} from '@site/src/components/docs-animation';
 
 # Partial Sync with RxDB
 
@@ -28,7 +29,9 @@ A full sync, where every client downloads the entire collection, works well when
 
 The pattern shows up in very different products, but the shape of the solution stays the same: pick a scope id, run one replication per active scope, stop replications when the scope is no longer in use.
 
+<DocsAnimation>
 <PartialSyncChunks />
+</DocsAnimation>
 
 ### Minecraft-like Voxel World
 
