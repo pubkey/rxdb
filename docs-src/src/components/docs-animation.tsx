@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 
 /**
  * Frame for embedding an animation into a docs page.
@@ -24,6 +24,12 @@ export function DocsAnimation(props: {
      */
     maxWidth?: number;
     /**
+     * (optional) Maximum height of the animation in pixels.
+     * The animation is scaled down to fit and stays centered.
+     * [default=256]
+     */
+    maxHeight?: number;
+    /**
      * One-line caption shown centered below the animation that
      * describes what it shows, like the text below an image on Wikipedia.
      * It is a title, not a sentence, so it has no dot at the end.
@@ -32,7 +38,21 @@ export function DocsAnimation(props: {
 }) {
     return (
         <figure style={{ margin: '24px auto', maxWidth: props.maxWidth ?? 480, textAlign: 'center' }}>
-            <div style={{ borderRadius: 8, background: '#0D0F18', overflow: 'hidden', lineHeight: 0 }}>
+            <style>{`
+                .docs-animation-frame > * > svg,
+                .docs-animation-frame > * > .stage,
+                .docs-animation-frame > * > .dsw-stage { max-height: var(--docs-animation-max-height); }
+            `}</style>
+            <div
+                className="docs-animation-frame"
+                style={{
+                    borderRadius: 8,
+                    background: '#0D0F18',
+                    overflow: 'hidden',
+                    lineHeight: 0,
+                    '--docs-animation-max-height': (props.maxHeight ?? 256) + 'px'
+                } as CSSProperties}
+            >
                 {props.children}
             </div>
             <figcaption style={{ marginTop: 8, fontSize: '0.9em', opacity: 0.8, textAlign: 'center' }}>
