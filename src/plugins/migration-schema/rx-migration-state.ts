@@ -1,6 +1,7 @@
 import {
     Observable,
     Subject,
+    distinctUntilChanged,
     filter,
     firstValueFrom,
     map,
@@ -23,6 +24,7 @@ import type {
 } from '../../types/index.d.ts';
 import {
     MIGRATION_DEFAULT_BATCH_SIZE,
+    MIGRATION_LEADER_TIMING,
     addMigrationStateToDatabase,
     getOldCollectionMeta,
     migrateDocumentData,
@@ -37,6 +39,7 @@ import {
     errorToPlainJson,
     getDefaultRevision,
     getDefaultRxDocumentMeta,
+    now,
     promiseWait
 } from '../utils/index.ts';
 import type {
@@ -99,6 +102,7 @@ export class RxMigrationState {
     public openStorageInstances = new Set<RxStorageInstance<any, any, any>>();
     public canceled: boolean = false;
     public broadcastChannel?: BroadcastChannel;
+    public heartbeatInterval?: ReturnType<typeof setInterval>;
     constructor(
         public readonly collection: RxCollection,
         public readonly migrationStrategies: NumberFunctionMap,
@@ -123,6 +127,11 @@ export class RxMigrationState {
         ).pipe(
             filter((d: RxMigrationStatusDocument | null) => !!d),
             map((d: RxMigrationStatusDocument | null) => ensureNotFalsy(d).data),
+            /**
+             * The heartbeat of the leader rewrites the status document
+             * without changing its data, which must not emit here.
+             */
+            distinctUntilChanged((a, b) => deepEqual(a, b)),
             shareReplay(RXJS_SHARE_REPLAY_DEFAULTS)
         );
     }
@@ -174,6 +183,7 @@ export class RxMigrationState {
         try {
             await this.runMigration(batchSize);
         } finally {
+            this.stopHeartbeat();
             /**
              * Always close the broadcastChannel so that the tab does not
              * stay leader forever if the migration throws on any code path.
@@ -201,7 +211,14 @@ export class RxMigrationState {
                 this.collection.schema.version
             ].join('|'));
             const leaderElector = createLeaderElection(this.broadcastChannel);
-            await leaderElector.awaitLeadership();
+            const waitResult = await this.awaitLeadershipOrStalledLeader(
+                () => leaderElector.awaitLeadership()
+            );
+            if (waitResult === 'DONE' || this.canceled) {
+                this.collection.migrationInProgress = false;
+                return;
+            }
+            this.startHeartbeat();
         }
 
         /**
@@ -276,6 +293,15 @@ export class RxMigrationState {
             await oldStorageInstance.close();
             this.collection.migrationInProgress = false;
             await this.updateStatus(s => {
+                /**
+                 * When a frozen leader was taken over by another tab
+                 * and continues later, it can fail because the other tab
+                 * has already finished the migration and removed the old storages.
+                 * A finished migration must not be marked as failed.
+                 */
+                if (s.status === 'DONE') {
+                    return s;
+                }
                 s.status = 'ERROR';
                 s.error = errorToPlainJson(err as Error);
                 return s;
@@ -328,6 +354,104 @@ export class RxMigrationState {
             s.status = 'DONE';
             return s;
         });
+    }
+
+    /**
+     * Waits until this instance is the leader of the migration.
+     * Returns 'STALLED' when the current leader did not write
+     * the status document for longer than MIGRATION_LEADER_TIMING.timeout,
+     * because then the leader is likely frozen, throttled or discarded
+     * by the browser and this instance takes over the migration.
+     * Returns 'DONE' when another instance has finished the migration.
+     * @link https://github.com/pubkey/rxdb/issues/9191
+     */
+    public async awaitLeadershipOrStalledLeader(
+        awaitLeadership: () => Promise<any>
+    ): Promise<'LEADER' | 'STALLED' | 'DONE'> {
+        let waiting = true;
+        const startTime = now();
+        const leadershipPromise = awaitLeadership().then(() => 'LEADER' as const);
+        const stalledPromise = (async () => {
+            while (waiting && !this.canceled) {
+                await promiseWait(MIGRATION_LEADER_TIMING.heartbeatInterval);
+                if (!waiting || this.canceled) {
+                    break;
+                }
+                const statusDoc = await getSingleDocument<RxMigrationStatusDocument>(
+                    this.database.internalStore,
+                    this.statusDocId
+                );
+                if (statusDoc && statusDoc.data.status === 'DONE') {
+                    return 'DONE' as const;
+                }
+                const lastActivity = Math.max(
+                    startTime,
+                    statusDoc ? statusDoc._meta.lwt : 0
+                );
+                if (now() - lastActivity > MIGRATION_LEADER_TIMING.timeout) {
+                    return 'STALLED' as const;
+                }
+            }
+            /**
+             * Waiting has ended because of leadership or cancellation,
+             * the other promise of the race decides the result.
+             */
+            return new Promise<never>(() => { });
+        })();
+        try {
+            return await Promise.race([leadershipPromise, stalledPromise]);
+        } finally {
+            waiting = false;
+        }
+    }
+
+    /**
+     * Regularly rewrites the status document while this instance
+     * runs the migration, so that other instances can see that
+     * the leader is still alive.
+     * Frozen or discarded browser tabs do not run timers,
+     * so the heartbeat stops when the leader stops working.
+     */
+    public startHeartbeat() {
+        this.stopHeartbeat();
+        this.heartbeatInterval = setInterval(() => {
+            this.updateStatusQueue = this.updateStatusQueue.then(async () => {
+                if (this.canceled) {
+                    return;
+                }
+                try {
+                    const previous = await getSingleDocument<RxMigrationStatusDocument>(
+                        this.database.internalStore,
+                        this.statusDocId
+                    );
+                    if (!previous || previous.data.status !== 'RUNNING') {
+                        return;
+                    }
+                    const newDoc = clone(previous);
+                    newDoc._meta.lwt = now();
+                    await writeSingle<RxMigrationStatusDocument>(
+                        this.database.internalStore,
+                        {
+                            previous,
+                            document: newDoc
+                        },
+                        INTERNAL_CONTEXT_MIGRATION_STATUS
+                    );
+                } catch (_err) {
+                    /**
+                     * A failed heartbeat is not a problem,
+                     * conflicts mean another write has refreshed the document anyway.
+                     */
+                }
+            });
+        }, MIGRATION_LEADER_TIMING.heartbeatInterval);
+    }
+
+    public stopHeartbeat() {
+        if (this.heartbeatInterval) {
+            clearInterval(this.heartbeatInterval);
+            this.heartbeatInterval = undefined;
+        }
     }
 
     public updateStatusHandlers: MigrationStatusUpdate[] = [];
@@ -570,6 +694,7 @@ export class RxMigrationState {
      */
     public async cancel() {
         this.canceled = true;
+        this.stopHeartbeat();
         this.collection.migrationInProgress = false;
         await Promise.all(
             Array.from(this.replicationStates.values())

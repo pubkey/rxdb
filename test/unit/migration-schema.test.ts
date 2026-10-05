@@ -37,8 +37,14 @@ import {
 import {
     RxMigrationState,
     RxMigrationStatus,
-    getOldCollectionMeta
+    getOldCollectionMeta,
+    MIGRATION_LEADER_TIMING,
+    setMigrationLeaderTiming
 } from '../../plugins/migration-schema/index.mjs';
+import {
+    BroadcastChannel,
+    createLeaderElection
+} from 'broadcast-channel';
 
 import { RxDBMigrationPlugin } from '../../plugins/migration-schema/index.mjs';
 import { RxDBAttachmentsPlugin } from '../../plugins/attachments/index.mjs';
@@ -1619,6 +1625,105 @@ describe('migration-schema.test.ts', function () {
             await db2.close();
         });
 
+
+        /**
+         * When the tab that won the leader election of the migration
+         * is frozen, throttled or discarded by the browser, it never finishes
+         * the migration. The other tabs must not wait forever for it,
+         * otherwise addCollections() never resolves in any tab.
+         * @link https://github.com/pubkey/rxdb/issues/9191
+         */
+        it('#9191 must not block addCollections() forever when the migration leader is frozen', async () => {
+            if (!config.storage.hasMultiInstance) {
+                return;
+            }
+            const dbName = randomToken(10);
+            const schema0 = {
+                version: 0,
+                primaryKey: 'id',
+                type: 'object',
+                properties: {
+                    id: { type: 'string', maxLength: 100 },
+                    name: { type: 'string' }
+                },
+                required: ['id', 'name']
+            };
+            const schema1 = clone(schema0);
+            schema1.version = 1;
+
+            const db = await createRxDatabase({
+                name: dbName,
+                storage: config.storage.getStorage(),
+                multiInstance: true,
+                ignoreDuplicate: true
+            });
+            await db.addCollections({
+                items: { schema: schema0 }
+            });
+            await db.items.bulkInsert([
+                { id: 'doc1', name: 'Document 1' },
+                { id: 'doc2', name: 'Document 2' }
+            ]);
+            await db.close();
+
+            /**
+             * Simulate a frozen tab that has won the leader election
+             * of the migration but never does any work.
+             */
+            const frozenChannel = new BroadcastChannel([
+                'rx-migration-state',
+                dbName,
+                'items',
+                1
+            ].join('|'));
+            const frozenLeader = createLeaderElection(frozenChannel);
+            await frozenLeader.awaitLeadership();
+
+            const timingBefore = Object.assign({}, MIGRATION_LEADER_TIMING);
+            setMigrationLeaderTiming(500, 100);
+            try {
+                const db2 = await createRxDatabase({
+                    name: dbName,
+                    storage: config.storage.getStorage(),
+                    multiInstance: true,
+                    ignoreDuplicate: true
+                });
+                let timeoutRef: ReturnType<typeof setTimeout> | undefined;
+                await Promise.race([
+                    db2.addCollections({
+                        items: {
+                            schema: schema1,
+                            migrationStrategies: {
+                                1: (doc: any) => {
+                                    doc.name = doc.name + '-migrated';
+                                    return doc;
+                                }
+                            }
+                        }
+                    }),
+                    new Promise((_res, rej) => {
+                        timeoutRef = setTimeout(
+                            () => rej(new Error('addCollections() is blocked by the frozen migration leader')),
+                            10 * 1000
+                        );
+                    })
+                ]);
+                clearTimeout(timeoutRef);
+
+                const docs = await db2.items.find({ sort: [{ id: 'asc' }] }).exec();
+                assert.deepStrictEqual(
+                    docs.map((d: any) => d.name),
+                    ['Document 1-migrated', 'Document 2-migrated']
+                );
+                const status = await db2.items.getMigrationState().getStatus();
+                assert.strictEqual(status.status, 'DONE');
+
+                await db2.close();
+            } finally {
+                setMigrationLeaderTiming(timingBefore.timeout, timingBefore.heartbeatInterval);
+                await frozenChannel.close();
+            }
+        });
 
         it('#7008 migrate schema with multiple connected storages', async () => {
             // create a schema
