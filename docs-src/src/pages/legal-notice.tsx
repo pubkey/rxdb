@@ -35,23 +35,8 @@ export default function LegalNotice() {
                         <h6>Umsatzsteuer-ID nach §27a Umsatzsteuergesetz</h6>
                         DE357840955
 
-                        <h6>NCAGE Code</h6>
+                        <h6>NCAGE Code (NATO Commercial and Government Entity Code)</h6>
                         CNP90
-                        <p>
-                            Der NCAGE Code (NATO Commercial and Government Entity Code) CNP90 wurde am
-                            05.10.2026 von der Nationalen Kodifizierungsstelle beim Logistikkommando der
-                            Bundeswehr im Rahmen des NATO-Kodifizierungssystems zugeteilt. Er identifiziert
-                            das oben genannte Unternehmen als Lieferant in den Logistiksystemen der NATO.
-                            Es handelt sich nicht um eine Produktzertifizierung oder Sicherheitszulassung
-                            von RxDB.
-                        </p>
-                        <p>
-                            The NCAGE code (NATO Commercial and Government Entity Code) CNP90 was assigned
-                            on October 5, 2026 by the German National Codification Bureau at the
-                            Logistikkommando der Bundeswehr under the NATO Codification System. It
-                            identifies the entity named above as a supplier in NATO logistics systems. It
-                            is not a product certification and not a security approval of RxDB.
-                        </p>
 
                         <h6>Verantwortlich für den Inhalt (gem. § 55 Abs. 2 RStV)</h6>
                         Der oben genannte Eigentümer.
