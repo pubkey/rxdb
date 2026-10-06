@@ -10,6 +10,12 @@ export type NewsItem = {
 
 export const NEWS_ITEMS: NewsItem[] = [
     {
+        title: 'EmbeddingGemma 2 Vector Search in the Browser with RxDB',
+        slug: '/articles/embeddinggemma-2-vector-search.html',
+        description: 'Run Google\'s new EmbeddingGemma 2 model with transformers.js and store 256-dimensional Matryoshka embeddings in RxDB for offline vector search.',
+        image: 'https://rxdb.info/headers/embeddinggemma-2-vector-search.jpg'
+    },
+    {
         title: 'Why Local-First Software Is the Future and its Limitations',
         slug: '/articles/local-first-future.html',
         description: 'Discover how local-first transforms web apps, boosts offline resilience, and why instant user feedback is becoming the new normal.',
