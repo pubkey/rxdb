@@ -645,7 +645,7 @@
     "express": "5.2.1",
     "fake-indexeddb": "6.2.5",
     "firebase": "12.19.0",
-    "firebase-tools": "15.31.0",
+    "firebase-tools": "15.32.0",
     "get-port": "7.2.0",
     "global-jsdom": "30.0.0",
     "globals": "17.12.0",
