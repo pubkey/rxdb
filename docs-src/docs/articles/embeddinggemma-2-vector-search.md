@@ -173,7 +173,8 @@ export const pipeline = await db.items.addPipeline({
             const embedding = await embedDocument(doc.title, doc.text);
             const docData: any = { id: doc.primary, embedding };
             sampleVectors.forEach((sample, i) => {
-                docData['idx' + i] = indexNrToString(euclideanDistance(sample, embedding));
+                const distance = euclideanDistance(sample, embedding);
+                docData['idx' + i] = indexNrToString(distance);
             });
             await db.vectors.upsert(docData);
         }
@@ -216,7 +217,10 @@ export async function search(userInput: string, indexDistance = 0.003) {
     }));
 
     const ranked = Array.from(candidates.entries())
-        .map(([id, embedding]) => ({ id, similarity: cosineSimilarity(queryVector, embedding) }))
+        .map(([id, embedding]) => ({
+            id,
+            similarity: cosineSimilarity(queryVector, embedding)
+        }))
         .sort(sortByObjectNumberProperty('similarity'))
         .slice(0, 10);
 
