@@ -1,0 +1,11 @@
+<button
+    type="button"
+    class="db-viewer-toggle"
+    id="db-viewer-toggle"
+    (click)="toggle()"
+    [style.display]="open() ? 'none' : ''"
+    title="Open the database viewer"
+>Open DB Viewer</button>
+<div class="db-viewer-dock" [class.open]="open()">
+    <div class="db-viewer-host" #viewerHost></div>
+</div>
