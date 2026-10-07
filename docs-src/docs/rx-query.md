@@ -496,6 +496,7 @@ Keep in mind what you lose when you query the storage directly:
 
 - The results are plain `RxDocumentData` objects with the internal fields `_deleted`, `_attachments`, `_meta` and `_rev`. They have no [RxDocument](./rx-document.md) methods, no ORM methods and no getters for [population](./population.md).
 - The results are not reactive and not cached. There is no `$` observable and every call runs the query on the storage again.
+- The document cache of the collection is not used. Normally RxDB keeps one `RxDocument` instance per document revision and returns that same instance from every query. The storage returns new objects on every call instead, so when you run several raw queries, or mix them with normal queries, the same document can end up in memory multiple times.
 - [Middleware](./middleware.md) hooks like `postCreate` do not run. Storage wrappers like [encryption](./encryption.md), [key compression](./key-compression.md) and schema validation still apply, because `collection.storageInstance` is the wrapped storage instance.
 
 ## liveQueryUpdateThrottleTime
