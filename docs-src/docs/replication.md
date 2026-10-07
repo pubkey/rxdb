@@ -771,7 +771,11 @@ export function startReplication<RxDocType>(
 }
 
 // replicationState is typed as RxReplicationState<HeroDocType, MyCheckpoint>
-const replicationState = startReplication(myDatabase.heroes, myPullHandler, myPushHandler);
+const replicationState = startReplication(
+    myDatabase.heroes,
+    myPullHandler,
+    myPushHandler
+);
 ```
 
 ## Storing Local-Only Metadata Alongside Replicated Documents

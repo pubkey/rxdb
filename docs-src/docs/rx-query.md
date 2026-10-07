@@ -459,7 +459,14 @@ const preparedQuery = rxQuery.getPreparedQuery();
 
 const result = await myCollection.storageInstance.query(preparedQuery);
 console.log(result.documents);
-// > [{ id: 'a', age: 21, _deleted: false, _attachments: {}, _meta: { lwt: 1791365224271 }, _rev: '2-dwtwqbarqc' }, ...]
+/* > [{
+    id: 'a',
+    age: 21,
+    _deleted: false,
+    _attachments: {},
+    _meta: { lwt: 1791365224271 },
+    _rev: '2-dwtwqbarqc'
+}, ...] */
 
 const countResult = await myCollection.storageInstance.count(preparedQuery);
 console.log(countResult.count);

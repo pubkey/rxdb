@@ -255,7 +255,9 @@ When the database uses the [encryption plugin](./encryption.md), the storage is 
 ```ts
 import { removeRxDatabase } from 'rxdb';
 import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
-import { wrappedKeyEncryptionCryptoJsStorage } from 'rxdb/plugins/encryption-crypto-js';
+import {
+    wrappedKeyEncryptionCryptoJsStorage
+} from 'rxdb/plugins/encryption-crypto-js';
 
 const encryptedStorage = wrappedKeyEncryptionCryptoJsStorage({
     storage: getRxStorageLocalstorage()

@@ -158,6 +158,8 @@ import { RxDBQueryBuilderPlugin } from 'rxdb/plugins/query-builder';
 import { RxDBUpdatePlugin } from 'rxdb/plugins/update';
 import { RxDBCleanupPlugin } from 'rxdb/plugins/cleanup';
 import { wrappedKeyCompressionStorage } from 'rxdb/plugins/key-compression';
-import { wrappedKeyEncryptionCryptoJsStorage } from 'rxdb/plugins/encryption-crypto-js';
+import {
+    wrappedKeyEncryptionCryptoJsStorage
+} from 'rxdb/plugins/encryption-crypto-js';
 import { replicateRxCollection, RxReplicationState } from 'rxdb/plugins/replication';
 ```
