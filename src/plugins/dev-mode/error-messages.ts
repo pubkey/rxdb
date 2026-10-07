@@ -1248,6 +1248,26 @@ export const ERROR_MESSAGES = {
     },
 
 
+    // plugins/flutter
+    FL1: {
+        message: 'The global __rxdbFlutterSend() function is missing',
+        cause: 'The RxDB Flutter bundle was evaluated in a JavaScript runtime that was not prepared by the rxdb Dart package.',
+        fix: 'Start the bundle through createRxDatabase() of the rxdb Dart package or define globalThis.__rxdbFlutterSend before evaluating the bundle.',
+        docs: 'https://rxdb.info/articles/flutter-database.html?console=errors&code=FL1'
+    },
+    FL2: {
+        message: 'Unknown method called over the Flutter bridge',
+        cause: 'The Dart package and the JavaScript bundle are on different versions.',
+        fix: 'Rebuild your JavaScript bundle with the same RxDB version as the rxdb Dart package.',
+        docs: 'https://rxdb.info/articles/flutter-database.html?console=errors&code=FL2'
+    },
+    FL3: {
+        message: 'Unknown id given to the Flutter bridge',
+        cause: 'The database, collection, replication or subscription with that id does not exist or was already closed.',
+        fix: 'Ensure you do not use a database, collection or replication after it was closed.',
+        docs: 'https://rxdb.info/articles/flutter-database.html?console=errors&code=FL3'
+    },
+
     // plugins/storage-remote
     RM1: {
         message: 'Cannot communicate with a remote that was build on a different RxDB version. Did you forget to rebuild your workers when updating RxDB?',
