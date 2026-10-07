@@ -569,7 +569,7 @@
   "dependencies": {
     "@babel/runtime": "8.0.5",
     "@types/simple-peer": "9.11.9",
-    "@types/ws": "8.18.1",
+    "@types/ws": "8.18.2",
     "ajv": "8.20.0",
     "ajv-formats": "3.0.1",
     "array-push-at-sort-position": "5.0.0",
