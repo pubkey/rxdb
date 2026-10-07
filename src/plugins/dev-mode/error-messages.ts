@@ -828,6 +828,12 @@ export const ERROR_MESSAGES = {
         fix: 'Check the error details in .errors. Calling start() again retries the start.',
         docs: 'https://rxdb.info/replication.html?console=errors&code=RC_START'
     },
+    RC_START_CANCELED: {
+        message: 'RxReplication start() was called on a replication that was canceled or removed',
+        cause: 'cancel() or remove() was called on this RxReplicationState, or its collection or database was closed. A canceled replication state can never be started again.',
+        fix: 'Use pause() and start() to stop and resume a replication. To continue after cancel(), call replicateRxCollection() again with the same replicationIdentifier.',
+        docs: 'https://rxdb.info/replication.html?console=errors&code=RC_START_CANCELED'
+    },
     RC_STREAM: {
         message: 'RxReplication pull stream$ threw an error - see .errors for more details',
         cause: 'The pull stream of the replication threw an error.',

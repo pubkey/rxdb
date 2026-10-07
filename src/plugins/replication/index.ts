@@ -171,6 +171,22 @@ export class RxReplicationState<RxDocType, CheckpointType> {
 
 
     public start(): Promise<void> {
+        /**
+         * A canceled or removed replication state can never run again.
+         * Reject so that the caller notices it has to create a new
+         * replication state with replicateRxCollection() instead.
+         * This only checks the state at call time. A start() that was queued
+         * before a cancel() or before a non-live replication finished
+         * resolves without running, see _start().
+         */
+        if (this.isStopped()) {
+            return Promise.reject(newRxError('RC_START_CANCELED', {
+                collection: this.collection.name,
+                args: {
+                    replicationIdentifier: this.replicationIdentifier
+                }
+            }));
+        }
         const startPromise = this.startQueue.then(() => {
             return this._start();
         });

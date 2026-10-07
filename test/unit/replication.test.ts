@@ -1608,6 +1608,96 @@ describe('replication.test.ts', () => {
             await localCollection.database.close();
             await remoteCollection.database.close();
         });
+        it('should throw when start() is called after cancel()', async () => {
+            const { localCollection, remoteCollection } = await getTestCollections({ local: 0, remote: 0 });
+            const replicationState = replicateRxCollection({
+                collection: localCollection,
+                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                live: true,
+                pull: {
+                    handler: getPullHandler(remoteCollection)
+                },
+                push: {
+                    handler: getPushHandler(remoteCollection)
+                }
+            });
+            ensureReplicationHasNoErrors(replicationState);
+            await replicationState.awaitInitialReplication();
+
+            await replicationState.cancel();
+            assert.ok(replicationState.isStopped());
+
+            await assert.rejects(
+                replicationState.start(),
+                (err: RxError) => err.code === 'RC_START_CANCELED'
+            );
+            assert.ok(replicationState.isStopped());
+
+            await localCollection.database.close();
+            await remoteCollection.database.close();
+        });
+        it('should throw when start() is called after cancel() on a replication that was never started', async () => {
+            const { localCollection, remoteCollection } = await getTestCollections({ local: 0, remote: 0 });
+            const replicationState = replicateRxCollection({
+                collection: localCollection,
+                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                live: true,
+                autoStart: false,
+                pull: {
+                    handler: getPullHandler(remoteCollection)
+                }
+            });
+            ensureReplicationHasNoErrors(replicationState);
+
+            await replicationState.cancel();
+            await assert.rejects(
+                replicationState.start(),
+                (err: RxError) => err.code === 'RC_START_CANCELED'
+            );
+
+            await localCollection.database.close();
+            await remoteCollection.database.close();
+        });
+        it('should throw when start() is called after remove()', async () => {
+            const { localCollection, remoteCollection } = await getTestCollections({ local: 0, remote: 0 });
+            const replicationState = replicateRxCollection({
+                collection: localCollection,
+                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                live: true,
+                pull: {
+                    handler: getPullHandler(remoteCollection)
+                }
+            });
+            ensureReplicationHasNoErrors(replicationState);
+            await replicationState.awaitInitialReplication();
+
+            await replicationState.remove();
+            await assert.rejects(
+                replicationState.start(),
+                (err: RxError) => err.code === 'RC_START_CANCELED'
+            );
+
+            await localCollection.database.close();
+            await remoteCollection.database.close();
+        });
+        it('should not throw when the collection is closed while waiting for leadership', async () => {
+            const { localCollection, remoteCollection } = await getTestCollections({ local: 0, remote: 0 });
+            const replicationState = replicateRxCollection({
+                collection: localCollection,
+                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                live: true,
+                pull: {
+                    handler: getPullHandler(remoteCollection)
+                }
+            });
+            const errors: any[] = [];
+            replicationState.error$.subscribe(err => errors.push(err));
+            await localCollection.database.close();
+            await wait(isFastMode() ? 10 : 50);
+            assert.ok(replicationState.isStopped());
+            assert.deepStrictEqual(errors, []);
+            await remoteCollection.database.close();
+        });
         it('should sync again after pause->restart', async () => {
             const startDocsAmount = 2;
             const { localCollection, remoteCollection } = await getTestCollections({ local: startDocsAmount, remote: startDocsAmount });

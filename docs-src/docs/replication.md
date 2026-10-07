@@ -606,11 +606,11 @@ Cancels the replication. Returns a promise that resolves when everything has bee
 await myRxReplicationState.cancel();
 ```
 
-A canceled `RxReplicationState` can **never** be started again. After `cancel()`, `isStopped()` returns `true` and calling `start()` does nothing. To resume the replication, call `replicateRxCollection()` again with the same `replicationIdentifier`. The new replication state reuses the stored checkpoints and continues where the canceled one stopped, so it does not download all documents again.
+A canceled `RxReplicationState` can **never** be started again. After `cancel()`, `isStopped()` returns `true` and calling `start()` rejects with the error `RC_START_CANCELED`. To resume the replication, call `replicateRxCollection()` again with the same `replicationIdentifier`. The new replication state reuses the stored checkpoints and continues where the canceled one stopped, so it does not download all documents again.
 
 ```ts
 await replicationState.cancel();
-await replicationState.start(); // does nothing, the state is canceled
+await replicationState.start(); // throws RC_START_CANCELED
 
 // resume by creating a new replication state with the same identifier
 const newReplicationState = replicateRxCollection({
@@ -721,8 +721,8 @@ const replicationState = replicateRxCollection({
 | Method | State afterwards | Can `start()` resume it? | Replication metadata |
 | --- | --- | --- | --- |
 | `pause()` | `isPaused() === true` | ✅ Yes | Kept |
-| `cancel()` | `isStopped() === true` | ❌ No, call `replicateRxCollection()` again with the same `replicationIdentifier` | Kept, so a new replication continues from the last checkpoint |
-| `remove()` | `isStopped() === true` | ❌ No, call `replicateRxCollection()` again | Deleted, so a new replication starts from scratch |
+| `cancel()` | `isStopped() === true` | ❌ No, `start()` throws `RC_START_CANCELED`. Call `replicateRxCollection()` again with the same `replicationIdentifier` | Kept, so a new replication continues from the last checkpoint |
+| `remove()` | `isStopped() === true` | ❌ No, `start()` throws `RC_START_CANCELED`. Call `replicateRxCollection()` again | Deleted, so a new replication starts from scratch |
 
 The replication is also canceled automatically when its [RxCollection](./rx-collection.md) or [RxDatabase](./rx-database.md) is closed.
 
