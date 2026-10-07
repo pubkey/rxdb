@@ -22,12 +22,12 @@
     "cap:open:ios": "npm run cap:sync && npx cap open ios"
   },
   "dependencies": {
-    "@angular/common": "22.2.0",
-    "@angular/compiler": "22.2.0",
-    "@angular/core": "22.2.0",
-    "@angular/forms": "22.2.0",
-    "@angular/platform-browser": "22.2.0",
-    "@angular/router": "22.2.0",
+    "@angular/common": "22.2.1",
+    "@angular/compiler": "22.2.1",
+    "@angular/core": "22.2.1",
+    "@angular/forms": "22.2.1",
+    "@angular/platform-browser": "22.2.1",
+    "@angular/router": "22.2.1",
     "@capacitor/android": "8.5.2",
     "@capacitor/core": "8.5.2",
     "@capacitor/ios": "8.5.2",
@@ -41,7 +41,7 @@
   "devDependencies": {
     "@angular/build": "22.2.0",
     "@angular/cli": "22.2.0",
-    "@angular/compiler-cli": "22.2.0",
+    "@angular/compiler-cli": "22.2.1",
     "@capacitor/cli": "8.5.2",
     "async-test-util": "2.5.0",
     "concurrently": "10.0.5",
