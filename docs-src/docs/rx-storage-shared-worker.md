@@ -45,7 +45,7 @@ import {
     createRxDatabase
 } from 'rxdb';
 import { getRxStorageSharedWorker } from 'rxdb-premium/plugins/storage-worker';
-import { getRxStorageIndexedDB } from 'rxdb/plugins/storage-indexeddb';
+import { getRxStorageIndexedDB } from 'rxdb-premium/plugins/storage-indexeddb';
 
 
 const database = await createRxDatabase({

@@ -269,7 +269,7 @@ console.dir(json);
   lastName: 'Gibson',
   _deleted: false,
   _attachments: { ... },
-  _rev: '1-aklsdjfhaklsdjhf...'
+  _rev: '1-aklsdjfhak'
 */
 ```
 
@@ -323,3 +323,24 @@ To avoid this, either:
 - Re-query the collection to get a fresh document.
 
 **How long to keep a reference to an `RxDocument`.** Treat an `RxDocument` like plain JSON data - it is a snapshot valid at the time of retrieval. RxDB manages query result caching internally via [event-reduce](./rx-query.md), so you do not need to cache documents yourself. For components that display document data and need live updates, subscribe to the document's `$` observable instead of holding a static reference.
+
+## Revisions (`_rev`)
+
+Every stored document has a `_rev` field that RxDB sets on each write. You never set it yourself. Read it with `myDocument.revision` or `myDocument.toJSON(true)._rev`.
+
+The revision string has the format `<height>-<token>`, for example `3-dwtwqbarqc`:
+
+- **height**: a number that starts with `1` on insert and increases by one with every write to that document.
+- **token**: the `token` of the [RxDatabase](./rx-database.md) instance that did the write (`myDatabase.token`). It is not a hash of the document content.
+
+```ts
+const doc = await myCollection.insert({ id: 'foo', age: 20 });
+console.log(doc.revision); // '1-dwtwqbarqc'
+
+const doc2 = await doc.incrementalPatch({ age: 21 });
+console.log(doc2.revision); // '2-dwtwqbarqc'
+```
+
+RxDB uses the revision for optimistic concurrency control. Every write sends the previous document state together with the new one. The storage compares the `_rev` of the previous state with the `_rev` that is currently stored. When they differ, another write happened in the meantime and the write fails with a `409 CONFLICT` error. This is why non-incremental methods like `patch()` throw on an outdated `RxDocument` instance, while the incremental methods retry with the latest state. Read more in [Transactions, Conflicts and Revisions](./transactions-conflicts-revisions.md).
+
+The `_rev` field is local to each client. By default it is stripped before documents are sent by the [replication](./replication.md) and the [conflict handler](./transactions-conflicts-revisions.md#custom-conflict-handler) does not see it. To detect conflicts between clients, the replication compares the assumed master state with the real master state instead. If your backend needs a version field, add your own field like `updatedAt` to the schema.

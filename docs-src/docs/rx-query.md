@@ -444,6 +444,53 @@ Returns true if the given object is an instance of RxQuery. Returns false if not
 const is = isRxQuery(myObj);
 ```
 
+## Query the Storage Directly
+
+`exec()` returns `RxDocument` instances. RxDB creates and caches these instances, which costs time and memory when a query returns many documents that you only read once, for example for an export or a bulk computation. In that case you can skip the `RxDocument` layer and run the query against the [RxStorage](./rx-storage.md) instance of the collection with `collection.storageInstance.query()`.
+
+`storageInstance.query()` needs a prepared query. Get it from a normal `RxQuery` with `getPreparedQuery()`. This normalizes the query, adds the `_deleted: false` condition so deleted documents are excluded, and calculates the query plan, the same way `exec()` does.
+
+```ts
+const rxQuery = myCollection.find({
+    selector: { age: { $gte: 21 } },
+    sort: [{ age: 'asc' }]
+});
+const preparedQuery = rxQuery.getPreparedQuery();
+
+const result = await myCollection.storageInstance.query(preparedQuery);
+console.log(result.documents);
+// > [{ id: 'a', age: 21, _deleted: false, _attachments: {}, _meta: { lwt: 1791365224271 }, _rev: '2-dwtwqbarqc' }, ...]
+
+const countResult = await myCollection.storageInstance.count(preparedQuery);
+console.log(countResult.count);
+```
+
+To build the prepared query without an `RxQuery`, use `normalizeMangoQuery()` and `prepareQuery()` from `rxdb` together with the filled schema of the collection (`myCollection.schema.jsonSchema`). The selector must then contain `_deleted: { $eq: false }` yourself.
+
+```ts
+import { normalizeMangoQuery, prepareQuery } from 'rxdb';
+
+const schema = myCollection.schema.jsonSchema;
+const preparedQuery = prepareQuery(
+    schema,
+    normalizeMangoQuery(schema, {
+        selector: {
+            _deleted: { $eq: false },
+            age: { $gte: 21 }
+        },
+        sort: [{ age: 'asc' }],
+        limit: 100
+    })
+);
+const result = await myCollection.storageInstance.query(preparedQuery);
+```
+
+Keep in mind what you lose when you query the storage directly:
+
+- The results are plain `RxDocumentData` objects with the internal fields `_deleted`, `_attachments`, `_meta` and `_rev`. They have no [RxDocument](./rx-document.md) methods, no ORM methods and no getters for [population](./population.md).
+- The results are not reactive and not cached. There is no `$` observable and every call runs the query on the storage again.
+- [Middleware](./middleware.md) hooks like `postCreate` do not run. Storage wrappers like [encryption](./encryption.md), [key compression](./key-compression.md) and schema validation still apply, because `collection.storageInstance` is the wrapped storage instance.
+
 ## liveQueryUpdateThrottleTime
 
 <BetaBlock since="17.1.0" />

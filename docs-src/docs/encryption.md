@@ -52,6 +52,7 @@ You could however use the [memory mapped](./rx-storage-memory-mapped.md) RxStora
 ## Password handling
 RxDB does not define how you should store or retrieve the encryption password. It only requires you to provide the password on database creation which grants you flexibility in how you manage encryption passwords.
 You could ask the user on app-start to insert the password, or you can retrieve the password from your backend on app start (or revoke access by no longer providing the password).
+The password is also required when you delete an encrypted database with `removeRxDatabase()`, see [removing an encrypted database](./rx-database.md#removing-an-encrypted-database).
 
 ## Asymmetric encryption
 
