@@ -1,0 +1,6 @@
+# Same as .gitignore but the generated JavaScript bundle
+# must be included in the published package.
+.dart_tool/
+.packages
+build/
+pubspec.lock

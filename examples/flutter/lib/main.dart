@@ -1,163 +1,152 @@
-// ignore_for_file: prefer_interpolation_to_compose_strings
-
 import 'package:flutter/material.dart';
-import 'package:flutter_qjs/flutter_qjs.dart';
-import 'package:flutter/services.dart';
 import 'package:rxdb/rxdb.dart';
+
+const Map<String, dynamic> heroSchema = {
+  'version': 0,
+  'primaryKey': 'id',
+  'type': 'object',
+  'properties': {
+    'id': {'type': 'string', 'maxLength': 100},
+    'name': {'type': 'string', 'maxLength': 100},
+    'color': {'type': 'string', 'maxLength': 30},
+  },
+  'required': ['id', 'name', 'color'],
+  'indexes': ['name'],
+};
+
+Future<RxDatabase> createHeroesDatabase({String name = 'heroes', bool inMemory = false}) {
+  return createRxDatabase(
+    name: name,
+    inMemory: inMemory,
+    collections: {
+      'heroes': const RxCollectionCreator(schema: heroSchema),
+    },
+  );
+}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  await RxDatabaseState.init('flutter-rxdb-heroes');
-  const app = MyApp();
-  runApp(app);
+  final database = await createHeroesDatabase();
+  runApp(HeroesApp(database: database));
 }
 
-class RxHeroDocType {
-  final String id, name, color;
-  RxHeroDocType({required this.id, required this.name, required this.color});
-}
+class HeroesApp extends StatelessWidget {
+  final RxDatabase database;
+  const HeroesApp({super.key, required this.database});
 
-class RxCollectionsOfDatabase {
-  late RxCollection<RxHeroDocType> heroes;
-}
-
-class RxDatabaseState {
-  static late RxDatabase database;
-  static bool initDone = false;
-  static late RxCollection<RxHeroDocType> collection;
-
-  static Future<RxDatabase> init(String databaseName) async {
-    if (initDone) {
-      return database;
-    }
-    initDone = true;
-    database = await getRxDatabase("javascript/dist/index.js", databaseName);
-    collection = database.getCollection<RxHeroDocType>('heroes');
-    return database;
-  }
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      title: 'RxDB Flutter Example',
+      theme: ThemeData(colorSchemeSeed: Colors.deepPurple),
+      home: HeroesPage(collection: database['heroes']),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-  final String title;
+class HeroesPage extends StatefulWidget {
+  final RxCollection collection;
+  const HeroesPage({super.key, required this.collection});
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<HeroesPage> createState() => _HeroesPageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  RxQuery<RxHeroDocType> query = RxDatabaseState.collection.find({});
-  List<RxDocument<RxHeroDocType>> documents = [];
+class _HeroesPageState extends State<HeroesPage> {
   final nameController = TextEditingController();
   final colorController = TextEditingController();
 
-  _MyHomePageState() {
-    query.$().listen((newResults) {
-      setState(() {
-        documents = newResults;
-      });
-    });
-  }
+  /// The query result is observed, so the list re-renders
+  /// whenever a matching document is inserted, changed or removed.
+  late final Stream<List<RxDocument>> heroes$ = widget.collection.find({
+    'selector': {},
+    'sort': [
+      {'name': 'asc'},
+    ],
+  }).$;
 
-  void saveNewHero() async {
-    print("saveNewHero() called");
-    var collection = RxDatabaseState.collection;
-    await collection.insert({
-      "id": "zflutter-${DateTime.now()}",
-      "name": nameController.text,
-      "color": colorController.text
+  late final Stream<int> count$ = widget.collection.count().$;
+
+  Future<void> saveHero() async {
+    await widget.collection.insert({
+      'id': 'hero-${DateTime.now().microsecondsSinceEpoch}',
+      'name': nameController.text,
+      'color': colorController.text,
     });
     nameController.clear();
     colorController.clear();
   }
 
-  void removeHero(RxDocument<RxHeroDocType> heroDocument) async {
-    print("removeHero() called");
-    await heroDocument.remove();
+  @override
+  void dispose() {
+    nameController.dispose();
+    colorController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title),
+        title: StreamBuilder<int>(
+          stream: count$,
+          builder: (context, snapshot) => Text('Heroes (${snapshot.data ?? 0})'),
+        ),
       ),
       body: Column(
         children: [
-          SizedBox(
-            height: 400,
-            child: ListView.builder(
-                scrollDirection: Axis.vertical,
-                itemCount: documents.length,
-                itemBuilder: (BuildContext ctxt, int index) {
-                  return Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: ListTile(
-                            key: Key(
-                                'list-tile-' + documents[index].data['name']),
-                            leading: Text(documents[index].data['name']),
-                            title: Text(
-                                'color: ' + documents[index].data['color'])),
-                      ),
-                      IconButton(
-                        key: Key(
-                            'button-delete-' + documents[index].data['name']),
+          Expanded(
+            child: StreamBuilder<List<RxDocument>>(
+              stream: heroes$,
+              builder: (context, snapshot) {
+                final docs = snapshot.data ?? const [];
+                return ListView.builder(
+                  itemCount: docs.length,
+                  itemBuilder: (context, index) {
+                    final doc = docs[index];
+                    final name = doc.get('name') as String;
+                    return ListTile(
+                      key: Key('list-tile-$name'),
+                      title: Text(name),
+                      subtitle: Text('color: ${doc.get('color')}'),
+                      trailing: IconButton(
+                        key: Key('button-delete-$name'),
                         icon: const Icon(Icons.remove_circle),
-                        onPressed: () {
-                          documents[index].remove();
-                        },
-                      )
-                    ],
-                  );
-                }),
-          ),
-          SizedBox(
-            width: 300,
-            height: 100,
-            child: TextFormField(
-              key: const Key('input-name'),
-              controller: nameController,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                labelText: 'Name',
-              ),
+                        onPressed: () => doc.remove(),
+                      ),
+                    );
+                  },
+                );
+              },
             ),
           ),
-          SizedBox(
-            width: 300,
-            child: TextFormField(
-              key: const Key('input-color'),
-              controller: colorController,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                labelText: 'Color',
-              ),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    key: const Key('input-name'),
+                    controller: nameController,
+                    decoration: const InputDecoration(labelText: 'Name'),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: TextField(
+                    key: const Key('input-color'),
+                    controller: colorController,
+                    decoration: const InputDecoration(labelText: 'Color'),
+                  ),
+                ),
+              ],
             ),
-          )
+          ),
         ],
       ),
       floatingActionButton: FloatingActionButton(
         key: const Key('button-save'),
-        onPressed: saveNewHero,
+        onPressed: saveHero,
         tooltip: 'Save',
         child: const Icon(Icons.add),
       ),
