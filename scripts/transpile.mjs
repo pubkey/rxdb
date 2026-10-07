@@ -144,6 +144,8 @@ function getFiles(state) {
             walkFolder(transpileFolder.source)
                 .filter(entry => entry.relativePath.endsWith('.js') || entry.relativePath.endsWith('.ts') || entry.relativePath.endsWith('.tsx'))
                 .filter(entry => !entry.relativePath.split(path.sep).includes('node_modules'))
+                // the Dart package of the flutter plugin contains a generated JavaScript bundle and build output
+                .filter(entry => !entry.relativePath.startsWith(path.join('plugins', 'flutter', 'dart') + path.sep))
                 .forEach(fileEntry => {
                     // ensure goal-file-ending is .js
                     const relativePathSplit = fileEntry.relativePath.split('.');

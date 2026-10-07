@@ -36,6 +36,24 @@ async function run() {
         JSON.stringify(packageJson, null, 2)
     );
 
+    // update version of the Flutter/Dart package, it is released together with the npm package
+    const pubspecPath = path.join(rootPath, 'src', 'plugins', 'flutter', 'dart', 'pubspec.yaml');
+    const pubspec = await fs.promises.readFile(pubspecPath, 'utf-8');
+    await fs.promises.writeFile(
+        pubspecPath,
+        pubspec.replace(/^version: .*$/m, 'version: ' + version)
+    );
+    const dartChangelogPath = path.join(rootPath, 'src', 'plugins', 'flutter', 'dart', 'CHANGELOG.md');
+    const dartChangelog = await fs.promises.readFile(dartChangelogPath, 'utf-8');
+    if (!dartChangelog.includes('## ' + version + '\n')) {
+        const firstEntry = dartChangelog.indexOf('\n## ');
+        const newEntry = '\n## ' + version + '\n\n- See the [RxDB changelog](https://github.com/pubkey/rxdb/blob/master/CHANGELOG.md).\n';
+        await fs.promises.writeFile(
+            dartChangelogPath,
+            firstEntry === -1 ? dartChangelog + newEntry : dartChangelog.slice(0, firstEntry) + newEntry + dartChangelog.slice(firstEntry)
+        );
+    }
+
 
     // collect changelog entries from orga/changelog/ files
     const changelogDir = path.join(rootPath, 'orga', 'changelog');

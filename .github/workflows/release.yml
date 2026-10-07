@@ -30,6 +30,8 @@ jobs:
     # @link https://docs.github.com/en/actions/using-jobs/assigning-permissions-to-jobs
     permissions:
       contents: write
+      # required to trigger the flutter-publish workflow
+      actions: write
       # @link https://docs.npmjs.com/generating-provenance-statements#about-npm-provenance
       id-token: write
     # Steps represent a sequence of tasks that will be executed as part of the job
@@ -148,6 +150,15 @@ jobs:
           artifacts: "rxdb-sbom.cdx.json,rxdb-sbom.spdx.json"
           token: ${{ secrets.GITHUB_TOKEN }}
 
+
+      # Publish the Flutter package to pub.dev.
+      # Tags created with the GITHUB_TOKEN do not trigger other workflows,
+      # so the publish workflow is started explicitly on the new tag.
+      - name: Trigger publishing of the Flutter package
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh workflow run flutter-publish.yml --ref ${{github.event.inputs.version}}
 
       # Notify rxdb-server to update its rxdb dependency
       # @link https://github.com/pubkey/rxdb-server/pull/376
