@@ -14,7 +14,7 @@ import {Steps} from '@site/src/components/steps';
 In this tutorial you will learn how to use RxDB with TypeScript.
 We will create a basic database with one collection and several [ORM](../orm.md)-methods, fully typed!
 
-RxDB directly comes with its typings and you do not have to install anything else, however the latest version of RxDB requires that you are using Typescript v3.8 or newer.
+RxDB directly comes with its typings and you do not have to install anything else. The latest version of RxDB requires TypeScript v3.8 or newer. All types are exported from `rxdb`, see the [import reference](../install.md#import-reference) for the full list of type and plugin imports. How to type a replication is shown in [using the replication with TypeScript](../replication.md#using-the-replication-with-typescript).
 Our way to go is
 
 - First define what the documents look like

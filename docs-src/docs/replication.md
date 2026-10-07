@@ -482,6 +482,13 @@ myRxReplicationState.conflict$.subscribe(conflict => console.dir(conflict));
 
 With `awaitInitialReplication()` you can await the initial replication that is done when a full replication cycle was successfully finished for the first time. The returned promise will never resolve if you cancel the replication before the initial replication can be done.
 
+The promise resolves only when **both directions** have finished their first cycle:
+
+- **Downstream (pull)**: all documents that the pull handler returns, up to the latest checkpoint, are written to the local collection.
+- **Upstream (push)**: all local writes that existed when the replication started are sent to the push handler. When the push handler reports conflicts, they are resolved and the upstream runs again before it counts as done.
+
+When only one direction is configured, the other direction completes instantly. A pull-only replication resolves as soon as the pull is done, and a push-only replication resolves as soon as the push is done.
+
 
 ```ts
 await myRxReplicationState.awaitInitialReplication();
@@ -599,9 +606,26 @@ Cancels the replication. Returns a promise that resolves when everything has bee
 await myRxReplicationState.cancel();
 ```
 
+A canceled `RxReplicationState` can **never** be started again. After `cancel()`, `isStopped()` returns `true` and calling `start()` rejects with the error `RC_START_CANCELED`. To resume the replication, call `replicateRxCollection()` again with the same `replicationIdentifier`. The new replication state reuses the stored checkpoints and continues where the canceled one stopped, so it does not download all documents again.
+
+```ts
+await replicationState.cancel();
+await replicationState.start(); // throws RC_START_CANCELED
+
+// resume by creating a new replication state with the same identifier
+const newReplicationState = replicateRxCollection({
+    collection: myRxCollection,
+    replicationIdentifier: 'my-rest-replication-to-https://example.com/api/sync',
+    pull: { /* ... */ },
+    push: { /* ... */ }
+});
+```
+
+Use `pause()` instead when you want to stop the replication for a while and continue later with the same `RxReplicationState`.
+
 ### pause()
 
-Pauses a running replication. The replication can later be resumed with `RxReplicationState.start()`.
+Pauses a running replication. The replication can later be resumed with `RxReplicationState.start()`. In contrast to `cancel()`, a paused replication keeps its state. When `start()` is called after a pause, it runs one resync cycle and then continues the live replication.
 
 ```ts
 await myRxReplicationState.pause();
@@ -691,6 +715,126 @@ const replicationState = replicateRxCollection({
     /* ... */
 });
 ```
+
+### Replication Lifecycle
+
+| Method | State afterwards | Can `start()` resume it? | Replication metadata |
+| --- | --- | --- | --- |
+| `pause()` | `isPaused() === true` | ✅ Yes | Kept |
+| `cancel()` | `isStopped() === true` | ❌ No, `start()` throws `RC_START_CANCELED`. Call `replicateRxCollection()` again with the same `replicationIdentifier` | Kept, so a new replication continues from the last checkpoint |
+| `remove()` | `isStopped() === true` | ❌ No, `start()` throws `RC_START_CANCELED`. Call `replicateRxCollection()` again | Deleted, so a new replication starts from scratch |
+
+The replication is also canceled automatically when its [RxCollection](./rx-collection.md) or [RxDatabase](./rx-database.md) is closed.
+
+## Using the Replication with TypeScript
+
+`replicateRxCollection()` and `RxReplicationState` take two generic types: the document type and the checkpoint type of your backend.
+
+```ts
+function replicateRxCollection<RxDocType, CheckpointType>(
+    options: ReplicationOptions<RxDocType, CheckpointType>
+): RxReplicationState<RxDocType, CheckpointType>;
+```
+
+The handler types are exported from `rxdb`:
+
+- `ReplicationPullHandler<RxDocType, CheckpointType>`: `(lastPulledCheckpoint: CheckpointType | undefined, batchSize: number) => Promise<{ documents: WithDeleted<RxDocType>[], checkpoint: CheckpointType | undefined }>`
+- `ReplicationPushHandler<RxDocType>`: `(rows: RxReplicationWriteToMasterRow<RxDocType>[]) => Promise<WithDeleted<RxDocType>[]>`. Each row has a `newDocumentState` and an optional `assumedMasterState`.
+
+When you write a helper function that starts the replication for any collection, take the document type from the `RxCollection` generic so that the returned `RxReplicationState` stays typed:
+
+```ts
+import type {
+    RxCollection,
+    ReplicationPullHandler,
+    ReplicationPushHandler
+} from 'rxdb';
+import {
+    replicateRxCollection,
+    RxReplicationState
+} from 'rxdb/plugins/replication';
+
+type MyCheckpoint = { id: string; updatedAt: number; };
+
+export function startReplication<RxDocType>(
+    collection: RxCollection<RxDocType>,
+    pullHandler: ReplicationPullHandler<RxDocType, MyCheckpoint>,
+    pushHandler: ReplicationPushHandler<RxDocType>
+): RxReplicationState<RxDocType, MyCheckpoint> {
+    return replicateRxCollection<RxDocType, MyCheckpoint>({
+        collection,
+        replicationIdentifier: 'my-sync-' + collection.name,
+        live: true,
+        pull: { handler: pullHandler },
+        push: { handler: pushHandler }
+    });
+}
+
+// replicationState is typed as RxReplicationState<HeroDocType, MyCheckpoint>
+const replicationState = startReplication(
+    myDatabase.heroes,
+    myPullHandler,
+    myPushHandler
+);
+```
+
+## Storing Local-Only Metadata Alongside Replicated Documents
+
+Sometimes you want to store data on the client that belongs to a replicated document but must never be sent to the server, for example a "read" flag, a draft text or a UI state. Keep in mind how the replication treats document fields:
+
+- Every field of the document schema is part of the replicated document state. When the server sends a newer version of a document, the local document is **replaced** with the server state. A field that only exists on the client is lost at that moment.
+- The `_meta` and `_rev` fields are internal to RxDB. They are stripped before documents are pushed and they are not passed to the [conflict handler](./transactions-conflicts-revisions.md#custom-conflict-handler), which only sees the `WithDeleted<RxDocType>` data. RxDB writes `_meta` itself, so you cannot use it for your own data.
+
+There are two ways to store local-only data that survive replication:
+
+### 1. A separate local collection
+
+Create a second [RxCollection](./rx-collection.md) that is not replicated and use the same primary key as the replicated document. This keeps the data queryable and reactive, and a remote update of the replicated document does not touch it.
+
+```ts
+await myDatabase.addCollections({
+    // replicated with the server
+    todos: { schema: todoSchema },
+    // never replicated, stores client-only state per todo
+    todoLocalState: {
+        schema: {
+            version: 0,
+            primaryKey: 'id', // same value as the todo id
+            type: 'object',
+            properties: {
+                id: { type: 'string', maxLength: 100 },
+                isRead: { type: 'boolean' },
+                draftText: { type: 'string' }
+            },
+            required: ['id']
+        }
+    }
+});
+
+await myDatabase.todoLocalState.upsert({ id: 'todo-1', isRead: true });
+```
+
+### 2. Local documents
+
+For key-value data that does not need queries, use [local documents](./rx-local-document.md). They are stored in a separate storage instance, are never replicated and are not part of the collection schema. They require the `local-documents` plugin and `localDocuments: true` on the collection.
+
+```ts
+import { addRxPlugin } from 'rxdb';
+import { RxDBLocalDocumentsPlugin } from 'rxdb/plugins/local-documents';
+addRxPlugin(RxDBLocalDocumentsPlugin);
+
+await myDatabase.addCollections({
+    todos: {
+        schema: todoSchema,
+        localDocuments: true
+    }
+});
+
+await myDatabase.todos.upsertLocal('ui-state-todo-1', { isRead: true });
+const localDoc = await myDatabase.todos.getLocal('ui-state-todo-1');
+```
+
+A schema field that you strip in the `push.modifier` does not reach the server, but it does not survive a pull either: as soon as the server sends a newer state of the document, the stripped field is gone from the local document. Only use this pattern for data that can be recomputed.
 
 ## Attachment replication
 

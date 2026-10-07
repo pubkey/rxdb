@@ -347,12 +347,23 @@ const is = isRxCollection(myObj);
 <FaqItem question={'How to remove the limit of ' + NON_PREMIUM_COLLECTION_LIMIT + ' collections?'}>
 
     <div>
-    In the open-source version of RxDB, the amount of RxCollections that can exist in parallel is limited to <code>{NON_PREMIUM_COLLECTION_LIMIT}</code>.
-    To remove this limit, you can purchase the [Premium Plugins](/premium/) and call the `setPremiumFlag()` function before creating a database:
+    In the open-source version of RxDB, the amount of RxCollections that can be open in parallel is limited to <code>{NON_PREMIUM_COLLECTION_LIMIT}</code>. The value comes from the `NON_PREMIUM_COLLECTION_LIMIT` constant in [`src/plugins/utils/utils-premium.ts`](https://github.com/pubkey/rxdb/blob/master/src/plugins/utils/utils-premium.ts).
+    The limit counts all open collections of all databases in the same JavaScript process. Closed collections do not count. When the limit is reached, RxDB waits a short time for other collections to close and then throws the error `COL23`.
+
+    To remove the limit:
+
+    1. Purchase the [Premium Plugins 👑](/premium/) and install the `rxdb-premium` package.
+    2. Call `setPremiumFlag()` once, before you create the first database.
+    3. Create your databases and collections as usual.
+
     ```ts
     import { setPremiumFlag } from 'rxdb-premium/plugins/shared';
     setPremiumFlag();
+
+    const db = await createRxDatabase({ /* ... */ });
     ```
+
+    Before you remove the limit, check whether you need that many collections. Each RxCollection opens its own storage instance (for example its own IndexedDB object store or SQLite table) and keeps its own change stream and query cache. So the startup time and memory usage grow with every collection. When many collections store documents with a similar shape, store them in one collection with a `type` field and an index on it.
     </div>
 
 </FaqItem>

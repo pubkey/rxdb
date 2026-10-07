@@ -229,10 +229,52 @@ await myDatabase.remove();
 
 You can also clear a database without removing its instance by using `removeRxDatabase()`. This is useful if you want to migrate data or reset the user's state by renaming the database. Then you can remove the previous data with `removeRxDatabase()` without creating a RxDatabase first. Notice that this will only remove the
 stored data on the storage. It will not clear the cache of any [RxDatabase](./rx-database.md) instances.
-```javascript
-import { removeRxDatabase } from 'rxdb';
-removeRxDatabase('mydatabasename', 'localstorage');
+
+```ts
+removeRxDatabase(
+    databaseName: string,
+    storage: RxStorage,
+    multiInstance: boolean = true,
+    password?: string
+): Promise<string[]> // resolves with the names of the removed collections
 ```
+
+Pass the same [RxStorage](./rx-storage.md) that was used to create the database, not a string.
+
+```ts
+import { removeRxDatabase } from 'rxdb';
+import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
+
+await removeRxDatabase('mydatabasename', getRxStorageLocalstorage());
+```
+
+#### Removing an encrypted database
+
+When the database uses the [encryption plugin](./encryption.md), the storage is wrapped with `wrappedKeyEncryptionCryptoJsStorage()`. To remove such a database, pass the wrapped storage and the password. Without the password, RxDB cannot open the storage instances of collections that have encrypted fields and `removeRxDatabase()` throws the error `EN3` ("Schema contains encrypted properties but no password is given").
+
+```ts
+import { removeRxDatabase } from 'rxdb';
+import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
+import {
+    wrappedKeyEncryptionCryptoJsStorage
+} from 'rxdb/plugins/encryption-crypto-js';
+
+const encryptedStorage = wrappedKeyEncryptionCryptoJsStorage({
+    storage: getRxStorageLocalstorage()
+});
+
+// throws EN3 because the password is missing
+// await removeRxDatabase('mydatabasename', encryptedStorage);
+
+await removeRxDatabase(
+    'mydatabasename',
+    encryptedStorage,
+    true, // multiInstance, same value as in createRxDatabase()
+    'myLongAndStupidPassword'
+);
+```
+
+When you still have the `RxDatabase` instance, call `myDatabase.remove()` instead. It uses the storage and the password the database was created with, so you do not have to pass them again.
 
 ### isRxDatabase
 Returns true if the given object is an instance of RxDatabase. Returns false if not.
