@@ -69,17 +69,19 @@ const myRxDatabase = await createRxDatabase({
 });
 ```
 
-Because the SQLite RxStorage is not free and you might not want to set up a FoundationDB cluster, there is also the option to use the [LokiJS RxStorage](./rx-storage-lokijs.md) together with the filesystem adapter. This will store the data as plain json in a file and load everything into memory on startup. This works great for small prototypes but it is not recommended to be used in production.
+Because the SQLite RxStorage is not free and you might not want to set up a FoundationDB cluster, there is also the [SQLite trial storage](./rx-storage-sqlite.md) which ships with RxDB Core. It uses the `node:sqlite` module that is built into Node.js. The trial storage is limited to 500 documents and does not use indexes, so it works for prototypes but is not made for production.
 
 ```ts
 import { createRxDatabase } from 'rxdb';
-const LokiFsStructuredAdapter = require('lokijs/src/loki-fs-structured-adapter.js');
-import { getRxStorageLoki } from 'rxdb/plugins/storage-lokijs';
-import sqlite3 from 'sqlite3';
+import {
+    getRxStorageSQLiteTrial,
+    getSQLiteBasicsNodeNative
+} from 'rxdb/plugins/storage-sqlite';
+import { DatabaseSync } from 'node:sqlite';
 const myRxDatabase = await createRxDatabase({
     name: 'path/to/database/file/foobar.db',
-    storage: getRxStorageLoki({
-        adapter: new LokiFsStructuredAdapter()
+    storage: getRxStorageSQLiteTrial({
+        sqliteBasics: getSQLiteBasicsNodeNative(DatabaseSync)
     })
 });
 ```
