@@ -41,7 +41,7 @@ At first, install transformers.js and RxDB:
 npm install @huggingface/transformers rxdb rxjs
 ```
 
-The `onnx-community/embeddinggemma-2-ONNX` model runs with the `feature-extraction` pipeline. With `dtype: 'q4'` the text model download is about **175 MB**. Google's model card warns that the activations of the model exceed the range of float16, so the sample uses `q4` and not `fp16` or `q4f16`.
+The `onnx-community/embeddinggemma-2-ONNX` model runs with the `feature-extraction` pipeline. With `dtype: 'q4'` the text model download is about **175 MB**, a sixth of the `fp32` weights. According to the [ONNX model card](https://huggingface.co/onnx-community/embeddinggemma-2-ONNX), `q4` text embeddings still have a cosine similarity of at least `0.988` to the `fp32` ones. Use `q8` (314 MB) when quality matters more than download size.
 
 EmbeddingGemma 2 expects a task prefix in front of every input. For search, the query is prefixed with `task: search result | query: ` and the stored documents with `title: ... | text: `. When you skip the prefixes, the search quality drops.
 
