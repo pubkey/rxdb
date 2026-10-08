@@ -4028,3 +4028,16 @@ pre[data-theme] span[style*="--shiki-token-keyword"] {
     content: '·';
     margin: 0 8px;
 }
+
+.legal-notice-text h3 {
+    margin-bottom: 24px;
+}
+
+.legal-notice-text h4 {
+    margin-top: 24px;
+    margin-bottom: 6px;
+}
+
+.legal-notice-text p {
+    margin-bottom: 0;
+}
