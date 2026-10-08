@@ -41,7 +41,7 @@ At first, install transformers.js and RxDB:
 npm install @huggingface/transformers rxdb rxjs
 ```
 
-The `onnx-community/embeddinggemma-2-ONNX` model runs with the `feature-extraction` pipeline. With `dtype: 'q4'` the text model download is about **175 MB**, a sixth of the `fp32` weights. According to the [ONNX model card](https://huggingface.co/onnx-community/embeddinggemma-2-ONNX), `q4` text embeddings still have a cosine similarity of at least `0.988` to the `fp32` ones. Use `q8` (314 MB) when quality matters more than download size.
+The `onnx-community/embeddinggemma-2-ONNX` model runs with the `feature-extraction` pipeline. With `dtype: 'q4'` the text model download is about **175 MB**, a sixth of the `fp32` weights. According to the [ONNX model card](https://huggingface.co/onnx-community/embeddinggemma-2-ONNX), `q4` text embeddings still have a cosine similarity of at least `0.988` to the `fp32` ones. Use `q8` (314 MB) when quality matters more than download size. In the [benchmark below](#embeddinggemma-2-vs-other-embedding-models-benchmark), `q4` lost less than one point of nDCG@10 compared to `q8` and was 4x faster on the CPU.
 
 EmbeddingGemma 2 expects a task prefix in front of every input. For search, the query is prefixed with `task: search result | query: ` and the stored documents with `title: ... | text: `. When you skip the prefixes, the search quality drops.
 
@@ -233,7 +233,7 @@ console.dir(results);
 // > [{ id: '...', similarity: 0.71, item: RxDocument }, ...]
 ```
 
-In the [benchmarks of the vector database article](./javascript-vector-database.md#performance-benchmarks), this index range query took `88` milliseconds on 10k documents with 384-dimensional vectors, compared to `765` milliseconds for a full table scan. The [benchmark below](#embeddinggemma-2-vs-other-embedding-models-benchmark) shows that with EmbeddingGemma 2 the query embedding (`167` milliseconds on a 4-core CPU), not the database query, takes most of the search time. If a full scan is fast enough for your dataset, you can drop the `idx` fields and just compare the query vector against all stored embeddings.
+In the [benchmarks of the vector database article](./javascript-vector-database.md#performance-benchmarks), this index range query took `88` milliseconds on 10k documents with 384-dimensional vectors, compared to `765` milliseconds for a full table scan. The [benchmark below](#embeddinggemma-2-vs-other-embedding-models-benchmark) shows that EmbeddingGemma 2 needs another `38` milliseconds to embed the search query with the `q4` weights on a 4-core CPU. If a full scan is fast enough for your dataset, you can drop the `idx` fields and just compare the query vector against all stored embeddings.
 
 ## EmbeddingGemma 2 vs. Other Embedding Models: Benchmark
 
@@ -241,17 +241,20 @@ To compare EmbeddingGemma 2 with the models that are commonly used with transfor
 
 - **Dataset**: the test split of [BEIR SciFact](https://huggingface.co/datasets/BeIR/scifact), 300 search queries against 5,183 scientific abstracts with human relevance labels.
 - **Runtime**: Node.js 22 with transformers.js `4.3.1` on the CPU (onnxruntime), on a cloud VM with 4 vCPUs (Intel Xeon @ 2.10GHz). No GPU.
-- **Models**: the `q8` ONNX weights of each model, with the query and document prefixes and the pooling that the model card recommends.
+- **Models**: the `q8` ONNX weights of each model (and also `q4` for EmbeddingGemma 2), with the query and document prefixes and the pooling that the model card recommends.
 - **Search**: a full scan with cosine similarity over all vectors, so that the quality numbers only depend on the model and not on an index.
 - **Metrics**: `nDCG@10` and `Recall@10` (higher is better), the median time to embed one search query, and how many documents per second are embedded when indexing in batches of 8 (higher is better).
 
 To check the setup, compare the result for `bge-small-en-v1.5`: it scores `0.708` here, and its [model card](https://huggingface.co/BAAI/bge-small-en-v1.5) reports `0.713` on SciFact with the non-quantized weights.
 
-| Model | Dimensions | Download (`q8`) | Query embedding (median) | Indexing | nDCG@10 | Recall@10 |
+| Model | Dimensions | Download | Query embedding (median) | Indexing | nDCG@10 | Recall@10 |
 | ----- | ---------- | --------------- | ------------------------ | -------- | ------- | --------- |
-| **EmbeddingGemma 2** | 768 | 314 MB | 167 ms | 1.6 docs/s | **0.853** | **0.944** |
-| **EmbeddingGemma 2** (truncated) | 256 | 314 MB | 167 ms | 1.6 docs/s | 0.836 | 0.918 |
-| **EmbeddingGemma 2** (truncated) | 128 | 314 MB | 167 ms | 1.6 docs/s | 0.793 | 0.867 |
+| **EmbeddingGemma 2** (`q8`) | 768 | 314 MB | 167 ms | 1.6 docs/s | **0.853** | **0.944** |
+| **EmbeddingGemma 2** (`q8`, truncated) | 256 | 314 MB | 167 ms | 1.6 docs/s | 0.836 | 0.918 |
+| **EmbeddingGemma 2** (`q8`, truncated) | 128 | 314 MB | 167 ms | 1.6 docs/s | 0.793 | 0.867 |
+| **EmbeddingGemma 2** (`q4`) | 768 | 175 MB | 38 ms | 2.0 docs/s | 0.849 | 0.924 |
+| **EmbeddingGemma 2** (`q4`, truncated) | 256 | 175 MB | 38 ms | 2.0 docs/s | 0.831 | 0.919 |
+| **EmbeddingGemma 2** (`q4`, truncated) | 128 | 175 MB | 38 ms | 2.0 docs/s | 0.783 | 0.878 |
 | EmbeddingGemma 1 (`embeddinggemma-300m`) | 768 | 309 MB | 228 ms | 2.0 docs/s | 0.794 | 0.925 |
 | EmbeddingGemma 1 (truncated) | 256 | 309 MB | 228 ms | 2.0 docs/s | 0.779 | 0.908 |
 | `Supabase/gte-small` | 384 | 34 MB | 4.4 ms | 13.9 docs/s | 0.719 | 0.840 |
@@ -262,12 +265,12 @@ To check the setup, compare the result for `bge-small-en-v1.5`: it scores `0.708
 
 The results show a clear tradeoff:
 
-- **Quality**: EmbeddingGemma 2 has the best search results of all tested models. Truncated to 256 dimensions it still scores `0.836`, which is higher than every other model at its full size. Compared to `all-MiniLM-L6-v2`, the model used in the [JavaScript vector database tutorial](./javascript-vector-database.md), the nDCG@10 goes from `0.658` to `0.853`, which is **30%** better.
-- **Query time**: embedding one search query takes `167` milliseconds, which is **55x** slower than `all-MiniLM-L6-v2`. The index range query from the [vector database article](./javascript-vector-database.md#performance-benchmarks) took `88` milliseconds, so with EmbeddingGemma 2 the model takes most of the search time.
-- **Indexing time**: with `1.6` documents per second on 4 CPU cores, embedding the 5,183 SciFact abstracts took 55 minutes. `all-MiniLM-L6-v2` did the same in 3.6 minutes. Notice that SciFact abstracts are long (215 words on average). Short texts like chat messages or product names embed faster.
-- **Download**: 314 MB at `q8` (175 MB at `q4`) compared to 23 to 34 MB for the small models.
+- **Quality**: EmbeddingGemma 2 has the best search results of all tested models. Truncated to 256 dimensions it still scores `0.836`, which is higher than every other model at its full size. Compared to `all-MiniLM-L6-v2`, the model used in the [JavaScript vector database tutorial](./javascript-vector-database.md), the nDCG@10 goes from `0.658` to `0.853`, which is **30%** better. The `q4` weights from the code above score `0.849`, almost the same as `q8`.
+- **Query time**: with the `q4` weights, embedding one search query takes `38` milliseconds, which is **13x** slower than `all-MiniLM-L6-v2`. The index range query from the [vector database article](./javascript-vector-database.md#performance-benchmarks) took `88` milliseconds (measured on a different machine), so a full search lands at roughly `130` milliseconds. Notice that `q4` was 4x faster than `q8` (`167` milliseconds) on this CPU.
+- **Indexing time**: with `2.0` documents per second (`q4`) on 4 CPU cores, embedding the 5,183 SciFact abstracts took 44 minutes (55 minutes with `q8`). `all-MiniLM-L6-v2` did the same in 3.6 minutes. Notice that SciFact abstracts are long (215 words on average). Short texts like chat messages or product names embed faster.
+- **Download**: 175 MB at `q4` (314 MB at `q8`) compared to 23 to 34 MB for the small models.
 
-So EmbeddingGemma 2 is the better choice when search quality matters and the dataset is indexed once and then grows slowly, for example notes, documents, or support articles. When thousands of documents arrive at once on low-end devices, a small model like `gte-small` or `bge-small-en-v1.5` indexes about **9x** faster. Another option is to compute the document embeddings with EmbeddingGemma 2 on the server and sync them to the clients, so that the client only has to embed the search query.
+So EmbeddingGemma 2 is the better choice when search quality matters and the dataset is indexed once and then grows slowly, for example notes, documents, or support articles. When thousands of documents arrive at once on low-end devices, a small model like `gte-small` or `bge-small-en-v1.5` indexes about **7x** faster. Another option is to compute the document embeddings with EmbeddingGemma 2 on the server and sync them to the clients, so that the client only has to embed the search query.
 
 Keep in mind that these numbers were measured on a server CPU in Node.js. In the browser, the [WebGPU](https://developer.mozilla.org/en-US/docs/Web/API/WebGPU_API) backend can be faster, the WebAssembly fallback is usually slower, and phones in power-saving mode are slower again. Measure on the slowest device your users have before you ship it.
 
@@ -276,7 +279,7 @@ Keep in mind that these numbers were measured on a server CPU in Node.js. In the
 Running the model in the browser has costs that a server-side setup does not have:
 
 - **Download size**: the `q4` text model is about 175 MB. The browser caches it, but the first load needs a fast connection. You might want to download it in the background after the app has started.
-- **Device speed**: in the [benchmark](#embeddinggemma-2-vs-other-embedding-models-benchmark), EmbeddingGemma 2 embedded `1.6` documents per second on 4 CPU cores, so 10k documents take more than an hour. WebGPU is not available in every browser, and low-end phones are slower than that. Run the model in a [Web Worker](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers) so that the UI does not freeze.
+- **Device speed**: in the [benchmark](#embeddinggemma-2-vs-other-embedding-models-benchmark), EmbeddingGemma 2 embedded `2.0` documents per second on 4 CPU cores, so 10k documents take about 80 minutes. WebGPU is not available in every browser, and low-end phones are slower than that. Run the model in a [Web Worker](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers) so that the UI does not freeze.
 - **Multimodal weights**: images, video, and audio need the vision and audio encoders, which add another 109 MB and 189 MB at `q4` according to the [ONNX model page](https://huggingface.co/onnx-community/embeddinggemma-2-ONNX). For text search you do not need them.
 
 When the client is too slow, compute the embeddings on the server with the same model and the same prefixes, and sync the `vectors` collection to the clients with the [RxDB Sync Engine](../replication.md). The search itself then still runs locally and works offline. The [local-first article](./local-first-future.md) explains this tradeoff in more detail.
@@ -300,7 +303,7 @@ Yes. Google lists transformers.js and WebGPU as supported runtimes, and the ONNX
 <details>
 <summary>Is EmbeddingGemma 2 better than all-MiniLM-L6-v2 for search?</summary>
 
-Yes, for quality. In our SciFact benchmark EmbeddingGemma 2 reached an nDCG@10 of `0.853`, compared to `0.658` for `all-MiniLM-L6-v2`. But it embeds a query in `167` ms instead of `3` ms and indexes documents 15x slower on the CPU. The **[benchmark section](#embeddinggemma-2-vs-other-embedding-models-benchmark)** compares seven models.
+Yes, for quality. In our SciFact benchmark EmbeddingGemma 2 reached an nDCG@10 of `0.853`, compared to `0.658` for `all-MiniLM-L6-v2`. But with the `q4` weights it embeds a query in `38` ms instead of `3` ms and indexes documents 12x slower on the CPU. The **[benchmark section](#embeddinggemma-2-vs-other-embedding-models-benchmark)** compares seven models.
 
 </details>
 
