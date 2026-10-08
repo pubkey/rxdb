@@ -12,7 +12,7 @@ import { JsonLd } from './json-ld';
 export const ARTICLE_AUTHOR = {
     name: 'Daniel Meyer',
     jobTitle: 'Creator of RxDB',
-    url: 'https://github.com/pubkey',
+    url: 'https://www.linkedin.com/in/danielmeyerdev',
     image: 'https://rxdb.info/files/authors/daniel-meyer.jpg',
     avatar: '/files/authors/daniel-meyer.jpg',
     sameAs: [
