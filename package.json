@@ -648,7 +648,7 @@
     "firebase-tools": "15.32.1",
     "get-port": "7.2.0",
     "global-jsdom": "30.0.0",
-    "globals": "17.12.0",
+    "globals": "17.13.0",
     "google-drive-mock": "1.2.0",
     "graphql-http": "1.23.1",
     "graphql-subscriptions": "3.0.0",
