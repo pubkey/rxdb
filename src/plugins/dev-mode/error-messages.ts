@@ -459,7 +459,7 @@ export const ERROR_MESSAGES = {
         message: 'In the open-source version of RxDB, the amount of collections that can exist in parallel is limited to ' + NON_PREMIUM_COLLECTION_LIMIT + '. If you already purchased the premium access, you can remove this limit: https://rxdb.info/rx-collection.html?console=limit#faq',
         cause: 'You have reached the limit of open collections for the free version.',
         fix: 'Reduce the number of open collections or upgrade to premium.',
-        docs: 'https://rxdb.info/premium.html?console=errors&code=COL23'
+        docs: 'https://rxdb.info/premium/?console=errors&code=COL23'
     },
     COL25: {
         message: 'Cannot write to RxCollection while a schema migration is running. Wait for the migration to finish before writing.',

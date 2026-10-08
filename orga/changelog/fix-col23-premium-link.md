@@ -1,0 +1,1 @@
+- FIX dev-mode error `COL23` linked to the non-existing page `premium.html` instead of `/premium/`
