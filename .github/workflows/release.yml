@@ -182,6 +182,17 @@ jobs:
 #          access-token: ${{ secrets.TWITTER_ACCESS_TOKEN }}
 #          access-token-secret: ${{ secrets.TWITTER_ACCESS_TOKEN_SECRET }}
 
+      # Adds the new version to the RxDB item on Wikidata
+      # @link https://www.wikidata.org/wiki/Q141663707
+      - name: add version to wikidata
+        if: steps.vars.outputs.prerelease == 'false'
+        # Wikidata is not important for the release, a failure must not fail the release or skip the following steps
+        continue-on-error: true
+        env:
+          WIKIDATA_USERNAME: ${{ secrets.WIKIDATA_USERNAME }}
+          WIKIDATA_PASSWORD: ${{ secrets.WIKIDATA_PASSWORD }}
+        run: node ./scripts/wikidata-add-version.mjs ${{github.event.inputs.version}}
+
       - name: notify bing indexnow
         if: steps.vars.outputs.prerelease == 'false'
         continue-on-error: true
