@@ -172,7 +172,7 @@ PowerSync is a strong fit when:
 
 - The team is SQL-first and wants to keep writing SQL on both client and server.
 - The backend is already Postgres or Mongo and you want managed CDC without writing pull and push handlers.
-- The product targets Flutter, Kotlin, or Swift in addition to web, and you want a single vendor SDK across all of them.
+- The product targets Kotlin or Swift in addition to web, or Flutter without a JavaScript runtime in between, and you want a single vendor SDK across all of them.
 - The license terms are acceptable for the product you are building.
 
 If those constraints match, PowerSync gives you a coherent path. If you need browser-first performance, a NoSQL query model, custom backends, or unrestricted licensing, RxDB is the better tool.
@@ -197,7 +197,7 @@ PowerSync is source-available under the Functional Source License (FSL), which p
 </FaqItem>
 <FaqItem question="Does RxDB support Flutter, Kotlin, or Swift?">
 
-No. RxDB targets JavaScript and TypeScript runtimes, including the browser, Node.js, Electron, Capacitor, and [React Native](../../react-native-database.md). PowerSync ships native SDKs for Flutter, Kotlin, and Swift, so if those platforms are required without a JavaScript bridge, PowerSync covers more ground.
+Yes for Flutter, no for Kotlin and Swift. RxDB targets JavaScript and TypeScript runtimes, including the browser, Node.js, Electron, Capacitor, and [React Native](../../react-native-database.md). For Flutter, the [rxdb Dart package](../flutter-database.md) runs RxDB inside of QuickJS and stores the data in SQLite, so queries, observables, and replication handlers are written in Dart. PowerSync ships native SDKs for Flutter, Kotlin, and Swift, so if those platforms are required without a JavaScript runtime in between, PowerSync covers more ground.
 
 </FaqItem>
 <FaqItem question="How are migrations handled?">
@@ -217,7 +217,7 @@ RxDB schemas are versioned. When you bump the version of a [collection schema](.
 | Reactivity | Observable queries via RxJS | Watched SQL queries |
 | Backend | Bring your own via [HTTP](../../replication-http.md), [GraphQL](../../replication-graphql.md), WebRTC, Firestore, CouchDB | Managed sync service connected to Postgres or MongoDB |
 | Conflict resolution | Per-collection custom handler on the client | Server-authoritative through Sync Rules |
-| Client SDKs | JavaScript and TypeScript across browser, Node.js, Electron, [React Native](../../react-native-database.md) | JavaScript, Flutter, Kotlin, Swift |
+| Client SDKs | JavaScript and TypeScript across browser, Node.js, Electron, [React Native](../../react-native-database.md), plus [Flutter](../flutter-database.md) via a Dart package | JavaScript, Flutter, Kotlin, Swift |
 | Multi-tab | Built-in leader election and broadcast | Limited, depends on storage configuration |
 | Self-hosting | Full client and replication code is open source | Self-hosted service available, gated by FSL terms |
 

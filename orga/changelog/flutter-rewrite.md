@@ -1,0 +1,2 @@
+- REWRITE the Flutter plugin: RxDB runs in QuickJS via `fjs` and stores data with the SQLite trial storage via the Dart `sqlite3` package. Queries, observables, documents, local documents, schema migrations and replication handlers (pull, push, pull stream) are now usable directly from Dart. The `rxdb` Dart package is published to pub.dev on each release.
+- FIX the Flutter plugin no longer worked because `flutter_qjs` and the LokiJS storage are not maintained anymore.
