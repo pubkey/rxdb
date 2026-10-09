@@ -7,6 +7,7 @@ import { IconClose } from '../components/icons/close';
 import { Button } from '../components/button';
 import LinkedInLogo from '@site/static/img/community-links/linkedin-logo.svg';
 import { IconNewsletter } from '../components/icons/newsletter';
+import { IconGoogle } from '../components/icons/google';
 
 type CallToActionItem = {
     /**
@@ -103,6 +104,16 @@ const callToActions: CallToActionItem[] = [
         keyword: '@newsletter',
         url: 'https://rxdb.info/newsletter',
         icon: <IconNewsletter />,
+    },
+    {
+        title: [
+            'Want more RxDB articles in your Google results? Add rxdb.info as a preferred source on Google!',
+            'See RxDB news first in Google Top Stories - add rxdb.info as a preferred source!'
+        ],
+        text: 'Add as preferred source on',
+        keyword: '@Google',
+        url: 'https://www.google.com/preferences/source?q=rxdb.info',
+        icon: <IconGoogle />,
     },
     // {
     //     title: 'RxDB needs your feedback, please take part in our user Survey',
