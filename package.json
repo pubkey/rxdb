@@ -618,7 +618,7 @@
     "@types/cors": "2.8.19",
     "@types/crypto-js": "4.2.2",
     "@types/mocha": "10.0.10",
-    "@types/node": "26.6.3",
+    "@types/node": "26.6.4",
     "@types/react": "19.3.0",
     "@types/source-map-support": "0.5.10",
     "@typescript-eslint/eslint-plugin": "8.71.0",
