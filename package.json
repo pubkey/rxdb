@@ -665,7 +665,7 @@
     "madge": "8.0.0",
     "microsoft-onedrive-mock": "1.0.5",
     "mini-css-extract-plugin": "2.10.2",
-    "mocha": "11.7.6",
+    "mocha": "12.0.3",
     "mongodb": "7.7.0",
     "nats": "2.29.3",
     "node-appwrite": "29.0.0",
