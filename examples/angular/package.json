@@ -23,7 +23,7 @@
     "test:build": "concurrently \"npm run server\" \"npm run build:serve\" \"npm run test:ci\" --kill-others --success first",
     "// test:ssr": "TODO use npm run serve:ssr instead when bug is fixed",
     "dev:ssr": "ng serve --configuration ssr-prod",
-    "test:ssr": "concurrently \"npm run server\" \"npm run dev:ssr\" \"sleep 10 && ts-mocha  --bail --exit ./test/ssr.test.ts\" --kill-others --success first",
+    "test:ssr": "concurrently \"npm run server\" \"npm run dev:ssr\" \"sleep 10 && ts-mocha -p ./test/tsconfig.json --bail --exit ./test/ssr.test.ts\" --kill-others --success first",
     "lint": "tslint app/src/**/*.ts",
     "analyze": "webpack-bundle-analyzer dist/angular/stats-es2015.json",
     "start:android": "npx cap open android",
