@@ -596,22 +596,29 @@ export function buildViewerWillRun(
     docId?: string
 ): ViewerWillRunLine[] {
     const lines: ViewerWillRunLine[] = [];
+    /**
+     * Chained calls break onto one line per call,
+     * so the preview stays narrow in the drawer.
+     */
     if (operation === 'remove') {
-        lines.push({
-            text: 'await ' + databaseName + '.' + collectionName + '.findOne(' + JSON.stringify(doc) + ').remove()',
-            changed: false
-        });
+        lines.push({ text: 'await ' + databaseName + '.' + collectionName, changed: false });
+        lines.push({ text: '  .findOne(' + JSON.stringify(doc) + ')', changed: false });
+        lines.push({ text: '  .remove()', changed: false });
         return lines;
     }
     let useDoc = doc;
     let opener = 'await ' + databaseName + '.' + collectionName + '.' + operation + '({';
+    let closer = '})';
     if (operation === 'patch') {
         const patchDoc: any = {};
         changedFields.forEach(field => {
             patchDoc[field] = doc[field];
         });
         useDoc = patchDoc;
-        opener = 'await ' + databaseName + '.' + collectionName + '.findOne(' + JSON.stringify(docId) + ').incrementalPatch({';
+        lines.push({ text: 'await ' + databaseName + '.' + collectionName, changed: false });
+        lines.push({ text: '  .findOne(' + JSON.stringify(docId) + ')', changed: false });
+        opener = '  .incrementalPatch({';
+        closer = '  })';
     }
     const json = JSON.stringify(useDoc, null, 2);
     const jsonLines = json.split('\n');
@@ -633,7 +640,7 @@ export function buildViewerWillRun(
             changed: changedFields.includes(currentField)
         });
     });
-    lines.push({ text: '})', changed: false });
+    lines.push({ text: closer, changed: false });
     return lines;
 }
 

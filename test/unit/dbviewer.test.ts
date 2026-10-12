@@ -186,11 +186,14 @@ describe('dbviewer.test.ts', () => {
         });
         it('previews edits as incrementalPatch with only the changed fields', () => {
             const lines = buildViewerWillRun('mydb', 'todos', { id: 'a1', title: 'new title', done: true }, ['title'], 'patch', 'a1');
-            assert.strictEqual(lines[0].text, 'await mydb.todos.findOne("a1").incrementalPatch({');
-            const fieldLines = lines.slice(1, -1);
+            assert.strictEqual(lines[0].text, 'await mydb.todos');
+            assert.strictEqual(lines[1].text, '  .findOne("a1")');
+            assert.strictEqual(lines[2].text, '  .incrementalPatch({');
+            const fieldLines = lines.slice(3, -1);
             assert.strictEqual(fieldLines.length, 1);
             assert.ok(fieldLines[0].text.includes('"title"'));
             assert.strictEqual(fieldLines[0].changed, true);
+            assert.strictEqual(lines[lines.length - 1].text, '  })');
         });
     });
     describe('formatting helpers', () => {
