@@ -54,7 +54,7 @@ function randomId(length: number): string {
 /**
  * Connects to the pairing room on the signaling server and
  * establishes a WebRTC data channel to the device that runs
- * exposeRxDBViewerWebRTC(). Resolves with the transport once
+ * connectRxDBViewer(). Resolves with the transport once
  * the channel is open. The protocol mirrors the simple-peer
  * connection handler of the rxdb replication-webrtc plugin.
  */
@@ -86,7 +86,7 @@ export function connectViewerWebRTC(options: ViewerWebRTCConnectOptions): Promis
 
         const timeoutHandle = setTimeout(() => {
             if (!settled) {
-                fail(new Error('no device connected within ' + Math.round(timeoutMs / 1000) + ' seconds. Check that exposeRxDBViewerWebRTC() runs in the app and uses the same signaling server and room id.'));
+                fail(new Error('no device connected within ' + Math.round(timeoutMs / 1000) + ' seconds. Check that connectRxDBViewer() runs in the app and uses the same signaling server and room id.'));
             }
         }, timeoutMs);
 
@@ -283,10 +283,11 @@ export function connectViewerWebRTC(options: ViewerWebRTCConnectOptions): Promis
                     others.forEach((remotePeerId: string) => {
                         /**
                          * Same deterministic initiator rule as the
-                         * rxdb connection handler: the peer with the
-                         * higher id creates the offer.
+                         * rxdb connection handler: each side initiates
+                         * toward peers whose id is greater than its own,
+                         * so exactly one side creates the offer.
                          */
-                        if (ownPeerId && ownPeerId > remotePeerId) {
+                        if (ownPeerId && remotePeerId > ownPeerId) {
                             createPeer(remotePeerId, true);
                         }
                     });

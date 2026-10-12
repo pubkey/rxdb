@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import type {
     RxDBViewerDump,
@@ -70,6 +70,25 @@ function storeWebRTCForm(form: { signalingServerUrl: string; roomId: string; }) 
     }
 }
 
+/**
+ * connectRxDBViewer() encodes the pairing data into the url
+ * hash, for example #room=abc123&signaling=wss%3A%2F%2F...
+ */
+function readHashConnectParams(): { roomId?: string; signalingServerUrl?: string; } {
+    try {
+        const hash = window.location.hash.replace(/^#/, '');
+        if (!hash) {
+            return {};
+        }
+        const params = new URLSearchParams(hash);
+        const roomId = params.get('room') || undefined;
+        const signalingServerUrl = params.get('signaling') || undefined;
+        return { roomId, signalingServerUrl };
+    } catch (err) {
+        return {};
+    }
+}
+
 const fieldLabelStyle: React.CSSProperties = {
     fontSize: 10,
     letterSpacing: 0.5,
@@ -98,6 +117,13 @@ const fieldInputStyle: React.CSSProperties = {
  */
 function StandaloneLanding(props: {
     initialError?: string;
+    initialRoomId?: string;
+    initialSignalingServerUrl?: string;
+    /**
+     * True when the pairing data came from the url hash,
+     * the connection then starts without a click.
+     */
+    autoConnect?: boolean;
     onDump: (dump: RxDBViewerDump, filename: string) => void;
     onWebRTC: (
         signalingServerUrl: string,
@@ -108,11 +134,14 @@ function StandaloneLanding(props: {
 }) {
     const stored = readStoredWebRTCForm();
     const fileRef = useRef<HTMLInputElement>(null);
+    const autoTriggered = useRef(false);
     const [error, setError] = useState<string | null>(props.initialError || null);
     const [status, setStatus] = useState<string | null>(null);
     const [connecting, setConnecting] = useState(false);
-    const [signalingServerUrl, setSignalingServerUrl] = useState(stored.signalingServerUrl || DEFAULT_SIGNALING_SERVER_URL);
-    const [roomId, setRoomId] = useState(stored.roomId || '');
+    const [signalingServerUrl, setSignalingServerUrl] = useState(
+        props.initialSignalingServerUrl || stored.signalingServerUrl || DEFAULT_SIGNALING_SERVER_URL
+    );
+    const [roomId, setRoomId] = useState(props.initialRoomId || stored.roomId || '');
 
     const connect = () => {
         const trimmedRoom = roomId.trim();
@@ -135,6 +164,13 @@ function StandaloneLanding(props: {
         );
     };
 
+    useEffect(() => {
+        if (props.autoConnect && props.initialRoomId && !autoTriggered.current) {
+            autoTriggered.current = true;
+            connect();
+        }
+    }, []);
+
     return (
         <div className="rxdbv-root" style={{ alignItems: 'center', justifyContent: 'center', overflow: 'auto' }}>
             <div style={{ maxWidth: 560, width: '100%', padding: '32px 28px', border: '1px solid rgba(255,255,255,0.12)', background: 'var(--rxdbv-bg-panel)', margin: '20px 0' }}>
@@ -151,7 +187,7 @@ function StandaloneLanding(props: {
                     In the app, expose the database with the dbviewer plugin:
                 </div>
                 <div className="rxdbv-mono" style={{ fontSize: 11, lineHeight: 1.7, marginTop: 8, padding: '10px 12px', background: 'var(--rxdbv-bg)', border: '1px solid rgba(255,255,255,0.1)', whiteSpace: 'pre', overflow: 'auto' }}>
-                    {'import { exposeRxDBViewerWebRTC } from \'rxdb/plugins/dbviewer\';\n\nawait exposeRxDBViewerWebRTC({\n    database: myDatabase,\n    roomId: \'a-long-random-id\'\n});'}
+                    {'import { connectRxDBViewer } from \'rxdb/plugins/dbviewer\';\n\nconst viewer = await connectRxDBViewer({\n    database: myDatabase\n});\nconsole.log(viewer.url); // open this url'}
                 </div>
                 <div style={{ marginTop: 12 }}>
                     <label style={fieldLabelStyle}>Signaling server</label>
@@ -167,7 +203,7 @@ function StandaloneLanding(props: {
                     <input
                         style={fieldInputStyle}
                         value={roomId}
-                        placeholder="the roomId used in exposeRxDBViewerWebRTC()"
+                        placeholder="the roomId of connectRxDBViewer()"
                         disabled={connecting}
                         onChange={event => setRoomId(event.target.value)}
                         onKeyDown={event => {
@@ -259,9 +295,13 @@ function boot() {
     };
 
     const renderStandalone = (initialError?: string) => {
+        const hashParams = readHashConnectParams();
         reactRoot.render(
             <StandaloneLanding
                 initialError={initialError}
+                initialRoomId={hashParams.roomId}
+                initialSignalingServerUrl={hashParams.signalingServerUrl}
+                autoConnect={!initialError && !!hashParams.roomId}
                 onDump={(dump, filename) => {
                     const source = createDumpSource(dump, filename);
                     renderLive(source, null, {
