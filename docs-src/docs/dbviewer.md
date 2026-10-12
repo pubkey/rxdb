@@ -6,10 +6,13 @@ image: /headers/dbviewer.jpg
 ---
 
 import {Tabs} from '@site/src/components/tabs';
+import {BetaBlock} from '@site/src/components/beta-block';
 
 # Database Viewer
 
 With the `dbviewer` plugin you can inspect and edit the data of a running [RxDB](https://rxdb.info/) database from inside your own application. The viewer mounts into any DOM element and renders a full devtool: a data grid with a Mango query bar, a JSON view, a document detail drawer, and panels for schema analysis, query analysis, [replication](./replication.md), the change stream and storage statistics. It works over a live [RxDatabase](./rx-database.md) and over a static dump created with the [json-dump plugin](./json-import-export.md).
+
+<BetaBlock since="17.7.0" />
 
 <p align="center">
   <img src="./files/dbviewer.png" alt="RxDB database viewer devtool" width="760" />

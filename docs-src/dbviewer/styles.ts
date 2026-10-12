@@ -419,6 +419,7 @@ export const DBVIEWER_STYLES = `
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 .rxdbv-badge-edited { font-size: 9px; border: 1px solid rgba(237, 22, 143, 0.5); color: var(--rxdbv-pink); padding: 1px 6px; }
+.rxdbv-badge-beta { font-size: 9px; border: 1px solid rgba(235, 203, 75, 0.5); color: var(--rxdbv-warning); padding: 1px 6px; font-family: var(--rxdbv-mono); text-transform: uppercase; letter-spacing: 0.5px; }
 .rxdbv-close { color: var(--rxdbv-fg-dim); cursor: pointer; font-size: 14px; }
 .rxdbv-close:hover { color: var(--rxdbv-fg); }
 .rxdbv-drawer-section {
