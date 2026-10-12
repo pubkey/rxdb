@@ -277,17 +277,18 @@ Keep in mind that the page and the plugin talk over a versioned `postMessage` pr
 
 ## Remote Pairing over WebRTC
 
-When the database runs on a device you cannot attach a debugger to, for example a phone in field testing, pair the hosted viewer page with that device over WebRTC. In the app, expose the database:
+When the database runs on a device you cannot attach a debugger to, for example a phone in field testing, pair the hosted viewer page with that device over WebRTC. In the app, connect the database and open the returned url in any browser:
 
 ```ts
-import { exposeRxDBViewerWebRTC } from 'rxdb/plugins/dbviewer';
+import { connectRxDBViewer } from 'rxdb/plugins/dbviewer';
 
-await exposeRxDBViewerWebRTC({
+const viewer = await connectRxDBViewer({
     database: db,
     /**
-     * Everyone who knows the room id gets FULL read and write
-     * access to the database, so use a long random id
-     * and treat it like a password.
+     * (optional) The pairing room id. Everyone who knows it
+     * gets FULL read and write access to the database,
+     * so treat it like a password.
+     * [default=a random 18 character token]
      */
     roomId: 'a-long-random-id',
     /**
@@ -296,11 +297,23 @@ await exposeRxDBViewerWebRTC({
      * you run your own, see the replication-webrtc docs.
      * [default='wss://signaling.rxdb.info/']
      */
-    signalingServerUrl: 'wss://example.com/signaling'
+    signalingServerUrl: 'wss://example.com/signaling',
+    /**
+     * (optional) Url of the hosted viewer page.
+     * [default='https://rxdb.info/dbviewer/index.html']
+     */
+    viewerUrl: 'https://example.com/dbviewer.html'
 });
+
+// the full url to open the viewer with, for example
+// https://rxdb.info/dbviewer/index.html#room=abc...&signaling=...
+console.log(viewer.url);
+
+// later: stop serving the database
+await viewer.close();
 ```
 
-Then open [rxdb.info/dbviewer/index.html](https://rxdb.info/dbviewer/index.html) directly in a browser. The page shows a connect form, enter the same signaling server and room id, and the viewer connects to the device through a WebRTC data channel. The full devtool works over the channel: grids, queries, edits, the query lab and the live feeds, because it speaks the same bridge protocol as the iframe mount.
+The url carries the room id and the signaling server in its hash, so the page connects on open without further input. Opening the page without a hash shows the same connect form for manual entry. The full devtool works over the channel: grids, queries, edits, the query lab and the live feeds, because it speaks the same bridge protocol as the iframe mount.
 
 The signaling server only brokers the connection, the data itself flows directly between the browser and the device. You can run your own signaling server with `startSignalingServerSimplePeer()`, see the [WebRTC replication docs](./replication-webrtc.md).
 

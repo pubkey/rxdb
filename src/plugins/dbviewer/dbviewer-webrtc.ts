@@ -3,7 +3,11 @@ import type {
 } from '../../index.d.ts';
 import { newRxError } from '../../rx-error.ts';
 import { getConnectionHandlerSimplePeer } from '../replication-webrtc/index.ts';
-import { RXDB_VERSION } from '../utils/index.ts';
+import {
+    randomToken,
+    RXDB_VERSION
+} from '../utils/index.ts';
+import { DBVIEWER_DEFAULT_URL } from './dbviewer.ts';
 import { createLiveDataSource } from './dbviewer-data.ts';
 import { createViewerEventHub } from './dbviewer-events.ts';
 import { attachViewerBridge } from './dbviewer-remote.ts';
@@ -12,7 +16,7 @@ import type {
     ViewerInfo
 } from './dbviewer-types.ts';
 
-export type RxDBViewerWebRTCOptions = {
+export type RxDBViewerConnectOptions = {
     /**
      * The live database to expose.
      */
@@ -20,16 +24,22 @@ export type RxDBViewerWebRTCOptions = {
     /**
      * The pairing room id. Everyone who knows the room id
      * and can reach the signaling server gets FULL read and
-     * write access to the database, so use a long random id
-     * and treat it like a password.
+     * write access to the database, so treat it like a password.
      * Must have at least 6 characters.
+     * [default=a random 18 character token]
      */
-    roomId: string;
+    roomId?: string;
     /**
      * Url of the WebRTC signaling server.
      * [default='wss://signaling.rxdb.info/']
      */
     signalingServerUrl?: string;
+    /**
+     * Url of the hosted viewer page that the returned url
+     * points to.
+     * [default='https://rxdb.info/dbviewer/index.html']
+     */
+    viewerUrl?: string;
     /**
      * Rows per page in grids and results.
      * [default=100]
@@ -37,24 +47,49 @@ export type RxDBViewerWebRTCOptions = {
     pageSize?: number;
 };
 
-export type RxDBViewerWebRTCHandle = {
+export type RxDBViewerConnectHandle = {
+    /**
+     * Full url of the viewer page with the pairing data in the
+     * hash. Open it in any browser and the viewer connects to
+     * this database over WebRTC.
+     */
+    url: string;
+    roomId: string;
     close: () => Promise<void>;
 };
 
 /**
- * Exposes the database to the hosted viewer page over WebRTC.
- * Open https://rxdb.info/dbviewer/index.html directly, enter the
- * same signaling server and room id, and the page connects to
- * this database through a WebRTC data channel. The bridge
- * protocol is the same as in the iframe mount, only the
+ * Builds the viewer page url with the pairing data in the hash.
+ */
+export function buildViewerConnectUrl(
+    viewerUrl: string,
+    roomId: string,
+    signalingServerUrl?: string
+): string {
+    let url = viewerUrl + '#room=' + encodeURIComponent(roomId);
+    if (signalingServerUrl) {
+        url = url + '&signaling=' + encodeURIComponent(signalingServerUrl);
+    }
+    return url;
+}
+
+/**
+ * Exposes the database to the hosted viewer page over WebRTC
+ * and returns the full url to open the viewer with.
+ * The page reads the room id and the signaling server from the
+ * url hash and connects through a WebRTC data channel. The
+ * bridge protocol is the same as in the iframe mount, only the
  * transport differs.
  */
-export async function exposeRxDBViewerWebRTC(
-    options: RxDBViewerWebRTCOptions
-): Promise<RxDBViewerWebRTCHandle> {
-    if (!options.roomId || options.roomId.length < 6) {
+export async function connectRxDBViewer(
+    options: RxDBViewerConnectOptions
+): Promise<RxDBViewerConnectHandle> {
+    if (typeof options.roomId === 'string' && options.roomId.length < 6) {
         throw newRxError('DVW3', { args: { roomId: options.roomId } });
     }
+    const roomId = options.roomId || randomToken(18);
+    const viewerUrl = options.viewerUrl || DBVIEWER_DEFAULT_URL;
+    const url = buildViewerConnectUrl(viewerUrl, roomId, options.signalingServerUrl);
     const database = options.database;
 
     /**
@@ -83,7 +118,7 @@ export async function exposeRxDBViewerWebRTC(
     const handlerCreator = getConnectionHandlerSimplePeer({
         signalingServerUrl: options.signalingServerUrl
     });
-    const handler = await handlerCreator({ topic: options.roomId } as any);
+    const handler = await handlerCreator({ topic: roomId } as any);
 
     type PeerState = {
         transportListeners: Set<(message: any) => void>;
@@ -152,6 +187,8 @@ export async function exposeRxDBViewerWebRTC(
     const responseSub = handler.response$.subscribe(({ peer, response }: any) => dispatchToPeer(peer, response));
 
     return {
+        url,
+        roomId,
         async close() {
             connectSub.unsubscribe();
             disconnectSub.unsubscribe();
