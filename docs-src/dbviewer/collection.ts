@@ -862,10 +862,20 @@ function buildDrawer(
     const { doc: mergedDoc, changedFields } = buildDrawerDocument(drawer);
     const edited = changedFields.length > 0 || drawer.mode === 'new';
 
+    /**
+     * Typing must enable the Apply button and refresh the
+     * WILL RUN preview on every keystroke, without re-rendering
+     * the drawer (a re-render would steal the input focus).
+     */
+    let updatePreview: () => void = () => { };
+    const fieldDots = new Map<string, HTMLElement>();
+
     const container = el('div', 'rxdbv-drawer');
+    const editedBadge = el('span', 'rxdbv-badge-edited', drawer.mode === 'new' ? 'new' : 'edited');
+    editedBadge.style.display = edited ? '' : 'none';
     container.appendChild(el('div', 'rxdbv-drawer-header', [
         el('span', 'rxdbv-mono', drawer.mode === 'new' ? 'new document' : String(drawer.docId), { style: 'font-weight:700;font-size:12px' }),
-        edited ? el('span', 'rxdbv-badge-edited', drawer.mode === 'new' ? 'new' : 'edited') : null,
+        editedBadge,
         el('div', 'rxdbv-flex1'),
         el('span', 'rxdbv-close', '×', {
             onClick: () => {
@@ -930,12 +940,15 @@ function buildDrawer(
         input.addEventListener('input', () => {
             drawer.staged.set(field, input.value);
             input.classList.remove('rxdbv-clean');
+            updatePreview();
         });
-        input.addEventListener('change', () => renderDrawer());
+        const modifiedDot = el('span', 'rxdbv-modified-dot', undefined, { title: 'modified' });
+        modifiedDot.style.display = staged ? '' : 'none';
+        fieldDots.set(field, modifiedDot);
         container.appendChild(el('div', 'rxdbv-field-row', [
             el('span', 'rxdbv-field-label', field),
             input,
-            staged ? el('span', 'rxdbv-modified-dot', undefined, { title: 'modified' }) : null,
+            modifiedDot,
             isPrimary ? el('span', 'rxdbv-badge-primary', 'primary') : null
         ]));
     });
@@ -966,44 +979,77 @@ function buildDrawer(
     if (!readOnly) {
         container.appendChild(el('div', 'rxdbv-drawer-section rxdbv-bordered rxdbv-willrun', 'WILL RUN'));
         const code = el('div', 'rxdbv-willrun-code');
-        const lines = buildViewerWillRun(
-            ctx.source.databaseName,
-            collectionName,
-            mergedDoc,
-            changedFields,
-            drawer.mode === 'new' ? 'insert' : 'patch',
-            drawer.docId
-        );
-        code.innerHTML = '<span class="rxdbv-plain-line"><span class="rxdbv-comment">// applied on save — nothing has run yet</span></span>' +
-            lines.map(line => line.changed
-                ? '<span class="rxdbv-changed-line">' + escapeHtml(line.text) + '</span>'
-                : '<span class="rxdbv-plain-line">' + escapeHtml(line.text) + '</span>'
-            ).join('');
+        const renderWillRunContent = (currentDoc: any, currentChangedFields: string[]) => {
+            const lines = buildViewerWillRun(
+                ctx.source.databaseName,
+                collectionName,
+                currentDoc,
+                currentChangedFields,
+                drawer.mode === 'new' ? 'insert' : 'patch',
+                drawer.docId
+            );
+            code.innerHTML = '<span class="rxdbv-plain-line"><span class="rxdbv-comment">// applied on save — nothing has run yet</span></span>' +
+                lines.map(line => line.changed
+                    ? '<span class="rxdbv-changed-line">' + escapeHtml(line.text) + '</span>'
+                    : '<span class="rxdbv-plain-line">' + escapeHtml(line.text) + '</span>'
+                ).join('');
+        };
+        renderWillRunContent(mergedDoc, changedFields);
         container.appendChild(code);
         const applyButton = el('button', 'rxdbv-btn-primary', 'Apply changes', {
             onClick: () => {
+                /**
+                 * Staged values are read at click time, so edits
+                 * typed without leaving the input are included.
+                 */
+                const { doc: currentDoc, changedFields: currentChangedFields } = buildDrawerDocument(drawer);
+                if (currentChangedFields.length === 0 && drawer.mode !== 'new') {
+                    return;
+                }
                 const changedOnly: any = {};
-                changedFields.forEach(field => {
-                    changedOnly[field] = mergedDoc[field];
+                currentChangedFields.forEach(field => {
+                    changedOnly[field] = currentDoc[field];
                 });
                 const write = drawer.mode === 'new'
-                    ? ctx.source.insert(collectionName, mergedDoc)
+                    ? ctx.source.insert(collectionName, currentDoc)
                     : ctx.source.update(collectionName, drawer.docId as string, changedOnly);
                 write.then(() => {
                     ctx.viewerWriteTimes.push(Date.now());
                     if (drawer.mode === 'new') {
                         uiState.drawer = null;
-                    } else {
-                        drawer.staged.clear();
+                        rerun();
+                        ctx.renderContent();
+                        return;
                     }
-                    rerun();
-                    ctx.renderContent();
+                    /**
+                     * The written document becomes the new baseline,
+                     * so the inputs show the saved values and the
+                     * edited state compares against them.
+                     */
+                    return ctx.source.getById(collectionName, drawer.docId as string).then(freshDoc => {
+                        if (freshDoc) {
+                            drawer.doc = freshDoc;
+                        }
+                        drawer.staged.clear();
+                        rerun();
+                        ctx.renderContent();
+                    });
                 }).catch(err => {
                     showViewerError(ctx.root, drawer.mode === 'new' ? 'Insert failed' : 'Update failed', err);
                 });
             }
         }) as HTMLButtonElement;
         applyButton.disabled = !edited;
+        updatePreview = () => {
+            const { doc: currentDoc, changedFields: currentChangedFields } = buildDrawerDocument(drawer);
+            const currentlyEdited = currentChangedFields.length > 0 || drawer.mode === 'new';
+            applyButton.disabled = !currentlyEdited;
+            editedBadge.style.display = currentlyEdited ? '' : 'none';
+            renderWillRunContent(currentDoc, currentChangedFields);
+            fieldDots.forEach((dot, fieldName) => {
+                dot.style.display = drawer.staged.has(fieldName) ? '' : 'none';
+            });
+        };
         container.appendChild(el('div', 'rxdbv-drawer-actions', [
             applyButton,
             el('button', 'rxdbv-btn', 'Discard', {

@@ -267,7 +267,7 @@ export function ViewerApp(props: ViewerAppProps) {
                     <button
                         className="rxdbv-btn"
                         title="Open the RxDB documentation"
-                        onClick={() => window.open(VIEWER_DOCS_BASE_URL + 'overview.html', '_blank')}
+                        onClick={() => window.open(VIEWER_DOCS_BASE_URL + 'dbviewer.html', '_blank')}
                     >?</button>
                     {props.showCloseButton ? (
                         <button
