@@ -1417,8 +1417,8 @@ export const ERROR_MESSAGES = {
     },
     DVW3: {
         message: 'dbviewer roomId too short',
-        cause: 'exposeRxDBViewerWebRTC() was called with a roomId that has fewer than 6 characters.',
-        fix: 'Use a long random roomId. Everyone who knows it gets full access to the database, so treat it like a password.',
+        cause: 'connectRxDBViewer() was called with a roomId that has fewer than 6 characters.',
+        fix: 'Use a long random roomId or omit it to get a generated one. Everyone who knows it gets full access to the database, so treat it like a password.',
         docs: 'https://rxdb.info/dbviewer.html'
     },
 
