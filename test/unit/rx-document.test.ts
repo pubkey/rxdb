@@ -25,7 +25,8 @@ import {
     defaultHashSha256,
     RxJsonSchema,
     BulkWriteRow,
-    getWrittenDocumentsFromBulkWriteResponse
+    getWrittenDocumentsFromBulkWriteResponse,
+    clone
 } from '../../plugins/core/index.mjs';
 
 
@@ -954,6 +955,73 @@ describe('rx-document.test.js', () => {
 
             assert.strictEqual(count, 1);
 
+            c.database.close();
+        });
+        /**
+         * @link https://github.com/pubkey/rxdb/issues/9234
+         */
+        it('should not write the document when all modifiers throw', async () => {
+            const c = await humansCollection.create(1);
+            const doc = await c.findOne().exec(true);
+            const revBefore = doc.toJSON(true)._rev;
+            const lwtBefore = doc.toJSON(true)._meta.lwt;
+
+            const bulkWriteBefore = c.storageInstance.bulkWrite.bind(c.storageInstance);
+            let writeRowsCount = 0;
+            c.storageInstance.bulkWrite = (writes, context) => {
+                writeRowsCount = writeRowsCount + writes.length;
+                return bulkWriteBefore(writes, context);
+            };
+            const emitted: any[] = [];
+            const sub = c.$.subscribe(ev => emitted.push(ev));
+
+            await AsyncTestUtil.assertThrows(
+                () => doc.incrementalModify(() => {
+                    throw new Error('refuse');
+                }),
+                'Error',
+                'refuse'
+            );
+            /**
+             * In dev-mode the document data is deep-frozen,
+             * so we also pass a non-frozen state to the queue directly
+             * to have the same behavior as in production.
+             */
+            await AsyncTestUtil.assertThrows(
+                () => c.incrementalWriteQueue.addWrite(
+                    clone(doc.toJSON(true)) as any,
+                    () => {
+                        throw new Error('refuse');
+                    }
+                ),
+                'Error',
+                'refuse'
+            );
+            await wait(50);
+
+            const after = (await c.storageInstance.findDocumentsById([doc.primary], true))[0];
+            assert.strictEqual(after._rev, revBefore);
+            assert.strictEqual(after._meta.lwt, lwtBefore);
+            assert.strictEqual(writeRowsCount, 0);
+            assert.strictEqual(emitted.length, 0);
+
+            // successful modifiers in the same batch must still be written
+            const results = await Promise.allSettled([
+                doc.incrementalModify(() => {
+                    throw new Error('refuse');
+                }),
+                doc.incrementalModify((d: any) => {
+                    d.age = 42;
+                    return d;
+                })
+            ]);
+            assert.strictEqual(results[0].status, 'rejected');
+            assert.strictEqual(results[1].status, 'fulfilled');
+            const after2 = (await c.storageInstance.findDocumentsById([doc.primary], true))[0];
+            assert.strictEqual(after2.age, 42);
+            assert.strictEqual(writeRowsCount, 1);
+
+            sub.unsubscribe();
             c.database.close();
         });
     });

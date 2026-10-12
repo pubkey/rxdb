@@ -1,0 +1,1 @@
+- FIX `incrementalModify()` wrote a new revision of the unchanged document after the modifier threw [#9234](https://github.com/pubkey/rxdb/issues/9234)
