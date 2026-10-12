@@ -5,9 +5,15 @@ description: Mount the RxDB database viewer to inspect collections, run Mango qu
 image: /headers/dbviewer.jpg
 ---
 
+import {Tabs} from '@site/src/components/tabs';
+
 # Database Viewer
 
 With the `dbviewer` plugin you can inspect and edit the data of a running [RxDB](https://rxdb.info/) database from inside your own application. The viewer mounts into any DOM element and renders a full devtool: a data grid with a Mango query bar, a JSON view, a document detail drawer, and panels for schema analysis, query analysis, [replication](./replication.md), the change stream and storage statistics. It works over a live [RxDatabase](./rx-database.md) and over a static dump created with the [json-dump plugin](./json-import-export.md).
+
+<p align="center">
+  <img src="./files/dbviewer.png" alt="RxDB database viewer devtool" width="760" />
+</p>
 
 Key features:
 
@@ -24,7 +30,7 @@ Key features:
 
 The plugin itself contains no UI code. `mountRxDBViewer()` creates an iframe that loads the viewer page, a single self-contained html file hosted at [rxdb.info/dbviewer/index.html](https://rxdb.info/dbviewer/index.html), and serves the database to it over `postMessage`. This keeps the whole viewer UI out of the rxdb build, so the plugin adds only the small bridge to your bundle. Data access, the [query planner](./query-optimizer.md) analysis and the event streams run in your application window, the page inside the iframe is plain UI and never gets direct access to the database object.
 
-When your app has to work without network access, download the page once and serve it from your own origin via the `viewerUrl` option.
+When your app has to work without network access, download the page once and serve it from your own origin, see [Self-Hosting the Viewer Page](#self-hosting-the-viewer-page).
 
 ## Usage
 
@@ -57,6 +63,146 @@ addRxPlugin(RxDBDbViewerPlugin);
 
 const viewer = db.launchDbViewer({ parent: document.body });
 ```
+
+### Usage with Frameworks
+
+In a framework component, mount the viewer when the component appears and call `remove()` when it is destroyed. The `close$` observable tells the host when the close icon was clicked, the host then decides what closing means, for example hiding the panel.
+
+<Tabs>
+
+### Angular
+
+```ts
+import {
+    AfterViewInit, Component, ElementRef,
+    NgZone, OnDestroy, ViewChild, inject
+} from '@angular/core';
+import { mountRxDBViewer, RxDBViewerHandle } from 'rxdb/plugins/dbviewer';
+import { DatabaseService } from '../services/database.service';
+
+@Component({
+    selector: 'db-viewer',
+    template: '<div #viewerHost style="height: 500px"></div>'
+})
+export class DbViewerComponent implements AfterViewInit, OnDestroy {
+    private dbService = inject(DatabaseService);
+    private zone = inject(NgZone);
+    private viewerHandle?: RxDBViewerHandle;
+    @ViewChild('viewerHost') viewerHost!: ElementRef<HTMLElement>;
+
+    ngAfterViewInit() {
+        // mounting outside of the angular zone keeps the
+        // viewer updates out of change detection
+        this.zone.runOutsideAngular(() => {
+            this.viewerHandle = mountRxDBViewer({
+                database: this.dbService.db,
+                parent: this.viewerHost.nativeElement
+            });
+        });
+    }
+    ngOnDestroy() {
+        if (this.viewerHandle) {
+            this.viewerHandle.remove();
+        }
+    }
+}
+```
+
+A complete integration with an "Open DB Viewer" toggle and the `close$` wiring is in the [angular example](https://github.com/pubkey/rxdb/tree/master/examples/angular).
+
+### React
+
+```tsx
+import { useEffect, useRef } from 'react';
+import { mountRxDBViewer } from 'rxdb/plugins/dbviewer';
+import { getDatabase } from './database';
+
+export function DbViewer() {
+    const hostRef = useRef<HTMLDivElement>(null);
+    useEffect(() => {
+        let removed = false;
+        let handle: ReturnType<typeof mountRxDBViewer> | undefined;
+        getDatabase().then(db => {
+            if (removed || !hostRef.current) {
+                return;
+            }
+            handle = mountRxDBViewer({
+                database: db,
+                parent: hostRef.current
+            });
+        });
+        return () => {
+            removed = true;
+            if (handle) {
+                handle.remove();
+            }
+        };
+    }, []);
+    return <div ref={hostRef} style={{ height: 500 }} />;
+}
+```
+
+### Vue
+
+```html
+<script setup>
+import { onMounted, onUnmounted, ref } from 'vue';
+import { mountRxDBViewer } from 'rxdb/plugins/dbviewer';
+import { getDatabase } from './database';
+
+const viewerHost = ref(null);
+let handle;
+
+onMounted(async () => {
+    const db = await getDatabase();
+    handle = mountRxDBViewer({
+        database: db,
+        parent: viewerHost.value
+    });
+});
+onUnmounted(() => {
+    if (handle) {
+        handle.remove();
+    }
+});
+</script>
+
+<template>
+    <div ref="viewerHost" style="height: 500px"></div>
+</template>
+```
+
+### Svelte
+
+```html
+<script>
+import { onMount } from 'svelte';
+import { mountRxDBViewer } from 'rxdb/plugins/dbviewer';
+import { getDatabase } from './database';
+
+let viewerHost;
+
+onMount(() => {
+    let handle;
+    getDatabase().then(db => {
+        handle = mountRxDBViewer({
+            database: db,
+            parent: viewerHost
+        });
+    });
+    return () => {
+        if (handle) {
+            handle.remove();
+        }
+    };
+});
+</script>
+
+<div bind:this={viewerHost} style="height: 500px"></div>
+```
+
+</Tabs>
+
 
 ## Options
 
@@ -107,6 +253,25 @@ viewer.close$.subscribe(() => {
 });
 ```
 
+## Self-Hosting the Viewer Page
+
+By default the iframe loads the viewer page from `https://rxdb.info/dbviewer/index.html`. When your app must work offline, or your security policy forbids loading pages from other origins, serve the page from your own origin instead. The page is one self-contained html file without further assets, so self-hosting is a file copy:
+
+1. **Get the file**. Download it once from [rxdb.info/dbviewer/index.html](https://rxdb.info/dbviewer/index.html), or copy it from the rxdb repository at `docs-src/static/dbviewer/index.html`. You can also build it from source with `npm run build:dbviewer`.
+2. **Serve it as a static asset** of your app, for example as `public/dbviewer.html`. The page must be served over http(s), a `file://` url does not work because `postMessage` needs an origin.
+3. **Point the plugin at it** with the `viewerUrl` option:
+
+```ts
+const viewer = mountRxDBViewer({
+    database: db,
+    viewerUrl: '/dbviewer.html'
+});
+```
+
+The [angular example](https://github.com/pubkey/rxdb/tree/master/examples/angular) does this in its `postinstall` script: it copies the built page into `src/assets/dbviewer.html` and mounts with `viewerUrl: 'assets/dbviewer.html'`.
+
+Keep in mind that the page and the plugin talk over a versioned `postMessage` protocol. When you update rxdb, refresh your self-hosted copy so both sides match.
+
 ## Dump mode
 
 When you cannot reach the device that runs the database, work from an export instead. On the device, run `await db.exportJSON()` with the [json-dump plugin](./json-import-export.md), save the result, and open it in the viewer:
@@ -140,7 +305,7 @@ Deleting documents opens a confirmation that states the blast radius: how many d
 ## Limitations
 
 - The viewer renders into the DOM, so it runs in browsers, Electron renderers and webviews, but not in plain Node.js.
-- By default the viewer page is loaded from rxdb.info, which needs network access on first load. For offline apps, host the page yourself and set `viewerUrl`.
+- By default the viewer page is loaded from rxdb.info, which needs network access on first load. For offline apps, [host the page yourself](#self-hosting-the-viewer-page) and set `viewerUrl`.
 - Sorting in the grid orders the current page, not the whole collection, because arbitrary fields are not guaranteed to be indexed.
 - The reads counter of the Live map is derived from the query cache counters, so reads that bypass the cache are not counted.
 - Remote pairing to a database on another device is not part of this plugin yet. Use [dump mode](#dump-mode) or the [remote storage](./rx-storage-remote.md) instead.
