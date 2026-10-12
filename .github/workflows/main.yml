@@ -500,6 +500,9 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-npm-root-v1-
 
+      - name: check changelog entries
+        run: node ./scripts/check-changelog-entries.js
+
       - name: spelling readme
         uses: codespell-project/actions-codespell@v2.4.3
         with:
