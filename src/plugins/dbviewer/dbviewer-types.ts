@@ -266,3 +266,17 @@ export type ViewerInitMessage = {
     type: 'rxdbv-init';
     info: ViewerInfo;
 };
+
+/**
+ * A duplex channel the bridge messages travel over.
+ * The iframe mount implements it with postMessage, the
+ * remote pairing implements it with a WebRTC data channel.
+ */
+export type ViewerBridgeTransport = {
+    send(message: any): void;
+    /**
+     * Returns an unsubscribe function.
+     */
+    onMessage(listener: (message: any) => void): () => void;
+    destroy(): void;
+};

@@ -14,6 +14,7 @@ import {
 import { sanitizeViewerValue } from './dbviewer-helpers.ts';
 import type {
     ViewerBridgeResponseMessage,
+    ViewerBridgeTransport,
     ViewerInfo,
     ViewerStatsSnapshot
 } from './dbviewer-types.ts';
@@ -23,9 +24,43 @@ export type ViewerBridgeOptions = {
     source: ViewerDataSource;
     hub: ViewerEventHub;
     info: ViewerInfo;
-    targetWindow: Window;
-    targetOrigin: string;
+    transport: ViewerBridgeTransport;
 };
+
+/**
+ * Transport over window.postMessage, used when the viewer
+ * page runs in an iframe of the same browser window.
+ */
+export function createWindowBridgeTransport(
+    targetWindow: Window,
+    targetOrigin: string
+): ViewerBridgeTransport {
+    const listeners = new Set<(message: any) => void>();
+    const onWindowMessage = (event: MessageEvent) => {
+        if (event.source !== targetWindow) {
+            return;
+        }
+        const data = event.data;
+        if (!data || typeof data.type !== 'string') {
+            return;
+        }
+        listeners.forEach(listener => listener(data));
+    };
+    window.addEventListener('message', onWindowMessage);
+    return {
+        send(message: any) {
+            targetWindow.postMessage(message, targetOrigin);
+        },
+        onMessage(listener: (message: any) => void) {
+            listeners.add(listener);
+            return () => listeners.delete(listener);
+        },
+        destroy() {
+            window.removeEventListener('message', onWindowMessage);
+            listeners.clear();
+        }
+    };
+}
 
 export type ViewerBridgeHandle = {
     destroy: () => void;
@@ -43,14 +78,13 @@ export function attachViewerBridge(options: ViewerBridgeOptions): ViewerBridgeHa
         source,
         hub,
         info,
-        targetWindow,
-        targetOrigin
+        transport
     } = options;
     let destroyed = false;
 
     const post = (message: any) => {
         if (!destroyed) {
-            targetWindow.postMessage(message, targetOrigin);
+            transport.send(message);
         }
     };
 
@@ -152,12 +186,8 @@ export function attachViewerBridge(options: ViewerBridgeOptions): ViewerBridgeHa
         }
     };
 
-    const onMessage = (event: MessageEvent) => {
-        if (destroyed || event.source !== targetWindow) {
-            return;
-        }
-        const data = event.data;
-        if (!data || data.type !== 'rxdbv-request') {
+    const unsubscribeTransport = transport.onMessage((data: any) => {
+        if (destroyed || !data || data.type !== 'rxdbv-request') {
             return;
         }
         const method = methods[data.method];
@@ -181,8 +211,7 @@ export function attachViewerBridge(options: ViewerBridgeOptions): ViewerBridgeHa
                     parameters: error && error.parameters ? sanitizeViewerValue(error.parameters) : undefined
                 }
             }));
-    };
-    window.addEventListener('message', onMessage);
+    });
 
     /**
      * Change and replication feed entries are pushed to the page
@@ -214,7 +243,7 @@ export function attachViewerBridge(options: ViewerBridgeOptions): ViewerBridgeHa
     return {
         destroy() {
             destroyed = true;
-            window.removeEventListener('message', onMessage);
+            unsubscribeTransport();
             hubSub.unsubscribe();
         }
     };

@@ -7,6 +7,8 @@ import { replicateRxCollection } from '../../plugins/replication/index.mjs';
 import { waitUntil } from 'async-test-util';
 import config from './config.ts';
 import {
+    attachViewerBridge,
+    createLiveDataSource,
     createViewerEventHub,
     analyzeViewerDocuments,
     buildViewerWillRun,
@@ -314,6 +316,95 @@ describe('dbviewer.test.ts', () => {
             assert.ok(hub.counters.writes >= 1);
 
             await replicationState.cancel();
+            hub.destroy();
+            await db.close();
+        });
+    });
+    describe('.attachViewerBridge()', () => {
+        it('answers rpc requests and pushes change events over any transport', async () => {
+            const db = await createRxDatabase({
+                name: randomToken(10),
+                storage: config.storage.getStorage(),
+                multiInstance: false
+            });
+            await db.addCollections({
+                docs: {
+                    schema: {
+                        version: 0,
+                        primaryKey: 'id',
+                        type: 'object',
+                        properties: {
+                            id: { type: 'string', maxLength: 100 },
+                            name: { type: 'string' }
+                        },
+                        required: ['id', 'name']
+                    }
+                }
+            });
+            await db.docs.insert({ id: 'one', name: 'first' });
+            const hub = createViewerEventHub(db as any);
+            const source = createLiveDataSource(db as any);
+
+            const received: any[] = [];
+            const listeners = new Set<(message: any) => void>();
+            const bridge = attachViewerBridge({
+                database: db as any,
+                source,
+                hub,
+                info: {
+                    databaseName: db.name,
+                    storageName: 'test',
+                    rxdbVersion: 'test',
+                    readOnly: false,
+                    pageSize: 0,
+                    showCloseButton: false
+                },
+                transport: {
+                    send(message: any) {
+                        received.push(message);
+                    },
+                    onMessage(listener: (message: any) => void) {
+                        listeners.add(listener);
+                        return () => listeners.delete(listener);
+                    },
+                    destroy() {
+                        listeners.clear();
+                    }
+                }
+            });
+            const request = (requestId: number, method: string, params: any[] = []) => {
+                listeners.forEach(listener => listener({
+                    type: 'rxdbv-request',
+                    requestId,
+                    method,
+                    params
+                }));
+            };
+
+            request(1, 'listCollections');
+            await waitUntil(() => received.some(message => message.requestId === 1));
+            const listResponse = received.find(message => message.requestId === 1);
+            assert.strictEqual(listResponse.type, 'rxdbv-response');
+            assert.strictEqual(listResponse.result[0].name, 'docs');
+
+            request(2, 'query', ['docs', {}, 0, 10]);
+            await waitUntil(() => received.some(message => message.requestId === 2));
+            const queryResponse = received.find(message => message.requestId === 2);
+            assert.strictEqual(queryResponse.result.docs.length, 1);
+
+            request(3, 'unknown-method');
+            await waitUntil(() => received.some(message => message.requestId === 3));
+            const errorResponse = received.find(message => message.requestId === 3);
+            assert.ok(errorResponse.error.message.includes('unknown method'));
+
+            await db.docs.insert({ id: 'two', name: 'second' });
+            await waitUntil(() => received.some(message =>
+                message.type === 'rxdbv-event' &&
+                message.name === 'change' &&
+                message.payload.documentId === 'two'
+            ));
+
+            bridge.destroy();
             hub.destroy();
             await db.close();
         });
