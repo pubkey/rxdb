@@ -64,6 +64,7 @@ export default function Page() {
             id: 'gads',
             metaTitle: 'RxDB: Open-Source Local-First Database for JavaScript',
             appName: 'JavaScript',
+            metaDescription: 'RxDB is a local-first database for React Native, Expo and the web. Same schema and queries on every platform, with sync to the backend you run.',
             title: variation.title,
             text: variation.text,
             bulletpoints: variation.bulletpoints
