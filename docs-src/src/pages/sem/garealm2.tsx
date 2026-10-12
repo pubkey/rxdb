@@ -63,6 +63,7 @@ export default function Page() {
         sem: {
             id: 'gads',
             metaTitle: 'RxDB: The Local-First JavaScript Database With Sync',
+            metaDescription: 'RxDB is a local-first JavaScript database with built-in sync. Data lives on the device, queries are reactive and changes replicate to any backend.',
             appName: 'JavaScript',
             title: variation.title,
             text: variation.text,

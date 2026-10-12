@@ -63,6 +63,7 @@ export default function Page() {
         sem: {
             id: 'gads',
             metaTitle: 'RxDB: The JSON Database for JavaScript Apps',
+            metaDescription: 'RxDB is a JSON document database for JavaScript apps. Store JSON on the device, validate it with JSON Schema, query it and sync it to any backend.',
             title: variation.title,
             text: variation.text,
             bulletpoints: variation.bulletpoints

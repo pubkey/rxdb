@@ -63,6 +63,7 @@ export default function Page() {
         sem: {
             id: 'gads',
             metaTitle: 'RxDB: Outgrown JSON Files? Get a Real JSON Database',
+            metaDescription: 'When JSON files are not enough: RxDB stores JSON documents with schema validation, indexes, queries and sync, in the browser, Node.js and mobile.',
             title: variation.title,
             text: variation.text,
             bulletpoints: variation.bulletpoints

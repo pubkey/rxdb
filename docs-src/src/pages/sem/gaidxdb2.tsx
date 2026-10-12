@@ -63,6 +63,7 @@ export default function Page() {
         sem: {
             id: 'gads',
             metaTitle: 'RxDB: The Reactive JavaScript Database on IndexedDB',
+            metaDescription: 'RxDB adds reactive queries to IndexedDB: the UI updates when data changes, in every open tab. A local NoSQL database with schemas and sync.',
             appName: 'JavaScript',
             title: variation.title,
             text: variation.text,

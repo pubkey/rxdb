@@ -63,6 +63,7 @@ export default function Page() {
         sem: {
             id: 'gads',
             metaTitle: 'RxDB: The Sync Layer for Offline Apps, Already Built',
+            metaDescription: 'RxDB ships the sync layer for offline apps: replication to any backend, retries, conflict handling and schema migrations on the device.',
             appName: 'React Native',
             title: variation.title,
             text: variation.text,

@@ -63,6 +63,7 @@ export default function Page() {
         sem: {
             id: 'gads',
             metaTitle: 'RxDB: The Encrypted Local Database for Your App',
+            metaDescription: 'RxDB is a local database for JavaScript apps with built-in encryption. Sensitive fields are encrypted on the device, and data syncs to your backend.',
             appName: 'JavaScript',
             title: variation.title,
             text: variation.text,
