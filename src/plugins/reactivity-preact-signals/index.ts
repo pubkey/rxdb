@@ -32,7 +32,6 @@ export type PreactSignal<T = any> = Signal<T>;
  */
 export const PREACT_SIGNAL_STATE = {
     subscribeCount: 0,
-    signalBySubscription: new WeakMap<Subscription, PreactSignal>(),
     aliveSubscription: new Set<Subscription>(),
 };
 
@@ -41,7 +40,6 @@ function removeSubscription(sub: Subscription) {
     const isAlive = PREACT_SIGNAL_STATE.aliveSubscription.has(sub);
     if (isAlive) {
         PREACT_SIGNAL_STATE.aliveSubscription.delete(sub);
-        PREACT_SIGNAL_STATE.signalBySubscription.delete(sub);
         PREACT_SIGNAL_STATE.subscribeCount = PREACT_SIGNAL_STATE.subscribeCount - 1;
         sub.unsubscribe();
     }
@@ -60,10 +58,14 @@ export const PreactSignalsRxReactivityFactory: RxReactivityFactory<PreactSignalR
         initialValue: InitData
     ): PreactSignal<Data | InitData> {
         const mySignal = signal<Data | InitData>(initialValue);
-        const sigRef: WeakRef = new WeakRef(mySignal);
+        /**
+         * Only a WeakRef to the signal is kept here so that the subscription
+         * does not prevent the signal from being garbage collected.
+         */
+        const sigRef: WeakRef<PreactSignal<Data | InitData>> = new WeakRef(mySignal);
         const sub = obs.subscribe((value: Data) => {
-            const sig = PREACT_SIGNAL_STATE.signalBySubscription.get(sub);
-            if (sig && sigRef.deref()) {
+            const sig = sigRef.deref();
+            if (sig) {
                 sig.value = value;
             } else {
                 /**
@@ -76,10 +78,13 @@ export const PreactSignalsRxReactivityFactory: RxReactivityFactory<PreactSignalR
             }
         });
         PREACT_SIGNAL_STATE.aliveSubscription.add(sub);
-        PREACT_SIGNAL_STATE.signalBySubscription.set(sub, mySignal);
         PREACT_SIGNAL_STATE.subscribeCount = PREACT_SIGNAL_STATE.subscribeCount + 1;
 
-        cleanupRegistry.register({}, sub);
+        /**
+         * The signal itself must be registered so that the cleanup
+         * runs when the signal is garbage collected and not earlier.
+         */
+        cleanupRegistry.register(mySignal, sub);
         return mySignal;
     }
 }; 

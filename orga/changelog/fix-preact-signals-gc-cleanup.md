@@ -1,0 +1,1 @@
+- FIX preact signals reactivity unsubscribed from the observable on the next garbage collection while the signal was still in use, and kept unused signals alive so they were never cleaned up
