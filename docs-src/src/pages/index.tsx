@@ -197,10 +197,10 @@ export type SemPage = {
   id: string;
   metaTitle: string;
   /**
-   * The meta description of the page.
-   * When not set, the default description of the homepage is used.
+   * The meta description of the page,
+   * shown in search results below the metaTitle.
    */
-  metaDescription?: string;
+  metaDescription: string;
   iconUrl?: string;
   title: any;
   text?: any;
@@ -288,7 +288,7 @@ export default function Home(props: {
       </Head>
       <Layout
         title={props.sem ? props.sem.metaTitle : HOME_TITLE}
-        description={props.sem?.metaDescription ?? 'RxDB is a fast, local-first NoSQL-database for JavaScript Applications like Websites, hybrid Apps, Electron-Apps, Progressive Web Apps and Node.js'}>
+        description={props.sem ? props.sem.metaDescription : 'RxDB is a fast, local-first NoSQL-database for JavaScript Applications like Websites, hybrid Apps, Electron-Apps, Progressive Web Apps and Node.js'}>
         <main>
 
           <HeroSection_B sem={props.sem} scrollToSection={scrollToSection} />
