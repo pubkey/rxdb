@@ -61,6 +61,16 @@ const variations = {
             <>Tabs and devices stay in sync</>,
             <>Open source, works with any backend</>
         ]
+    },
+    e: {
+        title: <>The <b>Local Database</b> That <b>Works Offline</b></>,
+        text: <>RxDB is a local database for JavaScript apps. Every query runs on the device, so the UI answers instantly, and the built-in sync engine replicates changes to your backend when the network is back.</>,
+        bulletpoints: [
+            <>Local database for browser, Node, React Native</>,
+            <>Offline-first, works without a connection</>,
+            <>Sync engine for any backend</>,
+            <>Open source</>
+        ]
     }
 };
 
@@ -80,7 +90,7 @@ export default function Page() {
     return Home({
         sem: {
             id: 'gads',
-            metaTitle: 'RxDB: Build Local-First Apps With Zero-Latency Queries',
+            metaTitle: 'RxDB: Offline-First Local Database for JavaScript Apps',
             appName: 'JavaScript',
             metaDescription: 'RxDB is a local database for JavaScript apps that works offline. Queries run on the device, and the built-in sync engine replicates to any backend.',
             title: variation.title,

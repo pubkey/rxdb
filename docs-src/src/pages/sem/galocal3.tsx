@@ -26,16 +26,21 @@ const variations = {
             <>Works offline by default</>
         ]
     },
-    b: {
-        title: <>Your Users Should <b>Never See a Spinner</b></>,
-        text: <>When data lives on the device, the UI never waits for the network. RxDB gives you instant queries, background sync, and an app that keeps working when the connection drops.</>,
-        bulletpoints: [
-            <>Instant UI from local data</>,
-            <>Background sync when online</>,
-            <>Keeps working offline</>,
-            <>Open source, any backend</>
-        ]
-    },
+    /**
+     * Variation 'b' was retired on 2026-10-12. Kept on record (commented out,
+     * not deleted) so its letter and copy stay reserved and are never reused
+     * for different copy.
+     */
+    // b: {
+    //     title: <>Your Users Should <b>Never See a Spinner</b></>,
+    //     text: <>When data lives on the device, the UI never waits for the network. RxDB gives you instant queries, background sync, and an app that keeps working when the connection drops.</>,
+    //     bulletpoints: [
+    //         <>Instant UI from local data</>,
+    //         <>Background sync when online</>,
+    //         <>Keeps working offline</>,
+    //         <>Open source, any backend</>
+    //     ]
+    // },
     c: {
         title: <><b>Local-First</b> Sync Without the <b>SaaS Bill</b></>,
         text: <>Cloud-first backends charge for every read and hold your data. RxDB stores data on the device and syncs to infrastructure you already run. No per-read pricing, no lock-in, open source.</>,
@@ -45,24 +50,38 @@ const variations = {
             <>Open-source core</>,
             <>You keep your data</>
         ]
+    },
+    d: {
+        title: <>An <b>Offline-First Sync Engine</b> for <b>JavaScript</b></>,
+        text: <>Local-first architecture means writes land on the device first and sync later. RxDB is that architecture as one open-source database: local storage, replication to any backend and conflict handling.</>,
+        bulletpoints: [
+            <>Writes land on the device first</>,
+            <>Replication to any backend</>,
+            <>Conflict handling included</>,
+            <>Open-source core</>
+        ]
     }
 };
 
+const variationKeys = Object.keys(variations) as (keyof typeof variations)[];
+
 export default function Page() {
     /**
-     * Render variation "a" on the server and on the first client render
-     * to avoid a hydration mismatch, then swap to the assigned variation.
+     * Render the first live variation on the server and on the first client
+     * render to avoid a hydration mismatch, then swap to the assigned one.
+     * The key comes from Object.keys(), never a hardcoded 'a': once variation
+     * 'a' is retired (commented out) a hardcoded default renders nothing.
      */
-    const [variationKey, setVariationKey] = useState('a');
+    const [variationKey, setVariationKey] = useState(variationKeys[0] as string);
     useEffect(() => {
-        setVariationKey(getSemVariation(Object.keys(variations)));
+        setVariationKey(getSemVariation(variationKeys));
     }, []);
-    const variation = variations[variationKey as keyof typeof variations] ?? variations.a;
+    const variation = variations[variationKey as keyof typeof variations] ?? variations[variationKeys[0]];
 
     return Home({
         sem: {
             id: 'gads',
-            metaTitle: 'RxDB: Local-First Sync Without the Hand-Rolled Code',
+            metaTitle: 'RxDB: Offline-First Sync Engine for JavaScript',
             appName: 'JavaScript',
             metaDescription: 'RxDB is an offline-first sync engine for JavaScript: writes land on the device first, then replicate to any backend with conflict handling.',
             title: variation.title,
