@@ -36,7 +36,7 @@ export default function LegalNotice() {
                         <p>DE357840955</p>
 
                         <h4>NCAGE Code (NATO Commercial and Government Entity Code)</h4>
-                        <p>CNP90</p>
+                        <p><a href="https://eportal.nspa.nato.int/Codification/CageTool/cage-view/CNP90" target="_blank" rel="noopener noreferrer">CNP90</a></p>
 
                         <h4>Verantwortlich für den Inhalt (gem. § 55 Abs. 2 RStV)</h4>
                         <p>Der oben genannte Eigentümer.</p>
