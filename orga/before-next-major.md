@@ -44,6 +44,10 @@ RxDB only uses `new Peer({initiator, config, trickle})`, the `signal`, `connect`
 
 A full implementation with green CI is at https://github.com/pubkey/rxdb/pull/8900
 
+## Remove the premium re-exports of the reactivity plugins
+
+The `reactivity-vue` and `reactivity-preact-signals` plugins moved from RxDB Premium to the free RxDB core (`rxdb/plugins/reactivity-vue`, `rxdb/plugins/reactivity-preact-signals`). The premium package still has plugins with the same names that only re-export the core plugins, so that existing imports from `rxdb-premium/plugins/reactivity-*` do not break. In the next major version, remove these re-exporting premium plugins and tell users in the changelog to import from `rxdb/plugins/reactivity-vue` and `rxdb/plugins/reactivity-preact-signals` instead.
+
 
 ---------------------------------
 ## Maybe later (not sure if should be done)
