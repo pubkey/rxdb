@@ -3,7 +3,7 @@ import { newRxError } from '../../rx-error.ts';
 import { RXDB_VERSION } from '../utils/index.ts';
 import { createLiveDataSource } from './dbviewer-data.ts';
 import { createViewerEventHub } from './dbviewer-events.ts';
-import { attachViewerBridge } from './dbviewer-remote.ts';
+import { attachViewerBridge, createWindowBridgeTransport } from './dbviewer-remote.ts';
 import type {
     RxDBViewerHandle,
     RxDBViewerOptions,
@@ -76,6 +76,7 @@ export function mountRxDBViewer(options: RxDBViewerOptions = {}): RxDBViewerHand
     };
 
     let bridge: { destroy: () => void; } | null = null;
+    let transport: { destroy: () => void; } | null = null;
     let destroyed = false;
 
     const onMessage = (event: MessageEvent) => {
@@ -92,13 +93,14 @@ export function mountRxDBViewer(options: RxDBViewerOptions = {}): RxDBViewerHand
                 info
             }, targetOrigin);
             if (database && source && hub && !bridge) {
+                const windowTransport = createWindowBridgeTransport(iframe.contentWindow, targetOrigin);
+                transport = windowTransport;
                 bridge = attachViewerBridge({
                     database,
                     source,
                     hub,
                     info,
-                    targetWindow: iframe.contentWindow,
-                    targetOrigin
+                    transport: windowTransport
                 });
             }
         } else if (data.type === 'rxdbv-close') {
@@ -117,6 +119,10 @@ export function mountRxDBViewer(options: RxDBViewerOptions = {}): RxDBViewerHand
             if (bridge) {
                 bridge.destroy();
                 bridge = null;
+            }
+            if (transport) {
+                transport.destroy();
+                transport = null;
             }
             if (hub) {
                 hub.destroy();

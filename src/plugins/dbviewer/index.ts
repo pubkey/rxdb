@@ -10,6 +10,7 @@ export * from './dbviewer-data.ts';
 export * from './dbviewer-events.ts';
 export * from './dbviewer-analyze.ts';
 export * from './dbviewer-remote.ts';
+export * from './dbviewer-webrtc.ts';
 export {
     mountRxDBViewer,
     DBVIEWER_DEFAULT_URL

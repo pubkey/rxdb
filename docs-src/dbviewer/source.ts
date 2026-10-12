@@ -60,25 +60,65 @@ export type ViewerSource = {
 };
 
 /**
- * RPC client over postMessage against the bridge that the
- * rxdb plugin attaches in the embedding host window.
+ * A duplex channel the viewer page talks to its host over.
+ * The iframe mode implements it with postMessage against the
+ * parent window, the WebRTC pairing with a data channel.
+ */
+export type ViewerPageTransport = {
+    send(message: any): void;
+    onMessage(listener: (message: any) => void): () => void;
+    destroy(): void;
+};
+
+/**
+ * Transport against the embedding parent window.
+ */
+export function createWindowPageTransport(
+    hostWindow: Window,
+    hostOrigin: string
+): ViewerPageTransport {
+    const listeners = new Set<(message: any) => void>();
+    const onWindowMessage = (event: MessageEvent) => {
+        if (event.source !== hostWindow) {
+            return;
+        }
+        const data = event.data;
+        if (!data || typeof data.type !== 'string') {
+            return;
+        }
+        listeners.forEach(listener => listener(data));
+    };
+    window.addEventListener('message', onWindowMessage);
+    return {
+        send(message: any) {
+            hostWindow.postMessage(message, hostOrigin);
+        },
+        onMessage(listener: (message: any) => void) {
+            listeners.add(listener);
+            return () => listeners.delete(listener);
+        },
+        destroy() {
+            window.removeEventListener('message', onWindowMessage);
+            listeners.clear();
+        }
+    };
+}
+
+/**
+ * RPC client against the bridge that the rxdb plugin serves
+ * on the other end of the transport.
  * Resolves once the collection list cache is filled.
  */
 export async function createRemoteSource(
     info: ViewerInfo,
-    hostWindow: Window,
-    hostOrigin: string
+    transport: ViewerPageTransport
 ): Promise<ViewerSource> {
     let requestIdCounter = 0;
     const pending = new Map<number, { resolve: (v: any) => void; reject: (e: any) => void; }>();
     const listeners = new Set<ViewerEventListener>();
     let collectionsCache: ViewerCollectionInfo[] = [];
 
-    const onMessage = (event: MessageEvent) => {
-        if (event.source !== hostWindow) {
-            return;
-        }
-        const data = event.data;
+    const unsubscribe = transport.onMessage((data: any) => {
         if (!data || typeof data.type !== 'string') {
             return;
         }
@@ -99,20 +139,19 @@ export async function createRemoteSource(
         } else if (data.type === 'rxdbv-event') {
             listeners.forEach(listener => listener(data.name, data.payload));
         }
-    };
-    window.addEventListener('message', onMessage);
+    });
 
     const call = (method: string, ...params: any[]): Promise<any> => {
         requestIdCounter = requestIdCounter + 1;
         const requestId = requestIdCounter;
         return new Promise((resolve, reject) => {
             pending.set(requestId, { resolve, reject });
-            hostWindow.postMessage({
+            transport.send({
                 type: 'rxdbv-request',
                 requestId,
                 method,
                 params
-            }, hostOrigin);
+            });
         });
     };
 
@@ -149,7 +188,8 @@ export async function createRemoteSource(
             return () => listeners.delete(listener);
         },
         destroy() {
-            window.removeEventListener('message', onMessage);
+            unsubscribe();
+            transport.destroy();
             listeners.clear();
             pending.clear();
         }

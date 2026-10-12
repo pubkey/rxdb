@@ -275,6 +275,35 @@ The [angular example](https://github.com/pubkey/rxdb/tree/master/examples/angula
 
 Keep in mind that the page and the plugin talk over a versioned `postMessage` protocol. When you update rxdb, refresh your self-hosted copy so both sides match.
 
+## Remote Pairing over WebRTC
+
+When the database runs on a device you cannot attach a debugger to, for example a phone in field testing, pair the hosted viewer page with that device over WebRTC. In the app, expose the database:
+
+```ts
+import { exposeRxDBViewerWebRTC } from 'rxdb/plugins/dbviewer';
+
+await exposeRxDBViewerWebRTC({
+    database: db,
+    /**
+     * Everyone who knows the room id gets FULL read and write
+     * access to the database, so use a long random id
+     * and treat it like a password.
+     */
+    roomId: 'a-long-random-id',
+    /**
+     * (optional) Url of the WebRTC signaling server.
+     * The default server is for tryouts only, in production
+     * you run your own, see the replication-webrtc docs.
+     * [default='wss://signaling.rxdb.info/']
+     */
+    signalingServerUrl: 'wss://example.com/signaling'
+});
+```
+
+Then open [rxdb.info/dbviewer/index.html](https://rxdb.info/dbviewer/index.html) directly in a browser. The page shows a connect form, enter the same signaling server and room id, and the viewer connects to the device through a WebRTC data channel. The full devtool works over the channel: grids, queries, edits, the query lab and the live feeds, because it speaks the same bridge protocol as the iframe mount.
+
+The signaling server only brokers the connection, the data itself flows directly between the browser and the device. You can run your own signaling server with `startSignalingServerSimplePeer()`, see the [WebRTC replication docs](./replication-webrtc.md).
+
 ## Dump mode
 
 When you cannot reach the device that runs the database, work from an export instead. On the device, run `await db.exportJSON()` with the [json-dump plugin](./json-import-export.md), save the result, and open it in the viewer:

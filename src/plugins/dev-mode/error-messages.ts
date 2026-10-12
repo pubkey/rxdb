@@ -1415,6 +1415,12 @@ export const ERROR_MESSAGES = {
         fix: 'Pass either a live RxDatabase via options.database or a JSON export via options.dump.',
         docs: 'https://rxdb.info/dbviewer.html'
     },
+    DVW3: {
+        message: 'dbviewer roomId too short',
+        cause: 'exposeRxDBViewerWebRTC() was called with a roomId that has fewer than 6 characters.',
+        fix: 'Use a long random roomId. Everyone who knows it gets full access to the database, so treat it like a password.',
+        docs: 'https://rxdb.info/dbviewer.html'
+    },
 
     // change-event-buffer errors
     COB1: {

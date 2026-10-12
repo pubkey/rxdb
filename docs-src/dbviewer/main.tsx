@@ -13,11 +13,21 @@ import {
 import { createPageHub } from './hub.ts';
 import {
     createDumpSource,
-    createRemoteSource
+    createRemoteSource,
+    createWindowPageTransport
 } from './source.ts';
-import type { ViewerSource } from './source.ts';
+import type {
+    ViewerPageTransport,
+    ViewerSource
+} from './source.ts';
+import {
+    connectViewerWebRTC,
+    DEFAULT_SIGNALING_SERVER_URL
+} from './webrtc.ts';
+import type { ViewerWebRTCStatus } from './webrtc.ts';
 
 const INIT_TIMEOUT_MS = 4000;
+const WEBRTC_FORM_STORAGE_KEY = 'rxdb-dbviewer-webrtc';
 
 function resolvePageSize(hostPageSize: number): number {
     if (hostPageSize > 0) {
@@ -35,35 +45,159 @@ function Connecting() {
     );
 }
 
+const STATUS_TEXT: { [status in ViewerWebRTCStatus]: string } = {
+    'signaling-connecting': 'connecting to the signaling server…',
+    'signaling-connected': 'connected to the signaling server…',
+    'waiting-for-device': 'waiting for the device to show up in the room…',
+    'peer-connecting': 'device found, connecting over WebRTC…',
+    'connected': 'connected'
+};
+
+function readStoredWebRTCForm(): { signalingServerUrl?: string; roomId?: string; } {
+    try {
+        const raw = localStorage.getItem(WEBRTC_FORM_STORAGE_KEY);
+        return raw ? JSON.parse(raw) : {};
+    } catch (err) {
+        return {};
+    }
+}
+
+function storeWebRTCForm(form: { signalingServerUrl: string; roomId: string; }) {
+    try {
+        localStorage.setItem(WEBRTC_FORM_STORAGE_KEY, JSON.stringify(form));
+    } catch (err) {
+        // localStorage can be unavailable, the form is then not remembered
+    }
+}
+
+const fieldLabelStyle: React.CSSProperties = {
+    fontSize: 10,
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
+    color: 'var(--rxdbv-fg-dim)',
+    display: 'block',
+    marginBottom: 4
+};
+const fieldInputStyle: React.CSSProperties = {
+    width: '100%',
+    boxSizing: 'border-box',
+    background: 'var(--rxdbv-bg)',
+    color: 'var(--rxdbv-fg)',
+    border: '1px solid rgba(255,255,255,0.2)',
+    padding: '7px 10px',
+    fontFamily: 'var(--rxdbv-mono)',
+    fontSize: 11,
+    outline: 'none'
+};
+
 /**
  * Shown when the page is opened directly on rxdb.info instead
- * of embedded by mountRxDBViewer(). A dump file can still be
- * opened and browsed read-only.
+ * of embedded by mountRxDBViewer(). From here a database on
+ * another device can be opened over WebRTC, or a static dump
+ * file can be browsed read-only.
  */
-function StandaloneLanding(props: { onDump: (dump: RxDBViewerDump, filename: string) => void; }) {
+function StandaloneLanding(props: {
+    initialError?: string;
+    onDump: (dump: RxDBViewerDump, filename: string) => void;
+    onWebRTC: (
+        signalingServerUrl: string,
+        roomId: string,
+        setStatus: (status: string) => void,
+        setError: (error: string) => void
+    ) => void;
+}) {
+    const stored = readStoredWebRTCForm();
     const fileRef = useRef<HTMLInputElement>(null);
-    const [error, setError] = useState<string | null>(null);
+    const [error, setError] = useState<string | null>(props.initialError || null);
+    const [status, setStatus] = useState<string | null>(null);
+    const [connecting, setConnecting] = useState(false);
+    const [signalingServerUrl, setSignalingServerUrl] = useState(stored.signalingServerUrl || DEFAULT_SIGNALING_SERVER_URL);
+    const [roomId, setRoomId] = useState(stored.roomId || '');
+
+    const connect = () => {
+        const trimmedRoom = roomId.trim();
+        if (trimmedRoom.length < 6) {
+            setError('the room id must have at least 6 characters');
+            return;
+        }
+        setError(null);
+        setConnecting(true);
+        storeWebRTCForm({ signalingServerUrl: signalingServerUrl.trim(), roomId: trimmedRoom });
+        props.onWebRTC(
+            signalingServerUrl.trim(),
+            trimmedRoom,
+            statusText => setStatus(statusText),
+            errorText => {
+                setConnecting(false);
+                setStatus(null);
+                setError(errorText);
+            }
+        );
+    };
+
     return (
-        <div className="rxdbv-root" style={{ alignItems: 'center', justifyContent: 'center' }}>
-            <div style={{ maxWidth: 560, padding: '32px 28px', border: '1px solid rgba(255,255,255,0.12)', background: 'var(--rxdbv-bg-panel)' }}>
+        <div className="rxdbv-root" style={{ alignItems: 'center', justifyContent: 'center', overflow: 'auto' }}>
+            <div style={{ maxWidth: 560, width: '100%', padding: '32px 28px', border: '1px solid rgba(255,255,255,0.12)', background: 'var(--rxdbv-bg-panel)', margin: '20px 0' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     <div className="rxdbv-logo" dangerouslySetInnerHTML={{ __html: DBVIEWER_LOGO_SVG }} />
                     <span className="rxdbv-wordmark" style={{ fontSize: 16 }}>RxDB</span>
                     <span style={{ fontSize: 13, fontWeight: 700 }}>Database Viewer</span>
+                    <span className="rxdbv-badge-beta" title="The database viewer is a beta feature">beta</span>
                 </div>
-                <div className="rxdbv-muted" style={{ fontSize: 12, lineHeight: 1.6, marginTop: 14 }}>
-                    This page is the UI of the RxDB database viewer. It is normally embedded
-                    by your app with the dbviewer plugin, which connects it to a live database:
+
+                <div className="rxdbv-rail-header" style={{ padding: '18px 0 6px' }}>CONNECT TO A DEVICE</div>
+                <div className="rxdbv-muted" style={{ fontSize: 12, lineHeight: 1.6 }}>
+                    Inspect a database that runs on another device over WebRTC.
+                    In the app, expose the database with the dbviewer plugin:
                 </div>
-                <div className="rxdbv-mono" style={{ fontSize: 11, lineHeight: 1.7, marginTop: 10, padding: '10px 12px', background: 'var(--rxdbv-bg)', border: '1px solid rgba(255,255,255,0.1)', whiteSpace: 'pre' }}>
-                    {'import { mountRxDBViewer } from \'rxdb/plugins/dbviewer\';\n\nconst viewer = mountRxDBViewer({\n    database: myDatabase,\n    parent: document.getElementById(\'viewer\')\n});'}
+                <div className="rxdbv-mono" style={{ fontSize: 11, lineHeight: 1.7, marginTop: 8, padding: '10px 12px', background: 'var(--rxdbv-bg)', border: '1px solid rgba(255,255,255,0.1)', whiteSpace: 'pre', overflow: 'auto' }}>
+                    {'import { exposeRxDBViewerWebRTC } from \'rxdb/plugins/dbviewer\';\n\nawait exposeRxDBViewerWebRTC({\n    database: myDatabase,\n    roomId: \'a-long-random-id\'\n});'}
                 </div>
-                <div className="rxdbv-muted" style={{ fontSize: 12, lineHeight: 1.6, marginTop: 14 }}>
-                    Without a host application you can open a static dump created
-                    with <code>await db.exportJSON()</code> and browse it read-only.
+                <div style={{ marginTop: 12 }}>
+                    <label style={fieldLabelStyle}>Signaling server</label>
+                    <input
+                        style={fieldInputStyle}
+                        value={signalingServerUrl}
+                        disabled={connecting}
+                        onChange={event => setSignalingServerUrl(event.target.value)}
+                    />
                 </div>
-                <div style={{ marginTop: 14, display: 'flex', gap: 10, alignItems: 'center' }}>
-                    <button className="rxdbv-btn-primary" onClick={() => fileRef.current && fileRef.current.click()}>
+                <div style={{ marginTop: 10 }}>
+                    <label style={fieldLabelStyle}>Room id</label>
+                    <input
+                        style={fieldInputStyle}
+                        value={roomId}
+                        placeholder="the roomId used in exposeRxDBViewerWebRTC()"
+                        disabled={connecting}
+                        onChange={event => setRoomId(event.target.value)}
+                        onKeyDown={event => {
+                            if (event.key === 'Enter' && !connecting) {
+                                connect();
+                            }
+                        }}
+                    />
+                </div>
+                <div style={{ marginTop: 12, display: 'flex', gap: 10, alignItems: 'center' }}>
+                    <button className="rxdbv-btn-primary" disabled={connecting} onClick={connect}>
+                        {connecting ? 'Connecting…' : 'Connect'}
+                    </button>
+                    {connecting && status ? (
+                        <span className="rxdbv-dim" style={{ fontSize: 11 }}>{status}</span>
+                    ) : null}
+                </div>
+                <div className="rxdbv-dim" style={{ fontSize: 10.5, lineHeight: 1.6, marginTop: 8 }}>
+                    Everyone who knows the room id gets full read and write access
+                    to the database, so use a long random id and your own signaling
+                    server in production.
+                </div>
+
+                <div className="rxdbv-rail-header" style={{ padding: '20px 0 6px' }}>OPEN A DUMP FILE</div>
+                <div className="rxdbv-muted" style={{ fontSize: 12, lineHeight: 1.6 }}>
+                    Open a static dump created with <code>await db.exportJSON()</code> and
+                    browse it read-only.
+                </div>
+                <div style={{ marginTop: 10, display: 'flex', gap: 10, alignItems: 'center' }}>
+                    <button className="rxdbv-btn" disabled={connecting} onClick={() => fileRef.current && fileRef.current.click()}>
                         Open dump file…
                     </button>
                     <a
@@ -72,7 +206,7 @@ function StandaloneLanding(props: { onDump: (dump: RxDBViewerDump, filename: str
                     >Viewer documentation</a>
                 </div>
                 {error ? (
-                    <div style={{ marginTop: 10, fontSize: 11, color: 'var(--rxdbv-danger)' }}>{error}</div>
+                    <div style={{ marginTop: 12, fontSize: 11, color: 'var(--rxdbv-danger)' }}>✕ {error}</div>
                 ) : null}
                 <input
                     ref={fileRef}
@@ -106,24 +240,102 @@ function boot() {
     }
     const reactRoot = createRoot(rootElement);
 
-    const renderStandalone = () => {
+    const renderLive = (
+        source: ViewerSource,
+        hub: ReturnType<typeof createPageHub> | null,
+        info: ViewerInfo,
+        onClose: () => void
+    ) => {
+        reactRoot.render(
+            <ViewerApp
+                source={source}
+                liveSource={source.kind === 'live' ? source : null}
+                hub={hub}
+                pageSize={resolvePageSize(info.pageSize)}
+                showCloseButton={info.showCloseButton}
+                onClose={onClose}
+            />
+        );
+    };
+
+    const renderStandalone = (initialError?: string) => {
         reactRoot.render(
             <StandaloneLanding
+                initialError={initialError}
                 onDump={(dump, filename) => {
                     const source = createDumpSource(dump, filename);
-                    reactRoot.render(
-                        <ViewerApp
-                            source={source}
-                            liveSource={null}
-                            hub={null}
-                            pageSize={resolvePageSize(0)}
-                            showCloseButton={false}
-                            onClose={() => undefined}
-                        />
-                    );
+                    renderLive(source, null, {
+                        databaseName: source.databaseName,
+                        storageName: source.storageName,
+                        rxdbVersion: source.rxdbVersion,
+                        readOnly: true,
+                        pageSize: 0,
+                        showCloseButton: false
+                    }, () => undefined);
+                }}
+                onWebRTC={(signalingServerUrl, roomId, setStatus, setError) => {
+                    connectWebRTC(signalingServerUrl, roomId, setStatus, setError);
                 }}
             />
         );
+    };
+
+    const connectWebRTC = (
+        signalingServerUrl: string,
+        roomId: string,
+        setStatus: (status: string) => void,
+        setError: (error: string) => void
+    ) => {
+        connectViewerWebRTC({
+            signalingServerUrl,
+            roomId,
+            onStatus: status => setStatus(STATUS_TEXT[status] || status),
+            onDisconnect: () => {
+                renderStandalone('the connection to the device was lost');
+            }
+        }).then(transport => {
+            setStatus('loading database info…');
+            return initOverTransport(transport);
+        }).then(result => {
+            if (!result) {
+                setError('the device did not answer the handshake');
+                return;
+            }
+            renderLive(result.source, result.hub, result.info, () => undefined);
+        }).catch(error => {
+            setError(String(error && error.message ? error.message : error));
+        });
+    };
+
+    /**
+     * Same handshake as in the iframe: send rxdbv-ready, wait
+     * for rxdbv-init, then start the RPC source over the transport.
+     */
+    const initOverTransport = (transport: ViewerPageTransport) => {
+        return new Promise<{ source: ViewerSource; hub: ReturnType<typeof createPageHub>; info: ViewerInfo; } | null>((resolve, reject) => {
+            let done = false;
+            const timeout = setTimeout(() => {
+                if (!done) {
+                    done = true;
+                    unsubscribe();
+                    resolve(null);
+                }
+            }, INIT_TIMEOUT_MS * 2);
+            const unsubscribe = transport.onMessage((data: any) => {
+                if (done || !data || data.type !== 'rxdbv-init') {
+                    return;
+                }
+                done = true;
+                clearTimeout(timeout);
+                unsubscribe();
+                const info = data.info as ViewerInfo;
+                createRemoteSource(info, transport).then(source => {
+                    const hub = createPageHub(source);
+                    resolve({ source, hub, info });
+                }).catch(reject);
+            });
+            transport.send({ type: 'rxdbv-ready' });
+        });
     };
 
     const embedded = window.parent && window.parent !== window;
@@ -135,19 +347,6 @@ function boot() {
     const hostWindow = window.parent;
     let initialized = false;
 
-    const renderLive = (source: ViewerSource, hub: ReturnType<typeof createPageHub> | null, info: ViewerInfo, hostOrigin: string) => {
-        reactRoot.render(
-            <ViewerApp
-                source={source}
-                liveSource={source.kind === 'live' ? source : null}
-                hub={hub}
-                pageSize={resolvePageSize(info.pageSize)}
-                showCloseButton={info.showCloseButton}
-                onClose={() => hostWindow.postMessage({ type: 'rxdbv-close' }, hostOrigin)}
-            />
-        );
-    };
-
     const onMessage = (event: MessageEvent) => {
         if (event.source !== hostWindow) {
             return;
@@ -157,16 +356,19 @@ function boot() {
             return;
         }
         initialized = true;
+        window.removeEventListener('message', onMessage);
         const info = data.info as ViewerInfo;
         const hostOrigin = event.origin && event.origin !== 'null' ? event.origin : '*';
+        const onClose = () => hostWindow.postMessage({ type: 'rxdbv-close' }, hostOrigin);
         if (info.dump) {
             const source = createDumpSource(info.dump, info.dumpFilename, info.rxdbVersion);
-            renderLive(source, null, info, hostOrigin);
+            renderLive(source, null, info, onClose);
             return;
         }
-        createRemoteSource(info, hostWindow, hostOrigin).then(source => {
+        const transport = createWindowPageTransport(hostWindow, hostOrigin);
+        createRemoteSource(info, transport).then(source => {
             const hub = createPageHub(source);
-            renderLive(source, hub, info, hostOrigin);
+            renderLive(source, hub, info, onClose);
         }).catch(() => {
             renderStandalone();
         });
