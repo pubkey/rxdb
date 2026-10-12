@@ -97,6 +97,7 @@ export default function Page() {
         sem: {
             id: 'gads',
             metaTitle: 'RxDB: One Local Database for Your Whole JavaScript Stack',
+            metaDescription: 'RxDB is one local database for browser, Electron, Node.js and React Native. Define a schema once and get reactive queries, migrations and sync.',
             title: variation.title,
             text: variation.text,
             bulletpoints: variation.bulletpoints

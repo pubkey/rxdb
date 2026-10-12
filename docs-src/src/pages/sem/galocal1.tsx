@@ -82,6 +82,7 @@ export default function Page() {
             id: 'gads',
             metaTitle: 'RxDB: Build Local-First Apps With Zero-Latency Queries',
             appName: 'JavaScript',
+            metaDescription: 'RxDB is a local database for JavaScript apps that works offline. Queries run on the device, and the built-in sync engine replicates to any backend.',
             title: variation.title,
             text: variation.text,
             bulletpoints: variation.bulletpoints

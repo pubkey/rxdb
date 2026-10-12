@@ -63,6 +63,7 @@ export default function Page() {
         sem: {
             id: 'gads',
             metaTitle: 'RxDB: Reliable Offline Sync You Control',
+            metaDescription: 'RxDB stores data on the device and syncs it to a backend you control. Offline writes, conflict handling and realtime replication in one database.',
             title: variation.title,
             text: variation.text,
             bulletpoints: variation.bulletpoints

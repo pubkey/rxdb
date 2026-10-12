@@ -63,6 +63,7 @@ export default function Page() {
         sem: {
             id: 'gads',
             metaTitle: 'RxDB: Open-Source NoSQL JSON Database for JavaScript',
+            metaDescription: 'RxDB is an open-source NoSQL database for JSON documents in JavaScript. JSON Schema validation, MongoDB-style queries and realtime sync.',
             title: variation.title,
             text: variation.text,
             bulletpoints: variation.bulletpoints

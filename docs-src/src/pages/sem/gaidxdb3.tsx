@@ -63,6 +63,7 @@ export default function Page() {
         sem: {
             id: 'gads',
             metaTitle: 'RxDB: Fix IndexedDB Limits, Speed and Sync',
+            metaDescription: 'RxDB works around the rough edges of IndexedDB with a NoSQL query engine, multi-tab support, faster storage options and sync to any backend.',
             appName: 'Browser',
             title: variation.title,
             text: variation.text,

@@ -63,6 +63,7 @@ export default function Page() {
         sem: {
             id: 'gads',
             metaTitle: 'RxDB: Field-Level Encryption for JavaScript Apps',
+            metaDescription: 'RxDB encrypts selected document fields before they are stored on the device. A local database for JavaScript apps with offline support and sync.',
             appName: 'JavaScript',
             title: variation.title,
             text: variation.text,

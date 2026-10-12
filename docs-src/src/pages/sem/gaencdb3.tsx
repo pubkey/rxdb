@@ -63,6 +63,7 @@ export default function Page() {
         sem: {
             id: 'gads',
             metaTitle: 'RxDB: Encrypt Local App Data on Web and Mobile',
+            metaDescription: 'RxDB encrypts local app data in the browser, React Native and Electron. Field-level encryption, offline support and sync to any backend.',
             appName: 'Browser',
             title: variation.title,
             text: variation.text,

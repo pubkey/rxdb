@@ -9,6 +9,7 @@ export default function Page() {
              * @link https://chatgpt.com/c/6794f6c2-052c-8005-9a18-4a049bf97cc1
              */
             metaTitle: 'The best Database on top of IndexedDB',
+            metaDescription: 'RxDB is a NoSQL database on top of IndexedDB. Schemas, reactive queries, multi-tab support and replication to any backend, all in the browser.',
             // title: <>The best <b >Database</b> on top of{' '}
             //     <b >IndexedDB</b></>,
             title: <>The easiest way to <b >store</b> and <b >sync</b> Data in IndexedDB</>,

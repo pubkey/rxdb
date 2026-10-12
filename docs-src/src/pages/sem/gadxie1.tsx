@@ -63,6 +63,7 @@ export default function Page() {
         sem: {
             id: 'gads',
             metaTitle: 'RxDB: The Upgrade Path From Your IndexedDB Wrapper',
+            metaDescription: 'RxDB runs on IndexedDB and adds what wrappers leave out: realtime sync to any backend, conflict handling and multi-tab support. Open source.',
             title: variation.title,
             text: variation.text,
             bulletpoints: variation.bulletpoints

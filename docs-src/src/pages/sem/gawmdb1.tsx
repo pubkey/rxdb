@@ -63,6 +63,7 @@ export default function Page() {
         sem: {
             id: 'gads',
             metaTitle: 'RxDB: Local Database for React Native With Sync Built In',
+            metaDescription: 'RxDB is a local database for React Native with sync built in. Runs on SQLite, works offline and replicates to HTTP, GraphQL, Supabase or CouchDB.',
             appName: 'React Native',
             title: variation.title,
             text: variation.text,

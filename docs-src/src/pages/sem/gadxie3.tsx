@@ -73,6 +73,7 @@ export default function Page() {
         sem: {
             id: 'gads',
             metaTitle: 'RxDB Solves Sync, Multi-Tab State and Offline Conflicts',
+            metaDescription: 'RxDB solves sync, multi-tab state and offline conflicts. Local writes replicate to any backend and every open tab sees the same data.',
             title: variation.title,
             text: variation.text,
             bulletpoints: variation.bulletpoints

@@ -87,6 +87,7 @@ export default function Page() {
         sem: {
             id: 'gads',
             metaTitle: 'RxDB: The JavaScript Database on Top of IndexedDB',
+            metaDescription: 'RxDB is a NoSQL database for JavaScript that runs on top of IndexedDB. Schemas, reactive queries, multi-tab support and sync to any backend.',
             appName: 'JavaScript',
             title: variation.title,
             text: variation.text,

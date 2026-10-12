@@ -63,6 +63,7 @@ export default function Page() {
         sem: {
             id: 'gads',
             metaTitle: 'RxDB: Replace Your Deprecated Mobile Sync Stack',
+            metaDescription: 'RxDB replaces a deprecated mobile sync stack: a local database for React Native with offline support and replication to a backend you choose.',
             appName: 'React Native',
             title: variation.title,
             text: variation.text,

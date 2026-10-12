@@ -64,6 +64,7 @@ export default function Page() {
             id: 'gads',
             metaTitle: 'RxDB: Local-First Sync Without the Hand-Rolled Code',
             appName: 'JavaScript',
+            metaDescription: 'RxDB is an offline-first sync engine for JavaScript: writes land on the device first, then replicate to any backend with conflict handling.',
             title: variation.title,
             text: variation.text,
             bulletpoints: variation.bulletpoints

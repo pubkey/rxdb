@@ -63,6 +63,7 @@ export default function Page() {
         sem: {
             id: 'gads',
             metaTitle: 'RxDB: Migrate Off Deprecated Offline Sync',
+            metaDescription: 'RxDB is an offline-first database for JavaScript with a built-in sync engine. Move the offline sync of your app to a maintained, open-source stack.',
             title: variation.title,
             text: variation.text,
             bulletpoints: variation.bulletpoints
