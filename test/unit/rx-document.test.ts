@@ -27,7 +27,8 @@ import {
     defaultHashSha256,
     RxJsonSchema,
     BulkWriteRow,
-    getWrittenDocumentsFromBulkWriteResponse
+    getWrittenDocumentsFromBulkWriteResponse,
+    getHeightOfRevision
 } from '../../plugins/core/index.mjs';
 
 
@@ -984,7 +985,6 @@ describe('rx-document.test.js', () => {
             // another write makes the state of staleDoc outdated
             const currentDoc = await staleDoc.incrementalPatch({ firstName: 'changed' });
             const revBefore = currentDoc.revision;
-            const lwtBefore = currentDoc.toJSON(true)._meta.lwt;
 
             const emitted: any[] = [];
             const sub = c.$.subscribe(ev => emitted.push(ev));
@@ -1009,31 +1009,34 @@ describe('rx-document.test.js', () => {
                 'Error',
                 'refuse'
             );
-            await wait(50);
             assert.strictEqual(modifierCalls, 2);
 
-            const after = await c.findOne(staleDoc.primary).exec(true);
-            assert.strictEqual(after.revision, revBefore);
-            assert.strictEqual(after.toJSON(true)._meta.lwt, lwtBefore);
-            assert.strictEqual(after.lastName, currentDoc.lastName);
-            assert.strictEqual(emitted.length, 0);
-
-            // successful modifiers in the same batch must still be written
+            /**
+             * The incremental write queue processes one batch after another,
+             * so when the next write has finished, a wrongly written
+             * revision of the refused write would already be stored.
+             * The batch also contains a failing modifier which must not affect the successful one.
+             */
             const results = await Promise.allSettled([
-                after.incrementalModify((docData) => {
+                currentDoc.incrementalModify((docData) => {
                     docData.lastName = 'partial';
                     throw new Error('refuse');
                 }),
-                after.incrementalModify((docData) => {
+                currentDoc.incrementalModify((docData) => {
                     docData.age = 42;
                     return docData;
                 })
             ]);
             assert.strictEqual(results[0].status, 'rejected');
             assert.strictEqual(results[1].status, 'fulfilled');
-            const after2 = await c.findOne(staleDoc.primary).exec(true);
-            assert.strictEqual(after2.age, 42);
-            assert.strictEqual(after2.lastName, currentDoc.lastName);
+
+            const after = await c.findOne(staleDoc.primary).exec(true);
+            assert.strictEqual(
+                getHeightOfRevision(after.revision),
+                getHeightOfRevision(revBefore) + 1
+            );
+            assert.strictEqual(after.age, 42);
+            assert.strictEqual(after.lastName, currentDoc.lastName);
             assert.strictEqual(emitted.length, 1);
 
             sub.unsubscribe();
