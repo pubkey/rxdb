@@ -935,10 +935,14 @@ describe('replication-microsoft-onedrive.test.ts', function () {
         syncOnce: (collection: RxCollection<any>) => syncOnce(collection, options),
         getAllServerDocs: async () => {
             const initData = await initDriveStructure(options);
-            const [files, walContent] = await Promise.all([
-                listFilesInFolder(options, initData.docsFolderId),
-                readWalContent<any>(options, initData)
-            ]);
+            /**
+             * The WAL must be read before the files are listed.
+             * A concurrent processWalFile() first writes the document files
+             * and then clears the WAL, so reading in this order
+             * always sees a pushed document in at least one of both places.
+             */
+            const walContent = await readWalContent<any>(options, initData);
+            const files = await listFilesInFolder(options, initData.docsFolderId);
             const contents = await fetchDocumentContents<any>(options, files.map(f => f.id));
             const docs: any[] = [...contents.ordered];
             if (walContent.rows) {
