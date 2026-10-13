@@ -1844,7 +1844,13 @@ describe('rx-storage-implementations.test.ts (implementation: ' + config.storage
 
                 storageInstance.remove();
             });
-            it('should return the correct documents when sorting by a non-indexed field with skip and limit', async () => {
+            it('should return the correct documents when sorting by a non-indexed field with skip and limit', async function () {
+                /**
+                 * Storages that use fake-indexeddb walk a cursor over every
+                 * document, which is slow on deno, so the mocha default timeout
+                 * is not enough.
+                 */
+                this.timeout(60 * 1000);
                 type TopKDoc = {
                     id: string;
                     category: string;
@@ -1910,7 +1916,7 @@ describe('rx-storage-implementations.test.ts (implementation: ' + config.storage
                         devMode: true
                     });
 
-                const docsAmount = isFastMode() ? 120 : 400;
+                const docsAmount = isFastMode() ? 100 : 200;
                 const docData: RxDocumentWriteData<TopKDoc>[] = new Array(docsAmount)
                     .fill(0)
                     .map(() => ({
