@@ -27,9 +27,30 @@ import { wait, waitUntil } from 'async-test-util';
 import { RxDBDevModePlugin } from '../plugins/dev-mode/index.mjs';
 
 const connectionSettings = { servers: 'localhost:4222' };
+/**
+ * The NATS server is started in parallel to the tests,
+ * so it might not accept connections yet when this file is loaded.
+ * Therefore we retry the connection until the server is reachable.
+ */
+const CONNECT_RETRY_TIME = 500;
+const CONNECT_MAX_TRIES = 120;
+async function connectWithRetry() {
+    let tries = 0;
+    while (true) {
+        try {
+            return await connect(connectionSettings);
+        } catch (err) {
+            tries++;
+            if (tries >= CONNECT_MAX_TRIES) {
+                throw err;
+            }
+            await wait(CONNECT_RETRY_TIME);
+        }
+    }
+}
 const connectionStatePromise = (async () => {
     const jc = JSONCodec();
-    const nc = await connect(connectionSettings);
+    const nc = await connectWithRetry();
     const jsm = await nc.jetstreamManager();
     const js = nc.jetstream();
     return {
@@ -101,7 +122,8 @@ describe('replication-nats.test.js', () => {
 
 
     describe('init', () => {
-        it('wait for server to be reachable', async () => {
+        it('wait for server to be reachable', async function () {
+            this.timeout(CONNECT_RETRY_TIME * CONNECT_MAX_TRIES + 30 * 1000);
             await connectionStatePromise;
             console.log('--');
             await waitUntil(async () => {
