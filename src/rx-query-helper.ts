@@ -366,3 +366,211 @@ export function prepareQuery<RxDocType>(
         queryPlan
     };
 }
+
+
+/**
+ * A query with a limit only needs the first `skip + limit` documents
+ * of the sorted result. Sorting all matching documents and then
+ * slicing costs n*log(n) comparisons. Selecting the k smallest
+ * documents with a bounded max-heap costs about n + k*log(k)*log(n/k)
+ * comparisons, which is way cheaper when k is small compared to n.
+ *
+ * The selection is exact: because RxDB always appends the primary key
+ * to the sort order, there are no ties and the k smallest documents
+ * are exactly the first k entries of the fully sorted list.
+ *
+ * When k is close to n, the heap bookkeeping costs more than it saves,
+ * so the full sort is used instead. This factor was tuned with a benchmark
+ * in test/unit/rx-query-helper.test.ts, so that the helper is never slower
+ * than the full sort.
+ */
+export const TOP_K_SELECTION_FACTOR = 2;
+
+export function getSkipPlusLimit(
+    skip: number | undefined,
+    limit: number | undefined
+): number {
+    const useSkip = skip ? skip : 0;
+    if (typeof limit !== 'number') {
+        return Infinity;
+    }
+    return useSkip + limit;
+}
+
+/**
+ * Returns true if the top-k selection is expected
+ * to be faster than sorting all n documents.
+ */
+export function shouldUseTopKSelection(
+    documentsAmount: number,
+    skipPlusLimit: number
+): boolean {
+    return (
+        Number.isFinite(skipPlusLimit) &&
+        skipPlusLimit * TOP_K_SELECTION_FACTOR < documentsAmount
+    );
+}
+
+/**
+ * Binary max-heap bounded to k entries.
+ * The root is the "largest" document according to the sort comparator,
+ * which is the document that is dropped first when a smaller one arrives.
+ */
+type BoundedMaxHeap<T> = {
+    heap: T[];
+    k: number;
+};
+
+function heapPush<T>(
+    state: BoundedMaxHeap<T>,
+    comparator: (a: T, b: T) => number,
+    doc: T
+) {
+    const heap = state.heap;
+    if (state.k <= 0) {
+        return;
+    }
+    if (heap.length < state.k) {
+        heap.push(doc);
+        let child = heap.length - 1;
+        while (child > 0) {
+            const parent = (child - 1) >> 1;
+            if (comparator(heap[child], heap[parent]) > 0) {
+                const tmp = heap[child];
+                heap[child] = heap[parent];
+                heap[parent] = tmp;
+                child = parent;
+            } else {
+                break;
+            }
+        }
+        return;
+    }
+    if (comparator(doc, heap[0]) >= 0) {
+        return;
+    }
+    heap[0] = doc;
+    const length = heap.length;
+    let i = 0;
+    while (true) {
+        const left = 2 * i + 1;
+        if (left >= length) {
+            break;
+        }
+        const right = left + 1;
+        let largest = left;
+        if (right < length && comparator(heap[right], heap[left]) > 0) {
+            largest = right;
+        }
+        if (comparator(heap[largest], heap[i]) > 0) {
+            const tmp = heap[i];
+            heap[i] = heap[largest];
+            heap[largest] = tmp;
+            i = largest;
+        } else {
+            break;
+        }
+    }
+}
+
+/**
+ * Sorts the given documents and returns the slice
+ * from `skip` to `skip + limit`, same as
+ * docs.sort(comparator).slice(skip, skip + limit)
+ * but with a top-k selection when only a small part of the
+ * documents has to be returned.
+ * Notice that the input array might be mutated.
+ */
+export function sortAndSliceDocuments<T>(
+    docs: T[],
+    comparator: (a: T, b: T) => number,
+    skip: number | undefined,
+    limit: number | undefined
+): T[] {
+    const useSkip = skip ? skip : 0;
+    const skipPlusLimit = getSkipPlusLimit(useSkip, limit);
+    if (skipPlusLimit <= 0 || useSkip >= docs.length) {
+        return [];
+    }
+    if (!shouldUseTopKSelection(docs.length, skipPlusLimit)) {
+        docs.sort(comparator);
+        if (useSkip === 0 && docs.length <= skipPlusLimit) {
+            return docs;
+        }
+        return docs.slice(useSkip, skipPlusLimit);
+    }
+    const state: BoundedMaxHeap<T> = {
+        heap: [],
+        k: skipPlusLimit
+    };
+    for (let i = 0; i < docs.length; i++) {
+        heapPush(state, comparator, docs[i]);
+    }
+    const result = state.heap.sort(comparator);
+    return useSkip === 0 ? result : result.slice(useSkip);
+}
+
+export type TopKDocumentsCollector<T> = {
+    /**
+     * Add a document that matches the query.
+     */
+    push: (doc: T) => void;
+    /**
+     * Returns the sorted documents from `skip` to `skip + limit`.
+     * Must only be called once.
+     */
+    getResult: () => T[];
+};
+
+/**
+ * Streaming variant of sortAndSliceDocuments() for storages that
+ * iterate over their rows. Only `skip + limit` documents are kept
+ * in memory once enough documents have been seen to make the
+ * top-k selection worth it. Before that, the documents are
+ * buffered so that a full sort can be used on small results.
+ */
+export function createTopKDocumentsCollector<T>(
+    comparator: (a: T, b: T) => number,
+    skip: number | undefined,
+    limit: number | undefined
+): TopKDocumentsCollector<T> {
+    const useSkip = skip ? skip : 0;
+    const skipPlusLimit = getSkipPlusLimit(useSkip, limit);
+    const bufferLimit = Number.isFinite(skipPlusLimit)
+        ? skipPlusLimit * TOP_K_SELECTION_FACTOR
+        : Infinity;
+    let buffer: T[] = [];
+    let heapState: BoundedMaxHeap<T> | undefined;
+    return {
+        push(doc: T) {
+            if (skipPlusLimit <= 0) {
+                return;
+            }
+            if (heapState) {
+                heapPush(heapState, comparator, doc);
+                return;
+            }
+            buffer.push(doc);
+            if (buffer.length > bufferLimit) {
+                heapState = {
+                    heap: [],
+                    k: skipPlusLimit
+                };
+                for (let i = 0; i < buffer.length; i++) {
+                    heapPush(heapState, comparator, buffer[i]);
+                }
+                buffer = [];
+            }
+        },
+        getResult() {
+            if (heapState) {
+                if (skipPlusLimit <= 0 || useSkip >= heapState.heap.length) {
+                    return [];
+                }
+                const result = heapState.heap.sort(comparator);
+                return useSkip === 0 ? result : result.slice(useSkip);
+            }
+            return sortAndSliceDocuments(buffer, comparator, useSkip, limit);
+        }
+    };
+}

@@ -29,7 +29,7 @@ import {
     categorizeBulkWriteRows
 } from '../../rx-storage-helper.ts';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper.ts';
-import { getQueryMatcher, getSortComparator } from '../../rx-query-helper.ts';
+import { createTopKDocumentsCollector, getQueryMatcher, getSortComparator } from '../../rx-query-helper.ts';
 import { newRxError } from '../../rx-error.ts';
 import type { RxStorageLocalstorage } from './index.ts';
 import {
@@ -441,6 +441,18 @@ export class RxStorageInstanceLocalstorage<RxDocType> implements RxStorageInstan
         );
 
         let rows: RxDocumentData<RxDocType>[] = [];
+        /**
+         * When the index does not provide the sort order,
+         * every document in the range has to be parsed, but only
+         * the first skip+limit documents in sort order are kept.
+         */
+        const collector = mustManuallyResort
+            ? createTopKDocumentsCollector<RxDocumentData<RxDocType>>(
+                getSortComparator(this.schema, preparedQuery.query),
+                skip,
+                query.limit
+            )
+            : undefined;
         let done = false;
         while (!done) {
             const currentRow = docsWithIndex[indexOfLower];
@@ -454,11 +466,15 @@ export class RxStorageInstanceLocalstorage<RxDocType> implements RxStorageInstan
             const currentDoc = ensureNotFalsy(this.getDoc(docId));
 
             if (!queryMatcher || queryMatcher(currentDoc)) {
-                rows.push(currentDoc);
+                if (collector) {
+                    collector.push(currentDoc);
+                } else {
+                    rows.push(currentDoc);
+                }
             }
 
             if (
-                (rows.length >= skipPlusLimit && !mustManuallyResort)
+                (rows.length >= skipPlusLimit && !collector)
             ) {
                 done = true;
             }
@@ -466,13 +482,12 @@ export class RxStorageInstanceLocalstorage<RxDocType> implements RxStorageInstan
             indexOfLower++;
         }
 
-        if (mustManuallyResort) {
-            const sortComparator = getSortComparator(this.schema, preparedQuery.query);
-            rows = rows.sort(sortComparator);
+        if (collector) {
+            rows = collector.getResult();
+        } else {
+            // apply skip and limit boundaries.
+            rows = rows.slice(skip, skipPlusLimit);
         }
-
-        // apply skip and limit boundaries.
-        rows = rows.slice(skip, skipPlusLimit);
         return Promise.resolve({
             documents: rows
         });

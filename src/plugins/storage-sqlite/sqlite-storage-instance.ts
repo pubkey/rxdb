@@ -41,7 +41,7 @@ import type {
     SQLiteQueryWithParams,
     SQLiteStorageSettings
 } from './sqlite-types.ts';
-import { getSortComparator } from '../../rx-query-helper.ts';
+import { createTopKDocumentsCollector, getSortComparator } from '../../rx-query-helper.ts';
 import { newRxError } from '../../rx-error.ts';
 let shownNonPremiumLog = false;
 let instanceId = 0;
@@ -316,19 +316,20 @@ export class RxStorageInstanceSQLite<RxDocType> implements RxStorageInstance<
 
 
 
-        let result: RxDocumentData<RxDocType>[] = [];
         const query = originalPreparedQuery.query;
         const skip = query.skip ? query.skip : 0;
-        /**
-         * Use typeof so an explicit `limit: 0` from the mango query is
-         * honored. The previous truthy check treated `0` as "no limit"
-         * and returned all matching documents.
-         */
-        const limit = typeof query.limit === 'number' ? query.limit : Infinity;
-        const skipPlusLimit = skip + limit;
         const queryMatcher = getQueryMatcher(
             this.schema,
             query as any
+        );
+        /**
+         * All rows are read and matched in JavaScript, but only
+         * the first skip+limit documents in sort order are kept.
+         */
+        const collector = createTopKDocumentsCollector<RxDocumentData<RxDocType>>(
+            getSortComparator(this.schema, query as any),
+            skip,
+            query.limit
         );
         const subResult = await this.all(
             database,
@@ -344,14 +345,11 @@ export class RxStorageInstanceSQLite<RxDocType> implements RxStorageInstance<
         subResult.forEach(row => {
             const docData = JSON.parse(getDataFromResultRow(row));
             if (queryMatcher(docData)) {
-                result.push(docData);
+                collector.push(docData);
             }
         });
-        const sortComparator = getSortComparator(this.schema, query as any);
-        result = result.sort(sortComparator);
-        result = result.slice(skip, skipPlusLimit);
         return {
-            documents: result
+            documents: collector.getResult()
         };
     }
     async count(

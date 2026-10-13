@@ -1,5 +1,5 @@
 import { INDEX_MAX, INDEX_MIN } from '../../query-planner.ts';
-import { getQueryMatcher, getSortComparator } from '../../rx-query-helper.ts';
+import { createTopKDocumentsCollector, getQueryMatcher, getSortComparator } from '../../rx-query-helper.ts';
 import type {
     PreparedQuery,
     QueryMatcher,
@@ -114,6 +114,19 @@ export async function dexieQuery<RxDocType>(
 
     const queryPlanFields: string[] = queryPlan.index;
 
+    /**
+     * When the index does not provide the sort order,
+     * the cursor has to visit every document in the range,
+     * but only the first skip+limit documents in sort order are kept.
+     */
+    const collector = queryPlan.sortSatisfiedByIndex
+        ? undefined
+        : createTopKDocumentsCollector<RxDocumentData<RxDocType>>(
+            getSortComparator(instance.schema, preparedQuery.query),
+            skip,
+            query.limit
+        );
+
     let rows: any[] = [];
     await state.dexieDb.transaction(
         'r',
@@ -149,7 +162,11 @@ export async function dexieQuery<RxDocType>(
                         // We have a record in cursor.value
                         const docData = fromDexieToStorage<RxDocType>(state.booleanIndexes, cursor.value);
                         if (!queryMatcher || queryMatcher(docData)) {
-                            rows.push(docData);
+                            if (collector) {
+                                collector.push(docData);
+                            } else {
+                                rows.push(docData);
+                            }
                         }
 
                         /**
@@ -178,13 +195,12 @@ export async function dexieQuery<RxDocType>(
     );
 
 
-    if (!queryPlan.sortSatisfiedByIndex) {
-        const sortComparator = getSortComparator(instance.schema, preparedQuery.query);
-        rows = rows.sort(sortComparator);
+    if (collector) {
+        rows = collector.getResult();
+    } else {
+        // apply skip and limit boundaries.
+        rows = rows.slice(skip, skipPlusLimit);
     }
-
-    // apply skip and limit boundaries.
-    rows = rows.slice(skip, skipPlusLimit);
 
     /**
      * Comment this in for debugging to check all fields in the database.
