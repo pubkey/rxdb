@@ -97,12 +97,13 @@ export class IncrementalWriteQueue<RxDocType> {
         try {
             await Promise.all(
                 Array.from(itemsById.entries())
-                    .map(async ([_docId, items]) => {
+                    .map(async ([docId, allItems]) => {
                         const oldData = findNewestOfDocumentStates(
-                            items.map(i => i.lastKnownDocumentState)
+                            allItems.map(i => i.lastKnownDocumentState)
                         );
                         let newData = oldData;
-                        for (const item of items) {
+                        const items: IncrementalWriteQueueItem<RxDocType>[] = [];
+                        for (const item of allItems) {
                             try {
                                 newData = await item.modifier(
                                     /**
@@ -112,12 +113,22 @@ export class IncrementalWriteQueue<RxDocType> {
                                      */
                                     clone(newData)
                                 ) as any;
+                                items.push(item);
                             } catch (err: any) {
                                 item.reject(err);
-                                item.reject = () => { };
-                                item.resolve = () => { };
                             }
                         }
+
+                        /**
+                         * Items whose modifier threw are already rejected
+                         * and must not be retried on conflicts.
+                         * If all modifiers threw, the document must not be written at all.
+                         */
+                        if (items.length === 0) {
+                            itemsById.delete(docId);
+                            return;
+                        }
+                        itemsById.set(docId, items);
 
                         try {
                             await this.preWrite(newData, oldData);

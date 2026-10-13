@@ -9,8 +9,10 @@ import {
     humansCollection,
     isFastMode,
     isNode,
-    HumanDocumentType
+    HumanDocumentType,
+    enableKeyCompression
 } from '../../plugins/test-utils/index.mjs';
+import { wrappedKeyCompressionStorage } from '../../plugins/key-compression/index.mjs';
 
 import {
     createRxDatabase,
@@ -25,7 +27,8 @@ import {
     defaultHashSha256,
     RxJsonSchema,
     BulkWriteRow,
-    getWrittenDocumentsFromBulkWriteResponse
+    getWrittenDocumentsFromBulkWriteResponse,
+    getHeightOfRevision
 } from '../../plugins/core/index.mjs';
 
 
@@ -955,6 +958,89 @@ describe('rx-document.test.js', () => {
             assert.strictEqual(count, 1);
 
             c.database.close();
+        });
+        /**
+         * @link https://github.com/pubkey/rxdb/issues/9234
+         */
+        it('should not write the document when the modifier throws after a conflict', async () => {
+            /**
+             * Key compression returns fresh, non-frozen document states on conflicts.
+             * With the plain memory storage in dev-mode, the frozen state would hide the bug.
+             */
+            const db = await createRxDatabase<{ human: RxCollection<HumanDocumentType>; }>({
+                name: randomToken(10),
+                storage: wrappedKeyCompressionStorage({
+                    storage: config.storage.getStorage()
+                })
+            });
+            await db.addCollections({
+                human: {
+                    schema: enableKeyCompression(schemas.human)
+                }
+            });
+            const c = db.human;
+            await c.insert(schemaObjects.humanData());
+            const staleDoc = await c.findOne().exec(true);
+
+            // another write makes the state of staleDoc outdated
+            const currentDoc = await staleDoc.incrementalPatch({ firstName: 'changed' });
+            const revBefore = currentDoc.revision;
+
+            const emitted: any[] = [];
+            const sub = c.$.subscribe(ev => emitted.push(ev));
+
+            /**
+             * The modifier only allows the write while the document is unchanged.
+             * On the stale state it passes, the write conflicts and
+             * the modifier is run again on the current state where it throws.
+             */
+            let modifierCalls = 0;
+            await AsyncTestUtil.assertThrows(
+                () => staleDoc.incrementalModify((docData) => {
+                    modifierCalls++;
+                    // partially modify the document before throwing
+                    docData.lastName = 'partial';
+                    if (docData.firstName === 'changed') {
+                        throw new Error('refuse');
+                    }
+                    docData.lastName = 'foobar';
+                    return docData;
+                }),
+                'Error',
+                'refuse'
+            );
+            assert.strictEqual(modifierCalls, 2);
+
+            /**
+             * The incremental write queue processes one batch after another,
+             * so when the next write has finished, a wrongly written
+             * revision of the refused write would already be stored.
+             * The batch also contains a failing modifier which must not affect the successful one.
+             */
+            const results = await Promise.allSettled([
+                currentDoc.incrementalModify((docData) => {
+                    docData.lastName = 'partial';
+                    throw new Error('refuse');
+                }),
+                currentDoc.incrementalModify((docData) => {
+                    docData.age = 42;
+                    return docData;
+                })
+            ]);
+            assert.strictEqual(results[0].status, 'rejected');
+            assert.strictEqual(results[1].status, 'fulfilled');
+
+            const after = await c.findOne(staleDoc.primary).exec(true);
+            assert.strictEqual(
+                getHeightOfRevision(after.revision),
+                getHeightOfRevision(revBefore) + 1
+            );
+            assert.strictEqual(after.age, 42);
+            assert.strictEqual(after.lastName, currentDoc.lastName);
+            assert.strictEqual(emitted.length, 1);
+
+            sub.unsubscribe();
+            db.close();
         });
     });
     describe('Proxy', () => {
