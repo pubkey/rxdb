@@ -12,7 +12,7 @@ import type {
 import { ensureNotFalsy, lastOfArray } from '../../plugins/utils/index.ts';
 import { getFoundationDBIndexName } from './foundationdb-helpers.ts';
 import { RxStorageInstanceFoundationDB } from './rx-storage-instance-foundationdb.ts';
-import { getQueryMatcher, getSortComparator } from '../../rx-query-helper.ts';
+import { createTopKDocumentsCollector, getQueryMatcher, getSortComparator } from '../../rx-query-helper.ts';
 
 export async function queryFoundationDB<RxDocType>(
     instance: RxStorageInstanceFoundationDB<RxDocType>,
@@ -60,6 +60,18 @@ export async function queryFoundationDB<RxDocType>(
         indexForName,
         upperBound
     );
+    /**
+     * When the index does not provide the sort order,
+     * only the first skip+limit documents in sort order are kept
+     * while iterating over the range.
+     */
+    const collector = mustManuallyResort
+        ? createTopKDocumentsCollector<RxDocumentData<RxDocType>>(
+            getSortComparator(instance.schema, preparedQuery.query),
+            skip,
+            query.limit
+        )
+        : undefined;
     let result: RxDocumentData<RxDocType>[] = await dbs.root.doTransaction(async (tx: any) => {
         const innerResult: RxDocumentData<RxDocType>[] = [];
         const indexTx = tx.at(indexDB.subspace);
@@ -117,11 +129,15 @@ export async function queryFoundationDB<RxDocType>(
             docsData.forEach((docData) => {
                 if (!done) {
                     if (!queryMatcher || queryMatcher(docData)) {
-                        innerResult.push(docData);
+                        if (collector) {
+                            collector.push(docData);
+                        } else {
+                            innerResult.push(docData);
+                        }
                     }
                 }
                 if (
-                    !mustManuallyResort &&
+                    !collector &&
                     innerResult.length === skipPlusLimit
                 ) {
                     done = true;
@@ -131,13 +147,12 @@ export async function queryFoundationDB<RxDocType>(
         }
         return innerResult;
     });
-    if (mustManuallyResort) {
-        const sortComparator = getSortComparator(instance.schema, preparedQuery.query);
-        result = result.sort(sortComparator);
+    if (collector) {
+        result = collector.getResult();
+    } else {
+        // apply skip and limit boundaries.
+        result = result.slice(skip, skipPlusLimit);
     }
-
-    // apply skip and limit boundaries.
-    result = result.slice(skip, skipPlusLimit);
 
     return {
         documents: result

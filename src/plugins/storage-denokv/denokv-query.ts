@@ -10,7 +10,7 @@ import type {
     RxStorageQueryResult
 } from '../../types/index.d.ts';
 import { ensureNotFalsy } from '../../plugins/utils/index.ts';
-import { getQueryMatcher, getSortComparator } from '../../rx-query-helper.ts';
+import { createTopKDocumentsCollector, getQueryMatcher, getSortComparator } from '../../rx-query-helper.ts';
 import { RxStorageInstanceDenoKV } from "./rx-storage-instance-denokv.ts";
 import { DENOKV_DOCUMENT_ROOT_PATH, getDenoKVIndexName } from "./denokv-helper.ts";
 
@@ -120,6 +120,19 @@ export async function queryDenoKV<RxDocType>(
         batchSize: instance.settings.batchSize
     });
 
+    /**
+     * When the index does not provide the sort order,
+     * only the first skip+limit documents in sort order are kept
+     * while iterating over the range.
+     */
+    const collector = mustManuallyResort
+        ? createTopKDocumentsCollector<RxDocumentData<RxDocType>>(
+            getSortComparator(instance.schema, preparedQuery.query),
+            skip,
+            query.limit
+        )
+        : undefined;
+
     for await (const indexDocEntry of range) {
         const docId = indexDocEntry.value;
         const docDataResult = await kv.get([instance.keySpace, DENOKV_DOCUMENT_ROOT_PATH, docId], instance.kvOptions);
@@ -128,23 +141,26 @@ export async function queryDenoKV<RxDocType>(
             continue;
         }
         if (!queryMatcher || queryMatcher(docData)) {
-            result.push(docData);
+            if (collector) {
+                collector.push(docData);
+            } else {
+                result.push(docData);
+            }
         }
         if (
-            !mustManuallyResort &&
+            !collector &&
             result.length === skipPlusLimit
         ) {
             break;
         }
     }
 
-    if (mustManuallyResort) {
-        const sortComparator = getSortComparator(instance.schema, preparedQuery.query);
-        result = result.sort(sortComparator);
+    if (collector) {
+        result = collector.getResult();
+    } else {
+        // apply skip and limit boundaries.
+        result = result.slice(skip, skipPlusLimit);
     }
-
-    // apply skip and limit boundaries.
-    result = result.slice(skip, skipPlusLimit);
 
     return {
         documents: result

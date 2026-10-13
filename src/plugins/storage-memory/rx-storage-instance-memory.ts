@@ -60,7 +60,7 @@ import type {
     RxStorageMemoryInstanceCreationOptions,
     RxStorageMemorySettings
 } from './memory-types.ts';
-import { getQueryMatcher, getSortComparator } from '../../rx-query-helper.ts';
+import { createTopKDocumentsCollector, getQueryMatcher, getSortComparator, sortAndSliceDocuments } from '../../rx-query-helper.ts';
 import { newRxError } from '../../rx-error.ts';
 
 /**
@@ -346,6 +346,15 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         let rows: RxDocumentData<RxDocType>[] = [];
 
         /**
+         * When the index does not provide the sort order,
+         * only the first skip+limit documents in sort order
+         * are kept via a top-k selection instead of sorting all matches.
+         */
+        const sortComparator = mustManuallyResort
+            ? getSortComparator(this.schema, preparedQuery.query)
+            : undefined;
+
+        /**
          * @performance
          * If the selector is satisfied by the index,
          * we can extract all documents in the range without
@@ -364,6 +373,23 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
                     rows[i] = docsWithIndex[indexOfLower + i][1];
                 }
             }
+            if (sortComparator) {
+                rows = sortAndSliceDocuments<RxDocumentData<RxDocType>>(rows, sortComparator, skip, query.limit);
+            }
+        } else if (sortComparator) {
+            const collector = createTopKDocumentsCollector<RxDocumentData<RxDocType>>(sortComparator, skip, query.limit);
+            while (indexOfLower <= indexOfUpper) {
+                const currentRow = docsWithIndex[indexOfLower];
+                if (!currentRow) {
+                    break;
+                }
+                const currentDoc = currentRow[1];
+                if (queryMatcher(currentDoc)) {
+                    collector.push(currentDoc);
+                }
+                indexOfLower++;
+            }
+            rows = collector.getResult();
         } else {
             let done = false;
             while (!done) {
@@ -380,9 +406,7 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
                     rows.push(currentDoc);
                 }
 
-                if (
-                    (rows.length >= skipPlusLimit && !mustManuallyResort)
-                ) {
+                if (rows.length >= skipPlusLimit) {
                     done = true;
                 }
 
@@ -390,13 +414,8 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
             }
         }
 
-        if (mustManuallyResort) {
-            const sortComparator = getSortComparator(this.schema, preparedQuery.query);
-            rows = rows.sort(sortComparator);
-        }
-
         // apply skip and limit boundaries.
-        if (skip !== 0 || rows.length > skipPlusLimit) {
+        if (!mustManuallyResort && (skip !== 0 || rows.length > skipPlusLimit)) {
             rows = rows.slice(skip, skipPlusLimit);
         }
 

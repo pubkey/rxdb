@@ -12,6 +12,7 @@ import {
     RxJsonSchema,
     ensureNotFalsy,
     shuffleArray,
+    randomNumber,
     now,
     getSingleDocument,
     parseRevision,
@@ -1839,6 +1840,174 @@ describe('rx-storage-implementations.test.ts (implementation: ' + config.storage
                 ];
                 for (const query of queries) {
                     await testQuery(query);
+                }
+
+                storageInstance.remove();
+            });
+            it('should return the correct documents when sorting by a non-indexed field with skip and limit', async () => {
+                type TopKDoc = {
+                    id: string;
+                    category: string;
+                    score: number;
+                    name: string;
+                    nested: {
+                        value: number;
+                    };
+                };
+                const schema: RxJsonSchema<RxDocumentData<TopKDoc>> = fillWithDefaultSettings({
+                    version: 0,
+                    primaryKey: 'id',
+                    type: 'object',
+                    properties: {
+                        id: {
+                            type: 'string',
+                            maxLength: 100
+                        },
+                        category: {
+                            type: 'string',
+                            maxLength: 20
+                        },
+                        score: {
+                            type: 'number',
+                            minimum: 0,
+                            maximum: 1000,
+                            multipleOf: 1
+                        },
+                        name: {
+                            type: 'string',
+                            maxLength: 100
+                        },
+                        nested: {
+                            type: 'object',
+                            properties: {
+                                value: {
+                                    type: 'number'
+                                }
+                            },
+                            required: ['value']
+                        }
+                    },
+                    indexes: [
+                        ['category', 'id']
+                    ],
+                    required: [
+                        'id',
+                        'category',
+                        'score',
+                        'name',
+                        'nested'
+                    ]
+                });
+                const storageInstance = await config.storage
+                    .getStorage()
+                    .createStorageInstance<TopKDoc>({
+                        databaseInstanceToken: randomToken(10),
+                        databaseName: randomToken(12),
+                        collectionName: randomToken(12),
+                        schema,
+                        options: {},
+                        multiInstance: false,
+                        devMode: true
+                    });
+
+                const docsAmount = isFastMode() ? 120 : 400;
+                const docData: RxDocumentWriteData<TopKDoc>[] = new Array(docsAmount)
+                    .fill(0)
+                    .map(() => ({
+                        id: randomString(10),
+                        category: ['a', 'b', 'c'][randomNumber(0, 2)],
+                        score: randomNumber(0, 50),
+                        name: randomString(2),
+                        nested: {
+                            value: randomNumber(0, 10)
+                        },
+                        _deleted: false,
+                        _attachments: {},
+                        _rev: EXAMPLE_REVISION_1,
+                        _meta: {
+                            lwt: now()
+                        }
+                    }));
+                const writeRows = docData.map(d => ({ document: d }));
+                const writeResponse = await storageInstance.bulkWrite(
+                    writeRows,
+                    testContext
+                );
+                assert.deepStrictEqual(writeResponse.error, []);
+                const docs = getWrittenDocumentsFromBulkWriteResponse(
+                    'id',
+                    writeRows,
+                    writeResponse
+                );
+
+                const queries: FilledMangoQuery<TopKDoc>[] = [
+                    {
+                        selector: {},
+                        sort: [{ score: 'desc' }, { id: 'asc' }],
+                        skip: 0,
+                        limit: 10
+                    },
+                    {
+                        selector: {},
+                        sort: [{ score: 'asc' }, { id: 'asc' }],
+                        skip: 25,
+                        limit: 10
+                    },
+                    {
+                        selector: { category: 'b' },
+                        sort: [{ name: 'asc' }, { id: 'asc' }],
+                        skip: 3,
+                        limit: 7
+                    },
+                    {
+                        selector: { category: { $in: ['a', 'c'] } },
+                        sort: [{ score: 'desc' }, { name: 'asc' }, { id: 'asc' }],
+                        skip: 0,
+                        limit: 1
+                    },
+                    {
+                        selector: {},
+                        sort: [{ 'nested.value': 'desc' }, { id: 'desc' }],
+                        skip: 10,
+                        limit: 20
+                    },
+                    {
+                        selector: {},
+                        sort: [{ score: 'asc' }, { id: 'asc' }],
+                        skip: docsAmount - 5,
+                        limit: 10
+                    },
+                    {
+                        selector: {},
+                        sort: [{ score: 'asc' }, { id: 'asc' }],
+                        skip: 0,
+                        limit: 0
+                    },
+                    {
+                        selector: {},
+                        sort: [{ score: 'asc' }, { id: 'asc' }],
+                        skip: 4
+                    }
+                ];
+                for (const query of queries) {
+                    const preparedQuery = prepareQuery(
+                        storageInstance.schema,
+                        query
+                    );
+                    const docsViaQuery = (await storageInstance.query(preparedQuery)).documents;
+                    const queryMatcher = getQueryMatcher(storageInstance.schema, query);
+                    const sortComparator = getSortComparator(storageInstance.schema, query);
+                    const sorted = shuffleArray(docs)
+                        .filter(doc => queryMatcher(doc))
+                        .sort(sortComparator);
+                    const expected = typeof query.limit === 'number'
+                        ? sorted.slice(query.skip, query.skip + query.limit)
+                        : sorted.slice(query.skip);
+                    assert.deepStrictEqual(
+                        docsViaQuery.map(d => stripMetaDataFromDocument(d)),
+                        expected.map(d => stripMetaDataFromDocument(d)),
+                        'query ' + JSON.stringify(query)
+                    );
                 }
 
                 storageInstance.remove();

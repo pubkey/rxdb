@@ -24,6 +24,7 @@ import './unit/internal-indexes.test.ts';
 import './unit/rx-storage-implementations.test.ts';
 import './unit/rx-storage-query-correctness.test.ts';
 import './unit/rx-storage-helper.test.ts';
+import './unit/rx-query-helper.test.ts';
 
 import './unit/rx-storage-dexie.test.ts';
 import './unit/rx-storage-localstorage.test.ts';
