@@ -9,8 +9,10 @@ import {
     humansCollection,
     isFastMode,
     isNode,
-    HumanDocumentType
+    HumanDocumentType,
+    enableKeyCompression
 } from '../../plugins/test-utils/index.mjs';
+import { wrappedKeyCompressionStorage } from '../../plugins/key-compression/index.mjs';
 
 import {
     createRxDatabase,
@@ -25,8 +27,7 @@ import {
     defaultHashSha256,
     RxJsonSchema,
     BulkWriteRow,
-    getWrittenDocumentsFromBulkWriteResponse,
-    clone
+    getWrittenDocumentsFromBulkWriteResponse
 } from '../../plugins/core/index.mjs';
 
 
@@ -960,69 +961,83 @@ describe('rx-document.test.js', () => {
         /**
          * @link https://github.com/pubkey/rxdb/issues/9234
          */
-        it('should not write the document when all modifiers throw', async () => {
-            const c = await humansCollection.create(1);
-            const doc = await c.findOne().exec(true);
-            const revBefore = doc.toJSON(true)._rev;
-            const lwtBefore = doc.toJSON(true)._meta.lwt;
+        it('should not write the document when the modifier throws after a conflict', async () => {
+            /**
+             * Key compression returns fresh, non-frozen document states on conflicts.
+             * With the plain memory storage in dev-mode, the frozen state would hide the bug.
+             */
+            const db = await createRxDatabase<{ human: RxCollection<HumanDocumentType>; }>({
+                name: randomToken(10),
+                storage: wrappedKeyCompressionStorage({
+                    storage: config.storage.getStorage()
+                })
+            });
+            await db.addCollections({
+                human: {
+                    schema: enableKeyCompression(schemas.human)
+                }
+            });
+            const c = db.human;
+            await c.insert(schemaObjects.humanData());
+            const staleDoc = await c.findOne().exec(true);
 
-            const bulkWriteBefore = c.storageInstance.bulkWrite.bind(c.storageInstance);
-            let writeRowsCount = 0;
-            c.storageInstance.bulkWrite = (writes, context) => {
-                writeRowsCount = writeRowsCount + writes.length;
-                return bulkWriteBefore(writes, context);
-            };
+            // another write makes the state of staleDoc outdated
+            const currentDoc = await staleDoc.incrementalPatch({ firstName: 'changed' });
+            const revBefore = currentDoc.revision;
+            const lwtBefore = currentDoc.toJSON(true)._meta.lwt;
+
             const emitted: any[] = [];
             const sub = c.$.subscribe(ev => emitted.push(ev));
 
-            await AsyncTestUtil.assertThrows(
-                () => doc.incrementalModify(() => {
-                    throw new Error('refuse');
-                }),
-                'Error',
-                'refuse'
-            );
             /**
-             * In dev-mode the document data is deep-frozen,
-             * so we also pass a non-frozen state to the queue directly
-             * to have the same behavior as in production.
+             * The modifier only allows the write while the document is unchanged.
+             * On the stale state it passes, the write conflicts and
+             * the modifier is run again on the current state where it throws.
              */
+            let modifierCalls = 0;
             await AsyncTestUtil.assertThrows(
-                () => c.incrementalWriteQueue.addWrite(
-                    clone(doc.toJSON(true)) as any,
-                    () => {
+                () => staleDoc.incrementalModify((docData) => {
+                    modifierCalls++;
+                    // partially modify the document before throwing
+                    docData.lastName = 'partial';
+                    if (docData.firstName === 'changed') {
                         throw new Error('refuse');
                     }
-                ),
+                    docData.lastName = 'foobar';
+                    return docData;
+                }),
                 'Error',
                 'refuse'
             );
             await wait(50);
+            assert.strictEqual(modifierCalls, 2);
 
-            const after = (await c.storageInstance.findDocumentsById([doc.primary], true))[0];
-            assert.strictEqual(after._rev, revBefore);
-            assert.strictEqual(after._meta.lwt, lwtBefore);
-            assert.strictEqual(writeRowsCount, 0);
+            const after = await c.findOne(staleDoc.primary).exec(true);
+            assert.strictEqual(after.revision, revBefore);
+            assert.strictEqual(after.toJSON(true)._meta.lwt, lwtBefore);
+            assert.strictEqual(after.lastName, currentDoc.lastName);
             assert.strictEqual(emitted.length, 0);
 
             // successful modifiers in the same batch must still be written
             const results = await Promise.allSettled([
-                doc.incrementalModify(() => {
+                after.incrementalModify((docData) => {
+                    docData.lastName = 'partial';
                     throw new Error('refuse');
                 }),
-                doc.incrementalModify((d: any) => {
-                    d.age = 42;
-                    return d;
+                after.incrementalModify((docData) => {
+                    docData.age = 42;
+                    return docData;
                 })
             ]);
             assert.strictEqual(results[0].status, 'rejected');
             assert.strictEqual(results[1].status, 'fulfilled');
-            const after2 = (await c.storageInstance.findDocumentsById([doc.primary], true))[0];
+            const after2 = await c.findOne(staleDoc.primary).exec(true);
             assert.strictEqual(after2.age, 42);
-            assert.strictEqual(writeRowsCount, 1);
+            assert.strictEqual(after2.lastName, currentDoc.lastName);
+            assert.strictEqual(emitted.length, 1);
 
             sub.unsubscribe();
-            c.database.close();
+            db.close();
         });
     });
     describe('Proxy', () => {
