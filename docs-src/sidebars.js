@@ -605,6 +605,13 @@ const sidebars = {
       items: [
         {
           type: 'category',
+          label: 'Case Studies',
+          items: [
+            'articles/case-studies/venice-ai'
+          ],
+        },
+        {
+          type: 'category',
           label: 'TanStack DB',
           items: [
             'articles/tanstack-db/rxdb-collection-for-tanstack-db',
@@ -680,8 +687,7 @@ const sidebars = {
         'articles/indexeddb/indexeddb-query',
         'articles/generic-prompts',
         'articles/electron-sqlite',
-        'articles/realm-to-rxdb-migration',
-        'articles/venice-ai-case-study'
+        'articles/realm-to-rxdb-migration'
       ],
     },
     'contribute',

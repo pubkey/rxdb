@@ -21,7 +21,7 @@ export const REVIEW_ITEMS: {
             target: '_blank',
             logo: '/files/companies/venice.svg',
             logoStyle: 'slider-logo-black ',
-            caseStudyHref: '/articles/venice-ai-case-study.html',
+            caseStudyHref: '/articles/case-studies/venice-ai.html',
         },
         {
             label: 'Readwise',
