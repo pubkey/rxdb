@@ -605,6 +605,13 @@ const sidebars = {
       items: [
         {
           type: 'category',
+          label: 'Case Studies',
+          items: [
+            'articles/case-studies/venice-ai'
+          ],
+        },
+        {
+          type: 'category',
           label: 'TanStack DB',
           items: [
             'articles/tanstack-db/rxdb-collection-for-tanstack-db',
