@@ -564,7 +564,7 @@
     }
   },
   "dependencies": {
-    "@babel/runtime": "8.0.5",
+    "@babel/runtime": "8.0.7",
     "@types/simple-peer": "9.11.9",
     "@types/ws": "8.18.2",
     "ajv": "8.20.0",
@@ -592,7 +592,7 @@
   "devDependencies": {
     "@angular/core": "22.2.1",
     "@babel/cli": "8.0.6",
-    "@babel/core": "8.0.6",
+    "@babel/core": "8.0.7",
     "@babel/plugin-external-helpers": "8.0.1",
     "@babel/plugin-transform-class-properties": "8.0.1",
     "@babel/plugin-transform-explicit-resource-management": "8.0.5",
@@ -602,8 +602,8 @@
     "@babel/plugin-transform-runtime": "8.0.6",
     "@babel/plugin-transform-template-literals": "8.0.1",
     "@babel/plugin-transform-typescript": "8.0.6",
-    "@babel/preset-env": "8.0.6",
-    "@babel/preset-typescript": "8.0.1",
+    "@babel/preset-env": "8.0.7",
+    "@babel/preset-typescript": "8.0.7",
     "@eslint/compat": "2.1.1",
     "@eslint/eslintrc": "3.3.7",
     "@eslint/js": "10.0.1",
