@@ -11,7 +11,18 @@ export const REVIEW_ITEMS: {
     target: '_blank';
     logo?: string;
     logoStyle: 'slider-logo-black ' | 'slider-logo-white ';
+    caseStudyHref?: string;
 }[] = [
+        {
+            label: 'Venice.ai',
+            location: 'USA',
+            description: 'We use RxDB as one shared data layer for our web and mobile apps. There is one schema, the same logic and the same database on both platforms. We even stream AI responses straight into RxDB and render them with live queries, and it is fast enough.',
+            href: 'https://venice.ai/',
+            target: '_blank',
+            logo: '/files/companies/venice.svg',
+            logoStyle: 'slider-logo-black ',
+            caseStudyHref: '/articles/venice-ai-case-study.html',
+        },
         {
             label: 'Readwise',
             location: 'USA',
@@ -157,6 +168,12 @@ export function ReviewsBlock() {
                             /> : <></>}
                             <div className="slider-info">
                                 <span className="developer"><b>{item.label}</b> ({item.location})</span>
+                                {item.caseStudyHref ? <a
+                                    href={item.caseStudyHref}
+                                    className="company-link"
+                                >
+                                    Read the case study
+                                </a> : <></>}
                                 {/* <span className="company-link"                                >
                     {new URL(item.href).hostname}
                 </span> */}

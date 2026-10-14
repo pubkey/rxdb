@@ -680,7 +680,8 @@ const sidebars = {
         'articles/indexeddb/indexeddb-query',
         'articles/generic-prompts',
         'articles/electron-sqlite',
-        'articles/realm-to-rxdb-migration'
+        'articles/realm-to-rxdb-migration',
+        'articles/venice-ai-case-study'
       ],
     },
     'contribute',
