@@ -113,6 +113,7 @@ You could however use the [memory mapped](./rx-storage-memory-mapped.md) RxStora
 ## Password handling
 RxDB does not define how you should store or retrieve the encryption password. It only requires you to provide the password on database creation which grants you flexibility in how you manage encryption passwords.
 You could ask the user on app-start to insert the password, or you can retrieve the password from your backend on app start (or revoke access by no longer providing the password).
+The password is also required when you delete an encrypted database with `removeRxDatabase()`, see [removing an encrypted database](./rx-database.md#removing-an-encrypted-database).
 
 ## Asymmetric encryption
 
@@ -2464,7 +2465,7 @@ import {
     createRxDatabase
 } from 'rxdb';
 import { getRxStorageSharedWorker } from 'rxdb-premium/plugins/storage-worker';
-import { getRxStorageIndexedDB } from 'rxdb/plugins/storage-indexeddb';
+import { getRxStorageIndexedDB } from 'rxdb-premium/plugins/storage-indexeddb';
 
 const database = await createRxDatabase({
     name: 'mydatabase',
@@ -3247,7 +3248,7 @@ import { HeadlineWithIcon } from '@site/src/components/headline-with-icon';
 
 # <HeadlineWithIcon h1 icon={<IconStorage />}>RxStorage</HeadlineWithIcon>
 
-RxDB is not a self-contained database. Instead the data is stored in an implementation of the [RxStorage interface](https://github.com/pubkey/rxdb/blob/master/src/types/rx-storage.interface.d.ts). This allows you to **switch out** the underlying data layer, depending on the JavaScript environment and performance requirements. For example you can use the SQLite storage for a capacitor app or you can use the LocalStorage RxStorage to store data in localstorage in a browser-based application. There are also storages for other JavaScript runtimes like Node.js, React-Native, NativeScript and more.
+RxDB is not a self-contained database. Instead the data is stored in an implementation of the [RxStorage interface](https://github.com/pubkey/rxdb/blob/master/src/types/rx-storage.interface.d.ts). This allows you to **switch out** the underlying data layer, depending on the JavaScript environment and performance requirements. For example you can use the SQLite storage for a capacitor app or you can use the LocalStorage RxStorage to store data in localstorage in a browser-based application. There are also storages for other JavaScript runtimes like Node.js, React-Native, NativeScript and more. The import path of every storage is listed in the [import reference](./install.md#import-reference).
 
 ## Quick Recommendations
 

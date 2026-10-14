@@ -78,6 +78,93 @@ import {
 } from 'rxdb';
 ```
 
+## Import Reference
+
+RxDB has three kinds of import paths:
+
+- `rxdb` (or `rxdb/plugins/core`): the core functions and all TypeScript types.
+- `rxdb/plugins/<name>`: the open-source plugins.
+- `rxdb-premium/plugins/<name>`: the [premium plugins 👑](/premium/).
+
+### Core Functions
+
+```ts
+import {
+    createRxDatabase,
+    addRxPlugin,
+    removeRxDatabase,
+    isRxDatabase,
+    isRxCollection,
+    isRxDocument,
+    isRxQuery,
+    toTypedRxJsonSchema
+} from 'rxdb';
+```
+
+### TypeScript Types
+
+All types are exported from `rxdb`. Use `import type` so that they do not end up in your bundle.
+
+```ts
+import type {
+    RxDatabase,
+    RxCollection,
+    RxDocument,
+    RxQuery,
+    RxJsonSchema,
+    RxStorage,
+    RxConflictHandler,
+    ExtractDocumentTypeFromTypedRxJsonSchema,
+    ReplicationPullHandler,
+    ReplicationPushHandler
+} from 'rxdb';
+```
+
+How to combine these types is shown in the [TypeScript tutorial](./tutorials/typescript.md).
+
+### Storages
+
+| Storage | Import |
+| --- | --- |
+| [Memory](./rx-storage-memory.md) | `import { getRxStorageMemory } from 'rxdb/plugins/storage-memory';` |
+| [LocalStorage](./rx-storage-localstorage.md) | `import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';` |
+| [Dexie.js](./rx-storage-dexie.md) | `import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';` |
+| [SQLite Trial](./rx-storage-sqlite.md) | `import { getRxStorageSQLiteTrial } from 'rxdb/plugins/storage-sqlite';` |
+| [MongoDB](./rx-storage-mongodb.md) | `import { getRxStorageMongoDB } from 'rxdb/plugins/storage-mongodb';` |
+| [DenoKV](./rx-storage-denokv.md) | `import { getRxStorageDenoKV } from 'rxdb/plugins/storage-denokv';` |
+| [FoundationDB](./rx-storage-foundationdb.md) | `import { getRxStorageFoundationDB } from 'rxdb/plugins/storage-foundationdb';` |
+| [Remote](./rx-storage-remote.md) | `import { getRxStorageRemote } from 'rxdb/plugins/storage-remote';` |
+| [Electron IpcRenderer](./electron.md) | `import { getRxStorageIpcRenderer } from 'rxdb/plugins/electron';` |
+| [IndexedDB 👑](./rx-storage-indexeddb.md) | `import { getRxStorageIndexedDB } from 'rxdb-premium/plugins/storage-indexeddb';` |
+| [OPFS 👑](./rx-storage-opfs.md) | `import { getRxStorageOPFS, getRxStorageOPFSMainThread } from 'rxdb-premium/plugins/storage-opfs';` |
+| [SQLite 👑](./rx-storage-sqlite.md) | `import { getRxStorageSQLite } from 'rxdb-premium/plugins/storage-sqlite';` |
+| [Expo Filesystem 👑](./rx-storage-filesystem-expo.md) | `import { getRxStorageExpoAsync } from 'rxdb-premium/plugins/storage-filesystem-expo';` |
+| [Node.js Filesystem 👑](./rx-storage-filesystem-node.md) | `import { getRxStorageFilesystemNode } from 'rxdb-premium/plugins/storage-filesystem-node';` |
+| [Worker 👑](./rx-storage-worker.md) | `import { getRxStorageWorker } from 'rxdb-premium/plugins/storage-worker';` |
+| [SharedWorker 👑](./rx-storage-shared-worker.md) | `import { getRxStorageSharedWorker } from 'rxdb-premium/plugins/storage-worker';` |
+| [Sharding 👑](./rx-storage-sharding.md) | `import { getRxStorageSharding } from 'rxdb-premium/plugins/storage-sharding';` |
+
+For unit tests, use the [Memory RxStorage](./rx-storage-memory.md). It needs no setup and all data is gone when the process ends. When your tests need a fresh database per test, give each database a random name with `randomToken()` from `rxdb`. More testing patterns are on the [testing page](./testing.md).
+
+### Common Plugins
+
+```ts
+import { RxDBDevModePlugin } from 'rxdb/plugins/dev-mode';
+import { wrappedValidateAjvStorage } from 'rxdb/plugins/validate-ajv';
+import { RxDBMigrationSchemaPlugin } from 'rxdb/plugins/migration-schema';
+import { RxDBLocalDocumentsPlugin } from 'rxdb/plugins/local-documents';
+import { RxDBLeaderElectionPlugin } from 'rxdb/plugins/leader-election';
+import { RxDBAttachmentsPlugin } from 'rxdb/plugins/attachments';
+import { RxDBQueryBuilderPlugin } from 'rxdb/plugins/query-builder';
+import { RxDBUpdatePlugin } from 'rxdb/plugins/update';
+import { RxDBCleanupPlugin } from 'rxdb/plugins/cleanup';
+import { wrappedKeyCompressionStorage } from 'rxdb/plugins/key-compression';
+import {
+    wrappedKeyEncryptionCryptoJsStorage
+} from 'rxdb/plugins/encryption-crypto-js';
+import { replicateRxCollection, RxReplicationState } from 'rxdb/plugins/replication';
+```
+
 ---
 
 ## RxDB Docs
@@ -1131,12 +1218,23 @@ const is = isRxCollection(myObj);
 <FaqItem question={'How to remove the limit of ' + NON_PREMIUM_COLLECTION_LIMIT + ' collections?'}>
 
     
-    In the open-source version of RxDB, the amount of RxCollections that can exist in parallel is limited to <code>{NON_PREMIUM_COLLECTION_LIMIT}</code>.
-    To remove this limit, you can purchase the [Premium Plugins](/premium/) and call the `setPremiumFlag()` function before creating a database:
+    In the open-source version of RxDB, the amount of RxCollections that can be open in parallel is limited to <code>{NON_PREMIUM_COLLECTION_LIMIT}</code>. The value comes from the `NON_PREMIUM_COLLECTION_LIMIT` constant in [`src/plugins/utils/utils-premium.ts`](https://github.com/pubkey/rxdb/blob/master/src/plugins/utils/utils-premium.ts).
+    The limit counts all open collections of all databases in the same JavaScript process. Closed collections do not count. When the limit is reached, RxDB waits a short time for other collections to close and then throws the error `COL23`.
+
+    To remove the limit:
+
+    1. Purchase the [Premium Plugins 👑](/premium/) and install the `rxdb-premium` package.
+    2. Call `setPremiumFlag()` once, before you create the first database.
+    3. Create your databases and collections as usual.
+
     ```ts
     import { setPremiumFlag } from 'rxdb-premium/plugins/shared';
     setPremiumFlag();
+
+    const db = await createRxDatabase({ /* ... */ });
     ```
+
+    Before you remove the limit, check whether you need that many collections. Each RxCollection opens its own storage instance (for example its own IndexedDB object store or SQLite table) and keeps its own change stream and query cache. So the startup time and memory usage grow with every collection. When many collections store documents with a similar shape, store them in one collection with a `type` field and an index on it.
     
 
 </FaqItem>
@@ -1363,10 +1461,52 @@ await myDatabase.remove();
 
 You can also clear a database without removing its instance by using `removeRxDatabase()`. This is useful if you want to migrate data or reset the user's state by renaming the database. Then you can remove the previous data with `removeRxDatabase()` without creating a RxDatabase first. Notice that this will only remove the
 stored data on the storage. It will not clear the cache of any [RxDatabase](./rx-database.md) instances.
-```javascript
-import { removeRxDatabase } from 'rxdb';
-removeRxDatabase('mydatabasename', 'localstorage');
+
+```ts
+removeRxDatabase(
+    databaseName: string,
+    storage: RxStorage,
+    multiInstance: boolean = true,
+    password?: string
+): Promise<string[]> // resolves with the names of the removed collections
 ```
+
+Pass the same [RxStorage](./rx-storage.md) that was used to create the database, not a string.
+
+```ts
+import { removeRxDatabase } from 'rxdb';
+import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
+
+await removeRxDatabase('mydatabasename', getRxStorageLocalstorage());
+```
+
+#### Removing an encrypted database
+
+When the database uses the [encryption plugin](./encryption.md), the storage is wrapped with `wrappedKeyEncryptionCryptoJsStorage()`. To remove such a database, pass the wrapped storage and the password. Without the password, RxDB cannot open the storage instances of collections that have encrypted fields and `removeRxDatabase()` throws the error `EN3` ("Schema contains encrypted properties but no password is given").
+
+```ts
+import { removeRxDatabase } from 'rxdb';
+import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
+import {
+    wrappedKeyEncryptionCryptoJsStorage
+} from 'rxdb/plugins/encryption-crypto-js';
+
+const encryptedStorage = wrappedKeyEncryptionCryptoJsStorage({
+    storage: getRxStorageLocalstorage()
+});
+
+// throws EN3 because the password is missing
+// await removeRxDatabase('mydatabasename', encryptedStorage);
+
+await removeRxDatabase(
+    'mydatabasename',
+    encryptedStorage,
+    true, // multiInstance, same value as in createRxDatabase()
+    'myLongAndStupidPassword'
+);
+```
+
+When you still have the `RxDatabase` instance, call `myDatabase.remove()` instead. It uses the storage and the password the database was created with, so you do not have to pass them again.
 
 ### isRxDatabase
 Returns true if the given object is an instance of RxDatabase. Returns false if not.
@@ -1654,7 +1794,7 @@ console.dir(json);
   lastName: 'Gibson',
   _deleted: false,
   _attachments: { ... },
-  _rev: '1-aklsdjfhaklsdjhf...'
+  _rev: '1-aklsdjfhak'
 */
 ```
 
@@ -1705,6 +1845,27 @@ To avoid this, either:
 - Re-query the collection to get a fresh document.
 
 **How long to keep a reference to an `RxDocument`.** Treat an `RxDocument` like plain JSON data - it is a snapshot valid at the time of retrieval. RxDB manages query result caching internally via [event-reduce](./rx-query.md), so you do not need to cache documents yourself. For components that display document data and need live updates, subscribe to the document's `$` observable instead of holding a static reference.
+
+## Revisions (`_rev`)
+
+Every stored document has a `_rev` field that RxDB sets on each write. You never set it yourself. Read it with `myDocument.revision` or `myDocument.toJSON(true)._rev`.
+
+The revision string has the format `<height>-<token>`, for example `3-dwtwqbarqc`:
+
+- **height**: a number that starts with `1` on insert and increases by one with every write to that document.
+- **token**: the `token` of the [RxDatabase](./rx-database.md) instance that did the write (`myDatabase.token`). It is not a hash of the document content.
+
+```ts
+const doc = await myCollection.insert({ id: 'foo', age: 20 });
+console.log(doc.revision); // '1-dwtwqbarqc'
+
+const doc2 = await doc.incrementalPatch({ age: 21 });
+console.log(doc2.revision); // '2-dwtwqbarqc'
+```
+
+RxDB uses the revision for optimistic concurrency control. Every write sends the previous document state together with the new one. The storage compares the `_rev` of the previous state with the `_rev` that is currently stored. When they differ, another write happened in the meantime and the write fails with a `409 CONFLICT` error. This is why non-incremental methods like `patch()` throw on an outdated `RxDocument` instance, while the incremental methods retry with the latest state. Read more in [Transactions, Conflicts and Revisions](./transactions-conflicts-revisions.md).
+
+The `_rev` field is local to each client. By default it is stripped before documents are sent by the [replication](./replication.md) and the [conflict handler](./transactions-conflicts-revisions.md#custom-conflict-handler) does not see it. To detect conflicts between clients, the replication compares the assumed master state with the real master state instead. If your backend needs a version field, add your own field like `updatedAt` to the schema.
 
 ---
 
@@ -2522,6 +2683,61 @@ Returns true if the given object is an instance of RxQuery. Returns false if not
 const is = isRxQuery(myObj);
 ```
 
+## Query the Storage Directly
+
+`exec()` returns `RxDocument` instances. RxDB creates and caches these instances, which costs time and memory when a query returns many documents that you only read once, for example for an export or a bulk computation. In that case you can skip the `RxDocument` layer and run the query against the [RxStorage](./rx-storage.md) instance of the collection with `collection.storageInstance.query()`.
+
+`storageInstance.query()` needs a prepared query. Get it from a normal `RxQuery` with `getPreparedQuery()`. This normalizes the query, adds the `_deleted: false` condition so deleted documents are excluded, and calculates the query plan, the same way `exec()` does.
+
+```ts
+const rxQuery = myCollection.find({
+    selector: { age: { $gte: 21 } },
+    sort: [{ age: 'asc' }]
+});
+const preparedQuery = rxQuery.getPreparedQuery();
+
+const result = await myCollection.storageInstance.query(preparedQuery);
+console.log(result.documents);
+/* > [{
+    id: 'a',
+    age: 21,
+    _deleted: false,
+    _attachments: {},
+    _meta: { lwt: 1791365224271 },
+    _rev: '2-dwtwqbarqc'
+}, ...] */
+
+const countResult = await myCollection.storageInstance.count(preparedQuery);
+console.log(countResult.count);
+```
+
+To build the prepared query without an `RxQuery`, use `normalizeMangoQuery()` and `prepareQuery()` from `rxdb` together with the filled schema of the collection (`myCollection.schema.jsonSchema`). The selector must then contain `_deleted: { $eq: false }` yourself.
+
+```ts
+import { normalizeMangoQuery, prepareQuery } from 'rxdb';
+
+const schema = myCollection.schema.jsonSchema;
+const preparedQuery = prepareQuery(
+    schema,
+    normalizeMangoQuery(schema, {
+        selector: {
+            _deleted: { $eq: false },
+            age: { $gte: 21 }
+        },
+        sort: [{ age: 'asc' }],
+        limit: 100
+    })
+);
+const result = await myCollection.storageInstance.query(preparedQuery);
+```
+
+Keep in mind what you lose when you query the storage directly:
+
+- The results are plain `RxDocumentData` objects with the internal fields `_deleted`, `_attachments`, `_meta` and `_rev`. They have no [RxDocument](./rx-document.md) methods, no ORM methods and no getters for [population](./population.md).
+- The results are not reactive and not cached. There is no `$` observable and every call runs the query on the storage again.
+- The document cache of the collection is not used. Normally RxDB keeps one `RxDocument` instance per document revision and returns that same instance from every query. The storage returns new objects on every call instead, so when you run several raw queries, or mix them with normal queries, the same document can end up in memory multiple times.
+- [Middleware](./middleware.md) hooks like `postCreate` do not run. Storage wrappers like [encryption](./encryption.md), [key compression](./key-compression.md) and schema validation still apply, because `collection.storageInstance` is the wrapped storage instance.
+
 ## liveQueryUpdateThrottleTime
 
 <BetaBlock since="17.1.0" />
@@ -3303,7 +3519,7 @@ import { HeadlineWithIcon } from '@site/src/components/headline-with-icon';
 
 # <HeadlineWithIcon h1 icon={<IconStorage />}>RxStorage</HeadlineWithIcon>
 
-RxDB is not a self-contained database. Instead the data is stored in an implementation of the [RxStorage interface](https://github.com/pubkey/rxdb/blob/master/src/types/rx-storage.interface.d.ts). This allows you to **switch out** the underlying data layer, depending on the JavaScript environment and performance requirements. For example you can use the SQLite storage for a capacitor app or you can use the LocalStorage RxStorage to store data in localstorage in a browser-based application. There are also storages for other JavaScript runtimes like Node.js, React-Native, NativeScript and more.
+RxDB is not a self-contained database. Instead the data is stored in an implementation of the [RxStorage interface](https://github.com/pubkey/rxdb/blob/master/src/types/rx-storage.interface.d.ts). This allows you to **switch out** the underlying data layer, depending on the JavaScript environment and performance requirements. For example you can use the SQLite storage for a capacitor app or you can use the LocalStorage RxStorage to store data in localstorage in a browser-based application. There are also storages for other JavaScript runtimes like Node.js, React-Native, NativeScript and more. The import path of every storage is listed in the [import reference](./install.md#import-reference).
 
 ## Quick Recommendations
 
@@ -3477,7 +3693,7 @@ import {Steps} from '@site/src/components/steps';
 In this tutorial you will learn how to use RxDB with TypeScript.
 We will create a basic database with one collection and several [ORM](../orm.md)-methods, fully typed!
 
-RxDB directly comes with its typings and you do not have to install anything else, however the latest version of RxDB requires that you are using Typescript v3.8 or newer.
+RxDB directly comes with its typings and you do not have to install anything else. The latest version of RxDB requires TypeScript v3.8 or newer. All types are exported from `rxdb`, see the [import reference](../install.md#import-reference) for the full list of type and plugin imports. How to type a replication is shown in [using the replication with TypeScript](../replication.md#using-the-replication-with-typescript).
 Our way to go is
 
 - First define what the documents look like

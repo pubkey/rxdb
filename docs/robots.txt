@@ -6,4 +6,8 @@ Allow: /
 # do not show up as duplicate content in search engines.
 Disallow: /*.md$
 
+# Links in the RxDB console output carry ?console=... for tracking and only
+# duplicate the normal docs pages, so crawlers do not need to fetch them.
+Disallow: /*?console=
+
 Sitemap: https://rxdb.info/sitemap.xml
