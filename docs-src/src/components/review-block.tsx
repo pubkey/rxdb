@@ -157,7 +157,10 @@ export function ReviewsBlock() {
                             fontWeight: 500,
                             lineHeight: '21px',
                             marginBottom: 0
-                        }}>{item.description}</p>
+                        }}>
+                            {item.description}
+                            {item.caseStudyHref ? <> <a href={item.caseStudyHref}>Read more</a></> : <></>}
+                        </p>
                         <IconQuoteEnd />
                         <div className="slider-profile">
                             {item.logo ? <img
@@ -168,12 +171,6 @@ export function ReviewsBlock() {
                             /> : <></>}
                             <div className="slider-info">
                                 <span className="developer"><b>{item.label}</b> ({item.location})</span>
-                                {item.caseStudyHref ? <a
-                                    href={item.caseStudyHref}
-                                    className="company-link"
-                                >
-                                    Read the case study
-                                </a> : <></>}
                                 {/* <span className="company-link"                                >
                     {new URL(item.href).hostname}
                 </span> */}
