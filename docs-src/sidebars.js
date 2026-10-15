@@ -482,6 +482,11 @@ const sidebars = {
         },
         {
           type: 'doc',
+          id: 'articles/embeddinggemma-2-vector-search',
+          label: 'EmbeddingGemma 2'
+        },
+        {
+          type: 'doc',
           id: 'query-optimizer',
           label: 'Query Optimizer',
           customProps: {
