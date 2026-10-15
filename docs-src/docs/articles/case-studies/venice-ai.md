@@ -4,9 +4,13 @@ slug: venice-ai.html
 description: Venice.ai keeps every conversation on the user's device instead of on its servers. See how Venice uses RxDB as one shared, reactive data layer for its React web app and React Native mobile app, and how it streams AI responses directly into the database.
 ---
 
+import {CenteredImage} from '@site/src/components/centered-image';
+
 # How Venice.ai Uses RxDB for Private, Local-First AI Chat
 
 [Venice.ai](https://venice.ai/) is a private and uncensored AI platform for text chat, image generation, video, audio, characters and an [OpenAI-compatible API](https://docs.venice.ai/). It was founded in 2024 by Erik Voorhees and Jesse Proudman. In July 2026 Venice raised a **$65M Series A at a $1B valuation**, led by Dragonfly, and reported more than **3 million active users** and an annualized run-rate above **$70M** ([TechCrunch, July 1, 2026](https://techcrunch.com/2026/07/01/venice-ai-becomes-a-unicorn-with-65m-series-a-as-its-privacy-first-ai-platform-takes-off/)).
+
+<CenteredImage src="/files/companies/venice.svg" alt="Venice.ai logo" width={120} />
 
 The interesting part for developers is where the data lives. Venice states that "your conversation history stays on your device" and that it never stores it on its servers ([venice.ai/privacy](https://venice.ai/privacy)). A product with millions of users and no server-side chat history needs a client-side database that can carry the whole app. Venice uses **RxDB** for that.
 
