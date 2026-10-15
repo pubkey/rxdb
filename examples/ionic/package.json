@@ -44,7 +44,7 @@
     "@angular/compiler-cli": "22.2.1",
     "@capacitor/cli": "8.5.3",
     "async-test-util": "2.5.0",
-    "concurrently": "10.0.5",
+    "concurrently": "10.0.6",
     "local-web-server": "5.4.0",
     "testcafe": "3.7.6",
     "typescript": "6.0.3"
