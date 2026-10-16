@@ -55,8 +55,6 @@ RxDB (Reactive Database) is a local-first, NoSQL database for JavaScript applica
 
 RxDB does not implement its own low-level engine. Instead the [RxStorage](../rx-storage.md) layer lets you choose where the data lives: [localStorage](../rx-storage-localstorage.md), [IndexedDB](../rx-storage-indexeddb.md), [OPFS](../rx-storage-opfs.md), [SQLite](../rx-storage-sqlite.md), memory, and more. Switching storages is a configuration change, not a rewrite. On top of the storage RxDB adds what an application needs: observable queries, [schema migrations](../migration-schema.md), [encryption](../encryption.md), [multi-tab support](../leader-election.md), and the [replication protocol](../replication.md).
 
-As of October 16, 2026, the [RxDB repository](https://github.com/pubkey/rxdb) has 23,411 GitHub stars, compared to about 16k for [PGlite](https://github.com/electric-sql/pglite) and about 11k for the [SQLite GitHub mirror](https://github.com/sqlite/sqlite) (the whole SQLite project, not only the Wasm build).
-
 ## The Main Difference: Engine vs. Database Product
 
 SQLite-Wasm and PGlite answer the question "how do I run SQL in the browser". RxDB answers the question "how do I build an app with local data that stays in sync". This is the most important point of this comparison.
