@@ -71,7 +71,7 @@ When your goal is a durable, syncable TanStack DB collection rather than Postgre
 
 There is also a build-size argument. PGlite adds about 3 MB gzipped of WASM before your app code. That is impressive for a full Postgres, but it is a lot of payload when all you need is durable document storage under an in-memory store.
 
-To be clear about the reverse direction: there is no RxDB storage based on PGlite either. RxDB is a NoSQL document database and stores its data in storages like IndexedDB, OPFS, or SQLite, not in a client-side Postgres.
+To be clear about the reverse direction: there is no RxDB storage based on PGlite either. A full [comparison of RxDB, SQLite-Wasm, and PGlite](../rxdb-vs-sqlite-wasm-vs-pglite.md) covers persistence, multi-tab behavior, and sync of all three. RxDB is a NoSQL document database and stores its data in storages like IndexedDB, OPFS, or SQLite, not in a client-side Postgres.
 
 ## Example: A Durable TanStack DB Collection with RxDB
 

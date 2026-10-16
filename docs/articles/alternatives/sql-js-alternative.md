@@ -176,7 +176,7 @@ The same configuration works in Node.js with `better-sqlite3` and in Electron wi
 
 Some teams reach for sql.js because they have an existing body of SQL queries or a SQLite file they want to read in the browser. RxDB's [SQLite Storage](../../rx-storage-sqlite.md) keeps SQLite as the engine, so the same WASM build that powers sql.js sits underneath your collections. You get [Mango queries](../../rx-query.md) for the application layer, and you can still drop down to SQL when you need it. For most CRUD work, the RxDB query API is shorter than equivalent SQL and avoids string concatenation around dynamic filters.
 
-If your goal is to ship a static, read-only SQLite file for full-text search or reference data, sql.js remains a fine fit. If your goal is an application that writes data, syncs across devices, and reacts to changes, RxDB on top of SQLite covers the same engine plus everything sql.js leaves to you.
+If your goal is to ship a static, read-only SQLite file for full-text search or reference data, sql.js remains a fine fit. The same is true for the official [SQLite-Wasm build and for PGlite](../rxdb-vs-sqlite-wasm-vs-pglite.md), which add OPFS persistence but still leave reactivity and sync to you. If your goal is an application that writes data, syncs across devices, and reacts to changes, RxDB on top of SQLite covers the same engine plus everything sql.js leaves to you.
 
 ## FAQ
 
