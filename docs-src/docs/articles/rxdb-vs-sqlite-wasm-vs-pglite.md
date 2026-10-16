@@ -290,4 +290,5 @@ More resources:
 - [TanStack DB with PGlite](./tanstack-db/tanstack-db-pglite.md)
 - [RxDB as an ElectricSQL Alternative](./alternatives/electricsql-alternative.md)
 - [The Local-First Future](./local-first-future.md)
+- [Offline First Database Comparison](https://github.com/pubkey/client-side-databases)
 - [RxDB on GitHub](/code/), leave a star ⭐
