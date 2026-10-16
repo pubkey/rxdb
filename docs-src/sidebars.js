@@ -636,6 +636,7 @@ const sidebars = {
           ],
         },
         'articles/browser-database',
+        'articles/rxdb-vs-sqlite-wasm-vs-pglite',
         'articles/local-first-future',
         'why-nosql',
         'downsides-of-offline-first',
