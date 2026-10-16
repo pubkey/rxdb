@@ -93,7 +93,7 @@ Because only binary data can be processed, OPFS is made to be a base filesystem 
 [WebAssembly](https://webassembly.org/) (Wasm) is a binary format that allows high-performance code execution on the web.
 Wasm was added to major browsers over the course of 2017 which opened a wide range of opportunities on what to run inside of a browser. You can compile native libraries to WebAssembly and just run them on the client with just a few adjustments. WASM code can be shipped to browser apps and generally runs much faster compared to JavaScript, but still about [10% slower than native](https://www.usenix.org/conference/atc19/presentation/jangda).
 
-Many people started to use compiled SQLite as a database inside of the browser which is why it makes sense to also compare this setup to the native APIs.
+Many people started to use compiled SQLite as a database inside of the browser which is why it makes sense to also compare this setup to the native APIs. For a comparison of the SQL engines themselves with an application database, read [RxDB vs. SQLite-Wasm vs. PGlite](./rxdb-vs-sqlite-wasm-vs-pglite.md).
 
 The compiled byte code of SQLite has a size of [about 938.9 kB](https://sqlite.org/download.html) which must be downloaded and parsed by the users on the first page load. WASM cannot directly access any persistent storage API in the browser. Instead it requires data to flow from WASM to the main-thread and then can be put into one of the browser APIs. This is done with so called [VFS (virtual file system) adapters](https://www.sqlite.org/vfs.html) that handle data access from SQLite to anything else.
 
