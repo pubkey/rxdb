@@ -1142,7 +1142,7 @@ jobs:
           # the test suite, so the run produces no output and never exits.
           # 2.6.5 is the newest version that runs the tests, renovate is
           # capped to it in renovate.json.
-          deno-version: "2.6.5"
+          deno-version: "v2.9.7"
       - name: run deno tests:dexie
         timeout-minutes: 12
         run: |
