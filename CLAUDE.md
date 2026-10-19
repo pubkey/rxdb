@@ -58,6 +58,15 @@ npm run check-types
 - Prefer including a link to the root issue or pull request in that changelog line.
 - Do NOT add a changelog entry for changes that are neither a testcase nor a FIX. For example, adding a SEM landingpage under `docs-src/src/pages/sem/` must not produce a changelog entry.
 
+## Example Schema Rule
+- Whenever a docs page needs an example schema, example documents, or example queries, use the shared `todos` example schema from the "Example Schema" section of `docs-src/docs/rx-schema.md`. Do NOT invent a new schema (heroes, humans, users, etc.).
+- Use the same names everywhere: database variable `myDatabase`, collection `todos`, schema `todoSchema`, document type `TodoDocType`.
+- Use the "Example Data" documents (`todo1` to `todo4`) from the same section so that query results shown as `// > ...` comments are consistent across pages.
+- Do NOT rename or remove fields. A page may only extend the schema when its feature requires it, for example adding `note` to `encrypted`, adding `attachments: {}`, bumping `version` for migrations, or adding a numeric `updatedAt` for replication checkpoints.
+- Pages may show a shorter schema with only the fields the example needs, but those fields must keep the names and types of the shared schema.
+- Only use a different schema when the feature cannot be shown with the `todos` schema, for example composite primary keys or vector embeddings.
+- When the shared schema in `rx-schema.md` changes, update the pages that use it.
+
 ## Article Internal Linking Rule
 - Whenever you CREATE a new article under `docs-src/docs/` (for example a page under `docs-src/docs/articles/`), internal links MUST go in both directions.
 - Inbound: you MUST add internal links to the new article from existing related articles in the same topic cluster. A new article that nothing links to does not rank.

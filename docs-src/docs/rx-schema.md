@@ -11,88 +11,190 @@ import {Faq, FaqItem} from '@site/src/components/faq';
 
 Schemas define the structure of the documents of a collection. Which field should be used as the primary key, which fields should be used as indexes, and what should be encrypted. Every collection has its own schema. With RxDB, schemas are defined with the [JSON Schema](https://json-schema.org/blog/posts/rxdb-case-study) standard which you might know from other projects.
 
-## Example
+## Example Schema
 
-In this example-schema we define a hero-collection with the following settings:
+This `todos` schema is the shared example schema of the RxDB docs. Pages about [queries](./rx-query.md), [documents](./rx-document.md), [collections](./rx-collection.md), [population](./population.md), and [replication](./replication.md) use the same schema and the same sample data, so the examples on one page also work on the others.
 
-- the version-number of the schema is 0
-- the name-property is the **primaryKey**. This means it's a unique, indexed, required `string` which can be used to definitely find a single document.
-- the color-field is required for every document
-- the healthpoints-field must be a number between 0 and 100
-- the secret-field stores an encrypted value
-- the birthyear-field is final which means it is required and cannot be changed
-- the skills-attribute must be an array of objects which contain the name and the damage-attribute. There is a maximum of 5 skills per hero.
-- Allows adding attachments and storing them encrypted
+- `id` is the **primaryKey**. It is a unique, indexed, required `string` which identifies a single document.
+- `name` is the required title of the todo.
+- `done` is a required `boolean` with `default: false`, so it can be left out on insert.
+- `dueAt` is an ISO 8601 date-time string. It has a `maxLength` so that it can be used in an index. ISO strings sort in chronological order.
+- `priority` is an integer between `0` and `10`. Number fields in an index must have `minimum`, `maximum`, and `multipleOf`.
+- `tags` is an array of strings with `default: []`.
+- `assignee` is an optional nested object. Query it with dot notation like `'assignee.name'`.
+- `subtasks` is an array of ids of other todos. The `ref: 'todos'` keyword makes it possible to load these documents with [population](./population.md).
+- `note` is an optional string. It can be [encrypted](./encryption.md) by adding it to the `encrypted` array.
+- The `indexes` speed up sorting by `dueAt` and queries on `done` and `priority`.
 
+```ts
+import {
+    toTypedRxJsonSchema,
+    ExtractDocumentTypeFromTypedRxJsonSchema,
+    RxJsonSchema
+} from 'rxdb';
 
-
-```json
-  {
-    "title": "hero schema",
-    "version": 0,
-    "description": "describes a simple hero",
-    "primaryKey": "name",
-    "type": "object",
-    "properties": {
-        "name": {
-            "type": "string",
-            "maxLength": 100 // <- the primary key must have set maxLength
+export const todoSchemaLiteral = {
+    title: 'todo schema',
+    version: 0,
+    primaryKey: 'id',
+    type: 'object',
+    properties: {
+        id: {
+            type: 'string',
+            maxLength: 100 // <- the primary key must have maxLength
         },
-        "color": {
-            "type": "string"
+        name: {
+            type: 'string'
         },
-        "healthpoints": {
-            "type": "number",
-            "minimum": 0,
-            "maximum": 100
+        done: {
+            type: 'boolean',
+            default: false
         },
-        "secret": {
-            "type": "string"
+        dueAt: {
+            type: 'string',
+            format: 'date-time',
+            maxLength: 30 // <- string fields in an index must have maxLength
         },
-        "birthyear": {
-            "type": "number",
-            "final": true,
-            "minimum": 1900,
-            "maximum": 2050
+        priority: {
+            type: 'integer',
+            minimum: 0,
+            maximum: 10,
+            multipleOf: 1 // <- number fields in an index must have minimum, maximum and multipleOf
         },
-        "skills": {
-            "type": "array",
-            "maxItems": 5,
-            "uniqueItems": true,
-            "items": {
-                "type": "object",
-                "properties": {
-                    "name": {
-                        "type": "string"
-                    },
-                    "damage": {
-                        "type": "number"
-                    }
-                }
+        tags: {
+            type: 'array',
+            default: [],
+            items: {
+                type: 'string'
             }
+        },
+        assignee: {
+            type: 'object',
+            properties: {
+                name: {
+                    type: 'string'
+                },
+                email: {
+                    type: 'string'
+                }
+            },
+            required: ['name']
+        },
+        subtasks: {
+            type: 'array',
+            ref: 'todos', // <- the values are ids of documents in the todos collection
+            items: {
+                type: 'string'
+            }
+        },
+        note: {
+            type: 'string'
         }
     },
-    "required": [
-        "name",
-        "color"
-    ],
-    "encrypted": ["secret"],
-    "attachments": {
-        "encrypted": true
-    }
-  }
+    required: ['id', 'name', 'done', 'dueAt', 'priority', 'tags'],
+    indexes: [
+        'dueAt',
+        ['done', 'priority']
+    ]
+} as const;
+
+const schemaTyped = toTypedRxJsonSchema(todoSchemaLiteral);
+export type TodoDocType = ExtractDocumentTypeFromTypedRxJsonSchema<typeof schemaTyped>;
+export const todoSchema: RxJsonSchema<TodoDocType> = todoSchemaLiteral;
 ```
 
 ## Create a collection with the schema
 
-```javascript
+```ts
 await myDatabase.addCollections({
-    heroes: {
-        schema: myHeroSchema
+    todos: {
+        schema: todoSchema
     }
 });
-console.dir(myDatabase.heroes.name);
-// heroes
+console.dir(myDatabase.todos.name);
+// > todos
+```
+
+## Example Data
+
+The docs use these documents whenever an example needs data.
+
+```ts
+await myDatabase.todos.bulkInsert([
+    {
+        id: 'todo1',
+        name: 'Learn RxDB',
+        done: false,
+        dueAt: '2026-01-01T10:00:00.000Z',
+        priority: 8,
+        tags: ['learning', 'rxdb'],
+        assignee: { name: 'Alice', email: 'alice@example.com' },
+        subtasks: ['todo3']
+    },
+    {
+        id: 'todo2',
+        name: 'Buy groceries',
+        done: true,
+        dueAt: '2026-01-02T09:30:00.000Z',
+        priority: 3,
+        tags: ['home'],
+        assignee: { name: 'Bob' },
+        note: 'Milk, eggs, bread'
+    },
+    {
+        id: 'todo3',
+        name: 'Set up replication',
+        dueAt: '2026-01-03T14:15:00.000Z',
+        priority: 10,
+        tags: ['rxdb', 'backend']
+    },
+    {
+        id: 'todo4',
+        name: 'Clean the kitchen',
+        dueAt: '2026-01-04T18:00:00.000Z',
+        priority: 1
+    }
+]);
+```
+
+`todo3` and `todo4` do not set `done`, and `todo4` does not set `tags`, so they get the defaults `false` and `[]`.
+
+## Example Queries
+
+```ts
+// Open todos with a high priority, sorted by due date.
+// Uses the ['done', 'priority'] index.
+const openTodos = await myDatabase.todos.find({
+    selector: {
+        done: false,
+        priority: { $gte: 5 }
+    },
+    sort: [{ dueAt: 'asc' }]
+}).exec();
+// > todo1, todo3
+
+// Query a field of a nested object
+const aliceTodos = await myDatabase.todos.find({
+    selector: { 'assignee.name': 'Alice' }
+}).exec();
+// > todo1
+
+// Query an array of strings
+const rxdbTodos = await myDatabase.todos.find({
+    selector: { tags: { $in: ['rxdb'] } }
+}).exec();
+// > todo1, todo3
+
+// Query for an optional field
+const withNote = await myDatabase.todos.find({
+    selector: { note: { $exists: true } }
+}).exec();
+// > todo2
+
+// Load the referenced subtask documents with population
+const todo1 = await myDatabase.todos.findOne('todo1').exec(true);
+const subtasks = await todo1.populate('subtasks');
+// > [todo3]
 ```
 
 
