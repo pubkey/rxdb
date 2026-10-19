@@ -26,14 +26,8 @@ This example schema describes a `todos` collection with the following settings:
 - `note` is an optional string. It can be [encrypted](./encryption.md) by adding it to the `encrypted` array.
 - The `indexes` speed up sorting by `dueAt` and queries on `done` and `priority`.
 
-```ts
-import {
-    toTypedRxJsonSchema,
-    ExtractDocumentTypeFromTypedRxJsonSchema,
-    RxJsonSchema
-} from 'rxdb';
-
-export const todoSchemaLiteral = {
+```js
+export const todoSchema = {
     title: 'todo schema',
     version: 0,
     primaryKey: 'id',
@@ -97,12 +91,7 @@ export const todoSchemaLiteral = {
         'dueAt',
         ['done', 'priority']
     ]
-} as const;
-
-const schemaTyped = toTypedRxJsonSchema(todoSchemaLiteral);
-export type TodoDocType =
-    ExtractDocumentTypeFromTypedRxJsonSchema<typeof schemaTyped>;
-export const todoSchema: RxJsonSchema<TodoDocType> = todoSchemaLiteral;
+};
 ```
 
 ## Create a collection with the schema
