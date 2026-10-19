@@ -587,7 +587,7 @@
     "oblivious-set": "2.0.0",
     "simple-peer": "9.11.1",
     "ws": "8.22.0",
-    "z-schema": "12.4.6"
+    "z-schema": "12.5.0"
   },
   "devDependencies": {
     "@angular/core": "22.2.2",
