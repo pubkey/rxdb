@@ -110,7 +110,7 @@ Keep in mind that:
 - The storage instances that RxDB creates for its own data (the internal store, [local documents](./rx-local-document.md) and replication meta data) are not validated and need no validator.
 - The hash is equal to `await myCollection.schema.hash` when the database uses the default `hashFunction`.
 
-The validation itself runs at the same speed as with `validate-ajv`, because ajv generates the same validation code in both cases. The difference is the startup time: `validate-ajv` compiles each schema when the first document is written, while `validate-ajv-standalone` only looks up the precompiled validator. The following results are the median of 40 runs with the [Memory RxStorage](./rx-storage-memory.md) on Node.js 22 (lower is better). Each run uses a new schema, so that `validate-ajv` cannot reuse a compiled validator. You can reproduce them with `npm run test:performance:validation`.
+The validation itself runs at the same speed as with `validate-ajv`, because ajv generates the same validation code in both cases. The difference is the startup time: `validate-ajv` compiles each schema when the first document is written, while `validate-ajv-standalone` only looks up the precompiled validator. The following results were measured with the [Memory RxStorage](./rx-storage-memory.md) on Node.js 22 (lower is better). Each test run takes the median of 40 runs, and the chart shows the best of 5 test runs. Each run uses a new schema, so that `validate-ajv` cannot reuse a compiled validator. You can reproduce them with `npm run test:performance:validation`.
 
 <PerformanceChart title="ajv vs. ajv-standalone on Memory Storage" data={PERFORMANCE_DATA_VALIDATION_AJV_STANDALONE} logScale={false} />
 
