@@ -21,6 +21,55 @@ You also need to install the peer-dependency `rxjs` if you have not installed it
 
 <InstallTabs packageName="rxjs" />
 
+## Use the ES2015 build of RxJS
+
+RxJS 7 ships an ES5 build and an ES2015 build. The ES2015 build is only resolved when your bundler sets the `es2015` export condition. Vite, webpack, Rollup and esbuild do not set it by default, so they bundle the ES5 build together with the `tslib` helpers. In an RxDB app built with Vite, adding the condition reduces the bundle by about `6.6 KB` minified (`1.6 KB` gzipped). The Angular CLI already sets the condition, so Angular projects need no change.
+
+**Vite** (6 or newer):
+
+```ts
+// vite.config.ts
+import { defineConfig, defaultClientConditions } from 'vite';
+
+export default defineConfig({
+    resolve: {
+        conditions: ['es2015', ...defaultClientConditions]
+    }
+});
+```
+
+**webpack** (5 or newer), `'...'` keeps the default conditions:
+
+```js
+// webpack.config.js
+module.exports = {
+    resolve: {
+        conditionNames: ['es2015', '...']
+    }
+};
+```
+
+**Rollup** with `@rollup/plugin-node-resolve`:
+
+```js
+// rollup.config.mjs
+import { nodeResolve } from '@rollup/plugin-node-resolve';
+
+export default {
+    plugins: [
+        nodeResolve({ browser: true, exportConditions: ['es2015'] })
+    ]
+};
+```
+
+**esbuild**, setting `conditions` replaces the default `module` condition, so add it again:
+
+```js
+await esbuild.build({
+    conditions: ['es2015', 'module']
+});
+```
+
 ## polyfills
 
 RxDB is coded with ES8 and transpiled to ES5. This means you have to install [polyfills](https://developer.mozilla.org/en-US/docs/Glossary/Polyfill) to support older browsers. For example you can use [core-js](https://github.com/zloirock/core-js) with:
