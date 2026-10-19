@@ -75,40 +75,41 @@ import { createRxDatabase } from 'rxdb/plugins/core';
 import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
 
 const db = await createRxDatabase({
-  name: 'notesdb',
+  name: 'mydb',
   storage: getRxStorageLocalstorage()
 });
 
 await db.addCollections({
-  notes: {
+  todos: {
     schema: {
-      title: 'note schema',
+      title: 'todo schema',
       version: 0,
       primaryKey: 'id',
       type: 'object',
       properties: {
         id: { type: 'string', maxLength: 100 },
-        title: { type: 'string' },
-        body: { type: 'string' },
-        tags: { type: 'array', items: { type: 'string' } },
-        updatedAt: { type: 'number' }
+        name: { type: 'string' },
+        done: { type: 'boolean', default: false },
+        dueAt: { type: 'string', format: 'date-time', maxLength: 30 },
+        tags: { type: 'array', default: [], items: { type: 'string' } },
+        note: { type: 'string' }
       },
-      required: ['id', 'title', 'updatedAt']
+      required: ['id', 'name', 'done', 'dueAt', 'tags']
     }
   }
 });
 
 // Reactive query: re-emits whenever matching documents change.
-const recent$ = db.notes
+const work$ = db.todos
   .find({
-    selector: { tags: { $in: ['inbox'] } },
-    sort: [{ updatedAt: 'desc' }],
+    selector: { tags: { $in: ['work'] } },
+    sort: [{ dueAt: 'asc' }],
     limit: 20
   })
   .$;
 
-recent$.subscribe(notes => {
-  console.log('inbox notes:', notes.map(n => n.title));
+work$.subscribe(todos => {
+  console.log('work todos:', todos.map(t => t.name));
 });
 ```
 
@@ -125,8 +126,8 @@ import {
 } from 'rxdb/plugins/replication-webrtc';
 
 const replicationPool = await replicateWebRTC({
-  collection: db.notes,
-  topic: 'notes-room-42', // peers sharing a topic sync with each other
+  collection: db.todos,
+  topic: 'todos-room-42', // peers sharing a topic sync with each other
   connectionHandlerCreator: getConnectionHandlerSimplePeer({
     // your own signaling server, see startSignalingServerSimplePeer()
     signalingServerUrl: 'wss://signaling.example.com/'
@@ -151,8 +152,8 @@ import {
 } from 'rxdb/plugins/replication-webrtc';
 
 const replicationPool = await replicateWebRTC({
-  collection: db.notes,
-  topic: 'notes-room-42',
+  collection: db.todos,
+  topic: 'todos-room-42',
   connectionHandlerCreator: getConnectionHandlerNostr({
     // public Nostr relays
     relays: ['wss://nos.lol', 'wss://relay.primal.net', 'wss://nostr.mom']

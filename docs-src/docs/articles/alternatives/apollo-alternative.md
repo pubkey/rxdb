@@ -120,25 +120,26 @@ const db = await createRxDatabase({
 });
 
 await db.addCollections({
-    tasks: {
+    todos: {
         schema: {
-            title: 'task schema',
+            title: 'todo schema',
             version: 0,
             primaryKey: 'id',
             type: 'object',
             properties: {
                 id: { type: 'string', maxLength: 100 },
-                title: { type: 'string' },
-                done: { type: 'boolean' },
+                name: { type: 'string' },
+                done: { type: 'boolean', default: false },
+                dueAt: { type: 'string', format: 'date-time', maxLength: 30 },
                 updatedAt: { type: 'number' }
             },
-            required: ['id', 'title', 'updatedAt']
+            required: ['id', 'name', 'done', 'dueAt', 'updatedAt']
         }
     }
 });
 
 const replicationState = replicateGraphQL({
-    collection: db.tasks,
+    collection: db.todos,
     url: {
         http: 'https://example.com/graphql',
         ws: 'wss://example.com/graphql'
@@ -146,8 +147,8 @@ const replicationState = replicateGraphQL({
     pull: {
         queryBuilder: (checkpoint, limit) => ({
             query: `query Pull($checkpoint: Checkpoint, $limit: Int!) {
-                pullTasks(checkpoint: $checkpoint, limit: $limit) {
-                    documents { id title done updatedAt _deleted }
+                pullTodos(checkpoint: $checkpoint, limit: $limit) {
+                    documents { id name done dueAt updatedAt _deleted }
                     checkpoint { id updatedAt }
                 }
             }`,
@@ -156,15 +157,15 @@ const replicationState = replicateGraphQL({
     },
     push: {
         queryBuilder: (rows) => ({
-            query: `mutation Push($rows: [TaskInputRow!]!) {
-                pushTasks(rows: $rows) { id title done updatedAt }
+            query: `mutation Push($rows: [TodoInputRow!]!) {
+                pushTodos(rows: $rows) { id name done dueAt updatedAt }
             }`,
             variables: { rows }
         })
     },
     live: true,
     deletedField: '_deleted',
-    replicationIdentifier: 'tasks-graphql'
+    replicationIdentifier: 'todos-graphql'
 });
 ```
 
@@ -178,27 +179,28 @@ Apollo's `useQuery` re-runs against the cache when relevant fields change. With 
 import { useEffect, useState } from 'react';
 import type { RxDocument } from 'rxdb';
 
-type Task = {
+type TodoDocType = {
     id: string;
-    title: string;
+    name: string;
     done: boolean;
+    dueAt: string;
     updatedAt: number;
 };
 
-export function TaskList({ db }) {
-    const [tasks, setTasks] = useState<RxDocument<Task>[]>([]);
+export function TodoList({ db }) {
+    const [todos, setTodos] = useState<RxDocument<TodoDocType>[]>([]);
 
     useEffect(() => {
-        const sub = db.tasks
-            .find({ selector: { done: false }, sort: [{ updatedAt: 'desc' }] })
-            .$.subscribe(setTasks);
+        const sub = db.todos
+            .find({ selector: { done: false }, sort: [{ dueAt: 'asc' }] })
+            .$.subscribe(setTodos);
         return () => sub.unsubscribe();
     }, [db]);
 
     return (
         <ul>
-            {tasks.map(t => (
-                <li key={t.id}>{t.title}</li>
+            {todos.map(t => (
+                <li key={t.id}>{t.name}</li>
             ))}
         </ul>
     );
