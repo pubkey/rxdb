@@ -1,0 +1,11 @@
+{
+    "$schema": "./schema.json",
+    "text": "CHANGE remove the `all()` method from the query-builder plugin because the `$all` operator is not supported by the RxDB query engine and queries using it always failed",
+    "links": [
+        {
+            "url": "https://github.com/pubkey/rxdb/pull/9293",
+            "linkText": "#9293"
+        }
+    ],
+    "priority": 4
+}

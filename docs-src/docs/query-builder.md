@@ -139,7 +139,7 @@ const results = await myDatabase.todos.find()
 
 For arrays of objects, `elemMatch()` also accepts a function instead of a selector. The function receives a nested query builder, so the element conditions can be chained with `where()` as well: `.where('items').elemMatch(elem => { elem.where('name').eq('foo'); })`.
 
-The query builder has an `all()` method, but the `$all` operator is not supported by the RxDB query engine and the query fails with `unknown query operator $all`. To find documents where an array contains multiple values, use `and()` with one condition per value:
+To find documents where an array contains multiple values, use `and()` with one condition per value:
 
 ```ts
 // todos that have both the 'rxdb' and the 'learning' tag
