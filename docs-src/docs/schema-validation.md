@@ -25,7 +25,7 @@ The schema validation is **not a plugin** but comes in as a wrapper around any o
 - It allows us to configure which [RxDatabase](./rx-database.md) instance must use the validation and which does not. In production it often makes sense to validate user data, but you might not need the validation for data that is only replicated from the backend.
 
 :::warning
-Schema validation can be **CPU expensive** and increases your build size. You should always use a schema validation in development mode. For most use cases, you **should not** use a validation in production for better performance.
+Schema validation can be **CPU expensive** and increases your build size. You should always use a schema validation in development mode. When you also validate in production, use the [validate-ajv-standalone](#validate-ajv-standalone) plugin for the smallest build size and the best performance.
 :::
 
 When no validation is used, any document data can be saved but there might be **undefined behavior** when saving data that does not comply to the schema of a `RxCollection`.
