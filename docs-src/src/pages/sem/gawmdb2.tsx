@@ -62,8 +62,8 @@ export default function Page() {
     return Home({
         sem: {
             id: 'gads',
-            metaTitle: 'RxDB: One Local Database for Mobile, Desktop and Web',
-            metaDescription: 'RxDB is one local database for React Native, Electron, browsers and Node.js. One schema, the same queries, and sync to the backend you run.',
+            metaTitle: 'RxDB: A WatermelonDB Alternative for Mobile, Desktop and Web',
+            metaDescription: 'RxDB is a WatermelonDB alternative that runs in React Native, Electron, browsers and Node.js. One schema, the same queries, and sync to the backend you run.',
             appName: 'React Native',
             title: variation.title,
             text: variation.text,

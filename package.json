@@ -540,7 +540,7 @@
   "peerDependencies": {
     "@angular/core": "*",
     "@preact/signals-core": "*",
-    "firebase": "^12.10.0",
+    "firebase": "^12.10.0 || ^13.0.0",
     "mongodb": "^6.21.0 || ^7.0.0",
     "nats": "^2.29.3",
     "react": "*",
@@ -594,7 +594,7 @@
     "oblivious-set": "2.0.0",
     "simple-peer": "9.11.1",
     "ws": "8.22.0",
-    "z-schema": "12.4.6"
+    "z-schema": "12.5.0"
   },
   "devDependencies": {
     "@angular/core": "22.2.2",
@@ -648,7 +648,7 @@
     "exists-file": "3.0.2",
     "express": "5.2.1",
     "fake-indexeddb": "6.2.5",
-    "firebase": "12.19.0",
+    "firebase": "13.0.0",
     "firebase-tools": "15.33.0",
     "get-port": "7.2.0",
     "global-jsdom": "30.0.0",

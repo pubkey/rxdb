@@ -2,15 +2,6 @@ import { Context } from 'mingo/core';
 import { Query } from 'mingo/query';
 import type { MangoQuerySelector } from './types/index.d.ts';
 import {
-    $project,
-    $sort
-} from 'mingo/operators/pipeline';
-import {
-
-} from 'mingo/operators/expression';
-import {
-} from 'mingo/operators/projection';
-import {
     $elemMatch,
     $eq,
     $nor,
@@ -30,12 +21,6 @@ import {
     $size,
     $mod
 } from 'mingo/operators/query';
-import {
-} from 'mingo/operators/query/evaluation';
-import {
-} from 'mingo/operators/query/array';
-import {
-} from 'mingo/operators/query/element';
 
 let mingoInitDone = false;
 let context: Context;
@@ -53,10 +38,6 @@ export function getMingoQuery<RxDocType>(
 ) {
     if (!mingoInitDone) {
         context = Context.init({
-            pipeline: {
-                $sort,
-                $project
-            },
             query: {
                 $elemMatch,
                 $eq,

@@ -69,6 +69,22 @@ export interface RxDatabaseCreator<Internals = any, InstanceCreationOptions = an
      */
     storage: RxStorage<Internals, InstanceCreationOptions>;
     instanceCreationOptions?: InstanceCreationOptions;
+    /**
+     * The name of the database. It uniquely identifies the stored data,
+     * so two databases with the same name and the same RxStorage share their data.
+     *
+     * When you deploy your app to a staging area or feature preview
+     * that runs on the same origin as other deployments,
+     * prefix the name with the staging id. Otherwise all deployments
+     * read and write the same stored database state.
+     * @example
+     * ```ts
+     * // production on example.com
+     * name: 'mydatabasename'
+     * // feature preview on example.com/commit-42/
+     * name: 'commit-42-mydatabasename'
+     * ```
+     */
     name: string;
     /**
      * Typed as `any` because different encryption plugins
