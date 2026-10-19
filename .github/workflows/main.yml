@@ -447,6 +447,9 @@ jobs:
       - name: measure build size
         run: npm run build:size
 
+      - name: check bundle size limits
+        run: npm run test:bundle-size
+
       - run: npm run build:rollup
 
       - name: check for em-dashes

@@ -10,7 +10,7 @@ function run() {
         name: 'heroesdb',
         storage: getRxStorageMemory()
     }).then(db => {
-        return db.destroy();
+        return db.close();
     });
 }
 run();
