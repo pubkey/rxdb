@@ -6,6 +6,7 @@ image: /headers/install.jpg
 ---
 
 import {InstallTabs} from '@site/src/components/install-tabs';
+import {Tabs} from '@site/src/components/tabs';
 
 # Install RxDB
 
@@ -25,7 +26,11 @@ You also need to install the peer-dependency `rxjs` if you have not installed it
 
 RxJS 7 ships an ES5 build and an ES2015 build. The ES2015 build is only resolved when your bundler sets the `es2015` export condition. Vite, webpack, Rollup and esbuild do not set it by default, so they bundle the ES5 build together with the `tslib` helpers. In an RxDB app built with Vite, adding the condition reduces the bundle by about `6.6 KB` minified (`1.6 KB` gzipped). The Angular CLI already sets the condition, so Angular projects need no change.
 
-**Vite** (6 or newer):
+<Tabs>
+
+### Vite
+
+Vite 6 or newer:
 
 ```ts
 // vite.config.ts
@@ -38,7 +43,9 @@ export default defineConfig({
 });
 ```
 
-**webpack** (5 or newer), `'...'` keeps the default conditions:
+### webpack
+
+webpack 5 or newer, `'...'` keeps the default conditions:
 
 ```js
 // webpack.config.js
@@ -49,7 +56,9 @@ module.exports = {
 };
 ```
 
-**Rollup** with `@rollup/plugin-node-resolve`:
+### Rollup
+
+With `@rollup/plugin-node-resolve`:
 
 ```js
 // rollup.config.mjs
@@ -62,13 +71,17 @@ export default {
 };
 ```
 
-**esbuild**, setting `conditions` replaces the default `module` condition, so add it again:
+### esbuild
+
+Setting `conditions` replaces the default `module` condition, so add it again:
 
 ```js
 await esbuild.build({
     conditions: ['es2015', 'module']
 });
 ```
+
+</Tabs>
 
 ## polyfills
 
