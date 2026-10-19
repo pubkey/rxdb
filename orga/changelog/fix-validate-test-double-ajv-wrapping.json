@@ -1,0 +1,11 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `validate.test.ts` wrapped the tested validator around a storage that was already validated with ajv, so ajv also ran in the z-schema tests",
+    "links": [
+        {
+            "url": "https://github.com/pubkey/rxdb/pull/9281",
+            "linkText": "#9281"
+        }
+    ],
+    "priority": 1
+}
