@@ -62,8 +62,8 @@ export default function Page() {
     return Home({
         sem: {
             id: 'gads',
-            metaTitle: 'RxDB: The Sync Layer for Offline Apps, Already Built',
-            metaDescription: 'RxDB ships the sync layer for offline apps: replication to any backend, retries, conflict handling and schema migrations on the device.',
+            metaTitle: 'RxDB: A WatermelonDB Alternative With Sync Already Built',
+            metaDescription: 'RxDB is a WatermelonDB alternative that ships the sync layer for offline apps: replication to any backend, retries, conflict handling and migrations.',
             appName: 'React Native',
             title: variation.title,
             text: variation.text,

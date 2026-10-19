@@ -4,7 +4,7 @@ import { getSemVariation } from '../../components/a-b-tests';
 
 /**
  * SEM landingpage for "gawmdb1".
- * A/b tests 3 variations of the title, description and bulletpoints.
+ * A/b tests multiple variations of the title, description and bulletpoints.
  * The variation is picked randomly per visitor and kept stable via localStorage.
  */
 
@@ -26,44 +26,66 @@ const variations = {
             <>Open-source core</>
         ]
     },
-    b: {
-        title: <><b>Offline Data</b> Without the <b>Sync Work</b></>,
-        text: <>Pull and push endpoints, change tracking and conflict rules are the work an offline database usually leaves to you. RxDB ships them: replication, conflict handling and migrations in one open-source database.</>,
+    /**
+     * Variations 'b' and 'c' were retired on 2026-10-18 to make room for
+     * variation 'd', which names WatermelonDB like the ads of this campaign.
+     * With about one click per day a 3-way test is not readable, so the page
+     * now splits 50/50 between 'a' and 'd'. Kept on record (commented out,
+     * not deleted) so their letters and copy stay reserved and are never
+     * reused for different copy.
+     */
+    // b: {
+    //     title: <><b>Offline Data</b> Without the <b>Sync Work</b></>,
+    //     text: <>Pull and push endpoints, change tracking and conflict rules are the work an offline database usually leaves to you. RxDB ships them: replication, conflict handling and migrations in one open-source database.</>,
+    //     bulletpoints: [
+    //         <>No hand-written sync code</>,
+    //         <>Conflict handling built in</>,
+    //         <>Schema migrations included</>,
+    //         <>Open source and battle-tested</>
+    //     ]
+    // },
+    // c: {
+    //     title: <><b>One Offline Database</b> for <b>Mobile and Web</b></>,
+    //     text: <>RxDB runs in React Native, Expo, Electron and the browser with the same schema and the same queries. Your app works offline everywhere and syncs in realtime when the network returns.</>,
+    //     bulletpoints: [
+    //         <>React Native, Expo, Electron, web</>,
+    //         <>Same schema on every platform</>,
+    //         <>Realtime sync across devices</>,
+    //         <>Works fully offline</>
+    //     ]
+    // },
+    d: {
+        title: <>A <b>WatermelonDB</b> Alternative With <b>Sync Built In</b></>,
+        text: <>RxDB is a local-first NoSQL database for React Native and the web. Replication is part of the database: connect it to HTTP, GraphQL, Supabase or CouchDB and your app works offline on every device.</>,
         bulletpoints: [
-            <>No hand-written sync code</>,
-            <>Conflict handling built in</>,
-            <>Schema migrations included</>,
-            <>Open source and battle-tested</>
-        ]
-    },
-    c: {
-        title: <><b>One Offline Database</b> for <b>Mobile and Web</b></>,
-        text: <>RxDB runs in React Native, Expo, Electron and the browser with the same schema and the same queries. Your app works offline everywhere and syncs in realtime when the network returns.</>,
-        bulletpoints: [
-            <>React Native, Expo, Electron, web</>,
-            <>Same schema on every platform</>,
-            <>Realtime sync across devices</>,
-            <>Works fully offline</>
+            <>React Native, Expo and the web</>,
+            <>Runs on SQLite</>,
+            <>Replication to HTTP, GraphQL, Supabase</>,
+            <>Open source core</>
         ]
     }
 };
 
+const variationKeys = Object.keys(variations) as (keyof typeof variations)[];
+
 export default function Page() {
     /**
-     * Render variation "a" on the server and on the first client render
-     * to avoid a hydration mismatch, then swap to the assigned variation.
+     * Render the first live variation on the server and on the first client
+     * render to avoid a hydration mismatch, then swap to the assigned one.
+     * The key comes from Object.keys(), never a hardcoded 'a': once variation
+     * 'a' is retired (commented out) a hardcoded default renders nothing.
      */
-    const [variationKey, setVariationKey] = useState('a');
+    const [variationKey, setVariationKey] = useState(variationKeys[0] as string);
     useEffect(() => {
-        setVariationKey(getSemVariation(Object.keys(variations)));
+        setVariationKey(getSemVariation(variationKeys));
     }, []);
-    const variation = variations[variationKey as keyof typeof variations] ?? variations.a;
+    const variation = variations[variationKey as keyof typeof variations] ?? variations[variationKeys[0]];
 
     return Home({
         sem: {
             id: 'gads',
-            metaTitle: 'RxDB: Local Database for React Native With Sync Built In',
-            metaDescription: 'RxDB is a local database for React Native with sync built in. Runs on SQLite, works offline and replicates to HTTP, GraphQL, Supabase or CouchDB.',
+            metaTitle: 'RxDB: A WatermelonDB Alternative for React Native',
+            metaDescription: 'RxDB is a WatermelonDB alternative for React Native with sync built in. Runs on SQLite, works offline and replicates to HTTP, GraphQL, Supabase or CouchDB.',
             appName: 'React Native',
             title: variation.title,
             text: variation.text,
