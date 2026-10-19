@@ -71,13 +71,15 @@ const entries = [];
 for (const [i, schema] of [todoSchema, userSchema].entries()) {
     const { hash, jsonSchema } = await getStandaloneValidationSchema(schema);
     const ajv = createAjv({ code: { source: true, esm: true } });
-    fs.writeFileSync(`src/validator-${i}.mjs`, standaloneCode(ajv, ajv.compile(jsonSchema)));
+    const code = standaloneCode(ajv, ajv.compile(jsonSchema));
+    fs.writeFileSync(`src/validator-${i}.mjs`, code);
     imports.push(`import v${i} from './validator-${i}.mjs';`);
     entries.push(`'${hash}': v${i}`);
 }
 fs.writeFileSync(
     'src/validators.mjs',
-    imports.join('\n') + '\nexport const validatorBySchemaHash = {' + entries.join(',') + '};\n'
+    imports.join('\n') +
+    '\nexport const validatorBySchemaHash = {' + entries.join(',') + '};\n'
 );
 ```
 
@@ -86,7 +88,9 @@ In the app, pass the generated `validatorBySchemaHash` map to the storage wrappe
 ```ts
 import { createRxDatabase } from 'rxdb/plugins/core';
 import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
-import { wrappedValidateAjvStandaloneStorage } from 'rxdb/plugins/validate-ajv-standalone';
+import {
+    wrappedValidateAjvStandaloneStorage
+} from 'rxdb/plugins/validate-ajv-standalone';
 import { validatorBySchemaHash } from './validators.mjs';
 
 const db = await createRxDatabase({
