@@ -41,30 +41,30 @@ WatermelonDB uses a **record-based**, relational data model. You define models w
 
 ```js
 import { Model } from '@nozbe/watermelondb';
-import { field, date, readonly, relation } from '@nozbe/watermelondb/decorators';
+import { field, date } from '@nozbe/watermelondb/decorators';
 
-class Post extends Model {
-    static table = 'posts';
+class Todo extends Model {
+    static table = 'todos';
     static associations = {
-        comments: { type: 'has_many', foreignKey: 'post_id' }
+        subtasks: { type: 'has_many', foreignKey: 'parent_id' }
     };
 
-    @field('title') title;
-    @field('body') body;
-    @readonly @date('created_at') createdAt;
+    @field('name') name;
+    @field('done') done;
+    @date('due_at') dueAt;
 }
 ```
 
 Queries return observables that re-emit when the underlying records change:
 
 ```js
-const posts = database.collections
-    .get('posts')
-    .query(Q.where('published', true))
+const openTodos = database.collections
+    .get('todos')
+    .query(Q.where('done', false))
     .observe();
 
-posts.subscribe(results => {
-    console.log('Published posts:', results.length);
+openTodos.subscribe(results => {
+    console.log('Open todos:', results.length);
 });
 ```
 
@@ -156,13 +156,13 @@ For a custom backend, the replication interface requires only a pull handler and
 import { replicateRxCollection } from 'rxdb/plugins/replication';
 
 const replicationState = await replicateRxCollection({
-    collection: db.posts,
-    replicationIdentifier: 'posts-sync-v1',
+    collection: db.todos,
+    replicationIdentifier: 'todos-sync-v1',
     pull: {
         handler: async (checkpoint, batchSize) => {
             const since = checkpoint?.updatedAt ?? 0;
             const response = await fetch(
-                `/api/posts/changes?since=${since}&limit=${batchSize}`
+                `/api/todos/changes?since=${since}&limit=${batchSize}`
             );
             const data = await response.json();
             return {
@@ -173,7 +173,7 @@ const replicationState = await replicateRxCollection({
     },
     push: {
         handler: async (rows) => {
-            const response = await fetch('/api/posts/push', {
+            const response = await fetch('/api/todos/push', {
                 method: 'POST',
                 body: JSON.stringify(rows),
                 headers: { 'Content-Type': 'application/json' }
@@ -204,16 +204,19 @@ WatermelonDB's built-in sync uses a simple "client-wins" strategy for field-leve
 
 ```ts
 await db.addCollections({
-    posts: {
-        schema: postSchema,
+    todos: {
+        schema: todoSchema,
         conflictHandler: async (input) => {
             const { newDocumentState, realMasterState } = input;
 
-            // Merge strategy: keep the most recently updated version
-            if (newDocumentState.updatedAt >= realMasterState.updatedAt) {
-                return { documentData: newDocumentState };
-            }
-            return { documentData: realMasterState };
+            // Merge strategy: keep the server state, but a todo stays done
+            // when either side has marked it as done
+            return {
+                documentData: {
+                    ...realMasterState,
+                    done: realMasterState.done || newDocumentState.done
+                }
+            };
         }
     }
 });
@@ -227,16 +230,17 @@ import { addRxPlugin } from 'rxdb/plugins/core';
 
 addRxPlugin(RxDBcrdtPlugin);
 
-const taskSchema = {
+const todoSchema = {
     version: 0,
     primaryKey: 'id',
     type: 'object',
     properties: {
         id: { type: 'string', maxLength: 100 },
-        title: { type: 'string' },
-        completed: { type: 'boolean' },
+        name: { type: 'string' },
+        done: { type: 'boolean', default: false },
         crdts: getCRDTSchemaPart()
     },
+    required: ['id', 'name', 'done'],
     crdt: { field: 'crdts' }
 };
 ```
@@ -271,21 +275,20 @@ const db = await createRxDatabase({
 });
 
 await db.addCollections({
-    posts: {
+    todos: {
         schema: {
-            title: 'post schema',
+            title: 'todo schema',
             version: 0,
             primaryKey: 'id',
             type: 'object',
             properties: {
-                id:        { type: 'string', maxLength: 100 },
-                title:     { type: 'string' },
-                authorId:  { type: 'string', maxLength: 100 },
-                published: { type: 'boolean' },
-                updatedAt: { type: 'number' }
+                id:    { type: 'string', maxLength: 100 },
+                name:  { type: 'string' },
+                done:  { type: 'boolean', default: false },
+                dueAt: { type: 'string', format: 'date-time', maxLength: 30 }
             },
-            required: ['id', 'title', 'authorId', 'published', 'updatedAt'],
-            indexes: ['updatedAt', 'authorId']
+            required: ['id', 'name', 'done', 'dueAt'],
+            indexes: ['dueAt']
         }
     }
 });
@@ -298,16 +301,16 @@ The OPFS storage option is particularly relevant for teams moving away from Wate
 RxDB builds its reactive layer on [RxJS](https://rxjs.dev), the industry-standard library for reactive programming in JavaScript. Every query exposes an Observable via the `$` property. The Observable emits the current result set on subscription and re-emits whenever the underlying data changes, without polling:
 
 ```ts
-// Subscribe to published posts sorted by most recent
-const publishedPosts$ = db.posts
+// Subscribe to open todos sorted by due date
+const openTodos$ = db.todos
     .find({
-        selector: { published: true },
-        sort: [{ updatedAt: 'desc' }]
+        selector: { done: false },
+        sort: [{ dueAt: 'asc' }]
     })
     .$;
 
-publishedPosts$.subscribe(posts => {
-    renderPostList(posts);
+openTodos$.subscribe(todos => {
+    renderTodoList(todos);
 });
 ```
 
@@ -316,16 +319,16 @@ Because this is a standard RxJS Observable, you can use it in React, Vue, Angula
 ```tsx
 import { useRxQuery } from 'rxdb-hooks';
 
-function PostList({ db }) {
-    const { result: posts, isFetching } = useRxQuery(
-        db.posts.find({
-            selector: { published: true },
-            sort: [{ updatedAt: 'desc' }]
+function TodoList({ db }) {
+    const { result: todos, isFetching } = useRxQuery(
+        db.todos.find({
+            selector: { done: false },
+            sort: [{ dueAt: 'asc' }]
         })
     );
 
     if (isFetching) return <p>Loading...</p>;
-    return <ul>{posts.map(p => <li key={p.id}>{p.title}</li>)}</ul>;
+    return <ul>{todos.map(t => <li key={t.id}>{t.name}</li>)}</ul>;
 }
 ```
 
@@ -333,14 +336,14 @@ RxDB also lets you subscribe at a more granular level: individual documents, spe
 
 ```ts
 // Watch a single field on a single document
-const doc = await db.posts.findOne('post-001').exec();
+const doc = await db.todos.findOne('todo1').exec();
 
-doc.get$('title').subscribe(newTitle => {
-    console.log('Title changed to:', newTitle);
+doc.get$('name').subscribe(newName => {
+    console.log('Name changed to:', newName);
 });
 
 // Watch the entire collection change stream
-db.posts.$.subscribe(changeEvent => {
+db.todos.$.subscribe(changeEvent => {
     console.log(changeEvent.operation, changeEvent.documentId);
 });
 ```
@@ -375,12 +378,11 @@ RxDB validates every document against a [JSON Schema](../../rx-schema.md) before
 
 ```ts
 try {
-    await db.posts.insert({
-        id: 'post-002',
-        // 'title' is a required field but is missing
-        authorId: 'user-1',
-        published: true,
-        updatedAt: Date.now()
+    await db.todos.insert({
+        id: 'todo2',
+        // 'name' is a required field but is missing
+        done: false,
+        dueAt: '2026-01-20T12:00:00.000Z'
     });
 } catch (err) {
     // Caught: document does not match schema
@@ -428,15 +430,17 @@ const db = await createRxDatabase({
 });
 
 // Fields marked as encrypted in the schema are stored as ciphertext
-const schema = {
+const todoSchema = {
     version: 0,
     primaryKey: 'id',
     type: 'object',
     properties: {
-        id:    { type: 'string', maxLength: 100 },
-        token: { type: 'string' }
+        id:   { type: 'string', maxLength: 100 },
+        name: { type: 'string' },
+        note: { type: 'string' }
     },
-    encrypted: ['token']
+    required: ['id', 'name'],
+    encrypted: ['note']
 };
 ```
 
@@ -476,45 +480,50 @@ import { getRxStorageIndexedDB } from 'rxdb/plugins/storage-indexeddb';
 addRxPlugin(RxDBDevModePlugin);
 
 const db = await createRxDatabase({
-    name: 'taskapp',
+    name: 'todoapp',
     storage: getRxStorageIndexedDB()
 });
 
 await db.addCollections({
-    tasks: {
+    todos: {
         schema: {
-            title: 'task schema',
+            title: 'todo schema',
             version: 0,
             primaryKey: 'id',
             type: 'object',
             properties: {
-                id:        { type: 'string', maxLength: 100 },
-                title:     { type: 'string' },
-                completed: { type: 'boolean' },
-                projectId: { type: 'string', maxLength: 100 },
-                updatedAt: { type: 'number' }
+                id:       { type: 'string', maxLength: 100 },
+                name:     { type: 'string' },
+                done:     { type: 'boolean', default: false },
+                dueAt:    { type: 'string', format: 'date-time', maxLength: 30 },
+                priority: {
+                    type: 'integer',
+                    minimum: 0,
+                    maximum: 10,
+                    multipleOf: 1
+                }
             },
-            required: ['id', 'title', 'completed', 'projectId', 'updatedAt'],
-            indexes: ['projectId', 'updatedAt']
+            required: ['id', 'name', 'done', 'dueAt', 'priority'],
+            indexes: ['dueAt', ['done', 'priority']]
         }
     }
 });
 
-// Insert a task
-await db.tasks.insert({
-    id: 'task-001',
-    title: 'Write documentation',
-    completed: false,
-    projectId: 'proj-rxdb',
-    updatedAt: Date.now()
+// Insert a todo
+await db.todos.insert({
+    id: 'todo1',
+    name: 'Write documentation',
+    done: false,
+    dueAt: '2026-01-15T09:00:00.000Z',
+    priority: 2
 });
 
-// Subscribe to all incomplete tasks in a project
-db.tasks.find({
-    selector: { projectId: 'proj-rxdb', completed: false },
-    sort: [{ updatedAt: 'desc' }]
-}).$.subscribe(tasks => {
-    console.log('Pending tasks:', tasks.map(t => t.title));
+// Subscribe to all open todos with a high priority
+db.todos.find({
+    selector: { done: false, priority: { $gte: 2 } },
+    sort: [{ priority: 'desc' }]
+}).$.subscribe(todos => {
+    console.log('Open todos:', todos.map(t => t.name));
 });
 ```
 

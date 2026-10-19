@@ -72,13 +72,13 @@ A typical NeDB workflow looks like this:
 
 ```js
 const Datastore = require('nedb');
-const db = new Datastore({ filename: 'tasks.db', autoload: true });
+const db = new Datastore({ filename: 'todos.db', autoload: true });
 
-db.insert({ _id: 't1', title: 'Write report', done: false }, (err, doc) => {
+db.insert({ _id: 'todo1', name: 'Write report', done: false }, (err, doc) => {
     // ...
 });
 
-db.find({ done: false }).sort({ title: 1 }).exec((err, docs) => {
+db.find({ done: false }).sort({ name: 1 }).exec((err, docs) => {
     // ...
 });
 ```
@@ -89,32 +89,32 @@ The same workflow in RxDB looks like this:
 import { createRxDatabase } from 'rxdb/plugins/core';
 import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
 
-const db = await createRxDatabase({
-    name: 'tasks',
+const myDatabase = await createRxDatabase({
+    name: 'mydatabase',
     storage: getRxStorageLocalstorage()
 });
 
-await db.addCollections({
-    tasks: {
+await myDatabase.addCollections({
+    todos: {
         schema: {
-            title: 'task schema',
+            title: 'todo schema',
             version: 0,
             primaryKey: 'id',
             type: 'object',
             properties: {
                 id: { type: 'string', maxLength: 100 },
-                title: { type: 'string' },
-                done: { type: 'boolean' }
+                name: { type: 'string' },
+                done: { type: 'boolean', default: false }
             },
-            required: ['id', 'title', 'done']
+            required: ['id', 'name', 'done']
         }
     }
 });
 
-await db.tasks.insert({ id: 't1', title: 'Write report', done: false });
+await myDatabase.todos.insert({ id: 'todo1', name: 'Write report', done: false });
 
-const openTasks = await db.tasks
-    .find({ selector: { done: false }, sort: [{ title: 'asc' }] })
+const openTodos = await myDatabase.todos
+    .find({ selector: { done: false }, sort: [{ name: 'asc' }] })
     .exec();
 ```
 
@@ -125,14 +125,14 @@ The query syntax stays close to MongoDB, so most NeDB selectors translate direct
 NeDB has no equivalent for the snippet below. With RxDB, the result list updates automatically whenever a matching document changes:
 
 ```ts
-db.tasks
+myDatabase.todos
     .find({ selector: { done: false } })
-    .$.subscribe(tasks => {
-        renderTaskList(tasks);
+    .$.subscribe(todos => {
+        renderTodoList(todos);
     });
 
-// Inserting a new task elsewhere in the app
-await db.tasks.insert({ id: 't2', title: 'Send invoice', done: false });
+// Inserting a new todo elsewhere in the app
+await myDatabase.todos.insert({ id: 'todo2', name: 'Send invoice', done: false });
 // The subscriber above receives the updated array immediately.
 ```
 

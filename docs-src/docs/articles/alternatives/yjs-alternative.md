@@ -87,43 +87,43 @@ A typical RxDB collection has a schema, supports queries, and emits updates over
 import { createRxDatabase, addRxPlugin } from 'rxdb';
 import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
 
-const db = await createRxDatabase({
-  name: 'app',
+const myDatabase = await createRxDatabase({
+  name: 'mydatabase',
   storage: getRxStorageDexie()
 });
 
-await db.addCollections({
-  tasks: {
+await myDatabase.addCollections({
+  todos: {
     schema: {
       version: 0,
       primaryKey: 'id',
       type: 'object',
       properties: {
-        id:        { type: 'string', maxLength: 40 },
-        title:     { type: 'string' },
-        status:    { type: 'string', enum: ['open', 'done'] },
-        updatedAt: { type: 'number' }
+        id:    { type: 'string', maxLength: 100 },
+        name:  { type: 'string' },
+        done:  { type: 'boolean', default: false },
+        dueAt: { type: 'string', format: 'date-time', maxLength: 30 }
       },
-      required: ['id', 'title', 'status', 'updatedAt'],
-      indexes: ['status', 'updatedAt']
+      required: ['id', 'name', 'done', 'dueAt'],
+      indexes: ['dueAt']
     }
   }
 });
 
-await db.tasks.insert({
-  id: 't1',
-  title: 'Write Yjs comparison',
-  status: 'open',
-  updatedAt: Date.now()
+await myDatabase.todos.insert({
+  id: 'todo1',
+  name: 'Write Yjs comparison',
+  done: false,
+  dueAt: '2026-01-15T09:00:00.000Z'
 });
 
-const openTasks$ = db.tasks
-  .find({ selector: { status: 'open' } })
-  .sort({ updatedAt: 'desc' })
+const openTodos$ = myDatabase.todos
+  .find({ selector: { done: false } })
+  .sort({ dueAt: 'asc' })
   .$;
 
-openTasks$.subscribe(tasks => {
-  console.log('open tasks:', tasks.map(t => t.title));
+openTodos$.subscribe(todos => {
+  console.log('open todos:', todos.map(t => t.name));
 });
 ```
 
@@ -139,31 +139,36 @@ import { RxDBcrdtPlugin } from 'rxdb/plugins/crdt';
 
 addRxPlugin(RxDBcrdtPlugin);
 
-await db.addCollections({
-  shoppingLists: {
+await myDatabase.addCollections({
+  todos: {
     schema: {
       version: 0,
       primaryKey: 'id',
       type: 'object',
       crdt: { field: 'crdts' },
       properties: {
-        id:    { type: 'string', maxLength: 40 },
-        items: { type: 'array', items: { type: 'string' } },
+        id:    { type: 'string', maxLength: 100 },
+        name:  { type: 'string' },
+        tags:  { type: 'array', default: [], items: { type: 'string' } },
         crdts: { type: 'object' }
       },
-      required: ['id']
+      required: ['id', 'name', 'tags']
     }
   }
 });
 
-const list = await db.shoppingLists.insert({ id: 'home', items: [] });
-
-await list.updateCRDT({
-  ifMatch: { $set: { items: ['milk'] } }
+const todo = await myDatabase.todos.insert({
+  id: 'todo1',
+  name: 'Write Yjs comparison',
+  tags: []
 });
 
-await list.updateCRDT({
-  ifMatch: { $push: { items: 'bread' } }
+await todo.updateCRDT({
+  ifMatch: { $set: { tags: ['work'] } }
+});
+
+await todo.updateCRDT({
+  ifMatch: { $push: { tags: 'urgent' } }
 });
 ```
 
