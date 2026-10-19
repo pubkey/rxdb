@@ -194,9 +194,9 @@ RxDB will always append the `primaryKey` to all indexes to ensure a deterministi
 ### Index-example
 
 ```javascript
-const schemaWithIndexes = {
+const todoSchemaWithIndexes = {
   version: 0,
-  title: 'human schema with indexes',
+  title: 'todo schema with indexes',
   keyCompression: true,
   primaryKey: 'id',
   type: 'object',
@@ -205,51 +205,52 @@ const schemaWithIndexes = {
           type: 'string',
           maxLength: 100 // <- the primary key must have set maxLength
       },
-      firstName: {
-          type: 'string',
-          // string-fields used as an index,
-          // must have set maxLength.
-          maxLength: 100
-      },
-      lastName: {
+      name: {
           type: 'string'
       },
-      active: {
+      done: {
           type: 'boolean'
       },
-      familyName: {
-          type: 'string'
+      dueAt: {
+          type: 'string',
+          format: 'date-time',
+          // string-fields used as an index,
+          // must have set maxLength.
+          maxLength: 30
       },
-      balance: {
-          type: 'number',
+      priority: {
+          type: 'integer',
 
           // number fields used in an index, must set
           // minimum, maximum and multipleOf
           minimum: 0,
-          maximum: 100000,
-          multipleOf: 0.01
+          maximum: 10,
+          multipleOf: 1
       },
-      creditCards: {
-          type: 'array',
-          items: {
-              type: 'object',
-              properties: {
-                    cvc: {
-                        type: 'number'
-                    }
+      assignee: {
+          type: 'object',
+          properties: {
+              name: {
+                  type: 'string'
+              },
+              email: {
+                  type: 'string'
               }
-          } 
+          }
       }
   },
   required: [
       'id',
-      'active' // <- boolean fields that are used in an index must be required. 
+      'name',
+      'dueAt',
+      'priority',
+      'done' // <- boolean fields that are used in an index must be required.
   ],
   indexes: [
-    'firstName', // <- this will create a simple index for the `firstName` field
+    'dueAt', // <- this will create a simple index for the `dueAt` field
     // <- compound-index for these two fields
-    ['active', 'firstName'],
-    'active'
+    ['done', 'priority'],
+    'done'
   ]
 };
 ```
@@ -268,7 +269,7 @@ Default values can only be defined for first-level fields.
 Whenever you insert a document unset fields will be filled with default-values.
 
 ```javascript
-const schemaWithDefaultAge = {
+const todoSchemaWithDefaults = {
   version: 0,
   primaryKey: 'id',
   type: 'object',
@@ -277,19 +278,31 @@ const schemaWithDefaultAge = {
           type: 'string',
           maxLength: 100 // <- the primary key must have set maxLength
       },
-      firstName: {
+      name: {
           type: 'string'
       },
-      lastName: {
-          type: 'string'
+      done: {
+          type: 'boolean',
+          default: false // <- default will be used
       },
-      age: {
-          type: 'integer',
-          default: 20       // <- default will be used
+      tags: {
+          type: 'array',
+          default: [], // <- default will be used
+          items: {
+              type: 'string'
+          }
       }
   },
-  required: ['id']
+  required: ['id', 'name', 'done', 'tags']
 };
+
+await myDatabase.todos.insert({
+    id: 'todo4',
+    name: 'Clean the kitchen'
+});
+const doc = await myDatabase.todos.findOne('todo4').exec();
+console.log(doc.done, doc.tags);
+// > false []
 ```
 
 ## final
@@ -302,7 +315,7 @@ Advantages:
 - When you enable the `eventReduce` algorithm, some performance-improvements are done.
 
 ```javascript
-const schemaWithFinalAge = {
+const todoSchemaWithFinalName = {
   version: 0,
   primaryKey: 'id',
   type: 'object',
@@ -311,18 +324,15 @@ const schemaWithFinalAge = {
           type: 'string',
           maxLength: 100 // <- the primary key must have set maxLength
       },
-      firstName: {
-          type: 'string'
-      },
-      lastName: {
-          type: 'string'
-      },
-      age: {
-          type: 'integer',
+      name: {
+          type: 'string',
           final: true
+      },
+      done: {
+          type: 'boolean'
       }
   },
-  required: ['id']
+  required: ['id', 'name', 'done']
 };
 ```
 
@@ -423,12 +433,12 @@ Also the following class properties of `RxDocument` cannot be used as top level 
                 "type": "string",
                 "maxLength": 100
             },
-            "nickname": {
+            "note": {
                 "type": "string"
             }
         },
         "required": ["id"]
-        // "nickname" is not required, so it can be left undefined (not set)
+        // "note" is not required, so it can be left undefined (not set)
     }
     ```
 
@@ -507,7 +517,7 @@ In **development**-mode, the schema-change can be simplified by **one of these**
 
 -   Use the memory-storage so your db resets on restart and your schema is not saved permanently
 -   Call `removeRxDatabase('mydatabasename', RxStorage);` before creating a new [RxDatabase](./rx-database.md)-instance
--   Add a timestamp as suffix to the database-name to create a new one each run like `name: 'heroesDB' + new Date().getTime()`
+-   Add a timestamp as suffix to the database-name to create a new one each run like `name: 'mydatabase' + new Date().getTime()`
 </div>
 
 </FaqItem>

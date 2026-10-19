@@ -13,16 +13,22 @@ RxDB works on RxDocuments instead of plain JSON data to have more convenient ope
 ## insert
 To insert a document into a collection, you have to call the collection's `.insert()` function.
 ```js
-await myCollection.insert({
-  name: 'foo',
-  lastname: 'bar'
+await myDatabase.todos.insert({
+  id: 'todo1',
+  name: 'Learn RxDB',
+  done: false,
+  dueAt: '2026-01-01T10:00:00.000Z',
+  priority: 8,
+  tags: ['learning', 'rxdb'],
+  assignee: { name: 'Alice', email: 'alice@example.com' },
+  subtasks: ['todo3']
 });
 ```
 
 ## find
 To find documents in a collection, you have to call the collection's `.find()` function. [See RxQuery](./rx-query.md).
 ```js
-const docs = await myCollection.find().exec(); // <- find all documents
+const docs = await myDatabase.todos.find().exec(); // <- find all documents
 ```
 
 
@@ -48,8 +54,8 @@ myDocument.get$('name')
     isName = newName;
   });
 
-await myDocument.incrementalPatch({name: 'foobar2'});
-console.dir(isName); // isName is now 'foobar2'
+await myDocument.incrementalPatch({name: 'Learn RxDB queries'});
+console.dir(isName); // isName is now 'Learn RxDB queries'
 
 // OR
 
@@ -68,13 +74,13 @@ All properties of an `RxDocument` are assigned as getters so you can also direct
   // Identical to myDocument.get('name');
   const name = myDocument.name;
   // Can also get nested values.
-  const nestedValue = myDocument.whatever.nestedfield;
+  const assigneeName = myDocument.assignee.name;
 
   // Also usable with observables:
-  myDocument.firstName$.subscribe(newName => console.log('name is: ' + newName));
-  // > 'name is: Stefe'
-  await myDocument.incrementalPatch({firstName: 'Steve'});
-  // > 'name is: Steve'
+  myDocument.name$.subscribe(newName => console.log('name is: ' + newName));
+  // > 'name is: Learn RxDB'
+  await myDocument.incrementalPatch({name: 'Learn RxDB queries'});
+  // > 'name is: Learn RxDB queries'
 ```
 
 ### update()
@@ -91,10 +97,10 @@ addRxPlugin(RxDBUpdatePlugin);
 
 await myDocument.update({
     $inc: {
-        age: 1 // increases age by 1
+        priority: 1 // increases priority by 1
     },
     $set: {
-        firstName: 'foobar' // sets firstName to foobar
+        name: 'Learn RxDB queries' // sets name to 'Learn RxDB queries'
     }
 });
 ```
@@ -105,12 +111,12 @@ Updates a document's data based on a function that mutates the current data and 
 ```js
 
 const changeFunction = (oldData) => {
-    oldData.age = oldData.age + 1;
-    oldData.name = 'foooobarNew';
+    oldData.priority = oldData.priority + 1;
+    oldData.name = 'Learn RxDB queries';
     return oldData;
 }
 await myDocument.modify(changeFunction);
-console.log(myDocument.name); // 'foooobarNew'
+console.log(myDocument.getLatest().name); // 'Learn RxDB queries'
 ```
 
 ### patch()
@@ -119,10 +125,10 @@ Overwrites the given attributes in the document's data.
 
 ```js
 await myDocument.patch({
-  name: 'Steve',
-  age: undefined // setting an attribute to undefined will remove it
+  name: 'Learn RxDB queries',
+  note: undefined // setting an attribute to undefined will remove it
 });
-console.log(myDocument.name); // 'Steve'
+console.log(myDocument.getLatest().name); // 'Learn RxDB queries'
 ```
 
 
@@ -137,25 +143,23 @@ To make a change to a document, no matter what the current state is, you can use
 // update
 await myDocument.incrementalUpdate({
     $inc: {
-        age: 1 // increases age by 1
+        priority: 1 // increases priority by 1
     }
 });
 
 // modify
 await myDocument.incrementalModify(docData => {
-  docData.age = docData.age + 1;
+  docData.priority = docData.priority + 1;
   return docData;
 });
 
 // patch
 await myDocument.incrementalPatch({
-  age: 100
+  priority: 10
 });
 
 // remove
-await myDocument.incrementalRemove({
-  age: 100
-});
+await myDocument.incrementalRemove();
 ```
 
 
@@ -165,9 +169,9 @@ await myDocument.incrementalRemove({
 Returns the latest known state of the `RxDocument`.
 
 ```js
-const myDocument = await myCollection.findOne('foobar').exec();
+const myDocument = await myDatabase.todos.findOne('todo1').exec();
 const docAfterEdit = await myDocument.incrementalPatch({
-  age: 10
+  priority: 10
 });
 const latestDoc = myDocument.getLatest();
 console.log(docAfterEdit === latestDoc); // > true
@@ -207,7 +211,7 @@ await doc.update({
 
 // modify() and remove()
 await doc.modify(data => {
-  data.age = 1;
+  data.done = true;
   data._deleted = true;
   return data;
 });
@@ -252,10 +256,10 @@ Returns the document's data as plain JSON object. This will return an **immutabl
 ```js
 const json = myDocument.toJSON();
 console.dir(json);
-/* { passportId: 'h1rg9ugdd30o',
-  firstName: 'Carolina',
-  lastName: 'Gibson',
-  age: 33 ...
+/* { id: 'todo1',
+  name: 'Learn RxDB',
+  done: false,
+  priority: 8 ...
 */
 ```
 
@@ -264,9 +268,9 @@ You can also set `withMetaFields: true` to get additional meta fields like the r
 ```js
 const json = myDocument.toJSON(true);
 console.dir(json);
-/* { passportId: 'h1rg9ugdd30o',
-  firstName: 'Carolina',
-  lastName: 'Gibson',
+/* { id: 'todo1',
+  name: 'Learn RxDB',
+  done: false,
   _deleted: false,
   _attachments: { ... },
   _rev: '1-aklsdjfhak'
@@ -281,7 +285,7 @@ Remember that deep cloning is expensive and should only be done when necessary.
 
 ```js
 const json = myDocument.toMutableJSON();
-json.firstName = 'Alice'; // The returned document can be mutated
+json.name = 'Learn RxDB queries'; // The returned document can be mutated
 ```
 
 
@@ -301,16 +305,16 @@ const is = isRxDocument(myObj);
 **RxDocument instances are immutable.** Each instance represents a snapshot of the document at the time it was fetched or last written. Modifying a document does not update existing instances of it - it creates a new `RxDocument` instance with the updated data. The old instance retains its original data.
 
 ```js
-const doc = await myCollection.findOne('foobar').exec();
-console.log(doc.age); // 10
+const doc = await myDatabase.todos.findOne('todo1').exec();
+console.log(doc.priority); // 8
 
-await doc.incrementalPatch({ age: 20 });
+await doc.incrementalPatch({ priority: 10 });
 
 // The original instance still has the old data
-console.log(doc.age); // 10
+console.log(doc.priority); // 8
 
 // Use getLatest() to get the updated state
-console.log(doc.getLatest().age); // 20
+console.log(doc.getLatest().priority); // 10
 ```
 
 **RxDB de-duplicates document instances.** When the same document is fetched multiple times without any writes in between, RxDB returns the same instance to save memory. Once a write occurs, subsequent fetches return a new instance reflecting the updated state.
@@ -334,10 +338,15 @@ The revision string has the format `<height>-<token>`, for example `3-dwtwqbarqc
 - **token**: the `token` of the [RxDatabase](./rx-database.md) instance that did the write (`myDatabase.token`). It is not a hash of the document content.
 
 ```ts
-const doc = await myCollection.insert({ id: 'foo', age: 20 });
+const doc = await myDatabase.todos.insert({
+  id: 'todo4',
+  name: 'Clean the kitchen',
+  dueAt: '2026-01-04T18:00:00.000Z',
+  priority: 1
+});
 console.log(doc.revision); // '1-dwtwqbarqc'
 
-const doc2 = await doc.incrementalPatch({ age: 21 });
+const doc2 = await doc.incrementalPatch({ priority: 2 });
 console.log(doc2.revision); // '2-dwtwqbarqc'
 ```
 

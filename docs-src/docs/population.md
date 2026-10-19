@@ -24,46 +24,55 @@ This works exactly like population with [mongoose](http://mongoosejs.com/docs/po
 The `ref` keyword in properties describes to which collection the field value belongs to (has a relationship). 
 
 ```javascript
-export const refHuman = {
-    title: 'human related to other human',
+export const todoSchemaWithParent = {
+    title: 'todo related to a parent todo',
     version: 0,
-    primaryKey: 'name',
+    primaryKey: 'id',
+    type: 'object',
     properties: {
-        name: {
+        id: {
             type: 'string',
             maxLength: 100
         },
-        bestFriend: {
-            ref: 'human',     // refers to collection human
+        name: {
+            type: 'string'
+        },
+        parent: {
+            ref: 'todos',     // refers to collection todos
             // ref-values must always be string
             // or ['string', 'null']
             // (primary of foreign RxDocument)
             type: 'string'
         }
-    }
+    },
+    required: ['id', 'name']
 };
 ```
 
-You can also have a one-to-many reference by using a string array.
+You can also have a one-to-many reference by using a string array. The `subtasks` field of the [example schema](./rx-schema.md#example-schema) works this way.
 
 ```js
-export const schemaWithOneToManyReference = {
+export const todoSchemaWithSubtasks = {
   version: 0,
-  primaryKey: 'name',
+  primaryKey: 'id',
   type: 'object',
   properties: {
-    name: {
+    id: {
       type: 'string',
       maxLength: 100
     },
-    friends: {
+    name: {
+      type: 'string'
+    },
+    subtasks: {
       type: 'array',
-      ref: 'human',
+      ref: 'todos',
       items: {
         type: 'string'
       }
     }
-  }
+  },
+  required: ['id', 'name']
 };
 ```
 
@@ -72,19 +81,30 @@ export const schemaWithOneToManyReference = {
 ### via method
 To get the referred RxDocument, you can use the `populate()` method.
 It takes the field path as attribute and returns a Promise which resolves to the foreign document or null if not found.
+For an array field like `subtasks`, it resolves to an array of documents.
 
 ```javascript
-await humansCollection.insert({
-  name: 'Alice',
-  bestFriend: 'Carol'
-});
-await humansCollection.insert({
-  name: 'Bob',
-  bestFriend: 'Alice'
-});
-const doc = await humansCollection.findOne('Bob').exec();
-const bestFriend = await doc.populate('bestFriend');
-console.dir(bestFriend); //> RxDocument[Alice]
+await myDatabase.todos.bulkInsert([
+  {
+    id: 'todo1',
+    name: 'Learn RxDB',
+    done: false,
+    dueAt: '2026-01-01T10:00:00.000Z',
+    priority: 8,
+    tags: ['learning', 'rxdb'],
+    subtasks: ['todo3']
+  },
+  {
+    id: 'todo3',
+    name: 'Set up replication',
+    dueAt: '2026-01-03T14:15:00.000Z',
+    priority: 10,
+    tags: ['rxdb', 'backend']
+  }
+]);
+const doc = await myDatabase.todos.findOne('todo1').exec();
+const subtasks = await doc.populate('subtasks');
+console.dir(subtasks); //> [RxDocument[todo3]]
 ```
 
 ### via getter
@@ -92,41 +112,39 @@ You can also get the populated RxDocument with the direct getter. To do this, yo
 This also works on nested values.
 
 ```javascript
-await humansCollection.insert({
-  name: 'Alice',
-  bestFriend: 'Carol'
-});
-await humansCollection.insert({
-  name: 'Bob',
-  bestFriend: 'Alice'
-});
-const doc = await humansCollection.findOne('Bob').exec();
-const bestFriend = await doc.bestFriend_; // notice the underscore `_`
-console.dir(bestFriend); //> RxDocument[Alice]
+const doc = await myDatabase.todos.findOne('todo1').exec();
+const subtasks = await doc.subtasks_; // notice the underscore `_`
+console.dir(subtasks); //> [RxDocument[todo3]]
 ```
 
 ## Example with nested reference
 
 ```javascript
-const myCollection = await myDatabase.addCollections({
-  human: {
+await myDatabase.addCollections({
+  todos: {
     schema: {
       version: 0,
+      primaryKey: 'id',
       type: 'object',
       properties: {
+        id: {
+          type: 'string',
+          maxLength: 100
+        },
         name: {
           type: 'string'
         },
-        family: {
+        relations: {
           type: 'object',
           properties: {
-            mother: {
+            parent: {
               type: 'string',
-              ref: 'human'
+              ref: 'todos'
             }
           }
         }
-      }
+      },
+      required: ['id', 'name']
     }
   }
 });
@@ -134,46 +152,53 @@ const myCollection = await myDatabase.addCollections({
 /**
  * We assume myDocument is a document from the collection
  */
-const mother = await myDocument.family.mother_;
-console.dir(mother); //> RxDocument
+const parent = await myDocument.relations.parent_;
+console.dir(parent); //> RxDocument
 ```
 
 ## Example with array
 
 ```javascript
-const myCollection = await myDatabase.addCollections({
-  human: {
+await myDatabase.addCollections({
+  todos: {
     schema: {
       version: 0,
+      primaryKey: 'id',
       type: 'object',
       properties: {
+        id: {
+          type: 'string',
+          maxLength: 100
+        },
         name: {
           type: 'string'
         },
-        friends: {
+        subtasks: {
           type: 'array',
-          ref: 'human',
+          ref: 'todos',
           items: {
               type: 'string'
           }
         }
-      }
+      },
+      required: ['id', 'name']
     }
   } 
 });
 
-//[insert other humans here]
+//[insert the subtasks todo2, todo3 and todo4 here]
 
-await myCollection.insert({
-  name: 'Alice',
-  friends: [
-    'Bob',
-    'Carol',
-    'Dave'
+await myDatabase.todos.insert({
+  id: 'todo1',
+  name: 'Learn RxDB',
+  subtasks: [
+    'todo2',
+    'todo3',
+    'todo4'
   ]
 });
 
-const doc = await humansCollection.findOne('Alice').exec();
-const friends = await doc.friends_;
-console.dir(friends); //> Array.<RxDocument>
+const doc = await myDatabase.todos.findOne('todo1').exec();
+const subtasks = await doc.subtasks_;
+console.dir(subtasks); //> Array.<RxDocument>
 ```
