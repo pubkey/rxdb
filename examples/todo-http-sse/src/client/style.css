@@ -1,0 +1,132 @@
+:root {
+  font-family: system-ui, -apple-system, sans-serif;
+  color: #1d1d1f;
+  background: #f4f4f7;
+}
+
+body {
+  margin: 0;
+}
+
+main {
+  max-width: 560px;
+  margin: 40px auto;
+  padding: 24px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+h1 {
+  margin: 0;
+  color: #e6008d;
+}
+
+h2 {
+  font-size: 1rem;
+  margin-top: 32px;
+}
+
+.subtitle {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.sync-bar,
+form,
+footer {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.sync-bar {
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.status {
+  font-size: 0.85rem;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #eee;
+}
+
+.status.online {
+  background: #d9f7e3;
+  color: #116b32;
+}
+
+.status.offline {
+  background: #fff1cc;
+  color: #7a5600;
+}
+
+.status.error {
+  background: #ffe0e0;
+  color: #a10000;
+}
+
+input,
+button {
+  font: inherit;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+button {
+  cursor: pointer;
+  background: #fafafa;
+}
+
+#new-todo {
+  flex: 1;
+}
+
+#todo-list,
+#conflict-log {
+  list-style: none;
+  padding: 0;
+}
+
+.todo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.todo .title {
+  flex: 1;
+  cursor: text;
+}
+
+.todo .edit {
+  flex: 1;
+}
+
+.todo.done .title {
+  text-decoration: line-through;
+  color: #999;
+}
+
+.todo .remove {
+  border: none;
+  background: none;
+  color: #c00;
+  font-size: 1.2rem;
+}
+
+footer {
+  justify-content: space-between;
+  font-size: 0.85rem;
+  color: #666;
+}
+
+#conflict-log li {
+  font-size: 0.8rem;
+  color: #555;
+  padding: 4px 0;
+}

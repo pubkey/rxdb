@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="data:," />
+    <title>RxDB Todo - HTTP + SSE Sync</title>
+  </head>
+  <body>
+    <main>
+      <h1>RxDB Todos</h1>
+      <p class="subtitle">
+        Dexie.js storage, key-compression, encryption and a custom Node.js sync server with Server-Sent Events.
+      </p>
+      <div class="sync-bar">
+        <span id="sync-status" class="status">starting...</span>
+        <button id="toggle-sync" type="button">Go offline</button>
+      </div>
+      <form id="new-todo-form">
+        <input id="new-todo" placeholder="What needs to be done?" autocomplete="off" autofocus />
+        <button type="submit">Add</button>
+      </form>
+      <ul id="todo-list"></ul>
+      <footer>
+        <span id="todo-count"></span>
+        <button id="clear-done" type="button">Clear completed</button>
+      </footer>
+      <h2>Conflicts</h2>
+      <ul id="conflict-log"></ul>
+    </main>
+    <script type="module" src="/src/client/main.ts"></script>
+  </body>
+</html>

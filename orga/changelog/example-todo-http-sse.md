@@ -1,0 +1,1 @@
+- ADD example `examples/todo-http-sse`: a todo app with the Dexie.js storage, key-compression and encryption that replicates to a custom Node.js server over HTTP with a Server-Sent Events pull stream and a three-way merge conflict handler, including end-to-end tests.

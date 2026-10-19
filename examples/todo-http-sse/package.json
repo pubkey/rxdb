@@ -1,0 +1,29 @@
+{
+  "name": "rxdb-example-todo-http-sse",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "preinstall": "(cd ../../ && npx yarn@1.22.22 pack ../../ --filename ./examples/todo-http-sse/rxdb-local.tgz)",
+    "dev": "concurrently --names server,client \"npm run server\" \"npm run dev:client\"",
+    "dev:client": "vite",
+    "server": "tsx server/index.ts",
+    "build": "tsc && vite build",
+    "preview": "concurrently --names server,client \"npm run server\" \"vite preview\"",
+    "test": "tsx --test test/*.test.ts"
+  },
+  "devDependencies": {
+    "@types/node": "26.6.5",
+    "concurrently": "10.0.6",
+    "eventsource": "5.1.2",
+    "fake-indexeddb": "6.2.5",
+    "tsx": "4.23.15",
+    "typescript": "5.9.3",
+    "vite": "8.3.4"
+  },
+  "//": "NOTICE: For the Github CI we use the local RxDB build (rxdb-local.tgz). In your app should just install 'rxdb' from npm instead",
+  "dependencies": {
+    "rxdb": "file:rxdb-local.tgz",
+    "rxjs": "7.8.2"
+  }
+}

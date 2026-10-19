@@ -831,6 +831,30 @@ jobs:
           working-directory: ./examples/vite-vanilla-ts
           run: npm run test
 
+  example-todo-http-sse:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - name: Set node version
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: ".nvmrc"
+      - name: prepare RxDB core
+        run: |
+          npm install --legacy-peer-deps
+          npm run build
+          rm -r node_modules
+      - name: todo-http-sse build
+        working-directory: ./examples/todo-http-sse
+        run: |
+          npm run preinstall
+          npm install --legacy-peer-deps
+          npm run build
+      - name: todo-http-sse test
+        working-directory: ./examples/todo-http-sse
+        run: npm run test
+
   example-ionic:
     runs-on: ubuntu-22.04
     timeout-minutes: 30

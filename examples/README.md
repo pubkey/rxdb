@@ -14,6 +14,7 @@ react                | [done](./react)
 svelte               | [done](./svelte)
 vuejs                | [done](./vue)
 supabase             | [done](./supabase/)
+HTTP + SSE sync      | [done](./todo-http-sse/)
 
 **NOTICE:** The maintainer is not able to maintain any additional example projects. If you want to add a new one, create your own repository and add a link to it below.
 

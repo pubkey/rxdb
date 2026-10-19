@@ -332,6 +332,9 @@ const replicationState = await replicateRxCollection({
 
 </Steps>
 
+## Full Example Project
+
+The [todo-http-sse example](https://github.com/pubkey/rxdb/tree/master/examples/todo-http-sse) puts all steps of this tutorial into one runnable app. It uses a Node.js server without dependencies, the [Dexie.js RxStorage](./rx-storage-dexie.md), [key compression](./key-compression.md), [encryption](./encryption.md), and a custom [conflict handler](./transactions-conflicts-revisions.md) that merges concurrent offline edits field by field. Instead of the `updatedAt` time of the client, the server uses its own sequence number as checkpoint, because client clocks cannot be trusted.
 
 ## Missing implementation details
 
