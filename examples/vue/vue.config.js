@@ -5,6 +5,10 @@ module.exports = {
   publicPath: './',
   configureWebpack: {
     devtool: 'source-map',
+    resolve: {
+      // use the ES2015 build of RxJS instead of the bigger ES5 build
+      conditionNames: ['es2015', '...'],
+    },
     plugins: [
       new CopyPlugin({
         patterns: [

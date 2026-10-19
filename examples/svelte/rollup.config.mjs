@@ -59,7 +59,9 @@ export default {
 		// https://github.com/rollup/plugins/tree/master/packages/commonjs
 		resolve({
 			browser: true,
-			dedupe: ['svelte']
+			dedupe: ['svelte'],
+			// use the ES2015 build of RxJS instead of the bigger ES5 build
+			exportConditions: ['es2015']
 		}),
 		commonjs(),
 
