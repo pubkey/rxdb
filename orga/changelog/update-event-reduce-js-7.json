@@ -1,0 +1,11 @@
+{
+    "$schema": "./schema.json",
+    "text": "PERFORMANCE Updated [event-reduce-js](https://github.com/pubkey/event-reduce) from `6.0.0` to `7.0.1`. Calculating and applying the EventReduce step for live queries is about **2.7x faster** (20k change events on 10 sorted queries: 830 to 916 ms before, 308 to 331 ms after) and the minified+gzipped bundle is 934 bytes smaller",
+    "links": [
+        {
+            "url": "https://github.com/pubkey/rxdb/pull/9289",
+            "linkText": "#9289"
+        }
+    ],
+    "priority": 7
+}
