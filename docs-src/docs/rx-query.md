@@ -216,7 +216,7 @@ myDatabase.todos.find({
 
 ## Query Builder Plugin
 
-To use chained query methods, you can also use the `query-builder` plugin.
+To use chained query methods, you can also use the [query builder plugin](./query-builder.md).
 
 ```ts
 // add the query builder plugin
@@ -230,11 +230,13 @@ const query = myDatabase.todos.find().where('priority').gt(5);
 const result = await query.exec();
 ```
 
+The [query builder page](./query-builder.md) shows all chained methods with examples, including nested fields, array fields, logical operators, sorting, and pagination.
+
 
 ## Query Examples
 Here some examples to learn quickly how to write queries without reading the docs.
 - [Pouch-find-docs](https://github.com/pouchdb/pouchdb/blob/master/packages/node_modules/pouchdb-find/README.md) - learn how to use mango-queries
-- [mquery-docs](https://github.com/aheckmann/mquery/blob/master/README.md) - learn how to use chained-queries
+- [Query Builder](./query-builder.md) - learn how to use chained queries
 
 
 ```js
