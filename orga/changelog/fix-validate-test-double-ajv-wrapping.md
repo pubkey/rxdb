@@ -1,1 +1,0 @@
-- FIX `validate.test.ts` wrapped the tested validator around a storage that was already validated with ajv, so ajv also ran in the z-schema tests
