@@ -84,9 +84,9 @@ async function initEncryptedDatabase() {
 
     // Define a schema and create a collection
     await db.addCollections({
-        secureData: {
+        todos: {
             schema: {
-                title: 'secure data schema',
+                title: 'todo schema',
                 version: 0,
                 type: 'object',
                 primaryKey: 'id',
@@ -95,14 +95,19 @@ async function initEncryptedDatabase() {
                         type: 'string',
                         maxLength: 100
                     },
-                    normalField: {
+                    name: {
                         type: 'string'
                     },
-                    secretField: {
+                    note: {
                         type: 'string'
                     }
                 },
-                required: ['id', 'normalField', 'secretField']
+                required: ['id', 'name'],
+                // the note field is stored encrypted
+                encrypted: ['note'],
+                attachments: {
+                    encrypted: true
+                }
             }
         }
     });
@@ -121,23 +126,24 @@ Once you've set up the database with encryption, data in fields specified by you
     const db = await initEncryptedDatabase();
 
     // Insert encrypted data
-    const doc = await db.secureData.insert({
-        id: 'mySecretId',
-        normalField: 'foobar',
-        secretField: 'This is top secret data'
+    const doc = await db.todos.insert({
+        id: 'todo2',
+        name: 'Buy groceries',
+        note: 'Milk, eggs, bread'
     });
 
     // Query encrypted data by its primary key or non-encrypted fields
-    const fetchedDoc = await db.secureData.findOne({
+    const fetchedDoc = await db.todos.findOne({
         selector: {
-            normalField: 'foobar'
+            name: 'Buy groceries'
         }
     }).exec(true);
-    console.log(fetchedDoc.secretField); // 'This is top secret data'
+    console.log(fetchedDoc.note);
+    // > 'Milk, eggs, bread'
 
     // Update data
     await fetchedDoc.patch({
-        secretField: 'Updated secret data'
+        note: 'Milk, eggs, bread, butter'
     });
 })();
 ```
@@ -171,9 +177,9 @@ If you need to store files (images, text files, etc.), consider encrypting [atta
 
 ```ts
 import { createBlob } from 'rxdb';
-const doc = await db.secureData.findOne({
+const doc = await db.todos.findOne({
     selector: {
-        normalField: 'foobar'
+        name: 'Buy groceries'
     }
 }).exec(true);
 const attachment = await doc.putAttachment({
