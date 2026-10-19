@@ -1,0 +1,11 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `incrementalModify()` wrote a new revision of the unchanged document after the modifier threw",
+    "links": [
+        {
+            "url": "https://github.com/pubkey/rxdb/issues/9234",
+            "linkText": "#9234"
+        }
+    ],
+    "priority": 6
+}

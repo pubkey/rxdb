@@ -1,7 +1,12 @@
 const fs = require('fs');
 const path = require('path');
+const Ajv = require('ajv');
+const {
+    changelogDir,
+    changelogSchemaPath,
+    getChangelogEntryFiles
+} = require('./changelog-entries.js');
 
-const changelogDir = path.join(__dirname, '../orga/changelog');
 const changelogFile = path.join(__dirname, '../CHANGELOG.md');
 
 const NEWEST_START = '<!-- CHANGELOG NEWEST -->';
@@ -9,40 +14,49 @@ const NEWEST_END = '<!-- /CHANGELOG NEWEST -->';
 
 let hasError = false;
 
-/**
- * A changelog entry is a markdown list item, so it has to start with '- '.
- * Lines that start with whitespace continue the entry above them and are
- * therefore allowed. Everything else would be merged into CHANGELOG.md as
- * a line that renders inside the previous bullet instead of as its own entry.
- */
-function checkLines(filePath, lines, lineOffset) {
-    for (let i = 0; i < lines.length; i++) {
-        const line = lines[i];
-        if (line.trim() === '') {
-            continue;
-        }
-        if (line.startsWith('- ') || /^\s/.test(line)) {
-            continue;
-        }
-        console.error(`Error: changelog entry does not start with "- " in ${filePath}:${i + 1 + lineOffset}`);
-        console.error(`> ${line}`);
-        console.error('-'.repeat(100));
-        hasError = true;
+function logError(message, details) {
+    console.error('Error: ' + message);
+    if (details) {
+        console.error(details);
     }
+    console.error('-'.repeat(100));
+    hasError = true;
 }
 
+/**
+ * Every file in orga/changelog/ besides the README and the schema
+ * must be a JSON entry that is valid against orga/changelog/schema.json.
+ */
 function checkEntryFiles() {
     if (!fs.existsSync(changelogDir)) {
         return;
     }
-    const files = fs.readdirSync(changelogDir)
-        .filter(file => file.endsWith('.md'))
-        .filter(file => file !== 'README.md')
-        .sort();
-    for (const file of files) {
+    const schema = JSON.parse(fs.readFileSync(changelogSchemaPath, 'utf-8'));
+    const ajv = new Ajv({ allErrors: true });
+    const validate = ajv.compile(schema);
+
+    const entryFiles = getChangelogEntryFiles();
+    fs.readdirSync(changelogDir)
+        .filter(file => !entryFiles.includes(file) && file !== 'README.md' && file !== 'schema.json')
+        .forEach(file => logError(
+            `changelog entry ${path.join(changelogDir, file)} is not a .json file`
+        ));
+
+    for (const file of entryFiles) {
         const fullPath = path.join(changelogDir, file);
-        const content = fs.readFileSync(fullPath, 'utf-8');
-        checkLines(fullPath, content.split('\n'), 0);
+        let entry;
+        try {
+            entry = JSON.parse(fs.readFileSync(fullPath, 'utf-8'));
+        } catch (err) {
+            logError(`changelog entry ${fullPath} is not valid JSON`, err.message);
+            continue;
+        }
+        if (!validate(entry)) {
+            logError(
+                `changelog entry ${fullPath} does not match the schema`,
+                ajv.errorsText(validate.errors, { separator: '\n', dataVar: 'entry' })
+            );
+        }
     }
 }
 
@@ -57,24 +71,36 @@ function checkNewestBlock() {
     const start = lines.indexOf(NEWEST_START);
     const end = lines.indexOf(NEWEST_END);
     if (start === -1 || end === -1) {
-        console.error(`Error: ${changelogFile} is missing the ${NEWEST_START} / ${NEWEST_END} markers.`);
-        hasError = true;
+        logError(`${changelogFile} is missing the ${NEWEST_START} / ${NEWEST_END} markers.`);
         return;
     }
-    const block = lines.slice(start + 1, end).filter(line => !line.trim().startsWith('<!--'));
-    checkLines(changelogFile, block, start + 1);
+    for (let i = start + 1; i < end; i++) {
+        const line = lines[i];
+        if (
+            line.trim() === '' ||
+            line.trim().startsWith('<!--') ||
+            line.startsWith('- ') ||
+            /^\s/.test(line)
+        ) {
+            continue;
+        }
+        logError(
+            `changelog entry does not start with "- " in ${changelogFile}:${i + 1}`,
+            `> ${line}`
+        );
+    }
 }
 
-console.log('Checking changelog entries start with "- "...');
+console.log('Checking changelog entries...');
 
 checkEntryFiles();
 checkNewestBlock();
 
 if (hasError) {
-    console.error('\nEvery changelog entry has to be a markdown list item starting with "- ".');
+    console.error('\nEvery changelog entry has to be a JSON file that matches orga/changelog/schema.json.');
     console.error('See orga/changelog/README.md');
     process.exit(1);
 } else {
-    console.log('Success: All changelog entries start with "- ".');
+    console.log('Success: All changelog entries are valid.');
     process.exit(0);
 }

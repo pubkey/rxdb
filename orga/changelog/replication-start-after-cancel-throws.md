@@ -1,1 +1,0 @@
-- CHANGE `RxReplicationState.start()` now throws the error `RC_START_CANCELED` when the replication was canceled or removed, instead of silently doing nothing [#9206](https://github.com/pubkey/rxdb/pull/9206)

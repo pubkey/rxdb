@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "PERFORMANCE Queries with a `limit` whose sort order is not covered by the used index now select the first `skip + limit` documents with a bounded heap instead of sorting all matching documents. This is used by the memory, localstorage, dexie, denokv, foundationdb and sqlite storages. Added the helpers `sortAndSliceDocuments()` and `createTopKDocumentsCollector()` to the core.",
+    "links": [],
+    "priority": 7
+}

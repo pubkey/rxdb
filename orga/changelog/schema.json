@@ -1,0 +1,51 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "RxDB changelog entry",
+    "description": "One change of the next RxDB release. See orga/changelog/README.md",
+    "type": "object",
+    "properties": {
+        "$schema": {
+            "type": "string"
+        },
+        "text": {
+            "description": "Markdown text of the change without the leading '- ' and without the links. Must start with one of the change types like FIX, ADD, CHANGE, PERFORMANCE.",
+            "type": "string",
+            "minLength": 5,
+            "pattern": "^[A-Z]+ \\S"
+        },
+        "links": {
+            "description": "Linked URLs, like the root issue or pull request. They are rendered as markdown links behind the text.",
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "url": {
+                        "type": "string",
+                        "pattern": "^https?://\\S+$"
+                    },
+                    "linkText": {
+                        "type": "string",
+                        "minLength": 1
+                    }
+                },
+                "required": [
+                    "url",
+                    "linkText"
+                ],
+                "additionalProperties": false
+            }
+        },
+        "priority": {
+            "description": "How important the change is for RxDB users, from 1 (for example lint fixes or flaky tests) to 10 (for example new plugins). Entries with a higher priority are shown first in the release notes.",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10
+        }
+    },
+    "required": [
+        "text",
+        "links",
+        "priority"
+    ],
+    "additionalProperties": false
+}
