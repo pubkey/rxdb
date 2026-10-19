@@ -13,7 +13,7 @@ Schemas define the structure of the documents of a collection. Which field shoul
 
 ## Example Schema
 
-This `todos` schema is the shared example schema of the RxDB docs. Pages about [queries](./rx-query.md), [documents](./rx-document.md), [collections](./rx-collection.md), [population](./population.md), and [replication](./replication.md) use the same schema and the same sample data, so the examples on one page also work on the others.
+This example schema describes a `todos` collection with the following settings:
 
 - `id` is the **primaryKey**. It is a unique, indexed, required `string` which identifies a single document.
 - `name` is the required title of the todo.
@@ -119,7 +119,7 @@ console.dir(myDatabase.todos.name);
 
 ## Example Data
 
-The docs use these documents whenever an example needs data.
+With the schema in place, you can insert documents into the collection.
 
 ```ts
 await myDatabase.todos.bulkInsert([
