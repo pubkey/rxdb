@@ -45,8 +45,10 @@ A hand-rolled setup looks like this: you open the database in the main process a
 import { DatabaseSync } from 'node:sqlite';
 import { ipcMain } from 'electron';
 
-const db = new DatabaseSync('/path/to/users.db');
-db.exec('CREATE TABLE IF NOT EXISTS users(id TEXT PRIMARY KEY, name TEXT)');
+const db = new DatabaseSync('/path/to/todos.db');
+db.exec(
+    'CREATE TABLE IF NOT EXISTS todos(id TEXT PRIMARY KEY, name TEXT, done INTEGER)'
+);
 
 ipcMain.handle('db-query', (event, sql, params) => {
     return db.prepare(sql).all(...params);
@@ -57,8 +59,8 @@ ipcMain.handle('db-query', (event, sql, params) => {
 // renderer process, without RxDB
 const rows = await ipcRenderer.invoke(
     'db-query',
-    'SELECT * FROM users WHERE name = ?',
-    ['alice']
+    'SELECT * FROM todos WHERE done = ?',
+    [0]
 );
 ```
 
@@ -148,7 +150,7 @@ import { getRxStorageIpcRenderer } from 'rxdb/plugins/electron';
 import { ipcRenderer } from 'electron';
 
 const db = await createRxDatabase({
-    name: 'heroesdb',
+    name: 'mydatabase',
     storage: getRxStorageIpcRenderer({
         key: 'main-storage',
         ipcRenderer
@@ -156,7 +158,7 @@ const db = await createRxDatabase({
 });
 
 await db.addCollections({
-    heroes: {
+    todos: {
         schema: {
             version: 0,
             primaryKey: 'id',
@@ -164,9 +166,10 @@ await db.addCollections({
             properties: {
                 id: { type: 'string', maxLength: 100 },
                 name: { type: 'string' },
-                color: { type: 'string' }
+                done: { type: 'boolean', default: false },
+                dueAt: { type: 'string', format: 'date-time', maxLength: 30 }
             },
-            required: ['id', 'name', 'color']
+            required: ['id', 'name', 'done', 'dueAt']
         }
     }
 });
@@ -180,24 +183,25 @@ await db.addCollections({
 
 ```ts
 // insert a document
-await db.heroes.insert({
-    id: 'sqlite-hero',
-    name: 'Alice',
-    color: 'red'
+await db.todos.insert({
+    id: 'todo1',
+    name: 'Buy groceries',
+    done: false,
+    dueAt: '2026-03-01T10:00:00.000Z'
 });
 
 // query once
-const redHeroes = await db.heroes.find({
-    selector: { color: 'red' }
+const openTodos = await db.todos.find({
+    selector: { done: false }
 }).exec();
 
 // observe a query
-db.heroes.find({
-    selector: { color: 'red' }
-}).$.subscribe(heroes => {
+db.todos.find({
+    selector: { done: false }
+}).$.subscribe(todos => {
     // emits on every change to the result set,
     // also when the write came from another window
-    renderHeroList(heroes);
+    renderTodoList(todos);
 });
 ```
 
@@ -233,7 +237,7 @@ A basic [HTTP replication](../replication-http.md) needs two endpoints on your s
 import { replicateRxCollection } from 'rxdb/plugins/replication';
 
 const replicationState = replicateRxCollection({
-    collection: db.heroes,
+    collection: db.todos,
     replicationIdentifier: 'my-http-replication',
     pull: {
         async handler(checkpointOrNull, batchSize) {

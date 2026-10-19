@@ -87,41 +87,43 @@ const db = await createRxDatabase({
 });
 
 await db.addCollections({
-    reports: {
+    todos: {
         schema: {
             version: 0,
             primaryKey: 'id',
             type: 'object',
             properties: {
                 id: { type: 'string', maxLength: 100 },
-                title: { type: 'string' },
-                status: { type: 'string' },
+                name: { type: 'string' },
+                done: { type: 'boolean', default: false },
+                dueAt: { type: 'string', format: 'date-time', maxLength: 30 },
                 updatedAt: { type: 'number' }
             },
-            required: ['id', 'title', 'status', 'updatedAt']
+            required: ['id', 'name', 'done', 'dueAt', 'updatedAt']
         }
     }
 });
 
 // This write succeeds with no network at all.
-await db.reports.insert({
-    id: 'report-1',
-    title: 'Sensor 4 offline',
-    status: 'open',
+await db.todos.insert({
+    id: 'todo1',
+    name: 'Replace sensor 4',
+    done: false,
+    dueAt: '2026-03-01T10:00:00.000Z',
     updatedAt: Date.now()
 });
 
 // Reactive query: emits a new array whenever a matching doc changes,
 // no matter if the change came from this device or from a later sync.
-db.reports.find({
-    selector: { status: 'open' }
-}).$.subscribe(reports => {
-    console.log('open reports: ' + reports.length);
+db.todos.find({
+    selector: { done: false }
+}).$.subscribe(todos => {
+    console.log('open todos: ' + todos.length);
 });
 
 const replicationState = await replicateRxCollection({
-    collection: db.reports,
-    replicationIdentifier: 'reports-sync-to-https://example.com/api/sync',
+    collection: db.todos,
+    replicationIdentifier: 'todos-sync-to-https://example.com/api/sync',
     live: true,
     /**
      * Retry a failed request after 30 seconds instead of the 5 second default.

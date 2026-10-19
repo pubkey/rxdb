@@ -98,25 +98,26 @@ async function initDB() {
   });
 
   await db.addCollections({
-    tasks: {
+    todos: {
       schema: {
-        title: 'task schema',
+        title: 'todo schema',
         version: 0,
         type: 'object',
         primaryKey: 'id',
         properties: {
           id: { type: 'string', maxLength: 100 },
-          title: { type: 'string' },
-          done: { type: 'boolean' }
-        }
+          name: { type: 'string' },
+          done: { type: 'boolean', default: false }
+        },
+        required: ['id', 'name', 'done']
       }
     }
   });
 
   // Start a custom REST-based replication
   replicateRxCollection({
-    collection: db.tasks,
-    replicationIdentifier: 'my-tasks-rest-api',
+    collection: db.todos,
+    replicationIdentifier: 'my-todos-rest-api',
     push: {
       handler: async (documents) => {
         // Send docs to your REST endpoint
@@ -171,16 +172,18 @@ const db = await createRxDatabase({
 ### Define Collections:
 ```ts
 await db.addCollections({
-  items: {
+  todos: {
     schema: {
-      title: 'items schema',
+      title: 'todo schema',
       version: 0,
       primaryKey: 'id',
       type: 'object',
       properties: {
         id: { type: 'string', maxLength: 100 },
-        text: { type: 'string' }
-      }
+        name: { type: 'string' },
+        done: { type: 'boolean', default: false }
+      },
+      required: ['id', 'name', 'done']
     }
   }
 });
@@ -204,7 +207,7 @@ import {
 } from 'rxdb/plugins/replication-webrtc';
 
 const replicationPool = await replicateWebRTC({
-  collection: db.tasks,
+  collection: db.todos,
   topic: 'my-p2p-room', // Clients with the same topic will sync with each other.
   connectionHandlerCreator: getConnectionHandlerSimplePeer({
     // Use your own or the official RxDB signaling server

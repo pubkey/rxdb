@@ -79,18 +79,19 @@ async function initDB() {
   });
 
   await db.addCollections({
-    notes: {
+    todos: {
       schema: {
-        title: 'notes schema',
+        title: 'todo schema',
         version: 0,
         type: 'object',
         primaryKey: 'id',
         properties: {
           id: { type: 'string', maxLength: 100 },
-          content: { type: 'string' },
-          timestamp: { type: 'number' }
+          name: { type: 'string' },
+          done: { type: 'boolean', default: false },
+          dueAt: { type: 'string', format: 'date-time', maxLength: 30 }
         },
-        required: ['id']
+        required: ['id', 'name', 'done', 'dueAt']
       }
     }
   });
@@ -129,19 +130,20 @@ async function initEncryptedDB() {
   });
 
   await db.addCollections({
-    secrets: {
+    todos: {
       schema: {
-        title: 'secret schema',
+        title: 'todo schema',
         version: 0,
         type: 'object',
         primaryKey: 'id',
         properties: {
           id: { type: 'string', maxLength: 100 },
-          text: { type: 'string' }
+          name: { type: 'string' },
+          note: { type: 'string' }
         },
-        required: ['id'],
+        required: ['id', 'name'],
         // all fields in this array will be stored encrypted:
-        encrypted: ['text']
+        encrypted: ['note']
       }
     }
   });
@@ -152,7 +154,7 @@ async function initEncryptedDB() {
 
 With encryption enabled:
 
-- `text` is automatically encrypted at rest.
+- `note` is automatically encrypted at rest.
 - [Queries](../rx-query.md) on encrypted fields are not directly possible (since data is encrypted), but once a document is loaded, RxDB decrypts it for normal usage.
 
 
@@ -162,18 +164,19 @@ To minimize the storage footprint, RxDB offers a [key-compression](../key-compre
 
 ```ts
 await db.addCollections({
-  logs: {
+  todos: {
     schema: {
-      title: 'logs schema',
+      title: 'todo schema',
       version: 0,
       keyCompression: true, // enable compression
       type: 'object',
       primaryKey: 'id',
       properties: {
         id: { type: 'string', maxLength: 100 },
-        message: { type: 'string' },
-        createdAt: { type: 'string', format: 'date-time' }
-      }
+        name: { type: 'string' },
+        dueAt: { type: 'string', format: 'date-time', maxLength: 30 }
+      },
+      required: ['id', 'name', 'dueAt']
     }
   }
 });
