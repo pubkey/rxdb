@@ -363,6 +363,12 @@
       "import": "./dist/esm/plugins/validate-ajv/index.js",
       "default": "./dist/esm/plugins/validate-ajv/index.js"
     },
+    "./plugins/validate-ajv-standalone": {
+      "types": "./dist/types/plugins/validate-ajv-standalone/index.d.ts",
+      "require": "./dist/cjs/plugins/validate-ajv-standalone/index.js",
+      "import": "./dist/esm/plugins/validate-ajv-standalone/index.js",
+      "default": "./dist/esm/plugins/validate-ajv-standalone/index.js"
+    },
     "./plugins/validate-is-my-json-valid": {
       "types": "./dist/types/plugins/validate-is-my-json-valid/index.d.ts",
       "require": "./dist/cjs/plugins/validate-is-my-json-valid/index.js",
@@ -471,6 +477,7 @@
     "test:circular": "npm run build && npm run build:test && madge --circular ./dist/esm/index.js && madge --circular ./dist/esm/plugins/storage-dexie/index.js && madge --circular test_tmp",
     "test:performance:dexie": "npm run transpile && cross-env DEFAULT_STORAGE=dexie CI=true karma start ./config/karma.performance.conf.cjs --single-run",
     "test:performance:memory:browser": "npm run transpile && cross-env DEFAULT_STORAGE=memory CI=true karma start ./config/karma.performance.conf.cjs --single-run",
+    "test:performance:validation": "npm run transpile && cross-env DEFAULT_STORAGE=memory mocha --config ./config/.mocharc.cjs ./test_tmp/performance-validation.test.js --unhandled-rejections=strict --expose-gc",
     "test:performance:memory:node": "npm run transpile && cross-env DEFAULT_STORAGE=memory mocha --config ./config/.mocharc.cjs ./test_tmp/performance.test.js --unhandled-rejections=strict --expose-gc",
     "test:performance:memory:crypto-js": "npm run transpile && cross-env DEFAULT_STORAGE=memory STORAGE_PASSWORD=test-password mocha --config ./config/.mocharc.cjs ./test_tmp/performance.test.js --unhandled-rejections=strict --expose-gc",
     "test:performance:memory:bun": "npm run transpile && cross-env DEFAULT_STORAGE=memory bun run ./node_modules/mocha/bin/mocha test_tmp/performance.test.js --bail",

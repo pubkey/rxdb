@@ -1163,6 +1163,12 @@ export const ERROR_MESSAGES = {
         fix: 'Do not store data that does not match the collections schema',
         docs: 'https://rxdb.info/schema-validation.html?console=errors&code=VD2'
     },
+    VD3: {
+        message: 'No precompiled validator found for the schema hash of the storage instance',
+        cause: 'The validatorBySchemaHash map given to wrappedValidateAjvStandaloneStorage() does not contain a validator for the schema of this collection. This happens when the schema was changed after the validators were compiled or when a schema version is missing.',
+        fix: 'Recompile the validators at build time with getStandaloneValidationSchema() and pass all of them, including the previous schema versions that still have to be migrated.',
+        docs: 'https://rxdb.info/schema-validation.html?console=errors&code=VD3'
+    },
 
     // plugins/in-memory.js
     // removed in 14.0.0 - PouchDB RxStorage is removed IM1: 'InMemory: Memory-Adapter must be added. Use addPouchPlugin(require(\'pouchdb-adapter-memory\'));',

@@ -6,7 +6,7 @@ image: /headers/schema-validation.jpg
 ---
 
 import { PerformanceChart } from '@site/src/components/performance-chart';
-import { PERFORMANCE_DATA_VALIDATION_INDEXEDDB, PERFORMANCE_DATA_VALIDATION_MEMORY } from '@site/src/components/performance-data';
+import { PERFORMANCE_DATA_VALIDATION_INDEXEDDB, PERFORMANCE_DATA_VALIDATION_MEMORY, PERFORMANCE_DATA_VALIDATION_AJV_STANDALONE } from '@site/src/components/performance-data';
 import {Faq, FaqItem} from '@site/src/components/faq';
 import {DocsAnimation} from '@site/src/components/docs-animation';
 import {SchemaValidationLogo} from '@site/src/components/animations/schema-validation-logo';
@@ -25,7 +25,7 @@ The schema validation is **not a plugin** but comes in as a wrapper around any o
 - It allows us to configure which [RxDatabase](./rx-database.md) instance must use the validation and which does not. In production it often makes sense to validate user data, but you might not need the validation for data that is only replicated from the backend.
 
 :::warning
-Schema validation can be **CPU expensive** and increases your build size. You should always use a schema validation in development mode. For most use cases, you **should not** use a validation in production for better performance.
+Schema validation can be **CPU expensive** and increases your build size. You should always use a schema validation in development mode. When you also validate in production, use the [validate-ajv-standalone](#validate-ajv-standalone) plugin for the smallest build size and the best performance.
 :::
 
 When no validation is used, any document data can be saved but there might be **undefined behavior** when saving data that does not comply to the schema of a `RxCollection`.
@@ -51,6 +51,68 @@ const db = await createRxDatabase({
     storage
 });
 ```
+
+### validate-ajv-standalone
+
+The `validate-ajv` plugin ships the full ajv compiler to the client and compiles each schema at runtime. With the `validate-ajv-standalone` plugin you instead compile your schemas at build time with the [ajv standalone tools](https://ajv.js.org/standalone.html) and only ship the generated validate functions. Compared to the `validate-ajv` plugin, this saves about `125 KB` minified (about `39 KB` gzipped) in your bundle size. Each generated validator adds a few KB, for example `5 KB` minified for a todo schema with four fields. Because no code is compiled in the browser, the standalone validators also work with Content Security Policies that do not allow `'unsafe-eval'`.
+
+The storage instance does not get your plain schema. It gets the full schema with the RxDB internal fields like `_deleted`, `_rev` and `_meta`. So at build time you have to call `getStandaloneValidationSchema()`, which returns that full `jsonSchema` and its `hash`. Compile the `jsonSchema` with an ajv instance from `createAjv()` so that ajv knows the RxDB specific schema keywords and formats. Only import `createAjv()` in the build script. When you import it in your app code, ajv ends up in your bundle again:
+
+```js
+// build-validators.mjs, runs at build time in Node.js
+import fs from 'node:fs';
+import standaloneCode from 'ajv/dist/standalone/index.js';
+import {
+    createAjv,
+    getStandaloneValidationSchema
+} from 'rxdb/plugins/validate-ajv-standalone';
+import { todoSchema, userSchema } from './src/schemas.mjs';
+
+const imports = [];
+const entries = [];
+for (const [i, schema] of [todoSchema, userSchema].entries()) {
+    const { hash, jsonSchema } = await getStandaloneValidationSchema(schema);
+    const ajv = createAjv({ code: { source: true, esm: true } });
+    const code = standaloneCode(ajv, ajv.compile(jsonSchema));
+    fs.writeFileSync(`src/validator-${i}.mjs`, code);
+    imports.push(`import v${i} from './validator-${i}.mjs';`);
+    entries.push(`'${hash}': v${i}`);
+}
+fs.writeFileSync(
+    'src/validators.mjs',
+    imports.join('\n') +
+    '\nexport const validatorBySchemaHash = {' + entries.join(',') + '};\n'
+);
+```
+
+In the app, pass the generated `validatorBySchemaHash` map to the storage wrapper. When a storage instance is created, the plugin hashes its schema and looks up the validator. If no validator exists for that hash, it throws the error `VD3`.
+
+```ts
+import { createRxDatabase } from 'rxdb/plugins/core';
+import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
+import {
+    wrappedValidateAjvStandaloneStorage
+} from 'rxdb/plugins/validate-ajv-standalone';
+import { validatorBySchemaHash } from './validators.mjs';
+
+const db = await createRxDatabase({
+    name: 'mydb',
+    storage: wrappedValidateAjvStandaloneStorage({
+        storage: getRxStorageDexie(),
+        validatorBySchemaHash
+    })
+});
+```
+
+Keep in mind that:
+- You have to rerun the build script whenever a schema changes, because any change also changes the hash.
+- During a [schema migration](./migration-schema.md), RxDB opens the storage instance of the previous schema version. So you have to include the validators of previous schema versions as long as clients can still have data stored with them.
+- The storage instances that RxDB creates for its own data (the internal store, [local documents](./rx-local-document.md) and replication meta data) are not validated and need no validator.
+- The hash is equal to `await myCollection.schema.hash` when the database uses the default `hashFunction`.
+
+The validation itself runs at the same speed as with `validate-ajv`, because ajv generates the same validation code in both cases. The difference is the startup time: `validate-ajv` compiles each schema when the first document is written, while `validate-ajv-standalone` only looks up the precompiled validator. The following results were measured with the [Memory RxStorage](./rx-storage-memory.md) on Node.js 22 (lower is better). Each test run takes the median of 40 runs, and the chart shows the best of 5 test runs. Each run uses a new schema, so that `validate-ajv` cannot reuse a compiled validator. You can reproduce them with `npm run test:performance:validation`.
+
+<PerformanceChart title="ajv vs. ajv-standalone on Memory Storage" data={PERFORMANCE_DATA_VALIDATION_AJV_STANDALONE} logScale={false} />
 
 ### validate-z-schema
 

@@ -37,6 +37,7 @@ import './unit/rx-database.test.ts';
 import './unit/rx-document.test.ts';
 import './unit/rx-collection.test.ts';
 import './unit/validate.test.ts';
+import './unit/validate-ajv-standalone.test.ts';
 import './unit/rx-query.test.ts';
 import './unit/cross-instance.test.ts';
 import './unit/local-documents.test.ts';

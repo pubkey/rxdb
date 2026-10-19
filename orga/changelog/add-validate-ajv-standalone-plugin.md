@@ -1,0 +1,3 @@
+- ADD `validate-ajv-standalone` plugin that validates with ajv validators precompiled at build time, so the ajv compiler is no longer part of the production bundle
+- ADD `createAjv()` to the `validate-ajv` plugin to create an ajv instance with the RxDB schema keywords and formats
+- ADD `npm run test:performance:validation` to compare `validate-ajv` with `validate-ajv-standalone`

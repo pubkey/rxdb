@@ -98,7 +98,11 @@ validationImplementations.forEach(
         let storage: RxStorage<any, any>;
         describe('init', () => {
             it('create storage', () => {
-                const innerStorage: RxStorage<any, any> = config.storage.getStorage();
+                /**
+                 * Use the storage without the validation wrapper of the test config
+                 * so that only the tested validation implementation is used.
+                 */
+                const innerStorage: RxStorage<any, any> = config.storage.getPerformanceStorage().storage;
                 storage = validationImplementation.implementation({
                     storage: innerStorage
                 });
@@ -889,7 +893,7 @@ validationImplementations.forEach(
                 const name = randomToken(10);
                 const db = await createRxDatabase({
                     name,
-                    storage: config.storage.getStorage(),
+                    storage,
                     eventReduce: true,
                     ignoreDuplicate: true
                 });
