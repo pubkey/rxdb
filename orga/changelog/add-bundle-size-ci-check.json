@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "ADD CI check that bundles realistic RxDB apps with esbuild and fails when their size exceeds the limits in `config/bundle-size/limits.json`",
+    "links": [],
+    "priority": 1
+}

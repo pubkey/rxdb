@@ -14,6 +14,7 @@
 - **Lint**: `npm run lint`
 - **Lint Fix**: `npm run lint:fix`
 - **Check Types**: `npm run check-types`
+- **Bundle Size Check**: `npm run test:bundle-size` (after `npm run build`). If a size change is intended, run `npm run bundle-size:update` and commit `config/bundle-size/limits.json`.
 
 ## Development Scripts
 - **Unwatch Tests**: `npm run dev`
