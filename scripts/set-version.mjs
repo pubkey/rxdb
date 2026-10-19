@@ -7,6 +7,14 @@
 import path from 'node:path';
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
+import changelogEntries from './changelog-entries.js';
+const {
+    changelogDir,
+    isChangelogEntryFile,
+    getChangelogEntryFiles,
+    changelogEntryToMarkdown,
+    sortChangelogEntries
+} = changelogEntries;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -37,25 +45,27 @@ async function run() {
     );
 
 
-    // collect changelog entries from orga/changelog/ files
-    const changelogDir = path.join(rootPath, 'orga', 'changelog');
-    const changelogFiles = (await fs.promises.readdir(changelogDir))
-        .filter(f => f.endsWith('.md') && f !== 'README.md')
-        .sort();
-    const newRows = [];
+    /**
+     * Collect changelog entries from the orga/changelog/ JSON files.
+     * Entries with a higher priority are shown first.
+     */
+    const changelogFiles = getChangelogEntryFiles();
+    const entries = [];
     for (const file of changelogFiles) {
         const content = await fs.promises.readFile(
             path.join(changelogDir, file),
             'utf-8'
         );
-        const lines = content.split('\n').filter(row => row.trim().length > 0);
-        newRows.push(...lines);
+        entries.push(JSON.parse(content));
     }
+    const newRows = sortChangelogEntries(entries).map(changelogEntryToMarkdown);
     newRows.push('');
 
     /**
      * Fetches changelog entries from a GitHub repo's orga/changelog/ directory
      * (one-change-per-file convention) and appends them under a heading.
+     * JSON entries are sorted by priority. Repos that still use
+     * markdown entry files are supported, their lines are added after the JSON entries.
      */
     async function appendExternalChangelog(repo, heading, token) {
         try {
@@ -74,17 +84,26 @@ async function run() {
             }
             const dirEntries = await dirResponse.json();
             const files = dirEntries
-                .filter(e => e.type === 'file' && e.name.endsWith('.md') && e.name !== 'README.md')
+                .filter(e => e.type === 'file')
+                .filter(e => isChangelogEntryFile(e.name) || (e.name.endsWith('.md') && e.name !== 'README.md'))
                 .sort((a, b) => a.name.localeCompare(b.name));
-            const rows = [];
+            const jsonEntries = [];
+            const markdownRows = [];
             for (const entry of files) {
                 const fileResponse = await fetch(entry.download_url, { headers });
-                if (fileResponse.ok) {
-                    const content = await fileResponse.text();
-                    const lines = content.split('\n').filter(l => l.trim().length > 0);
-                    rows.push(...lines);
+                if (!fileResponse.ok) {
+                    continue;
+                }
+                const content = await fileResponse.text();
+                if (entry.name.endsWith('.json')) {
+                    jsonEntries.push(JSON.parse(content));
+                } else {
+                    markdownRows.push(...content.split('\n').filter(l => l.trim().length > 0));
                 }
             }
+            const rows = sortChangelogEntries(jsonEntries)
+                .map(changelogEntryToMarkdown)
+                .concat(markdownRows);
             if (rows.length > 0) {
                 newRows.push(heading);
                 newRows.push(...rows);

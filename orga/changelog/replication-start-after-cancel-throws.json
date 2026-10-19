@@ -1,0 +1,11 @@
+{
+    "$schema": "./schema.json",
+    "text": "CHANGE `RxReplicationState.start()` now throws the error `RC_START_CANCELED` when the replication was canceled or removed, instead of silently doing nothing",
+    "links": [
+        {
+            "url": "https://github.com/pubkey/rxdb/pull/9206",
+            "linkText": "#9206"
+        }
+    ],
+    "priority": 5
+}

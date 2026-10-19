@@ -55,7 +55,8 @@ npm run check-types
 
 ## Changelog Rule
 - Whenever you add a testcase or implement a FIX, add a changelog entry file under `orga/changelog/`.
-- Prefer including a link to the root issue or pull request in that changelog line.
+- Changelog entries are JSON files that must match `orga/changelog/schema.json` with the fields `text`, `links` (`url` and `linkText`) and `priority` (1 to 10). See `orga/changelog/README.md`.
+- Prefer including a link to the root issue or pull request in the `links` of that changelog entry.
 - Do NOT add a changelog entry for changes that are neither a testcase nor a FIX. For example, adding a SEM landingpage under `docs-src/src/pages/sem/` must not produce a changelog entry.
 
 ## Article Internal Linking Rule

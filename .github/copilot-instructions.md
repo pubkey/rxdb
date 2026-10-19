@@ -32,7 +32,8 @@ npm run test:fast:memory
 
 ## Changelog Rule
 - Whenever you add a testcase or implement a FIX, add a changelog entry file under `orga/changelog/`.
-- Prefer including a link to the root issue or pull request in that changelog line.
+- Changelog entries are JSON files that must match `orga/changelog/schema.json` with the fields `text`, `links` (`url` and `linkText`) and `priority` (1 to 10). See `orga/changelog/README.md`.
+- Prefer including a link to the root issue or pull request in the `links` of that changelog entry.
 
 ## Not Allowed Edits
 - Do not edit anything in the `/docs` folder. It is generated. Edit `/docs-src` instead.
