@@ -237,6 +237,16 @@ export const PERFORMANCE_DATA_VALIDATION_MEMORY = [
     { name: 'z-schema', 'time-to-first-insert': 0.9, 'insert-3000-documents': 18 },
 ];
 
+/**
+ * Measured with 'npm run test:performance:validation',
+ * median of 40 runs on Node.js 22, averaged over 3 test runs.
+ */
+export const PERFORMANCE_DATA_VALIDATION_AJV_STANDALONE = [
+    { name: 'no validator', 'time-to-first-insert': 1.38, 'insert-3000-documents': 1.75 },
+    { name: 'ajv', 'time-to-first-insert': 5.99, 'insert-3000-documents': 5.72 },
+    { name: 'ajv-standalone', 'time-to-first-insert': 2.21, 'insert-3000-documents': 5.86 },
+];
+
 export const PERFORMANCE_DATA_ENCRYPTION: RxStoragePerformanceMeasurement[] = [
     {
         'name': 'WebCrypto AES-CBC',
