@@ -20,27 +20,29 @@ import {
  * declare types
  */
 
-type HeroDocType = {
-    passportId: string;
-    firstName: string;
-    lastName: string;
-    age?: number; // optional
+type TodoDocType = {
+    id: string;
+    name: string;
+    done: boolean;
+    dueAt: string;
+    priority: number;
+    note?: string; // optional
 };
 
-type HeroDocMethods = {
-    scream: (v: string) => string;
+type TodoDocMethods = {
+    describe: (prefix: string) => string;
 };
 
-type HeroDocument = RxDocument<HeroDocType, HeroDocMethods>;
+type TodoDocument = RxDocument<TodoDocType, TodoDocMethods>;
 
-type HeroCollectionMethods = {
+type TodoCollectionMethods = {
     countAllDocuments: () => Promise<number>;
 }
 
-type HeroCollection = RxCollection<HeroDocType, HeroDocMethods, HeroCollectionMethods>;
+type TodoCollection = RxCollection<TodoDocType, TodoDocMethods, TodoCollectionMethods>;
 
 type MyDatabaseCollections = {
-    heroes: HeroCollection
+    todos: TodoCollection
 };
 
 type MyDatabase = RxDatabase<MyDatabaseCollections>;
@@ -54,60 +56,72 @@ async function run() {
         storage: getRxStorageMemory()
     });
 
-    const heroSchema: RxJsonSchema<HeroDocType> = {
-        title: 'human schema',
-        description: 'describes a human being',
+    const todoSchema: RxJsonSchema<TodoDocType> = {
+        title: 'todo schema',
+        description: 'describes a single todo item',
         version: 0,
-        keyCompression: false,
-        primaryKey: 'passportId',
+        primaryKey: 'id',
         type: 'object',
         properties: {
-            passportId: {
+            id: {
                 type: 'string',
                 maxLength: 100
             },
-            firstName: {
+            name: {
                 type: 'string'
             },
-            lastName: {
-                type: 'string'
+            done: {
+                type: 'boolean',
+                default: false
             },
-            age: {
-                type: 'integer'
+            dueAt: {
+                type: 'string',
+                format: 'date-time',
+                maxLength: 30
+            },
+            priority: {
+                type: 'integer',
+                minimum: 0,
+                maximum: 10,
+                multipleOf: 1
+            },
+            note: {
+                type: 'string'
             }
         },
-        required: ['firstName', 'lastName']
+        required: ['id', 'name', 'done', 'dueAt', 'priority'],
+        indexes: ['dueAt']
     };
 
-    const heroDocMethods: HeroDocMethods = {
-        scream: function (this: HeroDocument, what: string) {
-            return this.firstName + ' screams: ' + what.toUpperCase();
+    const todoDocMethods: TodoDocMethods = {
+        describe: function (this: TodoDocument, prefix: string) {
+            return prefix + ': ' + this.name + ' (priority ' + this.priority + ')';
         }
     };
 
-    const heroCollectionMethods: HeroCollectionMethods = {
-        countAllDocuments: async function (this: HeroCollection) {
+    const todoCollectionMethods: TodoCollectionMethods = {
+        countAllDocuments: async function (this: TodoCollection) {
             const allDocs = await this.find().exec();
             return allDocs.length;
         }
     };
 
     await myDatabase.addCollections({
-        heroes: {
-            schema: heroSchema,
-            methods: heroDocMethods,
-            statics: heroCollectionMethods
+        todos: {
+            schema: todoSchema,
+            methods: todoDocMethods,
+            statics: todoCollectionMethods
         }
     });
 
-    // add a preInsert-hook
-    myDatabase.heroes.postInsert(
+    // add a postInsert-hook
+    myDatabase.todos.postInsert(
         function myPostInsertHook(
-            this: HeroCollection, // own collection is bound to the scope
-            docData: HeroDocType, // documents data
-            doc: HeroDocument // RxDocument
+            this: TodoCollection, // own collection is bound to the scope
+            docData: TodoDocType, // documents data
+            doc: TodoDocument // RxDocument
         ) {
-            console.log('insert to ' + this.name + '-collection: ' + doc.firstName);
+            console.log('insert to ' + this.name + '-collection: ' + doc.name);
         },
         false // not async
     );
@@ -118,21 +132,22 @@ async function run() {
      */
 
     // insert a document
-    const hero: HeroDocument = await myDatabase.heroes.insert({
-        passportId: 'myId',
-        firstName: 'piotr',
-        lastName: 'potter',
-        age: 5
+    const todo: TodoDocument = await myDatabase.todos.insert({
+        id: 'todo1',
+        name: 'Learn RxDB',
+        done: false,
+        dueAt: '2026-01-01T10:00:00.000Z',
+        priority: 8
     });
 
     // access a property
-    console.log(hero.firstName);
+    console.log(todo.name);
 
     // use a orm method
-    hero.scream('AAH!');
+    console.log(todo.describe('Next'));
 
     // use a static orm method from the collection
-    const amount: number = await myDatabase.heroes.countAllDocuments();
+    const amount: number = await myDatabase.todos.countAllDocuments();
     console.log(amount);
 
 

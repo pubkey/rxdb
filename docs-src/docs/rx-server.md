@@ -35,7 +35,7 @@ import { createRxServer } from 'rxdb-server/plugins/server';
 import { RxServerAdapterExpress } from 'rxdb-server/plugins/adapter-express';
 
 const myServer = await createRxServer({
-    database: myRxDatabase,
+    database: myDatabase,
     adapter: RxServerAdapterExpress,
     port: 443
 });
@@ -55,7 +55,7 @@ import { createRxServer } from 'rxdb-server/plugins/server';
 import { RxServerAdapterFastify } from 'rxdb-premium/plugins/server-adapter-fastify';
 
 const myServer = await createRxServer({
-    database: myRxDatabase,
+    database: myDatabase,
     adapter: RxServerAdapterFastify,
     port: 443
 });
@@ -71,7 +71,7 @@ import { createRxServer } from 'rxdb-server/plugins/server';
 import { RxServerAdapterKoa } from 'rxdb-premium/plugins/server-adapter-koa';
 
 const myServer = await createRxServer({
-    database: myRxDatabase,
+    database: myDatabase,
     adapter: RxServerAdapterKoa,
     port: 443
 });
@@ -92,7 +92,7 @@ The endpoint urls is a combination of the given `name` and schema `version` of t
 ```ts
 const myEndpoint = server.addReplicationEndpoint({
     name: 'my-endpoint',
-    collection: myServerCollection
+    collection: myDatabase.todos
 });
 
 console.log(myEndpoint.urlPath) // > 'my-endpoint/0'
@@ -110,7 +110,7 @@ The endpoint is added to the server with the `addReplicationEndpoint()` method. 
 // > server.ts
 const endpoint = server.addReplicationEndpoint({
     name: 'my-endpoint',
-    collection: myServerCollection
+    collection: myDatabase.todos
 });
 ```
 
@@ -118,7 +118,7 @@ Then you can start the [Server Replication](./replication-server.md) on the clie
 ```ts
 // > client.ts
 const replicationState = await replicateServer({
-    collection: usersCollection,
+    collection: myDatabase.todos,
     replicationIdentifier: 'my-server-replication',
     url: 'http://localhost:80/my-endpoint/0',
     push: {},
@@ -136,7 +136,7 @@ Creating a REST endpoint on a RxServer:
 ```ts
 const endpoint = await server.addRestEndpoint({
     name: 'my-endpoint',
-    collection: myServerCollection
+    collection: myDatabase.todos
 });
 ```
 
@@ -181,13 +181,13 @@ Endpoint cors always overwrite server cors. The default is the wildcard `*` whic
 
 ```ts
 const myServer = await startRxServer({
-    database: myRxDatabase,
+    database: myDatabase,
     cors: 'http://example.com'
     port: 443
 });
 const endpoint = await server.addReplicationEndpoint({
     name: 'my-endpoint',
-    collection: myServerCollection,
+    collection: myDatabase.todos,
     cors: 'http://example.com'
 });
 ```
@@ -209,17 +209,17 @@ The query modifier is a JavaScript function that is used to restrict which docum
 It gets the auth data and the actual NoSQL query as input parameter and returns a modified NoSQL query that is then used internally by the server.
 You can pass a different query modifier to each endpoint so that you can have different endpoints for different use cases on the same server.
 
-For example you could use a query modifier that get the `userId` from the auth data and then restricts the query to only return documents that have the same `userId` set.
+For example you could use a query modifier that gets the email of the user from the auth data and then restricts the query to only return todos where `assignee.email` has the same value.
 
 ```ts
 function myQueryModifier(authData, query) {
-    query.selector.userId = { $eq: authData.data.userid };
+    query.selector['assignee.email'] = { $eq: authData.data.email };
     return query;
 }
 
 const endpoint = await server.addReplicationEndpoint({
     name: 'my-endpoint',
-    collection: myServerCollection,
+    collection: myDatabase.todos,
     queryModifier: myQueryModifier
 });
 ```
@@ -250,7 +250,7 @@ function myChangeValidator(authData, change) {
 
 const endpoint = await server.addReplicationEndpoint({
     name: 'my-endpoint',
-    collection: myServerCollection,
+    collection: myDatabase.todos,
     changeValidator: myChangeValidator
 });
 ```
@@ -273,13 +273,14 @@ To set indexes without `_deleted`, you can use the `internalIndexes` field of th
             "type": "string",
             "maxLength": 100
         },
-        "name": {
+        "dueAt": {
             "type": "string",
-            "maxLength": 100
+            "format": "date-time",
+            "maxLength": 30
         }
     },
     "internalIndexes": [
-        ["name", "id"]
+        ["dueAt", "id"]
     ]
 }
 ```
@@ -297,9 +298,9 @@ Notice that when you use `serverOnlyFields` you likely need to have a different 
 ```ts
 const endpoint = await server.addReplicationEndpoint({
     name: 'my-endpoint',
-    collection: col,
-    // here the field 'my-secretss' is defined to be server-only
-    serverOnlyFields: ['my-secrets']
+    collection: myDatabase.todos,
+    // here the field 'note' is defined to be server-only
+    serverOnlyFields: ['note']
 });
 ```
 
@@ -309,16 +310,16 @@ For performance reasons, only top-level fields can be used as `serverOnlyFields`
 
 ## Readonly fields
 
-When you have fields that should only be modified by the server, but not by the client, you can ensure that by comparing the fields value in the [changeValidator](#change-validator).
+When you have fields that should only be modified by the server, but not by the client, you can ensure that by comparing the field's value in the [changeValidator](#change-validator). In this example only the server can change the `priority` of a todo.
 
 ```ts
 
 const myChangeValidator = function(authData, change){
     if(
-        change.newDocumentState.myReadonlyField !==
-        change.assumedMasterState.myReadonlyField
+        change.newDocumentState.priority !==
+        change.assumedMasterState.priority
     ){
-        throw new Error('myReadonlyField is readonly');
+        throw new Error('priority is readonly');
     }
 }
 ```
