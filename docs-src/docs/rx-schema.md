@@ -59,7 +59,8 @@ export const todoSchemaLiteral = {
             type: 'integer',
             minimum: 0,
             maximum: 10,
-            multipleOf: 1 // <- number fields in an index must have minimum, maximum and multipleOf
+            // number fields in an index must have minimum, maximum and multipleOf
+            multipleOf: 1
         },
         tags: {
             type: 'array',
@@ -82,7 +83,7 @@ export const todoSchemaLiteral = {
         },
         subtasks: {
             type: 'array',
-            ref: 'todos', // <- the values are ids of documents in the todos collection
+            ref: 'todos', // <- the values are ids of other todos documents
             items: {
                 type: 'string'
             }
@@ -99,7 +100,8 @@ export const todoSchemaLiteral = {
 } as const;
 
 const schemaTyped = toTypedRxJsonSchema(todoSchemaLiteral);
-export type TodoDocType = ExtractDocumentTypeFromTypedRxJsonSchema<typeof schemaTyped>;
+export type TodoDocType =
+    ExtractDocumentTypeFromTypedRxJsonSchema<typeof schemaTyped>;
 export const todoSchema: RxJsonSchema<TodoDocType> = todoSchemaLiteral;
 ```
 
