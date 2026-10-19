@@ -173,7 +173,12 @@ They can be combined with `where()` conditions:
 
 ```ts
 // open todos that are neither tagged 'home' nor have a priority below 2
-// selector: { done: { $eq: false }, $nor: [ { tags: 'home' }, { priority: { $lt: 2 } } ] }
+/**
+ * selector: {
+ *   done: { $eq: false },
+ *   $nor: [ { tags: 'home' }, { priority: { $lt: 2 } } ]
+ * }
+ */
 const results = await myDatabase.todos.find()
     .where('done').eq(false)
     .nor([
