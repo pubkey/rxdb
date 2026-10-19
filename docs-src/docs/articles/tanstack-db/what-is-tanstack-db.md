@@ -53,14 +53,14 @@ function OpenTodos() {
     const { data, isLoading } = useLiveQuery((q) =>
         q
             .from({ todo: todosCollection })
-            .where(({ todo }) => eq(todo.completed, false))
+            .where(({ todo }) => eq(todo.done, false))
     );
 
     if (isLoading) return <div>Loading...</div>;
     return (
         <ul>
             {data.map((todo) => (
-                <li key={todo.id}>{todo.text}</li>
+                <li key={todo.id}>{todo.name}</li>
             ))}
         </ul>
     );
@@ -123,10 +123,10 @@ await db.addCollections({
             primaryKey: 'id',
             properties: {
                 id: { type: 'string', maxLength: 100 },
-                text: { type: 'string' },
-                completed: { type: 'boolean' }
+                name: { type: 'string' },
+                done: { type: 'boolean', default: false }
             },
-            required: ['id', 'text', 'completed']
+            required: ['id', 'name', 'done']
         }
     }
 });
@@ -156,7 +156,7 @@ function OpenTodos() {
     const { data } = useLiveQuery((q) =>
         q
             .from({ todo: todosCollection })
-            .where(({ todo }) => eq(todo.completed, false))
+            .where(({ todo }) => eq(todo.done, false))
     );
     return (
         <ul>
@@ -166,11 +166,11 @@ function OpenTodos() {
                     onClick={() =>
                         // Optimistic in the UI, persisted to RxDB in the background.
                         todosCollection.update(todo.id, (draft) => {
-                            draft.completed = true;
+                            draft.done = true;
                         })
                     }
                 >
-                    {todo.text}
+                    {todo.name}
                 </li>
             ))}
         </ul>
@@ -179,8 +179,8 @@ function OpenTodos() {
 
 todosCollection.insert({
     id: 'todo-1',
-    text: 'learn TanStack DB',
-    completed: false
+    name: 'learn TanStack DB',
+    done: false
 });
 ```
 

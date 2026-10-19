@@ -36,7 +36,7 @@ Both plugins use symmetric encryption with a password. The encryption works with
 
 ## Setup: TanStack DB with an Encrypted Field
 
-The following example builds a patient notes collection where the diagnosis is encrypted at rest. It uses the free `encryption-crypto-js` plugin and the free [localStorage-based storage](../../rx-storage-localstorage.md); any other storage works the same way. The TanStack DB basics are covered in the [hub article](./rxdb-collection-for-tanstack-db.md), so the shared parts stay short here.
+The following example builds a `todos` collection where the `note` field of each todo is encrypted at rest. It uses the free `encryption-crypto-js` plugin and the free [localStorage-based storage](../../rx-storage-localstorage.md); any other storage works the same way. The TanStack DB basics are covered in the [hub article](./rxdb-collection-for-tanstack-db.md), so the shared parts stay short here.
 
 <Steps>
 
@@ -66,7 +66,7 @@ const encryptedStorage = wrappedKeyEncryptionCryptoJsStorage({
 import { createRxDatabase } from 'rxdb/plugins/core';
 
 const db = await createRxDatabase({
-    name: 'patientsdb',
+    name: 'todosdb',
     storage: encryptedStorage,
     // In production, do not hardcode this. See the password handling section below.
     password: 'sudoLetMeIn'
@@ -75,23 +75,24 @@ const db = await createRxDatabase({
 
 ### Define the Schema with an `encrypted` Fields List
 
-Fields listed in the `encrypted` array are encrypted before they are written to the storage. The primary key and the `name` field stay unencrypted so that RxDB can still index and query them.
+Fields listed in the `encrypted` array are encrypted before they are written to the storage. The primary key and the `name` and `done` fields stay unencrypted so that RxDB can still index and query them.
 
 ```ts
 await db.addCollections({
-    notes: {
+    todos: {
         schema: {
-            title: 'patient notes',
+            title: 'todos',
             version: 0,
             type: 'object',
             primaryKey: 'id',
             properties: {
                 id: { type: 'string', maxLength: 100 },
                 name: { type: 'string' },
-                diagnosis: { type: 'string' }
+                done: { type: 'boolean', default: false },
+                note: { type: 'string' }
             },
-            required: ['id', 'name'],
-            encrypted: ['diagnosis']
+            required: ['id', 'name', 'done'],
+            encrypted: ['note']
         }
     }
 });
@@ -103,9 +104,9 @@ await db.addCollections({
 import { createCollection } from '@tanstack/react-db';
 import { rxdbCollectionOptions } from '@tanstack/rxdb-db-collection';
 
-const notesCollection = createCollection(
+const todosCollection = createCollection(
     rxdbCollectionOptions({
-        rxCollection: db.notes
+        rxCollection: db.todos
     })
 );
 ```
@@ -117,25 +118,26 @@ The TanStack DB side does not know that encryption exists. Live queries see decr
 ```tsx
 import { useLiveQuery, eq } from '@tanstack/react-db';
 
-function PatientNotes() {
+function TodoNotes() {
     // The in-memory data is decrypted, so live queries work on all fields.
-    const { data: notes } = useLiveQuery((q) =>
-        q.from({ note: notesCollection })
+    const { data: todos } = useLiveQuery((q) =>
+        q.from({ todo: todosCollection })
     );
     return (
         <ul>
-            {notes.map((note) => (
-                <li key={note.id}>{note.name}: {note.diagnosis}</li>
+            {todos.map((todo) => (
+                <li key={todo.id}>{todo.name}: {todo.note}</li>
             ))}
         </ul>
     );
 }
 
-// The diagnosis field is stored as ciphertext on disk.
-notesCollection.insert({
-    id: 'patient-1',
-    name: 'Alice',
-    diagnosis: 'top secret'
+// The note field is stored as ciphertext on disk.
+todosCollection.insert({
+    id: 'todo-1',
+    name: 'Call the bank',
+    done: false,
+    note: 'PIN is 1234'
 });
 ```
 
@@ -163,7 +165,7 @@ const myPasswordObject = {
 };
 
 const db = await createRxDatabase({
-    name: 'patientsdb',
+    name: 'todosdb',
     storage: encryptedIndexedDbStorage,
     password: myPasswordObject
 });
@@ -179,7 +181,7 @@ Keep in mind that the password is set per database and cannot be changed later. 
 
 ## Limitations
 
-- **Encrypted fields cannot be used as operators in queries** on the RxDB level. RxDB does not expose the encrypted data in a way that allows direct querying based on the encrypted content, so a query like "find all documents where `diagnosis` equals X" does not work against the storage. Keep the fields you filter on unencrypted, as the example above does with `name`. When you have to query encrypted fields on the RxDB side, you can replicate the documents into a non-encrypted in-memory storage with the [memory mapped](../../rx-storage-memory-mapped.md) RxStorage and query them there.
+- **Encrypted fields cannot be used as operators in queries** on the RxDB level. RxDB does not expose the encrypted data in a way that allows direct querying based on the encrypted content, so a query like "find all documents where `note` equals X" does not work against the storage. Keep the fields you filter on unencrypted, as the example above does with `name`. When you have to query encrypted fields on the RxDB side, you can replicate the documents into a non-encrypted in-memory storage with the [memory mapped](../../rx-storage-memory-mapped.md) RxStorage and query them there.
 - **TanStack DB live queries are not affected** by this limitation, because they run against the decrypted in-memory copy. A `where()` clause on an encrypted field works. But this also means the decrypted data lives in memory, as stated above.
 - **Attachments** can be encrypted too by setting `encrypted: true` in the `attachments` property of the schema. See the [attachments documentation](../../rx-attachment.md).
 

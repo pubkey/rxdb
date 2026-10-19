@@ -79,10 +79,10 @@ await db.addCollections({
             primaryKey: 'id',
             properties: {
                 id: { type: 'string', maxLength: 100 },
-                text: { type: 'string' },
-                completed: { type: 'boolean' }
+                name: { type: 'string' },
+                done: { type: 'boolean', default: false }
             },
-            required: ['id', 'text', 'completed']
+            required: ['id', 'name', 'done']
         }
     }
 });
@@ -110,13 +110,13 @@ function OpenTodos() {
     const { data } = useLiveQuery((q) =>
         q
             .from({ todo: todosCollection })
-            .where(({ todo }) => eq(todo.completed, false))
+            .where(({ todo }) => eq(todo.done, false))
     );
     return <div>{data.length} open todos</div>;
 }
 
 // Writes are applied in memory instantly and persisted to RxDB.
-todosCollection.insert({ id: 'todo-1', text: 'buy milk', completed: false });
+todosCollection.insert({ id: 'todo-1', name: 'buy milk', done: false });
 ```
 
 Now reload the page. The collection loads its state back from the storage and `todo-1` is still there. This is the whole point of **TanStack DB persistence**: the in-memory store survives reloads because RxDB owns a durable copy on disk.

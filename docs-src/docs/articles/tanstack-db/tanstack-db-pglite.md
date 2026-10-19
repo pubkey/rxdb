@@ -95,23 +95,23 @@ import { createRxDatabase } from 'rxdb/plugins/core';
 import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
 
 const db = await createRxDatabase({
-    name: 'notesdb',
+    name: 'todosdb',
     storage: getRxStorageLocalstorage()
 });
 
 await db.addCollections({
-    notes: {
+    todos: {
         schema: {
-            title: 'notes',
+            title: 'todos',
             version: 0,
             type: 'object',
             primaryKey: 'id',
             properties: {
                 id: { type: 'string', maxLength: 100 },
-                text: { type: 'string' },
-                archived: { type: 'boolean' }
+                name: { type: 'string' },
+                done: { type: 'boolean', default: false }
             },
-            required: ['id', 'text', 'archived']
+            required: ['id', 'name', 'done']
         }
     }
 });
@@ -123,9 +123,9 @@ await db.addCollections({
 import { createCollection } from '@tanstack/react-db';
 import { rxdbCollectionOptions } from '@tanstack/rxdb-db-collection';
 
-const notesCollection = createCollection(
+const todosCollection = createCollection(
     rxdbCollectionOptions({
-        rxCollection: db.notes
+        rxCollection: db.todos
     })
 );
 ```
@@ -137,31 +137,31 @@ The collection loads its initial state from disk and stays in sync with RxDB fro
 ```tsx
 import { useLiveQuery, eq } from '@tanstack/react-db';
 
-function NoteList() {
+function TodoList() {
     // Live query: re-renders whenever a matching document changes.
-    const { data: activeNotes } = useLiveQuery((q) =>
+    const { data: openTodos } = useLiveQuery((q) =>
         q
-            .from({ note: notesCollection })
-            .where(({ note }) => eq(note.archived, false))
+            .from({ todo: todosCollection })
+            .where(({ todo }) => eq(todo.done, false))
     );
 
     return (
         <ul>
-            {activeNotes.map((note) => (
-                <li key={note.id}>{note.text}</li>
+            {openTodos.map((todo) => (
+                <li key={todo.id}>{todo.name}</li>
             ))}
         </ul>
     );
 }
 
 // Writes are optimistic in memory and persisted to RxDB.
-notesCollection.insert({
-    id: 'note-1',
-    text: 'compare PGlite and RxDB',
-    archived: false
+todosCollection.insert({
+    id: 'todo-1',
+    name: 'compare PGlite and RxDB',
+    done: false
 });
-notesCollection.update('note-1', (draft) => {
-    draft.archived = true;
+todosCollection.update('todo-1', (draft) => {
+    draft.done = true;
 });
 ```
 

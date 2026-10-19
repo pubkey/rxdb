@@ -31,15 +31,15 @@ For a todo app, the matching GraphQL schema looks like this:
 ```graphql
 type Todo {
     id: ID!
-    text: String!
-    completed: Boolean!
+    name: String!
+    done: Boolean!
     updatedAt: Float!
     deleted: Boolean!
 }
 input TodoInput {
     id: ID!
-    text: String!
-    completed: Boolean!
+    name: String!
+    done: Boolean!
     updatedAt: Float!
     deleted: Boolean!
 }
@@ -114,11 +114,11 @@ await db.addCollections({
             primaryKey: 'id',
             properties: {
                 id: { type: 'string', maxLength: 100 },
-                text: { type: 'string' },
-                completed: { type: 'boolean' },
+                name: { type: 'string' },
+                done: { type: 'boolean', default: false },
                 updatedAt: { type: 'number' }
             },
-            required: ['id', 'text', 'completed', 'updatedAt']
+            required: ['id', 'name', 'done', 'updatedAt']
         }
     }
 });
@@ -144,8 +144,8 @@ const pullQueryBuilder = (checkpoint, limit) => {
         pullTodo(checkpoint: $checkpoint, limit: $limit) {
             documents {
                 id
-                text
-                completed
+                name
+                done
                 updatedAt
                 deleted
             }
@@ -175,8 +175,8 @@ const pushQueryBuilder = rows => {
     const query = `mutation PushTodo($rows: [TodoInputPushRow!]) {
         pushTodo(rows: $rows) {
             id
-            text
-            completed
+            name
+            done
             updatedAt
             deleted
         }
@@ -201,8 +201,8 @@ const pullStreamQueryBuilder = (headers) => {
         streamTodo(headers: $headers) {
             documents {
                 id
-                text
-                completed
+                name
+                done
                 updatedAt
                 deleted
             }
@@ -286,7 +286,7 @@ function TodoList() {
     const { data: openTodos } = useLiveQuery((q) =>
         q
             .from({ todo: todosCollection })
-            .where(({ todo }) => eq(todo.completed, false))
+            .where(({ todo }) => eq(todo.done, false))
     );
 
     return (
@@ -296,12 +296,12 @@ function TodoList() {
                     key={todo.id}
                     onClick={() =>
                         todosCollection.update(todo.id, (draft) => {
-                            draft.completed = true;
+                            draft.done = true;
                             draft.updatedAt = Date.now();
                         })
                     }
                 >
-                    {todo.text}
+                    {todo.name}
                 </li>
             ))}
         </ul>
@@ -311,8 +311,8 @@ function TodoList() {
 // Inserts are pushed to the GraphQL server in the background:
 todosCollection.insert({
     id: 'todo-1',
-    text: 'buy milk',
-    completed: false,
+    name: 'buy milk',
+    done: false,
     updatedAt: Date.now()
 });
 ```

@@ -158,11 +158,11 @@ await db.addCollections({
             primaryKey: 'id',
             properties: {
                 id: { type: 'string', maxLength: 100 },
-                text: { type: 'string' },
-                completed: { type: 'boolean' },
+                name: { type: 'string' },
+                done: { type: 'boolean', default: false },
                 updatedAt: { type: 'number' }
             },
-            required: ['id', 'text', 'completed', 'updatedAt']
+            required: ['id', 'name', 'done', 'updatedAt']
         },
         /**
          * The conflict handler runs during replication, when the
