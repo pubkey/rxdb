@@ -81,8 +81,10 @@ export function getCollectionLocalInstanceName(collectionName: string): string {
     return 'plugin-local-documents-' + collectionName;
 }
 
+export const RX_LOCAL_DOCUMENT_SCHEMA_TITLE = 'RxLocalDocument';
+
 export const RX_LOCAL_DOCUMENT_SCHEMA: RxJsonSchema<RxDocumentData<RxLocalDocumentData>> = fillWithDefaultSettings({
-    title: 'RxLocalDocument',
+    title: RX_LOCAL_DOCUMENT_SCHEMA_TITLE,
     version: 0,
     primaryKey: 'id',
     type: 'object',

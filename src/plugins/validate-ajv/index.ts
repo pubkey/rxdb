@@ -4,7 +4,7 @@
  * @link https://github.com/epoberezkin/ajv
  * @link https://github.com/ajv-validator/ajv/issues/2132#issuecomment-1537224620
  */
-import { Ajv } from 'ajv';
+import { Ajv, type Options } from 'ajv';
 import addFormats from 'ajv-formats';
 import type {
     RxDocumentData,
@@ -15,28 +15,37 @@ import { wrappedValidateStorageFactory } from '../../plugin-helpers.ts';
 
 let ajv: Ajv;
 
+/**
+ * Creates a new Ajv instance that knows
+ * the RxDB specific schema keywords and the default formats.
+ * Use this at build time together with the ajv standalone tools
+ * so that the precompiled validators behave like the runtime ones.
+ */
+export function createAjv(options: Options = {}): Ajv {
+    const ret = new Ajv(Object.assign({
+        strict: true
+    }, options));
+    ret.addKeyword('version');
+    ret.addKeyword('keyCompression');
+    ret.addKeyword('primaryKey');
+    ret.addKeyword('indexes');
+    ret.addKeyword('encrypted');
+    ret.addKeyword('final');
+    ret.addKeyword('sharding');
+    ret.addKeyword('internalIndexes');
+    ret.addKeyword('attachments');
+    ret.addKeyword('ref');
+    ret.addKeyword('crdt');
+    addFormats(ret);
+    return ret;
+}
 
 export function getAjv() {
     if (!ajv) {
-        ajv = new Ajv({
-            strict: true
-        });
-        ajv.addKeyword('version');
-        ajv.addKeyword('keyCompression');
-        ajv.addKeyword('primaryKey');
-        ajv.addKeyword('indexes');
-        ajv.addKeyword('encrypted');
-        ajv.addKeyword('final');
-        ajv.addKeyword('sharding');
-        ajv.addKeyword('internalIndexes');
-        ajv.addKeyword('attachments');
-        ajv.addKeyword('ref');
-        ajv.addKeyword('crdt');
-        addFormats(ajv);
+        ajv = createAjv();
     }
     return ajv;
 }
-
 
 
 export function getValidator(
