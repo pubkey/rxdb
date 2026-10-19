@@ -60,7 +60,7 @@ import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
 
 export async function initDatabase() {
   const db = await createRxDatabase({
-    name: 'heroesdb',
+    name: 'tododb',
     storage: getRxStorageLocalstorage(),
     password: 'myPassword',    // optional encryption password
     multiInstance: true,       // multi-tab support
@@ -68,17 +68,23 @@ export async function initDatabase() {
   });
 
   await db.addCollections({
-    hero: {
+    todos: {
       schema: {
-        title: 'hero schema',
+        title: 'todo schema',
         version: 0,
         primaryKey: 'id',
         type: 'object',
         properties: {
           id: { type: 'string', maxLength: 100 },
           name: { type: 'string' },
-          healthpoints: { type: 'number' }
-        }
+          priority: {
+            type: 'integer',
+            minimum: 0,
+            maximum: 10,
+            multipleOf: 1
+          }
+        },
+        required: ['id', 'name', 'priority']
       }
     }
   });
@@ -96,36 +102,36 @@ RxDB queries return RxJS observables (`.$`). Vue can automatically update compon
 **Example with Vue 3 Composition API:**
 
 ```js
-// HeroList.vue
+// TodoList.vue
 <script setup>
 import { ref, onMounted } from 'vue';
 import { initDatabase } from '@/db';
 
-const heroes = ref([]);
+const todos = ref([]);
 let db;
 
 onMounted(async () => {
   db = await initDatabase();
 
   // Subscribe to an RxDB query
-  db.hero
+  db.todos
     .find({
       selector: {
-        healthpoints: { $gt: 0 }
+        priority: { $gt: 0 }
       },
       sort: [{ name: 'asc' }]
     })
     .$ // the dot-$ is an observable that emits whenever the query results change
-    .subscribe((newHeroes) => {
-      heroes.value = newHeroes;
+    .subscribe((newTodos) => {
+      todos.value = newTodos;
     });
 });
 </script>
 
 <template>
   <ul>
-    <li v-for="hero in heroes" :key="hero.id">
-      {{ hero.name }} - HP: {{ hero.healthpoints }}
+    <li v-for="todo in todos" :key="todo.id">
+      {{ todo.name }} - Priority: {{ todo.priority }}
     </li>
   </ul>
 </template>

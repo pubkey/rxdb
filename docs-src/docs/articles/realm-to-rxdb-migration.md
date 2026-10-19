@@ -77,10 +77,10 @@ import Realm, { ObjectSchema } from 'realm';
 
 class Todo extends Realm.Object<Todo> {
     _id!: Realm.BSON.ObjectId;
-    title!: string;
+    name!: string;
     done!: boolean;
     priority!: number;
-    createdAt!: Date;
+    dueAt!: Date;
     tags!: Realm.List<string>;
 
     static schema: ObjectSchema = {
@@ -88,10 +88,10 @@ class Todo extends Realm.Object<Todo> {
         primaryKey: '_id',
         properties: {
             _id: 'objectId',
-            title: 'string',
+            name: 'string',
             done: { type: 'bool', default: false },
             priority: 'int',
-            createdAt: 'date',
+            dueAt: 'date',
             tags: 'string[]'
         }
     };
@@ -110,22 +110,27 @@ await db.addCollections({
             type: 'object',
             properties: {
                 id: { type: 'string', maxLength: 100 },
-                title: { type: 'string' },
+                name: { type: 'string' },
                 done: { type: 'boolean', default: false },
-                priority: { type: 'number' },
-                createdAt: {
-                    type: 'number',
+                dueAt: {
+                    type: 'string',
+                    format: 'date-time',
+                    maxLength: 30
+                },
+                priority: {
+                    type: 'integer',
                     minimum: 0,
-                    maximum: 9007199254740991,
+                    maximum: 10,
                     multipleOf: 1
                 },
                 tags: {
                     type: 'array',
+                    default: [],
                     items: { type: 'string' }
                 }
             },
-            required: ['id', 'title', 'done', 'priority', 'createdAt'],
-            indexes: ['createdAt']
+            required: ['id', 'name', 'done', 'dueAt', 'priority', 'tags'],
+            indexes: ['dueAt', ['done', 'priority']]
         }
     }
 });
@@ -134,8 +139,8 @@ await db.addCollections({
 Type mapping rules:
 
 - `objectId` becomes a `string`. Call `.toHexString()` during the data export. The primary key property needs a `maxLength`.
-- `date` becomes a `number` (unix timestamp) or a `string` with `format: 'date-time'`. Numbers used in an index need `minimum`, `maximum` and `multipleOf`.
-- `int`, `float` and `double` become `number`.
+- `date` becomes a `string` with `format: 'date-time'` (call `.toISOString()` during the export) or a `number` (unix timestamp). Strings used in an index need a `maxLength`, numbers used in an index need `minimum`, `maximum` and `multipleOf`.
+- `int` becomes `integer`, `float` and `double` become `number`.
 - `string[]`, `int[]` and other Realm lists of primitives become arrays with an `items` definition.
 - Optional Realm properties (`'string?'`) stay out of the `required` array instead.
 - Fields you queried with `SORT` or filtered on frequently belong in `indexes`.
@@ -167,10 +172,10 @@ export async function migrateFromRealm(db: RxDatabase) {
     while (imported < all.length) {
         const batch = all.slice(imported, imported + BATCH_SIZE).map(todo => ({
             id: todo._id.toHexString(),
-            title: todo.title,
+            name: todo.name,
             done: todo.done,
             priority: todo.priority,
-            createdAt: todo.createdAt.getTime(),
+            dueAt: todo.dueAt.toISOString(),
             tags: Array.from(todo.tags)
         }));
         // bulkUpsert is idempotent, re-importing a
@@ -193,12 +198,12 @@ Realm Query Language filter strings become [Mango query](../rx-query.md) selecto
 | --- | --- |
 | `done == false` | `{ done: false }` |
 | `priority > 2` | `{ priority: { $gt: 2 } }` |
-| `title BEGINSWITH 'Buy'` | `{ title: { $regex: '^Buy' } }` |
-| `title CONTAINS[c] 'milk'` | `{ title: { $regex: 'milk', $options: 'i' } }` |
-| `status IN {'open', 'active'}` | `{ status: { $in: ['open', 'active'] } }` |
+| `name BEGINSWITH 'Buy'` | `{ name: { $regex: '^Buy' } }` |
+| `name CONTAINS[c] 'groceries'` | `{ name: { $regex: 'groceries', $options: 'i' } }` |
+| `priority IN {8, 10}` | `{ priority: { $in: [8, 10] } }` |
 | `done == false AND priority > 2` | `{ done: false, priority: { $gt: 2 } }` |
 | `done == false OR priority > 2` | `{ $or: [{ done: false }, { priority: { $gt: 2 } }] }` |
-| `ANY tags == 'work'` | `{ tags: { $elemMatch: { $eq: 'work' } } }` |
+| `ANY tags == 'rxdb'` | `{ tags: { $elemMatch: { $eq: 'rxdb' } } }` |
 
 Sorting and limits move out of the filter string into query options:
 
@@ -206,12 +211,12 @@ Sorting and limits move out of the filter string into query options:
 // Realm (before)
 const open = realm
     .objects(Todo)
-    .filtered('done == false SORT(createdAt DESC) LIMIT(20)');
+    .filtered('done == false SORT(dueAt DESC) LIMIT(20)');
 
 // RxDB (after)
 const open = await db.todos.find({
     selector: { done: false },
-    sort: [{ createdAt: 'desc' }],
+    sort: [{ dueAt: 'desc' }],
     limit: 20
 }).exec();
 ```
@@ -236,7 +241,7 @@ results.addListener((collection, changes) => {
 // RxDB (after)
 const subscription = db.todos.find({
     selector: { done: false },
-    sort: [{ createdAt: 'desc' }]
+    sort: [{ dueAt: 'desc' }]
 }).$.subscribe(todos => {
     renderList(todos);
 });
@@ -256,20 +261,22 @@ Realm requires every mutation to happen inside `realm.write()`. RxDB writes are 
 realm.write(() => {
     realm.create(Todo, {
         _id: new Realm.BSON.ObjectId(),
-        title: 'Migrate to RxDB',
+        name: 'Learn RxDB',
         done: false,
-        priority: 3,
-        createdAt: new Date()
+        priority: 8,
+        dueAt: new Date('2026-01-01T10:00:00.000Z'),
+        tags: ['learning', 'rxdb']
     });
 });
 
 // RxDB (after)
 await db.todos.insert({
     id: crypto.randomUUID(),
-    title: 'Migrate to RxDB',
+    name: 'Learn RxDB',
     done: false,
-    priority: 3,
-    createdAt: Date.now()
+    priority: 8,
+    dueAt: '2026-01-01T10:00:00.000Z',
+    tags: ['learning', 'rxdb']
 });
 ```
 
@@ -351,10 +358,10 @@ Realm required an `onMigration` callback for every schema change. In RxDB you bu
 ```ts
 await db.addCollections({
     todos: {
-        schema: todoSchemaV1, // version: 1, added "dueDate"
+        schema: todoSchemaV1, // version: 1, added "note"
         migrationStrategies: {
             1: oldDoc => {
-                oldDoc.dueDate = null;
+                oldDoc.note = '';
                 return oldDoc;
             }
         }

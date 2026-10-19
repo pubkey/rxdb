@@ -68,17 +68,17 @@ Ditto syncs into Ditto Cloud, with a MongoDB connector on the Pro tier and above
 Ditto queries are written in DQL, a SQL-like language embedded in strings. RxDB queries are plain JavaScript objects, checked against the schema, and composable at runtime:
 
 ```ts
-const query = db.reports.find({
+const query = db.todos.find({
     selector: {
-        status: 'open',
+        done: false,
         priority: { $gt: 2 }
     },
-    sort: [{ updatedAt: 'desc' }]
+    sort: [{ dueAt: 'asc' }]
 });
 
 // The query is observable. It re-emits on every matching change.
-query.$.subscribe(reports => {
-    console.log('open reports: ' + reports.length);
+query.$.subscribe(todos => {
+    console.log('open todos: ' + todos.length);
 });
 ```
 
@@ -108,30 +108,38 @@ import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
 import { replicateRxCollection } from 'rxdb/plugins/replication';
 
 const db = await createRxDatabase({
-    name: 'fielddb',
+    name: 'mydb',
     storage: getRxStorageDexie()
 });
 
 await db.addCollections({
-    reports: {
+    todos: {
         schema: {
             version: 0,
             primaryKey: 'id',
             type: 'object',
             properties: {
                 id: { type: 'string', maxLength: 100 },
-                title: { type: 'string' },
-                status: { type: 'string' },
+                name: { type: 'string' },
+                done: { type: 'boolean', default: false },
+                dueAt: { type: 'string', format: 'date-time', maxLength: 30 },
+                priority: {
+                    type: 'integer',
+                    minimum: 0,
+                    maximum: 10,
+                    multipleOf: 1
+                },
                 updatedAt: { type: 'number' }
             },
-            required: ['id', 'title', 'status', 'updatedAt']
+            required: ['id', 'name', 'done', 'dueAt', 'priority', 'updatedAt'],
+            indexes: ['dueAt', ['done', 'priority']]
         }
     }
 });
 
 const replicationState = await replicateRxCollection({
-    collection: db.reports,
-    replicationIdentifier: 'reports-sync-to-https://example.com/api/sync',
+    collection: db.todos,
+    replicationIdentifier: 'todos-sync-to-https://example.com/api/sync',
     live: true,
     pull: {
         batchSize: 25,

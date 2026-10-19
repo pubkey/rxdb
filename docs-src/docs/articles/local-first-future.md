@@ -241,7 +241,7 @@ Because you read this on the RxDB website, in the following a local-first setup 
 
 ### Setting up a Local Database
 
-With RxDB, you first create a database and define a schema for your collections. For example, suppose we're building a simple to-do list app that we want to work offline. We can define a "todos" collection with fields like `id`, `title`, `done`, `timestamp`, etc. In code, it looks like:
+With RxDB, you first create a database and define a schema for your collections. For example, suppose we're building a simple to-do list app that we want to work offline. We can define a "todos" collection with fields like `id`, `name`, `done`, `dueAt`, etc. In code, it looks like:
 
 
 <Steps>
@@ -280,12 +280,12 @@ await db.addCollections({
       primaryKey: 'id',
       type: 'object',
       properties: {
-        id:        { type: 'string', maxLength: 100 },
-        title:     { type: 'string' },
-        done:      { type: 'boolean' },
-        timestamp: { type: 'string' }
+        id:    { type: 'string', maxLength: 100 },
+        name:  { type: 'string' },
+        done:  { type: 'boolean', default: false },
+        dueAt: { type: 'string', format: 'date-time', maxLength: 30 }
       },
-      required: ['id', 'title', 'done', 'timestamp']
+      required: ['id', 'name', 'done', 'dueAt']
     }
   }
 });
@@ -305,9 +305,9 @@ Now, our frontend app can use this local collection just like a normal database:
 ```ts
 await db.todos.insert({
   id: 'todo1',
-  title: 'Learn RxDB local-first',
+  name: 'Learn RxDB',
   done: false,
-  timestamp: new Date().toISOString()
+  dueAt: '2026-01-01T10:00:00.000Z'
 });
 ```
 
@@ -372,7 +372,7 @@ function TodosComponent() {
   return (
     <ul>
       {todoList.map(todo => (
-        <li key={todo.id}>{todo.title}</li>
+        <li key={todo.id}>{todo.name}</li>
       ))}
     </ul>
   );

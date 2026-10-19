@@ -71,29 +71,30 @@ async function initDB() {
   });
 
   await db.addCollections({
-    tasks: {
+    todos: {
       schema: {
-        title: 'task schema',
+        title: 'todo schema',
         version: 0,
         type: 'object',
         primaryKey: 'id',
         properties: {
           id: { type: 'string', maxLength: 100 },
-          title: { type: 'string' },
-          complete: { type: 'boolean' }
-        }
+          name: { type: 'string' },
+          done: { type: 'boolean', default: false }
+        },
+        required: ['id', 'name', 'done']
       }
     }
   });
 
   // Start a custom replication
   replicateRxCollection({
-    collection: db.tasks,
-    replicationIdentifier: 'custom-tasks-api',
+    collection: db.todos,
+    replicationIdentifier: 'custom-todos-api',
     push: {
       handler: async (docs) => {
         // post local changes to your server
-        const resp = await fetch('https://yourapi.com/tasks/push', {
+        const resp = await fetch('https://yourapi.com/todos/push', {
           method: 'POST',
           body: JSON.stringify({ changes: docs })
         });
@@ -104,7 +105,7 @@ async function initDB() {
       handler: async (lastCheckpoint, batchSize) => {
         // fetch new/updated items from your server
         const response = await fetch(
-          `https://yourapi.com/tasks/pull?checkpoint=${JSON.stringify(
+          `https://yourapi.com/todos/pull?checkpoint=${JSON.stringify(
             lastCheckpoint
           )}&limit=${batchSize}`
         );
@@ -129,7 +130,7 @@ import {
 } from 'rxdb/plugins/replication-webrtc';
 
 const webrtcPool = await replicateWebRTC({
-  collection: db.tasks,
+  collection: db.todos,
   topic: 'p2p-topic-123',
   connectionHandlerCreator: getConnectionHandlerSimplePeer({
     signalingServerUrl: 'wss://signaling.rxdb.info/',
@@ -163,16 +164,18 @@ const db = await createRxDatabase({
 });
 
 await db.addCollections({
-  notes: {
+  todos: {
     schema: {
-      title: 'notes schema',
+      title: 'todo schema',
       version: 0,
       primaryKey: 'id',
       type: 'object',
       properties: {
         id: { type: 'string', maxLength: 100 },
-        content: { type: 'string' }
-      }
+        name: { type: 'string' },
+        done: { type: 'boolean', default: false }
+      },
+      required: ['id', 'name', 'done']
     }
   }
 });

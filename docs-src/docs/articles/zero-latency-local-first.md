@@ -61,48 +61,49 @@ async function initZeroLocalDB() {
 
   // Define one or more collections
   await db.addCollections({
-    tasks: {
+    todos: {
       schema: {
-        title: 'task schema',
+        title: 'todo schema',
         version: 0,
         type: 'object',
         primaryKey: 'id',
         properties: {
-          id:       { type: 'string', maxLength: 100 },
-          title:    { type: 'string' },
-          done:     { type: 'boolean' }
-        }
+          id:   { type: 'string', maxLength: 100 },
+          name: { type: 'string' },
+          done: { type: 'boolean', default: false }
+        },
+        required: ['id', 'name', 'done']
       }
     }
   });
 
   // Reactive query - automatically updates on local or remote changes
-  db.tasks
+  db.todos
     .find()
     .$ // returns an RxJS Observable
-    .subscribe(allTasks => {
-      console.log('All tasks updated:', allTasks);
+    .subscribe(allTodos => {
+      console.log('All todos updated:', allTodos);
     });
 
   return db;
 }
 ```
 
-When offline, reads and writes to `db.tasks` happen locally with near-zero delay. Once connectivity resumes, changes sync to the server automatically (if replication is configured).
+When offline, reads and writes to `db.todos` happen locally with near-zero delay. Once connectivity resumes, changes sync to the server automatically (if replication is configured).
 
 #### Example Setup of the replication
 
 ```ts
 import { replicateRxCollection } from 'rxdb/plugins/replication';
 
-async function syncLocalTasks(db) {
+async function syncLocalTodos(db) {
   replicateRxCollection({
-    collection: db.tasks,
-    replicationIdentifier: 'sync-tasks',
+    collection: db.todos,
+    replicationIdentifier: 'sync-todos',
     // Define how to pull server documents and push local documents
     pull: {
       handler: async (lastCheckpoint, batchSize) => {
-        // logic to retrieve updated tasks from the server since lastCheckpoint
+        // logic to retrieve updated todos from the server since lastCheckpoint
       },
     },
     push: {
@@ -124,7 +125,7 @@ This replication seamlessly merges server-side and client-side changes. Your app
 
 ### Optimistic UI on Local Data Changes
 
-A local first approach, especially with RxDB, naturally supports an [optimistic UI](./optimistic-ui.md) pattern. Because writes occur on the client, you can instantly reflect changes in the interface as soon as the user performs an action - no need to wait for server confirmation. For example, when a user updates a task document to done: true, the UI can re-render immediately with that new state. This even works across multiple browser tabs.
+A local first approach, especially with RxDB, naturally supports an [optimistic UI](./optimistic-ui.md) pattern. Because writes occur on the client, you can instantly reflect changes in the interface as soon as the user performs an action - no need to wait for server confirmation. For example, when a user updates a todo document to `done: true`, the UI can re-render immediately with that new state. This even works across multiple browser tabs.
 
 <CenteredImage src="/files/multiwindow.gif" alt="RxDB multi tab" width={450} />
 
@@ -160,18 +161,19 @@ const db = await createRxDatabase({
 });
 
 await db.addCollections({
-  secrets: {
+  todos: {
     schema: {
-      title: 'secrets schema',
+      title: 'todo schema',
       version: 0,
       type: 'object',
       primaryKey: 'id',
       properties: {
-        id:          { type: 'string', maxLength: 100 },
-        secretField: { type: 'string' }
+        id:   { type: 'string', maxLength: 100 },
+        name: { type: 'string' },
+        note: { type: 'string' }
       },
-      required: ['id'],
-      encrypted: ['secretField'] // define which fields to encrypt
+      required: ['id', 'name'],
+      encrypted: ['note'] // define which fields to encrypt
     }
   }
 });
@@ -187,18 +189,19 @@ Local data can expand quickly, especially for large documents or repeated key na
 
 ```ts
 await db.addCollections({
-  logs: {
+  todos: {
     schema: {
-      title: 'log schema',
+      title: 'todo schema',
       version: 0,
       keyCompression: true,
       type: 'object',
       primaryKey: 'id',
       properties: {
-        id:         { type: 'string', maxLength: 100 },
-        message:    { type: 'string' },
-        timestamp:  { type: 'number' }
-      }
+        id:    { type: 'string', maxLength: 100 },
+        name:  { type: 'string' },
+        dueAt: { type: 'string', format: 'date-time', maxLength: 30 }
+      },
+      required: ['id', 'name', 'dueAt']
     }
   }
 });

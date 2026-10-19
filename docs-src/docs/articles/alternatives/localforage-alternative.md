@@ -35,7 +35,7 @@ On top of local storage, RxDB ships a [replication protocol](../../replication.m
 The places where localForage runs out of road are predictable once you list them:
 
 - **Key-value only.** Every value is opaque to the library. There is no notion of fields, types, or relationships.
-- **No indexes.** You cannot ask for "all todos where `done = false` and `dueDate < tomorrow`". You either keep your own index keys by hand or scan all entries.
+- **No indexes.** You cannot ask for "all todos where `done = false` and `dueAt < tomorrow`". You either keep your own index keys by hand or scan all entries.
 - **No queries.** There is no query language, no filtering, no sorting, no pagination beyond what you build yourself.
 - **No schema.** Data shape drifts over time and migrations become custom scripts.
 - **No reactivity.** When a value changes, other parts of the app do not find out unless you wire your own event bus on top.
@@ -66,9 +66,9 @@ A typical localForage read by key:
 ```ts
 import localforage from 'localforage';
 
-const todo = await localforage.getItem<Todo>('todo-42');
+const todo = await localforage.getItem<TodoDocType>('todo1');
 if (todo) {
-    console.log(todo.title);
+    console.log(todo.name);
 }
 ```
 
@@ -92,30 +92,30 @@ await db.addCollections({
             type: 'object',
             properties: {
                 id: { type: 'string', maxLength: 100 },
-                title: { type: 'string' },
-                done: { type: 'boolean' },
-                dueDate: { type: 'string', format: 'date-time' }
+                name: { type: 'string' },
+                done: { type: 'boolean', default: false },
+                dueAt: { type: 'string', format: 'date-time', maxLength: 30 }
             },
-            required: ['id', 'title', 'done'],
-            indexes: ['done', 'dueDate']
+            required: ['id', 'name', 'done', 'dueAt'],
+            indexes: ['dueAt', ['done', 'dueAt']]
         }
     }
 });
 
-const todo = await db.todos.findOne('todo-42').exec();
-console.log(todo?.title);
+const todo = await db.todos.findOne('todo1').exec();
+console.log(todo?.name);
 ```
 
-The RxDB version is longer at setup time, but the database now knows the shape of a todo, can index `done` and `dueDate`, and can stream changes to the rest of the app.
+The RxDB version is longer at setup time, but the database now knows the shape of a todo, can index `done` and `dueAt`, and can stream changes to the rest of the app.
 
 ## Code Sample: Indexed Range Query With a Subscription
 
 In localForage, finding open todos due before tomorrow means iterating every entry:
 
 ```ts
-const openTodos: Todo[] = [];
-await localforage.iterate<Todo, void>((value) => {
-    if (!value.done && value.dueDate < tomorrow) {
+const openTodos: TodoDocType[] = [];
+await localforage.iterate<TodoDocType, void>((value) => {
+    if (!value.done && value.dueAt < tomorrow) {
         openTodos.push(value);
     }
 });
@@ -127,9 +127,9 @@ The same query in RxDB uses the index and returns an observable that re-fires on
 const query = db.todos.find({
     selector: {
         done: false,
-        dueDate: { $lt: tomorrow }
+        dueAt: { $lt: tomorrow }
     },
-    sort: [{ dueDate: 'asc' }]
+    sort: [{ dueAt: 'asc' }]
 });
 
 const subscription = query.$.subscribe((openTodos) => {

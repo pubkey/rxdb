@@ -29,7 +29,7 @@ The native IndexedDB API has no encryption feature. There is no option on `index
 
 That leaves you with one native option: encrypt the values yourself with the [Web Crypto API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API) before you call `store.put()`, and decrypt them again after every `store.get()`. It works, but it is painful for a few concrete reasons.
 
-- **You lose querying.** Once a field is a ciphertext string, an IndexedDB index over it is useless. You cannot ask the browser to "find all documents where `status` equals `active`", because on disk `status` is now random bytes. Every filter has to load and decrypt records by hand.
+- **You lose querying.** Once a field is a ciphertext string, an IndexedDB index over it is useless. You cannot ask the browser to "find all todos where `done` equals `false`", because on disk `done` is now random bytes. Every filter has to load and decrypt records by hand.
 - **You hand-wire every read and write.** Web Crypto is asynchronous and returns an `ArrayBuffer`. You have to manage the key, the initialization vector, the encoding to and from a storable string, and wrap every single access point in the browser.
 - **One missed spot leaks data.** The moment one code path writes a value without going through your encryption helper, that record lands on disk in plain text, and you will not notice until someone reads the file.
 
@@ -71,7 +71,7 @@ You declare encrypted fields with the `encrypted` array in the [JSON schema](../
 
 ```ts
 await db.addCollections({
-    users: {
+    todos: {
         schema: {
             version: 0,
             primaryKey: 'id',
@@ -79,12 +79,13 @@ await db.addCollections({
             properties: {
                 // the primary key must have a maxLength
                 id: { type: 'string', maxLength: 100 },
-                email: { type: 'string' },
+                name: { type: 'string' },
+                done: { type: 'boolean', default: false },
                 // this field is stored as ciphertext on disk
-                secret: { type: 'string' }
+                note: { type: 'string' }
             },
-            required: ['id', 'email'],
-            encrypted: ['secret']
+            required: ['id', 'name', 'done'],
+            encrypted: ['note']
         }
     }
 });
@@ -92,21 +93,22 @@ await db.addCollections({
 
 ### 3. Read and Write Without Touching the Cipher
 
-Encryption and decryption happen inside RxDB. You insert and query documents like normal, and the `secret` field is plain text in your code and ciphertext on disk.
+Encryption and decryption happen inside RxDB. You insert and query documents like normal, and the `note` field is plain text in your code and ciphertext on disk.
 
 ```ts
-await db.users.insert({
-    id: 'user1',
-    email: 'alice@example.com',
-    secret: 'my private token'
+await db.todos.insert({
+    id: 'todo1',
+    name: 'Renew passport',
+    done: false,
+    note: 'Passport number X1234567'
 });
 
 // query by a non-encrypted field
-const doc = await db.users.findOne({
-    selector: { email: 'alice@example.com' }
+const doc = await db.todos.findOne({
+    selector: { name: 'Renew passport' }
 }).exec(true);
 
-console.log(doc.secret); // 'my private token' - decrypted for you
+console.log(doc.note); // 'Passport number X1234567', decrypted for you
 ```
 
 Keep in mind that encrypted fields cannot be used inside a query selector, because on disk they are ciphertext. You query by the primary key or by non-encrypted fields, and you keep the sensitive data in the encrypted fields. If you need to query encrypted values, you can replicate them into a non-encrypted [memory mapped storage](../../rx-storage-memory-mapped.md) and query that.

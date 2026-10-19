@@ -205,14 +205,16 @@ await myDatabase.addCollections({
                     type: 'string'
                 },
                 done: {
-                    type: 'boolean'
+                    type: 'boolean',
+                    default: false
                 },
-                timestamp: {
+                dueAt: {
                     type: 'string',
-                    format: 'date-time'
+                    format: 'date-time',
+                    maxLength: 30
                 }
             },
-            required: ['id', 'name', 'done', 'timestamp']
+            required: ['id', 'name', 'done', 'dueAt']
         }
     }
 });
@@ -227,7 +229,7 @@ const myDocument = await myDatabase.todos.insert({
     id: 'todo1',
     name: 'Learn RxDB',
     done: false,
-    timestamp: new Date().toISOString()
+    dueAt: '2026-01-01T10:00:00.000Z'
 });
 ```
 
@@ -310,7 +312,7 @@ import {
 } from "rxdb/plugins/replication-http";
 
 replicateHTTP({
-  collection: db.todos,
+  collection: myDatabase.todos,
   push: {
     handler: async (rows) => {
       return fetch("https://example.com/api/todos/push", {
@@ -341,7 +343,7 @@ replicateHTTP({
 import { replicateGraphQL } from 'rxdb/plugins/replication-graphql';
 
 replicateGraphQL({
-    collection: db.todos,
+    collection: myDatabase.todos,
     url: 'https://example.com/graphql',
     push: { batchSize: 50 },
     pull: { batchSize: 50 }
@@ -376,7 +378,7 @@ replicateWebRTC({
 import { replicateCouchDB } from 'rxdb/plugins/replication-couchdb';
 
 replicateCouchDB({
-    collection: db.todos,
+    collection: myDatabase.todos,
     url: 'http://example.com/todos/',
     push: {},
     pull: {}

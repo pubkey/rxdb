@@ -86,46 +86,46 @@ RxDB uses a leader election mechanism so writes from any tab propagate to all op
 import { createRxDatabase } from 'rxdb/plugins/core';
 import { getRxStorageIndexedDB } from 'rxdb/plugins/storage-indexeddb';
 
-const db = await createRxDatabase({
-  name: 'appdb',
+const myDatabase = await createRxDatabase({
+  name: 'mydatabase',
   storage: getRxStorageIndexedDB()
 });
 
-await db.addCollections({
-  invoices: {
+await myDatabase.addCollections({
+  todos: {
     schema: {
-      title: 'invoice schema',
+      title: 'todo schema',
       version: 0,
       primaryKey: 'id',
       type: 'object',
       properties: {
         id: { type: 'string', maxLength: 100 },
-        customer: { type: 'string' },
-        amount: { type: 'number' },
-        paid: { type: 'boolean' },
-        createdAt: { type: 'number' }
+        name: { type: 'string' },
+        done: { type: 'boolean', default: false },
+        dueAt: { type: 'string', format: 'date-time', maxLength: 30 },
+        priority: { type: 'integer', minimum: 0, maximum: 10, multipleOf: 1 }
       },
-      required: ['id', 'customer', 'amount', 'createdAt'],
-      indexes: ['createdAt']
+      required: ['id', 'name', 'done', 'dueAt', 'priority'],
+      indexes: ['dueAt']
     }
   }
 });
 
 // Insert a document
-await db.invoices.insert({
-  id: 'inv-1001',
-  customer: 'acme',
-  amount: 420,
-  paid: false,
-  createdAt: Date.now()
+await myDatabase.todos.insert({
+  id: 'todo1',
+  name: 'Learn RxDB',
+  done: false,
+  dueAt: '2026-01-15T09:00:00.000Z',
+  priority: 2
 });
 
-// Reactive query: re-emits whenever a matching invoice changes
-db.invoices
-  .find({ selector: { paid: false }, sort: [{ createdAt: 'desc' }] })
+// Reactive query: re-emits whenever a matching todo changes
+myDatabase.todos
+  .find({ selector: { done: false }, sort: [{ dueAt: 'asc' }] })
   .$
-  .subscribe(unpaid => {
-    console.log('unpaid invoices:', unpaid.length);
+  .subscribe(openTodos => {
+    console.log('open todos:', openTodos.length);
   });
 ```
 
@@ -148,29 +148,33 @@ const storage = getRxStorageSQLiteTrial({
   sqliteBasics: getSQLiteBasicsWasm(sqliteWasm)
 });
 
-const db = await createRxDatabase({
+const myDatabase = await createRxDatabase({
   name: 'sqlite-app',
   storage
 });
 
-await db.addCollections({
-  notes: {
+await myDatabase.addCollections({
+  todos: {
     schema: {
-      title: 'note schema',
+      title: 'todo schema',
       version: 0,
       primaryKey: 'id',
       type: 'object',
       properties: {
         id: { type: 'string', maxLength: 100 },
-        title: { type: 'string' },
-        body: { type: 'string' }
+        name: { type: 'string' },
+        note: { type: 'string' }
       },
-      required: ['id', 'title']
+      required: ['id', 'name']
     }
   }
 });
 
-await db.notes.insert({ id: 'n1', title: 'first', body: 'hello sqlite' });
+await myDatabase.todos.insert({
+  id: 'todo1',
+  name: 'Learn RxDB',
+  note: 'hello sqlite'
+});
 ```
 
 The same configuration works in Node.js with `better-sqlite3` and in Electron with the native SQLite binding. You write your application against RxCollections once, and the storage adapter handles the runtime details.

@@ -90,7 +90,7 @@ import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
 
 async function initDatabase() {
   const db = await createRxDatabase({
-    name: 'heroesdb',
+    name: 'mydatabase',
     storage: getRxStorageLocalstorage(),
     password: 'myPassword',         // optional encryption password
     multiInstance: true,            // multi-tab support
@@ -98,17 +98,19 @@ async function initDatabase() {
   });
 
   await db.addCollections({
-    hero: {
+    todos: {
       schema: {
-        title: 'hero schema',
+        title: 'todo schema',
         version: 0,
         primaryKey: 'id',
         type: 'object',
         properties: {
           id: { type: 'string', maxLength: 100 },
           name: { type: 'string' },
-          points: { type: 'number' }
-        }
+          done: { type: 'boolean', default: false },
+          priority: { type: 'integer', minimum: 0, maximum: 10, multipleOf: 1 }
+        },
+        required: ['id', 'name', 'done', 'priority']
       }
     }
   });
@@ -123,42 +125,43 @@ async function initDatabase() {
 Once you have your RxDB instance, you can query data reactively and use jQuery to manipulate the DOM:
 
 ```js
-// Example: Displaying heroes using jQuery
+// Example: Displaying todos using jQuery
 $(document).ready(async function () {
   const db = await initDatabase();
 
-  // Subscribing to all hero documents
-  db.hero
+  // Subscribing to all todo documents
+  db.todos
     .find()
     .$  // the observable
-    .subscribe((heroes) => {
+    .subscribe((todos) => {
       // Clear the list
-      $('#heroList').empty();
+      $('#todoList').empty();
 
-      // Append each hero to the DOM
-      heroes.forEach((hero) => {
-        $('#heroList').append(`
+      // Append each todo to the DOM
+      todos.forEach((todo) => {
+        $('#todoList').append(`
           <li>
-            <strong>${hero.name}</strong> - Points: ${hero.points}
+            <strong>${todo.name}</strong> - Priority: ${todo.priority}
           </li>
         `);
       });
     });
 
-  // Example of adding a new hero
-  $('#addHeroBtn').on('click', async () => {
-    const heroName = $('#heroName').val();
-    const heroPoints = parseInt($('#heroPoints').val(), 10);
-    await db.hero.insert({
+  // Example of adding a new todo
+  $('#addTodoBtn').on('click', async () => {
+    const todoName = $('#todoName').val();
+    const todoPriority = parseInt($('#todoPriority').val(), 10);
+    await db.todos.insert({
       id: Date.now().toString(),
-      name: heroName,
-      points: heroPoints
+      name: todoName,
+      done: false,
+      priority: todoPriority
     });
   });
 });
 ```
 
-With this approach, any time data in the `hero` collection changes - like when a new hero is added - your jQuery code re-renders the list of heroes automatically.
+With this approach, any time data in the `todos` collection changes - like when a new todo is added - your jQuery code re-renders the list of todos automatically.
 
 ## Different RxStorage layers for RxDB
 

@@ -68,10 +68,10 @@ await db.addCollections({
             primaryKey: 'id',
             properties: {
                 id: { type: 'string', maxLength: 100 },
-                text: { type: 'string' },
-                completed: { type: 'boolean' }
+                name: { type: 'string' },
+                done: { type: 'boolean', default: false }
             },
-            required: ['id', 'text', 'completed']
+            required: ['id', 'name', 'done']
         }
     }
 });
@@ -131,7 +131,7 @@ function TodoList() {
     const { data: openTodos } = useLiveQuery((q) =>
         q
             .from({ todo: todosCollection })
-            .where(({ todo }) => eq(todo.completed, false))
+            .where(({ todo }) => eq(todo.done, false))
     );
 
     return (
@@ -141,11 +141,11 @@ function TodoList() {
                     key={todo.id}
                     onClick={() =>
                         todosCollection.update(todo.id, (draft) => {
-                            draft.completed = true;
+                            draft.done = true;
                         })
                     }
                 >
-                    {todo.text}
+                    {todo.name}
                 </li>
             ))}
         </ul>
@@ -155,8 +155,8 @@ function TodoList() {
 // Insert on peer A, and the todo shows up on peer B.
 todosCollection.insert({
     id: 'todo-' + Date.now(),
-    text: 'sync me over WebRTC',
-    completed: false
+    name: 'sync me over WebRTC',
+    done: false
 });
 ```
 

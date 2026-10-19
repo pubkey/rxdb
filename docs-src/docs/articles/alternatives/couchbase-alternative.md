@@ -117,7 +117,7 @@ import {
 } from 'rxdb/plugins/replication-webrtc';
 
 const replicationPool = await replicateWebRTC({
-    collection: db.items,
+    collection: db.todos,
     topic: 'my-collaboration-room',
     connectionHandlerCreator: getConnectionHandlerSimplePeer({
         signalingServerUrl: 'wss://signaling.example.com'
@@ -138,23 +138,23 @@ import { replicateRxCollection } from 'rxdb/plugins/replication';
 
 const replicationState = replicateRxCollection({
     replicationIdentifier: 'my-http-replication',
-    collection: db.items,
+    collection: db.todos,
     pull: {
         async handler(checkpointOrNull, batchSize) {
             const since = checkpointOrNull ? checkpointOrNull.updatedAt : 0;
             const response = await fetch(
-                `/api/items?since=${since}&limit=${batchSize}`
+                `/api/todos?since=${since}&limit=${batchSize}`
             );
             const data = await response.json();
             return {
-                documents: data.items,
+                documents: data.todos,
                 checkpoint: data.checkpoint
             };
         }
     },
     push: {
         async handler(rows) {
-            const response = await fetch('/api/items/bulk', {
+            const response = await fetch('/api/todos/bulk', {
                 method: 'POST',
                 body: JSON.stringify(rows)
             });
@@ -218,23 +218,23 @@ RxDB builds on [RxJS](https://rxjs.dev) to provide reactive queries as a first-c
 
 ```ts
 // This subscription remains live and re-emits whenever matching documents change
-db.items.find({
-    selector: { status: 'active' },
-    sort: [{ createdAt: 'asc' }]
-}).$.subscribe(activeItems => {
+db.todos.find({
+    selector: { done: false },
+    sort: [{ dueAt: 'asc' }]
+}).$.subscribe(openTodos => {
     // Called immediately with current results, then again on any relevant change
-    renderList(activeItems);
+    renderList(openTodos);
 });
 ```
 
 You can also subscribe to individual documents or to specific fields within a document:
 
 ```ts
-const item = await db.items.findOne('item-001').exec();
+const todo = await db.todos.findOne('todo1').exec();
 
-// Fires only when the 'status' field changes
-item.get$('status').subscribe(newStatus => {
-    updateStatusBadge(newStatus);
+// Fires only when the 'done' field changes
+todo.get$('done').subscribe(isDone => {
+    updateDoneCheckbox(isDone);
 });
 ```
 
@@ -246,21 +246,26 @@ RxDB enforces a [JSON Schema](../../rx-schema.md) on every document before it is
 
 ```ts
 await db.addCollections({
-    items: {
+    todos: {
         schema: {
-            title: 'item schema',
+            title: 'todo schema',
             version: 0,
             primaryKey: 'id',
             type: 'object',
             properties: {
-                id:        { type: 'string', maxLength: 100 },
-                title:     { type: 'string' },
-                status:    { type: 'string', enum: ['active', 'done', 'archived'] },
-                priority:  { type: 'number', minimum: 0, maximum: 10 },
-                createdAt: { type: 'number' }
+                id:       { type: 'string', maxLength: 100 },
+                name:     { type: 'string' },
+                done:     { type: 'boolean', default: false },
+                dueAt:    { type: 'string', format: 'date-time', maxLength: 30 },
+                priority: {
+                    type: 'integer',
+                    minimum: 0,
+                    maximum: 10,
+                    multipleOf: 1
+                }
             },
-            required: ['id', 'title', 'status', 'priority', 'createdAt'],
-            indexes: ['createdAt', ['status', 'priority']]
+            required: ['id', 'name', 'done', 'dueAt', 'priority'],
+            indexes: ['dueAt', ['done', 'priority']]
         }
     }
 });
@@ -269,11 +274,11 @@ await db.addCollections({
 RxDB also infers TypeScript types from the schema automatically. Accessing a document field gives you the exact TypeScript type without any manual type annotation:
 
 ```ts
-const item = await db.items.findOne('item-001').exec();
-if (item) {
-    // TypeScript knows: title is string, status is 'active' | 'done' | 'archived'
-    console.log(item.title);
-    console.log(item.status);
+const todo = await db.todos.findOne('todo1').exec();
+if (todo) {
+    // TypeScript knows: name is string, done is boolean, priority is number
+    console.log(todo.name);
+    console.log(todo.done);
     // Compile-time error if you access a field that is not in the schema
 }
 ```
@@ -302,20 +307,25 @@ When a data model changes, RxDB handles migration automatically. You increment t
 
 ```ts
 await db.addCollections({
-    items: {
+    todos: {
         schema: {
             version: 1, // was 0
             primaryKey: 'id',
             type: 'object',
             properties: {
-                id:        { type: 'string', maxLength: 100 },
-                title:     { type: 'string' },
-                status:    { type: 'string', enum: ['active', 'done', 'archived'] },
-                priority:  { type: 'number', minimum: 0, maximum: 10 },
-                tags:      { type: 'array', items: { type: 'string' } }, // new field
-                createdAt: { type: 'number' }
+                id:       { type: 'string', maxLength: 100 },
+                name:     { type: 'string' },
+                done:     { type: 'boolean', default: false },
+                dueAt:    { type: 'string', format: 'date-time', maxLength: 30 },
+                priority: {
+                    type: 'integer',
+                    minimum: 0,
+                    maximum: 10,
+                    multipleOf: 1
+                },
+                tags:     { type: 'array', items: { type: 'string' } } // new field
             },
-            required: ['id', 'title', 'status', 'priority', 'tags', 'createdAt']
+            required: ['id', 'name', 'done', 'dueAt', 'priority', 'tags']
         },
         migrationStrategies: {
             1: (oldDoc) => {
@@ -336,8 +346,8 @@ RxDB provides a configurable conflict handler per collection. When a local docum
 
 ```ts
 await db.addCollections({
-    items: {
-        schema: itemSchema,
+    todos: {
+        schema: todoSchema,
         conflictHandler: async (input) => {
             const { newDocumentState, realMasterState } = input;
             // Last-write-wins based on updatedAt timestamp
@@ -358,13 +368,13 @@ import { addRxPlugin } from 'rxdb/plugins/core';
 
 addRxPlugin(RxDBcrdtPlugin);
 
-const itemSchema = {
+const todoSchema = {
     version: 0,
     primaryKey: 'id',
     type: 'object',
     properties: {
         id:    { type: 'string', maxLength: 100 },
-        title: { type: 'string' },
+        name:  { type: 'string' },
         done:  { type: 'boolean' },
         crdts: getCRDTSchemaPart()
     },
@@ -396,10 +406,11 @@ const schema = {
     primaryKey: 'id',
     type: 'object',
     properties: {
-        id:              { type: 'string', maxLength: 100 },
-        sensitiveField:  { type: 'string' }
+        id:   { type: 'string', maxLength: 100 },
+        name: { type: 'string' },
+        note: { type: 'string' }
     },
-    encrypted: ['sensitiveField']
+    encrypted: ['note']
 };
 ```
 

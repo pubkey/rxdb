@@ -83,10 +83,10 @@ await db.addCollections({
             primaryKey: 'id',
             properties: {
                 id: { type: 'string', maxLength: 100 },
-                text: { type: 'string' },
-                completed: { type: 'boolean' }
+                name: { type: 'string' },
+                done: { type: 'boolean', default: false }
             },
-            required: ['id', 'text', 'completed']
+            required: ['id', 'name', 'done']
         }
     }
 });
@@ -119,8 +119,8 @@ db.todos.find().$.subscribe((docs) => {
 // persisted through RxDB into the SQLite file.
 todosCollection.insert({
     id: 'todo-' + Date.now(),
-    text: 'stored in SQLite',
-    completed: false
+    name: 'stored in SQLite',
+    done: false
 });
 ```
 

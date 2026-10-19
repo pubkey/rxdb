@@ -69,27 +69,27 @@ In your supabase project, create a new table. Ensure that:
 - You have a boolean field which stores if a row should is "deleted". You should not hard-delete rows in Supabase, because clients would miss the deletion if they haven't been online at the deletion time. Instead, use a deleted `boolean` to mark rows as deleted. This way all clients can still pull the deletion, and RxDB will hide the complexity on the client side.
 - Enable the realtime observation of writes to the table.
 
-Here is an example for a "human" table:
+Here is an example for a "todos" table:
 
 ```sql
 create extension if not exists moddatetime schema extensions;
 
-create table "public"."humans" (
-    "passportId" text primary key,
-    "firstName" text not null,
-    "lastName" text not null,
-    "age" integer,
+create table "public"."todos" (
+    "id" text primary key,
+    "name" text not null,
+    "done" boolean DEFAULT false NOT NULL,
+    "note" text,
 
     "_deleted" boolean DEFAULT false NOT NULL,
     "_modified" timestamp with time zone DEFAULT now() NOT NULL
 );
 
 -- auto-update the _modified timestamp
-CREATE TRIGGER update_modified_datetime BEFORE UPDATE ON public.humans FOR EACH ROW
+CREATE TRIGGER update_modified_datetime BEFORE UPDATE ON public.todos FOR EACH ROW
 EXECUTE FUNCTION extensions.moddatetime('_modified');
 
 -- add a table to the publication so we can subscribe to changes
-alter publication supabase_realtime add table "public"."humans";
+alter publication supabase_realtime add table "public"."todos";
 ```
 
 ### Create an RxDB Database & Collection
@@ -107,18 +107,18 @@ export const db = await createRxDatabase({
 });
 
 await db.addCollections({
-  humans: {
+  todos: {
     schema: {
       version: 0,
-      primaryKey: 'passportId',
+      primaryKey: 'id',
       type: 'object',
       properties: {
-        passportId: { type: 'string', maxLength: 100 },
-        firstName:   { type: 'string' },
-        lastName:    { type: 'string' },
-        age: { type: 'number' }
+        id: { type: 'string', maxLength: 100 },
+        name: { type: 'string' },
+        done: { type: 'boolean', default: false },
+        note: { type: 'string' }
       },
-      required: ['passportId', 'firstName', 'lastName']
+      required: ['id', 'name', 'done']
     }
   }
 });
@@ -183,24 +183,24 @@ Connect your RxDB collection to the Supabase table to start the replication.
 import { replicateSupabase } from 'rxdb/plugins/replication-supabase';
 
 const replication = replicateSupabase({
-  tableName: 'humans',
+  tableName: 'todos',
   client: supabase,
-  collection: db.humans,
-  replicationIdentifier: 'humans-supabase',
+  collection: db.todos,
+  replicationIdentifier: 'todos-supabase',
   live: true,
   pull: {
     batchSize: 50,
     // optional: shape incoming docs
     modifier: (doc) => {
-      // map nullable age-field
-      if (!doc.age) delete doc.age;
+      // map nullable note-field
+      if (doc.note === null) delete doc.note;
       return doc;
-    }
+    },
     // optional: customize the pull query before fetching
     queryBuilder: ({ query }) => {
       // Add filters, joins, or other PostgREST query modifiers
       // This runs before checkpoint filtering and ordering
-      return query.eq("status", "active");
+      return query.eq('done', false);
     },
   },
   push: {
@@ -234,7 +234,7 @@ const replication = replicateSupabase({
              * Create a totally new query instance
              * and return that.
              */
-            return supabase.from('humans').select('*, pets(*), toys(*)');
+            return supabase.from('todos').select('*, comments(*)');
         }
     }
 });

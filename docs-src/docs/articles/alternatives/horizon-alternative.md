@@ -35,24 +35,24 @@ The Horizon client library connected directly to a Horizon server process, which
 const horizon = Horizon();
 
 // Get a reference to a collection (table in RethinkDB)
-const messages = horizon('messages');
+const todos = horizon('todos');
 
 // Store a document
-messages.store({ id: 'msg-1', text: 'Hello, Horizon!', createdAt: new Date() });
+todos.store({ id: 'todo1', name: 'Learn Horizon', done: false, dueAt: new Date() });
 
 // Watch for realtime changes - returns an RxJS Observable
-messages.watch().subscribe(allMessages => {
-    renderMessages(allMessages);
+todos.watch().subscribe(allTodos => {
+    renderTodos(allTodos);
 });
 
 // Fetch once (not live)
-messages.fetch().subscribe(allMessages => {
-    console.log(allMessages);
+todos.fetch().subscribe(allTodos => {
+    console.log(allTodos);
 });
 
 // Order and limit
-messages.order('createdAt', 'descending').limit(20).watch().subscribe(recent => {
-    renderRecentMessages(recent);
+todos.order('dueAt', 'ascending').limit(20).watch().subscribe(nextTodos => {
+    renderNextTodos(nextTodos);
 });
 ```
 
@@ -143,30 +143,30 @@ const db = await createRxDatabase({
 });
 
 await db.addCollections({
-    messages: {
+    todos: {
         schema: {
-            title: 'message schema',
+            title: 'todo schema',
             version: 0,
             primaryKey: 'id',
             type: 'object',
             properties: {
-                id:        { type: 'string', maxLength: 100 },
-                text:      { type: 'string' },
-                roomId:    { type: 'string' },
-                createdAt: { type: 'number' }
+                id:    { type: 'string', maxLength: 100 },
+                name:  { type: 'string' },
+                done:  { type: 'boolean', default: false },
+                dueAt: { type: 'string', format: 'date-time', maxLength: 30 }
             },
-            required: ['id', 'text', 'roomId', 'createdAt'],
-            indexes: ['createdAt']
+            required: ['id', 'name', 'done', 'dueAt'],
+            indexes: ['dueAt']
         }
     }
 });
 
-// Subscribe to messages in a room, ordered by creation time
-db.messages.find({
-    selector: { roomId: 'room-42' },
-    sort: [{ createdAt: 'asc' }]
-}).$.subscribe(messages => {
-    renderMessages(messages); // called immediately and on every change
+// Subscribe to open todos, ordered by due date
+db.todos.find({
+    selector: { done: false },
+    sort: [{ dueAt: 'asc' }]
+}).$.subscribe(todos => {
+    renderTodos(todos); // called immediately and on every change
 });
 ```
 
@@ -227,13 +227,13 @@ RxDB stores data locally and replicates to a backend using a plugin system. You 
 import { replicateRxCollection } from 'rxdb/plugins/replication';
 
 const replicationState = await replicateRxCollection({
-    collection: db.messages,
-    replicationIdentifier: 'messages-http-v1',
+    collection: db.todos,
+    replicationIdentifier: 'todos-http-v1',
     pull: {
         handler: async (checkpoint, batchSize) => {
             const since = checkpoint?.updatedAt ?? 0;
             const response = await fetch(
-                `/api/messages?since=${since}&limit=${batchSize}`
+                `/api/todos?since=${since}&limit=${batchSize}`
             );
             const data = await response.json();
             return {
@@ -244,7 +244,7 @@ const replicationState = await replicateRxCollection({
     },
     push: {
         handler: async (rows) => {
-            const response = await fetch('/api/messages', {
+            const response = await fetch('/api/todos', {
                 method: 'POST',
                 body: JSON.stringify(rows),
                 headers: { 'Content-Type': 'application/json' }
@@ -307,8 +307,8 @@ RxDB provides a configurable conflict handler per collection. When two versions 
 
 ```typescript
 await db.addCollections({
-    messages: {
-        schema: messageSchema,
+    todos: {
+        schema: todoSchema,
         conflictHandler: async ({ newDocumentState, realMasterState }) => {
             // Keep whichever version was updated more recently
             if (newDocumentState.updatedAt >= realMasterState.updatedAt) {
@@ -328,15 +328,15 @@ import { addRxPlugin } from 'rxdb/plugins/core';
 
 addRxPlugin(RxDBcrdtPlugin);
 
-const messageSchema = {
+const todoSchema = {
     version: 0,
     primaryKey: 'id',
     type: 'object',
     properties: {
-        id:     { type: 'string', maxLength: 100 },
-        text:   { type: 'string' },
-        roomId: { type: 'string' },
-        crdts:  getCRDTSchemaPart()
+        id:    { type: 'string', maxLength: 100 },
+        name:  { type: 'string' },
+        done:  { type: 'boolean' },
+        crdts: getCRDTSchemaPart()
     },
     crdt: { field: 'crdts' }
 };
@@ -350,14 +350,14 @@ RxDB validates every document against a [JSON Schema](../../rx-schema.md) before
 
 ```typescript
 try {
-    await db.messages.insert({
-        id: 'msg-001',
-        // 'text' field is required but missing
-        roomId: 'room-42',
-        createdAt: Date.now()
+    await db.todos.insert({
+        id: 'todo1',
+        // 'name' field is required but missing
+        done: false,
+        dueAt: new Date().toISOString()
     });
 } catch (err) {
-    console.error(err); // Schema validation error: missing 'text'
+    console.error(err); // Schema validation error: missing 'name'
 }
 ```
 
@@ -373,14 +373,14 @@ RxDB has a built-in [schema migration system](../../migration-schema.md). When t
 
 ```typescript
 await db.addCollections({
-    messages: {
-        schema: messageSchemaV2, // version: 1
+    todos: {
+        schema: todoSchemaV1, // version: 1
         migrationStrategies: {
             1: (oldDoc) => {
-                // Migrate from version 0: add 'threadId' with a default
+                // Migrate from version 0: add 'priority' with a default
                 return {
                     ...oldDoc,
-                    threadId: oldDoc.threadId ?? 'main'
+                    priority: oldDoc.priority ?? 0
                 };
             }
         }
@@ -415,11 +415,11 @@ const schema = {
     primaryKey: 'id',
     type: 'object',
     properties: {
-        id:       { type: 'string', maxLength: 100 },
-        text:     { type: 'string' },
-        sensitiveData: { type: 'string' }
+        id:   { type: 'string', maxLength: 100 },
+        name: { type: 'string' },
+        note: { type: 'string' }
     },
-    encrypted: ['sensitiveData'] // stored as ciphertext in IndexedDB
+    encrypted: ['note'] // stored as ciphertext in IndexedDB
 };
 ```
 
@@ -428,17 +428,17 @@ const schema = {
 Horizon's `watch()` method pushed complete updated result sets from the server. RxDB provides observable change streams at both the collection and document level, giving fine-grained access to change events locally:
 
 ```typescript
-// Subscribe to all changes in the messages collection
-db.messages.$.subscribe(changeEvent => {
+// Subscribe to all changes in the todos collection
+db.todos.$.subscribe(changeEvent => {
     console.log('Operation:', changeEvent.operation); // INSERT, UPDATE, DELETE
     console.log('Document ID:', changeEvent.documentId);
     console.log('Document data:', changeEvent.documentData);
 });
 
 // Subscribe to changes on a specific document
-const doc = await db.messages.findOne('msg-001').exec();
+const doc = await db.todos.findOne('todo1').exec();
 doc.$.subscribe(updatedDoc => {
-    console.log('Document updated:', updatedDoc?.text);
+    console.log('Document updated:', updatedDoc?.name);
 });
 ```
 
@@ -464,43 +464,43 @@ import { getRxStorageIndexedDB } from 'rxdb/plugins/storage-indexeddb';
 addRxPlugin(RxDBDevModePlugin);
 
 const db = await createRxDatabase({
-    name: 'chatapp',
+    name: 'mydb',
     storage: getRxStorageIndexedDB()
 });
 
 await db.addCollections({
-    messages: {
+    todos: {
         schema: {
-            title: 'message schema',
+            title: 'todo schema',
             version: 0,
             primaryKey: 'id',
             type: 'object',
             properties: {
-                id:        { type: 'string', maxLength: 100 },
-                text:      { type: 'string' },
-                roomId:    { type: 'string' },
-                createdAt: { type: 'number' }
+                id:    { type: 'string', maxLength: 100 },
+                name:  { type: 'string' },
+                done:  { type: 'boolean', default: false },
+                dueAt: { type: 'string', format: 'date-time', maxLength: 30 }
             },
-            required: ['id', 'text', 'roomId', 'createdAt'],
-            indexes: ['roomId', 'createdAt']
+            required: ['id', 'name', 'done', 'dueAt'],
+            indexes: ['dueAt']
         }
     }
 });
 
-// Write a message
-await db.messages.insert({
-    id: 'msg-001',
-    text: 'Hello from RxDB!',
-    roomId: 'room-42',
-    createdAt: Date.now()
+// Write a todo
+await db.todos.insert({
+    id: 'todo1',
+    name: 'Hello from RxDB',
+    done: false,
+    dueAt: new Date().toISOString()
 });
 
 // Reactive query: emits current state immediately and on every change
-db.messages.find({
-    selector: { roomId: 'room-42' },
-    sort: [{ createdAt: 'asc' }]
-}).$.subscribe(messages => {
-    console.log('Current messages:', messages.map(m => m.text));
+db.todos.find({
+    selector: { done: false },
+    sort: [{ dueAt: 'asc' }]
+}).$.subscribe(todos => {
+    console.log('Current todos:', todos.map(t => t.name));
 });
 ```
 

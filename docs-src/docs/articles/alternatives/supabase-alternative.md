@@ -60,10 +60,10 @@ import { createClient } from '@supabase/supabase-js';
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const channel = supabase
-    .channel('posts-changes')
+    .channel('todos-changes')
     .on(
         'postgres_changes',
-        { event: '*', schema: 'public', table: 'posts' },
+        { event: '*', schema: 'public', table: 'todos' },
         (payload) => {
             console.log('Change received:', payload);
         }
@@ -84,9 +84,9 @@ Supabase does not include a local data store. Every query goes to the server:
 ```ts
 // This call FAILS when the user is offline
 const { data, error } = await supabase
-    .from('posts')
+    .from('todos')
     .select('*')
-    .eq('published', true);
+    .eq('done', false);
 ```
 
 If the network is unavailable, `data` is `null` and `error` contains a fetch failure. The application has no fallback. Users who open the app while offline see a broken state.
@@ -113,10 +113,10 @@ The Supabase client SDK does not have a reactive query system. If you want your 
 
 ```ts
 // Without RxDB, you have to wire this yourself:
-channel.on('postgres_changes', { event: 'INSERT', table: 'posts' }, async () => {
+channel.on('postgres_changes', { event: 'INSERT', table: 'todos' }, async () => {
     // Re-fetch the entire list every time something changes
-    const { data } = await supabase.from('posts').select('*');
-    setPosts(data);
+    const { data } = await supabase.from('todos').select('*');
+    setTodos(data);
 });
 ```
 
@@ -148,30 +148,29 @@ const db = await createRxDatabase({
 });
 
 await db.addCollections({
-    posts: {
+    todos: {
         schema: {
-            title: 'post schema',
+            title: 'todo schema',
             version: 0,
             primaryKey: 'id',
             type: 'object',
             properties: {
-                id:        { type: 'string', maxLength: 100 },
-                title:     { type: 'string' },
-                body:      { type: 'string' },
-                authorId:  { type: 'string', maxLength: 100 },
-                published: { type: 'boolean' },
-                updatedAt: { type: 'number' }
+                id:    { type: 'string', maxLength: 100 },
+                name:  { type: 'string' },
+                done:  { type: 'boolean', default: false },
+                dueAt: { type: 'string', format: 'date-time', maxLength: 30 },
+                note:  { type: 'string' }
             },
-            required: ['id', 'title', 'body', 'authorId', 'published', 'updatedAt'],
-            indexes: ['updatedAt', 'authorId']
+            required: ['id', 'name', 'done', 'dueAt'],
+            indexes: ['dueAt']
         }
     }
 });
 
 // This works offline. No network required.
-const posts = await db.posts.find({
-    selector: { published: true },
-    sort: [{ updatedAt: 'desc' }]
+const openTodos = await db.todos.find({
+    selector: { done: false },
+    sort: [{ dueAt: 'asc' }]
 }).exec();
 ```
 
@@ -190,23 +189,23 @@ First, create your Supabase table with the required fields:
 ```sql
 create extension if not exists moddatetime schema extensions;
 
-create table "public"."posts" (
+create table "public"."todos" (
     "id"        text primary key,
-    "title"     text not null,
-    "body"      text not null,
-    "authorId"  text not null,
-    "published" boolean DEFAULT false NOT NULL,
+    "name"      text not null,
+    "done"      boolean DEFAULT false NOT NULL,
+    "dueAt"     text not null,
+    "note"      text,
 
     "_deleted"  boolean DEFAULT false NOT NULL,
     "_modified" timestamp with time zone DEFAULT now() NOT NULL
 );
 
 -- Auto-update the _modified timestamp on every write
-CREATE TRIGGER update_modified_datetime BEFORE UPDATE ON public.posts FOR EACH ROW
+CREATE TRIGGER update_modified_datetime BEFORE UPDATE ON public.todos FOR EACH ROW
 EXECUTE FUNCTION extensions.moddatetime('_modified');
 
 -- Enable realtime streaming for this table
-alter publication supabase_realtime add table "public"."posts";
+alter publication supabase_realtime add table "public"."todos";
 ```
 
 Then start the replication in your application:
@@ -221,10 +220,10 @@ const supabase = createClient(
 );
 
 const replication = replicateSupabase({
-    tableName: 'posts',
+    tableName: 'todos',
     client: supabase,
-    collection: db.posts,
-    replicationIdentifier: 'posts-supabase-v1',
+    collection: db.todos,
+    replicationIdentifier: 'todos-supabase-v1',
     live: true,
     pull: {
         batchSize: 50
@@ -250,19 +249,19 @@ The plugin uses PostgREST for incremental pull and push operations, and Supabase
 RxDB queries return RxJS Observables. Every query re-emits whenever the matching documents change in the local database, whether the change came from a local write or from a sync event with Supabase:
 
 ```ts
-// Subscribe to published posts, sorted by most recent
-const publishedPosts$ = db.posts.find({
-    selector: { published: true },
-    sort: [{ updatedAt: 'desc' }]
+// Subscribe to open todos, sorted by due date
+const openTodos$ = db.todos.find({
+    selector: { done: false },
+    sort: [{ dueAt: 'asc' }]
 }).$;
 
-publishedPosts$.subscribe(posts => {
-    console.log('Published posts updated:', posts.length);
-    renderPostList(posts);
+openTodos$.subscribe(todos => {
+    console.log('Open todos updated:', todos.length);
+    renderTodoList(todos);
 });
 ```
 
-When a remote user publishes a post and that change reaches this client through Supabase Realtime and the RxDB replication plugin, the observable emits the updated list immediately. There is no polling, no manual re-fetch, and no separate state management layer needed.
+When a remote user adds a todo and that change reaches this client through Supabase Realtime and the RxDB replication plugin, the observable emits the updated list immediately. There is no polling, no manual re-fetch, and no separate state management layer needed.
 
 RxDB uses the [event-reduce](https://github.com/pubkey/event-reduce) algorithm to update query results efficiently. When a single document changes, RxDB checks whether the change affects the current query result and updates only what is necessary, rather than re-running the full query against storage.
 
@@ -270,14 +269,14 @@ You can subscribe to individual documents or specific fields:
 
 ```ts
 // Subscribe to a single document
-const doc = await db.posts.findOne('post-001').exec();
+const doc = await db.todos.findOne('todo1').exec();
 
-doc.get$('title').subscribe(newTitle => {
-    console.log('Title changed to:', newTitle);
+doc.get$('name').subscribe(newName => {
+    console.log('Name changed to:', newName);
 });
 
 // Watch the entire change stream of a collection
-db.posts.$.subscribe(changeEvent => {
+db.todos.$.subscribe(changeEvent => {
     console.log(changeEvent.operation, changeEvent.documentId);
 });
 ```
@@ -288,16 +287,19 @@ When the same document is modified on different clients while one is offline, a 
 
 ```ts
 await db.addCollections({
-    posts: {
-        schema: postSchema,
+    todos: {
+        schema: todoSchema,
         conflictHandler: async (input) => {
             const { newDocumentState, realMasterState } = input;
 
-            // Last-write-wins by updatedAt timestamp
-            if (newDocumentState.updatedAt >= realMasterState.updatedAt) {
-                return { documentData: newDocumentState };
-            }
-            return { documentData: realMasterState };
+            // Keep the server state, but a todo stays done
+            // when either side has marked it as done
+            return {
+                documentData: {
+                    ...realMasterState,
+                    done: realMasterState.done || newDocumentState.done
+                }
+            };
         }
     }
 });
@@ -311,17 +313,18 @@ import { addRxPlugin } from 'rxdb/plugins/core';
 
 addRxPlugin(RxDBcrdtPlugin);
 
-const postSchema = {
+const todoSchema = {
     version: 0,
     primaryKey: 'id',
     type: 'object',
     properties: {
-        id:        { type: 'string', maxLength: 100 },
-        title:     { type: 'string' },
-        body:      { type: 'string' },
-        published: { type: 'boolean' },
-        crdts:     getCRDTSchemaPart()
+        id:    { type: 'string', maxLength: 100 },
+        name:  { type: 'string' },
+        done:  { type: 'boolean', default: false },
+        note:  { type: 'string' },
+        crdts: getCRDTSchemaPart()
     },
+    required: ['id', 'name', 'done'],
     crdt: { field: 'crdts' }
 };
 ```
@@ -386,12 +389,11 @@ RxDB validates every document against a [JSON Schema](../../rx-schema.md) before
 
 ```ts
 try {
-    await db.posts.insert({
-        id: 'post-002',
-        // 'title' is required but missing
-        authorId: 'user-1',
-        published: true,
-        updatedAt: Date.now()
+    await db.todos.insert({
+        id: 'todo2',
+        // 'name' is required but missing
+        done: false,
+        dueAt: '2026-01-20T12:00:00.000Z'
     });
 } catch (err) {
     // Rejected: document does not match schema
@@ -403,10 +405,10 @@ RxDB also infers TypeScript types from the schema automatically. You get compile
 
 ```ts
 // TypeScript knows the shape of this document
-const post = await db.posts.findOne('post-001').exec();
-if (post) {
-    console.log(post.title);   // string
-    console.log(post.published); // boolean
+const todo = await db.todos.findOne('todo1').exec();
+if (todo) {
+    console.log(todo.name); // string
+    console.log(todo.done); // boolean
 }
 ```
 
@@ -416,35 +418,27 @@ When your data model changes, RxDB's [migration system](../../migration-schema.m
 
 ```ts
 await db.addCollections({
-    posts: {
+    todos: {
         schema: {
-            title: 'post schema',
+            title: 'todo schema',
             version: 1,  // incremented from 0
             primaryKey: 'id',
             type: 'object',
             properties: {
-                id:        { type: 'string', maxLength: 100 },
-                title:     { type: 'string' },
-                body:      { type: 'string' },
-                authorId:  { type: 'string', maxLength: 100 },
-                published: { type: 'boolean' },
-                slug:      { type: 'string' },  // new field
-                updatedAt: { type: 'number' }
+                id:       { type: 'string', maxLength: 100 },
+                name:     { type: 'string' },
+                done:     { type: 'boolean', default: false },
+                dueAt:    { type: 'string', format: 'date-time', maxLength: 30 },
+                note:     { type: 'string' },
+                priority: { type: 'integer', minimum: 0, maximum: 10 } // new field
             },
-            required: [
-                'id',
-                'title',
-                'body',
-                'authorId',
-                'published',
-                'slug',
-                'updatedAt'
-            ]
+            required: ['id', 'name', 'done', 'dueAt', 'priority'],
+            indexes: ['dueAt']
         },
         migrationStrategies: {
             1: (oldDoc) => {
-                // Generate a slug from the title
-                oldDoc.slug = oldDoc.title.toLowerCase().replace(/\s+/g, '-');
+                // Assign a default priority to all existing todos
+                oldDoc.priority = 0;
                 return oldDoc;
             }
         }
@@ -472,15 +466,17 @@ const db = await createRxDatabase({
 });
 
 // Fields marked 'encrypted' in the schema are stored as ciphertext
-const schema = {
+const todoSchema = {
     version: 0,
     primaryKey: 'id',
     type: 'object',
     properties: {
-        id:          { type: 'string', maxLength: 100 },
-        sensitiveData: { type: 'string' }
+        id:   { type: 'string', maxLength: 100 },
+        name: { type: 'string' },
+        note: { type: 'string' }
     },
-    encrypted: ['sensitiveData']
+    required: ['id', 'name'],
+    encrypted: ['note']
 };
 ```
 
@@ -557,21 +553,21 @@ const db = await createRxDatabase({
 });
 
 await db.addCollections({
-    posts: {
+    todos: {
         schema: {
-            title: 'post schema',
+            title: 'todo schema',
             version: 0,
             primaryKey: 'id',
             type: 'object',
             properties: {
-                id:        { type: 'string', maxLength: 100 },
-                title:     { type: 'string' },
-                body:      { type: 'string' },
-                published: { type: 'boolean' },
-                updatedAt: { type: 'number' }
+                id:    { type: 'string', maxLength: 100 },
+                name:  { type: 'string' },
+                done:  { type: 'boolean', default: false },
+                dueAt: { type: 'string', format: 'date-time', maxLength: 30 },
+                note:  { type: 'string' }
             },
-            required: ['id', 'title', 'body', 'published', 'updatedAt'],
-            indexes: ['updatedAt']
+            required: ['id', 'name', 'done', 'dueAt'],
+            indexes: ['dueAt']
         }
     }
 });
@@ -579,10 +575,10 @@ await db.addCollections({
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const replication = replicateSupabase({
-    tableName: 'posts',
+    tableName: 'todos',
     client: supabase,
-    collection: db.posts,
-    replicationIdentifier: 'posts-sync-v1',
+    collection: db.todos,
+    replicationIdentifier: 'todos-sync-v1',
     live: true,
     pull: { batchSize: 50 },
     push: { batchSize: 50 }
@@ -591,11 +587,11 @@ const replication = replicateSupabase({
 await replication.awaitInitialReplication();
 
 // All local queries work offline automatically
-db.posts.find({
-    selector: { published: true },
-    sort: [{ updatedAt: 'desc' }]
-}).$.subscribe(posts => {
-    console.log('Posts ready:', posts.length);
+db.todos.find({
+    selector: { done: false },
+    sort: [{ dueAt: 'asc' }]
+}).$.subscribe(todos => {
+    console.log('Todos ready:', todos.length);
 });
 ```
 

@@ -122,7 +122,7 @@ After creating an Appwrite project you have to create an Appwrite Database and a
 
 ### Add your documents attributes
 
-In the appwrite collection, create all <a href="https://appwrite.io/docs/products/databases/collections#attributes" rel="noopener nofollow">attributes</a> of your documents. You have to define all the fields that your document in your [RxDB schema](./rx-schema.md) knows about. Notice that Appwrite does not allow for nested attributes. So when you use RxDB with Appwrite, you should also not have nested attributes in your RxDB schema.
+In the appwrite collection, create all <a href="https://appwrite.io/docs/products/databases/collections#attributes" rel="noopener nofollow">attributes</a> of your documents. You have to define all the fields that your document in your [RxDB schema](./rx-schema.md) knows about. For the `todos` schema used below, these are `name` (string), `done` (boolean), and `priority` (integer). The `id` of the RxDB document is stored as the Appwrite document id. Notice that Appwrite does not allow for nested attributes. So when you use RxDB with Appwrite, you should also not have nested attributes in your RxDB schema.
 
 ### Add a `deleted` attribute
 
@@ -171,12 +171,12 @@ import { Client } from 'appwrite';
 ### Create a Database with a Collection
 
 ```ts
-const db = await createRxDatabase({
+const myDatabase = await createRxDatabase({
     name: 'mydb',
     storage: getRxStorageLocalstorage()
 });
-const mySchema = {
-    title: 'my schema',
+const todoSchema = {
+    title: 'todo schema',
     version: 0,
     primaryKey: 'id',
     type: 'object',
@@ -187,16 +187,26 @@ const mySchema = {
         },
         name: {
             type: 'string'
+        },
+        done: {
+            type: 'boolean',
+            default: false
+        },
+        priority: {
+            type: 'integer',
+            minimum: 0,
+            maximum: 10,
+            multipleOf: 1
         }
     },
-    required: ['id', 'name']
+    required: ['id', 'name', 'done', 'priority']
 };
-await db.addCollections({
-    humans: {
-        schema: mySchema
+await myDatabase.addCollections({
+    todos: {
+        schema: todoSchema
     }
 });
-const collection = db.humans;
+const collection = myDatabase.todos;
 ```
 
 

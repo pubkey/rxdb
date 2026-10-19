@@ -50,17 +50,17 @@ In the Meteor stack, Minimongo acts as a local mirror of data published from the
 
 ```javascript
 // Server-side: a Meteor publication
-Meteor.publish('recentPosts', function () {
-    return Posts.find({}, { sort: { createdAt: -1 }, limit: 50 });
+Meteor.publish('upcomingTodos', function () {
+    return Todos.find({}, { sort: { dueAt: 1 }, limit: 50 });
 });
 
 // Client-side: subscribing and querying Minimongo
-Meteor.subscribe('recentPosts');
+Meteor.subscribe('upcomingTodos');
 
-const posts = Posts.find({ category: 'news' }).fetch();
+const openTodos = Todos.find({ done: false }).fetch();
 ```
 
-On the client, the `Posts` variable points to a Minimongo collection. Operations like `find()` run entirely in memory against the local cache. Writes go to Minimongo first for an optimistic result, then propagate to the server.
+On the client, the `Todos` variable points to a Minimongo collection. Operations like `find()` run entirely in memory against the local cache. Writes go to Minimongo first for an optimistic result, then propagate to the server.
 
 When you use Minimongo outside of Meteor, you lose the DDP layer. You are left with an in-memory store that you must populate and sync manually. There is no standard protocol or built-in mechanism to keep that store synchronized with any backend.
 
@@ -130,65 +130,65 @@ Switching storage engines requires changing only the `storage` parameter when cr
 import { createRxDatabase } from 'rxdb/plugins/core';
 import { getRxStorageIndexedDB } from 'rxdb/plugins/storage-indexeddb';
 
-const db = await createRxDatabase({
+const myDatabase = await createRxDatabase({
     name: 'myapp',
     storage: getRxStorageIndexedDB()
 });
 
-await db.addCollections({
-    posts: {
+await myDatabase.addCollections({
+    todos: {
         schema: {
-            title: 'post schema',
+            title: 'todo schema',
             version: 0,
             primaryKey: 'id',
             type: 'object',
             properties: {
                 id: { type: 'string', maxLength: 100 },
-                title: { type: 'string' },
-                category: { type: 'string' },
-                createdAt: { type: 'number' }
+                name: { type: 'string' },
+                done: { type: 'boolean', default: false },
+                dueAt: { type: 'string', format: 'date-time', maxLength: 30 }
             },
-            required: ['id', 'title', 'category', 'createdAt'],
-            indexes: ['createdAt', 'category']
+            required: ['id', 'name', 'done', 'dueAt'],
+            indexes: ['dueAt']
         }
     }
 });
 ```
 
-After this setup, all data written to `db.posts` is stored persistently in IndexedDB. If the user goes offline, refreshes the browser, or restarts the device, the data is available immediately on the next load with no server round-trip required.
+After this setup, all data written to `myDatabase.todos` is stored persistently in IndexedDB. If the user goes offline, refreshes the browser, or restarts the device, the data is available immediately on the next load with no server round-trip required.
 
 ### Observable Queries with RxJS
 
 RxDB builds its reactive layer on [RxJS](https://rxjs.dev), which is one of the most widely adopted reactive programming libraries in the JavaScript ecosystem. Every query in RxDB exposes an Observable via the `$` property. The Observable emits the current result set immediately on subscription and re-emits whenever the underlying data changes.
 
 ```ts
-// Subscribe to all posts in the 'news' category, ordered by date
-const newsPosts$ = db.posts
+// Subscribe to all open todos, ordered by due date
+const openTodos$ = myDatabase.todos
     .find({
-        selector: { category: 'news' },
-        sort: [{ createdAt: 'desc' }]
+        selector: { done: false },
+        sort: [{ dueAt: 'asc' }]
     })
     .$;
 
-newsPosts$.subscribe(posts => {
-    console.log('News posts updated:', posts.length);
-    renderPostList(posts);
+openTodos$.subscribe(todos => {
+    console.log('Open todos updated:', todos.length);
+    renderTodoList(todos);
 });
 ```
 
-Every time a post is inserted, updated, or deleted, this subscription fires automatically. There is no polling, no manual cache invalidation, and no framework-specific wiring required. The same subscription works in React, Vue, Angular, Svelte, SolidJS, or plain JavaScript.
+Every time a todo is inserted, updated, or deleted, this subscription fires automatically. There is no polling, no manual cache invalidation, and no framework-specific wiring required. The same subscription works in React, Vue, Angular, Svelte, SolidJS, or plain JavaScript.
 
 RxDB also exposes observables at the document and field level:
 
 ```ts
-// Watch a single document's title field
-const doc = await db.posts.findOne('post-001').exec();
-doc.get$('title').subscribe(newTitle => {
-    console.log('Title changed to:', newTitle);
+// Watch a single document's name field
+const doc = await myDatabase.todos.findOne('todo1').exec();
+doc.get$('name').subscribe(newName => {
+    console.log('Name changed to:', newName);
 });
 
 // Watch the entire collection for any change
-db.posts.$.subscribe(changeEvent => {
+myDatabase.todos.$.subscribe(changeEvent => {
     console.log('Change event:', changeEvent.operation, changeEvent.documentId);
 });
 ```
@@ -204,17 +204,20 @@ RxDB tracks every document's revision history. Each write operation attaches a r
 When two versions of the same document exist (one local, one from the server), RxDB calls a configurable **conflict handler** to decide what happens:
 
 ```ts
-await db.addCollections({
-    posts: {
-        schema: postSchema,
+await myDatabase.addCollections({
+    todos: {
+        schema: todoSchema,
         conflictHandler: async (input) => {
             const { newDocumentState, realMasterState } = input;
 
-            // Strategy: keep the version with the most recent updatedAt timestamp
-            if (newDocumentState.updatedAt >= realMasterState.updatedAt) {
-                return { documentData: newDocumentState };
-            }
-            return { documentData: realMasterState };
+            // Strategy: keep the server state, but a todo stays done
+            // when either side has marked it as done
+            return {
+                documentData: {
+                    ...realMasterState,
+                    done: realMasterState.done || newDocumentState.done
+                }
+            };
         }
     }
 });
@@ -228,15 +231,18 @@ import { addRxPlugin } from 'rxdb/plugins/core';
 
 addRxPlugin(RxDBcrdtPlugin);
 
-const counterSchema = {
+const todoSchema = {
     version: 0,
     primaryKey: 'id',
     type: 'object',
     properties: {
         id: { type: 'string', maxLength: 100 },
+        name: { type: 'string' },
+        done: { type: 'boolean', default: false },
         // The CRDT field stores the operation log for automatic merging
         crdts: getCRDTSchemaPart()
     },
+    required: ['id', 'name', 'done'],
     crdt: { field: 'crdts' }
 };
 ```
@@ -253,12 +259,12 @@ RxDB's replication is backend-agnostic. The replication system uses a simple pul
 import { replicateRxCollection } from 'rxdb/plugins/replication';
 
 const replicationState = await replicateRxCollection({
-    collection: db.posts,
-    replicationIdentifier: 'posts-replication-v1',
+    collection: myDatabase.todos,
+    replicationIdentifier: 'todos-replication-v1',
     pull: {
         handler: async (checkpoint, batchSize) => {
             const response = await fetch(
-                `/api/posts/pull?since=${checkpoint?.updatedAt ?? 0}` +
+                `/api/todos/pull?since=${checkpoint?.updatedAt ?? 0}` +
                 `&limit=${batchSize}`
             );
             return response.json(); // { documents: [...], checkpoint: {...} }
@@ -266,7 +272,7 @@ const replicationState = await replicateRxCollection({
     },
     push: {
         handler: async (rows) => {
-            const response = await fetch('/api/posts/push', {
+            const response = await fetch('/api/todos/push', {
                 method: 'POST',
                 body: JSON.stringify(rows),
                 headers: { 'Content-Type': 'application/json' }
@@ -300,7 +306,7 @@ RxDB handles multi-tab browser applications with its [SharedWorker storage](../.
 ```ts
 import { getRxStorageSharedWorker } from 'rxdb/plugins/storage-shared-worker';
 
-const db = await createRxDatabase({
+const myDatabase = await createRxDatabase({
     name: 'myapp',
     storage: getRxStorageSharedWorker({
         workerInput: new SharedWorker(
@@ -321,28 +327,28 @@ RxDB uses a MongoDB-compatible query syntax for its `find` operations, so develo
 
 ```ts
 // Schema with compound and single-field indexes
-const postSchema = {
+const todoSchema = {
     version: 0,
     primaryKey: 'id',
     type: 'object',
     properties: {
         id: { type: 'string', maxLength: 100 },
-        category: { type: 'string', maxLength: 50 },
-        authorId: { type: 'string', maxLength: 100 },
-        createdAt: { type: 'number' }
+        name: { type: 'string' },
+        done: { type: 'boolean', default: false },
+        dueAt: { type: 'string', format: 'date-time', maxLength: 30 },
+        priority: { type: 'integer', minimum: 0, maximum: 10, multipleOf: 1 }
     },
-    required: ['id', 'category', 'authorId', 'createdAt'],
+    required: ['id', 'name', 'done', 'dueAt', 'priority'],
     indexes: [
-        'createdAt',
-        'category',
-        ['category', 'createdAt'] // compound index for category + time queries
+        'dueAt',
+        ['done', 'priority'] // compound index for done + priority queries
     ]
 };
 
 // This query uses the compound index
-const results = await db.posts.find({
-    selector: { category: 'news' },
-    sort: [{ createdAt: 'desc' }],
+const results = await myDatabase.todos.find({
+    selector: { done: false },
+    sort: [{ priority: 'desc' }],
     limit: 20
 }).exec();
 ```
@@ -356,11 +362,11 @@ RxDB validates every document against a [JSON Schema](../../rx-schema.md) before
 ```ts
 // Invalid documents are rejected at insert time
 try {
-    await db.posts.insert({
-        id: 'post-002',
-        // 'title' is missing, which is required
-        category: 'news',
-        createdAt: Date.now()
+    await myDatabase.todos.insert({
+        id: 'todo2',
+        // 'name' is missing, which is required
+        done: false,
+        dueAt: '2026-01-20T12:00:00.000Z'
     });
 } catch (err) {
     console.error('Validation error:', err.message);
@@ -408,55 +414,53 @@ import { getRxStorageIndexedDB } from 'rxdb/plugins/storage-indexeddb';
 // Add the dev mode plugin for schema validation errors during development
 addRxPlugin(RxDBDevModePlugin);
 
-const db = await createRxDatabase({
-    name: 'blogapp',
+const myDatabase = await createRxDatabase({
+    name: 'todoapp',
     storage: getRxStorageIndexedDB()
 });
 
-await db.addCollections({
-    posts: {
+await myDatabase.addCollections({
+    todos: {
         schema: {
-            title: 'post schema',
+            title: 'todo schema',
             version: 0,
             primaryKey: 'id',
             type: 'object',
             properties: {
                 id: { type: 'string', maxLength: 100 },
-                title: { type: 'string' },
-                category: { type: 'string' },
-                authorId: { type: 'string' },
-                createdAt: { type: 'number' },
-                updatedAt: { type: 'number' }
+                name: { type: 'string' },
+                done: { type: 'boolean', default: false },
+                dueAt: { type: 'string', format: 'date-time', maxLength: 30 },
+                priority: {
+                    type: 'integer',
+                    minimum: 0,
+                    maximum: 10,
+                    multipleOf: 1
+                },
+                tags: { type: 'array', default: [], items: { type: 'string' } }
             },
-            required: [
-                'id',
-                'title',
-                'category',
-                'authorId',
-                'createdAt',
-                'updatedAt'
-            ],
-            indexes: ['createdAt', 'category']
+            required: ['id', 'name', 'done', 'dueAt', 'priority', 'tags'],
+            indexes: ['dueAt', ['done', 'priority']]
         }
     }
 });
 
 // Insert a document
-await db.posts.insert({
-    id: 'post-001',
-    title: 'Getting Started with Local-First Apps',
-    category: 'tutorial',
-    authorId: 'user-42',
-    createdAt: Date.now(),
-    updatedAt: Date.now()
+await myDatabase.todos.insert({
+    id: 'todo1',
+    name: 'Learn RxDB',
+    done: false,
+    dueAt: '2026-01-15T09:00:00.000Z',
+    priority: 2,
+    tags: ['learning']
 });
 
-// Subscribe reactively to all tutorial posts
-db.posts.find({
-    selector: { category: 'tutorial' },
-    sort: [{ createdAt: 'desc' }]
-}).$.subscribe(posts => {
-    console.log('Tutorial posts:', posts.map(p => p.title));
+// Subscribe reactively to all open todos
+myDatabase.todos.find({
+    selector: { done: false },
+    sort: [{ dueAt: 'asc' }]
+}).$.subscribe(todos => {
+    console.log('Open todos:', todos.map(t => t.name));
 });
 ```
 

@@ -16,52 +16,56 @@ To find documents inside of an [RxCollection](./rx-collection.md), RxDB uses the
 To create a basic `RxQuery`, call `.find()` on a collection and insert selectors. The result-set of normal queries is an array with documents.
 
 ```js
-// find all that are older than 18
-const query = myCollection
+// find all todos with a priority greater than 5
+const query = myDatabase.todos
     .find({
       selector: {
-        age: {
-          $gt: 18
+        priority: {
+          $gt: 5
         }
       }
     });
+const results = await query.exec();
+// > [RxDocument[todo1], RxDocument[todo3]]
 ```
 
 ## findOne() {#findOne}
 A findOne-query has only a single [RxDocument](./rx-document.md) or `null` as result-set.
 
 ```js
-// find alice
-const query = myCollection
+// find the todo with the name 'Buy groceries'
+const query = myDatabase.todos
     .findOne({
       selector: {
-        name: 'alice'
+        name: 'Buy groceries'
       }
     });
 ```
 
 ```js
-// find the youngest one
-const query = myCollection
+// find the todo that is due first
+const query = myDatabase.todos
     .findOne({
       selector: {},
       sort: [
-        {age: 'asc'}
+        {dueAt: 'asc'}
       ]
     });
+const doc = await query.exec();
+// > RxDocument[todo1]
 ```
 
 ```js
 // find one document by the primary key
-const query = myCollection.findOne('foobar');
+const query = myDatabase.todos.findOne('todo1');
 ```
 ## exec()
 Returns a `Promise` that resolves with the result-set of the query.
 
 ```js
-const query = myCollection.find();
+const query = myDatabase.todos.find();
 const results = await query.exec();
-console.dir(results); // > [RxDocument,RxDocument,RxDocument..]
+console.dir(results); // > [RxDocument,RxDocument,RxDocument,RxDocument]
 ```
 
 On `.findOne()` queries, you can call `.exec(true)` to ensure your document exists and to make TypeScript handling easier:
@@ -69,11 +73,11 @@ On `.findOne()` queries, you can call `.exec(true)` to ensure your document exis
 ```ts
 // docOrUndefined can be RxDocument or null
 // which then has to be handled to be typesafe.
-const docOrUndefined = await myCollection.findOne().exec();
+const docOrUndefined = await myDatabase.todos.findOne().exec();
 
 // with .exec(true), it will throw if the document
 // cannot be found and always return type RxDocument
-const doc = await myCollection.findOne().exec(true);
+const doc = await myDatabase.todos.findOne().exec(true);
 ```
 
 
@@ -82,14 +86,14 @@ An `BehaviorSubject` [see](https://medium.com/@luukgruijs/understanding-rxjs-beh
 This is extremely helpful when used together with UIs that should always show the same state as what is written in the database.
 
 ```js
-const query = myCollection.find();
+const query = myDatabase.todos.find();
 const querySub = query.$.subscribe(results => {
     console.log('got results: ' + results.length);
 });
-// > 'got results: 5'   // BehaviorSubjects emit on subscription
+// > 'got results: 4'   // BehaviorSubjects emit on subscription
 
-await myCollection.insert({/* ... */}); // insert one
-// > 'got results: 6'   // $.subscribe() was called again with the new results
+await myDatabase.todos.insert({/* ... */}); // insert one
+// > 'got results: 5'   // $.subscribe() was called again with the new results
 
 // stop watching this query
 querySub.unsubscribe()
@@ -104,16 +108,16 @@ Runs an [update](./rx-document.md#update) on every RxDocument of the query-resul
 import { RxDBUpdatePlugin } from 'rxdb/plugins/update';
 addRxPlugin(RxDBUpdatePlugin);
 
-const query = myCollection.find({
+const query = myDatabase.todos.find({
   selector: {
-    age: {
-      $gt: 18
+    priority: {
+      $gt: 5
     }
   }
 });
 await query.update({
     $inc: {
-        age: 1 // increases age of every found document by 1
+        priority: 1 // increases priority of every found document by 1
     }
 });
 ```
@@ -123,15 +127,15 @@ await query.update({
 Runs the [RxDocument.patch()](./rx-document.md#patch) function on every RxDocument of the query result.
 
 ```js
-const query = myCollection.find({
+const query = myDatabase.todos.find({
   selector: {
-    age: {
-      $gt: 18
+    priority: {
+      $gt: 5
     }
   }
 });
 await query.patch({
-  age: 12 // set the age of every found to 12
+  done: true // set done of every found document to true
 });
 ```
 
@@ -140,15 +144,16 @@ await query.patch({
 Runs the [RxDocument.modify()](./rx-document.md#modify) function on every RxDocument of the query result.
 
 ```js
-const query = myCollection.find({
+const query = myDatabase.todos.find({
   selector: {
-    age: {
-      $gt: 18
+    priority: {
+      $gt: 5
     }
   }
 });
 await query.modify((docData) => {
-  docData.age = docData.age + 1; // increases age of every found document by 1
+  // increases priority of every found document by 1
+  docData.priority = docData.priority + 1;
   return docData;
 });
 ```
@@ -159,11 +164,11 @@ await query.modify((docData) => {
 Deletes all found documents. Returns a promise which resolves to the deleted documents.
 
 ```javascript
-// All documents where the age is less than 18
-const query = myCollection.find({
+// All todos that are done
+const query = myDatabase.todos.find({
   selector: {
-    age: {
-      $lt: 18
+    done: {
+      $eq: true
     }
   }
 });
@@ -175,10 +180,10 @@ On `.findOne()` queries, `.remove()` returns `null` when no document matches. Yo
 
 ```ts
 // returns null if no document matches
-const removed = await myCollection.findOne('foobar').remove();
+const removed = await myDatabase.todos.findOne('todo1').remove();
 
 // throws if no document matches, return type is always RxDocument
-const removed = await myCollection.findOne('foobar').remove(true);
+const removed = await myDatabase.todos.findOne('todo1').remove(true);
 ```
 
 ## doesDocumentDataMatch()
@@ -186,22 +191,23 @@ Returns `true` if the given document data matches the query.
 
 ```js
 const documentData = {
-  id: 'foobar',
-  age: 19
+  id: 'todo1',
+  name: 'Learn RxDB',
+  priority: 8
 };
 
-myCollection.find({
+myDatabase.todos.find({
   selector: {
-    age: {
-      $gt: 18
+    priority: {
+      $gt: 5
     }
   }
 }).doesDocumentDataMatch(documentData); // > true
 
-myCollection.find({
+myDatabase.todos.find({
   selector: {
-    age: {
-      $gt: 20
+    priority: {
+      $gt: 9
     }
   }
 }).doesDocumentDataMatch(documentData); // > false
@@ -220,7 +226,7 @@ addRxPlugin(RxDBQueryBuilderPlugin);
 
 // now you can use chained query methods
 
-const query = myCollection.find().where('age').gt(18);
+const query = myDatabase.todos.find().where('priority').gt(5);
 const result = await query.exec();
 ```
 
@@ -233,16 +239,16 @@ Here some examples to learn quickly how to write queries without reading the doc
 
 ```js
 // directly pass search-object
-myCollection.find({
+myDatabase.todos.find({
   selector: {
-    name: { $eq: 'foo' }
+    name: { $eq: 'Learn RxDB' }
   }
 })
 .exec().then(documents => console.dir(documents));
 
 /*
  * find by using sql equivalent '%like%' syntax
- * This example will e.g. match 'foo' but also 'fifoo' or 'foofa' or 'fifoofa'
+ * This example will e.g. match 'RxDB' but also 'Learn RxDB' or 'RxDB docs'
  * Notice that in RxDB queries, a regex is
  * represented as a $regex string with the
  * $options parameter for flags.
@@ -253,30 +259,35 @@ myCollection.find({
  * RegExp is mutated
  * after the query was parsed.
  */
-myCollection.find({
+myDatabase.todos.find({
   selector: {
-    name: { $regex: '.*foo.*' }
+    name: { $regex: '.*RxDB.*' }
   }
 })
 .exec().then(documents => console.dir(documents));
 
 // find using a composite statement eg: $or
-// This example checks where name is either foo
-// or if name is not existent on the document
-myCollection.find({
-  selector: { $or: [ { name: { $eq: 'foo' } }, { name: { $exists: false } }] }
+// This example checks where the name is either 'Learn RxDB'
+// or if note is not existent on the document
+myDatabase.todos.find({
+  selector: {
+    $or: [
+      { name: { $eq: 'Learn RxDB' } },
+      { note: { $exists: false } }
+    ]
+  }
 })
 .exec().then(documents => console.dir(documents));
 
 // do a case insensitive search
-// This example will match 'foo' or 'FOO' or 'FoO' etc...
-myCollection.find({
-  selector: { name: { $regex: '^foo$', $options: 'i' } }
+// This example will match 'learn rxdb' or 'LEARN RXDB' or 'Learn RxDB' etc...
+myDatabase.todos.find({
+  selector: { name: { $regex: '^learn rxdb$', $options: 'i' } }
 })
 .exec().then(documents => console.dir(documents));
 
 // chained queries
-myCollection.find().where('name').eq('foo')
+myDatabase.todos.find().where('name').eq('Learn RxDB')
 .exec().then(documents => console.dir(documents));
 ```
 
@@ -293,27 +304,27 @@ But the query planner cannot know everything and sometimes will not pick the mos
 To improve query performance, you can specify which index must be used, when running the query.
 
 ```ts
-const query = myCollection
+const query = myDatabase.todos
     .findOne({
       selector: {
-        age: {
-          $gt: 18
+        done: {
+          $eq: false
         },
-        gender: {
-          $eq: 'm'
+        dueAt: {
+          $gt: '2026-01-03T00:00:00.000Z'
         }
       },
       /**
-       * Because the developer knows that 50% of the documents are 'male',
-       * but only 20% are below age 18,
+       * Because the developer knows that 50% of the todos are not done,
+       * but only 10% are due after the given date,
        * it makes sense to enforce using the
-       * ['gender', 'age'] index to improve
+       * 'dueAt' index to improve
        * performance.
        * This could not be known by the query
        * planner which might have chosen
-       * ['age', 'gender'] instead.
+       * ['done', 'priority'] instead.
        */
-      index: ['gender', 'age']
+      index: ['dueAt']
     });
 ```
 
@@ -323,17 +334,20 @@ When you only need the amount of documents that match a query, but you do not ne
 The performance difference compared to a normal query differs depending on which [RxStorage](./rx-storage.md) implementation is used.
 
 ```ts
-const query = myCollection.count({
+const query = myDatabase.todos.count({
   selector: {
-    age: {
-      $gt: 18
+    done: {
+      $eq: false
+    },
+    priority: {
+      $gt: 5
     }
   }
   // 'limit' and 'skip' MUST NOT be set for count queries.
 });
 
 // get the count result once
-const matchingAmount = await query.exec(); // > number
+const matchingAmount = await query.exec(); // > 2
 
 // observe the result
 query.$.subscribe(amount => {
@@ -351,10 +365,10 @@ Count queries have a better performance than normal queries because they do not 
  * the count operation cannot run on any specific index range
  * because the $regex operator is used.
  */
-const query = myCollection.count({
+const query = myDatabase.todos.count({
   selector: {
-    age: {
-      $regex: 'foobar'
+    name: {
+      $regex: 'groceries'
     }
   }
 });
@@ -362,16 +376,16 @@ const query = myCollection.count({
 /**
  * The following will throw an error because
  * the count operation cannot run on any specific index range
- * because there is no ['age' ,'otherNumber'] index
+ * because there is no ['priority', 'dueAt'] index
  * defined in the schema.
  */
-const query = myCollection.count({
+const query = myDatabase.todos.count({
   selector: {
-    age: {
-      $gt: 20
+    priority: {
+      $gt: 5
     },
-    otherNumber: {
-      $gt: 10
+    dueAt: {
+      $gt: '2026-01-02T00:00:00.000Z'
     }
   }
 });
@@ -381,20 +395,20 @@ If you want to count these kinds of queries, you should do a normal query instea
 
 ```ts
 // get count manually once
-const resultSet = await myCollection.find({
+const resultSet = await myDatabase.todos.find({
   selector: {
-    age: {
-      $regex: 'foobar'
+    name: {
+      $regex: 'groceries'
     }
   }
 }).exec();
 const count = resultSet.length;
 
 // observe count manually
-const count$ = myCollection.find({
+const count$ = myDatabase.todos.find({
   selector: {
-    age: {
-      $regex: 'foobar'
+    name: {
+      $regex: 'groceries'
     }
   }
 }).$.pipe(
@@ -427,7 +441,7 @@ This means, when you have a `RxQuery` and run a `.where()` on it, the original R
 Example:
 
 ```javascript
-const queryObject = myCollection.find().where('age').gt(18);
+const queryObject = myDatabase.todos.find().where('priority').gt(5);
 // Creates a new RxQuery object, does not modify previous one
 queryObject.sort('name');
 const results = await queryObject.exec();
@@ -451,45 +465,47 @@ const is = isRxQuery(myObj);
 `storageInstance.query()` needs a prepared query. Get it from a normal `RxQuery` with `getPreparedQuery()`. This normalizes the query, adds the `_deleted: false` condition so deleted documents are excluded, and calculates the query plan, the same way `exec()` does.
 
 ```ts
-const rxQuery = myCollection.find({
-    selector: { age: { $gte: 21 } },
-    sort: [{ age: 'asc' }]
+const rxQuery = myDatabase.todos.find({
+    selector: { priority: { $gte: 8 } },
+    sort: [{ priority: 'asc' }]
 });
 const preparedQuery = rxQuery.getPreparedQuery();
 
-const result = await myCollection.storageInstance.query(preparedQuery);
+const result = await myDatabase.todos.storageInstance.query(preparedQuery);
 console.log(result.documents);
 /* > [{
-    id: 'a',
-    age: 21,
+    id: 'todo1',
+    name: 'Learn RxDB',
+    priority: 8,
     _deleted: false,
     _attachments: {},
     _meta: { lwt: 1791365224271 },
     _rev: '2-dwtwqbarqc'
 }, ...] */
 
-const countResult = await myCollection.storageInstance.count(preparedQuery);
+const countResult = await myDatabase.todos.storageInstance.count(preparedQuery);
 console.log(countResult.count);
+// > 2
 ```
 
-To build the prepared query without an `RxQuery`, use `normalizeMangoQuery()` and `prepareQuery()` from `rxdb` together with the filled schema of the collection (`myCollection.schema.jsonSchema`). The selector must then contain `_deleted: { $eq: false }` yourself.
+To build the prepared query without an `RxQuery`, use `normalizeMangoQuery()` and `prepareQuery()` from `rxdb` together with the filled schema of the collection (`myDatabase.todos.schema.jsonSchema`). The selector must then contain `_deleted: { $eq: false }` yourself.
 
 ```ts
 import { normalizeMangoQuery, prepareQuery } from 'rxdb';
 
-const schema = myCollection.schema.jsonSchema;
+const schema = myDatabase.todos.schema.jsonSchema;
 const preparedQuery = prepareQuery(
     schema,
     normalizeMangoQuery(schema, {
         selector: {
             _deleted: { $eq: false },
-            age: { $gte: 21 }
+            priority: { $gte: 8 }
         },
-        sort: [{ age: 'asc' }],
+        sort: [{ priority: 'asc' }],
         limit: 100
     })
 );
-const result = await myCollection.storageInstance.query(preparedQuery);
+const result = await myDatabase.todos.storageInstance.query(preparedQuery);
 ```
 
 Keep in mind what you lose when you query the storage directly:
@@ -511,16 +527,16 @@ The value can be set at the database level (applies to all collections) or overr
 
 ```ts
 // set at database level - applies to all collections
-const db = await createRxDatabase({
-  name: 'heroesdb',
+const myDatabase = await createRxDatabase({
+  name: 'mydatabase',
   storage: getRxStorageLocalstorage(),
   liveQueryUpdateThrottleTime: 100 // ms
 });
 
 // or override per collection
-const collections = await db.addCollections({
-  heroes: {
-    schema: heroSchema,
+await myDatabase.addCollections({
+  todos: {
+    schema: todoSchema,
     liveQueryUpdateThrottleTime: 200 // ms, overrides the database-level value
   }
 });
@@ -569,22 +585,23 @@ Like most other noSQL-Databases, RxDB uses the [mango-query-syntax](https://gith
   - **Store Data in a Meta-Field for Lowercase Search**: To enable case-insensitive search, you can store an additional field in your documents where the relevant text data is preprocessed and saved in lowercase.
 ```ts
 const document = {
-  name: 'John Doe',
-  nameLowercase: 'john doe' // Meta-field
+  id: 'todo1',
+  name: 'Learn RxDB',
+  nameLowercase: 'learn rxdb' // Meta-field
 };
-await myCollection.insert(document);
+await myDatabase.todos.insert(document);
 
-const query = myCollection.find({
+const query = myDatabase.todos.find({
   selector: {
-    nameLowercase: { $eq: 'john doe' }
+    nameLowercase: { $eq: 'learn rxdb' }
   }
 });
 ```
   - **Use a Regex Query**: Regular expressions can perform case-insensitive searches. For example:
 ```ts
-const query = myCollection.find({
+const query = myDatabase.todos.find({
   selector: {
-    name: { $regex: '^john doe$', $options: 'i' } // Case-insensitive regex
+    name: { $regex: '^learn rxdb$', $options: 'i' } // Case-insensitive regex
   }
 });
 ```

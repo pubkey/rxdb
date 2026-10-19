@@ -50,7 +50,7 @@ import { replicateGoogleDrive } from 'rxdb/plugins/replication-google-drive';
 
 const replicationState = await replicateGoogleDrive({
     replicationIdentifier: 'my-app-drive-sync',
-    collection: myRxCollection, // RxCollection
+    collection: myDatabase.todos, // RxCollection
     googleDrive: {
         oauthClientId: 'YOUR_GOOGLE_CLIENT_ID',
         authToken: 'USER_ACCESS_TOKEN',
@@ -126,7 +126,7 @@ By default the plugin stores data in the user visible "My Drive". Set `space: 'a
 ```ts
 const replicationState = await replicateGoogleDrive({
     replicationIdentifier: 'my-app-drive-sync',
-    collection: myRxCollection,
+    collection: myDatabase.todos,
     googleDrive: {
         oauthClientId: 'YOUR_GOOGLE_CLIENT_ID',
         authToken: 'USER_ACCESS_TOKEN',

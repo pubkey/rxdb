@@ -89,7 +89,7 @@ async function createDB(databaseName) {
         multiInstance: false
     });
     await db.addCollections({
-        heroes: {
+        todos: {
             schema: {
                 version: 0,
                 primaryKey: 'id',
@@ -100,16 +100,20 @@ async function createDB(databaseName) {
                         maxLength: 100
                     },
                     name: {
-                        type: 'string',
-                        maxLength: 100
+                        type: 'string'
                     },
-                    color: {
+                    done: {
+                        type: 'boolean',
+                        default: false
+                    },
+                    dueAt: {
                         type: 'string',
+                        format: 'date-time',
                         maxLength: 30
                     }
                 },
-                indexes: ['name'],
-                required: ['id', 'name', 'color']
+                indexes: ['dueAt'],
+                required: ['id', 'name', 'done', 'dueAt']
             }
         }
     });
@@ -151,20 +155,21 @@ import 'package:rxdb/rxdb.dart';
 RxDatabase database = await getRxDatabase("javascript/dist/index.js", databaseName);
 
 // get a collection
-RxCollection collection = database.getCollection('heroes');
+RxCollection collection = database.getCollection('todos');
 
 // insert a document
 RxDocument document = await collection.insert({
-    "id": "zflutter-${DateTime.now()}",
+    "id": "todo-${DateTime.now().millisecondsSinceEpoch}",
     "name": nameController.text,
-    "color": colorController.text
+    "done": false,
+    "dueAt": DateTime.now().toUtc().toIso8601String()
 });
 
 // create a query
-RxQuery<RxHeroDocType> query = RxDatabaseState.collection.find();
+RxQuery<TodoDocType> query = RxDatabaseState.collection.find();
 
 // create list to store query results
-List<RxDocument<RxHeroDocType>> documents = [];
+List<RxDocument<TodoDocType>> documents = [];
 
 // subscribe to a query
 query.$().listen((results) {

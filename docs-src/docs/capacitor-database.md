@@ -99,7 +99,7 @@ const database: SQLiteDBConnection = await this.sqlite.createConnection(
     version,
     readOnly
 );
-let { rows } = database.query('SELECT somevalue FROM sometable');
+let { rows } = database.query('SELECT name FROM todos');
 ```
 
 
@@ -185,7 +185,7 @@ import {
 
 ```ts
 // create database
-const myRxDatabase = await createRxDatabase({
+const myDatabase = await createRxDatabase({
     name: 'exampledb',
     storage: getRxStorageSQLiteTrial({
         sqliteBasics: getSQLiteBasicsCapacitor(sqlite, Capacitor)
@@ -197,7 +197,7 @@ const myRxDatabase = await createRxDatabase({
 
 ```ts
 // create database
-const myRxDatabase = await createRxDatabase({
+const myDatabase = await createRxDatabase({
     name: 'exampledb',
     storage: getRxStorageSQLite({
         sqliteBasics: getSQLiteBasicsCapacitor(sqlite, Capacitor)
@@ -212,8 +212,8 @@ const myRxDatabase = await createRxDatabase({
 
 ```ts
 // create collections
-const collections = await myRxDatabase.addCollections({
-    humans: {
+await myDatabase.addCollections({
+    todos: {
         schema: {
             version: 0,
             type: 'object',
@@ -221,9 +221,15 @@ const collections = await myRxDatabase.addCollections({
             properties: {
                 id: { type: 'string', maxLength: 100 },
                 name: { type: 'string' },
-                age: { type: 'number' }
-              },
-            required: ['id', 'name']
+                done: { type: 'boolean', default: false },
+                priority: {
+                    type: 'integer',
+                    minimum: 0,
+                    maximum: 10,
+                    multipleOf: 1
+                }
+            },
+            required: ['id', 'name', 'done', 'priority']
         }
     }
 });
@@ -232,15 +238,20 @@ const collections = await myRxDatabase.addCollections({
 ### Insert a Document
 
 ```ts
-await collections.humans.insert({id: 'foo', name: 'bar'});
+await myDatabase.todos.insert({
+    id: 'todo1',
+    name: 'Learn RxDB',
+    done: false,
+    priority: 8
+});
 ```
 
 ### Run a Query
 
 ```ts
-const result = await collections.humans.find({
+const result = await myDatabase.todos.find({
     selector: {
-        name: 'bar'
+        done: false
     }
 }).exec();
 ```
@@ -248,10 +259,11 @@ const result = await collections.humans.find({
 ### Observe a Query
 
 ```ts
-await collections.humans.find({
+myDatabase.todos.find({
     selector: {
-        name: 'bar'
-    }
+        done: false
+    },
+    sort: [{ priority: 'desc' }]
 }).$.subscribe(result => {/* ... */});
 ```
 

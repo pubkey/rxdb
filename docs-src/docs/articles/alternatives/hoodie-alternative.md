@@ -108,11 +108,12 @@ await db.addCollections({
             type: 'object',
             properties: {
                 id: { type: 'string', maxLength: 100 },
-                title: { type: 'string' },
-                done: { type: 'boolean' },
-                updatedAt: { type: 'string', format: 'date-time' }
+                name: { type: 'string' },
+                done: { type: 'boolean', default: false },
+                dueAt: { type: 'string', format: 'date-time', maxLength: 30 }
             },
-            required: ['id', 'title', 'done']
+            required: ['id', 'name', 'done', 'dueAt'],
+            indexes: ['dueAt']
         }
     }
 });
@@ -142,7 +143,7 @@ import { Subscription } from 'rxjs';
 
 const query = db.todos.find({
     selector: { done: false },
-    sort: [{ updatedAt: 'desc' }]
+    sort: [{ dueAt: 'asc' }]
 });
 
 const sub: Subscription = query.$.subscribe(openTodos => {
@@ -151,10 +152,10 @@ const sub: Subscription = query.$.subscribe(openTodos => {
 
 // Adding a document anywhere triggers the subscription above
 await db.todos.insert({
-    id: 't-1',
-    title: 'Migrate from Hoodie',
+    id: 'todo1',
+    name: 'Migrate from Hoodie',
     done: false,
-    updatedAt: new Date().toISOString()
+    dueAt: new Date().toISOString()
 });
 ```
 

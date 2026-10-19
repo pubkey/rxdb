@@ -155,13 +155,13 @@ PouchDB is also available as an RxStorage backend for compatibility with existin
 RxDB builds on [RxJS](https://rxjs.dev) to provide observable queries. Every query result is a live data source. When documents that match the query change, the observable emits the updated result automatically:
 
 ```ts
-// Subscribe to all active items sorted by creation time
-db.items.find({
-    selector: { status: 'active' },
-    sort: [{ createdAt: 'asc' }]
-}).$.subscribe(activeItems => {
-    console.log('Active items:', activeItems.length);
-    renderList(activeItems);
+// Subscribe to all open todos sorted by due date
+db.todos.find({
+    selector: { done: false },
+    sort: [{ dueAt: 'asc' }]
+}).$.subscribe(openTodos => {
+    console.log('Open todos:', openTodos.length);
+    renderList(openTodos);
 });
 ```
 
@@ -172,15 +172,15 @@ RxDB uses the [event-reduce algorithm](https://github.com/pubkey/event-reduce) t
 You can also subscribe to individual documents or specific fields within a document:
 
 ```ts
-const item = await db.items.findOne('item-001').exec();
+const todo = await db.todos.findOne('todo1').exec();
 
-// Fires only when the 'status' field changes
-item.get$('status').subscribe(newStatus => {
-    console.log('Status changed to:', newStatus);
+// Fires only when the 'done' field changes
+todo.get$('done').subscribe(newDone => {
+    console.log('Done changed to:', newDone);
 });
 
 // Fires for every change to any document in the collection
-db.items.$.subscribe(changeEvent => {
+db.todos.$.subscribe(changeEvent => {
     console.log(changeEvent.operation, changeEvent.documentId);
 });
 ```
@@ -196,30 +196,30 @@ const db = await createRxDatabase({
 });
 
 await db.addCollections({
-    items: {
+    todos: {
         schema: {
-            title: 'item schema',
+            title: 'todo schema',
             version: 0,
             primaryKey: 'id',
             type: 'object',
             properties: {
-                id:        { type: 'string', maxLength: 100 },
-                title:     { type: 'string' },
-                status:    { type: 'string', enum: ['active', 'done', 'archived'] },
-                createdAt: { type: 'number' }
+                id:    { type: 'string', maxLength: 100 },
+                name:  { type: 'string' },
+                done:  { type: 'boolean', default: false },
+                dueAt: { type: 'string', format: 'date-time', maxLength: 30 }
             },
-            required: ['id', 'title', 'status', 'createdAt'],
-            indexes: ['createdAt', 'status']
+            required: ['id', 'name', 'done', 'dueAt'],
+            indexes: ['dueAt']
         }
     }
 });
 
 try {
-    // Missing 'status' field, schema validation rejects this
-    await db.items.insert({
-        id: 'item-001',
-        title: 'First item',
-        createdAt: Date.now()
+    // Missing 'name' field, schema validation rejects this
+    await db.todos.insert({
+        id: 'todo1',
+        done: false,
+        dueAt: '2026-01-15T09:00:00.000Z'
     });
 } catch (err) {
     console.error('Validation error:', err.message);
@@ -230,11 +230,11 @@ RxDB also infers TypeScript types from the schema automatically. IDE autocomplet
 
 ```ts
 // TypeScript knows the exact shape of this document
-const item = await db.items.findOne('item-001').exec();
-if (item) {
-    // 'title' is string, 'status' is 'active' | 'done' | 'archived'
-    console.log(item.title);
-    console.log(item.status);
+const todo = await db.todos.findOne('todo1').exec();
+if (todo) {
+    // 'name' is string, 'done' is boolean
+    console.log(todo.name);
+    console.log(todo.done);
 }
 ```
 
@@ -261,23 +261,23 @@ import { replicateRxCollection } from 'rxdb/plugins/replication';
 
 const replicationState = replicateRxCollection({
     replicationIdentifier: 'my-custom-sync',
-    collection: db.items,
+    collection: db.todos,
     pull: {
         async handler(checkpointOrNull, batchSize) {
             const checkpoint = checkpointOrNull ?? { updatedAt: 0 };
             const response = await fetch(
-                `/api/items?since=${checkpoint.updatedAt}&limit=${batchSize}`
+                `/api/todos?since=${checkpoint.updatedAt}&limit=${batchSize}`
             );
             const data = await response.json();
             return {
-                documents: data.items,
+                documents: data.todos,
                 checkpoint: data.checkpoint
             };
         }
     },
     push: {
         async handler(rows) {
-            const response = await fetch('/api/items/bulk', {
+            const response = await fetch('/api/todos/bulk', {
                 method: 'POST',
                 body: JSON.stringify(rows)
             });
@@ -301,8 +301,8 @@ import { replicateCouchDB } from 'rxdb/plugins/replication-couchdb';
 
 const replicationState = replicateCouchDB({
     replicationIdentifier: 'my-couchdb-replication',
-    collection: db.items,
-    url: 'https://example.com/db/items',
+    collection: db.todos,
+    url: 'https://example.com/db/todos/',
     live: true,
     pull: { batchSize: 60 },
     push: { batchSize: 60 }
@@ -325,8 +325,8 @@ import {
 
 const replicationState = replicateCouchDB({
     replicationIdentifier: 'my-couchdb-replication',
-    collection: db.items,
-    url: 'https://example.com/db/items',
+    collection: db.todos,
+    url: 'https://example.com/db/todos/',
     fetch: getFetchWithCouchDBAuthorization('myUsername', 'myPassword'),
     live: true,
     pull: { batchSize: 60 },
@@ -340,20 +340,20 @@ When your data model changes, RxDB handles migration automatically. You incremen
 
 ```ts
 await db.addCollections({
-    items: {
+    todos: {
         schema: {
-            title: 'item schema',
+            title: 'todo schema',
             version: 1, // incremented from 0
             primaryKey: 'id',
             type: 'object',
             properties: {
-                id:        { type: 'string', maxLength: 100 },
-                title:     { type: 'string' },
-                status:    { type: 'string', enum: ['active', 'done', 'archived'] },
-                priority:  { type: 'number' }, // new field
-                createdAt: { type: 'number' }
+                id:       { type: 'string', maxLength: 100 },
+                name:     { type: 'string' },
+                done:     { type: 'boolean', default: false },
+                dueAt:    { type: 'string', format: 'date-time', maxLength: 30 },
+                priority: { type: 'integer', minimum: 0, maximum: 10 } // new field
             },
-            required: ['id', 'title', 'status', 'priority', 'createdAt']
+            required: ['id', 'name', 'done', 'dueAt', 'priority']
         },
         migrationStrategies: {
             1: (oldDoc) => {
@@ -374,16 +374,19 @@ RxDB resolves conflicts during replication through a configurable conflict handl
 
 ```ts
 await db.addCollections({
-    items: {
-        schema: itemSchema,
+    todos: {
+        schema: todoSchema,
         conflictHandler: async (input) => {
             const { newDocumentState, realMasterState } = input;
 
-            // Last-write-wins based on timestamp
-            if (newDocumentState.updatedAt >= realMasterState.updatedAt) {
-                return { documentData: newDocumentState };
-            }
-            return { documentData: realMasterState };
+            // Keep the server state, but a todo stays done
+            // when either side has marked it as done
+            return {
+                documentData: {
+                    ...realMasterState,
+                    done: realMasterState.done || newDocumentState.done
+                }
+            };
         }
     }
 });
@@ -397,16 +400,17 @@ import { addRxPlugin } from 'rxdb/plugins/core';
 
 addRxPlugin(RxDBcrdtPlugin);
 
-const itemSchema = {
+const todoSchema = {
     version: 0,
     primaryKey: 'id',
     type: 'object',
     properties: {
         id:     { type: 'string', maxLength: 100 },
-        title:  { type: 'string' },
-        done:   { type: 'boolean' },
+        name:   { type: 'string' },
+        done:   { type: 'boolean', default: false },
         crdts:  getCRDTSchemaPart()
     },
+    required: ['id', 'name', 'done'],
     crdt: { field: 'crdts' }
 };
 ```
@@ -452,15 +456,17 @@ const db = await createRxDatabase({
     password: 'user-specific-passphrase'
 });
 
-const schema = {
+const todoSchema = {
     version: 0,
     primaryKey: 'id',
     type: 'object',
     properties: {
-        id:            { type: 'string', maxLength: 100 },
-        sensitiveNote: { type: 'string' }
+        id:   { type: 'string', maxLength: 100 },
+        name: { type: 'string' },
+        note: { type: 'string' }
     },
-    encrypted: ['sensitiveNote']
+    required: ['id', 'name'],
+    encrypted: ['note']
 };
 ```
 
