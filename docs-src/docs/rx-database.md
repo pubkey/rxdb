@@ -34,6 +34,18 @@ const db = await createRxDatabase({
 The database name is a string which uniquely identifies the database. When two RxDatabases have the same name and use the same `RxStorage`, their data can be assumed as equal and they will share events between each other.
 Depending on the storage or adapter this can also be used to define the filesystem folder of your data.
 
+When you deploy your app to a staging area, prefix the database name with the staging id. Browser storages like IndexedDB, OPFS, and localStorage are scoped to the origin and not to the URL path. Let's say your app lives on `example.com` and you have a feature preview at `example.com/commit-42/`. Both deployments run on the same origin, so with the same database name the preview reads and writes the stored data of the production app. This can corrupt data when the preview uses a different [schema version](./migration-schema.md) or stores test documents. To fix this, use `commit-42-mydatabasename` as name for the preview.
+
+```ts
+// your own deploy config, for example 'commit-42' on a feature preview and '' on production
+const stagingId = import.meta.env.VITE_STAGING_ID;
+
+const db = await createRxDatabase({
+  name: stagingId ? stagingId + '-mydatabasename' : 'mydatabasename',
+  storage: getRxStorageLocalstorage()
+});
+```
+
 
 ### storage
 
