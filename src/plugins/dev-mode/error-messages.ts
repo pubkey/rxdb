@@ -182,6 +182,12 @@ export const ERROR_MESSAGES = {
         fix: 'Ensure all fields in the query have valid values.',
         docs: 'https://github.com/pubkey/rxdb/issues/6792?console=errors&code=QU19#issuecomment-2624555824'
     },
+    QU20: {
+        message: 'Sort fields must not use the bracket notation like foo.bar[3]. Use the dot notation like foo.bar.3 instead.',
+        cause: 'A sort field contains [ or ]. RxDB reads nested fields only with the dot notation, so the bracket notation would not sort by the array element and the result would silently be in a different order.',
+        fix: 'Write array indexes with the dot notation, for example { \'foo.bar.3\': \'asc\' }.',
+        docs: 'https://rxdb.info/mango-query.html?console=errors&code=QU20#sorting'
+    },
 
     // mquery.js
     MQ1: {

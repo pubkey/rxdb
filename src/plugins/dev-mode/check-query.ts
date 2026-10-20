@@ -154,6 +154,21 @@ export function checkMangoQuery(args: RxPluginPrePrepareQueryArgs) {
      * TODO also check nested fields
      */
     if (args.mangoQuery.sort) {
+        /**
+         * Schema field names cannot contain brackets,
+         * so a bracket in a sort field is always an
+         * array index in the bracket notation which RxDB does not resolve.
+         */
+        args.mangoQuery.sort
+            .map(sortPart => Object.keys(sortPart)[0])
+            .forEach(field => {
+                if (field.includes('[') || field.includes(']')) {
+                    throw newRxError('QU20', {
+                        field,
+                        query: args.mangoQuery,
+                    });
+                }
+            });
         args.mangoQuery.sort
             .map(sortPart => Object.keys(sortPart)[0])
             .filter(field => !field.includes('.'))

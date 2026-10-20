@@ -326,6 +326,19 @@ const byDoneAndDueDate = await myDatabase.todos.find({
 // > [RxDocument[todo4], RxDocument[todo3], RxDocument[todo1], RxDocument[todo2]]
 ```
 
+To sort by an element of an array, write the array index with the dot notation. Documents where the element does not exist are sorted first in ascending order:
+
+```ts
+// sort by the first tag
+const byFirstTag = await myDatabase.todos.find({
+    selector: {},
+    sort: [{ 'tags.0': 'asc' }]
+}).exec();
+// > [RxDocument[todo4], RxDocument[todo2], RxDocument[todo1], RxDocument[todo3]]
+```
+
+The bracket notation like `{ 'tags[0]': 'asc' }` is not supported, because RxDB resolves nested fields only by the dot notation. In [dev-mode](./dev-mode.md) such a sort throws [`QU20`](./errors.md#QU20).
+
 RxDB always appends the primary key as last sort field, so the result order is deterministic and never depends on the insert order. When a query has no `sort`, RxDB picks a sort order that fits the best [index](./rx-schema.md#indexes). Set `sort` explicitly when your code depends on the order. Sorting is fastest when the sort fields are part of an index.
 
 ## Pagination with Skip and Limit

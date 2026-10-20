@@ -1,0 +1,11 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX dev-mode now throws `QU20` when a sort field uses the bracket notation like `foo.bar[3]`. Before, such a sort was silently ignored and the documents were returned in primary key order. Use the dot notation `foo.bar.3` instead",
+    "links": [
+        {
+            "url": "https://github.com/pubkey/rxdb/pull/9294",
+            "linkText": "#9294"
+        }
+    ],
+    "priority": 4
+}
