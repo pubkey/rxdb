@@ -360,9 +360,9 @@ const doc = await myDatabase.todos.findOne({
 
 RxDB validates queries in [dev-mode](./dev-mode.md) to catch mistakes early:
 
-- **Fields must be in the schema**: Top level fields in the `selector` and in `sort` must be defined in the [schema](./rx-schema.md). Otherwise the query throws `QU13`.
-- **No `undefined` values**: A query must not contain fields with the value `undefined`, because JSON serialization would drop them silently and change the meaning of the query. This throws `QU19`.
-- **No `RegExp` instances**: Use a `$regex` string instead. This throws `QU16`.
-- **Only the known query fields**: The query object may only contain `selector`, `sort`, `skip`, `limit` and `index`. This throws `QU11`.
+- **Fields must be in the schema**: Top level fields in the `selector` and in `sort` must be defined in the [schema](./rx-schema.md). Otherwise the query throws [`QU13`](./errors.md#QU13).
+- **No `undefined` values**: A query must not contain fields with the value `undefined`, because JSON serialization would drop them silently and change the meaning of the query. This throws [`QU19`](./errors.md#QU19).
+- **No `RegExp` instances**: Use a `$regex` string instead. This throws [`QU16`](./errors.md#QU16).
+- **Only the known query fields**: The query object may only contain `selector`, `sort`, `skip`, `limit` and `index`. This throws [`QU11`](./errors.md#QU11).
 
 RxDB supports the operators `$eq`, `$ne`, `$gt`, `$gte`, `$lt`, `$lte`, `$in`, `$nin`, `$exists`, `$type`, `$regex` (with `$options`), `$size`, `$mod`, `$elemMatch`, `$and`, `$or`, `$nor` and `$not`. Queries always return full documents. There are no projections or aggregations, because the documents are already in the same JavaScript process as your application code. Read more in the [RxQuery FAQ](./rx-query.md#faq).
