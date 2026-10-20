@@ -263,6 +263,7 @@ Do not reproduce (authentic errors in old pages; write the correct form):
 - Inline code for API names, options, operators (`$gt`), field names (`_rev`), and counts like `10k`.
 - Images are centered raw HTML: `<p align="center"><img src="./files/x.png" alt="keyword phrase" width="450" /></p>`. Alt text is a short keyword phrase. Use `className`, not `class`.
 - Internal links are relative with the `.md` extension: `[RxStorage](./rx-storage.md)`, `[replication](../replication.md)` from articles. Site-root links for non-doc pages: `/premium/`, `/code/`, `/chat/`. Anchor text is a descriptive keyword phrase, never "click here". No UTM parameters.
+- Error codes: whenever an RxDB error code like `QU13` or `COL5` is mentioned in the docs, link it directly to its entry on the [error page](docs-src/docs/errors.md). The anchor is the plain error code: [`QU13`](./errors.md#QU13), or `../errors.md#QU13` from a page in `articles/`. Never leave a bare error code in prose.
 - Link densely: nearly every first mention of an RxDB concept links to its page. Repeat links to canonical pages (replication, rx-storage, quickstart, offline-first) are fine.
 - Admonitions `:::note` and `:::warning` (optionally titled) sparingly; not part of the default template.
 - Comparison tables may use ✅ / ❌ / ⚠️ cells.

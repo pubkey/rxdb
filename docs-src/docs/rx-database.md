@@ -265,7 +265,7 @@ await removeRxDatabase('mydatabasename', getRxStorageLocalstorage());
 
 #### Removing an encrypted database
 
-When the database uses the [encryption plugin](./encryption.md), the storage is wrapped with `wrappedKeyEncryptionCryptoJsStorage()`. To remove such a database, pass the wrapped storage and the password. Without the password, RxDB cannot open the storage instances of collections that have encrypted fields and `removeRxDatabase()` throws the error `EN3` ("Schema contains encrypted properties but no password is given").
+When the database uses the [encryption plugin](./encryption.md), the storage is wrapped with `wrappedKeyEncryptionCryptoJsStorage()`. To remove such a database, pass the wrapped storage and the password. Without the password, RxDB cannot open the storage instances of collections that have encrypted fields and `removeRxDatabase()` throws the error [`EN3`](./errors.md#EN3) ("Schema contains encrypted properties but no password is given").
 
 ```ts
 import { removeRxDatabase } from 'rxdb';

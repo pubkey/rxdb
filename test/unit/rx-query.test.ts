@@ -1473,6 +1473,26 @@ describe('rx-query.test.ts', () => {
 
             c.database.close();
         });
+        it('should throw when a sort field uses the bracket notation for an array index', async () => {
+            const c = await humansCollection.create(0);
+            await assertThrows(
+                () => c.find({
+                    selector: {},
+                    sort: [{ 'foo.bar[3]': 'asc' }]
+                }).exec(),
+                'RxError',
+                'QU20'
+            );
+            await assertThrows(
+                () => c.find({
+                    selector: {},
+                    sort: [{ 'firstName[0]': 'asc' }]
+                }).exec(),
+                'RxError',
+                'QU20'
+            );
+            c.database.close();
+        });
         it('#278 queryCache breaks when pointer out of bounds', async () => {
             if (config.storage.name === 'sqlite-trial') {
                 return;

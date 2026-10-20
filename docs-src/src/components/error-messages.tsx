@@ -2,6 +2,7 @@ import React from 'react';
 import { ucfirst } from '../../../src/plugins/utils/utils-string';
 import { ERROR_MESSAGES } from '../../../src/plugins/dev-mode/error-messages';
 import { useLocation } from '@docusaurus/router';
+import useBrokenLinks from '@docusaurus/useBrokenLinks';
 
 const PREFIX_MAPPING: Record<string, string> = {
     UT: 'util.js / config',
@@ -56,6 +57,7 @@ const groupedErrors = errorEntries.reduce((acc, [errorCode, errorMessage]) => {
 }, {} as Record<string, any[]>);
 
 function ErrorItem({ errorCode, errorMessage, isTarget, styles }: { errorCode: string; errorMessage: any; isTarget: boolean; styles: any; }) {
+    useBrokenLinks().collectAnchor(errorCode);
     return (
         <li
             id={errorCode}

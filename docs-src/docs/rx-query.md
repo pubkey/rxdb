@@ -10,7 +10,7 @@ import {Faq, FaqItem} from '@site/src/components/faq';
 
 # RxQuery
 
-To find documents inside of an [RxCollection](./rx-collection.md), RxDB uses the RxQuery interface that handles all query operations: it serves as the main interface for fetching documents, relies on a MongoDB-like [Mango Query Syntax](https://github.com/cloudant/mango), and provides three types of queries: [find()](#find), [findOne()](#findOne) and [count()](#count). By caching and de-duplicating results, RxQuery ensures efficient in-memory handling, and when queries are observed or re-run, the [EventReduce algorithm](https://github.com/pubkey/event-reduce) speeds up updates for a fast real-time experience and queries that run more than once.
+To find documents inside of an [RxCollection](./rx-collection.md), RxDB uses the RxQuery interface that handles all query operations: it serves as the main interface for fetching documents, relies on a MongoDB-like [Mango Query Syntax](./mango-query.md), and provides three types of queries: [find()](#find), [findOne()](#findOne) and [count()](#count). By caching and de-duplicating results, RxQuery ensures efficient in-memory handling, and when queries are observed or re-run, the [EventReduce algorithm](https://github.com/pubkey/event-reduce) speeds up updates for a fast real-time experience and queries that run more than once.
 
 ## find()
 To create a basic `RxQuery`, call `.find()` on a collection and insert selectors. The result-set of normal queries is an array with documents.
@@ -214,6 +214,21 @@ myDatabase.todos.find({
 ```
 
 
+## Mango Query Syntax
+
+The `selector` of a query is written in the [Mango query syntax](./mango-query.md). The [Mango query page](./mango-query.md) shows every supported operator with examples, including nested fields, array fields, regex queries, sorting, and pagination.
+
+```ts
+const results = await myDatabase.todos.find({
+  selector: {
+    done: false,
+    priority: { $gt: 5 }
+  },
+  sort: [{ priority: 'desc' }]
+}).exec();
+// > [RxDocument[todo3], RxDocument[todo1]]
+```
+
 ## Query Builder Plugin
 
 To use chained query methods, you can also use the [query builder plugin](./query-builder.md).
@@ -232,66 +247,6 @@ const result = await query.exec();
 
 The [query builder page](./query-builder.md) shows all chained methods with examples, including nested fields, array fields, logical operators, sorting, and pagination.
 
-
-## Query Examples
-Here some examples to learn quickly how to write queries without reading the docs.
-- [Pouch-find-docs](https://github.com/pouchdb/pouchdb/blob/master/packages/node_modules/pouchdb-find/README.md) - learn how to use mango-queries
-- [Query Builder](./query-builder.md) - learn how to use chained queries
-
-
-```js
-// directly pass search-object
-myDatabase.todos.find({
-  selector: {
-    name: { $eq: 'Learn RxDB' }
-  }
-})
-.exec().then(documents => console.dir(documents));
-
-/*
- * find by using sql equivalent '%like%' syntax
- * This example will e.g. match 'RxDB' but also 'Learn RxDB' or 'RxDB docs'
- * Notice that in RxDB queries, a regex is
- * represented as a $regex string with the
- * $options parameter for flags.
- * Using a RegExp instance is not allowed
- * because they are not JSON.stringify()-able
- * and also RegExp instances are mutable which
- * could cause undefined behavior when the
- * RegExp is mutated
- * after the query was parsed.
- */
-myDatabase.todos.find({
-  selector: {
-    name: { $regex: '.*RxDB.*' }
-  }
-})
-.exec().then(documents => console.dir(documents));
-
-// find using a composite statement eg: $or
-// This example checks where the name is either 'Learn RxDB'
-// or if note is not existent on the document
-myDatabase.todos.find({
-  selector: {
-    $or: [
-      { name: { $eq: 'Learn RxDB' } },
-      { note: { $exists: false } }
-    ]
-  }
-})
-.exec().then(documents => console.dir(documents));
-
-// do a case insensitive search
-// This example will match 'learn rxdb' or 'LEARN RXDB' or 'Learn RxDB' etc...
-myDatabase.todos.find({
-  selector: { name: { $regex: '^learn rxdb$', $options: 'i' } }
-})
-.exec().then(documents => console.dir(documents));
-
-// chained queries
-myDatabase.todos.find().where('name').eq('Learn RxDB')
-.exec().then(documents => console.dir(documents));
-```
 
 :::note RxDB will always append the primary key to the sort parameters
 For several performance optimizations, like the [EventReduce algorithm](https://github.com/pubkey/event-reduce), RxDB expects all queries to return a deterministic sort order that does not depend on the insert order of the documents. To ensure a deterministic ordering, RxDB will always append the primary key as last sort parameter to all queries and to all indexes.
