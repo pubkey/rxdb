@@ -134,7 +134,7 @@ console.log(myDocument.getLatest().name); // 'Learn RxDB queries'
 
 ### Prevent conflicts with the incremental methods {#incrementalModify}
 
-Making a normal change to the non-latest version of an `RxDocument` will lead to a `409 CONFLICT` error because RxDB
+Making a normal change to the non-latest version of an `RxDocument` will lead to a [`409 CONFLICT`](./errors.md#CONFLICT) error because RxDB
 uses [revision checks](./transactions-conflicts-revisions.md) instead of transactions.
 
 To make a change to a document, no matter what the current state is, you can use the `incremental` methods:
@@ -319,7 +319,7 @@ console.log(doc.getLatest().priority); // 10
 
 **RxDB de-duplicates document instances.** When the same document is fetched multiple times without any writes in between, RxDB returns the same instance to save memory. Once a write occurs, subsequent fetches return a new instance reflecting the updated state.
 
-**Calling non-incremental write methods on an outdated instance throws a `CONFLICT` error.** If you hold a reference to a document and another operation modifies that document in the meantime, calling `.patch()`, `.update()`, or `.modify()` on the outdated instance will fail with a conflict error. See [Transactions, Conflicts and Revisions](./transactions-conflicts-revisions.md) for details on how RxDB handles conflicts.
+**Calling non-incremental write methods on an outdated instance throws a [`CONFLICT`](./errors.md#CONFLICT) error.** If you hold a reference to a document and another operation modifies that document in the meantime, calling `.patch()`, `.update()`, or `.modify()` on the outdated instance will fail with a conflict error. See [Transactions, Conflicts and Revisions](./transactions-conflicts-revisions.md) for details on how RxDB handles conflicts.
 
 To avoid this, either:
 - Use the [incremental methods](#incrementalModify) (`incrementalPatch`, `incrementalModify`, `incrementalUpdate`) which always fetch the latest state before applying changes.
@@ -350,6 +350,6 @@ const doc2 = await doc.incrementalPatch({ priority: 2 });
 console.log(doc2.revision); // '2-dwtwqbarqc'
 ```
 
-RxDB uses the revision for optimistic concurrency control. Every write sends the previous document state together with the new one. The storage compares the `_rev` of the previous state with the `_rev` that is currently stored. When they differ, another write happened in the meantime and the write fails with a `409 CONFLICT` error. This is why non-incremental methods like `patch()` throw on an outdated `RxDocument` instance, while the incremental methods retry with the latest state. Read more in [Transactions, Conflicts and Revisions](./transactions-conflicts-revisions.md).
+RxDB uses the revision for optimistic concurrency control. Every write sends the previous document state together with the new one. The storage compares the `_rev` of the previous state with the `_rev` that is currently stored. When they differ, another write happened in the meantime and the write fails with a [`409 CONFLICT`](./errors.md#CONFLICT) error. This is why non-incremental methods like `patch()` throw on an outdated `RxDocument` instance, while the incremental methods retry with the latest state. Read more in [Transactions, Conflicts and Revisions](./transactions-conflicts-revisions.md).
 
 The `_rev` field is local to each client. By default it is stripped before documents are sent by the [replication](./replication.md) and the [conflict handler](./transactions-conflicts-revisions.md#custom-conflict-handler) does not see it. To detect conflicts between clients, the replication compares the assumed master state with the real master state instead. If your backend needs a version field, add your own field like `updatedAt` to the schema.

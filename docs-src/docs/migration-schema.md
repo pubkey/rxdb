@@ -115,7 +115,7 @@ If you have lots of data or the migrationStrategies take a long time, it might b
 
 :::warning No writes during a running migration
 While a schema migration is running on a collection, writes to that collection are not allowed.
-Calls that would write will throw a `COL25` error until the migration finishes.
+Calls that would write will throw a [`COL25`](./errors.md#COL25) error until the migration finishes.
 Wait for `collection.migratePromise()` to resolve (or observe `collection.getMigrationState().$` until status is `DONE`)
 before performing writes.
 :::

@@ -52,7 +52,7 @@ A---B1---C1---X---D    master/server state
 
 So detection happens on the master side during push, resolution happens on the client. This split keeps the backend simple, because the server never needs merge logic. The resolved document then streams from RxDB into the TanStack DB collection through the change feed, and your live queries re-render with the winning state.
 
-Under the hood, RxDB tracks document versions with **revisions**. Each document is stored with a revision string like `1-9dcca3b8e1a` that consists of a revision height and the database instance token. A write that assumes an outdated revision throws a `409 CONFLICT` error. The [Transactions, Conflicts and Revisions](../../transactions-conflicts-revisions.md) page explains this in detail.
+Under the hood, RxDB tracks document versions with **revisions**. Each document is stored with a revision string like `1-9dcca3b8e1a` that consists of a revision height and the database instance token. A write that assumes an outdated revision throws a [`409 CONFLICT`](../../errors.md#CONFLICT) error. The [Transactions, Conflicts and Revisions](../../transactions-conflicts-revisions.md) page explains this in detail.
 
 ## The Default Conflict Handler
 

@@ -187,7 +187,7 @@ Switching storages is a configuration change, not a rewrite. The React code stay
 
 ### Create the Database Outside of React
 
-Create the database in its own module and cache the promise. Components should never create the database themselves. This also protects you from React StrictMode, which runs effects twice in development: without the cached promise, RxDB would throw the error `DB8` because a database with the same name already exists.
+Create the database in its own module and cache the promise. Components should never create the database themselves. This also protects you from React StrictMode, which runs effects twice in development: without the cached promise, RxDB would throw the error [`DB8`](../errors.md#DB8) because a database with the same name already exists.
 
 ```ts
 // database.ts

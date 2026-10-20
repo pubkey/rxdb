@@ -373,7 +373,7 @@ const is = isRxCollection(myObj);
 
     <div>
     In the open-source version of RxDB, the amount of RxCollections that can be open in parallel is limited to <code>{NON_PREMIUM_COLLECTION_LIMIT}</code>. The value comes from the `NON_PREMIUM_COLLECTION_LIMIT` constant in [`src/plugins/utils/utils-premium.ts`](https://github.com/pubkey/rxdb/blob/master/src/plugins/utils/utils-premium.ts).
-    The limit counts all open collections of all databases in the same JavaScript process. Closed collections do not count. When the limit is reached, RxDB waits a short time for other collections to close and then throws the error `COL23`.
+    The limit counts all open collections of all databases in the same JavaScript process. Closed collections do not count. When the limit is reached, RxDB waits a short time for other collections to close and then throws the error [`COL23`](./errors.md#COL23).
 
     To remove the limit:
 

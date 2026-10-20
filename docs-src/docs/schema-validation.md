@@ -85,7 +85,7 @@ fs.writeFileSync(
 );
 ```
 
-In the app, pass the generated `validatorBySchemaHash` map to the storage wrapper. When a storage instance is created, the plugin hashes its schema and looks up the validator. If no validator exists for that hash, it throws the error `VD3`.
+In the app, pass the generated `validatorBySchemaHash` map to the storage wrapper. When a storage instance is created, the plugin hashes its schema and looks up the validator. If no validator exists for that hash, it throws the error [`VD3`](./errors.md#VD3).
 
 ```ts
 import { createRxDatabase } from 'rxdb/plugins/core';
