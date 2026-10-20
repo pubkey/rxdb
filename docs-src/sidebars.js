@@ -70,6 +70,11 @@ const sidebars = {
           type: 'doc',
           id: 'rx-query',
           label: 'RxQuery'
+        },
+        {
+          type: 'doc',
+          id: 'query-builder',
+          label: 'Query Builder'
         }
       ]
     },

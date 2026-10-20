@@ -466,13 +466,13 @@ OTHER_MANGO_ATTRIBUTES.forEach(function (method) {
 
 
 /**
- * gt, gte, lt, lte, ne, in, nin, all, regex, size, maxDistance
+ * gt, gte, lt, lte, ne, in, nin, regex, size
  *
  *     Thing.where('type').nin(array)
  */
 export const OTHER_MANGO_OPERATORS = [
     'gt', 'gte', 'lt', 'lte', 'ne',
-    'in', 'nin', 'all', 'regex', 'size'
+    'in', 'nin', 'regex', 'size'
 ];
 OTHER_MANGO_OPERATORS.forEach(function ($conditional) {
     (NoSqlQueryBuilderClass.prototype as any)[$conditional] = function () {

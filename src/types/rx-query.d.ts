@@ -136,7 +136,6 @@ export declare class RxQuery<
     ne(queryObj: any): RxQuery<RxDocumentType, RxQueryResult, OrmMethods, Reactivity>;
     in(queryObj: any[]): RxQuery<RxDocumentType, RxQueryResult, OrmMethods, Reactivity>;
     nin(queryObj: any[]): RxQuery<RxDocumentType, RxQueryResult, OrmMethods, Reactivity>;
-    all(queryObj: any): RxQuery<RxDocumentType, RxQueryResult, OrmMethods, Reactivity>;
     regex(queryObj: string | {
         $regex: string;
         $options: MangoQueryRegexOptions;

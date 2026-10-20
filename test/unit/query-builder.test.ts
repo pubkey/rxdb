@@ -218,5 +218,12 @@ describe('query-builder.test.js', () => {
 
             c.database.close();
         });
+        it('should not have an all() method because $all is not a supported query operator', async () => {
+            const c = await humansCollection.create(0);
+            const query = c.find();
+            assert.strictEqual(typeof (query as any).all, 'undefined');
+            assert.strictEqual(typeof (createQueryBuilder() as any).all, 'undefined');
+            c.database.close();
+        });
     });
 });
