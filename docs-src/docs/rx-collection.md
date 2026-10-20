@@ -253,7 +253,7 @@ await myDatabase.todos.incrementalUpsert(docData);
 ```
 
 ### find()
-To find documents in your collection, use this method. [See RxQuery.find()](./rx-query.md#find).
+To find documents in your collection, use this method. [See RxQuery.find()](./rx-query.md#find). Queries are written in the [Mango query syntax](./mango-query.md) or with the chained methods of the [query builder](./query-builder.md).
 
 ```js
 // find all todos with a priority greater than 5

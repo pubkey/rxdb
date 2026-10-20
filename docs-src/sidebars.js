@@ -73,6 +73,11 @@ const sidebars = {
         },
         {
           type: 'doc',
+          id: 'mango-query',
+          label: 'Mango Query'
+        },
+        {
+          type: 'doc',
           id: 'query-builder',
           label: 'Query Builder'
         }
