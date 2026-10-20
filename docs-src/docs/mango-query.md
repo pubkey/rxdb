@@ -366,3 +366,32 @@ RxDB validates queries in [dev-mode](./dev-mode.md) to catch mistakes early:
 - **Only the known query fields**: The query object may only contain `selector`, `sort`, `skip`, `limit` and `index`. This throws [`QU11`](./errors.md#QU11).
 
 RxDB supports the operators `$eq`, `$ne`, `$gt`, `$gte`, `$lt`, `$lte`, `$in`, `$nin`, `$exists`, `$type`, `$regex` (with `$options`), `$size`, `$mod`, `$elemMatch`, `$and`, `$or`, `$nor` and `$not`. Queries always return full documents. There are no projections or aggregations, because the documents are already in the same JavaScript process as your application code. Read more in the [RxQuery FAQ](./rx-query.md#faq).
+
+## Adding Query Operators
+
+RxDB runs queries with the [mingo](https://github.com/kofrasa/mingo) library. Mingo implements most MongoDB query operators, but RxDB only loads the operators listed above, because every loaded operator adds to the bundle size of your app. A query with any other operator fails with `unknown query operator`. There is no option to load more operators at runtime. To add one, change the RxDB source code and open a pull request:
+
+1. **Load the operator** in `src/rx-query-mingo.ts`. Import it from `mingo/operators/query` and add it to the `query` object of `Context.init()`:
+
+```ts
+import { Context } from 'mingo/core';
+import {
+    $eq,
+    /* ... the other loaded operators ... */
+    $myOperator // <- the new operator
+} from 'mingo/operators/query';
+
+context = Context.init({
+    query: {
+        $eq,
+        /* ... the other loaded operators ... */
+        $myOperator
+    }
+});
+```
+
+2. **Add the typing** to `MangoQueryOperators` in `src/types/rx-query.d.ts`, so that TypeScript accepts the operator in a selector.
+3. **Add a test** with `testCorrectQueries()` in `test/unit/rx-storage-query-correctness.test.ts`. These tests run against every [RxStorage](./rx-storage.md), so they also catch storages that do not use mingo for the given query.
+4. **Check the bundle size** with `npm run build` and `npm run test:bundle-size`. If the size increase is intended, run `npm run bundle-size:update` and commit the updated limits.
+
+The [contribution guide](./contribute.md) explains how to set up the repository and run the tests.
