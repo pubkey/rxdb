@@ -10,7 +10,7 @@ import {Faq, FaqItem} from '@site/src/components/faq';
 
 # RxQuery
 
-To find documents inside of an [RxCollection](./rx-collection.md), RxDB uses the RxQuery interface that handles all query operations: it serves as the main interface for fetching documents, relies on a MongoDB-like [Mango Query Syntax](./mango-query.md), and provides three types of queries: [find()](#find), [findOne()](#findOne) and [count()](#count). By caching and de-duplicating results, RxQuery ensures efficient in-memory handling, and when queries are observed or re-run, the [EventReduce algorithm](https://github.com/pubkey/event-reduce) speeds up updates for a fast real-time experience and queries that run more than once.
+To find documents inside of an [RxCollection](./rx-collection.md), RxDB uses the RxQuery interface that handles all query operations: it serves as the main interface for fetching documents, relies on a MongoDB-like [Mango Query Syntax](./rx-query-examples.md), and provides three types of queries: [find()](#find), [findOne()](#findOne) and [count()](#count). By caching and de-duplicating results, RxQuery ensures efficient in-memory handling, and when queries are observed or re-run, the [EventReduce algorithm](https://github.com/pubkey/event-reduce) speeds up updates for a fast real-time experience and queries that run more than once.
 
 ## find()
 To create a basic `RxQuery`, call `.find()` on a collection and insert selectors. The result-set of normal queries is an array with documents.
@@ -214,9 +214,9 @@ myDatabase.todos.find({
 ```
 
 
-## Mango Query Syntax
+## Query Examples
 
-The `selector` of a query is written in the [Mango query syntax](./mango-query.md). The [Mango query page](./mango-query.md) shows every supported operator with examples, including nested fields, array fields, regex queries, sorting, and pagination.
+The `selector` of a query is written in the [Mango query syntax](./rx-query-examples.md). That page shows every supported operator with examples, including nested fields, array fields, regex queries, sorting, and pagination.
 
 ```ts
 const results = await myDatabase.todos.find({
@@ -229,9 +229,7 @@ const results = await myDatabase.todos.find({
 // > [RxDocument[todo3], RxDocument[todo1]]
 ```
 
-## Query Builder Plugin
-
-To use chained query methods, you can also use the [query builder plugin](./query-builder.md).
+To use chained query methods instead, add the [query builder plugin](./query-builder.md). Its page shows all chained methods with examples, including nested fields, array fields, logical operators, sorting, and pagination.
 
 ```ts
 // add the query builder plugin
@@ -240,13 +238,9 @@ import { RxDBQueryBuilderPlugin } from 'rxdb/plugins/query-builder';
 addRxPlugin(RxDBQueryBuilderPlugin);
 
 // now you can use chained query methods
-
 const query = myDatabase.todos.find().where('priority').gt(5);
 const result = await query.exec();
 ```
-
-The [query builder page](./query-builder.md) shows all chained methods with examples, including nested fields, array fields, logical operators, sorting, and pagination.
-
 
 :::note RxDB will always append the primary key to the sort parameters
 For several performance optimizations, like the [EventReduce algorithm](https://github.com/pubkey/event-reduce), RxDB expects all queries to return a deterministic sort order that does not depend on the insert order of the documents. To ensure a deterministic ordering, RxDB will always append the primary key as last sort parameter to all queries and to all indexes.
@@ -499,21 +493,17 @@ await myDatabase.addCollections({
 });
 ```
 
-## Design Decisions
-
-Like most other noSQL-Databases, RxDB uses the [mango-query-syntax](https://github.com/cloudant/mango) similar to MongoDB and others.
-
-- We use the JSON-based Mango Query Syntax because:
-  - Mango Queries work better with TypeScript compared to SQL strings.
-  - Mango Queries are composable and easy to transform by code without joining SQL strings.
-  - Queries can be run very fast and efficient with only a minimal query planner to plan the best indexes and operations.
-  - NoSQL queries can be optimized with the [EventReduce](https://github.com/pubkey/event-reduce) algorithm to improve performance of observed and cached queries.
-
-
 ## FAQ
 
 
 <Faq>
+<FaqItem question="Why does RxDB use the Mango query syntax instead of SQL?">
+
+<div>
+  Like most other NoSQL databases, RxDB uses the JSON-based [Mango query syntax](https://github.com/cloudant/mango), similar to MongoDB. Mango queries work better with TypeScript than SQL strings, and they are composable, so you can transform them in code without joining strings. They can also be run fast with only a minimal query planner that picks the best index and operations. And NoSQL queries can be optimized with the [EventReduce](https://github.com/pubkey/event-reduce) algorithm, which improves the performance of observed and cached queries.
+</div>
+
+</FaqItem>
 <FaqItem question="Can I specify which document fields are returned by an RxDB query?">
 
 <div>
