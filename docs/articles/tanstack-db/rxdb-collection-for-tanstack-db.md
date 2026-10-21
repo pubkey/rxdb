@@ -81,10 +81,10 @@ await db.addCollections({
             primaryKey: 'id',
             properties: {
                 id: { type: 'string', maxLength: 100 },
-                text: { type: 'string' },
-                completed: { type: 'boolean' }
+                name: { type: 'string' },
+                done: { type: 'boolean', default: false }
             },
-            required: ['id', 'text', 'completed']
+            required: ['id', 'name', 'done']
         }
     }
 });
@@ -116,7 +116,7 @@ function TodoList() {
     const { data: openTodos } = useLiveQuery((q) =>
         q
             .from({ todo: todosCollection })
-            .where(({ todo }) => eq(todo.completed, false))
+            .where(({ todo }) => eq(todo.done, false))
     );
 
     return (
@@ -125,11 +125,11 @@ function TodoList() {
                 
                         // Optimistic update: instant in the UI, persisted to RxDB.
                         todosCollection.update(todo.id, (draft) => {
-                            draft.completed = true;
+                            draft.done = true;
                         })
                     }
                 >
-                    {todo.text}
+                    {todo.name}
                 
             ))}
         
@@ -137,7 +137,7 @@ function TodoList() {
 }
 
 // Inserts and deletes work the same way:
-todosCollection.insert({ id: 'todo-1', text: 'buy milk', completed: false });
+todosCollection.insert({ id: 'todo-1', name: 'buy milk', done: false });
 todosCollection.delete('todo-1');
 ```
 

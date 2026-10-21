@@ -76,12 +76,12 @@ import { createRxDatabase } from 'rxdb/plugins/core';
 import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
 import { replicateRxCollection } from 'rxdb/plugins/replication';
 
-const db = await createRxDatabase({
-  name: 'app',
+const myDatabase = await createRxDatabase({
+  name: 'mydatabase',
   storage: getRxStorageLocalstorage()
 });
 
-await db.addCollections({
+await myDatabase.addCollections({
   todos: {
     schema: {
       title: 'todo schema',
@@ -90,17 +90,18 @@ await db.addCollections({
       type: 'object',
       properties: {
         id: { type: 'string', maxLength: 100 },
-        text: { type: 'string' },
-        done: { type: 'boolean' },
-        updatedAt: { type: 'number' }
+        name: { type: 'string' },
+        done: { type: 'boolean', default: false },
+        dueAt: { type: 'string', format: 'date-time', maxLength: 30 }
       },
-      required: ['id', 'text', 'done', 'updatedAt']
+      required: ['id', 'name', 'done', 'dueAt'],
+      indexes: ['dueAt']
     }
   }
 });
 
 replicateRxCollection({
-  collection: db.todos,
+  collection: myDatabase.todos,
   replicationIdentifier: 'todos-http',
   live: true,
   pull: {
@@ -129,11 +130,11 @@ replicateRxCollection({
 });
 
 // Standard write. No mutator needed.
-await db.todos.insert({
-  id: 't1',
-  text: 'Try RxDB',
+await myDatabase.todos.insert({
+  id: 'todo1',
+  name: 'Try RxDB',
   done: false,
-  updatedAt: Date.now()
+  dueAt: '2026-01-15T09:00:00.000Z'
 });
 ```
 
@@ -147,31 +148,31 @@ Replicache exposes `useSubscribe` over its scan API. RxDB exposes the full query
 import { useEffect, useState } from 'react';
 import { RxDocument } from 'rxdb';
 
-type Todo = {
+type TodoDocType = {
   id: string;
-  text: string;
+  name: string;
   done: boolean;
-  updatedAt: number;
+  dueAt: string;
 };
 
-export function OpenTodos({ db }) {
-  const [todos, setTodos] = useState<RxDocument<Todo>[]>([]);
+export function OpenTodos({ myDatabase }) {
+  const [todos, setTodos] = useState<RxDocument<TodoDocType>[]>([]);
 
   useEffect(() => {
-    const sub = db.todos
+    const sub = myDatabase.todos
       .find({
         selector: { done: false },
-        sort: [{ updatedAt: 'desc' }]
+        sort: [{ dueAt: 'asc' }]
       })
       .$.subscribe(results => setTodos(results));
     return () => sub.unsubscribe();
-  }, [db]);
+  }, [myDatabase]);
 
   return (
     
       {todos.map(t => (
          t.patch({ done: true })}>
-          {t.text}
+          {t.name}
         
       ))}
     
@@ -185,7 +186,7 @@ The query is declarative. The patch call is a normal write on the document. Opti
 
 The core difference between Replicache and RxDB is the mental model.
 
-Replicache treats every change as a named operation. A mutator like `addTodo({ id, text })` is the only way to mutate state. The client runs the mutator against the local cache for an instant result, the server runs the same mutator to produce the canonical state, and the protocol reconciles the two. Application logic lives inside mutators. Reads are scans over a key/value store.
+Replicache treats every change as a named operation. A mutator like `addTodo({ id, name })` is the only way to mutate state. The client runs the mutator against the local cache for an instant result, the server runs the same mutator to produce the canonical state, and the protocol reconciles the two. Application logic lives inside mutators. Reads are scans over a key/value store.
 
 RxDB treats every change as a write to a document in a collection. Code calls `collection.insert`, `doc.patch`, or `collection.bulkUpsert`. The local store records the change, the [Sync Engine](../../replication.md) ships it to the server through a generic push handler, and the server stores it in whatever database it already uses. Reads are MongoDB-style queries with reactive results.
 

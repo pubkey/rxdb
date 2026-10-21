@@ -106,10 +106,10 @@ await db.addCollections({
             type: 'object',
             properties: {
                 id: { type: 'string', maxLength: 100 },
-                text: { type: 'string' },
-                completed: { type: 'boolean' }
+                name: { type: 'string' },
+                done: { type: 'boolean', default: false }
             },
-            required: ['id', 'text', 'completed']
+            required: ['id', 'name', 'done']
         }
     }
 });
@@ -141,7 +141,7 @@ export function TodoList() {
     const { data: openTodos } = useLiveQuery((q) =>
         q
             .from({ todo: todosCollection })
-            .where(({ todo }) => eq(todo.completed, false))
+            .where(({ todo }) => eq(todo.done, false))
     );
 
     return (
@@ -151,11 +151,11 @@ export function TodoList() {
                         // Optimistic update: instant in the UI,
                         // persisted to SQLite in the main process.
                         todosCollection.update(todo.id, (draft) => {
-                            draft.completed = true;
+                            draft.done = true;
                         })
                     }
                 >
-                    {todo.text}
+                    {todo.name}
                 
             ))}
         
@@ -164,8 +164,8 @@ export function TodoList() {
 
 todosCollection.insert({
     id: 'todo-1',
-    text: 'ship the desktop app',
-    completed: false
+    name: 'ship the desktop app',
+    done: false
 });
 ```
 

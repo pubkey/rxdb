@@ -17,11 +17,11 @@ This page explains where the native IndexedDB types fall short, how to add types
 The DOM type definitions ship with `lib.dom.d.ts`, so `IDBDatabase`, `IDBObjectStore`, and `IDBRequest` are typed. The trouble is what those types say. A read gives you back an `IDBRequest`, and its `result` property is typed as `any`.
 
 ```ts
-const request = store.get('user-1');
+const request = store.get('todo1');
 request.onsuccess = () => {
   // request.result is `any`. No autocomplete, no checking.
-  const user = request.result;
-  console.log(user.naem); // typo compiles fine, breaks at runtime
+  const todo = request.result;
+  console.log(todo.naem); // typo compiles fine, breaks at runtime
 };
 ```
 
@@ -29,7 +29,7 @@ There are three problems here:
 
 - **`result` is `any`**: Every value you read is untyped, so a typo in a field name compiles and fails only at runtime.
 - **No schema link**: TypeScript does not know which object stores exist or what shape their records have. You get no error when you read from a store that does not exist.
-- **Manual casts everywhere**: To get any safety back you cast every read (`request.result as User`), which is a promise you make to the compiler, not a check it performs.
+- **Manual casts everywhere**: To get any safety back you cast every read (`request.result as Todo`), which is a promise you make to the compiler, not a check it performs.
 
 TypeScript cannot infer types across the IndexedDB boundary. You have to add them.
 
@@ -38,24 +38,24 @@ TypeScript cannot infer types across the IndexedDB boundary. You have to add the
 You can layer your own types on top with generics and casts. It removes some of the pain but not all of it.
 
 ```ts
-type User = {
+type Todo = {
   id: string;
   name: string;
-  age: number;
+  priority: number;
 };
 
-function getUser(db: IDBDatabase, id: string): Promise<User> {
+function getTodo(db: IDBDatabase, id: string): Promise<Todo> {
   return new Promise((resolve, reject) => {
-    const tx = db.transaction('users', 'readonly');
-    const request = tx.objectStore('users').get(id);
+    const tx = db.transaction('todos', 'readonly');
+    const request = tx.objectStore('todos').get(id);
     // The cast is a claim, not a guarantee.
-    request.onsuccess = () => resolve(request.result as User);
+    request.onsuccess = () => resolve(request.result as Todo);
     request.onerror = () => reject(request.error);
   });
 }
 ```
 
-The value is still whatever IndexedDB stored. The `as User` cast tells the compiler to trust you. If the stored record does not match, TypeScript stays silent and the bug surfaces later. For real safety you also need runtime validation, which raw IndexedDB does not provide.
+The value is still whatever IndexedDB stored. The `as Todo` cast tells the compiler to trust you. If the stored record does not match, TypeScript stays silent and the bug surfaces later. For real safety you also need runtime validation, which raw IndexedDB does not provide.
 
 ## Type-Safe Wrappers
 
@@ -69,22 +69,22 @@ The [idb](https://github.com/jakearchibald/idb) library accepts a `DBSchema` typ
 import { openDB, DBSchema } from 'idb';
 
 interface MyDB extends DBSchema {
-  users: {
+  todos: {
     key: string;
-    value: { id: string; name: string; age: number };
-    indexes: { 'by-age': number };
+    value: { id: string; name: string; priority: number };
+    indexes: { 'by-priority': number };
   };
 }
 
 const db = await openDB<MyDB>('mydb', 1, {
   upgrade(db) {
-    const store = db.createObjectStore('users', { keyPath: 'id' });
-    store.createIndex('by-age', 'age');
+    const store = db.createObjectStore('todos', { keyPath: 'id' });
+    store.createIndex('by-priority', 'priority');
   }
 });
 
-const user = await db.get('users', 'user-1');
-// user is typed as { id: string; name: string; age: number } | undefined
+const todo = await db.get('todos', 'todo1');
+// todo is typed as { id: string; name: string; priority: number } | undefined
 ```
 
 This is a big step up. Reads are typed, store names are checked, and index names are validated. The type is still a claim about what is stored, not a runtime check, so a corrupted record slips through, but the developer experience is much better than the raw API.
@@ -100,38 +100,38 @@ import {
   RxJsonSchema
 } from 'rxdb';
 
-const userSchemaLiteral = {
-  title: 'user schema',
+const todoSchemaLiteral = {
+  title: 'todo schema',
   version: 0,
   primaryKey: 'id',
   type: 'object',
   properties: {
     id: { type: 'string', maxLength: 100 },
     name: { type: 'string' },
-    age: { type: 'integer' }
+    priority: { type: 'integer', minimum: 0, maximum: 10, multipleOf: 1 }
   },
-  required: ['id', 'name', 'age'],
-  indexes: ['age']
+  required: ['id', 'name', 'priority'],
+  indexes: ['priority']
 } as const; // <- 'as const' preserves the literal type
 
-const schemaTyped = toTypedRxJsonSchema(userSchemaLiteral);
+const schemaTyped = toTypedRxJsonSchema(todoSchemaLiteral);
 
 // The document type is derived from the schema, not written twice.
-export type UserDocType =
+export type TodoDocType =
   ExtractDocumentTypeFromTypedRxJsonSchema<typeof schemaTyped>;
 
-export const userSchema: RxJsonSchema<UserDocType> = userSchemaLiteral;
+export const todoSchema: RxJsonSchema<TodoDocType> = todoSchemaLiteral;
 ```
 
 Once the collection is created, queries and documents are fully typed, and every write is validated against the schema at runtime:
 
 ```ts
-const adults = await db.users.find({
-  selector: { age: { $gt: 17 } }
+const urgentTodos = await db.todos.find({
+  selector: { priority: { $gt: 5 } }
 }).exec();
-// adults is typed as RxDocument<UserDocType>[]
+// urgentTodos is typed as RxDocument<TodoDocType>[]
 
-const first = adults[0];
+const first = urgentTodos[0];
 first.name; // string, checked
 first.get('naem'); // TypeScript error, unknown field
 ```

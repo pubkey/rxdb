@@ -96,43 +96,45 @@ import { createRxDatabase } from 'rxdb/plugins/core';
 import { getRxStorageIndexedDB } from 'rxdb/plugins/storage-indexeddb';
 
 const db = await createRxDatabase({
-  name: 'budget',
+  name: 'mydb',
   storage: getRxStorageIndexedDB()
 });
 
 await db.addCollections({
-  transactions: {
+  todos: {
     schema: {
-      title: 'transaction schema',
+      title: 'todo schema',
       version: 0,
       type: 'object',
       primaryKey: 'id',
       properties: {
         id: { type: 'string', maxLength: 100 },
-        amount: { type: 'number' },
-        category: { type: 'string', maxLength: 50 },
-        date: { type: 'string', format: 'date-time' }
+        name: { type: 'string' },
+        done: { type: 'boolean', default: false },
+        dueAt: { type: 'string', format: 'date-time', maxLength: 30 },
+        tags: { type: 'array', default: [], items: { type: 'string' } }
       },
-      required: ['id', 'amount', 'category', 'date'],
-      indexes: ['category', 'date']
+      required: ['id', 'name', 'done', 'dueAt', 'tags'],
+      indexes: ['dueAt']
     }
   }
 });
 
 // Reactive query: emits a new array whenever a matching doc changes.
-const groceries$ = db.transactions
-  .find({ selector: { category: 'groceries' }, sort: [{ date: 'desc' }] })
+const openTodos$ = db.todos
+  .find({ selector: { done: false }, sort: [{ dueAt: 'asc' }] })
   .$;
 
-groceries$.subscribe(docs => {
-  console.log('Groceries updated:', docs.length);
+openTodos$.subscribe(docs => {
+  console.log('Open todos updated:', docs.length);
 });
 
-await db.transactions.insert({
-  id: 't1',
-  amount: 42.5,
-  category: 'groceries',
-  date: new Date().toISOString()
+await db.todos.insert({
+  id: 'todo1',
+  name: 'Write the absurd-sql migration plan',
+  done: false,
+  dueAt: new Date().toISOString(),
+  tags: ['work']
 });
 ```
 
@@ -147,7 +149,7 @@ One of the practical pains with absurd-sql is that it is tied to its specific In
 import { getRxStorageIndexedDB } from 'rxdb/plugins/storage-indexeddb';
 
 const db = await createRxDatabase({
-  name: 'budget',
+  name: 'mydb',
   storage: getRxStorageIndexedDB()
 });
 ```
@@ -157,7 +159,7 @@ const db = await createRxDatabase({
 import { getRxStorageOPFS } from 'rxdb/plugins/storage-opfs';
 
 const db = await createRxDatabase({
-  name: 'budget',
+  name: 'mydb',
   storage: getRxStorageOPFS()
 });
 ```

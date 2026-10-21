@@ -9,7 +9,7 @@ import {SchemaMigrationLogo} from '@site/src/components/animations/schema-migrat
 
 The RxDB Data Migration Plugin helps developers easily update stored data in their apps when they make changes to the data structure by changing the schema of a [RxCollection](./rx-collection.md). This is useful when developers release a new version of the app with a different schema.
 
-Imagine you have your awesome messenger-app distributed to many users. After a while, you decide that in your new version, you want to change the schema of the messages-collection. Instead of saving the message-date like `2017-02-12T23:03:05+00:00` you want to have the unix-timestamp like `1486940585` to make it easier to compare dates. To accomplish this, you change the schema and **increase the version-number** and you also change your code where you save the incoming messages. But one problem remains: what happens with the messages which are already stored in the database on the user's device in the old schema?
+Imagine you have your awesome todo-app distributed to many users. After a while, you decide that in your new version, you want to change the schema of the `todos` collection. Instead of saving the `dueAt` date as a unix-timestamp like `1486940585000` you want to have an ISO 8601 string like `2017-02-12T23:03:05.000Z` so that it is readable and can be used in an index with a `maxLength`. To accomplish this, you change the schema and **increase the version-number** and you also change your code where you save new todos. But one problem remains: what happens with the todos which are already stored in the database on the user's device in the old schema?
 
 With RxDB you can provide migrationStrategies for your collections that automatically (or on call) transform your existing data from older to newer schemas. This assures that the client's data always matches your newest code-version.
 
@@ -33,12 +33,12 @@ Upon creation of a collection, you have to provide migrationStrategies when your
 
 ```javascript
 myDatabase.addCollections({
-  messages: {
-    schema: messageSchemaV1,
+  todos: {
+    schema: todoSchemaV1,
     migrationStrategies: {
       // 1 means, this transforms data from version 0 to version 1
       1: function(oldDoc){
-        oldDoc.time = new Date(oldDoc.time).getTime(); // string to unix
+        oldDoc.dueAt = new Date(oldDoc.dueAt).toISOString(); // unix to string
         return oldDoc;
       }
     }
@@ -50,11 +50,11 @@ Asynchronous strategies can also be used:
 
 ```javascript
 myDatabase.addCollections({
-  messages: {
-    schema: messageSchemaV1,
+  todos: {
+    schema: todoSchemaV1,
     migrationStrategies: {
       1: function(oldDoc){
-        oldDoc.time = new Date(oldDoc.time).getTime(); // string to unix
+        oldDoc.dueAt = new Date(oldDoc.dueAt).toISOString(); // unix to string
         return oldDoc;
       },
       /**
@@ -63,13 +63,12 @@ myDatabase.addCollections({
        */
       2: function(oldDoc){
         // in the new schema (version: 2) we defined
-        // 'senderCountry' as required field (string)
-        // so we must get the country of the message-sender from the server
-        const coordinates = oldDoc.coordinates;
-        return fetch('http://myserver.com/api/countryByCoordinates/'+coordinates+'/')
+        // 'priority' as required field (integer)
+        // so we must get the priority of the todo from the server
+        return fetch('https://example.com/api/todoPriority/' + oldDoc.id)
           .then(response => response.json())
-          .then(country => {
-            oldDoc.senderCountry = country;
+          .then(priority => {
+            oldDoc.priority = priority;
             return oldDoc;
           });
       }
@@ -82,20 +81,20 @@ you can also filter which documents should be migrated:
 
 ```js
 myDatabase.addCollections({
-  messages: {
-    schema: messageSchemaV1,
+  todos: {
+    schema: todoSchemaV1,
     migrationStrategies: {
       // 1 means, this transforms data from version 0 to version 1
       1: function(oldDoc){
-        oldDoc.time = new Date(oldDoc.time).getTime(); // string to unix
+        oldDoc.dueAt = new Date(oldDoc.dueAt).toISOString(); // unix to string
         return oldDoc;
       },
       /**
-       * this removes all documents older than 2017-02-12
+       * this removes all todos due before 2017-02-12
        * they will not appear in the new collection
        */
       2: function(oldDoc){
-        if(oldDoc.time < 1486940585) return null;
+        if(oldDoc.dueAt < '2017-02-12T00:00:00.000Z') return null;
         else return oldDoc;
       }
     }
@@ -110,15 +109,15 @@ If you have lots of data or the migrationStrategies take a long time, it might b
 
 :::warning No writes during a running migration
 While a schema migration is running on a collection, writes to that collection are not allowed.
-Calls that would write will throw a `COL25` error until the migration finishes.
+Calls that would write will throw a [`COL25`](./errors.md#COL25) error until the migration finishes.
 Wait for `collection.migratePromise()` to resolve (or observe `collection.getMigrationState().$` until status is `DONE`)
 before performing writes.
 :::
 
 ```javascript
-const messageCol = await myDatabase.addCollections({
-  messages: {
-    schema: messageSchemaV1,
+await myDatabase.addCollections({
+  todos: {
+    schema: todoSchemaV1,
     autoMigrate: false, // <- migration will not run at creation
     migrationStrategies: {
       1: async function(oldDoc){
@@ -130,9 +129,10 @@ const messageCol = await myDatabase.addCollections({
     }
   }
 });
+const todosCollection = myDatabase.todos;
 
 // check if migration is needed
-const needed = await messageCol.migrationNeeded();
+const needed = await todosCollection.migrationNeeded();
 if(needed === false) {
   return;
 }
@@ -140,9 +140,9 @@ if(needed === false) {
 // start the migration
 // 10 is the batch-size, how many docs will run
 // at parallel
-messageCol.startMigration(10);
+todosCollection.startMigration(10);
 
-const migrationState = messageCol.getMigrationState();
+const migrationState = todosCollection.getMigrationState();
 
 // 'start' the observable
 migrationState.$.subscribe({
@@ -165,8 +165,8 @@ migrationState.$.subscribe({
 If you don't want to show the state to the user, you can also use `.migratePromise()`:
 
 ```js
-const migrationPromise = messageCol.migratePromise(10);
-await migratePromise;
+const migrationPromise = todosCollection.migratePromise(10);
+await migrationPromise;
 ```
 
 ## migrationStates()
@@ -191,27 +191,31 @@ allStatesObservable.subscribe(allStates => {
 Schema `default` values are **not** automatically filled in during migration. When you insert a document through the normal RxDB API (like `insert()` or `bulkInsert()`), fields with a `default` in the schema are auto-filled. Migration does not do this. Your migration strategy has full explicit control over the document data and must set every field that the new schema needs.
 
 ```js
-const messageSchemaV1 = {
+const todoSchemaV1 = {
     version: 1,
     primaryKey: 'id',
     type: 'object',
     properties: {
         id: { type: 'string', maxLength: 100 },
-        text: { type: 'string' },
+        name: { type: 'string' },
         // new field in v1 with a default value
-        priority: { type: 'string', default: 'normal' }
+        tags: {
+            type: 'array',
+            default: [],
+            items: { type: 'string' }
+        }
     },
-    required: ['id', 'text']
+    required: ['id', 'name', 'tags']
 };
 
 const migrationStrategies = {
     1: function(oldDoc){
         /**
-         * You must explicitly set 'priority' here.
-         * The schema default 'normal' will NOT be
+         * You must explicitly set 'tags' here.
+         * The schema default [] will NOT be
          * applied automatically during migration.
          */
-        oldDoc.priority = 'normal';
+        oldDoc.tags = [];
         return oldDoc;
     }
 };

@@ -105,9 +105,9 @@ For example if your documents look like this:
 
 ```ts
 const docData = {
-    "id": "foobar",
-    "name": "Alice",
-    "lastName": "Wilson",
+    "id": "todo1",
+    "name": "Learn RxDB",
+    "done": false,
     /**
      * Contains the last write timestamp
      * so all document writes can be sorted by that value
@@ -540,7 +540,12 @@ While `awaitInSync()` waits for the whole collection to be in sync, `awaitDocume
 You pass the `RxDocument` instance you got back from a write operation:
 
 ```ts
-const doc = await myCollection.insert({ id: 'foobar', value: 10 });
+const doc = await myDatabase.todos.insert({
+    id: 'todo1',
+    name: 'Learn RxDB',
+    dueAt: '2026-01-01T10:00:00.000Z',
+    priority: 8
+});
 await myReplicationState.awaitDocumentPushed(doc);
 // here we know that the document state was pushed to the server
 ```
@@ -554,7 +559,12 @@ If the document was overwritten by a newer local write before it could be pushed
 `awaitDocumentPushed()` does not set a timeout on purpose. If you need one, combine it with `Promise.race()`:
 
 ```ts
-const doc = await myCollection.insert({ id: 'foobar', value: 10 });
+const doc = await myDatabase.todos.insert({
+    id: 'todo1',
+    name: 'Learn RxDB',
+    dueAt: '2026-01-01T10:00:00.000Z',
+    priority: 8
+});
 await Promise.race([
     myReplicationState.awaitDocumentPushed(doc),
     new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000))
@@ -746,9 +756,9 @@ export function startReplication<RxDocType>(
     });
 }
 
-// replicationState is typed as RxReplicationState<HeroDocType, MyCheckpoint>
+// replicationState is typed as RxReplicationState<TodoDocType, MyCheckpoint>
 const replicationState = startReplication(
-    myDatabase.heroes,
+    myDatabase.todos,
     myPullHandler,
     myPushHandler
 );
@@ -787,7 +797,7 @@ await myDatabase.addCollections({
     }
 });
 
-await myDatabase.todoLocalState.upsert({ id: 'todo-1', isRead: true });
+await myDatabase.todoLocalState.upsert({ id: 'todo1', isRead: true });
 ```
 
 ### 2. Local documents
@@ -806,8 +816,8 @@ await myDatabase.addCollections({
     }
 });
 
-await myDatabase.todos.upsertLocal('ui-state-todo-1', { isRead: true });
-const localDoc = await myDatabase.todos.getLocal('ui-state-todo-1');
+await myDatabase.todos.upsertLocal('ui-state-todo1', { isRead: true });
+const localDoc = await myDatabase.todos.getLocal('ui-state-todo1');
 ```
 
 A schema field that you strip in the `push.modifier` does not reach the server, but it does not survive a pull either: as soon as the server sends a newer state of the document, the stripped field is gone from the local document. Only use this pattern for data that can be recomputed.

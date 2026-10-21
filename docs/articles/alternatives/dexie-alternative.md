@@ -29,7 +29,7 @@ Dexie is a small library with a clear scope. That scope leaves a few gaps once a
 
 ### Queries Limited to Index Ranges
 
-Dexie queries are built around IndexedDB cursors and key ranges. Filtering by anything other than an indexed field requires a full scan with `.filter(fn)`, which loads documents into memory and runs a JavaScript predicate on each one. Multi-field conditions, `$or` branches, and nested property matches need manual composition or hand-written index keys. Anyone who has tried to express a query like "all open tasks assigned to user X with priority above 3, sorted by due date" against Dexie knows how much glue code is involved.
+Dexie queries are built around IndexedDB cursors and key ranges. Filtering by anything other than an indexed field requires a full scan with `.filter(fn)`, which loads documents into memory and runs a JavaScript predicate on each one. Multi-field conditions, `$or` branches, and nested property matches need manual composition or hand-written index keys. Anyone who has tried to express a query like "all open todos assigned to user X with priority above 3, sorted by due date" against Dexie knows how much glue code is involved.
 
 ### No MongoDB-Style Operators
 
@@ -75,35 +75,35 @@ For collaborative workloads RxDB provides a [CRDT plugin](../../crdt.md) and a p
 
 ## Code Sample: Dexie Query vs RxDB Query
 
-A query like "open tasks with priority above 3 or tagged as urgent" is awkward in Dexie because it mixes a range condition with an `$or` branch on a different field.
+A query like "open todos with priority above 3 or tagged as urgent" is awkward in Dexie because it mixes a range condition with an `$or` branch on a different field.
 
 Dexie:
 
 ```ts
 import Dexie from 'dexie';
 
-const db = new Dexie('tasks-db');
+const db = new Dexie('todos-db');
 db.version(1).stores({
-  tasks: '++id, done, priority, tag'
+  todos: 'id, done, priority, *tags'
 });
 
-const result = await db.tasks
+const result = await db.todos
   .where('done').equals(0)
-  .and(task => task.priority > 3 || task.tag === 'urgent')
+  .and(todo => todo.priority > 3 || todo.tags.includes('urgent'))
   .toArray();
 ```
 
-The `and(fn)` part runs in JavaScript over every non-done task, so the `priority` index is not used.
+The `and(fn)` part runs in JavaScript over every non-done todo, so the `priority` index is not used.
 
 RxDB:
 
 ```ts
-const result = await db.tasks.find({
+const result = await db.todos.find({
   selector: {
     done: false,
     $or: [
       { priority: { $gt: 3 } },
-      { tag: 'urgent' }
+      { tags: { $in: ['urgent'] } }
     ]
   }
 }).exec();
@@ -112,10 +112,10 @@ const result = await db.tasks.find({
 The query planner inspects the selector, picks an index, and returns the matching documents. The same query can be observed:
 
 ```ts
-db.tasks.find({
+db.todos.find({
   selector: {
     done: false,
-    $or: [{ priority: { $gt: 3 } }, { tag: 'urgent' }]
+    $or: [{ priority: { $gt: 3 } }, { tags: { $in: ['urgent'] } }]
   }
 }).$.subscribe(docs => render(docs));
 ```
@@ -130,36 +130,36 @@ import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
 import { replicateRxCollection } from 'rxdb/plugins/replication';
 
 const db = await createRxDatabase({
-  name: 'tasksdb',
+  name: 'mydb',
   storage: getRxStorageDexie(),
   multiInstance: true,
   eventReduce: true
 });
 
 await db.addCollections({
-  tasks: {
+  todos: {
     schema: {
-      title: 'task schema',
+      title: 'todo schema',
       version: 0,
       type: 'object',
       primaryKey: 'id',
       properties: {
         id: { type: 'string', maxLength: 100 },
-        title: { type: 'string' },
-        done: { type: 'boolean' },
-        priority: { type: 'number' },
-        tag: { type: 'string', maxLength: 50 },
+        name: { type: 'string' },
+        done: { type: 'boolean', default: false },
+        priority: { type: 'integer', minimum: 0, maximum: 10, multipleOf: 1 },
+        tags: { type: 'array', default: [], items: { type: 'string' } },
         updatedAt: { type: 'number' }
       },
-      required: ['id', 'title', 'done', 'updatedAt'],
-      indexes: ['priority', 'tag', 'updatedAt']
+      required: ['id', 'name', 'done', 'priority', 'tags', 'updatedAt'],
+      indexes: [['done', 'priority']]
     }
   }
 });
 
 replicateRxCollection({
-  collection: db.tasks,
-  replicationIdentifier: 'tasks-http',
+  collection: db.todos,
+  replicationIdentifier: 'todos-http',
   live: true,
   pull: {
     handler: async (checkpoint, batchSize) => {
@@ -167,7 +167,7 @@ replicateRxCollection({
         JSON.stringify(checkpoint || {})
       );
       const url =
-        `https://api.example.com/tasks/pull?checkpoint=${checkpointQuery}` +
+        `https://api.example.com/todos/pull?checkpoint=${checkpointQuery}` +
         `&limit=${batchSize}`;
       const res = await fetch(url);
       return await res.json();
@@ -175,7 +175,7 @@ replicateRxCollection({
   },
   push: {
     handler: async (changeRows) => {
-      const res = await fetch('https://api.example.com/tasks/push', {
+      const res = await fetch('https://api.example.com/todos/push', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify(changeRows)

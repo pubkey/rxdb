@@ -140,17 +140,17 @@ const db = await createRxDatabase({
 
 // Add your collection schema
 await db.addCollections({
-  humans: {
+  todos: {
     schema: {
       version: 0,
-      primaryKey: 'passportId',
+      primaryKey: 'id',
       type: 'object',
       properties: {
-        passportId: { type: 'string', maxLength: 100 },
-        firstName: { type: 'string' },
-        lastName: { type: 'string' }
+        id: { type: 'string', maxLength: 100 },
+        name: { type: 'string' },
+        done: { type: 'boolean', default: false }
       },
-      required: ['passportId', 'firstName', 'lastName']
+      required: ['id', 'name', 'done']
     }
   }
 });
@@ -174,8 +174,8 @@ const replicationState = replicateMongoDB({
     connection: 'mongodb://localhost:27017',
     databaseName: 'my-database'
   },
-  collection: db.humans,
-  replicationIdentifier: 'humans-mongodb-sync',
+  collection: db.todos,
+  replicationIdentifier: 'todos-mongodb-sync',
   pull: { batchSize: 50 },
   push: { batchSize: 50 },
   live: true
@@ -214,8 +214,8 @@ const server = await createRxServer({
 });
 
 const endpoint = server.addReplicationEndpoint({
-    name: 'humans',
-    collection: db.humans
+    name: 'todos',
+    collection: db.todos
 });
 console.log('Replication endpoint:', `http://localhost:8080/${endpoint.urlPath}`);
 
@@ -243,27 +243,27 @@ const db = await createRxDatabase({
 });
 
 await db.addCollections({
-  humans: {
+  todos: {
     schema: {
-      version: 0,  
-      primaryKey: 'passportId',
+      version: 0,
+      primaryKey: 'id',
       type: 'object',
       properties: {
-        passportId: { type: 'string', maxLength: 100 },
-        firstName: { type: 'string' },
-        lastName: { type: 'string' }
+        id: { type: 'string', maxLength: 100 },
+        name: { type: 'string' },
+        done: { type: 'boolean', default: false }
       },
-      required: ['passportId', 'firstName', 'lastName']
+      required: ['id', 'name', 'done']
     }
   }
 });
 
 // Start replication to the RxServer endpoint printed by the server:
-// e.g. http://localhost:8080/humans/0
+// e.g. http://localhost:8080/todos/0
 const replicationState = replicateServer({
-  replicationIdentifier: 'humans-rxserver',
-  collection: db.humans,
-  url: 'http://localhost:8080/humans/0',
+  replicationIdentifier: 'todos-rxserver',
+  collection: db.todos,
+  url: 'http://localhost:8080/todos/0',
   live: true,
   pull: { batchSize: 50 },
   push: { batchSize: 50 }

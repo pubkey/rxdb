@@ -59,7 +59,7 @@ The `schemaHash` is written into the dump so that `importJSON()` can refuse a du
 await myCollection.importJSON(json);
 ```
 
-The collection has to exist and its schema has to be the same one the dump was created from. When the hashes do not match, RxDB throws the error `JD2`.
+The collection has to exist and its schema has to be the same one the dump was created from. When the hashes do not match, RxDB throws the error [`JD2`](./errors.md#JD2).
 
 Notice that importing fires a change event for each inserted document, so open [queries](./rx-query.md) and their subscriptions update on their own.
 
@@ -98,7 +98,7 @@ Collections whose name starts with an underscore are internal and are always lef
 await myDatabase.importJSON(json);
 ```
 
-The collections must be created before the import, because the dump does not carry the collection settings like the [schema](./rx-schema.md), the [migration strategies](./migration-schema.md) or the conflict handler. When the dump contains a collection that does not exist in the database, RxDB throws the error `JD1` and nothing is written.
+The collections must be created before the import, because the dump does not carry the collection settings like the [schema](./rx-schema.md), the [migration strategies](./migration-schema.md) or the conflict handler. When the dump contains a collection that does not exist in the database, RxDB throws the error [`JD1`](./errors.md#JD1) and nothing is written.
 
 ## Attachments
 

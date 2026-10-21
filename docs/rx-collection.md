@@ -14,8 +14,8 @@ To create one or more collections you need an [RxDatabase](./rx-database.md) obj
 ```js
 const myCollections = await myDatabase.addCollections({
   // key = collectionName
-  humans: {
-    schema: mySchema,
+  todos: {
+    schema: todoSchema,
     statics: {},                       // (optional) ORM-functions
                                          // for this collection
     methods: {},                          // (optional) ORM-functions for documents
@@ -30,7 +30,7 @@ const myCollections = await myDatabase.addCollections({
                                          // conflict handler
   },
   // you can create multiple collections at once
-  animals: {
+  projects: {
     // ...
   }
 });
@@ -63,13 +63,13 @@ To get an existing collection from the database, call the collection name direct
 
 ```javascript
 // newly created collection
-const collections = await db.addCollections({
-  heroes: {
-    schema: mySchema
+const collections = await myDatabase.addCollections({
+  todos: {
+    schema: todoSchema
   }
 });
-const collection2 = db.heroes;
-console.log(collections.heroes === collection2); //> true
+const collection2 = myDatabase.todos;
+console.log(collections.todos === collection2); //> true
 ```
 
 ## Functions
@@ -78,12 +78,12 @@ console.log(collections.heroes === collection2); //> true
 Calling this will return an [rxjs-Observable](https://rxjs.dev/guide/observable) which streams every change to data of this collection.
 
 ```js
-myCollection.$.subscribe(changeEvent => console.dir(changeEvent));
+myDatabase.todos.$.subscribe(changeEvent => console.dir(changeEvent));
 
 // you can also observe single event-types with insert$ update$ remove$
-myCollection.insert$.subscribe(changeEvent => console.dir(changeEvent));
-myCollection.update$.subscribe(changeEvent => console.dir(changeEvent));
-myCollection.remove$.subscribe(changeEvent => console.dir(changeEvent));
+myDatabase.todos.insert$.subscribe(changeEvent => console.dir(changeEvent));
+myDatabase.todos.update$.subscribe(changeEvent => console.dir(changeEvent));
+myDatabase.todos.remove$.subscribe(changeEvent => console.dir(changeEvent));
 
 ```
 
@@ -91,9 +91,11 @@ myCollection.remove$.subscribe(changeEvent => console.dir(changeEvent));
 Use this to insert new documents into the database. The collection will validate the schema and automatically encrypt any encrypted fields. Returns the new RxDocument.
 
 ```js
-const doc = await myCollection.insert({
-  name: 'foo',
-  lastname: 'bar'
+const doc = await myDatabase.todos.insert({
+  id: 'todo4',
+  name: 'Clean the kitchen',
+  dueAt: '2026-01-04T18:00:00.000Z',
+  priority: 1
 });
 ```
 
@@ -104,9 +106,11 @@ The insertIfNotExists() method attempts to insert a new document into the collec
 Returns either the newly added [RxDocument](./rx-document.md) or the previous existing document.
 
 ```js
-const doc = await myCollection.insertIfNotExists({
-  name: 'foo',
-  lastname: 'bar'
+const doc = await myDatabase.todos.insertIfNotExists({
+  id: 'todo4',
+  name: 'Clean the kitchen',
+  dueAt: '2026-01-04T18:00:00.000Z',
+  priority: 1
 });
 ```
 
@@ -116,14 +120,21 @@ When you have to insert many documents at once, use bulk insert. This is much fa
 Returns an object with a `success` and `error` arrays.
 
 ```js
-const result = await myCollection.bulkInsert([{
-  name: 'foo1',
-  lastname: 'bar1'
-},
-{
-  name: 'foo2',
-  lastname: 'bar2'
-}]);
+const result = await myDatabase.todos.bulkInsert([
+  {
+    id: 'todo3',
+    name: 'Set up replication',
+    dueAt: '2026-01-03T14:15:00.000Z',
+    priority: 10,
+    tags: ['rxdb', 'backend']
+  },
+  {
+    id: 'todo4',
+    name: 'Clean the kitchen',
+    dueAt: '2026-01-04T18:00:00.000Z',
+    priority: 1
+  }
+]);
 
 // > {
 //   success: [RxDocument, RxDocument],
@@ -140,9 +151,9 @@ const result = await myCollection.bulkInsert([{
 When you want to remove many documents at once, use bulk remove. Returns an object with a `success`- and `error`-array.
 
 ```js
-const result = await myCollection.bulkRemove([
-  'primary1',
-  'primary2'
+const result = await myDatabase.todos.bulkRemove([
+  'todo3',
+  'todo4'
 ]);
 
 // > {
@@ -153,7 +164,7 @@ const result = await myCollection.bulkRemove([
 
 Instead of providing the document ids, you can also use the [RxDocument](./rx-document.md) instances. This can have better performance if your code knows them already at the moment of removing them:
 ```js
-const result = await myCollection.bulkRemove([
+const result = await myDatabase.todos.bulkRemove([
   myRxDocument1,
   myRxDocument2,
   /* ... */
@@ -166,13 +177,18 @@ Inserts the document if it does not exist within the collection, otherwise it wi
 When the document already exists, any [inline attachments](./rx-attachment.md#inline-attachments-on-insert-and-upsert) in the upsert data are **merged** with existing attachments by default. Pass `{ deleteExistingAttachments: true }` as the second argument to replace all existing attachments instead.
 
 ```js
-const doc = await myCollection.upsert({
-  name: 'foo',
-  lastname: 'bar2'
+const doc = await myDatabase.todos.upsert({
+  id: 'todo4',
+  name: 'Clean the kitchen',
+  done: true,
+  dueAt: '2026-01-04T18:00:00.000Z',
+  priority: 1
 });
 
 // with options
-const doc2 = await myCollection.upsert(docData, { deleteExistingAttachments: true });
+const doc2 = await myDatabase.todos.upsert(docData, {
+  deleteExistingAttachments: true
+});
 ```
 
 ### bulkUpsert()
@@ -180,14 +196,20 @@ Same as `upsert()` but runs over multiple documents. Improves performance compar
 Returns an `error` and a `success` array. Accepts an optional second argument for [upsert options](./rx-attachment.md#upsert-behavior-with-attachments).
 
 ```js
-const docs = await myCollection.bulkUpsert([
+const docs = await myDatabase.todos.bulkUpsert([
   {
-    name: 'foo',
-    lastname: 'bar2'
+    id: 'todo3',
+    name: 'Set up replication',
+    done: true,
+    dueAt: '2026-01-03T14:15:00.000Z',
+    priority: 10
   },
   {
-    name: 'bar',
-    lastname: 'foo2'
+    id: 'todo4',
+    name: 'Clean the kitchen',
+    done: true,
+    dueAt: '2026-01-04T18:00:00.000Z',
+    priority: 1
   }
 ]);
 /**
@@ -207,33 +229,36 @@ The behavior is similar to [RxDocument.incrementalModify](./rx-document.md#incre
 
 ```js
 const docData = {
-    name: 'Bob', // primary
-    lastName: 'Kelso'
+    id: 'todo4', // primary
+    name: 'Clean the kitchen',
+    dueAt: '2026-01-04T18:00:00.000Z',
+    priority: 1
 };
 
-myCollection.upsert(docData);
-myCollection.upsert(docData);
+myDatabase.todos.upsert(docData);
+myDatabase.todos.upsert(docData);
 // -> throws because of parallel update to the same document
 
-myCollection.incrementalUpsert(docData);
-myCollection.incrementalUpsert(docData);
-myCollection.incrementalUpsert(docData);
+myDatabase.todos.incrementalUpsert(docData);
+myDatabase.todos.incrementalUpsert(docData);
+myDatabase.todos.incrementalUpsert(docData);
 
 // wait until last upsert finished
-await myCollection.incrementalUpsert(docData);
+await myDatabase.todos.incrementalUpsert(docData);
 // -> works
 ```
 
 ### find()
-To find documents in your collection, use this method. [See RxQuery.find()](./rx-query.md#find).
+To find documents in your collection, use this method. [See RxQuery.find()](./rx-query.md#find). Queries are written in the [Mango query syntax](./mango-query.md) or with the chained methods of the [query builder](./query-builder.md).
 
 ```js
-// find all that are older than 18
-const olderDocuments = await myCollection
+// find all todos with a priority greater than 5
+const importantTodos = await myDatabase.todos
     .find()
-    .where('age')
-    .gt(18)
+    .where('priority')
+    .gt(5)
     .exec(); // execute
+// > [RxDocument[todo1], RxDocument[todo3]]
 ```
 
 ### findOne()
@@ -242,15 +267,15 @@ This does basically what find() does, but it returns only a single document. You
 To find documents in your collection, use this method. [See RxQuery.find()](./rx-query.md#findOne).
 
 ```js
-// get document with name:foobar
-myCollection.findOne({
+// get document with id:todo1
+myDatabase.todos.findOne({
   selector: {
-    name: 'foo'
+    id: 'todo1'
   }
 }).exec().then(doc => console.dir(doc));
 
 // get document by primary, functionally identical to above query
-myCollection.findOne('foo')
+myDatabase.todos.findOne('todo1')
   .exec().then(doc => console.dir(doc));
 ```
 
@@ -262,11 +287,11 @@ Returns a `Map` where the primary key of the document is mapped to the document.
 
 ```js
 const ids = [
-  'alice',
-  'bob',
+  'todo1',
+  'todo2',
   /* ... */
 ];
-const docsMap = await myCollection.findByIds(ids);
+const docsMap = await myDatabase.todos.findByIds(ids);
 
 console.dir(docsMap); // Map(2)
 ```
@@ -280,7 +305,7 @@ The `Map` returned by `findByIds` is not guaranteed to return elements in the sa
 Creates a JSON export of every document in the collection. Needs the `json-dump` plugin. [Read more](./json-import-export.md)
 
 ```js
-const json = await myCollection.exportJSON();
+const json = await myDatabase.todos.exportJSON();
 ```
 
 ### importJSON()
@@ -288,7 +313,7 @@ const json = await myCollection.exportJSON();
 Imports a previously exported JSON dump back into the collection. [Read more](./json-import-export.md)
 
 ```js
-await myCollection.importJSON(json);
+await myDatabase.todos.importJSON(json);
 ```
 
 ### remove()
@@ -297,14 +322,14 @@ Removes all known data of the collection and its previous versions.
 This removes the documents, the schemas, and older schemaVersions.
 
 ```js
-await myCollection.remove();
+await myDatabase.todos.remove();
 // collection is now removed and can be re-created
 ```
 
 ### close()
 Removes the collection's object instance from the [RxDatabase](./rx-database.md). This is to free up memory and stop all observers and replications. It will not delete the collection's data. When you create the collection again with `database.addCollections()`, the newly added collection will still have all data.
 ```js
-await myCollection.close();
+await myDatabase.todos.close();
 ```
 
 ### onClose / onRemove()
@@ -313,8 +338,8 @@ This works even across multiple browser tabs so you can detect when another tab 
 and your application can behave accordingly.
 
 ```js
-await myCollection.onClose(() => console.log('I am closed'));
-await myCollection.onRemove(() => console.log('I am removed'));
+await myDatabase.todos.onClose(() => console.log('I am closed'));
+await myDatabase.todos.onRemove(() => console.log('I am removed'));
 ```
 
 ### isRxCollection
@@ -338,7 +363,7 @@ const is = isRxCollection(myObj);
 
     
     In the open-source version of RxDB, the amount of RxCollections that can be open in parallel is limited to <code>{NON_PREMIUM_COLLECTION_LIMIT}</code>. The value comes from the `NON_PREMIUM_COLLECTION_LIMIT` constant in [`src/plugins/utils/utils-premium.ts`](https://github.com/pubkey/rxdb/blob/master/src/plugins/utils/utils-premium.ts).
-    The limit counts all open collections of all databases in the same JavaScript process. Closed collections do not count. When the limit is reached, RxDB waits a short time for other collections to close and then throws the error `COL23`.
+    The limit counts all open collections of all databases in the same JavaScript process. Closed collections do not count. When the limit is reached, RxDB waits a short time for other collections to close and then throws the error [`COL23`](./errors.md#COL23).
 
     To remove the limit:
 
@@ -350,7 +375,7 @@ const is = isRxCollection(myObj);
     import { setPremiumFlag } from 'rxdb-premium/plugins/shared';
     setPremiumFlag();
 
-    const db = await createRxDatabase({ /* ... */ });
+    const myDatabase = await createRxDatabase({ /* ... */ });
     ```
 
     Before you remove the limit, check whether you need that many collections. Each RxCollection opens its own storage instance (for example its own IndexedDB object store or SQLite table) and keeps its own change stream and query cache. So the startup time and memory usage grow with every collection. When many collections store documents with a similar shape, store them in one collection with a `type` field and an index on it.

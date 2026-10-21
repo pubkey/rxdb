@@ -38,11 +38,11 @@ Across types the sort order is fixed: numbers come first, then dates, then strin
 A range is built with `IDBKeyRange`:
 
 ```js
-IDBKeyRange.only('work');                  // category === 'work'
-IDBKeyRange.lowerBound(18);                // age >= 18
-IDBKeyRange.lowerBound(18, true);          // age > 18   (open bound)
-IDBKeyRange.upperBound(65);                // age <= 65
-IDBKeyRange.bound(18, 65, false, true);    // age >= 18 && age < 65
+IDBKeyRange.only('work');                  // tag === 'work'
+IDBKeyRange.lowerBound(5);                 // priority >= 5
+IDBKeyRange.lowerBound(5, true);           // priority > 5   (open bound)
+IDBKeyRange.upperBound(8);                 // priority <= 8
+IDBKeyRange.bound(5, 8, false, true);      // priority >= 5 && priority < 8
 ```
 
 There is no range for "starts with". You build one from the sort order instead, by using the highest possible code unit as the upper bound:
@@ -68,10 +68,12 @@ const many = store.getAll(IDBKeyRange.bound('todo1', 'todo9'));
 
 ### Reading Through a Secondary Index
 
-To filter by any other field, you need an index on that field, created inside `onupgradeneeded`. The index is a second sorted list that maps the indexed value to the records that carry it.
+To filter by any other field, you need an index on that field, created inside `onupgradeneeded`. The index is a second sorted list that maps the indexed value to the records that carry it. For an array field like `tags`, the index is created with `{ multiEntry: true }`, so that every tag of a todo gets its own index entry.
 
 ```js
-const index = store.index('category');
+// created in onupgradeneeded with:
+// store.createIndex('tags', 'tags', { multiEntry: true });
+const index = store.index('tags');
 
 // all work todos
 index.getAll(IDBKeyRange.only('work'));
@@ -90,7 +92,7 @@ index.count(IDBKeyRange.only('work'));
 A cursor is what you use when the result set is large, when you need to stop early, or when you have to filter on something the index does not cover.
 
 ```js
-const request = store.index('category').openCursor(IDBKeyRange.only('work'), 'next');
+const request = store.index('tags').openCursor(IDBKeyRange.only('work'), 'next');
 
 request.onsuccess = () => {
     const cursor = request.result;
@@ -179,30 +181,35 @@ const request = store.getAll();
 
 request.onsuccess = () => {
     const result = request.result
-        .filter(todo => todo.category === 'work')
+        .filter(todo => todo.tags.includes('work'))
         .sort((a, b) => b.priority - a.priority);
 };
 ```
 
-With 200 todos nobody notices. With 200,000 todos the browser deserializes 200,000 objects, hands them to the main thread, and then sorts them there, to show ten rows. Add an index on `category` and the same query reads only the work todos.
+With 200 todos nobody notices. With 200,000 todos the browser deserializes 200,000 objects, hands them to the main thread, and then sorts them there, to show ten rows. Add a `multiEntry` index on `tags` and the same query reads only the work todos.
 
 ### Put Equality Fields First and the Range Field Last
 
 A compound index is created by passing an array as the key path, and its keys are compared element by element.
 
 ```js
-store.createIndex('category_priority', ['category', 'priority']);
+store.createIndex('priority_dueAt', ['priority', 'dueAt']);
 ```
 
-The order of the fields decides whether a query can be answered by one contiguous range or not. Take the query "work todos with a priority between 5 and 10".
+The order of the fields decides whether a query can be answered by one contiguous range or not. Take the query "todos with priority 8 that are due in March 2026".
 
-With the index `['priority', 'category']` the first field is the range field, so the range has to cover every priority from 5 to 10 with every category in it. The browser reads all of those records, and your code throws away the ones from other categories.
+With the index `['dueAt', 'priority']` the first field is the range field, so the range has to cover every todo due in March with every priority in it. The browser reads all of those records, and your code throws away the ones with other priorities.
 
-With the index `['category', 'priority']` the same query is one slice:
+With the index `['priority', 'dueAt']` the same query is one slice:
 
 ```js
-const range = IDBKeyRange.bound(['work', 5], ['work', 10]);
-store.index('category_priority').getAll(range);
+const range = IDBKeyRange.bound(
+    [8, '2026-03-01T00:00:00.000Z'],
+    [8, '2026-04-01T00:00:00.000Z'],
+    false,
+    true
+);
+store.index('priority_dueAt').getAll(range);
 ```
 
 Nothing outside the result is read. The rule that follows from this holds for most databases, and RxDB's own [performance tips](../../nosql-performance-tips.md) apply it to Mango queries:
@@ -211,11 +218,11 @@ Nothing outside the result is read. The rule that follows from this holds for mo
 
 Fields that come after the first range field cannot narrow the range any further. They are still stored in the index, but only a full match on everything before them makes them useful.
 
-One thing that surprises people: in a compound index, a record is only indexed when **every** field of the key path is present. A todo without a `priority` does not show up in a `['category', 'priority']` index at all, not even as a low value.
+One thing that surprises people: in a compound index, a record is only indexed when **every** field of the key path is present. A todo without a `dueAt` does not show up in a `['priority', 'dueAt']` index at all, not even as a low value.
 
 ### Let the Index Do the Sorting
 
-An index is a sorted list, so an index that matches your sort order removes the in-memory sort completely. The `['category', 'priority']` index above returns work todos already ordered by priority, ascending with `next` and descending with `prev`. No `Array.sort()` is needed, and you can stop reading as soon as you have enough records for the current page.
+An index is a sorted list, so an index that matches your sort order removes the in-memory sort completely. The `['priority', 'dueAt']` index above returns the todos of one priority already ordered by due date, ascending with `next` and descending with `prev`. No `Array.sort()` is needed, and you can stop reading as soon as you have enough records for the current page.
 
 This is why sorting and filtering have to be designed together. An index that serves the filter but not the sort still forces you to read the whole result set.
 
@@ -266,8 +273,8 @@ Moving that work into a [Web Worker](https://developer.mozilla.org/en-US/docs/We
 self.onmessage = async (event) => {
     const db = await openDatabase(); // the same indexedDB API, inside the worker
     const tx = db.transaction('todos', 'readonly');
-    const index = tx.objectStore('todos').index('category');
-    const request = index.getAll(IDBKeyRange.only(event.data.category));
+    const index = tx.objectStore('todos').index('tags');
+    const request = index.getAll(IDBKeyRange.only(event.data.tag));
 
     request.onsuccess = () => {
         // the expensive part runs on the worker thread, not on the main thread
@@ -284,7 +291,7 @@ self.onmessage = async (event) => {
 const worker = new Worker('/query-worker.js');
 
 worker.onmessage = (event) => renderList(event.data);
-worker.postMessage({ category: 'work' });
+worker.postMessage({ tag: 'work' });
 ```
 
 Notice that the result crosses the thread boundary by structured clone, which costs time proportional to how much you send. Sending `50k` documents back to the main thread moves the work instead of removing it. Return the page you render, not the result set you scanned.
@@ -299,7 +306,7 @@ RxDB ships this as a storage option instead of a rewrite. The [👑 Worker RxSto
 
 ## Code Sample: A Complex Query in Raw IndexedDB
 
-Here is a query that a server-side database answers in one line: **the ten open todos in the category `work` with the highest priority, skipping the first ten**. Filter on two fields, sort descending on a third, skip, and limit.
+Here is a query that a server-side database answers in one line: **the ten open todos with the highest priority, skipping the first ten**. Filter on one field, sort descending on a second, skip, and limit.
 
 <Steps>
 
@@ -308,14 +315,14 @@ Here is a query that a server-side database answers in one line: **the ten open 
 `done` is a boolean, and booleans are not valid IndexedDB keys, so the field cannot be indexed as it is. Store it as `0` or `1` and convert at the edges of your app.
 
 ```js
-// { id: 'todo1', name: 'Write docs', category: 'work', done: 0, priority: 7 }
+// { id: 'todo1', name: 'Write docs', done: 0, priority: 7, tags: ['work'] }
 ```
 
 This is the first compromise, and it leaks into every piece of code that touches the record.
 
 ### Create the Compound Index
 
-Two equality fields first, the sort field last. The version has to be raised so that `onupgradeneeded` runs again on an existing database.
+The equality field first, the sort field last. The version has to be raised so that `onupgradeneeded` runs again on an existing database.
 
 ```js
 const request = indexedDB.open('todos-db', 2);
@@ -324,20 +331,20 @@ request.onupgradeneeded = (event) => {
     // inside a version change, the store is reached through the transaction
     const store = event.target.transaction.objectStore('todos');
     store.createIndex(
-        'category_done_priority',
-        ['category', 'done', 'priority']
+        'done_priority',
+        ['done', 'priority']
     );
 };
 ```
 
 ### Build the Key Range
 
-The range has to cover every priority for one `[category, done]` pair. Arrays sort after every other key type, so `['work', 0, []]` is greater than `['work', 0, <any number>]` and makes a clean upper bound.
+The range has to cover every priority for one value of `done`. Arrays sort after every other key type, so `[0, []]` is greater than `[0, <any number>]` and makes a clean upper bound.
 
 ```js
 const range = IDBKeyRange.bound(
-    ['work', 0],
-    ['work', 0, []]
+    [0],
+    [0, []]
 );
 ```
 
@@ -346,11 +353,11 @@ const range = IDBKeyRange.bound(
 The cursor direction `prev` gives the descending sort, `advance()` does the skip, and counting the pushed records does the limit.
 
 ```js
-function findTodoPage(db, { category, done, skip, limit }) {
+function findTodoPage(db, { done, skip, limit }) {
     return new Promise((resolve, reject) => {
         const tx = db.transaction('todos', 'readonly');
-        const index = tx.objectStore('todos').index('category_done_priority');
-        const range = IDBKeyRange.bound([category, done], [category, done, []]);
+        const index = tx.objectStore('todos').index('done_priority');
+        const range = IDBKeyRange.bound([done], [done, []]);
 
         const result = [];
         let skipped = skip === 0;
@@ -380,7 +387,6 @@ function findTodoPage(db, { category, done, skip, limit }) {
 }
 
 const page = await findTodoPage(db, {
-    category: 'work',
     done: 0,
     skip: 10,
     limit: 10
@@ -429,7 +435,6 @@ The forty-line paging function from above is this:
 ```ts
 const page = await db.todos.find({
     selector: {
-        category: { $eq: 'work' },
         done: { $eq: false }
     },
     sort: [{ priority: 'desc' }],
@@ -462,19 +467,21 @@ await db.addCollections({
             properties: {
                 id: { type: 'string', maxLength: 100 },
                 name: { type: 'string' },
-                category: { type: 'string', maxLength: 50 },
-                done: { type: 'boolean' },
+                done: { type: 'boolean', default: false },
+                dueAt: { type: 'string', format: 'date-time', maxLength: 30 },
                 priority: {
                     // number fields in an index need minimum, maximum and multipleOf
-                    type: 'number',
+                    type: 'integer',
                     minimum: 0,
-                    maximum: 100,
+                    maximum: 10,
                     multipleOf: 1
-                }
+                },
+                tags: { type: 'array', default: [], items: { type: 'string' } }
             },
-            required: ['id', 'name', 'category', 'done', 'priority'],
+            required: ['id', 'name', 'done', 'dueAt', 'priority', 'tags'],
             indexes: [
-                ['category', 'done', 'priority']
+                'dueAt',
+                ['done', 'priority']
             ]
         }
     }
@@ -482,7 +489,7 @@ await db.addCollections({
 ```
 
 :::note
-RxDB indexes `string`, `integer`, and `number` fields, and `boolean` fields on the storages that support them. A boolean used in an index has to be listed in `required`. On a storage without boolean index support, index `['category', 'priority']` instead and let the query matcher handle `done`. See [Indexes](../../rx-schema.md#indexes).
+RxDB indexes `string`, `integer`, and `number` fields, and `boolean` fields on the storages that support them. A boolean used in an index has to be listed in `required`. On a storage without boolean index support, index `priority` instead and let the query matcher handle `done`. See [Indexes](../../rx-schema.md#indexes).
 :::
 
 Schema validation also closes the other gap: a write that does not match the schema is rejected, so a malformed record never reaches the index in the first place.
@@ -494,12 +501,12 @@ RxDB sends every query to a query planner that turns the selector into an index 
 ```ts
 const query = db.todos.find({
     selector: {
-        category: { $eq: 'work' },
+        dueAt: { $lt: '2026-03-01T00:00:00.000Z' },
         priority: { $gt: 5 }
     },
-    // 20% of todos are 'work', but 80% have a priority above 5,
-    // so starting the index range on 'category' reads fewer records
-    index: ['category', 'priority']
+    // 10% of todos are due before March, but 80% have a priority above 5,
+    // so starting the index range on 'dueAt' reads fewer records
+    index: ['dueAt']
 });
 ```
 
@@ -529,7 +536,7 @@ The operations IndexedDB leaves to you are ordinary API calls:
 ```ts
 // a count query never fetches document data
 const total = await db.todos.count({
-    selector: { category: { $eq: 'work' } }
+    selector: { done: { $eq: false } }
 }).exec();
 ```
 
@@ -592,7 +599,7 @@ Yes, but only by primary key or with a full scan. Without an index the only way 
 </FaqItem>
 <FaqItem question="How do I query multiple fields in IndexedDB?">
 
-Create a compound index with an array key path, for example `store.createIndex('category_priority', ['category', 'priority'])`, and build a range over the array keys. The field order matters: equality fields first, the range or sort field last. IndexedDB never combines two separate indexes, so any condition outside the one index you used has to be checked in JavaScript.
+Create a compound index with an array key path, for example `store.createIndex('priority_dueAt', ['priority', 'dueAt'])`, and build a range over the array keys. The field order matters: equality fields first, the range or sort field last. IndexedDB never combines two separate indexes, so any condition outside the one index you used has to be checked in JavaScript.
 
 </FaqItem>
 <FaqItem question="How do I sort IndexedDB query results?">

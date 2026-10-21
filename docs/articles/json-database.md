@@ -42,7 +42,7 @@ When your application's schema evolves, RxDB provides [migration strategies](../
 
 ```javascript
 // RxDB Schema example
-const mySchema = {
+const todoSchema = {
     version: 0,
     primaryKey: 'id', // <- define the primary key for your documents
     type: 'object',
@@ -52,18 +52,19 @@ const mySchema = {
             maxLength: 100 // <- the primary key must have set maxLength
         },
         name: {
-            type: 'string',
-            maxLength: 100
+            type: 'string'
         },
         done: {
-            type: 'boolean'
+            type: 'boolean',
+            default: false
         },
-        timestamp: {
+        dueAt: {
             type: 'string',
-            format: 'date-time'
+            format: 'date-time',
+            maxLength: 30
         }
     },
-    required: ['id', 'name', 'done', 'timestamp']
+    required: ['id', 'name', 'done', 'dueAt']
 }
 ```
 

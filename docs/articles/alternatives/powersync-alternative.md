@@ -41,12 +41,12 @@ PowerSync ships under FSL, which forbids using the software to build a product t
 PowerSync queries are SQL strings. That suits backend teams that already think in SQL, but it means schema migrations, type generation, and reactive bindings all flow through string parsing. RxDB queries are plain objects, type-checked against the schema, and composable in JavaScript:
 
 ```ts
-const query = db.tasks.find({
+const query = myDatabase.todos.find({
   selector: {
     done: false,
     priority: { $gte: 2 }
   },
-  sort: [{ updatedAt: 'desc' }]
+  sort: [{ dueAt: 'asc' }]
 });
 ```
 
@@ -87,37 +87,37 @@ RxDB coordinates writes and query state across multiple browser tabs through a l
 import { createRxDatabase } from 'rxdb/plugins/core';
 import { getRxStorageIndexedDB } from 'rxdb/plugins/storage-indexeddb';
 
-const db = await createRxDatabase({
-  name: 'appdb',
+const myDatabase = await createRxDatabase({
+  name: 'mydatabase',
   storage: getRxStorageIndexedDB()
 });
 
-await db.addCollections({
-  tasks: {
+await myDatabase.addCollections({
+  todos: {
     schema: {
-      title: 'task schema',
+      title: 'todo schema',
       version: 0,
       primaryKey: 'id',
       type: 'object',
       properties: {
-        id: { type: 'string', maxLength: 40 },
-        title: { type: 'string' },
-        done: { type: 'boolean' },
-        priority: { type: 'integer', minimum: 0, maximum: 5 },
-        updatedAt: { type: 'string', format: 'date-time' }
+        id: { type: 'string', maxLength: 100 },
+        name: { type: 'string' },
+        done: { type: 'boolean', default: false },
+        dueAt: { type: 'string', format: 'date-time', maxLength: 30 },
+        priority: { type: 'integer', minimum: 0, maximum: 10, multipleOf: 1 }
       },
-      required: ['id', 'title', 'done', 'priority', 'updatedAt'],
-      indexes: ['priority', 'updatedAt']
+      required: ['id', 'name', 'done', 'dueAt', 'priority'],
+      indexes: ['dueAt', ['done', 'priority']]
     }
   }
 });
 
 // Observable Mango query
-db.tasks.find({
+myDatabase.todos.find({
   selector: { done: false, priority: { $gte: 2 } },
-  sort: [{ updatedAt: 'desc' }]
+  sort: [{ dueAt: 'asc' }]
 }).$.subscribe(results => {
-  console.log('open high-priority tasks:', results.length);
+  console.log('open high-priority todos:', results.length);
 });
 ```
 
@@ -129,14 +129,14 @@ The handler shape below maps cleanly onto a Postgres backend. The pull handler r
 import { replicateRxCollection } from 'rxdb/plugins/replication';
 
 const replication = replicateRxCollection({
-  collection: db.tasks,
-  replicationIdentifier: 'tasks-postgres-rest',
+  collection: myDatabase.todos,
+  replicationIdentifier: 'todos-postgres-rest',
   live: true,
   pull: {
     async handler(checkpoint, batchSize) {
       const since = checkpoint ? checkpoint.updatedAt : '1970-01-01T00:00:00Z';
       const res = await fetch(
-        `/api/tasks/pull?since=${encodeURIComponent(since)}&limit=${batchSize}`
+        `/api/todos/pull?since=${encodeURIComponent(since)}&limit=${batchSize}`
       );
       const body = await res.json();
       return {
@@ -147,7 +147,7 @@ const replication = replicateRxCollection({
   },
   push: {
     async handler(changeRows) {
-      const res = await fetch('/api/tasks/push', {
+      const res = await fetch('/api/todos/push', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify(changeRows)

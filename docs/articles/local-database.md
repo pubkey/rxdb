@@ -154,10 +154,11 @@ await db.addCollections({
                 // the primary key must have a maxLength
                 id: { type: 'string', maxLength: 100 },
                 name: { type: 'string' },
-                done: { type: 'boolean' },
-                timestamp: { type: 'string', format: 'date-time' }
+                done: { type: 'boolean', default: false },
+                dueAt: { type: 'string', format: 'date-time', maxLength: 30 }
             },
-            required: ['id', 'name', 'done', 'timestamp']
+            required: ['id', 'name', 'done', 'dueAt'],
+            indexes: ['dueAt']
         }
     }
 });
@@ -170,9 +171,9 @@ Inserts and queries run on the device. There is no `await fetch()` in this code 
 ```ts
 await db.todos.insert({
     id: 'todo1',
-    name: 'Use a local database',
+    name: 'Learn RxDB',
     done: false,
-    timestamp: new Date().toISOString()
+    dueAt: '2026-01-01T10:00:00.000Z'
 });
 
 const openTodos = await db.todos.find({

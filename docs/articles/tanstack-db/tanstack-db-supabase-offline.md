@@ -44,8 +44,8 @@ create extension if not exists moddatetime schema extensions;
 
 create table "public"."todos" (
     "id" text primary key,
-    "text" text not null,
-    "completed" boolean not null,
+    "name" text not null,
+    "done" boolean DEFAULT false NOT NULL,
 
     "_deleted" boolean DEFAULT false NOT NULL,
     "_modified" timestamp with time zone DEFAULT now() NOT NULL
@@ -94,10 +94,10 @@ await db.addCollections({
             primaryKey: 'id',
             properties: {
                 id: { type: 'string', maxLength: 100 },
-                text: { type: 'string' },
-                completed: { type: 'boolean' }
+                name: { type: 'string' },
+                done: { type: 'boolean', default: false }
             },
-            required: ['id', 'text', 'completed']
+            required: ['id', 'name', 'done']
         }
     }
 });
@@ -172,7 +172,7 @@ function TodoList() {
     const { data: openTodos } = useLiveQuery((q) =>
         q
             .from({ todo: todosCollection })
-            .where(({ todo }) => eq(todo.completed, false))
+            .where(({ todo }) => eq(todo.done, false))
     );
 
     return (
@@ -180,11 +180,11 @@ function TodoList() {
             {openTodos.map((todo) => (
                 
                         todosCollection.update(todo.id, (draft) => {
-                            draft.completed = true;
+                            draft.done = true;
                         })
                     }
                 >
-                    {todo.text}
+                    {todo.name}
                 
             ))}
         
@@ -192,7 +192,7 @@ function TodoList() {
 }
 
 // Inserts work offline too. RxDB pushes them to Supabase later.
-todosCollection.insert({ id: 'todo-1', text: 'buy milk', completed: false });
+todosCollection.insert({ id: 'todo-1', name: 'buy milk', done: false });
 ```
 
 </Steps>

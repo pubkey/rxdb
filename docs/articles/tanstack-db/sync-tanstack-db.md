@@ -76,12 +76,12 @@ await db.addCollections({
             primaryKey: 'id',
             properties: {
                 id: { type: 'string', maxLength: 100 },
-                text: { type: 'string' },
-                completed: { type: 'boolean' },
+                name: { type: 'string' },
+                done: { type: 'boolean', default: false },
                 // last write time, used as part of the replication checkpoint
                 updatedAt: { type: 'number' }
             },
-            required: ['id', 'text', 'completed', 'updatedAt']
+            required: ['id', 'name', 'done', 'updatedAt']
         }
     }
 });
@@ -177,17 +177,17 @@ function TodoList() {
     const { data: openTodos } = useLiveQuery((q) =>
         q
             .from({ todo: todosCollection })
-            .where(({ todo }) => eq(todo.completed, false))
+            .where(({ todo }) => eq(todo.done, false))
     );
 
-    return {openTodos.map(todo => {todo.text})};
+    return {openTodos.map(todo => {todo.name})};
 }
 
 // this write is persisted to RxDB and pushed to the backend
 todosCollection.insert({
     id: 'todo-1',
-    text: 'buy milk',
-    completed: false,
+    name: 'buy milk',
+    done: false,
     updatedAt: Date.now()
 });
 ```

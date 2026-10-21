@@ -7,6 +7,7 @@ This file contains all documentation content in a single document following the 
 ## Installation
 
 import {InstallTabs} from '@site/src/components/install-tabs';
+import {Tabs} from '@site/src/components/tabs';
 
 # Install RxDB
 
@@ -21,6 +22,67 @@ To install the latest release of `rxdb` and its dependencies and save it to your
 You also need to install the peer-dependency `rxjs` if you have not installed it before.
 
 <InstallTabs packageName="rxjs" />
+
+## Use the ES2015 build of RxJS
+
+RxJS 7 ships an ES5 build and an ES2015 build. The ES2015 build is only resolved when your bundler sets the `es2015` export condition. Vite, webpack, Rollup and esbuild do not set it by default, so they bundle the ES5 build together with the `tslib` helpers. In an RxDB app built with Vite, adding the condition reduces the bundle by about `6.6 KB` minified (`1.6 KB` gzipped). The Angular CLI already sets the condition, so Angular projects need no change.
+
+<Tabs>
+
+### Vite
+
+Vite 6 or newer:
+
+```ts
+// vite.config.ts
+import { defineConfig, defaultClientConditions } from 'vite';
+
+export default defineConfig({
+    resolve: {
+        conditions: ['es2015', ...defaultClientConditions]
+    }
+});
+```
+
+### webpack
+
+webpack 5 or newer, `'...'` keeps the default conditions:
+
+```js
+// webpack.config.js
+module.exports = {
+    resolve: {
+        conditionNames: ['es2015', '...']
+    }
+};
+```
+
+### Rollup
+
+With `@rollup/plugin-node-resolve`:
+
+```js
+// rollup.config.mjs
+import { nodeResolve } from '@rollup/plugin-node-resolve';
+
+export default {
+    plugins: [
+        nodeResolve({ browser: true, exportConditions: ['es2015'] })
+    ]
+};
+```
+
+### esbuild
+
+Setting `conditions` replaces the default `module` condition, so add it again:
+
+```js
+await esbuild.build({
+    conditions: ['es2015', 'module']
+});
+```
+
+</Tabs>
 
 ## polyfills
 
@@ -369,14 +431,16 @@ await myDatabase.addCollections({
                     type: 'string'
                 },
                 done: {
-                    type: 'boolean'
+                    type: 'boolean',
+                    default: false
                 },
-                timestamp: {
+                dueAt: {
                     type: 'string',
-                    format: 'date-time'
+                    format: 'date-time',
+                    maxLength: 30
                 }
             },
-            required: ['id', 'name', 'done', 'timestamp']
+            required: ['id', 'name', 'done', 'dueAt']
         }
     }
 });
@@ -391,7 +455,7 @@ const myDocument = await myDatabase.todos.insert({
     id: 'todo1',
     name: 'Learn RxDB',
     done: false,
-    timestamp: new Date().toISOString()
+    dueAt: '2026-01-01T10:00:00.000Z'
 });
 ```
 
@@ -471,7 +535,7 @@ import {
 } from "rxdb/plugins/replication-http";
 
 replicateHTTP({
-  collection: db.todos,
+  collection: myDatabase.todos,
   push: {
     handler: async (rows) => {
       return fetch("https://example.com/api/todos/push", {
@@ -501,7 +565,7 @@ replicateHTTP({
 import { replicateGraphQL } from 'rxdb/plugins/replication-graphql';
 
 replicateGraphQL({
-    collection: db.todos,
+    collection: myDatabase.todos,
     url: 'https://example.com/graphql',
     push: { batchSize: 50 },
     pull: { batchSize: 50 }
@@ -533,7 +597,7 @@ replicateWebRTC({
 import { replicateCouchDB } from 'rxdb/plugins/replication-couchdb';
 
 replicateCouchDB({
-    collection: db.todos,
+    collection: myDatabase.todos,
     url: 'http://example.com/todos/',
     push: {},
     pull: {}
@@ -895,8 +959,8 @@ To create one or more collections you need an [RxDatabase](./rx-database.md) obj
 ```js
 const myCollections = await myDatabase.addCollections({
   // key = collectionName
-  humans: {
-    schema: mySchema,
+  todos: {
+    schema: todoSchema,
     statics: {},                       // (optional) ORM-functions
                                          // for this collection
     methods: {},                          // (optional) ORM-functions for documents
@@ -911,7 +975,7 @@ const myCollections = await myDatabase.addCollections({
                                          // conflict handler
   },
   // you can create multiple collections at once
-  animals: {
+  projects: {
     // ...
   }
 });
@@ -944,13 +1008,13 @@ To get an existing collection from the database, call the collection name direct
 
 ```javascript
 // newly created collection
-const collections = await db.addCollections({
-  heroes: {
-    schema: mySchema
+const collections = await myDatabase.addCollections({
+  todos: {
+    schema: todoSchema
   }
 });
-const collection2 = db.heroes;
-console.log(collections.heroes === collection2); //> true
+const collection2 = myDatabase.todos;
+console.log(collections.todos === collection2); //> true
 ```
 
 ## Functions
@@ -959,12 +1023,12 @@ console.log(collections.heroes === collection2); //> true
 Calling this will return an [rxjs-Observable](https://rxjs.dev/guide/observable) which streams every change to data of this collection.
 
 ```js
-myCollection.$.subscribe(changeEvent => console.dir(changeEvent));
+myDatabase.todos.$.subscribe(changeEvent => console.dir(changeEvent));
 
 // you can also observe single event-types with insert$ update$ remove$
-myCollection.insert$.subscribe(changeEvent => console.dir(changeEvent));
-myCollection.update$.subscribe(changeEvent => console.dir(changeEvent));
-myCollection.remove$.subscribe(changeEvent => console.dir(changeEvent));
+myDatabase.todos.insert$.subscribe(changeEvent => console.dir(changeEvent));
+myDatabase.todos.update$.subscribe(changeEvent => console.dir(changeEvent));
+myDatabase.todos.remove$.subscribe(changeEvent => console.dir(changeEvent));
 
 ```
 
@@ -972,9 +1036,11 @@ myCollection.remove$.subscribe(changeEvent => console.dir(changeEvent));
 Use this to insert new documents into the database. The collection will validate the schema and automatically encrypt any encrypted fields. Returns the new RxDocument.
 
 ```js
-const doc = await myCollection.insert({
-  name: 'foo',
-  lastname: 'bar'
+const doc = await myDatabase.todos.insert({
+  id: 'todo4',
+  name: 'Clean the kitchen',
+  dueAt: '2026-01-04T18:00:00.000Z',
+  priority: 1
 });
 ```
 
@@ -985,9 +1051,11 @@ The insertIfNotExists() method attempts to insert a new document into the collec
 Returns either the newly added [RxDocument](./rx-document.md) or the previous existing document.
 
 ```js
-const doc = await myCollection.insertIfNotExists({
-  name: 'foo',
-  lastname: 'bar'
+const doc = await myDatabase.todos.insertIfNotExists({
+  id: 'todo4',
+  name: 'Clean the kitchen',
+  dueAt: '2026-01-04T18:00:00.000Z',
+  priority: 1
 });
 ```
 
@@ -997,14 +1065,21 @@ When you have to insert many documents at once, use bulk insert. This is much fa
 Returns an object with a `success` and `error` arrays.
 
 ```js
-const result = await myCollection.bulkInsert([{
-  name: 'foo1',
-  lastname: 'bar1'
-},
-{
-  name: 'foo2',
-  lastname: 'bar2'
-}]);
+const result = await myDatabase.todos.bulkInsert([
+  {
+    id: 'todo3',
+    name: 'Set up replication',
+    dueAt: '2026-01-03T14:15:00.000Z',
+    priority: 10,
+    tags: ['rxdb', 'backend']
+  },
+  {
+    id: 'todo4',
+    name: 'Clean the kitchen',
+    dueAt: '2026-01-04T18:00:00.000Z',
+    priority: 1
+  }
+]);
 
 // > {
 //   success: [RxDocument, RxDocument],
@@ -1021,9 +1096,9 @@ const result = await myCollection.bulkInsert([{
 When you want to remove many documents at once, use bulk remove. Returns an object with a `success`- and `error`-array.
 
 ```js
-const result = await myCollection.bulkRemove([
-  'primary1',
-  'primary2'
+const result = await myDatabase.todos.bulkRemove([
+  'todo3',
+  'todo4'
 ]);
 
 // > {
@@ -1034,7 +1109,7 @@ const result = await myCollection.bulkRemove([
 
 Instead of providing the document ids, you can also use the [RxDocument](./rx-document.md) instances. This can have better performance if your code knows them already at the moment of removing them:
 ```js
-const result = await myCollection.bulkRemove([
+const result = await myDatabase.todos.bulkRemove([
   myRxDocument1,
   myRxDocument2,
   /* ... */
@@ -1047,13 +1122,18 @@ Inserts the document if it does not exist within the collection, otherwise it wi
 When the document already exists, any [inline attachments](./rx-attachment.md#inline-attachments-on-insert-and-upsert) in the upsert data are **merged** with existing attachments by default. Pass `{ deleteExistingAttachments: true }` as the second argument to replace all existing attachments instead.
 
 ```js
-const doc = await myCollection.upsert({
-  name: 'foo',
-  lastname: 'bar2'
+const doc = await myDatabase.todos.upsert({
+  id: 'todo4',
+  name: 'Clean the kitchen',
+  done: true,
+  dueAt: '2026-01-04T18:00:00.000Z',
+  priority: 1
 });
 
 // with options
-const doc2 = await myCollection.upsert(docData, { deleteExistingAttachments: true });
+const doc2 = await myDatabase.todos.upsert(docData, {
+  deleteExistingAttachments: true
+});
 ```
 
 ### bulkUpsert()
@@ -1061,14 +1141,20 @@ Same as `upsert()` but runs over multiple documents. Improves performance compar
 Returns an `error` and a `success` array. Accepts an optional second argument for [upsert options](./rx-attachment.md#upsert-behavior-with-attachments).
 
 ```js
-const docs = await myCollection.bulkUpsert([
+const docs = await myDatabase.todos.bulkUpsert([
   {
-    name: 'foo',
-    lastname: 'bar2'
+    id: 'todo3',
+    name: 'Set up replication',
+    done: true,
+    dueAt: '2026-01-03T14:15:00.000Z',
+    priority: 10
   },
   {
-    name: 'bar',
-    lastname: 'foo2'
+    id: 'todo4',
+    name: 'Clean the kitchen',
+    done: true,
+    dueAt: '2026-01-04T18:00:00.000Z',
+    priority: 1
   }
 ]);
 /**
@@ -1088,33 +1174,36 @@ The behavior is similar to [RxDocument.incrementalModify](./rx-document.md#incre
 
 ```js
 const docData = {
-    name: 'Bob', // primary
-    lastName: 'Kelso'
+    id: 'todo4', // primary
+    name: 'Clean the kitchen',
+    dueAt: '2026-01-04T18:00:00.000Z',
+    priority: 1
 };
 
-myCollection.upsert(docData);
-myCollection.upsert(docData);
+myDatabase.todos.upsert(docData);
+myDatabase.todos.upsert(docData);
 // -> throws because of parallel update to the same document
 
-myCollection.incrementalUpsert(docData);
-myCollection.incrementalUpsert(docData);
-myCollection.incrementalUpsert(docData);
+myDatabase.todos.incrementalUpsert(docData);
+myDatabase.todos.incrementalUpsert(docData);
+myDatabase.todos.incrementalUpsert(docData);
 
 // wait until last upsert finished
-await myCollection.incrementalUpsert(docData);
+await myDatabase.todos.incrementalUpsert(docData);
 // -> works
 ```
 
 ### find()
-To find documents in your collection, use this method. [See RxQuery.find()](./rx-query.md#find).
+To find documents in your collection, use this method. [See RxQuery.find()](./rx-query.md#find). Queries are written in the [Mango query syntax](./mango-query.md) or with the chained methods of the [query builder](./query-builder.md).
 
 ```js
-// find all that are older than 18
-const olderDocuments = await myCollection
+// find all todos with a priority greater than 5
+const importantTodos = await myDatabase.todos
     .find()
-    .where('age')
-    .gt(18)
+    .where('priority')
+    .gt(5)
     .exec(); // execute
+// > [RxDocument[todo1], RxDocument[todo3]]
 ```
 
 ### findOne()
@@ -1123,15 +1212,15 @@ This does basically what find() does, but it returns only a single document. You
 To find documents in your collection, use this method. [See RxQuery.find()](./rx-query.md#findOne).
 
 ```js
-// get document with name:foobar
-myCollection.findOne({
+// get document with id:todo1
+myDatabase.todos.findOne({
   selector: {
-    name: 'foo'
+    id: 'todo1'
   }
 }).exec().then(doc => console.dir(doc));
 
 // get document by primary, functionally identical to above query
-myCollection.findOne('foo')
+myDatabase.todos.findOne('todo1')
   .exec().then(doc => console.dir(doc));
 ```
 
@@ -1143,11 +1232,11 @@ Returns a `Map` where the primary key of the document is mapped to the document.
 
 ```js
 const ids = [
-  'alice',
-  'bob',
+  'todo1',
+  'todo2',
   /* ... */
 ];
-const docsMap = await myCollection.findByIds(ids);
+const docsMap = await myDatabase.todos.findByIds(ids);
 
 console.dir(docsMap); // Map(2)
 ```
@@ -1161,7 +1250,7 @@ The `Map` returned by `findByIds` is not guaranteed to return elements in the sa
 Creates a JSON export of every document in the collection. Needs the `json-dump` plugin. [Read more](./json-import-export.md)
 
 ```js
-const json = await myCollection.exportJSON();
+const json = await myDatabase.todos.exportJSON();
 ```
 
 ### importJSON()
@@ -1169,7 +1258,7 @@ const json = await myCollection.exportJSON();
 Imports a previously exported JSON dump back into the collection. [Read more](./json-import-export.md)
 
 ```js
-await myCollection.importJSON(json);
+await myDatabase.todos.importJSON(json);
 ```
 
 ### remove()
@@ -1178,14 +1267,14 @@ Removes all known data of the collection and its previous versions.
 This removes the documents, the schemas, and older schemaVersions.
 
 ```js
-await myCollection.remove();
+await myDatabase.todos.remove();
 // collection is now removed and can be re-created
 ```
 
 ### close()
 Removes the collection's object instance from the [RxDatabase](./rx-database.md). This is to free up memory and stop all observers and replications. It will not delete the collection's data. When you create the collection again with `database.addCollections()`, the newly added collection will still have all data.
 ```js
-await myCollection.close();
+await myDatabase.todos.close();
 ```
 
 ### onClose / onRemove()
@@ -1194,8 +1283,8 @@ This works even across multiple browser tabs so you can detect when another tab 
 and your application can behave accordingly.
 
 ```js
-await myCollection.onClose(() => console.log('I am closed'));
-await myCollection.onRemove(() => console.log('I am removed'));
+await myDatabase.todos.onClose(() => console.log('I am closed'));
+await myDatabase.todos.onRemove(() => console.log('I am removed'));
 ```
 
 ### isRxCollection
@@ -1219,7 +1308,7 @@ const is = isRxCollection(myObj);
 
     
     In the open-source version of RxDB, the amount of RxCollections that can be open in parallel is limited to <code>{NON_PREMIUM_COLLECTION_LIMIT}</code>. The value comes from the `NON_PREMIUM_COLLECTION_LIMIT` constant in [`src/plugins/utils/utils-premium.ts`](https://github.com/pubkey/rxdb/blob/master/src/plugins/utils/utils-premium.ts).
-    The limit counts all open collections of all databases in the same JavaScript process. Closed collections do not count. When the limit is reached, RxDB waits a short time for other collections to close and then throws the error `COL23`.
+    The limit counts all open collections of all databases in the same JavaScript process. Closed collections do not count. When the limit is reached, RxDB waits a short time for other collections to close and then throws the error [`COL23`](./errors.md#COL23).
 
     To remove the limit:
 
@@ -1231,7 +1320,7 @@ const is = isRxCollection(myObj);
     import { setPremiumFlag } from 'rxdb-premium/plugins/shared';
     setPremiumFlag();
 
-    const db = await createRxDatabase({ /* ... */ });
+    const myDatabase = await createRxDatabase({ /* ... */ });
     ```
 
     Before you remove the limit, check whether you need that many collections. Each RxCollection opens its own storage instance (for example its own IndexedDB object store or SQLite table) and keeps its own change stream and query cache. So the startup time and memory usage grow with every collection. When many collections store documents with a similar shape, store them in one collection with a `type` field and an index on it.
@@ -1272,6 +1361,21 @@ const db = await createRxDatabase({
 
 The database name is a string which uniquely identifies the database. When two RxDatabases have the same name and use the same `RxStorage`, their data can be assumed as equal and they will share events between each other.
 Depending on the storage or adapter this can also be used to define the filesystem folder of your data.
+
+:::note Prefix the name on staging deployments
+When you deploy your app to a staging area, prefix the database name with the staging id. Browser storages like IndexedDB, OPFS, and localStorage are scoped to the origin and not to the URL path. Let's say your app lives on `example.com` and you have a feature preview at `example.com/commit-42/`. Both deployments run on the same origin, so with the same database name the preview reads and writes the stored data of the production app. This can corrupt data when the preview uses a different [schema version](./migration-schema.md) or stores test documents. To fix this, use `commit-42-mydatabasename` as name for the preview.
+
+```ts
+// your own deploy config, for example 'commit-42' on a feature preview
+// and '' on production
+const stagingId = import.meta.env.VITE_STAGING_ID;
+
+const db = await createRxDatabase({
+  name: stagingId ? stagingId + '-mydatabasename' : 'mydatabasename',
+  storage: getRxStorageLocalstorage()
+});
+```
+:::
 
 ### storage
 
@@ -1482,7 +1586,7 @@ await removeRxDatabase('mydatabasename', getRxStorageLocalstorage());
 
 #### Removing an encrypted database
 
-When the database uses the [encryption plugin](./encryption.md), the storage is wrapped with `wrappedKeyEncryptionCryptoJsStorage()`. To remove such a database, pass the wrapped storage and the password. Without the password, RxDB cannot open the storage instances of collections that have encrypted fields and `removeRxDatabase()` throws the error `EN3` ("Schema contains encrypted properties but no password is given").
+When the database uses the [encryption plugin](./encryption.md), the storage is wrapped with `wrappedKeyEncryptionCryptoJsStorage()`. To remove such a database, pass the wrapped storage and the password. Without the password, RxDB cannot open the storage instances of collections that have encrypted fields and `removeRxDatabase()` throws the error [`EN3`](./errors.md#EN3) ("Schema contains encrypted properties but no password is given").
 
 ```ts
 import { removeRxDatabase } from 'rxdb';
@@ -1546,16 +1650,22 @@ RxDB works on RxDocuments instead of plain JSON data to have more convenient ope
 ## insert
 To insert a document into a collection, you have to call the collection's `.insert()` function.
 ```js
-await myCollection.insert({
-  name: 'foo',
-  lastname: 'bar'
+await myDatabase.todos.insert({
+  id: 'todo1',
+  name: 'Learn RxDB',
+  done: false,
+  dueAt: '2026-01-01T10:00:00.000Z',
+  priority: 8,
+  tags: ['learning', 'rxdb'],
+  assignee: { name: 'Alice', email: 'alice@example.com' },
+  subtasks: ['todo3']
 });
 ```
 
 ## find
 To find documents in a collection, you have to call the collection's `.find()` function. [See RxQuery](./rx-query.md).
 ```js
-const docs = await myCollection.find().exec(); // <- find all documents
+const docs = await myDatabase.todos.find().exec(); // <- find all documents
 ```
 
 ## Functions
@@ -1580,8 +1690,8 @@ myDocument.get$('name')
     isName = newName;
   });
 
-await myDocument.incrementalPatch({name: 'foobar2'});
-console.dir(isName); // isName is now 'foobar2'
+await myDocument.incrementalPatch({name: 'Learn RxDB queries'});
+console.dir(isName); // isName is now 'Learn RxDB queries'
 
 // OR
 
@@ -1599,13 +1709,13 @@ All properties of an `RxDocument` are assigned as getters so you can also direct
   // Identical to myDocument.get('name');
   const name = myDocument.name;
   // Can also get nested values.
-  const nestedValue = myDocument.whatever.nestedfield;
+  const assigneeName = myDocument.assignee.name;
 
   // Also usable with observables:
-  myDocument.firstName$.subscribe(newName => console.log('name is: ' + newName));
-  // > 'name is: Stefe'
-  await myDocument.incrementalPatch({firstName: 'Steve'});
-  // > 'name is: Steve'
+  myDocument.name$.subscribe(newName => console.log('name is: ' + newName));
+  // > 'name is: Learn RxDB'
+  await myDocument.incrementalPatch({name: 'Learn RxDB queries'});
+  // > 'name is: Learn RxDB queries'
 ```
 
 ### update()
@@ -1622,10 +1732,10 @@ addRxPlugin(RxDBUpdatePlugin);
 
 await myDocument.update({
     $inc: {
-        age: 1 // increases age by 1
+        priority: 1 // increases priority by 1
     },
     $set: {
-        firstName: 'foobar' // sets firstName to foobar
+        name: 'Learn RxDB queries' // sets name to 'Learn RxDB queries'
     }
 });
 ```
@@ -1636,12 +1746,12 @@ Updates a document's data based on a function that mutates the current data and 
 ```js
 
 const changeFunction = (oldData) => {
-    oldData.age = oldData.age + 1;
-    oldData.name = 'foooobarNew';
+    oldData.priority = oldData.priority + 1;
+    oldData.name = 'Learn RxDB queries';
     return oldData;
 }
 await myDocument.modify(changeFunction);
-console.log(myDocument.name); // 'foooobarNew'
+console.log(myDocument.getLatest().name); // 'Learn RxDB queries'
 ```
 
 ### patch()
@@ -1650,15 +1760,15 @@ Overwrites the given attributes in the document's data.
 
 ```js
 await myDocument.patch({
-  name: 'Steve',
-  age: undefined // setting an attribute to undefined will remove it
+  name: 'Learn RxDB queries',
+  note: undefined // setting an attribute to undefined will remove it
 });
-console.log(myDocument.name); // 'Steve'
+console.log(myDocument.getLatest().name); // 'Learn RxDB queries'
 ```
 
 ### Prevent conflicts with the incremental methods {#incrementalModify}
 
-Making a normal change to the non-latest version of an `RxDocument` will lead to a `409 CONFLICT` error because RxDB
+Making a normal change to the non-latest version of an `RxDocument` will lead to a [`409 CONFLICT`](./errors.md#CONFLICT) error because RxDB
 uses [revision checks](./transactions-conflicts-revisions.md) instead of transactions.
 
 To make a change to a document, no matter what the current state is, you can use the `incremental` methods:
@@ -1667,25 +1777,23 @@ To make a change to a document, no matter what the current state is, you can use
 // update
 await myDocument.incrementalUpdate({
     $inc: {
-        age: 1 // increases age by 1
+        priority: 1 // increases priority by 1
     }
 });
 
 // modify
 await myDocument.incrementalModify(docData => {
-  docData.age = docData.age + 1;
+  docData.priority = docData.priority + 1;
   return docData;
 });
 
 // patch
 await myDocument.incrementalPatch({
-  age: 100
+  priority: 10
 });
 
 // remove
-await myDocument.incrementalRemove({
-  age: 100
-});
+await myDocument.incrementalRemove();
 ```
 
 ### getLatest()
@@ -1693,9 +1801,9 @@ await myDocument.incrementalRemove({
 Returns the latest known state of the `RxDocument`.
 
 ```js
-const myDocument = await myCollection.findOne('foobar').exec();
+const myDocument = await myDatabase.todos.findOne('todo1').exec();
 const docAfterEdit = await myDocument.incrementalPatch({
-  age: 10
+  priority: 10
 });
 const latestDoc = myDocument.getLatest();
 console.log(docAfterEdit === latestDoc); // > true
@@ -1735,7 +1843,7 @@ await doc.update({
 
 // modify() and remove()
 await doc.modify(data => {
-  data.age = 1;
+  data.done = true;
   data._deleted = true;
   return data;
 });
@@ -1777,10 +1885,10 @@ Returns the document's data as plain JSON object. This will return an **immutabl
 ```js
 const json = myDocument.toJSON();
 console.dir(json);
-/* { passportId: 'h1rg9ugdd30o',
-  firstName: 'Carolina',
-  lastName: 'Gibson',
-  age: 33 ...
+/* { id: 'todo1',
+  name: 'Learn RxDB',
+  done: false,
+  priority: 8 ...
 */
 ```
 
@@ -1789,9 +1897,9 @@ You can also set `withMetaFields: true` to get additional meta fields like the r
 ```js
 const json = myDocument.toJSON(true);
 console.dir(json);
-/* { passportId: 'h1rg9ugdd30o',
-  firstName: 'Carolina',
-  lastName: 'Gibson',
+/* { id: 'todo1',
+  name: 'Learn RxDB',
+  done: false,
   _deleted: false,
   _attachments: { ... },
   _rev: '1-aklsdjfhak'
@@ -1805,7 +1913,7 @@ Remember that deep cloning is expensive and should only be done when necessary.
 
 ```js
 const json = myDocument.toMutableJSON();
-json.firstName = 'Alice'; // The returned document can be mutated
+json.name = 'Learn RxDB queries'; // The returned document can be mutated
 ```
 
 :::note All methods of RxDocument are bound to the instance
@@ -1823,21 +1931,21 @@ const is = isRxDocument(myObj);
 **RxDocument instances are immutable.** Each instance represents a snapshot of the document at the time it was fetched or last written. Modifying a document does not update existing instances of it - it creates a new `RxDocument` instance with the updated data. The old instance retains its original data.
 
 ```js
-const doc = await myCollection.findOne('foobar').exec();
-console.log(doc.age); // 10
+const doc = await myDatabase.todos.findOne('todo1').exec();
+console.log(doc.priority); // 8
 
-await doc.incrementalPatch({ age: 20 });
+await doc.incrementalPatch({ priority: 10 });
 
 // The original instance still has the old data
-console.log(doc.age); // 10
+console.log(doc.priority); // 8
 
 // Use getLatest() to get the updated state
-console.log(doc.getLatest().age); // 20
+console.log(doc.getLatest().priority); // 10
 ```
 
 **RxDB de-duplicates document instances.** When the same document is fetched multiple times without any writes in between, RxDB returns the same instance to save memory. Once a write occurs, subsequent fetches return a new instance reflecting the updated state.
 
-**Calling non-incremental write methods on an outdated instance throws a `CONFLICT` error.** If you hold a reference to a document and another operation modifies that document in the meantime, calling `.patch()`, `.update()`, or `.modify()` on the outdated instance will fail with a conflict error. See [Transactions, Conflicts and Revisions](./transactions-conflicts-revisions.md) for details on how RxDB handles conflicts.
+**Calling non-incremental write methods on an outdated instance throws a [`CONFLICT`](./errors.md#CONFLICT) error.** If you hold a reference to a document and another operation modifies that document in the meantime, calling `.patch()`, `.update()`, or `.modify()` on the outdated instance will fail with a conflict error. See [Transactions, Conflicts and Revisions](./transactions-conflicts-revisions.md) for details on how RxDB handles conflicts.
 
 To avoid this, either:
 - Use the [incremental methods](#incrementalModify) (`incrementalPatch`, `incrementalModify`, `incrementalUpdate`) which always fetch the latest state before applying changes.
@@ -1856,14 +1964,19 @@ The revision string has the format `<height>-<token>`, for example `3-dwtwqbarqc
 - **token**: the `token` of the [RxDatabase](./rx-database.md) instance that did the write (`myDatabase.token`). It is not a hash of the document content.
 
 ```ts
-const doc = await myCollection.insert({ id: 'foo', age: 20 });
+const doc = await myDatabase.todos.insert({
+  id: 'todo4',
+  name: 'Clean the kitchen',
+  dueAt: '2026-01-04T18:00:00.000Z',
+  priority: 1
+});
 console.log(doc.revision); // '1-dwtwqbarqc'
 
-const doc2 = await doc.incrementalPatch({ age: 21 });
+const doc2 = await doc.incrementalPatch({ priority: 2 });
 console.log(doc2.revision); // '2-dwtwqbarqc'
 ```
 
-RxDB uses the revision for optimistic concurrency control. Every write sends the previous document state together with the new one. The storage compares the `_rev` of the previous state with the `_rev` that is currently stored. When they differ, another write happened in the meantime and the write fails with a `409 CONFLICT` error. This is why non-incremental methods like `patch()` throw on an outdated `RxDocument` instance, while the incremental methods retry with the latest state. Read more in [Transactions, Conflicts and Revisions](./transactions-conflicts-revisions.md).
+RxDB uses the revision for optimistic concurrency control. Every write sends the previous document state together with the new one. The storage compares the `_rev` of the previous state with the `_rev` that is currently stored. When they differ, another write happened in the meantime and the write fails with a [`409 CONFLICT`](./errors.md#CONFLICT) error. This is why non-incremental methods like `patch()` throw on an outdated `RxDocument` instance, while the incremental methods retry with the latest state. Read more in [Transactions, Conflicts and Revisions](./transactions-conflicts-revisions.md).
 
 The `_rev` field is local to each client. By default it is stripped before documents are sent by the [replication](./replication.md) and the [conflict handler](./transactions-conflicts-revisions.md#custom-conflict-handler) does not see it. To detect conflicts between clients, the replication compares the assumed master state with the real master state instead. If your backend needs a version field, add your own field like `updatedAt` to the schema.
 
@@ -2257,58 +2370,62 @@ import {Faq, FaqItem} from '@site/src/components/faq';
 
 # RxQuery
 
-To find documents inside of an [RxCollection](./rx-collection.md), RxDB uses the RxQuery interface that handles all query operations: it serves as the main interface for fetching documents, relies on a MongoDB-like [Mango Query Syntax](https://github.com/cloudant/mango), and provides three types of queries: [find()](#find), [findOne()](#findOne) and [count()](#count). By caching and de-duplicating results, RxQuery ensures efficient in-memory handling, and when queries are observed or re-run, the [EventReduce algorithm](https://github.com/pubkey/event-reduce) speeds up updates for a fast real-time experience and queries that run more than once.
+To find documents inside of an [RxCollection](./rx-collection.md), RxDB uses the RxQuery interface that handles all query operations: it serves as the main interface for fetching documents, relies on a MongoDB-like [Mango Query Syntax](./mango-query.md), and provides three types of queries: [find()](#find), [findOne()](#findOne) and [count()](#count). By caching and de-duplicating results, RxQuery ensures efficient in-memory handling, and when queries are observed or re-run, the [EventReduce algorithm](https://github.com/pubkey/event-reduce) speeds up updates for a fast real-time experience and queries that run more than once.
 
 ## find()
 To create a basic `RxQuery`, call `.find()` on a collection and insert selectors. The result-set of normal queries is an array with documents.
 
 ```js
-// find all that are older than 18
-const query = myCollection
+// find all todos with a priority greater than 5
+const query = myDatabase.todos
     .find({
       selector: {
-        age: {
-          $gt: 18
+        priority: {
+          $gt: 5
         }
       }
     });
+const results = await query.exec();
+// > [RxDocument[todo1], RxDocument[todo3]]
 ```
 
 ## findOne() {#findOne}
 A findOne-query has only a single [RxDocument](./rx-document.md) or `null` as result-set.
 
 ```js
-// find alice
-const query = myCollection
+// find the todo with the name 'Buy groceries'
+const query = myDatabase.todos
     .findOne({
       selector: {
-        name: 'alice'
+        name: 'Buy groceries'
       }
     });
 ```
 
 ```js
-// find the youngest one
-const query = myCollection
+// find the todo that is due first
+const query = myDatabase.todos
     .findOne({
       selector: {},
       sort: [
-        {age: 'asc'}
+        {dueAt: 'asc'}
       ]
     });
+const doc = await query.exec();
+// > RxDocument[todo1]
 ```
 
 ```js
 // find one document by the primary key
-const query = myCollection.findOne('foobar');
+const query = myDatabase.todos.findOne('todo1');
 ```
 ## exec()
 Returns a `Promise` that resolves with the result-set of the query.
 
 ```js
-const query = myCollection.find();
+const query = myDatabase.todos.find();
 const results = await query.exec();
-console.dir(results); // > [RxDocument,RxDocument,RxDocument..]
+console.dir(results); // > [RxDocument,RxDocument,RxDocument,RxDocument]
 ```
 
 On `.findOne()` queries, you can call `.exec(true)` to ensure your document exists and to make TypeScript handling easier:
@@ -2316,11 +2433,11 @@ On `.findOne()` queries, you can call `.exec(true)` to ensure your document exis
 ```ts
 // docOrUndefined can be RxDocument or null
 // which then has to be handled to be typesafe.
-const docOrUndefined = await myCollection.findOne().exec();
+const docOrUndefined = await myDatabase.todos.findOne().exec();
 
 // with .exec(true), it will throw if the document
 // cannot be found and always return type RxDocument
-const doc = await myCollection.findOne().exec(true);
+const doc = await myDatabase.todos.findOne().exec(true);
 ```
 
 ## Observe $ {#observe}
@@ -2328,14 +2445,14 @@ An `BehaviorSubject` [see](https://medium.com/@luukgruijs/understanding-rxjs-beh
 This is extremely helpful when used together with UIs that should always show the same state as what is written in the database.
 
 ```js
-const query = myCollection.find();
+const query = myDatabase.todos.find();
 const querySub = query.$.subscribe(results => {
     console.log('got results: ' + results.length);
 });
-// > 'got results: 5'   // BehaviorSubjects emit on subscription
+// > 'got results: 4'   // BehaviorSubjects emit on subscription
 
-await myCollection.insert({/* ... */}); // insert one
-// > 'got results: 6'   // $.subscribe() was called again with the new results
+await myDatabase.todos.insert({/* ... */}); // insert one
+// > 'got results: 5'   // $.subscribe() was called again with the new results
 
 // stop watching this query
 querySub.unsubscribe()
@@ -2350,16 +2467,16 @@ Runs an [update](./rx-document.md#update) on every RxDocument of the query-resul
 import { RxDBUpdatePlugin } from 'rxdb/plugins/update';
 addRxPlugin(RxDBUpdatePlugin);
 
-const query = myCollection.find({
+const query = myDatabase.todos.find({
   selector: {
-    age: {
-      $gt: 18
+    priority: {
+      $gt: 5
     }
   }
 });
 await query.update({
     $inc: {
-        age: 1 // increases age of every found document by 1
+        priority: 1 // increases priority of every found document by 1
     }
 });
 ```
@@ -2369,15 +2486,15 @@ await query.update({
 Runs the [RxDocument.patch()](./rx-document.md#patch) function on every RxDocument of the query result.
 
 ```js
-const query = myCollection.find({
+const query = myDatabase.todos.find({
   selector: {
-    age: {
-      $gt: 18
+    priority: {
+      $gt: 5
     }
   }
 });
 await query.patch({
-  age: 12 // set the age of every found to 12
+  done: true // set done of every found document to true
 });
 ```
 
@@ -2386,15 +2503,16 @@ await query.patch({
 Runs the [RxDocument.modify()](./rx-document.md#modify) function on every RxDocument of the query result.
 
 ```js
-const query = myCollection.find({
+const query = myDatabase.todos.find({
   selector: {
-    age: {
-      $gt: 18
+    priority: {
+      $gt: 5
     }
   }
 });
 await query.modify((docData) => {
-  docData.age = docData.age + 1; // increases age of every found document by 1
+  // increases priority of every found document by 1
+  docData.priority = docData.priority + 1;
   return docData;
 });
 ```
@@ -2404,11 +2522,11 @@ await query.modify((docData) => {
 Deletes all found documents. Returns a promise which resolves to the deleted documents.
 
 ```javascript
-// All documents where the age is less than 18
-const query = myCollection.find({
+// All todos that are done
+const query = myDatabase.todos.find({
   selector: {
-    age: {
-      $lt: 18
+    done: {
+      $eq: true
     }
   }
 });
@@ -2420,10 +2538,10 @@ On `.findOne()` queries, `.remove()` returns `null` when no document matches. Yo
 
 ```ts
 // returns null if no document matches
-const removed = await myCollection.findOne('foobar').remove();
+const removed = await myDatabase.todos.findOne('todo1').remove();
 
 // throws if no document matches, return type is always RxDocument
-const removed = await myCollection.findOne('foobar').remove(true);
+const removed = await myDatabase.todos.findOne('todo1').remove(true);
 ```
 
 ## doesDocumentDataMatch()
@@ -2431,30 +2549,46 @@ Returns `true` if the given document data matches the query.
 
 ```js
 const documentData = {
-  id: 'foobar',
-  age: 19
+  id: 'todo1',
+  name: 'Learn RxDB',
+  priority: 8
 };
 
-myCollection.find({
+myDatabase.todos.find({
   selector: {
-    age: {
-      $gt: 18
+    priority: {
+      $gt: 5
     }
   }
 }).doesDocumentDataMatch(documentData); // > true
 
-myCollection.find({
+myDatabase.todos.find({
   selector: {
-    age: {
-      $gt: 20
+    priority: {
+      $gt: 9
     }
   }
 }).doesDocumentDataMatch(documentData); // > false
 ```
 
+## Mango Query Syntax
+
+The `selector` of a query is written in the [Mango query syntax](./mango-query.md). The [Mango query page](./mango-query.md) shows every supported operator with examples, including nested fields, array fields, regex queries, sorting, and pagination.
+
+```ts
+const results = await myDatabase.todos.find({
+  selector: {
+    done: false,
+    priority: { $gt: 5 }
+  },
+  sort: [{ priority: 'desc' }]
+}).exec();
+// > [RxDocument[todo3], RxDocument[todo1]]
+```
+
 ## Query Builder Plugin
 
-To use chained query methods, you can also use the `query-builder` plugin.
+To use chained query methods, you can also use the [query builder plugin](./query-builder.md).
 
 ```ts
 // add the query builder plugin
@@ -2464,63 +2598,11 @@ addRxPlugin(RxDBQueryBuilderPlugin);
 
 // now you can use chained query methods
 
-const query = myCollection.find().where('age').gt(18);
+const query = myDatabase.todos.find().where('priority').gt(5);
 const result = await query.exec();
 ```
 
-## Query Examples
-Here some examples to learn quickly how to write queries without reading the docs.
-- [Pouch-find-docs](https://github.com/pouchdb/pouchdb/blob/master/packages/node_modules/pouchdb-find/README.md) - learn how to use mango-queries
-- [mquery-docs](https://github.com/aheckmann/mquery/blob/master/README.md) - learn how to use chained-queries
-
-```js
-// directly pass search-object
-myCollection.find({
-  selector: {
-    name: { $eq: 'foo' }
-  }
-})
-.exec().then(documents => console.dir(documents));
-
-/*
- * find by using sql equivalent '%like%' syntax
- * This example will e.g. match 'foo' but also 'fifoo' or 'foofa' or 'fifoofa'
- * Notice that in RxDB queries, a regex is
- * represented as a $regex string with the
- * $options parameter for flags.
- * Using a RegExp instance is not allowed
- * because they are not JSON.stringify()-able
- * and also RegExp instances are mutable which
- * could cause undefined behavior when the
- * RegExp is mutated
- * after the query was parsed.
- */
-myCollection.find({
-  selector: {
-    name: { $regex: '.*foo.*' }
-  }
-})
-.exec().then(documents => console.dir(documents));
-
-// find using a composite statement eg: $or
-// This example checks where name is either foo
-// or if name is not existent on the document
-myCollection.find({
-  selector: { $or: [ { name: { $eq: 'foo' } }, { name: { $exists: false } }] }
-})
-.exec().then(documents => console.dir(documents));
-
-// do a case insensitive search
-// This example will match 'foo' or 'FOO' or 'FoO' etc...
-myCollection.find({
-  selector: { name: { $regex: '^foo$', $options: 'i' } }
-})
-.exec().then(documents => console.dir(documents));
-
-// chained queries
-myCollection.find().where('name').eq('foo')
-.exec().then(documents => console.dir(documents));
-```
+The [query builder page](./query-builder.md) shows all chained methods with examples, including nested fields, array fields, logical operators, sorting, and pagination.
 
 :::note RxDB will always append the primary key to the sort parameters
 For several performance optimizations, like the [EventReduce algorithm](https://github.com/pubkey/event-reduce), RxDB expects all queries to return a deterministic sort order that does not depend on the insert order of the documents. To ensure a deterministic ordering, RxDB will always append the primary key as last sort parameter to all queries and to all indexes.
@@ -2534,27 +2616,27 @@ But the query planner cannot know everything and sometimes will not pick the mos
 To improve query performance, you can specify which index must be used, when running the query.
 
 ```ts
-const query = myCollection
+const query = myDatabase.todos
     .findOne({
       selector: {
-        age: {
-          $gt: 18
+        done: {
+          $eq: false
         },
-        gender: {
-          $eq: 'm'
+        dueAt: {
+          $gt: '2026-01-03T00:00:00.000Z'
         }
       },
       /**
-       * Because the developer knows that 50% of the documents are 'male',
-       * but only 20% are below age 18,
+       * Because the developer knows that 50% of the todos are not done,
+       * but only 10% are due after the given date,
        * it makes sense to enforce using the
-       * ['gender', 'age'] index to improve
+       * 'dueAt' index to improve
        * performance.
        * This could not be known by the query
        * planner which might have chosen
-       * ['age', 'gender'] instead.
+       * ['done', 'priority'] instead.
        */
-      index: ['gender', 'age']
+      index: ['dueAt']
     });
 ```
 
@@ -2564,17 +2646,20 @@ When you only need the amount of documents that match a query, but you do not ne
 The performance difference compared to a normal query differs depending on which [RxStorage](./rx-storage.md) implementation is used.
 
 ```ts
-const query = myCollection.count({
+const query = myDatabase.todos.count({
   selector: {
-    age: {
-      $gt: 18
+    done: {
+      $eq: false
+    },
+    priority: {
+      $gt: 5
     }
   }
   // 'limit' and 'skip' MUST NOT be set for count queries.
 });
 
 // get the count result once
-const matchingAmount = await query.exec(); // > number
+const matchingAmount = await query.exec(); // > 2
 
 // observe the result
 query.$.subscribe(amount => {
@@ -2592,10 +2677,10 @@ Count queries have a better performance than normal queries because they do not 
  * the count operation cannot run on any specific index range
  * because the $regex operator is used.
  */
-const query = myCollection.count({
+const query = myDatabase.todos.count({
   selector: {
-    age: {
-      $regex: 'foobar'
+    name: {
+      $regex: 'groceries'
     }
   }
 });
@@ -2603,16 +2688,16 @@ const query = myCollection.count({
 /**
  * The following will throw an error because
  * the count operation cannot run on any specific index range
- * because there is no ['age' ,'otherNumber'] index
+ * because there is no ['priority', 'dueAt'] index
  * defined in the schema.
  */
-const query = myCollection.count({
+const query = myDatabase.todos.count({
   selector: {
-    age: {
-      $gt: 20
+    priority: {
+      $gt: 5
     },
-    otherNumber: {
-      $gt: 10
+    dueAt: {
+      $gt: '2026-01-02T00:00:00.000Z'
     }
   }
 });
@@ -2622,20 +2707,20 @@ If you want to count these kinds of queries, you should do a normal query instea
 
 ```ts
 // get count manually once
-const resultSet = await myCollection.find({
+const resultSet = await myDatabase.todos.find({
   selector: {
-    age: {
-      $regex: 'foobar'
+    name: {
+      $regex: 'groceries'
     }
   }
 }).exec();
 const count = resultSet.length;
 
 // observe count manually
-const count$ = myCollection.find({
+const count$ = myDatabase.todos.find({
   selector: {
-    age: {
-      $regex: 'foobar'
+    name: {
+      $regex: 'groceries'
     }
   }
 }).$.pipe(
@@ -2666,7 +2751,7 @@ This means, when you have a `RxQuery` and run a `.where()` on it, the original R
 Example:
 
 ```javascript
-const queryObject = myCollection.find().where('age').gt(18);
+const queryObject = myDatabase.todos.find().where('priority').gt(5);
 // Creates a new RxQuery object, does not modify previous one
 queryObject.sort('name');
 const results = await queryObject.exec();
@@ -2690,45 +2775,47 @@ const is = isRxQuery(myObj);
 `storageInstance.query()` needs a prepared query. Get it from a normal `RxQuery` with `getPreparedQuery()`. This normalizes the query, adds the `_deleted: false` condition so deleted documents are excluded, and calculates the query plan, the same way `exec()` does.
 
 ```ts
-const rxQuery = myCollection.find({
-    selector: { age: { $gte: 21 } },
-    sort: [{ age: 'asc' }]
+const rxQuery = myDatabase.todos.find({
+    selector: { priority: { $gte: 8 } },
+    sort: [{ priority: 'asc' }]
 });
 const preparedQuery = rxQuery.getPreparedQuery();
 
-const result = await myCollection.storageInstance.query(preparedQuery);
+const result = await myDatabase.todos.storageInstance.query(preparedQuery);
 console.log(result.documents);
 /* > [{
-    id: 'a',
-    age: 21,
+    id: 'todo1',
+    name: 'Learn RxDB',
+    priority: 8,
     _deleted: false,
     _attachments: {},
     _meta: { lwt: 1791365224271 },
     _rev: '2-dwtwqbarqc'
 }, ...] */
 
-const countResult = await myCollection.storageInstance.count(preparedQuery);
+const countResult = await myDatabase.todos.storageInstance.count(preparedQuery);
 console.log(countResult.count);
+// > 2
 ```
 
-To build the prepared query without an `RxQuery`, use `normalizeMangoQuery()` and `prepareQuery()` from `rxdb` together with the filled schema of the collection (`myCollection.schema.jsonSchema`). The selector must then contain `_deleted: { $eq: false }` yourself.
+To build the prepared query without an `RxQuery`, use `normalizeMangoQuery()` and `prepareQuery()` from `rxdb` together with the filled schema of the collection (`myDatabase.todos.schema.jsonSchema`). The selector must then contain `_deleted: { $eq: false }` yourself.
 
 ```ts
 import { normalizeMangoQuery, prepareQuery } from 'rxdb';
 
-const schema = myCollection.schema.jsonSchema;
+const schema = myDatabase.todos.schema.jsonSchema;
 const preparedQuery = prepareQuery(
     schema,
     normalizeMangoQuery(schema, {
         selector: {
             _deleted: { $eq: false },
-            age: { $gte: 21 }
+            priority: { $gte: 8 }
         },
-        sort: [{ age: 'asc' }],
+        sort: [{ priority: 'asc' }],
         limit: 100
     })
 );
-const result = await myCollection.storageInstance.query(preparedQuery);
+const result = await myDatabase.todos.storageInstance.query(preparedQuery);
 ```
 
 Keep in mind what you lose when you query the storage directly:
@@ -2750,16 +2837,16 @@ The value can be set at the database level (applies to all collections) or overr
 
 ```ts
 // set at database level - applies to all collections
-const db = await createRxDatabase({
-  name: 'heroesdb',
+const myDatabase = await createRxDatabase({
+  name: 'mydatabase',
   storage: getRxStorageLocalstorage(),
   liveQueryUpdateThrottleTime: 100 // ms
 });
 
 // or override per collection
-const collections = await db.addCollections({
-  heroes: {
-    schema: heroSchema,
+await myDatabase.addCollections({
+  todos: {
+    schema: todoSchema,
     liveQueryUpdateThrottleTime: 200 // ms, overrides the database-level value
   }
 });
@@ -2799,22 +2886,23 @@ Like most other noSQL-Databases, RxDB uses the [mango-query-syntax](https://gith
   - **Store Data in a Meta-Field for Lowercase Search**: To enable case-insensitive search, you can store an additional field in your documents where the relevant text data is preprocessed and saved in lowercase.
 ```ts
 const document = {
-  name: 'John Doe',
-  nameLowercase: 'john doe' // Meta-field
+  id: 'todo1',
+  name: 'Learn RxDB',
+  nameLowercase: 'learn rxdb' // Meta-field
 };
-await myCollection.insert(document);
+await myDatabase.todos.insert(document);
 
-const query = myCollection.find({
+const query = myDatabase.todos.find({
   selector: {
-    nameLowercase: { $eq: 'john doe' }
+    nameLowercase: { $eq: 'learn rxdb' }
   }
 });
 ```
   - **Use a Regex Query**: Regular expressions can perform case-insensitive searches. For example:
 ```ts
-const query = myCollection.find({
+const query = myDatabase.todos.find({
   selector: {
-    name: { $regex: '^john doe$', $options: 'i' } // Case-insensitive regex
+    name: { $regex: '^learn rxdb$', $options: 'i' } // Case-insensitive regex
   }
 });
 ```
@@ -2833,86 +2921,99 @@ import {Faq, FaqItem} from '@site/src/components/faq';
 
 Schemas define the structure of the documents of a collection. Which field should be used as the primary key, which fields should be used as indexes, and what should be encrypted. Every collection has its own schema. With RxDB, schemas are defined with the [JSON Schema](https://json-schema.org/blog/posts/rxdb-case-study) standard which you might know from other projects.
 
-## Example
+## Example Schema
 
-In this example-schema we define a hero-collection with the following settings:
+This example schema describes a `todos` collection with the following settings:
 
-- the version-number of the schema is 0
-- the name-property is the **primaryKey**. This means it's a unique, indexed, required `string` which can be used to definitely find a single document.
-- the color-field is required for every document
-- the healthpoints-field must be a number between 0 and 100
-- the secret-field stores an encrypted value
-- the birthyear-field is final which means it is required and cannot be changed
-- the skills-attribute must be an array of objects which contain the name and the damage-attribute. There is a maximum of 5 skills per hero.
-- Allows adding attachments and storing them encrypted
+- `id` is the **primaryKey**. It is a unique, indexed, required `string` which identifies a single document.
+- `name` is the required title of the todo.
+- `done` is a required `boolean` with `default: false`, so it can be left out on insert.
+- `dueAt` is an ISO 8601 date-time string. It has a `maxLength` so that it can be used in an index. ISO strings sort in chronological order.
+- `priority` is an integer between `0` and `10`. Number fields in an index must have `minimum`, `maximum`, and `multipleOf`.
+- `tags` is an array of strings with `default: []`.
+- `assignee` is an optional nested object with a required `name`.
+- `subtasks` is an array of ids of other todos. The `ref: 'todos'` keyword makes it possible to load these documents with [population](./population.md).
+- `note` is an optional string. It can be [encrypted](./encryption.md) by adding it to the `encrypted` array.
+- The `indexes` speed up sorting by `dueAt` and queries on `done` and `priority`.
 
-```json
-  {
-    "title": "hero schema",
-    "version": 0,
-    "description": "describes a simple hero",
-    "primaryKey": "name",
-    "type": "object",
-    "properties": {
-        "name": {
-            "type": "string",
-            "maxLength": 100 // <- the primary key must have set maxLength
+```js
+export const todoSchema = {
+    title: 'todo schema',
+    version: 0,
+    primaryKey: 'id',
+    type: 'object',
+    properties: {
+        id: {
+            type: 'string',
+            maxLength: 100 // <- the primary key must have maxLength
         },
-        "color": {
-            "type": "string"
+        name: {
+            type: 'string'
         },
-        "healthpoints": {
-            "type": "number",
-            "minimum": 0,
-            "maximum": 100
+        done: {
+            type: 'boolean',
+            default: false
         },
-        "secret": {
-            "type": "string"
+        dueAt: {
+            type: 'string',
+            format: 'date-time',
+            maxLength: 30 // <- string fields in an index must have maxLength
         },
-        "birthyear": {
-            "type": "number",
-            "final": true,
-            "minimum": 1900,
-            "maximum": 2050
+        priority: {
+            type: 'integer',
+            minimum: 0,
+            maximum: 10,
+            // number fields in an index must have minimum, maximum and multipleOf
+            multipleOf: 1
         },
-        "skills": {
-            "type": "array",
-            "maxItems": 5,
-            "uniqueItems": true,
-            "items": {
-                "type": "object",
-                "properties": {
-                    "name": {
-                        "type": "string"
-                    },
-                    "damage": {
-                        "type": "number"
-                    }
-                }
+        tags: {
+            type: 'array',
+            default: [],
+            items: {
+                type: 'string'
             }
+        },
+        assignee: {
+            type: 'object',
+            properties: {
+                name: {
+                    type: 'string'
+                },
+                email: {
+                    type: 'string'
+                }
+            },
+            required: ['name']
+        },
+        subtasks: {
+            type: 'array',
+            ref: 'todos', // <- the values are ids of other todos documents
+            items: {
+                type: 'string'
+            }
+        },
+        note: {
+            type: 'string'
         }
     },
-    "required": [
-        "name",
-        "color"
-    ],
-    "encrypted": ["secret"],
-    "attachments": {
-        "encrypted": true
-    }
-  }
+    required: ['id', 'name', 'done', 'dueAt', 'priority', 'tags'],
+    indexes: [
+        'dueAt',
+        ['done', 'priority']
+    ]
+};
 ```
 
 ## Create a collection with the schema
 
-```javascript
+```ts
 await myDatabase.addCollections({
-    heroes: {
-        schema: myHeroSchema
+    todos: {
+        schema: todoSchema
     }
 });
-console.dir(myDatabase.heroes.name);
-// heroes
+console.dir(myDatabase.todos.name);
+// > todos
 ```
 
 ## version
@@ -3002,9 +3103,9 @@ RxDB will always append the `primaryKey` to all indexes to ensure a deterministi
 ### Index-example
 
 ```javascript
-const schemaWithIndexes = {
+const todoSchemaWithIndexes = {
   version: 0,
-  title: 'human schema with indexes',
+  title: 'todo schema with indexes',
   keyCompression: true,
   primaryKey: 'id',
   type: 'object',
@@ -3013,51 +3114,52 @@ const schemaWithIndexes = {
           type: 'string',
           maxLength: 100 // <- the primary key must have set maxLength
       },
-      firstName: {
-          type: 'string',
-          // string-fields used as an index,
-          // must have set maxLength.
-          maxLength: 100
-      },
-      lastName: {
+      name: {
           type: 'string'
       },
-      active: {
+      done: {
           type: 'boolean'
       },
-      familyName: {
-          type: 'string'
+      dueAt: {
+          type: 'string',
+          format: 'date-time',
+          // string-fields used as an index,
+          // must have set maxLength.
+          maxLength: 30
       },
-      balance: {
-          type: 'number',
+      priority: {
+          type: 'integer',
 
           // number fields used in an index, must set
           // minimum, maximum and multipleOf
           minimum: 0,
-          maximum: 100000,
-          multipleOf: 0.01
+          maximum: 10,
+          multipleOf: 1
       },
-      creditCards: {
-          type: 'array',
-          items: {
-              type: 'object',
-              properties: {
-                    cvc: {
-                        type: 'number'
-                    }
+      assignee: {
+          type: 'object',
+          properties: {
+              name: {
+                  type: 'string'
+              },
+              email: {
+                  type: 'string'
               }
-          } 
+          }
       }
   },
   required: [
       'id',
-      'active' // <- boolean fields that are used in an index must be required. 
+      'name',
+      'dueAt',
+      'priority',
+      'done' // <- boolean fields that are used in an index must be required.
   ],
   indexes: [
-    'firstName', // <- this will create a simple index for the `firstName` field
+    'dueAt', // <- this will create a simple index for the `dueAt` field
     // <- compound-index for these two fields
-    ['active', 'firstName'],
-    'active'
+    ['done', 'priority'],
+    'done'
   ]
 };
 ```
@@ -3074,7 +3176,7 @@ Default values can only be defined for first-level fields.
 Whenever you insert a document unset fields will be filled with default-values.
 
 ```javascript
-const schemaWithDefaultAge = {
+const todoSchemaWithDefaults = {
   version: 0,
   primaryKey: 'id',
   type: 'object',
@@ -3083,19 +3185,31 @@ const schemaWithDefaultAge = {
           type: 'string',
           maxLength: 100 // <- the primary key must have set maxLength
       },
-      firstName: {
+      name: {
           type: 'string'
       },
-      lastName: {
-          type: 'string'
+      done: {
+          type: 'boolean',
+          default: false // <- default will be used
       },
-      age: {
-          type: 'integer',
-          default: 20       // <- default will be used
+      tags: {
+          type: 'array',
+          default: [], // <- default will be used
+          items: {
+              type: 'string'
+          }
       }
   },
-  required: ['id']
+  required: ['id', 'name', 'done', 'tags']
 };
+
+await myDatabase.todos.insert({
+    id: 'todo4',
+    name: 'Clean the kitchen'
+});
+const doc = await myDatabase.todos.findOne('todo4').exec();
+console.log(doc.done, doc.tags);
+// > false []
 ```
 
 ## final
@@ -3108,7 +3222,7 @@ Advantages:
 - When you enable the `eventReduce` algorithm, some performance-improvements are done.
 
 ```javascript
-const schemaWithFinalAge = {
+const todoSchemaWithFinalName = {
   version: 0,
   primaryKey: 'id',
   type: 'object',
@@ -3117,18 +3231,15 @@ const schemaWithFinalAge = {
           type: 'string',
           maxLength: 100 // <- the primary key must have set maxLength
       },
-      firstName: {
-          type: 'string'
-      },
-      lastName: {
-          type: 'string'
-      },
-      age: {
-          type: 'integer',
+      name: {
+          type: 'string',
           final: true
+      },
+      done: {
+          type: 'boolean'
       }
   },
-  required: ['id']
+  required: ['id', 'name', 'done']
 };
 ```
 
@@ -3221,12 +3332,12 @@ Also the following class properties of `RxDocument` cannot be used as top level 
                 "type": "string",
                 "maxLength": 100
             },
-            "nickname": {
+            "note": {
                 "type": "string"
             }
         },
         "required": ["id"]
-        // "nickname" is not required, so it can be left undefined (not set)
+        // "note" is not required, so it can be left undefined (not set)
     }
     ```
 
@@ -3295,7 +3406,7 @@ In **development**-mode, the schema-change can be simplified by **one of these**
 
 -   Use the memory-storage so your db resets on restart and your schema is not saved permanently
 -   Call `removeRxDatabase('mydatabasename', RxStorage);` before creating a new [RxDatabase](./rx-database.md)-instance
--   Add a timestamp as suffix to the database-name to create a new one each run like `name: 'heroesDB' + new Date().getTime()`
+-   Add a timestamp as suffix to the database-name to create a new one each run like `name: 'mydatabase' + new Date().getTime()`
 
 </FaqItem>
 </Faq>
@@ -3731,51 +3842,64 @@ import {
     ExtractDocumentTypeFromTypedRxJsonSchema,
     RxJsonSchema
 } from 'rxdb';
-export const heroSchemaLiteral = {
-    title: 'hero schema',
-    description: 'describes a human being',
+export const todoSchemaLiteral = {
+    title: 'todo schema',
+    description: 'describes a single todo item',
     version: 0,
-    keyCompression: true,
-    primaryKey: 'passportId',
+    primaryKey: 'id',
     type: 'object',
     properties: {
-        passportId: {
+        id: {
             type: 'string',
             maxLength: 100 // <- the primary key must have set maxLength
         },
-        firstName: {
+        name: {
             type: 'string'
         },
-        lastName: {
-            type: 'string'
+        done: {
+            type: 'boolean',
+            default: false
         },
-        age: {
-            type: 'integer'
+        dueAt: {
+            type: 'string',
+            format: 'date-time',
+            maxLength: 30
+        },
+        priority: {
+            type: 'integer',
+            minimum: 0,
+            maximum: 10,
+            multipleOf: 1
+        },
+        note: {
+            type: 'string'
         }
     },
-    required: ['firstName', 'lastName', 'passportId'],
-    indexes: ['firstName']
+    required: ['id', 'name', 'done', 'dueAt', 'priority'],
+    indexes: ['dueAt']
 } as const; // <- It is important to set 'as const' to preserve the literal type
-const schemaTyped = toTypedRxJsonSchema(heroSchemaLiteral);
+const schemaTyped = toTypedRxJsonSchema(todoSchemaLiteral);
 
 // aggregate the document type from the schema
-export type HeroDocType =
+export type TodoDocType =
     ExtractDocumentTypeFromTypedRxJsonSchema<
         typeof schemaTyped
     >;
 
 // create the typed RxJsonSchema from the literal typed object.
-export const heroSchema: RxJsonSchema<HeroDocType> = heroSchemaLiteral;
+export const todoSchema: RxJsonSchema<TodoDocType> = todoSchemaLiteral;
 ```
 
 **Option B**: Manually type the document type
 
 ```typescript
-export type HeroDocType = {
-    passportId: string;
-    firstName: string;
-    lastName: string;
-    age?: number; // optional
+export type TodoDocType = {
+    id: string;
+    name: string;
+    done: boolean;
+    dueAt: string;
+    priority: number;
+    note?: string; // optional
 };
 ```
 
@@ -3788,17 +3912,17 @@ If your schema is in a `.json` file or generated from somewhere else, you might 
 We also add some ORM-methods for the document.
 
 ```typescript
-export type HeroDocMethods = {
-    scream: (v: string) => string;
+export type TodoDocMethods = {
+    describe: (prefix: string) => string;
 };
 ```
 
 ## Create [RxDocument](../rx-document.md) Type
 
-We can merge these into our HeroDocument.
+We can merge these into our TodoDocument.
 
 ```typescript
-export type HeroDocument = RxDocument<HeroDocType, HeroDocMethods>;
+export type TodoDocument = RxDocument<TodoDocType, TodoDocMethods>;
 ```
 
 ## Create [RxCollection](../rx-collection.md) Type
@@ -3808,15 +3932,15 @@ Now we can define type for the collection which contains the documents.
 ```typescript
 
 // we declare one static ORM-method for the collection
-export type HeroCollectionMethods = {
+export type TodoCollectionMethods = {
     countAllDocuments: () => Promise<number>;
 }
 
 // and then merge all our types
-export type HeroCollection = RxCollection<
-    HeroDocType,
-    HeroDocMethods,
-    HeroCollectionMethods
+export type TodoCollection = RxCollection<
+    TodoDocType,
+    TodoDocMethods,
+    TodoCollectionMethods
 >;
 ```
 
@@ -3826,7 +3950,7 @@ Before we can define the database, we make a helper-type which contains all coll
 
 ```typescript
 export type MyDatabaseCollections = {
-    heroes: HeroCollection
+    todos: TodoCollection
 }
 ```
 
@@ -3840,7 +3964,7 @@ export type MyDatabase = RxDatabase<MyDatabaseCollections>;
 
 ## Using the types
 
-Now that we have declare all our types, we can use them.
+Now that we have declared all our types, we can use them.
 
 ```typescript
 
@@ -3852,60 +3976,72 @@ const myDatabase: MyDatabase = await createRxDatabase<MyDatabaseCollections>({
     storage: getRxStorageLocalstorage()
 });
 
-const heroSchema: RxJsonSchema<HeroDocType> = {
-    title: 'human schema',
-    description: 'describes a human being',
+const todoSchema: RxJsonSchema<TodoDocType> = {
+    title: 'todo schema',
+    description: 'describes a single todo item',
     version: 0,
-    keyCompression: true,
-    primaryKey: 'passportId',
+    primaryKey: 'id',
     type: 'object',
     properties: {
-        passportId: {
+        id: {
             type: 'string',
             maxLength: 100
         },
-        firstName: {
+        name: {
             type: 'string'
         },
-        lastName: {
-            type: 'string'
+        done: {
+            type: 'boolean',
+            default: false
         },
-        age: {
-            type: 'integer'
+        dueAt: {
+            type: 'string',
+            format: 'date-time',
+            maxLength: 30
+        },
+        priority: {
+            type: 'integer',
+            minimum: 0,
+            maximum: 10,
+            multipleOf: 1
+        },
+        note: {
+            type: 'string'
         }
     },
-    required: ['passportId', 'firstName', 'lastName']
+    required: ['id', 'name', 'done', 'dueAt', 'priority'],
+    indexes: ['dueAt']
 };
 
-const heroDocMethods: HeroDocMethods = {
-    scream: function(this: HeroDocument, what: string) {
-        return this.firstName + ' screams: ' + what.toUpperCase();
+const todoDocMethods: TodoDocMethods = {
+    describe: function(this: TodoDocument, prefix: string) {
+        return prefix + ': ' + this.name + ' (priority ' + this.priority + ')';
     }
 };
 
-const heroCollectionMethods: HeroCollectionMethods = {
-    countAllDocuments: async function(this: HeroCollection) {
+const todoCollectionMethods: TodoCollectionMethods = {
+    countAllDocuments: async function(this: TodoCollection) {
         const allDocs = await this.find().exec();
         return allDocs.length;
     }
 };
 
 await myDatabase.addCollections({
-    heroes: {
-        schema: heroSchema,
-        methods: heroDocMethods,
-        statics: heroCollectionMethods
+    todos: {
+        schema: todoSchema,
+        methods: todoDocMethods,
+        statics: todoCollectionMethods
     }
 });
 
 // add a postInsert-hook
-myDatabase.heroes.postInsert(
+myDatabase.todos.postInsert(
     function myPostInsertHook(
-        this: HeroCollection, // own collection is bound to the scope
-        docData: HeroDocType, // documents data
-        doc: HeroDocument // RxDocument
+        this: TodoCollection, // own collection is bound to the scope
+        docData: TodoDocType, // documents data
+        doc: TodoDocument // RxDocument
     ) {
-        console.log('insert to ' + this.name + '-collection: ' + doc.firstName);
+        console.log('insert to ' + this.name + '-collection: ' + doc.name);
     },
     false // not async
 );
@@ -3915,22 +4051,26 @@ myDatabase.heroes.postInsert(
  */
 
 // insert a document
-const hero: HeroDocument = await myDatabase.heroes.insert({
-    passportId: 'myId',
-    firstName: 'piotr',
-    lastName: 'potter',
-    age: 5
+const todo: TodoDocument = await myDatabase.todos.insert({
+    id: 'todo1',
+    name: 'Learn RxDB',
+    done: false,
+    dueAt: '2026-01-01T10:00:00.000Z',
+    priority: 8
 });
 
 // access a property
-console.log(hero.firstName);
+console.log(todo.name);
+// > 'Learn RxDB'
 
 // use a orm method
-hero.scream('AAH!');
+console.log(todo.describe('Next'));
+// > 'Next: Learn RxDB (priority 8)'
 
 // use a static orm method from the collection
-const amount: number = await myDatabase.heroes.countAllDocuments();
+const amount: number = await myDatabase.todos.countAllDocuments();
 console.log(amount);
+// > 1
 
 /**
  * clean up

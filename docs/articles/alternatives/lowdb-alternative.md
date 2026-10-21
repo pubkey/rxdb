@@ -77,16 +77,16 @@ The numbers reflect this. As of July 30, 2026, [LowDB](https://github.com/typico
 
 ## Code Sample: A LowDB Lodash Chain in RxDB
 
-A typical LowDB read against a `posts` array filters by author and sorts by date:
+A typical LowDB read against a `todos` array filters by assignee and sorts by due date:
 
 ```ts
 // LowDB
 import { JSONFilePreset } from 'lowdb/node';
 
-const db = await JSONFilePreset('db.json', { posts: [] });
-const recentByAuthor = db.data.posts
-    .filter(p => p.author === 'alice')
-    .sort((a, b) => b.createdAt - a.createdAt)
+const db = await JSONFilePreset('db.json', { todos: [] });
+const nextForAlice = db.data.todos
+    .filter(t => t.assignee?.name === 'Alice')
+    .sort((a, b) => a.dueAt.localeCompare(b.dueAt))
     .slice(0, 10);
 ```
 
@@ -98,60 +98,67 @@ import { createRxDatabase } from 'rxdb/plugins/core';
 import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
 
 const db = await createRxDatabase({
-    name: 'blog',
+    name: 'mydb',
     storage: getRxStorageLocalstorage()
 });
 
 await db.addCollections({
-    posts: {
+    todos: {
         schema: {
-            title: 'post schema',
+            title: 'todo schema',
             version: 0,
             primaryKey: 'id',
             type: 'object',
             properties: {
                 id: { type: 'string', maxLength: 100 },
-                author: { type: 'string', maxLength: 100 },
-                title: { type: 'string' },
-                createdAt: { type: 'number' }
+                name: { type: 'string' },
+                dueAt: { type: 'string', format: 'date-time', maxLength: 30 },
+                assignee: {
+                    type: 'object',
+                    properties: {
+                        name: { type: 'string' },
+                        email: { type: 'string' }
+                    },
+                    required: ['name']
+                }
             },
-            required: ['id', 'author', 'createdAt'],
-            indexes: ['author', 'createdAt']
+            required: ['id', 'name', 'dueAt'],
+            indexes: ['dueAt']
         }
     }
 });
 
-const recentByAuthor = await db.posts.find({
-    selector: { author: 'alice' },
-    sort: [{ createdAt: 'desc' }],
+const nextForAlice = await db.todos.find({
+    selector: { 'assignee.name': 'Alice' },
+    sort: [{ dueAt: 'asc' }],
     limit: 10
 }).exec();
 ```
 
-The schema enforces field types, the index makes the author and date filter fast, and the query result is identical in shape to the LowDB output.
+The schema enforces field types, the `dueAt` index makes the sort by date fast, and the query result is identical in shape to the LowDB output.
 
 ## Code Sample: Subscribing to Live Query Results
 
 LowDB has no equivalent for this. In RxDB the same query becomes a stream:
 
 ```ts
-const query = db.posts.find({
-    selector: { author: 'alice' },
-    sort: [{ createdAt: 'desc' }],
+const query = db.todos.find({
+    selector: { 'assignee.name': 'Alice' },
+    sort: [{ dueAt: 'asc' }],
     limit: 10
 });
 
 query.$.subscribe(results => {
-    console.log('latest posts by alice:', results.map(r => r.title));
+    console.log('next todos for Alice:', results.map(r => r.name));
 });
 
 // Any insert, update, or delete that affects the result set
 // triggers a new emission, even from another tab or process.
-await db.posts.insert({
-    id: 'p1',
-    author: 'alice',
-    title: 'Hello',
-    createdAt: Date.now()
+await db.todos.insert({
+    id: 'todo1',
+    name: 'Hello',
+    dueAt: new Date().toISOString(),
+    assignee: { name: 'Alice' }
 });
 ```
 

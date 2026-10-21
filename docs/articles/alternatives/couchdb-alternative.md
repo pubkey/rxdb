@@ -117,13 +117,13 @@ await db.addCollections({
             primaryKey: 'id',
             type: 'object',
             properties: {
-                id:        { type: 'string', maxLength: 100 },
-                title:     { type: 'string' },
-                done:      { type: 'boolean' },
-                updatedAt: { type: 'number' }
+                id:    { type: 'string', maxLength: 100 },
+                name:  { type: 'string' },
+                done:  { type: 'boolean', default: false },
+                dueAt: { type: 'string', format: 'date-time', maxLength: 30 }
             },
-            required: ['id', 'title', 'done', 'updatedAt'],
-            indexes: ['updatedAt']
+            required: ['id', 'name', 'done', 'dueAt'],
+            indexes: ['dueAt']
         }
     }
 });
@@ -131,7 +131,7 @@ await db.addCollections({
 // This runs against local IndexedDB. No network required.
 const openTodos = await db.todos.find({
     selector: { done: false },
-    sort: [{ updatedAt: 'desc' }]
+    sort: [{ dueAt: 'asc' }]
 }).exec();
 ```
 
@@ -211,10 +211,10 @@ replicationState.fetch = getFetchWithCouchDBAuthorization(
 One of RxDB's most significant advantages over CouchDB (and PouchDB) is its reactive query system. Every query can be subscribed to as an RxJS Observable. The query result re-emits automatically whenever the matching documents change, whether the change came from a local write or from a remote sync:
 
 ```ts
-// Subscribe to open todos, sorted by most recently updated
+// Subscribe to open todos, sorted by due date
 db.todos.find({
     selector: { done: false },
-    sort: [{ updatedAt: 'desc' }]
+    sort: [{ dueAt: 'asc' }]
 }).$.subscribe(todos => {
     console.log('Open todos:', todos.length);
     renderTodoList(todos);
@@ -228,11 +228,11 @@ RxDB uses the [event-reduce algorithm](https://github.com/pubkey/event-reduce) t
 You can also subscribe to individual documents or specific document fields:
 
 ```ts
-const doc = await db.todos.findOne('todo-001').exec();
+const doc = await db.todos.findOne('todo1').exec();
 
 // React to a single field changing
-doc.get$('title').subscribe(newTitle => {
-    console.log('Title updated:', newTitle);
+doc.get$('name').subscribe(newName => {
+    console.log('Name updated:', newName);
 });
 
 // Watch the raw change stream of the collection
@@ -330,7 +330,7 @@ const todoSchema = {
     type: 'object',
     properties: {
         id:    { type: 'string', maxLength: 100 },
-        title: { type: 'string' },
+        name:  { type: 'string' },
         done:  { type: 'boolean' },
         crdts: getCRDTSchemaPart()
     },
@@ -347,10 +347,10 @@ RxDB validates every document against a [JSON Schema](../../rx-schema.md) before
 ```ts
 try {
     await db.todos.insert({
-        id: 'todo-002',
-        // 'title' is required but missing
+        id: 'todo2',
+        // 'name' is required but missing
         done: false,
-        updatedAt: Date.now()
+        dueAt: new Date().toISOString()
     });
 } catch (err) {
     // Rejected: document does not match schema
@@ -362,9 +362,9 @@ RxDB also infers TypeScript types from the schema automatically, giving compile-
 
 ```ts
 // TypeScript knows the shape of this document
-const todo = await db.todos.findOne('todo-001').exec();
+const todo = await db.todos.findOne('todo1').exec();
 if (todo) {
-    console.log(todo.title); // string
+    console.log(todo.name); // string
     console.log(todo.done);  // boolean
 }
 ```
@@ -385,12 +385,18 @@ await db.addCollections({
             type: 'object',
             properties: {
                 id:       { type: 'string', maxLength: 100 },
-                title:    { type: 'string' },
-                done:     { type: 'boolean' },
-                priority: { type: 'number' }, // new field
-                updatedAt: { type: 'number' }
+                name:     { type: 'string' },
+                done:     { type: 'boolean', default: false },
+                dueAt:    { type: 'string', format: 'date-time', maxLength: 30 },
+                // new field
+                priority: {
+                    type: 'integer',
+                    minimum: 0,
+                    maximum: 10,
+                    multipleOf: 1
+                }
             },
-            required: ['id', 'title', 'done', 'priority', 'updatedAt']
+            required: ['id', 'name', 'done', 'dueAt', 'priority']
         },
         migrationStrategies: {
             1: (oldDoc) => {
@@ -427,10 +433,11 @@ const schema = {
     primaryKey: 'id',
     type: 'object',
     properties: {
-        id:            { type: 'string', maxLength: 100 },
-        sensitiveNote: { type: 'string' }
+        id:   { type: 'string', maxLength: 100 },
+        name: { type: 'string' },
+        note: { type: 'string' }
     },
-    encrypted: ['sensitiveNote']
+    encrypted: ['note']
 };
 ```
 

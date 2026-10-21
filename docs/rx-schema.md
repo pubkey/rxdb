@@ -8,86 +8,99 @@ import {Faq, FaqItem} from '@site/src/components/faq';
 
 Schemas define the structure of the documents of a collection. Which field should be used as the primary key, which fields should be used as indexes, and what should be encrypted. Every collection has its own schema. With RxDB, schemas are defined with the [JSON Schema](https://json-schema.org/blog/posts/rxdb-case-study) standard which you might know from other projects.
 
-## Example
+## Example Schema
 
-In this example-schema we define a hero-collection with the following settings:
+This example schema describes a `todos` collection with the following settings:
 
-- the version-number of the schema is 0
-- the name-property is the **primaryKey**. This means it's a unique, indexed, required `string` which can be used to definitely find a single document.
-- the color-field is required for every document
-- the healthpoints-field must be a number between 0 and 100
-- the secret-field stores an encrypted value
-- the birthyear-field is final which means it is required and cannot be changed
-- the skills-attribute must be an array of objects which contain the name and the damage-attribute. There is a maximum of 5 skills per hero.
-- Allows adding attachments and storing them encrypted
+- `id` is the **primaryKey**. It is a unique, indexed, required `string` which identifies a single document.
+- `name` is the required title of the todo.
+- `done` is a required `boolean` with `default: false`, so it can be left out on insert.
+- `dueAt` is an ISO 8601 date-time string. It has a `maxLength` so that it can be used in an index. ISO strings sort in chronological order.
+- `priority` is an integer between `0` and `10`. Number fields in an index must have `minimum`, `maximum`, and `multipleOf`.
+- `tags` is an array of strings with `default: []`.
+- `assignee` is an optional nested object with a required `name`.
+- `subtasks` is an array of ids of other todos. The `ref: 'todos'` keyword makes it possible to load these documents with [population](./population.md).
+- `note` is an optional string. It can be [encrypted](./encryption.md) by adding it to the `encrypted` array.
+- The `indexes` speed up sorting by `dueAt` and queries on `done` and `priority`.
 
-```json
-  {
-    "title": "hero schema",
-    "version": 0,
-    "description": "describes a simple hero",
-    "primaryKey": "name",
-    "type": "object",
-    "properties": {
-        "name": {
-            "type": "string",
-            "maxLength": 100 // <- the primary key must have set maxLength
+```js
+export const todoSchema = {
+    title: 'todo schema',
+    version: 0,
+    primaryKey: 'id',
+    type: 'object',
+    properties: {
+        id: {
+            type: 'string',
+            maxLength: 100 // <- the primary key must have maxLength
         },
-        "color": {
-            "type": "string"
+        name: {
+            type: 'string'
         },
-        "healthpoints": {
-            "type": "number",
-            "minimum": 0,
-            "maximum": 100
+        done: {
+            type: 'boolean',
+            default: false
         },
-        "secret": {
-            "type": "string"
+        dueAt: {
+            type: 'string',
+            format: 'date-time',
+            maxLength: 30 // <- string fields in an index must have maxLength
         },
-        "birthyear": {
-            "type": "number",
-            "final": true,
-            "minimum": 1900,
-            "maximum": 2050
+        priority: {
+            type: 'integer',
+            minimum: 0,
+            maximum: 10,
+            // number fields in an index must have minimum, maximum and multipleOf
+            multipleOf: 1
         },
-        "skills": {
-            "type": "array",
-            "maxItems": 5,
-            "uniqueItems": true,
-            "items": {
-                "type": "object",
-                "properties": {
-                    "name": {
-                        "type": "string"
-                    },
-                    "damage": {
-                        "type": "number"
-                    }
-                }
+        tags: {
+            type: 'array',
+            default: [],
+            items: {
+                type: 'string'
             }
+        },
+        assignee: {
+            type: 'object',
+            properties: {
+                name: {
+                    type: 'string'
+                },
+                email: {
+                    type: 'string'
+                }
+            },
+            required: ['name']
+        },
+        subtasks: {
+            type: 'array',
+            ref: 'todos', // <- the values are ids of other todos documents
+            items: {
+                type: 'string'
+            }
+        },
+        note: {
+            type: 'string'
         }
     },
-    "required": [
-        "name",
-        "color"
-    ],
-    "encrypted": ["secret"],
-    "attachments": {
-        "encrypted": true
-    }
-  }
+    required: ['id', 'name', 'done', 'dueAt', 'priority', 'tags'],
+    indexes: [
+        'dueAt',
+        ['done', 'priority']
+    ]
+};
 ```
 
 ## Create a collection with the schema
 
-```javascript
+```ts
 await myDatabase.addCollections({
-    heroes: {
-        schema: myHeroSchema
+    todos: {
+        schema: todoSchema
     }
 });
-console.dir(myDatabase.heroes.name);
-// heroes
+console.dir(myDatabase.todos.name);
+// > todos
 ```
 
 ## version
@@ -177,9 +190,9 @@ RxDB will always append the `primaryKey` to all indexes to ensure a deterministi
 ### Index-example
 
 ```javascript
-const schemaWithIndexes = {
+const todoSchemaWithIndexes = {
   version: 0,
-  title: 'human schema with indexes',
+  title: 'todo schema with indexes',
   keyCompression: true,
   primaryKey: 'id',
   type: 'object',
@@ -188,51 +201,52 @@ const schemaWithIndexes = {
           type: 'string',
           maxLength: 100 // <- the primary key must have set maxLength
       },
-      firstName: {
-          type: 'string',
-          // string-fields used as an index,
-          // must have set maxLength.
-          maxLength: 100
-      },
-      lastName: {
+      name: {
           type: 'string'
       },
-      active: {
+      done: {
           type: 'boolean'
       },
-      familyName: {
-          type: 'string'
+      dueAt: {
+          type: 'string',
+          format: 'date-time',
+          // string-fields used as an index,
+          // must have set maxLength.
+          maxLength: 30
       },
-      balance: {
-          type: 'number',
+      priority: {
+          type: 'integer',
 
           // number fields used in an index, must set
           // minimum, maximum and multipleOf
           minimum: 0,
-          maximum: 100000,
-          multipleOf: 0.01
+          maximum: 10,
+          multipleOf: 1
       },
-      creditCards: {
-          type: 'array',
-          items: {
-              type: 'object',
-              properties: {
-                    cvc: {
-                        type: 'number'
-                    }
+      assignee: {
+          type: 'object',
+          properties: {
+              name: {
+                  type: 'string'
+              },
+              email: {
+                  type: 'string'
               }
-          } 
+          }
       }
   },
   required: [
       'id',
-      'active' // <- boolean fields that are used in an index must be required. 
+      'name',
+      'dueAt',
+      'priority',
+      'done' // <- boolean fields that are used in an index must be required.
   ],
   indexes: [
-    'firstName', // <- this will create a simple index for the `firstName` field
+    'dueAt', // <- this will create a simple index for the `dueAt` field
     // <- compound-index for these two fields
-    ['active', 'firstName'],
-    'active'
+    ['done', 'priority'],
+    'done'
   ]
 };
 ```
@@ -249,7 +263,7 @@ Default values can only be defined for first-level fields.
 Whenever you insert a document unset fields will be filled with default-values.
 
 ```javascript
-const schemaWithDefaultAge = {
+const todoSchemaWithDefaults = {
   version: 0,
   primaryKey: 'id',
   type: 'object',
@@ -258,19 +272,31 @@ const schemaWithDefaultAge = {
           type: 'string',
           maxLength: 100 // <- the primary key must have set maxLength
       },
-      firstName: {
+      name: {
           type: 'string'
       },
-      lastName: {
-          type: 'string'
+      done: {
+          type: 'boolean',
+          default: false // <- default will be used
       },
-      age: {
-          type: 'integer',
-          default: 20       // <- default will be used
+      tags: {
+          type: 'array',
+          default: [], // <- default will be used
+          items: {
+              type: 'string'
+          }
       }
   },
-  required: ['id']
+  required: ['id', 'name', 'done', 'tags']
 };
+
+await myDatabase.todos.insert({
+    id: 'todo4',
+    name: 'Clean the kitchen'
+});
+const doc = await myDatabase.todos.findOne('todo4').exec();
+console.log(doc.done, doc.tags);
+// > false []
 ```
 
 ## final
@@ -283,7 +309,7 @@ Advantages:
 - When you enable the `eventReduce` algorithm, some performance-improvements are done.
 
 ```javascript
-const schemaWithFinalAge = {
+const todoSchemaWithFinalName = {
   version: 0,
   primaryKey: 'id',
   type: 'object',
@@ -292,18 +318,15 @@ const schemaWithFinalAge = {
           type: 'string',
           maxLength: 100 // <- the primary key must have set maxLength
       },
-      firstName: {
-          type: 'string'
-      },
-      lastName: {
-          type: 'string'
-      },
-      age: {
-          type: 'integer',
+      name: {
+          type: 'string',
           final: true
+      },
+      done: {
+          type: 'boolean'
       }
   },
-  required: ['id']
+  required: ['id', 'name', 'done']
 };
 ```
 
@@ -396,12 +419,12 @@ Also the following class properties of `RxDocument` cannot be used as top level 
                 "type": "string",
                 "maxLength": 100
             },
-            "nickname": {
+            "note": {
                 "type": "string"
             }
         },
         "required": ["id"]
-        // "nickname" is not required, so it can be left undefined (not set)
+        // "note" is not required, so it can be left undefined (not set)
     }
     ```
 
@@ -470,7 +493,7 @@ In **development**-mode, the schema-change can be simplified by **one of these**
 
 -   Use the memory-storage so your db resets on restart and your schema is not saved permanently
 -   Call `removeRxDatabase('mydatabasename', RxStorage);` before creating a new [RxDatabase](./rx-database.md)-instance
--   Add a timestamp as suffix to the database-name to create a new one each run like `name: 'heroesDB' + new Date().getTime()`
+-   Add a timestamp as suffix to the database-name to create a new one each run like `name: 'mydatabase' + new Date().getTime()`
 
 </FaqItem>
 </Faq>

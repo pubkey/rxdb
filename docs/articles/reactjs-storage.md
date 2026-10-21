@@ -91,32 +91,32 @@ import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
 
 (async function setUpRxDB() {
   const db = await createRxDatabase({
-    name: 'heroDB',
+    name: 'tododb',
     storage: getRxStorageLocalstorage(),
     multiInstance: false
   });
 
-  const heroSchema = {
-    title: 'hero schema',
+  const todoSchema = {
+    title: 'todo schema',
     version: 0,
     type: 'object',
     primaryKey: 'id',
     properties: {
       id: { type: 'string', maxLength: 100 },
       name: { type: 'string' },
-      power: { type: 'string' }
+      done: { type: 'boolean', default: false }
     },
-    required: ['id', 'name']
+    required: ['id', 'name', 'done']
   };
 
-  await db.addCollections({ heroes: { schema: heroSchema } });
+  await db.addCollections({ todos: { schema: todoSchema } });
 
   // Insert a doc
-  await db.heroes.insert({ id: '1', name: 'AlphaHero', power: 'Lightning' });
+  await db.todos.insert({ id: 'todo1', name: 'Learn RxDB', done: false });
 
   // Query docs once
-  const allHeroes = await db.heroes.find().exec();
-  console.log('Heroes: ', allHeroes);
+  const allTodos = await db.todos.find().exec();
+  console.log('Todos: ', allTodos);
 })();
 ```
 
@@ -125,14 +125,14 @@ Reactive Queries: In a React component, you can subscribe to a query via RxDB’
 ```tsx
 import React, { useEffect, useState } from 'react';
 
-function HeroList({ collection }) {
-  const [heroes, setHeroes] = useState([]);
+function TodoList({ collection }) {
+  const [todos, setTodos] = useState([]);
 
   useEffect(() => {
     const query = collection.find();
     // query.$ is an RxJS Observable that emits whenever data changes
-    const sub = query.$.subscribe(newHeroes => {
-      setHeroes(newHeroes);
+    const sub = query.$.subscribe(newTodos => {
+      setTodos(newTodos);
     });
 
     return () => sub.unsubscribe(); // clean up subscription
@@ -140,16 +140,16 @@ function HeroList({ collection }) {
 
   return (
     
-      {heroes.map(hero => (
+      {todos.map(todo => (
         
-          {hero.name} - Power: {hero.power}
+          {todo.name} - Done: {todo.done ? 'yes' : 'no'}
         
       ))}
     
   );
 }
 
-export default HeroList;
+export default TodoList;
 ```
 
 <CenteredImage src="../files/animations/realtime.gif" alt="realtime ui updates" width={700} />
@@ -169,15 +169,15 @@ import {
 
 (async function setUpRxDBWithSignals() {
   const db = await createRxDatabase({
-    name: 'heroDB_signals',
+    name: 'tododb_signals',
     storage: getRxStorageLocalstorage(),
     reactivity: PreactSignalsRxReactivityFactory
   });
 
   // Create a signal-based query instead of using Observables:
-  const collection = db.heroes;
-  const heroesSignal = collection.find().$$; // signals version
-  // Now you can reference heroesSignal() in Preact or React with adapter usage
+  const collection = db.todos;
+  const todosSignal = collection.find().$$; // signals version
+  // Now you can reference todosSignal() in Preact or React with adapter usage
 })();
 ```
 
@@ -207,18 +207,19 @@ import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
   });
 
   await db.addCollections({
-    secrets: {
+    todos: {
       schema: {
-        title: 'secret schema',
+        title: 'todo schema',
         version: 0,
         type: 'object',
         primaryKey: 'id',
         properties: {
           id: { type: 'string', maxLength: 100 },
-          secretInfo: { type: 'string' }
+          name: { type: 'string' },
+          note: { type: 'string' }
         },
-        required: ['id'],
-        encrypted: ['secretInfo'] // field to encrypt
+        required: ['id', 'name'],
+        encrypted: ['note'] // field to encrypt
       }
     }
   });

@@ -89,12 +89,12 @@ await db.addCollections({
             primaryKey: 'id',
             properties: {
                 id: { type: 'string', maxLength: 100 },
-                text: { type: 'string' },
-                completed: { type: 'boolean' },
+                name: { type: 'string' },
+                done: { type: 'boolean', default: false },
                 // last write time, part of the replication checkpoint
                 updatedAt: { type: 'number' }
             },
-            required: ['id', 'text', 'completed', 'updatedAt']
+            required: ['id', 'name', 'done', 'updatedAt']
         }
     }
 });
@@ -183,13 +183,13 @@ function TodoList() {
     const { data: openTodos } = useLiveQuery((q) =>
         q
             .from({ todo: todosCollection })
-            .where(({ todo }) => eq(todo.completed, false))
+            .where(({ todo }) => eq(todo.done, false))
     );
 
     return (
         
             {openTodos.map((todo) => (
-                {todo.text}
+                {todo.name}
             ))}
         
     );
@@ -200,8 +200,8 @@ function TodoList() {
 // as soon as the client is online again.
 todosCollection.insert({
     id: 'todo-1',
-    text: 'works without network',
-    completed: false,
+    name: 'works without network',
+    done: false,
     updatedAt: Date.now()
 });
 ```

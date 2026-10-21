@@ -92,34 +92,39 @@ import { createRxDatabase } from 'rxdb/plugins/core';
 import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
 
 const db = await createRxDatabase({
-  name: 'shop',
+  name: 'mydb',
   storage: getRxStorageLocalstorage()
 });
 
 await db.addCollections({
-  products: {
+  todos: {
     schema: {
-      title: 'product schema',
+      title: 'todo schema',
       version: 0,
       type: 'object',
       primaryKey: 'id',
       properties: {
         id: { type: 'string', maxLength: 100 },
         name: { type: 'string' },
-        price: { type: 'number' },
-        updatedAt: { type: 'number' }
+        priority: { type: 'integer', minimum: 0, maximum: 10, multipleOf: 1 },
+        updatedAt: {
+          type: 'number',
+          minimum: 0,
+          maximum: 1000000000000000,
+          multipleOf: 1
+        }
       },
-      required: ['id', 'name', 'price', 'updatedAt'],
+      required: ['id', 'name', 'priority', 'updatedAt'],
       indexes: ['updatedAt']
     }
   }
 });
 
 // Observable query that updates on every change
-const subscription = db.products
-  .find({ selector: { price: { $lt: 100 } }, sort: [{ updatedAt: 'desc' }] })
+const subscription = db.todos
+  .find({ selector: { priority: { $gte: 5 } }, sort: [{ updatedAt: 'desc' }] })
   .$.subscribe(results => {
-    console.log('current cheap products:', results.length);
+    console.log('current high priority todos:', results.length);
   });
 ```
 
@@ -133,14 +138,14 @@ The example below replicates an RxDB collection with a REST endpoint that reads 
 import { replicateRxCollection } from 'rxdb/plugins/replication';
 
 const replicationState = replicateRxCollection({
-  collection: db.products,
-  replicationIdentifier: 'products-postgres-rest',
+  collection: db.todos,
+  replicationIdentifier: 'todos-postgres-rest',
   live: true,
   pull: {
     handler: async (checkpoint, batchSize) => {
       const updatedAt = checkpoint ? checkpoint.updatedAt : 0;
       const id = checkpoint ? checkpoint.id : '';
-      const url = `https://api.example.com/products/pull` +
+      const url = `https://api.example.com/todos/pull` +
         `?updatedAt=${updatedAt}&id=${encodeURIComponent(id)}&limit=${batchSize}`;
       const res = await fetch(url);
       const data = await res.json();
@@ -152,7 +157,7 @@ const replicationState = replicateRxCollection({
   },
   push: {
     handler: async (changeRows) => {
-      const res = await fetch('https://api.example.com/products/push', {
+      const res = await fetch('https://api.example.com/todos/push', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(changeRows)

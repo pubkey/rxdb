@@ -69,38 +69,38 @@ const db = await createRxDatabase({
 });
 
 await db.addCollections({
-    tasks: {
+    todos: {
         schema: {
-            title: 'tasks schema',
+            title: 'todo schema',
             version: 0,
             type: 'object',
             primaryKey: 'id',
             properties: {
                 id: { type: 'string', maxLength: 100 },
-                title: { type: 'string' },
-                done: { type: 'boolean' }
+                name: { type: 'string' },
+                done: { type: 'boolean', default: false }
             },
-            required: ['id', 'title', 'done']
+            required: ['id', 'name', 'done']
         }
     }
 });
 
-await db.tasks.insert({
-    id: 'task-1',
-    title: 'buy milk',
+await db.todos.insert({
+    id: 'todo1',
+    name: 'Learn RxDB',
     done: false
 });
 
 // Reactive query: emits a new array whenever a matching doc changes.
-db.tasks
+db.todos
     .find({ selector: { done: false } })
     .$
-    .subscribe(undoneTasks => {
-        console.log('Currently undone tasks:', undoneTasks.length);
+    .subscribe(openTodos => {
+        console.log('Currently open todos:', openTodos.length);
     });
 ```
 
-The `tasks` collection now stores data offline. The next step is to sync it with a backend.
+The `todos` collection now stores data offline. The next step is to sync it with a backend.
 
 ## How the RxDB Sync Engine Works
 
@@ -122,8 +122,8 @@ All transfers happen in batches. Batching means fewer requests, better compressi
 import { replicateRxCollection } from 'rxdb/plugins/replication';
 
 const replicationState = await replicateRxCollection({
-    collection: db.tasks,
-    replicationIdentifier: 'tasks-to-https://example.com/api/sync',
+    collection: db.todos,
+    replicationIdentifier: 'todos-to-https://example.com/api/sync',
     live: true,
     pull: {
         async handler(checkpoint, batchSize) {
@@ -191,24 +191,25 @@ const db = await createRxDatabase({
 });
 
 await db.addCollections({
-    usersecrets: {
+    todos: {
         schema: {
-            title: 'encrypted user data',
+            title: 'todo schema',
             version: 0,
             type: 'object',
             primaryKey: 'id',
             properties: {
                 id: { type: 'string', maxLength: 100 },
-                secretData: { type: 'string' }
+                name: { type: 'string' },
+                note: { type: 'string' }
             },
-            required: ['id'],
-            encrypted: ['secretData']
+            required: ['id', 'name'],
+            encrypted: ['note']
         }
     }
 });
 ```
 
-The `secretData` field is now unreadable without the password, even when someone copies the raw database files from the device. For production apps, the 👑 [RxDB Premium](/premium/) Web Crypto encryption plugin is recommended because it is faster and uses the browser's native crypto APIs.
+The `note` field is now unreadable without the password, even when someone copies the raw database files from the device. For production apps, the 👑 [RxDB Premium](/premium/) Web Crypto encryption plugin is recommended because it is faster and uses the browser's native crypto APIs.
 
 ## How to Improve Your Offline Database Setup
 

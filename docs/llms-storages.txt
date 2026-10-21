@@ -152,7 +152,7 @@ Also you have to set a **password** when creating the database. The format of th
 ```ts
 import { createRxDatabase } from 'rxdb/plugins/core';
 // create an encrypted database
-const db = await createRxDatabase({
+const myDatabase = await createRxDatabase({
     name: 'mydatabase',
     storage: encryptedStorage,
     password: 'sudoLetMeIn'
@@ -164,28 +164,40 @@ const db = await createRxDatabase({
 To define a field as being encrypted, you have to add it to the `encrypted` fields list in the schema.
 
 ```ts
-const schema = {
+const todoSchema = {
     version: 0,
-  primaryKey: 'id',
-  type: 'object',
-  properties: {
-      id: {
-          type: 'string',
-          maxLength: 100
-      },
-      secret: {
-          type: 'string'
-      },
-  },
-  required: ['id'],
-  encrypted: ['secret']
+    primaryKey: 'id',
+    type: 'object',
+    properties: {
+        id: {
+            type: 'string',
+            maxLength: 100
+        },
+        name: {
+            type: 'string'
+        },
+        note: {
+            type: 'string'
+        }
+    },
+    required: ['id', 'name'],
+    encrypted: ['note']
 };
 
-await db.addCollections({
-    myDocuments: {
-        schema
+await myDatabase.addCollections({
+    todos: {
+        schema: todoSchema
     }
-})
+});
+
+await myDatabase.todos.insert({
+    id: 'todo2',
+    name: 'Buy groceries',
+    note: 'Milk, eggs, bread' // <- stored encrypted
+});
+const doc = await myDatabase.todos.findOne('todo2').exec();
+console.log(doc.note);
+// > 'Milk, eggs, bread'
 ```
 </Steps>
 
@@ -212,7 +224,7 @@ const myPasswordObject = {
 };
 
 // create an encrypted database
-const db = await createRxDatabase({
+const myDatabase = await createRxDatabase({
     name: 'mydatabase',
     storage: encryptedIndexedDbStorage,
     password: myPasswordObject
@@ -232,8 +244,9 @@ The password is set database specific and it is not possible to change the passw
 To store the [attachments](./rx-attachment.md) data encrypted, you have to set `encrypted: true` in the `attachments` property of the schema.
 
 ```ts
-const mySchema = {
+const todoSchema = {
     version: 0,
+    primaryKey: 'id',
     type: 'object',
     properties: {
         /* ... */
@@ -302,17 +315,17 @@ Yes, libraries like `crypto-js` or wrappers over the native WebCrypto API provid
 </FaqItem>
 <FaqItem question="Can I encrypt a child field when the parent field is already encrypted?">
 
-No. When you encrypt a parent field, the entire object at that path is encrypted as a single string. You cannot also encrypt a child path of an already-encrypted parent. For example, if you encrypt `nested`, you must **not** also add `nested.secret` to the `encrypted` array. Doing so will throw an error in [dev-mode](./dev-mode.md).
+No. When you encrypt a parent field, the entire object at that path is encrypted as a single string. You cannot also encrypt a child path of an already-encrypted parent. For example, if you encrypt `assignee`, you must **not** also add `assignee.email` to the `encrypted` array. Doing so will throw an error in [dev-mode](./dev-mode.md).
 
 ```ts
-// NOT ALLOWED - 'nested.secret' is a child of 'nested'
-const schema = {
-    encrypted: ['nested', 'nested.secret']
+// NOT ALLOWED - 'assignee.email' is a child of 'assignee'
+const todoSchema = {
+    encrypted: ['assignee', 'assignee.email']
 };
 
 // CORRECT - only encrypt the parent
-const schema = {
-    encrypted: ['nested']
+const todoSchema = {
+    encrypted: ['assignee']
 };
 ```
 
@@ -329,7 +342,7 @@ import {KeyCompressionLogo} from '@site/src/components/animations/key-compressio
 
 # Key Compression
 
-With the key compression plugin, documents will be stored in a compressed format which saves up to 40% disc space.
+With the key compression plugin, documents will be stored in a compressed format which saves up to 40% disk space.
 For compression the npm module [jsonschema-key-compression](https://github.com/pubkey/jsonschema-key-compression) is used.
 It compresses json-data based on its json-schema while still having valid json. It works by compressing long attribute-names into smaller ones and backwards.
 
@@ -360,7 +373,7 @@ const storageWithKeyCompression = wrappedKeyCompressionStorage({
 
 ```ts
 import { createRxDatabase } from 'rxdb/plugins/core';
-const db = await createRxDatabase({
+const myDatabase = await createRxDatabase({
     name: 'mydatabase',
     storage: storageWithKeyCompression
 });
@@ -369,8 +382,7 @@ const db = await createRxDatabase({
 ### Create a compressed RxCollection
 
 ```ts
-
-const mySchema = {
+const todoSchema = {
   keyCompression: true, // set this to true, to enable the keyCompression
   version: 0,
   primaryKey: 'id',
@@ -380,14 +392,28 @@ const mySchema = {
           type: 'string',
           maxLength: 100 // <- the primary key must have set maxLength
       },
+      name: {
+          type: 'string'
+      },
+      done: {
+          type: 'boolean',
+          default: false
+      }
       /* ... */
-  }
+  },
+  required: ['id', 'name', 'done']
 };
-await db.addCollections({
-    docs: {
-        schema: mySchema
+await myDatabase.addCollections({
+    todos: {
+        schema: todoSchema
     }
 });
+
+await myDatabase.todos.insert({ id: 'todo1', name: 'Learn RxDB' });
+const doc = await myDatabase.todos.findOne('todo1').exec();
+// the document data is decompressed when you access it
+console.log(doc.name);
+// > 'Learn RxDB'
 ```
 
 </Steps>
@@ -636,7 +662,7 @@ import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
 
 ### Create a Database
 ```ts
-const db = await createRxDatabase({
+const myDatabase = await createRxDatabase({
     name: 'exampledb',
     storage: getRxStorageDexie()
 });
@@ -656,7 +682,7 @@ import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
 const fakeIndexedDB = require('fake-indexeddb');
 const fakeIDBKeyRange = require('fake-indexeddb/lib/FDBKeyRange');
 
-const db = await createRxDatabase({
+const myDatabase = await createRxDatabase({
     name: 'exampledb',
     storage: getRxStorageDexie({
         indexedDB: fakeIndexedDB,
@@ -671,7 +697,7 @@ const db = await createRxDatabase({
 Dexie.js has its own plugin system with [many plugins](https://dexie.org/docs/DerivedWork#known-addons) for [encryption](./encryption.md), replication or other use cases. With the Dexie.js `RxStorage` you can use the same plugins by passing them to the `getRxStorageDexie()` function.
 
 ```ts
-const db = await createRxDatabase({
+const myDatabase = await createRxDatabase({
     name: 'exampledb',
     storage: getRxStorageDexie({
         addons: [ /* Your Dexie.js plugins */ ]
@@ -732,7 +758,7 @@ const storage = getRxStorageDexie({
 #### Create an RxDB Database
 
 ```ts
-const db = await createRxDatabase({
+const myDatabase = await createRxDatabase({
   name: 'mydb',
   storage
 });
@@ -761,7 +787,7 @@ import { createRxDatabase } from 'rxdb/plugins/core';
 #### Create an RxDB Database with the Dexie Storage
 
 ```ts
-const db = await createRxDatabase({
+const myDatabase = await createRxDatabase({
   name: 'mydb',
   storage: getRxStorageDexie()
 });
@@ -770,8 +796,8 @@ const db = await createRxDatabase({
 #### Add a Collection
 
 ```ts
-await db.addCollections({
-    humans: {
+await myDatabase.addCollections({
+    todos: {
         schema: {
             version: 0,
             type: 'object',
@@ -779,9 +805,9 @@ await db.addCollections({
             properties: {
                 id: { type: 'string', maxLength: 100 },
                 name: { type: 'string' },
-                age: { type: 'number' }
-              },
-            required: ['id', 'name']
+                done: { type: 'boolean', default: false }
+            },
+            required: ['id', 'name', 'done']
         }
     }
 });
@@ -792,9 +818,9 @@ await db.addCollections({
 ```ts
 const replicationState = replicateCouchDB({
   replicationIdentifier: 'my-couchdb-replication',
-  collection: db.humans,
+  collection: myDatabase.todos,
   // The URL to your CouchDB endpoint
-  url: 'http://example.com/db/humans'
+  url: 'http://example.com/db/todos'
 });
 ```
 
@@ -1346,7 +1372,7 @@ import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
 
 ### Create a Database
 ```ts
-const db = await createRxDatabase({
+const myDatabase = await createRxDatabase({
     name: 'exampledb',
     storage: getRxStorageLocalstorage()
 });
@@ -1355,19 +1381,19 @@ const db = await createRxDatabase({
 ### Add a Collection
 
 ```ts
-await db.addCollections({
-  tasks: {
+await myDatabase.addCollections({
+  todos: {
     schema: {
-      title: 'tasks schema',
+      title: 'todo schema',
       version: 0,
       primaryKey: 'id',
       type: 'object',
       properties: {
         id: { type: 'string', maxLength: 100 },
-        title: { type: 'string' },
-        done: { type: 'boolean' }
+        name: { type: 'string' },
+        done: { type: 'boolean', default: false }
       },
-      required: ['id', 'title', 'done']
+      required: ['id', 'name', 'done']
     }
   }
 });
@@ -1376,12 +1402,12 @@ await db.addCollections({
 ### Insert a document
 
 ```ts
-await db.tasks.insert({ id: 'task-01', title: 'Get started with RxDB', done: false });
+await myDatabase.todos.insert({ id: 'todo1', name: 'Learn RxDB', done: false });
 ```
 
 ### Query documents
 ```ts
-const nonDoneTasks = await db.tasks.find({
+const notDoneTodos = await myDatabase.todos.find({
     selector: {
         done: {
             $eq: false
@@ -1404,7 +1430,7 @@ import {
     getLocalStorageMock
 } from 'rxdb/plugins/storage-localstorage';
 
-const db = await createRxDatabase({
+const myDatabase = await createRxDatabase({
     name: 'exampledb',
     storage: getRxStorageLocalstorage({
         localStorage: getLocalStorageMock()
@@ -3414,7 +3440,7 @@ To use RxDB on the server side, the FoundationDB RxStorage provides a way of hav
 ## Schema Validation
 
 import { PerformanceChart } from '@site/src/components/performance-chart';
-import { PERFORMANCE_DATA_VALIDATION_INDEXEDDB, PERFORMANCE_DATA_VALIDATION_MEMORY } from '@site/src/components/performance-data';
+import { PERFORMANCE_DATA_VALIDATION_INDEXEDDB, PERFORMANCE_DATA_VALIDATION_MEMORY, PERFORMANCE_DATA_VALIDATION_AJV_STANDALONE } from '@site/src/components/performance-data';
 import {Faq, FaqItem} from '@site/src/components/faq';
 import {DocsAnimation} from '@site/src/components/docs-animation';
 import {SchemaValidationLogo} from '@site/src/components/animations/schema-validation-logo';
@@ -3433,7 +3459,7 @@ The schema validation is **not a plugin** but comes in as a wrapper around any o
 - It allows us to configure which [RxDatabase](./rx-database.md) instance must use the validation and which does not. In production it often makes sense to validate user data, but you might not need the validation for data that is only replicated from the backend.
 
 :::warning
-Schema validation can be **CPU expensive** and increases your build size. You should always use a schema validation in development mode. For most use cases, you **should not** use a validation in production for better performance.
+Schema validation can be **CPU expensive** and increases your build size. You should always use a schema validation in development mode. When you also validate in production, use the [validate-ajv-standalone](#validate-ajv-standalone) plugin for the smallest build size and the best performance.
 :::
 
 When no validation is used, any document data can be saved but there might be **undefined behavior** when saving data that does not comply to the schema of a `RxCollection`.
@@ -3458,6 +3484,68 @@ const db = await createRxDatabase({
     storage
 });
 ```
+
+### validate-ajv-standalone
+
+The `validate-ajv` plugin ships the full ajv compiler to the client and compiles each schema at runtime. With the `validate-ajv-standalone` plugin you instead compile your schemas at build time with the [ajv standalone tools](https://ajv.js.org/standalone.html) and only ship the generated validate functions. Compared to the `validate-ajv` plugin, this saves about `125 KB` minified (about `39 KB` gzipped) in your bundle size. Each generated validator adds a few KB, for example `5 KB` minified for a todo schema with four fields. Because no code is compiled in the browser, the standalone validators also work with Content Security Policies that do not allow `'unsafe-eval'`.
+
+The storage instance does not get your plain schema. It gets the full schema with the RxDB internal fields like `_deleted`, `_rev` and `_meta`. So at build time you have to call `getStandaloneValidationSchema()`, which returns that full `jsonSchema` and its `hash`. Compile the `jsonSchema` with an ajv instance from `createAjv()` so that ajv knows the RxDB specific schema keywords and formats. Only import `createAjv()` in the build script. When you import it in your app code, ajv ends up in your bundle again:
+
+```js
+// build-validators.mjs, runs at build time in Node.js
+import fs from 'node:fs';
+import standaloneCode from 'ajv/dist/standalone/index.js';
+import {
+    createAjv,
+    getStandaloneValidationSchema
+} from 'rxdb/plugins/validate-ajv-standalone';
+import { todoSchema, userSchema } from './src/schemas.mjs';
+
+const imports = [];
+const entries = [];
+for (const [i, schema] of [todoSchema, userSchema].entries()) {
+    const { hash, jsonSchema } = await getStandaloneValidationSchema(schema);
+    const ajv = createAjv({ code: { source: true, esm: true } });
+    const code = standaloneCode(ajv, ajv.compile(jsonSchema));
+    fs.writeFileSync(`src/validator-${i}.mjs`, code);
+    imports.push(`import v${i} from './validator-${i}.mjs';`);
+    entries.push(`'${hash}': v${i}`);
+}
+fs.writeFileSync(
+    'src/validators.mjs',
+    imports.join('\n') +
+    '\nexport const validatorBySchemaHash = {' + entries.join(',') + '};\n'
+);
+```
+
+In the app, pass the generated `validatorBySchemaHash` map to the storage wrapper. When a storage instance is created, the plugin hashes its schema and looks up the validator. If no validator exists for that hash, it throws the error [`VD3`](./errors.md#VD3).
+
+```ts
+import { createRxDatabase } from 'rxdb/plugins/core';
+import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
+import {
+    wrappedValidateAjvStandaloneStorage
+} from 'rxdb/plugins/validate-ajv-standalone';
+import { validatorBySchemaHash } from './validators.mjs';
+
+const db = await createRxDatabase({
+    name: 'mydb',
+    storage: wrappedValidateAjvStandaloneStorage({
+        storage: getRxStorageDexie(),
+        validatorBySchemaHash
+    })
+});
+```
+
+Keep in mind that:
+- You have to rerun the build script whenever a schema changes, because any change also changes the hash.
+- During a [schema migration](./migration-schema.md), RxDB opens the storage instance of the previous schema version. So you have to include the validators of previous schema versions as long as clients can still have data stored with them.
+- The storage instances that RxDB creates for its own data (the internal store, [local documents](./rx-local-document.md) and replication meta data) are not validated and need no validator.
+- The hash is equal to `await myCollection.schema.hash` when the database uses the default `hashFunction`.
+
+The validation itself runs at the same speed as with `validate-ajv`, because ajv generates the same validation code in both cases. The difference is the startup time: `validate-ajv` compiles each schema when the first document is written, while `validate-ajv-standalone` only looks up the precompiled validator. The following results were measured with the [Memory RxStorage](./rx-storage-memory.md) on Node.js 22 (lower is better). Each test run takes the median of 40 runs, and the chart shows the best of 5 test runs. Each run uses a new schema, so that `validate-ajv` cannot reuse a compiled validator. You can reproduce them with `npm run test:performance:validation`.
+
+<PerformanceChart title="ajv vs. ajv-standalone on Memory Storage" data={PERFORMANCE_DATA_VALIDATION_AJV_STANDALONE} logScale={false} />
 
 ### validate-z-schema
 

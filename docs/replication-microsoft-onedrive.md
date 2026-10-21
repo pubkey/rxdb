@@ -44,7 +44,7 @@ import {
 
 const replicationState = await replicateMicrosoftOneDrive({
     replicationIdentifier: 'my-app-onedrive-sync',
-    collection: myRxCollection, // RxCollection
+    collection: myDatabase.todos, // RxCollection
     oneDrive: {
         authToken: 'USER_ACCESS_TOKEN',
         folderPath: 'my-app-data/user-1'

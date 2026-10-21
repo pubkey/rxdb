@@ -87,10 +87,10 @@ RxDB supports multiple storage options. The free and simple approach is using th
 import { createRxDatabase } from 'rxdb/plugins/core';
 
 // Define your schema
-const heroSchema = {
-  title: 'hero schema',
+const todoSchema = {
+  title: 'todo schema',
   version: 0,
-  description: 'Describes a hero in your app',
+  description: 'Describes a todo in your app',
   primaryKey: 'id',
   type: 'object',
   properties: {
@@ -101,11 +101,24 @@ const heroSchema = {
     name: {
       type: 'string'
     },
-    power: {
-      type: 'string'
+    done: {
+      type: 'boolean',
+      default: false
+    },
+    dueAt: {
+      type: 'string',
+      format: 'date-time',
+      maxLength: 30
+    },
+    priority: {
+      type: 'integer',
+      minimum: 0,
+      maximum: 10,
+      multipleOf: 1
     }
   },
-  required: ['id', 'name']
+  required: ['id', 'name', 'done', 'dueAt', 'priority'],
+  indexes: ['dueAt']
 };
 ```
 
@@ -118,14 +131,14 @@ import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
 export async function initDB() {
   // Create a database
   const db = await createRxDatabase({
-    name: 'heroesdb', // the name of the database
+    name: 'mydatabase', // the name of the database
     storage: getRxStorageLocalstorage()
   });
 
   // Add collections
   await db.addCollections({
-    heroes: {
-      schema: heroSchema
+    todos: {
+      schema: todoSchema
     }
   });
 
@@ -140,14 +153,14 @@ import { getRxStorageIndexedDB } from 'rxdb-premium/plugins/storage-indexeddb';
 export async function initDB() {
   // Create a database
   const db = await createRxDatabase({
-    name: 'heroesdb', // the name of the database
+    name: 'mydatabase', // the name of the database
     storage: getRxStorageIndexedDB()
   });
 
   // Add collections
   await db.addCollections({
-    heroes: {
-      schema: heroSchema
+    todos: {
+      schema: todoSchema
     }
   });
 
@@ -165,24 +178,42 @@ Once your database is initialized, you can perform all CRUD operations:
 
 ```ts
 // insert
-await db.heroes.insert({ name: 'Iron Man', power: 'Genius-level intellect' });
+await db.todos.insert({
+  id: 'todo1',
+  name: 'Buy groceries',
+  done: false,
+  dueAt: '2026-03-01T10:00:00.000Z',
+  priority: 2
+});
 
 // bulk insert
-await db.heroes.bulkInsert([
-  { name: 'Thor', power: 'God of Thunder' },
-  { name: 'Hulk', power: 'Superhuman Strength' }
+await db.todos.bulkInsert([
+  {
+    id: 'todo2',
+    name: 'Write report',
+    done: false,
+    dueAt: '2026-03-02T09:00:00.000Z',
+    priority: 8
+  },
+  {
+    id: 'todo3',
+    name: 'Call the dentist',
+    done: true,
+    dueAt: '2026-02-20T14:00:00.000Z',
+    priority: 5
+  }
 ]);
 
 // find and findOne
-const heroes = await db.heroes.find().exec();
-const ironMan = await db.heroes.findOne({ selector: { name: 'Iron Man' } }).exec();
+const todos = await db.todos.find().exec();
+const report = await db.todos.findOne({ selector: { name: 'Write report' } }).exec();
 
 // update
-const doc = await db.heroes.findOne({ selector: { name: 'Hulk' } }).exec();
-await doc.update({ $set: { power: 'Unlimited Strength' } });
+const doc = await db.todos.findOne({ selector: { id: 'todo2' } }).exec();
+await doc.update({ $set: { done: true } });
 
 // delete
-const doc = await db.heroes.findOne({ selector: { name: 'Thor' } }).exec();
+const doc = await db.todos.findOne({ selector: { id: 'todo3' } }).exec();
 await doc.remove();
 ```
 
@@ -200,9 +231,9 @@ In Angular, you can display this data with the `AsyncPipe`:
 
 ```ts
 constructor(private dbService: DatabaseService) {
-  this.heroes$ = this.dbService.db.heroes.find({
+  this.todos$ = this.dbService.db.todos.find({
     selector: {},
-    sort: [{ name: 'asc' }]
+    sort: [{ dueAt: 'asc' }]
   }).$;
 }
 ```
@@ -210,7 +241,7 @@ constructor(private dbService: DatabaseService) {
 ```html
 
   
-    {{ hero.name }}
+    {{ todo.name }}
   
 
 ```
@@ -258,13 +289,13 @@ const database = await createRxDatabase({
 Use the double-dollar sign (`$$`) to get a `Signal` instead of an `Observable`:
 
 ```ts
-const heroesSignal = database.heroes.find().$$;
+const todosSignal = database.todos.find().$$;
 ```
 
 ```html
 
   
-    {{ hero.name }}
+    {{ todo.name }}
   
 
 ```

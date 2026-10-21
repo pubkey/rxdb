@@ -39,7 +39,7 @@ import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
 
 ### Create a Database
 ```ts
-const db = await createRxDatabase({
+const myDatabase = await createRxDatabase({
     name: 'exampledb',
     storage: getRxStorageLocalstorage()
 });
@@ -48,19 +48,19 @@ const db = await createRxDatabase({
 ### Add a Collection
 
 ```ts
-await db.addCollections({
-  tasks: {
+await myDatabase.addCollections({
+  todos: {
     schema: {
-      title: 'tasks schema',
+      title: 'todo schema',
       version: 0,
       primaryKey: 'id',
       type: 'object',
       properties: {
         id: { type: 'string', maxLength: 100 },
-        title: { type: 'string' },
-        done: { type: 'boolean' }
+        name: { type: 'string' },
+        done: { type: 'boolean', default: false }
       },
-      required: ['id', 'title', 'done']
+      required: ['id', 'name', 'done']
     }
   }
 });
@@ -69,12 +69,12 @@ await db.addCollections({
 ### Insert a document
 
 ```ts
-await db.tasks.insert({ id: 'task-01', title: 'Get started with RxDB', done: false });
+await myDatabase.todos.insert({ id: 'todo1', name: 'Learn RxDB', done: false });
 ```
 
 ### Query documents
 ```ts
-const nonDoneTasks = await db.tasks.find({
+const notDoneTodos = await myDatabase.todos.find({
     selector: {
         done: {
             $eq: false
@@ -97,7 +97,7 @@ import {
     getLocalStorageMock
 } from 'rxdb/plugins/storage-localstorage';
 
-const db = await createRxDatabase({
+const myDatabase = await createRxDatabase({
     name: 'exampledb',
     storage: getRxStorageLocalstorage({
         localStorage: getLocalStorageMock()

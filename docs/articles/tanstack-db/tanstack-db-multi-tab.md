@@ -90,10 +90,10 @@ await db.addCollections({
             primaryKey: 'id',
             properties: {
                 id: { type: 'string', maxLength: 100 },
-                text: { type: 'string' },
-                completed: { type: 'boolean' }
+                name: { type: 'string' },
+                done: { type: 'boolean', default: false }
             },
-            required: ['id', 'text', 'completed']
+            required: ['id', 'name', 'done']
         }
     }
 });
@@ -152,13 +152,13 @@ function OpenTodos() {
     const { data: openTodos } = useLiveQuery((q) =>
         q
             .from({ todo: todosCollection })
-            .where(({ todo }) => eq(todo.completed, false))
+            .where(({ todo }) => eq(todo.done, false))
     );
-    return {openTodos.map((t) => {t.text})};
+    return {openTodos.map((t) => {t.name})};
 }
 
 // Insert in one tab, watch it appear in the other:
-todosCollection.insert({ id: 'todo-1', text: 'buy milk', completed: false });
+todosCollection.insert({ id: 'todo-1', name: 'buy milk', done: false });
 ```
 
 To see it in action, open your app in two browser tabs side by side and insert a todo in the first tab. The list in the second tab updates without a reload, because the write goes into the shared RxDB storage and streams into the other tab's TanStack DB collection through the change feed.

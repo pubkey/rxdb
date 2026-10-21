@@ -60,43 +60,44 @@ The following snippet defines a `todos` collection and subscribes to a reactive 
 import { createRxDatabase } from 'rxdb/plugins/core';
 import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
 
-const db = await createRxDatabase({
-    name: 'tasksdb',
+const myDatabase = await createRxDatabase({
+    name: 'todosdb',
     storage: getRxStorageDexie()
 });
 
-await db.addCollections({
+await myDatabase.addCollections({
     todos: {
         schema: {
             version: 0,
             primaryKey: 'id',
             type: 'object',
             properties: {
-                id: { type: 'string', maxLength: 64 },
-                title: { type: 'string' },
-                done: { type: 'boolean' },
-                createdAt: { type: 'number' }
+                id: { type: 'string', maxLength: 100 },
+                name: { type: 'string' },
+                done: { type: 'boolean', default: false },
+                dueAt: { type: 'string', format: 'date-time', maxLength: 30 }
             },
-            required: ['id', 'title', 'done', 'createdAt']
+            required: ['id', 'name', 'done', 'dueAt'],
+            indexes: ['dueAt']
         }
     }
 });
 
 // Reactive query, emits whenever matching documents change.
-const openTodos$ = db.todos.find({
+const openTodos$ = myDatabase.todos.find({
     selector: { done: false },
-    sort: [{ createdAt: 'desc' }]
+    sort: [{ dueAt: 'asc' }]
 }).$;
 
 openTodos$.subscribe(todos => {
-    console.log('open todos:', todos.map(t => t.title));
+    console.log('open todos:', todos.map(t => t.name));
 });
 
-await db.todos.insert({
-    id: 't1',
-    title: 'Replace Realm with RxDB',
+await myDatabase.todos.insert({
+    id: 'todo1',
+    name: 'Replace Realm with RxDB',
     done: false,
-    createdAt: Date.now()
+    dueAt: '2026-01-15T09:00:00.000Z'
 });
 ```
 
@@ -108,7 +109,7 @@ RxDB does not talk to MongoDB directly from the client, which is the right archi
 import { replicateRxCollection } from 'rxdb/plugins/replication';
 
 const replicationState = replicateRxCollection({
-    collection: db.todos,
+    collection: myDatabase.todos,
     replicationIdentifier: 'todos-mongo-http',
     live: true,
     pull: {
@@ -150,7 +151,7 @@ The dedicated [Realm to RxDB migration guide](../realm-to-rxdb-migration.md) cov
 1. **Map Realm classes to RxDB schemas**. Each Realm object schema becomes a JSON schema under an [RxCollection](../../rx-collection.md). Relationship properties map to references by primary key, and embedded objects map to nested object types in the schema.
 2. **Export existing data**. Use the Realm SDK to read every object of every type and write them as JSON. This is a one off script that runs on app start during the transition release.
 3. **Bulk insert into RxDB**. Use `collection.bulkInsert(docs)` on first launch after the migration release. Mark the migration as complete in `localStorage` so it only runs once.
-4. **Replace Realm queries**. Realm's filter strings translate to RxDB selectors. For example `realm.objects('Todo').filtered('done == false SORT(createdAt DESC)')` becomes `db.todos.find({ selector: { done: false }, sort: [{ createdAt: 'desc' }] })`.
+4. **Replace Realm queries**. Realm's filter strings translate to RxDB selectors. For example `realm.objects('Todo').filtered('done == false SORT(dueAt ASC)')` becomes `myDatabase.todos.find({ selector: { done: false }, sort: [{ dueAt: 'asc' }] })`.
 5. **Replace change listeners with observables**. `collection.addListener` becomes `query.$.subscribe`. Most UI frameworks already integrate with RxJS or with hooks like `useRxQuery`.
 6. **Wire up replication**. Stand up the pull and push HTTP endpoints against MongoDB or any other server. Roll out the new client and disable Atlas Device Sync once devices have synced their final state.
 

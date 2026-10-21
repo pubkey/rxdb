@@ -81,22 +81,22 @@ await db.addCollections({
       type: 'object',
       primaryKey: 'id',
       properties: {
-        id:      { type: 'string', maxLength: 100 },
-        title:   { type: 'string' },
-        done:    { type: 'boolean', default: false },
-        created: { type: 'string', format: 'date-time' }
+        id:    { type: 'string', maxLength: 100 },
+        name:  { type: 'string' },
+        done:  { type: 'boolean', default: false },
+        dueAt: { type: 'string', format: 'date-time', maxLength: 30 }
       },
-      required: ['id', 'title', 'done']
+      required: ['id', 'name', 'done', 'dueAt']
     }
   }
 });
 
 // insert an example document
 await db.todos.insert({
-  id: 'todo-1',
-  title: 'P2P demo task',
+  id: 'todo1',
+  name: 'Learn RxDB',
   done: false,
-  created: new Date().toISOString()
+  dueAt: '2026-01-01T10:00:00.000Z'
 });
 ```
 

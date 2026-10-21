@@ -39,7 +39,7 @@ Each document is stored together with its revision string, that looks like `1-9d
 - The revision height, a number that starts with `1` and is increased with each write to that document.
 - The database instance token.
 
-An operation to the RxDB data layer does not only contain the new document data, but also the previous document data with its revision string. If the previous revision matches the revision that is currently stored in the database, the write operation can succeed. If the previous revision is **different** than the revision that is currently stored in the database, the operation will throw a `409 CONFLICT` error.
+An operation to the RxDB data layer does not only contain the new document data, but also the previous document data with its revision string. If the previous revision matches the revision that is currently stored in the database, the write operation can succeed. If the previous revision is **different** than the revision that is currently stored in the database, the operation will throw a [`409 CONFLICT`](./errors.md#CONFLICT) error.
 
 ## Conflicts
 
@@ -49,7 +49,7 @@ There are two types of conflicts in RxDB, the **local conflict** and the **repli
 
 A local conflict can happen when a write operation assumes a different previous document state, than what is currently stored in the database. This can happen when multiple parts of your application do simultaneous writes to the same document. This can happen on a single browser tab, or when multiple tabs write at once or when a write appears while the document gets replicated from a remote server replication.
 
-When a local conflict appears, RxDB will throw a `409 CONFLICT` error. The calling code must then handle the error properly, depending on the application logic.
+When a local conflict appears, RxDB will throw a [`409 CONFLICT`](./errors.md#CONFLICT) error. The calling code must then handle the error properly, depending on the application logic.
 
 Instead of handling local conflicts, in most cases it is easier to ensure that they cannot happen, by using `incremental` database operations like [incrementalModify()](./rx-document.md), [incrementalPatch()](./rx-document.md) or [incrementalUpsert()](./rx-collection.md). These write operations have a built-in way to handle conflicts by re-applying the mutation functions to the conflicting document state.
 

@@ -46,7 +46,7 @@ At first, wrap the database opening in a promise and cache that promise. The cac
 
 ```ts
 // db.ts
-export type Todo = { id: string; title: string; done: boolean };
+export type Todo = { id: string; name: string; done: boolean };
 
 let dbPromise: Promise<IDBDatabase> | null = null;
 
@@ -184,7 +184,7 @@ Switching storages is a configuration change, not a rewrite. The React code stay
 
 ### Create the Database Outside of React
 
-Create the database in its own module and cache the promise. Components should never create the database themselves. This also protects you from React StrictMode, which runs effects twice in development: without the cached promise, RxDB would throw the error `DB8` because a database with the same name already exists.
+Create the database in its own module and cache the promise. Components should never create the database themselves. This also protects you from React StrictMode, which runs effects twice in development: without the cached promise, RxDB would throw the error [`DB8`](../errors.md#DB8) because a database with the same name already exists.
 
 ```ts
 // database.ts
@@ -193,9 +193,9 @@ import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
 
 export type TodoDocType = {
   id: string;
-  title: string;
+  name: string;
   done: boolean;
-  createdAt: number;
+  dueAt: string;
 };
 
 export type MyCollections = {
@@ -209,17 +209,12 @@ const todoSchema = {
   type: 'object',
   properties: {
     id: { type: 'string', maxLength: 100 },
-    title: { type: 'string' },
-    done: { type: 'boolean' },
-    createdAt: {
-      type: 'number',
-      minimum: 0,
-      maximum: 100000000000000,
-      multipleOf: 1
-    }
+    name: { type: 'string' },
+    done: { type: 'boolean', default: false },
+    dueAt: { type: 'string', format: 'date-time', maxLength: 30 }
   },
-  required: ['id', 'title', 'done', 'createdAt'],
-  indexes: ['createdAt']
+  required: ['id', 'name', 'done', 'dueAt'],
+  indexes: ['dueAt']
 } as const;
 
 let dbPromise: Promise<MyDatabase> | null = null;
@@ -287,7 +282,7 @@ export function TodoList() {
     collection: 'todos',
     query: {
       selector: { done: false },
-      sort: [{ createdAt: 'asc' }]
+      sort: [{ dueAt: 'asc' }]
     }
   });
 
@@ -299,7 +294,7 @@ export function TodoList() {
     
       {todos.map(todo => (
         
-          {todo.title}
+          {todo.name}
           {/* RxDocuments can be modified directly */}
           <button onClick={() => todo.patch({ done: true })}>Done</button>
           <button onClick={() => todo.remove()}>Delete</button>
@@ -322,25 +317,25 @@ import type { TodoDocType } from './database';
 
 export function AddTodo() {
   const collection = useRxCollection<TodoDocType>('todos');
-  const [title, setTitle] = useState('');
+  const [name, setName] = useState('');
 
   async function onSubmit(event: React.FormEvent) {
     event.preventDefault();
-    if (!collection || !title) {
+    if (!collection || !name) {
       return;
     }
     await collection.insert({
       id: crypto.randomUUID(),
-      title,
+      name,
       done: false,
-      createdAt: Date.now()
+      dueAt: new Date().toISOString()
     });
-    setTitle('');
+    setName('');
   }
 
   return (
     <form onSubmit={onSubmit}>
-      <input value={title} onChange={e => setTitle(e.target.value)} />
+      <input value={name} onChange={e => setName(e.target.value)} />
       <button type="submit">Add</button>
     </form>
   );
@@ -371,27 +366,37 @@ const db = await getDatabase();
 
 // insert
 await db.todos.insert({
-  id: 'a1',
-  title: 'Buy milk',
+  id: 'todo1',
+  name: 'Learn RxDB',
   done: false,
-  createdAt: Date.now()
+  dueAt: '2026-01-01T10:00:00.000Z'
 });
 
 // bulk insert, one IndexedDB transaction for all documents
 await db.todos.bulkInsert([
-  { id: 'a2', title: 'Write docs', done: false, createdAt: Date.now() },
-  { id: 'a3', title: 'Ship release', done: false, createdAt: Date.now() }
+  {
+    id: 'todo3',
+    name: 'Set up replication',
+    done: false,
+    dueAt: '2026-01-03T14:15:00.000Z'
+  },
+  {
+    id: 'todo4',
+    name: 'Clean the kitchen',
+    done: false,
+    dueAt: '2026-01-04T18:00:00.000Z'
+  }
 ]);
 
 // query
 const openTodos = await db.todos.find({
   selector: { done: false },
-  sort: [{ createdAt: 'desc' }],
+  sort: [{ dueAt: 'desc' }],
   limit: 10
 }).exec();
 
 // update
-const doc = await db.todos.findOne('a1').exec();
+const doc = await db.todos.findOne('todo1').exec();
 await doc?.incrementalPatch({ done: true });
 
 // delete

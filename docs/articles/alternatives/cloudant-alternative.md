@@ -112,11 +112,12 @@ await db.addCollections({
       type: 'object',
       properties: {
         id: { type: 'string', maxLength: 100 },
-        title: { type: 'string' },
-        done: { type: 'boolean' },
-        updatedAt: { type: 'string', format: 'date-time' }
+        name: { type: 'string' },
+        done: { type: 'boolean', default: false },
+        dueAt: { type: 'string', format: 'date-time', maxLength: 30 }
       },
-      required: ['id', 'title', 'done']
+      required: ['id', 'name', 'done', 'dueAt'],
+      indexes: ['dueAt']
     }
   }
 });
@@ -144,7 +145,7 @@ Once data is local, queries no longer hit the network. The same query that would
 ```ts
 const openTodos$ = db.todos.find({
   selector: { done: false },
-  sort: [{ updatedAt: 'desc' }]
+  sort: [{ dueAt: 'asc' }]
 }).$;
 
 const subscription = openTodos$.subscribe(todos => {
@@ -154,10 +155,10 @@ const subscription = openTodos$.subscribe(todos => {
 
 // Writing a document triggers the subscription above
 await db.todos.insert({
-  id: 'todo-1',
-  title: 'Try RxDB with Cloudant',
+  id: 'todo1',
+  name: 'Try RxDB with Cloudant',
   done: false,
-  updatedAt: new Date().toISOString()
+  dueAt: new Date().toISOString()
 });
 ```
 

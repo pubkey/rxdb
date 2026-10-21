@@ -23,17 +23,12 @@ DataStore was officially launched in **December 2019**. Its core idea was to giv
 To define data models, developers wrote a GraphQL schema and then ran the Amplify CLI to generate platform-specific model classes:
 
 ```graphql
-type Post @model {
+type Todo @model {
   id: ID!
-  title: String!
-  body: String
-  status: PostStatus!
-  rating: Int
-}
-
-enum PostStatus {
-  PUBLISHED
-  DRAFT
+  name: String!
+  done: Boolean!
+  priority: Int
+  note: String
 }
 ```
 
@@ -41,13 +36,13 @@ After running `amplify push`, the CLI created the AppSync API, DynamoDB tables, 
 
 ```ts
 // A DataStore OR query
-const posts = await DataStore.query(Post, c => c.or(
-  c => c.rating('gt', 4).status('eq', PostStatus.PUBLISHED)
+const todos = await DataStore.query(Todo, c => c.or(
+  c => c.priority('gt', 4).done('eq', false)
 ));
 
 // A DataStore sort query
-const posts = await DataStore.query(Post, Predicates.ALL, {
-  sort: s => s.rating(SortDirection.ASCENDING).title(SortDirection.DESCENDING)
+const todos = await DataStore.query(Todo, Predicates.ALL, {
+  sort: s => s.priority(SortDirection.DESCENDING).name(SortDirection.ASCENDING)
 });
 ```
 
@@ -89,16 +84,16 @@ DataStore's predicate syntax is a custom function-based API that maps to AppSync
 RxDB uses [Mango queries](../../rx-query.md), a MongoDB-compatible JSON query syntax. These run entirely client-side against the local storage, so they are not limited by what the server can express:
 
 ```ts
-// Complex query in RxDB: posts that are published AND (rating > 4 OR featured = true)
-const results = await db.posts.find({
+// Complex query in RxDB: open todos AND (priority > 4 OR tagged 'urgent')
+const results = await db.todos.find({
   selector: {
-    status: 'published',
+    done: false,
     $or: [
-      { rating: { $gt: 4 } },
-      { featured: true }
+      { priority: { $gt: 4 } },
+      { tags: { $in: ['urgent'] } }
     ]
   },
-  sort: [{ rating: 'desc' }, { title: 'asc' }]
+  sort: [{ priority: 'desc' }, { dueAt: 'asc' }]
 }).exec();
 ```
 
@@ -121,12 +116,12 @@ RxDB exposes the full replication state as observables. You can subscribe to rep
 import { replicateRxCollection } from 'rxdb/plugins/replication';
 
 const replicationState = await replicateRxCollection({
-    collection: db.posts,
-    replicationIdentifier: 'posts-http-v1',
+    collection: db.todos,
+    replicationIdentifier: 'todos-http-v1',
     pull: {
         handler: async (checkpoint, batchSize) => {
             const response = await fetch(
-                `/api/posts/changes?since=${checkpoint?.updatedAt ?? 0}` +
+                `/api/todos/changes?since=${checkpoint?.updatedAt ?? 0}` +
                 `&limit=${batchSize}`
             );
             const data = await response.json();
@@ -135,7 +130,7 @@ const replicationState = await replicateRxCollection({
     },
     push: {
         handler: async (rows) => {
-            const response = await fetch('/api/posts/push', {
+            const response = await fetch('/api/todos/push', {
                 method: 'POST',
                 body: JSON.stringify(rows),
                 headers: { 'Content-Type': 'application/json' }
@@ -166,15 +161,14 @@ RxDB has a built-in [schema migration system](../../migration-schema.md). You in
 
 ```ts
 await db.addCollections({
-    posts: {
-        schema: postSchemaV2, // version: 1 (incremented from 0)
+    todos: {
+        schema: todoSchemaV1, // version: 1 (incremented from 0)
         migrationStrategies: {
             // Transform documents from version 0 to version 1
             1: (oldDoc) => {
                 return {
                     ...oldDoc,
-                    status: oldDoc.published ? 'published' : 'draft',
-                    rating: oldDoc.rating ?? 0
+                    priority: oldDoc.priority ?? 0
                 };
             }
         }
@@ -189,7 +183,7 @@ When the database opens with a higher schema version, RxDB runs the migration au
 DataStore provides a subscription API to observe model changes:
 
 ```ts
-const subscription = DataStore.observe(Post).subscribe(msg => {
+const subscription = DataStore.observe(Todo).subscribe(msg => {
     console.log(msg.opType, msg.element);
 });
 ```
@@ -200,13 +194,13 @@ RxDB queries are observable by default. Every query exposes a `$` property that 
 
 ```ts
 // This observable emits immediately with current results,
-// then re-emits whenever matching posts change
-db.posts.find({
-    selector: { status: 'published' },
-    sort: [{ rating: 'desc' }]
-}).$.subscribe(posts => {
-    // posts is always the current, up-to-date result set
-    renderUI(posts);
+// then re-emits whenever matching todos change
+db.todos.find({
+    selector: { done: false },
+    sort: [{ dueAt: 'asc' }]
+}).$.subscribe(todos => {
+    // todos is always the current, up-to-date result set
+    renderUI(todos);
 });
 ```
 
@@ -226,7 +220,7 @@ If your existing backend is AWS AppSync, RxDB can replicate with it directly usi
 import { replicateGraphQL } from 'rxdb/plugins/replication-graphql';
 
 const replicationState = await replicateGraphQL({
-    collection: db.posts,
+    collection: db.todos,
     url: {
         http:
             'https://your-appsync-endpoint.appsync-api.us-east-1.amazonaws.com' +
@@ -238,9 +232,9 @@ const replicationState = await replicateGraphQL({
     pull: {
         queryBuilder: (checkpoint, limit) => ({
             query: `
-                query SyncPosts($lastSync: AWSTimestamp, $limit: Int) {
-                    syncPosts(lastSync: $lastSync, limit: $limit) {
-                        items { id title body status rating _deleted _lastChangedAt }
+                query SyncTodos($lastSync: AWSTimestamp, $limit: Int) {
+                    syncTodos(lastSync: $lastSync, limit: $limit) {
+                        items { id name done priority _deleted _lastChangedAt }
                         nextToken
                     }
                 }
@@ -252,7 +246,7 @@ const replicationState = await replicateGraphQL({
         }),
         responseModifier: (response) => {
             return {
-                documents: response.data.syncPosts.items,
+                documents: response.data.syncTodos.items,
                 checkpoint: { updatedAt: Date.now() }
             };
         }
@@ -260,8 +254,8 @@ const replicationState = await replicateGraphQL({
     push: {
         queryBuilder: (rows) => ({
             query: `
-                mutation CreateOrUpdatePost($input: CreatePostInput!) {
-                    createPost(input: $input) { id title body status rating }
+                mutation CreateOrUpdateTodo($input: CreateTodoInput!) {
+                    createTodo(input: $input) { id name done priority }
                 }
             `,
             variables: { input: rows[0].newDocumentState }
@@ -308,8 +302,8 @@ RxDB runs conflict resolution on the client. When the pull handler returns a doc
 
 ```ts
 await db.addCollections({
-    posts: {
-        schema: postSchema,
+    todos: {
+        schema: todoSchema,
         conflictHandler: async ({ newDocumentState, realMasterState }) => {
             // Example: keep whichever version was updated more recently
             if (newDocumentState.updatedAt >= realMasterState.updatedAt) {
@@ -329,22 +323,22 @@ import { addRxPlugin } from 'rxdb/plugins/core';
 
 addRxPlugin(RxDBcrdtPlugin);
 
-const postSchema = {
+const todoSchema = {
     version: 0,
     primaryKey: 'id',
     type: 'object',
     properties: {
-        id:      { type: 'string', maxLength: 100 },
-        title:   { type: 'string' },
-        body:    { type: 'string' },
-        status:  { type: 'string' },
-        crdts:   getCRDTSchemaPart()
+        id:    { type: 'string', maxLength: 100 },
+        name:  { type: 'string' },
+        done:  { type: 'boolean' },
+        crdts: getCRDTSchemaPart()
     },
     crdt: { field: 'crdts' }
 };
+};
 ```
 
-With CRDTs, two users editing the same post while offline will have their changes merged field-by-field when they reconnect, rather than one edit overwriting the other.
+With CRDTs, two users editing the same todo while offline will have their changes merged field-by-field when they reconnect, rather than one edit overwriting the other.
 
 ### Multi-Tab Support in the Browser
 
@@ -384,16 +378,16 @@ const db = await createRxDatabase({
     password: 'your-encryption-passphrase'
 });
 
-const schema = {
+const todoSchema = {
     version: 0,
     primaryKey: 'id',
     type: 'object',
     properties: {
-        id:    { type: 'string', maxLength: 100 },
-        token: { type: 'string' },
-        email: { type: 'string' }
+        id:   { type: 'string', maxLength: 100 },
+        name: { type: 'string' },
+        note: { type: 'string' }
     },
-    encrypted: ['token', 'email'] // These fields are stored as ciphertext
+    encrypted: ['note'] // This field is stored as ciphertext
 };
 ```
 
@@ -403,11 +397,11 @@ RxDB validates every document against a [JSON Schema](../../rx-schema.md) before
 
 ```ts
 try {
-    await db.posts.insert({
-        id: 'post-001',
-        // 'title' is required but missing
-        status: 'published',
-        updatedAt: Date.now()
+    await db.todos.insert({
+        id: 'todo1',
+        // 'name' is required but missing
+        done: false,
+        dueAt: new Date().toISOString()
     });
 } catch (err) {
     console.error(err); // Schema validation error
@@ -428,24 +422,25 @@ DataStore used GraphQL schemas processed by the Amplify CLI. RxDB uses JSON Sche
 
 ```ts
 // DataStore model (generated from GraphQL)
-import { Post } from './models';
+import { Todo } from './models';
 
 // RxDB equivalent
-const postSchema = {
-    title: 'post schema',
+const todoSchema = {
+    title: 'todo schema',
     version: 0,
     primaryKey: 'id',
     type: 'object',
     properties: {
         id:        { type: 'string', maxLength: 100 },
-        title:     { type: 'string' },
-        body:      { type: 'string' },
-        status:    { type: 'string', enum: ['PUBLISHED', 'DRAFT'] },
-        rating:    { type: 'number' },
+        name:      { type: 'string' },
+        done:      { type: 'boolean', default: false },
+        dueAt:     { type: 'string', format: 'date-time', maxLength: 30 },
+        priority:  { type: 'integer', minimum: 0, maximum: 10, multipleOf: 1 },
+        note:      { type: 'string' },
         updatedAt: { type: 'number' }
     },
-    required: ['id', 'title', 'status', 'updatedAt'],
-    indexes: ['updatedAt', 'status']
+    required: ['id', 'name', 'done', 'dueAt', 'priority', 'updatedAt'],
+    indexes: ['dueAt', ['done', 'priority']]
 };
 ```
 
@@ -454,32 +449,33 @@ const postSchema = {
 ```ts
 // DataStore
 await DataStore.save(
-    new Post({ title: 'Hello', status: PostStatus.DRAFT, rating: 0 })
+    new Todo({ name: 'Hello', done: false, priority: 0 })
 );
-const posts = await DataStore.query(Post, c => c.status('eq', PostStatus.PUBLISHED));
+const todos = await DataStore.query(Todo, c => c.done('eq', false));
 
 // RxDB equivalent
-await db.posts.insert({
+await db.todos.insert({
     id: uuid(),
-    title: 'Hello',
-    status: 'DRAFT',
-    rating: 0,
+    name: 'Hello',
+    done: false,
+    dueAt: new Date().toISOString(),
+    priority: 0,
     updatedAt: Date.now()
 });
-const posts = await db.posts.find({ selector: { status: 'PUBLISHED' } }).exec();
+const todos = await db.todos.find({ selector: { done: false } }).exec();
 ```
 
 **3. Replace DataStore subscriptions with RxDB reactive queries.**
 
 ```ts
 // DataStore
-const sub = DataStore.observe(Post).subscribe(msg => {
-    refetchPosts(); // Manual re-query needed
+const sub = DataStore.observe(Todo).subscribe(msg => {
+    refetchTodos(); // Manual re-query needed
 });
 
 // RxDB equivalent: result set updates automatically
-db.posts.find({ selector: { status: 'PUBLISHED' } }).$.subscribe(posts => {
-    updateUI(posts); // posts is always current
+db.todos.find({ selector: { done: false } }).$.subscribe(todos => {
+    updateUI(todos); // todos is always current
 });
 ```
 
@@ -510,40 +506,45 @@ const db = await createRxDatabase({
 });
 
 await db.addCollections({
-    posts: {
+    todos: {
         schema: {
-            title: 'post schema',
+            title: 'todo schema',
             version: 0,
             primaryKey: 'id',
             type: 'object',
             properties: {
-                id:        { type: 'string', maxLength: 100 },
-                title:     { type: 'string' },
-                status:    { type: 'string' },
-                rating:    { type: 'number' },
-                updatedAt: { type: 'number' }
+                id:       { type: 'string', maxLength: 100 },
+                name:     { type: 'string' },
+                done:     { type: 'boolean', default: false },
+                dueAt:    { type: 'string', format: 'date-time', maxLength: 30 },
+                priority: {
+                    type: 'integer',
+                    minimum: 0,
+                    maximum: 10,
+                    multipleOf: 1
+                }
             },
-            required: ['id', 'title', 'status', 'updatedAt'],
-            indexes: ['updatedAt', 'status', 'rating']
+            required: ['id', 'name', 'done', 'dueAt', 'priority'],
+            indexes: ['dueAt', ['done', 'priority']]
         }
     }
 });
 
 // Write data
-await db.posts.insert({
-    id: 'post-001',
-    title: 'Getting started with RxDB',
-    status: 'PUBLISHED',
-    rating: 5,
-    updatedAt: Date.now()
+await db.todos.insert({
+    id: 'todo1',
+    name: 'Getting started with RxDB',
+    done: false,
+    dueAt: new Date().toISOString(),
+    priority: 5
 });
 
-// Reactive query: subscribes to published posts sorted by rating
-db.posts.find({
-    selector: { status: 'PUBLISHED' },
-    sort: [{ rating: 'desc' }]
-}).$.subscribe(posts => {
-    console.log('Current published posts:', posts.map(p => p.title));
+// Reactive query: subscribes to open todos sorted by priority
+db.todos.find({
+    selector: { done: false },
+    sort: [{ priority: 'desc' }]
+}).$.subscribe(todos => {
+    console.log('Current open todos:', todos.map(t => t.name));
 });
 ```
 

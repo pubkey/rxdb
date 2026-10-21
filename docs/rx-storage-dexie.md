@@ -36,7 +36,7 @@ import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
 
 ### Create a Database
 ```ts
-const db = await createRxDatabase({
+const myDatabase = await createRxDatabase({
     name: 'exampledb',
     storage: getRxStorageDexie()
 });
@@ -56,7 +56,7 @@ import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
 const fakeIndexedDB = require('fake-indexeddb');
 const fakeIDBKeyRange = require('fake-indexeddb/lib/FDBKeyRange');
 
-const db = await createRxDatabase({
+const myDatabase = await createRxDatabase({
     name: 'exampledb',
     storage: getRxStorageDexie({
         indexedDB: fakeIndexedDB,
@@ -71,7 +71,7 @@ const db = await createRxDatabase({
 Dexie.js has its own plugin system with [many plugins](https://dexie.org/docs/DerivedWork#known-addons) for [encryption](./encryption.md), replication or other use cases. With the Dexie.js `RxStorage` you can use the same plugins by passing them to the `getRxStorageDexie()` function.
 
 ```ts
-const db = await createRxDatabase({
+const myDatabase = await createRxDatabase({
     name: 'exampledb',
     storage: getRxStorageDexie({
         addons: [ /* Your Dexie.js plugins */ ]
@@ -132,7 +132,7 @@ const storage = getRxStorageDexie({
 #### Create an RxDB Database
 
 ```ts
-const db = await createRxDatabase({
+const myDatabase = await createRxDatabase({
   name: 'mydb',
   storage
 });
@@ -161,7 +161,7 @@ import { createRxDatabase } from 'rxdb/plugins/core';
 #### Create an RxDB Database with the Dexie Storage
 
 ```ts
-const db = await createRxDatabase({
+const myDatabase = await createRxDatabase({
   name: 'mydb',
   storage: getRxStorageDexie()
 });
@@ -170,8 +170,8 @@ const db = await createRxDatabase({
 #### Add a Collection
 
 ```ts
-await db.addCollections({
-    humans: {
+await myDatabase.addCollections({
+    todos: {
         schema: {
             version: 0,
             type: 'object',
@@ -179,9 +179,9 @@ await db.addCollections({
             properties: {
                 id: { type: 'string', maxLength: 100 },
                 name: { type: 'string' },
-                age: { type: 'number' }
-              },
-            required: ['id', 'name']
+                done: { type: 'boolean', default: false }
+            },
+            required: ['id', 'name', 'done']
         }
     }
 });
@@ -192,9 +192,9 @@ await db.addCollections({
 ```ts
 const replicationState = replicateCouchDB({
   replicationIdentifier: 'my-couchdb-replication',
-  collection: db.humans,
+  collection: myDatabase.todos,
   // The URL to your CouchDB endpoint
-  url: 'http://example.com/db/humans'
+  url: 'http://example.com/db/todos'
 });
 ```
 

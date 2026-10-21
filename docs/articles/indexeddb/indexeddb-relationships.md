@@ -231,52 +231,54 @@ The getter also works on nested fields, so `await myDocument.family.mother_` res
 
 ### One-to-Many With an Array of Refs
 
-`tagIds` above is the interesting one. When you put `ref` on an **array of strings**, the field becomes a one-to-many reference: the parent document holds the primary keys of its children, and the getter resolves the whole list at once.
+`tagIds` above is the interesting one. When you put `ref` on an **array of strings**, the field becomes a one-to-many reference: the parent document holds the primary keys of its children, and the getter resolves the whole list at once. The `todos` example schema does this with its `subtasks` field, where every entry is the id of another todo.
 
 ```js
-const userSchema = {
+const todoSchema = {
   version: 0,
-  primaryKey: 'name',
+  primaryKey: 'id',
   type: 'object',
   properties: {
-    name: { type: 'string', maxLength: 100 },
-    postIds: {
+    id: { type: 'string', maxLength: 100 },
+    name: { type: 'string' },
+    subtasks: {
       type: 'array',
-      // Every entry is the primary key of a document in 'posts'.
-      ref: 'posts',
+      // Every entry is the primary key of a document in 'todos'.
+      ref: 'todos',
       items: { type: 'string' }
     }
   },
-  required: ['name']
+  required: ['id', 'name']
 };
 ```
 
 Writing the relation is writing an array of strings:
 
 ```js
-await db.users.insert({
-  name: 'Alice',
-  postIds: ['post-1', 'post-2', 'post-3']
+await db.todos.insert({
+  id: 'todo1',
+  name: 'Plan the release',
+  subtasks: ['todo2', 'todo3', 'todo4']
 });
 ```
 
 And reading it back gives you documents, not keys:
 
 ```js
-const alice = await db.users.findOne('Alice').exec();
+const releaseTodo = await db.todos.findOne('todo1').exec();
 
-const posts = await alice.postIds_;
-console.dir(posts); // > Array.<RxDocument>
+const subtasks = await releaseTodo.subtasks_;
+console.dir(subtasks); // > Array.<RxDocument>
 
 // The explicit form does the same.
-const samePosts = await alice.populate('postIds');
+const sameSubtasks = await releaseTodo.populate('subtasks');
 ```
 
 Adding a child means rewriting the parent's array, so use an [incremental write](../../rx-document.md) to avoid a conflict when two tabs do it at the same time:
 
 ```js
-await alice.incrementalModify(docData => {
-  docData.postIds.push('post-4');
+await releaseTodo.incrementalModify(docData => {
+  docData.subtasks.push('todo5');
   return docData;
 });
 ```
@@ -390,7 +392,7 @@ Use a junction object store whose primary key is the compound key `['postId', 't
 </FaqItem>
 <FaqItem question="How do I model a one-to-many relationship in RxDB?">
 
-Two ways, and the choice is about size. For a bounded list, put `ref` on an array of strings in the parent schema (`{ type: 'array', ref: 'posts', items: { type: 'string' } }`) and read it with the underscore getter, which resolves to an array of `RxDocument`. For a list that can grow, put `ref` on a string field of the child and add that field to the collection's `indexes`, then query it. RxDB indexes only `string`, `integer`, and `number` fields, so an array of refs cannot be indexed.
+Two ways, and the choice is about size. For a bounded list, put `ref` on an array of strings in the parent schema (`{ type: 'array', ref: 'todos', items: { type: 'string' } }`) and read it with the underscore getter, which resolves to an array of `RxDocument`. For a list that can grow, put `ref` on a string field of the child and add that field to the collection's `indexes`, then query it. RxDB indexes only `string`, `integer`, and `number` fields, so an array of refs cannot be indexed.
 
 </FaqItem>
 <FaqItem question="Why is loading related records from IndexedDB slow?">

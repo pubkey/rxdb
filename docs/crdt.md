@@ -34,13 +34,13 @@ A CRDT operator example:
 
 ```js
 const myCRDTOperation = {
-    // increment the points field by +1
+    // increment the priority field by +1
     $inc: {
-        points: 1
+        priority: 1
     },
-    // set the modified field to true
+    // set the done field to true
     $set: {
-        modified: true
+        done: true
     }
 };
 ```
@@ -87,12 +87,12 @@ addRxPlugin(RxDBcrdtPlugin);
 import { createRxDatabase } from 'rxdb';
 import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
 const myDatabase = await createRxDatabase({
-  name: 'heroesdb',
+  name: 'mydatabase',
   storage: getRxStorageLocalstorage()
 });
 
 // create a schema with the CRDT options
-const mySchema = {
+const todoSchema = {
     version: 0,
     primaryKey: 'id',
     type: 'object',
@@ -101,34 +101,42 @@ const mySchema = {
             type: 'string',
             maxLength: 100
         },
-        points: {
-            type: 'number',
-            maximum: 100,
-            minimum: 0
+        name: {
+            type: 'string'
+        },
+        priority: {
+            type: 'integer',
+            minimum: 0,
+            maximum: 10,
+            multipleOf: 1
         },
         crdts: getCRDTSchemaPart() // use this field to store the CRDT operations
     },
-    required: ['id', 'points'],
+    required: ['id', 'name', 'priority'],
     crdt: { // CRDT options
         field: 'crdts'
     }
 }
 
 // add a collection
-await db.addCollections({
-    users: {
-        schema: mySchema
+await myDatabase.addCollections({
+    todos: {
+        schema: todoSchema
     }
 });
 
 // insert a document
-const myDocument = await db.users.insert({id: 'alice', points: 0});
+const myDocument = await myDatabase.todos.insert({
+    id: 'todo4',
+    name: 'Clean the kitchen',
+    priority: 1
+});
 
-// run a CRDT operation that increments the 'points' by one
+// run a CRDT operation that increments the 'priority' by one
 await myDocument.updateCRDT({
     ifMatch: {
         $inc: {
-            points: 1
+            priority: 1
         }
     }
 });
@@ -138,21 +146,21 @@ await myDocument.updateCRDT({
 
 By default, all CRDTs operations will be run to build the current document state. But in many cases, more granular operations are required to better reflect the desired business logic. For these cases, conditional CRDTs can be used.
 
-For example if you have a field `points` with a `maximum` of `100`, you might want to only run the `$inc` operation, if the `points` value is less than `100`.
+For example if you have a field `priority` with a `maximum` of `10`, you might want to only run the `$inc` operation, if the `priority` value is less than `10`.
 In an conditional CRDT, you can specify a `selector` and the operation sets `ifMatch` and `ifNotMatch`. At each time the CRDT is applied to the document state, first the selector will run and evaluate which operations path must be used.
 
 ```ts
 await myDocument.updateCRDT({
     // only if the selector matches, the ifMatch operation will run
     selector: {
-        age: {
-            $lt: 100
+        priority: {
+            $lt: 10
         }
     },
     // an operation that runs if the selector matches
     ifMatch: {
         $inc: {
-            points: 1
+            priority: 1
         }
     },
     // if the selector does NOT match, you could run a different operation instead
@@ -196,16 +204,18 @@ When CRDTs are enabled with the plugin, all insert operations are automatically 
 
 ```ts
 // Calling RxCollection.insert()
-await myRxCollection.insert({
-    id: 'foo',
-    points: 1
+await myDatabase.todos.insert({
+    id: 'todo4',
+    name: 'Clean the kitchen',
+    priority: 1
 });
 // is exactly equal to calling insertCRDT()
-await myRxCollection.insertCRDT({
+await myDatabase.todos.insertCRDT({
     ifMatch: {
         $set: {
-            id: 'foo',
-            points: 1
+            id: 'todo4',
+            name: 'Clean the kitchen',
+            priority: 1
         }
     }
 });
@@ -215,7 +225,7 @@ When the same document is inserted in multiple client instances and then replica
 You can use `insertCRDT()` to make conditional insert operations with any logic. To check for the previous existence of a document, use the `$exists` query operation on the primary key of the document.
 
 ```ts
-await myRxCollection.insertCRDT({
+await myDatabase.todos.insertCRDT({
     selector: {
         // only run if the document did not exist before.
         id: { $exists: false }
@@ -223,14 +233,15 @@ await myRxCollection.insertCRDT({
     ifMatch: {
         // if the document did not exist, insert it
         $set: {
-            id: 'foo',
-            points: 1
+            id: 'todo4',
+            name: 'Clean the kitchen',
+            priority: 1
         }
     },
     ifNotMatch: {
-        // if document existed already, increment the points by +1
+        // if document existed already, increment the priority by +1
         $inc: {
-            points: 1
+            priority: 1
         }
     }
 });
@@ -318,7 +329,7 @@ Both methods are first-class citizens in RxDB. CRDTs focus on **automatic, deter
 
 ### Example: merging different fields with conflict handlers instead of CRDT
 
-For example, imagine two users edit different fields of the same document at the same time. One updates a `name`, the other updates a `score`. A custom conflict handler can merge both changes so no data is lost:
+For example, imagine two users edit different fields of the same document at the same time. One updates the `name`, the other updates the `priority`. A custom conflict handler can merge both changes so no data is lost:
 
 ```ts
 const mergeFieldsHandler = {
@@ -327,7 +338,10 @@ const mergeFieldsHandler = {
     return {
       ...input.realMasterState,
       name: input.newDocumentState.name ?? input.realMasterState.name,
-      score: Math.max(input.newDocumentState.score, input.realMasterState.score)
+      priority: Math.max(
+        input.newDocumentState.priority,
+        input.realMasterState.priority
+      )
     };
   }
 };

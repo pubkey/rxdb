@@ -1,6 +1,6 @@
 # Key Compression
 
-> Use the RxDB key compression plugin to store documents in a compressed format, saving up to 40% disc space through JSON schema-based property name shortening.
+> Use the RxDB key compression plugin to store documents in a compressed format, saving up to 40% disk space through JSON schema-based property name shortening.
 
 import {Steps} from '@site/src/components/steps';
 import {DocsAnimation} from '@site/src/components/docs-animation';
@@ -8,7 +8,7 @@ import {KeyCompressionLogo} from '@site/src/components/animations/key-compressio
 
 # Key Compression
 
-With the key compression plugin, documents will be stored in a compressed format which saves up to 40% disc space.
+With the key compression plugin, documents will be stored in a compressed format which saves up to 40% disk space.
 For compression the npm module [jsonschema-key-compression](https://github.com/pubkey/jsonschema-key-compression) is used.
 It compresses json-data based on its json-schema while still having valid json. It works by compressing long attribute-names into smaller ones and backwards.
 
@@ -39,7 +39,7 @@ const storageWithKeyCompression = wrappedKeyCompressionStorage({
 
 ```ts
 import { createRxDatabase } from 'rxdb/plugins/core';
-const db = await createRxDatabase({
+const myDatabase = await createRxDatabase({
     name: 'mydatabase',
     storage: storageWithKeyCompression
 });
@@ -48,8 +48,7 @@ const db = await createRxDatabase({
 ### Create a compressed RxCollection
 
 ```ts
-
-const mySchema = {
+const todoSchema = {
   keyCompression: true, // set this to true, to enable the keyCompression
   version: 0,
   primaryKey: 'id',
@@ -59,14 +58,28 @@ const mySchema = {
           type: 'string',
           maxLength: 100 // <- the primary key must have set maxLength
       },
+      name: {
+          type: 'string'
+      },
+      done: {
+          type: 'boolean',
+          default: false
+      }
       /* ... */
-  }
+  },
+  required: ['id', 'name', 'done']
 };
-await db.addCollections({
-    docs: {
-        schema: mySchema
+await myDatabase.addCollections({
+    todos: {
+        schema: todoSchema
     }
 });
+
+await myDatabase.todos.insert({ id: 'todo1', name: 'Learn RxDB' });
+const doc = await myDatabase.todos.findOne('todo1').exec();
+// the document data is decompressed when you access it
+console.log(doc.name);
+// > 'Learn RxDB'
 ```
 
 </Steps>

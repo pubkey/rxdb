@@ -126,12 +126,12 @@ const db = new poolUtil.OpfsSAHPoolDb('/todos.sqlite3');
 
 db.exec(`CREATE TABLE IF NOT EXISTS todos (
     id TEXT PRIMARY KEY,
-    title TEXT,
+    name TEXT,
     done INTEGER
 )`);
 db.exec({
     sql: 'INSERT INTO todos VALUES (?, ?, ?)',
-    bind: ['t1', 'Buy milk', 0]
+    bind: ['todo1', 'Learn RxDB', 0]
 });
 
 const rows = db.exec({
@@ -140,7 +140,7 @@ const rows = db.exec({
     rowMode: 'object'
 });
 console.log(rows);
-// > [{ id: 't1', title: 'Buy milk', done: 0 }]
+// > [{ id: 'todo1', name: 'Learn RxDB', done: 0 }]
 // Not reactive: you have to run the query again after each write,
 // and post the results from the worker to the main thread yourself.
 ```
@@ -158,12 +158,12 @@ const pg = await PGlite.create('idb://todos', {
 
 await pg.exec(`CREATE TABLE IF NOT EXISTS todos (
     id TEXT PRIMARY KEY,
-    title TEXT,
+    name TEXT,
     done BOOLEAN
 )`);
 await pg.query(
     'INSERT INTO todos VALUES ($1, $2, $3)',
-    ['t1', 'Buy milk', false]
+    ['todo1', 'Learn RxDB', false]
 );
 
 // Reactive inside this PGlite instance.
@@ -193,15 +193,15 @@ await db.addCollections({
             type: 'object',
             properties: {
                 id: { type: 'string', maxLength: 100 },
-                title: { type: 'string' },
-                done: { type: 'boolean' }
+                name: { type: 'string' },
+                done: { type: 'boolean', default: false }
             },
-            required: ['id', 'title', 'done']
+            required: ['id', 'name', 'done']
         }
     }
 });
 
-await db.todos.insert({ id: 't1', title: 'Buy milk', done: false });
+await db.todos.insert({ id: 'todo1', name: 'Learn RxDB', done: false });
 
 // Reactive across all browser tabs and replication.
 db.todos.find({ selector: { done: false } }).$.subscribe(todos => {

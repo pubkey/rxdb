@@ -49,51 +49,64 @@ import {
     ExtractDocumentTypeFromTypedRxJsonSchema,
     RxJsonSchema
 } from 'rxdb';
-export const heroSchemaLiteral = {
-    title: 'hero schema',
-    description: 'describes a human being',
+export const todoSchemaLiteral = {
+    title: 'todo schema',
+    description: 'describes a single todo item',
     version: 0,
-    keyCompression: true,
-    primaryKey: 'passportId',
+    primaryKey: 'id',
     type: 'object',
     properties: {
-        passportId: {
+        id: {
             type: 'string',
             maxLength: 100 // <- the primary key must have set maxLength
         },
-        firstName: {
+        name: {
             type: 'string'
         },
-        lastName: {
-            type: 'string'
+        done: {
+            type: 'boolean',
+            default: false
         },
-        age: {
-            type: 'integer'
+        dueAt: {
+            type: 'string',
+            format: 'date-time',
+            maxLength: 30
+        },
+        priority: {
+            type: 'integer',
+            minimum: 0,
+            maximum: 10,
+            multipleOf: 1
+        },
+        note: {
+            type: 'string'
         }
     },
-    required: ['firstName', 'lastName', 'passportId'],
-    indexes: ['firstName']
+    required: ['id', 'name', 'done', 'dueAt', 'priority'],
+    indexes: ['dueAt']
 } as const; // <- It is important to set 'as const' to preserve the literal type
-const schemaTyped = toTypedRxJsonSchema(heroSchemaLiteral);
+const schemaTyped = toTypedRxJsonSchema(todoSchemaLiteral);
 
 // aggregate the document type from the schema
-export type HeroDocType =
+export type TodoDocType =
     ExtractDocumentTypeFromTypedRxJsonSchema<
         typeof schemaTyped
     >;
 
 // create the typed RxJsonSchema from the literal typed object.
-export const heroSchema: RxJsonSchema<HeroDocType> = heroSchemaLiteral;
+export const todoSchema: RxJsonSchema<TodoDocType> = todoSchemaLiteral;
 ```
 
 **Option B**: Manually type the document type
 
 ```typescript
-export type HeroDocType = {
-    passportId: string;
-    firstName: string;
-    lastName: string;
-    age?: number; // optional
+export type TodoDocType = {
+    id: string;
+    name: string;
+    done: boolean;
+    dueAt: string;
+    priority: number;
+    note?: string; // optional
 };
 ```
 
@@ -106,17 +119,17 @@ If your schema is in a `.json` file or generated from somewhere else, you might 
 We also add some ORM-methods for the document.
 
 ```typescript
-export type HeroDocMethods = {
-    scream: (v: string) => string;
+export type TodoDocMethods = {
+    describe: (prefix: string) => string;
 };
 ```
 
 ## Create [RxDocument](../rx-document.md) Type
 
-We can merge these into our HeroDocument.
+We can merge these into our TodoDocument.
 
 ```typescript
-export type HeroDocument = RxDocument<HeroDocType, HeroDocMethods>;
+export type TodoDocument = RxDocument<TodoDocType, TodoDocMethods>;
 ```
 
 ## Create [RxCollection](../rx-collection.md) Type
@@ -126,15 +139,15 @@ Now we can define type for the collection which contains the documents.
 ```typescript
 
 // we declare one static ORM-method for the collection
-export type HeroCollectionMethods = {
+export type TodoCollectionMethods = {
     countAllDocuments: () => Promise<number>;
 }
 
 // and then merge all our types
-export type HeroCollection = RxCollection<
-    HeroDocType,
-    HeroDocMethods,
-    HeroCollectionMethods
+export type TodoCollection = RxCollection<
+    TodoDocType,
+    TodoDocMethods,
+    TodoCollectionMethods
 >;
 ```
 
@@ -144,7 +157,7 @@ Before we can define the database, we make a helper-type which contains all coll
 
 ```typescript
 export type MyDatabaseCollections = {
-    heroes: HeroCollection
+    todos: TodoCollection
 }
 ```
 
@@ -158,7 +171,7 @@ export type MyDatabase = RxDatabase<MyDatabaseCollections>;
 
 ## Using the types
 
-Now that we have declare all our types, we can use them.
+Now that we have declared all our types, we can use them.
 
 ```typescript
 
@@ -170,60 +183,72 @@ const myDatabase: MyDatabase = await createRxDatabase<MyDatabaseCollections>({
     storage: getRxStorageLocalstorage()
 });
 
-const heroSchema: RxJsonSchema<HeroDocType> = {
-    title: 'human schema',
-    description: 'describes a human being',
+const todoSchema: RxJsonSchema<TodoDocType> = {
+    title: 'todo schema',
+    description: 'describes a single todo item',
     version: 0,
-    keyCompression: true,
-    primaryKey: 'passportId',
+    primaryKey: 'id',
     type: 'object',
     properties: {
-        passportId: {
+        id: {
             type: 'string',
             maxLength: 100
         },
-        firstName: {
+        name: {
             type: 'string'
         },
-        lastName: {
-            type: 'string'
+        done: {
+            type: 'boolean',
+            default: false
         },
-        age: {
-            type: 'integer'
+        dueAt: {
+            type: 'string',
+            format: 'date-time',
+            maxLength: 30
+        },
+        priority: {
+            type: 'integer',
+            minimum: 0,
+            maximum: 10,
+            multipleOf: 1
+        },
+        note: {
+            type: 'string'
         }
     },
-    required: ['passportId', 'firstName', 'lastName']
+    required: ['id', 'name', 'done', 'dueAt', 'priority'],
+    indexes: ['dueAt']
 };
 
-const heroDocMethods: HeroDocMethods = {
-    scream: function(this: HeroDocument, what: string) {
-        return this.firstName + ' screams: ' + what.toUpperCase();
+const todoDocMethods: TodoDocMethods = {
+    describe: function(this: TodoDocument, prefix: string) {
+        return prefix + ': ' + this.name + ' (priority ' + this.priority + ')';
     }
 };
 
-const heroCollectionMethods: HeroCollectionMethods = {
-    countAllDocuments: async function(this: HeroCollection) {
+const todoCollectionMethods: TodoCollectionMethods = {
+    countAllDocuments: async function(this: TodoCollection) {
         const allDocs = await this.find().exec();
         return allDocs.length;
     }
 };
 
 await myDatabase.addCollections({
-    heroes: {
-        schema: heroSchema,
-        methods: heroDocMethods,
-        statics: heroCollectionMethods
+    todos: {
+        schema: todoSchema,
+        methods: todoDocMethods,
+        statics: todoCollectionMethods
     }
 });
 
 // add a postInsert-hook
-myDatabase.heroes.postInsert(
+myDatabase.todos.postInsert(
     function myPostInsertHook(
-        this: HeroCollection, // own collection is bound to the scope
-        docData: HeroDocType, // documents data
-        doc: HeroDocument // RxDocument
+        this: TodoCollection, // own collection is bound to the scope
+        docData: TodoDocType, // documents data
+        doc: TodoDocument // RxDocument
     ) {
-        console.log('insert to ' + this.name + '-collection: ' + doc.firstName);
+        console.log('insert to ' + this.name + '-collection: ' + doc.name);
     },
     false // not async
 );
@@ -233,22 +258,26 @@ myDatabase.heroes.postInsert(
  */
 
 // insert a document
-const hero: HeroDocument = await myDatabase.heroes.insert({
-    passportId: 'myId',
-    firstName: 'piotr',
-    lastName: 'potter',
-    age: 5
+const todo: TodoDocument = await myDatabase.todos.insert({
+    id: 'todo1',
+    name: 'Learn RxDB',
+    done: false,
+    dueAt: '2026-01-01T10:00:00.000Z',
+    priority: 8
 });
 
 // access a property
-console.log(hero.firstName);
+console.log(todo.name);
+// > 'Learn RxDB'
 
 // use a orm method
-hero.scream('AAH!');
+console.log(todo.describe('Next'));
+// > 'Next: Learn RxDB (priority 8)'
 
 // use a static orm method from the collection
-const amount: number = await myDatabase.heroes.countAllDocuments();
+const amount: number = await myDatabase.todos.countAllDocuments();
 console.log(amount);
+// > 1
 
 /**
  * clean up

@@ -68,15 +68,15 @@ import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
 
 export async function initDB() {
   const db = await createRxDatabase({
-    name: 'heroesdb',         // the name of the database
+    name: 'tododb',           // the name of the database
     storage: getRxStorageLocalstorage()
   });
 
   // Define your schema
-  const heroSchema = {
-    title: 'hero schema',
+  const todoSchema = {
+    title: 'todo schema',
     version: 0,
-    description: 'Describes a hero in your app',
+    description: 'Describes a todo in your app',
     primaryKey: 'id',
     type: 'object',
     properties: {
@@ -87,7 +87,7 @@ export async function initDB() {
       name: {
         type: 'string'
       },
-      power: {
+      note: {
         type: 'string'
       }
     },
@@ -96,8 +96,8 @@ export async function initDB() {
 
   // add collections
   await db.addCollections({
-    heroes: {
-      schema: heroSchema
+    todos: {
+      schema: todoSchema
     }
   });
 
@@ -111,28 +111,30 @@ Once your database is initialized, you can perform all CRUD operations:
 
 ```ts
 // insert
-await db.heroes.insert({
-    id: '1', name: 'Iron Man',
-    power: 'Genius-level intellect'
+await db.todos.insert({
+    id: 'todo1',
+    name: 'Learn RxDB'
 });
 
 // bulk insert
-await db.heroes.bulkInsert([
-  { id: '2', name: 'Thor', power: 'God of Thunder' },
-  { id: '3', name: 'Hulk', power: 'Superhuman Strength' }
+await db.todos.bulkInsert([
+  { id: 'todo2', name: 'Buy groceries', note: 'Milk, eggs, bread' },
+  { id: 'todo4', name: 'Clean the kitchen' }
 ]);
 
 // find and findOne
-const heroes = await db.heroes.find().exec();
-const ironMan = await db.heroes.findOne({ selector: { name: 'Iron Man' } }).exec();
+const todos = await db.todos.find().exec();
+const todo1 = await db.todos.findOne({ selector: { name: 'Learn RxDB' } }).exec();
 
 // update
-const doc = await db.heroes.findOne({ selector: { name: 'Hulk' } }).exec();
-await doc.update({ $set: { power: 'Unlimited Strength' } });
+const doc = await db.todos.findOne({ selector: { name: 'Buy groceries' } }).exec();
+await doc.update({ $set: { note: 'Milk, eggs, bread, butter' } });
 
 // delete
-const thorDoc = await db.heroes.findOne({ selector: { name: 'Thor' } }).exec();
-await thorDoc.remove();
+const kitchenDoc = await db.todos
+  .findOne({ selector: { name: 'Clean the kitchen' } })
+  .exec();
+await kitchenDoc.remove();
 ```
 
 ## Reactive Queries and Live Updates
@@ -148,10 +150,10 @@ Here's an example of a Vue component that subscribes to live data updates:
 ```html
 <template>
   
-    Hero List
+    Todo List
     
       
-        {{ hero.name }} - {{ hero.power }}
+        {{ todo.name }} - {{ todo.note }}
       
     
   
@@ -161,16 +163,16 @@ Here's an example of a Vue component that subscribes to live data updates:
 import { ref, onMounted } from 'vue';
 import { initDB } from '@/db';
 
-const heroes = ref<any[]>([]);
+const todos = ref<any[]>([]);
 
 onMounted(async () => {
   const db = await initDB();
   // create an observable query
-  const query = db.heroes.find();
+  const query = db.todos.find();
 
   // subscribe to the query
-  query.$.subscribe((newHeroes: any[]) => {
-    heroes.value = newHeroes;
+  query.$.subscribe((newTodos: any[]) => {
+    todos.value = newTodos;
   });
 });
 </script>
@@ -183,19 +185,19 @@ This component subscribes to the collection's changes, [updating the UI](./optim
 If you're exploring Vue's reactivity transforms or signals, RxDB also offers [custom reactivity factories](../reactivity.md) ([premium plugins](/premium/) are required). This allows queries to emit data as signals instead of traditional Observables.
 
 ```ts
-const heroesSignal = db.heroes.find().$$; // $$ indicates a reactive result
+const todosSignal = db.todos.find().$$; // $$ indicates a reactive result
 
 ```
-With this, in your Vue template or script, you can directly read from heroesSignal()
+With this, in your Vue template or script, you can directly read from todosSignal()
 
 ```html
 <template>
   
-    Hero List
+    Todo List
     
-      <!-- we read heroesSignal.value which is always up to date -->
+      <!-- we read todosSignal.value which is always up to date -->
       
-        {{ hero.name }} - {{ hero.power }}
+        {{ todo.name }} - {{ todo.note }}
       
     
   

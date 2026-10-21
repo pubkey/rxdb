@@ -71,26 +71,34 @@ RxDB takes the opposite approach: the local database is the primary data store, 
 import { createRxDatabase } from 'rxdb/plugins/core';
 import { getRxStorageIndexedDB } from 'rxdb/plugins/storage-indexeddb';
 
-const db = await createRxDatabase({
+const myDatabase = await createRxDatabase({
     name: 'myapp',
     storage: getRxStorageIndexedDB()
 });
 
-await db.addCollections({
-    messages: {
+await myDatabase.addCollections({
+    todos: {
         schema: {
-            title: 'message schema',
+            title: 'todo schema',
             version: 0,
             primaryKey: 'id',
             type: 'object',
             properties: {
                 id: { type: 'string', maxLength: 100 },
-                text: { type: 'string' },
-                author: { type: 'string' },
-                createdAt: { type: 'number' }
+                name: { type: 'string' },
+                done: { type: 'boolean', default: false },
+                dueAt: { type: 'string', format: 'date-time', maxLength: 30 },
+                assignee: {
+                    type: 'object',
+                    properties: {
+                        name: { type: 'string' },
+                        email: { type: 'string' }
+                    },
+                    required: ['name']
+                }
             },
-            required: ['id', 'text', 'author', 'createdAt'],
-            indexes: ['createdAt']
+            required: ['id', 'name', 'done', 'dueAt'],
+            indexes: ['dueAt']
         }
     }
 });
@@ -104,12 +112,12 @@ Replication with a backend server happens separately and in the background:
 import { replicateRxCollection } from 'rxdb/plugins/replication';
 
 const replicationState = await replicateRxCollection({
-    collection: db.messages,
-    replicationIdentifier: 'my-messages-replication',
+    collection: myDatabase.todos,
+    replicationIdentifier: 'my-todos-replication',
     pull: {
         handler: async (checkpointOrNull, batchSize) => {
             const response = await fetch(
-                `/api/messages/pull?checkpoint=${JSON.stringify(checkpointOrNull)}` +
+                `/api/todos/pull?checkpoint=${JSON.stringify(checkpointOrNull)}` +
                 `&limit=${batchSize}`
             );
             return response.json();
@@ -117,7 +125,7 @@ const replicationState = await replicateRxCollection({
     },
     push: {
         handler: async (docs) => {
-            const response = await fetch('/api/messages/push', {
+            const response = await fetch('/api/todos/push', {
                 method: 'POST',
                 body: JSON.stringify(docs),
                 headers: { 'Content-Type': 'application/json' }
@@ -148,17 +156,17 @@ RxDB is a library, not a platform. It runs wherever JavaScript runs and has no o
 ```tsx
 import { useRxData } from 'rxdb-hooks';
 
-function MessageList() {
-    const { result: messages, isFetching } = useRxData('messages', collection =>
-        collection.find().sort({ createdAt: 'asc' })
+function TodoList() {
+    const { result: todos, isFetching } = useRxData('todos', collection =>
+        collection.find().sort({ dueAt: 'asc' })
     );
 
     if (isFetching) return Loading...;
 
     return (
         
-            {messages.map(msg => (
-                {msg.author}: {msg.text}
+            {todos.map(todo => (
+                {todo.assignee?.name}: {todo.name}
             ))}
         
     );
@@ -168,12 +176,12 @@ function MessageList() {
 **Vanilla JavaScript with RxJS observables:**
 
 ```ts
-const subscription = db.messages
+const subscription = myDatabase.todos
     .find()
-    .sort({ createdAt: 'asc' })
+    .sort({ dueAt: 'asc' })
     .$
-    .subscribe(messages => {
-        renderMessages(messages);
+    .subscribe(todos => {
+        renderTodos(todos);
     });
 ```
 
@@ -220,14 +228,14 @@ Switching storage engines typically requires only changing the `storage` paramet
 ```ts
 // Browser with IndexedDB
 import { getRxStorageIndexedDB } from 'rxdb/plugins/storage-indexeddb';
-const db = await createRxDatabase({
+const myDatabase = await createRxDatabase({
     name: 'myapp',
     storage: getRxStorageIndexedDB()
 });
 
 // React Native with SQLite
 import { getRxStorageSQLite } from 'rxdb/plugins/storage-sqlite';
-const db = await createRxDatabase({
+const myDatabase = await createRxDatabase({
     name: 'myapp',
     storage: getRxStorageSQLite({ sqliteBasics })
 });
@@ -244,20 +252,20 @@ Meteor's reactive system is built around its own reactive computation model (Tra
 RxDB's reactive system is built on [RxJS](https://rxjs.dev), which is one of the most widely used reactive programming libraries in JavaScript. Every query, document, and field in RxDB exposes RxJS Observables:
 
 ```ts
-// Subscribe to all messages from a specific author
-const authorMessages$ = db.messages
-    .find({ selector: { author: 'alice' } })
-    .sort({ createdAt: 'asc' })
+// Subscribe to all todos assigned to a specific person
+const aliceTodos$ = myDatabase.todos
+    .find({ selector: { 'assignee.name': 'Alice' } })
+    .sort({ dueAt: 'asc' })
     .$;
 
-authorMessages$.subscribe(messages => {
-    console.log('Alice has', messages.length, 'messages');
+aliceTodos$.subscribe(todos => {
+    console.log('Alice has', todos.length, 'todos');
 });
 
 // Subscribe to a single document and watch one field
-const doc = await db.messages.findOne('msg-001').exec();
-doc.get$('text').subscribe(newText => {
-    console.log('Text changed to:', newText);
+const doc = await myDatabase.todos.findOne('todo1').exec();
+doc.get$('name').subscribe(newName => {
+    console.log('Name changed to:', newName);
 });
 ```
 
@@ -272,18 +280,20 @@ In Meteor, the server is the authority. If a client-side Minimongo write conflic
 RxDB includes a configurable [conflict resolution system](../../transactions-conflicts-revisions.md). Every document has an associated revision, and when two versions of the same document arrive from different sources, RxDB calls your conflict handler to decide the outcome:
 
 ```ts
-await db.addCollections({
-    messages: {
-        schema: messageSchema,
+await myDatabase.addCollections({
+    todos: {
+        schema: todoSchema,
         conflictHandler: async (input) => {
             const { newDocumentState, realMasterState } = input;
 
-            // Merge by taking the most recently updated version
-            if (newDocumentState.updatedAt > realMasterState.updatedAt) {
-                return { documentData: newDocumentState };
-            }
-
-            return { documentData: realMasterState };
+            // Keep the server state, but a todo stays done
+            // when either side has marked it as done
+            return {
+                documentData: {
+                    ...realMasterState,
+                    done: realMasterState.done || newDocumentState.done
+                }
+            };
         }
     }
 });
@@ -304,7 +314,7 @@ RxDB includes built-in [multi-tab support](../../rx-storage-shared-worker.md). W
 ```ts
 import { getRxStorageSharedWorker } from 'rxdb/plugins/storage-shared-worker';
 
-const db = await createRxDatabase({
+const myDatabase = await createRxDatabase({
     name: 'myapp',
     storage: getRxStorageSharedWorker({
         workerInput: new SharedWorker(
@@ -377,12 +387,12 @@ Create a database and a collection:
 import { createRxDatabase } from 'rxdb/plugins/core';
 import { getRxStorageIndexedDB } from 'rxdb/plugins/storage-indexeddb';
 
-const db = await createRxDatabase({
+const myDatabase = await createRxDatabase({
     name: 'my-local-app',
     storage: getRxStorageIndexedDB()
 });
 
-await db.addCollections({
+await myDatabase.addCollections({
     todos: {
         schema: {
             title: 'todo schema',
@@ -391,27 +401,27 @@ await db.addCollections({
             type: 'object',
             properties: {
                 id: { type: 'string', maxLength: 100 },
-                text: { type: 'string' },
-                done: { type: 'boolean' },
-                updatedAt: { type: 'number' }
+                name: { type: 'string' },
+                done: { type: 'boolean', default: false },
+                dueAt: { type: 'string', format: 'date-time', maxLength: 30 }
             },
-            required: ['id', 'text', 'done', 'updatedAt'],
-            indexes: ['updatedAt']
+            required: ['id', 'name', 'done', 'dueAt'],
+            indexes: ['dueAt']
         }
     }
 });
 
 // Insert a document
-await db.todos.insert({
-    id: 'todo-1',
-    text: 'Learn RxDB',
+await myDatabase.todos.insert({
+    id: 'todo1',
+    name: 'Learn RxDB',
     done: false,
-    updatedAt: Date.now()
+    dueAt: '2026-01-15T09:00:00.000Z'
 });
 
 // Subscribe to all todos reactively
-db.todos.find().sort({ updatedAt: 'asc' }).$.subscribe(todos => {
-    console.log('Current todos:', todos.map(t => t.text));
+myDatabase.todos.find().sort({ dueAt: 'asc' }).$.subscribe(todos => {
+    console.log('Current todos:', todos.map(t => t.name));
 });
 ```
 

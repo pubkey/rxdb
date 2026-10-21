@@ -34,9 +34,9 @@ The last goal is why raw IndexedDB feels so bare. It was designed as a foundatio
 
 - **Database**: a named, versioned container. You open it by name, and the version number controls when its structure is allowed to change.
 - **Object store**: the place where records live, similar to a table in SQL or a collection in a document database. One database can hold many object stores.
-- **Record**: this is the part that trips people up. A record is one complete JavaScript object, stored under a key. It is not a single value like in localStorage, and it is not a row of separate columns like in SQL. Whatever object you put in is the object you get back. So `{ id: 'todo1', name: 'Learn IndexedDB', category: 'work', done: false }` goes in and comes out as one whole record.
+- **Record**: this is the part that trips people up. A record is one complete JavaScript object, stored under a key. It is not a single value like in localStorage, and it is not a row of separate columns like in SQL. Whatever object you put in is the object you get back. So `{ id: 'todo1', name: 'Learn IndexedDB', done: false, priority: 8 }` goes in and comes out as one whole record.
 - **Primary key**: the value that uniquely identifies a record inside its store. In the tutorial the key is the `id` field (`keyPath: 'id'`), so every todo needs its own unique `id`.
-- **Index**: a secondary lookup path. By default you can only find a record by its primary key. An index lets you also find records by another field, for example every todo where `category` equals `work`, without reading the whole store. You define indexes once, at the moment the store is created, and the browser keeps them up to date on every write.
+- **Index**: a secondary lookup path. By default you can only find a record by its primary key. An index lets you also find records by another field, for example every todo where `priority` is `5` or higher, without reading the whole store. You define indexes once, at the moment the store is created, and the browser keeps them up to date on every write.
 - **Transaction**: every read and write runs inside a transaction. It groups operations and commits them as one unit, and it commits on its own as soon as the browser is done with it.
 
 ### Callbacks and Why They Are Harder Than Promises
@@ -68,7 +68,7 @@ Keep this in mind while reading the tutorial below. Every `onsuccess` you see is
 
 ## How to Use IndexedDB - Step by Step
 
-The example below builds a small `todos` store, adds an index, and runs the full create, read, update, and delete cycle. Every record has the shape `{ id, name, category, done }`. You can paste each block into the browser console and follow along.
+The example below builds a small `todos` store, adds an index, and runs the full create, read, update, and delete cycle. Every record has the shape `{ id, name, done, priority }`. You can paste each block into the browser console and follow along.
 
 <Steps>
 
@@ -83,8 +83,8 @@ request.onupgradeneeded = (event) => {
     const db = event.target.result;
     // create the store on first open, keyed by the 'id' field
     const store = db.createObjectStore('todos', { keyPath: 'id' });
-    // add a secondary index so we can query by category later
-    store.createIndex('category', 'category', { unique: false });
+    // add a secondary index so we can query by priority later
+    store.createIndex('priority', 'priority', { unique: false });
 };
 
 let db;
@@ -111,7 +111,7 @@ function addTodo(todo) {
     tx.onerror = () => console.error('write failed', tx.error);
 }
 
-addTodo({ id: 'todo1', name: 'Learn IndexedDB', category: 'work', done: false });
+addTodo({ id: 'todo1', name: 'Learn IndexedDB', done: false, priority: 8 });
 ```
 
 ### Read a Record by Key
@@ -125,21 +125,21 @@ const request = store.get('todo1');
 
 request.onsuccess = () => {
     console.log(request.result);
-    // > { id: 'todo1', name: 'Learn IndexedDB', category: 'work', done: false }
+    // > { id: 'todo1', name: 'Learn IndexedDB', done: false, priority: 8 }
 };
 ```
 
 ### Query Records With an Index
 
-To fetch many records by a field, you go through the index you created. `IDBKeyRange.only('work')` limits the result to records where `category` equals `work`. Every condition you want to express has to become a key range like this one, which is covered in [how to query IndexedDB with indexes](./indexeddb-query.md).
+To fetch many records by a field, you go through the index you created. `IDBKeyRange.lowerBound(5)` limits the result to records where `priority` is `5` or higher. Every condition you want to express has to become a key range like this one, which is covered in [how to query IndexedDB with indexes](./indexeddb-query.md).
 
 ```js
 const tx = db.transaction('todos', 'readonly');
-const index = tx.objectStore('todos').index('category');
-const request = index.getAll(IDBKeyRange.only('work'));
+const index = tx.objectStore('todos').index('priority');
+const request = index.getAll(IDBKeyRange.lowerBound(5));
 
 request.onsuccess = () => {
-    console.log(request.result); // all todos where category === 'work'
+    console.log(request.result); // all todos where priority >= 5
 };
 ```
 
@@ -178,7 +178,7 @@ The tutorial above works, but as soon as your app grows past a demo, the native 
 
 - **Callback-based API**: IndexedDB is built on events, not Promises. You cannot `await` a request, and a transaction auto-commits as soon as control returns to the event loop, so it cannot survive an `await` in the middle. Real code turns into nested `onsuccess` handlers or a pile of manual Promise wrappers.
 - **No reactivity**: The native API has no way to tell you when data changes. If you want your UI to update after a write (for example when you use [IndexedDB in React](../react-indexeddb.md)), you have to build your own event bus and call it from every place that touches the store.
-- **Limited querying**: You can only query by a key or a single-field index range. Anything like "find all not-done todos in category 'work', sorted by name, skip 20, limit 10" means [opening a cursor and iterating and filtering by hand](./indexeddb-query.md). There is no combined filter, sort, skip, and limit. Booleans and plain objects are also not valid IndexedDB keys, so a `done: true/false` field cannot be indexed directly.
+- **Limited querying**: You can only query by a key or a single-field index range. Anything like "find all not-done todos with a priority of 5 or higher, sorted by name, skip 20, limit 10" means [opening a cursor and iterating and filtering by hand](./indexeddb-query.md). There is no combined filter, sort, skip, and limit. Booleans and plain objects are also not valid IndexedDB keys, so a `done: true/false` field cannot be indexed directly.
 - **No schema or validation**: Object stores are schemaless. You can write any shape into them, which feels convenient until one wrong write puts a malformed record on disk and a later read crashes your app.
 - **Slow for many operations**: IndexedDB is not fast, and bulk reads and writes have a lot of overhead. See [Slow IndexedDB](../../slow-indexeddb.md) for the numbers and the reasons.
 - **Storage limits and eviction**: The browser controls the quota, and it can evict your data under storage pressure. Safari wipes script-writable storage after 7 days of inactivity. See [IndexedDB max storage limit](../indexeddb-max-storage-limit.md).
@@ -215,10 +215,15 @@ await db.addCollections({
                 // the primary key must have a maxLength
                 id: { type: 'string', maxLength: 100 },
                 name: { type: 'string' },
-                category: { type: 'string' },
-                done: { type: 'boolean' }
+                done: { type: 'boolean', default: false },
+                priority: {
+                    type: 'integer',
+                    minimum: 0,
+                    maximum: 10,
+                    multipleOf: 1
+                }
             },
-            required: ['id', 'name', 'category', 'done']
+            required: ['id', 'name', 'done', 'priority']
         }
     }
 });
@@ -227,8 +232,8 @@ await db.addCollections({
 const doc = await db.todos.insert({
     id: 'todo1',
     name: 'Learn RxDB',
-    category: 'work',
-    done: false
+    done: false,
+    priority: 8
 });
 ```
 
@@ -255,7 +260,7 @@ Instead of opening a cursor and filtering by hand, you write [MongoDB-style (Man
 const results = await db.todos.find({
     selector: {
         done: { $eq: false },
-        category: { $eq: 'work' }
+        priority: { $gte: 5 }
     },
     sort: [{ name: 'asc' }],
     skip: 0,
@@ -290,7 +295,7 @@ A record is one complete JavaScript object stored inside an **object store** und
 <details>
 <summary>What is an index in IndexedDB?</summary>
 
-An index is a secondary lookup path. Without it you can only find a record by its primary key. An index lets you find records by another field, for example every todo where `category` equals `work`, without scanning the whole store. You create indexes once, inside `onupgradeneeded`, and the browser keeps them current on every write.
+An index is a secondary lookup path. Without it you can only find a record by its primary key. An index lets you find records by another field, for example every todo where `priority` is `5` or higher, without scanning the whole store. You create indexes once, inside `onupgradeneeded`, and the browser keeps them current on every write.
 
 </details>
 

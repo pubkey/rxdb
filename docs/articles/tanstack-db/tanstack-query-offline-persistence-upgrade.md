@@ -106,10 +106,10 @@ await db.addCollections({
             primaryKey: 'id',
             properties: {
                 id: { type: 'string', maxLength: 100 },
-                title: { type: 'string' },
-                done: { type: 'boolean' }
+                name: { type: 'string' },
+                done: { type: 'boolean', default: false }
             },
-            required: ['id', 'title', 'done']
+            required: ['id', 'name', 'done']
         }
     }
 });
@@ -147,14 +147,14 @@ function OpenTodos() {
     return (
         
             {openTodos.map((todo) => (
-                {todo.title}
+                {todo.name}
             ))}
         
     );
 }
 
 // Writes are optimistic in memory and persisted to RxDB.
-todosCollection.insert({ id: 'todo-1', title: 'buy milk', done: false });
+todosCollection.insert({ id: 'todo-1', name: 'buy milk', done: false });
 todosCollection.update('todo-1', (draft) => {
     draft.done = true;
 });

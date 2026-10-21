@@ -92,10 +92,10 @@ await db.addCollections({
             primaryKey: 'id',
             properties: {
                 id: { type: 'string', maxLength: 100 },
-                text: { type: 'string' },
-                completed: { type: 'boolean' }
+                name: { type: 'string' },
+                done: { type: 'boolean', default: false }
             },
-            required: ['id', 'text', 'completed']
+            required: ['id', 'name', 'done']
         }
     }
 });
@@ -131,7 +131,7 @@ export function TodoList() {
     const { data: openTodos, isLoading } = useLiveQuery((q) =>
         q
             .from({ todo: todosCollection })
-            .where(({ todo }) => eq(todo.completed, false))
+            .where(({ todo }) => eq(todo.done, false))
     );
 
     if (isLoading) {
@@ -149,11 +149,11 @@ export function TodoList() {
                             // Optimistic update: instant in the UI,
                             // persisted to SQLite in the background.
                             todosCollection.update(item.id, (draft) => {
-                                draft.completed = true;
+                                draft.done = true;
                             })
                         }
                     >
-                        <Text>{item.text}</Text>
+                        <Text>{item.name}</Text>
                     </Pressable>
                 )}
             />
@@ -161,8 +161,8 @@ export function TodoList() {
                 onPress={() =>
                     todosCollection.insert({
                         id: 'todo-' + Date.now(),
-                        text: 'new todo',
-                        completed: false
+                        name: 'new todo',
+                        done: false
                     })
                 }
             >

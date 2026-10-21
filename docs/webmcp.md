@@ -140,7 +140,7 @@ First, initialize your [RxDatabase](./rx-database.md) instance:
 import { createRxDatabase } from 'rxdb';
 import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
 
-const db = await createRxDatabase({
+const myDatabase = await createRxDatabase({
     name: 'mydatabase',
     storage: getRxStorageLocalstorage()
 });
@@ -151,7 +151,7 @@ const db = await createRxDatabase({
 Next, [add a collection](./rx-collection.md) with a simple schema. Providing an accurate schema is critical because the AI agent will use this exact schema to understand your data shape:
 
 ```ts
-await db.addCollections({
+await myDatabase.addCollections({
     todos: {
         schema: {
             title: 'Todo App Schema',
@@ -160,8 +160,8 @@ await db.addCollections({
             type: 'object',
             properties: {
                 id: { type: 'string', maxLength: 100 },
-                name: { type: 'string', description: 'The task title' },
-                done: { type: 'boolean' }
+                name: { type: 'string', description: 'The todo title' },
+                done: { type: 'boolean', default: false }
             },
             required: ['id', 'name', 'done']
         }
@@ -175,10 +175,10 @@ Finally, activate WebMCP on the whole database or specific collections:
 
 ```ts
 // Expose all collections in the DB to WebMCP (Read-only by default)
-db.registerWebMCP();
+myDatabase.registerWebMCP();
 
 // Or expose only a specific collection:
-db.collections.todos.registerWebMCP();
+myDatabase.collections.todos.registerWebMCP();
 ```
 
 </Steps>
@@ -193,7 +193,7 @@ By default, WebMCP allows modifier tools.
 If you explicitly want the agent to only be able to query the database, enable `readOnly`. 
 
 ```ts
-db.registerWebMCP({
+myDatabase.registerWebMCP({
     readOnly: true 
 });
 ```
@@ -207,7 +207,7 @@ Because [replications](./replication.md) pull remote data into the local RxDB as
 Set this to `false` if you want to allow queries without waiting for replication to be in sync.
 
 ```ts
-db.registerWebMCP({
+myDatabase.registerWebMCP({
     awaitReplicationsInSync: false
 });
 ```
@@ -221,7 +221,7 @@ If the application is offline and the replication is configured to retry infinit
 The tools are registered at the WebMCP registry of the current document. When you need them registered at the registry of another document, for example an iframe, pass that registry directly.
 
 ```ts
-db.registerWebMCP({
+myDatabase.registerWebMCP({
     modelContext: myIframe.contentDocument.modelContext
 });
 ```
@@ -230,12 +230,12 @@ When this option is not set, `document.modelContext` is used with a fallback to 
 
 ### Logs and Errors
 
-Both `registerWebMCP` methods (`db.registerWebMCP()` and `db.collections.humans.registerWebMCP()`) return an object containing two RxJS Subjects: `log$` and `error$`.
+Both `registerWebMCP` methods (`myDatabase.registerWebMCP()` and `myDatabase.collections.todos.registerWebMCP()`) return an object containing two RxJS Subjects: `log$` and `error$`.
 
 You can subscribe to these to monitor the AI agent's actions:
 
 ```ts
-const { log$, error$ } = db.registerWebMCP();
+const { log$, error$ } = myDatabase.registerWebMCP();
 
 log$.subscribe(info => {
     // Log all tool calls, arguments, and responses
@@ -258,49 +258,49 @@ Providing detailed, highly accurate descriptions for your properties significant
 #### Bad Example
 
 ```ts
-const productSchema = {
+const todoSchema = {
     version: 0,
-    title: 'Product',
-    primaryKey: 'sku',
+    title: 'Todo',
+    primaryKey: 'id',
     type: 'object',
     properties: {
-        sku: {
+        id: {
             type: 'string',
             maxLength: 100
         },
-        price: {
-            type: 'number'
+        priority: {
+            type: 'integer'
         }
     },
-    required: ['sku', 'price']
+    required: ['id', 'priority']
 };
 ```
 
 #### Good Example
 
 ```ts
-const productSchema = {
+const todoSchema = {
     version: 0,
-    title: 'Store Product Inventory Item',
-    description: 'A physical item sold in our store.' +
-        ' Contains pricing and SKU lookup data.',
-    primaryKey: 'sku',
+    title: 'Todo List Item',
+    description: 'A single task on the todo list of the user.' +
+        ' Contains the priority used for sorting.',
+    primaryKey: 'id',
     type: 'object',
     properties: {
-        sku: {
+        id: {
             type: 'string',
             maxLength: 100,
-            description: 'The Stock Keeping Unit.' +
-                ' Category prefix and 6-digit number.'
+            description: 'The unique id of the todo, like todo1.'
         },
-        price: {
-            type: 'number',
+        priority: {
+            type: 'integer',
             minimum: 0,
-            multipleOf: 0.01,
-            description: 'The price of the product in Euro (€).'
+            maximum: 10,
+            multipleOf: 1,
+            description: 'Importance from 0 (lowest) to 10 (highest).'
         }
     },
-    required: ['sku', 'price']
+    required: ['id', 'priority']
 };
 ```
 
@@ -329,7 +329,7 @@ APIs and behaviors are subject to change as the official W3C WebMCP specificatio
 <FaqItem question="How to mix the RxDB WebMCP with own WebMCP tools?">
 
     
-        You can easily mix the RxDB WebMCP tools with your own tools. Since <code>db.registerWebMCP()</code> internally just calls <code>navigator.modelContext.registerTool()</code>, you can simply call this native method yourself to register any additional tools that interact with your frontend logic, external APIs, or other non-database components.
+        You can easily mix the RxDB WebMCP tools with your own tools. Since <code>myDatabase.registerWebMCP()</code> internally just calls <code>navigator.modelContext.registerTool()</code>, you can simply call this native method yourself to register any additional tools that interact with your frontend logic, external APIs, or other non-database components.
     
 
 </FaqItem>

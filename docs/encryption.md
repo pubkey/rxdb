@@ -87,7 +87,7 @@ Also you have to set a **password** when creating the database. The format of th
 ```ts
 import { createRxDatabase } from 'rxdb/plugins/core';
 // create an encrypted database
-const db = await createRxDatabase({
+const myDatabase = await createRxDatabase({
     name: 'mydatabase',
     storage: encryptedStorage,
     password: 'sudoLetMeIn'
@@ -99,28 +99,40 @@ const db = await createRxDatabase({
 To define a field as being encrypted, you have to add it to the `encrypted` fields list in the schema.
 
 ```ts
-const schema = {
+const todoSchema = {
     version: 0,
-  primaryKey: 'id',
-  type: 'object',
-  properties: {
-      id: {
-          type: 'string',
-          maxLength: 100
-      },
-      secret: {
-          type: 'string'
-      },
-  },
-  required: ['id'],
-  encrypted: ['secret']
+    primaryKey: 'id',
+    type: 'object',
+    properties: {
+        id: {
+            type: 'string',
+            maxLength: 100
+        },
+        name: {
+            type: 'string'
+        },
+        note: {
+            type: 'string'
+        }
+    },
+    required: ['id', 'name'],
+    encrypted: ['note']
 };
 
-await db.addCollections({
-    myDocuments: {
-        schema
+await myDatabase.addCollections({
+    todos: {
+        schema: todoSchema
     }
-})
+});
+
+await myDatabase.todos.insert({
+    id: 'todo2',
+    name: 'Buy groceries',
+    note: 'Milk, eggs, bread' // <- stored encrypted
+});
+const doc = await myDatabase.todos.findOne('todo2').exec();
+console.log(doc.note);
+// > 'Milk, eggs, bread'
 ```
 </Steps>
 
@@ -147,7 +159,7 @@ const myPasswordObject = {
 };
 
 // create an encrypted database
-const db = await createRxDatabase({
+const myDatabase = await createRxDatabase({
     name: 'mydatabase',
     storage: encryptedIndexedDbStorage,
     password: myPasswordObject
@@ -167,8 +179,9 @@ The password is set database specific and it is not possible to change the passw
 To store the [attachments](./rx-attachment.md) data encrypted, you have to set `encrypted: true` in the `attachments` property of the schema.
 
 ```ts
-const mySchema = {
+const todoSchema = {
     version: 0,
+    primaryKey: 'id',
     type: 'object',
     properties: {
         /* ... */
@@ -237,17 +250,17 @@ Yes, libraries like `crypto-js` or wrappers over the native WebCrypto API provid
 </FaqItem>
 <FaqItem question="Can I encrypt a child field when the parent field is already encrypted?">
 
-No. When you encrypt a parent field, the entire object at that path is encrypted as a single string. You cannot also encrypt a child path of an already-encrypted parent. For example, if you encrypt `nested`, you must **not** also add `nested.secret` to the `encrypted` array. Doing so will throw an error in [dev-mode](./dev-mode.md).
+No. When you encrypt a parent field, the entire object at that path is encrypted as a single string. You cannot also encrypt a child path of an already-encrypted parent. For example, if you encrypt `assignee`, you must **not** also add `assignee.email` to the `encrypted` array. Doing so will throw an error in [dev-mode](./dev-mode.md).
 
 ```ts
-// NOT ALLOWED - 'nested.secret' is a child of 'nested'
-const schema = {
-    encrypted: ['nested', 'nested.secret']
+// NOT ALLOWED - 'assignee.email' is a child of 'assignee'
+const todoSchema = {
+    encrypted: ['assignee', 'assignee.email']
 };
 
 // CORRECT - only encrypt the parent
-const schema = {
-    encrypted: ['nested']
+const todoSchema = {
+    encrypted: ['assignee']
 };
 ```
 

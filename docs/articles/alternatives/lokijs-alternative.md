@@ -59,45 +59,47 @@ import { createRxDatabase } from 'rxdb/plugins/core';
 import { getRxStorageIndexedDB } from 'rxdb/plugins/storage-indexeddb';
 
 const db = await createRxDatabase({
-  name: 'appdb',
+  name: 'mydb',
   storage: getRxStorageIndexedDB(),
   multiInstance: true,
   eventReduce: true
 });
 
 await db.addCollections({
-  notes: {
+  todos: {
     schema: {
-      title: 'notes schema',
+      title: 'todo schema',
       version: 0,
       primaryKey: 'id',
       type: 'object',
       properties: {
         id: { type: 'string', maxLength: 100 },
-        title: { type: 'string' },
-        body: { type: 'string' },
-        updatedAt: { type: 'number' }
+        name: { type: 'string' },
+        done: { type: 'boolean', default: false },
+        dueAt: { type: 'string', format: 'date-time', maxLength: 30 },
+        note: { type: 'string' }
       },
-      required: ['id', 'title', 'updatedAt'],
-      indexes: ['updatedAt']
+      required: ['id', 'name', 'done', 'dueAt'],
+      indexes: ['dueAt']
     }
   }
 });
 
-await db.notes.insert({
-  id: 'note-1',
-  title: 'First note',
-  body: 'Hello RxDB',
-  updatedAt: Date.now()
+await db.todos.insert({
+  id: 'todo1',
+  name: 'First todo',
+  done: false,
+  dueAt: new Date().toISOString(),
+  note: 'Hello RxDB'
 });
 
 // Observe a live query: the subscription fires on every change
-const query = db.notes
+const query = db.todos
   .find()
-  .sort({ updatedAt: 'desc' });
+  .sort({ dueAt: 'asc' });
 
-query.$.subscribe(notes => {
-  console.log('current notes:', notes.map(n => n.title));
+query.$.subscribe(todos => {
+  console.log('current todos:', todos.map(t => t.name));
 });
 ```
 
@@ -117,28 +119,29 @@ const cache = await createRxDatabase({
 });
 
 await cache.addCollections({
-  products: {
+  todos: {
     schema: {
-      title: 'products schema',
+      title: 'todo schema',
       version: 0,
       primaryKey: 'id',
       type: 'object',
       properties: {
         id: { type: 'string', maxLength: 100 },
         name: { type: 'string' },
-        price: { type: 'number' }
-      }
+        priority: { type: 'integer', minimum: 0, maximum: 10, multipleOf: 1 }
+      },
+      required: ['id', 'name', 'priority']
     }
   }
 });
 
-await cache.products.bulkInsert([
-  { id: 'p1', name: 'Pen', price: 2 },
-  { id: 'p2', name: 'Notebook', price: 6 }
+await cache.todos.bulkInsert([
+  { id: 'todo1', name: 'Buy groceries', priority: 2 },
+  { id: 'todo2', name: 'Write report', priority: 6 }
 ]);
 
-const cheap = await cache.products
-  .find({ selector: { price: { $lt: 5 } } })
+const lowPriority = await cache.todos
+  .find({ selector: { priority: { $lt: 5 } } })
   .exec();
 ```
 

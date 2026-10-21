@@ -86,10 +86,10 @@ await db.addCollections({
             primaryKey: 'id',
             properties: {
                 id: { type: 'string', maxLength: 100 },
-                text: { type: 'string' },
-                completed: { type: 'boolean' }
+                name: { type: 'string' },
+                done: { type: 'boolean', default: false }
             },
-            required: ['id', 'text', 'completed']
+            required: ['id', 'name', 'done']
         }
     }
 });
@@ -124,7 +124,7 @@ export function TodoList() {
     const { data: openTodos } = useLiveQuery((q) =>
         q
             .from({ todo: todosCollection })
-            .where(({ todo }) => eq(todo.completed, false))
+            .where(({ todo }) => eq(todo.done, false))
     );
 
     return (
@@ -132,16 +132,16 @@ export function TodoList() {
             {openTodos.map((todo) => (
                 <IonItem key={todo.id}>
                     <IonCheckbox
-                        checked={todo.completed}
+                        checked={todo.done}
                         onIonChange={() =>
                             // Optimistic update: instant in the UI,
                             // persisted to SQLite in the background.
                             todosCollection.update(todo.id, (draft) => {
-                                draft.completed = true;
+                                draft.done = true;
                             })
                         }
                     />
-                    <IonLabel>{todo.text}</IonLabel>
+                    <IonLabel>{todo.name}</IonLabel>
                 </IonItem>
             ))}
         </IonList>
@@ -149,7 +149,7 @@ export function TodoList() {
 }
 
 // Inserts and deletes work the same way:
-todosCollection.insert({ id: 'todo-1', text: 'buy milk', completed: false });
+todosCollection.insert({ id: 'todo-1', name: 'buy milk', done: false });
 todosCollection.delete('todo-1');
 ```
 

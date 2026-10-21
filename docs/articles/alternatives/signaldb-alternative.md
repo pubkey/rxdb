@@ -74,44 +74,45 @@ RxDB has a decade of releases, paid support options, and production deployments 
 import { createRxDatabase, addRxPlugin } from 'rxdb';
 import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
 
-const db = await createRxDatabase({
-    name: 'tasksdb',
+const myDatabase = await createRxDatabase({
+    name: 'todosdb',
     storage: getRxStorageDexie()
 });
 
-await db.addCollections({
-    tasks: {
+await myDatabase.addCollections({
+    todos: {
         schema: {
             version: 0,
             primaryKey: 'id',
             type: 'object',
             properties: {
-                id: { type: 'string', maxLength: 40 },
-                title: { type: 'string' },
-                done: { type: 'boolean' },
-                updatedAt: { type: 'number' }
+                id: { type: 'string', maxLength: 100 },
+                name: { type: 'string' },
+                done: { type: 'boolean', default: false },
+                dueAt: { type: 'string', format: 'date-time', maxLength: 30 }
             },
-            required: ['id', 'title', 'done', 'updatedAt']
+            required: ['id', 'name', 'done', 'dueAt'],
+            indexes: ['dueAt']
         }
     }
 });
 
 // Reactive query: emits whenever the result set changes,
 // across tabs and after replication updates.
-const openTasks$ = db.tasks
+const openTodos$ = myDatabase.todos
     .find({ selector: { done: false } })
-    .sort({ updatedAt: 'desc' })
+    .sort({ dueAt: 'asc' })
     .$;
 
-openTasks$.subscribe(tasks => {
-    console.log('Open tasks:', tasks.length);
+openTodos$.subscribe(todos => {
+    console.log('Open todos:', todos.length);
 });
 
-await db.tasks.insert({
-    id: 't1',
-    title: 'Write SignalDB comparison',
+await myDatabase.todos.insert({
+    id: 'todo1',
+    name: 'Write SignalDB comparison',
     done: false,
-    updatedAt: Date.now()
+    dueAt: '2026-01-15T09:00:00.000Z'
 });
 ```
 
@@ -125,12 +126,12 @@ The [HTTP replication plugin](../../replication-http.md) syncs an RxDB collectio
 import { replicateRxCollection } from 'rxdb/plugins/replication';
 
 const replicationState = replicateRxCollection({
-    collection: db.tasks,
-    replicationIdentifier: 'tasks-http-replication',
+    collection: myDatabase.todos,
+    replicationIdentifier: 'todos-http-replication',
     pull: {
         async handler(checkpoint, batchSize) {
             const url =
-                `/api/tasks/pull?since=${checkpoint?.updatedAt ?? 0}` +
+                `/api/todos/pull?since=${checkpoint?.updatedAt ?? 0}` +
                 `&limit=${batchSize}`;
             const response = await fetch(url);
             const data = await response.json();
@@ -142,7 +143,7 @@ const replicationState = replicateRxCollection({
     },
     push: {
         async handler(changeRows) {
-            const response = await fetch('/api/tasks/push', {
+            const response = await fetch('/api/todos/push', {
                 method: 'POST',
                 body: JSON.stringify(changeRows)
             });
