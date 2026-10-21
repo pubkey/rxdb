@@ -73,8 +73,8 @@ const sidebars = {
         },
         {
           type: 'doc',
-          id: 'mango-query',
-          label: 'Mango Query'
+          id: 'rx-query-examples',
+          label: 'Query Examples'
         },
         {
           type: 'doc',

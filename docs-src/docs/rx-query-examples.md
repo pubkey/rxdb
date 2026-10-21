@@ -1,11 +1,11 @@
 ---
-title: Mango Query Syntax - Operators and Examples for RxDB
-slug: mango-query.html
+title: RxQuery Examples - Mango Query Syntax and Operators for RxDB
+slug: rx-query-examples.html
 description: Learn the Mango query syntax of RxDB with examples for every supported operator, nested fields, arrays, regex, sorting, and pagination.
-image: /headers/mango-query.jpg
+image: /headers/rx-query-examples.jpg
 ---
 
-# Mango Query Syntax
+# RxQuery Examples
 
 [RxDB](https://rxdb.info/) queries are written in the **Mango query syntax**, a JSON-based query language that works like MongoDB queries. You pass a Mango query to `find()`, `findOne()` or `count()` of an [RxCollection](./rx-collection.md) and get back an [RxQuery](./rx-query.md). Because a Mango query is a plain JSON object, it can be typed with TypeScript, composed by code, and optimized by the [EventReduce algorithm](https://github.com/pubkey/event-reduce). If you prefer chained methods like `.where('priority').gt(5)`, use the [query builder](./query-builder.md), which creates the same Mango queries.
 

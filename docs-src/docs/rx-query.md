@@ -10,7 +10,7 @@ import {Faq, FaqItem} from '@site/src/components/faq';
 
 # RxQuery
 
-To find documents inside of an [RxCollection](./rx-collection.md), RxDB uses the RxQuery interface that handles all query operations: it serves as the main interface for fetching documents, relies on a MongoDB-like [Mango Query Syntax](./mango-query.md), and provides three types of queries: [find()](#find), [findOne()](#findOne) and [count()](#count). By caching and de-duplicating results, RxQuery ensures efficient in-memory handling, and when queries are observed or re-run, the [EventReduce algorithm](https://github.com/pubkey/event-reduce) speeds up updates for a fast real-time experience and queries that run more than once.
+To find documents inside of an [RxCollection](./rx-collection.md), RxDB uses the RxQuery interface that handles all query operations: it serves as the main interface for fetching documents, relies on a MongoDB-like [Mango Query Syntax](./rx-query-examples.md), and provides three types of queries: [find()](#find), [findOne()](#findOne) and [count()](#count). By caching and de-duplicating results, RxQuery ensures efficient in-memory handling, and when queries are observed or re-run, the [EventReduce algorithm](https://github.com/pubkey/event-reduce) speeds up updates for a fast real-time experience and queries that run more than once.
 
 ## find()
 To create a basic `RxQuery`, call `.find()` on a collection and insert selectors. The result-set of normal queries is an array with documents.
@@ -216,7 +216,7 @@ myDatabase.todos.find({
 
 ## Query Examples
 
-The `selector` of a query is written in the [Mango query syntax](./mango-query.md). That page shows every supported operator with examples, including nested fields, array fields, regex queries, sorting, and pagination.
+The `selector` of a query is written in the [Mango query syntax](./rx-query-examples.md). That page shows every supported operator with examples, including nested fields, array fields, regex queries, sorting, and pagination.
 
 ```ts
 const results = await myDatabase.todos.find({
