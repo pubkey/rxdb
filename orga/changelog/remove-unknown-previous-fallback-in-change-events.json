@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "CHANGE remove the `'UNKNOWN'` fallback for `previousDocumentData` on `UPDATE` change events and throw the error `CE1` in dev-mode when an RxStorage emits an `UPDATE` event without `previousDocumentData`",
+    "links": [],
+    "priority": 3
+}

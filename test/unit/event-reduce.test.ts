@@ -11,7 +11,9 @@ import {
     randomToken,
     RxCollection,
     RxDocument,
-    MangoQuery
+    MangoQuery,
+    rxChangeEventToEventReduceChangeEvent,
+    RxStorageChangeEvent
 } from '../../plugins/core/index.mjs';
 
 import {
@@ -419,5 +421,30 @@ describe('event-reduce.test.js', () => {
         assert.strictEqual(finalResults[2].primary, 'doc-b');
 
         col.database.close();
+    });
+    it('should throw in dev-mode on UPDATE events without previousDocumentData', () => {
+        const documentData: any = {
+            passportId: 'foobar',
+            _deleted: false,
+            _attachments: {},
+            _rev: '2-aaa',
+            _meta: { lwt: 1000 }
+        };
+        const event: RxStorageChangeEvent<any> = {
+            operation: 'UPDATE',
+            documentId: 'foobar',
+            documentData,
+            previousDocumentData: undefined as any
+        };
+        assert.throws(
+            () => rxChangeEventToEventReduceChangeEvent(event),
+            (err: any) => err.code === 'CE1'
+        );
+
+        const previousDocumentData = Object.assign({}, documentData, { _rev: '1-aaa' });
+        const reduceEvent = rxChangeEventToEventReduceChangeEvent(
+            Object.assign({}, event, { previousDocumentData })
+        );
+        assert.strictEqual(reduceEvent?.previous, previousDocumentData);
     });
 });
