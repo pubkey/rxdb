@@ -1,0 +1,11 @@
+{
+    "$schema": "./schema.json",
+    "text": "CHANGE remove dead fallbacks from the PouchDB era: the `'UNKNOWN'` fallback for `previousDocumentData` on `UPDATE` change events, the `getDocumentDataOfRxChangeEvent()` function, the no-op `postMigrateDocument` hook of the attachments plugin, the `RxCollection.awaitPersistence()` type and unused CouchDB types. In dev-mode, an RxStorage that emits an `UPDATE` event without `previousDocumentData` now throws the error `CE1`",
+    "links": [
+        {
+            "url": "https://github.com/pubkey/rxdb/pull/9306",
+            "linkText": "#9306"
+        }
+    ],
+    "priority": 3
+}

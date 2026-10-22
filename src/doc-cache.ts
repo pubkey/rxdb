@@ -151,10 +151,7 @@ export class DocumentCache<RxDocType, OrmMethods> {
                     const event = events[index];
                     const cacheItem = cacheItemByDocId.get(event.documentId);
                     if (cacheItem) {
-                        let documentData = event.documentData;
-                        if (!documentData) {
-                            documentData = event.previousDocumentData as any;
-                        }
+                        const documentData = event.documentData;
                         /**
                          * In multiInstance mode the changeStream merges events
                          * from the own writes together with the events from other

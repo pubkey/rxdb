@@ -125,10 +125,7 @@ export function calculateNewResults<RxDocumentType>(
     const eventReduceEvents: ChangeEvent<RxDocumentType>[] = [];
     for (let index = 0; index < rxChangeEvents.length; index++) {
         const cE = rxChangeEvents[index];
-        const eventReduceEvent = rxChangeEventToEventReduceChangeEvent(cE);
-        if (eventReduceEvent) {
-            eventReduceEvents.push(eventReduceEvent);
-        }
+        eventReduceEvents.push(rxChangeEventToEventReduceChangeEvent(cE));
     }
 
     const foundNonOptimizeable = eventReduceEvents.find(eventReduceEvent => {

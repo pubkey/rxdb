@@ -1410,6 +1410,14 @@ export const ERROR_MESSAGES = {
         docs: ''
     },
 
+    // change-event errors
+    CE1: {
+        message: 'RxStorage emitted an UPDATE change event without previousDocumentData',
+        cause: 'Every UPDATE event of an RxStorage must contain the previous document state in previousDocumentData. The event-reduce algorithm and the RxQuery change handling depend on it.',
+        fix: 'If you use a custom RxStorage, build the change events with categorizeBulkWriteRows() or set previousDocumentData on UPDATE events. If this throws with a built-in RxStorage, make a PR with a test case to the RxDB repo.',
+        docs: 'https://rxdb.info/rx-storage.html'
+    },
+
     /**
      * Should never be thrown, use this for
      * null checks etc. so you do not have to increase the
