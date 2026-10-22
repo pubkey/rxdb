@@ -107,7 +107,7 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
                 await Promise.all(
                     writeBatch.flatMap(row => {
                         const docId: string = (row.document as any)[this.primaryPath];
-                        const attachments: Record<string, any> = (row.document as any)._attachments || {};
+                        const attachments: Record<string, any> = row.document._attachments;
                         return Object.entries(attachments)
                             .filter(([, att]) => att.data instanceof Blob)
                             .map(async ([attId, att]) => {
