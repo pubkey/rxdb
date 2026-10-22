@@ -195,7 +195,7 @@ export function getAttachment(
 ): RxAttachment | null {
     ensureSchemaSupportsAttachments(this);
     const docData: any = this._data;
-    if (!docData._attachments || !docData._attachments[id])
+    if (!docData._attachments[id])
         return null;
 
     const attachmentData = docData._attachments[id];
@@ -215,11 +215,6 @@ export function allAttachments(
 ): RxAttachment[] {
     ensureSchemaSupportsAttachments(this);
     const docData: any = this._data;
-
-    // if there are no attachments, the field is missing
-    if (!docData._attachments) {
-        return [];
-    }
     return Object.keys(docData._attachments)
         .map(id => {
             return fromStorageInstanceResult(
@@ -296,8 +291,8 @@ export const RxDBAttachmentsPlugin: RxPlugin = {
                              * about attachment changes.
                              */
                             distinctUntilChanged((prev: RxDocument, curr: RxDocument) => deepEqual(
-                                Object.keys((prev as any)._data._attachments || {}),
-                                Object.keys((curr as any)._data._attachments || {})
+                                Object.keys(prev._data._attachments),
+                                Object.keys(curr._data._attachments)
                             )),
                             map((rxDocument: RxDocument) => {
                                 return Object.entries(

@@ -91,7 +91,7 @@ export function flattenEvents<EventType>(
     function getEventId(ev: any): string {
         return [
             ev.documentId,
-            ev.documentData ? ev.documentData._rev : '',
+            ev.documentData._rev,
             ev.previousDocumentData ? ev.previousDocumentData._rev : ''
         ].join('|');
     }
