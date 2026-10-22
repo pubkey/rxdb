@@ -344,13 +344,8 @@ export function categorizeBulkWriteRows<RxDocType>(
              * Check for conflict
              */
             if (
-                (
-                    !previous
-                ) ||
-                (
-                    !!previous &&
-                    revInDb !== previous._rev
-                )
+                !previous ||
+                revInDb !== previous._rev
             ) {
                 // is conflict error
                 const err: RxStorageWriteError<RxDocType> = {
@@ -373,17 +368,15 @@ export function categorizeBulkWriteRows<RxDocType>(
                     /**
                      * Deleted documents must have cleared all their attachments.
                      */
-                    if (previous) {
-                        const prevAtts = previous._attachments;
-                        const prevAttKeys = Object.keys(prevAtts);
-                        for (let a = 0; a < prevAttKeys.length; a++) {
-                            const attachmentId = prevAttKeys[a];
-                            attachmentsRemove.push({
-                                documentId: docId,
-                                attachmentId,
-                                digest: prevAtts[attachmentId].digest
-                            });
-                        }
+                    const prevAtts = previous._attachments;
+                    const prevAttKeys = Object.keys(prevAtts);
+                    for (let a = 0; a < prevAttKeys.length; a++) {
+                        const attachmentId = prevAttKeys[a];
+                        attachmentsRemove.push({
+                            documentId: docId,
+                            attachmentId,
+                            digest: prevAtts[attachmentId].digest
+                        });
                     }
                 } else {
                     // first check for errors
@@ -392,7 +385,7 @@ export function categorizeBulkWriteRows<RxDocType>(
                     for (let a = 0; a < docAttKeys.length; a++) {
                         const attachmentId = docAttKeys[a];
                         const attachmentData = docAtts[attachmentId];
-                        const previousAttachmentData = previous ? previous._attachments[attachmentId] : undefined;
+                        const previousAttachmentData = previous._attachments[attachmentId];
                         if (
                             !previousAttachmentData &&
                             !(attachmentData as RxAttachmentWriteData).data
@@ -413,7 +406,7 @@ export function categorizeBulkWriteRows<RxDocType>(
                         for (let a = 0; a < docAttKeys.length; a++) {
                             const attachmentId = docAttKeys[a];
                             const attachmentData = docAtts[attachmentId];
-                            const previousAttachmentData = previous ? previous._attachments[attachmentId] : undefined;
+                            const previousAttachmentData = previous._attachments[attachmentId];
                             if (!previousAttachmentData) {
                                 attachmentsAdd.push({
                                     documentId: docId,
@@ -445,18 +438,16 @@ export function categorizeBulkWriteRows<RxDocType>(
                          * Detect attachments that have been removed
                          * (present in previous but missing from the new document).
                          */
-                        if (previous) {
-                            const prevAtts = previous._attachments;
-                            const prevAttKeys = Object.keys(prevAtts);
-                            for (let a = 0; a < prevAttKeys.length; a++) {
-                                const attachmentId = prevAttKeys[a];
-                                if (!docAtts[attachmentId]) {
-                                    attachmentsRemove.push({
-                                        documentId: docId,
-                                        attachmentId,
-                                        digest: prevAtts[attachmentId].digest
-                                    });
-                                }
+                        const prevAtts = previous._attachments;
+                        const prevAttKeys = Object.keys(prevAtts);
+                        for (let a = 0; a < prevAttKeys.length; a++) {
+                            const attachmentId = prevAttKeys[a];
+                            if (!docAtts[attachmentId]) {
+                                attachmentsRemove.push({
+                                    documentId: docId,
+                                    attachmentId,
+                                    digest: prevAtts[attachmentId].digest
+                                });
                             }
                         }
                     }
@@ -488,7 +479,7 @@ export function categorizeBulkWriteRows<RxDocType>(
                  * instead of calling stripAttachmentsDataFromDocument() again.
                  */
                 eventDocumentData = hasAttachments ? updatedRow.document : document as any;
-            } else if (previous && !previousDeleted && !documentDeleted) {
+            } else if (!previousDeleted && !documentDeleted) {
                 operation = 'UPDATE';
                 eventDocumentData = hasAttachments ? updatedRow.document : document as any;
                 previousEventDocumentData = previous;

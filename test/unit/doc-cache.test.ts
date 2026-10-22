@@ -228,23 +228,6 @@ describe('doc-cache.test.ts', () => {
                 assert.strictEqual(latest.age, 31);
                 assert.strictEqual(latest._rev, EXAMPLE_REVISION_2);
             });
-            it('should fall back to previousDocumentData if documentData is missing', () => {
-                const { cache, changes$ } = createDocumentCache();
-                const docData1 = createFakeDocData('doc1', EXAMPLE_REVISION_1, 1, 'Alice', 30);
-                cache.getCachedRxDocuments([docData1]);
-
-                changes$.next([{
-                    documentId: 'doc1',
-                    documentData: undefined as any,
-                    previousDocumentData: createFakeDocData('doc1', EXAMPLE_REVISION_1, 1, 'FallbackName', 99),
-                    operation: 'DELETE',
-                    isLocal: false
-                } as any]);
-
-                cache.processTasks();
-                const latest = cache.getLatestDocumentData('doc1');
-                assert.strictEqual(latest.name, 'FallbackName');
-            });
             it('should not downgrade latestDoc when an older change event arrives out of order', () => {
                 /**
                  * In multiInstance mode the changeStream merges the own writes

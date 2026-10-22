@@ -12,31 +12,14 @@ import type {
     EventBulk,
     RxChangeEvent,
     RxChangeEventBulk,
-    RxDocumentData,
     RxStorageChangeEvent
 } from './types/index.d.ts';
 import { getFromMapOrCreate } from './plugins/utils/index.ts';
 import { newRxError } from './rx-error.ts';
 
-export function getDocumentDataOfRxChangeEvent<T>(
-    rxChangeEvent: RxStorageChangeEvent<T>
-): RxDocumentData<T> {
-    if ((rxChangeEvent as any).documentData) {
-        return (rxChangeEvent as any).documentData;
-    } else {
-        return (rxChangeEvent as any).previousDocumentData;
-    }
-}
-
-/**
- * Might return null which means an
- * already deleted document got modified but still is deleted.
- * These kind of events are not relevant for the event-reduce algorithm
- * and must be filtered out.
- */
 export function rxChangeEventToEventReduceChangeEvent<DocType>(
     rxChangeEvent: RxStorageChangeEvent<DocType>
-): EventReduceChangeEvent<DocType> | null {
+): EventReduceChangeEvent<DocType> {
     switch (rxChangeEvent.operation) {
         case 'INSERT':
             return {
@@ -46,6 +29,10 @@ export function rxChangeEventToEventReduceChangeEvent<DocType>(
                 previous: null
             };
         case 'UPDATE':
+            /**
+             * TODO remove this dev-mode check in the next major version,
+             * see orga/before-next-major.md
+             */
             if (
                 overwritable.isDevMode() &&
                 !rxChangeEvent.previousDocumentData

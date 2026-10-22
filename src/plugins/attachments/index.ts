@@ -8,8 +8,7 @@ import {
     blobToString,
     createBlobFromBase64,
     deepEqual,
-    flatClone,
-    PROMISE_RESOLVE_VOID
+    flatClone
 } from '../../plugins/utils/index.ts';
 import type {
     RxDocument,
@@ -266,14 +265,6 @@ export async function preMigrateDocument<RxDocType>(
     }
 }
 
-export function postMigrateDocument(_action: any): Promise<void> {
-    /**
-     * No longer needed because
-     * we store the attachments data buffers directly in the document.
-     */
-    return PROMISE_RESOLVE_VOID;
-}
-
 export const RxDBAttachmentsPlugin: RxPlugin = {
     name: 'attachments',
     rxdb: true,
@@ -319,9 +310,6 @@ export const RxDBAttachmentsPlugin: RxPlugin = {
     hooks: {
         preMigrateDocument: {
             after: preMigrateDocument
-        },
-        postMigrateDocument: {
-            after: postMigrateDocument
         }
     }
 };

@@ -36,7 +36,6 @@ import type {
     CRDTEntry,
     ModifyFunction
 } from './types/index.d.ts';
-import { getDocumentDataOfRxChangeEvent } from './rx-change-event.ts';
 import { overwritable } from './overwritable.ts';
 import { getSchemaByObjectPath } from './rx-schema-helper.ts';
 import { getWrittenDocumentsFromBulkWriteResponse, throwIfIsStorageWriteError } from './rx-storage-helper.ts';
@@ -110,7 +109,7 @@ export const basePrototype = {
                 filter((bulk: any) => !bulk.isLocal),
                 map((bulk: any) => bulk.events.find((ev: any) => ev.documentId === id)),
                 filter((event: any) => !!event),
-                map((changeEvent: any) => getDocumentDataOfRxChangeEvent(ensureNotFalsy(changeEvent))),
+                map((changeEvent: any) => ensureNotFalsy(changeEvent).documentData),
                 startWith(latestDocData),
                 distinctUntilChanged((prev: RxDocumentData<any>, curr: RxDocumentData<any>) => prev._rev === curr._rev),
                 map((docData: RxDocumentData<any>) => (this as RxDocument<any>).collection._docCache.getCachedRxDocument(docData)),

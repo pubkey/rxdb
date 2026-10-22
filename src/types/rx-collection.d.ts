@@ -102,9 +102,6 @@ export interface RxCollectionGenerated<RxDocumentType = any, OrmMethods = {}, Re
     postSave(fun: RxCollectionHookCallback<RxDocumentType, OrmMethods, Reactivity>, parallel: boolean): void;
     postRemove(fun: RxCollectionHookCallback<RxDocumentType, OrmMethods, Reactivity>, parallel: boolean): void;
     postCreate(fun: RxCollectionHookCallbackNonAsync<RxDocumentType, OrmMethods, Reactivity>): void;
-
-    // only inMemory-collections
-    awaitPersistence(): Promise<void>;
 }
 
 /**

@@ -7,7 +7,6 @@ import {
     startWith
 } from 'rxjs';
 import { overwritable } from '../../overwritable.ts';
-import { getDocumentDataOfRxChangeEvent } from '../../rx-change-event.ts';
 import {
     basePrototype,
     createRxDocumentConstructor
@@ -108,7 +107,7 @@ const RxLocalDocumentPrototype: any = {
             ),
             map((bulk: RxChangeEventBulk<any>) => bulk.events.find((ev: RxStorageChangeEvent<any>) => ev.documentId === id)),
             filter((event: RxStorageChangeEvent<any> | undefined) => !!event),
-            map((changeEvent: any) => getDocumentDataOfRxChangeEvent(ensureNotFalsy(changeEvent))),
+            map((changeEvent: any) => ensureNotFalsy(changeEvent).documentData),
             startWith(state.docCache.getLatestDocumentData(this.primary)),
             distinctUntilChanged((prev: any, curr: any) => prev._rev === curr._rev),
             map((docData: any) => state.docCache.getCachedRxDocument(docData)),
