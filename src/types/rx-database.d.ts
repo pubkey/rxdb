@@ -147,8 +147,9 @@ export type RxEventReduceOptions = {
     /**
      * Returns how many documents a query keeps in memory
      * before (skip) and after (limit) its result window.
-     * When documents leave the result window, the next documents
-     * are taken from there instead of running the query again.
+     * When the query result set leaves its current range, for example because
+     * documents are deleted, the next documents are taken from there
+     * instead of running the query again.
      * Return 0 for both to not use a buffer for that query.
      * @link https://github.com/pubkey/event-reduce/blob/master/docs/result-window-buffer.md
      */
