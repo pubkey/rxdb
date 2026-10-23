@@ -8,6 +8,7 @@ import {
     ResultWindowBuffer,
     createResultWindowBuffer,
     applyChangeEventToResultWindowBuffer,
+    getRecommendedResultWindowBufferSize,
     getResultWindowBufferQuery,
     getResultWindowBufferResults
 } from 'event-reduce-js';
@@ -41,14 +42,13 @@ export type EventReduceResultPos<RxDocumentType> = {
 export type EventReduceResult<RxDocumentType> = EventReduceResultNeg | EventReduceResultPos<RxDocumentType>;
 
 /**
- * Small limits get about log2(limit) documents on each side of the result window,
- * which then grows faster around limit 400 (an S-curve) and is at most 30.
+ * Uses the recommended buffer size of event-reduce on both sides of the result window:
+ * about log2(limit) documents, which then grows faster around limit 400 (an S-curve) and is at most 30.
  * limit 1 -> 0, 2 -> 1, 4 -> 2, 10 -> 3, 20 -> 4, 100 -> 7, 500 -> 20, 1000 -> 26, 3000 -> 30.
  * So findOne() queries (limit 1) and queries without a limit do not use a buffer.
  */
 export function defaultResultWindowBuffer(query: FilledMangoQuery<any>): { skip: number; limit: number; } {
-    const limit = query.limit;
-    const size = limit ? Math.min(30, Math.floor(Math.log2(limit) + 19 / (1 + (400 / limit) ** 2))) : 0;
+    const size = getRecommendedResultWindowBufferSize(query.limit);
     return {
         skip: size,
         limit: size
