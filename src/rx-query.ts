@@ -780,7 +780,6 @@ function __ensureEqual<RxDocType>(rxQuery: RxQueryBase<RxDocType, any>): Promise
                 // 'find' or 'findOne' query
                 const resultWindowBuffer = getResultWindowBuffer<RxDocType>(rxQuery as any);
                 const eventReduceResult = resultWindowBuffer ? calculateNewResultsWithResultWindowBuffer(
-                    rxQuery as any,
                     resultWindowBuffer,
                     runChangeEvents
                 ) : calculateNewResults(

@@ -7,10 +7,9 @@ import {
     ChangeEvent,
     ResultWindowBuffer,
     createResultWindowBuffer,
-    applyChangeEventToResultWindowBuffer,
+    applyChangeEventsToResultWindowBuffer,
     getRecommendedResultWindowBufferSize,
-    getResultWindowBufferQuery,
-    getResultWindowBufferResults
+    getResultWindowBufferQuery
 } from 'event-reduce-js';
 import type {
     RxQuery,
@@ -24,7 +23,6 @@ import type {
 } from './types/index.d.ts';
 import { rxChangeEventToEventReduceChangeEvent } from './rx-change-event.ts';
 import {
-    areRxDocumentArraysEqual,
     clone,
     ensureNotFalsy,
     getFromMapOrCreate
@@ -216,6 +214,8 @@ export function calculateNewResults<RxDocumentType>(
  * before and after the result window in memory. When documents move
  * into the window, they are taken from the buffer instead of running
  * the query again, which EventReduce alone would have to do.
+ * With both sizes 0, the buffer never needs more full queries than EventReduce alone,
+ * so all find queries use it, except queries by primary key.
  * @link https://github.com/pubkey/event-reduce/blob/master/docs/result-window-buffer.md
  */
 export const RXQUERY_RESULT_WINDOW_BUFFER_CACHE: WeakMap<RxQuery, ResultWindowBuffer<any> | false> = new WeakMap();
@@ -235,25 +235,20 @@ export function getResultWindowBuffer<RxDocType>(
             if (
                 !eventReduceOptions ||
                 (rxQuery.op !== 'find' && rxQuery.op !== 'findOne') ||
-                // queries by primary key do not need a buffer
+                // queries by primary key do not run a storage query, they use calculateNewResults()
                 rxQuery.isFindOneByIdQuery
             ) {
                 return false;
             }
-            const normalizedQuery = rxQuery.normalizedQuery;
-            const sizes = eventReduceOptions.resultWindowBuffer(normalizedQuery);
+            const sizes = eventReduceOptions.resultWindowBuffer(rxQuery.normalizedQuery);
             // throws on negative sizes and values that are not numbers
-            const resultWindowBuffer = createResultWindowBuffer(
+            return createResultWindowBuffer(
                 getQueryParams(rxQuery),
                 {
                     skipBufferSize: sizes.skip,
                     limitBufferSize: sizes.limit
                 }
             );
-            // the skip buffer is only used with a skip, the limit buffer only with a limit
-            const usesSkipBuffer = normalizedQuery.skip > 0 && resultWindowBuffer.skipBufferSize > 0;
-            const usesLimitBuffer = !!normalizedQuery.limit && resultWindowBuffer.limitBufferSize > 0;
-            return usesSkipBuffer || usesLimitBuffer ? resultWindowBuffer : false;
         }
     );
     return ret ? ret : undefined;
@@ -268,48 +263,32 @@ export function getResultWindowBufferPreparedQuery<RxDocType>(
     resultWindowBuffer: ResultWindowBuffer<RxDocumentData<RxDocType>>
 ): PreparedQuery<RxDocType> {
     const preparedQuery = rxQuery.getPreparedQuery();
-    const bufferQuery = getResultWindowBufferQuery(resultWindowBuffer);
-    const query: FilledMangoQuery<RxDocType> = Object.assign({}, preparedQuery.query, {
-        skip: bufferQuery.skip
+    return Object.assign({}, preparedQuery, {
+        query: getResultWindowBufferQuery(resultWindowBuffer, preparedQuery.query)
     });
-    if (typeof bufferQuery.limit === 'number') {
-        query.limit = bufferQuery.limit;
-    } else {
-        delete query.limit;
-    }
-    return Object.assign({}, preparedQuery, { query });
 }
 
 /**
  * Like calculateNewResults() but updates the result window buffer of the query.
  */
 export function calculateNewResultsWithResultWindowBuffer<RxDocumentType>(
-    rxQuery: RxQuery<RxDocumentType>,
     resultWindowBuffer: ResultWindowBuffer<RxDocumentData<RxDocumentType>>,
     rxChangeEvents: RxStorageChangeEvent<RxDocumentType>[]
 ): EventReduceResult<RxDocumentType> {
-    for (let index = 0; index < rxChangeEvents.length; index++) {
-        const eventReduceEvent = rxChangeEventToEventReduceChangeEvent(rxChangeEvents[index]);
-        if (applyChangeEventToResultWindowBuffer(
-            resultWindowBuffer,
-            // storage change events always contain the full document data
-            eventReduceEvent as ChangeEvent<RxDocumentData<RxDocumentType>>
-        ) === 'runFullQueryAgain') {
-            // the result window does not fit into the buffer anymore, the query refills it
-            return {
-                runFullQueryAgain: true
-            };
-        }
-    }
-    const newResults: RxDocumentType[] = getResultWindowBufferResults(resultWindowBuffer) as any;
-    const changed = !areRxDocumentArraysEqual(
-        rxQuery.collection.schema.primaryPath,
-        newResults as any,
-        ensureNotFalsy(rxQuery._result).docsData
+    // storage change events always contain the full document data
+    const changeEvents = rxChangeEvents.map(
+        rxChangeEvent => rxChangeEventToEventReduceChangeEvent(rxChangeEvent) as ChangeEvent<RxDocumentData<RxDocumentType>>
     );
+    const result = applyChangeEventsToResultWindowBuffer(resultWindowBuffer, changeEvents);
+    if (result.runFullQueryAgain) {
+        // the result window does not fit into the buffer anymore, the query refills it
+        return {
+            runFullQueryAgain: true
+        };
+    }
     return {
         runFullQueryAgain: false,
-        changed,
-        newResults
+        changed: result.changed,
+        newResults: result.results as any
     };
 }
