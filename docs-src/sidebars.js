@@ -368,6 +368,11 @@ const sidebars = {
         },
         {
           type: 'doc',
+          id: 'event-reduce',
+          label: 'EventReduce'
+        },
+        {
+          type: 'doc',
           id: 'plugins',
           label: 'Creating Plugins'
         },
