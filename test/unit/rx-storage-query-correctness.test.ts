@@ -56,7 +56,13 @@ const RESULT_WINDOW_BUFFER_VARIANTS: { name: string; eventReduce: false | RxEven
         }
     },
     {
-        name: 'with result window buffer',
+        name: 'with result window buffer of size 1',
+        eventReduce: {
+            resultWindowBuffer: () => ({ skip: 1, limit: 1 })
+        }
+    },
+    {
+        name: 'with result window buffer of size 2',
         eventReduce: {
             resultWindowBuffer: () => ({ skip: 2, limit: 2 })
         }
