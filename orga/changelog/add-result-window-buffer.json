@@ -1,6 +1,6 @@
 {
     "$schema": "./schema.json",
-    "text": "ADD result window buffer for queries with a `skip` or `limit`. RxDB keeps some documents before and after the result window in memory, so documents that move into the window are taken from there instead of running the query again. By default the buffer per side is `min(30, floor(log2(limit) + 19 / (1 + (400 / limit)²)))`, set your own sizes with `eventReduce: { resultWindowBuffer: (query) => ({ skip, limit }) }`. `RxDatabase.eventReduce` is now `false` or the EventReduce options object instead of a boolean.",
+    "text": "ADD result window buffer for queries with a `skip` or `limit`. RxDB keeps some documents before and after the result window in memory, so documents that move into the window are taken from there instead of running the query again. By default it uses the recommended buffer sizes of event-reduce, set your own sizes with `eventReduce: { resultWindowBuffer: (query) => ({ skip, limit }) }`. `eventReduce: true` still works and uses the default options. The options are at `RxDatabase.eventReduceOptions`.",
     "links": [
         {
             "url": "https://github.com/pubkey/rxdb/pull/9314",
