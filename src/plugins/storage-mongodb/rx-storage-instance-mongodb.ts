@@ -322,10 +322,9 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
     ): Promise<RxDocumentData<RxDocType>[]> {
         this.runningOperations.next(this.runningOperations.getValue() + 1);
         const mongoCollection = await this.mongoCollectionPromise;
-        const primaryPath = this.primaryPath;
 
         const plainQuery: MongoQuerySelector<any> = {
-            [primaryPath]: {
+            [this.inMongoPrimaryPath]: {
                 $in: docIds
             }
         };
