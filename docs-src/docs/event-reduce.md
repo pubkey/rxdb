@@ -50,9 +50,9 @@ const myDatabase = await createRxDatabase({
   storage: getRxStorageLocalstorage(),
   eventReduce: {
     resultWindowBuffer: (query) => ({
-      // documents to keep before the result window (only used when the query has a skip)
+      // documents kept before the result window (used when the query has a skip)
       skip: Math.min(query.skip, 10),
-      // documents to keep after the result window (only used when the query has a limit)
+      // documents kept after the result window (used when the query has a limit)
       limit: query.limit ? query.limit : 0
     })
   }
