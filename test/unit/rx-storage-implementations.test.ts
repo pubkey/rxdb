@@ -2218,6 +2218,77 @@ describe('rx-storage-implementations.test.ts (implementation: ' + config.storage
 
                 storageInstance.remove();
             });
+            it('should find the documents when the primary key is _id', async () => {
+                type IdDocType = { _id: string; value: string; };
+                const storageInstance = await config.storage.getStorage().createStorageInstance<IdDocType>({
+                    databaseInstanceToken: randomToken(10),
+                    databaseName: randomToken(12),
+                    collectionName: randomToken(12),
+                    schema: fillWithDefaultSettings({
+                        version: 0,
+                        type: 'object',
+                        primaryKey: '_id',
+                        properties: {
+                            _id: {
+                                type: 'string',
+                                maxLength: 100
+                            },
+                            value: {
+                                type: 'string'
+                            }
+                        },
+                        required: ['_id', 'value']
+                    }),
+                    options: {},
+                    multiInstance: false,
+                    devMode: true
+                });
+
+                const docData: RxDocumentData<IdDocType> = {
+                    _id: 'foobar',
+                    value: 'barfoo',
+                    _deleted: false,
+                    _attachments: {},
+                    _rev: EXAMPLE_REVISION_1,
+                    _meta: {
+                        lwt: now()
+                    }
+                };
+                const insertResult = await storageInstance.bulkWrite(
+                    [{
+                        document: docData
+                    }],
+                    testContext
+                );
+                assert.deepStrictEqual(insertResult.error, []);
+
+                const found = await storageInstance.findDocumentsById(['foobar'], false);
+                assert.strictEqual(found.length, 1);
+                assert.deepStrictEqual(
+                    stripMetaDataFromDocument(found[0]),
+                    stripMetaDataFromDocument(docData)
+                );
+
+                // an update must find the previous document state
+                const updateResult = await storageInstance.bulkWrite(
+                    [{
+                        previous: docData,
+                        document: Object.assign({}, docData, {
+                            value: 'updated',
+                            _rev: EXAMPLE_REVISION_2,
+                            _meta: {
+                                lwt: now()
+                            }
+                        })
+                    }],
+                    testContext
+                );
+                assert.deepStrictEqual(updateResult.error, []);
+                const foundAfterUpdate = await storageInstance.findDocumentsById(['foobar'], false);
+                assert.strictEqual(foundAfterUpdate[0].value, 'updated');
+
+                storageInstance.remove();
+            });
             it('should find deleted documents', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
                     databaseInstanceToken: randomToken(10),

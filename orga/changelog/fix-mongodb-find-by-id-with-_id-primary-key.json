@@ -1,0 +1,11 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX MongoDB storage `findDocumentsById()` not finding documents when the primary key is `_id`, which made updates and removes of these documents fail with a `CONFLICT` error",
+    "links": [
+        {
+            "url": "https://github.com/pubkey/rxdb/pull/9314",
+            "linkText": "#9314"
+        }
+    ],
+    "priority": 7
+}
