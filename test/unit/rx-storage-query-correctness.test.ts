@@ -44,9 +44,13 @@ const TEST_CONTEXT = 'rx-storage-query-correctness.test.ts';
  * Each query is run on an RxDatabase without and with the result window buffer.
  * The buffer sizes are fixed, so that also the small limits of these tests use a buffer.
  */
-const RESULT_WINDOW_BUFFER_VARIANTS: { name: string; eventReduce: RxEventReduceOptions; }[] = [
+const RESULT_WINDOW_BUFFER_VARIANTS: { name: string; eventReduce: false | RxEventReduceOptions; }[] = [
     {
-        name: 'without result window buffer',
+        name: 'without EventReduce',
+        eventReduce: false
+    },
+    {
+        name: 'with result window buffer of size 0',
         eventReduce: {
             resultWindowBuffer: () => ({ skip: 0, limit: 0 })
         }
