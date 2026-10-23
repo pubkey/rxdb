@@ -231,7 +231,7 @@ export function getResultWindowBuffer<RxDocType>(
         RXQUERY_RESULT_WINDOW_BUFFER_CACHE,
         rxQuery,
         () => {
-            const eventReduceOptions = rxQuery.collection.database.eventReduce;
+            const eventReduceOptions = rxQuery.collection.database.eventReduceOptions;
             if (
                 !eventReduceOptions ||
                 (rxQuery.op !== 'find' && rxQuery.op !== 'findOne') ||

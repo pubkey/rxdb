@@ -96,7 +96,7 @@ When you create more than one instance of the same database in a single javascri
 ### eventReduce
 `(optional=true)`
 
-Optimizes observed and recurring queries with the [EventReduce algorithm](./event-reduce.md). Set `eventReduce: false` to disable it,
+Optimizes observed and recurring queries with the [EventReduce algorithm](./event-reduce.md). `true` uses the default options. Set `eventReduce: false` to disable it,
 or pass an object to configure it, like the size of the result window buffer. See [EventReduce](./event-reduce.md) for all options.
 
 ### ignoreDuplicate

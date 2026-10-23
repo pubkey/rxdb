@@ -8,7 +8,7 @@ description: Learn how RxDB uses the EventReduce algorithm and the result window
 
 One big benefit of having a realtime database is that big performance optimizations can be done when the database knows a query is observed and the updated results are needed continuously. RxDB uses the [EventReduce Algorithm](https://github.com/pubkey/event-reduce) to optimize observed or recurring queries. When a document is written, RxDB calculates the new results of a query from the old results and the change event, instead of running the query against the storage again.
 
-EventReduce is enabled by default. It is configured with the `eventReduce` option of [createRxDatabase()](./rx-database.md#eventreduce).
+EventReduce is enabled by default. It is configured with the `eventReduce` option of [createRxDatabase()](./rx-database.md#eventreduce): `true` (the default) uses the default options, `false` disables EventReduce and an object sets your own options.
 
 ## Disable EventReduce
 
@@ -34,10 +34,7 @@ instead of running the query again.
 
 ### Default buffer sizes
 
-By default, the buffer on each side is about `log2(limit)` documents for small limits, grows faster around limit 400
-and is at most 30 documents: `min(30, floor(log2(limit) + 19 / (1 + (400 / limit)²)))`.
-That is limit 2 → 1, 4 → 2, 10 → 3, 20 → 4, 100 → 7, 500 → 20, 1,000 → 26 and 30 from limit 2,712.
-So `findOne()` queries (limit 1) and queries without a limit do not use a buffer.
+By default, RxDB uses the [recommended buffer sizes of event-reduce](https://github.com/pubkey/event-reduce/blob/master/docs/result-window-buffer.md#recommended-sizes) on both sides of the result window.
 
 ### Custom buffer sizes
 
