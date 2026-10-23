@@ -24,7 +24,7 @@ const db = await createRxDatabase({
   /* Optional parameters: */
   password: 'myPassword',             // <- password (optional)
   multiInstance: true,                // <- multiInstance (optional, default: true)
-  eventReduce: true,                  // <- eventReduce (optional, default: false)
+  eventReduce: true,                  // <- eventReduce (optional, default: true)
   cleanupPolicy: {}                   // <- custom cleanup policy (optional)
 });
 ```
@@ -94,11 +94,41 @@ When you create more than one instance of the same database in a single javascri
 `multiInstance` should be set to `false` when you have single instances like a single Node.js process, a React Native app, a Cordova app or a single-window [Electron](./electron-database.md) app which can decrease the startup time because no instance coordination has to be done.
 
 ### eventReduce
-`(optional=false)`
+`(optional=true)`
 
 One big benefit of having a realtime database is that big performance optimizations can be done when the database knows a query is observed and the updated results are needed continuously. RxDB uses the [EventReduce Algorithm](https://github.com/pubkey/event-reduce) to optimize observer or recurring queries.
 
-For better performance, you should always set `eventReduce: true`. This will also be the default in the next major RxDB version.
+Set `eventReduce: false` to disable it.
+
+For queries with a `skip` or `limit`, RxDB also keeps some documents before and after the result window in memory,
+the [result window buffer](https://github.com/pubkey/event-reduce/blob/master/docs/result-window-buffer.md).
+When documents leave the result window, for example because they are deleted, the next documents are taken from the buffer
+instead of running the query again. By default, the buffer on each side is about `log2(limit)` documents for small limits, grows faster around limit 400
+and is at most 30 documents: `min(30, floor(log2(limit) + 19 / (1 + (400 / limit)²)))`.
+That is limit 2 → 1, 4 → 2, 10 → 3, 20 → 4, 100 → 7, 500 → 20, 1,000 → 26 and 30 from limit 2,712.
+So `findOne()` queries (limit 1) and queries without a limit do not use a buffer.
+You can set your own buffer sizes with a function that gets the normalized query.
+The sizes must be numbers of 0 or more:
+
+```ts
+import { createRxDatabase } from 'rxdb';
+import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
+
+const myDatabase = await createRxDatabase({
+  name: 'mydatabase',
+  storage: getRxStorageLocalstorage(),
+  eventReduce: {
+    resultWindowBuffer: (query) => ({
+      // documents to keep before the result window (only used when the query has a skip)
+      skip: Math.min(query.skip, 10),
+      // documents to keep after the result window (only used when the query has a limit)
+      limit: query.limit ? query.limit : 0
+    })
+  }
+});
+```
+
+A bigger buffer saves more queries, but each query then reads more documents from the storage, and the buffer uses more memory.
 
 
 ### ignoreDuplicate

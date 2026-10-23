@@ -19,6 +19,7 @@ import type {
     BulkWriteRow,
     RxChangeEvent,
     RxDatabaseCreator,
+    RxEventReduceOptions,
     RxChangeEventBulk,
     RxDocumentData,
     RxCleanupPolicy,
@@ -90,6 +91,7 @@ import { overwritable } from './overwritable.ts';
 import type { RxMigrationState } from './plugins/migration-schema/index.ts';
 import type { RxReactivityFactory } from './types/plugins/reactivity.d.ts';
 import { rxChangeEventBulkToRxChangeEvents } from './rx-change-event.ts';
+import { getEventReduceOptions } from './event-reduce.ts';
 
 /**
  * stores the used database names+storage names
@@ -128,7 +130,10 @@ export class RxDatabaseBase<
         public readonly instanceCreationOptions: InstanceCreationOptions,
         public readonly password: any,
         public readonly multiInstance: boolean,
-        public readonly eventReduce: boolean = false,
+        /**
+         * false if EventReduce is disabled.
+         */
+        public readonly eventReduce: false | RxEventReduceOptions = false,
         public options: any = {},
         /**
          * Stores information documents about the collections of the database
@@ -828,6 +833,7 @@ export function createRxDatabase<
 ): Promise<
     RxDatabase<Collections, Internals, InstanceCreationOptions, Reactivity>
 > {
+    const eventReduceOptions = getEventReduceOptions(eventReduce);
     runPluginHooks('preCreateRxDatabase', {
         storage,
         instanceCreationOptions,
@@ -895,7 +901,7 @@ export function createRxDatabase<
             instanceCreationOptions,
             password,
             multiInstance,
-            eventReduce,
+            eventReduceOptions,
             options,
             storageInstance,
             hashFunction,

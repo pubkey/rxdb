@@ -4,17 +4,26 @@ import {
     runAction,
     QueryParams,
     StateResolveFunctionInput,
-    ChangeEvent
+    ChangeEvent,
+    ResultWindowBuffer,
+    createResultWindowBuffer,
+    applyChangeEventToResultWindowBuffer,
+    getResultWindowBufferQuery,
+    getResultWindowBufferResults
 } from 'event-reduce-js';
 import type {
     RxQuery,
     MangoQuery,
     StringKeys,
     RxDocumentData,
-    RxStorageChangeEvent
+    RxStorageChangeEvent,
+    RxEventReduceOptions,
+    FilledMangoQuery,
+    PreparedQuery
 } from './types/index.d.ts';
 import { rxChangeEventToEventReduceChangeEvent } from './rx-change-event.ts';
 import {
+    areRxDocumentArraysEqual,
     clone,
     ensureNotFalsy,
     getFromMapOrCreate
@@ -30,6 +39,41 @@ export type EventReduceResultPos<RxDocumentType> = {
     newResults: RxDocumentType[];
 };
 export type EventReduceResult<RxDocumentType> = EventReduceResultNeg | EventReduceResultPos<RxDocumentType>;
+
+/**
+ * Small limits get about log2(limit) documents on each side of the result window,
+ * which then grows faster around limit 400 (an S-curve) and is at most 30.
+ * limit 1 -> 0, 2 -> 1, 4 -> 2, 10 -> 3, 20 -> 4, 100 -> 7, 500 -> 20, 1000 -> 26, 3000 -> 30.
+ * So findOne() queries (limit 1) and queries without a limit do not use a buffer.
+ */
+export function defaultResultWindowBuffer(query: FilledMangoQuery<any>): { skip: number; limit: number; } {
+    const limit = query.limit;
+    const size = limit ? Math.min(30, Math.floor(Math.log2(limit) + 19 / (1 + (400 / limit) ** 2))) : 0;
+    return {
+        skip: size,
+        limit: size
+    };
+}
+
+export const DEFAULT_EVENT_REDUCE_OPTIONS: RxEventReduceOptions = {
+    resultWindowBuffer: defaultResultWindowBuffer
+};
+
+/**
+ * Normalizes the eventReduce option of the database creator.
+ * @return false if EventReduce is disabled
+ */
+export function getEventReduceOptions(
+    eventReduce?: boolean | Partial<RxEventReduceOptions>
+): false | RxEventReduceOptions {
+    if (eventReduce === false) {
+        return false;
+    }
+    if (eventReduce === true || typeof eventReduce === 'undefined') {
+        return DEFAULT_EVENT_REDUCE_OPTIONS;
+    }
+    return Object.assign({}, DEFAULT_EVENT_REDUCE_OPTIONS, eventReduce);
+}
 
 
 export function getSortFieldsOfQuery<RxDocType>(
@@ -162,4 +206,110 @@ export function calculateNewResults<RxDocumentType>(
             newResults: previousResults
         };
     }
+}
+
+
+/**
+ * Result window buffer
+ * --------------------
+ * For a query with a skip or limit, the buffer keeps some documents
+ * before and after the result window in memory. When documents move
+ * into the window, they are taken from the buffer instead of running
+ * the query again, which EventReduce alone would have to do.
+ * @link https://github.com/pubkey/event-reduce/blob/master/docs/result-window-buffer.md
+ */
+export const RXQUERY_RESULT_WINDOW_BUFFER_CACHE: WeakMap<RxQuery, ResultWindowBuffer<any> | false> = new WeakMap();
+
+/**
+ * Returns the result window buffer of the query,
+ * or undefined if the query does not use one.
+ */
+export function getResultWindowBuffer<RxDocType>(
+    rxQuery: RxQuery<RxDocType>
+): ResultWindowBuffer<RxDocumentData<RxDocType>> | undefined {
+    const ret = getFromMapOrCreate(
+        RXQUERY_RESULT_WINDOW_BUFFER_CACHE,
+        rxQuery,
+        () => {
+            const eventReduceOptions = rxQuery.collection.database.eventReduce;
+            if (
+                !eventReduceOptions ||
+                (rxQuery.op !== 'find' && rxQuery.op !== 'findOne') ||
+                // queries by primary key do not need a buffer
+                rxQuery.isFindOneByIdQuery
+            ) {
+                return false;
+            }
+            const normalizedQuery = rxQuery.normalizedQuery;
+            const sizes = eventReduceOptions.resultWindowBuffer(normalizedQuery);
+            // throws on negative sizes and values that are not numbers
+            const resultWindowBuffer = createResultWindowBuffer(
+                getQueryParams(rxQuery),
+                {
+                    skipBufferSize: sizes.skip,
+                    limitBufferSize: sizes.limit
+                }
+            );
+            // the skip buffer is only used with a skip, the limit buffer only with a limit
+            const usesSkipBuffer = normalizedQuery.skip > 0 && resultWindowBuffer.skipBufferSize > 0;
+            const usesLimitBuffer = !!normalizedQuery.limit && resultWindowBuffer.limitBufferSize > 0;
+            return usesSkipBuffer || usesLimitBuffer ? resultWindowBuffer : false;
+        }
+    );
+    return ret ? ret : undefined;
+}
+
+/**
+ * The prepared query of the RxQuery,
+ * with the skip and limit of the result window buffer.
+ */
+export function getResultWindowBufferPreparedQuery<RxDocType>(
+    rxQuery: RxQuery<RxDocType>,
+    resultWindowBuffer: ResultWindowBuffer<RxDocumentData<RxDocType>>
+): PreparedQuery<RxDocType> {
+    const preparedQuery = rxQuery.getPreparedQuery();
+    const bufferQuery = getResultWindowBufferQuery(resultWindowBuffer);
+    const query: FilledMangoQuery<RxDocType> = Object.assign({}, preparedQuery.query, {
+        skip: bufferQuery.skip
+    });
+    if (typeof bufferQuery.limit === 'number') {
+        query.limit = bufferQuery.limit;
+    } else {
+        delete query.limit;
+    }
+    return Object.assign({}, preparedQuery, { query });
+}
+
+/**
+ * Like calculateNewResults() but updates the result window buffer of the query.
+ */
+export function calculateNewResultsWithResultWindowBuffer<RxDocumentType>(
+    rxQuery: RxQuery<RxDocumentType>,
+    resultWindowBuffer: ResultWindowBuffer<RxDocumentData<RxDocumentType>>,
+    rxChangeEvents: RxStorageChangeEvent<RxDocumentType>[]
+): EventReduceResult<RxDocumentType> {
+    for (let index = 0; index < rxChangeEvents.length; index++) {
+        const eventReduceEvent = rxChangeEventToEventReduceChangeEvent(rxChangeEvents[index]);
+        if (applyChangeEventToResultWindowBuffer(
+            resultWindowBuffer,
+            // storage change events always contain the full document data
+            eventReduceEvent as ChangeEvent<RxDocumentData<RxDocumentType>>
+        ) === 'runFullQueryAgain') {
+            // the result window does not fit into the buffer anymore, the query refills it
+            return {
+                runFullQueryAgain: true
+            };
+        }
+    }
+    const newResults: RxDocumentType[] = getResultWindowBufferResults(resultWindowBuffer) as any;
+    const changed = !areRxDocumentArraysEqual(
+        rxQuery.collection.schema.primaryPath,
+        newResults as any,
+        ensureNotFalsy(rxQuery._result).docsData
+    );
+    return {
+        runFullQueryAgain: false,
+        changed,
+        newResults
+    };
 }
