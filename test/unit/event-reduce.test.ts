@@ -13,7 +13,9 @@ import {
     RxDocument,
     MangoQuery,
     rxChangeEventToEventReduceChangeEvent,
-    RxStorageChangeEvent
+    RxStorageChangeEvent,
+    RxEventReduceOptions,
+    defaultResultWindowBuffer
 } from '../../plugins/core/index.mjs';
 
 import {
@@ -24,7 +26,7 @@ import config from './config.ts';
 
 describe('event-reduce.test.js', () => {
     async function createCollection(
-        eventReduce: boolean,
+        eventReduce: boolean | RxEventReduceOptions,
         storage = config.storage.getStorage(),
         keyCompression = false
     ): Promise<RxCollection> {
@@ -37,7 +39,7 @@ describe('event-reduce.test.js', () => {
         schema.keyCompression = keyCompression;
         schema.indexes = ['age', 'lastName', 'firstName'];
         (schema as any).required.push('age');
-        const collectionName = eventReduce ? 'with-event-reduce' : 'without-event-reduce';
+        const collectionName = eventReduce !== false ? 'with-event-reduce' : 'without-event-reduce';
         const collections = await db.addCollections({
             [collectionName]: {
                 schema
@@ -446,5 +448,121 @@ describe('event-reduce.test.js', () => {
             Object.assign({}, event, { previousDocumentData })
         );
         assert.strictEqual(reduceEvent?.previous, previousDocumentData);
+    });
+    describe('result window buffer', () => {
+        it('should by default buffer about log2(limit), growing faster around limit 400, at most 30', () => {
+            const expected: [number, number][] = [
+                [1, 0],
+                [2, 1],
+                [3, 1],
+                [4, 2],
+                [10, 3],
+                [20, 4],
+                [100, 7],
+                [500, 20],
+                [1000, 26],
+                [2711, 29],
+                [2712, 30],
+                [100000, 30]
+            ];
+            expected.forEach(([limit, size]) => {
+                assert.deepStrictEqual(
+                    defaultResultWindowBuffer({ selector: {}, sort: [], skip: 10, limit }),
+                    { skip: size, limit: size },
+                    'limit ' + limit
+                );
+            });
+            // no limit, no buffer
+            assert.deepStrictEqual(defaultResultWindowBuffer({ selector: {}, sort: [], skip: 10 }), { skip: 0, limit: 0 });
+        });
+        it('should throw when resultWindowBuffer returns a negative size', async () => {
+            const col = await createCollection({
+                resultWindowBuffer: () => ({ skip: 0, limit: -1 })
+            });
+            await assert.rejects(
+                () => col.find({ selector: {}, limit: 3 }).exec(),
+                /RWB_SIZE/
+            );
+            col.database.close();
+        });
+        it('should not run the query again when a visible document is removed', async () => {
+            const col = await createCollection(true);
+            await col.bulkInsert(new Array(10).fill(0).map((_v, i) => schemaObjects.humanData('doc-' + i, 20 + i)));
+            const query = col.find({
+                selector: {},
+                sort: [{ age: 'asc' }],
+                limit: 3
+            });
+            // the default buffer for limit 3 has 1 document after the window
+            const results = await query.exec();
+            assert.deepStrictEqual(results.map(d => d.primary), ['doc-0', 'doc-1', 'doc-2']);
+            const execCountBefore = query._execOverDatabaseCount;
+
+            await results[0].remove();
+            const resultsAfter = await query.exec();
+            assert.deepStrictEqual(resultsAfter.map(d => d.primary), ['doc-1', 'doc-2', 'doc-3']);
+            assert.strictEqual(query._execOverDatabaseCount, execCountBefore);
+
+            // the buffer is used up, so the next removal must run the query again
+            await resultsAfter[0].remove();
+            const resultsAfter2 = await query.exec();
+            assert.deepStrictEqual(resultsAfter2.map(d => d.primary), ['doc-2', 'doc-3', 'doc-4']);
+            assert.strictEqual(query._execOverDatabaseCount, execCountBefore + 1);
+
+            col.database.close();
+        });
+        new Array(isFastMode() ? 1 : 5).fill(0).forEach(() => {
+            it('random writes: should have the same results as without event-reduce', async () => {
+                const colNoEventReduce = await createCollection(false);
+                const colWithBuffer = await createCollection({
+                    resultWindowBuffer: (query) => ({
+                        skip: query.skip > 0 ? 3 : 0,
+                        limit: query.limit ? 3 : 0
+                    })
+                });
+                const queries: MangoQuery[] = [
+                    { selector: {}, sort: [{ age: 'asc' }], limit: 5 },
+                    { selector: {}, sort: [{ age: 'desc' }], skip: 3, limit: 4 },
+                    { selector: { age: { $gt: 30 } }, sort: [{ lastName: 'asc' }], skip: 2 },
+                    { selector: { age: { $lt: 60 } }, sort: [{ age: 'asc' }], limit: 1 }
+                ];
+                // subscribe so the query instances stay in the query cache and keep their buffers
+                const subs = queries.map(query => colWithBuffer.find(query).$.subscribe());
+
+                const initialDocs = new Array(15).fill(0).map(() => schemaObjects.humanData());
+                await colNoEventReduce.bulkInsert(initialDocs);
+                await colWithBuffer.bulkInsert(initialDocs);
+                await testQueryResultForEquality(colNoEventReduce, colWithBuffer, queries);
+
+                for (let i = 0; i < (isFastMode() ? 20 : 60); i++) {
+                    const allDocs = await colNoEventReduce.find({ sort: [{ passportId: 'asc' }] }).exec();
+                    const random = Math.random();
+                    if (allDocs.length === 0 || random < 0.3) {
+                        const docData = schemaObjects.humanData();
+                        await colNoEventReduce.insert(docData);
+                        await colWithBuffer.insert(docData);
+                    } else {
+                        const id = allDocs[Math.floor(Math.random() * allDocs.length)].primary;
+                        if (random < 0.7) {
+                            const age = Math.floor(Math.random() * 100);
+                            await Promise.all([colNoEventReduce, colWithBuffer].map(async (col) => {
+                                const doc = await col.findOne(id).exec(true);
+                                await doc.incrementalPatch({ age });
+                            }));
+                        } else {
+                            await Promise.all([colNoEventReduce, colWithBuffer].map(async (col) => {
+                                const doc = await col.findOne(id).exec(true);
+                                await doc.remove();
+                            }));
+                        }
+                    }
+                    await testQueryResultForEquality(colNoEventReduce, colWithBuffer, queries);
+                }
+
+                subs.forEach(sub => sub.unsubscribe());
+                colNoEventReduce.database.close();
+                colWithBuffer.database.close();
+            });
+        });
     });
 });

@@ -7,7 +7,7 @@ import type {
     RxDatabaseBase
 } from '../rx-database.d.ts';
 import { Observable } from 'rxjs';
-import type { RxStorage } from './rx-storage.interface.d.ts';
+import type { FilledMangoQuery, RxStorage } from './rx-storage.interface.d.ts';
 import type { RxLocalDocument } from './plugins/local-documents.d.ts';
 import type { RxCleanupPolicy } from './plugins/cleanup.d.ts';
 import type { ById, HashFunction } from './util.d.ts';
@@ -92,7 +92,12 @@ export interface RxDatabaseCreator<Internals = any, InstanceCreationOptions = an
      */
     password?: string | any;
     multiInstance?: boolean;
-    eventReduce?: boolean;
+    /**
+     * Set to false to disable the EventReduce algorithm.
+     * Defaults to DEFAULT_EVENT_REDUCE_OPTIONS.
+     * true is the same as the default.
+     */
+    eventReduce?: boolean | RxEventReduceOptions;
     ignoreDuplicate?: boolean;
     options?: any;
     /**
@@ -133,6 +138,25 @@ export interface RxDatabaseCreator<Internals = any, InstanceCreationOptions = an
      */
     reactivity?: RxReactivityFactory<Reactivity>;
 }
+
+/**
+ * Options of the EventReduce algorithm.
+ * @link https://github.com/pubkey/event-reduce
+ */
+export type RxEventReduceOptions = {
+    /**
+     * Returns how many documents a query keeps in memory
+     * before (skip) and after (limit) its result window.
+     * When documents leave the result window, the next documents
+     * are taken from there instead of running the query again.
+     * Return 0 for both to not use a buffer for that query.
+     * @link https://github.com/pubkey/event-reduce/blob/master/docs/result-window-buffer.md
+     */
+    resultWindowBuffer: (query: FilledMangoQuery<any>) => {
+        skip: number;
+        limit: number;
+    };
+};
 
 export type CollectionsOfDatabase = ById<RxCollection>;
 export type RxDatabase<

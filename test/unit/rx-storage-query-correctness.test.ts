@@ -16,7 +16,9 @@ import {
     getSortComparator,
     createRxDatabase,
     prepareQuery,
-    ensureNotFalsy
+    ensureNotFalsy,
+    RxCollection,
+    RxEventReduceOptions
 } from '../../plugins/core/index.mjs';
 import {
     schemaObjects,
@@ -37,6 +39,25 @@ import {
 } from '../../src/plugins/test-utils/schema-objects.ts';
 
 const TEST_CONTEXT = 'rx-storage-query-correctness.test.ts';
+
+/**
+ * Each query is run on an RxDatabase without and with the result window buffer.
+ * The buffer sizes are fixed, so that also the small limits of these tests use a buffer.
+ */
+const RESULT_WINDOW_BUFFER_VARIANTS: { name: string; eventReduce: RxEventReduceOptions; }[] = [
+    {
+        name: 'without result window buffer',
+        eventReduce: {
+            resultWindowBuffer: () => ({ skip: 0, limit: 0 })
+        }
+    },
+    {
+        name: 'with result window buffer',
+        eventReduce: {
+            resultWindowBuffer: () => ({ skip: 2, limit: 2 })
+        }
+    }
+];
 describe('rx-storage-query-correctness.test.ts', () => {
     type TestCorrectQueriesInput<RxDocType> = {
         notRunIfTrue?: () => boolean;
@@ -120,20 +141,54 @@ describe('rx-storage-query-correctness.test.ts', () => {
                 throw new Error('bulkWrite(' + input.testTitle + ') error: ' + JSON.stringify(bulkWriteResult.error, null, 4));
             }
 
-            const database = await createRxDatabase({
-                name: randomToken(10),
-                storage: wrappedValidateAjvStorage({
-                    storage: config.storage.getStorage()
-                }),
-                allowSlowCount: true
-            });
-            const collections = await database.addCollections({
-                test: {
-                    schema: input.schema
+            /**
+             * Run the RxCollection queries with and without the result window buffer
+             * of event-reduce, to ensure both return the same results.
+             */
+            const variants = await Promise.all(RESULT_WINDOW_BUFFER_VARIANTS.map(async (variant) => {
+                const database = await createRxDatabase({
+                    name: randomToken(10),
+                    storage: wrappedValidateAjvStorage({
+                        storage: config.storage.getStorage()
+                    }),
+                    allowSlowCount: true,
+                    eventReduce: variant.eventReduce
+                });
+                const collections = await database.addCollections({
+                    test: {
+                        schema: input.schema
+                    }
+                });
+                const collection: RxCollection<RxDocType> = collections.test;
+                await collection.bulkInsert(input.data);
+                return {
+                    name: variant.name,
+                    database,
+                    collection
+                };
+            }));
+
+            /**
+             * Returns the result ids of the query
+             * computed in memory from the given documents.
+             */
+            function getStaticsResultIds(query: MangoQuery<RxDocType>, docs: typeof rawDocsData): string[] {
+                const queryForStorage = clone(query) as MangoQuery<RxDocType>;
+                if (!queryForStorage.selector) {
+                    queryForStorage.selector = {};
                 }
-            });
-            const collection = collections.test;
-            await collection.bulkInsert(input.data);
+                (queryForStorage.selector as any)._deleted = false;
+                const normalizedQuery = normalizeMangoQuery(schema, queryForStorage);
+                const skip = normalizedQuery.skip ? normalizedQuery.skip : 0;
+                const limit = normalizedQuery.limit ? normalizedQuery.limit : Infinity;
+                const queryMatcher = getQueryMatcher(schema, normalizedQuery);
+                const sortComparator = getSortComparator(schema, normalizedQuery);
+                return docs.slice(0)
+                    .filter(d => queryMatcher(d as any))
+                    .sort(sortComparator as any)
+                    .slice(skip, skip + limit)
+                    .map(d => (d as any)[primaryPath]);
+            }
 
             for (const queryData of input.queries) {
                 if (!queryData) {
@@ -213,22 +268,24 @@ describe('rx-storage-query-correctness.test.ts', () => {
                 }
 
                 // Test output of RxCollection.find()
-                const rxQuery = collection.find(queryData.query);
-                const resultFromCollection = await rxQuery.exec();
-                const resultFromCollectionIds = resultFromCollection.map(d => d.primary);
-                try {
-                    assert.deepStrictEqual(resultFromCollectionIds, queryData.expectedResultDocIds);
-                } catch (err) {
-                    console.log('WRONG QUERY RESULTS FROM RxCollection.find(): ' + queryData.info);
-                    console.dir({
-                        queryData,
-                        resultFromCollectionIds,
-                        preparedQuery: rxQuery.getPreparedQuery()
-                    });
-                    throw err;
+                for (const variant of variants) {
+                    const rxQuery = variant.collection.find(queryData.query);
+                    const resultFromCollection = await rxQuery.exec();
+                    const resultFromCollectionIds = resultFromCollection.map(d => d.primary);
+                    try {
+                        assert.deepStrictEqual(resultFromCollectionIds, queryData.expectedResultDocIds);
+                    } catch (err) {
+                        console.log('WRONG QUERY RESULTS FROM RxCollection.find() ' + variant.name + ': ' + queryData.info);
+                        console.dir({
+                            queryData,
+                            resultFromCollectionIds,
+                            preparedQuery: rxQuery.getPreparedQuery()
+                        });
+                        throw err;
+                    }
+                    const byId = await variant.collection.findByIds(resultFromCollectionIds).exec();
+                    resultFromCollectionIds.forEach(id => assert.ok(byId.has(id), 'findById must have same output'));
                 }
-                const byId = await collection.findByIds(resultFromCollectionIds).exec();
-                resultFromCollectionIds.forEach(id => assert.ok(byId.has(id), 'findById must have same output'));
 
 
                 // Test output of .count()
@@ -250,8 +307,65 @@ describe('rx-storage-query-correctness.test.ts', () => {
                 }
             }
 
+            /**
+             * Remove all documents one by one and then insert them again.
+             * After each write, every query must return the same results
+             * with and without the result window buffer, as computed in memory.
+             * The queries are subscribed, so the same RxQuery instances
+             * are updated by event-reduce instead of running again.
+             */
+            const queries = input.queries.filter(q => !!q).map(q => ensureNotFalsy(q));
+            const liveQueries = variants.map(variant => queries.map(queryData => {
+                const rxQuery = variant.collection.find(queryData.query);
+                return {
+                    queryData,
+                    rxQuery,
+                    sub: rxQuery.$.subscribe()
+                };
+            }));
+            const presentIds = new Set<string>(rawDocsData.map(d => (d as any)[primaryPath]));
+            async function ensureAllQueriesCorrect(context: string) {
+                const currentDocs = rawDocsData.filter(d => presentIds.has((d as any)[primaryPath]));
+                for (let variantIndex = 0; variantIndex < variants.length; variantIndex++) {
+                    for (const liveQuery of liveQueries[variantIndex]) {
+                        const expected = getStaticsResultIds(liveQuery.queryData.query, currentDocs);
+                        const resultIds = (await liveQuery.rxQuery.exec()).map(d => d.primary);
+                        try {
+                            assert.deepStrictEqual(resultIds, expected);
+                        } catch (err) {
+                            console.log('WRONG QUERY RESULTS ' + context + ' ' + variants[variantIndex].name + ': ' + liveQuery.queryData.info);
+                            console.dir({
+                                query: liveQuery.queryData.query,
+                                resultIds,
+                                expected
+                            });
+                            throw err;
+                        }
+                    }
+                }
+            }
+            await ensureAllQueriesCorrect('before writes');
+            for (const docData of input.data) {
+                const id: string = (docData as any)[primaryPath];
+                for (const variant of variants) {
+                    const doc = await variant.collection.findOne(id).exec(true);
+                    await doc.remove();
+                }
+                presentIds.delete(id);
+                await ensureAllQueriesCorrect('after removing ' + id);
+            }
+            for (const docData of input.data) {
+                const id: string = (docData as any)[primaryPath];
+                for (const variant of variants) {
+                    await variant.collection.insert(docData);
+                }
+                presentIds.add(id);
+                await ensureAllQueriesCorrect('after inserting ' + id);
+            }
+            liveQueries.flat().forEach(liveQuery => liveQuery.sub.unsubscribe());
+
             await Promise.all([
-                database.remove(),
+                ...variants.map(variant => variant.database.remove()),
                 storageInstance.close()
             ]);
         });
