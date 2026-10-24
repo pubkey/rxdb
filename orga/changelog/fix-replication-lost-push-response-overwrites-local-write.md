@@ -1,0 +1,1 @@
+- FIX replication: when the response of a successful push was lost and the push was retried, a local write made in between could be overwritten by the conflict handler with the previously pushed state

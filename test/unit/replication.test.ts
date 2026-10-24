@@ -1786,6 +1786,54 @@ describe('replication.test.ts', () => {
     });
     describe('issues', () => {
         /**
+         * When a push reaches the master but the response is lost (timeout, dropped connection),
+         * RxDB retries the same rows. The master then reports a conflict whose
+         * real master state is exactly what the client sent before.
+         * A local write that happened while the retry was pending must not be lost.
+         */
+        it('should not lose a local write when the response of a successful push was lost', async () => {
+            const localCollection = await humansCollection.createHumanWithTimestamp(0, randomToken(10), false);
+            const remoteCollection = await humansCollection.createHumanWithTimestamp(0, randomToken(10), false);
+            const basePushHandler = getPushHandler(remoteCollection);
+
+            const docId = 'lost-ack-doc';
+            await localCollection.insert(schemaObjects.humanWithTimestampData({ id: docId, name: 'v1' }));
+
+            let pushCalls = 0;
+            const replicationState = replicateRxCollection<HumanWithTimestampDocumentType, any>({
+                collection: localCollection,
+                replicationIdentifier: randomToken(10),
+                live: true,
+                push: {
+                    handler: async (rows) => {
+                        pushCalls++;
+                        const result = await basePushHandler(rows);
+                        if (pushCalls === 1) {
+                            // the master stored the write, then the user edits locally and the response is lost
+                            const docBeforeAck = await localCollection.findOne(docId).exec(true);
+                            await docBeforeAck.incrementalPatch({ name: 'v2' });
+                            throw new Error('response lost');
+                        }
+                        return result;
+                    }
+                },
+                retryTime: 50
+            });
+            await replicationState.awaitInitialReplication();
+            await waitUntil(() => pushCalls >= 2);
+            await replicationState.awaitInSync();
+
+            const localDoc = await localCollection.findOne(docId).exec(true);
+            assert.strictEqual(localDoc.name, 'v2', 'local write must not be overwritten');
+            await waitUntil(async () => {
+                const remoteDoc = await remoteCollection.findOne(docId).exec(true);
+                return remoteDoc.name === 'v2';
+            });
+
+            localCollection.database.close();
+            remoteCollection.database.close();
+        });
+        /**
          * @link https://github.com/pubkey/rxdb/pull/7804
          */
 
