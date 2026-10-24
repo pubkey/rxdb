@@ -1499,12 +1499,16 @@ describe('rx-query.test.ts', () => {
             }
             const c = await humansCollection.createPrimary(0);
 
+            /**
+             * Use unique primary keys, random ones can collide
+             * and then the bulkInsert() fails with COL22.
+             */
             // insert some docs
             const insertAmount = 100;
             await c.bulkInsert(
                 new Array(insertAmount)
                     .fill(0)
-                    .map((_v, idx) => schemaObjects.humanData(undefined, idx))
+                    .map((_v, idx) => schemaObjects.humanData('first-' + idx, idx))
             );
 
             // make and exec query
@@ -1516,7 +1520,7 @@ describe('rx-query.test.ts', () => {
             await c.bulkInsert(
                 new Array(300) // higher than ChangeEventBuffer.limit
                     .fill(0)
-                    .map(() => schemaObjects.humanData())
+                    .map((_v, idx) => schemaObjects.humanData('second-' + idx))
             );
 
             // re-exec query
@@ -1526,7 +1530,7 @@ describe('rx-query.test.ts', () => {
             // try same with upserts
             const docData = new Array(200)
                 .fill(0)
-                .map(() => schemaObjects.humanData());
+                .map((_v, idx) => schemaObjects.humanData('third-' + idx));
             await c.bulkInsert(docData);
 
             const docs3 = await query.exec();
