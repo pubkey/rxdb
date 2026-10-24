@@ -81,7 +81,7 @@
     "concurrently": "10.0.6",
     "copyfiles": "2.4.1",
     "less": "^4.2.0",
-    "local-web-server": "5.4.0",
+    "local-web-server": "5.4.2",
     "testcafe": "3.7.6",
     "ts-mocha": "11.1.0",
     "ts-node": "10.9.2",

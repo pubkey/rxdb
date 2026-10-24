@@ -45,7 +45,7 @@
     "@capacitor/cli": "8.5.3",
     "async-test-util": "2.5.0",
     "concurrently": "10.0.6",
-    "local-web-server": "5.4.0",
+    "local-web-server": "5.4.2",
     "testcafe": "3.7.6",
     "typescript": "6.0.3"
   }

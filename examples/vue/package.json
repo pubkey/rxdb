@@ -44,7 +44,7 @@
     "eslint": "^10.0.0",
     "eslint-plugin-vue": "^10.0.0",
     "globals": "^17.3.0",
-    "local-web-server": "5.4.0",
+    "local-web-server": "5.4.2",
     "sass": "^1.80.0",
     "sass-loader": "17.0.1",
     "testcafe": "3.7.6",
