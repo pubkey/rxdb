@@ -10,8 +10,8 @@
     "babel-polyfill": "6.26.0",
     "concurrently": "10.0.6",
     "pouchdb-server": "4.2.0",
-    "react": "19.3.0",
-    "react-dom": "19.3.0",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
     "rxdb": "file:rxdb-local.tgz",
     "rxjs": "7.8.2"
   },
