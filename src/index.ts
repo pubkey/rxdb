@@ -17,6 +17,7 @@ export * from './rx-document-prototype-merge.ts';
 export * from './rx-query.ts';
 export * from './rx-query-single-result.ts';
 export * from './rx-query-helper.ts';
+export { DEFAULT_EVENT_REDUCE_OPTIONS, defaultResultWindowBuffer } from './event-reduce.ts';
 export * from './rx-schema.ts';
 export * from './rx-schema-helper.ts';
 export * from './rx-storage-helper.ts';

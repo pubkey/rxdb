@@ -19,6 +19,7 @@ import type {
     BulkWriteRow,
     RxChangeEvent,
     RxDatabaseCreator,
+    RxEventReduceOptions,
     RxChangeEventBulk,
     RxDocumentData,
     RxCleanupPolicy,
@@ -90,6 +91,7 @@ import { overwritable } from './overwritable.ts';
 import type { RxMigrationState } from './plugins/migration-schema/index.ts';
 import type { RxReactivityFactory } from './types/plugins/reactivity.d.ts';
 import { rxChangeEventBulkToRxChangeEvents } from './rx-change-event.ts';
+import { DEFAULT_EVENT_REDUCE_OPTIONS, getEventReduceOptions } from './event-reduce.ts';
 
 /**
  * stores the used database names+storage names
@@ -140,6 +142,11 @@ export class RxDatabaseBase<
         public readonly reactivity?: RxReactivityFactory<any>,
         public readonly onClosed?: () => void,
         public readonly liveQueryUpdateThrottleTime: number = 0,
+        /**
+         * The options of EventReduce,
+         * false if EventReduce is disabled.
+         */
+        public readonly eventReduceOptions: false | RxEventReduceOptions = eventReduce ? DEFAULT_EVENT_REDUCE_OPTIONS : false
     ) {
         DB_COUNT++;
 
@@ -828,6 +835,7 @@ export function createRxDatabase<
 ): Promise<
     RxDatabase<Collections, Internals, InstanceCreationOptions, Reactivity>
 > {
+    const eventReduceOptions = getEventReduceOptions(eventReduce);
     runPluginHooks('preCreateRxDatabase', {
         storage,
         instanceCreationOptions,
@@ -895,7 +903,7 @@ export function createRxDatabase<
             instanceCreationOptions,
             password,
             multiInstance,
-            eventReduce,
+            eventReduceOptions !== false,
             options,
             storageInstance,
             hashFunction,
@@ -903,7 +911,8 @@ export function createRxDatabase<
             allowSlowCount,
             reactivity,
             onInstanceClosed,
-            liveQueryUpdateThrottleTime
+            liveQueryUpdateThrottleTime,
+            eventReduceOptions
         ) as RxDatabase<Collections>;
 
         await runAsyncPluginHooks('createRxDatabase', {

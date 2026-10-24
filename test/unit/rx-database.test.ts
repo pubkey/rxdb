@@ -11,7 +11,9 @@ import {
     defaultHashSha256,
     prepareQuery,
     RxCollectionEvent,
-    dbCount
+    dbCount,
+    DEFAULT_EVENT_REDUCE_OPTIONS,
+    ensureNotFalsy
 } from '../../plugins/core/index.mjs';
 
 import AsyncTestUtil, { waitUntil } from 'async-test-util';
@@ -188,8 +190,40 @@ describe('rx-database.test.ts', () => {
                     storage: config.storage.getStorage()
                 });
                 assert.strictEqual(db.eventReduce, true);
+                assert.strictEqual(db.eventReduceOptions, DEFAULT_EVENT_REDUCE_OPTIONS);
                 db.close();
 
+            });
+            it('should use the default options with eventReduce: true', async () => {
+                const db = await createRxDatabase({
+                    name: randomToken(10),
+                    storage: config.storage.getStorage(),
+                    eventReduce: true
+                });
+                assert.strictEqual(db.eventReduce, true);
+                assert.strictEqual(db.eventReduceOptions, DEFAULT_EVENT_REDUCE_OPTIONS);
+                db.close();
+            });
+            it('should use the given options of eventReduce', async () => {
+                const resultWindowBuffer = () => ({ skip: 1, limit: 2 });
+                const db = await createRxDatabase({
+                    name: randomToken(10),
+                    storage: config.storage.getStorage(),
+                    eventReduce: { resultWindowBuffer }
+                });
+                assert.strictEqual(db.eventReduce, true);
+                assert.strictEqual(ensureNotFalsy(db.eventReduceOptions).resultWindowBuffer, resultWindowBuffer);
+                db.close();
+            });
+            it('should have eventReduce: false when disabled', async () => {
+                const db = await createRxDatabase({
+                    name: randomToken(10),
+                    storage: config.storage.getStorage(),
+                    eventReduce: false
+                });
+                assert.strictEqual(db.eventReduce, false);
+                assert.strictEqual(db.eventReduceOptions, false);
+                db.close();
             });
             it('closes duplicate databases if closeDuplicates flag is true', async () => {
                 const name = randomToken(10);

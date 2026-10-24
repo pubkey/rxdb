@@ -48,7 +48,13 @@ import type {
     RxStorageChangeEvent,
     Reactified
 } from './types/index.d.ts';
-import { calculateNewResults } from './event-reduce.ts';
+import {
+    calculateNewResults,
+    calculateNewResultsWithResultWindowBuffer,
+    getResultWindowBuffer,
+    getResultWindowBufferPreparedQuery
+} from './event-reduce.ts';
+import { getResultWindowBufferResults, resetResultWindowBuffer } from 'event-reduce-js';
 import type { EventReduceResultPos } from './event-reduce.ts';
 import { triggerCacheReplacement } from './query-cache.ts';
 import {
@@ -332,11 +338,28 @@ export class RxQueryBase<
                 };
             }
         } else {
-            const queryResult = await queryCollection<RxDocType>(this as any);
-            result = {
-                result: queryResult.docs,
-                counter: queryResult.counter
-            };
+            const resultWindowBuffer = getResultWindowBuffer<RxDocType>(this as any);
+            if (resultWindowBuffer) {
+                /**
+                 * Query the documents of the buffer, before and after the result window,
+                 * and take the result window out of them.
+                 */
+                const queryResult = await queryCollection<RxDocType>(
+                    this as any,
+                    getResultWindowBufferPreparedQuery<RxDocType>(this as any, resultWindowBuffer)
+                );
+                resetResultWindowBuffer(resultWindowBuffer, queryResult.docs);
+                result = {
+                    result: getResultWindowBufferResults(resultWindowBuffer),
+                    counter: queryResult.counter
+                };
+            } else {
+                const queryResult = await queryCollection<RxDocType>(this as any);
+                result = {
+                    result: queryResult.docs,
+                    counter: queryResult.counter
+                };
+            }
         }
 
         /**
@@ -755,7 +778,11 @@ function __ensureEqual<RxDocType>(rxQuery: RxQueryBase<RxDocType, any>): Promise
                 }
             } else {
                 // 'find' or 'findOne' query
-                const eventReduceResult = calculateNewResults(
+                const resultWindowBuffer = getResultWindowBuffer<RxDocType>(rxQuery as any);
+                const eventReduceResult = resultWindowBuffer ? calculateNewResultsWithResultWindowBuffer(
+                    resultWindowBuffer,
+                    runChangeEvents
+                ) : calculateNewResults(
                     rxQuery as any,
                     runChangeEvents
                 );
@@ -823,7 +850,12 @@ function __ensureEqual<RxDocType>(rxQuery: RxQueryBase<RxDocType, any>): Promise
  * when specific queries are used.
  */
 export async function queryCollection<RxDocType>(
-    rxQuery: RxQuery<RxDocType> | RxQueryBase<RxDocType, any>
+    rxQuery: RxQuery<RxDocType> | RxQueryBase<RxDocType, any>,
+    /**
+     * Overwrites the prepared query of the RxQuery,
+     * used to query with the skip and limit of the result window buffer.
+     */
+    overwritePreparedQuery?: PreparedQuery<RxDocType>
 ): Promise<{
     docs: RxDocumentData<RxDocType>[];
     /**
@@ -914,8 +946,9 @@ export async function queryCollection<RxDocType>(
         }
 
     } else {
-        const preparedQuery = rxQuery.getPreparedQuery();
-        const queryResult = await collection.storageInstance.query(preparedQuery);
+        const queryResult = await collection.storageInstance.query(
+            overwritePreparedQuery ? overwritePreparedQuery : rxQuery.getPreparedQuery()
+        );
         docs = queryResult.documents;
     }
 
