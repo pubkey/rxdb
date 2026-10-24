@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX flaky `#278 queryCache breaks when pointer out of bounds` test, it inserted documents with random primary keys which can collide and then made `bulkInsert()` fail with `COL22`",
+    "links": [],
+    "priority": 1
+}
