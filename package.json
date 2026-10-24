@@ -678,7 +678,7 @@
     "mocha": "12.0.3",
     "mongodb": "7.7.0",
     "nats": "2.29.3",
-    "node-appwrite": "30.0.0",
+    "node-appwrite": "30.0.1",
     "node-datachannel": "0.33.4",
     "pre-commit": "2.0.0",
     "process": "0.11.10",
