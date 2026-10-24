@@ -17,7 +17,8 @@ import {
     DEFAULT_DELETED_FIELD,
     DEFAULT_MODIFIED_FIELD,
     POSTGRES_INSERT_CONFLICT_CODE,
-    addDocEqualityToQuery
+    addDocEqualityToQuery,
+    quotePostgrestFilterValue
 } from './helper.ts';
 import { ensureNotFalsy, flatClone, lastOfArray } from '../utils/index.ts';
 
@@ -125,8 +126,11 @@ export function replicateSupabase<RxDocType>(
                     // WHERE modified > :m OR (modified = :m AND id > :id)
                     // PostgREST or() takes comma-separated disjuncts; use nested and() for the tie-breaker.
                     // Wrap identifiers with double quotes to be safe if they're mixed-case.
+                    // Quote the values too, so a primary key with reserved characters like ( ) , cannot break the filter.
+                    const quotedModified = quotePostgrestFilterValue(modified);
+                    const quotedId = quotePostgrestFilterValue(id);
                     query = query.or(
-                        `"${modifiedField}".gt.${modified},and("${modifiedField}".eq.${modified},"${primaryPath}".gt.${id})`
+                        `"${modifiedField}".gt.${quotedModified},and("${modifiedField}".eq.${quotedModified},"${primaryPath}".gt.${quotedId})`
                     );
                 }
 

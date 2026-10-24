@@ -1,0 +1,11 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `replication-supabase` pull failed with PostgREST `PGRST100` when the checkpoint primary key contained reserved characters like `(`, `)` or `,`",
+    "links": [
+        {
+            "url": "https://github.com/pubkey/rxdb/issues/9325",
+            "linkText": "#9325"
+        }
+    ],
+    "priority": 5
+}
