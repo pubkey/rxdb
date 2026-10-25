@@ -3,7 +3,7 @@ import Head from '@docusaurus/Head';
 
 import React, { useEffect } from 'react';
 import useIsBrowser from '@docusaurus/useIsBrowser';
-import { NON_PREMIUM_COLLECTION_LIMIT, PRICE_PRO_MONTHLY, PRICE_PRO_PLUS_MONTHLY } from '../constants';
+import { NON_PREMIUM_COLLECTION_LIMIT, PRICE_CORPORATE_YEARLY, PRICE_PRO_MONTHLY, PRICE_PRO_PLUS_MONTHLY } from '../constants';
 import { triggerTrackingEvent } from '../components/trigger-event';
 import { IframeFormModal } from '../components/modal';
 import { Button } from '../components/button';
@@ -48,6 +48,15 @@ const PRODUCT_JSON_LD = {
             'url': 'https://rxdb.info/premium/',
             'availability': 'https://schema.org/InStock',
         },
+        {
+            '@type': 'Offer',
+            'name': 'Corporate',
+            'description': 'Per year. Includes consulting sessions.',
+            'price': String(PRICE_CORPORATE_YEARLY),
+            'priceCurrency': 'USD',
+            'url': 'https://rxdb.info/premium/',
+            'availability': 'https://schema.org/InStock',
+        },
     ],
 };
 
@@ -68,13 +77,13 @@ export default function Premium() {
     }, [isBrowser, initDone]);
 
     // for dialog
-    const [openCustom, setOpenCustom] = React.useState(false);
-    const handleOpenCustomDialog = () => {
-        triggerTrackingEvent('custom_package_form_open', 0.4);
-        setOpenCustom(true);
+    const [openCorporate, setOpenCorporate] = React.useState(false);
+    const handleOpenCorporateDialog = () => {
+        triggerTrackingEvent('corporate_form_open', 0.4);
+        setOpenCorporate(true);
     };
-    const handleCloseCustom = () => {
-        setOpenCustom(false);
+    const handleCloseCorporate = () => {
+        setOpenCorporate(false);
     };
 
     const [openPro, setOpenPro] = React.useState(false);
@@ -121,7 +130,7 @@ export default function Premium() {
                             <p style={{ width: '80%', textAlign: 'center' }}>
                                 While the core of RxDB is free and open-source, we offer paid licenses for businesses and professionals.
                                 Pro and Pro Plus tiers add commercial plugins that provide <a href="/rx-storage-performance.html" target="_blank">better performance</a>, a smaller build size, flexible storage engines, and secure encryption for production workloads.
-                                The Enterprise tier includes the contract terms that larger companies require.
+                                The Corporate tier adds consulting sessions with the RxDB maintainer.
                             </p>
                         </div>
                     </div>
@@ -224,33 +233,29 @@ export default function Premium() {
                                     </div>
                                 </div>
 
-                                {/* ENTERPRISE TIER */}
+                                {/* CORPORATE TIER */}
                                 <div className="pricing-tier">
                                     <div className="tier-top" style={{ minHeight: 220, display: 'flex', flexDirection: 'column' }}>
-                                        <span className="tier-note">// custom agreements & SLA</span>
-                                        <h3>Enterprise</h3>
-                                        <p className="tier-desc">SLA, custom commercial terms.</p>
+                                        <span className="tier-note">// consulting included</span>
+                                        <h3>Corporate</h3>
+                                        <p className="tier-desc">Pro Plus with consulting sessions.</p>
                                         <span className="tier-price-prefix">&nbsp;</span>
-                                        <div className="tier-price">Custom</div>
-                                        <div className="tier-price-sub">&nbsp;</div>
-                                        <div className="tier-license">get in contact</div>
+                                        <div className="tier-price">${PRICE_CORPORATE_YEARLY}<span>/ year</span></div>
+                                        <div className="tier-price-sub">unlimited developers</div>
+                                        <div className="tier-license">&nbsp;</div>
                                     </div>
 
                                     <div className="tier-includes-title">INCLUDES</div>
                                     <ul className="tier-features">
                                         <li>Everything in Pro Plus</li>
-                                        <li>Custom commercial license & MSA</li>
-                                        <li>Named engineer</li>
-                                        <li>Support SLA, 24-hour first response</li>
+                                        <li><a href="/consulting/" target="_blank">Consulting sessions</a></li>
                                         <li>Architecture review & onboarding</li>
                                         <li>Priority bug fixes & feature requests</li>
-                                        <li>Source Code Access</li>
-                                        <li>Volume seats & multi-product licensing</li>
                                     </ul>
 
                                     <Button onClick={(e) => {
-                                        e.preventDefault(); handleOpenCustomDialog();
-                                    }} style={{ width: '100%', marginBottom: 15 }} icon={<IconChevronsRight />}>Contact</Button>
+                                        e.preventDefault(); handleOpenCorporateDialog();
+                                    }} style={{ width: '100%', marginBottom: 15 }} icon={<IconChevronsRight />}>Get Corporate</Button>
                                     <div style={{ minHeight: 0, display: 'flex', flexDirection: 'column' }}>
                                         <span className="tier-agreement" style={{ visibility: 'hidden' }}>Preview License Agreement</span>
                                     </div>
@@ -585,7 +590,7 @@ export default function Premium() {
                         </div>
                     </div>
                     */}
-                    <CustomFormDialog open={openCustom} onClose={handleCloseCustom} />
+                    <CorporateFormDialog open={openCorporate} onClose={handleCloseCorporate} />
                     <ProFormDialog open={openPro} onClose={handleClosePro} />
                     <ProPlusFormDialog open={openProPlus} onClose={handleCloseProPlus} />
                 </main>
@@ -598,7 +603,7 @@ export default function Premium() {
 // }
 
 
-function CustomFormDialog({ onClose, open }) {
+function CorporateFormDialog({ onClose, open }) {
     return <IframeFormModal
         onClose={onClose}
         open={open}
