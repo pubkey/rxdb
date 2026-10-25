@@ -255,7 +255,7 @@ export default function Premium() {
 
                                     <Button onClick={(e) => {
                                         e.preventDefault(); handleOpenCorporateDialog();
-                                    }} style={{ width: '100%', marginBottom: 15 }} icon={<IconChevronsRight />}>Get Corporate</Button>
+                                    }} style={{ width: '100%', marginBottom: 15, whiteSpace: 'nowrap' }} icon={<IconChevronsRight />}>Get Corporate</Button>
                                     <div style={{ minHeight: 0, display: 'flex', flexDirection: 'column' }}>
                                         <span className="tier-agreement" style={{ visibility: 'hidden' }}>Preview License Agreement</span>
                                     </div>
