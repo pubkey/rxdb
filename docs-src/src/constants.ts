@@ -21,3 +21,8 @@ export const JOBS_TITLE = 'Jobs & Open Positions at RxDB';
  */
 export const PRICE_PRO_MONTHLY = 99;
 export const PRICE_PRO_PLUS_MONTHLY = 239;
+
+/**
+ * Corporate package price in dollars per year.
+ */
+export const PRICE_CORPORATE_YEARLY = 4800;
