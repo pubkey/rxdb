@@ -250,6 +250,8 @@ export default function Premium() {
                                         <li>Everything in Pro Plus</li>
                                         <li><a href="/consulting/" target="_blank">Consulting sessions</a></li>
                                         <li>Architecture review & onboarding</li>
+                                        <li>Named engineer</li>
+                                        <li>Source code access</li>
                                         <li>Priority bug fixes & feature requests</li>
                                     </ul>
 
