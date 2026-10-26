@@ -6,9 +6,8 @@ import { PRICE_CORPORATE_YEARLY, PRICE_PRO_MONTHLY, PRICE_PRO_PLUS_MONTHLY } fro
 /**
  * Thank-you page for the premium forms.
  * The forms redirect here with a ?tier= query param
- * (?tier=pro, ?tier=pro-plus or ?tier=custom) so we can track
+ * (?tier=pro, ?tier=pro-plus or ?tier=corporate) so we can track
  * the lead value of the submitted tier.
- * ?tier=custom is sent by the corporate form.
  * Missing or unknown values fall back to the pro price.
  */
 export default function PremiumSubmitted() {
@@ -19,9 +18,9 @@ export default function PremiumSubmitted() {
         }
 
         const tierParam = new URLSearchParams(location.search).get('tier') || '';
-        const tier = tierParam === 'custom' ? 'custom' : (tierParam.includes('plus') ? 'pro_plus' : 'pro');
+        const tier = tierParam === 'corporate' ? 'corporate' : (tierParam.includes('plus') ? 'pro_plus' : 'pro');
         let yearlyPrice: number;
-        if (tier === 'custom') {
+        if (tier === 'corporate') {
             yearlyPrice = PRICE_CORPORATE_YEARLY;
         } else {
             yearlyPrice = (tier === 'pro' ? PRICE_PRO_MONTHLY : PRICE_PRO_PLUS_MONTHLY) * 12;
