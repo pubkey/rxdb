@@ -28,7 +28,12 @@ import type {
     NatsSyncOptions
 } from './nats-types.ts';
 import { connect, DeliverPolicy, JSONCodec, ReplayPolicy } from 'nats';
-import { getNatsServerDocumentState } from './nats-helper.ts';
+import {
+    getNatsDocumentSubject,
+    getNatsLegacyDocumentSubject,
+    getNatsLegacyServerDocumentState,
+    getNatsServerDocumentState
+} from './nats-helper.ts';
 import { awaitRetry } from '../replication/replication-helper.ts';
 
 export * from './nats-types.ts';
@@ -115,14 +120,22 @@ export function replicateNats<RxDocType>(
                 await (fetchedMessages as any).signal;
                 await fetchedMessages.close();
 
-                const useMessages: WithDeleted<RxDocType>[] = [];
+                /**
+                 * A document can exist under its legacy subject and its encoded subject
+                 * when the legacy subject could not be purged after the document was moved.
+                 * Messages are delivered in sequence order, so the last message per id wins.
+                 */
+                const useMessages = new Map<string, WithDeleted<RxDocType>>();
                 for await (const m of fetchedMessages) {
-                    useMessages.push(m.json());
+                    const docData: WithDeleted<RxDocType> = m.json();
+                    const docId = (docData as any)[primaryPath];
+                    useMessages.delete(docId);
+                    useMessages.set(docId, docData);
                     newCheckpoint.sequence = m.seq;
                     m.ack();
                 }
                 return {
-                    documents: useMessages,
+                    documents: Array.from(useMessages.values()),
                     checkpoint: newCheckpoint
                 };
             },
@@ -162,6 +175,22 @@ export function replicateNats<RxDocType>(
                             }
                         }
 
+                        /**
+                         * Documents with a '%' in the id might still be stored
+                         * under the subject that was used before ids were encoded.
+                         * In that case the document is moved to its encoded subject
+                         * and the legacy subject is purged afterwards.
+                         */
+                        let legacyDocState;
+                        if (!remoteDocState) {
+                            legacyDocState = await getNatsLegacyServerDocumentState(
+                                cn.natsStream,
+                                options.subjectPrefix,
+                                docId
+                            );
+                            remoteDocState = legacyDocState;
+                        }
+
                         if (
                             remoteDocState &&
                             (
@@ -177,15 +206,20 @@ export function replicateNats<RxDocType>(
                             while (!pushDone) {
                                 try {
                                     await cn.jetstreamClient.publish(
-                                        options.subjectPrefix + '.' + docId,
+                                        getNatsDocumentSubject(options.subjectPrefix, docId),
                                         jc.encode(writeRow.newDocumentState),
                                         {
-                                            expect: remoteDocState ? {
+                                            expect: remoteDocState && !legacyDocState ? {
                                                 streamName: options.streamName,
                                                 lastSubjectSequence: remoteDocState.seq
                                             } : undefined
                                         }
                                     );
+                                    if (legacyDocState) {
+                                        await cn.jsm.streams.purge(options.streamName, {
+                                            filter: ensureNotFalsy(getNatsLegacyDocumentSubject(options.subjectPrefix, docId))
+                                        });
+                                    }
                                     pushDone = true;
                                 } catch (err: Error | any) {
                                     if (err.message.includes('wrong last sequence')) {
