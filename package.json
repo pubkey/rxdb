@@ -645,7 +645,7 @@
     "delete": "1.1.0",
     "dependency-check": "4.1.0",
     "esbuild": "0.28.2",
-    "eslint": "10.12.0",
+    "eslint": "10.13.0",
     "eslint-plugin-import": "2.32.0",
     "eslint-plugin-jsdoc": "65.3.12",
     "exists-file": "3.0.2",
@@ -706,7 +706,7 @@
     "webpack-dev-server": "6.0.0"
   },
   "overrides": {
-    "eslint": "10.12.0",
+    "eslint": "10.13.0",
     "webpack-dev-server": "6.0.0",
     "dexie": "4.4.2",
     "graphql-http": {
