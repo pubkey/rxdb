@@ -459,6 +459,24 @@ describe('replication-google-drive.test.ts', function () {
             );
             assert.strictEqual(found.files.length, 10);
         });
+        it('getDocumentFiles() with quotes, backslashes and query keywords in the ids', async () => {
+            const ids = ['a\'b\'c', 'a\\b', 'ab\\', 'a\\\'b', 'x or y', 'x and y', 'a(b', 'a)b'];
+            await insertDocumentFiles(
+                options,
+                options.initData,
+                PRIMARY_PATH,
+                ids.map(id => schemaObjects.humanData(id))
+            );
+            const found = await getDocumentFiles(
+                options,
+                options.initData,
+                ids
+            );
+            assert.deepStrictEqual(
+                found.files.map(f => docIdFromFileName(f.name)).sort(),
+                ids.slice(0).sort()
+            );
+        });
         it('fetchDocumentContents()', async () => {
             const docs = new Array(10).fill(0).map(() => schemaObjects.humanData());
             const ids = docs.map(d => (d as any)[PRIMARY_PATH]);

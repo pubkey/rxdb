@@ -103,7 +103,7 @@ export async function findFolder(
     parentId: string = 'root',
     folderName: string
 ): Promise<string | undefined> {
-    const query = "name = '" + folderName + "' and '" + parentId + "' in parents and trashed = false and mimeType = '" + FOLDER_MIME_TYPE + "'";
+    const query = "name = '" + escapeDriveQueryValue(folderName) + "' and '" + parentId + "' in parents and trashed = false and mimeType = '" + FOLDER_MIME_TYPE + "'";
     /**
      * We sort by createdTime ASC
      * so in case the same folder was created multiple times, we always pick the same
@@ -190,7 +190,7 @@ export async function createEmptyFile(
      * after creating it.
      */
     const query = [
-        `name = '${fileName}'`,
+        `name = '${escapeDriveQueryValue(fileName)}'`,
         `'${parentId}' in parents`,
         `trashed = false`,
     ].join(' and ');
@@ -430,7 +430,7 @@ export async function readFolder(
 
     // Resolve folder path
     for (const part of parts) {
-        const query = "name = '" + part + "' and '" + parentId + "' in parents and trashed = false and mimeType = '" + FOLDER_MIME_TYPE + "'";
+        const query = "name = '" + escapeDriveQueryValue(part) + "' and '" + parentId + "' in parents and trashed = false and mimeType = '" + FOLDER_MIME_TYPE + "'";
         const searchUrl = googleDriveOptions.apiEndpoint + '/drive/v3/files?fields=files(id)&q=' + encodeURIComponent(query) + driveSpaceQuerySuffix(googleDriveOptions);
         const searchResponse = await fetch(searchUrl, {
             method: 'GET',
@@ -559,4 +559,13 @@ export async function listFilesInFolder(
  */
 export function docIdFromFileName(fileName: string): string {
     return fileName.endsWith('.json') ? fileName.slice(0, -'.json'.length) : fileName;
+}
+
+/**
+ * Inside of string values in Google Drive queries,
+ * a ' must be escaped as \' and a \ as \\.
+ * @link https://developers.google.com/workspace/drive/api/guides/ref-search-terms
+ */
+export function escapeDriveQueryValue(value: string): string {
+    return value.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
 }
