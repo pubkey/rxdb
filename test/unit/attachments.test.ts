@@ -330,7 +330,12 @@ describe('attachments.test.ts', () => {
             const promises: Promise<any>[] = [];
             while (x > 0) {
                 x--;
-                if (randomBoolean()) {
+                /**
+                 * The first operation is always an add,
+                 * otherwise the reads would wait forever when
+                 * randomBoolean() never returns true.
+                 */
+                if (x === 9 || randomBoolean()) {
                     // add
                     const id = randomStringWithSpecialChars(10, 14) + '-att';
                     promises.push(
