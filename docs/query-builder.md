@@ -4,7 +4,7 @@
 
 # Query Builder
 
-With the `query-builder` plugin you can write [RxQuery](./rx-query.md) selectors with chained methods instead of passing a JSON object. Each chained call adds one condition, and the result is a normal `RxQuery` with a normal [Mango query](./mango-query.md) underneath. This means everything on the [RxQuery page](./rx-query.md) (`exec()`, `$`, `update()`, `remove()`, indexes, the [query cache](./query-cache.md)) works the same for chained queries.
+With the `query-builder` plugin you can write [RxQuery](./rx-query.md) selectors with chained methods instead of passing a JSON object. Each chained call adds one condition, and the result is a normal `RxQuery` with a normal [Mango query](./rx-query-examples.md) underneath. This means everything on the [RxQuery page](./rx-query.md) (`exec()`, `$`, `update()`, `remove()`, indexes, the [query cache](./query-cache.md)) works the same for chained queries.
 
 All examples on this page use the `todos` collection and the example documents from the [example schema](./rx-schema.md#example-schema).
 

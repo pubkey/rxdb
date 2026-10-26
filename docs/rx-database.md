@@ -21,7 +21,7 @@ const db = await createRxDatabase({
   /* Optional parameters: */
   password: 'myPassword',             // <- password (optional)
   multiInstance: true,                // <- multiInstance (optional, default: true)
-  eventReduce: true,                  // <- eventReduce (optional, default: false)
+  eventReduce: true,                  // <- eventReduce (optional, default: true)
   cleanupPolicy: {}                   // <- custom cleanup policy (optional)
 });
 ```
@@ -88,11 +88,10 @@ When you create more than one instance of the same database in a single javascri
 `multiInstance` should be set to `false` when you have single instances like a single Node.js process, a React Native app, a Cordova app or a single-window [Electron](./electron-database.md) app which can decrease the startup time because no instance coordination has to be done.
 
 ### eventReduce
-`(optional=false)`
+`(optional=true)`
 
-One big benefit of having a realtime database is that big performance optimizations can be done when the database knows a query is observed and the updated results are needed continuously. RxDB uses the [EventReduce Algorithm](https://github.com/pubkey/event-reduce) to optimize observer or recurring queries.
-
-For better performance, you should always set `eventReduce: true`. This will also be the default in the next major RxDB version.
+Optimizes observed and recurring queries with the [EventReduce algorithm](./event-reduce.md). `true` uses the default options. Set `eventReduce: false` to disable it,
+or pass an object to configure it, like the size of the result window buffer. See [EventReduce](./event-reduce.md) for all options.
 
 ### ignoreDuplicate
 `(optional=false)`
