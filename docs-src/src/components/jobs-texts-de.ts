@@ -12,7 +12,20 @@ export const JOBS_TEXTS_DE = {
     description: 'Offene Werkstudentenstellen bei RxDB in Stuttgart. 17 € pro Stunde.',
     headline: 'Karriere bei',
     switchLanguage: 'Read this page in English',
-    intro: 'RxDB ist eine Local-First-Datenbank für JavaScript-Anwendungen. Apps, die darauf aufbauen, funktionieren weiter, wenn das Netz weg ist, und synchronisieren sich wieder, sobald die Verbindung zurück ist. Wir sind ein kleines Team, das Open-Source-Software für Entwickler auf der ganzen Welt baut, und wir suchen Leute, die etwas bauen wollen, statt nur Credit Points zu sammeln. Beide offenen Stellen sind Werkstudentenstellen in Stuttgart 🇩🇪.',
+    intro: 'RxDB ist eine Datenbank, die im Browser und auf dem Handy läuft. Apps, die damit gebaut sind, funktionieren ohne Netz weiter und synchronisieren, sobald wieder eine Verbindung da ist. Wir sind ein kleines Team, das Open-Source-Software für Entwickler auf der ganzen Welt baut, und wir suchen Leute, die etwas bauen wollen, statt nur Credit Points zu sammeln. Beide offenen Stellen sind Werkstudentenstellen in Stuttgart 🇩🇪.',
+    customersTitle: 'Wer RxDB einsetzt',
+    customers: [
+        'Venice.ai, eine KI-Plattform mit über 3 Millionen Nutzern, streamt die Antworten ihrer KI direkt in RxDB.',
+        'Bei Nutrien melden die Maschinenführer im Bergwerk unter Tage über eine RxDB-App, wie es am Abbaustoß aussieht.',
+        'Readwise speichert damit pro Nutzer zehntausende Artikel und Bücher, auf jedem Gerät.',
+        'WooCommerce POS baut damit ein Kassensystem, das als Web-, Desktop- und Mobile-App aus einer einzigen Codebasis läuft.',
+        'myAgro, das über 250.000 Kleinbauern in Westafrika hilft, Saatgut und Dünger per Handy zu kaufen, verwaltet seine Daten mit RxDB.',
+        'MoreApp, SafeEx und WebWare schicken damit Prüfer und Techniker raus, auch dorthin, wo kein Netz ist.',
+        'Ein großer australischer Baukonzern prüft damit die Qualität auf seinen Baustellen.',
+        'Ein israelischer Hersteller von Drohnenabwehrsystemen nutzt RxDB.',
+        'MongoDB und Supabase sind offizielle Partner.'
+    ],
+    stats: 'RxDB hat auf GitHub rund 23.000 Sterne und wird auf npm etwa 370.000 Mal im Monat heruntergeladen.',
     summary: '17 € pro Stunde, 10 bis 20 Stunden pro Woche, vor Ort in Stuttgart 🇩🇪',
     openAdvert: 'Ganze Stellenanzeige lesen',
     openAdvertAria: 'Stellenanzeige öffnen: ',
@@ -34,7 +47,7 @@ export const JOBS_TEXTS_DE = {
         },
         {
             title: 'Echte Nutzer ab Tag eins',
-            text: 'RxDB läuft in Produktion bei Firmen wie Readwise, Nutrien, MoreApp und myAgro. Was du auslieferst, wird benutzt.'
+            text: 'RxDB läuft in Produktion bei den Firmen weiter unten. Was du auslieferst, wird benutzt.'
         },
         {
             title: 'Direkter Draht zum Maintainer',
