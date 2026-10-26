@@ -24,6 +24,29 @@ const CONDITIONS = [
 ];
 
 /**
+ * Shown on the page itself, above the adverts, so that a visitor sees what
+ * makes these jobs different before opening one of them.
+ */
+const WHY = [
+    {
+        title: 'Your work is public',
+        text: 'Everything you build is open source. Your commits, videos and name are out there for every future employer to see.'
+    },
+    {
+        title: 'Real users from day one',
+        text: 'RxDB runs in production at companies like Readwise, Nutrien, MoreApp and myAgro. What you ship gets used.'
+    },
+    {
+        title: 'Direct line to the maintainer',
+        text: 'You work directly with the person who built RxDB. No layers of management, short feedback loops, fast decisions.'
+    },
+    {
+        title: 'Responsibility, not busywork',
+        text: 'You get a topic that is yours, and the freedom to decide how to solve it. Coffee runs are not part of the job.'
+    }
+];
+
+/**
  * Both positions are German Werkstudent jobs based in Stuttgart. The page is
  * in English like the rest of the site, so the job titles keep the German
  * term, which is the actual employment status rather than a translation.
@@ -38,35 +61,38 @@ const JOBS = [
          * to ask which one it is for.
          */
         formUrl: 'https://webforms.pipedrive.com/f/czK0WxW1wnP2HOdt6VkTVENuSfO4WvZsVeFXTCAy1a6wazfJcSa0BHBiWNoj1YKZTZ',
-        teaser: 'Development work on the RxDB library itself, with a focus on the experience of the developers who build with it.',
+        teaser: 'You write code for the RxDB core. It ships in the next npm release and runs in apps that real companies use every day. No internal tool, no slide deck, no ticket that nobody reads.',
         tasks: [
-            'Identifying where developers get stuck when they start with RxDB, and resolving the causes in the code',
-            'Working on the public API of the library so that it behaves predictably',
-            'Improving the messages and diagnostics RxDB produces when something goes wrong',
-            'Feeding recurring questions from the community back into the product and the documentation'
+            'Find the places where developers get stuck with RxDB and fix them at the root, in the code',
+            'Shape the public API so that it does what people expect on the first try',
+            'Turn cryptic errors into messages that tell the developer exactly what went wrong and how to fix it',
+            'Build small demo apps and examples that show what local-first can do in the browser',
+            'Read what the community asks every week and turn it into product and docs changes'
         ],
         requirements: [
-            'Enrolled in computer science, software engineering, media informatics or a comparable subject',
-            'Confident command of TypeScript, experience with a frontend framework is an advantage',
-            'Own published projects. A GitHub profile takes the place of a cover letter.'
+            'You study computer science, software engineering, media informatics or something comparable',
+            'You write TypeScript with confidence. React, Angular, Vue or Svelte is a plus.',
+            'You have built things nobody asked you to build. Send us your GitHub profile instead of a cover letter.',
+            'You have opinions about tools, APIs and developer experience, and you can back them up'
         ]
     },
     {
         id: 'video',
         title: 'Working Student (m/f/d) Developer Experience, Video and Social Media',
         formUrl: 'https://webforms.pipedrive.com/f/6ULD69TOWMqORnAypjPo1bdwhsesN2fDV6KxV3qLLYIPaJhOP8rNnznmTTk7Pojq39',
-        teaser: 'Production of video content about RxDB, from the concept through filming and editing to publication.',
+        teaser: 'You own the RxDB video channel. Idea, camera, edit, upload. You decide what works, you see the numbers, and you get the freedom to try formats that nobody else in the database space is doing.',
         tasks: [
-            'Planning and filming short-form videos about working with RxDB',
-            'Editing them end to end, including cut, sound, titles and thumbnails',
-            'Adapting each video into shorts and reels for YouTube, LinkedIn, Instagram and TikTok',
-            'Running the YouTube channel, including community management',
-            'Evaluating reach and engagement data to decide which topics to produce next'
+            'Come up with video ideas that developers want to watch, and film them',
+            'Edit end to end: cut, sound, titles, thumbnails',
+            'Turn every video into shorts and reels for YouTube, LinkedIn, Instagram and TikTok',
+            'Run the YouTube channel and talk to the community in the comments',
+            'Read the reach and engagement data and decide what to produce next'
         ],
         requirements: [
-            'Enrolled in audiovisual media, online media, advertising and market communication, media informatics or a comparable subject',
-            'Independent filming and editing, demonstrated by work samples',
-            'Basic understanding of software development. Writing code is not part of the role, but the content requires following what happens on screen and reading a short snippet of it.'
+            'You study audiovisual media, online media, advertising and market communication, media informatics or something comparable',
+            'You film and edit on your own. Show us your best work samples, a portfolio, a channel or a reel.',
+            'You are curious about software. You do not write code in this role, but you follow what happens on screen and can read a short snippet.',
+            'You have a feel for what makes people stop scrolling'
         ]
     }
 ];
@@ -137,12 +163,30 @@ export default function Jobs() {
                             </h1>
                             <div className="inner centered" style={{ flexDirection: 'column' }}>
                                 <p className="centered-mobile-p" style={{ maxWidth: 780 }}>
-                                    RxDB is a local-first database for JavaScript applications. It
-                                    keeps working when the network drops and syncs again once the
-                                    connection is back. Companies like Readwise, Nutrien, MoreApp and
-                                    myAgro run RxDB in production. Both open positions are
-                                    Werkstudent roles based in Stuttgart, Germany 🇩🇪.
+                                    RxDB is a local-first database for JavaScript applications. Apps
+                                    built on it keep working when the network drops and sync again
+                                    once the connection is back. We are a small team that builds
+                                    open source software used by developers all over the world, and
+                                    we are looking for people who want to build things, not just
+                                    collect credit points. Both open positions are Werkstudent roles
+                                    in Stuttgart, Germany 🇩🇪.
                                 </p>
+                                <div style={{
+                                    display: 'flex',
+                                    flexWrap: 'wrap',
+                                    justifyContent: 'center',
+                                    maxWidth: 980,
+                                    marginTop: 16
+                                }}>
+                                    {WHY.map(entry => <div key={entry.title} style={{
+                                        flex: '1 1 220px',
+                                        margin: 8,
+                                        textAlign: 'left'
+                                    }}>
+                                        <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 6 }}>{entry.title}</div>
+                                        <div style={{ fontSize: 14, lineHeight: '21px', opacity: 0.85 }}>{entry.text}</div>
+                                    </div>)}
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -241,9 +285,9 @@ export default function Jobs() {
                                     overflowY: 'auto'
                                 }}>
                                     <div style={{ fontSize: 15, lineHeight: '23px' }}>{job.teaser}</div>
-                                    <Section title='Responsibilities' items={job.tasks} />
-                                    <Section title='Requirements' items={job.requirements} />
-                                    <Section title='Conditions' items={CONDITIONS} />
+                                    <Section title='What you will do' items={job.tasks} />
+                                    <Section title='What you bring' items={job.requirements} />
+                                    <Section title='What you get' items={CONDITIONS} />
                                 </div>
                                 <div style={{
                                     textAlign: 'center',
