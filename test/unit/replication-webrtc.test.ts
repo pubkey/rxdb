@@ -152,6 +152,55 @@ describe('replication-webrtc.test.ts', function () {
         });
     });
 
+    describe('peer lifecycle', () => {
+        type FakePeer = { id: string; };
+        function getFakeHandler() {
+            const handler: WebRTCConnectionHandler<FakePeer> = {
+                connect$: new Subject<FakePeer>(),
+                disconnect$: new Subject<FakePeer>(),
+                message$: new Subject<PeerWithMessage<FakePeer>>(),
+                response$: new Subject<PeerWithResponse<FakePeer>>(),
+                error$: new Subject<any>(),
+                send() {
+                    return Promise.resolve();
+                },
+                close() {
+                    return Promise.resolve();
+                }
+            };
+            return handler;
+        }
+        it('should not throw or add the peer when it disconnects before the handshake finished', async () => {
+            const collection = await humansCollection.create(0, 'lifecycle');
+            const handler = getFakeHandler();
+            const pool = await replicateWebRTC<any, FakePeer>({
+                collection,
+                topic: randomToken(10),
+                connectionHandlerCreator: () => Promise.resolve(handler),
+                pull: {},
+                push: {}
+            });
+            const errors: any[] = [];
+            pool.error$.subscribe((err: any) => errors.push(err));
+
+            // the token request is never answered, the peer drops out while waiting for it
+            const peer = { id: 'a' };
+            (handler.connect$ as Subject<FakePeer>).next(peer);
+            await wait(0);
+            (handler.disconnect$ as Subject<FakePeer>).next(peer);
+
+            // a disconnect for a peer that never connected at all
+            (handler.disconnect$ as Subject<FakePeer>).next({ id: 'never-connected' });
+
+            await wait(50);
+            assert.strictEqual(pool.peerStates$.getValue().size, 0);
+            assert.deepStrictEqual(errors, []);
+
+            await pool.cancel();
+            await collection.database.close();
+        });
+    });
+
     async function getJson<RxDocType>(collection: RxCollection<RxDocType>) {
         const docs = await collection.find().exec();
         return docs.map((d: any) => d.toJSON());

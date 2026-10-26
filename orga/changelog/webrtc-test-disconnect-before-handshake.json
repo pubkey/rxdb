@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "TEST [replication-webrtc] Added a regression test that a peer which disconnects before the token handshake finished is neither added to the pool nor makes `removePeer()` throw `missing value from map`",
+    "links": [],
+    "priority": 3
+}
