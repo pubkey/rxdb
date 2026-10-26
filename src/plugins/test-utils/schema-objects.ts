@@ -13,8 +13,10 @@ import {
 /**
  * Some storages had problems with umlauts and other special chars.
  * So we add these to all test strings.
+ * Chars like .,~-%&_:* #\ are included to ensure that strings still work
+ * when they are url encoded or used inside of url query parameters.
  */
-export const TEST_DATA_CHARSET = '0987654321ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzäöüÖÄßÜ[]{}\'';
+export const TEST_DATA_CHARSET = '0987654321ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzäöüÖÄßÜ[]{}\'.,~-%&_:* #\\';
 export const TEST_DATA_CHARSET_LAST_SORTED = ensureNotFalsy(lastOfArray(TEST_DATA_CHARSET.split('').sort()));
 const someEmojisArr = ['😊', '💩', '👵', '🍌', '🏳️‍🌈', '😃'];
 
@@ -58,6 +60,14 @@ export function randomStringWithSpecialChars(
      * than the provided length. In that cases we have to rerun.
      */
     if (text.length > length) {
+        return randomStringWithSpecialChars(minLength, maxLength);
+    }
+
+    /**
+     * The strings are used as primary keys which
+     * must not start or end with a whitespace.
+     */
+    if (text !== text.trim()) {
         return randomStringWithSpecialChars(minLength, maxLength);
     }
 
