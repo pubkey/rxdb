@@ -11,13 +11,15 @@ import {
 import {
     schemaObjects,
     isNode,
-    createAttachments
+    createAttachments,
+    humansCollection
 } from '../../plugins/test-utils/index.mjs';
 import {
     backupSingleDocument,
     clearFolder,
     RxBackupState,
-    getMeta
+    getMeta,
+    toFileName
 } from '../../plugins/backup/index.mjs';
 import { BackupMetaFileContent, RxBackupWriteEvent } from '../../plugins/core/index.mjs';
 
@@ -70,11 +72,11 @@ describe('backup.test.ts', () => {
                 }
             );
 
-            assert.ok(fs.existsSync(path.join(directory, firstDoc.primary)));
-            assert.ok(fs.existsSync(path.join(directory, firstDoc.primary, 'attachments', 'cat.txt')));
+            assert.ok(fs.existsSync(path.join(directory, toFileName(firstDoc.primary))));
+            assert.ok(fs.existsSync(path.join(directory, toFileName(firstDoc.primary), 'attachments', 'cat.txt')));
             assert.ok(
                 fs.existsSync(
-                    path.join(directory, firstDoc.primary, 'document.json')
+                    path.join(directory, toFileName(firstDoc.primary), 'document.json')
                 )
             );
 
@@ -103,11 +105,11 @@ describe('backup.test.ts', () => {
             const backupState = collection.database.backup(options);
             await backupState.awaitInitialBackup();
 
-            assert.ok(fs.existsSync(path.join(directory, firstDoc.primary)));
-            assert.ok(fs.existsSync(path.join(directory, firstDoc.primary, 'attachments', 'cat.txt')));
+            assert.ok(fs.existsSync(path.join(directory, toFileName(firstDoc.primary))));
+            assert.ok(fs.existsSync(path.join(directory, toFileName(firstDoc.primary), 'attachments', 'cat.txt')));
             assert.ok(
                 fs.existsSync(
-                    path.join(directory, firstDoc.primary, 'document.json')
+                    path.join(directory, toFileName(firstDoc.primary), 'document.json')
                 )
             );
 
@@ -162,11 +164,11 @@ describe('backup.test.ts', () => {
             const doc2 = await collection.insert(schemaObjects.humanData());
 
             await waitUntil(() => {
-                return fs.existsSync(path.join(directory, doc2.primary));
+                return fs.existsSync(path.join(directory, toFileName(doc2.primary)));
             });
             await waitUntil(() => {
                 return fs.existsSync(
-                    path.join(directory, doc2.primary, 'document.json')
+                    path.join(directory, toFileName(doc2.primary), 'document.json')
                 );
             });
 
@@ -199,7 +201,7 @@ describe('backup.test.ts', () => {
             const backupState1 = collection.database.backup(options);
             await backupState1.awaitInitialBackup();
 
-            const docFolder = path.join(directory, docId);
+            const docFolder = path.join(directory, toFileName(docId));
             assert.ok(
                 fs.existsSync(docFolder),
                 'doc folder should exist after initial backup'
@@ -229,6 +231,58 @@ describe('backup.test.ts', () => {
             assert.strictEqual(deletedEvents[0].documentId, docId);
 
             sub.unsubscribe();
+            await collection.database.close();
+        });
+        it('toFileName() must return unique file names that are valid on all operating systems', () => {
+            const ids = [
+                'foobar',
+                'a:b',
+                'a%3Ab',
+                'a*b',
+                'a\\b',
+                'a/b',
+                '..',
+                '.',
+                'a.',
+                'CON',
+                'con.txt',
+                'äöü😊',
+                'a?b<c>d|e"f',
+                'a\u0001b'
+            ];
+            const fileNames = ids.map(id => toFileName(id));
+            assert.strictEqual(new Set(fileNames).size, ids.length);
+            fileNames.forEach(fileName => {
+                assert.ok(!/[<>:"/\\|?*]/.test(fileName), fileName);
+                assert.ok(Array.from(fileName).every(char => char.charCodeAt(0) >= 32), fileName);
+                assert.ok(!fileName.endsWith('.') && !fileName.endsWith(' '), fileName);
+                assert.ok(!/^(con|prn|aux|nul|com\d|lpt\d)(\.|$)/i.test(fileName), fileName);
+            });
+            assert.strictEqual(toFileName('foobar'), 'foobar');
+            assert.strictEqual(toFileName('äöü😊'), 'äöü😊');
+        });
+        it('should backup documents with ids that contain special chars', async () => {
+            const collection = await humansCollection.create(0);
+            const ids = ['a:b', 'a*b', 'a\\b', 'a/b', 'a%b', '..', 'nul', 'a?b<c>d|e'];
+            const insertResult = await collection.bulkInsert(ids.map(id => schemaObjects.humanData(id)));
+            assert.deepStrictEqual(insertResult.error, []);
+            const directory = getBackupDir();
+            const backupState = collection.database.backup({
+                live: false,
+                directory,
+                attachments: false
+            });
+            await backupState.awaitInitialBackup();
+
+            const folders = fs.readdirSync(directory).filter(f => f !== 'backup_meta.json' && f !== 'human');
+            assert.strictEqual(folders.length, ids.length);
+            ids.forEach(id => {
+                const content = JSON.parse(
+                    fs.readFileSync(path.join(directory, toFileName(id), 'document.json'), 'utf-8')
+                );
+                assert.strictEqual(content.passportId, id);
+            });
+
             await collection.database.close();
         });
     });

@@ -32,6 +32,7 @@ import {
     getMeta,
     prepareFolders,
     setMeta,
+    toFileName,
     writeJsonToFile,
     writeToFile
 } from './file-util.ts';
@@ -72,7 +73,7 @@ export async function backupSingleDocument(
                     const content = await attachment.getData();
                     const attachmentFileLocation = path.join(
                         attachmentsFolder,
-                        attachment.id
+                        toFileName(attachment.id)
                     );
                     await writeToFile(attachmentFileLocation, content);
                     writtenFiles.push(attachmentFileLocation);
