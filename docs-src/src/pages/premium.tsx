@@ -252,6 +252,9 @@ export default function Premium() {
                                         <li>Architecture review & onboarding</li>
                                         <li>Named engineer</li>
                                         <li>Source code access</li>
+                                        <li>Private support channel</li>
+                                        <li>Code review of your RxDB integration</li>
+                                        <li>Migration help</li>
                                         <li>Priority bug fixes & feature requests</li>
                                     </ul>
 
