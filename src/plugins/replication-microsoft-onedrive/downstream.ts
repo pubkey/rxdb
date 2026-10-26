@@ -7,7 +7,7 @@ import type {
     OneDriveState
 } from './microsoft-onedrive-types.ts';
 import { DriveStructure } from './init.ts';
-import { getDriveBaseUrl } from './microsoft-onedrive-helper.ts';
+import { docIdFromFileName, getDriveBaseUrl } from './microsoft-onedrive-helper.ts';
 
 export async function fetchChanges<DocType>(
     oneDriveState: OneDriveState,
@@ -82,7 +82,7 @@ export async function fetchChangesFiles(
         files = files.filter(file => {
             if (file.lastModifiedDateTime === checkpoint.lastModifiedDateTime) {
                 // If it's the exact same time, check if we already processed it
-                const docId = file.name.split('.')[0];
+                const docId = docIdFromFileName(file.name);
                 return !(checkpoint as any).docIdsWithSameModifiedTime?.includes(docId);
             }
             return true;
@@ -99,7 +99,7 @@ export async function fetchChangesFiles(
         const lastModified = ensureNotFalsy(last.lastModifiedDateTime);
         let docIdsWithSameModifiedTime = files
             .filter(file => file.lastModifiedDateTime === lastModified)
-            .map(file => file.name.split('.')[0]);
+            .map(file => docIdFromFileName(file.name));
 
         if (checkpoint && first && first.lastModifiedDateTime === checkpoint.lastModifiedDateTime) {
             const oldIds = (checkpoint as any).docIdsWithSameModifiedTime || [];
