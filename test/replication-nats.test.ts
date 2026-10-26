@@ -138,7 +138,6 @@ describe('replication-nats.test.js', () => {
         'a>b',
         'a b',
         'a\tb',
-        'a\nb',
         '50%off',
         '%2E',
         'a%2Eb',
@@ -167,6 +166,7 @@ describe('replication-nats.test.js', () => {
             assert.strictEqual(encodeNatsSubjectToken('>'), '%3E');
             assert.strictEqual(encodeNatsSubjectToken('a b'), 'a%20b');
             assert.strictEqual(encodeNatsSubjectToken('a\tb'), 'a%09b');
+            assert.strictEqual(encodeNatsSubjectToken('a\r\nb'), 'a%0D%0Ab');
             assert.strictEqual(encodeNatsSubjectToken('50%off'), '50%25off');
             assert.strictEqual(encodeNatsSubjectToken('a%2Eb'), 'a%252Eb');
             assert.strictEqual(getNatsDocumentSubject('foo.bar', 'alice@example.com'), 'foo.bar.alice@example%2Ecom');
