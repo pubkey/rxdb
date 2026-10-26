@@ -32,3 +32,13 @@
 - [ ] Typings
 - [ ] Changelog
 
+
+## Assisted by
+<!--
+  WRITE IF THIS PR WAS CREATED WITH THE HELP OF AN AI.
+  IF YES, NAME THE TOOL AND THE MODEL VERSION.
+  EXAMPLES:
+   - NO
+   - YES, CLAUDE CODE WITH OPUS 5.5
+   - YES, GITHUB COPILOT WITH GPT-5
+-->
