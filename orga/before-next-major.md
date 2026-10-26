@@ -55,7 +55,7 @@ The `reactivity-vue` and `reactivity-preact-signals` plugins moved from RxDB Pre
 
 ## Remove the legacy subject fallback of the NATS replication
 
-The NATS replication percent-encodes the primary key in the subject with `encodeNatsSubjectToken()`. Before that, documents were stored under the plain subject `<subjectPrefix>.<docId>`. For ids with a `%`, the legacy subject differs from the encoded one, so the push handler has a fallback for documents that are still stored under the legacy subject:
+The NATS replication percent-encodes the primary key in the subject with `encodeNatsSubjectToken()`. Before that, documents were stored under the plain subject `<subjectPrefix>.<docId>`. For ids with a `%`, or with a `*` or `>` inside a longer id like `a*b`, the legacy subject differs from the encoded one, so the push handler has a fallback for documents that are still stored under the legacy subject:
 
 - `getNatsLegacyDocumentSubject()`, `getNatsLegacyServerDocumentState()` and `moveNatsLegacyDocument()` in `src/plugins/replication-nats/nats-helper.ts`.
 - In the push handler, the move of a legacy document that occupies the encoded subject of another document (the legacy subject of `a%2Eb` is the encoded subject of `a.b`) and the lookup of the legacy subject when the encoded subject has no message.

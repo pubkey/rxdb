@@ -44,22 +44,28 @@ export function getNatsDocumentSubject(
 /**
  * Before the ids were encoded, documents were stored
  * under the plain subject '<subjectPrefix>.<docId>'.
- * This only worked for ids without invalid chars, so a legacy subject
- * can only exist for ids where the encoding changed nothing but the '%' chars.
- * Returns undefined when no legacy subject can exist for the id.
+ * This worked for every id that is a valid literal subject token:
+ * no '.', no whitespace, no null char and not a single '*' or '>'.
+ * A '*' or '>' inside a longer token is not a wildcard,
+ * so ids like 'a*b' were stored under their plain subject.
+ * @link https://github.com/nats-io/nats-server/blob/main/server/sublist.go
+ * Returns undefined when no legacy subject can exist for the id
+ * or when it is equal to the encoded subject.
  */
 export function getNatsLegacyDocumentSubject(
     subjectPrefix: string,
     docId: string
 ): string | undefined {
-    const withoutEscapeChar = docId.split('%').join('');
     if (
-        withoutEscapeChar !== docId &&
-        encodeNatsSubjectToken(withoutEscapeChar) === withoutEscapeChar
+        docId.length === 0 ||
+        docId === '*' ||
+        docId === '>' ||
+        /[.\x00\t\n\f\r ]/.test(docId) ||
+        encodeNatsSubjectToken(docId) === docId
     ) {
-        return subjectPrefix + '.' + docId;
+        return undefined;
     }
-    return undefined;
+    return subjectPrefix + '.' + docId;
 }
 
 function isNoMessageFoundError(err: Error | any): boolean {

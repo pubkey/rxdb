@@ -185,7 +185,15 @@ describe('replication-nats.test.js', () => {
             assert.strictEqual(getNatsLegacyDocumentSubject('foo', 'foobar'), undefined);
             assert.strictEqual(getNatsLegacyDocumentSubject('foo', 'a.b'), undefined);
             assert.strictEqual(getNatsLegacyDocumentSubject('foo', 'a.b%'), undefined);
+            assert.strictEqual(getNatsLegacyDocumentSubject('foo', '*'), undefined);
+            assert.strictEqual(getNatsLegacyDocumentSubject('foo', '>'), undefined);
+            assert.strictEqual(getNatsLegacyDocumentSubject('foo', 'a b%'), undefined);
+            assert.strictEqual(getNatsLegacyDocumentSubject('foo', 'a\tb*'), undefined);
+            assert.strictEqual(getNatsLegacyDocumentSubject('foo', 'über🙂'), undefined);
             assert.strictEqual(getNatsLegacyDocumentSubject('foo', '50%off'), 'foo.50%off');
+            assert.strictEqual(getNatsLegacyDocumentSubject('foo', 'a*b'), 'foo.a*b');
+            assert.strictEqual(getNatsLegacyDocumentSubject('foo', 'x>y'), 'foo.x>y');
+            assert.strictEqual(getNatsLegacyDocumentSubject('foo', '**'), 'foo.**');
         });
     });
 
@@ -334,33 +342,38 @@ describe('replication-nats.test.js', () => {
             this.timeout(30 * 1000);
             const connectionState = await connectionStatePromise;
             const natsName = randomToken(10);
-            const docId = '50%off';
+            const legacyIds = ['50%off', 'a*b', 'x>y'];
             await connectionState.jsm.streams.add({
                 name: natsName,
                 subjects: [natsName + '.*']
             });
-            const legacyDoc = schemaObjects.humanWithTimestampData({ id: docId, name: 'legacy' });
-            await connectionState.js.publish(
-                natsName + '.' + docId,
-                connectionState.jc.encode(Object.assign({ _deleted: false }, legacyDoc))
-            );
+            for (const docId of legacyIds) {
+                const legacyDoc = schemaObjects.humanWithTimestampData({ id: docId, name: 'legacy' });
+                await connectionState.js.publish(
+                    natsName + '.' + docId,
+                    connectionState.jc.encode(Object.assign({ _deleted: false }, legacyDoc))
+                );
+            }
 
             const collection = await humansCollection.createHumanWithTimestamp(0, undefined, false);
             const replicationState = syncNats(collection, natsName);
             await replicationState.awaitInitialReplication();
-            const doc = await collection.findOne(docId).exec(true);
-            assert.strictEqual(doc.name, 'legacy');
-
-            await doc.incrementalPatch({ name: 'moved' });
+            for (const docId of legacyIds) {
+                const doc = await collection.findOne(docId).exec(true);
+                assert.strictEqual(doc.name, 'legacy');
+                await doc.incrementalPatch({ name: 'moved' });
+            }
             await replicationState.awaitInSync();
 
             assert.deepStrictEqual(
-                await getServerSubjects(natsName),
-                [getNatsDocumentSubject(natsName, docId)]
+                (await getServerSubjects(natsName)).sort(),
+                legacyIds.map(docId => getNatsDocumentSubject(natsName, docId)).sort()
             );
             const serverDocs = await getAllDocsOfServer(natsName);
-            assert.strictEqual(serverDocs.length, 1);
-            assert.strictEqual(serverDocs[0].name, 'moved');
+            assert.deepStrictEqual(
+                serverDocs.map(d => d.id + ':' + d.name).sort(),
+                legacyIds.map(docId => docId + ':moved').sort()
+            );
 
             await collection.database.close();
         });
