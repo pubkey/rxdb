@@ -30,9 +30,9 @@ import type {
 import { connect, DeliverPolicy, JSONCodec, ReplayPolicy } from 'nats';
 import {
     getNatsDocumentSubject,
-    getNatsLegacyDocumentSubject,
     getNatsLegacyServerDocumentState,
-    getNatsServerDocumentState
+    getNatsServerDocumentState,
+    moveNatsLegacyDocument
 } from './nats-helper.ts';
 import { awaitRetry } from '../replication/replication-helper.ts';
 
@@ -176,6 +176,25 @@ export function replicateNats<RxDocType>(
                         }
 
                         /**
+                         * The encoded subject of this document can be the legacy subject
+                         * of another document, for example 'a.b' is encoded to 'a%2Eb'
+                         * which was the subject of the document 'a%2Eb' before ids were encoded.
+                         * That document is moved to its own encoded subject first.
+                         */
+                        if (remoteDocState && remoteDocState.json<any>()[primaryPath] !== docId) {
+                            await moveNatsLegacyDocument(
+                                cn.jetstreamClient,
+                                cn.jsm,
+                                cn.natsStream,
+                                options.streamName,
+                                options.subjectPrefix,
+                                primaryPath,
+                                remoteDocState
+                            );
+                            remoteDocState = undefined;
+                        }
+
+                        /**
                          * Documents with a '%' in the id might still be stored
                          * under the subject that was used before ids were encoded.
                          * In that case the document is moved to its encoded subject
@@ -186,6 +205,7 @@ export function replicateNats<RxDocType>(
                             legacyDocState = await getNatsLegacyServerDocumentState(
                                 cn.natsStream,
                                 options.subjectPrefix,
+                                primaryPath,
                                 docId
                             );
                             remoteDocState = legacyDocState;
@@ -216,9 +236,15 @@ export function replicateNats<RxDocType>(
                                         }
                                     );
                                     if (legacyDocState) {
-                                        await cn.jsm.streams.purge(options.streamName, {
-                                            filter: ensureNotFalsy(getNatsLegacyDocumentSubject(options.subjectPrefix, docId))
-                                        });
+                                        await moveNatsLegacyDocument(
+                                            cn.jetstreamClient,
+                                            cn.jsm,
+                                            cn.natsStream,
+                                            options.streamName,
+                                            options.subjectPrefix,
+                                            primaryPath,
+                                            legacyDocState
+                                        );
                                     }
                                     pushDone = true;
                                 } catch (err: Error | any) {

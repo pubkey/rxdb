@@ -1,6 +1,6 @@
 {
     "$schema": "./schema.json",
-    "text": "FIX NATS replication failing for documents whose primary key contains chars that are not allowed in NATS subject tokens like `.`, `*`, `>` or whitespace, the id is now percent-encoded in the subject and documents with a `%` in the id that are stored under their old subject are moved on the next write",
+    "text": "FIX NATS replication failing for documents whose primary key contains chars that are not allowed in NATS subject tokens like `.`, `*`, `>` or whitespace, the id is now percent-encoded in the subject and documents with a `%` in the id that are stored under their old subject are moved on the next write or when another document needs that subject",
     "links": [
         {
             "url": "https://github.com/pubkey/rxdb/issues/9343",

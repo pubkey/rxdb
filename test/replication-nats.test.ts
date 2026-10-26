@@ -364,5 +364,65 @@ describe('replication-nats.test.js', () => {
 
             await collection.database.close();
         });
+        it('should move a legacy document when its subject is the encoded subject of another document', async function () {
+            this.timeout(30 * 1000);
+            const connectionState = await connectionStatePromise;
+            const natsName = randomToken(10);
+            const legacyId = 'a%2Eb';
+            const newId = 'a.b';
+            assert.strictEqual(
+                getNatsLegacyDocumentSubject(natsName, legacyId),
+                getNatsDocumentSubject(natsName, newId)
+            );
+            await connectionState.jsm.streams.add({
+                name: natsName,
+                subjects: [natsName + '.*']
+            });
+            const legacyDoc = schemaObjects.humanWithTimestampData({ id: legacyId, name: 'legacy' });
+            await connectionState.js.publish(
+                natsName + '.' + legacyId,
+                connectionState.jc.encode(Object.assign({ _deleted: false }, legacyDoc))
+            );
+
+            const collectionA = await humansCollection.createHumanWithTimestamp(0, undefined, false);
+            const replicationStateA = syncNats(collectionA, natsName);
+            await replicationStateA.awaitInitialReplication();
+            await collectionA.insert(schemaObjects.humanWithTimestampData({ id: newId, name: 'new' }));
+            await replicationStateA.awaitInSync();
+
+            assert.deepStrictEqual(
+                (await getServerSubjects(natsName)).sort(),
+                [
+                    getNatsDocumentSubject(natsName, legacyId),
+                    getNatsDocumentSubject(natsName, newId)
+                ].sort()
+            );
+            const serverDocs = await getAllDocsOfServer(natsName);
+            assert.deepStrictEqual(
+                serverDocs.map(d => d.id + ':' + d.name).sort(),
+                [legacyId + ':legacy', newId + ':new'].sort()
+            );
+
+            const collectionB = await humansCollection.createHumanWithTimestamp(0, undefined, false);
+            const replicationStateB = syncNats(collectionB, natsName);
+            await replicationStateB.awaitInitialReplication();
+            assert.deepStrictEqual(
+                (await collectionB.find().exec()).map(d => d.primary + ':' + d.name).sort(),
+                [legacyId + ':legacy', newId + ':new'].sort()
+            );
+
+            // updating the moved legacy document must not touch the other document
+            const legacyDocB = await collectionB.findOne(legacyId).exec(true);
+            await legacyDocB.incrementalPatch({ name: 'legacy-updated' });
+            await replicationStateB.awaitInSync();
+            const serverDocsAfter = await getAllDocsOfServer(natsName);
+            assert.deepStrictEqual(
+                serverDocsAfter.map(d => d.id + ':' + d.name).sort(),
+                [legacyId + ':legacy-updated', newId + ':new'].sort()
+            );
+
+            await collectionA.database.close();
+            await collectionB.database.close();
+        });
     });
 });

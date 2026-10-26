@@ -1,4 +1,6 @@
 import type {
+    JetStreamClient,
+    JetStreamManager,
     StoredMsg,
     Stream
 } from 'nats';
@@ -78,18 +80,23 @@ export async function getNatsServerDocumentState(
 /**
  * Returns the stored message of a document that is still
  * stored under its legacy subject, or undefined if there is none.
+ * The legacy subject of an id can be equal to the encoded subject of another id,
+ * for example the legacy subject of 'a%2Eb' is the encoded subject of 'a.b',
+ * so the id in the message body is checked.
  */
 export async function getNatsLegacyServerDocumentState(
     natsStream: Stream,
     subjectPrefix: string,
+    primaryPath: string,
     docId: string
 ): Promise<StoredMsg | undefined> {
     const legacySubject = getNatsLegacyDocumentSubject(subjectPrefix, docId);
     if (!legacySubject) {
         return undefined;
     }
+    let legacyDocState: StoredMsg;
     try {
-        return await natsStream.getMessage({
+        legacyDocState = await natsStream.getMessage({
             last_by_subj: legacySubject
         });
     } catch (err: Error | any) {
@@ -98,4 +105,49 @@ export async function getNatsLegacyServerDocumentState(
         }
         throw err;
     }
+    if (legacyDocState.json<any>()[primaryPath] !== docId) {
+        return undefined;
+    }
+    return legacyDocState;
+}
+
+/**
+ * Removes a legacy document from its legacy subject
+ * after publishing it to its encoded subject.
+ * If the encoded subject already has a message, the document
+ * was written after it was moved and only the legacy subject is purged.
+ * The purge only removes messages up to the legacy message
+ * so that newer writes to the subject are kept.
+ */
+export async function moveNatsLegacyDocument(
+    jetstreamClient: JetStreamClient,
+    jetstreamManager: JetStreamManager,
+    natsStream: Stream,
+    streamName: string,
+    subjectPrefix: string,
+    primaryPath: string,
+    legacyDocState: StoredMsg
+): Promise<void> {
+    const docId: string = legacyDocState.json<any>()[primaryPath];
+    const subject = getNatsDocumentSubject(subjectPrefix, docId);
+    if (subject !== legacyDocState.subject) {
+        let hasEncodedState = true;
+        try {
+            await natsStream.getMessage({
+                last_by_subj: subject
+            });
+        } catch (err: Error | any) {
+            if (!isNoMessageFoundError(err)) {
+                throw err;
+            }
+            hasEncodedState = false;
+        }
+        if (!hasEncodedState) {
+            await jetstreamClient.publish(subject, legacyDocState.data);
+        }
+    }
+    await jetstreamManager.streams.purge(streamName, {
+        filter: legacyDocState.subject,
+        seq: legacyDocState.seq + 1
+    });
 }
