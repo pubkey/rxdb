@@ -1,0 +1,11 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `replication-google-drive` not finding the remote document when the primary key contains a `.` because the document id was parsed from the file name with `split('.')`",
+    "links": [
+        {
+            "url": "https://github.com/pubkey/rxdb/pull/9338",
+            "linkText": "#9338"
+        }
+    ],
+    "priority": 3
+}

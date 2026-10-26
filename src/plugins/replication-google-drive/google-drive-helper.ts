@@ -551,3 +551,12 @@ export async function listFilesInFolder(
     const data = await res.json();
     return data.files ?? [];
 }
+
+/**
+ * Document files are named '<docId>.json'.
+ * The docId itself can contain dots,
+ * so only the '.json' suffix must be removed.
+ */
+export function docIdFromFileName(fileName: string): string {
+    return fileName.endsWith('.json') ? fileName.slice(0, -'.json'.length) : fileName;
+}

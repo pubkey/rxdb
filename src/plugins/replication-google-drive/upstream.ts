@@ -3,7 +3,7 @@ import { newRxError, newRxFetchError } from '../../rx-error.ts';
 import { stripAllAttachmentDataForComparison } from '../../replication-protocol/helper.ts';
 import { deepEqual, ensureNotFalsy } from '../utils/index.ts';
 import { fetchDocumentContents, getDocumentFiles, insertDocumentFiles, updateDocumentFiles } from './document-handling.ts';
-import { DRIVE_MAX_BULK_SIZE, fillFileIfEtagMatches, getFileEtag } from './google-drive-helper.ts';
+import { docIdFromFileName, DRIVE_MAX_BULK_SIZE, fillFileIfEtagMatches, getFileEtag } from './google-drive-helper.ts';
 import type {
     DriveFileMetadata,
     GoogleDriveOptionsWithDefaults
@@ -36,7 +36,7 @@ export async function fetchConflicts<RxDocType>(
     const fileIdByDocId = new Map<string, string>();
     const fileIds: string[] = filesMeta.files.map((f) => {
         const fileId = ensureNotFalsy(f.id);
-        const docId = f.name.split('.')[0];
+        const docId = docIdFromFileName(f.name);
         fileIdByDocId.set(docId, fileId);
         return fileId;
     });
@@ -227,7 +227,7 @@ export async function processWalFile<RxDocType>(
      */
     await Promise.all(docFiles.files.map(async (file) => {
         const fileId = ensureNotFalsy(file.id);
-        const docId = file.name.split('.')[0] as any;
+        const docId = docIdFromFileName(file.name) as any;
         const etag = await getFileEtag(googleDriveOptions, fileId);
         fileMetaByDocId[docId] = { fileId, etag };
     }));

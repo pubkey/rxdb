@@ -22,6 +22,7 @@ import {
     TRANSACTION_BLOCKED_FLAG,
     getDocumentFiles,
     insertDocumentFiles,
+    docIdFromFileName,
     isTransactionTimedOut,
     fetchDocumentContents,
     fetchChanges,
@@ -498,7 +499,7 @@ describe('replication-google-drive.test.ts', function () {
             );
             const fileMetaByDocId: any = {};
             await Promise.all(found.files.map(async (file) => {
-                const docId = file.name.split('.')[0];
+                const docId = docIdFromFileName(file.name);
                 const etag = await getFileEtag(options, ensureNotFalsy(file.id));
                 fileMetaByDocId[docId] = { fileId: file.id, etag };
             }));
@@ -534,7 +535,7 @@ describe('replication-google-drive.test.ts', function () {
             );
             const fileMetaByDocId: any = {};
             await Promise.all(found.files.map(async (file) => {
-                const docId = file.name.split('.')[0];
+                const docId = docIdFromFileName(file.name);
                 const etag = await getFileEtag(options, ensureNotFalsy(file.id));
                 fileMetaByDocId[docId] = { fileId: file.id, etag };
             }));
@@ -712,6 +713,24 @@ describe('replication-google-drive.test.ts', function () {
                     rows
                 );
                 assert.deepStrictEqual(conflictResult.conflicts, []);
+            });
+            it('should not have a conflict on updates of documents with dots in the id', async () => {
+                const docs = ['a.b', 'a.b.c', '1.0', 'foo.json'].map(id => schemaObjects.humanData(id));
+                await insertDocumentFiles(
+                    options,
+                    options.initData,
+                    PRIMARY_PATH,
+                    docs.map(doc => toRxDocumentData(doc))
+                );
+                const rows = docs.map(doc => toWriteRow(Object.assign({}, doc, { firstName: 'changed' }), doc));
+                const conflictResult = await fetchConflicts(
+                    options,
+                    options.initData,
+                    PRIMARY_PATH,
+                    rows
+                );
+                assert.deepStrictEqual(conflictResult.conflicts, []);
+                assert.strictEqual(conflictResult.nonConflicts.length, docs.length);
             });
         });
         describe('WAL file', () => {
