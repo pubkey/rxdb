@@ -11,7 +11,7 @@ import { HOME_TITLE, JOBS_TITLE } from '../../../constants';
  *
  * The default formatter skips the suffix only when the page title is exactly
  * equal to `siteConfig.title`. That is too narrow for us: the homepage and
- * /consulting/ carry the longer descriptive HOME_TITLE, and /jobs/ carries
+ * /consulting/ carry the longer descriptive HOME_TITLE, and /jobs-en/ carries
  * JOBS_TITLE. Both already contain the brand, so appending the suffix would
  * render `RxDB - JavaScript Database | RxDB` and `Jobs & Open Positions at
  * RxDB | RxDB`. Treat them the way Docusaurus treats the site title.

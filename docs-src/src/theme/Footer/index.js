@@ -72,7 +72,7 @@ export default function FooterWrapper() {
       },
       {
         label: 'Jobs',
-        href: '/jobs/',
+        href: '/jobs-en/',
       },
       {
         label: 'Press',

@@ -9,7 +9,7 @@ export const NON_PREMIUM_COLLECTION_LIMIT = 13;
 export const HOME_TITLE = 'RxDB - JavaScript Database';
 
 /**
- * Title of the /jobs/ page. Like HOME_TITLE it already names the brand, so the
+ * Title of the English /jobs-en/ page. Like HOME_TITLE it already names the brand, so the
  * swizzled TitleFormatter must not append the ` | RxDB` suffix to it.
  */
 export const JOBS_TITLE = 'Jobs & Open Positions at RxDB';

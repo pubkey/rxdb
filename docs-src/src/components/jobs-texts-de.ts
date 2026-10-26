@@ -1,5 +1,5 @@
 /**
- * German texts of the /jobs/ page, shown at /jobs/?lang=de.
+ * German texts of the jobs page at /jobs/.
  * They live in their own file so that codespell, which only knows English,
  * can skip them while it still checks the English texts in jobs.tsx.
  */
@@ -11,6 +11,7 @@ export const JOBS_TEXTS_DE = {
     title: 'Jobs & offene Stellen',
     description: 'Offene Werkstudentenstellen bei RxDB in Stuttgart. 17 € pro Stunde.',
     headline: 'Karriere bei',
+    switchLanguage: 'Read this page in English',
     intro: 'RxDB ist eine Local-First-Datenbank für JavaScript-Anwendungen. Apps, die darauf aufbauen, funktionieren weiter, wenn das Netz weg ist, und synchronisieren sich wieder, sobald die Verbindung zurück ist. Wir sind ein kleines Team, das Open-Source-Software für Entwickler auf der ganzen Welt baut, und wir suchen Leute, die etwas bauen wollen, statt nur Credit Points zu sammeln. Beide offenen Stellen sind Werkstudentenstellen in Stuttgart 🇩🇪.',
     summary: '17 € pro Stunde, 10 bis 20 Stunden pro Woche, vor Ort in Stuttgart 🇩🇪',
     openAdvert: 'Ganze Stellenanzeige lesen',
