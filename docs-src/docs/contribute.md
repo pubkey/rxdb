@@ -35,6 +35,7 @@ If you make a pull-request, ensure the following:
 2. Do not commit build-files (anything in the `dist`-folder)
 3. Before you add non-trivial changes, create an issue to discuss if this will be merged and you don't waste your time.
 4. To run the unit and integration-tests, do `npm run test` and ensure everything works as expected
+5. Fill out the `Assisted by` section of the [PR template](https://github.com/pubkey/rxdb/blob/master/.github/PULL_REQUEST_TEMPLATE.md). State if you were assisted by an AI and, if so, name the tool and the model version, for example `Yes, Claude Code with Opus 5.5`. If no AI was used, write `No`.
 
 ## Getting help
 
