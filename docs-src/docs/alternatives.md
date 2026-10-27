@@ -286,7 +286,7 @@ Replicache can be used in most frontend technologies like browsers, React/Remix,
 
 ### InstantDB
 
-InstantDB is designed for real-time data synchronization with built-in offline support, allowing changes to be queued locally and [synced](./replication.md) when the user reconnects. While it offers seamless [optimistic updates](./articles/optimistic-ui.md) and rollback capabilities, its offline-first design is not as mature or comprehensive as RxDB's - the [offline data](./articles/offline-database.md) is more of a cache, not a full-database sync. The query language used is Datalog, and the backend sync service is written in Clojure. InstantDB is focused more on simplicity and real-time collaboration, with fewer customization options for storage or conflict resolution compared to RxDB, which supports various storage adapters and advanced conflict handling via CRDTs.
+InstantDB is designed for real-time data synchronization with built-in offline support, allowing changes to be queued locally and [synced](./replication.md) when the user reconnects. While it offers seamless [optimistic updates](./articles/optimistic-ui.md) and rollback capabilities, its offline-first design is not as mature or comprehensive as RxDB's - the [offline data](./articles/offline-database.md) is more of a cache, not a full-database sync. The query language used is Datalog, and the backend sync service is written in Clojure. InstantDB is focused more on simplicity and real-time collaboration, with fewer customization options for storage or conflict resolution compared to RxDB, which supports various storage adapters and advanced conflict handling via CRDTs. In August 2026 the Instant team joined OpenAI, new Instant Cloud signups were closed, and all Instant Cloud apps shut down on August 31, 2027.
 
 [Read more about why RxDB is a good alternative to InstantDB](./articles/alternatives/instantdb-alternative.md).
 
@@ -299,7 +299,7 @@ Yjs is a [CRDT-based](./crdt.md) (Conflict-free Replicated Data Type) library fo
 
 ### ElectricSQL
 
-2024: ElectricSQL is being rewritten in a new Electric-Next branch, which focuses on partial syncing of ("shapes", which makes is basically a NoSQL like document database) of data from a remote Postgres DB to a local clients written in TypeScript/JS or Elixir. The write path is not yet implemented, neither is client-side reactivity. The ElectricSQL backend is written in Elixir.
+ElectricSQL is a read-path sync engine that streams partial "shapes" of a Postgres database to clients over HTTP. Writes go through your own API, because Electric does not sync the write path. The sync service is written in Elixir. In August 2026 the Electric team joined Databricks and Electric Cloud was shut down, so Cloud users have to self-host the sync service or move to another stack.
 
 [Read more about why RxDB is a good alternative to ElectricSQL](./articles/alternatives/electricsql-alternative.md).
 

@@ -1,109 +1,114 @@
 ---
-title: RxDB as an InstantDB Alternative with Custom Backends
+title: RxDB as an InstantDB Alternative After the Instant Cloud Shutdown
 slug: instantdb-alternative.html
-description: Compare RxDB and InstantDB for local-first apps. Bring your own backend, run open source, use Mango queries, and get full offline storage with conflict handling.
+description: Instant Cloud shuts down on August 31, 2027. Compare RxDB and InstantDB and learn how to move a local-first app to a backend you control.
 image: /headers/instantdb-alternative.jpg
 ---
 
 import {Faq, FaqItem} from '@site/src/components/faq';
 import {ComparisonTable} from '@site/src/components/comparison-table';
 
-# RxDB as an InstantDB Alternative with Custom Backends
+# RxDB as an InstantDB Alternative After the Instant Cloud Shutdown
 
-If you arrived here looking for an **InstantDB alternative**, you most likely want one of three things:
+[InstantDB](https://www.instantdb.com/) made realtime, collaborative apps easy to start: a client SDK with optimistic updates, a Datalog-style query language, and a hosted sync service that just worked. In August 2026 the Instant team [joined OpenAI](https://www.instantdb.com/essays/instant_team_joins_openai). New signups for Instant Cloud are closed, and **all Instant Cloud apps shut down on August 31, 2027**. If you are looking for an **InstantDB alternative**, you now have a deadline.
 
-- A real [offline-first](../../offline-first.md) local database, not just a network cache that flushes when storage gets tight.
-- The freedom to plug your own backend into the sync layer instead of relying on a hosted Datalog service.
-- An open source stack that you can audit, fork, and self-host without depending on a single vendor.
+[RxDB](https://rxdb.info/) (Reactive Database) is a [local-first](../local-first-future.md), NoSQL database for JavaScript applications that stores data on the device and replicates with any backend you run. This page explains what the Instant Cloud shutdown means for existing apps, where InstantDB falls short as a local database, and how to move an InstantDB app to RxDB with your own [Sync Engine](../../replication.md) backend.
 
-**RxDB** (Reactive Database) is a client-side NoSQL database for JavaScript that stores data locally in the browser, mobile runtimes, Electron, or Node.js, and replicates with any backend you control. It is fully open source and has been used in production for offline-first apps for years.
-
-<RxdbLogo alt="JavaScript Database" />
+<RxdbLogo alt="InstantDB alternative" />
 
 ## A Short History of InstantDB
 
-InstantDB launched in 2023 out of Y Combinator with the goal of making real-time, collaborative apps feel as easy to build as a static page. The product centers on a hosted sync service written in Clojure that exposes a Datalog-style query language to JavaScript clients. Clients write through optimistic updates, the server stores the canonical state, and changes are streamed back to every connected device.
+InstantDB launched in 2023 out of Y Combinator. The product centers on a sync server written in Clojure that talks to Postgres and exposes a Datalog-style query language (InstaQL) to JavaScript clients. Clients write through optimistic updates, the server stores the canonical state, and changes are streamed back to every connected device. The design works well for prototypes and collaborative tools, and the SDK handles subscriptions and rollbacks automatically.
 
-The design works well for prototypes and small collaborative tools. Queries are expressive once you know Datalog, and the SDK handles subscriptions and rollbacks automatically. The trade-off is that the sync engine and storage are tightly coupled to the InstantDB cloud, and the local layer is a query cache rather than a full database.
+### A Brief Timeline
 
-## What Is RxDB?
+- **2023** - InstantDB launches as a Y Combinator company with a hosted sync service.
+- **2024** - The full stack, including the Clojure server, is published under the Apache 2.0 license on [GitHub](https://github.com/instantdb/instant).
+- **July 31, 2026** - Subscriptions started after this date are fully refunded.
+- **August 2026** - The Instant team joins OpenAI. New signups for Instant Cloud are closed ([announcement](https://www.instantdb.com/essays/instant_team_joins_openai)).
+- **August 31, 2027** - All Instant Cloud apps shut down.
+- **August 31, 2028** - Instant Cloud backups are no longer available.
 
-RxDB is an embeddable JavaScript database built around three ideas:
+## What the Instant Cloud Shutdown Means for Your App
 
-- **Local-first storage**: every read and write hits a local engine first. The app keeps working when the network is gone. See [offline-first](../../offline-first.md) and [local-first future](../../articles/local-first-future.md).
-- **Reactive queries**: any [RxQuery](../../rx-query.md) returns an observable that re-emits when matching data changes, locally or from a remote push. See [reactivity](../../reactivity.md).
-- **Pluggable replication**: the [Sync Engine](../../replication.md) talks to any HTTP endpoint, GraphQL server, CouchDB, Firestore, or peer over WebRTC. The protocol is documented and you can implement it on any backend with [HTTP replication](../../replication-http.md).
+The announcement is clear: "Existing users should migrate off of Instant Cloud within the next 12 months." There are two paths. You can self-host Instant, or you can move to a different stack.
 
-Storage is also pluggable. The same collection can run on IndexedDB, OPFS, SQLite, in-memory, or LocalStorage without changing application code.
+Instant stays open source, and the team published a [migration guide to self-hosting](https://www.instantdb.com/docs/self-hosting/migrate.md). Following it, you set up your own Instant server, rehearse with a test backup, switch Instant Cloud to read-only, restore a final backup, and deploy a client release with the new app ID and URLs. The guide states that "Migrating without data loss will require some downtime." During the cutover, writes are blocked, and users may have to sign in again.
 
-## Limitations of InstantDB
+Self-hosting keeps your app code unchanged. But you take over the operation of a Clojure sync server and its Postgres database, and the project that you depend on no longer has its original team working on it full-time. This is the trade-off to evaluate before you choose a path.
 
-InstantDB is a good fit for many apps, but a few constraints push teams to look for an alternative.
+If you have to touch the backend anyway, the migration is also the moment to move to a stack where the sync server is a small part of the backend you already run, instead of a separate service that you have to keep alive.
 
-### 1. The Sync Service Is Hosted Only
+## What is RxDB?
 
-InstantDB requires its managed backend. There is no open source server you can run on your own infrastructure for production workloads. If your app must run on customer hardware, in regulated environments, or in regions where the InstantDB cloud is not available, you are stuck.
+RxDB (Reactive Database) is a local-first, NoSQL database for JavaScript applications. It runs in the browser, Node.js, Electron, React Native, Capacitor, Deno, and Bun. It is built around three ideas:
+
+- **Local-first storage**: every read and write hits a local engine first. The app keeps working when the network is gone. See [offline-first](../../offline-first.md).
+- **Reactive queries**: any [RxQuery](../../rx-query.md) returns an observable that emits again when matching data changes, locally or from a remote push. See [reactivity](../../reactivity.md).
+- **Pluggable replication**: the [Sync Engine](../../replication.md) talks to any HTTP endpoint, GraphQL server, CouchDB, Firestore, Supabase, or peer over WebRTC. The protocol is documented, so you can implement it on any backend with [HTTP replication](../../replication-http.md).
+
+Storage is also pluggable. The same collection can run on [IndexedDB](../../rx-storage-indexeddb.md), [OPFS](../../rx-storage-opfs.md), [SQLite](../../rx-storage-sqlite.md), in-memory, or [localStorage](../../rx-storage-localstorage.md) without changing application code.
+
+## Where InstantDB Falls Short
+
+The shutdown is the urgent reason to move, but some limits of InstantDB also apply to a self-hosted Instant server.
+
+### 1. The Backend Is a Fixed Service
+
+Instant clients only talk to an Instant server. Your data model, permissions, and sync all live inside that Clojure service and its Postgres schema. When you self-host, you operate the full Instant backend next to your own services. With RxDB, the sync endpoints are a few routes in the backend you already have, written in the language you already use.
 
 ### 2. Datalog Has a Learning Curve
 
-InstantDB queries use a Datalog-style triple syntax. The model is expressive once it clicks, but new contributors have to learn it before they can ship a feature. RxDB uses a JSON Mango query format that is familiar to anyone who has touched MongoDB, PouchDB, or Supabase.
+InstantDB queries use a Datalog-style syntax. The model is expressive once it clicks, but new contributors have to learn it before they can ship a feature. RxDB uses [MongoDB-style (Mango) queries](../../rx-query.md) that are familiar to anyone who has used MongoDB or PouchDB.
 
 ### 3. The Local Layer Is a Cache
 
-InstantDB stores results of subscribed queries on the client so the UI stays responsive during short network drops. It is not a full local database. You cannot run arbitrary queries that were never subscribed, and the cache can be evicted. RxDB stores every document of every replicated collection on disk and lets you query any field at any time.
+InstantDB stores the results of subscribed queries on the client so the UI stays responsive during network drops. It is not a full local database. You cannot run arbitrary queries over data that was never subscribed. RxDB stores every document of every replicated collection on the device and lets you query any field at any time, which makes it an [offline database](../offline-database.md) and not just a cache.
 
-### 4. Few Storage Adapter Options
+### 4. Few Storage Options
 
-The InstantDB client picks its own persistence layer. RxDB exposes a [storage interface](../../rx-collection.md) with adapters for IndexedDB, OPFS, SQLite, Memory, LocalStorage, Dexie, and more. You can swap storage per platform or per collection.
+The InstantDB client picks its own persistence layer. RxDB exposes an [RxStorage](../../rx-storage.md) interface with storages for IndexedDB, OPFS, SQLite, memory, localStorage, Dexie, and more. You can switch storages per platform. Switching storages is a configuration change, not a rewrite.
 
 ### 5. Limited Conflict Resolution Knobs
 
-InstantDB resolves write conflicts internally. You get optimistic updates and rollback, but the resolution policy is mostly fixed. RxDB lets you write a [custom conflict handler](../../transactions-conflicts-revisions.md) per collection, or opt into [CRDTs](../../crdt.md) when you need automatic merging without server arbitration.
+InstantDB resolves write conflicts internally. You get optimistic updates and rollback, but the resolution policy is mostly fixed. RxDB lets you write a [custom conflict handler](../../transactions-conflicts-revisions.md) per collection, or use [CRDTs](../../crdt.md) when you need automatic merging.
 
-Both projects are under active development. As of July 30, 2026, [InstantDB](https://github.com/instantdb/instant) has 10,366 GitHub stars while [RxDB](https://github.com/pubkey/rxdb) has 23,296.
+As of October 27, 2026, [InstantDB](https://github.com/instantdb/instant) has about 10,600 GitHub stars while [RxDB](https://github.com/pubkey/rxdb) has 23,416.
 
 ## Why Teams Pick RxDB Instead
 
 ### Bring Your Own Backend
 
-RxDB does not ship with a mandatory cloud. You connect a collection to whatever you already run:
+RxDB does not ship with a mandatory cloud. A collection connects to whatever you already run:
 
 - A REST API over [HTTP replication](../../replication-http.md).
-- A GraphQL endpoint with subscriptions.
-- A CouchDB or Firestore instance using the official replication plugins.
-- WebRTC peers for direct device-to-device sync.
+- A [GraphQL](../../replication-graphql.md) endpoint with subscriptions.
+- [CouchDB](../../replication-couchdb.md), [Firestore](../../replication-firestore.md), or [Supabase](../../replication-supabase.md) with the official replication plugins.
+- [WebRTC](../../replication-webrtc.md) peers for direct device-to-device sync.
 
-The sync protocol is a simple pull plus push plus event stream contract. Anything that can implement those three calls can be an RxDB backend.
+The sync protocol is a pull plus push plus event stream contract. Anything that can implement those three calls can be an RxDB backend. No vendor can shut it down for you.
 
-### Open Source
+### Open Source and Independent
 
-RxDB is Apache 2.0 on the core and the storage adapters. You can read every line of the engine, fork it, and run it without sending data to a third party.
-
-### JSON Mango Queries
-
-Queries look like the rest of the JavaScript ecosystem. See [RxQuery](../../rx-query.md) for the full operator list.
+The RxDB core is Apache 2.0. The project has been maintained since 2016 and is funded by [👑 RxDB Premium](/premium/) plugins, not by venture capital that needs an exit.
 
 ### Observable Queries Out of the Box
 
-Every query is an RxJS observable. UI frameworks subscribe once and re-render when data changes. See [reactivity](../../reactivity.md) and [optimistic UI](../../articles/optimistic-ui.md).
+Every query is an RxJS observable. UI frameworks subscribe once and re-render when data changes. See [reactivity](../../reactivity.md) and [optimistic UI](../optimistic-ui.md).
 
-### Real Conflict Resolution
+### Multi-Tab
 
-Plug in a [custom conflict handler](../../transactions-conflicts-revisions.md) per collection, or enable [CRDTs](../../crdt.md) when you want commutative merges without writing your own merge logic.
-
-### Multi-Storage and Multi-Tab
-
-The same code runs on IndexedDB in the browser, OPFS for higher write throughput, SQLite on React Native, or in-memory for tests. The [multi-tab](../../rx-collection.md) layer makes sure two browser tabs see the same state through a shared worker or BroadcastChannel.
+The same code runs in every browser tab. The [multi-tab](../../rx-collection.md) support makes sure two tabs see the same state, and replication runs only once through [leader election](../../leader-election.md).
 
 ## Code Sample: Rewriting an InstantDB Query in RxDB
 
-A typical InstantDB query that fetches open todos for a user looks roughly like this:
+A typical InstantDB query that fetches open todos looks like this:
 
 ```ts
 // InstantDB
 const { data } = db.useQuery({
   todos: {
-    $: { where: { ownerId: userId, done: false } }
+    $: { where: { done: false } }
   }
 });
 ```
@@ -112,18 +117,17 @@ The same query in RxDB uses the [Mango query format](../../rx-query.md) and retu
 
 ```ts
 // RxDB
-const query = db.todos.find({
+const query = myDatabase.todos.find({
   selector: {
-    ownerId: userId,
     done: false
   },
-  sort: [{ createdAt: 'desc' }]
+  sort: [{ dueAt: 'asc' }]
 });
 
-const todos$ = query.$; // Observable<RxDocument[]>
+const todos$ = query.$; // Observable<RxDocument<TodoDocType>[]>
 ```
 
-`todos$` re-emits whenever a matching document is inserted, updated, or deleted, whether the change came from a local write, another tab, or the replication stream.
+`todos$` emits whenever a matching document is inserted, updated, or deleted, whether the change came from a local write, another tab, or the replication stream.
 
 ## Code Sample: Driving a React UI From an Observable
 
@@ -131,83 +135,82 @@ A small React component that mirrors the InstantDB pattern of subscribing to a q
 
 ```tsx
 import { useEffect, useState } from 'react';
-import { db } from './db';
+import { myDatabase } from './database';
 
-export function TodoList({ userId }: { userId: string }) {
+export function TodoList() {
   const [todos, setTodos] = useState<any[]>([]);
 
   useEffect(() => {
-    const sub = db.todos
-      .find({ selector: { ownerId: userId, done: false } })
+    const sub = myDatabase.todos
+      .find({ selector: { done: false }, sort: [{ dueAt: 'asc' }] })
       .$.subscribe(setTodos);
     return () => sub.unsubscribe();
-  }, [userId]);
+  }, []);
 
-  async function addTodo(title: string) {
-    // Optimistic write: the local store updates first,
+  async function addTodo(name: string) {
+    // The local write resolves at once,
     // replication pushes it to the backend in the background.
-    await db.todos.insert({
+    await myDatabase.todos.insert({
       id: crypto.randomUUID(),
-      ownerId: userId,
-      title,
-      done: false,
-      createdAt: new Date().toISOString()
+      name,
+      dueAt: new Date().toISOString(),
+      priority: 5
     });
   }
 
   return (
     <ul>
-      {todos.map(t => <li key={t.id}>{t.title}</li>)}
+      {todos.map(t => <li key={t.id}>{t.name}</li>)}
       <button onClick={() => addTodo('New task')}>Add</button>
     </ul>
   );
 }
 ```
 
-The local insert resolves immediately. The replication layer streams the write to the server when the network is available, and any conflict is funneled through the configured conflict handler. See [optimistic UI](../../articles/optimistic-ui.md) for the full pattern.
+The local insert resolves immediately. The replication pushes the write to the server when the network is available, and any conflict goes through the configured conflict handler. See [optimistic UI](../optimistic-ui.md) for the full pattern.
 
-## Hosting: Managed Sync vs Self-Hosted
+## Moving an InstantDB App to RxDB
 
-| Concern | InstantDB | RxDB |
-| --- | --- | --- |
-| Sync service | Hosted by InstantDB | Self-hosted on any stack |
-| Storage location | InstantDB cloud | Your servers, your database |
-| Pricing model | Per-app hosted plan | Cost of your own infrastructure |
-| Data residency | InstantDB regions | Wherever you deploy |
-| Open source server | No | Yes, the protocol is open |
+Instant Cloud offers on-demand backups, and the data model of an InstantDB app is a set of namespaces with attributes and links. In the following, these steps move such an app to RxDB:
 
-If you want to ship fast and a hosted backend is acceptable, InstantDB removes a lot of work. If your team needs to own the data path end to end, RxDB lets you put the sync server next to the rest of your services and reuse your existing auth, logging, and backups.
+1. **Map each namespace to an RxDB collection** and write a [JSON schema](../../rx-schema.md) for it. Links between namespaces become id fields or arrays of ids, which RxDB can resolve with [population](../../population.md).
+2. **Load your data into your own backend database.** Use the Instant admin SDK or a backup to export the entities, and write them to the database that will be the source of truth, for example Postgres or MongoDB. Add an `updatedAt` field and keep deleted entities as tombstones with a `_deleted` flag.
+3. **Add pull, push, and stream endpoints** to your backend as described in the [HTTP replication docs](../../replication-http.md). Move your Instant permission rules into these endpoints, so each user only pulls and pushes the documents they are allowed to see.
+4. **Replace `useQuery` and `transact` calls** with RxDB queries and writes as shown above.
+5. **Ship the new client release** before August 31, 2027. Clients that open the new version start a fresh initial replication from your backend.
+
+Because the RxDB client keeps working offline, users who open the app during the cutover can keep writing locally. Their changes are pushed as soon as the new backend is reachable.
+
+## When InstantDB Still Makes Sense
+
+If your app is small, your team is happy with InstaQL, and you are fine operating a Clojure service and its Postgres database, self-hosting Instant is the path with the fewest code changes. The [self-hosting guide](https://www.instantdb.com/docs/self-hosting/migrate.md) is well written, and the code is Apache 2.0, so nobody can take it away from you.
 
 ## FAQ
 
 <Faq>
+<FaqItem question="When does Instant Cloud shut down?">
+
+On August 31, 2027, all Instant Cloud apps shut down. New signups are already closed, and backups stay available until August 31, 2028. Moving to **[RxDB](../../rx-database.md)** with your own backend removes the dependency on any hosted sync service.
+
+</FaqItem>
 <FaqItem question="Is InstantDB self-hostable?">
 
-The InstantDB sync service is a hosted product. There is no supported way to run the production server on your own infrastructure today. If self-hosting is a hard requirement, RxDB plus a backend you already operate is a closer fit.
+Yes. Instant is open source under Apache 2.0 and publishes a self-hosting guide. Migrating from Instant Cloud to a self-hosted server requires some downtime, and you have to operate the Clojure server and its Postgres database yourself. With the **[RxDB Sync Engine](../../replication.md)**, the sync endpoints live inside the backend you already run.
 
 </FaqItem>
+<FaqItem question="What is the best InstantDB alternative for a local-first app?">
 
+That depends on your backend. If you want a full local database that syncs with a backend you own, **[RxDB](../../rx-database.md)** fits because it replicates with any HTTP, GraphQL, CouchDB, Firestore, or Supabase backend. If you want to keep Postgres and a hosted sync service, look at the [PowerSync comparison](./powersync-alternative.md).
+
+</FaqItem>
 <FaqItem question="Does RxDB use Datalog?">
 
-No. RxDB queries use a JSON Mango syntax similar to MongoDB and PouchDB. The format is documented in [RxQuery](../../rx-query.md) and supports selectors, sorting, indexes, and limits without a separate query language.
+No. RxDB queries use a JSON Mango syntax similar to MongoDB. The format is documented in **[RxQuery](../../rx-query.md)** and supports selectors, sorting, indexes, and limits without a separate query language.
 
 </FaqItem>
-
 <FaqItem question="How does RxDB handle optimistic updates?">
 
-Every write goes to the local storage first and resolves immediately. Observable queries re-emit with the new state, so the UI updates without waiting for the server. The [Sync Engine](../../replication.md) pushes the change in the background, and conflicts are routed through the collection's [conflict handler](../../transactions-conflicts-revisions.md). See [optimistic UI](../../articles/optimistic-ui.md) for an end-to-end example.
-
-</FaqItem>
-
-<FaqItem question="Can I customize storage in RxDB?">
-
-Yes. RxDB has a storage interface with adapters for IndexedDB, OPFS, SQLite, in-memory, LocalStorage, and Dexie. You pick the adapter when you create the database, and the rest of the API stays the same. See [RxCollection](../../rx-collection.md) for how storage plugs into a collection.
-
-</FaqItem>
-
-<FaqItem question="What about real-time collaboration?">
-
-RxDB streams changes from the server through the replication event channel and from other browser tabs through BroadcastChannel. Combined with [observable queries](../../reactivity.md), the UI updates as soon as a remote change lands. For peer-to-peer setups, the WebRTC plugin lets devices sync directly. See [realtime database](../../articles/realtime-database.md) for the architecture.
+Every write goes to the local storage first and resolves immediately. Observable queries emit the new state, so the UI updates without waiting for the server. The **[Sync Engine](../../replication.md)** pushes the change in the background, and conflicts go through the collection's [conflict handler](../../transactions-conflicts-revisions.md).
 
 </FaqItem>
 </Faq>
@@ -218,30 +221,29 @@ RxDB streams changes from the server through the replication event channel and f
 
 | Feature | InstantDB | RxDB |
 | --- | --- | --- |
-| License | Proprietary client, hosted backend | Apache 2.0 core |
-| Backend | Hosted Clojure sync service | Any HTTP, GraphQL, CouchDB, Firestore, or WebRTC peer |
-| Query language | Datalog-style triples | JSON Mango selectors |
+| License | Apache 2.0 | Apache 2.0 core |
+| Hosted service | Instant Cloud, shuts down August 31, 2027 | None required |
+| Backend | Instant Clojure server with Postgres | Any HTTP, GraphQL, CouchDB, Firestore, Supabase backend, or WebRTC peers |
+| Query language | Datalog-style (InstaQL) | MongoDB-style (Mango) queries |
 | Local layer | Query cache | Full local database |
-| Storage adapters | Built in, fixed | IndexedDB, OPFS, SQLite, Memory, LocalStorage, Dexie |
+| Storages | Built in, fixed | IndexedDB, OPFS, SQLite, memory, localStorage, Dexie, and more |
 | Offline writes | Yes, queued | Yes, persisted to local storage |
-| Conflict resolution | Built-in, limited knobs | Custom handler per collection or [CRDT](../../crdt.md) |
+| Conflict resolution | Built in, limited knobs | Custom handler per collection or [CRDT](../../crdt.md) |
 | Reactivity | Subscriptions on queries | RxJS observables on every query |
-| Multi-tab sync | Yes | Yes, via BroadcastChannel or shared worker |
-| P2P sync | No | Yes, via WebRTC plugin |
-| Self-hosting | Not supported | Standard |
+| P2P sync | No | Yes, via the WebRTC plugin |
 
 </ComparisonTable>
 
 ## Follow Up
 
-If you want the developer experience of InstantDB but with a backend you control, an open source codebase, and a real local database underneath, RxDB is worth a look. Start with the [Sync Engine](../../replication.md) docs to see how a collection connects to your existing API, then read the [reactivity](../../reactivity.md) guide for how the UI stays in sync.
+If you have to move off Instant Cloud anyway, move to a stack where nobody else decides when your sync backend goes away. Start with the [Quickstart](../../quickstart.md), then read the [Sync Engine](../../replication.md) docs to see how a collection connects to your existing API. The [ElectricSQL comparison](./electricsql-alternative.md) and the [Turso comparison](./turso-alternative.md) cover two more hosted sync services that changed course in 2026.
 
 More resources:
 
 - [RxDB Sync Engine](../../replication.md)
 - [HTTP Replication](../../replication-http.md)
 - [Custom Conflict Resolution](../../transactions-conflicts-revisions.md)
-- [CRDT Support](../../crdt.md)
-- [Local-First Future](../../articles/local-first-future.md)
-- [Optimistic UI Patterns](../../articles/optimistic-ui.md)
-- [Realtime Database](../../articles/realtime-database.md)
+- [Local-First Future](../local-first-future.md)
+- [Optimistic UI Patterns](../optimistic-ui.md)
+- [Realtime Database](../realtime-database.md)
+- [RxDB on GitHub](/code/), leave a star ⭐
