@@ -57,7 +57,11 @@ const replicationState = replicateNats({
     /**
      * The subject prefix determines how the documents are stored in NATS.
      * For example the document with id 'alice'
-     * will have the subject 'foobar.alice'
+     * will have the subject 'foobar.alice'.
+     * Chars that are not allowed in a NATS subject token
+     * (`.`, `*`, `>`, whitespace and control chars) and the
+     * escape char `%` are percent-encoded, so the document with id
+     * 'alice@example.com' has the subject 'foobar.alice@example%2Ecom'.
      */
     subjectPrefix: 'foobar',
     connection: { servers: 'localhost:4222' },

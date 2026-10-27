@@ -10254,7 +10254,11 @@ const replicationState = replicateNats({
     /**
      * The subject prefix determines how the documents are stored in NATS.
      * For example the document with id 'alice'
-     * will have the subject 'foobar.alice'
+     * will have the subject 'foobar.alice'.
+     * Chars that are not allowed in a NATS subject token
+     * (`.`, `*`, `>`, whitespace and control chars) and the
+     * escape char `%` are percent-encoded, so the document with id
+     * 'alice@example.com' has the subject 'foobar.alice@example%2Ecom'.
      */
     subjectPrefix: 'foobar',
     connection: { servers: 'localhost:4222' },
@@ -42676,6 +42680,7 @@ If you make a pull-request, ensure the following:
 2. Do not commit build-files (anything in the `dist`-folder)
 3. Before you add non-trivial changes, create an issue to discuss if this will be merged and you don't waste your time.
 4. To run the unit and integration-tests, do `npm run test` and ensure everything works as expected
+5. Fill out the `Assisted by` section of the [PR template](https://github.com/pubkey/rxdb/blob/master/.github/PULL_REQUEST_TEMPLATE.md). State if you were assisted by an AI and, if so, name the tool and the model version, for example `Yes, Claude Code with Opus 5.5`. If no AI was used, write `No`.
 
 ## Getting help
 
