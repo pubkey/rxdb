@@ -17,11 +17,12 @@ import {
     ensureReplicationHasNoErrors,
     SimpleHumanDocumentType,
     PrimaryHumanDocType,
-    runReplicationBaseTestSuite
+    runReplicationBaseTestSuite,
+    randomStringWithSpecialChars
 } from '../plugins/test-utils/index.mjs';
 import { RxDBDevModePlugin } from '../plugins/dev-mode/index.mjs';
 import config from './unit/config.ts';
-import { randomString, waitUntil } from 'async-test-util';
+import { waitUntil } from 'async-test-util';
 import {
     RxSupabaseReplicationState,
     replicateSupabase
@@ -68,9 +69,9 @@ describe('replication-supabase.test.ts', function () {
     }
     function getRandomDoc() {
         const ret = {
-            passportId: randomString(10),
-            firstName: randomString(10),
-            lastName: randomString(10)
+            passportId: randomStringWithSpecialChars(8, 12),
+            firstName: randomStringWithSpecialChars(8, 12),
+            lastName: randomStringWithSpecialChars(8, 12)
         };
         return ret;
     }
@@ -472,8 +473,8 @@ describe('replication-supabase.test.ts', function () {
             for (const passportId of ids) {
                 await insertDocument({
                     passportId,
-                    firstName: randomString(10),
-                    lastName: randomString(10)
+                    firstName: randomStringWithSpecialChars(8, 12),
+                    lastName: randomStringWithSpecialChars(8, 12)
                 });
             }
 
