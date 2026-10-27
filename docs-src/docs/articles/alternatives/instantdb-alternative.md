@@ -10,7 +10,11 @@ import {ComparisonTable} from '@site/src/components/comparison-table';
 
 # RxDB as an InstantDB Alternative After the Instant Cloud Shutdown
 
-[InstantDB](https://www.instantdb.com/) made realtime, collaborative apps easy to start: a client SDK with optimistic updates, a Datalog-style query language, and a hosted sync service that just worked. In August 2026 the Instant team [joined OpenAI](https://www.instantdb.com/essays/instant_team_joins_openai). New signups for Instant Cloud are closed, and **all Instant Cloud apps shut down on August 31, 2027**. If you are looking for an **InstantDB alternative**, you now have a deadline.
+[InstantDB](https://www.instantdb.com/) made realtime, collaborative apps easy to start: a client SDK with optimistic updates, a Datalog-style query language, and a hosted sync service that just worked. Now that Instant Cloud is closing, many teams are looking for an **InstantDB alternative** and have a deadline to meet.
+
+:::note Instant Cloud is shutting down
+In August 2026 the Instant team joined OpenAI. New Instant Cloud signups are closed, all Instant Cloud apps shut down on August 31, 2027, and backups stay available until August 31, 2028 ([announcement](https://www.instantdb.com/essays/instant_team_joins_openai)).
+:::
 
 [RxDB](https://rxdb.info/) (Reactive Database) is a [local-first](../local-first-future.md), NoSQL database for JavaScript applications that stores data on the device and replicates with any backend you run. This page explains what the Instant Cloud shutdown means for existing apps, where InstantDB falls short as a local database, and how to move an InstantDB app to RxDB with your own [Sync Engine](../../replication.md) backend.
 

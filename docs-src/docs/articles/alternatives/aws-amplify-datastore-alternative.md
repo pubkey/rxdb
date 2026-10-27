@@ -13,6 +13,10 @@ import {Timeline} from '@site/src/components/timeline';
 
 <RxdbLogo alt="JavaScript Database" />
 
+:::note AWS Amplify DataStore is deprecated
+DataStore is not part of Amplify Gen 2. Amplify Gen 1, which contains DataStore, is in maintenance mode and reaches end of life on May 1, 2027 ([Amplify docs](https://docs.amplify.aws/gen1/vue/build-a-backend/more-features/datastore/migrate-from-datastore/)).
+:::
+
 AWS Amplify DataStore offered an appealing promise: define a GraphQL schema, run a CLI command, and get automatic offline sync to DynamoDB via AWS AppSync. For teams already embedded in the AWS ecosystem, that promise was compelling. But DataStore was deprecated in Amplify Gen 2, is scheduled for end-of-life on May 1, 2027, and had well-documented limitations around query flexibility, local performance, and its tight coupling to AWS infrastructure. This page explains what DataStore does, where it falls short, and why [RxDB](https://rxdb.info) is a practical alternative for teams building offline-first applications.
 
 ---

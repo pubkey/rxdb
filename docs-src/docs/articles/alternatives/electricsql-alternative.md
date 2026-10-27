@@ -10,7 +10,11 @@ import {ComparisonTable} from '@site/src/components/comparison-table';
 
 # RxDB as an ElectricSQL Alternative for Local-First JavaScript Apps
 
-[ElectricSQL](https://electric.ax/) is a read-path sync engine that streams subsets of a Postgres database ("shapes") to clients over HTTP. Electric reached 1.0 in March 2025 and its open source projects, including [PGlite](https://pglite.dev/), are widely used. In August 2026 the Electric team [joined Databricks](https://electric.ax/blog/2026/08/11/electric-joining-databricks), and **Electric Cloud was shut down**. Teams that ran on Electric Cloud now have to self-host the Electric sync service or move to a different stack, which is why many of them are looking for an **ElectricSQL alternative**.
+[ElectricSQL](https://electric.ax/) is a read-path sync engine that streams subsets of a Postgres database ("shapes") to clients over HTTP. Electric reached 1.0 in March 2025 and its open source projects, including [PGlite](https://pglite.dev/), are widely used. Teams that ran on Electric Cloud now have to self-host the Electric sync service or move to a different stack, which is why many of them are looking for an **ElectricSQL alternative**.
+
+:::note Electric Cloud has been shut down
+In August 2026 the Electric team joined Databricks and announced that Electric Cloud is winding down ([announcement](https://electric.ax/blog/2026/08/11/electric-joining-databricks)). By September 28, 2026, Electric Cloud was shut down ([PR #4812](https://github.com/electric-sql/electric/pull/4812)). The open source sync service can still be self-hosted.
+:::
 
 [RxDB](https://rxdb.info/) is a [local-first](../local-first-future.md) NoSQL database for JavaScript that has been in production since 2016. It runs in the browser, Node.js, Electron, React Native, Capacitor, Deno, and Bun. It ships a full bidirectional [replication protocol](../../replication.md), [reactive queries](../../reactivity.md), and pluggable storages including SQLite, IndexedDB, OPFS, and in-memory. This page explains what ElectricSQL offers today, where it falls short, and how RxDB fills the same role with a backend you control.
 
