@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import Home from '..';
 import { getSemVariation } from '../../components/a-b-tests';
+import { LocalDatabaseSection } from '../../components/local-database-section';
 
 /**
  * SEM landingpage for "galocal3".
@@ -86,7 +87,8 @@ export default function Page() {
             metaDescription: 'RxDB is an offline-first sync engine for JavaScript: writes land on the device first, then replicate to any backend with conflict handling.',
             title: variation.title,
             text: variation.text,
-            bulletpoints: variation.bulletpoints
+            bulletpoints: variation.bulletpoints,
+            blocks: [<LocalDatabaseSection key="local-database" />]
         }
     });
 }
