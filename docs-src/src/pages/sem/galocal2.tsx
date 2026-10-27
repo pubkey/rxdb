@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import Home from '..';
 import { getSemVariation } from '../../components/a-b-tests';
+import { LocalDatabaseSection } from '../../components/local-database-section';
 
 /**
  * SEM landingpage for "galocal2".
@@ -86,7 +87,8 @@ export default function Page() {
             metaDescription: 'RxDB is a local-first database for React Native, Expo and the web. Same schema and queries on every platform, with sync to the backend you run.',
             title: variation.title,
             text: variation.text,
-            bulletpoints: variation.bulletpoints
+            bulletpoints: variation.bulletpoints,
+            blocks: [<LocalDatabaseSection key="local-database" />]
         }
     });
 }
