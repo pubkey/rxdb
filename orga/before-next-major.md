@@ -63,6 +63,22 @@ The NATS replication percent-encodes the primary key in the subject with `encode
 
 A legacy document is only moved when it is written again. Removing the fallback before all legacy documents are moved breaks them: the pull still returns them, but the push no longer finds their server state, so the conflict detection does not work and the old message stays in the stream next to the new one. In the next major version, remove the fallback and tell users in the changelog to move the legacy documents first, for example by running a one-time migration that reads all subjects with a `LastPerSubject` consumer and calls `moveNatsLegacyDocument()` for every message whose subject is not `getNatsDocumentSubject(subjectPrefix, docId)`. See https://github.com/pubkey/rxdb/issues/9343
 
+## Make `crypto-js` an optional peer dependency
+
+`crypto-js` is a normal `dependency` pinned at `4.2.0`, so **every** `npm install rxdb` pulls it in, including the installs of everyone who never touches the encryption plugin. It is used in exactly one place, `import pkg from 'crypto-js'` in `src/plugins/encryption-crypto-js/index.ts`, and nothing else in `src/` imports it.
+
+The reason to move it: `crypto-js` is no longer maintained. Its npm page marks it as discontinued, `4.2.0` is the last release and its own README recommends the native crypto module. Since RxDB generates a CycloneDX and an SPDX SBOM for every release and attaches both to the GitHub release, that discontinued package is now listed in a machine readable file for every consumer, and a dependency scanner flags it without anyone reading the docs. Making it optional keeps it out of the dependency tree and out of the SBOM of everyone who does not use the plugin.
+
+It has to be a `peerDependency` with `peerDependenciesMeta.optional`, the same as `firebase`, `mongodb` and `nats`. That is the breaking part: people who use `rxdb/plugins/encryption-crypto-js` have to install `crypto-js` themselves.
+
+These things have to be handled:
+
+- **`crypto-js` has to stay a `devDependency`.** `src/plugins/test-utils/config.ts` imports `wrappedKeyEncryptionCryptoJsStorage`, so the test utils pull the plugin in and the repo's own test suite needs the package present. The test utils also ship inside the npm package, so anyone importing `rxdb/plugins/test-utils` needs `crypto-js` installed as well, which is worth a line in the changelog.
+- **Check what `test:deps` does with it.** The script runs `dependency-check` with `--no-dev` over `./dist/cjs/plugins/encryption-crypto-js/index.js`. Verify whether a `peerDependency` counts as satisfying the import. If it does not, add `--ignore-module crypto-js` next to the existing `ws` and `graphql` entries.
+- **The import is static and `encryptString()` / `decryptString()` are synchronous.** Without the package installed the plugin throws at import time with a module resolution error rather than an RxDB error. Turning it into a lazy `import()` would make the whole encryption path async, which is a much larger change, so the static import is probably worth keeping. Decide whether a clearer error is needed instead, for example a check in the plugin's `init` that throws a dedicated error code.
+
+Open question, not decided: whether the free plugin should keep using `crypto-js` at all. `encryptString()` calls `AES.encrypt(value, password)` with the password as a string, which makes crypto-js derive the key with the OpenSSL compatible scheme (MD5, one iteration) and produce unauthenticated AES-CBC. `MINIMUM_PASSWORD_LENGTH` is `8`. The [encryption docs](https://rxdb.info/encryption.html) now carry a warning that points security relevant users at `encryption-web-crypto`. Moving the free plugin to the Web Crypto API as well, or deprecating it, is a separate decision and a separate breaking change, because it changes the ciphertext format and makes existing stored data unreadable without a migration.
+
 ---------------------------------
 ## Maybe later (not sure if should be done)
 

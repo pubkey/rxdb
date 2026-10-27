@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX the [encryption docs](https://rxdb.info/encryption.html) recommended `crypto-js` in two FAQ answers, which contradicted the page's own statement that `encryption-web-crypto` is the more secure plugin. The page now carries a warning that `encryption-crypto-js` is meant for keeping data out of plain sight and that security relevant apps should use `encryption-web-crypto`, because `crypto-js` is no longer maintained and the free plugin passes the password straight to `AES.encrypt()`, which derives the key with a single MD5 round and produces unauthenticated AES-CBC. The page title was also a single word and is now a keyword phrase",
+    "links": [],
+    "priority": 3
+}
