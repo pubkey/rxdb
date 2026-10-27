@@ -1,0 +1,11 @@
+{
+    "$schema": "./schema.json",
+    "text": "ADD the chars `.,~-%&_:* #\\` to `TEST_DATA_CHARSET` to ensure that test data still works when it is url encoded",
+    "links": [
+        {
+            "url": "https://github.com/pubkey/rxdb/pull/9326",
+            "linkText": "#9326"
+        }
+    ],
+    "priority": 1
+}

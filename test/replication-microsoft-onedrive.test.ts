@@ -661,6 +661,24 @@ describe('replication-microsoft-onedrive.test.ts', function () {
                 );
                 assert.deepStrictEqual(conflictResult.conflicts, []);
             });
+            it('should not have a conflict on updates of documents with dots in the id', async () => {
+                const docs = ['a.b', 'a.b.c', '1.0', 'foo.json'].map(id => schemaObjects.humanData(id));
+                await insertDocumentFiles(
+                    options,
+                    options.initData,
+                    PRIMARY_PATH,
+                    docs.map(doc => toRxDocumentData(doc))
+                );
+                const rows = docs.map(doc => toWriteRow(Object.assign({}, doc, { firstName: 'changed' }), doc));
+                const conflictResult = await fetchConflicts(
+                    options,
+                    options.initData,
+                    PRIMARY_PATH,
+                    rows
+                );
+                assert.deepStrictEqual(conflictResult.conflicts, []);
+                assert.strictEqual(conflictResult.nonConflicts.length, docs.length);
+            });
         });
         describe('WAL file', () => {
             it('should write to the wal file', async () => {

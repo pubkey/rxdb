@@ -3,7 +3,7 @@ import { newRxError, newRxFetchError } from '../../rx-error.ts';
 import { stripAllAttachmentDataForComparison } from '../../replication-protocol/helper.ts';
 import { deepEqual, ensureNotFalsy } from '../utils/index.ts';
 import { fetchDocumentContents, getDocumentFiles, insertDocumentFiles, updateDocumentFiles } from './document-handling.ts';
-import { fillFileIfEtagMatches, getDriveBaseUrl } from './microsoft-onedrive-helper.ts';
+import { docIdFromFileName, fillFileIfEtagMatches, getDriveBaseUrl } from './microsoft-onedrive-helper.ts';
 import type {
     OneDriveState,
     OneDriveItem
@@ -39,7 +39,7 @@ export async function fetchConflicts<RxDocType>(
     const fileIdByDocId = new Map<string, string>();
     const fileIds: string[] = filesMeta.files.map((f) => {
         const fileId = ensureNotFalsy(f.id);
-        const docId = f.name.split('.')[0];
+        const docId = docIdFromFileName(f.name);
         fileIdByDocId.set(docId, fileId);
         return fileId;
     });
@@ -223,7 +223,7 @@ export async function processWalFile<RxDocType>(
     const fileIdByDocId: Record<string, string> = {};
 
     docFiles.files.forEach(file => {
-        const docId = file.name.split('.')[0] as any;
+        const docId = docIdFromFileName(file.name) as any;
         fileIdByDocId[docId] = file.id;
     });
 

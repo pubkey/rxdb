@@ -1,0 +1,11 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX backup plugin failing on Windows or writing outside of the backup directory when a primary key or attachment id contains chars like `:*\\/` or `..`. These chars are now percent-encoded in the folder and file names",
+    "links": [
+        {
+            "url": "https://github.com/pubkey/rxdb/pull/9338",
+            "linkText": "#9338"
+        }
+    ],
+    "priority": 3
+}

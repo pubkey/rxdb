@@ -121,12 +121,39 @@ export function setMeta(
     return writeJsonToFile(loc, meta);
 }
 
+function escapeFileNameChar(char: string): string {
+    return '%' + char.charCodeAt(0).toString(16).toUpperCase().padStart(2, '0');
+}
+
+/**
+ * Document ids and attachment ids can contain chars
+ * that are not allowed in file names, like : * \ / on windows.
+ * These are percent-encoded so that each id maps to exactly
+ * one file name inside of the backup directory.
+ * The % itself is also encoded so that the mapping is unique.
+ */
+export function toFileName(id: string): string {
+    let ret = id.replace(/[<>:"/\\|?*%\x00-\x1F]/g, escapeFileNameChar);
+    /**
+     * Windows does not allow names that end with a dot or whitespace
+     * and this also prevents the names '.' and '..'.
+     */
+    const lastChar = ret.slice(-1);
+    if (lastChar === '.' || lastChar === ' ') {
+        ret = ret.slice(0, -1) + escapeFileNameChar(lastChar);
+    }
+    if (/^(con|prn|aux|nul|com\d|lpt\d)(\.|$)/i.test(ret)) {
+        ret = escapeFileNameChar(ret[0]) + ret.slice(1);
+    }
+    return ret;
+}
+
 export function documentFolder(
     options: BackupOptions,
     docId: string
 ): string {
     return path.join(
         options.directory,
-        docId
+        toFileName(docId)
     );
 }

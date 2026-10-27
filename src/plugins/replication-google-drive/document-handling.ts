@@ -1,7 +1,7 @@
 import { newRxError, newRxFetchError } from '../../rx-error.ts';
 import { ById } from '../../types/util';
 import { ensureNotFalsy } from '../utils/index.ts';
-import { applyDriveSpace, insertMultipartFile } from './google-drive-helper.ts';
+import { applyDriveSpace, escapeDriveQueryValue, insertMultipartFile } from './google-drive-helper.ts';
 import type {
     DriveFileListResponse,
     GoogleDriveOptionsWithDefaults
@@ -24,7 +24,7 @@ export async function getDocumentFiles(
 ): Promise<DriveFileListResponse> {
     const fileNames = docIds.map(id => id + '.json');
     let q = fileNames
-        .map(name => `name = '${name.replace("'", "\\'")}'`)
+        .map(name => `name = '${escapeDriveQueryValue(name)}'`)
         .join(' or ');
     q = '(' + q + ') and trashed = false';
     q += ' and \'' + init.docsFolderId + '\' in parents';
