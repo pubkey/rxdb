@@ -234,8 +234,7 @@ await db.heroes.find({
     }
   }
 })
-.$ // the $ returns an observable that
-   // emits each time the result set of the query changes
+.$ // observable with updated query results
 .subscribe(aliveHeroes => console.dir(aliveHeroes));
 ```
 
