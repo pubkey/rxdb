@@ -321,6 +321,12 @@ PowerSync is a "framework" for implementing local-first solutions. It centralize
 
 [Read more about why RxDB is a good alternative to PowerSync](./articles/alternatives/powersync-alternative.md).
 
+### Turso and libSQL
+
+Turso maintains libSQL, an open source fork of SQLite, and Turso Database, a rewrite of SQLite in Rust. Both run in the browser through WebAssembly. Turso Database stores data in OPFS through a Web Worker, which requires COOP and COEP headers and does not allow the same database to be used from several tabs. The libSQL WASM client is experimental and does not support sync. Turso Cloud adds hosted databases and server-side sync, and in October 2026 Supabase announced that it is acquiring Turso.
+
+[Read more about why RxDB is a good alternative to Turso and libSQL](./articles/alternatives/turso-alternative.md).
+
 # Read further
 
 - [Offline First Database Comparison](https://github.com/pubkey/client-side-databases)
