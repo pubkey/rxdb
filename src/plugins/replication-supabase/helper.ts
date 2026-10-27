@@ -5,6 +5,20 @@ export const POSTGRES_INSERT_CONFLICT_CODE = "23505";
 export const DEFAULT_MODIFIED_FIELD = '_modified';
 export const DEFAULT_DELETED_FIELD = '_deleted';
 
+/**
+ * Wraps a value in double quotes for use inside a PostgREST
+ * logic tree like or=(...) or and(...).
+ * Unquoted, a value that contains a reserved character
+ * (, . : ( ) and others) breaks the parsing
+ * and PostgREST answers with PGRST100 "failed to parse logic tree".
+ * Inside the quotes, a backslash and a double quote
+ * must be escaped with a backslash.
+ * @link https://docs.postgrest.org/en/stable/references/api/url_grammar.html#reserved-characters
+ */
+export function quotePostgrestFilterValue(value: string | number): string {
+    return '"' + String(value).replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"';
+}
+
 
 export function addDocEqualityToQuery<RxDocType>(
     jsonSchema: RxJsonSchema<RxDocumentData<RxDocType>>,

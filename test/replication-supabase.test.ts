@@ -449,6 +449,44 @@ describe('replication-supabase.test.ts', function () {
     });
 
     describe('issues', () => {
+        it('should pull documents whose primary key contains PostgREST reserved characters', async () => {
+            await cleanUpServer();
+            /**
+             * Inserted one after another, so they are pulled in this order.
+             * With batchSize = 5 the pull checkpoints land on index 4 and index 9,
+             * so the following pulls must send those ids inside the or() filter.
+             * No id contains a double quote, because RxDB does not allow it in a primary key (DOC23).
+             */
+            const ids = [
+                '0-a(b)c',
+                '1-dot.colon:star*',
+                '2-back\\slash',
+                '3-plain',
+                '4-(a b) #1234,with comma',
+                '5-plain',
+                '6-plain',
+                '7-plain',
+                '8-plain',
+                '9-mixed(,).\\:end'
+            ];
+            for (const passportId of ids) {
+                await insertDocument({
+                    passportId,
+                    firstName: randomString(10),
+                    lastName: randomString(10)
+                });
+            }
+
+            const collection = await humansCollection.createPrimary(0, undefined, false);
+            await syncCollectionOnce(collection, false, true);
+            const docs = await collection.find().exec();
+            assert.deepStrictEqual(
+                docs.map(d => d.passportId).sort(),
+                ids.slice().sort()
+            );
+
+            await collection.database.remove();
+        });
         it('#7513 push.modifier is never applied', async () => {
             await cleanUpServer();
 
