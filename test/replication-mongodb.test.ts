@@ -18,7 +18,8 @@ import {
     getPullStream,
     getPullHandler,
     getPushHandler,
-    runReplicationBaseTestSuite
+    runReplicationBaseTestSuite,
+    randomStringWithSpecialChars
 } from '../plugins/test-utils/index.mjs';
 
 import { RxDBDevModePlugin } from '../plugins/dev-mode/index.mjs';
@@ -127,9 +128,9 @@ describe('replication-mongodb.test.ts', function () {
     }
     function getRandomMongoDoc() {
         const ret = {
-            passportId: randomString(10),
-            firstName: randomString(10),
-            lastName: randomString(10)
+            passportId: randomStringWithSpecialChars(8, 12),
+            firstName: randomStringWithSpecialChars(8, 12),
+            lastName: randomStringWithSpecialChars(8, 12)
         };
         return ret;
     }
