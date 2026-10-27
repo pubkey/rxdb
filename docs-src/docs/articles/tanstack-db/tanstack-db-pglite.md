@@ -6,6 +6,7 @@ image: /headers/tanstack-db-pglite.jpg
 ---
 
 import {Steps} from '@site/src/components/steps';
+import {Faq, FaqItem} from '@site/src/components/faq';
 
 # TanStack DB with PGlite: Postgres-in-Browser Storage
 
@@ -171,33 +172,33 @@ This is done. No custom adapter, no SQL-to-document mapping, and the data surviv
 
 ## FAQ
 
-<details>
-    <summary>Is there an official TanStack DB PGlite collection?</summary>
+<Faq>
+
+<FaqItem question="Is there an official TanStack DB PGlite collection?">
 
 No. The official TanStack DB collection types cover TanStack Query, Electric, TrailBase, RxDB, PowerSync, localStorage, and local-only data. For PGlite you would have to write your own persistence glue, while the **[RxDB collection](./rxdb-collection-for-tanstack-db.md)** is an official, maintained package.
 
-</details>
+</FaqItem>
 
-<details>
-    <summary>Can PGlite persist data in the browser?</summary>
+<FaqItem question="Can PGlite persist data in the browser?">
 
 Yes. PGlite defaults to an in-memory database, and in the browser it can persist its data directory to IndexedDB via an `idb://` data directory or to OPFS through its access-handle-pool filesystem inside a Web Worker. This persists the Postgres files themselves, which is different from a document store like **[RxDB](../../rx-database.md)** that persists JSON documents through an [RxStorage](../../rx-storage.md).
 
-</details>
+</FaqItem>
 
-<details>
-    <summary>Can I use PGlite as an RxDB storage?</summary>
+<FaqItem question="Can I use PGlite as an RxDB storage?">
 
 No. There is no RxDB storage built on PGlite or any other client-side Postgres. RxDB is a NoSQL document database and ships **[storages](../../rx-storage.md)** for localStorage, IndexedDB, OPFS, SQLite, and more. When you need Postgres semantics on the client, use PGlite directly instead of forcing it under a document database.
 
-</details>
+</FaqItem>
 
-<details>
-    <summary>Does the RxDB-backed TanStack DB collection sync with a Postgres backend?</summary>
+<FaqItem question="Does the RxDB-backed TanStack DB collection sync with a Postgres backend?">
 
 Yes. Replication is configured on the RxDB collection through the **[Sync Engine](../../replication.md)**, which works with any backend, including a server-side PostgreSQL exposed over [HTTP](../../replication-http.md) or [GraphQL](./tanstack-db-graphql.md). Pulled documents stream into the TanStack DB collection automatically, so Postgres stays on the server where it scales best.
 
-</details>
+</FaqItem>
+
+</Faq>
 
 ## Follow Up
 

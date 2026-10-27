@@ -6,6 +6,7 @@ image: /headers/tanstack-db-graphql.jpg
 ---
 
 import {Steps} from '@site/src/components/steps';
+import {Faq, FaqItem} from '@site/src/components/faq';
 
 # TanStack DB + GraphQL: Offline-First Sync with RxDB
 
@@ -339,40 +340,39 @@ Writing three query builders per collection is repetitive. RxDB ships the helper
 
 ## FAQ
 
-<details>
-    <summary>Can TanStack DB sync with a GraphQL backend?</summary>
+<Faq>
+
+<FaqItem question="Can TanStack DB sync with a GraphQL backend?">
 
 Yes. TanStack DB itself has no GraphQL client, but with the RxDB collection underneath you configure the **[GraphQL replication plugin](../../replication-graphql.md)** on the RxCollection. Pulled and streamed documents then flow into the TanStack DB collection automatically and local mutations are pushed back as GraphQL mutations.
 
-</details>
+</FaqItem>
 
-<details>
-    <summary>Does TanStack DB support GraphQL subscriptions for realtime updates?</summary>
+<FaqItem question="Does TanStack DB support GraphQL subscriptions for realtime updates?">
 
 Yes, through RxDB's pull stream. You provide a `streamQueryBuilder` and a websocket url, and the **[Sync Engine](../../replication.md)** applies every subscription event to the local database, which updates the TanStack DB live queries in the same render cycle as local writes.
 
-</details>
+</FaqItem>
 
-<details>
-    <summary>Does the TanStack DB GraphQL sync work offline?</summary>
+<FaqItem question="Does the TanStack DB GraphQL sync work offline?">
 
 Yes. Writes are stored in the local **[RxStorage](../../rx-storage.md)** first and pushed when the client is online again. The replication resumes from its last checkpoint after a reconnect, so the client catches up on all server changes it missed while offline.
 
-</details>
+</FaqItem>
 
-<details>
-    <summary>Do I need Apollo Client or urql to sync TanStack DB with GraphQL?</summary>
+<FaqItem question="Do I need Apollo Client or urql to sync TanStack DB with GraphQL?">
 
 No. The **[GraphQL replication plugin](../../replication-graphql.md)** sends plain GraphQL queries over `fetch` and uses `graphql-ws` for subscriptions. You can still use Apollo or urql elsewhere in your app, but the replication does not depend on them.
 
-</details>
+</FaqItem>
 
-<details>
-    <summary>What does my GraphQL server need for the replication to work?</summary>
+<FaqItem question="What does my GraphQL server need for the replication to work?">
 
 No special sync service is required. Your server needs a pull `Query` that returns documents changed after a checkpoint, a push `Mutation` that returns conflicts, and optionally a `Subscription` for realtime events. Documents must be sortable by last write time and carry a boolean deleted flag, as described in the **[replication docs](../../replication.md)**.
 
-</details>
+</FaqItem>
+
+</Faq>
 
 ## Follow Up
 

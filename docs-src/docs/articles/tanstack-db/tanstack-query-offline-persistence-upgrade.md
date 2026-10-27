@@ -6,6 +6,7 @@ image: /headers/tanstack-query-offline-persistence-upgrade.jpg
 ---
 
 import {Steps} from '@site/src/components/steps';
+import {Faq, FaqItem} from '@site/src/components/faq';
 
 # Outgrowing TanStack Query's Offline Persistence? Use RxDB
 
@@ -209,40 +210,39 @@ Keep `persistQueryClient` when all of the following are true: the server is the 
 
 ## FAQ
 
-<details>
-    <summary>Can TanStack Query persist its cache to IndexedDB?</summary>
+<Faq>
+
+<FaqItem question="Can TanStack Query persist its cache to IndexedDB?">
 
 Yes. The official docs show how to build a custom persister on IndexedDB with `idb-keyval`, which lifts the localStorage size limit. The persister still stores the whole dehydrated cache as one entry, so it does not become a queryable database. For queryable durable storage, use an **[RxStorage](../../rx-storage.md)** under TanStack DB instead.
 
-</details>
+</FaqItem>
 
-<details>
-    <summary>Is persistQueryClient a database?</summary>
+<FaqItem question="Is persistQueryClient a database?">
 
 No. It saves a dehydrated snapshot of the query cache and restores it on startup, with a default `maxAge` of 24 hours after which the snapshot is silently discarded. A database like **[RxDB](../../rx-database.md)** stores documents durably, queries them with indexes, and replicates them with a backend.
 
-</details>
+</FaqItem>
 
-<details>
-    <summary>Do I have to replace TanStack Query when I adopt TanStack DB and RxDB?</summary>
+<FaqItem question="Do I have to replace TanStack Query when I adopt TanStack DB and RxDB?">
 
 No. TanStack Query and TanStack DB solve different problems, and TanStack DB even ships a Query collection type that loads data through TanStack Query. You can keep TanStack Query for server-owned data and back the collections that hold **[local-first](../local-first-future.md)** user data with RxDB.
 
-</details>
+</FaqItem>
 
-<details>
-    <summary>Does the localStorage limit affect TanStack Query offline persistence?</summary>
+<FaqItem question="Does the localStorage limit affect TanStack Query offline persistence?">
 
 Yes. Browsers limit localStorage to about 5 MiB per origin, and when the serialized cache exceeds the quota, persisting fails. By default there is no retry, and the `removeOldestQuery` strategy makes room by dropping data. RxDB avoids this wall by writing single documents to storages like **[IndexedDB](../indexeddb-max-storage-limit.md)**, which allow far larger quotas.
 
-</details>
+</FaqItem>
 
-<details>
-    <summary>Does data in RxDB expire like a persisted query cache?</summary>
+<FaqItem question="Does data in RxDB expire like a persisted query cache?">
 
 No. RxDB is a database, so documents stay on disk until your code deletes them. There is no `maxAge` and no cache busting. The **[Sync Engine](../../replication.md)** keeps local documents and your backend consistent instead of discarding and refetching them.
 
-</details>
+</FaqItem>
+
+</Faq>
 
 ## Follow Up
 

@@ -8,9 +8,29 @@ import { triggerTrackingEvent } from '../components/trigger-event';
 import { IframeFormModal } from '../components/modal';
 import { Button } from '../components/button';
 import { IconChevronsRight } from '../components/icons/chevrons-right';
+import { Faq, FaqItem } from '../components/faq';
 
 
 
+
+/**
+ * The Pro tiers show a monthly price but are only sold as annual licenses,
+ * which the billingDuration of one year expresses.
+ */
+function monthlyBilledAnnually(price: number) {
+    return {
+        '@type': 'UnitPriceSpecification',
+        'price': String(price),
+        'priceCurrency': 'USD',
+        'unitCode': 'MON',
+        'referenceQuantity': {
+            '@type': 'QuantitativeValue',
+            'value': 1,
+            'unitCode': 'MON',
+        },
+        'billingDuration': 'P1Y',
+    };
+}
 
 /**
  * Product structured data for the premium plugins so search
@@ -32,28 +52,50 @@ const PRODUCT_JSON_LD = {
     'offers': [
         {
             '@type': 'Offer',
+            'name': 'Free',
+            'description': 'Open-source core under the Apache 2.0 license. Includes the RxDB core, replication, schema validation and migration, the default storages and up to ' + NON_PREMIUM_COLLECTION_LIMIT + ' open collections in parallel. No signup, no key.',
+            'price': '0',
+            'priceCurrency': 'USD',
+            'url': 'https://rxdb.info/premium/',
+            'availability': 'https://schema.org/InStock',
+        },
+        {
+            '@type': 'Offer',
             'name': 'Pro',
-            'description': 'Per month, billed annually. Unlimited developers.',
+            'description': 'Starting price per month, billed annually. Unlimited developers. Everything in Free plus the OPFS, IndexedDB, SQLite and Filesystem storages, WebCrypto encryption and fulltext search.',
             'price': String(PRICE_PRO_MONTHLY),
             'priceCurrency': 'USD',
+            'priceSpecification': monthlyBilledAnnually(PRICE_PRO_MONTHLY),
             'url': 'https://rxdb.info/premium/',
             'availability': 'https://schema.org/InStock',
         },
         {
             '@type': 'Offer',
             'name': 'Pro Plus',
-            'description': 'Per month, billed annually. Unlimited developers.',
+            'description': 'Starting price per month, billed annually. Unlimited developers. Everything in Pro plus the Worker, SharedWorker, Sharding and Memory-Mapped storages, the localStorage meta optimizer, the query optimizer, RxServer adapters for Fastify and Koa, and the logger plugin.',
             'price': String(PRICE_PRO_PLUS_MONTHLY),
             'priceCurrency': 'USD',
+            'priceSpecification': monthlyBilledAnnually(PRICE_PRO_PLUS_MONTHLY),
             'url': 'https://rxdb.info/premium/',
             'availability': 'https://schema.org/InStock',
         },
         {
             '@type': 'Offer',
             'name': 'Corporate',
-            'description': 'Per year. Includes consulting sessions.',
+            'description': 'Per year. Unlimited developers. Everything in Pro Plus plus consulting sessions, architecture review, a named engineer, source code access, a private support channel, code review, migration help and priority bug fixes.',
             'price': String(PRICE_CORPORATE_YEARLY),
             'priceCurrency': 'USD',
+            'priceSpecification': {
+                '@type': 'UnitPriceSpecification',
+                'price': String(PRICE_CORPORATE_YEARLY),
+                'priceCurrency': 'USD',
+                'unitCode': 'ANN',
+                'referenceQuantity': {
+                    '@type': 'QuantitativeValue',
+                    'value': 1,
+                    'unitCode': 'ANN',
+                },
+            },
             'url': 'https://rxdb.info/premium/',
             'availability': 'https://schema.org/InStock',
         },
@@ -273,21 +315,21 @@ export default function Premium() {
                             <h2>
                                 F.A.Q.
                             </h2>
+                            <Faq>
                             {
                                 /**
                                  * IMPORTANT: It is a bad practice to "justify" for the price. We sell a B2B
                                  * tool and of course it is more expensive than a consumer netflix abo.
                                  */
                             }
-                            <details>
-                                <summary>What is the process for making a purchase?</summary>
+                            <FaqItem question="What is the process for making a purchase?">
                                 <ul>
                                     <li>Fill out the form by clicking one of the buttons above.</li>
                                     <li>You will receive a license agreement to sign via email.</li>
                                     <li>You will receive an invoice to pay.</li>
                                     <li>You will receive an access token to add the Premium plugins to your project following <a href="https://www.npmjs.com/package/rxdb-premium" target="_blank">these instructions</a>.</li>
                                 </ul>
-                            </details>
+                            </FaqItem>
                             {/* <details>
                                 <summary>Why is it not for free?</summary>
                                 The development of RxDB started in 2016 and after all these years it
@@ -303,8 +345,7 @@ export default function Premium() {
                                 that RxDB is a <b>future proof</b> tech stack to build on which lets
                                 RxDB stand out compared to similar technologies.
                             </details> */}
-                            <details>
-                                <summary>Can I get a free trial period?</summary>
+                            <FaqItem question="Can I get a free trial period?">
                                 <ul>
                                     <li>
                                         We do not currently offer a free trial. Instead, we encourage you to
@@ -318,7 +359,7 @@ export default function Premium() {
                                         Premium licenses are provided on an <b>annual basis</b>.
                                     </li>
                                 </ul>
-                            </details>
+                            </FaqItem>
                             {/* <details>
                                 <summary>Why is it not cheaper?</summary>
                                 The price of the Premium Plugins is chosen in way that ensures that
@@ -329,13 +370,11 @@ export default function Premium() {
                                 to do that and rely on the traditional client-server stack. So RxDB
                                 cannot be sold to that many people which increases the price.
                             </details> */}
-                            <details>
-                                <summary>Can I install/build the premium plugins in my CI?</summary>
+                            <FaqItem question="Can I install/build the premium plugins in my CI?">
                                 Yes, you can safely install and use the Premium Plugins in your CI
                                 without additional payment.
-                            </details>
-                            <details>
-                                <summary>Which payment methods are accepted?</summary>
+                            </FaqItem>
+                            <FaqItem question="Which payment methods are accepted?">
                                 <b>Stripe.com</b> is used as payment processor so most known payment
                                 options like credit card, PayPal, SEPA transfer and others are
                                 available. A list of all options can be found{' '}
@@ -347,7 +386,7 @@ export default function Premium() {
                                     here
                                 </a>
                                 .
-                            </details>
+                            </FaqItem>
                             {/* <details>
                                 <summary>Can I get a discount?</summary>
                                 Discounts are provided for people that have made a significant
@@ -362,33 +401,26 @@ export default function Premium() {
                                 </a>{' '}
                                 to get 2 years access to the Premium Plugins.
                             </details> */}
-                            <details>
-                                <summary>
-                                    Is there any tracking code inside of the premium plugins?
-                                </summary>
+                            <FaqItem question="Is there any tracking code inside of the premium plugins?">
                                 No, the premium plugins themself do not contain any tracking code. When
                                 you build your application with RxDB and deploy it to production, it
                                 will not make requests from your users to any RxDB server.
-                            </details>
-                            <details>
-                                <summary>
-                                    Can I upgrade to a higher tier later?
-                                </summary>
+                            </FaqItem>
+                            <FaqItem question="Can I upgrade to a higher tier later?">
                                 Yes! You can upgrade to a higher tier at any time.
                                 When you decide to upgrade, we'll calculate a fair upgrade price,
                                 meaning you only pay the difference between your existing tier and the new tier.
                                 <br />
                                 Your previous payments are fully credited towards the new license.
-                            </details>
-                            <details>
-                                <summary>Can I get a discount?</summary>
+                            </FaqItem>
+                            <FaqItem question="Can I get a discount?">
                                 We only offer discounts to developers who publicly speak about RxDB or are technical influencers.
                                 If you give talks at conferences, create educational content for a large audience, or can otherwise help spread the word about RxDB, please reach out to discuss a potential discount.
-                            </details>
-                            <details>
-                                <summary>Why do I have to pay taxes?</summary>
+                            </FaqItem>
+                            <FaqItem question="Why do I have to pay taxes?">
                                 Taxation depends on your country and entity type. We recommend that you add a correct address and, importantly, your Tax ID when filling out the form.
-                            </details>
+                            </FaqItem>
+                            </Faq>
                         </div>
                     </div>
 

@@ -6,6 +6,7 @@ image: /headers/rxdb-collection-for-tanstack-db.jpg
 ---
 
 import {Steps} from '@site/src/components/steps';
+import {Faq, FaqItem} from '@site/src/components/faq';
 
 # TanStack DB + RxDB: Durable, Offline-First Persistence & Sync
 
@@ -245,40 +246,39 @@ The RxDB collection is the better choice when you want a full database under you
 
 ## FAQ
 
-<details>
-    <summary>Does TanStack DB persist data on its own?</summary>
+<Faq>
+
+<FaqItem question="Does TanStack DB persist data on its own?">
 
 No. TanStack DB keeps collection data in memory and delegates persistence to the collection implementation. TanStack ships SQLite persistence adapters for some platforms, and the **[RxDB collection](https://tanstack.com/db/latest/docs/collections/rxdb-collection)** persists data through any [RxStorage](../../rx-storage.md) like IndexedDB, OPFS or SQLite.
 
-</details>
+</FaqItem>
 
-<details>
-    <summary>Is data duplicated between RxDB and TanStack DB?</summary>
+<FaqItem question="Is data duplicated between RxDB and TanStack DB?">
 
 Yes, intentionally. RxDB stores the data durably on disk while TanStack DB holds an in-memory copy for fast live queries. This duplication is what makes UI queries instant while keeping **[local-first](../local-first-future.md)** persistence and sync.
 
-</details>
+</FaqItem>
 
-<details>
-    <summary>Do I still need RxDB indexes when I only query through TanStack DB?</summary>
+<FaqItem question="Do I still need RxDB indexes when I only query through TanStack DB?">
 
 Usually not. TanStack DB queries run entirely in memory, so RxDB indexes do not affect them. Indexes still matter when you query the **[RxCollection](../../rx-collection.md)** directly, when replication uses filtered selectors, or when you load only a subset of the data into memory.
 
-</details>
+</FaqItem>
 
-<details>
-    <summary>Does the RxDB collection work with Vue, Solid, Svelte or Angular?</summary>
+<FaqItem question="Does the RxDB collection work with Vue, Solid, Svelte or Angular?">
 
 Yes. The `rxdbCollectionOptions()` function targets the framework-independent collection API of TanStack DB, so it works with every official framework binding. Only the `useLiveQuery` import changes, for example to `@tanstack/vue-db`. **[RxDB](../../rx-database.md)** itself is framework-agnostic as well.
 
-</details>
+</FaqItem>
 
-<details>
-    <summary>Which RxDB version do I need?</summary>
+<FaqItem question="Which RxDB version do I need?">
 
 The `@tanstack/rxdb-db-collection` package requires `rxdb` version `16.17.2` or later as a peer dependency. No extra RxDB plugin is needed; the integration builds on the public **[RxCollection](../../rx-collection.md)** API.
 
-</details>
+</FaqItem>
+
+</Faq>
 
 ## Follow Up
 

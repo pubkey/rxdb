@@ -6,6 +6,7 @@ image: /headers/what-is-tanstack-db.jpg
 ---
 
 import {Steps} from '@site/src/components/steps';
+import {Faq, FaqItem} from '@site/src/components/faq';
 
 # What Is TanStack DB? A Beginner's Guide with Persistence
 
@@ -192,33 +193,33 @@ localStorage is limited to around 5 MB per domain, so it fits demos, prototypes,
 
 ## FAQ
 
-<details>
-    <summary>Is TanStack DB a database?</summary>
+<Faq>
+
+<FaqItem question="Is TanStack DB a database?">
 
 No, not in the traditional sense. TanStack DB is an in-memory reactive client store with a database-like query API. It does not write to disk by itself and delegates persistence to the collection implementation. Pairing it with **[RxDB](../../rx-database.md)** through the official RxDB collection gives it an actual database underneath.
 
-</details>
+</FaqItem>
 
-<details>
-    <summary>Does TanStack DB persist data after a page reload?</summary>
+<FaqItem question="Does TanStack DB persist data after a page reload?">
 
 No, not out of the box. Collection data lives in memory and a reload clears it. TanStack ships SQLite persistence adapters and a LocalStorage collection for this, and the **[RxDB collection](./rxdb-collection-for-tanstack-db.md)** persists data through any [RxStorage](../../rx-storage.md) like localStorage, IndexedDB, OPFS, or SQLite.
 
-</details>
+</FaqItem>
 
-<details>
-    <summary>Does TanStack DB work offline?</summary>
+<FaqItem question="Does TanStack DB work offline?">
 
 Yes, when the collection type supports it. With the RxDB collection, all reads and writes go against the local database first, so the app keeps working without a network connection, and RxDB's [Sync Engine](../../replication.md) resumes replication from a checkpoint when the client comes back online. The **[offline-first guide](./tanstack-db-offline-first.md)** shows the complete pattern.
 
-</details>
+</FaqItem>
 
-<details>
-    <summary>Do I need TanStack Query to use TanStack DB?</summary>
+<FaqItem question="Do I need TanStack Query to use TanStack DB?">
 
 No. The Query collection type uses TanStack Query to fetch data from REST APIs, but other collection types do not depend on it. The **[RxDB collection](./rxdb-collection-for-tanstack-db.md)** for example only needs `rxdb`, `rxjs`, and a TanStack DB framework binding.
 
-</details>
+</FaqItem>
+
+</Faq>
 
 ## Follow Up
 

@@ -6,6 +6,7 @@ image: /headers/tanstack-db-capacitor.jpg
 ---
 
 import {Steps} from '@site/src/components/steps';
+import {Faq, FaqItem} from '@site/src/components/faq';
 
 # TanStack DB with Capacitor & Ionic: Offline Storage Guide
 
@@ -172,40 +173,39 @@ The RxDB collection is the better choice when you want a full database under you
 
 ## FAQ
 
-<details>
-    <summary>Does TanStack DB work with Capacitor and Ionic?</summary>
+<Faq>
+
+<FaqItem question="Does TanStack DB work with Capacitor and Ionic?">
 
 Yes. TanStack DB is plain JavaScript and runs in the Capacitor webview with React, Angular, Vue, Solid, or Svelte bindings. It keeps data in memory, so pair it with a persistent collection implementation like the **[RxDB collection](./rxdb-collection-for-tanstack-db.md)** to make the data survive app restarts.
 
-</details>
+</FaqItem>
 
-<details>
-    <summary>Can I use IndexedDB or localStorage for TanStack DB in a Capacitor app?</summary>
+<FaqItem question="Can I use IndexedDB or localStorage for TanStack DB in a Capacitor app?">
 
 Yes, but only for prototyping. Webview storages work inside Capacitor, and the OS can delete them when the device runs low on space. For production, use the **[SQLite RxStorage](../../rx-storage-sqlite.md)** which writes to the device filesystem and is not subject to webview cleanup.
 
-</details>
+</FaqItem>
 
-<details>
-    <summary>Is the RxDB SQLite storage for Capacitor free?</summary>
+<FaqItem question="Is the RxDB SQLite storage for Capacitor free?">
 
 No, not the full version. The production SQLite storage is part of the **[RxDB Premium 👑](/premium/)** plugins. A free trial version (`getRxStorageSQLiteTrial`) ships with RxDB core and is limited to `500` documents without indexes, and the free localStorage-based storage works for testing inside the webview.
 
-</details>
+</FaqItem>
 
-<details>
-    <summary>Does the RxDB collection for TanStack DB work with Ionic Angular or Vue?</summary>
+<FaqItem question="Does the RxDB collection for TanStack DB work with Ionic Angular or Vue?">
 
 Yes. The `rxdbCollectionOptions()` function targets the framework-independent `createCollection()` API, so it works with `@tanstack/angular-db`, `@tanstack/vue-db`, and the other official bindings. **[RxDB](../../rx-database.md)** itself is framework-agnostic as well.
 
-</details>
+</FaqItem>
 
-<details>
-    <summary>Does the same code run as a PWA in the browser?</summary>
+<FaqItem question="Does the same code run as a PWA in the browser?">
 
 Yes. Swap the SQLite storage for the **[IndexedDB RxStorage](../../rx-storage-indexeddb.md)** or another browser storage and the rest of the code stays identical. See [Building an Offline PWA with TanStack DB and RxDB](./tanstack-db-pwa.md) for the browser setup.
 
-</details>
+</FaqItem>
+
+</Faq>
 
 ## Follow Up
 

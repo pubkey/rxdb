@@ -6,6 +6,7 @@ image: /headers/tanstack-db-conflict-resolution.jpg
 ---
 
 import {Steps} from '@site/src/components/steps';
+import {Faq, FaqItem} from '@site/src/components/faq';
 
 # Conflict Resolution in TanStack DB with RxDB
 
@@ -222,33 +223,33 @@ Two offline users incrementing the same counter is the classic case: a last-writ
 
 ## FAQ
 
-<details>
-    <summary>Does TanStack DB resolve sync conflicts on its own?</summary>
+<Faq>
+
+<FaqItem question="Does TanStack DB resolve sync conflicts on its own?">
 
 No. TanStack DB rolls back the optimistic in-memory state when a local write fails to persist, but it does not talk to your backend. Replication and conflict resolution belong to the collection implementation, and with the RxDB collection they are handled by the **[RxDB Sync Engine](../../replication.md)** and the collection's conflict handler.
 
-</details>
+</FaqItem>
 
-<details>
-    <summary>Does the server resolve conflicts in RxDB replication?</summary>
+<FaqItem question="Does the server resolve conflicts in RxDB replication?">
 
 No. The server only detects the conflict during a push, by comparing the assumed master state with its actual state, and responds with the actual document state. RxDB then resolves the conflict on the client by calling the conflict handler of the **[RxCollection](../../rx-collection.md)** and pushes the resolved state again. Your backend never needs merge logic.
 
-</details>
+</FaqItem>
 
-<details>
-    <summary>Can I use last-write-wins for TanStack DB conflict resolution?</summary>
+<FaqItem question="Can I use last-write-wins for TanStack DB conflict resolution?">
 
 Yes. Set a custom `conflictHandler` on the collection that compares a field like `updatedAt` and returns the newer of `realMasterState` and `newDocumentState`. Keep in mind that the **[default conflict handler](../../transactions-conflicts-revisions.md)** drops the fork state on purpose, so that clients that were offline for a long time do not overwrite other people's changes.
 
-</details>
+</FaqItem>
 
-<details>
-    <summary>Do CRDTs remove the need for a custom conflict handler?</summary>
+<FaqItem question="Do CRDTs remove the need for a custom conflict handler?">
 
 Yes. The **[RxDB CRDT plugin](../../crdt.md)** stores each write as a CRDT operation and merges conflicting operations deterministically with its own built-in handler. You must not set a custom conflict handler when the CRDT plugin is enabled.
 
-</details>
+</FaqItem>
+
+</Faq>
 
 ## Follow Up
 

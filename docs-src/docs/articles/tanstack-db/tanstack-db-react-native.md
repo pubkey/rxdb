@@ -6,6 +6,7 @@ image: /headers/tanstack-db-react-native.jpg
 ---
 
 import {Steps} from '@site/src/components/steps';
+import {Faq, FaqItem} from '@site/src/components/faq';
 
 # TanStack DB in React Native & Expo: Offline Storage Guide
 
@@ -197,40 +198,39 @@ Replication is configured on the RxDB collection, not on the TanStack DB collect
 
 ## FAQ
 
-<details>
-    <summary>Does TanStack DB work in React Native and Expo?</summary>
+<Faq>
+
+<FaqItem question="Does TanStack DB work in React Native and Expo?">
 
 Yes. TanStack DB is plain JavaScript without DOM dependencies, so it runs in React Native and Expo without changes. Its collections are in-memory though, so for offline data you need a durable collection backend like the **[RxDB collection](./rxdb-collection-for-tanstack-db.md)** on top of a persistent storage.
 
-</details>
+</FaqItem>
 
-<details>
-    <summary>How do I persist TanStack DB data offline in React Native?</summary>
+<FaqItem question="How do I persist TanStack DB data offline in React Native?">
 
 Yes, this works through the collection implementation. The `@tanstack/rxdb-db-collection` package stores all documents in **[RxDB](../../rx-database.md)**, which persists them to SQLite or the Expo filesystem on the device. On the next app start the TanStack DB collection reloads its state from disk.
 
-</details>
+</FaqItem>
 
-<details>
-    <summary>Can I use TanStack DB with SQLite in Expo?</summary>
+<FaqItem question="Can I use TanStack DB with SQLite in Expo?">
 
 Yes. Install `expo-sqlite` and create the RxDatabase with the **[SQLite RxStorage](../../rx-storage-sqlite.md)** using the `getSQLiteBasicsExpoSQLiteAsync()` adapter. The free trial version is fine for prototypes, the production version is part of [RxDB Premium 👑](/premium/).
 
-</details>
+</FaqItem>
 
-<details>
-    <summary>Which RxDB storage is fastest for React Native?</summary>
+<FaqItem question="Which RxDB storage is fastest for React Native?">
 
 Yes, there is a clear answer: the premium **[Expo Filesystem RxStorage](../../rx-storage-filesystem-expo.md)**. It skips the SQL engine and writes documents directly through `expo-file-system`, which makes it significantly faster than SQLite in RxDB's performance test suite. It requires Expo SDK 54 or newer.
 
-</details>
+</FaqItem>
 
-<details>
-    <summary>Do I still need a sync library for TanStack DB on mobile?</summary>
+<FaqItem question="Do I still need a sync library for TanStack DB on mobile?">
 
 No. When you use the RxDB collection, RxDB's **[Sync Engine](../../replication.md)** handles replication with any backend, including retries, checkpoints, and conflict handling. TanStack DB picks up replicated changes automatically through RxDB's change feed.
 
-</details>
+</FaqItem>
+
+</Faq>
 
 ## Follow Up
 

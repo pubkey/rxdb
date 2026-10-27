@@ -6,6 +6,7 @@ image: /headers/tanstack-db-sqlite.jpg
 ---
 
 import {Steps} from '@site/src/components/steps';
+import {Faq, FaqItem} from '@site/src/components/faq';
 
 # TanStack DB with SQLite: Native & WASM Storage via RxDB
 
@@ -217,33 +218,33 @@ The RxDB SQLite storage covers a different scope. It puts a full database under 
 
 ## FAQ
 
-<details>
-    <summary>Is there a free SQLite storage for TanStack DB with RxDB?</summary>
+<Faq>
+
+<FaqItem question="Is there a free SQLite storage for TanStack DB with RxDB?">
 
 Yes. The trial version of the **[SQLite RxStorage](../../rx-storage-sqlite.md)** ships with the free RxDB core package as `getRxStorageSQLiteTrial`. It is limited to `500` non-deleted documents and is meant for evaluation and prototypes. The production version with indexes and full query support is part of [RxDB Premium 👑](/premium/).
 
-</details>
+</FaqItem>
 
-<details>
-    <summary>Can TanStack DB use SQLite WASM in the browser?</summary>
+<FaqItem question="Can TanStack DB use SQLite WASM in the browser?">
 
 Yes. The premium SQLite storage supports `wa-sqlite` through the `getSQLiteBasicsWasm()` adapter, so your TanStack DB collections persist into WebAssembly SQLite. In most browser apps the **[IndexedDB storage](../../rx-storage-indexeddb.md)** or [OPFS storage](../../rx-storage-opfs.md) is the faster choice, and your TanStack DB code stays identical when you switch.
 
-</details>
+</FaqItem>
 
-<details>
-    <summary>Does TanStack DB work with Expo SQLite?</summary>
+<FaqItem question="Does TanStack DB work with Expo SQLite?">
 
 Yes. The `getSQLiteBasicsExpoSQLiteAsync()` adapter connects the SQLite storage to the `expo-sqlite` module, and the TanStack DB collection sits on top through `rxdbCollectionOptions()`. The **[React Native database guide](../../react-native-database.md)** lists the recommended adapters per environment, including the faster [Expo Filesystem storage](../../rx-storage-filesystem-expo.md).
 
-</details>
+</FaqItem>
 
-<details>
-    <summary>Do I have to change my TanStack DB code when I switch from SQLite to another storage?</summary>
+<FaqItem question="Do I have to change my TanStack DB code when I switch from SQLite to another storage?">
 
 No. The storage is set once when the database is created, and the **[RxStorage](../../rx-storage.md)** interface hides it from everything above. Your TanStack DB collections, live queries, and mutations keep working unchanged on IndexedDB, OPFS, SQLite, or any other storage.
 
-</details>
+</FaqItem>
+
+</Faq>
 
 ## Follow Up
 

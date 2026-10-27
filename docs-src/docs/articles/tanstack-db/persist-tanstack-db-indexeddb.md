@@ -6,6 +6,7 @@ image: /headers/persist-tanstack-db-indexeddb.jpg
 ---
 
 import {Steps} from '@site/src/components/steps';
+import {Faq, FaqItem} from '@site/src/components/faq';
 
 # How to Persist TanStack DB to IndexedDB & OPFS
 
@@ -180,40 +181,39 @@ The RxDB collection is the better fit when persistence is only the first step:
 
 ## FAQ
 
-<details>
-    <summary>Does TanStack DB persist data to IndexedDB by default?</summary>
+<Faq>
+
+<FaqItem question="Does TanStack DB persist data to IndexedDB by default?">
 
 No. TanStack DB collections are in-memory and lose their state on a page reload. Persistence comes from the collection implementation, and with the **[RxDB collection](./rxdb-collection-for-tanstack-db.md)** you can persist to localStorage, IndexedDB, or OPFS by configuring the matching RxStorage.
 
-</details>
+</FaqItem>
 
-<details>
-    <summary>Can I persist TanStack DB to IndexedDB for free?</summary>
+<FaqItem question="Can I persist TanStack DB to IndexedDB for free?">
 
 Yes. The **[Dexie.js storage](../../rx-storage-dexie.md)** is free and stores your TanStack DB data in IndexedDB. The premium IndexedDB storage 👑 is faster and has a smaller build size, but it is not required to get durable IndexedDB persistence.
 
-</details>
+</FaqItem>
 
-<details>
-    <summary>Is OPFS faster than IndexedDB for TanStack DB storage?</summary>
+<FaqItem question="Is OPFS faster than IndexedDB for TanStack DB storage?">
 
 Yes, for reads on big datasets. The **[OPFS storage](../../rx-storage-opfs.md)** reads up to 4x faster than IndexedDB because it works on binary files. The IndexedDB storage has the faster initial page load and the smaller build size, so OPFS pays off when collections grow past `10k` documents.
 
-</details>
+</FaqItem>
 
-<details>
-    <summary>Do I lose data when I switch the RxDB storage?</summary>
+<FaqItem question="Do I lose data when I switch the RxDB storage?">
 
 No, but the data does not move by itself. The old storage keeps the documents and the new storage starts empty. Run the **[storage migration plugin](../../migration-storage.md)** once to copy the existing documents into the new storage, then ship the new configuration.
 
-</details>
+</FaqItem>
 
-<details>
-    <summary>Does the storage choice change my TanStack DB code?</summary>
+<FaqItem question="Does the storage choice change my TanStack DB code?">
 
 No. TanStack DB talks to the RxCollection, and the RxCollection talks to whatever **[RxStorage](../../rx-storage.md)** you configured. Queries, mutations, and live updates work the same on every storage. Switching storages is a configuration change, not a rewrite.
 
-</details>
+</FaqItem>
+
+</Faq>
 
 ## Follow Up
 

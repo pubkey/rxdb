@@ -6,6 +6,7 @@ image: /headers/tanstack-db-offline-first.jpg
 ---
 
 import {Steps} from '@site/src/components/steps';
+import {Faq, FaqItem} from '@site/src/components/faq';
 
 # Building an Offline-First App with TanStack DB and RxDB
 
@@ -224,40 +225,39 @@ Offline-first is not the right approach for every app, and it would be dishonest
 
 ## FAQ
 
-<details>
-    <summary>Does TanStack DB work offline?</summary>
+<Faq>
+
+<FaqItem question="Does TanStack DB work offline?">
 
 Yes, with the right collection type. TanStack DB queries and mutations run in memory, so they work without a network by design, but the state is lost on reload and nothing syncs. The **[RxDB collection](./rxdb-collection-for-tanstack-db.md)** adds durable storage and a replication that queues offline writes and resumes when the client is back online.
 
-</details>
+</FaqItem>
 
-<details>
-    <summary>Is TanStack DB local-first?</summary>
+<FaqItem question="Is TanStack DB local-first?">
 
 No, not on its own. TanStack DB is an in-memory store and delegates persistence and sync to the collection implementation. When you back it with **[RxDB](../../rx-database.md)**, the local database becomes the source of truth and the setup follows the [local-first](../local-first-future.md) model: all reads and writes are local, the server is a replication endpoint.
 
-</details>
+</FaqItem>
 
-<details>
-    <summary>Are offline writes lost when the user closes the tab?</summary>
+<FaqItem question="Are offline writes lost when the user closes the tab?">
 
 No. Writes on the TanStack DB collection are persisted to the RxDB storage on disk, and the **[Sync Engine](../../replication.md)** tracks which of them still have to be pushed. After a reload, the replication resumes from its stored checkpoint and sends the pending writes to the backend.
 
-</details>
+</FaqItem>
 
-<details>
-    <summary>Do I need @tanstack/offline-transactions when using RxDB?</summary>
+<FaqItem question="Do I need @tanstack/offline-transactions when using RxDB?">
 
 No. The `@tanstack/offline-transactions` package queues mutations while offline, which is useful when your data comes from a server-backed collection. With the RxDB collection, offline writes are already persisted locally and pushed later by **[RxDB's replication](../../replication.md)**, so a separate mutation queue is not needed.
 
-</details>
+</FaqItem>
 
-<details>
-    <summary>Does the replication resume from a checkpoint after being offline?</summary>
+<FaqItem question="Does the replication resume from a checkpoint after being offline?">
 
 Yes. RxDB stores a checkpoint for each replication, identified by the `replicationIdentifier`. When the client reconnects, the **[Sync Engine](../../replication.md)** runs a checkpoint iteration that fetches only the documents changed since that checkpoint, and failed requests are retried after `retryTime` or immediately when `navigator.onLine` reports the connection is back.
 
-</details>
+</FaqItem>
+
+</Faq>
 
 ## Follow Up
 
