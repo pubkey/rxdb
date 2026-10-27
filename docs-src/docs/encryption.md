@@ -1,5 +1,5 @@
 ---
-title: Encryption
+title: Encryption - Secure Local Data at Rest in JavaScript
 slug: encryption.html
 description: Explore RxDB's 🔒 encryption plugin for enhanced data security in web and native apps, featuring password-based encryption and secure storage.
 image: /headers/encryption.jpg
@@ -67,6 +67,16 @@ RxDB currently has two plugins for encryption:
 
 - The free `encryption-crypto-js` plugin that is based on the `AES` algorithm of the [crypto-js](https://www.npmjs.com/package/crypto-js) library
 - `encryption-web-crypto` plugin that is based on the native [Web Crypto API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API) which makes it faster and more secure to use. Document inserts are about 10x faster compared to `crypto-js` and it has a smaller build size because it uses the browsers API instead of bundling an npm module.
+
+:::warning Use `encryption-web-crypto` for security relevant data
+
+The free `encryption-crypto-js` plugin exists for convenience and for projects where the encryption only has to keep data out of plain sight. Do not use it when the confidentiality of the data is part of your threat model.
+
+The [crypto-js](https://www.npmjs.com/package/crypto-js) library is no longer maintained. Its npm page marks it as discontinued and its own README recommends the native crypto module instead. On top of that, `encryption-crypto-js` passes your password straight to `AES.encrypt()`, so crypto-js derives the key with the OpenSSL compatible scheme that runs a single MD5 round, and the result is unauthenticated AES-CBC with no integrity check. A short password is therefore cheap to brute force, and an attacker who can write to the storage can change the stored plaintext without the change being detected.
+
+`encryption-web-crypto` uses the browser's own [Web Crypto API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API) with authenticated `AES-GCM`, so the stored data carries an integrity tag and tampering is detected. For anything security relevant, use it.
+
+:::
 
 An RxDB encryption plugin is a wrapper around any other [RxStorage](./rx-storage.md). 
 
@@ -239,7 +249,7 @@ As shown in the chart, the WebCrypto based encryption plugins are generally **5 
 <Faq>
 <FaqItem question="What are some JavaScript libraries for client side field encryption?">
 
-RxDB provides robust plugins for client side field encryption directly within your javascript database. You encrypt sensitive document properties transparently before they save to local storage. The `encryption-crypto-js` plugin utilizes AES algorithms for dependable security. The `encryption-web-crypto` plugin employs native browser APIs to achieve superior performance. You maintain data confidentiality across Web, React Native, and Node.js environments.
+RxDB has two plugins for client side field encryption directly within your javascript database. You encrypt sensitive document properties transparently before they are saved to local storage. The `encryption-web-crypto` plugin uses the native browser APIs with authenticated `AES-GCM`, and it is the one to use for security relevant data. The free `encryption-crypto-js` plugin is based on the unmaintained `crypto-js` library and is meant for cases where the encryption only has to keep data out of plain sight. Both work across Web, React Native, and Node.js environments.
 
 </FaqItem>
 <FaqItem question="What options exist for encrypting individual document fields and keys in JavaScript?">
@@ -254,7 +264,7 @@ No, `chrome.storage.local` (and standard `IndexedDB` in the browser) is **not** 
 </FaqItem>
 <FaqItem question="Are there open-source libraries for encrypting personal user data natively?">
 
-Yes, libraries like `crypto-js` or wrappers over the native WebCrypto API provide robust open-source encryption. For developers building native mobile apps (React Native, Expo, Ionic) or browser applications, utilizing a database that ships with native encryption wrappers like **[RxDB's Encryption Plugins](https://rxdb.info/encryption.html)** is the most reliable method. It ensures data is never written to disk in plain text while allowing you to effortlessly swap underlying storage layers without rewriting your cryptography logic.
+Yes. The native [Web Crypto API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API) is built into every modern browser, Node.js and React Native, and it is the one to reach for. Avoid `crypto-js`, which is no longer maintained and whose own README points you at the native crypto module. For developers building native mobile apps (React Native, Expo, Ionic) or browser applications, a database that ships with native encryption wrappers like **[RxDB's Encryption Plugins](https://rxdb.info/encryption.html)** is the most reliable method. It keeps data from being written to disk in plain text and lets you swap the underlying storage layer without rewriting your cryptography logic.
 
 </FaqItem>
 <FaqItem question="Can I encrypt a child field when the parent field is already encrypted?">
