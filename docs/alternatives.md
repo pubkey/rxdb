@@ -259,7 +259,7 @@ Replicache can be used in most frontend technologies like browsers, React/Remix,
 
 ### InstantDB
 
-InstantDB is designed for real-time data synchronization with built-in offline support, allowing changes to be queued locally and [synced](./replication.md) when the user reconnects. While it offers seamless [optimistic updates](./articles/optimistic-ui.md) and rollback capabilities, its offline-first design is not as mature or comprehensive as RxDB's - the [offline data](./articles/offline-database.md) is more of a cache, not a full-database sync. The query language used is Datalog, and the backend sync service is written in Clojure. InstantDB is focused more on simplicity and real-time collaboration, with fewer customization options for storage or conflict resolution compared to RxDB, which supports various storage adapters and advanced conflict handling via CRDTs.
+InstantDB is designed for real-time data synchronization with built-in offline support, allowing changes to be queued locally and [synced](./replication.md) when the user reconnects. While it offers seamless [optimistic updates](./articles/optimistic-ui.md) and rollback capabilities, its offline-first design is not as mature or comprehensive as RxDB's - the [offline data](./articles/offline-database.md) is more of a cache, not a full-database sync. The query language used is Datalog, and the backend sync service is written in Clojure. InstantDB is focused more on simplicity and real-time collaboration, with fewer customization options for storage or conflict resolution compared to RxDB, which supports various storage adapters and advanced conflict handling via CRDTs. In August 2026 the Instant team joined OpenAI, new Instant Cloud signups were closed, and all Instant Cloud apps shut down on August 31, 2027.
 
 [Read more about why RxDB is a good alternative to InstantDB](./articles/alternatives/instantdb-alternative.md).
 
@@ -271,7 +271,7 @@ Yjs is a [CRDT-based](./crdt.md) (Conflict-free Replicated Data Type) library fo
 
 ### ElectricSQL
 
-2024: ElectricSQL is being rewritten in a new Electric-Next branch, which focuses on partial syncing of ("shapes", which makes is basically a NoSQL like document database) of data from a remote Postgres DB to a local clients written in TypeScript/JS or Elixir. The write path is not yet implemented, neither is client-side reactivity. The ElectricSQL backend is written in Elixir.
+ElectricSQL is a read-path sync engine that streams partial "shapes" of a Postgres database to clients over HTTP. Writes go through your own API, because Electric does not sync the write path. The sync service is written in Elixir. In August 2026 the Electric team joined Databricks and Electric Cloud was shut down, so Cloud users have to self-host the sync service or move to another stack.
 
 [Read more about why RxDB is a good alternative to ElectricSQL](./articles/alternatives/electricsql-alternative.md).
 
@@ -292,6 +292,12 @@ Ditto is a closed-source, edge-native database whose native SDKs sync device-to-
 PowerSync is a "framework" for implementing local-first solutions. It centralizes business logic and conflict resolution on a central, authoritative server (PostgreSQL or MongoDB), vs RxDB that also supports custom backends. Both RxDB and PowerSync can be used with a variety of storage backends, but PowerSync uses SQLite as the front-end database which has shown to be slow because the WASM-SQLite abstraction increases read and write latency. In terms of client SDKs, PowerSync offers Flutter, Kotlin, and Swift in addition to JS/TypeScript. PowerSync offers many client technologies, PowerSync is under a license that restricts commercial use that competes with PowerSync and the JourneyApps Platform.
 
 [Read more about why RxDB is a good alternative to PowerSync](./articles/alternatives/powersync-alternative.md).
+
+### Turso and libSQL
+
+Turso maintains libSQL, an open source fork of SQLite, and Turso Database, a rewrite of SQLite in Rust. Both run in the browser through WebAssembly. Turso Database stores data in OPFS through a Web Worker, which requires COOP and COEP headers and does not allow the same database to be used from several tabs. The libSQL WASM client is experimental and does not support sync. Turso Cloud adds hosted databases and server-side sync, and in October 2026 Supabase announced that it is acquiring Turso.
+
+[Read more about why RxDB is a good alternative to Turso and libSQL](./articles/alternatives/turso-alternative.md).
 
 # Read further
 

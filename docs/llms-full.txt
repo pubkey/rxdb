@@ -15574,7 +15574,7 @@ Replicache can be used in most frontend technologies like browsers, React/Remix,
 
 ### InstantDB
 
-InstantDB is designed for real-time data synchronization with built-in offline support, allowing changes to be queued locally and [synced](./replication.md) when the user reconnects. While it offers seamless [optimistic updates](./articles/optimistic-ui.md) and rollback capabilities, its offline-first design is not as mature or comprehensive as RxDB's - the [offline data](./articles/offline-database.md) is more of a cache, not a full-database sync. The query language used is Datalog, and the backend sync service is written in Clojure. InstantDB is focused more on simplicity and real-time collaboration, with fewer customization options for storage or conflict resolution compared to RxDB, which supports various storage adapters and advanced conflict handling via CRDTs.
+InstantDB is designed for real-time data synchronization with built-in offline support, allowing changes to be queued locally and [synced](./replication.md) when the user reconnects. While it offers seamless [optimistic updates](./articles/optimistic-ui.md) and rollback capabilities, its offline-first design is not as mature or comprehensive as RxDB's - the [offline data](./articles/offline-database.md) is more of a cache, not a full-database sync. The query language used is Datalog, and the backend sync service is written in Clojure. InstantDB is focused more on simplicity and real-time collaboration, with fewer customization options for storage or conflict resolution compared to RxDB, which supports various storage adapters and advanced conflict handling via CRDTs. In August 2026 the Instant team joined OpenAI, new Instant Cloud signups were closed, and all Instant Cloud apps shut down on August 31, 2027.
 
 [Read more about why RxDB is a good alternative to InstantDB](./articles/alternatives/instantdb-alternative.md).
 
@@ -15586,7 +15586,7 @@ Yjs is a [CRDT-based](./crdt.md) (Conflict-free Replicated Data Type) library fo
 
 ### ElectricSQL
 
-2024: ElectricSQL is being rewritten in a new Electric-Next branch, which focuses on partial syncing of ("shapes", which makes is basically a NoSQL like document database) of data from a remote Postgres DB to a local clients written in TypeScript/JS or Elixir. The write path is not yet implemented, neither is client-side reactivity. The ElectricSQL backend is written in Elixir.
+ElectricSQL is a read-path sync engine that streams partial "shapes" of a Postgres database to clients over HTTP. Writes go through your own API, because Electric does not sync the write path. The sync service is written in Elixir. In August 2026 the Electric team joined Databricks and Electric Cloud was shut down, so Cloud users have to self-host the sync service or move to another stack.
 
 [Read more about why RxDB is a good alternative to ElectricSQL](./articles/alternatives/electricsql-alternative.md).
 
@@ -15607,6 +15607,12 @@ Ditto is a closed-source, edge-native database whose native SDKs sync device-to-
 PowerSync is a "framework" for implementing local-first solutions. It centralizes business logic and conflict resolution on a central, authoritative server (PostgreSQL or MongoDB), vs RxDB that also supports custom backends. Both RxDB and PowerSync can be used with a variety of storage backends, but PowerSync uses SQLite as the front-end database which has shown to be slow because the WASM-SQLite abstraction increases read and write latency. In terms of client SDKs, PowerSync offers Flutter, Kotlin, and Swift in addition to JS/TypeScript. PowerSync offers many client technologies, PowerSync is under a license that restricts commercial use that competes with PowerSync and the JourneyApps Platform.
 
 [Read more about why RxDB is a good alternative to PowerSync](./articles/alternatives/powersync-alternative.md).
+
+### Turso and libSQL
+
+Turso maintains libSQL, an open source fork of SQLite, and Turso Database, a rewrite of SQLite in Rust. Both run in the browser through WebAssembly. Turso Database stores data in OPFS through a Web Worker, which requires COOP and COEP headers and does not allow the same database to be used from several tabs. The libSQL WASM client is experimental and does not support sync. Turso Cloud adds hosted databases and server-side sync, and in October 2026 Supabase announced that it is acquiring Turso.
+
+[Read more about why RxDB is a good alternative to Turso and libSQL](./articles/alternatives/turso-alternative.md).
 
 # Read further
 
@@ -16152,6 +16158,10 @@ import {Timeline} from '@site/src/components/timeline';
 # RxDB as an AWS Amplify DataStore Alternative
 
 <RxdbLogo alt="JavaScript Database" />
+
+:::note AWS Amplify DataStore is deprecated
+DataStore is not part of Amplify Gen 2. Amplify Gen 1, which contains DataStore, is in maintenance mode and reaches end of life on May 1, 2027 ([Amplify docs](https://docs.amplify.aws/gen1/vue/build-a-backend/more-features/datastore/migrate-from-datastore/)).
+:::
 
 AWS Amplify DataStore offered an appealing promise: define a GraphQL schema, run a CLI command, and get automatic offline sync to DynamoDB via AWS AppSync. For teams already embedded in the AWS ecosystem, that promise was compelling. But DataStore was deprecated in Amplify Gen 2, is scheduled for end-of-life on May 1, 2027, and had well-documented limitations around query flexibility, local performance, and its tight coupling to AWS infrastructure. This page explains what DataStore does, where it falls short, and why [RxDB](https://rxdb.info) is a practical alternative for teams building offline-first applications.
 
@@ -18600,57 +18610,58 @@ import {ComparisonTable} from '@site/src/components/comparison-table';
 
 # RxDB as an ElectricSQL Alternative for Local-First JavaScript Apps
 
-[ElectricSQL](https://electric-sql.com/) is in the middle of a major rewrite. The original prototype combined SQLite, Postgres, and CRDT-based bidirectional sync. The new direction, often called Electric Next, drops most of that and focuses on partial sync of "shapes" from a Postgres source database to TypeScript or Elixir clients. The write path is not yet implemented and client-side reactivity is incomplete. Teams that want to ship a [local-first](../../offline-first.md) JavaScript application today need a stable alternative that already supports reads, writes, queries, and live updates.
+[ElectricSQL](https://electric.ax/) is a read-path sync engine that streams subsets of a Postgres database ("shapes") to clients over HTTP. Electric reached 1.0 in March 2025 and its open source projects, including [PGlite](https://pglite.dev/), are widely used. Teams that ran on Electric Cloud now have to self-host the Electric sync service or move to a different stack, which is why many of them are looking for an **ElectricSQL alternative**.
 
-[RxDB](https://rxdb.info/) is a [local-first](../../articles/local-first-future.md) NoSQL database for JavaScript that has been in production since 2016. It runs in the browser, in Node.js, in Electron, and in React Native. It ships a full bidirectional [replication protocol](../../replication.md), [reactive queries](../../reactivity.md), and pluggable storages including SQLite, IndexedDB, OPFS, and in-memory. This page explains what ElectricSQL offers today, where it falls short, and how RxDB fills the same role with fewer surprises.
+:::note Electric Cloud has been shut down
+In August 2026 the Electric team joined Databricks and announced that Electric Cloud is winding down ([announcement](https://electric.ax/blog/2026/08/11/electric-joining-databricks)). By September 28, 2026, Electric Cloud was shut down ([PR #4812](https://github.com/electric-sql/electric/pull/4812)). The open source sync service can still be self-hosted.
+:::
 
-<RxdbLogo alt="JavaScript Database" />
+[RxDB](https://rxdb.info/) is a [local-first](../local-first-future.md) NoSQL database for JavaScript that has been in production since 2016. It runs in the browser, Node.js, Electron, React Native, Capacitor, Deno, and Bun. It ships a full bidirectional [replication protocol](../../replication.md), [reactive queries](../../reactivity.md), and pluggable storages including SQLite, IndexedDB, OPFS, and in-memory. This page explains what ElectricSQL offers today, where it falls short, and how RxDB fills the same role with a backend you control.
+
+<RxdbLogo alt="ElectricSQL alternative" />
 
 ## A Short History of ElectricSQL
 
-The first version of ElectricSQL targeted a specific architecture. Each client embedded SQLite. A backend process replicated rows from Postgres into those SQLite databases and back, using CRDT-based merge logic to resolve conflicts. The pitch was a SQL database on the client that stayed in sync with a SQL database on the server.
+The first version of ElectricSQL embedded SQLite in each client and replicated rows between Postgres and those SQLite databases in both directions, with CRDT-based merge logic. In 2024 the team rewrote Electric with a much narrower scope: a sync service written in Elixir that sits in front of Postgres and streams "shapes", which are filtered subsets of a table, to clients as JSON over HTTP. The write path was intentionally left to the application.
 
-In 2024 the team announced a rewrite. The new branch, Electric Next, narrows the scope significantly:
+### A Brief Timeline
 
-- Sync is built around "shapes". A shape is a filtered subset of a Postgres table that the client subscribes to. Internally this looks closer to a document store than a relational system, since the client receives JSON rows over an HTTP stream.
-- The backend is written in Elixir and runs as a service in front of Postgres.
-- The client library is TypeScript and JavaScript, with an Elixir client also in scope.
-- The write path is not yet implemented in the new architecture. Clients can read shapes but cannot send changes back through the same protocol.
-- Client-side reactivity, the ability to subscribe to a query and receive updates as the local data changes, is not yet feature complete.
-
-The shape-based read model is interesting for some workloads, but it is a partial product. Most apps need both reads and writes, and most apps need observable queries that the UI can bind to.
+- **2024** - Rewrite as "Electric Next", focused on read-path sync of shapes from Postgres.
+- **March 17, 2025** - [Electric 1.0](https://electric-sql.com/blog/2025/03/17/electricsql-1.0-released) is released and declared production ready. Electric Cloud follows as a managed service.
+- **August 11, 2026** - Electric [joins Databricks](https://electric.ax/blog/2026/08/11/electric-joining-databricks). The post says Electric Cloud "is winding down. Cloud users will need to self-host or move to another provider." Previously open sourced projects stay open source.
+- **September 28, 2026** - A pull request in the Electric repository notes that Electric Cloud sign-in "no longer works now that Electric Cloud has been shut down" ([PR #4812](https://github.com/electric-sql/electric/pull/4812)).
 
 ## What is RxDB?
 
-RxDB is a JavaScript database that stores data on the client and syncs with any backend you choose. Documents are validated against a JSON schema, queries follow a MongoDB-style syntax, and every query can be observed as an [RxJS observable](../../reactivity.md). The same code runs in browsers, Node.js, Electron, React Native, Capacitor, and other JavaScript runtimes.
+RxDB (Reactive Database) is a local-first, NoSQL database for JavaScript applications. Documents are validated against a JSON schema, queries use MongoDB-style (Mango) syntax, and every query can be observed as an [RxJS observable](../../reactivity.md).
 
-The storage layer is pluggable. You can use [IndexedDB](../../rx-storage-indexeddb.md), OPFS, an in-memory store, or a [SQLite-backed storage](../../rx-storage-sqlite.md) when you want a SQL engine under the hood. The replication layer is also pluggable. RxDB ships handlers for [generic HTTP/REST](../../replication-http.md), GraphQL, CouchDB, WebRTC, Firestore, NATS, and others. Because the [replication protocol](../../replication.md) is documented and minimal, you can implement it on top of any backend, including a Postgres database fronted by a small REST or HTTP service.
+The storage layer is pluggable. You can use [IndexedDB](../../rx-storage-indexeddb.md), [OPFS](../../rx-storage-opfs.md), an in-memory store, or a [SQLite-backed storage](../../rx-storage-sqlite.md) when you want a SQL engine under the hood. The replication layer is also pluggable. RxDB ships handlers for [generic HTTP/REST](../../replication-http.md), GraphQL, CouchDB, WebRTC, Firestore, [Supabase](../../replication-supabase.md), NATS, and others. Because the [replication protocol](../../replication.md) is documented and minimal, you can implement it on top of any backend, including a Postgres database fronted by a small HTTP service.
 
-## ElectricSQL Limitations Today
+## Where ElectricSQL Falls Short
 
-These are the practical issues a team hits when evaluating ElectricSQL Next for a production app.
+These are the practical issues a team hits when evaluating ElectricSQL for a production local-first app.
 
-### 1. The Rewrite is in Flight
+### 1. No Managed Hosting Anymore
 
-The product is being redesigned in public. Documentation, APIs, and feature scope keep shifting. Building on a moving target is risky for any application that needs a stable contract over the next few years.
+With Electric Cloud gone, running Electric means operating the sync service yourself. Notice that the service has to keep a logical replication connection to your Postgres database, so it becomes one more stateful component in your infrastructure. The team now works inside Databricks, and the Electric repository describes itself as "The agent platform built on sync", which makes the long-term focus of the standalone sync product hard to predict.
 
 ### 2. No Write Path
 
-Electric Next streams shapes from Postgres to the client. It does not provide a built-in mechanism to push local writes back through the same channel. Teams have to build their own write API on the side and reconcile it with the shape stream. This is the core feature most local-first apps need, and it is missing.
+The Electric docs state it directly: "Electric does not do write-path sync." Local writes have to go through your own API, and the [writes guide](https://electric.ax/docs/guides/writes) lists several patterns, from online-only writes to optimistic state to syncing through a local PGlite database. Each of them has to be built and maintained by the application. For offline writes, this is the part that is hardest to get right, and Electric leaves it to you.
 
-### 3. Incomplete Client Reactivity
+### 3. No Local Database by Default
 
-A local-first app usually binds the UI to live query results. When the underlying data changes, the view updates. Electric Next does not yet offer a complete reactive query layer on the client. You receive shape updates, but wiring them into queries with filters, sorts, and joins is left to the application.
+Electric streams shape data to the client, but it does not decide where it is stored or how it is queried. To get queries with filters and sorts over local data, you combine it with another library such as TanStack DB or PGlite. With RxDB, the local database, the queries, and the replication are one system.
 
 ### 4. Elixir Backend Dependency
 
-The sync service is written in Elixir and runs as its own process in front of Postgres. Teams that do not already operate Elixir services take on a new runtime, new deployment story, and new monitoring surface. For shops standardized on Node.js, Go, Python, or Rust, this is real overhead.
+The sync service is written in Elixir and runs as its own process in front of Postgres. Teams that do not already operate Elixir services take on a new runtime, a new deployment, and a new monitoring surface.
 
 ### 5. Postgres-Centric
 
-ElectricSQL assumes Postgres is the source of truth. If your backend uses MongoDB, MySQL, DynamoDB, a custom service, or a mix of stores, ElectricSQL is the wrong fit. The shape model is tied to Postgres replication internals.
+ElectricSQL assumes Postgres is the source of truth. If your backend uses MongoDB, MySQL, DynamoDB, a custom service, or a mix of stores, ElectricSQL is the wrong fit. The shape model is tied to Postgres logical replication.
 
-Both projects are under active development. As of July 30, 2026, [ElectricSQL](https://github.com/electric-sql/electric) has 10,286 GitHub stars while [RxDB](https://github.com/pubkey/rxdb) has 23,296.
+As of October 27, 2026, [ElectricSQL](https://github.com/electric-sql/electric) has 10,418 GitHub stars while [RxDB](https://github.com/pubkey/rxdb) has 23,416.
 
 ## RxDB Advantages
 
@@ -18660,7 +18671,7 @@ RxDB has been published since 2016 and is used in production across web, desktop
 
 ### 2. Full Read and Write Replication
 
-The [RxDB replication protocol](../../replication.md) handles pull, push, and live updates. Writes made on the client flow back to the server through the push handler, with conflict detection based on document revisions. This works out of the box, not as a future roadmap item.
+The [RxDB replication protocol](../../replication.md) handles pull, push, and live updates. Writes made on the client flow back to the server through the push handler, with conflict detection based on document revisions. This works out of the box.
 
 ### 3. Multiple Storage Engines
 
@@ -18777,34 +18788,38 @@ The standard pattern for replacing ElectricSQL with RxDB looks like this.
 5. The push endpoint accepts a batch of change rows, applies them inside a transaction, and returns rows that lost a conflict so the client can reconcile.
 6. Add an event stream, server-sent events or a WebSocket, that emits a notification when any row in a table changes. The RxDB replication uses that signal to trigger a new pull. This is the live channel described in the [realtime database article](../../articles/realtime-database.md).
 
-This setup mirrors what ElectricSQL provides on the read side, adds the write path that ElectricSQL Next is missing, and runs on whatever language your team already uses. There is no Elixir service to operate.
+This setup mirrors what ElectricSQL provides on the read side, adds the write path that Electric leaves to the application, and runs on whatever language your team already uses. There is no Elixir service to operate and no hosted sync service that can be shut down.
+
+## When ElectricSQL Still Makes Sense
+
+If you only need read-path sync from Postgres, for example to stream live data into dashboards, and you already handle writes through an existing API, Electric does that job well. It is open source, and the [Electric 1.0 release](https://electric-sql.com/blog/2025/03/17/electricsql-1.0-released) stabilized its APIs. Same goes for [PGlite](https://pglite.dev/): if you want a full Postgres in the browser, it is the best-known option. Compare it with other browser databases in [RxDB vs SQLite WASM vs PGlite](../rxdb-vs-sqlite-wasm-vs-pglite.md).
 
 ## FAQ
 
 <Faq>
-<FaqItem question="Is ElectricSQL stable for production?">
+<FaqItem question="Is Electric Cloud shut down?">
 
-The original ElectricSQL is no longer the active product. Electric Next is under active development, the write path is not implemented, and client reactivity is incomplete. For a production deployment that needs both reads and writes today, it is too early.
+Yes. Electric announced on August 11, 2026 that Electric Cloud is winding down after the team joined Databricks, and by September 28, 2026 the Electric repository described it as shut down. Cloud users have to self-host the Electric sync service or move to another stack such as **[RxDB](../../rx-database.md)** with your own backend.
+
+</FaqItem>
+<FaqItem question="Is ElectricSQL still open source?">
+
+Yes. Electric states that everything it previously open sourced stays open source, including the Postgres sync service, PGlite, and TanStack DB. You can run the sync service yourself, but you have to operate it next to your Postgres database.
+
+</FaqItem>
+<FaqItem question="Does ElectricSQL support offline writes?">
+
+No, not by itself. Electric does read-path sync only, and writes go through your own API. With the **[RxDB Sync Engine](../../replication.md)**, writes are stored locally and pushed to the server by the push handler, with conflict handling built in.
 
 </FaqItem>
 <FaqItem question="Can RxDB sync from a Postgres database?">
 
-Yes. Expose a small pull and push HTTP API in front of Postgres and use the [HTTP replication plugin](../../replication-http.md). The server can be Node.js, Go, Rust, Python, or anything else that speaks HTTP and SQL. RxDB does not require a specific backend runtime.
-
-</FaqItem>
-<FaqItem question="Does RxDB use SQLite?">
-
-RxDB can use SQLite as a storage backend through the [SQLite RxStorage](../../rx-storage-sqlite.md). It also supports IndexedDB, OPFS, in-memory, and other engines. The choice is per database, and the rest of the API stays the same.
+Yes. Expose a small pull and push HTTP API in front of Postgres and use the **[HTTP replication plugin](../../replication-http.md)**. The server can be Node.js, Go, Rust, Python, or anything else that speaks HTTP and SQL. If your Postgres runs on Supabase, the [Supabase replication plugin](../../replication-supabase.md) does this without a custom server.
 
 </FaqItem>
 <FaqItem question="What about partial sync, the equivalent of ElectricSQL shapes?">
 
-RxDB supports partial replication. The pull handler can filter on the server side based on user, tenant, region, or any other dimension. You can also run multiple replications per collection with different filters, which gives the same outcome as subscribing to several shapes.
-
-</FaqItem>
-<FaqItem question="Can I use ElectricSQL and RxDB together?">
-
-In theory yes. You could let ElectricSQL stream shapes into a service that then feeds an RxDB pull endpoint. In practice this adds two systems to maintain. Most teams pick one. If RxDB covers the read and write path on its own, the simpler choice is to drop the extra layer.
+RxDB supports partial replication. The pull handler can filter on the server side based on user, tenant, region, or any other dimension. You can also run multiple replications per collection with different filters, which gives the same outcome as subscribing to several shapes. See **[partial sync](../../replication.md)**.
 
 </FaqItem>
 </Faq>
@@ -18813,25 +18828,25 @@ In theory yes. You could let ElectricSQL stream shapes into a service that then 
 
 <ComparisonTable>
 
-| Feature | ElectricSQL Next | RxDB |
+| Feature | ElectricSQL | RxDB |
 | --- | --- | --- |
-| Status | Rewrite in progress | Stable since 2016 |
+| Status | Open source, team joined Databricks in August 2026 | Independent, maintained since 2016 |
+| Managed hosting | Electric Cloud shut down in 2026 | No hosted service required |
 | Read sync | Yes, via shapes | Yes, via pull handler |
-| Write sync | Not yet implemented | Yes, via push handler |
-| Client reactivity | Incomplete | Observable queries on every collection |
+| Write sync | No, writes go through your own API | Yes, via push handler |
+| Local database | Not included, combine with TanStack DB or PGlite | Included |
 | Backend runtime | Elixir service in front of Postgres | Any HTTP server, any language |
 | Source database | Postgres only | Postgres, MongoDB, MySQL, CouchDB, custom, P2P |
-| Client storage | Internal, JSON over HTTP | IndexedDB, OPFS, SQLite, in-memory, more |
-| Query language | Shape filters | MongoDB-style Mango queries |
+| Client storage | Up to the application | IndexedDB, OPFS, SQLite, in-memory, more |
+| Query language | Shape filters | MongoDB-style (Mango) queries |
 | Conflict handling | Application defined | Pluggable conflict handler with revisions |
-| Mobile support | Limited | React Native, Capacitor, Expo, Electron |
-| Offline-first | Read-only today | Full offline reads and writes |
+| Offline-first | Read-only unless you build the write path | Full offline reads and writes |
 
 </ComparisonTable>
 
 ## Next Steps
 
-If you were waiting for ElectricSQL Next to ship a complete read and write path with reactive queries, RxDB already covers that ground. Start with the [RxDB replication guide](../../replication.md), wire up an [HTTP replication](../../replication-http.md) against your Postgres backend, and bind your UI to [observable queries](../../reactivity.md).
+If you ran on Electric Cloud and have to move anyway, RxDB covers reads, writes, local queries, and live updates with a backend you control. The [InstantDB comparison](./instantdb-alternative.md) and the [Turso comparison](./turso-alternative.md) cover two more hosted sync services that changed course in 2026, and the [PowerSync comparison](./powersync-alternative.md) covers another Postgres sync engine. Start with the [RxDB replication guide](../../replication.md), wire up an [HTTP replication](../../replication-http.md) against your Postgres backend, and bind your UI to [observable queries](../../reactivity.md).
 
 More resources:
 
@@ -19312,6 +19327,10 @@ import {Timeline} from '@site/src/components/timeline';
 # RxDB as a Horizon Alternative
 
 <RxdbLogo alt="JavaScript Database" />
+
+:::note Horizon is no longer maintained
+The company behind RethinkDB and Horizon shut down in 2016, and the [Horizon repository](https://github.com/rethinkdb/horizon) has received no meaningful updates since then.
+:::
 
 Horizon was the official client-side library for RethinkDB, launched in 2016 to let developers build realtime JavaScript applications without writing server code. It offered a clean API for subscribing to live data, built-in authentication, and a permission system. But Horizon's life was short. The company behind RethinkDB shut down just months after Horizon launched, and offline support was never implemented. The project is now archived and receives no maintenance.
 
@@ -19879,107 +19898,116 @@ RxDB has been in active development since 2016 and is used by companies in produ
 
 ---
 
-## RxDB as an InstantDB Alternative with Custom Backends
+## RxDB as an InstantDB Alternative After the Instant Cloud Shutdown
 
 import {Faq, FaqItem} from '@site/src/components/faq';
 import {ComparisonTable} from '@site/src/components/comparison-table';
 
-# RxDB as an InstantDB Alternative with Custom Backends
+# RxDB as an InstantDB Alternative After the Instant Cloud Shutdown
 
-If you arrived here looking for an **InstantDB alternative**, you most likely want one of three things:
+[InstantDB](https://www.instantdb.com/) made realtime, collaborative apps easy to start: a client SDK with optimistic updates, a Datalog-style query language, and a hosted sync service that just worked. Now that Instant Cloud is closing, many teams are looking for an **InstantDB alternative** and have a deadline to meet.
 
-- A real [offline-first](../../offline-first.md) local database, not just a network cache that flushes when storage gets tight.
-- The freedom to plug your own backend into the sync layer instead of relying on a hosted Datalog service.
-- An open source stack that you can audit, fork, and self-host without depending on a single vendor.
+:::note Instant Cloud is shutting down
+In August 2026 the Instant team joined OpenAI. New Instant Cloud signups are closed, all Instant Cloud apps shut down on August 31, 2027, and backups stay available until August 31, 2028 ([announcement](https://www.instantdb.com/essays/instant_team_joins_openai)).
+:::
 
-**RxDB** (Reactive Database) is a client-side NoSQL database for JavaScript that stores data locally in the browser, mobile runtimes, Electron, or Node.js, and replicates with any backend you control. It is fully open source and has been used in production for offline-first apps for years.
+[RxDB](https://rxdb.info/) (Reactive Database) is a [local-first](../local-first-future.md), NoSQL database for JavaScript applications that stores data on the device and replicates with any backend you run. This page explains what the Instant Cloud shutdown means for existing apps, where InstantDB falls short as a local database, and how to move an InstantDB app to RxDB with your own [Sync Engine](../../replication.md) backend.
 
-<RxdbLogo alt="JavaScript Database" />
+<RxdbLogo alt="InstantDB alternative" />
 
 ## A Short History of InstantDB
 
-InstantDB launched in 2023 out of Y Combinator with the goal of making real-time, collaborative apps feel as easy to build as a static page. The product centers on a hosted sync service written in Clojure that exposes a Datalog-style query language to JavaScript clients. Clients write through optimistic updates, the server stores the canonical state, and changes are streamed back to every connected device.
+InstantDB launched in 2023 out of Y Combinator. The product centers on a sync server written in Clojure that talks to Postgres and exposes a Datalog-style query language (InstaQL) to JavaScript clients. Clients write through optimistic updates, the server stores the canonical state, and changes are streamed back to every connected device. The design works well for prototypes and collaborative tools, and the SDK handles subscriptions and rollbacks automatically.
 
-The design works well for prototypes and small collaborative tools. Queries are expressive once you know Datalog, and the SDK handles subscriptions and rollbacks automatically. The trade-off is that the sync engine and storage are tightly coupled to the InstantDB cloud, and the local layer is a query cache rather than a full database.
+### A Brief Timeline
 
-## What Is RxDB?
+- **2023** - InstantDB launches as a Y Combinator company with a hosted sync service.
+- **2024** - The full stack, including the Clojure server, is published under the Apache 2.0 license on [GitHub](https://github.com/instantdb/instant).
+- **July 31, 2026** - Subscriptions started after this date are fully refunded.
+- **August 2026** - The Instant team joins OpenAI. New signups for Instant Cloud are closed ([announcement](https://www.instantdb.com/essays/instant_team_joins_openai)).
+- **August 31, 2027** - All Instant Cloud apps shut down.
+- **August 31, 2028** - Instant Cloud backups are no longer available.
 
-RxDB is an embeddable JavaScript database built around three ideas:
+## What the Instant Cloud Shutdown Means for Your App
 
-- **Local-first storage**: every read and write hits a local engine first. The app keeps working when the network is gone. See [offline-first](../../offline-first.md) and [local-first future](../../articles/local-first-future.md).
-- **Reactive queries**: any [RxQuery](../../rx-query.md) returns an observable that re-emits when matching data changes, locally or from a remote push. See [reactivity](../../reactivity.md).
-- **Pluggable replication**: the [Sync Engine](../../replication.md) talks to any HTTP endpoint, GraphQL server, CouchDB, Firestore, or peer over WebRTC. The protocol is documented and you can implement it on any backend with [HTTP replication](../../replication-http.md).
+The announcement is clear: "Existing users should migrate off of Instant Cloud within the next 12 months." There are two paths. You can self-host Instant, or you can move to a different stack.
 
-Storage is also pluggable. The same collection can run on IndexedDB, OPFS, SQLite, in-memory, or LocalStorage without changing application code.
+Instant stays open source, and the team published a [migration guide to self-hosting](https://www.instantdb.com/docs/self-hosting/migrate.md). Following it, you set up your own Instant server, rehearse with a test backup, switch Instant Cloud to read-only, restore a final backup, and deploy a client release with the new app ID and URLs. The guide states that "Migrating without data loss will require some downtime." During the cutover, writes are blocked, and users may have to sign in again.
 
-## Limitations of InstantDB
+Self-hosting keeps your app code unchanged. But you take over the operation of a Clojure sync server and its Postgres database, and the project that you depend on no longer has its original team working on it full-time. This is the trade-off to evaluate before you choose a path.
 
-InstantDB is a good fit for many apps, but a few constraints push teams to look for an alternative.
+If you have to touch the backend anyway, the migration is also the moment to move to a stack where the sync server is a small part of the backend you already run, instead of a separate service that you have to keep alive.
 
-### 1. The Sync Service Is Hosted Only
+## What is RxDB?
 
-InstantDB requires its managed backend. There is no open source server you can run on your own infrastructure for production workloads. If your app must run on customer hardware, in regulated environments, or in regions where the InstantDB cloud is not available, you are stuck.
+RxDB (Reactive Database) is a local-first, NoSQL database for JavaScript applications. It runs in the browser, Node.js, Electron, React Native, Capacitor, Deno, and Bun. It is built around three ideas:
+
+- **Local-first storage**: every read and write hits a local engine first. The app keeps working when the network is gone. See [offline-first](../../offline-first.md).
+- **Reactive queries**: any [RxQuery](../../rx-query.md) returns an observable that emits again when matching data changes, locally or from a remote push. See [reactivity](../../reactivity.md).
+- **Pluggable replication**: the [Sync Engine](../../replication.md) talks to any HTTP endpoint, GraphQL server, CouchDB, Firestore, Supabase, or peer over WebRTC. The protocol is documented, so you can implement it on any backend with [HTTP replication](../../replication-http.md).
+
+Storage is also pluggable. The same collection can run on [IndexedDB](../../rx-storage-indexeddb.md), [OPFS](../../rx-storage-opfs.md), [SQLite](../../rx-storage-sqlite.md), in-memory, or [localStorage](../../rx-storage-localstorage.md) without changing application code.
+
+## Where InstantDB Falls Short
+
+The shutdown is the urgent reason to move, but some limits of InstantDB also apply to a self-hosted Instant server.
+
+### 1. The Backend Is a Fixed Service
+
+Instant clients only talk to an Instant server. Your data model, permissions, and sync all live inside that Clojure service and its Postgres schema. When you self-host, you operate the full Instant backend next to your own services. With RxDB, the sync endpoints are a few routes in the backend you already have, written in the language you already use.
 
 ### 2. Datalog Has a Learning Curve
 
-InstantDB queries use a Datalog-style triple syntax. The model is expressive once it clicks, but new contributors have to learn it before they can ship a feature. RxDB uses a JSON Mango query format that is familiar to anyone who has touched MongoDB, PouchDB, or Supabase.
+InstantDB queries use a Datalog-style syntax. The model is expressive once it clicks, but new contributors have to learn it before they can ship a feature. RxDB uses [MongoDB-style (Mango) queries](../../rx-query.md) that are familiar to anyone who has used MongoDB or PouchDB.
 
 ### 3. The Local Layer Is a Cache
 
-InstantDB stores results of subscribed queries on the client so the UI stays responsive during short network drops. It is not a full local database. You cannot run arbitrary queries that were never subscribed, and the cache can be evicted. RxDB stores every document of every replicated collection on disk and lets you query any field at any time.
+InstantDB stores the results of subscribed queries on the client so the UI stays responsive during network drops. It is not a full local database. You cannot run arbitrary queries over data that was never subscribed. RxDB stores every document of every replicated collection on the device and lets you query any field at any time, which makes it an [offline database](../offline-database.md) and not just a cache.
 
-### 4. Few Storage Adapter Options
+### 4. Few Storage Options
 
-The InstantDB client picks its own persistence layer. RxDB exposes a [storage interface](../../rx-collection.md) with adapters for IndexedDB, OPFS, SQLite, Memory, LocalStorage, Dexie, and more. You can swap storage per platform or per collection.
+The InstantDB client picks its own persistence layer. RxDB exposes an [RxStorage](../../rx-storage.md) interface with storages for IndexedDB, OPFS, SQLite, memory, localStorage, Dexie, and more. You can switch storages per platform. Switching storages is a configuration change, not a rewrite.
 
 ### 5. Limited Conflict Resolution Knobs
 
-InstantDB resolves write conflicts internally. You get optimistic updates and rollback, but the resolution policy is mostly fixed. RxDB lets you write a [custom conflict handler](../../transactions-conflicts-revisions.md) per collection, or opt into [CRDTs](../../crdt.md) when you need automatic merging without server arbitration.
+InstantDB resolves write conflicts internally. You get optimistic updates and rollback, but the resolution policy is mostly fixed. RxDB lets you write a [custom conflict handler](../../transactions-conflicts-revisions.md) per collection, or use [CRDTs](../../crdt.md) when you need automatic merging.
 
-Both projects are under active development. As of July 30, 2026, [InstantDB](https://github.com/instantdb/instant) has 10,366 GitHub stars while [RxDB](https://github.com/pubkey/rxdb) has 23,296.
+As of October 27, 2026, [InstantDB](https://github.com/instantdb/instant) has about 10,600 GitHub stars while [RxDB](https://github.com/pubkey/rxdb) has 23,416.
 
 ## Why Teams Pick RxDB Instead
 
 ### Bring Your Own Backend
 
-RxDB does not ship with a mandatory cloud. You connect a collection to whatever you already run:
+RxDB does not ship with a mandatory cloud. A collection connects to whatever you already run:
 
 - A REST API over [HTTP replication](../../replication-http.md).
-- A GraphQL endpoint with subscriptions.
-- A CouchDB or Firestore instance using the official replication plugins.
-- WebRTC peers for direct device-to-device sync.
+- A [GraphQL](../../replication-graphql.md) endpoint with subscriptions.
+- [CouchDB](../../replication-couchdb.md), [Firestore](../../replication-firestore.md), or [Supabase](../../replication-supabase.md) with the official replication plugins.
+- [WebRTC](../../replication-webrtc.md) peers for direct device-to-device sync.
 
-The sync protocol is a simple pull plus push plus event stream contract. Anything that can implement those three calls can be an RxDB backend.
+The sync protocol is a pull plus push plus event stream contract. Anything that can implement those three calls can be an RxDB backend. No vendor can shut it down for you.
 
-### Open Source
+### Open Source and Independent
 
-RxDB is Apache 2.0 on the core and the storage adapters. You can read every line of the engine, fork it, and run it without sending data to a third party.
-
-### JSON Mango Queries
-
-Queries look like the rest of the JavaScript ecosystem. See [RxQuery](../../rx-query.md) for the full operator list.
+The RxDB core is Apache 2.0. The project has been maintained since 2016 and is funded by [👑 RxDB Premium](/premium/) plugins, not by venture capital that needs an exit.
 
 ### Observable Queries Out of the Box
 
-Every query is an RxJS observable. UI frameworks subscribe once and re-render when data changes. See [reactivity](../../reactivity.md) and [optimistic UI](../../articles/optimistic-ui.md).
+Every query is an RxJS observable. UI frameworks subscribe once and re-render when data changes. See [reactivity](../../reactivity.md) and [optimistic UI](../optimistic-ui.md).
 
-### Real Conflict Resolution
+### Multi-Tab
 
-Plug in a [custom conflict handler](../../transactions-conflicts-revisions.md) per collection, or enable [CRDTs](../../crdt.md) when you want commutative merges without writing your own merge logic.
-
-### Multi-Storage and Multi-Tab
-
-The same code runs on IndexedDB in the browser, OPFS for higher write throughput, SQLite on React Native, or in-memory for tests. The [multi-tab](../../rx-collection.md) layer makes sure two browser tabs see the same state through a shared worker or BroadcastChannel.
+The same code runs in every browser tab. The [multi-tab](../../rx-collection.md) support makes sure two tabs see the same state, and replication runs only once through [leader election](../../leader-election.md).
 
 ## Code Sample: Rewriting an InstantDB Query in RxDB
 
-A typical InstantDB query that fetches open todos for a user looks roughly like this:
+A typical InstantDB query that fetches open todos looks like this:
 
 ```ts
 // InstantDB
 const { data } = db.useQuery({
   todos: {
-    $: { where: { ownerId: userId, done: false } }
+    $: { where: { done: false } }
   }
 });
 ```
@@ -19988,18 +20016,17 @@ The same query in RxDB uses the [Mango query format](../../rx-query.md) and retu
 
 ```ts
 // RxDB
-const query = db.todos.find({
+const query = myDatabase.todos.find({
   selector: {
-    ownerId: userId,
     done: false
   },
-  sort: [{ createdAt: 'desc' }]
+  sort: [{ dueAt: 'asc' }]
 });
 
-const todos$ = query.$; // Observable<RxDocument[]>
+const todos$ = query.$; // Observable<RxDocument<TodoDocType>[]>
 ```
 
-`todos$` re-emits whenever a matching document is inserted, updated, or deleted, whether the change came from a local write, another tab, or the replication stream.
+`todos$` emits whenever a matching document is inserted, updated, or deleted, whether the change came from a local write, another tab, or the replication stream.
 
 ## Code Sample: Driving a React UI From an Observable
 
@@ -20007,83 +20034,82 @@ A small React component that mirrors the InstantDB pattern of subscribing to a q
 
 ```tsx
 import { useEffect, useState } from 'react';
-import { db } from './db';
+import { myDatabase } from './database';
 
-export function TodoList({ userId }: { userId: string }) {
+export function TodoList() {
   const [todos, setTodos] = useState<any[]>([]);
 
   useEffect(() => {
-    const sub = db.todos
-      .find({ selector: { ownerId: userId, done: false } })
+    const sub = myDatabase.todos
+      .find({ selector: { done: false }, sort: [{ dueAt: 'asc' }] })
       .$.subscribe(setTodos);
     return () => sub.unsubscribe();
-  }, [userId]);
+  }, []);
 
-  async function addTodo(title: string) {
-    // Optimistic write: the local store updates first,
+  async function addTodo(name: string) {
+    // The local write resolves at once,
     // replication pushes it to the backend in the background.
-    await db.todos.insert({
+    await myDatabase.todos.insert({
       id: crypto.randomUUID(),
-      ownerId: userId,
-      title,
-      done: false,
-      createdAt: new Date().toISOString()
+      name,
+      dueAt: new Date().toISOString(),
+      priority: 5
     });
   }
 
   return (
     
-      {todos.map(t => {t.title})}
+      {todos.map(t => {t.name})}
       <button onClick={() => addTodo('New task')}>Add</button>
     
   );
 }
 ```
 
-The local insert resolves immediately. The replication layer streams the write to the server when the network is available, and any conflict is funneled through the configured conflict handler. See [optimistic UI](../../articles/optimistic-ui.md) for the full pattern.
+The local insert resolves immediately. The replication pushes the write to the server when the network is available, and any conflict goes through the configured conflict handler. See [optimistic UI](../optimistic-ui.md) for the full pattern.
 
-## Hosting: Managed Sync vs Self-Hosted
+## Moving an InstantDB App to RxDB
 
-| Concern | InstantDB | RxDB |
-| --- | --- | --- |
-| Sync service | Hosted by InstantDB | Self-hosted on any stack |
-| Storage location | InstantDB cloud | Your servers, your database |
-| Pricing model | Per-app hosted plan | Cost of your own infrastructure |
-| Data residency | InstantDB regions | Wherever you deploy |
-| Open source server | No | Yes, the protocol is open |
+Instant Cloud offers on-demand backups, and the data model of an InstantDB app is a set of namespaces with attributes and links. In the following, these steps move such an app to RxDB:
 
-If you want to ship fast and a hosted backend is acceptable, InstantDB removes a lot of work. If your team needs to own the data path end to end, RxDB lets you put the sync server next to the rest of your services and reuse your existing auth, logging, and backups.
+1. **Map each namespace to an RxDB collection** and write a [JSON schema](../../rx-schema.md) for it. Links between namespaces become id fields or arrays of ids, which RxDB can resolve with [population](../../population.md).
+2. **Load your data into your own backend database.** Use the Instant admin SDK or a backup to export the entities, and write them to the database that will be the source of truth, for example Postgres or MongoDB. Add an `updatedAt` field and keep deleted entities as tombstones with a `_deleted` flag.
+3. **Add pull, push, and stream endpoints** to your backend as described in the [HTTP replication docs](../../replication-http.md). Move your Instant permission rules into these endpoints, so each user only pulls and pushes the documents they are allowed to see.
+4. **Replace `useQuery` and `transact` calls** with RxDB queries and writes as shown above.
+5. **Ship the new client release** before August 31, 2027. Clients that open the new version start a fresh initial replication from your backend.
+
+Because the RxDB client keeps working offline, users who open the app during the cutover can keep writing locally. Their changes are pushed as soon as the new backend is reachable.
+
+## When InstantDB Still Makes Sense
+
+If your app is small, your team is happy with InstaQL, and you are fine operating a Clojure service and its Postgres database, self-hosting Instant is the path with the fewest code changes. The [self-hosting guide](https://www.instantdb.com/docs/self-hosting/migrate.md) is well written, and the code is Apache 2.0, so nobody can take it away from you.
 
 ## FAQ
 
 <Faq>
+<FaqItem question="When does Instant Cloud shut down?">
+
+On August 31, 2027, all Instant Cloud apps shut down. New signups are already closed, and backups stay available until August 31, 2028. Moving to **[RxDB](../../rx-database.md)** with your own backend removes the dependency on any hosted sync service.
+
+</FaqItem>
 <FaqItem question="Is InstantDB self-hostable?">
 
-The InstantDB sync service is a hosted product. There is no supported way to run the production server on your own infrastructure today. If self-hosting is a hard requirement, RxDB plus a backend you already operate is a closer fit.
+Yes. Instant is open source under Apache 2.0 and publishes a self-hosting guide. Migrating from Instant Cloud to a self-hosted server requires some downtime, and you have to operate the Clojure server and its Postgres database yourself. With the **[RxDB Sync Engine](../../replication.md)**, the sync endpoints live inside the backend you already run.
 
 </FaqItem>
+<FaqItem question="What is the best InstantDB alternative for a local-first app?">
 
+That depends on your backend. If you want a full local database that syncs with a backend you own, **[RxDB](../../rx-database.md)** fits because it replicates with any HTTP, GraphQL, CouchDB, Firestore, or Supabase backend. If you want to keep Postgres and a hosted sync service, look at the [PowerSync comparison](./powersync-alternative.md).
+
+</FaqItem>
 <FaqItem question="Does RxDB use Datalog?">
 
-No. RxDB queries use a JSON Mango syntax similar to MongoDB and PouchDB. The format is documented in [RxQuery](../../rx-query.md) and supports selectors, sorting, indexes, and limits without a separate query language.
+No. RxDB queries use a JSON Mango syntax similar to MongoDB. The format is documented in **[RxQuery](../../rx-query.md)** and supports selectors, sorting, indexes, and limits without a separate query language.
 
 </FaqItem>
-
 <FaqItem question="How does RxDB handle optimistic updates?">
 
-Every write goes to the local storage first and resolves immediately. Observable queries re-emit with the new state, so the UI updates without waiting for the server. The [Sync Engine](../../replication.md) pushes the change in the background, and conflicts are routed through the collection's [conflict handler](../../transactions-conflicts-revisions.md). See [optimistic UI](../../articles/optimistic-ui.md) for an end-to-end example.
-
-</FaqItem>
-
-<FaqItem question="Can I customize storage in RxDB?">
-
-Yes. RxDB has a storage interface with adapters for IndexedDB, OPFS, SQLite, in-memory, LocalStorage, and Dexie. You pick the adapter when you create the database, and the rest of the API stays the same. See [RxCollection](../../rx-collection.md) for how storage plugs into a collection.
-
-</FaqItem>
-
-<FaqItem question="What about real-time collaboration?">
-
-RxDB streams changes from the server through the replication event channel and from other browser tabs through BroadcastChannel. Combined with [observable queries](../../reactivity.md), the UI updates as soon as a remote change lands. For peer-to-peer setups, the WebRTC plugin lets devices sync directly. See [realtime database](../../articles/realtime-database.md) for the architecture.
+Every write goes to the local storage first and resolves immediately. Observable queries emit the new state, so the UI updates without waiting for the server. The **[Sync Engine](../../replication.md)** pushes the change in the background, and conflicts go through the collection's [conflict handler](../../transactions-conflicts-revisions.md).
 
 </FaqItem>
 </Faq>
@@ -20094,33 +20120,32 @@ RxDB streams changes from the server through the replication event channel and f
 
 | Feature | InstantDB | RxDB |
 | --- | --- | --- |
-| License | Proprietary client, hosted backend | Apache 2.0 core |
-| Backend | Hosted Clojure sync service | Any HTTP, GraphQL, CouchDB, Firestore, or WebRTC peer |
-| Query language | Datalog-style triples | JSON Mango selectors |
+| License | Apache 2.0 | Apache 2.0 core |
+| Hosted service | Instant Cloud, shuts down August 31, 2027 | None required |
+| Backend | Instant Clojure server with Postgres | Any HTTP, GraphQL, CouchDB, Firestore, Supabase backend, or WebRTC peers |
+| Query language | Datalog-style (InstaQL) | MongoDB-style (Mango) queries |
 | Local layer | Query cache | Full local database |
-| Storage adapters | Built in, fixed | IndexedDB, OPFS, SQLite, Memory, LocalStorage, Dexie |
+| Storages | Built in, fixed | IndexedDB, OPFS, SQLite, memory, localStorage, Dexie, and more |
 | Offline writes | Yes, queued | Yes, persisted to local storage |
-| Conflict resolution | Built-in, limited knobs | Custom handler per collection or [CRDT](../../crdt.md) |
+| Conflict resolution | Built in, limited knobs | Custom handler per collection or [CRDT](../../crdt.md) |
 | Reactivity | Subscriptions on queries | RxJS observables on every query |
-| Multi-tab sync | Yes | Yes, via BroadcastChannel or shared worker |
-| P2P sync | No | Yes, via WebRTC plugin |
-| Self-hosting | Not supported | Standard |
+| P2P sync | No | Yes, via the WebRTC plugin |
 
 </ComparisonTable>
 
 ## Follow Up
 
-If you want the developer experience of InstantDB but with a backend you control, an open source codebase, and a real local database underneath, RxDB is worth a look. Start with the [Sync Engine](../../replication.md) docs to see how a collection connects to your existing API, then read the [reactivity](../../reactivity.md) guide for how the UI stays in sync.
+If you have to move off Instant Cloud anyway, move to a stack where nobody else decides when your sync backend goes away. Start with the [Quickstart](../../quickstart.md), then read the [Sync Engine](../../replication.md) docs to see how a collection connects to your existing API. The [ElectricSQL comparison](./electricsql-alternative.md) and the [Turso comparison](./turso-alternative.md) cover two more hosted sync services that changed course in 2026.
 
 More resources:
 
 - [RxDB Sync Engine](../../replication.md)
 - [HTTP Replication](../../replication-http.md)
 - [Custom Conflict Resolution](../../transactions-conflicts-revisions.md)
-- [CRDT Support](../../crdt.md)
-- [Local-First Future](../../articles/local-first-future.md)
-- [Optimistic UI Patterns](../../articles/optimistic-ui.md)
-- [Realtime Database](../../articles/realtime-database.md)
+- [Local-First Future](../local-first-future.md)
+- [Optimistic UI Patterns](../optimistic-ui.md)
+- [Realtime Database](../realtime-database.md)
+- [RxDB on GitHub](/code/), leave a star ⭐
 
 ---
 
@@ -21783,6 +21808,10 @@ import {ComparisonTable} from '@site/src/components/comparison-table';
 
 Teams that built mobile and web applications on top of [MongoDB Realm](https://www.mongodb.com/docs/realm/) and the Atlas Device SDKs are now in a difficult position. In September 2024, MongoDB announced the deprecation of the Atlas Device SDKs and Atlas Device Sync, with end of life targeted for September 2025. Applications that still rely on Realm for client storage and bidirectional sync need a JavaScript friendly replacement that does not lock the project to a single cloud vendor and that will keep receiving updates well past 2025.
 
+:::note Atlas Device Sync is deprecated
+MongoDB deprecated the Atlas Device SDKs and Atlas Device Sync in September 2024. They reached end of life and were removed on September 30, 2025. The on-device Realm database continues as a community project without sync ([MongoDB docs](https://www.mongodb.com/docs/atlas/device-sdks/deprecation/)).
+:::
+
 This page explains why [RxDB](https://rxdb.info/) is a strong replacement for Realm in JavaScript, TypeScript, [React Native](../../react-native-database.md), [Electron](../../electron-database.md), and browser environments. It covers the history of Realm, the technical shortcomings that existed even before the deprecation announcement, the features RxDB provides today, code samples for schema definition and replication to a MongoDB-backed HTTP endpoint, and practical migration notes.
 
 <RxdbLogo alt="RxDB - JavaScript Database" />
@@ -23016,6 +23045,10 @@ import {ComparisonTable} from '@site/src/components/comparison-table';
 # RxDB as a Replicache Alternative for Local-First Web Apps
 
 Replicache built strong mindshare in the local-first community with its mutator-based sync model and tight focus on collaborative web apps. Teams pick it because it advertises support for many backend stacks and ships a polished developer experience. Once a project grows, the mutator architecture, the source-available license, and the opinionated query API push some teams to look for a Replicache alternative. RxDB is an open source [local-first](../../articles/local-first-future.md), NoSQL database for JavaScript that stores data on the client, runs MongoDB-style queries against a local store, and replicates with any backend you control.
+
+:::note Replicache is archived
+The [Replicache repository](https://github.com/rocicorp/replicache) is archived and read-only. Rocicorp now develops Zero as the successor of Replicache.
+:::
 
 <RxdbLogo alt="RxDB JavaScript Database" />
 
@@ -24910,6 +24943,223 @@ Yes. Your application code reads and writes against the local RxDB collection. T
 
 </FaqItem>
 </Faq>
+
+---
+
+## RxDB as a Turso and libSQL WASM Alternative for Browser Apps
+
+import {Faq, FaqItem} from '@site/src/components/faq';
+import {ComparisonTable} from '@site/src/components/comparison-table';
+
+# RxDB as a Turso and libSQL WASM Alternative for Browser Apps
+
+[Turso](https://turso.tech/) is the company behind **libSQL**, an open source fork of SQLite, and **Turso Database**, a rewrite of SQLite in Rust. Both run on servers, at the edge, and in the browser through WebAssembly, and Turso Cloud adds hosted databases and sync. The team has shipped a lot of database engineering in a short time, and its Rust rewrite has 25,068 GitHub stars as of October 27, 2026. On October 2, 2026, [Supabase announced that it is acquiring Turso](https://supabase.com/blog/supabase-is-acquiring-turso).
+
+If you want a **Turso alternative** or a **libSQL WASM alternative** for a browser app, the question is usually not "which SQL engine is better". It is how to get local data that persists, works in every tab, and stays in sync with a server. [RxDB](https://rxdb.info/) is a [local-first](../local-first-future.md), NoSQL database for JavaScript with a pluggable [storage layer](../../rx-storage.md), [reactive queries](../../reactivity.md), and a [Sync Engine](../../replication.md). This page explains what Turso and libSQL offer in the browser today, where they fall short for local-first web apps, and how RxDB covers the same use cases.
+
+<RxdbLogo alt="Turso and libSQL WASM alternative" />
+
+## A Short History of Turso and libSQL
+
+Glauber Costa and Pekka Enberg forked SQLite as libSQL in 2022 because SQLite does not accept outside contributions. libSQL added features such as a server mode, replication, and vector search, and their company built a hosted edge database on top of it. In December 2024 they announced Limbo, a full rewrite of SQLite in Rust, which later became Turso Database and the main focus of the team.
+
+### A Brief Timeline
+
+- **2022** - libSQL is forked from SQLite ([coverage](https://www.devclass.com/development/2022/10/05/sqlite-not-open-enough-and-needs-modernization-complains-project-which-forks-it/1630721)). The company, then called ChiselStrike, later renames itself to Turso.
+- **December 10, 2024** - [Limbo](https://turso.tech/blog/introducing-limbo-a-complete-rewrite-of-sqlite-in-rust) is announced as a rewrite of SQLite in Rust.
+- **January 21, 2025** - Turso goes all-in on the rewrite. The new multitenant server is announced as closed source, edge replicas are discontinued for new users, and "everything that runs on the client will remain strictly open source" ([roadmap post](https://turso.tech/blog/upcoming-changes-to-the-turso-platform-and-roadmap)).
+- **March 31, 2025** - [Offline sync public beta](https://turso.tech/blog/turso-offline-sync-public-beta) for TypeScript and Rust. The browser is "planned for the future".
+- **July 1, 2025** - First alpha of [Turso Database](https://turso.tech/blog/turso-the-next-evolution-of-sqlite).
+- **October 8, 2025** - [Turso in the browser](https://turso.tech/blog/introducing-turso-in-the-browser) via the `@tursodatabase/database-wasm` package, and the beta of [Turso Sync](https://turso.tech/blog/introducing-databases-anywhere-with-turso-sync).
+- **October 2, 2026** - Supabase announces the acquisition of Turso. Both posts say Turso Cloud keeps running and Turso Database stays open source.
+- **October 12, 2026** - Turso Database 0.8.3 is the latest release on npm.
+
+## Turso and libSQL in the Browser Today
+
+There are two ways to run Turso technology in a browser.
+
+**Turso Database via `@tursodatabase/database-wasm`** (MIT, version 0.8.3 as of October 2026). Queries run on the main thread, and the library starts a Web Worker for all file operations through the synchronous OPFS ([Origin Private File System](../../rx-storage-opfs.md)) API. A minimal example from the Turso announcement:
+
+```ts
+import { connect } from '@tursodatabase/database-wasm';
+
+const db = await connect('local.db');
+console.info(await db.prepare('SELECT ?').run([42]));
+```
+
+**libSQL via `@libsql/client-wasm`** (version 0.18.0). This client wraps `@libsql/libsql-wasm-experimental`, which describes itself as "libSQL Wasm packaged as an ES module, forked from SQLite Wasm". It is based on SQLite 3.44.0 and has not been released since October 31, 2024. Calling `sync()` in this client throws "sync not supported in wasm mode", and encryption is not supported either.
+
+For server-side apps, Turso also offers [embedded replicas](https://docs.turso.tech/features/embedded-replicas/introduction) and [Turso Sync](https://docs.turso.tech/sync/usage), which keep a local database file in sync with Turso Cloud. Those need a file system, so they target Node.js, mobile, and desktop, not the browser.
+
+## What is RxDB?
+
+RxDB (Reactive Database) is a local-first, NoSQL database for JavaScript applications. It runs in the browser, Node.js, Electron, React Native, Capacitor, Deno, and Bun. Documents are validated against a [JSON schema](../../rx-schema.md), queries use MongoDB-style (Mango) syntax, and every query can be observed as an RxJS observable.
+
+RxDB does not ship its own storage engine. Instead, it runs on top of a [storage](../../rx-storage.md) of your choice: [IndexedDB](../../rx-storage-indexeddb.md), [OPFS](../../rx-storage-opfs.md), [SQLite](../../rx-storage-sqlite.md), memory, or [localStorage](../../rx-storage-localstorage.md). Switching storages is a configuration change, not a rewrite.
+
+## Where Turso and libSQL Fall Short in the Browser
+
+### 1. COOP and COEP Headers Are Required
+
+Turso Database shares memory between the main thread and its worker through `SharedArrayBuffer`. The Turso announcement says: "This requires additional COEP / COOP headers to be set for document resource." The bundled code throws when `SharedArrayBuffer` is not available. These headers break embedded third-party iframes, some OAuth popups, and ads, and many static hosts do not let you set them at all. RxDB storages work without special headers.
+
+### 2. One Tab Only
+
+The OPFS access handle locks the database file to one worker. In Turso's own words, this "will prevent usage of same database from different browser tab." Users open apps in several tabs, so you have to build tab coordination yourself. RxDB has [multi-tab](../../rx-collection.md) support built in: all tabs see the same data, changes in one tab show up in the others, and replication runs only in one tab through [leader election](../../leader-election.md).
+
+### 3. Large WASM Download
+
+The browser has to download and compile the database engine before the first query. We measured the `turso.wasm32-wasi.wasm` file of `@tursodatabase/database-wasm` 0.8.3 at **11.6 MB** raw and about **3.9 MB** gzipped. The CDN bundle, which inlines the WASM as base64, is 16.0 MB. For comparison, the official SQLite WASM binary is [about 938.9 kB](https://sqlite.org/download.html) uncompressed. In our [browser storage benchmark](../localstorage-indexeddb-cookies-opfs-sqlite-wasm.md), WASM SQLite needed **504 ms** until it could store the first document while IndexedDB needed **46 ms**. A binary that is more than ten times larger will not start faster.
+
+### 4. No Sync in the Browser Docs
+
+Turso Sync has a browser package (`@tursodatabase/sync-wasm`), but the [official SDK reference](https://docs.turso.tech/sdk/ts/reference) lists only Node.js for sync, and the libSQL WASM client does not sync at all. Where sync works, the remote is Turso Cloud and conflicts are resolved by ["last push wins"](https://docs.turso.tech/sync/conflict-resolution). There is no custom conflict handler. The RxDB [replication protocol](../../replication.md) runs in the browser, works with any backend, and lets you write a [conflict handler](../../transactions-conflicts-revisions.md) per collection.
+
+### 5. Pre-1.0 Engine With Compatibility Gaps
+
+The Turso Database README says it "runs in production today at multiple organizations" but has not reached 1.0 and recommends keeping backups. Its [compatibility list](https://github.com/tursodatabase/turso/blob/main/COMPAT.md) names gaps such as no FTS3/4/5, no `WITH RECURSIVE`, and WAL as the only journal mode. libSQL is battle-tested, but Turso writes that "new features are being developed in Turso", and the browser build of libSQL is still marked experimental.
+
+### 6. Open Questions After the Acquisition
+
+Supabase writes that "For existing users, nothing changes" and that Turso continues its SQLite work. Neither the Supabase post nor the [Turso post](https://turso.tech/blog/turso-is-joining-supabase) mentions libSQL, pricing, or the browser and offline sync roadmap. Notice that this is the third hosted sync product in 2026 whose future changed through an acquisition, after [Electric Cloud](./electricsql-alternative.md) and [Instant Cloud](./instantdb-alternative.md). RxDB is independent and funded by [👑 RxDB Premium](/premium/) plugins, and its replication runs against your own backend.
+
+## Code Sample: A Reactive Query in RxDB
+
+With Turso in the browser you write SQL and run the query again after every write, because there are no change notifications. With RxDB, the query is an observable that emits whenever the result changes, from any tab or from replication:
+
+```ts
+import { createRxDatabase } from 'rxdb/plugins/core';
+import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
+
+const myDatabase = await createRxDatabase({
+  name: 'mydb',
+  storage: getRxStorageLocalstorage()
+});
+
+await myDatabase.addCollections({
+  todos: {
+    schema: {
+      version: 0,
+      primaryKey: 'id',
+      type: 'object',
+      properties: {
+        id: { type: 'string', maxLength: 100 },
+        name: { type: 'string' },
+        done: { type: 'boolean', default: false },
+        priority: { type: 'integer', minimum: 0, maximum: 10, multipleOf: 1 }
+      },
+      required: ['id', 'name']
+    }
+  }
+});
+
+await myDatabase.todos.insert({ id: 'todo1', name: 'Learn RxDB', priority: 8 });
+
+myDatabase.todos
+  .find({ selector: { done: false }, sort: [{ priority: 'desc' }] })
+  .$.subscribe(todos => console.log(todos.map(t => t.name)));
+// > ['Learn RxDB']
+```
+
+For larger datasets, switch to the [IndexedDB](../../rx-storage-indexeddb.md) or [OPFS](../../rx-storage-opfs.md) storage. If you want SQLite under the hood, the [SQLite storage](../../rx-storage-sqlite.md) runs RxDB on a WebAssembly build of SQLite in the browser and on native SQLite in React Native, Capacitor, Electron, and Node.js.
+
+## Code Sample: Syncing With Your Own Backend
+
+Instead of Turso Cloud, RxDB replicates with any server that implements a pull and a push endpoint. If your backend data lives in libSQL or Turso on the server, these endpoints can read from and write to it.
+
+```ts
+import { replicateRxCollection } from 'rxdb/plugins/replication';
+
+const replicationState = replicateRxCollection({
+  collection: myDatabase.todos,
+  replicationIdentifier: 'todos-http',
+  live: true,
+  pull: {
+    async handler(checkpoint, batchSize) {
+      const response = await fetch(
+        `https://api.example.com/todos/pull?checkpoint=${JSON.stringify(checkpoint)}&limit=${batchSize}`
+      );
+      return await response.json(); // { documents, checkpoint }
+    }
+  },
+  push: {
+    async handler(changeRows) {
+      const response = await fetch('https://api.example.com/todos/push', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(changeRows)
+      });
+      return await response.json(); // conflicting documents
+    }
+  }
+});
+```
+
+The full contract, including the event stream for live updates, is described in the [HTTP replication docs](../../replication-http.md).
+
+## When Turso or libSQL Still Makes Sense
+
+- **Server-side SQLite**: For a backend that needs one SQLite database per tenant or per AI agent, Turso Cloud and embedded replicas are built for exactly that. This is a server use case, not a browser one.
+- **You need SQL in the browser**: If your app runs complex SQL queries over local data and you control the response headers, Turso Database in the browser gives you a SQLite-compatible engine with an async API. Also compare it with SQLite-Wasm and PGlite in [RxDB vs SQLite WASM vs PGlite](../rxdb-vs-sqlite-wasm-vs-pglite.md).
+- **You want open source engine work**: Turso Database is MIT licensed, and the team publishes its engine work in the open.
+
+## FAQ
+
+<Faq>
+<FaqItem question="Can Turso run in the browser?">
+
+Yes. Turso Database runs in the browser through the `@tursodatabase/database-wasm` package, which stores data in OPFS through a Web Worker. It requires COOP and COEP headers, and the same database cannot be used from several browser tabs. **[RxDB](../../rx-database.md)** runs in the browser without special headers and supports multiple tabs out of the box.
+
+</FaqItem>
+<FaqItem question="Does libSQL WASM support offline sync?">
+
+No. The `@libsql/client-wasm` client throws "sync not supported in wasm mode" when you call `sync()`. Turso's sync features target environments with a file system. The **[RxDB Sync Engine](../../replication.md)** runs in the browser and syncs with any backend.
+
+</FaqItem>
+<FaqItem question="What happens to Turso after the Supabase acquisition?">
+
+Supabase and Turso both state that Turso Cloud keeps running and that Turso Database stays open source. Neither announcement mentions libSQL, pricing, or the browser roadmap. If you want a local database whose sync does not depend on a hosted service, **[RxDB](../../rx-database.md)** replicates with your own backend.
+
+</FaqItem>
+<FaqItem question="Is RxDB a SQL database?">
+
+No. RxDB is a NoSQL document database with MongoDB-style (Mango) queries. It can use SQLite as its storage engine through the **[SQLite RxStorage](../../rx-storage-sqlite.md)**, but the query language works on JSON documents and has no joins.
+
+</FaqItem>
+</Faq>
+
+## Comparison Table
+
+<ComparisonTable>
+
+| Feature | Turso / libSQL in the browser | RxDB |
+| --- | --- | --- |
+| Data model | SQL tables | JSON documents with schema |
+| Query language | SQL | MongoDB-style (Mango) queries |
+| Browser persistence | OPFS through a Web Worker (Turso Database) | IndexedDB, OPFS, SQLite, localStorage, memory |
+| COOP/COEP headers | Required (Turso Database) | Not required |
+| Multiple tabs | Not supported on the same database | Built in |
+| Reactive queries | No | Yes, observables on every query |
+| WASM download | 11.6 MB raw, about 3.9 MB gzipped (Turso Database 0.8.3) | No WASM needed with IndexedDB or localStorage |
+| Sync in the browser | Not in the docs (Turso Sync), not supported (libSQL WASM) | Yes, with any backend |
+| Conflict handling | Last push wins | Custom handler per collection or [CRDT](../../crdt.md) |
+| Status | Turso Database pre-1.0, libSQL WASM experimental | Stable, maintained since 2016 |
+| License | MIT (Turso Database), MIT (libSQL client) | Apache 2.0 core |
+
+</ComparisonTable>
+
+## Follow Up
+
+If you came to Turso for local data in the browser, RxDB gives you persistence, multi-tab support, reactive queries, and sync without special headers or a hosted backend. Start with the [Quickstart](../../quickstart.md) and pick a storage in the [RxStorage overview](../../rx-storage.md).
+
+More resources:
+
+- [RxDB vs SQLite WASM vs PGlite](../rxdb-vs-sqlite-wasm-vs-pglite.md)
+- [Browser Storage Benchmark](../localstorage-indexeddb-cookies-opfs-sqlite-wasm.md)
+- [RxDB Sync Engine](../../replication.md)
+- [SQLite RxStorage](../../rx-storage-sqlite.md)
+- [Supabase Alternative](./supabase-alternative.md)
+- [RxDB on GitHub](/code/), leave a star ⭐
 
 ---
 
@@ -36376,7 +36626,7 @@ SQLite-Wasm and PGlite answer the question "how do I run SQL in the browser". Rx
 
 With an engine you get tables and a query API. Everything around that is your job: keeping the UI in sync with the data, handling two open tabs, retrying writes to the server, and resolving conflicts when two devices edit the same row while offline. This is where most of the work in a local-first app is, and the engine does not help with it.
 
-The layers can also be combined. The [RxDB SQLite storage](../rx-storage-sqlite.md) runs RxDB on top of SQLite, both on native platforms and in the browser through a WebAssembly build of SQLite (the browser adapter `getSQLiteBasicsWasm()` uses the [wa-sqlite](https://github.com/rhashimoto/wa-sqlite) build, not the official `@sqlite.org/sqlite-wasm` package). There is no RxDB storage based on PGlite.
+The layers can also be combined. The [RxDB SQLite storage](../rx-storage-sqlite.md) runs RxDB on top of SQLite, both on native platforms and in the browser through a WebAssembly build of SQLite (the browser adapter `getSQLiteBasicsWasm()` uses the [wa-sqlite](https://github.com/rhashimoto/wa-sqlite) build, not the official `@sqlite.org/sqlite-wasm` package). There is no RxDB storage based on PGlite. Turso also ships a SQLite-compatible engine written in Rust for the browser, which has its own trade-offs with headers, tabs, and bundle size, see the [Turso and libSQL WASM comparison](./alternatives/turso-alternative.md).
 
 ## Comparing the Details
 

@@ -11,6 +11,10 @@ import {Timeline} from '@site/src/components/timeline';
 
 <RxdbLogo alt="JavaScript Database" />
 
+:::note Horizon is no longer maintained
+The company behind RethinkDB and Horizon shut down in 2016, and the [Horizon repository](https://github.com/rethinkdb/horizon) has received no meaningful updates since then.
+:::
+
 Horizon was the official client-side library for RethinkDB, launched in 2016 to let developers build realtime JavaScript applications without writing server code. It offered a clean API for subscribing to live data, built-in authentication, and a permission system. But Horizon's life was short. The company behind RethinkDB shut down just months after Horizon launched, and offline support was never implemented. The project is now archived and receives no maintenance.
 
 This page explains what Horizon was, where it failed to deliver for modern client-side applications, and why [RxDB](https://rxdb.info) is a strong replacement for teams that want the reactive, data-subscription model Horizon promised, with the offline-first architecture it never had.
