@@ -79,7 +79,7 @@ const TEXTS = {
             },
             {
                 title: 'Real users from day one',
-                text: 'RxDB runs in production at the companies listed below. What you ship gets used.'
+                text: 'RxDB runs in production at many companies around the world. What you ship gets used.'
             },
             {
                 title: 'Responsibility, not busywork',

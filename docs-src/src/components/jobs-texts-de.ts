@@ -46,7 +46,7 @@ export const JOBS_TEXTS_DE = {
         },
         {
             title: 'Echte Nutzer ab Tag eins',
-            text: 'RxDB läuft in Produktion bei den Firmen weiter unten. Was du auslieferst, wird benutzt.'
+            text: 'RxDB läuft in Produktion bei vielen Firmen weltweit. Was du auslieferst, wird benutzt.'
         },
         {
             title: 'Verantwortung statt Kleinkram',
