@@ -327,6 +327,12 @@ Turso maintains libSQL, an open source fork of SQLite, and Turso Database, a rew
 
 [Read more about why RxDB is a good alternative to Turso and libSQL](./articles/alternatives/turso-alternative.md).
 
+### Convex
+
+Convex is a reactive backend for TypeScript apps. Queries and mutations are TypeScript functions that run on the server, and clients subscribe to queries over a WebSocket. Convex is online-first: the client caches query results in memory and, according to Convex, it "doesn't currently provide a full offline sync mechanism". RxDB can replace Convex for local-first apps, or sit next to it as the offline layer by replicating through Convex queries and mutations.
+
+[Read more about why RxDB is a good alternative to Convex](./articles/alternatives/convex-alternative.md).
+
 # Read further
 
 - [Offline First Database Comparison](https://github.com/pubkey/client-side-databases)
