@@ -522,9 +522,9 @@ jobs:
         uses: codespell-project/actions-codespell@v2.4.3
         with:
           ignore_words_file: config/codespellignore.txt
-          # legal-notice.tsx and privacy.tsx are German, and codespell only
+          # legal-notice.tsx, privacy.tsx and jobs-texts-de.ts are German, and codespell only
           # knows English misspellings, so it flags ordinary German words.
-          skip: legal-notice.tsx,privacy.tsx,custom.css
+          skip: legal-notice.tsx,privacy.tsx,jobs-texts-de.ts,custom.css
           path: docs-src/src
       - name: spelling docs-src/releases
         uses: codespell-project/actions-codespell@v2.4.3
