@@ -24,6 +24,16 @@ const URLS: { [lang in JobsLang]: string } = {
 };
 
 /**
+ * Order of the flags in the language switch.
+ */
+const LANGS: JobsLang[] = ['de', 'en'];
+
+const LANG_NAMES: { [lang in JobsLang]: string } = {
+    de: 'Deutsch',
+    en: 'English'
+};
+
+/**
  * The texts of the page in every supported language.
  */
 const TEXTS = {
@@ -169,7 +179,7 @@ function Section(props: { title: string; items: string[]; }) {
  * plain letters "DE" and "GB".
  */
 function Flag(props: { lang: JobsLang; }) {
-    const size = { width: 36, height: 24, display: 'block', borderRadius: 3 };
+    const size = { width: 48, height: 32, display: 'block', borderRadius: 3 };
     if (props.lang === 'de') {
         return <svg viewBox="0 0 5 3" style={size} aria-hidden="true">
             <rect width="5" height="3" y="0" fill="#000" />
@@ -198,7 +208,6 @@ export function JobsPage(props: { lang: JobsLang; }) {
     });
 
     const t = TEXTS[lang];
-    const otherLang: JobsLang = lang === 'de' ? 'en' : 'de';
 
     const [openJob, setOpenJob] = useState<number | null>(null);
     // which position's form to show, kept after closing so the modal can fade out
@@ -240,15 +249,35 @@ export function JobsPage(props: { lang: JobsLang; }) {
 
                     <div className="block first centered">
                         <div className="content">
-                            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12 }}>
-                                <Link
-                                    to={URLS[otherLang]}
-                                    aria-label={t.switchLanguage}
-                                    title={t.switchLanguage}
-                                    hrefLang={otherLang}
-                                >
-                                    <Flag lang={otherLang} />
-                                </Link>
+                            <div style={{ display: 'flex', justifyContent: 'center', gap: 12, marginBottom: 16 }}>
+                                {LANGS.map(entry => {
+                                    const selected = entry === lang;
+                                    const style = {
+                                        display: 'block',
+                                        padding: 3,
+                                        borderRadius: 6,
+                                        border: '2px solid ' + (selected ? 'var(--color-top)' : 'transparent'),
+                                        opacity: selected ? 1 : 0.6
+                                    };
+                                    return selected ? <span
+                                        key={entry}
+                                        style={style}
+                                        title={LANG_NAMES[entry]}
+                                        aria-label={LANG_NAMES[entry]}
+                                        aria-current='page'
+                                    >
+                                        <Flag lang={entry} />
+                                    </span> : <Link
+                                        key={entry}
+                                        to={URLS[entry]}
+                                        style={style}
+                                        aria-label={t.switchLanguage}
+                                        title={t.switchLanguage}
+                                        hrefLang={entry}
+                                    >
+                                        <Flag lang={entry} />
+                                    </Link>;
+                                })}
                             </div>
                             <h1 style={{ textAlign: 'center' }}>
                                 {t.headline} <b>RxDB</b>
