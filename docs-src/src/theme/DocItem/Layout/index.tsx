@@ -15,6 +15,7 @@ import type {Props} from '@theme/DocItem/Layout';
 
 import styles from './styles.module.css';
 import { DocsFooter } from '@site/src/components/docs-footer';
+import { DocJsonLd } from '@site/src/components/doc-json-ld';
 
 /**
  * Decide if the toc should be rendered, on mobile or desktop viewports
@@ -50,6 +51,7 @@ export default function DocItemLayout(props: Props): ReactNode {
         <DocVersionBanner />
         <div className={styles.docItemContainer}>
           <article>
+            <DocJsonLd />
             <DocBreadcrumbs />
             <DocVersionBadge />
             {docTOC.mobile}

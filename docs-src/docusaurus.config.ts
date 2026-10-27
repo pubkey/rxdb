@@ -120,6 +120,42 @@ const config: Config = {
                 },
             }),
         },
+        {
+            tagName: 'script',
+            attributes: { type: 'application/ld+json' },
+            innerHTML: JSON.stringify({
+                '@context': 'https://schema.org',
+                '@graph': [
+                    {
+                        '@type': 'Organization',
+                        '@id': 'https://rxdb.info/#organization',
+                        'name': 'RxDB',
+                        'url': 'https://rxdb.info',
+                        'logo': 'https://rxdb.info/files/logo/logo.svg',
+                        'foundingDate': '2016',
+                        'founder': {
+                            '@type': 'Person',
+                            'name': 'Daniel Meyer',
+                            'url': 'https://github.com/pubkey',
+                        },
+                        'sameAs': [
+                            'https://github.com/pubkey/rxdb',
+                            'https://twitter.com/rxdbjs',
+                            'https://www.linkedin.com/company/rxdb',
+                            'https://www.npmjs.com/package/rxdb',
+                        ],
+                    },
+                    {
+                        '@type': 'WebSite',
+                        '@id': 'https://rxdb.info/#website',
+                        'name': 'RxDB',
+                        'url': 'https://rxdb.info',
+                        'inLanguage': 'en',
+                        'publisher': { '@id': 'https://rxdb.info/#organization' },
+                    },
+                ],
+            }),
+        },
     ],
 
     // Set the production url of your site here
