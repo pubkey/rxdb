@@ -6,6 +6,7 @@ image: /headers/tanstack-db-supabase-offline.jpg
 ---
 
 import {Steps} from '@site/src/components/steps';
+import {Faq, FaqItem} from '@site/src/components/faq';
 
 # TanStack DB + Supabase: Adding True Offline Support
 
@@ -216,40 +217,39 @@ It can happen that the same row was changed on the server in the meantime. The p
 
 ## FAQ
 
-<details>
-    <summary>Is there an official Supabase collection for TanStack DB?</summary>
+<Faq>
+
+<FaqItem question="Is there an official Supabase collection for TanStack DB?">
 
 No. As of July 2026 there is no Supabase-published TanStack DB collection package on npm. Supabase apps load TanStack DB collections through `supabase-js` by hand, or they put **[RxDB](../../rx-database.md)** underneath with the `@tanstack/rxdb-db-collection` package and let the [Supabase Replication Plugin](../../replication-supabase.md) handle the Postgres sync.
 
-</details>
+</FaqItem>
 
-<details>
-    <summary>Does TanStack DB work offline with Supabase?</summary>
+<FaqItem question="Does TanStack DB work offline with Supabase?">
 
 Yes, with RxDB in between. TanStack DB reads from the local **[RxDB](../../rx-database.md)** database instead of the network, so queries and writes keep working without a connection. The [Sync Engine](../../replication.md) pushes pending writes to Supabase when the client is online again. See [Building an Offline-First App with TanStack DB and RxDB](./tanstack-db-offline-first.md) for the full pattern.
 
-</details>
+</FaqItem>
 
-<details>
-    <summary>Can TanStack DB receive Supabase realtime updates?</summary>
+<FaqItem question="Can TanStack DB receive Supabase realtime updates?">
 
 Yes. The **[Supabase Replication Plugin](../../replication-supabase.md)** subscribes to Supabase Realtime channels and pulls changed rows over PostgREST. RxDB persists them locally and its change feed streams every update into the TanStack DB collection, so live queries re-render automatically.
 
-</details>
+</FaqItem>
 
-<details>
-    <summary>Do I have to change my Postgres tables for TanStack DB Supabase sync?</summary>
+<FaqItem question="Do I have to change my Postgres tables for TanStack DB Supabase sync?">
 
 Yes, slightly. The table needs a `text` primary key, a timestamp column for the last modification (default `_modified`), a boolean column that marks rows as deleted (default `_deleted`), and realtime must be enabled for the table. The **[plugin documentation](../../replication-supabase.md)** contains the full SQL setup.
 
-</details>
+</FaqItem>
 
-<details>
-    <summary>Are conflicts resolved on the Supabase server?</summary>
+<FaqItem question="Are conflicts resolved on the Supabase server?">
 
 No. RxDB resolves all conflicts on the client: a rejected push triggers the collection's conflict handler, which by default keeps the server state. Custom merge strategies are described in **[Conflict Resolution in TanStack DB with RxDB](./tanstack-db-conflict-resolution.md)**.
 
-</details>
+</FaqItem>
+
+</Faq>
 
 ## Follow Up
 

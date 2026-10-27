@@ -133,9 +133,9 @@ const replicationState = replicateRxCollection({
   live: true,
   pull: {
     async handler(checkpoint, batchSize) {
-      const response = await fetch(
-        `https://api.example.com/todos/pull?checkpoint=${JSON.stringify(checkpoint)}&limit=${batchSize}`
-      );
+      const url = 'https://api.example.com/todos/pull' +
+        `?checkpoint=${JSON.stringify(checkpoint)}&limit=${batchSize}`;
+      const response = await fetch(url);
       return await response.json(); // { documents, checkpoint }
     }
   },

@@ -6,6 +6,7 @@ image: /headers/tanstack-db-p2p-webrtc.jpg
 ---
 
 import {Steps} from '@site/src/components/steps';
+import {Faq, FaqItem} from '@site/src/components/faq';
 
 # Peer-to-Peer Sync for TanStack DB with WebRTC & RxDB
 
@@ -186,40 +187,39 @@ P2P sync means every peer stores a full copy of the shared data on its device. W
 
 ## FAQ
 
-<details>
-    <summary>Can TanStack DB sync peer-to-peer without a server?</summary>
+<Faq>
+
+<FaqItem question="Can TanStack DB sync peer-to-peer without a server?">
 
 Yes, for the data itself. With the **[RxDB WebRTC replication](../../replication-webrtc.md)** underneath, documents travel directly between peers and no server stores them. You still need a small signaling server for peer discovery, because WebRTC clients cannot find each other without one.
 
-</details>
+</FaqItem>
 
-<details>
-    <summary>Do peers have to be online at the same time to sync?</summary>
+<FaqItem question="Do peers have to be online at the same time to sync?">
 
 Yes. WebRTC data channels only transfer data while both peers are connected, and there is no server that buffers changes for absent peers. Each peer keeps a durable local copy in **[RxDB](../../rx-database.md)**, so the missing changes are exchanged the next time both peers are online together.
 
-</details>
+</FaqItem>
 
-<details>
-    <summary>What happens when two peers edit the same document in TanStack DB?</summary>
+<FaqItem question="What happens when two peers edit the same document in TanStack DB?">
 
 No peer has authority, so the conflict is detected and resolved locally by the RxDB conflict handler. The default handler resolves to one of the conflicting states. For field-level merges you set a custom `conflictHandler` on the RxCollection, as described in **[Conflict Resolution in TanStack DB with RxDB](./tanstack-db-conflict-resolution.md)**.
 
-</details>
+</FaqItem>
 
-<details>
-    <summary>Can I use the public RxDB signaling server in production?</summary>
+<FaqItem question="Can I use the public RxDB signaling server in production?">
 
 No. The server at `wss://signaling.rxdb.info/` exists for demonstration purposes and tryouts, it is not reliable and might be offline at any time. In production you run your own signaling server, for example with `startSignalingServerSimplePeer()` from the **[WebRTC replication plugin](../../replication-webrtc.md)**.
 
-</details>
+</FaqItem>
 
-<details>
-    <summary>Does TanStack DB WebRTC sync work in Node.js?</summary>
+<FaqItem question="Does TanStack DB WebRTC sync work in Node.js?">
 
 Yes. Node.js does not ship the WebRTC and WebSocket APIs, so you install `node-datachannel`, wrap its polyfill with `createSimplePeerWrtc()`, and pass a WebSocket constructor from the `ws` package. The exact setup is shown on the **[WebRTC replication page](../../replication-webrtc.md)**.
 
-</details>
+</FaqItem>
+
+</Faq>
 
 ## Follow Up
 

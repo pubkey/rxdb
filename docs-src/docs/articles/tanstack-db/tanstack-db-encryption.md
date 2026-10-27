@@ -6,6 +6,7 @@ image: /headers/tanstack-db-encryption.jpg
 ---
 
 import {Steps} from '@site/src/components/steps';
+import {Faq, FaqItem} from '@site/src/components/faq';
 
 # Encrypting Local Data in TanStack DB with RxDB
 
@@ -191,40 +192,39 @@ The same pattern runs on [React Native](./tanstack-db-react-native.md) and [Capa
 
 ## FAQ
 
-<details>
-    <summary>Does TanStack DB support encryption out of the box?</summary>
+<Faq>
+
+<FaqItem question="Does TanStack DB support encryption out of the box?">
 
 No. TanStack DB is an in-memory store and does not encrypt anything itself. Encryption at rest belongs to the persistence layer. With the official RxDB collection, the **[RxDB encryption plugins](../../encryption.md)** encrypt document fields before they are written to the storage, and TanStack DB works on the decrypted in-memory copy without any changes.
 
-</details>
+</FaqItem>
 
-<details>
-    <summary>How do I encrypt TanStack DB data in IndexedDB or SQLite?</summary>
+<FaqItem question="How do I encrypt TanStack DB data in IndexedDB or SQLite?">
 
 Yes, this works with a storage wrapper. Wrap your [RxStorage](../../rx-storage.md) with `wrappedKeyEncryptionCryptoJsStorage` (free) or `wrappedKeyEncryptionWebCryptoStorage` (premium 👑), set a `password` on `createRxDatabase()`, and list the sensitive fields in the schema's `encrypted` array. The **[RxDB collection for TanStack DB](./rxdb-collection-for-tanstack-db.md)** then persists all writes through that encrypted storage.
 
-</details>
+</FaqItem>
 
-<details>
-    <summary>Can I query encrypted fields in TanStack DB?</summary>
+<FaqItem question="Can I query encrypted fields in TanStack DB?">
 
 Yes, on the TanStack DB side. Live queries run against the decrypted in-memory data, so filters on encrypted fields work there. On the **[RxDB](../../rx-database.md)** side, encrypted fields cannot be used as query operators because they are stored as ciphertext, so keep filter fields for RxDB-level queries and replication unencrypted.
 
-</details>
+</FaqItem>
 
-<details>
-    <summary>Is TanStack DB secure storage enough for health and fintech apps?</summary>
+<FaqItem question="Is TanStack DB secure storage enough for health and fintech apps?">
 
 No single feature is enough on its own, but encryption at rest is a core requirement. The RxDB encryption plugins keep sensitive fields unreadable on disk when a device is lost, which supports compliance with regulations like GDPR and HIPAA. Combine it with secure password handling, HTTPS for [replication](../../replication.md), and the practices from the **[React Native encryption guide](../react-native-encryption.md)** on mobile.
 
-</details>
+</FaqItem>
 
-<details>
-    <summary>What happens when I open the database with a wrong password?</summary>
+<FaqItem question="What happens when I open the database with a wrong password?">
 
 No data is returned. The password is set per database and cannot be changed afterwards, and opening an existing database with a different password throws an error. To change the password, migrate the data with the **[storage migration plugin](../../migration-storage.md)** into a new database, or use the meta-password pattern described in the [encryption docs](../../encryption.md).
 
-</details>
+</FaqItem>
+
+</Faq>
 
 ## Follow Up
 

@@ -8,6 +8,7 @@ image: /headers/indexeddb-encryption.jpg
 import {Steps} from '@site/src/components/steps';
 import { PerformanceChart } from '@site/src/components/performance-chart';
 import { PERFORMANCE_DATA_ENCRYPTION, PERFORMANCE_METRICS } from '@site/src/components/performance-data';
+import {Faq, FaqItem} from '@site/src/components/faq';
 
 # IndexedDB Encryption
 
@@ -142,40 +143,39 @@ If encryption runs on many documents, the Web Crypto plugin is worth it. Indexed
 
 ## FAQ
 
-<details>
-<summary>Is IndexedDB encrypted at rest by default?</summary>
+<Faq>
+
+<FaqItem question="Is IndexedDB encrypted at rest by default?">
 
 No. IndexedDB writes your data to a file on the user's disk in plain text. Same-origin isolation stops other websites from reading it, but it does nothing against someone with file-level access to the machine. To protect data at rest you have to encrypt the values before they are written, which an encrypted [RxStorage](../../rx-storage.md) wrapper does for you.
 
-</details>
+</FaqItem>
 
-<details>
-<summary>How do I encrypt data in IndexedDB?</summary>
+<FaqItem question="How do I encrypt data in IndexedDB?">
 
 You have two options. Encrypt each value yourself with the [Web Crypto API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API) before every write and decrypt after every read, which breaks querying and is easy to get wrong. Or use **[RxDB](https://rxdb.info/)** on top of IndexedDB and flag the secret fields with `encrypted` in the schema, so encryption and decryption happen transparently. See [How RxDB Adds Encryption](#how-rxdb-adds-encryption-on-top-of-indexeddb).
 
-</details>
+</FaqItem>
 
-<details>
-<summary>Can I query encrypted IndexedDB fields?</summary>
+<FaqItem question="Can I query encrypted IndexedDB fields?">
 
 No. An encrypted field is stored as ciphertext, so an index over it is meaningless and a selector on it cannot match. You query by the primary key or by non-encrypted fields and keep the sensitive data in the encrypted fields. To query encrypted values you can replicate them into a non-encrypted [memory mapped storage](../../rx-storage-memory-mapped.md) first.
 
-</details>
+</FaqItem>
 
-<details>
-<summary>Does encryption slow down IndexedDB?</summary>
+<FaqItem question="Does encryption slow down IndexedDB?">
 
 Yes, a bit, because every write encrypts and every read decrypts. The cost depends on the plugin. The free `crypto-js` plugin is fine for small data, and the premium `encryption-web-crypto` plugin is about 10x faster on inserts. For heavy workloads you can run encryption inside a [Worker storage](../../rx-storage-worker.md) to keep it off the main thread.
 
-</details>
+</FaqItem>
 
-<details>
-<summary>Can I change the encryption password later?</summary>
+<FaqItem question="Can I change the encryption password later?">
 
 Not directly. The password is set once per database, and opening the database with a different password throws an error. To rotate it you migrate the data into a new database with the [storage migration plugin](../../migration-storage.md), or you store a random meta-password encrypted with the user password and only change that outer layer. See the [encryption docs](../../encryption.md#changing-the-password).
 
-</details>
+</FaqItem>
+
+</Faq>
 
 ## Follow Up
 

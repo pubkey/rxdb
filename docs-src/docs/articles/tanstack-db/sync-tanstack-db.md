@@ -6,6 +6,7 @@ image: /headers/sync-tanstack-db.jpg
 ---
 
 import {Steps} from '@site/src/components/steps';
+import {Faq, FaqItem} from '@site/src/components/faq';
 
 # How to Sync TanStack DB with Your Backend
 
@@ -218,40 +219,39 @@ To be fair: TanStack DB also has official collection types for [Electric](https:
 
 ## FAQ
 
-<details>
-    <summary>Does TanStack DB have built-in backend sync?</summary>
+<Faq>
+
+<FaqItem question="Does TanStack DB have built-in backend sync?">
 
 No. TanStack DB delegates sync to the collection implementation. The Electric, PowerSync, and TrailBase collections sync with those specific services, while the **[RxDB collection](./rxdb-collection-for-tanstack-db.md)** brings a backend-agnostic replication protocol that works with any infrastructure.
 
-</details>
+</FaqItem>
 
-<details>
-    <summary>Can TanStack DB sync in realtime?</summary>
+<FaqItem question="Can TanStack DB sync in realtime?">
 
 Yes. When the backend provides an event stream via `pull.stream$`, for example over Server-Sent Events or WebSockets, changes reach the client the moment they happen. The **[Sync Engine](../../replication.md)** writes them to RxDB and they stream into the TanStack DB collection automatically.
 
-</details>
+</FaqItem>
 
-<details>
-    <summary>Does the sync keep working when the app goes offline?</summary>
+<FaqItem question="Does the sync keep working when the app goes offline?">
 
 Yes. Reads and writes go against the local RxDB database first, so the app keeps working without a connection. When the client comes back online, the replication resumes from its last checkpoint and pushes the queued local writes. The full pattern is described in **[Building an Offline-First App with TanStack DB and RxDB](./tanstack-db-offline-first.md)**.
 
-</details>
+</FaqItem>
 
-<details>
-    <summary>Do I have to change my backend to sync with TanStack DB and RxDB?</summary>
+<FaqItem question="Do I have to change my backend to sync with TanStack DB and RxDB?">
 
 No. Your backend only has to expose a pull endpoint, a push endpoint, and optionally an event stream. The complex parts like retries, checkpoints, and **[conflict resolution](./tanstack-db-conflict-resolution.md)** run inside of RxDB on the client, so the backend can stay simple.
 
-</details>
+</FaqItem>
 
-<details>
-    <summary>Does the sync handle conflicts when two clients change the same document?</summary>
+<FaqItem question="Does the sync handle conflicts when two clients change the same document?">
 
 Yes. The push handler reports the write as a conflict, and RxDB resolves it on the client with the conflict handler of the collection. By default the server state wins. You can set a custom **[conflict handler](../../transactions-conflicts-revisions.md)** to merge the states instead.
 
-</details>
+</FaqItem>
+
+</Faq>
 
 ## Follow Up
 

@@ -6,6 +6,7 @@ image: /headers/tanstack-db-multi-tab.jpg
 ---
 
 import {Steps} from '@site/src/components/steps';
+import {Faq, FaqItem} from '@site/src/components/faq';
 
 # Multi-Tab Sync for TanStack DB with RxDB
 
@@ -180,33 +181,33 @@ Instead of running one storage instance per tab, the [SharedWorker RxStorage](..
 
 ## FAQ
 
-<details>
-    <summary>Does TanStack DB sync across multiple browser tabs on its own?</summary>
+<Faq>
+
+<FaqItem question="Does TanStack DB sync across multiple browser tabs on its own?">
 
 No. TanStack DB keeps collection data in memory, and each tab holds its own independent copy. Cross-tab consistency comes from the collection implementation. The **[RxDB collection](./rxdb-collection-for-tanstack-db.md)** stores data in a shared durable storage and streams changes from one tab into the TanStack DB collections of all other tabs.
 
-</details>
+</FaqItem>
 
-<details>
-    <summary>Does RxDB replication run in every open tab?</summary>
+<FaqItem question="Does RxDB replication run in every open tab?">
 
 No, not by default. With `waitForLeadership: true` (the default), the **[Sync Engine](../../replication.md)** waits until the tab is elected leader before it starts replicating, so exactly one tab talks to the backend. When you set `waitForLeadership: false`, each tab runs its own replication cycles.
 
-</details>
+</FaqItem>
 
-<details>
-    <summary>Do I need the leader election plugin for TanStack DB cross-tab sync?</summary>
+<FaqItem question="Do I need the leader election plugin for TanStack DB cross-tab sync?">
 
 Yes, when replication is involved. In a multi-instance setting you have to import the **[leader election plugin](../../leader-election.md)** so that RxDB can know how many instances exist and which browser tab should run the replication. Plain cross-tab reactivity without replication only needs `multiInstance: true`, which is the default.
 
-</details>
+</FaqItem>
 
-<details>
-    <summary>Should I set multiInstance to false in the browser?</summary>
+<FaqItem question="Should I set multiInstance to false in the browser?">
 
 No, not for normal web apps. `multiInstance: true` is the default and enables event sharing between tabs. Set it to `false` only for single-instance environments like a Node.js process, React Native, or a single-window Electron app, where skipping the instance coordination decreases the startup time. See the **[RxDatabase](../../rx-database.md)** documentation for details.
 
-</details>
+</FaqItem>
+
+</Faq>
 
 ## Follow Up
 

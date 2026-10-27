@@ -6,6 +6,7 @@ image: /headers/indexeddb-tutorial.jpg
 ---
 
 import {Steps} from '@site/src/components/steps';
+import {Faq, FaqItem} from '@site/src/components/faq';
 
 # IndexedDB Tutorial
 
@@ -281,61 +282,57 @@ RxDB uses batched cursors and other techniques to work around the slow parts of 
 
 ## FAQ
 
-<details>
-<summary>How do I use IndexedDB in JavaScript?</summary>
+<Faq>
+
+<FaqItem question="How do I use IndexedDB in JavaScript?">
 
 You open a database with `indexedDB.open(name, version)`, create an **object store** inside the `onupgradeneeded` event, and then read and write records inside `readwrite` or `readonly` transactions. Every operation returns a request whose result arrives on an `onsuccess` callback. The [step-by-step tutorial above](#how-to-use-indexeddb---step-by-step) walks through the full create, read, update, and delete cycle.
 
-</details>
+</FaqItem>
 
-<details>
-<summary>What is a record in IndexedDB?</summary>
+<FaqItem question="What is a record in IndexedDB?">
 
 A record is one complete JavaScript object stored inside an **object store** under a key. It is not a single value like a localStorage string, and it is not a row of separate columns like in SQL. You put an object in and you get the same object back. See [The Core Concepts](#the-core-concepts) above.
 
-</details>
+</FaqItem>
 
-<details>
-<summary>What is an index in IndexedDB?</summary>
+<FaqItem question="What is an index in IndexedDB?">
 
 An index is a secondary lookup path. Without it you can only find a record by its primary key. An index lets you find records by another field, for example every todo where `priority` is `5` or higher, without scanning the whole store. You create indexes once, inside `onupgradeneeded`, and the browser keeps them current on every write.
 
-</details>
+</FaqItem>
 
-<details>
-<summary>What is the difference between a callback and a promise?</summary>
+<FaqItem question="What is the difference between a callback and a promise?">
 
 A callback is a function you pass to an API that gets called later with the result, like IndexedDB's `onsuccess`. A Promise is a value you read with `await` or `.then()`. Promises let you write straight-line code with one `try/catch`, while callbacks nest and need error handling on every step. This is a large part of why raw IndexedDB feels harder than a modern database.
 
-</details>
+</FaqItem>
 
-<details>
-<summary>Is IndexedDB better than localStorage?</summary>
+<FaqItem question="Is IndexedDB better than localStorage?">
 
 Yes, for structured data. [localStorage](../../rx-storage-localstorage.md) only stores strings, is synchronous, and is capped at a few megabytes. IndexedDB stores objects and blobs, works asynchronously, and holds much more data. For simple key-value flags, localStorage is fine.
 
-</details>
+</FaqItem>
 
-<details>
-<summary>Why is IndexedDB so hard to use?</summary>
+<FaqItem question="Why is IndexedDB so hard to use?">
 
 The API predates Promises and is built around events and callbacks, so control flow is verbose and a transaction cannot survive an `await`. It also has no reactivity, no schema, and only single-field range queries. Most teams add a wrapper. See [the best IndexedDB wrapper](./best-indexeddb-wrapper.md) for a comparison.
 
-</details>
+</FaqItem>
 
-<details>
-<summary>Can IndexedDB sync data to a server or other devices?</summary>
+<FaqItem question="Can IndexedDB sync data to a server or other devices?">
 
 No. IndexedDB stores data in one browser, on one device, in one origin, and has no built-in sync. You have to build replication yourself or use a library like **[RxDB](https://rxdb.info/)** that ships a [Sync Engine](../../replication.md). See [IndexedDB sync](./indexeddb-sync.md).
 
-</details>
+</FaqItem>
 
-<details>
-<summary>Does RxDB use IndexedDB?</summary>
+<FaqItem question="Does RxDB use IndexedDB?">
 
 Yes. **[RxDB](https://rxdb.info/)** can store its data in IndexedDB through the free [Dexie.js storage](../../rx-storage-dexie.md) or the premium [IndexedDB RxStorage](../../rx-storage-indexeddb.md). You keep IndexedDB as the storage and get a real database API, reactivity, and sync on top.
 
-</details>
+</FaqItem>
+
+</Faq>
 
 ## Follow Up
 

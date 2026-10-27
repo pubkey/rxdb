@@ -11,6 +11,7 @@ import { IframeFormModal, Modal } from './modal';
 import { Button } from './button';
 import { JOBS_TITLE } from '../constants';
 import { JOBS_TEXTS_DE } from './jobs-texts-de';
+import { JsonLd } from './json-ld';
 
 export type JobsLang = 'en' | 'de';
 
@@ -157,6 +158,77 @@ const JOBS = [
     }
 ];
 
+/**
+ * Date the current positions were first published. Search engines use it to
+ * decide how fresh a JobPosting is, so update it when a new position is added.
+ */
+const JOBS_DATE_POSTED = '2026-10-21';
+
+/**
+ * Must match the hourly wage that is named in the visible texts.
+ */
+const JOBS_HOURLY_WAGE_EUR = 17;
+
+function escapeHtml(text: string): string {
+    return text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+}
+
+function htmlList(title: string, items: string[]): string {
+    return '<p><b>' + escapeHtml(title) + '</b></p><ul>' +
+        items.map(item => '<li>' + escapeHtml(item) + '</li>').join('') +
+        '</ul>';
+}
+
+/**
+ * Builds one schema.org JobPosting per position. The full advert is only
+ * rendered inside a modal after a click, so without this markup crawlers and
+ * job search engines would not see the tasks, requirements and wage.
+ */
+function jobPostingsJsonLd(lang: JobsLang) {
+    const t = TEXTS[lang];
+    return t.jobs.map(job => ({
+        '@context': 'https://schema.org',
+        '@type': 'JobPosting',
+        title: job.title,
+        description: '<p>' + escapeHtml(job.teaser) + '</p>' +
+            htmlList(t.sectionTasks, job.tasks) +
+            htmlList(t.sectionRequirements, job.requirements) +
+            htmlList(t.sectionConditions, t.conditions),
+        datePosted: JOBS_DATE_POSTED,
+        employmentType: 'PART_TIME',
+        url: 'https://rxdb.info' + URLS[lang],
+        inLanguage: lang,
+        hiringOrganization: {
+            '@type': 'Organization',
+            name: 'RxDB',
+            sameAs: 'https://rxdb.info/',
+            logo: 'https://rxdb.info/files/logo/logo.svg'
+        },
+        jobLocation: {
+            '@type': 'Place',
+            address: {
+                '@type': 'PostalAddress',
+                addressLocality: 'Stuttgart',
+                addressRegion: 'Baden-Württemberg',
+                addressCountry: 'DE'
+            }
+        },
+        baseSalary: {
+            '@type': 'MonetaryAmount',
+            currency: 'EUR',
+            value: {
+                '@type': 'QuantitativeValue',
+                value: JOBS_HOURLY_WAGE_EUR,
+                unitText: 'HOUR'
+            }
+        },
+        workHours: '10-20 hours per week'
+    }));
+}
+
 function Section(props: { title: string; items: string[]; }) {
     return <>
         <div style={{
@@ -246,6 +318,7 @@ export function JobsPage(props: { lang: JobsLang; }) {
                 description={t.description}
             >
                 <main>
+                    <JsonLd data={jobPostingsJsonLd(lang)} />
 
                     <div className="block first centered">
                         <div className="content">

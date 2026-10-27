@@ -9,6 +9,50 @@ import { triggerTrackingEvent } from '../components/trigger-event';
 import { IframeFormModal } from '../components/modal';
 import { Button } from '../components/button';
 import { HOME_TITLE } from '../constants';
+import { JsonLd } from '../components/json-ld';
+
+/**
+ * Must match the price that is shown on the page.
+ */
+const CONSULTING_PRICE_EUR_PER_HOUR = 180;
+
+const CONSULTING_JSON_LD = {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: 'RxDB Consulting Session',
+    serviceType: 'Software consulting',
+    description: 'A one hour consulting session with the RxDB core maintainer for quick fixes and suggestions on how to use RxDB and related technologies.',
+    url: 'https://rxdb.info/consulting/',
+    areaServed: 'Worldwide',
+    availableChannel: {
+        '@type': 'ServiceChannel',
+        serviceType: 'Video call'
+    },
+    provider: {
+        '@type': 'Organization',
+        name: 'RxDB',
+        url: 'https://rxdb.info/',
+        logo: 'https://rxdb.info/files/logo/logo.svg'
+    },
+    offers: {
+        '@type': 'Offer',
+        price: String(CONSULTING_PRICE_EUR_PER_HOUR),
+        priceCurrency: 'EUR',
+        url: 'https://buy.stripe.com/14kdU1dN05SAfMA4gg',
+        availability: 'https://schema.org/InStock',
+        priceSpecification: {
+            '@type': 'UnitPriceSpecification',
+            price: String(CONSULTING_PRICE_EUR_PER_HOUR),
+            priceCurrency: 'EUR',
+            unitCode: 'HUR',
+            referenceQuantity: {
+                '@type': 'QuantitativeValue',
+                value: 1,
+                unitCode: 'HUR'
+            }
+        }
+    }
+};
 
 export default function Consulting() {
     useEffect(() => {
@@ -28,9 +72,10 @@ export default function Consulting() {
             </Head>
             <Layout
                 title={HOME_TITLE}
-                description="RxDB is a fast, local-first NoSQL-database for JavaScript Applications like Websites, hybrid Apps, Electron-Apps, Progressive Web Apps and Node.js"
+                description={'Book a one hour consulting session with the RxDB core maintainer for ' + CONSULTING_PRICE_EUR_PER_HOUR + '€, or get matched with a partner agency that builds your local-first app.'}
             >
                 <main>
+                    <JsonLd data={CONSULTING_JSON_LD} />
 
                     <div className="block">
                         <div className="content">
@@ -47,7 +92,7 @@ export default function Consulting() {
                                     <p style={{
                                         fontSize: 20,
                                         fontWeight: 700
-                                    }}>180€ / 1 hour session</p>
+                                    }}>{CONSULTING_PRICE_EUR_PER_HOUR}€ / 1 hour session</p>
                                     <div className="text-center-mobile" style={{
                                     }}>
                                         <Button

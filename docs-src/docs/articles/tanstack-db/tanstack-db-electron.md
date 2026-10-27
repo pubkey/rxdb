@@ -6,6 +6,7 @@ image: /headers/tanstack-db-electron.jpg
 ---
 
 import {Steps} from '@site/src/components/steps';
+import {Faq, FaqItem} from '@site/src/components/faq';
 
 # TanStack DB in Electron: A Local Database for Desktop Apps
 
@@ -205,40 +206,39 @@ TanStack also ships a first-party persistence adapter for Electron, the `@tansta
 
 ## FAQ
 
-<details>
-    <summary>Can I use TanStack DB with SQLite in Electron?</summary>
+<Faq>
+
+<FaqItem question="Can I use TanStack DB with SQLite in Electron?">
 
 Yes. The `@tanstack/rxdb-db-collection` package connects TanStack DB to an RxDB collection, and the **[SQLite RxStorage](../../rx-storage-sqlite.md)** persists that collection to a single `.sqlite` file in the Electron main process. A free trial version of the storage ships with RxDB Core for evaluation.
 
-</details>
+</FaqItem>
 
-<details>
-    <summary>Does the database run in the Electron main or renderer process?</summary>
+<FaqItem question="Does the database run in the Electron main or renderer process?">
 
 The storage runs in the main process and the RxDatabase runs in the renderer. The **[Electron plugin](../../electron.md)** connects them with `exposeIpcMainRxStorage` and `getRxStorageIpcRenderer`, so database work never blocks the UI and SQLite stays where Node.js can reach it.
 
-</details>
+</FaqItem>
 
-<details>
-    <summary>Do multiple Electron windows stay in sync with TanStack DB?</summary>
+<FaqItem question="Do multiple Electron windows stay in sync with TanStack DB?">
 
 Yes. Each `BrowserWindow` connects to the same main-process storage through `getRxStorageIpcRenderer` with the same `key`. A write in one window streams through **[RxDB](../../rx-database.md)**'s change feed into the TanStack DB collections of all other windows, and their live queries re-render on their own.
 
-</details>
+</FaqItem>
 
-<details>
-    <summary>Do I need native module rebuilds for SQLite in Electron?</summary>
+<FaqItem question="Do I need native module rebuilds for SQLite in Electron?">
 
 No, not when you use the `node:sqlite` module that ships with Node.js 22 and newer, which recent Electron versions include. The `getSQLiteBasicsNodeNative()` adapter of the **[SQLite RxStorage](../../rx-storage-sqlite.md)** wraps it directly. Third-party packages like `sqlite3` are native addons and must be rebuilt with @electron/rebuild on every Electron upgrade.
 
-</details>
+</FaqItem>
 
-<details>
-    <summary>Is there a free way to try TanStack DB with RxDB in Electron?</summary>
+<FaqItem question="Is there a free way to try TanStack DB with RxDB in Electron?">
 
 Yes. The SQLite trial storage comes with RxDB Core and passes the full storage test suite, limited to 500 non-deleted documents and without indexes. You can also run the free **[localStorage-based storage](../../rx-storage-localstorage.md)** in the renderer for a prototype. For production, the full SQLite and filesystem storages are part of [RxDB Premium 👑](/premium/).
 
-</details>
+</FaqItem>
+
+</Faq>
 
 ## Follow Up
 
