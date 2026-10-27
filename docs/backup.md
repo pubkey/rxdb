@@ -96,6 +96,16 @@ const subscription = backupState.writeEvents$
 */
 ```
 
+## Folder Names
+
+Each document is written into a folder that is named by its primary key, and each attachment into a file that is named by its attachment id. Chars that are not allowed in file names on all operating systems (`<>:"/\|?*`, control chars, and a trailing `.` or whitespace) and the `%` char are percent-encoded. Also reserved Windows names like `CON` or `NUL` get their first char encoded. A document with the primary key `todo:1` is stored in the folder `todo%3A1`. Use `toFileName()` to get the folder name of a primary key:
+
+```ts
+import { toFileName } from 'rxdb/plugins/backup';
+const folderName = toFileName('todo:1');
+// > 'todo%3A1'
+```
+
 ## Limitations
 
 - It is currently not possible to import from a written backup. If you need this functionality, please make a pull request.
