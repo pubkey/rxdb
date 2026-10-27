@@ -12,8 +12,7 @@ import {
     schemaObjects,
     ensureReplicationHasNoErrors,
     HumanWithTimestampDocumentType,
-    runReplicationBaseTestSuite,
-    setExcludedTestDataChars
+    runReplicationBaseTestSuite
 } from '../plugins/test-utils/index.mjs';
 
 import {
@@ -74,11 +73,6 @@ const connectionStatePromise = (async () => {
  */
 describe('replication-nats.test.js', () => {
     addRxPlugin(RxDBDevModePlugin);
-    /**
-     * The document id is used as token of the NATS subject,
-     * which must not contain whitespace, '.', '*' or '>'.
-     */
-    setExcludedTestDataChars(' .*>');
     assert.ok(config);
     /**
      * Use a low batchSize in all tests

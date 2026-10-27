@@ -20,19 +20,9 @@ export const TEST_DATA_CHARSET = '0987654321ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghij
 export const TEST_DATA_CHARSET_LAST_SORTED = ensureNotFalsy(lastOfArray(TEST_DATA_CHARSET.split('').sort()));
 const someEmojisArr = ['😊', '💩', '👵', '🍌', '🏳️‍🌈', '😃'];
 
-let baseChars = TEST_DATA_CHARSET.split('');
-let allChars = baseChars.concat(someEmojisArr);
-
-/**
- * Some backends cannot handle all chars of the TEST_DATA_CHARSET,
- * for example NATS does not allow whitespace, '.', '*' and '>' in subjects.
- * Tests of these backends can exclude the chars from the random test data.
- */
-export function setExcludedTestDataChars(chars: string) {
-    const excluded = new Set(chars.split(''));
-    baseChars = TEST_DATA_CHARSET.split('').filter(char => !excluded.has(char));
-    allChars = baseChars.concat(someEmojisArr);
-}
+const baseChars = TEST_DATA_CHARSET.split('');
+let allChars = baseChars.slice(0);
+allChars = allChars.concat(someEmojisArr);
 
 export function randomStringWithSpecialChars(
     minLength: number,
