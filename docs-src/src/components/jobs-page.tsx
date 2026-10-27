@@ -32,7 +32,7 @@ const TEXTS = {
         description: 'Open working student positions at RxDB in Stuttgart, Germany. 17 € per hour.',
         headline: 'Careers at',
         switchLanguage: 'Diese Seite auf Deutsch lesen',
-        intro: 'RxDB is a database that runs in the browser and on the phone. Apps built with it keep working without a network connection and sync once the connection is back. We are a small team that builds open source software used by developers all over the world, and we are looking for people who want to build things, not just collect credit points. Both open positions are Werkstudent roles in Stuttgart, Germany 🇩🇪.',
+        intro: 'RxDB is a database that runs in the browser and on the phone. Apps built with it keep working without a network connection and sync once the connection is back. RxDB is an open source project used by developers all over the world, and we are looking for people who want to build things, not just collect credit points. Both open positions are Werkstudent roles in Stuttgart, Germany 🇩🇪.',
         customersTitle: 'Who uses RxDB',
         /**
          * Only customers that are public on the rxdb.info start page are
@@ -46,10 +46,9 @@ const TEXTS = {
             'myAgro, which helps more than 250,000 small farmers in West Africa buy seeds and fertilizer by mobile phone, manages its data with RxDB.',
             'MoreApp, SafeEx and WebWare send inspectors and technicians out with it, including to places without a network.',
             'A large Australian construction group checks quality on its building sites with it.',
-            'An Israeli maker of counter-drone systems uses RxDB.',
+            'A startup that builds counter-drone systems uses RxDB.',
             'MongoDB and Supabase are official partners.'
         ],
-        stats: 'RxDB has about 23,000 stars on GitHub and is downloaded about 370,000 times a month on npm.',
         summary: '17 € per hour, 10 to 20 hours per week, on site in Stuttgart, Germany 🇩🇪',
         openAdvert: 'Read the full advert',
         openAdvertAria: 'Open the job advert: ',
@@ -81,10 +80,6 @@ const TEXTS = {
             {
                 title: 'Real users from day one',
                 text: 'RxDB runs in production at the companies listed below. What you ship gets used.'
-            },
-            {
-                title: 'Direct line to the maintainer',
-                text: 'You work directly with the person who built RxDB. No layers of management, short feedback loops, fast decisions.'
             },
             {
                 title: 'Responsibility, not busywork',
@@ -283,7 +278,6 @@ export function JobsPage(props: { lang: JobsLang; }) {
                                     <ul style={{ lineHeight: '26px', fontSize: 15 }}>
                                         {t.customers.map((entry, i) => <li key={'c-' + i}>{entry}</li>)}
                                     </ul>
-                                    <p style={{ textAlign: 'center', fontWeight: 700 }}>{t.stats}</p>
                                 </div>
                             </div>
                         </div>
