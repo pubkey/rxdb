@@ -639,7 +639,7 @@
     "clone": "2.1.2",
     "concurrently": "10.0.6",
     "copy-webpack-plugin": "14.0.0",
-    "core-js": "3.50.0",
+    "core-js": "3.51.0",
     "cors": "2.8.6",
     "cross-env": "10.1.0",
     "delete": "1.1.0",
