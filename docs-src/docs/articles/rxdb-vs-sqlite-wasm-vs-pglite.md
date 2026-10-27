@@ -61,7 +61,7 @@ SQLite-Wasm and PGlite answer the question "how do I run SQL in the browser". Rx
 
 With an engine you get tables and a query API. Everything around that is your job: keeping the UI in sync with the data, handling two open tabs, retrying writes to the server, and resolving conflicts when two devices edit the same row while offline. This is where most of the work in a local-first app is, and the engine does not help with it.
 
-The layers can also be combined. The [RxDB SQLite storage](../rx-storage-sqlite.md) runs RxDB on top of SQLite, both on native platforms and in the browser through a WebAssembly build of SQLite (the browser adapter `getSQLiteBasicsWasm()` uses the [wa-sqlite](https://github.com/rhashimoto/wa-sqlite) build, not the official `@sqlite.org/sqlite-wasm` package). There is no RxDB storage based on PGlite.
+The layers can also be combined. The [RxDB SQLite storage](../rx-storage-sqlite.md) runs RxDB on top of SQLite, both on native platforms and in the browser through a WebAssembly build of SQLite (the browser adapter `getSQLiteBasicsWasm()` uses the [wa-sqlite](https://github.com/rhashimoto/wa-sqlite) build, not the official `@sqlite.org/sqlite-wasm` package). There is no RxDB storage based on PGlite. Turso also ships a SQLite-compatible engine written in Rust for the browser, which has its own trade-offs with headers, tabs, and bundle size, see the [Turso and libSQL WASM comparison](./alternatives/turso-alternative.md).
 
 ## Comparing the Details
 
