@@ -35,6 +35,8 @@ export type NatsSyncOptions<RxDocType> = Omit<
      * which means a message for a document would have the subject
      * 'foo.bar.myDoc' where the last part 'myDoc' would be the primaryKey in
      * the RxDB document.
+     * The primaryKey is encoded with encodeNatsSubjectToken()
+     * so that ids like 'a.b' or 'a b' are valid subject tokens.
      * @link https://docs.nats.io/nats-concepts/subjects
      */
     subjectPrefix: string;
