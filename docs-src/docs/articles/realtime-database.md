@@ -177,7 +177,7 @@ The 16ms budget is also the reason why the two other meanings of realtime matter
 
 Three architectures all call themselves realtime, and the word "server-authoritative" covers two of them that behave differently in practice.
 
-**Managed realtime backend**: a vendor runs the server and you rent access to it. The truth lives in their cloud, the query engine runs there, and you are billed per operation. The Firebase Realtime Database and Firestore work this way.
+**Managed realtime backend**: a vendor runs the server and you rent access to it. The truth lives in their cloud, the query engine runs there, and you are billed per operation. The Firebase Realtime Database and Firestore work this way. Same goes for Convex, which runs your queries as TypeScript functions on its servers and has no offline mode, see the [Convex comparison](./alternatives/convex-alternative.md).
 
 **Self-hosted server-authoritative**: your own server, on a VPS, on bare metal, or on a Raspberry Pi in the office, holds the truth. The client keeps a cache. Nothing here is metered by a vendor, and the data stays on hardware you control.
 
