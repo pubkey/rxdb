@@ -196,7 +196,7 @@ const replicationState = replicateSupabase({
 });
 ```
 
-Because RxDB handles the sync layer, you can build your app as if it were a purely local application. All reads and writes happen against the local SQLite database instantly, while the replication happens in the background. This is the essence of **Local-First** development.
+Because RxDB handles the sync layer, you can build your app as if it were a purely local application. All reads and writes happen against the local SQLite database instantly, while the [SQLite sync](./articles/sqlite-sync.md) with your backend happens in the background. This is the essence of **Local-First** development.
 
 ## Comparison with Alternatives
 

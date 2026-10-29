@@ -227,7 +227,7 @@ Because the [storage layer](../rx-storage.md) is swappable, none of your applica
 
 ## Syncing the Electron SQLite database with a backend
 
-Local SQLite data becomes more useful when it replicates. With the RxDB [Sync Engine](../replication.md) your Electron app pulls and pushes changes in realtime and keeps working offline. Writes land in SQLite first, the UI updates instantly and the replication catches up whenever the network allows it. Conflicts are detected and resolved with a [conflict handler](../transactions-conflicts-revisions.md) that you control.
+Local SQLite data becomes more useful when it replicates, and [SQLite sync](./sqlite-sync.md) explains which approaches exist for that. With the RxDB [Sync Engine](../replication.md) your Electron app pulls and pushes changes in realtime and keeps working offline. Writes land in SQLite first, the UI updates instantly and the replication catches up whenever the network allows it. Conflicts are detected and resolved with a [conflict handler](../transactions-conflicts-revisions.md) that you control.
 
 <CenteredImage src="../files/database-replication.png" alt="SQLite replication Electron" width={200} />
 
