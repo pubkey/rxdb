@@ -1,38 +1,103 @@
 ---
-title: SQLite Sync - Sync a SQLite Database Between Devices and a Backend
+title: SQLite Sync - How to Sync Local Data From Devices to Any Backend
 slug: sqlite-sync.html
-description: Learn how SQLite sync works with changesets, CRDTs, file replication and sync engines, and how to sync SQLite with your own backend using RxDB.
+description: Learn how device-to-server sync works, from change tracking and conflicts to its downsides, and how to sync SQLite or any local data with any backend using RxDB.
 image: /headers/sqlite-sync.jpg
 ---
 
 import {Faq, FaqItem} from '@site/src/components/faq';
 
-# SQLite Sync: How to Sync a SQLite Database Between Devices and a Backend
+# SQLite Sync and Device-to-Server Sync: How to Sync Local Data With Any Backend
 
-**SQLite sync** means keeping the SQLite database on each device and the data on your server in the same state, in both directions, also when a device was offline for a while. [SQLite](https://www.sqlite.org/) is the default local database on Android, iOS, [Electron](./electron-sqlite.md) and Node.js, but it is an embedded library without any network layer. Every app that stores data in SQLite and wants it on a second device has to add sync on top. This page explains what SQLite sync has to solve, compares the tools that exist in October 2026, and shows how [RxDB](https://rxdb.info/) syncs a SQLite database with any backend through its [Sync Engine](../replication.md).
+**SQLite sync** and device-to-server sync in general mean keeping the local database on each device and the data on your server in the same state, in both directions, also when a device was offline for a while. [SQLite](https://www.sqlite.org/) is the default local database on Android, iOS, [Electron](./electron-sqlite.md) and Node.js, and in the browser the same job falls to [IndexedDB](../rx-storage-indexeddb.md) or [OPFS](../rx-storage-opfs.md). None of them has a network layer. Every app that keeps data on the device and wants it on a server or a second device has to add sync on top. This page explains what device-to-server sync has to solve, its downsides, why a NoSQL document model makes it easier to sync with any backend, and how [RxDB](https://rxdb.info/) does it with its [Sync Engine](../replication.md).
 
 <RxdbLogo alt="SQLite sync" />
 
-## What SQLite Sync Has to Solve
+## What Device-to-Server Sync Has to Solve
 
-Copying a database file from one device to another is not sync. As soon as two devices write to their own copy, you need a protocol that moves single changes and merges them. A working SQLite sync layer has to handle all of these:
+Copying a database file from one device to another is not sync. As soon as a device and a server both accept writes, you need a protocol that moves single changes and merges them. A working sync layer has to handle all of these, no matter which local database you use:
 
-- **Change tracking**: Find out which rows changed since the last sync, including rows that were deleted. A deleted row is gone from the table, so you need tombstones or a change log to send the delete at all.
+- **Change tracking**: Find out which records changed since the last sync, including records that were deleted. A deleted record is gone from the table, so you need tombstones or a change log to send the delete at all.
 - **Checkpoints**: Remember how far each device has synced, so that a restart or a lost connection continues where it stopped instead of downloading everything again.
 - **Offline writes**: Queue local writes while the device is offline and push them later, in the right order.
-- **Conflicts**: Decide what happens when two devices changed the same row while both were offline.
-- **Live updates**: Get changes from other devices without polling every few seconds.
-- **Schema changes**: Old app versions with an old table layout still have data that has to sync after an update.
+- **Conflicts**: Decide what happens when two devices changed the same record while both were offline.
+- **Live updates**: Get changes from the server and other devices without polling every few seconds.
+- **Schema changes**: Old app versions with an old data layout still have data that has to sync after an update.
 
-None of this is part of SQLite itself. The trouble starts when you build it yourself: change tracking, checkpoints and conflict handling are each small on their own, but the edge cases (a delete that races an update, a device that comes back after three weeks) are where most custom sync code breaks.
+The trouble starts when you build it yourself: change tracking, checkpoints and conflict handling are each small on their own, but the edge cases (a delete that races an update, a device that comes back after three weeks) are where most custom sync code breaks.
 
-## Why SQLite Has No Built-In Sync
+## How Data Moves Between Device and Server
+
+There are four common models. They differ in what is sent over the wire.
+
+1. **Replicate the changed state**: The client asks the server for all records that changed after its checkpoint and sends its own changed records back. The server only has to answer "what changed since X". This is the model of the RxDB [Sync Engine](../replication.md) and of CouchDB.
+2. **Replay an operation log**: Every write is recorded as an operation (an SQL statement, a mutation) and replayed on the other side. This needs a global order of all operations. When an older operation arrives late, the client has to roll back and re-apply newer ones, which gets expensive for clients that were offline for days. [Why NoSQL](../why-nosql.md#reliable-replication) explains this with an `UPDATE ... WHERE` example.
+3. **Merge with CRDTs**: Each field carries enough metadata to merge any two versions without asking the application. The merge is automatic, but the merge rules are fixed. See [CRDT](../crdt.md).
+4. **Copy pages or files**: The database file or its write-ahead log is copied to another machine. This works for one writer and its read replicas on servers, not for many devices that all write.
+
+The transport is a separate decision. Pulling can be plain HTTP polling, and live updates come over long polling, [Server-Sent Events or WebSockets](./websockets-sse-polling-webrtc-webtransport.md). RxDB uses a pull handler for catching up and an optional event stream for live changes, so the protocol works the same over any transport.
+
+## Conflict Strategies
+
+When the same record was changed on two devices, one of these rules decides the result:
+
+- **Server wins**: The client drops its change and takes the server state. Simple, but offline edits get lost without the user noticing.
+- **Last write wins**: The newer timestamp wins. Device clocks drift and can be set by the user, so "newer" is not reliable across devices.
+- **Field merge**: Fields that were changed on only one side are kept, fields changed on both sides need a rule. This needs application knowledge, for example "a done todo stays done".
+- **CRDT merge**: A data type that merges deterministically. Good for counters, sets and text, but you cannot add business rules.
+
+RxDB detects conflicts on the server with a revision check and resolves them on the client with a [conflict handler](../transactions-conflicts-revisions.md#custom-conflict-handler) per collection. The default keeps the server state, and a custom handler can implement any of the strategies above.
+
+## Downsides of Syncing Local Data
+
+Syncing local data makes apps fast and lets them work offline, but there is no free lunch. Before you build on it, keep these costs in mind. A longer discussion is in [Downsides of Local First / Offline First](../downsides-of-offline-first.md).
+
+- **Data size on the device**: Every synced record is stored on the device. The first sync of a large dataset takes time and storage, which is why most apps sync only the data a user needs with [partial sync](../partial-sync.md).
+- **Eventual consistency**: Two devices can show different data until both have synced. A read on the device is fast, but it is not guaranteed to be the latest state on the server.
+- **Conflicts are product decisions**: No algorithm knows whether a price change or a deleted comment should win. Someone has to define the rules per data type, and users can still be surprised by the outcome.
+- **Permissions move to the sync layer**: The server has to check for every pulled and pushed record whether the user may read or write it. A query that runs on the device cannot enforce access rules on its own.
+- **Client migrations**: When your data layout changes, every device has to migrate its local data, and old app versions keep sending data in the old layout until they update. See [schema migration](../migration-schema.md).
+- **Deletes stay around**: Tombstones have to stay around until every device has synced them, so the storage keeps growing unless you [clean up](../cleanup.md) old deletes.
+- **Data at rest on the device**: A lost phone or a shared computer holds a copy of the user's data. Sensitive fields should be [encrypted](../encryption.md).
+- **More states to test**: Offline, slow network, app killed during sync, two tabs, two devices. Each of them is a case your tests have to cover.
+
+## Why a NoSQL Document Model Makes Sync Easier
+
+Most of the work in device-to-server sync comes from the data model, not from the network. A document model, where each record is one JSON document with a primary key, removes several of the hard parts.
+
+### 1. The Document Is the Unit of Sync and Conflict
+
+A document carries all fields of one entity. A change is "this document now looks like this", and a conflict is "two versions of this document". In a relational schema, one user action often touches several rows in several tables (a todo, its tags in a join table, a counter in a parent row), and the sync layer has to keep those rows together or the other side sees a half-applied change.
+
+### 2. Replicate State, Not Queries
+
+With documents you replicate the result of a write, not the statement that produced it. An `UPDATE ... WHERE` that ran on an outdated local state cannot produce a different result on the server, because the server never runs it. The changed documents are simply sent over, and replaying is no longer needed.
+
+### 3. No Ordering Constraints Between Records
+
+Foreign keys require that a parent row exists before its child row is inserted. When changes arrive in batches, out of order, or partially because the connection dropped, a relational sync layer has to sort them or temporarily disable constraints. Documents reference each other by id, and a missing reference is a state the app can handle instead of a write that fails.
+
+### 4. JSON Maps to Every Backend
+
+A JSON document can be stored as-is in MongoDB, CouchDB or Firestore, as a `jsonb` column in Postgres, as a row with columns, or returned by any REST or GraphQL API. The client does not have to mirror the server schema, and the server does not have to run the same database engine as the device. A SQLite table on the device that has to match a Postgres table on the server breaks as soon as the column types or constraints differ.
+
+### 5. One Checkpoint per Collection
+
+With one primary key and one `updatedAt` per document, "give me everything that changed after checkpoint X" is a single indexed query on the server. There is no change log across tables to maintain.
+
+### 6. Schema Versions per Document
+
+A document schema with a version number lets the client migrate stored documents with a migration strategy, and the server can accept or upgrade documents from old app versions one by one.
+
+What you give up: there are no joins or multi-document transactions on the client. Related data is either embedded in the document or loaded by id, and writes that must change several documents atomically need a different design. [Why NoSQL](../why-nosql.md#what-you-lose-with-nosql) lists these trade-offs in detail.
+
+## SQLite Has No Built-In Sync
 
 SQLite runs inside your process and reads and writes a single file. There is no server, no port and no replication protocol. The closest built-in feature is the [Session Extension](https://www.sqlite.org/sessionintro.html), which records changes to tables into a **changeset** blob that you can apply to another database with the same schema. It is part of the amalgamation since SQLite 3.13.0 but is disabled by default and has to be compiled in with `SQLITE_ENABLE_SESSION` and `SQLITE_ENABLE_PREUPDATE_HOOK`.
 
 When a changeset is applied, SQLite calls a conflict handler for each row that does not match. The handler can only return [`SQLITE_CHANGESET_OMIT`, `SQLITE_CHANGESET_ABORT` or `SQLITE_CHANGESET_REPLACE`](https://www.sqlite.org/session/sqlite3changeset_apply.html), so it can keep one side or the other, but not merge fields. The extension also has no transport. The official introduction describes the transfer step as "Alice can send her changeset to Bob". Sending it, storing checkpoints and handling a device that missed changesets is up to you.
 
-## SQLite Sync Tools Compared
+### SQLite Sync Tools Compared
 
 The tools that call themselves SQLite sync solve different problems. Some replicate a server database for backups, some merge client databases with CRDTs, and some are hosted services with their own backend. All facts below were checked on October 29, 2026.
 
@@ -45,23 +110,21 @@ The tools that call themselves SQLite sync solve different problems. Some replic
 | [SQLite Sync by SQLite AI](https://github.com/sqliteai/sqlite-sync) | CRDT extension | "No conflicts. Deterministic merge" | Linux, macOS, Windows, iOS, Android, WASM, React Native | SQLite Cloud, Postgres or Supabase via their CloudSync service | Active, 1.2.0 on September 28, 2026 |
 | [ElectricSQL](https://electric.ax/) | Streams Postgres "shapes" to clients | "Electric does not do write-path sync." | TypeScript client, PGlite | Electric service in front of Postgres | SQLite client sync was dropped in the 2024 rewrite |
 
-A few things stand out:
-
 - **Litestream and LiteFS are server tools.** Litestream is a backup and disaster recovery tool, and its own [tips page](https://litestream.io/tips/) warns that "Multiple applications replicating into the same bucket & path can cause situations where you will be unable to restore". It does not sync user devices. LiteFS replicates one primary to read replicas in a cluster, and Fly.io says on its [LiteFS docs](https://docs.fly.io/litefs) that it is "not able to provide support or guidance for it".
-- **CRDT extensions merge without asking you.** cr-sqlite and SQLite Sync resolve every conflict with a fixed merge strategy. That is the point of a CRDT, but it also means you cannot plug in business rules like "a done todo stays done". The last cr-sqlite release is v0.16.3 from January 17, 2024, <TimeSince date="2024-01-17" />. Read the [CRDT](../crdt.md) page for how RxDB handles CRDTs as an opt-in per collection.
-- **Hosted sync services decide your backend.** PowerSync needs its sync service in front of one of its supported databases, Turso Sync needs Turso Cloud, and SQLite Sync routes through the CloudSync service of SQLite Cloud even when your data lives in your own Postgres. More detail is in the [PowerSync alternative](./alternatives/powersync-alternative.md), [Turso alternative](./alternatives/turso-alternative.md) and [ElectricSQL alternative](./alternatives/electricsql-alternative.md) articles.
+- **CRDT extensions merge without asking you.** cr-sqlite and SQLite Sync resolve every conflict with a fixed merge strategy. That is the point of a CRDT, but it also means you cannot plug in business rules like "a done todo stays done". The last cr-sqlite release is v0.16.3 from January 17, 2024, <TimeSince date="2024-01-17" />.
+- **Hosted sync services decide your backend.** SQLite Sync routes through the CloudSync service of SQLite Cloud even when your data lives in your own Postgres, and ElectricSQL needs its sync service in front of Postgres and leaves the write path to you. More detail is in the [ElectricSQL alternative](./alternatives/electricsql-alternative.md) article.
 
-## SQLite Sync With RxDB
+## Sync Any Local Data With RxDB
 
-[RxDB](../rx-database.md) (Reactive Database) is a local-first, NoSQL database for JavaScript applications. It runs in the browser, Node.js, Electron, React Native, Capacitor, Deno, and Bun. Instead of syncing SQLite tables directly, RxDB stores JSON documents in a pluggable [RxStorage](../rx-storage.md), and on mobile and desktop that storage is SQLite. The sync layer sits above the storage, so it works the same no matter which storage you use.
+[RxDB](../rx-database.md) (Reactive Database) is a local-first, NoSQL database for JavaScript applications. It runs in the browser, Node.js, Electron, React Native, Capacitor, Deno, and Bun. RxDB stores JSON documents in a pluggable [RxStorage](../rx-storage.md), and the sync layer sits above the storage, so it works the same no matter where the data is stored on the device.
 
-### 1. SQLite as the Storage
+### 1. SQLite or Any Other Storage on the Device
 
-The [SQLite RxStorage](../rx-storage-sqlite.md) runs on top of the SQLite library that your platform already has: `expo-sqlite` or `react-native-quick-sqlite` in [React Native](../react-native-database.md), the Capacitor SQLite plugin in [Capacitor](../capacitor-database.md), `node:sqlite` in Node.js and Electron, and Tauri SQLite. RxDB Core ships a trial version that is limited to 500 documents. The production version is part of [RxDB Premium 👑](/premium/).
+On mobile and desktop the [SQLite RxStorage](../rx-storage-sqlite.md) runs on top of the SQLite library that your platform already has: `expo-sqlite` or `react-native-quick-sqlite` in [React Native](../react-native-database.md), the Capacitor SQLite plugin in [Capacitor](../capacitor-database.md), `node:sqlite` in Node.js and Electron, and Tauri SQLite. RxDB Core ships a trial version that is limited to 500 documents. The production version is part of [RxDB Premium 👑](/premium/). In a browser you would usually pick [IndexedDB](../rx-storage-indexeddb.md) or [OPFS](../rx-storage-opfs.md) instead, because they need no WebAssembly download. Switching storages is a configuration change, not a rewrite.
 
 ### 2. A Sync Engine With Checkpoints
 
-The [RxDB Sync Engine](../replication.md) replicates with a simple protocol: the client pulls documents changed after a checkpoint and pushes its local changes. Deletes are replicated as documents with `_deleted: true`, so there are no lost deletes. Checkpoints are stored locally, so an app that was closed during sync continues where it stopped. While the device is offline, writes land in SQLite and are pushed when the connection is back.
+The [RxDB Sync Engine](../replication.md) replicates changed documents: the client pulls documents changed after a checkpoint and pushes its local changes. Deletes are replicated as documents with `_deleted: true`, so there are no lost deletes. Checkpoints are stored locally, so an app that was closed during sync continues where it stopped. While the device is offline, writes land in the local storage and are pushed when the connection is back.
 
 ### 3. Conflict Handling You Control
 
@@ -71,13 +134,9 @@ When the server reports that a pushed document was changed by another device, Rx
 
 RxDB does not need a hosted service. It ships replication plugins for [HTTP](../replication-http.md), [GraphQL](../replication-graphql.md), [WebSocket](../replication-websocket.md), [CouchDB](../replication-couchdb.md), [Supabase](../replication-supabase.md) and [Firestore](../replication-firestore.md). With the HTTP replication your backend only needs a pull and a push endpoint, and the data can live in Postgres, MySQL, MongoDB or a SQLite file on the server.
 
-### 5. The Same Code in the Browser
-
-SQLite is the right storage on phones and desktops. In a browser you would usually pick [IndexedDB](../rx-storage-indexeddb.md) or [OPFS](../rx-storage-opfs.md) instead, because they need no WebAssembly download (a WASM SQLite build works too, see [RxDB vs SQLite WASM vs PGlite](./rxdb-vs-sqlite-wasm-vs-pglite.md)). Switching storages is a configuration change, not a rewrite. The schema, queries, conflict handler and replication code stay the same on every platform.
-
 ## Code Sample: Sync a SQLite Database With Your Backend
 
-The following example runs in an Expo app. It stores `todos` in SQLite, observes a query, and syncs with a backend over HTTP.
+The following example runs in an Expo app. It stores `todos` in SQLite, observes a query, and syncs with a backend over HTTP. In a browser app only the `storage` line changes.
 
 ```ts
 import { createRxDatabase } from 'rxdb';
@@ -177,9 +236,9 @@ On the server, the pull endpoint returns the documents with an `updatedAt` great
 ## FAQ
 
 <Faq>
-<FaqItem question="How do I sync a SQLite database between devices?">
+<FaqItem question="How do I sync a local database with a server?">
 
-You need a sync layer on top of SQLite, because SQLite has no network replication. Each device keeps its own SQLite database, pushes its local changes to a server and pulls the changes of other devices since its last checkpoint. **[RxDB](../rx-database.md)** stores its data in SQLite on mobile and desktop and does this with its Sync Engine against any backend.
+You need a sync layer on top of the local database, because SQLite, IndexedDB and OPFS have no network replication. The device pushes its local changes to the server and pulls the changes since its last checkpoint. **[RxDB](../rx-database.md)** does this with its Sync Engine against any backend, with SQLite, IndexedDB or OPFS as storage.
 
 </FaqItem>
 <FaqItem question="Does SQLite have built-in replication?">
@@ -187,9 +246,14 @@ You need a sync layer on top of SQLite, because SQLite has no network replicatio
 No. SQLite has the Session Extension, which records changes into changesets, but it is disabled by default and has no transport, checkpoints or merge logic. You have to send changesets yourself and handle devices that missed some. The **[RxDB Sync Engine](../replication.md)** adds checkpoints, offline queues and conflict handling on top of SQLite.
 
 </FaqItem>
+<FaqItem question="Is a NoSQL database easier to sync than a SQL database?">
+
+Yes, for device-to-server sync it is. A document is one unit of change and conflict, there are no foreign-key ordering constraints between records, and JSON can be stored by any backend. SQL sync has to keep multi-row changes together and keep the client schema in line with the server schema. Read **[Why NoSQL](../why-nosql.md)** for the details.
+
+</FaqItem>
 <FaqItem question="Can I sync SQLite with PostgreSQL?">
 
-Yes. Tools like PowerSync and SQLite Sync connect a client SQLite database to Postgres through their own sync service. With **[RxDB](../replication-http.md)** you write a pull and a push endpoint in your existing backend that read and write Postgres, so no additional service is needed.
+Yes. Tools like SQLite Sync connect a client SQLite database to Postgres through their own sync service. With **[RxDB](../replication-http.md)** you write a pull and a push endpoint in your existing backend that read and write Postgres, so no additional service is needed.
 
 </FaqItem>
 <FaqItem question="Is Litestream a SQLite sync tool?">
@@ -197,14 +261,14 @@ Yes. Tools like PowerSync and SQLite Sync connect a client SQLite database to Po
 No. Litestream streams the write-ahead log of a server-side SQLite database to cloud storage for backups and disaster recovery. It supports one writer and warns against several applications replicating into the same path. For syncing user devices you need a client sync layer such as the **[RxDB Sync Engine](../replication.md)**.
 
 </FaqItem>
-<FaqItem question="How are conflicts handled when syncing SQLite?">
+<FaqItem question="How are conflicts handled when syncing local data?">
 
-It depends on the tool. The Session Extension can only omit or replace a row, CRDT extensions merge with a fixed strategy, and Turso Sync uses "last push wins". **[RxDB](../transactions-conflicts-revisions.md)** calls a conflict handler that you define per collection, so you can merge fields with your own rules.
+It depends on the tool. The SQLite Session Extension can only omit or replace a row, CRDT extensions merge with a fixed strategy, and many services use last write wins. **[RxDB](../transactions-conflicts-revisions.md)** calls a conflict handler that you define per collection, so you can merge fields with your own rules.
 
 </FaqItem>
-<FaqItem question="Does SQLite sync work offline?">
+<FaqItem question="Does device-to-server sync work offline?">
 
-Yes, when the sync layer queues local writes. In RxDB every write goes to the local SQLite database first, the UI updates from it, and the replication pushes the changes when the device is online again. Read more about **[offline-first](../offline-first.md)** apps.
+Yes, when the sync layer queues local writes. In RxDB every write goes to the local database first, the UI updates from it, and the replication pushes the changes when the device is online again. Read more about **[offline-first](../offline-first.md)** apps.
 
 </FaqItem>
 </Faq>
@@ -212,9 +276,9 @@ Yes, when the sync layer queues local writes. In RxDB every write goes to the lo
 ## Follow Up
 
 - Start with the [RxDB Quickstart](../quickstart.md)
-- [SQLite RxStorage](../rx-storage-sqlite.md) for React Native, Capacitor, Electron, Tauri and Node.js
 - [RxDB Sync Engine](../replication.md) and the [HTTP replication](../replication-http.md)
+- [SQLite RxStorage](../rx-storage-sqlite.md) for React Native, Capacitor, Electron, Tauri and Node.js
+- [Downsides of Local First / Offline First](../downsides-of-offline-first.md) and [Why NoSQL](../why-nosql.md)
 - [Electron SQLite](./electron-sqlite.md) for desktop apps
-- [RxDB vs SQLite WASM vs PGlite](./rxdb-vs-sqlite-wasm-vs-pglite.md) for SQLite in the browser
 - [Local database](./local-database.md) and [offline database](./offline-database.md) basics
 - [RxDB on GitHub](/code/), leave a star ⭐
