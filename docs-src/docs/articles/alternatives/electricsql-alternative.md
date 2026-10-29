@@ -22,7 +22,7 @@ In August 2026 the Electric team joined Databricks and announced that Electric C
 
 ## A Short History of ElectricSQL
 
-The first version of ElectricSQL embedded SQLite in each client and replicated rows between Postgres and those SQLite databases in both directions, with CRDT-based merge logic. In 2024 the team rewrote Electric with a much narrower scope: a sync service written in Elixir that sits in front of Postgres and streams "shapes", which are filtered subsets of a table, to clients as JSON over HTTP. The write path was intentionally left to the application.
+The first version of ElectricSQL embedded SQLite in each client and replicated rows between Postgres and those SQLite databases in both directions ([SQLite sync](../sqlite-sync.md) compares the tools that do this today), with CRDT-based merge logic. In 2024 the team rewrote Electric with a much narrower scope: a sync service written in Elixir that sits in front of Postgres and streams "shapes", which are filtered subsets of a table, to clients as JSON over HTTP. The write path was intentionally left to the application.
 
 ### A Brief Timeline
 

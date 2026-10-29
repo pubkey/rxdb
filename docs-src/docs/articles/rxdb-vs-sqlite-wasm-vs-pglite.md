@@ -101,7 +101,7 @@ RxDB handles multiple tabs out of the box. Changes from one tab are broadcast to
 
 ### 6. Sync and Conflict Handling
 
-SQLite-Wasm has no sync at all. You design the protocol, the change tracking, and the conflict logic yourself.
+SQLite-Wasm has no sync at all. You design the protocol, the change tracking, and the conflict logic yourself, as described in [SQLite sync](./sqlite-sync.md).
 
 PGlite can receive data from a server-side Postgres through Electric. That sync is server-authoritative and focused on the read path: the client subscribes to "shapes" (subsets of server tables). How local writes travel back to the server is up to your application.
 

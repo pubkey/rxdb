@@ -703,6 +703,7 @@ const sidebars = {
         'articles/indexeddb/indexeddb-query',
         'articles/generic-prompts',
         'articles/electron-sqlite',
+        'articles/sqlite-sync',
         'articles/realm-to-rxdb-migration'
       ],
     },
