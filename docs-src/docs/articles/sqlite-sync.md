@@ -174,12 +174,6 @@ const replicationState = replicateRxCollection({
 
 On the server, the pull endpoint returns the documents with an `updatedAt` greater than the checkpoint, or the same `updatedAt` and a greater `id`, sorted by both fields, and the push endpoint writes each change unless the stored document differs from the `assumedMasterState` the client sent. In that case it returns the stored document as a conflict. The full contract, including the event stream for live updates, is described in the [HTTP replication docs](../replication-http.md).
 
-## When Another SQLite Sync Tool Makes Sense
-
-- **You need SQL on the client**: RxDB uses MongoDB-style (Mango) queries over JSON documents. When your app depends on SQL joins and aggregations over local data, a SQL-first tool like PowerSync or Turso Sync fits better.
-- **You want automatic merges and accept a fixed strategy**: When every column can be merged by a CRDT rule and you never need custom conflict logic, SQLite Sync or cr-sqlite give you that inside SQLite. Check the maintenance status of cr-sqlite first.
-- **You need server backups, not device sync**: For a single server that writes to SQLite and needs point-in-time recovery, Litestream is the right tool. It is not a replacement for client sync.
-
 ## FAQ
 
 <Faq>
