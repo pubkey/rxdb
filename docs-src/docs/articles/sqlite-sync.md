@@ -57,7 +57,7 @@ Syncing local data makes apps fast and lets them work offline, but there is no f
 - **Conflicts are product decisions**: No algorithm knows whether a price change or a deleted comment should win. Someone has to define the rules per data type, and users can still be surprised by the outcome.
 - **Permissions move to the sync layer**: The server has to check for every pulled and pushed record whether the user may read or write it. A query that runs on the device cannot enforce access rules on its own.
 - **Client migrations**: When your data layout changes, every device has to migrate its local data, and old app versions keep sending data in the old layout until they update. See [schema migration](../migration-schema.md).
-- **Deletes stay around**: Tombstones have to stay around until every device has synced them, so the storage keeps growing unless you [clean up](../cleanup.md) old deletes.
+- **Deletes keep using storage**: Tombstones have to stay around until every device has synced them, so the storage keeps growing unless you [clean up](../cleanup.md) old deletes.
 - **Data at rest on the device**: A lost phone or a shared computer holds a copy of the user's data. Sensitive fields should be [encrypted](../encryption.md).
 - **More states to test**: Offline, slow network, app killed during sync, two tabs, two devices. Each of them is a case your tests have to cover.
 
