@@ -233,22 +233,22 @@ export const DBVIEWER_STYLES = `
 .rxdbv-segment + .rxdbv-segment { border-left: 1px solid rgba(255, 255, 255, 0.20); }
 .rxdbv-segment:hover { color: var(--rxdbv-fg); }
 .rxdbv-segment.rxdbv-active { background: var(--rxdbv-active-segment); color: var(--rxdbv-fg); }
+/* the standard button with a leading icon, here the observe dot */
 .rxdbv-observe {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     gap: 6px;
-    border: 1px solid rgba(255, 255, 255, 0.20);
-    padding: 3px 10px;
-    font-size: 11px;
     color: var(--rxdbv-fg-muted);
-    cursor: pointer;
-    transition: color 180ms ease-in-out, border-color 180ms ease-in-out;
 }
-.rxdbv-observe:hover { color: var(--rxdbv-fg); }
 .rxdbv-observe .rxdbv-observe-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--rxdbv-fg-dim); }
+.rxdbv-observe:hover .rxdbv-observe-dot { background: var(--rxdbv-bg-dark); }
 .rxdbv-observe.rxdbv-active { border-color: rgba(62, 207, 142, 0.5); color: var(--rxdbv-success); }
 .rxdbv-observe.rxdbv-active .rxdbv-observe-dot { background: var(--rxdbv-success); }
+.rxdbv-observe.rxdbv-active:hover { background: rgba(62, 207, 142, 0.12); color: var(--rxdbv-success); }
+.rxdbv-observe.rxdbv-active:hover .rxdbv-observe-dot { background: var(--rxdbv-success); }
 .rxdbv-observe.rxdbv-disabled { opacity: 0.5; cursor: default; }
+.rxdbv-observe.rxdbv-disabled:hover { background: transparent; color: var(--rxdbv-fg-muted); }
+.rxdbv-observe.rxdbv-disabled:hover .rxdbv-observe-dot { background: var(--rxdbv-fg-dim); }
 
 /* query bar */
 .rxdbv-querybar {
@@ -593,11 +593,16 @@ export const DBVIEWER_STYLES = `
 .rxdbv-live-node { border: 1px solid rgba(255, 255, 255, 0.20); background: var(--rxdbv-bg); padding: 9px 10px; }
 .rxdbv-live-rows { flex: 1; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
 .rxdbv-live-row { display: flex; align-items: center; min-height: 84px; }
-.rxdbv-live-lane { flex: 1; min-width: 70px; display: flex; flex-direction: column; gap: 9px; }
-.rxdbv-live-lane.rxdbv-in { padding-right: 6px; }
-.rxdbv-live-lane.rxdbv-out { padding-left: 6px; }
-.rxdbv-live-track { position: relative; height: 13px; }
-.rxdbv-live-track .rxdbv-track-line { position: absolute; top: 6px; left: 0; right: 0; height: 1px; background: rgba(255, 255, 255, 0.10); }
+/**
+ * The lanes stretch over the full row height and position their
+ * two tracks symmetrically around the vertical center, so the
+ * lines always meet the nodes left and right at their middle.
+ */
+.rxdbv-live-lane { flex: 1; min-width: 70px; align-self: stretch; position: relative; }
+.rxdbv-live-track { position: absolute; left: 0; right: 0; height: 13px; }
+.rxdbv-live-lane > .rxdbv-live-track:nth-child(1) { top: calc(50% - 15px); }
+.rxdbv-live-lane > .rxdbv-live-track:nth-child(2) { top: calc(50% + 2px); }
+.rxdbv-live-track .rxdbv-track-line { position: absolute; top: 6px; left: 0; right: 0; height: 1px; background: rgba(255, 255, 255, 0.14); }
 .rxdbv-live-track .rxdbv-track-line.rxdbv-thread {
     background: repeating-linear-gradient(90deg, rgba(25, 155, 241, 0.7) 0 6px, transparent 6px 12px);
     height: 1px;
@@ -610,7 +615,20 @@ export const DBVIEWER_STYLES = `
     font-size: 12px;
     font-weight: 700;
 }
-.rxdbv-live-lane-label { font-size: 10px; color: var(--rxdbv-fg-muted); font-family: var(--rxdbv-mono); }
+.rxdbv-live-lane-label {
+    position: absolute;
+    top: calc(50% + 19px);
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 10px;
+    color: var(--rxdbv-fg-muted);
+    font-family: var(--rxdbv-mono);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.rxdbv-live-lane.rxdbv-no-edge .rxdbv-live-track { display: none; }
 .rxdbv-live-coll-node { width: 296px; min-width: 296px; border: 1px solid rgba(255, 255, 255, 0.12); background: var(--rxdbv-bg-detail); padding: 9px 10px; }
 .rxdbv-live-coll-node.rxdbv-pulse { animation: rxdbvNodePulse 0.25s ease-out; }
 .rxdbv-sparkline { display: flex; align-items: flex-end; gap: 1.5px; height: 26px; margin-top: 7px; }
@@ -708,5 +726,7 @@ export const DBVIEWER_STYLES = `
 .rxdbv-phone-row:hover { background: rgba(255, 255, 255, 0.04); }
 .rxdbv-phone-note { padding: 12px 14px; border-top: 1px solid rgba(255, 255, 255, 0.08); color: var(--rxdbv-fg-dim); font-size: 11px; }
 .rxdbv-phone-field { padding: 8px 14px; border-bottom: 1px solid rgba(255, 255, 255, 0.06); font-size: 13px; }
+.rxdbv-phone-tool-host { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: auto; }
+.rxdbv-phone-tool-host > * { min-width: 0; }
 .rxdbv-phone-field .rxdbv-phone-field-label { color: var(--rxdbv-fg-dim); font-size: 10px; }
 `;

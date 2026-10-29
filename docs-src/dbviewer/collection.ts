@@ -126,13 +126,17 @@ export function renderCollectionScreen(ctx: PageContext) {
     };
 
     // toolbar row 1
-    const observeToggle = el('div', 'rxdbv-observe' +
+    const observeToggle = el('button', 'rxdbv-btn rxdbv-observe' +
         (uiState.observe ? ' rxdbv-active' : '') +
         (readOnly ? ' rxdbv-disabled' : ''), [
         el('span', 'rxdbv-observe-dot'),
         uiState.observe ? 'Observing' : 'Observe'
     ], {
-        title: readOnly ? 'not available on a dump' : 'Update the current result live as documents change',
+        title: readOnly ? 'not available on a dump' : (
+            uiState.observe ?
+                'live — the list updates as documents change' :
+                'Update the current result live as documents change'
+        ),
         onClick: () => {
             if (readOnly) {
                 return;
@@ -158,7 +162,6 @@ export function renderCollectionScreen(ctx: PageContext) {
             })
         ]),
         observeToggle,
-        uiState.observe ? el('span', 'rxdbv-dim', 'live — the list updates as documents change', { style: 'font-size:10px' }) : null,
         el('div', 'rxdbv-flex1'),
         el('button', 'rxdbv-btn', 'Export', {
             onClick: () => {
@@ -187,10 +190,10 @@ export function renderCollectionScreen(ctx: PageContext) {
     ]);
     const runButton = el('button', 'rxdbv-btn-primary', 'Run') as HTMLButtonElement;
     const explainButton = el('button', 'rxdbv-btn', 'Explain', {
-        title: 'Analyze this query in the Query lab',
+        title: 'Explain this query: used index, execution plan and findings',
         onClick: () => {
             applyInput();
-            ctx.navigate({ view: 'querylab', collectionName });
+            ctx.navigate({ view: 'explain', collectionName });
         }
     });
     const dropdownHost = el('div');

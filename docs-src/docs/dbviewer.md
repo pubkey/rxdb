@@ -25,9 +25,10 @@ Key features:
 - **Document drawer**: Shows fields, internals (`_rev`, `_meta.lwt`), [attachments](./rx-attachment.md) with inline image previews, and a WILL RUN block that previews the exact call before you apply staged edits: `insert()` for new documents, `incrementalPatch()` with only the changed fields for edits.
 - **Live activity map**: Draws the database as a map from app to collections to remote endpoints. Write, query and replication events flow as glyph particles, each collection node shows a 60 second sparkline and its cached [RxQuery](./rx-query.md) count. No document contents are drawn, only names, counts and rates, so the screen is safe to share.
 - **Schema panel**: Samples documents and shows per-field type shares, presence percentages and value details, plus violations against the declared [schema](./rx-schema.md). A toggle switches to the declared JSON schema itself.
-- **Query lab**: Explains a query with the used index, an execution plan derived from the [query planner](./query-optimizer.md) and findings like missing compound indexes or `$regex` full scans.
+- **Explain button**: Explains the current query with the used index, an execution plan derived from the [query planner](./query-optimizer.md) and findings like missing compound indexes or `$regex` full scans.
 - **Changes and replication feeds**: A network-tab style list of all writes with a unified diff per change, and per-collection pull/push states with a live feed of replicated documents.
-- **Storage panel**: Engine, document counts, tombstones and attachment bytes per collection, with a button to run a [cleanup](./cleanup.md) when the cleanup plugin is loaded.
+- **Storage panel**: Engine, document counts, tombstones and attachment bytes per collection.
+- **Cleanup tool**: Shows per collection how many tombstones could be purged and how much of the stored data that is, and runs a [cleanup](./cleanup.md) when the cleanup plugin is loaded.
 
 ## How it works
 
@@ -313,7 +314,7 @@ console.log(viewer.url);
 await viewer.close();
 ```
 
-The url carries the room id and the signaling server in its hash, so the page connects on open without further input. Opening the page without a hash shows the same connect form for manual entry. The full devtool works over the channel: grids, queries, edits, the query lab and the live feeds, because it speaks the same bridge protocol as the iframe mount.
+The url carries the room id and the signaling server in its hash, so the page connects on open without further input. Opening the page without a hash shows the same connect form for manual entry. The full devtool works over the channel: grids, queries, edits, the explain view and the live feeds, because it speaks the same bridge protocol as the iframe mount.
 
 The signaling server only brokers the connection, the data itself flows directly between the browser and the device. You can run your own signaling server with `startSignalingServerSimplePeer()`, see the [WebRTC replication docs](./replication-webrtc.md).
 

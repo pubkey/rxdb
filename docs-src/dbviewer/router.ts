@@ -18,9 +18,10 @@ import {
 } from './feeds.ts';
 import { renderLivePanel } from './live.ts';
 import {
-    renderQueryLabPanel,
+    renderExplainPanel,
     renderSchemaPanel,
-    renderStoragePanel
+    renderStoragePanel,
+    renderCleanupPanel
 } from './panels.ts';
 
 /**
@@ -48,11 +49,14 @@ export function renderContentScreen(ctx: PageContext) {
         case 'changes':
             renderChangesPanel(ctx);
             break;
-        case 'querylab':
-            renderQueryLabPanel(ctx);
+        case 'explain':
+            renderExplainPanel(ctx);
             break;
         case 'storage':
             renderStoragePanel(ctx);
+            break;
+        case 'cleanup':
+            renderCleanupPanel(ctx);
             break;
         case 'replication':
             renderReplicationPanel(ctx);
@@ -155,7 +159,7 @@ function renderPhoneLayout(ctx: PageContext) {
     const host = ctx.contentHost;
     const phone = ctx.phoneNav;
 
-    if (phone.screen === 'collections' || !phone.collectionName) {
+    if (phone.screen !== 'tool' && (phone.screen === 'collections' || !phone.collectionName)) {
         const header = el('div', 'rxdbv-phone-header', [
             el('div', 'rxdbv-logo', undefined, { html: DBVIEWER_LOGO_SVG }),
             el('span', '', 'RxDB', { style: 'font-weight:800' }),
@@ -194,9 +198,78 @@ function renderPhoneLayout(ctx: PageContext) {
                 ]));
             });
         }
+        const tools: { view: typeof ctx.nav.view; label: string; }[] = [
+            { view: 'live', label: 'Live' },
+            { view: 'schema', label: 'Schema' },
+            { view: 'changes', label: 'Changes' },
+            { view: 'storage', label: 'Storage' },
+            { view: 'cleanup', label: 'Cleanup' },
+            { view: 'settings', label: 'Settings' }
+        ];
+        const dumpDisabled = ctx.source.kind === 'dump' ? ['live', 'changes'] : [];
+        listWrap.appendChild(el('div', 'rxdbv-rail-header', 'TOOLS', { style: 'padding:16px 14px 4px' }));
+        tools.filter(tool => !dumpDisabled.includes(tool.view)).forEach(tool => {
+            listWrap.appendChild(el('div', 'rxdbv-phone-row', [
+                el('span', 'rxdbv-flex1', tool.label),
+                el('span', 'rxdbv-dim', '›')
+            ], {
+                onClick: () => {
+                    ctx.phoneNav = { screen: 'tool', toolView: tool.view };
+                    ctx.renderContent();
+                }
+            }));
+        });
         host.appendChild(header);
         host.appendChild(listWrap);
-        host.appendChild(el('div', 'rxdbv-phone-note', 'Tools (Schema, Changes, Query lab, Storage) are desktop-only. Reading data works here.'));
+        return;
+    }
+
+    if (phone.screen === 'tool') {
+        const toolView = phone.toolView || 'settings';
+        const title = toolView === 'live' ? 'Live'
+            : toolView.charAt(0).toUpperCase() + toolView.slice(1);
+        host.appendChild(el('div', 'rxdbv-phone-header', [
+            el('span', 'rxdbv-phone-back', '‹', {
+                onClick: () => {
+                    ctx.phoneNav = { screen: 'collections' };
+                    ctx.renderContent();
+                }
+            }),
+            el('span', '', title, { style: 'font-weight:700' })
+        ]));
+        /**
+         * The tool panels render into ctx.contentHost, so a
+         * scrollable wrapper stands in as the content host
+         * while the panel builds itself.
+         */
+        const toolHost = el('div', 'rxdbv-phone-tool-host');
+        host.appendChild(toolHost);
+        const originalContentHost = ctx.contentHost;
+        ctx.contentHost = toolHost;
+        try {
+            switch (toolView) {
+                case 'live':
+                    renderLivePanel(ctx);
+                    break;
+                case 'schema':
+                    renderSchemaPanel(ctx);
+                    break;
+                case 'changes':
+                    renderChangesPanel(ctx);
+                    break;
+                case 'storage':
+                    renderStoragePanel(ctx);
+                    break;
+                case 'cleanup':
+                    renderCleanupPanel(ctx);
+                    break;
+                case 'settings':
+                    renderSettings(ctx);
+                    break;
+            }
+        } finally {
+            ctx.contentHost = originalContentHost;
+        }
         return;
     }
 
@@ -256,7 +329,7 @@ function renderPhoneLayout(ctx: PageContext) {
     host.appendChild(docHeader);
     host.appendChild(fieldsWrap);
     host.appendChild(el('div', 'rxdbv-phone-note', 'Read-only at this width. Editing needs the desktop drawer.'));
-    ctx.source.getById(collectionName, docId).then(doc => {
+    ctx.source.getById(docCollectionName, docId).then(doc => {
         if (!doc || ctx.destroyed) {
             return;
         }

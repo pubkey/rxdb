@@ -39,6 +39,7 @@ type LaneRefs = {
     sparkHost: HTMLElement;
     remoteHost: HTMLElement;
     row: HTMLElement;
+    outLane: HTMLElement;
     lastParticleAt: { [laneKey: string]: number; };
     lastPulseAt: number;
     lastExecCount: number;
@@ -122,9 +123,9 @@ export function renderLivePanel(ctx: PageContext) {
     // rows
     const rowsHost = el('div', 'rxdbv-live-rows', [
         el('div', '', [
-            el('div', 'rxdbv-flex1'),
+            el('div', 'rxdbv-flex1', undefined, { style: 'min-width:70px' }),
             el('div', 'rxdbv-live-col-header', 'COLLECTIONS', { style: 'width:296px;min-width:296px' }),
-            el('div', 'rxdbv-flex1'),
+            el('div', 'rxdbv-flex1', undefined, { style: 'min-width:70px' }),
             el('div', 'rxdbv-live-col-header', 'REMOTE', { style: 'width:186px;min-width:186px' })
         ], { style: 'display:flex' })
     ]);
@@ -167,10 +168,11 @@ export function renderLivePanel(ctx: PageContext) {
             ], { style: 'display:flex;gap:10px;margin-top:5px;font-size:10px;font-family:var(--rxdbv-mono);color:var(--rxdbv-fg-muted)' })
         ]);
         const remoteHost = el('div', 'rxdbv-live-remote-node rxdbv-none');
+        const outLane = el('div', 'rxdbv-live-lane rxdbv-out', [pushTrack, pullTrack, outLabel]);
         const row = el('div', 'rxdbv-live-row', [
             el('div', 'rxdbv-live-lane rxdbv-in', [writesTrack, queryTrack, inLabel]),
             node,
-            el('div', 'rxdbv-live-lane rxdbv-out', [pushTrack, pullTrack, outLabel]),
+            outLane,
             remoteHost
         ]);
         rowsHost.appendChild(row);
@@ -189,6 +191,7 @@ export function renderLivePanel(ctx: PageContext) {
             sparkHost,
             remoteHost,
             row,
+            outLane,
             lastParticleAt: {},
             lastPulseAt: 0,
             lastExecCount: -1
@@ -369,8 +372,10 @@ export function renderLivePanel(ctx: PageContext) {
                     'no replication configured for ',
                     el('span', 'rxdbv-mono', collectionName)
                 ], { style: 'font-size:10px;line-height:1.5' }));
-                refs.outLabel.textContent = 'no edge drawn';
+                refs.outLane.classList.add('rxdbv-no-edge');
+                refs.outLabel.textContent = '';
             } else {
+                refs.outLane.classList.remove('rxdbv-no-edge');
                 const info = replications[0];
                 const hasError = !!info.lastError && !!info.lastErrorTime && now - info.lastErrorTime < 60 * 1000;
                 refs.remoteHost.className = 'rxdbv-live-remote-node' + (hasError ? ' rxdbv-error' : '');

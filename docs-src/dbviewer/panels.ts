@@ -177,16 +177,17 @@ export function renderSchemaPanel(ctx: PageContext) {
 }
 
 /**
- * Query lab: runs the query, shows the used index,
- * the execution plan derived from the query planner
- * and findings about unindexed parts.
+ * Explain view, opened from the Explain button of a collection:
+ * runs the query, shows the used index, the execution plan
+ * derived from the query planner and findings about unindexed
+ * parts.
  */
-export function renderQueryLabPanel(ctx: PageContext) {
+export function renderExplainPanel(ctx: PageContext) {
     const collectionName = ctx.currentCollectionName();
     const panel = el('div', 'rxdbv-panel-scroll');
     ctx.contentHost.appendChild(panel);
     if (!collectionName) {
-        panel.appendChild(panelToolbar('Query lab', [el('span', 'rxdbv-dim', 'no collection')]));
+        panel.appendChild(panelToolbar('Explain', [el('span', 'rxdbv-dim', 'no collection')]));
         return;
     }
     const uiState = ctx.collectionState.get(collectionName);
@@ -217,7 +218,7 @@ export function renderQueryLabPanel(ctx: PageContext) {
         }
     });
     panel.appendChild(el('div', 'rxdbv-toolbar', [
-        el('span', 'rxdbv-toolbar-title', 'Query lab'),
+        el('span', 'rxdbv-toolbar-title', 'Explain'),
         el('span', 'rxdbv-mono rxdbv-muted', collectionName, { style: 'font-size:11px' }),
         inputWrap,
         explainButton,
@@ -334,8 +335,7 @@ function runExplain(
 
 /**
  * Storage panel: engine, per-collection document counts,
- * tombstones and attachment bytes collected on the host side,
- * plus the cleanup action.
+ * tombstones and attachment bytes collected on the host side.
  */
 export function renderStoragePanel(ctx: PageContext) {
     const panel = el('div', 'rxdbv-panel-scroll');
@@ -362,8 +362,6 @@ export function renderStoragePanel(ctx: PageContext) {
     panel.appendChild(header);
     const rowsHost = el('div');
     panel.appendChild(rowsHost);
-    const cleanupHost = el('div');
-    panel.appendChild(cleanupHost);
 
     ctx.source.storageStats().then(stats => {
         if (ctx.destroyed) {
@@ -401,42 +399,104 @@ export function renderStoragePanel(ctx: PageContext) {
         (documentsCard.querySelector('.rxdbv-stat-value') as HTMLElement).textContent = formatInteger(totalDocs);
         (attachmentsCard.querySelector('.rxdbv-stat-value') as HTMLElement).textContent =
             totalAttachmentBytes > 0 ? formatByteSize(totalAttachmentBytes) : '—';
-
-        renderCleanupCard(ctx, cleanupHost, totalTombstones, stats.cleanupSupported);
     }).catch(err => {
         showViewerError(ctx.root, 'Reading storage stats failed', err);
     });
 }
 
-function renderCleanupCard(
-    ctx: PageContext,
-    host: HTMLElement,
-    totalTombstones: number,
-    cleanupSupported: boolean
-) {
-    clearChildren(host);
-    if (ctx.source.kind === 'dump') {
-        return;
-    }
-    const card = el('div', 'rxdbv-cleanup-card', [
-        el('div', '', 'Cleanup', { style: 'font-weight:700;font-size:12px' }),
-        el('div', 'rxdbv-muted', 'Purges tombstones of deleted documents. Peers whose replication checkpoint predates the cleanup must re-sync from scratch.', {
-            style: 'font-size:11.5px;margin-top:4px;line-height:1.55'
-        })
+/**
+ * Cleanup tool: shows per collection how many tombstones a
+ * cleanup could purge and what share of the stored rows that
+ * is, plus the action to run the cleanup.
+ */
+export function renderCleanupPanel(ctx: PageContext) {
+    const panel = el('div', 'rxdbv-panel-scroll');
+    ctx.contentHost.appendChild(panel);
+    panel.appendChild(panelToolbar('Cleanup'));
+
+    const cards = el('div', 'rxdbv-stat-cards');
+    const cleanableCard = statCard('CLEANABLE TOMBSTONES', '…', 'var(--rxdbv-warning)');
+    cards.appendChild(cleanableCard);
+    const shareCard = statCard('SHARE OF STORED ROWS', '…');
+    cards.appendChild(shareCard);
+    panel.appendChild(cards);
+
+    const template = '1fr 130px 130px 170px';
+    const header = el('div', 'rxdbv-table-header', [
+        el('div', '', 'collection'),
+        el('div', '', 'documents'),
+        el('div', '', 'tombstones'),
+        el('div', '', 'cleanable share')
     ]);
-    if (cleanupSupported) {
-        card.appendChild(el('button', 'rxdbv-btn-danger-outline', 'Run cleanup — purge ' + formatInteger(totalTombstones) + ' tombstones', {
-            style: 'margin-top:10px',
-            onClick: () => {
-                ctx.source.cleanup()
-                    .then(() => ctx.renderContent())
-                    .catch(err => showViewerError(ctx.root, 'Cleanup failed', err));
+    header.style.gridTemplateColumns = template;
+    panel.appendChild(header);
+    const rowsHost = el('div');
+    panel.appendChild(rowsHost);
+    const actionHost = el('div');
+    panel.appendChild(actionHost);
+
+    ctx.source.storageStats().then(stats => {
+        if (ctx.destroyed) {
+            return;
+        }
+        let totalRows = 0;
+        let totalTombstones = 0;
+        stats.rows.forEach(row => {
+            const documents = row.documents || 0;
+            const tombstones = row.tombstones || 0;
+            totalRows = totalRows + documents + tombstones;
+            totalTombstones = totalTombstones + tombstones;
+            const share = documents + tombstones > 0
+                ? Math.round((tombstones / (documents + tombstones)) * 100)
+                : 0;
+            const rowElement = el('div', 'rxdbv-table-row rxdbv-mono', [
+                el('div', '', row.name),
+                el('div', 'rxdbv-muted', row.documents === null ? '—' : formatInteger(documents)),
+                el('div', '', row.tombstones === null ? '—' : formatInteger(tombstones), {
+                    style: tombstones > 0 ? 'color:var(--rxdbv-warning)' : ''
+                }),
+                el('div', 'rxdbv-muted', row.tombstones === null ? '—' : share + '%')
+            ]);
+            rowElement.style.gridTemplateColumns = template;
+            rowsHost.appendChild(rowElement);
+        });
+
+        (cleanableCard.querySelector('.rxdbv-stat-value') as HTMLElement).textContent = formatInteger(totalTombstones);
+        (shareCard.querySelector('.rxdbv-stat-value') as HTMLElement).textContent = totalRows > 0
+            ? Math.round((totalTombstones / totalRows) * 100) + '%'
+            : '0%';
+
+        const card = el('div', 'rxdbv-cleanup-card', [
+            el('div', '', 'Run cleanup', { style: 'font-weight:700;font-size:12px' }),
+            el('div', 'rxdbv-muted', 'Purges the tombstones of deleted documents from the storage. Peers whose replication checkpoint predates the cleanup must re-sync from scratch.', {
+                style: 'font-size:11.5px;margin-top:4px;line-height:1.55'
+            })
+        ]);
+        if (ctx.source.kind === 'dump') {
+            card.appendChild(el('div', 'rxdbv-dim', 'Not available on a dump.', {
+                style: 'margin-top:10px;font-size:11px'
+            }));
+        } else if (stats.cleanupSupported) {
+            const runButton = el('button', 'rxdbv-btn-danger-outline', 'Run cleanup — purge ' + formatInteger(totalTombstones) + ' tombstones', {
+                style: 'margin-top:10px',
+                onClick: () => {
+                    ctx.source.cleanup()
+                        .then(() => ctx.renderContent())
+                        .catch(err => showViewerError(ctx.root, 'Cleanup failed', err));
+                }
+            }) as HTMLButtonElement;
+            if (totalTombstones === 0) {
+                runButton.disabled = true;
+                runButton.textContent = 'Run cleanup — nothing to purge';
             }
-        }));
-    } else {
-        card.appendChild(el('div', 'rxdbv-dim', 'Add the cleanup plugin (RxDBCleanupPlugin) to run a cleanup from here.', {
-            style: 'margin-top:10px;font-size:11px'
-        }));
-    }
-    host.appendChild(card);
+            card.appendChild(runButton);
+        } else {
+            card.appendChild(el('div', 'rxdbv-dim', 'Add the cleanup plugin (RxDBCleanupPlugin) to run a cleanup from here.', {
+                style: 'margin-top:10px;font-size:11px'
+            }));
+        }
+        actionHost.appendChild(card);
+    }).catch(err => {
+        showViewerError(ctx.root, 'Reading storage stats failed', err);
+    });
 }
