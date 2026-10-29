@@ -285,7 +285,8 @@ export function renderChangesPanel(ctx: PageContext) {
         detailHost.appendChild(diffBlock);
         detailHost.appendChild(el('div', 'rxdbv-dim', entry.fromReplication
             ? 'source: replication (pulled from the remote)'
-            : 'source: local write of this database instance', {
+            : 'source: app write (not from replication)', {
+            title: 'Only writes pulled by the replication are marked. An app write from another tab of the same database looks the same as one from this tab.',
             style: 'padding:0 12px 12px;font-size:10px'
         }));
     };

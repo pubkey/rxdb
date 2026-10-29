@@ -338,8 +338,8 @@ function Rail(props: { ctx: PageContext; }) {
         { view: 'live', label: 'Live' },
         { view: 'schema', label: 'Schema' },
         { view: 'changes', label: 'Changes' },
-        { view: 'querylab', label: 'Query lab' },
-        { view: 'storage', label: 'Storage' }
+        { view: 'storage', label: 'Storage' },
+        { view: 'cleanup', label: 'Cleanup' }
     ];
     const dumpDisabled: ViewerNavView[] = ['live', 'changes'];
 
