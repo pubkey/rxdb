@@ -30,6 +30,30 @@ Key features:
 - **Storage panel**: Engine, document counts, tombstones and attachment bytes per collection.
 - **Cleanup tool**: Shows per collection how many tombstones could be purged and how much of the stored data that is, and runs a [cleanup](./cleanup.md) when the cleanup plugin is loaded.
 
+The live activity map shows the write, query and replication flow of the database in realtime:
+
+<p align="center">
+  <img src="./files/dbviewer-live-map.png" alt="RxDB database viewer live activity map" width="760" />
+</p>
+
+The Explain button analyzes the current query with the index, the execution plan and findings:
+
+<p align="center">
+  <img src="./files/dbviewer-explain.png" alt="RxDB database viewer query explain view" width="760" />
+</p>
+
+The cleanup tool shows how many tombstones a [cleanup](./cleanup.md) could purge:
+
+<p align="center">
+  <img src="./files/dbviewer-cleanup.png" alt="RxDB database viewer cleanup tool" width="760" />
+</p>
+
+Below 640px the viewer switches to stacked touch screens with the same collections and tools:
+
+<p align="center">
+  <img src="./files/dbviewer-phone.png" alt="RxDB database viewer phone layout" width="300" />
+</p>
+
 ## How it works
 
 The plugin itself contains no UI code. `mountRxDBViewer()` creates an iframe that loads the viewer page, a single self-contained html file hosted at [rxdb.info/dbviewer/index.html](https://rxdb.info/dbviewer/index.html), and serves the database to it over `postMessage`. This keeps the whole viewer UI out of the rxdb build, so the plugin adds only the small bridge to your bundle. Data access, the [query planner](./query-optimizer.md) analysis and the event streams run in your application window, the page inside the iframe is plain UI and never gets direct access to the database object.
@@ -314,7 +338,13 @@ console.log(viewer.url);
 await viewer.close();
 ```
 
-The url carries the room id and the signaling server in its hash, so the page connects on open without further input. Opening the page without a hash shows the same connect form for manual entry. The full devtool works over the channel: grids, queries, edits, the explain view and the live feeds, because it speaks the same bridge protocol as the iframe mount.
+The url carries the room id and the signaling server in its hash, so the page connects on open without further input. Opening the page without a hash shows the same connect form for manual entry:
+
+<p align="center">
+  <img src="./files/dbviewer-connect.png" alt="RxDB database viewer WebRTC connect form" width="760" />
+</p>
+
+The full devtool works over the channel: grids, queries, edits, the explain view and the live feeds, because it speaks the same bridge protocol as the iframe mount.
 
 The signaling server only brokers the connection, the data itself flows directly between the browser and the device. You can run your own signaling server with `startSignalingServerSimplePeer()`, see the [WebRTC replication docs](./replication-webrtc.md).
 
