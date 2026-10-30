@@ -272,9 +272,12 @@ export const DBVIEWER_STYLES = `
  * background, bold text and a 3px indicator bar in the
  * brand color.
  */
+/* the tab row sits directly above the content box */
+.rxdbv-tabs-row { display: flex; padding: 10px 12px 0; }
 .rxdbv-tabs {
     display: inline-flex;
     align-items: stretch;
+    gap: 3px;
     height: 31px;
 }
 .rxdbv-tab {
@@ -285,7 +288,7 @@ export const DBVIEWER_STYLES = `
     justify-content: center;
     padding: 0 17px;
     border: 0;
-    background: transparent;
+    background: var(--rxdbv-bg);
     color: var(--rxdbv-fg-muted);
     font-size: 11px;
     font-weight: 500;
@@ -294,7 +297,7 @@ export const DBVIEWER_STYLES = `
     transition: color 180ms ease-in-out, background 180ms ease-in-out;
 }
 .rxdbv-tab:hover:not(.rxdbv-active) { color: var(--rxdbv-fg); font-weight: 800; }
-.rxdbv-tab.rxdbv-active { background: var(--rxdbv-bg); color: var(--rxdbv-fg); font-weight: 800; }
+.rxdbv-tab.rxdbv-active { background: var(--rxdbv-active-segment); color: var(--rxdbv-fg); font-weight: 800; }
 .rxdbv-tab.rxdbv-active::before {
     content: '';
     position: absolute;
@@ -335,9 +338,11 @@ export const DBVIEWER_STYLES = `
     display: flex;
     align-items: center;
     gap: 8px;
+    box-sizing: border-box;
+    height: 31px;
     background: var(--rxdbv-bg);
     border: 2px solid var(--rxdbv-control-border);
-    padding: 4px 10px;
+    padding: 0 10px;
     font-family: var(--rxdbv-mono);
     font-size: 11.5px;
 }
@@ -668,8 +673,17 @@ export const DBVIEWER_STYLES = `
 
 /* changes panel */
 .rxdbv-split { flex: 1; display: flex; min-height: 0; }
-.rxdbv-split-left { flex: 1; overflow: auto; border-right: 1px solid rgba(255, 255, 255, 0.10); }
+.rxdbv-split-left { flex: 1; overflow: auto; min-width: 0; border-right: 1px solid rgba(255, 255, 255, 0.10); }
 .rxdbv-split-right { width: 460px; min-width: 460px; overflow: auto; background: var(--rxdbv-bg-detail); }
+/**
+ * Below 760px the master/detail split stacks vertically, so
+ * the detail pane and its code boxes never exceed the screen.
+ */
+@media (max-width: 760px) {
+    .rxdbv-split { flex-direction: column; }
+    .rxdbv-split-left { flex: 0 1 auto; max-height: 45%; border-right: 0; border-bottom: 1px solid rgba(255, 255, 255, 0.10); }
+    .rxdbv-split-right { width: auto; min-width: 0; flex: 1; }
+}
 .rxdbv-filter-input {
     background: var(--rxdbv-bg);
     border: 2px solid var(--rxdbv-control-border);
@@ -751,6 +765,21 @@ export const DBVIEWER_STYLES = `
  * Idle rows fade their graphics but never their text,
  * faded labels on the dark background are unreadable.
  */
+/**
+ * Below 760px the live map flows top-down: app node, then per
+ * collection its node and remote stacked. The horizontal lanes
+ * and the column headers only make sense side by side, so they
+ * are not drawn.
+ */
+@media (max-width: 760px) {
+    .rxdbv-live-map { flex-direction: column; gap: 12px; overflow-x: hidden; }
+    .rxdbv-live-col-app { width: auto; min-width: 0; }
+    .rxdbv-live-rows > div:first-child { display: none !important; }
+    .rxdbv-live-row { flex-direction: column; align-items: stretch; gap: 8px; min-height: 0; }
+    .rxdbv-live-lane { display: none; }
+    .rxdbv-live-coll-node,
+    .rxdbv-live-remote-node { width: auto; min-width: 0; }
+}
 .rxdbv-live-idle .rxdbv-live-track { opacity: 0.45; }
 .rxdbv-live-idle .rxdbv-live-coll-node,
 .rxdbv-live-idle .rxdbv-live-remote-node { opacity: 0.8; }
@@ -830,5 +859,12 @@ export const DBVIEWER_STYLES = `
 .rxdbv-phone-field { padding: 8px 14px; border-bottom: 1px solid rgba(255, 255, 255, 0.06); font-size: 13px; }
 .rxdbv-phone-tool-host { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: auto; }
 .rxdbv-phone-tool-host > * { min-width: 0; }
+/**
+ * The phone header already names the open tool, so the panel
+ * toolbar does not repeat it. A toolbar that held only the
+ * title disappears entirely.
+ */
+.rxdbv-phone-tool-host .rxdbv-toolbar-title { display: none; }
+.rxdbv-phone-tool-host .rxdbv-toolbar:not(:has(> :not(.rxdbv-toolbar-title))) { display: none; }
 .rxdbv-phone-field .rxdbv-phone-field-label { color: var(--rxdbv-fg-dim); font-size: 10px; }
 `;

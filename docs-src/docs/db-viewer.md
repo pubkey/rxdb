@@ -1,8 +1,8 @@
 ---
 title: Database Viewer - Inspect and Edit RxDB Data in a Devtool
-slug: dbviewer.html
+slug: db-viewer.html
 description: Mount the RxDB database viewer to inspect collections, run Mango queries, edit documents and watch replication live, over a running database or a JSON dump.
-image: /headers/dbviewer.jpg
+image: /headers/db-viewer.jpg
 ---
 
 import {Tabs} from '@site/src/components/tabs';
@@ -10,7 +10,7 @@ import {BetaBlock} from '@site/src/components/beta-block';
 
 # Database Viewer
 
-With the `dbviewer` plugin you can inspect and edit the data of a running [RxDB](https://rxdb.info/) database from inside your own application. The viewer mounts into any DOM element and renders a full devtool: a data grid with a Mango query bar, a JSON view, a document detail drawer, and panels for schema analysis, query analysis, [replication](./replication.md), the change stream and storage statistics. It works over a live [RxDatabase](./rx-database.md) and over a static dump created with the [json-dump plugin](./json-import-export.md).
+With the `dbviewer` plugin you can inspect and edit the data of a running [RxDB](https://rxdb.info/) database. There are two ways to use it: mount it into any DOM element of your own application with `mountRxDBViewer()`, or connect to the database from the outside with `connectRxDBViewer()`, which pairs the hosted viewer page with the app over WebRTC. Both render the same full devtool: a data grid with a Mango query bar, a JSON view, a document detail drawer, and panels for schema analysis, query analysis, [replication](./replication.md), the change stream and storage statistics. It works over a live [RxDatabase](./rx-database.md) and over a static dump created with the [json-dump plugin](./json-import-export.md).
 
 <BetaBlock since="17.7.0" />
 
@@ -49,11 +49,7 @@ The cleanup tool shows how many tombstones a [cleanup](./cleanup.md) could purge
   <img src="./files/dbviewer-cleanup.png" alt="RxDB database viewer cleanup tool" width="760" />
 </p>
 
-Below 640px the viewer switches to stacked touch screens with the same collections and tools:
-
-<p align="center">
-  <img src="./files/dbviewer-phone.png" alt="RxDB database viewer phone layout" width="300" />
-</p>
+Below 640px the viewer switches to stacked touch screens with the same collections and tools.
 
 ## How it works
 
@@ -362,7 +358,7 @@ mountRxDBViewer({
 });
 ```
 
-A persistent banner states that the data is read-only and frozen at export time. Editing, Observe mode, the Live map and the feeds are disabled with a "not available on a dump" hint. The grid, queries, the Schema panel and the Storage counts work fully. A dump file can also be opened at runtime from the Export/Import tool.
+Editing, Observe mode, the Live map and the feeds are disabled with a "not available on a dump" hint. The grid, queries, the Schema panel and the Storage counts work fully. A dump file can also be opened at runtime from the Export/Import tool.
 
 ## Editing is explicit
 
@@ -423,11 +419,3 @@ Yes. The viewer talks to the database through the normal query API, so every [Rx
 Yes. The Replication panel polls for states created with `replicateRxCollection()` or one of the replication plugins in the same JavaScript context, so states that start later are picked up automatically.
 
 </details>
-
-## Follow Up
-
-- Start with the [RxDB Quickstart](./quickstart.md)
-- Learn how to [export and import JSON dumps](./json-import-export.md)
-- Read about [dev-mode](./dev-mode.md) checks during development
-- Expose your data to AI agents with the [WebMCP plugin](./webmcp.md)
-- If you have not done so yet, leave a star at the [RxDB GitHub repo ⭐](/code/)
