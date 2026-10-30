@@ -371,7 +371,7 @@ export default function Home(props: {
           <CoreConceptSection dark={true} />
 
           <PartnerTrophy
-            href="/articles/tanstack-db/rxdb-collection-for-tanstack-db.html"
+            href="https://tanstack.com/db/latest/docs/collections/rxdb-collection"
             title="TanStack DB"
             slug="tanstack"
             subTitle="Integrates with"
