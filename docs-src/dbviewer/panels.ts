@@ -9,7 +9,7 @@ import type { ViewerFieldType } from '../../src/plugins/dbviewer/dbviewer-types.
 import type { PageContext } from './context.ts';
 import {
     buildInfoBox,
-    buildToggle,
+    buildTabs,
     clearChildren,
     downloadJson,
     el,
@@ -65,7 +65,7 @@ export function renderSchemaPanel(ctx: PageContext) {
         ctx.schemaViewMode.set(collectionName, mode);
         ctx.renderContent();
     };
-    const segments = buildToggle([
+    const segments = buildTabs([
         { value: 'analysis', label: 'Analysis' },
         { value: 'schema', label: 'JSON schema' }
     ], viewMode, setViewMode);
@@ -332,67 +332,81 @@ function runExplain(
 export function renderExportPanel(ctx: PageContext) {
     const panel = el('div', 'rxdbv-panel-scroll');
     ctx.contentHost.appendChild(panel);
-    panel.appendChild(panelToolbar('Export'));
+    panel.appendChild(panelToolbar('Export/Import'));
 
     const collections = ctx.source.listCollections();
     const selected = new Set<string>(collections.map(info => info.name));
+    const selectorInputs = new Map<string, HTMLInputElement>();
 
     panel.appendChild(el('div', 'rxdbv-section-label', 'COLLECTIONS'));
-    const listHost = el('div', '', undefined, { style: 'padding:4px 12px;display:flex;flex-direction:column;gap:7px' });
+    panel.appendChild(el('div', 'rxdbv-dim', 'Pick the collections to export. A selector limits that collection to matching documents.', {
+        style: 'font-size:10.5px;padding:0 12px 6px;line-height:1.5'
+    }));
+    const listHost = el('div', '', undefined, { style: 'padding:4px 12px;display:flex;flex-direction:column;gap:8px;max-width:760px' });
     collections.forEach(info => {
         const checkbox = el('input', '', undefined, { type: 'checkbox' }) as HTMLInputElement;
         checkbox.checked = true;
+        const count = ctx.countsCache.get(info.name);
+        const selectorInput = el('input', 'rxdbv-query-input', undefined, {
+            placeholder: '{ "field": "value" } (optional)'
+        }) as HTMLInputElement;
+        selectorInputs.set(info.name, selectorInput);
+        const errorLine = el('div', '', '', {
+            style: 'color:var(--rxdbv-danger);font-size:10.5px;padding-left:24px;font-family:var(--rxdbv-mono)'
+        });
+        const selectorWrap = el('div', 'rxdbv-query-input-wrap', [
+            el('span', 'rxdbv-dim', 'find'),
+            selectorInput
+        ], { style: 'flex:1;min-width:200px' });
         checkbox.addEventListener('change', () => {
             if (checkbox.checked) {
                 selected.add(info.name);
             } else {
                 selected.delete(info.name);
             }
+            selectorInput.disabled = !checkbox.checked;
+            selectorWrap.style.opacity = checkbox.checked ? '' : '0.4';
             updateButton();
         });
-        const count = ctx.countsCache.get(info.name);
-        listHost.appendChild(el('label', '', [
-            checkbox,
-            el('span', 'rxdbv-mono', info.name),
-            el('span', 'rxdbv-dim rxdbv-mono', typeof count === 'number' ? formatInteger(count) + ' docs' : '', { style: 'font-size:10px' })
-        ], { style: 'display:flex;align-items:center;gap:8px;cursor:pointer;font-size:11.5px' }));
+        selectorInput.addEventListener('input', () => {
+            const parsed = parseViewerSelector(selectorInput.value);
+            errorLine.textContent = parsed.error ? '✕ ' + parsed.error.message : '';
+            updateButton();
+        });
+        listHost.appendChild(el('div', '', [
+            el('div', '', [
+                el('label', '', [
+                    checkbox,
+                    el('span', 'rxdbv-mono', info.name),
+                    el('span', 'rxdbv-dim rxdbv-mono', typeof count === 'number' ? formatInteger(count) + ' docs' : '', { style: 'font-size:10px' })
+                ], { style: 'display:flex;align-items:center;gap:8px;cursor:pointer;font-size:11.5px;min-width:170px' }),
+                selectorWrap
+            ], { style: 'display:flex;align-items:center;gap:12px;flex-wrap:wrap' }),
+            errorLine
+        ]));
     });
     panel.appendChild(listHost);
-
-    panel.appendChild(el('div', 'rxdbv-section-label', 'SELECTOR (OPTIONAL)'));
-    const selectorInput = el('input', 'rxdbv-query-input', undefined, {
-        placeholder: '{ "field": "value" }'
-    }) as HTMLInputElement;
-    const selectorWrap = el('div', 'rxdbv-query-input-wrap', [
-        el('span', 'rxdbv-dim', 'find'),
-        selectorInput
-    ], { style: 'margin:4px 12px;max-width:640px;flex:unset' });
-    panel.appendChild(selectorWrap);
-    const errorLine = el('div', '', '', { style: 'color:var(--rxdbv-danger);font-size:10.5px;padding:2px 12px;font-family:var(--rxdbv-mono)' });
-    panel.appendChild(errorLine);
-    panel.appendChild(el('div', 'rxdbv-dim', 'When a selector is set, only matching documents of the selected collections are exported.', {
-        style: 'font-size:10.5px;padding:0 12px;line-height:1.5'
-    }));
 
     const exportButton = el('button', 'rxdbv-btn-primary', 'Download JSON') as HTMLButtonElement;
     const statusLine = el('div', 'rxdbv-dim', '', { style: 'font-size:11px;padding:4px 12px' });
     const updateButton = () => {
-        const parsed = parseViewerSelector(selectorInput.value);
-        exportButton.disabled = selected.size === 0 || !!parsed.error;
+        const anyInvalid = collections.some(info =>
+            selected.has(info.name) &&
+            !!parseViewerSelector((selectorInputs.get(info.name) as HTMLInputElement).value).error);
+        exportButton.disabled = selected.size === 0 || anyInvalid;
     };
-    selectorInput.addEventListener('input', () => {
-        const parsed = parseViewerSelector(selectorInput.value);
-        errorLine.textContent = parsed.error ? '✕ ' + parsed.error.message : '';
-        updateButton();
-    });
     exportButton.addEventListener('click', () => {
-        const parsed = parseViewerSelector(selectorInput.value);
-        if (parsed.error) {
-            return;
+        const names = collections.map(info => info.name).filter(name => selected.has(name));
+        const selectors = new Map<string, any>();
+        for (const name of names) {
+            const parsed = parseViewerSelector((selectorInputs.get(name) as HTMLInputElement).value);
+            if (parsed.error) {
+                return;
+            }
+            selectors.set(name, parsed.selector);
         }
         exportButton.disabled = true;
         exportButton.textContent = 'Exporting…';
-        const names = collections.map(info => info.name).filter(name => selected.has(name));
         const pageSize = 500;
         const collectionsOut: { name: string; docs: any[]; }[] = [];
         let totalDocs = 0;
@@ -402,7 +416,7 @@ export function renderExportPanel(ctx: PageContext) {
             }
             const docs: any[] = [];
             const readPage = (skip: number): Promise<void> =>
-                ctx.source.query(names[index], parsed.selector, skip, pageSize).then(result => {
+                ctx.source.query(names[index], selectors.get(names[index]), skip, pageSize).then(result => {
                     docs.push(...result.docs);
                     if (result.docs.length === pageSize) {
                         return readPage(skip + pageSize);
@@ -430,6 +444,36 @@ export function renderExportPanel(ctx: PageContext) {
     });
     panel.appendChild(el('div', '', [exportButton], { style: 'padding:12px' }));
     panel.appendChild(statusLine);
+
+    const fileInput = el('input', '', undefined, { type: 'file' }) as HTMLInputElement;
+    fileInput.accept = 'application/json,.json';
+    fileInput.style.display = 'none';
+    fileInput.addEventListener('change', () => {
+        const file = fileInput.files && fileInput.files[0];
+        if (!file) {
+            return;
+        }
+        file.text().then(text => {
+            try {
+                const dump = JSON.parse(text);
+                ctx.openDump(dump, file.name);
+            } catch (err) {
+                showViewerError(ctx.root, file.name + ' is not a valid JSON dump', err);
+            }
+        });
+    });
+    panel.appendChild(el('div', 'rxdbv-section-label', 'IMPORT'));
+    panel.appendChild(el('div', '', [
+        el('div', 'rxdbv-muted', [
+            'Open a static export created with ',
+            el('code', 'rxdbv-mono', 'await db.exportJSON()'),
+            ' or with the export above, and browse it read-only.'
+        ], { style: 'line-height:1.55;margin-bottom:10px;font-size:11.5px' }),
+        el('button', 'rxdbv-btn', 'Open dump file…', {
+            onClick: () => fileInput.click()
+        }),
+        fileInput
+    ], { style: 'padding:8px 12px;max-width:520px' }));
 }
 
 /**

@@ -343,7 +343,7 @@ function Rail(props: { ctx: PageContext; }) {
         { view: 'changes', label: 'Changes' },
         { view: 'storage', label: 'Storage' },
         { view: 'cleanup', label: 'Cleanup' },
-        { view: 'export', label: 'Export' }
+        { view: 'export', label: 'Export/Import' }
     ];
     const dumpDisabled: ViewerNavView[] = ['live', 'changes'];
 

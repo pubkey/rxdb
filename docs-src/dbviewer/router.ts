@@ -10,10 +10,7 @@ import {
     DBVIEWER_LOGO_SVG,
     el
 } from './dom.ts';
-import {
-    VIEWER_DOCS_BASE_URL,
-    showViewerError
-} from './error.ts';
+import { VIEWER_DOCS_BASE_URL } from './error.ts';
 import {
     renderChangesPanel,
     renderReplicationPanel
@@ -114,24 +111,6 @@ function renderSettings(ctx: PageContext) {
         storeSettings({ pageSize: ctx.pageSize });
     });
 
-    const fileInput = el('input', '', undefined, { type: 'file' }) as HTMLInputElement;
-    fileInput.accept = 'application/json,.json';
-    fileInput.style.display = 'none';
-    fileInput.addEventListener('change', () => {
-        const file = fileInput.files && fileInput.files[0];
-        if (!file) {
-            return;
-        }
-        file.text().then(text => {
-            try {
-                const dump = JSON.parse(text);
-                ctx.openDump(dump, file.name);
-            } catch (err) {
-                showViewerError(ctx.root, file.name + ' is not a valid JSON dump', err);
-            }
-        });
-    });
-
     ctx.contentHost.appendChild(el('div', 'rxdbv-panel-scroll', [
         el('div', 'rxdbv-toolbar', [
             el('span', 'rxdbv-toolbar-title', 'Settings')
@@ -139,18 +118,6 @@ function renderSettings(ctx: PageContext) {
         el('div', '', [
             el('div', 'rxdbv-section-label', 'GRID'),
             el('div', '', [select], { style: 'padding:8px 12px' }),
-            el('div', 'rxdbv-section-label', 'DUMP FILE'),
-            el('div', '', [
-                el('div', 'rxdbv-muted', [
-                    'Open a static export created with ',
-                    el('code', 'rxdbv-mono', 'await db.exportJSON()'),
-                    ' and browse it read-only.'
-                ], { style: 'line-height:1.55;margin-bottom:10px;font-size:11.5px' }),
-                el('button', 'rxdbv-btn-primary', 'Open dump file…', {
-                    onClick: () => fileInput.click()
-                }),
-                fileInput
-            ], { style: 'padding:8px 12px;max-width:520px' }),
             el('div', 'rxdbv-section-label', 'ABOUT'),
             el('div', 'rxdbv-dim', 'RxDB database viewer · rxdb v' + ctx.source.rxdbVersion, { style: 'padding:8px 12px' })
         ])
@@ -210,7 +177,7 @@ function renderPhoneLayout(ctx: PageContext) {
             { view: 'changes', label: 'Changes' },
             { view: 'storage', label: 'Storage' },
             { view: 'cleanup', label: 'Cleanup' },
-            { view: 'export', label: 'Export' },
+            { view: 'export', label: 'Export/Import' },
             { view: 'settings', label: 'Settings' }
         ];
         const dumpDisabled = ctx.source.kind === 'dump' ? ['live', 'changes'] : [];
@@ -233,7 +200,7 @@ function renderPhoneLayout(ctx: PageContext) {
 
     if (phone.screen === 'tool') {
         const toolView = phone.toolView || 'settings';
-        const title = toolView === 'live' ? 'Live'
+        const title = toolView === 'export' ? 'Export/Import'
             : toolView.charAt(0).toUpperCase() + toolView.slice(1);
         host.appendChild(el('div', 'rxdbv-phone-header', [
             el('span', 'rxdbv-phone-back', undefined, {

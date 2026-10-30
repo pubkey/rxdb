@@ -76,18 +76,18 @@ export type ToggleOption<T extends string> = {
 };
 
 /**
- * The standard toggle (segmented control), used wherever the
- * UI switches between views, for example Table/JSON. It shares
- * the fixed proportions of the button component: 31px height
- * and a 2px border, so toggles and buttons line up in toolbars.
+ * Tabs, used wherever the UI switches between views, for
+ * example Table/JSON. Same design as the Tabs component of
+ * the docs (docs-src/src/components/tabs.tsx) and the same
+ * 31px height as the buttons.
  */
-export function buildToggle<T extends string>(
+export function buildTabs<T extends string>(
     options: ToggleOption<T>[],
     activeValue: T,
     onChange: (value: T) => void
 ): HTMLElement {
-    return el('div', 'rxdbv-toggle', options.map(option =>
-        el('button', 'rxdbv-toggle-option' + (option.value === activeValue ? ' rxdbv-active' : ''), option.label, {
+    return el('div', 'rxdbv-tabs', options.map(option =>
+        el('button', 'rxdbv-tab' + (option.value === activeValue ? ' rxdbv-active' : ''), option.label, {
             title: option.title || '',
             onClick: () => {
                 if (option.value !== activeValue) {

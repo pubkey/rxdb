@@ -12,7 +12,7 @@ import {
 import type { PageContext } from './context.ts';
 import {
     base64ToBlob,
-    buildToggle,
+    buildTabs,
     DBVIEWER_ICON_ARROW_LEFT,
     DBVIEWER_ICON_ARROW_RIGHT,
     DBVIEWER_ICON_CLOSE,
@@ -151,7 +151,7 @@ export function renderCollectionScreen(ctx: PageContext) {
     });
     const toolbar = el('div', 'rxdbv-toolbar', [
         el('span', 'rxdbv-toolbar-title rxdbv-mono', collectionName),
-        buildToggle([
+        buildTabs([
             { value: 'table', label: 'Table' },
             { value: 'json', label: 'JSON' }
         ], uiState.view, view => {
