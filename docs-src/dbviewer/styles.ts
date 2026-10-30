@@ -266,20 +266,20 @@ export const DBVIEWER_STYLES = `
 }
 .rxdbv-toolbar-title { font-weight: 700; font-size: 13px; }
 /**
- * The standard toggle (segmented control). Same fixed
- * proportions as the buttons: 31px height, 17px side padding
- * and a 2px border, so it lines up with them in toolbars.
+ * Tabs, same design as the docs Tabs component
+ * (docs-src/src/components/tabs.tsx with .side-tabs in
+ * custom.css): flat labels, the active tab has a filled
+ * background, bold text and a 3px indicator bar in the
+ * brand color.
  */
-.rxdbv-toggle {
-    box-sizing: border-box;
+.rxdbv-tabs {
     display: inline-flex;
     align-items: stretch;
     height: 31px;
-    border: 2px solid var(--rxdbv-control-border);
-    font-size: 11px;
 }
-.rxdbv-toggle-option {
+.rxdbv-tab {
     box-sizing: border-box;
+    position: relative;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -293,9 +293,17 @@ export const DBVIEWER_STYLES = `
     cursor: pointer;
     transition: color 180ms ease-in-out, background 180ms ease-in-out;
 }
-.rxdbv-toggle-option + .rxdbv-toggle-option { border-left: 2px solid var(--rxdbv-control-border); }
-.rxdbv-toggle-option:hover { color: var(--rxdbv-fg); }
-.rxdbv-toggle-option.rxdbv-active { background: var(--rxdbv-active-segment); color: var(--rxdbv-fg); }
+.rxdbv-tab:hover:not(.rxdbv-active) { color: var(--rxdbv-fg); font-weight: 800; }
+.rxdbv-tab.rxdbv-active { background: var(--rxdbv-bg); color: var(--rxdbv-fg); font-weight: 800; }
+.rxdbv-tab.rxdbv-active::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: #ED168F;
+}
 /* the standard button with a leading icon, here the observe dot */
 .rxdbv-observe {
     display: inline-flex;
@@ -457,6 +465,9 @@ export const DBVIEWER_STYLES = `
 .rxdbv-json-view {
     flex: 1;
     overflow: auto;
+    margin: 8px 12px;
+    background: var(--rxdbv-bg-code);
+    border: 2px solid #666;
     padding: 10px 14px;
     font-family: var(--rxdbv-mono);
     font-size: 11px;
@@ -535,6 +546,7 @@ export const DBVIEWER_STYLES = `
 .rxdbv-willrun-code {
     margin: 4px 12px;
     background: var(--rxdbv-bg-code);
+    border: 2px solid #666;
     padding: 8px 10px;
     font-family: var(--rxdbv-mono);
     font-size: 10.5px;
@@ -647,7 +659,7 @@ export const DBVIEWER_STYLES = `
 .rxdbv-admonition-body { color: var(--rxdbv-fg-muted); margin-top: 4px; line-height: 1.55; }
 .rxdbv-admonition-body:first-child { margin-top: 0; }
 .rxdbv-admonition-body code { font-family: var(--rxdbv-mono); color: var(--rxdbv-fg); }
-.rxdbv-plan-box { margin: 6px 12px; border: 1px solid rgba(255, 255, 255, 0.10); font-size: 11px; font-family: var(--rxdbv-mono); }
+.rxdbv-plan-box { margin: 6px 12px; border: 2px solid #666; background: var(--rxdbv-bg-code); font-size: 11px; font-family: var(--rxdbv-mono); }
 .rxdbv-plan-step { display: flex; gap: 12px; padding: 6px 10px; }
 .rxdbv-plan-step + .rxdbv-plan-step { border-top: 1px solid rgba(255, 255, 255, 0.06); }
 .rxdbv-plan-step .rxdbv-plan-num { color: var(--rxdbv-fg-dim); width: 14px; }
@@ -669,7 +681,7 @@ export const DBVIEWER_STYLES = `
     width: 190px;
 }
 .rxdbv-filter-input::placeholder { color: var(--rxdbv-fg-dim); }
-.rxdbv-diff-block { padding: 10px 12px; font-family: var(--rxdbv-mono); font-size: 11px; line-height: 1.7; white-space: pre; overflow: auto; }
+.rxdbv-diff-block { margin: 8px 12px; background: var(--rxdbv-bg-code); border: 2px solid #666; padding: 10px 12px; font-family: var(--rxdbv-mono); font-size: 11px; line-height: 1.7; white-space: pre; overflow: auto; }
 .rxdbv-diff-line-removed { background: rgba(253, 54, 110, 0.14); color: var(--rxdbv-danger); display: block; }
 .rxdbv-diff-line-added { background: rgba(62, 207, 142, 0.12); color: var(--rxdbv-success); display: block; }
 .rxdbv-diff-line-same { display: block; }
@@ -756,6 +768,7 @@ export const DBVIEWER_STYLES = `
 .rxdbv-empty-code {
     margin-top: 10px;
     background: var(--rxdbv-bg-code);
+    border: 2px solid #666;
     padding: 8px 12px;
     font-family: var(--rxdbv-mono);
     font-size: 11px;

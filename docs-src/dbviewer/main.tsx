@@ -185,7 +185,7 @@ function StandaloneLanding(props: {
                     Inspect a database that runs on another device over WebRTC.
                     In the app, expose the database with the dbviewer plugin:
                 </div>
-                <div className="rxdbv-mono" style={{ fontSize: 11, lineHeight: 1.7, marginTop: 8, padding: '10px 12px', background: 'var(--rxdbv-bg)', border: '1px solid rgba(255,255,255,0.1)', whiteSpace: 'pre', overflow: 'auto' }}>
+                <div className="rxdbv-mono" style={{ fontSize: 11, lineHeight: 1.7, marginTop: 8, padding: '10px 12px', background: 'var(--rxdbv-bg-code)', border: '2px solid #666', whiteSpace: 'pre', overflow: 'auto' }}>
                     {'import { connectRxDBViewer } from \'rxdb/plugins/dbviewer\';\n\nconst viewer = await connectRxDBViewer({\n    database: myDatabase\n});\nconsole.log(viewer.url); // open this url'}
                 </div>
                 <div style={{ marginTop: 12 }}>
