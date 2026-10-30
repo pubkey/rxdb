@@ -237,7 +237,7 @@ function StandaloneLanding(props: {
                     </button>
                     <a
                         style={{ fontSize: 11 }}
-                        onClick={() => window.open('https://rxdb.info/dbviewer.html', '_blank')}
+                        onClick={() => window.open('https://rxdb.info/db-viewer.html', '_blank')}
                     >Viewer documentation</a>
                 </div>
                 {error ? (

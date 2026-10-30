@@ -151,13 +151,6 @@ export function renderCollectionScreen(ctx: PageContext) {
     });
     const toolbar = el('div', 'rxdbv-toolbar', [
         el('span', 'rxdbv-toolbar-title rxdbv-mono', collectionName),
-        buildTabs([
-            { value: 'table', label: 'Table' },
-            { value: 'json', label: 'JSON' }
-        ], uiState.view, view => {
-            uiState.view = view;
-            ctx.renderContent();
-        }),
         observeToggle,
         el('div', 'rxdbv-flex1'),
         el('button', 'rxdbv-btn', 'Export', {
@@ -198,6 +191,15 @@ export function renderCollectionScreen(ctx: PageContext) {
     screen.appendChild(querybar);
     const errorHost = el('div');
     screen.appendChild(errorHost);
+    screen.appendChild(el('div', 'rxdbv-tabs-row', [
+        buildTabs([
+            { value: 'table', label: 'Table' },
+            { value: 'json', label: 'JSON' }
+        ], uiState.view, view => {
+            uiState.view = view;
+            ctx.renderContent();
+        })
+    ]));
 
     const applyInput = (commit = true) => {
         uiState.queryInput = queryInput.value;

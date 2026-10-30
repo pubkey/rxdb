@@ -515,7 +515,7 @@ const sidebars = {
         },
         {
           type: 'doc',
-          id: 'dbviewer',
+          id: 'db-viewer',
           label: 'Database Viewer'
         },
         {
