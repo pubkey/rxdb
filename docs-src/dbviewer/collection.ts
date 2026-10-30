@@ -168,14 +168,7 @@ export function renderCollectionScreen(ctx: PageContext) {
     const toolbar = el('div', 'rxdbv-toolbar', [
         el('span', 'rxdbv-toolbar-title rxdbv-mono', collectionName),
         observeToggle,
-        el('div', 'rxdbv-flex1'),
-        el('button', 'rxdbv-btn', 'Export', {
-            onClick: () => {
-                ctx.source.exportCollection(collectionName).then(data => {
-                    downloadJson(ctx.source.databaseName + '-' + collectionName + '.json', data);
-                }).catch(err => showViewerError(ctx.root, 'Export failed', err));
-            }
-        })
+        el('div', 'rxdbv-flex1')
     ]);
     screen.appendChild(toolbar);
 
@@ -500,8 +493,11 @@ function renderTableView(
     headerCells.push(el('div', 'rxdbv-grid-checkbox-cell', [buildSelectAllCheckbox(ctx, uiState, docs, primaryPath)]));
     const sortableHeader = (label: string, sortKey: string) => {
         const sorted = uiState.sortField === sortKey;
-        const arrow = sorted ? (uiState.sortDirection === -1 ? ' ↓' : ' ↑') : '';
-        return el('div', sorted ? 'rxdbv-sorted' : '', label + arrow, {
+        const cell: (string | HTMLElement)[] = [label];
+        if (sorted) {
+            cell.push(el('span', 'rxdbv-sort-arrow', uiState.sortDirection === -1 ? '↓' : '↑'));
+        }
+        return el('div', 'rxdbv-sortable' + (sorted ? ' rxdbv-sorted' : ''), cell, {
             title: 'Sort this page by ' + label,
             onClick: () => {
                 if (uiState.sortField === sortKey) {
@@ -879,6 +875,8 @@ function buildDrawer(
 ): HTMLElement {
     const drawer = uiState.drawer as DrawerState;
     const readOnly = isReadOnlyCollection(ctx, collectionName);
+    const collectionInfo = ctx.source.listCollections().find(c => c.name === collectionName);
+    const schemaProperties: { [field: string]: any; } = (collectionInfo && collectionInfo.jsonSchema && collectionInfo.jsonSchema.properties) || {};
     const { doc: mergedDoc, changedFields } = buildDrawerDocument(drawer);
     const edited = changedFields.length > 0 || drawer.mode === 'new';
 
@@ -953,16 +951,43 @@ function buildDrawer(
             return;
         }
         const staged = drawer.staged.has(field);
-        const input = el('input', 'rxdbv-field-input' + (staged ? '' : ' rxdbv-clean'), undefined, {
-            value: staged
-                ? drawer.staged.get(field)
-                : (type === 'string' ? String(value) : JSON.stringify(value))
-        }) as HTMLInputElement;
-        input.addEventListener('input', () => {
-            drawer.staged.set(field, input.value);
-            input.classList.remove('rxdbv-clean');
-            updatePreview();
-        });
+        const currentValue = staged
+            ? drawer.staged.get(field) as string
+            : (type === 'string' ? String(value) : JSON.stringify(value));
+        const fieldSchema = schemaProperties[field];
+        const enumValues: any[] | null = fieldSchema && Array.isArray(fieldSchema.enum) ? fieldSchema.enum : null;
+        let input: HTMLInputElement | HTMLSelectElement;
+        if (enumValues) {
+            // an enum field is edited through a select with the allowed values
+            const select = el('select', 'rxdbv-field-input rxdbv-field-select' + (staged ? '' : ' rxdbv-clean')) as HTMLSelectElement;
+            const optionStrings = enumValues.map(entry => typeof entry === 'string' ? entry : JSON.stringify(entry));
+            if (!optionStrings.includes(currentValue)) {
+                optionStrings.unshift(currentValue);
+            }
+            optionStrings.forEach(option => {
+                const optionEl = document.createElement('option');
+                optionEl.value = option;
+                optionEl.textContent = option;
+                select.appendChild(optionEl);
+            });
+            select.value = currentValue;
+            select.addEventListener('change', () => {
+                drawer.staged.set(field, select.value);
+                select.classList.remove('rxdbv-clean');
+                updatePreview();
+            });
+            input = select;
+        } else {
+            const textInput = el('input', 'rxdbv-field-input' + (staged ? '' : ' rxdbv-clean'), undefined, {
+                value: currentValue
+            }) as HTMLInputElement;
+            textInput.addEventListener('input', () => {
+                drawer.staged.set(field, textInput.value);
+                textInput.classList.remove('rxdbv-clean');
+                updatePreview();
+            });
+            input = textInput;
+        }
         const modifiedDot = el('span', 'rxdbv-modified-dot', undefined, { title: 'modified' });
         modifiedDot.style.display = staged ? '' : 'none';
         fieldDots.set(field, modifiedDot);
