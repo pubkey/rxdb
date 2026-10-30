@@ -2,7 +2,7 @@ import type { RxDBViewerDump } from '../../src/plugins/dbviewer/dbviewer-types.t
 import type { PageHub } from './hub.ts';
 import type { ViewerSource } from './source.ts';
 
-export type ViewerNavView = 'collection' | 'live' | 'schema' | 'changes' | 'explain' | 'storage' | 'cleanup' | 'replication' | 'settings';
+export type ViewerNavView = 'collection' | 'live' | 'schema' | 'changes' | 'explain' | 'storage' | 'cleanup' | 'export' | 'replication' | 'settings';
 
 export type ViewerNav = {
     view: ViewerNavView;

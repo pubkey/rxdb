@@ -11,6 +11,7 @@ import {
     buildInfoBox,
     buildToggle,
     clearChildren,
+    downloadJson,
     el,
     withCopyButton
 } from './dom.ts';
@@ -319,6 +320,116 @@ function runExplain(
     }).catch(err => {
         showViewerError(ctx.root, 'Explain failed', err);
     });
+}
+
+/**
+ * Export tool: downloads the database as one json file.
+ * Collections can be picked and an optional selector limits
+ * the export to matching documents. The export reads through
+ * the normal query path in pages, so it works on a live
+ * database and on a dump alike.
+ */
+export function renderExportPanel(ctx: PageContext) {
+    const panel = el('div', 'rxdbv-panel-scroll');
+    ctx.contentHost.appendChild(panel);
+    panel.appendChild(panelToolbar('Export'));
+
+    const collections = ctx.source.listCollections();
+    const selected = new Set<string>(collections.map(info => info.name));
+
+    panel.appendChild(el('div', 'rxdbv-section-label', 'COLLECTIONS'));
+    const listHost = el('div', '', undefined, { style: 'padding:4px 12px;display:flex;flex-direction:column;gap:7px' });
+    collections.forEach(info => {
+        const checkbox = el('input', '', undefined, { type: 'checkbox' }) as HTMLInputElement;
+        checkbox.checked = true;
+        checkbox.addEventListener('change', () => {
+            if (checkbox.checked) {
+                selected.add(info.name);
+            } else {
+                selected.delete(info.name);
+            }
+            updateButton();
+        });
+        const count = ctx.countsCache.get(info.name);
+        listHost.appendChild(el('label', '', [
+            checkbox,
+            el('span', 'rxdbv-mono', info.name),
+            el('span', 'rxdbv-dim rxdbv-mono', typeof count === 'number' ? formatInteger(count) + ' docs' : '', { style: 'font-size:10px' })
+        ], { style: 'display:flex;align-items:center;gap:8px;cursor:pointer;font-size:11.5px' }));
+    });
+    panel.appendChild(listHost);
+
+    panel.appendChild(el('div', 'rxdbv-section-label', 'SELECTOR (OPTIONAL)'));
+    const selectorInput = el('input', 'rxdbv-query-input', undefined, {
+        placeholder: '{ "field": "value" }'
+    }) as HTMLInputElement;
+    const selectorWrap = el('div', 'rxdbv-query-input-wrap', [
+        el('span', 'rxdbv-dim', 'find'),
+        selectorInput
+    ], { style: 'margin:4px 12px;max-width:640px;flex:unset' });
+    panel.appendChild(selectorWrap);
+    const errorLine = el('div', '', '', { style: 'color:var(--rxdbv-danger);font-size:10.5px;padding:2px 12px;font-family:var(--rxdbv-mono)' });
+    panel.appendChild(errorLine);
+    panel.appendChild(el('div', 'rxdbv-dim', 'When a selector is set, only matching documents of the selected collections are exported.', {
+        style: 'font-size:10.5px;padding:0 12px;line-height:1.5'
+    }));
+
+    const exportButton = el('button', 'rxdbv-btn-primary', 'Download JSON') as HTMLButtonElement;
+    const statusLine = el('div', 'rxdbv-dim', '', { style: 'font-size:11px;padding:4px 12px' });
+    const updateButton = () => {
+        const parsed = parseViewerSelector(selectorInput.value);
+        exportButton.disabled = selected.size === 0 || !!parsed.error;
+    };
+    selectorInput.addEventListener('input', () => {
+        const parsed = parseViewerSelector(selectorInput.value);
+        errorLine.textContent = parsed.error ? '✕ ' + parsed.error.message : '';
+        updateButton();
+    });
+    exportButton.addEventListener('click', () => {
+        const parsed = parseViewerSelector(selectorInput.value);
+        if (parsed.error) {
+            return;
+        }
+        exportButton.disabled = true;
+        exportButton.textContent = 'Exporting…';
+        const names = collections.map(info => info.name).filter(name => selected.has(name));
+        const pageSize = 500;
+        const collectionsOut: { name: string; docs: any[]; }[] = [];
+        let totalDocs = 0;
+        const exportCollectionAt = (index: number): Promise<void> => {
+            if (index >= names.length) {
+                return Promise.resolve();
+            }
+            const docs: any[] = [];
+            const readPage = (skip: number): Promise<void> =>
+                ctx.source.query(names[index], parsed.selector, skip, pageSize).then(result => {
+                    docs.push(...result.docs);
+                    if (result.docs.length === pageSize) {
+                        return readPage(skip + pageSize);
+                    }
+                });
+            return readPage(0).then(() => {
+                totalDocs = totalDocs + docs.length;
+                collectionsOut.push({ name: names[index], docs });
+                return exportCollectionAt(index + 1);
+            });
+        };
+        exportCollectionAt(0).then(() => {
+            downloadJson(ctx.source.databaseName + '-export.json', {
+                name: ctx.source.databaseName,
+                collections: collectionsOut
+            });
+            statusLine.textContent = 'Exported ' + formatInteger(totalDocs) + ' documents from ' +
+                collectionsOut.length + (collectionsOut.length === 1 ? ' collection.' : ' collections.');
+        }).catch(err => {
+            showViewerError(ctx.root, 'Export failed', err);
+        }).then(() => {
+            exportButton.textContent = 'Download JSON';
+            updateButton();
+        });
+    });
+    panel.appendChild(el('div', '', [exportButton], { style: 'padding:12px' }));
+    panel.appendChild(statusLine);
 }
 
 /**
