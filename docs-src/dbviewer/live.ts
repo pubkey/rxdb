@@ -131,7 +131,7 @@ export function renderLivePanel(ctx: PageContext) {
     map.appendChild(rowsHost);
 
     const lanes = new Map<string, LaneRefs>();
-    const collections = ctx.source.listCollections();
+    const collections = ctx.source.listCollections().filter(info => !info.viewOnly);
 
     collections.forEach(info => {
         const writesTrack = el('div', 'rxdbv-live-track', [el('div', 'rxdbv-track-line')]);

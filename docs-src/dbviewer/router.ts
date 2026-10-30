@@ -142,7 +142,8 @@ function renderPhoneLayout(ctx: PageContext) {
         ]);
         const listWrap = el('div', '', undefined, { style: 'flex:1;overflow:auto' });
         listWrap.appendChild(el('div', 'rxdbv-rail-header', 'COLLECTIONS', { style: 'padding:12px 14px 4px' }));
-        ctx.source.listCollections().forEach(info => {
+        const phoneCollections = ctx.source.listCollections();
+        phoneCollections.filter(info => !info.viewOnly).forEach(info => {
             const count = ctx.countsCache.get(info.name);
             listWrap.appendChild(el('div', 'rxdbv-phone-row', [
                 el('span', 'rxdbv-mono rxdbv-flex1', info.name),
@@ -155,6 +156,22 @@ function renderPhoneLayout(ctx: PageContext) {
                 }
             }));
         });
+        if (phoneCollections.some(info => !!info.viewOnly)) {
+            listWrap.appendChild(el('div', 'rxdbv-rail-header', 'SYSTEM', { style: 'padding:16px 14px 4px' }));
+            phoneCollections.filter(info => !!info.viewOnly).forEach(info => {
+                const count = ctx.countsCache.get(info.name);
+                listWrap.appendChild(el('div', 'rxdbv-phone-row', [
+                    el('span', 'rxdbv-mono rxdbv-muted rxdbv-flex1', info.name),
+                    el('span', 'rxdbv-dim rxdbv-mono', typeof count === 'number' ? formatInteger(count) : '…', { style: 'font-size:12px' }),
+                    el('span', 'rxdbv-dim', undefined, { html: DBVIEWER_ICON_ARROW_RIGHT })
+                ], {
+                    onClick: () => {
+                        ctx.phoneNav = { screen: 'list', collectionName: info.name };
+                        ctx.renderContent();
+                    }
+                }));
+            });
+        }
         if (ctx.events && ctx.events.replications.length > 0) {
             listWrap.appendChild(el('div', 'rxdbv-rail-header', 'REPLICATION', { style: 'padding:16px 14px 4px' }));
             ctx.events.replications.forEach(info => {

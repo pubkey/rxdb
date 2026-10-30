@@ -30,6 +30,7 @@ Key features:
 - **Storage panel**: Engine, document counts, tombstones and attachment bytes per collection.
 - **Cleanup tool**: Shows per collection how many tombstones could be purged and how much of the stored data that is, and runs a [cleanup](./cleanup.md) when the cleanup plugin is loaded.
 - **Export tool**: Downloads the database as one JSON file. You can pick which collections to include and set an optional MongoDB-style (Mango) selector per collection, so only matching documents are exported.
+- **System collections**: The database internal store, [local documents](./rx-local-document.md) and the collections behind [RxState](./rx-state.md) instances are listed in a SYSTEM group. They are view-only: you can browse, query and export them, but editing is disabled.
 
 The live activity map shows the write, query and replication flow of the database in realtime:
 
