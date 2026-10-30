@@ -27,8 +27,13 @@ export const DBVIEWER_STYLES = `
     --rxdbv-info: #199BF1;
     --rxdbv-violet: #9B6BFF;
     --rxdbv-gradient: linear-gradient(90deg, #ED168F, #B2218B, #752A8A);
-    --rxdbv-font: system-ui, 'Segoe UI', Helvetica, Arial, sans-serif;
-    --rxdbv-mono: ui-monospace, Menlo, Consolas, monospace;
+    /**
+     * Same font stack as the docs pages (--ifm-font-family-base
+     * in docs-src/src/css/custom.css). The @font-face for it is
+     * inlined into the page by scripts/build-dbviewer.mjs.
+     */
+    --rxdbv-font: 'Atkinson Hyperlegible Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', 'DejaVu Sans Mono', monospace;
+    --rxdbv-mono: 'Atkinson Hyperlegible Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', 'DejaVu Sans Mono', monospace;
 
     display: flex;
     flex-direction: column;
@@ -69,12 +74,26 @@ export const DBVIEWER_STYLES = `
 @keyframes rxdbvThread { from { background-position: 0 0; } to { background-position: -16px 0; } }
 
 /* buttons */
+/**
+ * All buttons use the fixed proportions of the landing page
+ * button (docs-src/src/components/button.tsx): 45px height,
+ * 25px side padding and a 2px border at a 16px font, scaled
+ * to the viewer font sizes (11px -> 31px/17px, 10px -> 28px/16px).
+ * The border width stays 2px at every size.
+ */
 .rxdbv-btn {
-    border: 1px solid rgba(255, 255, 255, 0.25);
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    height: 31px;
+    padding: 0 17px;
+    border: 2px solid rgba(255, 255, 255, 0.25);
     background: transparent;
     color: var(--rxdbv-fg);
     font-size: 11px;
-    padding: 4px 12px;
+    font-weight: 500;
     border-radius: 0;
     cursor: pointer;
     font-family: inherit;
@@ -84,14 +103,21 @@ export const DBVIEWER_STYLES = `
 .rxdbv-btn:active { transform: translateY(1px); }
 .rxdbv-btn:disabled { opacity: 0.5; cursor: default; }
 .rxdbv-btn:disabled:hover { background: transparent; color: var(--rxdbv-fg); }
-.rxdbv-btn-small { font-size: 10px; padding: 3px 10px; }
+.rxdbv-btn-small { font-size: 10px; height: 28px; padding: 0 16px; }
+.rxdbv-btn-icon { width: 31px; padding: 0; }
 .rxdbv-btn-primary {
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    height: 31px;
+    padding: 0 17px;
     border: 0;
     background: var(--rxdbv-gradient);
     color: var(--rxdbv-fg);
-    font-weight: 700;
+    font-weight: 800;
     font-size: 11px;
-    padding: 6px 16px;
     border-radius: 0;
     cursor: pointer;
     font-family: inherit;
@@ -100,12 +126,17 @@ export const DBVIEWER_STYLES = `
 .rxdbv-btn-primary:active { transform: translateY(1px); }
 .rxdbv-btn-primary:disabled { opacity: 0.4; cursor: default; }
 .rxdbv-btn-danger-outline {
-    border: 1px solid var(--rxdbv-danger);
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 31px;
+    padding: 0 17px;
+    border: 2px solid var(--rxdbv-danger);
     background: transparent;
     color: var(--rxdbv-danger);
     font-weight: 700;
     font-size: 11px;
-    padding: 6px 14px;
     border-radius: 0;
     cursor: pointer;
     font-family: inherit;
@@ -372,11 +403,17 @@ export const DBVIEWER_STYLES = `
     flex-wrap: wrap;
 }
 .rxdbv-pager {
-    border: 1px solid rgba(255, 255, 255, 0.20);
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: 2px solid rgba(255, 255, 255, 0.20);
     background: transparent;
     color: var(--rxdbv-fg);
     font-size: 11px;
-    padding: 2px 8px;
     border-radius: 0;
     cursor: pointer;
     font-family: inherit;
@@ -514,12 +551,17 @@ export const DBVIEWER_STYLES = `
 }
 .rxdbv-modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; }
 .rxdbv-btn-danger-solid {
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 31px;
+    padding: 0 17px;
     border: 0;
     background: var(--rxdbv-danger);
     color: var(--rxdbv-fg);
     font-weight: 700;
     font-size: 11px;
-    padding: 6px 14px;
     border-radius: 0;
     cursor: pointer;
     font-family: inherit;
