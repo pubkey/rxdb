@@ -422,6 +422,7 @@ export const DBVIEWER_STYLES = `
 }
 .rxdbv-grid-header > div { padding: 5px 8px 5px 0; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .rxdbv-grid-header > div.rxdbv-sorted { color: var(--rxdbv-fg); }
+.rxdbv-sort-arrow { color: var(--rxdbv-pink); font-weight: 700; margin-left: 4px; }
 .rxdbv-grid-row {
     display: grid;
     padding: 0 12px;
@@ -488,7 +489,7 @@ export const DBVIEWER_STYLES = `
     line-height: 1.65;
     white-space: pre;
 }
-.rxdbv-json-key { color: var(--rxdbv-fg-dim); }
+.rxdbv-json-key { color: var(--rxdbv-fg); }
 .rxdbv-json-str { color: var(--rxdbv-success); }
 .rxdbv-json-num { color: var(--rxdbv-warning); }
 .rxdbv-json-doc-fresh { background: rgba(62, 207, 142, 0.08); display: block; }
@@ -526,7 +527,7 @@ export const DBVIEWER_STYLES = `
 .rxdbv-drawer-section.rxdbv-willrun { color: var(--rxdbv-pink); }
 .rxdbv-field-row { display: flex; gap: 8px; padding: 3px 12px; align-items: center; }
 .rxdbv-field-row .rxdbv-field-label { width: 80px; min-width: 80px; color: var(--rxdbv-fg-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.rxdbv-field-row .rxdbv-field-value { font-family: var(--rxdbv-mono); color: var(--rxdbv-fg-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rxdbv-field-row .rxdbv-field-value { font-family: var(--rxdbv-mono); color: var(--rxdbv-fg-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; height: 31px; line-height: 31px; }
 .rxdbv-field-row .rxdbv-field-value.rxdbv-string { color: var(--rxdbv-success); }
 .rxdbv-field-row .rxdbv-expand-toggle { cursor: pointer; }
 .rxdbv-field-child { display: flex; gap: 8px; padding: 2px 12px 2px 28px; font-family: var(--rxdbv-mono); }
@@ -545,6 +546,8 @@ export const DBVIEWER_STYLES = `
     min-width: 0;
 }
 .rxdbv-field-input.rxdbv-clean { border-color: var(--rxdbv-control-border); }
+.rxdbv-field-select { cursor: pointer; }
+.rxdbv-field-select option { background: var(--rxdbv-bg); color: var(--rxdbv-fg); }
 .rxdbv-modified-dot { width: 6px; height: 6px; min-width: 6px; border-radius: 50%; background: var(--rxdbv-pink); }
 .rxdbv-badge-primary { font-size: 9px; color: var(--rxdbv-fg-dim); border: 1px solid rgba(255, 255, 255, 0.15); padding: 0 4px; }
 .rxdbv-attachment-box { margin: 4px 12px; border: 1px solid rgba(255, 255, 255, 0.12); }
@@ -867,7 +870,6 @@ export const DBVIEWER_STYLES = `
 .rxdbv-phone-row:hover { background: rgba(255, 255, 255, 0.04); }
 .rxdbv-phone-note { padding: 12px 14px; border-top: 1px solid rgba(255, 255, 255, 0.08); color: var(--rxdbv-fg-dim); font-size: 11px; }
 .rxdbv-phone-field { padding: 8px 14px; border-bottom: 1px solid rgba(255, 255, 255, 0.06); font-size: 13px; }
-.rxdbv-topbar-tool,
 .rxdbv-phone-header-title {
     position: absolute;
     left: 50%;
