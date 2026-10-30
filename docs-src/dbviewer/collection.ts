@@ -12,6 +12,7 @@ import {
 import type { PageContext } from './context.ts';
 import {
     base64ToBlob,
+    buildToggle,
     clearChildren,
     downloadJson,
     el,
@@ -147,20 +148,13 @@ export function renderCollectionScreen(ctx: PageContext) {
     });
     const toolbar = el('div', 'rxdbv-toolbar', [
         el('span', 'rxdbv-toolbar-title rxdbv-mono', collectionName),
-        el('div', 'rxdbv-segments', [
-            el('div', 'rxdbv-segment' + (uiState.view === 'table' ? ' rxdbv-active' : ''), 'Table', {
-                onClick: () => {
-                    uiState.view = 'table';
-                    ctx.renderContent();
-                }
-            }),
-            el('div', 'rxdbv-segment' + (uiState.view === 'json' ? ' rxdbv-active' : ''), 'JSON', {
-                onClick: () => {
-                    uiState.view = 'json';
-                    ctx.renderContent();
-                }
-            })
-        ]),
+        buildToggle([
+            { value: 'table', label: 'Table' },
+            { value: 'json', label: 'JSON' }
+        ], uiState.view, view => {
+            uiState.view = view;
+            ctx.renderContent();
+        }),
         observeToggle,
         el('div', 'rxdbv-flex1'),
         el('button', 'rxdbv-btn', 'Export', {

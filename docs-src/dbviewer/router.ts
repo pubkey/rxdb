@@ -92,7 +92,7 @@ function renderEmptyDatabase(ctx: PageContext) {
 function renderSettings(ctx: PageContext) {
     const pageSizes = [25, 50, 100, 250];
     const select = el('select', '', undefined, {
-        style: 'background:var(--rxdbv-bg);color:var(--rxdbv-fg);border:1px solid rgba(255,255,255,0.2);padding:4px 8px;font-family:inherit;font-size:11px'
+        style: 'background:var(--rxdbv-bg);color:var(--rxdbv-fg);border:2px solid var(--rxdbv-control-border);height:31px;padding:0 8px;font-family:inherit;font-size:11px'
     }) as HTMLSelectElement;
     pageSizes.forEach(size => {
         const option = document.createElement('option');

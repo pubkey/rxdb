@@ -8,6 +8,7 @@ import {
 import type { ViewerFieldType } from '../../src/plugins/dbviewer/dbviewer-types.ts';
 import type { PageContext } from './context.ts';
 import {
+    buildToggle,
     clearChildren,
     el,
     withCopyButton
@@ -62,14 +63,10 @@ export function renderSchemaPanel(ctx: PageContext) {
         ctx.schemaViewMode.set(collectionName, mode);
         ctx.renderContent();
     };
-    const segments = el('div', 'rxdbv-segments', [
-        el('div', 'rxdbv-segment' + (viewMode === 'analysis' ? ' rxdbv-active' : ''), 'Analysis', {
-            onClick: () => setViewMode('analysis')
-        }),
-        el('div', 'rxdbv-segment' + (viewMode === 'schema' ? ' rxdbv-active' : ''), 'JSON schema', {
-            onClick: () => setViewMode('schema')
-        })
-    ]);
+    const segments = buildToggle([
+        { value: 'analysis', label: 'Analysis' },
+        { value: 'schema', label: 'JSON schema' }
+    ], viewMode, setViewMode);
     const legend = el('span', 'rxdbv-dim', undefined, { style: 'font-size:10px' });
     legend.innerHTML = (['string', 'number', 'boolean', 'array', 'object', 'missing'] as ViewerFieldType[])
         .map(type => type + ' <span style="display:inline-block;width:8px;height:8px;background:' + TYPE_COLORS[type] + '"></span>')
