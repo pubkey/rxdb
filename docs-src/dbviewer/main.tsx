@@ -103,7 +103,8 @@ const fieldInputStyle: React.CSSProperties = {
     background: 'var(--rxdbv-bg)',
     color: 'var(--rxdbv-fg)',
     border: '2px solid var(--rxdbv-control-border)',
-    padding: '6px 10px',
+    height: 31,
+    padding: '0 10px',
     fontFamily: 'var(--rxdbv-mono)',
     fontSize: 11,
     outline: 'none'

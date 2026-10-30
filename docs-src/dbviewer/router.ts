@@ -112,9 +112,6 @@ function renderSettings(ctx: PageContext) {
     });
 
     ctx.contentHost.appendChild(el('div', 'rxdbv-panel-scroll', [
-        el('div', 'rxdbv-toolbar', [
-            el('span', 'rxdbv-toolbar-title', 'Settings')
-        ]),
         el('div', '', [
             el('div', 'rxdbv-section-label', 'GRID'),
             el('div', '', [select], { style: 'padding:8px 12px' }),
@@ -210,7 +207,7 @@ function renderPhoneLayout(ctx: PageContext) {
                     ctx.renderContent();
                 }
             }),
-            el('span', '', title, { style: 'font-weight:700' })
+            el('span', 'rxdbv-phone-header-title', title)
         ]));
         /**
          * The tool panels render into ctx.contentHost, so a

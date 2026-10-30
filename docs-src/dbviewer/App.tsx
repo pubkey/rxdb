@@ -241,6 +241,18 @@ export function ViewerApp(props: ViewerAppProps) {
 
     const source = ctx.source;
     const identity = source.databaseName + ' / ' + source.storageName + ' / v' + (source.rxdbVersion || '?');
+    const TOOL_TITLES: { [view: string]: string; } = {
+        live: 'Live',
+        schema: 'Schema',
+        changes: 'Changes',
+        explain: 'Explain',
+        storage: 'Storage',
+        cleanup: 'Cleanup',
+        export: 'Export/Import',
+        replication: 'Replication',
+        settings: 'Settings'
+    };
+    const toolTitle = TOOL_TITLES[ctx.nav.view] || null;
 
     return (
         <div className="rxdbv-root" ref={rootRef} style={{ position: 'relative' }}>
@@ -252,6 +264,7 @@ export function ViewerApp(props: ViewerAppProps) {
                     <span className="rxdbv-wordmark">RxDB</span>
                     <span className="rxdbv-topbar-divider">|</span>
                     <span className="rxdbv-topbar-identity">{identity}</span>
+                    {toolTitle ? <span className="rxdbv-topbar-tool">{toolTitle}</span> : null}
                     <div className="rxdbv-flex1" />
                     <button
                         className="rxdbv-btn"

@@ -168,7 +168,7 @@ export function renderCollectionScreen(ctx: PageContext) {
         value: uiState.queryInput,
         placeholder: '{ "field": "value" }'
     }) as HTMLInputElement;
-    const inputWrap = el('div', 'rxdbv-query-input-wrap' + (uiState.parseError ? ' rxdbv-error' : ''), [
+    const inputWrap = el('div', 'rxdbv-input rxdbv-query-input-wrap' + (uiState.parseError ? ' rxdbv-error' : ''), [
         el('span', 'rxdbv-dim', 'find'),
         queryInput,
         el('span', 'rxdbv-query-history-toggle', 'history ▾', {
@@ -1141,7 +1141,7 @@ function openDeleteModal(
         : '?';
     const hasReplication = !!ctx.events && ctx.events.replications.some(r => r.collectionName === collectionName);
 
-    const input = el('input', 'rxdbv-modal-input', undefined, {
+    const input = el('input', 'rxdbv-input rxdbv-modal-input', undefined, {
         placeholder: collectionName
     }) as HTMLInputElement;
     const deleteButton = el('button', 'rxdbv-btn-danger-solid', 'Delete ' + formatInteger(count) + ' documents') as HTMLButtonElement;

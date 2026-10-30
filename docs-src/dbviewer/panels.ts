@@ -29,10 +29,12 @@ const TYPE_COLORS: { [key in ViewerFieldType]: string } = {
     missing: '#3A4256'
 };
 
-function panelToolbar(title: string, children: (HTMLElement | string | null)[] = []): HTMLElement {
-    return el('div', 'rxdbv-toolbar', ([
-        el('span', 'rxdbv-toolbar-title', title)
-    ] as (HTMLElement | string | null)[]).concat(children));
+/**
+ * The topbar names the open tool, so panel toolbars only hold
+ * their controls.
+ */
+function panelToolbar(children: (HTMLElement | string | null)[]): HTMLElement {
+    return el('div', 'rxdbv-toolbar', children);
 }
 
 function statCard(label: string, value: string | HTMLElement, color?: string): HTMLElement {
@@ -56,7 +58,7 @@ export function renderSchemaPanel(ctx: PageContext) {
     const panel = el('div', 'rxdbv-panel-scroll');
     ctx.contentHost.appendChild(panel);
     if (!collectionName) {
-        panel.appendChild(panelToolbar('Schema', [el('span', 'rxdbv-dim', 'no collection')]));
+        panel.appendChild(panelToolbar([el('span', 'rxdbv-dim', 'no collection')]));
         return;
     }
     const info = ctx.source.listCollections().find(c => c.name === collectionName);
@@ -76,7 +78,7 @@ export function renderSchemaPanel(ctx: PageContext) {
 
     if (viewMode === 'schema') {
         const versionText = info && typeof info.schemaVersion === 'number' ? ' · declared v' + info.schemaVersion : '';
-        panel.appendChild(panelToolbar('Schema', [
+        panel.appendChild(panelToolbar([
             segments,
             el('span', 'rxdbv-mono rxdbv-muted', collectionName + versionText, { style: 'font-size:11px' })
         ]));
@@ -96,7 +98,7 @@ export function renderSchemaPanel(ctx: PageContext) {
     }
 
     const headerText = el('span', 'rxdbv-mono rxdbv-muted', collectionName + ' · sampling…', { style: 'font-size:11px' });
-    panel.appendChild(panelToolbar('Schema', [
+    panel.appendChild(panelToolbar([
         segments,
         headerText,
         el('div', 'rxdbv-flex1'),
@@ -186,7 +188,7 @@ export function renderExplainPanel(ctx: PageContext) {
     const panel = el('div', 'rxdbv-panel-scroll');
     ctx.contentHost.appendChild(panel);
     if (!collectionName) {
-        panel.appendChild(panelToolbar('Explain', [el('span', 'rxdbv-dim', 'no collection')]));
+        panel.appendChild(panelToolbar([el('span', 'rxdbv-dim', 'no collection')]));
         return;
     }
     const uiState = ctx.collectionState.get(collectionName);
@@ -196,7 +198,7 @@ export function renderExplainPanel(ctx: PageContext) {
         value: initialQuery,
         placeholder: '{ "field": "value" }'
     }) as HTMLInputElement;
-    const inputWrap = el('div', 'rxdbv-query-input-wrap', [
+    const inputWrap = el('div', 'rxdbv-input rxdbv-query-input-wrap', [
         el('span', 'rxdbv-dim', 'find'),
         queryInput
     ]);
@@ -215,7 +217,6 @@ export function renderExplainPanel(ctx: PageContext) {
         }
     });
     panel.appendChild(el('div', 'rxdbv-toolbar', [
-        el('span', 'rxdbv-toolbar-title', 'Explain'),
         el('span', 'rxdbv-mono rxdbv-muted', collectionName, { style: 'font-size:11px' }),
         inputWrap,
         explainButton,
@@ -332,7 +333,6 @@ function runExplain(
 export function renderExportPanel(ctx: PageContext) {
     const panel = el('div', 'rxdbv-panel-scroll');
     ctx.contentHost.appendChild(panel);
-    panel.appendChild(panelToolbar('Export/Import'));
 
     const collections = ctx.source.listCollections();
     const selected = new Set<string>(collections.map(info => info.name));
@@ -354,7 +354,7 @@ export function renderExportPanel(ctx: PageContext) {
         const errorLine = el('div', '', '', {
             style: 'color:var(--rxdbv-danger);font-size:10.5px;padding-left:24px;font-family:var(--rxdbv-mono)'
         });
-        const selectorWrap = el('div', 'rxdbv-query-input-wrap', [
+        const selectorWrap = el('div', 'rxdbv-input rxdbv-query-input-wrap', [
             el('span', 'rxdbv-dim', 'find'),
             selectorInput
         ], { style: 'flex:1;min-width:200px' });
@@ -483,7 +483,6 @@ export function renderExportPanel(ctx: PageContext) {
 export function renderStoragePanel(ctx: PageContext) {
     const panel = el('div', 'rxdbv-panel-scroll');
     ctx.contentHost.appendChild(panel);
-    panel.appendChild(panelToolbar('Storage'));
 
     const cards = el('div', 'rxdbv-stat-cards');
     cards.appendChild(statCard('ENGINE', ctx.source.storageName));
@@ -555,7 +554,6 @@ export function renderStoragePanel(ctx: PageContext) {
 export function renderCleanupPanel(ctx: PageContext) {
     const panel = el('div', 'rxdbv-panel-scroll');
     ctx.contentHost.appendChild(panel);
-    panel.appendChild(panelToolbar('Cleanup'));
 
     const cards = el('div', 'rxdbv-stat-cards');
     const cleanableCard = statCard('CLEANABLE TOMBSTONES', '…', 'var(--rxdbv-warning)');
