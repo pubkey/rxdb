@@ -5,6 +5,7 @@ import {
 import type { PageContext } from './context.ts';
 import {
     clearChildren,
+    DBVIEWER_ICON_CLOSE,
     el
 } from './dom.ts';
 
@@ -451,7 +452,7 @@ function openLiveQueriesSubPanel(ctx: PageContext, panel: HTMLElement, collectio
             el('span', '', 'Live queries', { style: 'font-weight:700;font-size:12px' }),
             el('span', 'rxdbv-dim rxdbv-mono', collectionName + ' · ' + queries.length + ' cached', { style: 'font-size:10px' }),
             el('div', 'rxdbv-flex1'),
-            el('span', 'rxdbv-close', '×', { onClick: close })
+            el('span', 'rxdbv-close', undefined, { html: DBVIEWER_ICON_CLOSE, onClick: close })
         ], { style: 'display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid rgba(255,255,255,0.08)' }));
 
         const template = '1fr 80px 80px 110px';

@@ -175,33 +175,39 @@ export function renderChangesPanel(ctx: PageContext) {
         filterText = filterInput.value.toLowerCase();
         renderList();
     });
-    const recordingDot = el('span', '', undefined, { style: 'width:7px;height:7px;border-radius:50%;background:var(--rxdbv-success)' });
     const sessionCounter = el('span', 'rxdbv-dim', '', { style: 'font-size:10px' });
-    const pauseButton = el('button', 'rxdbv-btn rxdbv-btn-small', 'Pause', {
+    /**
+     * Same observe button as the collection toolbar. Observing
+     * means the list updates live. One click pauses, the next
+     * click clears the list once and continues observing.
+     */
+    const observeLabel = el('span', '', 'Observing');
+    const observeButton = el('button', 'rxdbv-btn rxdbv-observe rxdbv-active', [
+        el('span', 'rxdbv-observe-dot'),
+        observeLabel
+    ], {
+        title: 'live — the list updates as changes happen',
         onClick: () => {
-            paused = !paused;
-            pauseButton.textContent = paused ? 'Resume' : 'Pause';
-            recordingDot.style.background = paused ? 'var(--rxdbv-fg-dim)' : 'var(--rxdbv-success)';
-            if (!paused) {
-                renderList();
+            if (paused) {
+                events.changes.length = 0;
+                selectedEntry = null;
+                renderDetail();
             }
+            paused = !paused;
+            observeButton.classList.toggle('rxdbv-active', !paused);
+            observeLabel.textContent = paused ? 'Observe' : 'Observing';
+            observeButton.title = paused
+                ? 'Paused. Click to clear the list and continue observing.'
+                : 'live — the list updates as changes happen';
+            renderList();
         }
     });
     panel.appendChild(el('div', 'rxdbv-toolbar', [
         el('span', 'rxdbv-toolbar-title', 'Changes'),
-        recordingDot,
         sessionCounter,
         filterInput,
         el('div', 'rxdbv-flex1'),
-        pauseButton,
-        el('button', 'rxdbv-btn rxdbv-btn-small', 'Clear', {
-            onClick: () => {
-                events.changes.length = 0;
-                selectedEntry = null;
-                renderList();
-                renderDetail();
-            }
-        })
+        observeButton
     ]));
 
     const listHost = el('div', 'rxdbv-split-left');
@@ -265,8 +271,7 @@ export function renderChangesPanel(ctx: PageContext) {
             el('span', 'rxdbv-mono', entry.collectionName + ' / ' + entry.documentId),
             el('span', 'rxdbv-mono rxdbv-dim', (entry.revFrom ? shortRev(entry.revFrom) + ' → ' : '→ ') + shortRev(entry.revTo)),
             el('div', 'rxdbv-flex1'),
-            el('a', '', 'open document', {
-                style: 'font-size:10px',
+            el('button', 'rxdbv-btn rxdbv-btn-small', 'Open document', {
                 onClick: () => ctx.navigate({ view: 'collection', collectionName: entry.collectionName })
             })
         ], { style: 'display:flex;gap:8px;align-items:center;padding:8px 12px;border-bottom:1px solid rgba(255,255,255,0.08);font-size:11px' }));

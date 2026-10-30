@@ -11,7 +11,10 @@ import type {
     ViewerNav,
     ViewerNavView
 } from './context.ts';
-import { DBVIEWER_LOGO_SVG } from './dom.ts';
+import {
+    DBVIEWER_ICON_CLOSE,
+    DBVIEWER_LOGO_SVG
+} from './dom.ts';
 import { VIEWER_DOCS_BASE_URL } from './error.ts';
 import type { PageHub } from './hub.ts';
 import { renderContentScreen } from './router.ts';
@@ -274,7 +277,8 @@ export function ViewerApp(props: ViewerAppProps) {
                             className="rxdbv-btn rxdbv-btn-icon"
                             title="Close the viewer"
                             onClick={() => ctx.requestClose()}
-                        >×</button>
+                            dangerouslySetInnerHTML={{ __html: DBVIEWER_ICON_CLOSE }}
+                        ></button>
                     ) : null}
                 </div>
             ) : null}

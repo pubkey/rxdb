@@ -13,6 +13,9 @@ import type { PageContext } from './context.ts';
 import {
     base64ToBlob,
     buildToggle,
+    DBVIEWER_ICON_ARROW_LEFT,
+    DBVIEWER_ICON_ARROW_RIGHT,
+    DBVIEWER_ICON_CLOSE,
     clearChildren,
     downloadJson,
     el,
@@ -663,14 +666,16 @@ function renderFooter(
     const selectionCount = uiState.selection.size;
     const readOnly = ctx.source.readOnly;
 
-    const previousButton = el('button', 'rxdbv-pager', '‹', {
+    const previousButton = el('button', 'rxdbv-pager', undefined, {
+        html: DBVIEWER_ICON_ARROW_LEFT,
         onClick: () => {
             uiState.page = Math.max(0, uiState.page - 1);
             ctx.renderContent();
         }
     }) as HTMLButtonElement;
     previousButton.disabled = uiState.page === 0;
-    const nextButton = el('button', 'rxdbv-pager', '›', {
+    const nextButton = el('button', 'rxdbv-pager', undefined, {
+        html: DBVIEWER_ICON_ARROW_RIGHT,
         onClick: () => {
             uiState.page = uiState.page + 1;
             ctx.renderContent();
@@ -874,7 +879,8 @@ function buildDrawer(
         el('span', 'rxdbv-mono', drawer.mode === 'new' ? 'new document' : String(drawer.docId), { style: 'font-weight:700;font-size:12px' }),
         editedBadge,
         el('div', 'rxdbv-flex1'),
-        el('span', 'rxdbv-close', '×', {
+        el('span', 'rxdbv-close', undefined, {
+            html: DBVIEWER_ICON_CLOSE,
             onClick: () => {
                 uiState.drawer = null;
                 ctx.renderContent();

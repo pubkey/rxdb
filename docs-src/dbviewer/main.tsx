@@ -102,8 +102,8 @@ const fieldInputStyle: React.CSSProperties = {
     boxSizing: 'border-box',
     background: 'var(--rxdbv-bg)',
     color: 'var(--rxdbv-fg)',
-    border: '1px solid rgba(255,255,255,0.2)',
-    padding: '7px 10px',
+    border: '2px solid var(--rxdbv-control-border)',
+    padding: '6px 10px',
     fontFamily: 'var(--rxdbv-mono)',
     fontSize: 11,
     outline: 'none'
