@@ -137,7 +137,7 @@ The chart below shows the difference between the two plugins (lower is better). 
 RxDB ships two encryption plugins, and both wrap the storage the same way.
 
 - **`encryption-crypto-js`**: the free plugin, based on the `AES` algorithm of the [crypto-js](https://www.npmjs.com/package/crypto-js) library. It works everywhere and is a good default.
-- **`encryption-web-crypto`**: a [👑 premium](/premium/) plugin built on the native [Web Crypto API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API). Document inserts are about 10x faster than with crypto-js, and the build size is smaller because it uses the browser API instead of bundling a module.
+- **`encryption-web-crypto`**: a [<PremiumIcon /> premium](/premium/) plugin built on the native [Web Crypto API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API). Document inserts are about 10x faster than with crypto-js, and the build size is smaller because it uses the browser API instead of bundling a module.
 
 If encryption runs on many documents, the Web Crypto plugin is worth it. IndexedDB is already [slow](../../slow-indexeddb.md), so you do not want a slow cipher on top. For heavy workloads you can also move encryption into a [Worker storage](../../rx-storage-worker.md) so it does not block the main thread.
 

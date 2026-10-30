@@ -17,7 +17,7 @@ To store the data inside of and [RxDB Database](./rx-database.md) in IndexedDB i
 
 ## Dexie.js vs IndexedDB Storage
 
-While Dexie.js [RxStorage](./rx-storage.md) can be used for free, most professional projects should switch to our **premium [IndexedDB RxStorage](./rx-storage-indexeddb.md) 👑** in production:
+While Dexie.js [RxStorage](./rx-storage.md) can be used for free, most professional projects should switch to our **premium [IndexedDB RxStorage](./rx-storage-indexeddb.md) <PremiumIcon />** in production:
 
 - It is faster and reduces build size by up to **36%**.
 - It has a way [better performance](./rx-storage-performance.md) on reads and writes.
@@ -209,7 +209,7 @@ Dexie.js offers a feature called `liveQuery` which automatically updates query r
 
 ## Disabling the non-premium console log
 
-We want to be transparent with our community, and you'll notice a console message when using the free Dexie.js based RxStorage implementation. This message serves to inform you about the availability of faster storage solutions within our [👑 Premium Plugins](/premium/). We understand that this might be a minor inconvenience, and we sincerely apologize for that. However, maintaining and improving RxDB requires substantial resources, and our premium users help us ensure its sustainability. If you find value in RxDB and wish to remove this message, we encourage you to explore our premium storage options, which are optimized for professional use and production environments. Thank you for your understanding and support.
+We want to be transparent with our community, and you'll notice a console message when using the free Dexie.js based RxStorage implementation. This message serves to inform you about the availability of faster storage solutions within our [<PremiumIcon /> Premium Plugins](/premium/). We understand that this might be a minor inconvenience, and we sincerely apologize for that. However, maintaining and improving RxDB requires substantial resources, and our premium users help us ensure its sustainability. If you find value in RxDB and wish to remove this message, we encourage you to explore our premium storage options, which are optimized for professional use and production environments. Thank you for your understanding and support.
 
 If you already have premium access and want to use the Dexie.js [RxStorage](./rx-storage.md) without the log, you can call the `setPremiumFlag()` function to disable the log.
 

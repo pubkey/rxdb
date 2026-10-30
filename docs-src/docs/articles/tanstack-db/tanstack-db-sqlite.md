@@ -25,7 +25,7 @@ TanStack DB keeps its collections in memory. When you combine it with the RxDB c
 The SQLite storage exists in two versions:
 
 - **Trial version**: Shipped for free with the RxDB core package. Import `getRxStorageSQLiteTrial` from `rxdb/plugins/storage-sqlite`. It passes the full RxDB storage test suite, but it is limited to `500` non-deleted documents, does not use indexes, has no [attachment](../../rx-attachment.md) support, and fetches the whole storage state to run queries in memory. Use it for evaluation and prototypes only.
-- **[RxDB Premium 👑](/premium/) version**: The production-ready storage. Import `getRxStorageSQLite` from `rxdb-premium/plugins/storage-sqlite`. It has full query support with indexes and a load of performance optimizations.
+- **[RxDB Premium <PremiumIcon />](/premium/) version**: The production-ready storage. Import `getRxStorageSQLite` from `rxdb-premium/plugins/storage-sqlite`. It has full query support with indexes and a load of performance optimizations.
 
 Both versions share the same API. Moving from the trial to the premium storage is an import change, not a rewrite, so you can build your whole TanStack DB integration on the trial version first.
 
@@ -222,7 +222,7 @@ The RxDB SQLite storage covers a different scope. It puts a full database under 
 
 <FaqItem question="Is there a free SQLite storage for TanStack DB with RxDB?">
 
-Yes. The trial version of the **[SQLite RxStorage](../../rx-storage-sqlite.md)** ships with the free RxDB core package as `getRxStorageSQLiteTrial`. It is limited to `500` non-deleted documents and is meant for evaluation and prototypes. The production version with indexes and full query support is part of [RxDB Premium 👑](/premium/).
+Yes. The trial version of the **[SQLite RxStorage](../../rx-storage-sqlite.md)** ships with the free RxDB core package as `getRxStorageSQLiteTrial`. It is limited to `500` non-deleted documents and is meant for evaluation and prototypes. The production version with indexes and full query support is part of [RxDB Premium <PremiumIcon />](/premium/).
 
 </FaqItem>
 

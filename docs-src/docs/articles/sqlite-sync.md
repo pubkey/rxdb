@@ -120,7 +120,7 @@ The tools that call themselves SQLite sync solve different problems. Some replic
 
 ### 1. SQLite or Any Other Storage on the Device
 
-On mobile and desktop the [SQLite RxStorage](../rx-storage-sqlite.md) runs on top of the SQLite library that your platform already has: `expo-sqlite` or `react-native-quick-sqlite` in [React Native](../react-native-database.md), the Capacitor SQLite plugin in [Capacitor](../capacitor-database.md), `node:sqlite` in Node.js and Electron, and Tauri SQLite. RxDB Core ships a trial version that is limited to 500 documents. The production version is part of [RxDB Premium 👑](/premium/). In a browser you would usually pick [IndexedDB](../rx-storage-indexeddb.md) or [OPFS](../rx-storage-opfs.md) instead, because they need no WebAssembly download. Switching storages is a configuration change, not a rewrite.
+On mobile and desktop the [SQLite RxStorage](../rx-storage-sqlite.md) runs on top of the SQLite library that your platform already has: `expo-sqlite` or `react-native-quick-sqlite` in [React Native](../react-native-database.md), the Capacitor SQLite plugin in [Capacitor](../capacitor-database.md), `node:sqlite` in Node.js and Electron, and Tauri SQLite. RxDB Core ships a trial version that is limited to 500 documents. The production version is part of [RxDB Premium <PremiumIcon />](/premium/). In a browser you would usually pick [IndexedDB](../rx-storage-indexeddb.md) or [OPFS](../rx-storage-opfs.md) instead, because they need no WebAssembly download. Switching storages is a configuration change, not a rewrite.
 
 ### 2. A Sync Engine With Checkpoints
 

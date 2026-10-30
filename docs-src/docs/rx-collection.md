@@ -377,7 +377,7 @@ const is = isRxCollection(myObj);
 
     To remove the limit:
 
-    1. Purchase the [Premium Plugins 👑](/premium/) and install the `rxdb-premium` package.
+    1. Purchase the [Premium Plugins <PremiumIcon />](/premium/) and install the `rxdb-premium` package.
     2. Call `setPremiumFlag()` once, before you create the first database.
     3. Create your databases and collections as usual.
 

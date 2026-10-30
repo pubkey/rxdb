@@ -53,9 +53,9 @@ let storage = getRxStorageLocalstorage();
 ```
 
 
-#### IndexedDB 👑
+#### IndexedDB <PremiumIcon />
 
-The premium [IndexedDB storage](./rx-storage-indexeddb.md) is a high-performance, browser-native storage with a smaller bundle and faster startup compared to Dexie-based IndexedDB. Recommended when you have [👑 premium](/premium/) access and care about performance and bundle size.
+The premium [IndexedDB storage](./rx-storage-indexeddb.md) is a high-performance, browser-native storage with a smaller bundle and faster startup compared to Dexie-based IndexedDB. Recommended when you have [<PremiumIcon /> premium](/premium/) access and care about performance and bundle size.
 
 ```ts
 import {
@@ -81,7 +81,7 @@ let storage = getRxStorageDexie();
 
 #### SQLite
 
-[SQLite](./rx-storage-sqlite.md) is ideal for React Native, Capacitor, Electron, Node.js and other hybrid or native environments. It gives you a fast, durable database on disk. Use the 👑 premium storage for production; a trial version exists for quick experimentation.
+[SQLite](./rx-storage-sqlite.md) is ideal for React Native, Capacitor, Electron, Node.js and other hybrid or native environments. It gives you a fast, durable database on disk. Use the <PremiumIcon /> premium storage for production; a trial version exists for quick experimentation.
 
 **Premium SQLite (Node.js example)**
 
@@ -115,7 +115,7 @@ sqliteBasics: getSQLiteBasicsNodeNative(DatabaseSync)
 });
 ```
 
-#### Expo Filesystem 👑
+#### Expo Filesystem <PremiumIcon />
 
 For React Native and Expo applications, the [Expo Filesystem storage](./rx-storage-filesystem-expo.md) offers superior performance compared to SQLite and Async Storage by utilizing OPFS JSI bindings.
 
@@ -139,9 +139,9 @@ There are many more storages such as [MongoDB](./rx-storage-mongodb.md), [DenoKV
     <div>
         RxDB provides a wide range of storages depending on your JavaScript runtime and performance needs.
         <ul>
-    <li>In the Browser: Use the <a href="/rx-storage-localstorage.html">LocalStorage</a> storage for simple setup and small build size. For bigger datasets, use either the <a href="/rx-storage-dexie.html">dexie.js storage</a> (free) or the <a href="/rx-storage-indexeddb.html">IndexedDB RxStorage</a> if you have <a href="/premium/">👑 premium access</a> which is a bit faster and has a smaller build size.</li>
-    <li>In <a href="/electron-database.html">Electron</a> and <a href="/react-native-database.html">React Native</a>: Use the <a href="./rx-storage-sqlite.html">SQLite RxStorage</a> if you have <a href="/premium/">👑 premium access</a> or the <a href="/rx-storage-sqlite.html">SQLite Trial RxStorage</a> for tryouts.</li>
-    <li>In Capacitor: Use the <a href="/rx-storage-sqlite.html">SQLite RxStorage</a> if you have <a href="/premium/">👑 premium access</a>, otherwise use the <a href="/rx-storage-localstorage.html">LocalStorage</a> storage.</li>
+    <li>In the Browser: Use the <a href="/rx-storage-localstorage.html">LocalStorage</a> storage for simple setup and small build size. For bigger datasets, use either the <a href="/rx-storage-dexie.html">dexie.js storage</a> (free) or the <a href="/rx-storage-indexeddb.html">IndexedDB RxStorage</a> if you have <a href="/premium/"><PremiumIcon /> premium access</a> which is a bit faster and has a smaller build size.</li>
+    <li>In <a href="/electron-database.html">Electron</a> and <a href="/react-native-database.html">React Native</a>: Use the <a href="./rx-storage-sqlite.html">SQLite RxStorage</a> if you have <a href="/premium/"><PremiumIcon /> premium access</a> or the <a href="/rx-storage-sqlite.html">SQLite Trial RxStorage</a> for tryouts.</li>
+    <li>In Capacitor: Use the <a href="/rx-storage-sqlite.html">SQLite RxStorage</a> if you have <a href="/premium/"><PremiumIcon /> premium access</a>, otherwise use the <a href="/rx-storage-localstorage.html">LocalStorage</a> storage.</li>
 </ul>
 
     </div>
@@ -403,4 +403,4 @@ You are now ready to dive deeper into RxDB.
 - There is a full implementation of the [quickstart guide](https://github.com/pubkey/rxdb-quickstart) so you can clone that repository and play with the code.
 - For frameworks and runtimes like Angular, React Native and others, check out the list of [example implementations](https://github.com/pubkey/rxdb/tree/master/examples).
 - Also please continue reading the documentation, join the community on our [Discord chat](/chat/), and star the [GitHub repo](https://github.com/pubkey/rxdb).
-- If you are using RxDB in a production environment and are able to support its continued development, please take a look at the [👑 Premium package](/premium/) which includes additional plugins and utilities.
+- If you are using RxDB in a production environment and are able to support its continued development, please take a look at the [<PremiumIcon /> Premium package](/premium/) which includes additional plugins and utilities.

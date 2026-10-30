@@ -108,9 +108,9 @@ await migrateStorage({
 /* ... */
 ```
 
-## Disable Version Check on [RxDB Premium 👑](/premium/)
+## Disable Version Check on [RxDB Premium <PremiumIcon />](/premium/)
 
-RxDB Premium has a check in place that ensures that you do not accidentally use the wrong RxDB core and 👑 Premium version together which could break your database state. 
+RxDB Premium has a check in place that ensures that you do not accidentally use the wrong RxDB core and <PremiumIcon /> Premium version together which could break your database state. 
 This can be a problem during migrations where you have multiple versions of RxDB in use and it will throw the error `Version mismatch detected`.
 You can disable that check by importing and running the `disableVersionCheck()` function from RxDB Premium.
 

@@ -91,7 +91,7 @@ Keep in mind that embeddings from different models are not compatible with each 
 
 ## Storing the Embeddings in RxDB
 
-Now create an [RxDatabase](../rx-database.md) with two collections: `items` stores the documents and `vectors` stores one embedding per document. The sample uses the [Dexie.js RxStorage](../rx-storage-dexie.md) which stores data in IndexedDB. The [localStorage RxStorage](../rx-storage-localstorage.md) is not a good fit here because 10k vectors with 256 numbers each do not fit into the localStorage quota. For production apps, the 👑 [IndexedDB RxStorage](../rx-storage-indexeddb.md) or the [OPFS RxStorage](../rx-storage-opfs.md) are faster.
+Now create an [RxDatabase](../rx-database.md) with two collections: `items` stores the documents and `vectors` stores one embedding per document. The sample uses the [Dexie.js RxStorage](../rx-storage-dexie.md) which stores data in IndexedDB. The [localStorage RxStorage](../rx-storage-localstorage.md) is not a good fit here because 10k vectors with 256 numbers each do not fit into the localStorage quota. For production apps, the <PremiumIcon /> [IndexedDB RxStorage](../rx-storage-indexeddb.md) or the [OPFS RxStorage](../rx-storage-opfs.md) are faster.
 
 The `vectors` schema also gets five index fields `idx0` to `idx4`. They implement the "distance to samples" index from the [JavaScript vector database article](./javascript-vector-database.md): each field stores the distance of the embedding to one fixed sample vector, so that a query only has to read the embeddings that are close to the search vector.
 

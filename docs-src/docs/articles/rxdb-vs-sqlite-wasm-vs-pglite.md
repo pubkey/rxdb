@@ -71,7 +71,7 @@ All three tools can persist data in the browser. The difference is in the requir
 
 SQLite-Wasm and PGlite both reach their fastest persistence through OPFS, and both can only use OPFS from inside a Web Worker. The standard SQLite OPFS VFS additionally needs the `Cross-Origin-Opener-Policy` and `Cross-Origin-Embedder-Policy` headers, which you cannot always set (for example when your app embeds third-party iframes or is served from a static host without header control). So in practice you end up with a worker setup, a message protocol between the main thread and the worker, and a fallback for browsers where OPFS does not work.
 
-RxDB has the same browser APIs available, but it lets you pick the storage per environment. The [localStorage RxStorage](../rx-storage-localstorage.md) works everywhere without any worker. The [IndexedDB RxStorage](../rx-storage-indexeddb.md) and the [OPFS RxStorage](../rx-storage-opfs.md) (inside a [Worker](../rx-storage-worker.md) or [SharedWorker](../rx-storage-shared-worker.md)) are the faster options from [RxDB Premium 👑](/premium/). The application code stays the same.
+RxDB has the same browser APIs available, but it lets you pick the storage per environment. The [localStorage RxStorage](../rx-storage-localstorage.md) works everywhere without any worker. The [IndexedDB RxStorage](../rx-storage-indexeddb.md) and the [OPFS RxStorage](../rx-storage-opfs.md) (inside a [Worker](../rx-storage-worker.md) or [SharedWorker](../rx-storage-shared-worker.md)) are the faster options from [RxDB Premium <PremiumIcon />](/premium/). The application code stays the same.
 
 ### 2. Bundle Size and Startup Time
 
@@ -274,7 +274,7 @@ For a local-first app that writes data, works offline, runs in multiple tabs, an
 | Schema migrations | Manual SQL | Manual SQL | ✅ [Migration strategies](../migration-schema.md) |
 | Encryption | ❌ In the free build | ❌ | ✅ [Field-level encryption](../encryption.md) |
 | Runtimes | Browser, Node.js | Browser, Node.js, Bun, Deno | Browser, Node.js, Electron, React Native, Capacitor, Deno, Bun |
-| License | Public domain, Apache-2.0 wrapper | Apache-2.0 / PostgreSQL License | Apache-2.0, plus [RxDB Premium 👑](/premium/) plugins |
+| License | Public domain, Apache-2.0 wrapper | Apache-2.0 / PostgreSQL License | Apache-2.0, plus [RxDB Premium <PremiumIcon />](/premium/) plugins |
 
 </ComparisonTable>
 

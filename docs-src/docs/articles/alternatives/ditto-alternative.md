@@ -188,7 +188,7 @@ No. The Ditto documentation states that web browsers do not support the peer-to-
 </FaqItem>
 <FaqItem question="Is Ditto open source?">
 
-No. Ditto does not publish the source of its sync engine, and the SDKs ship as compiled packages under a commercial agreement. **[RxDB](../../rx-database.md)** core is Apache 2.0 on [GitHub](/code/), so you can read the storage and replication code, fork it, and keep using it without a vendor relationship. Some RxDB plugins are [👑 premium](/premium/) and closed, but the database and the [Sync Engine](../../replication.md) are not.
+No. Ditto does not publish the source of its sync engine, and the SDKs ship as compiled packages under a commercial agreement. **[RxDB](../../rx-database.md)** core is Apache 2.0 on [GitHub](/code/), so you can read the storage and replication code, fork it, and keep using it without a vendor relationship. Some RxDB plugins are [<PremiumIcon /> premium](/premium/) and closed, but the database and the [Sync Engine](../../replication.md) are not.
 
 </FaqItem>
 <FaqItem question="How much does Ditto cost compared to RxDB?">

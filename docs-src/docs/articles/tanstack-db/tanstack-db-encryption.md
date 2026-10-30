@@ -31,7 +31,7 @@ Because the [RxDB collection for TanStack DB](./rxdb-collection-for-tanstack-db.
 RxDB ships two [encryption plugins](../../encryption.md):
 
 - **`encryption-crypto-js`**: The free plugin, based on the `AES` algorithm of the [crypto-js](https://www.npmjs.com/package/crypto-js) library.
-- **`encryption-web-crypto`** 👑: A [premium](/premium/) plugin based on the native [Web Crypto API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API). It is faster and more secure to use, with document inserts about 10x faster compared to `crypto-js`, and it has a smaller build size because it uses the browser's API instead of bundling an npm module.
+- **`encryption-web-crypto`** <PremiumIcon />: A [premium](/premium/) plugin based on the native [Web Crypto API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API). It is faster and more secure to use, with document inserts about 10x faster compared to `crypto-js`, and it has a smaller build size because it uses the browser's API instead of bundling an npm module.
 
 Both plugins use symmetric encryption with a password. The encryption works with all RxStorage implementations, so the same setup covers [localStorage](../../rx-storage-localstorage.md), [IndexedDB](../../rx-storage-indexeddb.md), [OPFS](../../rx-storage-opfs.md), and [SQLite](../../rx-storage-sqlite.md).
 
@@ -144,7 +144,7 @@ todosCollection.insert({
 
 </Steps>
 
-## The Premium Web Crypto Plugin 👑
+## The Premium Web Crypto Plugin <PremiumIcon />
 
 For production apps with larger datasets, the [premium](/premium/) `encryption-web-crypto` plugin is the better choice. It uses the same wrapper pattern, and the `password` becomes an object that also selects the algorithm:
 
@@ -188,7 +188,7 @@ Keep in mind that the password is set per database and cannot be changed later. 
 
 ## Encryption on Mobile
 
-The same pattern runs on [React Native](./tanstack-db-react-native.md) and [Capacitor](./tanstack-db-capacitor.md), where the storage underneath is typically the [SQLite RxStorage](../../rx-storage-sqlite.md) 👑. On mobile you should fetch the database password from the platform's secure keystore instead of storing it in plain JavaScript. The [React Native encryption guide](../react-native-encryption.md) shows this with `react-native-keychain` and covers best practices for encrypted mobile databases.
+The same pattern runs on [React Native](./tanstack-db-react-native.md) and [Capacitor](./tanstack-db-capacitor.md), where the storage underneath is typically the [SQLite RxStorage](../../rx-storage-sqlite.md) <PremiumIcon />. On mobile you should fetch the database password from the platform's secure keystore instead of storing it in plain JavaScript. The [React Native encryption guide](../react-native-encryption.md) shows this with `react-native-keychain` and covers best practices for encrypted mobile databases.
 
 ## FAQ
 
@@ -202,7 +202,7 @@ No. TanStack DB is an in-memory store and does not encrypt anything itself. Encr
 
 <FaqItem question="How do I encrypt TanStack DB data in IndexedDB or SQLite?">
 
-Yes, this works with a storage wrapper. Wrap your [RxStorage](../../rx-storage.md) with `wrappedKeyEncryptionCryptoJsStorage` (free) or `wrappedKeyEncryptionWebCryptoStorage` (premium 👑), set a `password` on `createRxDatabase()`, and list the sensitive fields in the schema's `encrypted` array. The **[RxDB collection for TanStack DB](./rxdb-collection-for-tanstack-db.md)** then persists all writes through that encrypted storage.
+Yes, this works with a storage wrapper. Wrap your [RxStorage](../../rx-storage.md) with `wrappedKeyEncryptionCryptoJsStorage` (free) or `wrappedKeyEncryptionWebCryptoStorage` (premium <PremiumIcon />), set a `password` on `createRxDatabase()`, and list the sensitive fields in the schema's `encrypted` array. The **[RxDB collection for TanStack DB](./rxdb-collection-for-tanstack-db.md)** then persists all writes through that encrypted storage.
 
 </FaqItem>
 

@@ -212,7 +212,7 @@ await db.addCollections({
 });
 ```
 
-The `note` field is now unreadable without the password, even when someone copies the raw database files from the device. For production apps, the 👑 [RxDB Premium](/premium/) Web Crypto encryption plugin is recommended because it is faster and uses the browser's native crypto APIs.
+The `note` field is now unreadable without the password, even when someone copies the raw database files from the device. For production apps, the <PremiumIcon /> [RxDB Premium](/premium/) Web Crypto encryption plugin is recommended because it is faster and uses the browser's native crypto APIs.
 
 ## How to Improve Your Offline Database Setup
 
