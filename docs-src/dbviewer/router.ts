@@ -5,6 +5,8 @@ import { renderCollectionScreen } from './collection.ts';
 import type { PageContext } from './context.ts';
 import { storeSettings } from './context.ts';
 import {
+    DBVIEWER_ICON_ARROW_LEFT,
+    DBVIEWER_ICON_ARROW_RIGHT,
     DBVIEWER_LOGO_SVG,
     el
 } from './dom.ts';
@@ -177,7 +179,7 @@ function renderPhoneLayout(ctx: PageContext) {
             listWrap.appendChild(el('div', 'rxdbv-phone-row', [
                 el('span', 'rxdbv-mono rxdbv-flex1', info.name),
                 el('span', 'rxdbv-dim rxdbv-mono', typeof count === 'number' ? formatInteger(count) : '…', { style: 'font-size:12px' }),
-                el('span', 'rxdbv-dim', '›')
+                el('span', 'rxdbv-dim', undefined, { html: DBVIEWER_ICON_ARROW_RIGHT })
             ], {
                 onClick: () => {
                     ctx.phoneNav = { screen: 'list', collectionName: info.name };
@@ -211,7 +213,7 @@ function renderPhoneLayout(ctx: PageContext) {
         tools.filter(tool => !dumpDisabled.includes(tool.view)).forEach(tool => {
             listWrap.appendChild(el('div', 'rxdbv-phone-row', [
                 el('span', 'rxdbv-flex1', tool.label),
-                el('span', 'rxdbv-dim', '›')
+                el('span', 'rxdbv-dim', undefined, { html: DBVIEWER_ICON_ARROW_RIGHT })
             ], {
                 onClick: () => {
                     ctx.phoneNav = { screen: 'tool', toolView: tool.view };
@@ -229,7 +231,8 @@ function renderPhoneLayout(ctx: PageContext) {
         const title = toolView === 'live' ? 'Live'
             : toolView.charAt(0).toUpperCase() + toolView.slice(1);
         host.appendChild(el('div', 'rxdbv-phone-header', [
-            el('span', 'rxdbv-phone-back', '‹', {
+            el('span', 'rxdbv-phone-back', undefined, {
+                html: DBVIEWER_ICON_ARROW_LEFT,
                 onClick: () => {
                     ctx.phoneNav = { screen: 'collections' };
                     ctx.renderContent();
@@ -276,7 +279,8 @@ function renderPhoneLayout(ctx: PageContext) {
     if (phone.screen === 'list') {
         const collectionName = phone.collectionName;
         const header = el('div', 'rxdbv-phone-header', [
-            el('span', 'rxdbv-phone-back', '‹', {
+            el('span', 'rxdbv-phone-back', undefined, {
+                html: DBVIEWER_ICON_ARROW_LEFT,
                 onClick: () => {
                     ctx.phoneNav = { screen: 'collections' };
                     ctx.renderContent();
@@ -301,7 +305,7 @@ function renderPhoneLayout(ctx: PageContext) {
                         el('div', '', title, { style: 'overflow:hidden;text-overflow:ellipsis;white-space:nowrap' }),
                         el('div', 'rxdbv-mono rxdbv-dim', id + ' · ' + String(doc._rev || ''), { style: 'font-size:10px' })
                     ], { style: 'min-width:0' }),
-                    el('span', 'rxdbv-dim', '›')
+                    el('span', 'rxdbv-dim', undefined, { html: DBVIEWER_ICON_ARROW_RIGHT })
                 ], {
                     onClick: () => {
                         ctx.phoneNav = { screen: 'doc', collectionName, docId: id };
@@ -316,7 +320,8 @@ function renderPhoneLayout(ctx: PageContext) {
     const docCollectionName = phone.collectionName;
     const docId = phone.docId as string;
     const docHeader = el('div', 'rxdbv-phone-header', [
-        el('span', 'rxdbv-phone-back', '‹', {
+        el('span', 'rxdbv-phone-back', undefined, {
+                html: DBVIEWER_ICON_ARROW_LEFT,
             onClick: () => {
                 ctx.phoneNav = { screen: 'list', collectionName: docCollectionName };
                 ctx.renderContent();

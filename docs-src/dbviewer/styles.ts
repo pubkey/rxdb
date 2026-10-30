@@ -305,7 +305,7 @@ export const DBVIEWER_STYLES = `
 }
 .rxdbv-observe .rxdbv-observe-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--rxdbv-fg-dim); }
 .rxdbv-observe:hover .rxdbv-observe-dot { background: var(--rxdbv-bg-dark); }
-.rxdbv-observe.rxdbv-active { border-color: rgba(62, 207, 142, 0.5); color: var(--rxdbv-success); }
+.rxdbv-observe.rxdbv-active { border-color: var(--rxdbv-success); color: var(--rxdbv-success); }
 .rxdbv-observe.rxdbv-active .rxdbv-observe-dot { background: var(--rxdbv-success); }
 .rxdbv-observe.rxdbv-active:hover { background: rgba(62, 207, 142, 0.12); color: var(--rxdbv-success); }
 .rxdbv-observe.rxdbv-active:hover .rxdbv-observe-dot { background: var(--rxdbv-success); }
@@ -328,8 +328,8 @@ export const DBVIEWER_STYLES = `
     align-items: center;
     gap: 8px;
     background: var(--rxdbv-bg);
-    border: 1px solid rgba(255, 255, 255, 0.14);
-    padding: 5px 10px;
+    border: 2px solid var(--rxdbv-control-border);
+    padding: 4px 10px;
     font-family: var(--rxdbv-mono);
     font-size: 11.5px;
 }
@@ -416,7 +416,7 @@ export const DBVIEWER_STYLES = `
 .rxdbv-root input[type='checkbox'] { accent-color: var(--rxdbv-pink); width: 12px; height: 12px; margin: 0; }
 .rxdbv-cell-edit-input {
     background: var(--rxdbv-bg);
-    border: 1px solid var(--rxdbv-pink);
+    border: 2px solid var(--rxdbv-pink);
     color: var(--rxdbv-fg);
     font-size: 11px;
     font-family: inherit;
@@ -509,7 +509,7 @@ export const DBVIEWER_STYLES = `
 .rxdbv-field-input {
     flex: 1;
     background: var(--rxdbv-bg);
-    border: 1px solid var(--rxdbv-pink);
+    border: 2px solid var(--rxdbv-pink);
     color: var(--rxdbv-fg);
     font-size: 11px;
     font-family: var(--rxdbv-mono);
@@ -517,7 +517,7 @@ export const DBVIEWER_STYLES = `
     outline: none;
     min-width: 0;
 }
-.rxdbv-field-input.rxdbv-clean { border-color: rgba(255, 255, 255, 0.14); }
+.rxdbv-field-input.rxdbv-clean { border-color: var(--rxdbv-control-border); }
 .rxdbv-modified-dot { width: 6px; height: 6px; min-width: 6px; border-radius: 50%; background: var(--rxdbv-pink); }
 .rxdbv-badge-primary { font-size: 9px; color: var(--rxdbv-fg-dim); border: 1px solid rgba(255, 255, 255, 0.15); padding: 0 4px; }
 .rxdbv-attachment-box { margin: 4px 12px; border: 1px solid rgba(255, 255, 255, 0.12); }
@@ -573,7 +573,7 @@ export const DBVIEWER_STYLES = `
     width: 100%;
     margin-top: 4px;
     background: var(--rxdbv-bg-dark);
-    border: 1px solid rgba(255, 255, 255, 0.20);
+    border: 2px solid var(--rxdbv-control-border);
     color: var(--rxdbv-fg);
     font-family: var(--rxdbv-mono);
     font-size: 12px;
@@ -623,14 +623,30 @@ export const DBVIEWER_STYLES = `
 .rxdbv-table-row.rxdbv-clickable:hover { background: rgba(255, 255, 255, 0.04); }
 .rxdbv-table-row.rxdbv-selected { background: rgba(237, 22, 143, 0.10); }
 .rxdbv-type-bar { display: flex; height: 10px; width: 240px; max-width: 100%; background: var(--rxdbv-neutral-bar); }
-.rxdbv-finding { margin: 6px 12px; padding: 10px 12px; font-size: 11.5px; }
-.rxdbv-finding.rxdbv-warning-box { border: 1px solid rgba(235, 203, 75, 0.4); background: rgba(235, 203, 75, 0.06); }
-.rxdbv-finding.rxdbv-danger-box { border: 1px solid rgba(253, 54, 110, 0.4); background: rgba(253, 54, 110, 0.06); }
-.rxdbv-finding .rxdbv-finding-title { font-weight: 700; }
-.rxdbv-finding.rxdbv-warning-box .rxdbv-finding-title { color: var(--rxdbv-warning); }
-.rxdbv-finding.rxdbv-danger-box .rxdbv-finding-title { color: var(--rxdbv-danger); }
-.rxdbv-finding .rxdbv-finding-body { color: var(--rxdbv-fg-muted); margin-top: 4px; line-height: 1.55; }
-.rxdbv-finding .rxdbv-finding-body code { font-family: var(--rxdbv-mono); color: var(--rxdbv-fg); }
+/**
+ * Info boxes, same design as the docs admonitions
+ * (.alert.alert--info in docs-src/src/css/custom.css):
+ * square corners, dark background and a colored border
+ * with the thicker left edge of the docs alerts. The info
+ * color is --color-middle of the docs.
+ */
+.rxdbv-admonition {
+    margin: 6px 12px;
+    padding: 12px 14px;
+    font-size: 11.5px;
+    background: var(--rxdbv-bg);
+    border: 1px solid #B2218B;
+    border-left-width: 5px;
+    border-radius: 0;
+}
+.rxdbv-admonition-warning { border-color: var(--rxdbv-warning); }
+.rxdbv-admonition-danger { border-color: var(--rxdbv-danger); }
+.rxdbv-admonition-title { font-weight: 700; }
+.rxdbv-admonition-warning .rxdbv-admonition-title { color: var(--rxdbv-warning); }
+.rxdbv-admonition-danger .rxdbv-admonition-title { color: var(--rxdbv-danger); }
+.rxdbv-admonition-body { color: var(--rxdbv-fg-muted); margin-top: 4px; line-height: 1.55; }
+.rxdbv-admonition-body:first-child { margin-top: 0; }
+.rxdbv-admonition-body code { font-family: var(--rxdbv-mono); color: var(--rxdbv-fg); }
 .rxdbv-plan-box { margin: 6px 12px; border: 1px solid rgba(255, 255, 255, 0.10); font-size: 11px; font-family: var(--rxdbv-mono); }
 .rxdbv-plan-step { display: flex; gap: 12px; padding: 6px 10px; }
 .rxdbv-plan-step + .rxdbv-plan-step { border-top: 1px solid rgba(255, 255, 255, 0.06); }
@@ -644,8 +660,8 @@ export const DBVIEWER_STYLES = `
 .rxdbv-split-right { width: 460px; min-width: 460px; overflow: auto; background: var(--rxdbv-bg-detail); }
 .rxdbv-filter-input {
     background: var(--rxdbv-bg);
-    border: 1px solid rgba(255, 255, 255, 0.14);
-    padding: 3px 10px;
+    border: 2px solid var(--rxdbv-control-border);
+    padding: 2px 10px;
     font-size: 11px;
     color: var(--rxdbv-fg);
     font-family: var(--rxdbv-mono);

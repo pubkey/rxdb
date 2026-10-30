@@ -60,6 +60,15 @@ export function el(
     return node;
 }
 
+/**
+ * Icons from the docs icon set (docs-src/src/components/icons),
+ * inlined with fill="currentColor" so they follow the text
+ * color of the control they sit in.
+ */
+export const DBVIEWER_ICON_CLOSE = '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4 16H8L8 12H4L4 16Z" fill="currentColor"/><path d="M0 20H4L4 16H0L0 20Z" fill="currentColor"/><path d="M8 11.9999H12V7.99992H8L8 11.9999Z" fill="currentColor"/><path d="M4 8.00008H8L8 4.00008H4L4 8.00008Z" fill="currentColor"/><path d="M0 4.00004L4 4.00004L4 3.8147e-05L0 3.8147e-05L0 4.00004Z" fill="currentColor"/><path d="M16 11.9999H12V15.9999H16V11.9999Z" fill="currentColor"/><path d="M20 16H16V20H20V16Z" fill="currentColor"/><path d="M16 4.00004H12V8.00004H16V4.00004Z" fill="currentColor"/><path d="M20 0H16V4H20V0Z" fill="currentColor"/></svg>';
+export const DBVIEWER_ICON_ARROW_LEFT = '<svg xmlns="http://www.w3.org/2000/svg" width="8" height="13" viewBox="0 0 18 30" fill="none" aria-hidden="true"><path d="M12 24H6L6 18H12V24Z" fill="currentColor"/><path d="M18 30H12V24H18V30Z" fill="currentColor"/><path d="M6 18H0L0 12H6L6 18Z" fill="currentColor"/><path d="M12 12H6L6 6L12 6V12Z" fill="currentColor"/><path d="M18 6L12 6V0L18 0V6Z" fill="currentColor"/></svg>';
+export const DBVIEWER_ICON_ARROW_RIGHT = '<svg xmlns="http://www.w3.org/2000/svg" width="8" height="13" viewBox="0 0 18 30" fill="none" aria-hidden="true"><path d="M6 24H12V18H6L6 24Z" fill="currentColor"/><path d="M0 30H6L6 24H0L0 30Z" fill="currentColor"/><path d="M12 18H18V12H12V18Z" fill="currentColor"/><path d="M6 12H12V6L6 6L6 12Z" fill="currentColor"/><path d="M0 6L6 6L6 0L0 0L0 6Z" fill="currentColor"/></svg>';
+
 export type ToggleOption<T extends string> = {
     value: T;
     label: string;
@@ -87,6 +96,27 @@ export function buildToggle<T extends string>(
             }
         })
     ));
+}
+
+export type InfoBoxKind = 'info' | 'warning' | 'danger';
+
+/**
+ * The standard info box, same design as the admonitions of the
+ * docs pages (.alert in docs-src/src/css/custom.css): square
+ * corners, dark background and a colored border with the
+ * thicker left edge of the docs alerts.
+ */
+export function buildInfoBox(
+    kind: InfoBoxKind,
+    title: ElChild,
+    body: ElChild[] | ElChild
+): HTMLElement {
+    const children: ElChild[] = [];
+    if (title) {
+        children.push(el('div', 'rxdbv-admonition-title', title));
+    }
+    children.push(el('div', 'rxdbv-admonition-body', body));
+    return el('div', 'rxdbv-admonition rxdbv-admonition-' + kind, children);
 }
 
 export function clearChildren(node: HTMLElement) {

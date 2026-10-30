@@ -8,6 +8,7 @@ import {
 import type { ViewerFieldType } from '../../src/plugins/dbviewer/dbviewer-types.ts';
 import type { PageContext } from './context.ts';
 import {
+    buildInfoBox,
     buildToggle,
     clearChildren,
     el,
@@ -198,9 +199,7 @@ export function renderExplainPanel(ctx: PageContext) {
         el('span', 'rxdbv-dim', 'find'),
         queryInput
     ]);
-    const explainButton = el('button', 'rxdbv-btn', 'Explain', {
-        style: 'border-color:var(--rxdbv-pink);background:rgba(237,22,143,0.12)'
-    });
+    const explainButton = el('button', 'rxdbv-btn', 'Explain');
     const runButton = el('button', 'rxdbv-btn-primary', 'Run', {
         onClick: () => {
             if (uiState) {
@@ -297,33 +296,25 @@ function runExplain(
         let findings = 0;
         if (plan.hasRegex) {
             findings = findings + 1;
-            resultHost.appendChild(el('div', 'rxdbv-finding rxdbv-danger-box', [
-                el('div', 'rxdbv-finding-title', '✕ This query cannot use an index'),
-                el('div', 'rxdbv-finding-body', [
-                    el('code', '', '$regex'),
-                    ' selectors always scan the whole collection. Prefer a prefix match on an indexed field.'
-                ])
+            resultHost.appendChild(buildInfoBox('danger', '✕ This query cannot use an index', [
+                el('code', '', '$regex'),
+                ' selectors always scan the whole collection. Prefer a prefix match on an indexed field.'
             ]));
         }
         if (plan.index && plan.unindexedFields.length > 0 && !plan.hasRegex) {
             findings = findings + 1;
             const indexedSelectorFields = plan.index.filter(field => !plan.unindexedFields.includes(field) && field !== '_deleted');
             const suggested = JSON.stringify(indexedSelectorFields.concat(plan.unindexedFields));
-            resultHost.appendChild(el('div', 'rxdbv-finding rxdbv-warning-box', [
-                el('div', 'rxdbv-finding-title', '▲ ' + plan.unindexedFields.join(', ') + ' is not covered by the used index'),
-                el('div', 'rxdbv-finding-body', [
-                    'Documents matching the index bounds are re-checked in memory. Add a compound index ',
-                    el('code', '', suggested),
-                    ' to the schema to make this query fully indexed.'
-                ])
+            resultHost.appendChild(buildInfoBox('warning', '▲ ' + plan.unindexedFields.join(', ') + ' is not covered by the used index', [
+                'Documents matching the index bounds are re-checked in memory. Add a compound index ',
+                el('code', '', suggested),
+                ' to the schema to make this query fully indexed.'
             ]));
         }
         if (findings === 0) {
-            resultHost.appendChild(el('div', 'rxdbv-finding', [
-                el('div', 'rxdbv-finding-body', dumpMode
-                    ? 'Dump mode scans the loaded documents in memory, index analysis needs a live database.'
-                    : 'No findings. The selector is fully covered by the used index.')
-            ]));
+            resultHost.appendChild(buildInfoBox('info', null, dumpMode
+                ? 'Dump mode scans the loaded documents in memory, index analysis needs a live database.'
+                : 'No findings. The selector is fully covered by the used index.'));
         }
     }).catch(err => {
         showViewerError(ctx.root, 'Explain failed', err);
