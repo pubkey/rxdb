@@ -1,6 +1,7 @@
 import assert from 'assert';
 import {
     createRxDatabase,
+    ensureNotFalsy,
     randomToken
 } from '../../plugins/core/index.mjs';
 import { replicateRxCollection } from '../../plugins/replication/index.mjs';
@@ -406,6 +407,78 @@ describe('dbviewer.test.ts', () => {
 
             bridge.destroy();
             hub.destroy();
+            await db.close();
+        });
+    });
+    describe('system collections', () => {
+        it('lists internal store, local documents and rx-state as view-only and rejects writes', async () => {
+            const { addRxPlugin } = await import('../../plugins/core/index.mjs');
+            const { RxDBLocalDocumentsPlugin } = await import('../../plugins/local-documents/index.mjs');
+            const { RxDBStatePlugin } = await import('../../plugins/state/index.mjs');
+            addRxPlugin(RxDBLocalDocumentsPlugin);
+            addRxPlugin(RxDBStatePlugin);
+            const db = await createRxDatabase({
+                name: randomToken(10),
+                storage: config.storage.getStorage(),
+                multiInstance: false,
+                localDocuments: true
+            });
+            await db.addCollections({
+                docs: {
+                    schema: {
+                        version: 0,
+                        primaryKey: 'id',
+                        type: 'object',
+                        properties: {
+                            id: { type: 'string', maxLength: 100 },
+                            name: { type: 'string' }
+                        },
+                        required: ['id', 'name']
+                    }
+                }
+            });
+            await db.insertLocal('viewer-test-local', { hello: 'world' });
+            const state = await (db as any).addState('viewertest');
+            await state.set('counter', () => 42);
+
+            const source = createLiveDataSource(db as any);
+            const infos = source.listCollections();
+
+            const internalInfo = infos.find(info => info.name === '.internal');
+            assert.ok(internalInfo, 'has .internal');
+            assert.strictEqual(internalInfo?.viewOnly, true);
+
+            const localInfo = infos.find(info => info.name === '.local');
+            assert.ok(localInfo, 'has .local');
+            assert.strictEqual(localInfo?.viewOnly, true);
+
+            const stateInfo = ensureNotFalsy(infos.find(info => info.name.startsWith('rx-state-')), 'has the rx-state collection');
+            assert.strictEqual(stateInfo.viewOnly, true);
+
+            const internalDocs = await source.query('.internal', {}, 0, 100);
+            assert.ok(internalDocs.docs.length > 0, 'internal store has documents');
+
+            const localDocs = await source.query('.local', {}, 0, 100);
+            assert.strictEqual(localDocs.docs.length, 1);
+            assert.strictEqual(localDocs.docs[0].id, 'viewer-test-local');
+            const byId = await source.getById('.local', 'viewer-test-local');
+            assert.strictEqual(byId.data.hello, 'world');
+
+            const stateDocs = await source.query(stateInfo.name, {}, 0, 100);
+            assert.ok(stateDocs.docs.length > 0, 'state collection has documents');
+
+            const exported = await source.exportCollection('.local');
+            assert.strictEqual(exported.docs.length, 1);
+
+            await assert.rejects(
+                () => source.insert('.internal', { id: 'x' }),
+                (err: any) => err.code === 'DVW4'
+            );
+            await assert.rejects(
+                () => source.removeByIds(stateInfo.name, ['x']),
+                (err: any) => err.code === 'DVW4'
+            );
+
             await db.close();
         });
     });

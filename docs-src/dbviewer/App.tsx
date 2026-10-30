@@ -363,7 +363,7 @@ function Rail(props: { ctx: PageContext; }) {
     return (
         <div className="rxdbv-rail">
             <div className="rxdbv-rail-header">COLLECTIONS</div>
-            {collections.map(info => {
+            {collections.filter(info => !info.viewOnly).map(info => {
                 const active = nav.view === 'collection' && ctx.currentCollectionName() === info.name;
                 const count = ctx.countsCache.get(info.name);
                 return (
@@ -377,11 +377,28 @@ function Rail(props: { ctx: PageContext; }) {
                     </div>
                 );
             })}
-            {collections.length === 0 ? (
+            {collections.filter(info => !info.viewOnly).length === 0 ? (
                 <div className="rxdbv-rail-item">
                     <span className="rxdbv-rail-label rxdbv-dim">none yet</span>
                 </div>
             ) : null}
+            {collections.some(info => info.viewOnly) ? (
+                <div className="rxdbv-rail-header" title="view-only: internal store, local documents and RxState">SYSTEM</div>
+            ) : null}
+            {collections.filter(info => !!info.viewOnly).map(info => {
+                const active = nav.view === 'collection' && ctx.currentCollectionName() === info.name;
+                const count = ctx.countsCache.get(info.name);
+                return (
+                    <div
+                        key={info.name}
+                        className={'rxdbv-rail-item' + (active ? ' rxdbv-active' : '')}
+                        onClick={() => ctx.navigate({ view: 'collection', collectionName: info.name })}
+                    >
+                        <span className="rxdbv-rail-label rxdbv-muted">{info.name}</span>
+                        <span className="rxdbv-rail-count">{typeof count === 'number' ? formatInteger(count) : '…'}</span>
+                    </div>
+                );
+            })}
             {replicationsByCollection.size > 0 ? (
                 <div className="rxdbv-rail-header">REPLICATION</div>
             ) : null}

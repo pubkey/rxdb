@@ -23,6 +23,22 @@ import {
 } from './dom.ts';
 import { showViewerError } from './error.ts';
 
+/**
+ * A collection is read-only on a dump and when the host marks
+ * it view-only (internal store, local documents, RxState).
+ */
+function isReadOnlyCollection(ctx: PageContext, collectionName: string): boolean {
+    if (ctx.source.readOnly) {
+        return true;
+    }
+    const info = ctx.source.listCollections().find(collectionInfo => collectionInfo.name === collectionName);
+    return !!(info && info.viewOnly);
+}
+
+function readOnlyReason(ctx: PageContext): string {
+    return ctx.source.readOnly ? 'not available on a dump' : 'view-only collection';
+}
+
 const HISTORY_STORAGE_KEY = 'rxdb-dbviewer-queries';
 
 type DrawerState = {
@@ -116,7 +132,7 @@ export function renderCollectionScreen(ctx: PageContext) {
     const host = ctx.contentHost;
     const info = ctx.source.listCollections().find(c => c.name === collectionName);
     const primaryPath = info ? info.primaryPath : 'id';
-    const readOnly = ctx.source.readOnly;
+    const readOnly = isReadOnlyCollection(ctx, collectionName);
 
     const screen = el('div', 'rxdbv-content', undefined, { style: 'position:relative' });
     host.appendChild(screen);
@@ -136,7 +152,7 @@ export function renderCollectionScreen(ctx: PageContext) {
         el('span', 'rxdbv-observe-dot'),
         uiState.observe ? 'Observing' : 'Observe'
     ], {
-        title: readOnly ? 'not available on a dump' : (
+        title: readOnly ? readOnlyReason(ctx) : (
             uiState.observe ?
                 'live — the list updates as documents change' :
                 'Update the current result live as documents change'
@@ -538,7 +554,7 @@ function renderTableView(
             if (type === 'boolean') {
                 cell.style.color = value ? 'var(--rxdbv-success)' : 'var(--rxdbv-fg-muted)';
             }
-            if (!ctx.source.readOnly && (type === 'string' || type === 'number' || type === 'boolean' || type === 'null')) {
+            if (!isReadOnlyCollection(ctx, collectionName) && (type === 'string' || type === 'number' || type === 'boolean' || type === 'null')) {
                 cell.title = 'Double-click to edit';
                 cell.addEventListener('dblclick', event => {
                     event.stopPropagation();
@@ -666,7 +682,7 @@ function renderFooter(
     const rangeEnd = skip + result.docs.length;
     const totalText = result.total === null ? '—' : formatInteger(result.total);
     const selectionCount = uiState.selection.size;
-    const readOnly = ctx.source.readOnly;
+    const readOnly = isReadOnlyCollection(ctx, collectionName);
 
     const previousButton = el('button', 'rxdbv-pager', undefined, {
         html: DBVIEWER_ICON_ARROW_LEFT,
@@ -708,7 +724,7 @@ function renderFooter(
         ]) : null,
         el('div', 'rxdbv-flex1'),
         readOnly
-            ? el('button', 'rxdbv-btn-primary', '+ New document', { title: 'not available on a dump', disabled: 'true' })
+            ? el('button', 'rxdbv-btn-primary', '+ New document', { title: readOnlyReason(ctx), disabled: 'true' })
             : el('button', 'rxdbv-btn-primary', '+ New document', {
                 onClick: () => openNewDocumentDrawer(ctx, collectionName, uiState)
             })
@@ -732,7 +748,7 @@ function renderEmptyCollection(
                 'Create the first one here, or insert from the app with ',
                 el('code', '', 'db.' + collectionName + '.insert({ … })')
             ]),
-            ctx.source.readOnly ? null : el('div', 'rxdbv-empty-actions', [
+            isReadOnlyCollection(ctx, collectionName) ? null : el('div', 'rxdbv-empty-actions', [
                 el('button', 'rxdbv-btn-primary', '+ New document', {
                     onClick: () => openNewDocumentDrawer(ctx, collectionName, uiState)
                 })
@@ -862,7 +878,7 @@ function buildDrawer(
     renderDrawer: () => void
 ): HTMLElement {
     const drawer = uiState.drawer as DrawerState;
-    const readOnly = ctx.source.readOnly;
+    const readOnly = isReadOnlyCollection(ctx, collectionName);
     const { doc: mergedDoc, changedFields } = buildDrawerDocument(drawer);
     const edited = changedFields.length > 0 || drawer.mode === 'new';
 

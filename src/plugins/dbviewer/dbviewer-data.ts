@@ -2,6 +2,16 @@ import type {
     RxCollection,
     RxDatabase
 } from '../../index.d.ts';
+import { INTERNAL_STORE_SCHEMA } from '../../rx-database-internal-store.ts';
+import { newRxError } from '../../rx-error.ts';
+import {
+    normalizeMangoQuery,
+    prepareQuery
+} from '../../rx-query-helper.ts';
+import {
+    LOCAL_DOC_STATE_BY_PARENT_RESOLVED,
+    RX_LOCAL_DOCUMENT_SCHEMA
+} from '../local-documents/local-documents-helper.ts';
 import {
     matchesViewerSelector,
     VIEWER_INTERNAL_FIELDS
@@ -15,6 +25,12 @@ export type ViewerCollectionInfo = {
     primaryPath: string;
     jsonSchema?: any;
     schemaVersion?: number;
+    /**
+     * View-only collections can be browsed and exported but
+     * not edited: the internal store, local documents and the
+     * collections of RxState instances.
+     */
+    viewOnly?: boolean;
 };
 
 export type ViewerQueryResult = {
@@ -69,7 +85,75 @@ function getLiveCollection(database: RxDatabase, collectionName: string): RxColl
     return (database.collections as any)[collectionName];
 }
 
+export const VIEWER_RX_STATE_COLLECTION_PREFIX = 'rx-state-';
+
+type ViewerSystemCollection = {
+    name: string;
+    primaryPath: string;
+    storageInstance: any;
+    schema: any;
+};
+
+/**
+ * System collections are storage instances that exist next to
+ * the normal collections: the internal store of the database
+ * and the local document stores of the database and of each
+ * collection. They are browsable but never editable.
+ */
+function listSystemCollections(database: RxDatabase): ViewerSystemCollection[] {
+    const result: ViewerSystemCollection[] = [{
+        name: '.internal',
+        primaryPath: 'id',
+        storageInstance: database.internalStore,
+        schema: INTERNAL_STORE_SCHEMA
+    }];
+    const databaseLocalState = LOCAL_DOC_STATE_BY_PARENT_RESOLVED.get(database as any);
+    if (databaseLocalState) {
+        result.push({
+            name: '.local',
+            primaryPath: 'id',
+            storageInstance: databaseLocalState.storageInstance,
+            schema: RX_LOCAL_DOCUMENT_SCHEMA
+        });
+    }
+    Object.entries(database.collections).forEach(([name, collection]) => {
+        const localState = LOCAL_DOC_STATE_BY_PARENT_RESOLVED.get(collection as any);
+        if (localState) {
+            result.push({
+                name: '.local-' + name,
+                primaryPath: 'id',
+                storageInstance: localState.storageInstance,
+                schema: RX_LOCAL_DOCUMENT_SCHEMA
+            });
+        }
+    });
+    return result;
+}
+
+async function readAllSystemDocs(system: ViewerSystemCollection): Promise<any[]> {
+    const preparedQuery = prepareQuery(
+        system.schema,
+        normalizeMangoQuery(system.schema, {
+            selector: { _deleted: { $eq: false } } as any
+        })
+    );
+    const result = await system.storageInstance.query(preparedQuery);
+    return result.documents;
+}
+
 export function createLiveDataSource(database: RxDatabase): ViewerDataSource {
+    const findSystemCollection = (collectionName: string) =>
+        listSystemCollections(database).find(system => system.name === collectionName);
+    /**
+     * System collections and the collections behind RxState
+     * must not be written from the viewer, because RxState
+     * keeps its own in-memory state over its collection.
+     */
+    const assertWritable = (collectionName: string) => {
+        if (findSystemCollection(collectionName) || collectionName.startsWith(VIEWER_RX_STATE_COLLECTION_PREFIX)) {
+            throw newRxError('DVW4', { args: { collection: collectionName } });
+        }
+    };
     return {
         kind: 'live',
         readOnly: false,
@@ -77,16 +161,32 @@ export function createLiveDataSource(database: RxDatabase): ViewerDataSource {
         storageName: database.storage.name,
         rawDatabase: database,
         listCollections() {
-            return Object.entries(database.collections)
+            const normal = Object.entries(database.collections)
                 .filter(([name]) => !name.startsWith('_'))
                 .map(([name, collection]) => ({
                     name,
                     primaryPath: String((collection as RxCollection<any>).schema.primaryPath),
                     jsonSchema: (collection as RxCollection<any>).schema.jsonSchema,
-                    schemaVersion: (collection as RxCollection<any>).schema.version
+                    schemaVersion: (collection as RxCollection<any>).schema.version,
+                    viewOnly: name.startsWith(VIEWER_RX_STATE_COLLECTION_PREFIX) ? true : undefined
                 }));
+            const system = listSystemCollections(database).map(systemCollection => ({
+                name: systemCollection.name,
+                primaryPath: systemCollection.primaryPath,
+                jsonSchema: systemCollection.schema,
+                viewOnly: true
+            }));
+            return (normal as ViewerCollectionInfo[]).concat(system);
         },
         async count(collectionName: string, selector?: any) {
+            const system = findSystemCollection(collectionName);
+            if (system) {
+                const docs = await readAllSystemDocs(system);
+                if (!selector) {
+                    return docs.length;
+                }
+                return docs.filter(doc => matchesViewerSelector(doc, selector)).length;
+            }
             const collection = getLiveCollection(database, collectionName);
             if (!collection) {
                 return null;
@@ -98,6 +198,15 @@ export function createLiveDataSource(database: RxDatabase): ViewerDataSource {
             }
         },
         async query(collectionName: string, selector: any, skip: number, limit: number) {
+            const system = findSystemCollection(collectionName);
+            if (system) {
+                const all = await readAllSystemDocs(system);
+                const matching = all.filter(doc => matchesViewerSelector(doc, selector));
+                return {
+                    docs: matching.slice(skip, skip + limit),
+                    total: matching.length
+                };
+            }
             const collection = getLiveCollection(database, collectionName);
             if (!collection) {
                 return { docs: [], total: 0 };
@@ -119,6 +228,11 @@ export function createLiveDataSource(database: RxDatabase): ViewerDataSource {
             };
         },
         async getById(collectionName: string, id: string) {
+            const system = findSystemCollection(collectionName);
+            if (system) {
+                const all = await readAllSystemDocs(system);
+                return all.find(doc => String(doc[system.primaryPath]) === id) || null;
+            }
             const collection = getLiveCollection(database, collectionName);
             if (!collection) {
                 return null;
@@ -127,14 +241,17 @@ export function createLiveDataSource(database: RxDatabase): ViewerDataSource {
             return doc ? doc.toJSON(true) : null;
         },
         async upsert(collectionName: string, doc: any) {
+            assertWritable(collectionName);
             const collection = getLiveCollection(database, collectionName);
             await collection.upsert(stripInternalFields(doc));
         },
         async insert(collectionName: string, doc: any) {
+            assertWritable(collectionName);
             const collection = getLiveCollection(database, collectionName);
             await collection.insert(stripInternalFields(doc));
         },
         async update(collectionName: string, id: string, changedFields: any) {
+            assertWritable(collectionName);
             const collection = getLiveCollection(database, collectionName);
             const rxDocument = await collection.findOne(id).exec();
             if (!rxDocument) {
@@ -143,6 +260,7 @@ export function createLiveDataSource(database: RxDatabase): ViewerDataSource {
             await rxDocument.incrementalPatch(stripInternalFields(changedFields));
         },
         async removeByIds(collectionName: string, ids: string[]) {
+            assertWritable(collectionName);
             const collection = getLiveCollection(database, collectionName);
             await collection.find({
                 selector: {
@@ -153,6 +271,13 @@ export function createLiveDataSource(database: RxDatabase): ViewerDataSource {
             }).remove();
         },
         async exportCollection(collectionName: string) {
+            const system = findSystemCollection(collectionName);
+            if (system) {
+                return {
+                    name: collectionName,
+                    docs: await readAllSystemDocs(system)
+                };
+            }
             const collection = getLiveCollection(database, collectionName);
             if (typeof (collection as any).exportJSON === 'function') {
                 return (collection as any).exportJSON();
