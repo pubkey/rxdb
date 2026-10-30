@@ -23,7 +23,8 @@ import {
     renderExplainPanel,
     renderSchemaPanel,
     renderStoragePanel,
-    renderCleanupPanel
+    renderCleanupPanel,
+    renderExportPanel
 } from './panels.ts';
 
 /**
@@ -59,6 +60,9 @@ export function renderContentScreen(ctx: PageContext) {
             break;
         case 'cleanup':
             renderCleanupPanel(ctx);
+            break;
+        case 'export':
+            renderExportPanel(ctx);
             break;
         case 'replication':
             renderReplicationPanel(ctx);
@@ -206,6 +210,7 @@ function renderPhoneLayout(ctx: PageContext) {
             { view: 'changes', label: 'Changes' },
             { view: 'storage', label: 'Storage' },
             { view: 'cleanup', label: 'Cleanup' },
+            { view: 'export', label: 'Export' },
             { view: 'settings', label: 'Settings' }
         ];
         const dumpDisabled = ctx.source.kind === 'dump' ? ['live', 'changes'] : [];
@@ -265,6 +270,9 @@ function renderPhoneLayout(ctx: PageContext) {
                     break;
                 case 'cleanup':
                     renderCleanupPanel(ctx);
+                    break;
+                case 'export':
+                    renderExportPanel(ctx);
                     break;
                 case 'settings':
                     renderSettings(ctx);
