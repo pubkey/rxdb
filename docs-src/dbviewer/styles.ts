@@ -19,8 +19,8 @@ export const DBVIEWER_STYLES = `
     --rxdbv-active-segment: #2C3547;
     --rxdbv-neutral-bar: #3A4256;
     --rxdbv-fg: #FFFFFF;
-    --rxdbv-fg-muted: #B5B5B5;
-    --rxdbv-fg-dim: #6E7688;
+    --rxdbv-fg-muted: #D2D6DF;
+    --rxdbv-fg-dim: #A2A9BA;
     --rxdbv-success: #3ECF8E;
     --rxdbv-danger: #FD366E;
     --rxdbv-warning: #EBCB4B;
