@@ -247,7 +247,6 @@ export function ViewerApp(props: ViewerAppProps) {
                         <div className="rxdbv-logo" dangerouslySetInnerHTML={{ __html: DBVIEWER_LOGO_SVG }} />
                     </div>
                     <span className="rxdbv-wordmark">RxDB</span>
-                    <span className="rxdbv-badge-beta" title="The database viewer is a beta feature">beta</span>
                     <span className="rxdbv-topbar-divider">|</span>
                     <span className="rxdbv-topbar-identity">{identity}</span>
                     <div className="rxdbv-flex1" />

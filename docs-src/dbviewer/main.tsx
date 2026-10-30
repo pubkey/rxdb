@@ -178,7 +178,6 @@ function StandaloneLanding(props: {
                     <div className="rxdbv-logo" dangerouslySetInnerHTML={{ __html: DBVIEWER_LOGO_SVG }} />
                     <span className="rxdbv-wordmark" style={{ fontSize: 16 }}>RxDB</span>
                     <span style={{ fontSize: 13, fontWeight: 700 }}>Database Viewer</span>
-                    <span className="rxdbv-badge-beta" title="The database viewer is a beta feature">beta</span>
                 </div>
 
                 <div className="rxdbv-rail-header" style={{ padding: '18px 0 6px' }}>CONNECT TO A DEVICE</div>
