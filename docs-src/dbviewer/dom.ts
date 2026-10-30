@@ -98,6 +98,17 @@ export function buildTabs<T extends string>(
     ));
 }
 
+/**
+ * The standard input, same fixed 31px height and 2px border
+ * as the buttons. Extra classes add width or color variants.
+ */
+export function buildInput(
+    attrs?: { [k: string]: any; },
+    extraClassName?: string
+): HTMLInputElement {
+    return el('input', 'rxdbv-input' + (extraClassName ? ' ' + extraClassName : ''), undefined, attrs) as HTMLInputElement;
+}
+
 export type InfoBoxKind = 'info' | 'warning' | 'danger';
 
 /**

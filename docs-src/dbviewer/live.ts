@@ -56,7 +56,6 @@ export function renderLivePanel(ctx: PageContext) {
     ctx.contentHost.appendChild(panel);
     const events = ctx.events;
     if (!events || ctx.source.kind === 'dump') {
-        panel.appendChild(el('div', 'rxdbv-toolbar', [el('span', 'rxdbv-toolbar-title', 'Live')]));
         panel.appendChild(el('div', 'rxdbv-empty-state', [
             el('div', 'rxdbv-empty-inner', [
                 el('div', 'rxdbv-empty-title', 'Not available on a dump'),
@@ -84,7 +83,6 @@ export function renderLivePanel(ctx: PageContext) {
         }
     });
     panel.appendChild(el('div', 'rxdbv-toolbar', [
-        el('span', 'rxdbv-toolbar-title', 'Live'),
         el('span', '', undefined, { style: 'width:7px;height:7px;border-radius:50%;background:var(--rxdbv-success);animation:rxdbvBlink 1.4s ease-in-out infinite' }),
         el('span', 'rxdbv-dim rxdbv-mono', '60s window', { style: 'font-size:10px' }),
         legend,

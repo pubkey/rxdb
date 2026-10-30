@@ -9,6 +9,7 @@ import {
 import type { ViewerChangeEntry } from '../../src/plugins/dbviewer/dbviewer-types.ts';
 import type { PageContext } from './context.ts';
 import {
+    buildInput,
     clearChildren,
     el
 } from './dom.ts';
@@ -23,9 +24,6 @@ export function renderReplicationPanel(ctx: PageContext) {
     const events = ctx.events;
 
     if (!events || events.replications.length === 0) {
-        panel.appendChild(el('div', 'rxdbv-toolbar', [
-            el('span', 'rxdbv-toolbar-title', 'Replication')
-        ]));
         panel.appendChild(el('div', 'rxdbv-empty-state', [
             el('div', 'rxdbv-empty-inner', [
                 el('div', 'rxdbv-empty-title', 'No replication running'),
@@ -43,7 +41,6 @@ export function renderReplicationPanel(ctx: PageContext) {
 
     const identifiers = Array.from(new Set(events.replications.map(r => r.identifier))).join(', ');
     panel.appendChild(el('div', 'rxdbv-toolbar', [
-        el('span', 'rxdbv-toolbar-title', 'Replication'),
         el('span', 'rxdbv-muted', events.replications.length + ' states · ' + identifiers, { style: 'font-size:11px' })
     ]));
 
@@ -154,7 +151,6 @@ export function renderChangesPanel(ctx: PageContext) {
     ctx.contentHost.appendChild(panel);
     const events = ctx.events;
     if (!events) {
-        panel.appendChild(el('div', 'rxdbv-toolbar', [el('span', 'rxdbv-toolbar-title', 'Changes')]));
         panel.appendChild(el('div', 'rxdbv-empty-state', [
             el('div', 'rxdbv-empty-inner', [
                 el('div', 'rxdbv-empty-title', 'Not available on a dump'),
@@ -168,9 +164,9 @@ export function renderChangesPanel(ctx: PageContext) {
     let filterText = '';
     let selectedEntry: ViewerChangeEntry | null = events.changes[0] || null;
 
-    const filterInput = el('input', 'rxdbv-filter-input', undefined, {
+    const filterInput = buildInput({
         placeholder: 'filter: collection or id…'
-    }) as HTMLInputElement;
+    }, 'rxdbv-filter-input');
     filterInput.addEventListener('input', () => {
         filterText = filterInput.value.toLowerCase();
         renderList();
@@ -203,7 +199,6 @@ export function renderChangesPanel(ctx: PageContext) {
         }
     });
     panel.appendChild(el('div', 'rxdbv-toolbar', [
-        el('span', 'rxdbv-toolbar-title', 'Changes'),
         sessionCounter,
         filterInput,
         el('div', 'rxdbv-flex1'),
@@ -269,11 +264,7 @@ export function renderChangesPanel(ctx: PageContext) {
         detailHost.appendChild(el('div', '', [
             el('span', 'rxdbv-mono', entry.operation, { style: 'font-weight:700;color:' + opColor(entry.operation) }),
             el('span', 'rxdbv-mono', entry.collectionName + ' / ' + entry.documentId),
-            el('span', 'rxdbv-mono rxdbv-dim', (entry.revFrom ? shortRev(entry.revFrom) + ' → ' : '→ ') + shortRev(entry.revTo)),
-            el('div', 'rxdbv-flex1'),
-            el('button', 'rxdbv-btn rxdbv-btn-small', 'Open document', {
-                onClick: () => ctx.navigate({ view: 'collection', collectionName: entry.collectionName })
-            })
+            el('span', 'rxdbv-mono rxdbv-dim', (entry.revFrom ? shortRev(entry.revFrom) + ' → ' : '→ ') + shortRev(entry.revTo))
         ], { style: 'display:flex;gap:8px;align-items:center;padding:8px 12px;border-bottom:1px solid rgba(255,255,255,0.08);font-size:11px' }));
 
         const diff = diffViewerJson(entry.previousDocumentData || null, entry.documentData || null);
@@ -288,6 +279,11 @@ export function renderChangesPanel(ctx: PageContext) {
             return '<span class="rxdbv-diff-line-same">  ' + escapeHtml(line.text) + '</span>';
         }).join('');
         detailHost.appendChild(diffBlock);
+        detailHost.appendChild(el('div', '', [
+            el('button', 'rxdbv-btn rxdbv-btn-small', 'Open document', {
+                onClick: () => ctx.navigate({ view: 'collection', collectionName: entry.collectionName })
+            })
+        ], { style: 'padding: 2px 12px 8px' }));
         detailHost.appendChild(el('div', 'rxdbv-dim', entry.fromReplication
             ? 'source: replication (pulled from the remote)'
             : 'source: app write (not from replication)', {
