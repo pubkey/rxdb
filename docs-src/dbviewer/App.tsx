@@ -266,13 +266,13 @@ export function ViewerApp(props: ViewerAppProps) {
                         }}
                     >Refresh</button>
                     <button
-                        className="rxdbv-btn"
+                        className="rxdbv-btn rxdbv-btn-icon"
                         title="Open the RxDB documentation"
                         onClick={() => window.open(VIEWER_DOCS_BASE_URL + 'dbviewer.html', '_blank')}
                     >?</button>
                     {props.showCloseButton ? (
                         <button
-                            className="rxdbv-btn"
+                            className="rxdbv-btn rxdbv-btn-icon"
                             title="Close the viewer"
                             onClick={() => ctx.requestClose()}
                         >×</button>
