@@ -28,6 +28,12 @@ export const DBVIEWER_STYLES = `
     --rxdbv-violet: #9B6BFF;
     --rxdbv-gradient: linear-gradient(90deg, #ED168F, #B2218B, #752A8A);
     /**
+     * Non-primary controls carry the solid white border of the
+     * landing page button component (border: 2px solid #fff in
+     * docs-src/src/components/button.tsx).
+     */
+    --rxdbv-control-border: rgb(255, 255, 255);
+    /**
      * Same font stack as the docs pages (--ifm-font-family-base
      * in docs-src/src/css/custom.css). The @font-face for it is
      * inlined into the page by scripts/build-dbviewer.mjs.
@@ -89,7 +95,7 @@ export const DBVIEWER_STYLES = `
     gap: 7px;
     height: 31px;
     padding: 0 17px;
-    border: 2px solid rgba(255, 255, 255, 0.25);
+    border: 2px solid var(--rxdbv-control-border);
     background: transparent;
     color: var(--rxdbv-fg);
     font-size: 11px;
@@ -173,7 +179,7 @@ export const DBVIEWER_STYLES = `
     top: 8px;
     right: 12px;
     z-index: 5;
-    border: 1px solid rgba(255, 255, 255, 0.20);
+    border: 2px solid var(--rxdbv-control-border);
     background: var(--rxdbv-bg);
     color: var(--rxdbv-fg-muted);
     padding: 4px 6px;
@@ -259,11 +265,37 @@ export const DBVIEWER_STYLES = `
     flex-wrap: wrap;
 }
 .rxdbv-toolbar-title { font-weight: 700; font-size: 13px; }
-.rxdbv-segments { display: flex; border: 1px solid rgba(255, 255, 255, 0.20); font-size: 11px; }
-.rxdbv-segment { padding: 3px 12px; color: var(--rxdbv-fg-muted); cursor: pointer; transition: color 180ms ease-in-out; }
-.rxdbv-segment + .rxdbv-segment { border-left: 1px solid rgba(255, 255, 255, 0.20); }
-.rxdbv-segment:hover { color: var(--rxdbv-fg); }
-.rxdbv-segment.rxdbv-active { background: var(--rxdbv-active-segment); color: var(--rxdbv-fg); }
+/**
+ * The standard toggle (segmented control). Same fixed
+ * proportions as the buttons: 31px height, 17px side padding
+ * and a 2px border, so it lines up with them in toolbars.
+ */
+.rxdbv-toggle {
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: stretch;
+    height: 31px;
+    border: 2px solid var(--rxdbv-control-border);
+    font-size: 11px;
+}
+.rxdbv-toggle-option {
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 17px;
+    border: 0;
+    background: transparent;
+    color: var(--rxdbv-fg-muted);
+    font-size: 11px;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    transition: color 180ms ease-in-out, background 180ms ease-in-out;
+}
+.rxdbv-toggle-option + .rxdbv-toggle-option { border-left: 2px solid var(--rxdbv-control-border); }
+.rxdbv-toggle-option:hover { color: var(--rxdbv-fg); }
+.rxdbv-toggle-option.rxdbv-active { background: var(--rxdbv-active-segment); color: var(--rxdbv-fg); }
 /* the standard button with a leading icon, here the observe dot */
 .rxdbv-observe {
     display: inline-flex;
@@ -410,7 +442,7 @@ export const DBVIEWER_STYLES = `
     width: 28px;
     height: 28px;
     padding: 0;
-    border: 2px solid rgba(255, 255, 255, 0.20);
+    border: 2px solid var(--rxdbv-control-border);
     background: transparent;
     color: var(--rxdbv-fg);
     font-size: 11px;
@@ -418,7 +450,7 @@ export const DBVIEWER_STYLES = `
     cursor: pointer;
     font-family: inherit;
 }
-.rxdbv-pager:disabled { color: var(--rxdbv-fg-dim); cursor: default; }
+.rxdbv-pager:disabled { color: var(--rxdbv-fg-dim); opacity: 0.5; cursor: default; }
 .rxdbv-pager:not(:disabled):hover { background: var(--rxdbv-fg); color: var(--rxdbv-bg-dark); }
 
 /* JSON view */

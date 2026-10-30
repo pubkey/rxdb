@@ -60,6 +60,35 @@ export function el(
     return node;
 }
 
+export type ToggleOption<T extends string> = {
+    value: T;
+    label: string;
+    title?: string;
+};
+
+/**
+ * The standard toggle (segmented control), used wherever the
+ * UI switches between views, for example Table/JSON. It shares
+ * the fixed proportions of the button component: 31px height
+ * and a 2px border, so toggles and buttons line up in toolbars.
+ */
+export function buildToggle<T extends string>(
+    options: ToggleOption<T>[],
+    activeValue: T,
+    onChange: (value: T) => void
+): HTMLElement {
+    return el('div', 'rxdbv-toggle', options.map(option =>
+        el('button', 'rxdbv-toggle-option' + (option.value === activeValue ? ' rxdbv-active' : ''), option.label, {
+            title: option.title || '',
+            onClick: () => {
+                if (option.value !== activeValue) {
+                    onChange(option.value);
+                }
+            }
+        })
+    ));
+}
+
 export function clearChildren(node: HTMLElement) {
     /**
      * textContent instead of removeChild() in a loop,
