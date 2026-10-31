@@ -495,7 +495,7 @@ function renderTableView(
         const sorted = uiState.sortField === sortKey;
         const cell: (string | HTMLElement)[] = [label];
         if (sorted) {
-            cell.push(el('span', 'rxdbv-sort-arrow', uiState.sortDirection === -1 ? '↓' : '↑'));
+            cell.push(el('span', 'rxdbv-sort-arrow', uiState.sortDirection === -1 ? '▼' : '▲'));
         }
         return el('div', 'rxdbv-sortable' + (sorted ? ' rxdbv-sorted' : ''), cell, {
             title: 'Sort this page by ' + label,
