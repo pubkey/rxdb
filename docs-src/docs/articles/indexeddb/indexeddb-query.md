@@ -305,7 +305,7 @@ But there is no free lunch. A worker does not make a query faster, it changes wh
 
 So a worker pays off when queries are big enough to drop frames, and it costs you startup time when they are not.
 
-RxDB ships this as a storage option instead of a rewrite. The [👑 Worker RxStorage](../../rx-storage-worker.md) and the [👑 SharedWorker RxStorage](../../rx-storage-shared-worker.md) run any RxStorage in a worker process, and your query code does not change.
+RxDB ships this as a storage option instead of a rewrite. The [<PremiumIcon /> Worker RxStorage](../../rx-storage-worker.md) and the [<PremiumIcon /> SharedWorker RxStorage](../../rx-storage-shared-worker.md) run any RxStorage in a worker process, and your query code does not change.
 
 ## Code Sample: A Complex Query in Raw IndexedDB
 
@@ -429,7 +429,7 @@ None of this makes IndexedDB a bad storage engine. It is a solid transactional p
 
 ## How RxDB Solves This With Full NoSQL Queries
 
-RxDB (Reactive Database) is a local-first, NoSQL database for JavaScript applications. It runs in the browser, Node.js, Electron, React Native, Capacitor, Deno, and Bun, and it stores its data through a pluggable [RxStorage](../../rx-storage.md) layer. In the browser that storage can be IndexedDB, through the free [Dexie.js RxStorage](../../rx-storage-dexie.md) or the faster [👑 premium IndexedDB RxStorage](../../rx-storage-indexeddb.md). Your data still lands in IndexedDB. What changes is everything above it.
+RxDB (Reactive Database) is a local-first, NoSQL database for JavaScript applications. It runs in the browser, Node.js, Electron, React Native, Capacitor, Deno, and Bun, and it stores its data through a pluggable [RxStorage](../../rx-storage.md) layer. In the browser that storage can be IndexedDB, through the free [Dexie.js RxStorage](../../rx-storage-dexie.md) or the faster [<PremiumIcon /> premium IndexedDB RxStorage](../../rx-storage-indexeddb.md). Your data still lands in IndexedDB. What changes is everything above it.
 
 ### 1. Mango Queries Instead of Key Ranges
 

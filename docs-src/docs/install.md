@@ -145,7 +145,7 @@ RxDB has three kinds of import paths:
 
 - `rxdb` (or `rxdb/plugins/core`): the core functions and all TypeScript types.
 - `rxdb/plugins/<name>`: the open-source plugins.
-- `rxdb-premium/plugins/<name>`: the [premium plugins 👑](/premium/).
+- `rxdb-premium/plugins/<name>`: the [premium plugins <PremiumIcon />](/premium/).
 
 ### Core Functions
 
@@ -196,14 +196,14 @@ How to combine these types is shown in the [TypeScript tutorial](./tutorials/typ
 | [FoundationDB](./rx-storage-foundationdb.md) | `import { getRxStorageFoundationDB } from 'rxdb/plugins/storage-foundationdb';` |
 | [Remote](./rx-storage-remote.md) | `import { getRxStorageRemote } from 'rxdb/plugins/storage-remote';` |
 | [Electron IpcRenderer](./electron.md) | `import { getRxStorageIpcRenderer } from 'rxdb/plugins/electron';` |
-| [IndexedDB 👑](./rx-storage-indexeddb.md) | `import { getRxStorageIndexedDB } from 'rxdb-premium/plugins/storage-indexeddb';` |
-| [OPFS 👑](./rx-storage-opfs.md) | `import { getRxStorageOPFS, getRxStorageOPFSMainThread } from 'rxdb-premium/plugins/storage-opfs';` |
-| [SQLite 👑](./rx-storage-sqlite.md) | `import { getRxStorageSQLite } from 'rxdb-premium/plugins/storage-sqlite';` |
-| [Expo Filesystem 👑](./rx-storage-filesystem-expo.md) | `import { getRxStorageExpoAsync } from 'rxdb-premium/plugins/storage-filesystem-expo';` |
-| [Node.js Filesystem 👑](./rx-storage-filesystem-node.md) | `import { getRxStorageFilesystemNode } from 'rxdb-premium/plugins/storage-filesystem-node';` |
-| [Worker 👑](./rx-storage-worker.md) | `import { getRxStorageWorker } from 'rxdb-premium/plugins/storage-worker';` |
-| [SharedWorker 👑](./rx-storage-shared-worker.md) | `import { getRxStorageSharedWorker } from 'rxdb-premium/plugins/storage-worker';` |
-| [Sharding 👑](./rx-storage-sharding.md) | `import { getRxStorageSharding } from 'rxdb-premium/plugins/storage-sharding';` |
+| [IndexedDB <PremiumIcon />](./rx-storage-indexeddb.md) | `import { getRxStorageIndexedDB } from 'rxdb-premium/plugins/storage-indexeddb';` |
+| [OPFS <PremiumIcon />](./rx-storage-opfs.md) | `import { getRxStorageOPFS, getRxStorageOPFSMainThread } from 'rxdb-premium/plugins/storage-opfs';` |
+| [SQLite <PremiumIcon />](./rx-storage-sqlite.md) | `import { getRxStorageSQLite } from 'rxdb-premium/plugins/storage-sqlite';` |
+| [Expo Filesystem <PremiumIcon />](./rx-storage-filesystem-expo.md) | `import { getRxStorageExpoAsync } from 'rxdb-premium/plugins/storage-filesystem-expo';` |
+| [Node.js Filesystem <PremiumIcon />](./rx-storage-filesystem-node.md) | `import { getRxStorageFilesystemNode } from 'rxdb-premium/plugins/storage-filesystem-node';` |
+| [Worker <PremiumIcon />](./rx-storage-worker.md) | `import { getRxStorageWorker } from 'rxdb-premium/plugins/storage-worker';` |
+| [SharedWorker <PremiumIcon />](./rx-storage-shared-worker.md) | `import { getRxStorageSharedWorker } from 'rxdb-premium/plugins/storage-worker';` |
+| [Sharding <PremiumIcon />](./rx-storage-sharding.md) | `import { getRxStorageSharding } from 'rxdb-premium/plugins/storage-sharding';` |
 
 For unit tests, use the [Memory RxStorage](./rx-storage-memory.md). It needs no setup and all data is gone when the process ends. When your tests need a fresh database per test, give each database a random name with `randomToken()` from `rxdb`. More testing patterns are on the [testing page](./testing.md).
 

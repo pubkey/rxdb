@@ -105,7 +105,7 @@ Each row of the left column is code you would write and maintain yourself. The I
 
 The recommended architecture runs the SQLite storage in the main process and connects each renderer window to it with the [RxDB Electron plugin](../electron.md). The renderer creates a normal `RxDatabase`, while all SQLite operations happen in the main process and never block the UI.
 
-RxDB ships a free **trial version** of the SQLite storage that you can use to evaluate the setup. For production apps, the full [SQLite RxStorage](../rx-storage-sqlite.md) is part of the [RxDB Premium 👑](/premium/) plugins.
+RxDB ships a free **trial version** of the SQLite storage that you can use to evaluate the setup. For production apps, the full [SQLite RxStorage](../rx-storage-sqlite.md) is part of the [RxDB Premium <PremiumIcon />](/premium/) plugins.
 
 ### 1. Install RxDB
 

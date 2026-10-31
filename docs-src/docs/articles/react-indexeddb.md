@@ -181,7 +181,7 @@ npm install rxdb rxjs --save
 RxDB stores data through a swappable [RxStorage](../rx-storage.md). For IndexedDB there are two options:
 
 - The free [Dexie.js RxStorage](../rx-storage-dexie.md) (`getRxStorageDexie()`), which stores data in IndexedDB through Dexie.js. Use it for side projects and prototypes.
-- The premium [IndexedDB RxStorage 👑](../rx-storage-indexeddb.md) (`getRxStorageIndexedDB()`), which talks to IndexedDB directly. It has [faster reads and writes](../rx-storage-performance.md), a smaller bundle, and stores [attachments](../rx-attachment.md) as binary data instead of base64.
+- The premium [IndexedDB RxStorage <PremiumIcon />](../rx-storage-indexeddb.md) (`getRxStorageIndexedDB()`), which talks to IndexedDB directly. It has [faster reads and writes](../rx-storage-performance.md), a smaller bundle, and stores [attachments](../rx-attachment.md) as binary data instead of base64.
 
 Switching storages is a configuration change, not a rewrite. The React code stays the same.
 

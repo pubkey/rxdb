@@ -31,7 +31,7 @@ React Native does not ship a database engine, so RxDB brings its own storage lay
 The [SQLite RxStorage](../../rx-storage-sqlite.md) works on all mobile platforms and uses the SQLite engine that Android and iOS already ship. There are two versions:
 
 - The **trial version** ships directly with RxDB Core as `getRxStorageSQLiteTrial()`. It passes the full storage test suite, but it is made for evaluation and prototypes only: it does not use indexes, has no attachment support, is limited to `500` non-deleted documents, and fetches the whole storage state to run queries in memory.
-- The **[RxDB Premium 👑](/premium/)** version `getRxStorageSQLite()` is the production-ready storage with full query support and performance optimizations.
+- The **[RxDB Premium <PremiumIcon />](/premium/)** version `getRxStorageSQLite()` is the production-ready storage with full query support and performance optimizations.
 
 Both versions connect to the concrete SQLite library through a so called `sqliteBasics` adapter:
 
@@ -40,7 +40,7 @@ Both versions connect to the concrete SQLite library through a so called `sqlite
 
 Also set `multiInstance: false` when creating the database, because React Native runs a single JavaScript process and does not need cross-instance coordination.
 
-### Expo Filesystem Storage 👑
+### Expo Filesystem Storage <PremiumIcon />
 
 For the best performance in React Native and Expo apps, the premium **[Expo Filesystem RxStorage](../../rx-storage-filesystem-expo.md)** is recommended. It is built on `expo-file-system` with the `expo-opfs` peer dependency, requires at least Expo SDK 54, and skips the SQL engine entirely: no SQL parsing, no native query planning, no relational mapping. This makes it significantly faster than SQLite in the [Expo performance comparison](../../rx-storage-filesystem-expo.md). You can pick the asynchronous `getRxStorageExpoAsync()` or the synchronous `getRxStorageExpoSync()` API.
 
@@ -56,7 +56,7 @@ The RxDB collection is the better fit when you want a full database under your s
 
 ## Example: Expo App with SQLite Storage
 
-The following example uses the free SQLite trial storage with `expo-sqlite`. For production you would swap in the [premium 👑 storage](/premium/) or the [Expo Filesystem storage](../../rx-storage-filesystem-expo.md), the rest of the code stays the same. The basics of `rxdbCollectionOptions()` are explained in the [hub article](./rxdb-collection-for-tanstack-db.md).
+The following example uses the free SQLite trial storage with `expo-sqlite`. For production you would swap in the [premium <PremiumIcon /> storage](/premium/) or the [Expo Filesystem storage](../../rx-storage-filesystem-expo.md), the rest of the code stays the same. The basics of `rxdbCollectionOptions()` are explained in the [hub article](./rxdb-collection-for-tanstack-db.md).
 
 <Steps>
 
@@ -214,7 +214,7 @@ Yes, this works through the collection implementation. The `@tanstack/rxdb-db-co
 
 <FaqItem question="Can I use TanStack DB with SQLite in Expo?">
 
-Yes. Install `expo-sqlite` and create the RxDatabase with the **[SQLite RxStorage](../../rx-storage-sqlite.md)** using the `getSQLiteBasicsExpoSQLiteAsync()` adapter. The free trial version is fine for prototypes, the production version is part of [RxDB Premium 👑](/premium/).
+Yes. Install `expo-sqlite` and create the RxDatabase with the **[SQLite RxStorage](../../rx-storage-sqlite.md)** using the `getSQLiteBasicsExpoSQLiteAsync()` adapter. The free trial version is fine for prototypes, the production version is part of [RxDB Premium <PremiumIcon />](/premium/).
 
 </FaqItem>
 

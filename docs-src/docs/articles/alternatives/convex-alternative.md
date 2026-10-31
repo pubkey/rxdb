@@ -320,7 +320,7 @@ For a local-first JavaScript app, use a client-side database with replication, s
 | Transactions | Serializable ACID on the server | Per document, with conflict handlers |
 | Backend | Convex cloud or self-hosted Convex backend | Any backend, including Convex |
 | License | FSL-1.1-Apache-2.0 backend, Apache 2.0 client | Apache 2.0 core |
-| Pricing | Usage-based, $25 per developer per month on Professional | Free core, 👑 Premium plugins optional |
+| Pricing | Usage-based, $25 per developer per month on Professional | Free core, <PremiumIcon /> Premium plugins optional |
 | Native clients | Swift, Kotlin, Python, Rust | JavaScript runtimes only |
 
 </ComparisonTable>

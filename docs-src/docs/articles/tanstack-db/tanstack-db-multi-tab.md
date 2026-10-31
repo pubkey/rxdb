@@ -177,7 +177,7 @@ To see it in action, open your app in two browser tabs side by side and insert a
 
 ## Advanced: SharedWorker Storage
 
-Instead of running one storage instance per tab, the [SharedWorker RxStorage](../../rx-storage-shared-worker.md) (part of [RxDB Premium 👑](/premium/)) runs the storage in a single JavaScript process that all tabs share, which removes duplicate database connections and improves performance in tab-heavy apps.
+Instead of running one storage instance per tab, the [SharedWorker RxStorage](../../rx-storage-shared-worker.md) (part of [RxDB Premium <PremiumIcon />](/premium/)) runs the storage in a single JavaScript process that all tabs share, which removes duplicate database connections and improves performance in tab-heavy apps.
 
 ## FAQ
 

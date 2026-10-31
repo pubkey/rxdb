@@ -15,9 +15,9 @@ RxDB is not a self-contained database. Instead the data is stored in an implemen
 
 ## Quick Recommendations
 
-- In the Browser: Use the [LocalStorage](./rx-storage-localstorage.md) storage for simple setup and small build size. For bigger datasets, use either the [dexie.js storage](./rx-storage-dexie.md) (free) or the [IndexedDB RxStorage](./rx-storage-indexeddb.md) if you have [👑 premium access](/premium/) which is a bit faster and has a smaller build size.
-- In [Electron](./electron-database.md) and [ReactNative](./react-native-database.md): Use the [SQLite RxStorage](./rx-storage-sqlite.md) if you have [👑 premium access](/premium/) or the [trial-SQLite RxStorage](./rx-storage-sqlite.md) for tryouts. For ultimate performance in Expo and React Native, use the [Expo Filesystem RxStorage](./rx-storage-filesystem-expo.md).
-- In Capacitor: Use the [SQLite RxStorage](./rx-storage-sqlite.md) if you have [👑 premium access](/premium/), otherwise use the [localStorage](./rx-storage-localstorage.md) storage.
+- In the Browser: Use the [LocalStorage](./rx-storage-localstorage.md) storage for simple setup and small build size. For bigger datasets, use either the [dexie.js storage](./rx-storage-dexie.md) (free) or the [IndexedDB RxStorage](./rx-storage-indexeddb.md) if you have [<PremiumIcon /> premium access](/premium/) which is a bit faster and has a smaller build size.
+- In [Electron](./electron-database.md) and [ReactNative](./react-native-database.md): Use the [SQLite RxStorage](./rx-storage-sqlite.md) if you have [<PremiumIcon /> premium access](/premium/) or the [trial-SQLite RxStorage](./rx-storage-sqlite.md) for tryouts. For ultimate performance in Expo and React Native, use the [Expo Filesystem RxStorage](./rx-storage-filesystem-expo.md).
+- In Capacitor: Use the [SQLite RxStorage](./rx-storage-sqlite.md) if you have [<PremiumIcon /> premium access](/premium/), otherwise use the [localStorage](./rx-storage-localstorage.md) storage.
 
 
 ## Configuration Examples
@@ -109,41 +109,41 @@ A storage that stores the data as plain data in the memory of the JavaScript pro
 
 The localStorage based storage stores the data inside of a browsers [localStorage API](./articles/localstorage.md). It is the easiest to set up and has a small bundle size. **If you are new to RxDB, you should start with the LocalStorage RxStorage**. [Read more](./rx-storage-localstorage.md)
 
-### 👑 IndexedDB
+### <PremiumIcon /> IndexedDB
 
 The IndexedDB `RxStorage` is based on plain IndexedDB. For most use cases, this has the best performance together with the OPFS storage. [Read more](./rx-storage-indexeddb.md)
 
-### 👑 OPFS
+### <PremiumIcon /> OPFS
 
 The OPFS `RxStorage` is based on the File System Access API. This has the best performance of all other non-in-memory storage, when RxDB is used inside of a browser. [Read more](./rx-storage-opfs.md)
 
-### 👑 Filesystem Node
+### <PremiumIcon /> Filesystem Node
 
 The Filesystem Node storage is best suited when you use RxDB in a Node.js process or with [electron.js](./electron.md). [Read more](./rx-storage-filesystem-node.md)
 
 ### Storage Wrapper Plugins
 
-#### 👑 Worker
+#### <PremiumIcon /> Worker
 
 The worker RxStorage is a wrapper around any other RxStorage which allows to run the storage in a WebWorker (in browsers) or a Worker Thread (in Node.js). By doing so, you can take CPU load from the main process and move it into the worker's process which can improve the perceived performance of your application. [Read more](./rx-storage-worker.md)
 
-#### 👑 SharedWorker
+#### <PremiumIcon /> SharedWorker
 
 The SharedWorker RxStorage is a wrapper around any other RxStorage which allows to run the storage in a SharedWorker (only in browsers). By doing so, you can take CPU load from the main process and move it into the worker's process which can improve the perceived performance of your application. [Read more](./rx-storage-shared-worker.md)
 
 #### Remote
 The Remote RxStorage is made to use a remote storage and communicate with it over an asynchronous message channel. The remote part could be on another JavaScript process or even on a different host machine. Mostly used internally in other storages like Worker or Electron-ipc. [Read more](./rx-storage-remote.md)
 
-#### 👑 Sharding
+#### <PremiumIcon /> Sharding
 
 On some `RxStorage` implementations (like IndexedDB), a huge performance improvement can be done by sharding the documents into multiple database instances. With the sharding plugin you can wrap any other `RxStorage` into a sharded storage. [Read more](./rx-storage-sharding.md)
 
-#### 👑 Memory Mapped
+#### <PremiumIcon /> Memory Mapped
 
 The memory-mapped [RxStorage](./rx-storage.md) is a wrapper around any other RxStorage. The wrapper creates an in-memory storage that is used for query and write operations. This memory instance stores its data in an underlying storage for persistence.
 The main reason to use this is to improve query/write performance while still having the data stored on disk. [Read more](./rx-storage-memory-mapped.md)
 
-#### 👑 Localstorage Meta Optimizer
+#### <PremiumIcon /> Localstorage Meta Optimizer
 
 The [RxStorage](./rx-storage.md) Localstorage Meta Optimizer is a wrapper around any other RxStorage. The wrapper uses the original RxStorage for normal collection documents. But to optimize the initial page load time, it uses [localstorage](./articles/localstorage.md) to store the plain key-value metadata that RxDB needs to create databases and collections. This plugin can only be used in browsers. [Read more](./rx-storage-localstorage-meta-optimizer.md)
 
@@ -154,11 +154,11 @@ To use RxDB in [electron](./electron-database.md), it is recommended to run the 
 
 ### Third Party based Storages
 
-#### 👑 Expo Filesystem
+#### <PremiumIcon /> Expo Filesystem
 
 The Expo Filesystem storage brings blazing-fast OPFS capabilities to React Native and Expo applications, bypassing the bridge via JSI bindings for maximum performance. This is the fastest storage engine for React Native. [Read more](./rx-storage-filesystem-expo.md)
 
-#### 👑 SQLite
+#### <PremiumIcon /> SQLite
 
 The SQLite storage has great performance when RxDB is used on **Node.js**, **Electron**, **React Native**, **Cordova** or **Capacitor**. [Read more](./rx-storage-sqlite.md)
 

@@ -26,8 +26,8 @@ This is exactly the shape of the TanStack DB integration. RxDB persists document
 
 RxDB abstracts persistence behind the [RxStorage](../../rx-storage.md) interface, and several storages fit the Electron main process:
 
-- **[SQLite RxStorage](../../rx-storage-sqlite.md)**: The recommended production option. It stores everything in a single `.sqlite` file, and since Node.js version 22 the `node:sqlite` module ships with Node itself, which recent Electron versions include. No native module rebuilds needed. A free **trial version** (`getRxStorageSQLiteTrial`) comes with RxDB Core for evaluation. It is limited to 500 non-deleted documents, skips indexes, and runs queries in memory. The full version is part of [RxDB Premium 👑](/premium/).
-- **[Filesystem Node RxStorage](../../rx-storage-filesystem-node.md)** 👑: Stores documents as plain JSON files through the Node.js filesystem API. It is a bit faster than the SQLite storage because it skips the boundary between the JavaScript process and the SQLite engine, and its setup is less complex.
+- **[SQLite RxStorage](../../rx-storage-sqlite.md)**: The recommended production option. It stores everything in a single `.sqlite` file, and since Node.js version 22 the `node:sqlite` module ships with Node itself, which recent Electron versions include. No native module rebuilds needed. A free **trial version** (`getRxStorageSQLiteTrial`) comes with RxDB Core for evaluation. It is limited to 500 non-deleted documents, skips indexes, and runs queries in memory. The full version is part of [RxDB Premium <PremiumIcon />](/premium/).
+- **[Filesystem Node RxStorage](../../rx-storage-filesystem-node.md)** <PremiumIcon />: Stores documents as plain JSON files through the Node.js filesystem API. It is a bit faster than the SQLite storage because it skips the boundary between the JavaScript process and the SQLite engine, and its setup is less complex.
 - **[LocalStorage](../../rx-storage-localstorage.md) or [IndexedDB](../../rx-storage-indexeddb.md) in the renderer**: Good for a quick prototype without any main-process code, slower for large datasets.
 - **[Memory RxStorage](../../rx-storage-memory.md)**: Keeps everything in RAM, useful for tests.
 
@@ -179,7 +179,7 @@ The mutation applies to the in-memory state instantly, travels over IPC into SQL
 
 ### Switch to a Production Storage
 
-The trial storage is for evaluation and prototypes only. For production, exchange the storage in the main process for the [Premium SQLite RxStorage](../../rx-storage-sqlite.md) 👑 or the [Filesystem Node RxStorage](../../rx-storage-filesystem-node.md) 👑. Nothing else changes.
+The trial storage is for evaluation and prototypes only. For production, exchange the storage in the main process for the [Premium SQLite RxStorage](../../rx-storage-sqlite.md) <PremiumIcon /> or the [Filesystem Node RxStorage](../../rx-storage-filesystem-node.md) <PremiumIcon />. Nothing else changes.
 
 ```ts
 // main.js, production variant
@@ -234,7 +234,7 @@ No, not when you use the `node:sqlite` module that ships with Node.js 22 and new
 
 <FaqItem question="Is there a free way to try TanStack DB with RxDB in Electron?">
 
-Yes. The SQLite trial storage comes with RxDB Core and passes the full storage test suite, limited to 500 non-deleted documents and without indexes. You can also run the free **[localStorage-based storage](../../rx-storage-localstorage.md)** in the renderer for a prototype. For production, the full SQLite and filesystem storages are part of [RxDB Premium 👑](/premium/).
+Yes. The SQLite trial storage comes with RxDB Core and passes the full storage test suite, limited to 500 non-deleted documents and without indexes. You can also run the free **[localStorage-based storage](../../rx-storage-localstorage.md)** in the renderer for a prototype. For production, the full SQLite and filesystem storages are part of [RxDB Premium <PremiumIcon />](/premium/).
 
 </FaqItem>
 

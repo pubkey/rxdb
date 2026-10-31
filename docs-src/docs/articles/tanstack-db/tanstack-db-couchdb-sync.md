@@ -172,7 +172,7 @@ const replicationState = await replicateServer({
 });
 ```
 
-RxServer covers the parts that are tedious to build yourself: an `authHandler` parses the request headers into auth data, a `queryModifier` restricts which documents each user can replicate, and a `changeValidator` restricts which writes are accepted. The client-side replication state emits `unauthorized$` when auth headers must be refreshed and `outdatedClient$` when the app runs against a newer server schema. The Express adapter ships with the free `rxdb-server` package. The Fastify and Koa adapters are part of [RxDB Premium 👑](/premium/).
+RxServer covers the parts that are tedious to build yourself: an `authHandler` parses the request headers into auth data, a `queryModifier` restricts which documents each user can replicate, and a `changeValidator` restricts which writes are accepted. The client-side replication state emits `unauthorized$` when auth headers must be refreshed and `outdatedClient$` when the app runs against a newer server schema. The Express adapter ships with the free `rxdb-server` package. The Fastify and Koa adapters are part of [RxDB Premium <PremiumIcon />](/premium/).
 
 ## Example: TanStack DB with CouchDB Sync
 
@@ -321,7 +321,7 @@ Yes. The RxDB **[Sync Engine](../../replication.md)** only needs a pull endpoint
 
 <FaqItem question="Is RxServer free to self-host?">
 
-Yes. The `rxdb-server` package with the Express adapter is free and open source, including replication endpoints, auth handlers, query modifiers, and change validators. Only the Fastify and Koa adapters are part of **[RxDB Premium 👑](/premium/)**. See the [RxServer docs](../../rx-server.md) for details.
+Yes. The `rxdb-server` package with the Express adapter is free and open source, including replication endpoints, auth handlers, query modifiers, and change validators. Only the Fastify and Koa adapters are part of **[RxDB Premium <PremiumIcon />](/premium/)**. See the [RxServer docs](../../rx-server.md) for details.
 
 </FaqItem>
 

@@ -25,7 +25,7 @@ RxDB covers all of these requirements out of the box. It is a [local-first](./ar
 
 React Native does not have a native database engine. To store data persistently and efficiently, RxDB offers multiple storage options.
 
-### 👑 Expo Filesystem (Highest Performance)
+### <PremiumIcon /> Expo Filesystem (Highest Performance)
 
 For the absolute best performance in React Native and Expo applications, the premium **[Expo Filesystem RxStorage](./rx-storage-filesystem-expo.md)** is highly recommended. Built on `expo-opfs`, it completely bypasses the React Native bridge and delivers significantly faster read/write speeds than traditional SQLite.
 

@@ -76,7 +76,7 @@ const database = await createRxDatabase({
 
 The `worker.js` must be a self containing JavaScript file that contains all dependencies in a bundle.
 To make it easier for you, RxDB ships with pre-bundles worker files that are ready to use.
-You can find them in the folder `node_modules/rxdb-premium/dist/workers` after you have installed the [RxDB Premium 👑 Plugin](/premium/). From there you can copy them to a location where it can be served from the webserver and then use their path to create the `RxDatabase`.
+You can find them in the folder `node_modules/rxdb-premium/dist/workers` after you have installed the [RxDB Premium <PremiumIcon /> Plugin](/premium/). From there you can copy them to a location where it can be served from the webserver and then use their path to create the `RxDatabase`.
 
 Any valid `worker.js` JavaScript file can be used both, for normal Workers and SharedWorkers.
 

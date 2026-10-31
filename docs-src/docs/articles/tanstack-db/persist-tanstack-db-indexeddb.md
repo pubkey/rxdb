@@ -22,14 +22,14 @@ RxDB itself does not care where that disk is. All data goes through the [RxStora
 
 ## TanStack DB Storage Options in the Browser
 
-Four storages matter for browser apps. Two are free, two are part of [RxDB Premium 👑](/premium/).
+Four storages matter for browser apps. Two are free, two are part of [RxDB Premium <PremiumIcon />](/premium/).
 
 | Storage | Price | Based on | Best for |
 |---|---|---|---|
 | [LocalStorage](../../rx-storage-localstorage.md) | free | localStorage API | small and medium datasets, simplest setup |
 | [Dexie.js](../../rx-storage-dexie.md) | free | IndexedDB | bigger datasets without premium access |
-| [IndexedDB](../../rx-storage-indexeddb.md) 👑 | premium | IndexedDB | production apps, lowest latency, smallest build |
-| [OPFS](../../rx-storage-opfs.md) 👑 | premium | Origin Private File System | big datasets, fastest queries |
+| [IndexedDB](../../rx-storage-indexeddb.md) <PremiumIcon /> | premium | IndexedDB | production apps, lowest latency, smallest build |
+| [OPFS](../../rx-storage-opfs.md) <PremiumIcon /> | premium | Origin Private File System | big datasets, fastest queries |
 
 ### LocalStorage Storage (Free)
 
@@ -39,11 +39,11 @@ The [localStorage-based storage](../../rx-storage-localstorage.md) is the recomm
 
 The [Dexie.js storage](../../rx-storage-dexie.md) stores data in IndexedDB through the [Dexie.js](https://github.com/dexie/Dexie.js) wrapper library. IndexedDB has no fixed 5 MB cap, so this is the free choice for **TanStack DB IndexedDB** persistence with larger datasets. It also lets you use Dexie.js addons. It prints a console message pointing to the premium storages, and its query performance is behind the premium IndexedDB storage.
 
-### IndexedDB Storage 👑
+### IndexedDB Storage <PremiumIcon />
 
 The premium [IndexedDB storage](../../rx-storage-indexeddb.md) is built on plain IndexedDB without a wrapper library. Compared to the Dexie.js storage it is faster on reads and writes, reduces the build size by up to **36%**, and runs in a WAL-like mode similar to SQLite for faster writes. Among the browser storages it has the smallest write and read latency and the fastest initial page load. For most production apps this is the storage to use.
 
-### OPFS Storage 👑
+### OPFS Storage <PremiumIcon />
 
 The premium [OPFS storage](../../rx-storage-opfs.md) writes to the **Origin Private File System** (OPFS), a browser API that gives web apps a sandboxed, origin-specific virtual filesystem with byte-level file access. Because it works on binary files instead of an object store, reads are up to 4x faster compared to IndexedDB, even with complex queries. The fast synchronous OPFS methods are only available inside a WebWorker, so the storage runs in a worker by default, which also keeps database work off the main thread. When your TanStack DB collections hold more than `10k` documents, OPFS is the better fit. The full numbers are on the [storage performance page](../../rx-storage-performance.md).
 
@@ -139,7 +139,7 @@ const db = await createRxDatabase({
 });
 ```
 
-For the premium [IndexedDB storage](../../rx-storage-indexeddb.md) 👑:
+For the premium [IndexedDB storage](../../rx-storage-indexeddb.md) <PremiumIcon />:
 
 ```ts
 import { getRxStorageIndexedDB } from 'rxdb-premium/plugins/storage-indexeddb';
@@ -150,7 +150,7 @@ const db = await createRxDatabase({
 });
 ```
 
-For the premium [OPFS storage](../../rx-storage-opfs.md) 👑, which runs inside a WebWorker through the worker storage:
+For the premium [OPFS storage](../../rx-storage-opfs.md) <PremiumIcon />, which runs inside a WebWorker through the worker storage:
 
 ```ts
 import { getRxStorageWorker } from 'rxdb-premium/plugins/storage-worker';
@@ -191,7 +191,7 @@ No. TanStack DB collections are in-memory and lose their state on a page reload.
 
 <FaqItem question="Can I persist TanStack DB to IndexedDB for free?">
 
-Yes. The **[Dexie.js storage](../../rx-storage-dexie.md)** is free and stores your TanStack DB data in IndexedDB. The premium IndexedDB storage 👑 is faster and has a smaller build size, but it is not required to get durable IndexedDB persistence.
+Yes. The **[Dexie.js storage](../../rx-storage-dexie.md)** is free and stores your TanStack DB data in IndexedDB. The premium IndexedDB storage <PremiumIcon /> is faster and has a smaller build size, but it is not required to get durable IndexedDB persistence.
 
 </FaqItem>
 

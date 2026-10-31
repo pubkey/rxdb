@@ -94,7 +94,7 @@ The sync protocol is a pull plus push plus event stream contract. Anything that 
 
 ### Open Source and Independent
 
-The RxDB core is Apache 2.0. The project has been maintained since 2016 and is funded by [👑 RxDB Premium](/premium/) plugins, not by venture capital that needs an exit.
+The RxDB core is Apache 2.0. The project has been maintained since 2016 and is funded by [<PremiumIcon /> RxDB Premium](/premium/) plugins, not by venture capital that needs an exit.
 
 ### Observable Queries Out of the Box
 

@@ -30,8 +30,8 @@ TanStack DB keeps collection data in memory by design. When the user closes the 
 RxDB abstracts the storage layer behind the [RxStorage](../../rx-storage.md) interface, so you can pick the browser storage that fits your app:
 
 - **[localStorage-based storage](../../rx-storage-localstorage.md)**: Free and part of the RxDB core. Zero configuration, good for demos, prototypes, and small datasets. The example below uses it.
-- **[IndexedDB RxStorage](../../rx-storage-indexeddb.md)** (part of [RxDB Premium 👑](/premium/)): The recommended choice for professional PWAs. It stores data asynchronously and handles larger datasets.
-- **[OPFS RxStorage](../../rx-storage-opfs.md)** (part of [RxDB Premium 👑](/premium/)): Built on the Origin Private File System, a browser API for file access inside a sandboxed, origin-specific filesystem. It runs inside a WebWorker and reads up to 4x faster than IndexedDB in the [RxDB storage benchmarks](../../rx-storage-performance.md).
+- **[IndexedDB RxStorage](../../rx-storage-indexeddb.md)** (part of [RxDB Premium <PremiumIcon />](/premium/)): The recommended choice for professional PWAs. It stores data asynchronously and handles larger datasets.
+- **[OPFS RxStorage](../../rx-storage-opfs.md)** (part of [RxDB Premium <PremiumIcon />](/premium/)): Built on the Origin Private File System, a browser API for file access inside a sandboxed, origin-specific filesystem. It runs inside a WebWorker and reads up to 4x faster than IndexedDB in the [RxDB storage benchmarks](../../rx-storage-performance.md).
 
 Switching storages is a configuration change, not a rewrite. You can start with localStorage today and move to IndexedDB or OPFS when your data grows.
 
@@ -197,7 +197,7 @@ Yes, when the collection implementation persists data. TanStack DB itself keeps 
 
 <FaqItem question="Which storage should a TanStack DB offline PWA use?">
 
-For professional apps, IndexedDB or OPFS. The free **[localStorage-based storage](../../rx-storage-localstorage.md)** is the simplest start but is limited to around 5 MB. The [IndexedDB](../../rx-storage-indexeddb.md) and [OPFS](../../rx-storage-opfs.md) storages from [RxDB Premium 👑](/premium/) handle larger datasets and perform better.
+For professional apps, IndexedDB or OPFS. The free **[localStorage-based storage](../../rx-storage-localstorage.md)** is the simplest start but is limited to around 5 MB. The [IndexedDB](../../rx-storage-indexeddb.md) and [OPFS](../../rx-storage-opfs.md) storages from [RxDB Premium <PremiumIcon />](/premium/) handle larger datasets and perform better.
 
 </FaqItem>
 

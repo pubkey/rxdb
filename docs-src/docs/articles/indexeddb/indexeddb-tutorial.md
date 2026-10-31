@@ -194,7 +194,7 @@ None of this makes IndexedDB a bad storage engine. It is a good place to keep da
 
 RxDB (Reactive Database) is a local-first, NoSQL database for JavaScript applications. It runs on top of IndexedDB (and other storages) and gives you the database features the raw API is missing, while your data still lives in IndexedDB under the hood. Switching storages is a configuration change, not a rewrite.
 
-In the browser you have two common ways to store into IndexedDB with RxDB: the free [Dexie.js storage](../../rx-storage-dexie.md), which wraps IndexedDB and is a good default, or the [IndexedDB RxStorage](../../rx-storage-indexeddb.md) with [👑 premium access](/premium/), which is faster and ships a smaller build. The examples below use the Dexie storage.
+In the browser you have two common ways to store into IndexedDB with RxDB: the free [Dexie.js storage](../../rx-storage-dexie.md), which wraps IndexedDB and is a good default, or the [IndexedDB RxStorage](../../rx-storage-indexeddb.md) with [<PremiumIcon /> premium access](/premium/), which is faster and ships a smaller build. The examples below use the Dexie storage.
 
 ### 1. A Promise-Based API With Schemas
 

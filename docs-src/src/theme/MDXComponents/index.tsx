@@ -5,6 +5,7 @@ import { Pre } from '@site/src/theme/CodeBlock';
 import { RxdbLogo } from '@site/src/components/rxdb-logo';
 import { TimeSince } from '@site/src/components/time-since';
 import { ArticleByline } from '@site/src/components/article-byline';
+import { PremiumIcon } from '@site/src/components/icons/premium';
 
 function Code(props: React.ComponentProps<'code'>) {
     const isInline =
@@ -22,4 +23,5 @@ export default {
     RxdbLogo,
     TimeSince,
     ArticleByline,
+    PremiumIcon,
 };
