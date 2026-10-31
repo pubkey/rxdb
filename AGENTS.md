@@ -177,7 +177,7 @@ Do not reproduce (authentic errors in old pages; write the correct form):
 - Link densely: nearly every first mention of an RxDB concept links to its page. Repeat links to canonical pages (replication, rx-storage, quickstart, offline-first) are fine.
 - Admonitions `:::note` and `:::warning` (optionally titled) sparingly; not part of the default template.
 - Comparison tables may use ✅ / ❌ / ⚠️ cells.
-- Premium marker: never use the 👑 emoji. Use the globally registered `<PremiumIcon />` crown component (no import needed) next to "RxDB Premium" links and premium features. Emoji only where functional: ⭐ for the star CTA, ✅/❌/⚠️ in tables. Never decorative emoji in prose.
+- Premium marker: never use the crown emoji character. Use the globally registered `<PremiumIcon />` crown component (no import needed) next to "RxDB Premium" links and premium features. Emoji only where functional: ⭐ for the star CTA, ✅/❌/⚠️ in tables. Never decorative emoji in prose.
 - FAQ answers open with a "Yes." or "No." verdict, then 2 to 5 sentences with a bold internal link like `**[RxDB](./rx-database.md)**`. Questions are phrased as real search queries.
 
 ### Components (import from `@site/src/components/...`)

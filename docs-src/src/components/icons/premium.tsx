@@ -3,6 +3,7 @@ import React from 'react';
 export function IconPremium(props: {
     width?: number | string;
     height?: number | string;
+    stroke?: string;
 }) {
     return  <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -12,7 +13,7 @@ export function IconPremium(props: {
     fill="none"
   >
     <path
-      stroke="#fff"
+      stroke={props.stroke ?? '#fff'}
       strokeLinecap="round"
       strokeLinejoin="round"
       strokeWidth={2}
@@ -24,20 +25,19 @@ export function IconPremium(props: {
 /**
  * Inline crown that marks RxDB Premium features inside text,
  * scaled to the font size of the surrounding text.
+ * The crown is drawn over a widened non-breaking space so that
+ * a surrounding link underlines it like the link text.
  */
 export function PremiumIcon() {
     return <span
+        className="premium-icon"
         role="img"
         aria-label="RxDB Premium"
         title="RxDB Premium"
-        style={{
-            display: 'inline-block',
-            width: '1.1em',
-            height: '1.1em',
-            verticalAlign: '-0.2em',
-            lineHeight: 0,
-        }}
     >
-        <IconPremium width="100%" height="100%" />
+        <span className="premium-icon-spacer" aria-hidden="true">{'\u00A0'}</span>
+        <span className="premium-icon-svg" aria-hidden="true">
+            <IconPremium width="100%" height="100%" stroke="currentColor" />
+        </span>
     </span>;
 }
