@@ -573,7 +573,7 @@
     }
   },
   "dependencies": {
-    "@babel/runtime": "8.0.7",
+    "@babel/runtime": "8.0.8",
     "@types/simple-peer": "9.11.9",
     "@types/ws": "8.18.2",
     "ajv": "8.20.0",
@@ -601,7 +601,7 @@
   "devDependencies": {
     "@angular/core": "22.2.3",
     "@babel/cli": "8.0.6",
-    "@babel/core": "8.0.7",
+    "@babel/core": "8.0.9",
     "@babel/plugin-external-helpers": "8.0.1",
     "@babel/plugin-transform-class-properties": "8.0.1",
     "@babel/plugin-transform-explicit-resource-management": "8.0.5",
