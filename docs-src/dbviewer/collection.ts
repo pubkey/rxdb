@@ -181,15 +181,16 @@ export function renderCollectionScreen(ctx: PageContext) {
         value: uiState.queryInput,
         placeholder: '{ "field": "value" }'
     }) as HTMLInputElement;
+    const historyButton = el('button', 'rxdbv-btn', 'History ▾', {
+        title: 'Show favourite and recent queries',
+        onClick: () => {
+            uiState.historyOpen = !uiState.historyOpen;
+            renderHistoryDropdown();
+        }
+    });
     const inputWrap = el('div', 'rxdbv-input rxdbv-query-input-wrap' + (uiState.parseError ? ' rxdbv-error' : ''), [
         el('span', 'rxdbv-dim', 'find'),
-        queryInput,
-        el('span', 'rxdbv-query-history-toggle', 'history ▾', {
-            onClick: () => {
-                uiState.historyOpen = !uiState.historyOpen;
-                renderHistoryDropdown();
-            }
-        })
+        queryInput
     ]);
     const buildNumberInput = (label: string, value: number, min: number, apply: (parsed: number) => void) => {
         const numberInput = el('input', 'rxdbv-query-input', undefined, {
@@ -232,7 +233,7 @@ export function renderCollectionScreen(ctx: PageContext) {
         }
     });
     const dropdownHost = el('div');
-    const querybar = el('div', 'rxdbv-querybar', [inputWrap, limitWrap, skipWrap, explainButton, runButton, dropdownHost]);
+    const querybar = el('div', 'rxdbv-querybar', [historyButton, inputWrap, limitWrap, skipWrap, explainButton, runButton, dropdownHost]);
     screen.appendChild(querybar);
     const errorHost = el('div');
     screen.appendChild(errorHost);

@@ -369,8 +369,6 @@ export const DBVIEWER_STYLES = `
     font-size: 11.5px;
     padding: 0;
 }
-.rxdbv-query-history-toggle { color: var(--rxdbv-fg-dim); font-size: 10px; cursor: pointer; white-space: nowrap; }
-.rxdbv-query-history-toggle:hover { color: var(--rxdbv-fg); }
 .rxdbv-query-dropdown {
     position: absolute;
     top: 100%;
