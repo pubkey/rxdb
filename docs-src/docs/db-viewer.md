@@ -20,7 +20,7 @@ With the `dbviewer` plugin you can inspect and edit the data of a running [RxDB]
 
 Key features:
 
-- **Data grid and JSON view**: Browse documents of any [RxCollection](./rx-collection.md), paginated at 100 rows per page, with multi-select, inline editing and an Observe mode, on by default, that updates the result live as documents change.
+- **Data grid and JSON view**: Browse documents of any [RxCollection](./rx-collection.md), paginated with `limit` (default: 20) and `skip` inputs next to the query bar, with multi-select, inline editing and an Observe mode, on by default, that updates the result live as documents change.
 - **Mango query bar**: Run MongoDB-style (Mango) selectors against a collection, with history and favourites. The input also accepts relaxed JavaScript object syntax like `{ name: 'foo' }`, unquoted keys and single quotes are converted to JSON. Syntax errors show the exact character position and previous results stay visible.
 - **Document drawer**: Shows fields, internals (`_rev`, `_meta.lwt`), [attachments](./rx-attachment.md) with inline image previews, and a WILL RUN block that previews the exact call before you apply staged edits: `insert()` for new documents, `incrementalPatch()` with only the changed fields for edits.
 - **Live activity map**: Draws the database as a map from app to collections to remote endpoints. Write, query and replication events flow as glyph particles, each collection node shows a 60 second sparkline and its cached [RxQuery](./rx-query.md) count. No document contents are drawn, only names, counts and rates, so the screen is safe to share.

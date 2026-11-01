@@ -55,6 +55,8 @@ type CollectionUiState = {
     appliedSelector: any;
     parseError: { message: string; position: number; } | null;
     page: number;
+    limit: number;
+    skip: number;
     selection: Set<string>;
     observe: boolean;
     drawer: DrawerState | null;
@@ -74,6 +76,8 @@ function getUiState(ctx: PageContext, collectionName: string): CollectionUiState
             appliedSelector: {},
             parseError: null,
             page: 0,
+            limit: 20,
+            skip: 0,
             selection: new Set(),
             observe: ctx.source.kind === 'live',
             drawer: null,
@@ -187,6 +191,38 @@ export function renderCollectionScreen(ctx: PageContext) {
             }
         })
     ]);
+    const buildNumberInput = (label: string, value: number, min: number, apply: (parsed: number) => void) => {
+        const numberInput = el('input', 'rxdbv-query-input', undefined, {
+            value: String(value),
+            inputmode: 'numeric'
+        }) as HTMLInputElement;
+        const commit = () => {
+            let parsed = parseInt(numberInput.value, 10);
+            if (isNaN(parsed) || parsed < min) {
+                parsed = min;
+            }
+            numberInput.value = String(parsed);
+            apply(parsed);
+            uiState.page = 0;
+            rerun();
+        };
+        numberInput.addEventListener('change', commit);
+        numberInput.addEventListener('keydown', event => {
+            if ((event as KeyboardEvent).key === 'Enter') {
+                commit();
+            }
+        });
+        return el('div', 'rxdbv-input rxdbv-num-input-wrap', [
+            el('span', 'rxdbv-dim', label),
+            numberInput
+        ], { title: label + ' for the query' });
+    };
+    const limitWrap = buildNumberInput('limit', uiState.limit, 1, parsed => {
+        uiState.limit = parsed;
+    });
+    const skipWrap = buildNumberInput('skip', uiState.skip, 0, parsed => {
+        uiState.skip = parsed;
+    });
     const runButton = el('button', 'rxdbv-btn-primary', 'Run') as HTMLButtonElement;
     const explainButton = el('button', 'rxdbv-btn', 'Explain', {
         title: 'Explain this query: used index, execution plan and findings',
@@ -196,7 +232,7 @@ export function renderCollectionScreen(ctx: PageContext) {
         }
     });
     const dropdownHost = el('div');
-    const querybar = el('div', 'rxdbv-querybar', [inputWrap, explainButton, runButton, dropdownHost]);
+    const querybar = el('div', 'rxdbv-querybar', [inputWrap, limitWrap, skipWrap, explainButton, runButton, dropdownHost]);
     screen.appendChild(querybar);
     const errorHost = el('div');
     screen.appendChild(errorHost);
@@ -418,8 +454,8 @@ function runQuery(
     footerHost: HTMLElement,
     primaryPath: string
 ) {
-    const skip = uiState.page * ctx.pageSize;
-    ctx.source.query(collectionName, uiState.appliedSelector, skip, ctx.pageSize).then(result => {
+    const skip = uiState.skip + uiState.page * uiState.limit;
+    ctx.source.query(collectionName, uiState.appliedSelector, skip, uiState.limit).then(result => {
         if (ctx.destroyed) {
             return;
         }
@@ -674,7 +710,7 @@ function renderFooter(
     if (!result) {
         return;
     }
-    const skip = uiState.page * ctx.pageSize;
+    const skip = uiState.skip + uiState.page * uiState.limit;
     const rangeEnd = skip + result.docs.length;
     const totalText = result.total === null ? '—' : formatInteger(result.total);
     const selectionCount = uiState.selection.size;
@@ -695,7 +731,7 @@ function renderFooter(
             ctx.renderContent();
         }
     }) as HTMLButtonElement;
-    nextButton.disabled = result.total !== null ? rangeEnd >= result.total : result.docs.length < ctx.pageSize;
+    nextButton.disabled = result.total !== null ? rangeEnd >= result.total : result.docs.length < uiState.limit;
 
     const footer = el('div', 'rxdbv-grid-footer', [
         el('span', '', formatInteger(skip + 1) + '–' + formatInteger(rangeEnd) + ' of ' + totalText),

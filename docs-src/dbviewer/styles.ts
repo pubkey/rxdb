@@ -355,6 +355,8 @@ export const DBVIEWER_STYLES = `
     position: relative;
 }
 .rxdbv-query-input-wrap { flex: 1; display: flex; font-size: 11.5px; }
+.rxdbv-num-input-wrap { width: 102px; flex: none; display: flex; font-size: 11.5px; }
+.rxdbv-num-input-wrap .rxdbv-query-input { text-align: right; width: 100%; }
 .rxdbv-query-input-wrap.rxdbv-error { border-color: var(--rxdbv-danger); }
 .rxdbv-query-input-wrap.rxdbv-focus { border-color: var(--rxdbv-pink); }
 .rxdbv-query-input {
@@ -473,7 +475,7 @@ export const DBVIEWER_STYLES = `
     cursor: pointer;
     font-family: inherit;
 }
-.rxdbv-pager:disabled { color: var(--rxdbv-fg-dim); opacity: 0.5; cursor: default; }
+.rxdbv-pager:disabled { cursor: default; }
 .rxdbv-pager:not(:disabled):hover { background: var(--rxdbv-fg); color: var(--rxdbv-bg-dark); }
 
 /* JSON view */
