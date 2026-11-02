@@ -275,7 +275,7 @@ export const DBVIEWER_STYLES = `
  * brand color.
  */
 /* the tab row sits directly above the content box */
-.rxdbv-tabs-row { display: flex; align-items: center; padding: 10px 12px 0; }
+.rxdbv-tabs-row { display: flex; align-items: center; padding: 10px 12px 8px; }
 .rxdbv-tabs {
     display: inline-flex;
     align-items: stretch;
