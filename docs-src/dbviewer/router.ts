@@ -128,7 +128,8 @@ function renderPhoneLayout(ctx: PageContext) {
                 el('span', 'rxdbv-mono rxdbv-flex1', info.name)
             ]));
             listWrap.appendChild(el('div', 'rxdbv-phone-row rxdbv-phone-subrow', [
-                el('span', 'rxdbv-flex1', typeof count === 'number' ? 'Documents (' + formatInteger(count) + ')' : 'Documents'),
+                el('span', 'rxdbv-flex1', 'Documents'),
+                typeof count === 'number' ? el('span', 'rxdbv-dim rxdbv-mono', formatInteger(count), { style: 'font-size:12px' }) : null,
                 el('span', 'rxdbv-dim', undefined, { html: DBVIEWER_ICON_ARROW_RIGHT })
             ], {
                 onClick: () => {
@@ -147,18 +148,19 @@ function renderPhoneLayout(ctx: PageContext) {
                 if (tool.view === 'changes' && ctx.source.kind === 'dump') {
                     return;
                 }
-                let label = tool.label;
+                let value: string | null = null;
                 if (tool.view === 'changes' && ctx.events) {
                     const changeCount = ctx.events.changes.filter(entry => entry.collectionName === info.name).length;
                     if (changeCount > 0) {
-                        label = 'Changes (' + formatInteger(changeCount) + ')';
+                        value = formatInteger(changeCount);
                     }
                 }
                 if (tool.view === 'schema' && typeof info.schemaVersion === 'number') {
-                    label = 'Schema (v' + info.schemaVersion + ')';
+                    value = 'v' + info.schemaVersion;
                 }
                 listWrap.appendChild(el('div', 'rxdbv-phone-row rxdbv-phone-subrow', [
-                    el('span', 'rxdbv-flex1', label),
+                    el('span', 'rxdbv-flex1', tool.label),
+                    value !== null ? el('span', 'rxdbv-dim rxdbv-mono', value, { style: 'font-size:12px' }) : null,
                     el('span', 'rxdbv-dim', undefined, { html: DBVIEWER_ICON_ARROW_RIGHT })
                 ], {
                     onClick: () => {

@@ -433,7 +433,7 @@ export function renderExportPanel(ctx: PageContext) {
     ctx.contentHost.appendChild(panel);
 
     const collections = ctx.source.listCollections();
-    const selected = new Set<string>(collections.filter(info => info.name !== '.internal').map(info => info.name));
+    const selected = new Set<string>(collections.filter(info => !info.viewOnly).map(info => info.name));
     const selectorInputs = new Map<string, HTMLInputElement>();
 
     panel.appendChild(el('div', 'rxdbv-section-label', 'COLLECTIONS'));

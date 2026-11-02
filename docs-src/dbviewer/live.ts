@@ -95,7 +95,7 @@ export function renderLivePanel(ctx: PageContext) {
 
     // app column
     const leaderBadge = el('span', '', 'leader', {
-        style: 'font-size:9px;border:1px solid rgba(62,207,142,0.5);color:var(--rxdbv-success);padding:0 5px;font-family:var(--rxdbv-mono);display:none'
+        style: 'font-size:9px;border:1px solid rgba(22,237,143,0.5);color:var(--rxdbv-success);padding:0 5px;font-family:var(--rxdbv-mono);display:none'
     });
     const appRates = el('div', 'rxdbv-mono rxdbv-muted', '', { style: 'display:flex;gap:8px;margin-top:6px;font-size:9.5px' });
     const viewerWritesLabel = el('div', 'rxdbv-muted rxdbv-mono', '0 in 60s · from this devtool', { style: 'font-size:10px;margin-top:3px' });

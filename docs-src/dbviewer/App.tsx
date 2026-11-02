@@ -390,18 +390,18 @@ function Rail(props: { ctx: PageContext; }) {
                                 ? active
                                 : nav.view === tool.view && nav.collectionName === info.name;
                             const disabled = ctx.source.kind === 'dump' && dumpDisabled.includes(tool.view);
-                            let label = tool.label;
+                            let value: string | null = null;
                             if (tool.view === 'changes' && ctx.events) {
                                 const changeCount = ctx.events.changes.filter(entry => entry.collectionName === info.name).length;
                                 if (changeCount > 0) {
-                                    label = 'Changes (' + formatInteger(changeCount) + ')';
+                                    value = formatInteger(changeCount);
                                 }
                             }
                             if (tool.view === 'schema' && typeof info.schemaVersion === 'number') {
-                                label = 'Schema (v' + info.schemaVersion + ')';
+                                value = 'v' + info.schemaVersion;
                             }
                             if (tool.view === 'collection' && typeof count === 'number') {
-                                label = 'Documents (' + formatInteger(count) + ')';
+                                value = formatInteger(count);
                             }
                             return (
                                 <div
@@ -415,7 +415,8 @@ function Rail(props: { ctx: PageContext; }) {
                                         }
                                     }}
                                 >
-                                    <span className="rxdbv-rail-label">{label}</span>
+                                    <span className="rxdbv-rail-label">{tool.label}</span>
+                                    {value !== null ? <span className="rxdbv-rail-count">{value}</span> : null}
                                 </div>
                             );
                         })}

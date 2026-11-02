@@ -25,9 +25,9 @@ export const DBVIEWER_STYLES = `
     --rxdbv-type-number: #B2218B;
     --rxdbv-type-boolean: #752A8A;
     --rxdbv-type-array: #199BF1;
-    --rxdbv-type-object: #3ECF8E;
+    --rxdbv-type-object: #16ED8F;
     --rxdbv-type-missing: #3A4256;
-    --rxdbv-success: #3ECF8E;
+    --rxdbv-success: #16ED8F;
     --rxdbv-danger: #FD366E;
     --rxdbv-warning: #EBCB4B;
     --rxdbv-info: #199BF1;
@@ -81,7 +81,7 @@ export const DBVIEWER_STYLES = `
 @keyframes rxdbvFlowR { from { left: -2px; opacity: 0; } 8% { opacity: 1; } 92% { opacity: 1; } to { left: 100%; opacity: 0; } }
 @keyframes rxdbvFlowL { from { left: 100%; opacity: 0; } 8% { opacity: 1; } 92% { opacity: 1; } to { left: -2px; opacity: 0; } }
 @keyframes rxdbvBlink { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
-@keyframes rxdbvRowIn { from { background: rgba(62, 207, 142, 0.22); } to { background: transparent; } }
+@keyframes rxdbvRowIn { from { background: rgba(22, 237, 143, 0.22); } to { background: transparent; } }
 @keyframes rxdbvNodePulse { 0% { border-color: rgba(255, 255, 255, 0.45); } 100% { border-color: rgba(255, 255, 255, 0.12); } }
 @keyframes rxdbvThread { from { background-position: 0 0; } to { background-position: -16px 0; } }
 
@@ -354,7 +354,7 @@ export const DBVIEWER_STYLES = `
 .rxdbv-observe:hover .rxdbv-observe-dot { background: var(--rxdbv-bg-dark); }
 .rxdbv-observe.rxdbv-active { border-color: var(--rxdbv-success); color: var(--rxdbv-success); }
 .rxdbv-observe.rxdbv-active .rxdbv-observe-dot { background: var(--rxdbv-success); }
-.rxdbv-observe.rxdbv-active:hover { background: rgba(62, 207, 142, 0.12); color: var(--rxdbv-success); }
+.rxdbv-observe.rxdbv-active:hover { background: rgba(22, 237, 143, 0.12); color: var(--rxdbv-success); }
 .rxdbv-observe.rxdbv-active:hover .rxdbv-observe-dot { background: var(--rxdbv-success); }
 .rxdbv-observe.rxdbv-disabled { opacity: 0.5; cursor: default; }
 .rxdbv-observe.rxdbv-disabled:hover { background: transparent; color: var(--rxdbv-fg-muted); }
@@ -509,7 +509,7 @@ export const DBVIEWER_STYLES = `
 .rxdbv-json-num { color: var(--rxdbv-type-number); }
 .rxdbv-json-bool { color: var(--rxdbv-type-boolean); }
 .rxdbv-json-null { color: var(--rxdbv-fg-dim); }
-.rxdbv-json-doc-fresh { background: rgba(62, 207, 142, 0.08); display: block; }
+.rxdbv-json-doc-fresh { background: rgba(22, 237, 143, 0.08); display: block; }
 .rxdbv-json-fresh-note { color: var(--rxdbv-success); }
 
 /* drawer */
@@ -724,7 +724,7 @@ export const DBVIEWER_STYLES = `
 .rxdbv-filter-input { width: 190px; }
 .rxdbv-diff-block { margin: 8px 12px; background: var(--rxdbv-bg-code); border: 2px solid #666; padding: 10px 12px; font-family: var(--rxdbv-mono); font-size: 11px; line-height: 1.7; white-space: pre; overflow: auto; }
 .rxdbv-diff-line-removed { background: rgba(253, 54, 110, 0.14); color: var(--rxdbv-danger); display: block; }
-.rxdbv-diff-line-added { background: rgba(62, 207, 142, 0.12); color: var(--rxdbv-success); display: block; }
+.rxdbv-diff-line-added { background: rgba(22, 237, 143, 0.12); color: var(--rxdbv-success); display: block; }
 .rxdbv-diff-line-same { display: block; }
 .rxdbv-willrun-code .rxdbv-plain-line { display: block; }
 
