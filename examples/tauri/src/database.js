@@ -1,9 +1,11 @@
 import { createRxDatabase, addRxPlugin } from "rxdb";
 import { RxDBQueryBuilderPlugin } from "rxdb/plugins/query-builder";
 import { RxDBDevModePlugin } from "rxdb/plugins/dev-mode";
+import { RxDBCleanupPlugin } from "rxdb/plugins/cleanup";
 
 addRxPlugin(RxDBQueryBuilderPlugin);
 addRxPlugin(RxDBDevModePlugin);
+addRxPlugin(RxDBCleanupPlugin);
 
 const heroSchema = {
   title: "hero schema",

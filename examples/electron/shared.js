@@ -1,9 +1,11 @@
 const { createRxDatabase, addRxPlugin } = require('rxdb');
 const { RxDBQueryBuilderPlugin } = require('rxdb/plugins/query-builder');
 const { RxDBDevModePlugin } = require('rxdb/plugins/dev-mode');
+const { RxDBCleanupPlugin } = require('rxdb/plugins/cleanup');
 
 addRxPlugin(RxDBQueryBuilderPlugin);
 addRxPlugin(RxDBDevModePlugin);
+addRxPlugin(RxDBCleanupPlugin);
 
 const heroSchema = {
     title: 'hero schema',

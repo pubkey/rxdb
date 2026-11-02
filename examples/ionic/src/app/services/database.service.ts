@@ -3,6 +3,7 @@ import { Capacitor } from '@capacitor/core';
 
 import { addRxPlugin, createRxDatabase, RxStorage } from 'rxdb';
 import { RxDBLeaderElectionPlugin } from 'rxdb/plugins/leader-election';
+import { RxDBCleanupPlugin } from 'rxdb/plugins/cleanup';
 import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
 
 import type { RxHeroesDatabase } from '../RxDB.d';
@@ -40,6 +41,7 @@ async function _create(): Promise<RxHeroesDatabase> {
     if (!isNative) {
         addRxPlugin(RxDBLeaderElectionPlugin);
     }
+    addRxPlugin(RxDBCleanupPlugin);
 
     console.log('DatabaseService: creating database..');
     const db: RxHeroesDatabase = await createRxDatabase({

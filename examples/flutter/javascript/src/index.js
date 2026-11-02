@@ -1,5 +1,6 @@
 import {
-    createRxDatabase
+    createRxDatabase,
+    addRxPlugin
 } from 'rxdb';
 import {
     getRxStorageLoki
@@ -8,6 +9,9 @@ import {
     setFlutterRxDatabaseConnector,
     getLokijsAdapterFlutter
 } from 'rxdb/plugins/flutter';
+import { RxDBCleanupPlugin } from 'rxdb/plugins/cleanup';
+
+addRxPlugin(RxDBCleanupPlugin);
 
 async function createDB(databaseName) {
     const db = await createRxDatabase({

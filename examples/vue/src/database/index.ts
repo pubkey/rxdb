@@ -29,6 +29,9 @@ import { wrappedValidateAjvStorage } from 'rxdb/plugins/validate-ajv';
 import { RxDBLeaderElectionPlugin } from 'rxdb/plugins/leader-election';
 addRxPlugin(RxDBLeaderElectionPlugin);
 
+import { RxDBCleanupPlugin } from 'rxdb/plugins/cleanup';
+addRxPlugin(RxDBCleanupPlugin);
+
 import { replicateCouchDB } from 'rxdb/plugins/replication-couchdb';
 
 console.log('hostname: ' + window.location.hostname);

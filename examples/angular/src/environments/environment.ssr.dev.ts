@@ -12,6 +12,7 @@ import {
 import {
     addRxPlugin
 } from 'rxdb';
+import { RxDBCleanupPlugin } from 'rxdb/plugins/cleanup';
 import { EnvironmentParams } from './environment-type';
 
 
@@ -24,6 +25,7 @@ export const environment: EnvironmentParams = {
     rxdbSyncUrl: 'http://localhost:' + SYNC_PORT + '/' + DATABASE_NAME,
     addRxDBPlugins() {
         addRxPlugin(RxDBDevModePlugin);
+        addRxPlugin(RxDBCleanupPlugin);
     },
     getRxStorage() {
         return wrappedValidateAjvStorage({

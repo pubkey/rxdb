@@ -13,6 +13,9 @@ addRxPlugin(RxDBQueryBuilderPlugin);
 const { RxDBLeaderElectionPlugin } = require('../../../plugins/leader-election');
 addRxPlugin(RxDBLeaderElectionPlugin);
 
+const { RxDBCleanupPlugin } = require('../../../plugins/cleanup');
+addRxPlugin(RxDBCleanupPlugin);
+
 const Database = {};
 
 const heroSchema = {

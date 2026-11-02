@@ -15,6 +15,9 @@ import { wrappedValidateAjvStorage } from 'rxdb/plugins/validate-ajv';
 import { RxDBLeaderElectionPlugin } from 'rxdb/plugins/leader-election';
 addRxPlugin(RxDBLeaderElectionPlugin);
 
+import { RxDBCleanupPlugin } from 'rxdb/plugins/cleanup';
+addRxPlugin(RxDBCleanupPlugin);
+
 const syncURL = 'http://' + window.location.hostname + ':10102/';
 console.log('host: ' + syncURL);
 import { RxDBDevModePlugin } from 'rxdb/plugins/dev-mode';
