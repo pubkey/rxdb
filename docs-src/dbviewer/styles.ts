@@ -110,6 +110,7 @@ export const DBVIEWER_STYLES = `
 .rxdbv-btn:disabled { opacity: 0.5; cursor: default; }
 .rxdbv-btn:disabled:hover { background: transparent; color: var(--rxdbv-fg); }
 .rxdbv-btn-small { font-size: 10px; height: 28px; padding: 0 16px; }
+.rxdbv-selection-actions { display: inline-flex; align-items: center; gap: 8px; }
 .rxdbv-btn-icon { width: 31px; padding: 0; }
 .rxdbv-btn-primary {
     box-sizing: border-box;

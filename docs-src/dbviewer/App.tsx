@@ -253,8 +253,9 @@ export function ViewerApp(props: ViewerAppProps) {
     };
     const toolTitle = TOOL_TITLES[ctx.nav.view] || null;
     const identityParts = [source.databaseName];
-    if (ctx.nav.collectionName) {
-        identityParts.push(ctx.nav.collectionName);
+    const identityCollection = ctx.nav.collectionName || ctx.currentCollectionName();
+    if (identityCollection) {
+        identityParts.push(identityCollection);
     }
     if (toolTitle) {
         identityParts.push(toolTitle);

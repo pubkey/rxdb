@@ -738,13 +738,12 @@ function renderFooter(
         el('span', '', formatInteger(skip + 1) + '–' + formatInteger(rangeEnd) + ' of ' + totalText),
         previousButton,
         nextButton,
-        selectionCount > 0 ? el('span', 'rxdbv-dim', [
-            formatInteger(selectionCount) + ' selected · ',
-            el('a', '', 'Delete', {
+        selectionCount > 0 ? el('span', 'rxdbv-selection-actions', [
+            el('span', 'rxdbv-dim', formatInteger(selectionCount) + ' selected'),
+            el('button', 'rxdbv-btn rxdbv-btn-small', 'Delete', {
                 onClick: () => openDeleteModal(ctx, collectionName, uiState)
             }),
-            ' · ',
-            el('a', '', 'Export selection', {
+            el('button', 'rxdbv-btn rxdbv-btn-small', 'Export selection', {
                 onClick: () => {
                     const result2 = uiState.lastResult;
                     if (!result2) {
