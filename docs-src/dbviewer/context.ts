@@ -48,21 +48,3 @@ export type PageContext = {
     requestClose(): void;
 };
 
-const SETTINGS_STORAGE_KEY = 'rxdb-dbviewer-settings';
-
-export function readStoredSettings(): { pageSize?: number; } {
-    try {
-        const raw = localStorage.getItem(SETTINGS_STORAGE_KEY);
-        return raw ? JSON.parse(raw) : {};
-    } catch (err) {
-        return {};
-    }
-}
-
-export function storeSettings(settings: { pageSize?: number; }) {
-    try {
-        localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(settings));
-    } catch (err) {
-        // localStorage can be unavailable, settings are then session-only
-    }
-}

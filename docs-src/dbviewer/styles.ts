@@ -21,6 +21,12 @@ export const DBVIEWER_STYLES = `
     --rxdbv-fg: #FFFFFF;
     --rxdbv-fg-muted: #D2D6DF;
     --rxdbv-fg-dim: #A2A9BA;
+    --rxdbv-type-string: #ED168F;
+    --rxdbv-type-number: #B2218B;
+    --rxdbv-type-boolean: #752A8A;
+    --rxdbv-type-array: #199BF1;
+    --rxdbv-type-object: #3ECF8E;
+    --rxdbv-type-missing: #3A4256;
     --rxdbv-success: #3ECF8E;
     --rxdbv-danger: #FD366E;
     --rxdbv-warning: #EBCB4B;
@@ -244,6 +250,10 @@ export const DBVIEWER_STYLES = `
     padding-left: 26px;
     font-size: 11px;
 }
+.rxdbv-topbar-crumb { cursor: pointer; }
+.rxdbv-topbar-crumb:hover { color: var(--rxdbv-pink); }
+.rxdbv-rail-group { cursor: default; }
+.rxdbv-rail-group:hover { background: transparent; }
 .rxdbv-rail-item:hover { background: rgba(255, 255, 255, 0.05); }
 .rxdbv-rail-item.rxdbv-active {
     border-left-color: var(--rxdbv-pink);
@@ -495,8 +505,10 @@ export const DBVIEWER_STYLES = `
     white-space: pre;
 }
 .rxdbv-json-key { color: var(--rxdbv-fg); }
-.rxdbv-json-str { color: var(--rxdbv-success); }
-.rxdbv-json-num { color: var(--rxdbv-warning); }
+.rxdbv-json-str { color: var(--rxdbv-type-string); }
+.rxdbv-json-num { color: var(--rxdbv-type-number); }
+.rxdbv-json-bool { color: var(--rxdbv-type-boolean); }
+.rxdbv-json-null { color: var(--rxdbv-fg-dim); }
 .rxdbv-json-doc-fresh { background: rgba(62, 207, 142, 0.08); display: block; }
 .rxdbv-json-fresh-note { color: var(--rxdbv-success); }
 
@@ -533,7 +545,7 @@ export const DBVIEWER_STYLES = `
 .rxdbv-field-row { display: flex; gap: 8px; padding: 3px 12px; align-items: center; }
 .rxdbv-field-row .rxdbv-field-label { width: 80px; min-width: 80px; color: var(--rxdbv-fg-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .rxdbv-field-row .rxdbv-field-value { font-family: var(--rxdbv-mono); color: var(--rxdbv-fg-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; height: 31px; line-height: 31px; }
-.rxdbv-field-row .rxdbv-field-value.rxdbv-string { color: var(--rxdbv-success); }
+.rxdbv-field-row .rxdbv-field-value.rxdbv-string { color: var(--rxdbv-type-string); }
 .rxdbv-field-row .rxdbv-expand-toggle { cursor: pointer; }
 .rxdbv-field-child { display: flex; gap: 8px; padding: 2px 12px 2px 28px; font-family: var(--rxdbv-mono); }
 .rxdbv-field-child .rxdbv-field-label { width: 64px; min-width: 64px; color: var(--rxdbv-fg-dim); }
@@ -872,6 +884,8 @@ export const DBVIEWER_STYLES = `
 }
 .rxdbv-phone-row:hover { background: rgba(255, 255, 255, 0.04); }
 .rxdbv-phone-subrow { padding-left: 30px; font-size: 12px; color: var(--rxdbv-fg-muted); }
+.rxdbv-phone-group { cursor: default; }
+.rxdbv-phone-group:hover { background: transparent; }
 .rxdbv-phone-note { padding: 12px 14px; border-top: 1px solid rgba(255, 255, 255, 0.08); color: var(--rxdbv-fg-dim); font-size: 11px; }
 .rxdbv-phone-field { padding: 8px 14px; border-bottom: 1px solid rgba(255, 255, 255, 0.06); font-size: 13px; }
 .rxdbv-phone-header-title {

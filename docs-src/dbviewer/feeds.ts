@@ -22,8 +22,12 @@ export function renderReplicationPanel(ctx: PageContext) {
     const panel = el('div', 'rxdbv-panel-scroll');
     ctx.contentHost.appendChild(panel);
     const events = ctx.events;
+    const scopeCollection = ctx.nav.collectionName || null;
+    const replications = events
+        ? (scopeCollection ? events.replications.filter(r => r.collectionName === scopeCollection) : events.replications)
+        : [];
 
-    if (!events || events.replications.length === 0) {
+    if (!events || replications.length === 0) {
         panel.appendChild(el('div', 'rxdbv-empty-state', [
             el('div', 'rxdbv-empty-inner', [
                 el('div', 'rxdbv-empty-title', 'No replication running'),
@@ -39,9 +43,9 @@ export function renderReplicationPanel(ctx: PageContext) {
         return;
     }
 
-    const identifiers = Array.from(new Set(events.replications.map(r => r.identifier))).join(', ');
+    const identifiers = Array.from(new Set(replications.map(r => r.identifier))).join(', ');
     panel.appendChild(el('div', 'rxdbv-toolbar', [
-        el('span', 'rxdbv-muted', events.replications.length + ' states · ' + identifiers, { style: 'font-size:11px' })
+        el('span', 'rxdbv-muted', replications.length + ' states · ' + identifiers, { style: 'font-size:11px' })
     ]));
 
     const template = '110px 110px 110px 1fr 1fr';
@@ -60,7 +64,6 @@ export function renderReplicationPanel(ctx: PageContext) {
     const feedHeader = el('div', '', [
         el('span', 'rxdbv-section-label', 'LIVE FEED', { style: 'padding:0' }),
         el('span', '', undefined, { style: 'width:7px;height:7px;border-radius:50%;background:var(--rxdbv-success)' }),
-        el('span', 'rxdbv-dim', 'documents received and sent, newest first', { style: 'font-size:10px' }),
         el('div', 'rxdbv-flex1')
     ], { style: 'display:flex;align-items:center;gap:8px;padding:14px 12px 4px' });
     let paused = false;
@@ -80,7 +83,7 @@ export function renderReplicationPanel(ctx: PageContext) {
 
     const renderStates = () => {
         clearChildren(rowsHost);
-        events.replications.forEach(info => {
+        replications.forEach(info => {
             const stateGlyph = (active: boolean) => {
                 if (info.lastError && info.lastErrorTime && Date.now() - info.lastErrorTime < 60 * 1000) {
                     return el('div', '', '▲ error', { style: 'color:var(--rxdbv-danger)' });
@@ -111,16 +114,18 @@ export function renderReplicationPanel(ctx: PageContext) {
 
     const renderFeed = () => {
         clearChildren(feedHost);
-        events.replicationFeed.slice(0, 60).forEach(entry => {
-            const glyph = el('span', 'rxdbv-mono', entry.direction === 'pull' ? '↓' : '↑', {
-                style: 'width:12px;font-weight:700;color:' + (entry.direction === 'pull' ? 'var(--rxdbv-info)' : 'var(--rxdbv-pink)')
+        events.replicationFeed
+            .filter(entry => !scopeCollection || entry.collectionName === scopeCollection)
+            .slice(0, 60).forEach(entry => {
+            const directionLabel = el('span', 'rxdbv-mono', entry.direction === 'pull' ? 'PULL' : 'PUSH', {
+                style: 'width:42px;font-weight:700;color:' + (entry.direction === 'pull' ? 'var(--rxdbv-info)' : 'var(--rxdbv-pink)')
             });
             feedHost.appendChild(el('div', '', [
-                glyph,
+                directionLabel,
                 el('span', 'rxdbv-dim rxdbv-mono', formatClockTime(entry.time, true).slice(0, 10), { style: 'width:90px' }),
                 el('span', 'rxdbv-mono', entry.collectionName, { style: 'width:90px' }),
                 el('span', 'rxdbv-mono rxdbv-muted', entry.documentId, { style: 'width:110px;overflow:hidden;text-overflow:ellipsis' }),
-                el('span', 'rxdbv-mono rxdbv-dim rxdbv-flex1', entry.direction + ' · ' + shortRev(entry.rev) + ' · ' + formatByteSize(entry.byteSize))
+                el('span', 'rxdbv-mono rxdbv-dim rxdbv-flex1', shortRev(entry.rev) + ' · ' + formatByteSize(entry.byteSize))
             ], { style: 'display:flex;gap:12px;margin:0 12px;padding:4px 10px;border-bottom:1px solid rgba(255,255,255,0.05);font-size:11px;align-items:center' }));
         });
         if (events.replicationFeed.length === 0) {
@@ -208,7 +213,6 @@ export function renderChangesPanel(ctx: PageContext) {
         }
     });
     panel.appendChild(el('div', 'rxdbv-toolbar', [
-        sessionCounter,
         filterInput,
         el('div', 'rxdbv-flex1'),
         observeButton
@@ -217,23 +221,85 @@ export function renderChangesPanel(ctx: PageContext) {
     const listHost = el('div', 'rxdbv-split-left');
     const detailHost = el('div', 'rxdbv-split-right');
     panel.appendChild(el('div', 'rxdbv-split', [listHost, detailHost]));
+    panel.appendChild(el('div', 'rxdbv-grid-footer', [sessionCounter]));
 
-    const template = '100px 70px 90px 110px 1fr';
+    const template = '100px 70px 110px 1fr';
     const opColor = (operation: string) =>
         operation === 'INSERT' ? 'var(--rxdbv-success)' : (operation === 'DELETE' ? 'var(--rxdbv-danger)' : 'var(--rxdbv-warning)');
+
+    /**
+     * One line that names the changed top-level fields with their
+     * old and new values, like "power: 100 → 94, _deleted: false → true".
+     */
+    const changeSummary = (entry: ViewerChangeEntry): string => {
+        const previous = entry.previousDocumentData || {};
+        const next = entry.documentData || {};
+        const formatValue = (value: any): string => {
+            if (typeof value === 'undefined') {
+                return '∅';
+            }
+            const text = typeof value === 'object' ? JSON.stringify(value) : String(value);
+            return text.length > 24 ? text.slice(0, 24) + '…' : text;
+        };
+        const keys = Array.from(new Set(Object.keys(previous).concat(Object.keys(next))))
+            .filter(key => key !== '_rev' && key !== '_meta' && key !== '_attachments');
+        const parts: string[] = [];
+        keys.forEach(key => {
+            if (JSON.stringify((previous as any)[key]) === JSON.stringify((next as any)[key])) {
+                return;
+            }
+            if (!entry.previousDocumentData) {
+                parts.push(key + ': ' + formatValue((next as any)[key]));
+            } else {
+                parts.push(key + ': ' + formatValue((previous as any)[key]) + ' → ' + formatValue((next as any)[key]));
+            }
+        });
+        return parts.join(', ');
+    };
+
+    let sortField: 'time' | 'op' | 'id' | 'change' = 'time';
+    let sortDirection: 1 | -1 = -1;
 
     const renderList = () => {
         clearChildren(listHost);
         const scopedCount = scopedChanges().length;
-        sessionCounter.textContent = (paused ? 'paused' : 'recording') + ' · ' + (scopeCollection
-            ? formatInteger(scopedCount) + (scopedCount === 1 ? ' change recorded' : ' changes recorded')
-            : formatInteger(events.sessionWrites) + ' writes this session');
+        sessionCounter.textContent = (paused ? 'paused · ' : '') + formatInteger(scopedCount) + (scopedCount === 1 ? ' change recorded' : ' changes recorded');
+        const sortValue = (entry: ViewerChangeEntry): string | number => {
+            if (sortField === 'time') {
+                return entry.time;
+            }
+            if (sortField === 'op') {
+                return entry.operation;
+            }
+            if (sortField === 'id') {
+                return entry.documentId;
+            }
+            return changeSummary(entry);
+        };
+        const sortableHeader = (label: string, field: typeof sortField) => {
+            const cell: (string | HTMLElement)[] = [label];
+            if (sortField === field) {
+                cell.push(el('span', 'rxdbv-sort-arrow', sortDirection === -1 ? '▼' : '▲'));
+            }
+            return el('div', '', cell, {
+                style: 'cursor:pointer',
+                title: 'Sort by ' + label,
+                onClick: () => {
+                    if (sortField === field) {
+                        sortDirection = sortDirection === -1 ? 1 : -1;
+                    } else {
+                        sortField = field;
+                        sortDirection = -1;
+                    }
+                    renderList();
+                }
+            });
+        };
         const header = el('div', 'rxdbv-table-header', [
-            el('div', '', 'time'),
-            el('div', '', 'op'),
-            el('div', '', 'collection'),
-            el('div', '', 'id'),
-            el('div', '', 'rev')
+            sortableHeader('time', 'time'),
+            sortableHeader('op', 'op'),
+            sortableHeader('id', 'id'),
+            sortableHeader('change', 'change')
         ]);
         header.style.gridTemplateColumns = template;
         listHost.appendChild(header);
@@ -243,14 +309,20 @@ export function renderChangesPanel(ctx: PageContext) {
             }
             return entry.collectionName.toLowerCase().includes(filterText) ||
                 entry.documentId.toLowerCase().includes(filterText);
-        }).slice(0, 100);
+        }).slice(0, 100).sort((a, b) => {
+            const left = sortValue(a);
+            const right = sortValue(b);
+            if (left === right) {
+                return 0;
+            }
+            return (left < right ? -1 : 1) * sortDirection;
+        });
         visible.forEach(entry => {
             const row = el('div', 'rxdbv-table-row rxdbv-clickable rxdbv-mono' + (entry === selectedEntry ? ' rxdbv-selected' : ''), [
                 el('div', 'rxdbv-dim', formatClockTime(entry.time, true)),
                 el('div', '', entry.operation, { style: 'font-weight:700;color:' + opColor(entry.operation) }),
-                el('div', '', entry.collectionName),
                 el('div', 'rxdbv-muted', entry.documentId),
-                el('div', 'rxdbv-dim', (entry.revFrom ? shortRev(entry.revFrom) + ' → ' : '→ ') + shortRev(entry.revTo))
+                el('div', 'rxdbv-dim', changeSummary(entry), { style: 'overflow:hidden;text-overflow:ellipsis;white-space:nowrap' })
             ], {
                 onClick: () => {
                     selectedEntry = entry;

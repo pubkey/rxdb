@@ -3,7 +3,6 @@ import {
 } from '../../src/plugins/dbviewer/dbviewer-helpers.ts';
 import { renderCollectionScreen } from './collection.ts';
 import type { PageContext } from './context.ts';
-import { storeSettings } from './context.ts';
 import {
     DBVIEWER_ICON_ARROW_LEFT,
     DBVIEWER_ICON_ARROW_RIGHT,
@@ -93,28 +92,8 @@ function renderEmptyDatabase(ctx: PageContext) {
 }
 
 function renderSettings(ctx: PageContext) {
-    const pageSizes = [25, 50, 100, 250];
-    const select = el('select', '', undefined, {
-        style: 'background:var(--rxdbv-bg);color:var(--rxdbv-fg);border:2px solid var(--rxdbv-control-border);height:31px;padding:0 8px;font-family:inherit;font-size:11px'
-    }) as HTMLSelectElement;
-    pageSizes.forEach(size => {
-        const option = document.createElement('option');
-        option.value = String(size);
-        option.textContent = String(size) + ' rows per page';
-        if (size === ctx.pageSize) {
-            option.selected = true;
-        }
-        select.appendChild(option);
-    });
-    select.addEventListener('change', () => {
-        ctx.pageSize = parseInt(select.value, 10);
-        storeSettings({ pageSize: ctx.pageSize });
-    });
-
     ctx.contentHost.appendChild(el('div', 'rxdbv-panel-scroll', [
         el('div', '', [
-            el('div', 'rxdbv-section-label', 'GRID'),
-            el('div', '', [select], { style: 'padding:8px 12px' }),
             el('div', 'rxdbv-section-label', 'ABOUT'),
             el('div', 'rxdbv-dim', 'RxDB database viewer · rxdb v' + ctx.source.rxdbVersion, { style: 'padding:8px 12px' })
         ])
@@ -145,9 +124,11 @@ function renderPhoneLayout(ctx: PageContext) {
         const phoneCollections = ctx.source.listCollections();
         phoneCollections.filter(info => !info.viewOnly).forEach(info => {
             const count = ctx.countsCache.get(info.name);
-            listWrap.appendChild(el('div', 'rxdbv-phone-row', [
-                el('span', 'rxdbv-mono rxdbv-flex1', info.name),
-                el('span', 'rxdbv-dim rxdbv-mono', typeof count === 'number' ? formatInteger(count) : '…', { style: 'font-size:12px' }),
+            listWrap.appendChild(el('div', 'rxdbv-phone-row rxdbv-phone-group', [
+                el('span', 'rxdbv-mono rxdbv-flex1', info.name)
+            ]));
+            listWrap.appendChild(el('div', 'rxdbv-phone-row rxdbv-phone-subrow', [
+                el('span', 'rxdbv-flex1', typeof count === 'number' ? 'Documents (' + formatInteger(count) + ')' : 'Documents'),
                 el('span', 'rxdbv-dim', undefined, { html: DBVIEWER_ICON_ARROW_RIGHT })
             ], {
                 onClick: () => {
@@ -159,12 +140,25 @@ function renderPhoneLayout(ctx: PageContext) {
                 { view: 'schema', label: 'Schema' },
                 { view: 'changes', label: 'Changes' }
             ];
+            if (ctx.events && ctx.events.replications.some(r => r.collectionName === info.name)) {
+                collectionTools.push({ view: 'replication', label: 'Replication' });
+            }
             collectionTools.forEach(tool => {
                 if (tool.view === 'changes' && ctx.source.kind === 'dump') {
                     return;
                 }
+                let label = tool.label;
+                if (tool.view === 'changes' && ctx.events) {
+                    const changeCount = ctx.events.changes.filter(entry => entry.collectionName === info.name).length;
+                    if (changeCount > 0) {
+                        label = 'Changes (' + formatInteger(changeCount) + ')';
+                    }
+                }
+                if (tool.view === 'schema' && typeof info.schemaVersion === 'number') {
+                    label = 'Schema (v' + info.schemaVersion + ')';
+                }
                 listWrap.appendChild(el('div', 'rxdbv-phone-row rxdbv-phone-subrow', [
-                    el('span', 'rxdbv-flex1', tool.label),
+                    el('span', 'rxdbv-flex1', label),
                     el('span', 'rxdbv-dim', undefined, { html: DBVIEWER_ICON_ARROW_RIGHT })
                 ], {
                     onClick: () => {
@@ -175,35 +169,6 @@ function renderPhoneLayout(ctx: PageContext) {
                 }));
             });
         });
-        if (phoneCollections.some(info => !!info.viewOnly)) {
-            listWrap.appendChild(el('div', 'rxdbv-rail-header', 'SYSTEM', { style: 'padding:16px 14px 4px' }));
-            phoneCollections.filter(info => !!info.viewOnly).forEach(info => {
-                const count = ctx.countsCache.get(info.name);
-                listWrap.appendChild(el('div', 'rxdbv-phone-row', [
-                    el('span', 'rxdbv-mono rxdbv-muted rxdbv-flex1', info.name),
-                    el('span', 'rxdbv-dim rxdbv-mono', typeof count === 'number' ? formatInteger(count) : '…', { style: 'font-size:12px' }),
-                    el('span', 'rxdbv-dim', undefined, { html: DBVIEWER_ICON_ARROW_RIGHT })
-                ], {
-                    onClick: () => {
-                        ctx.phoneNav = { screen: 'list', collectionName: info.name };
-                        ctx.renderContent();
-                    }
-                }));
-            });
-        }
-        if (ctx.events && ctx.events.replications.length > 0) {
-            listWrap.appendChild(el('div', 'rxdbv-rail-header', 'REPLICATION', { style: 'padding:16px 14px 4px' }));
-            ctx.events.replications.forEach(info => {
-                const state = info.lastError ? '▲ error' : (info.active ? '● running' : (info.stopped ? '■ stopped' : '○ idle'));
-                const color = info.lastError ? 'var(--rxdbv-danger)' : (info.active ? 'var(--rxdbv-success)' : 'var(--rxdbv-fg-dim)');
-                const stateSpan = el('span', '', state, { style: 'font-size:11px' });
-                stateSpan.style.color = color;
-                listWrap.appendChild(el('div', 'rxdbv-phone-row', [
-                    el('span', 'rxdbv-mono rxdbv-flex1', info.collectionName),
-                    stateSpan
-                ]));
-            });
-        }
         const tools: { view: typeof ctx.nav.view; label: string; }[] = [
             { view: 'live', label: 'Live' },
             { view: 'storage', label: 'Storage' },
@@ -224,6 +189,22 @@ function renderPhoneLayout(ctx: PageContext) {
                 }
             }));
         });
+        if (phoneCollections.some(info => !!info.viewOnly)) {
+            listWrap.appendChild(el('div', 'rxdbv-rail-header', 'SYSTEM', { style: 'padding:16px 14px 4px' }));
+            phoneCollections.filter(info => !!info.viewOnly).forEach(info => {
+                const count = ctx.countsCache.get(info.name);
+                listWrap.appendChild(el('div', 'rxdbv-phone-row', [
+                    el('span', 'rxdbv-mono rxdbv-muted rxdbv-flex1', info.name),
+                    el('span', 'rxdbv-dim rxdbv-mono', typeof count === 'number' ? formatInteger(count) : '…', { style: 'font-size:12px' }),
+                    el('span', 'rxdbv-dim', undefined, { html: DBVIEWER_ICON_ARROW_RIGHT })
+                ], {
+                    onClick: () => {
+                        ctx.phoneNav = { screen: 'list', collectionName: info.name };
+                        ctx.renderContent();
+                    }
+                }));
+            });
+        }
         host.appendChild(header);
         host.appendChild(listWrap);
         return;
@@ -262,6 +243,9 @@ function renderPhoneLayout(ctx: PageContext) {
                     break;
                 case 'changes':
                     renderChangesPanel(ctx);
+                    break;
+                case 'replication':
+                    renderReplicationPanel(ctx);
                     break;
                 case 'storage':
                     renderStoragePanel(ctx);

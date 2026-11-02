@@ -19,14 +19,19 @@ import { showViewerError } from './error.ts';
 
 const SCHEMA_SAMPLE_LIMIT = 1000;
 
+/**
+ * The global type-to-color map. The values mirror the
+ * --rxdbv-type-* variables in styles.ts which also color
+ * the JSON view.
+ */
 const TYPE_COLORS: { [key in ViewerFieldType]: string } = {
-    string: '#199BF1',
-    number: '#EBCB4B',
-    boolean: '#3ECF8E',
-    array: '#B2218B',
-    object: '#752A8A',
-    null: '#3A4256',
-    missing: '#3A4256'
+    string: 'var(--rxdbv-type-string)',
+    number: 'var(--rxdbv-type-number)',
+    boolean: 'var(--rxdbv-type-boolean)',
+    array: 'var(--rxdbv-type-array)',
+    object: 'var(--rxdbv-type-object)',
+    null: 'var(--rxdbv-type-missing)',
+    missing: 'var(--rxdbv-type-missing)'
 };
 
 /**
@@ -76,11 +81,14 @@ export function renderSchemaPanel(ctx: PageContext) {
         .map(type => type + ' <span style="display:inline-block;width:8px;height:8px;background:' + TYPE_COLORS[type] + '"></span>')
         .join(' · ');
 
+    const versionBadge = info && typeof info.schemaVersion === 'number'
+        ? el('span', 'rxdbv-badge-primary', 'v' + info.schemaVersion, { title: 'declared schema version' })
+        : null;
+
     if (viewMode === 'schema') {
-        const versionText = info && typeof info.schemaVersion === 'number' ? ' · declared v' + info.schemaVersion : '';
         panel.appendChild(panelToolbar([
             segments,
-            el('span', 'rxdbv-mono rxdbv-muted', collectionName + versionText, { style: 'font-size:11px' })
+            versionBadge
         ]));
         if (info && info.jsonSchema) {
             const jsonView = el('div', 'rxdbv-json-view');
@@ -97,9 +105,13 @@ export function renderSchemaPanel(ctx: PageContext) {
         return;
     }
 
-    const headerText = el('span', 'rxdbv-mono rxdbv-muted', collectionName + ' · sampling…', { style: 'font-size:11px' });
+    const headerText = el('span', 'rxdbv-mono rxdbv-muted', 'sampling…', { style: 'font-size:11px' });
+    const checkButton = el('button', 'rxdbv-btn rxdbv-btn-small', 'Scan for validation errors', {
+        title: 'Iterate over the whole collection and check every document against the declared schema'
+    }) as HTMLButtonElement;
     panel.appendChild(panelToolbar([
         segments,
+        versionBadge,
         headerText,
         el('div', 'rxdbv-flex1'),
         legend
@@ -107,6 +119,68 @@ export function renderSchemaPanel(ctx: PageContext) {
 
     const tableHost = el('div');
     panel.appendChild(tableHost);
+    const checkHost = el('div');
+
+    if (!info || !info.jsonSchema) {
+        checkButton.style.display = 'none';
+    }
+    checkButton.addEventListener('click', () => {
+        if (!info || !info.jsonSchema) {
+            return;
+        }
+        checkButton.disabled = true;
+        checkButton.textContent = 'Checking…';
+        clearChildren(checkHost);
+        const pageSize = 500;
+        let scanned = 0;
+        const allViolations: { id: string; message: string; }[] = [];
+        const readPage = (skip: number): Promise<void> =>
+            ctx.source.query(collectionName, {}, skip, pageSize).then(result => {
+                scanned += result.docs.length;
+                checkButton.textContent = 'Checking… ' + formatInteger(scanned);
+                const batch = analyzeViewerDocuments(result.docs, info.jsonSchema, info.primaryPath);
+                batch.violations.forEach(violation => {
+                    if (allViolations.length < 100) {
+                        allViolations.push(violation);
+                    }
+                });
+                if (result.docs.length === pageSize) {
+                    return readPage(skip + pageSize);
+                }
+            });
+        readPage(0).then(() => {
+            if (ctx.destroyed) {
+                return;
+            }
+            checkButton.disabled = false;
+            checkButton.textContent = 'Scan for validation errors';
+            if (allViolations.length === 0) {
+                checkHost.appendChild(buildInfoBox(
+                    'info',
+                    'All documents match the schema',
+                    'Checked ' + formatInteger(scanned) + ' documents against the declared schema. No invalid documents found.'
+                ));
+            } else {
+                const box = buildInfoBox(
+                    'warning',
+                    formatInteger(allViolations.length) + (allViolations.length === 100 ? '+' : '') + ' invalid documents',
+                    'Checked ' + formatInteger(scanned) + ' documents. These documents do not match the declared schema:'
+                );
+                checkHost.appendChild(box);
+                allViolations.slice(0, 30).forEach(violation => {
+                    checkHost.appendChild(el('div', '', [
+                        el('span', '', '▲', { style: 'color:var(--rxdbv-danger)' }),
+                        el('span', 'rxdbv-mono rxdbv-muted', violation.id, { style: 'width:90px;overflow:hidden;text-overflow:ellipsis' }),
+                        el('span', 'rxdbv-mono rxdbv-flex1', violation.message)
+                    ], { style: 'display:flex;gap:12px;margin:0 12px;padding:5px 10px;border-bottom:1px solid rgba(255,255,255,0.05);font-size:11px;align-items:center' }));
+                });
+            }
+        }).catch(err => {
+            checkButton.disabled = false;
+            checkButton.textContent = 'Scan for validation errors';
+            showViewerError(ctx.root, 'Schema check failed', err);
+        });
+    });
 
     ctx.source.query(collectionName, {}, 0, SCHEMA_SAMPLE_LIMIT).then(result => {
         if (ctx.destroyed) {
@@ -117,8 +191,7 @@ export function renderSchemaPanel(ctx: PageContext) {
             info ? info.jsonSchema : undefined,
             info ? info.primaryPath : undefined
         );
-        const declared = info && typeof info.schemaVersion === 'number' ? 'declared v' + info.schemaVersion + ' · ' : '';
-        headerText.textContent = collectionName + ' · ' + declared + 'sampled ' + formatInteger(analysis.sampled) + ' documents';
+        headerText.textContent = 'sampled ' + formatInteger(analysis.sampled) + ' documents';
 
         const template = '130px 260px 90px 1fr';
         const header = el('div', 'rxdbv-table-header', [
@@ -152,6 +225,33 @@ export function renderSchemaPanel(ctx: PageContext) {
             tableHost.appendChild(row);
         });
 
+        if (info && info.jsonSchema) {
+            const declaredIndexes: (string | string[])[] = Array.isArray(info.jsonSchema.indexes) ? info.jsonSchema.indexes : [];
+            tableHost.appendChild(el('div', 'rxdbv-section-label', 'INDEXES', { style: 'margin-top:16px' }));
+            const indexTemplate = '130px 1fr';
+            const indexHeader = el('div', 'rxdbv-table-header', [
+                el('div', '', 'type'),
+                el('div', '', 'fields')
+            ]);
+            indexHeader.style.gridTemplateColumns = indexTemplate;
+            tableHost.appendChild(indexHeader);
+            const indexRow = (type: string, fields: string) => {
+                const row = el('div', 'rxdbv-table-row', [
+                    el('div', 'rxdbv-mono rxdbv-muted', type),
+                    el('div', 'rxdbv-mono', fields)
+                ]);
+                row.style.gridTemplateColumns = indexTemplate;
+                tableHost.appendChild(row);
+            };
+            indexRow('primary', info.primaryPath);
+            declaredIndexes.forEach(declaredIndex => {
+                const fields = Array.isArray(declaredIndex) ? declaredIndex : [declaredIndex];
+                indexRow(fields.length > 1 ? 'compound' : 'index', fields.join(', '));
+            });
+            tableHost.appendChild(el('div', '', [checkButton], { style: 'padding:14px 12px 4px' }));
+            tableHost.appendChild(checkHost);
+        }
+
         if (analysis.violations.length > 0) {
             tableHost.appendChild(el('div', '', [
                 el('span', '', 'Schema violations', { style: 'font-weight:700;font-size:12px' }),
@@ -171,8 +271,6 @@ export function renderSchemaPanel(ctx: PageContext) {
                     })
                 ], { style: 'display:flex;gap:12px;margin:0 12px;padding:5px 10px;border-bottom:1px solid rgba(255,255,255,0.05);font-size:11px;align-items:center' }));
             });
-        } else if (info && info.jsonSchema) {
-            tableHost.appendChild(el('div', 'rxdbv-dim', 'No schema violations in the sample.', { style: 'margin:16px 12px;font-size:11px' }));
         }
     });
 }
@@ -335,17 +433,14 @@ export function renderExportPanel(ctx: PageContext) {
     ctx.contentHost.appendChild(panel);
 
     const collections = ctx.source.listCollections();
-    const selected = new Set<string>(collections.map(info => info.name));
+    const selected = new Set<string>(collections.filter(info => info.name !== '.internal').map(info => info.name));
     const selectorInputs = new Map<string, HTMLInputElement>();
 
     panel.appendChild(el('div', 'rxdbv-section-label', 'COLLECTIONS'));
-    panel.appendChild(el('div', 'rxdbv-dim', 'Pick the collections to export. A selector limits that collection to matching documents.', {
-        style: 'font-size:10.5px;padding:0 12px 6px;line-height:1.5'
-    }));
     const listHost = el('div', '', undefined, { style: 'padding:4px 12px;display:flex;flex-direction:column;gap:8px;max-width:760px' });
     collections.forEach(info => {
         const checkbox = el('input', '', undefined, { type: 'checkbox' }) as HTMLInputElement;
-        checkbox.checked = true;
+        checkbox.checked = selected.has(info.name);
         const count = ctx.countsCache.get(info.name);
         const selectorInput = el('input', 'rxdbv-query-input', undefined, {
             placeholder: '{ "field": "value" } (optional)'
@@ -358,6 +453,10 @@ export function renderExportPanel(ctx: PageContext) {
             el('span', 'rxdbv-dim', 'find'),
             selectorInput
         ], { style: 'flex:1;min-width:200px' });
+        if (!checkbox.checked) {
+            selectorInput.disabled = true;
+            selectorWrap.style.opacity = '0.4';
+        }
         checkbox.addEventListener('change', () => {
             if (checkbox.checked) {
                 selected.add(info.name);
@@ -388,7 +487,6 @@ export function renderExportPanel(ctx: PageContext) {
     panel.appendChild(listHost);
 
     const exportButton = el('button', 'rxdbv-btn-primary', 'Download JSON') as HTMLButtonElement;
-    const statusLine = el('div', 'rxdbv-dim', '', { style: 'font-size:11px;padding:4px 12px' });
     const updateButton = () => {
         const anyInvalid = collections.some(info =>
             selected.has(info.name) &&
@@ -409,7 +507,6 @@ export function renderExportPanel(ctx: PageContext) {
         exportButton.textContent = 'Exporting…';
         const pageSize = 500;
         const collectionsOut: { name: string; docs: any[]; }[] = [];
-        let totalDocs = 0;
         const exportCollectionAt = (index: number): Promise<void> => {
             if (index >= names.length) {
                 return Promise.resolve();
@@ -423,7 +520,6 @@ export function renderExportPanel(ctx: PageContext) {
                     }
                 });
             return readPage(0).then(() => {
-                totalDocs = totalDocs + docs.length;
                 collectionsOut.push({ name: names[index], docs });
                 return exportCollectionAt(index + 1);
             });
@@ -433,8 +529,6 @@ export function renderExportPanel(ctx: PageContext) {
                 name: ctx.source.databaseName,
                 collections: collectionsOut
             });
-            statusLine.textContent = 'Exported ' + formatInteger(totalDocs) + ' documents from ' +
-                collectionsOut.length + (collectionsOut.length === 1 ? ' collection.' : ' collections.');
         }).catch(err => {
             showViewerError(ctx.root, 'Export failed', err);
         }).then(() => {
@@ -443,7 +537,6 @@ export function renderExportPanel(ctx: PageContext) {
         });
     });
     panel.appendChild(el('div', '', [exportButton], { style: 'padding:12px' }));
-    panel.appendChild(statusLine);
 
     const fileInput = el('input', '', undefined, { type: 'file' }) as HTMLInputElement;
     fileInput.accept = 'application/json,.json';

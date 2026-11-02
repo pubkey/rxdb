@@ -252,15 +252,7 @@ export function ViewerApp(props: ViewerAppProps) {
         settings: 'Settings'
     };
     const toolTitle = TOOL_TITLES[ctx.nav.view] || null;
-    const identityParts = [source.databaseName];
     const identityCollection = ctx.nav.collectionName || ctx.currentCollectionName();
-    if (identityCollection) {
-        identityParts.push(identityCollection);
-    }
-    if (toolTitle) {
-        identityParts.push(toolTitle);
-    }
-    const identity = identityParts.join(' / ');
 
     return (
         <div className="rxdbv-root" ref={rootRef} style={{ position: 'relative' }}>
@@ -271,7 +263,18 @@ export function ViewerApp(props: ViewerAppProps) {
                     </div>
                     <span className="rxdbv-wordmark">RxDB</span>
                     <span className="rxdbv-topbar-divider">|</span>
-                    <span className="rxdbv-topbar-identity">{identity}</span>
+                    <span className="rxdbv-topbar-identity">
+                        {source.databaseName}
+                        {identityCollection ? ' / ' : ''}
+                        {identityCollection ? (
+                            <span
+                                className="rxdbv-topbar-crumb"
+                                title={'Open the ' + identityCollection + ' documents'}
+                                onClick={() => ctx.navigate({ view: 'collection', collectionName: identityCollection })}
+                            >{identityCollection}</span>
+                        ) : null}
+                        {toolTitle ? ' / ' + toolTitle : ''}
+                    </span>
                     <div className="rxdbv-flex1" />
                     <button
                         className="rxdbv-btn"
@@ -365,6 +368,7 @@ function Rail(props: { ctx: PageContext; }) {
     ];
     const dumpDisabled: ViewerNavView[] = ['live', 'changes'];
     const collectionTools: { view: ViewerNavView; label: string; }[] = [
+        { view: 'collection', label: 'Documents' },
         { view: 'schema', label: 'Schema' },
         { view: 'changes', label: 'Changes' }
     ];
@@ -375,18 +379,30 @@ function Rail(props: { ctx: PageContext; }) {
             {collections.filter(info => !info.viewOnly).map(info => {
                 const active = nav.view === 'collection' && ctx.currentCollectionName() === info.name;
                 const count = ctx.countsCache.get(info.name);
+                const replicationState = replicationsByCollection.get(info.name);
                 return (
                     <React.Fragment key={info.name}>
-                        <div
-                            className={'rxdbv-rail-item' + (active ? ' rxdbv-active' : '')}
-                            onClick={() => ctx.navigate({ view: 'collection', collectionName: info.name })}
-                        >
+                        <div className="rxdbv-rail-item rxdbv-rail-group">
                             <span className="rxdbv-rail-label">{info.name}</span>
-                            <span className="rxdbv-rail-count">{typeof count === 'number' ? formatInteger(count) : '…'}</span>
                         </div>
                         {collectionTools.map(tool => {
-                            const toolActive = nav.view === tool.view && nav.collectionName === info.name;
+                            const toolActive = tool.view === 'collection'
+                                ? active
+                                : nav.view === tool.view && nav.collectionName === info.name;
                             const disabled = ctx.source.kind === 'dump' && dumpDisabled.includes(tool.view);
+                            let label = tool.label;
+                            if (tool.view === 'changes' && ctx.events) {
+                                const changeCount = ctx.events.changes.filter(entry => entry.collectionName === info.name).length;
+                                if (changeCount > 0) {
+                                    label = 'Changes (' + formatInteger(changeCount) + ')';
+                                }
+                            }
+                            if (tool.view === 'schema' && typeof info.schemaVersion === 'number') {
+                                label = 'Schema (v' + info.schemaVersion + ')';
+                            }
+                            if (tool.view === 'collection' && typeof count === 'number') {
+                                label = 'Documents (' + formatInteger(count) + ')';
+                            }
                             return (
                                 <div
                                     key={info.name + '-' + tool.view}
@@ -399,10 +415,23 @@ function Rail(props: { ctx: PageContext; }) {
                                         }
                                     }}
                                 >
-                                    <span className="rxdbv-rail-label">{tool.label}</span>
+                                    <span className="rxdbv-rail-label">{label}</span>
                                 </div>
                             );
                         })}
+                        {replicationState ? (
+                            <div
+                                className={'rxdbv-rail-item rxdbv-rail-subitem' + (nav.view === 'replication' && nav.collectionName === info.name ? ' rxdbv-active' : '')}
+                                title={info.name + ' Replication'}
+                                onClick={() => ctx.navigate({ view: 'replication', collectionName: info.name })}
+                            >
+                                <span className="rxdbv-rail-label">Replication</span>
+                                <span
+                                    title={replicationState.state}
+                                    style={{ color: replicationState.color, fontSize: 10 }}
+                                >{replicationState.glyph}</span>
+                            </div>
+                        ) : null}
                     </React.Fragment>
                 );
             })}
@@ -411,42 +440,6 @@ function Rail(props: { ctx: PageContext; }) {
                     <span className="rxdbv-rail-label rxdbv-dim">none yet</span>
                 </div>
             ) : null}
-            {collections.some(info => info.viewOnly) ? (
-                <div className="rxdbv-rail-header" title="view-only: internal store, local documents and RxState">SYSTEM</div>
-            ) : null}
-            {collections.filter(info => !!info.viewOnly).map(info => {
-                const active = nav.view === 'collection' && ctx.currentCollectionName() === info.name;
-                const count = ctx.countsCache.get(info.name);
-                return (
-                    <div
-                        key={info.name}
-                        className={'rxdbv-rail-item' + (active ? ' rxdbv-active' : '')}
-                        onClick={() => ctx.navigate({ view: 'collection', collectionName: info.name })}
-                    >
-                        <span className="rxdbv-rail-label rxdbv-muted">{info.name}</span>
-                        <span className="rxdbv-rail-count">{typeof count === 'number' ? formatInteger(count) : '…'}</span>
-                    </div>
-                );
-            })}
-            {replicationsByCollection.size > 0 ? (
-                <div className="rxdbv-rail-header">REPLICATION</div>
-            ) : null}
-            {Array.from(replicationsByCollection.entries()).map(([collectionName, replicationState]) => {
-                const active = nav.view === 'replication' && nav.collectionName === collectionName;
-                return (
-                    <div
-                        key={'repl-' + collectionName}
-                        className={'rxdbv-rail-item' + (active ? ' rxdbv-active' : '')}
-                        onClick={() => ctx.navigate({ view: 'replication', collectionName })}
-                    >
-                        <span className="rxdbv-rail-label">{collectionName}</span>
-                        <span
-                            title={replicationState.state}
-                            style={{ color: replicationState.color, fontSize: 10 }}
-                        >{replicationState.glyph}</span>
-                    </div>
-                );
-            })}
             <div className="rxdbv-rail-header">TOOLS</div>
             {tools.map(tool => {
                 const disabled = ctx.source.kind === 'dump' && dumpDisabled.includes(tool.view);
@@ -462,6 +455,23 @@ function Rail(props: { ctx: PageContext; }) {
                             }
                         }}
                     >{tool.label}</div>
+                );
+            })}
+            {collections.some(info => info.viewOnly) ? (
+                <div className="rxdbv-rail-header" title="view-only: internal store, local documents and RxState">SYSTEM</div>
+            ) : null}
+            {collections.filter(info => !!info.viewOnly).map(info => {
+                const active = nav.view === 'collection' && ctx.currentCollectionName() === info.name;
+                const count = ctx.countsCache.get(info.name);
+                return (
+                    <div
+                        key={info.name}
+                        className={'rxdbv-rail-item' + (active ? ' rxdbv-active' : '')}
+                        onClick={() => ctx.navigate({ view: 'collection', collectionName: info.name })}
+                    >
+                        <span className="rxdbv-rail-label rxdbv-muted">{info.name}</span>
+                        <span className="rxdbv-rail-count">{typeof count === 'number' ? formatInteger(count) : '…'}</span>
+                    </div>
                 );
             })}
             <div className="rxdbv-rail-spacer" />

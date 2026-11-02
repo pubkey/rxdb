@@ -114,8 +114,7 @@ export function renderLivePanel(ctx: PageContext) {
             el('div', 'rxdbv-mono', 'viewer writes', { style: 'font-size:10.5px' }),
             viewerWritesLabel
         ], { style: 'border:1px dashed rgba(255,255,255,0.22);padding:8px 10px;opacity:0.85' }),
-        el('div', 'rxdbv-flex1'),
-        el('div', 'rxdbv-dim', 'Fixed positions. No document contents are drawn — names, counts and rates only.', { style: 'font-size:9.5px;line-height:1.5' })
+        el('div', 'rxdbv-flex1')
     ]);
     map.appendChild(appColumn);
 
@@ -196,11 +195,6 @@ export function renderLivePanel(ctx: PageContext) {
             lastExecCount: -1
         });
     });
-
-    const emptyHint = el('div', 'rxdbv-muted', 'This screen updates as the app reads and writes. Nothing has happened since the viewer opened.', {
-        style: 'font-size:11px;line-height:1.55;padding:10px 12px;display:none'
-    });
-    panel.appendChild(emptyHint);
 
     // summary bar
     const summaryValues = {
@@ -308,8 +302,6 @@ export function renderLivePanel(ctx: PageContext) {
         }
         const now = Date.now();
         const nothingYet = events.firstEventTime === null;
-        emptyHint.style.display = nothingYet ? '' : 'none';
-
         leaderBadge.style.display = events.isLeader === true ? '' : 'none';
         const totalWriteRate = events.ratePerSecond(events.localWriteTimes);
         const readRate = events.ratePerSecond(events.readTimes);
@@ -453,8 +445,9 @@ function openLiveQueriesSubPanel(ctx: PageContext, panel: HTMLElement, collectio
             el('span', 'rxdbv-close', undefined, { html: DBVIEWER_ICON_CLOSE, onClick: close })
         ], { style: 'display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid rgba(255,255,255,0.08)' }));
 
-        const template = '1fr 80px 80px 110px';
+        const template = '110px 1fr 80px 80px 110px';
         const header = el('div', 'rxdbv-table-header', [
+            el('div', '', 'collection'),
             el('div', '', 'query'),
             el('div', '', 'results'),
             el('div', '', 'execs'),
@@ -463,12 +456,19 @@ function openLiveQueriesSubPanel(ctx: PageContext, panel: HTMLElement, collectio
         header.style.gridTemplateColumns = template;
         box.appendChild(header);
         queries.forEach(query => {
-            const stale = query.lastEmitTime && Date.now() - query.lastEmitTime > 60 * 1000;
+            /**
+             * A time near the epoch means the query has not emitted
+             * through the normal result path, showing "20000d ago"
+             * would be wrong.
+             */
+            const lastEmit = query.lastEmitTime && query.lastEmitTime > 946684800000 ? query.lastEmitTime : null;
+            const stale = lastEmit && Date.now() - lastEmit > 60 * 1000;
             const row = el('div', 'rxdbv-table-row rxdbv-mono', [
+                el('div', 'rxdbv-muted', collectionName),
                 el('div', '', query.queryString, { title: query.queryString }),
                 el('div', 'rxdbv-muted', query.resultCount === null ? '—' : formatInteger(query.resultCount)),
                 el('div', 'rxdbv-muted', formatInteger(query.execCount)),
-                el('div', '', query.lastEmitTime ? formatTimeAgo(query.lastEmitTime) : '—', {
+                el('div', '', lastEmit ? formatTimeAgo(lastEmit) : '—', {
                     style: stale ? 'color:var(--rxdbv-warning)' : ''
                 })
             ]);

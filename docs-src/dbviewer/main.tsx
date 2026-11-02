@@ -5,7 +5,6 @@ import type {
     ViewerInfo
 } from '../../src/plugins/dbviewer/dbviewer-types.ts';
 import { ViewerApp } from './App.tsx';
-import { readStoredSettings } from './context.ts';
 import {
     DBVIEWER_LOGO_SVG,
     ensureViewerStyles
@@ -30,11 +29,7 @@ const INIT_TIMEOUT_MS = 4000;
 const WEBRTC_FORM_STORAGE_KEY = 'rxdb-dbviewer-webrtc';
 
 function resolvePageSize(hostPageSize: number): number {
-    if (hostPageSize > 0) {
-        return hostPageSize;
-    }
-    const stored = readStoredSettings();
-    return stored.pageSize || 100;
+    return hostPageSize > 0 ? hostPageSize : 100;
 }
 
 function Connecting() {

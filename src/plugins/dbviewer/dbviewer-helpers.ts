@@ -689,10 +689,11 @@ export function colorViewerJson(value: any, indent = 0): string {
         case 'string':
             return '<span class="rxdbv-json-str">"' + escapeHtml(value) + '"</span>';
         case 'number':
-        case 'boolean':
             return '<span class="rxdbv-json-num">' + String(value) + '</span>';
+        case 'boolean':
+            return '<span class="rxdbv-json-bool">' + String(value) + '</span>';
         case 'null':
-            return '<span class="rxdbv-json-num">null</span>';
+            return '<span class="rxdbv-json-null">null</span>';
         case 'array': {
             if (value.length === 0) {
                 return '[]';
