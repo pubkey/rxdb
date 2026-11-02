@@ -173,14 +173,13 @@ export function renderChangesPanel(ctx: PageContext) {
     });
     const sessionCounter = el('span', 'rxdbv-dim', '', { style: 'font-size:10px' });
     /**
-     * Same observe button as the collection toolbar. Observing
-     * means the list updates live. One click pauses, the next
-     * click clears the list once and continues observing.
+     * Same Live button as the collection view. While active the
+     * list updates live. One click pauses, the next click clears
+     * the list once and continues observing.
      */
-    const observeLabel = el('span', '', 'Observing');
     const observeButton = el('button', 'rxdbv-btn rxdbv-observe rxdbv-active', [
         el('span', 'rxdbv-observe-dot'),
-        observeLabel
+        'Live'
     ], {
         title: 'live — the list updates as changes happen',
         onClick: () => {
@@ -191,7 +190,6 @@ export function renderChangesPanel(ctx: PageContext) {
             }
             paused = !paused;
             observeButton.classList.toggle('rxdbv-active', !paused);
-            observeLabel.textContent = paused ? 'Observe' : 'Observing';
             observeButton.title = paused
                 ? 'Paused. Click to clear the list and continue observing.'
                 : 'live — the list updates as changes happen';

@@ -154,7 +154,7 @@ export function renderCollectionScreen(ctx: PageContext) {
         (uiState.observe ? ' rxdbv-active' : '') +
         (readOnly ? ' rxdbv-disabled' : ''), [
         el('span', 'rxdbv-observe-dot'),
-        uiState.observe ? 'Observing' : 'Observe'
+        'Live'
     ], {
         title: readOnly ? readOnlyReason(ctx) : (
             uiState.observe ?
