@@ -223,7 +223,7 @@ export function renderChangesPanel(ctx: PageContext) {
     panel.appendChild(el('div', 'rxdbv-split', [listHost, detailHost]));
     panel.appendChild(el('div', 'rxdbv-grid-footer', [sessionCounter]));
 
-    const template = '100px 70px 110px 1fr';
+    const template = '100px 70px 60px 110px 1fr';
     const opColor = (operation: string) =>
         operation === 'INSERT' ? 'var(--rxdbv-success)' : (operation === 'DELETE' ? 'var(--rxdbv-danger)' : 'var(--rxdbv-warning)');
 
@@ -257,8 +257,12 @@ export function renderChangesPanel(ctx: PageContext) {
         return parts.join(', ');
     };
 
-    let sortField: 'time' | 'op' | 'id' | 'change' = 'time';
+    let sortField: 'time' | 'op' | 'source' | 'id' | 'change' = 'time';
     let sortDirection: 1 | -1 = -1;
+    const sourceLabel = (entry: ViewerChangeEntry) => entry.fromReplication ? 'sync' : 'self';
+    const sourceTitle = (entry: ViewerChangeEntry) => entry.fromReplication
+        ? 'replication (pulled from the remote)'
+        : 'app write (not from replication). An app write from another tab of the same database looks the same as one from this tab.';
 
     const renderList = () => {
         clearChildren(listHost);
@@ -270,6 +274,9 @@ export function renderChangesPanel(ctx: PageContext) {
             }
             if (sortField === 'op') {
                 return entry.operation;
+            }
+            if (sortField === 'source') {
+                return sourceLabel(entry);
             }
             if (sortField === 'id') {
                 return entry.documentId;
@@ -298,6 +305,7 @@ export function renderChangesPanel(ctx: PageContext) {
         const header = el('div', 'rxdbv-table-header', [
             sortableHeader('time', 'time'),
             sortableHeader('op', 'op'),
+            sortableHeader('source', 'source'),
             sortableHeader('id', 'id'),
             sortableHeader('change', 'change')
         ]);
@@ -321,6 +329,7 @@ export function renderChangesPanel(ctx: PageContext) {
             const row = el('div', 'rxdbv-table-row rxdbv-clickable rxdbv-mono' + (entry === selectedEntry ? ' rxdbv-selected' : ''), [
                 el('div', 'rxdbv-dim', formatClockTime(entry.time, true)),
                 el('div', '', entry.operation, { style: 'font-weight:700;color:' + opColor(entry.operation) }),
+                el('div', 'rxdbv-muted', sourceLabel(entry), { title: sourceTitle(entry) }),
                 el('div', 'rxdbv-muted', entry.documentId),
                 el('div', 'rxdbv-dim', changeSummary(entry), { style: 'overflow:hidden;text-overflow:ellipsis;white-space:nowrap' })
             ], {
@@ -368,12 +377,6 @@ export function renderChangesPanel(ctx: PageContext) {
                 onClick: () => ctx.navigate({ view: 'collection', collectionName: entry.collectionName })
             })
         ], { style: 'padding: 2px 12px 8px' }));
-        detailHost.appendChild(el('div', 'rxdbv-dim', entry.fromReplication
-            ? 'source: replication (pulled from the remote)'
-            : 'source: app write (not from replication)', {
-            title: 'Only writes pulled by the replication are marked. An app write from another tab of the same database looks the same as one from this tab.',
-            style: 'padding:0 12px 12px;font-size:10px'
-        }));
     };
 
     renderList();
