@@ -1,0 +1,11 @@
+{
+    "$schema": "./schema.json",
+    "text": "ADD query correctness tests for the `$nor` operator (top level, inside `$and`/`$or`, and with missing or `null` fields) so all storages are checked against the same results",
+    "links": [
+        {
+            "url": "https://github.com/pubkey/rxdb/issues/9371",
+            "linkText": "#9371"
+        }
+    ],
+    "priority": 1
+}

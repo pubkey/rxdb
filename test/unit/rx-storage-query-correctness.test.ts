@@ -2660,4 +2660,79 @@ describe('rx-storage-query-correctness.test.ts', () => {
             }
         ]
     });
+
+    /**
+     * @link https://github.com/pubkey/rxdb/issues/9371
+     */
+    testCorrectQueries<{ id: string; a?: string | null; b?: string | null; }>({
+        testTitle: '$nor operator',
+        data: [
+            { id: 'd1', a: 'x', b: null },
+            { id: 'd2', a: 'x', b: 'z' },
+            { id: 'd3' },
+            { id: 'd4', a: null },
+            { id: 'd5', a: 'y' }
+        ],
+        schema: {
+            version: 0,
+            primaryKey: 'id',
+            type: 'object',
+            properties: {
+                id: { type: 'string', maxLength: 10 },
+                a: { type: ['string', 'null'] },
+                b: { type: ['string', 'null'] }
+            },
+            required: ['id']
+        },
+        queries: [
+            {
+                info: '$nor with a multi-field sub-selector',
+                query: {
+                    selector: { $nor: [{ a: 'x', b: null }] },
+                    sort: [{ id: 'asc' }]
+                },
+                expectedResultDocIds: ['d2', 'd3', 'd4', 'd5']
+            },
+            {
+                info: 'De Morgan rewrite of the $nor query returns the same result',
+                query: {
+                    selector: { $or: [{ a: { $ne: 'x' } }, { b: { $ne: null } }] },
+                    sort: [{ id: 'asc' }]
+                },
+                expectedResultDocIds: ['d2', 'd3', 'd4', 'd5']
+            },
+            {
+                info: '$nor with multiple sub-selectors matches documents with missing or null fields',
+                query: {
+                    selector: { $nor: [{ a: 'x' }, { a: 'y' }] },
+                    sort: [{ id: 'asc' }]
+                },
+                expectedResultDocIds: ['d3', 'd4']
+            },
+            {
+                info: '$nor with $exists',
+                query: {
+                    selector: { $nor: [{ a: { $exists: true } }] },
+                    sort: [{ id: 'asc' }]
+                },
+                expectedResultDocIds: ['d3']
+            },
+            {
+                info: '$nor inside of $and',
+                query: {
+                    selector: { $and: [{ $nor: [{ a: 'y' }] }, { a: { $ne: null } }] },
+                    sort: [{ id: 'asc' }]
+                },
+                expectedResultDocIds: ['d1', 'd2']
+            },
+            {
+                info: '$nor inside of $or',
+                query: {
+                    selector: { $or: [{ $nor: [{ a: 'x' }] }, { b: 'z' }] },
+                    sort: [{ id: 'asc' }]
+                },
+                expectedResultDocIds: ['d2', 'd3', 'd4', 'd5']
+            }
+        ]
+    });
 });
