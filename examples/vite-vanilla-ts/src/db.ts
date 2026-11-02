@@ -6,10 +6,12 @@ import { wrappedKeyEncryptionCryptoJsStorage } from 'rxdb/plugins/encryption-cry
 import { HeroSchema, MyDatabaseCollections } from './schema';
 
 import { RxDBDevModePlugin } from 'rxdb/plugins/dev-mode';
+import { RxDBCleanupPlugin } from 'rxdb/plugins/cleanup';
 import { wrappedValidateAjvStorage } from 'rxdb/plugins/validate-ajv';
 
 addRxPlugin(RxDBQueryBuilderPlugin);
 addRxPlugin(RxDBDevModePlugin);
+addRxPlugin(RxDBCleanupPlugin);
 
 const _create = async () => {
   const database = await createRxDatabase<MyDatabaseCollections>({

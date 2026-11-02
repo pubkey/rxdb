@@ -7,6 +7,7 @@ import {
 } from '../shared';
 import { addRxPlugin } from 'rxdb';
 import { RxDBLeaderElectionPlugin } from 'rxdb/plugins/leader-election';
+import { RxDBCleanupPlugin } from 'rxdb/plugins/cleanup';
 import { EnvironmentParams } from './environment-type';
 
 export const environment: EnvironmentParams = {
@@ -18,6 +19,7 @@ export const environment: EnvironmentParams = {
   rxdbSyncUrl: 'http://' + window.location.hostname + ':' + SYNC_PORT + '/' + DATABASE_NAME,
   addRxDBPlugins() {
     addRxPlugin(RxDBLeaderElectionPlugin);
+    addRxPlugin(RxDBCleanupPlugin);
   },
   getRxStorage() {
     return getRxStorageLocalstorage();

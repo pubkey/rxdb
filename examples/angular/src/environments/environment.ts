@@ -8,6 +8,7 @@ import {
 } from '../shared';
 import { addRxPlugin } from 'rxdb';
 import { RxDBLeaderElectionPlugin } from 'rxdb/plugins/leader-election';
+import { RxDBCleanupPlugin } from 'rxdb/plugins/cleanup';
 import {
   RxDBDevModePlugin
 } from 'rxdb/plugins/dev-mode';
@@ -23,6 +24,7 @@ export const environment: EnvironmentParams = {
   addRxDBPlugins() {
     addRxPlugin(RxDBDevModePlugin);
     addRxPlugin(RxDBLeaderElectionPlugin);
+    addRxPlugin(RxDBCleanupPlugin);
   },
   getRxStorage() {
     return wrappedValidateAjvStorage({

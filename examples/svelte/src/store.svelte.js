@@ -4,6 +4,7 @@ import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
 import { RxDBQueryBuilderPlugin } from 'rxdb/plugins/query-builder';
 import { wrappedValidateAjvStorage } from 'rxdb/plugins/validate-ajv';
 import { RxDBDevModePlugin } from 'rxdb/plugins/dev-mode';
+import { RxDBCleanupPlugin } from 'rxdb/plugins/cleanup';
 import noteSchema from './schema';
 
 /**
@@ -12,6 +13,7 @@ import noteSchema from './schema';
 
 addRxPlugin(RxDBQueryBuilderPlugin);
 addRxPlugin(RxDBDevModePlugin);
+addRxPlugin(RxDBCleanupPlugin);
 
 let dbPromise;
 

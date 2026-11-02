@@ -12,11 +12,13 @@ import { RxDBUpdatePlugin } from 'rxdb/plugins/update'
 import { RxDBQueryBuilderPlugin } from 'rxdb/plugins/query-builder'
 import { replicateCouchDB } from 'rxdb/plugins/replication-couchdb'
 import { RxDBAttachmentsPlugin } from 'rxdb/plugins/attachments';
+import { RxDBCleanupPlugin } from 'rxdb/plugins/cleanup';
 
 addRxPlugin(RxDBMigrationPlugin);
 addRxPlugin(RxDBUpdatePlugin);
 addRxPlugin(RxDBQueryBuilderPlugin);
 addRxPlugin(RxDBAttachmentsPlugin);
+addRxPlugin(RxDBCleanupPlugin);
 
 /**
  * expo-crypto now supports getRandomValues, randomUUID (UUID v4), and digest functions,
