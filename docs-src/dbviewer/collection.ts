@@ -169,13 +169,6 @@ export function renderCollectionScreen(ctx: PageContext) {
             ctx.renderContent();
         }
     });
-    const toolbar = el('div', 'rxdbv-toolbar', [
-        el('span', 'rxdbv-toolbar-title rxdbv-mono', collectionName),
-        observeToggle,
-        el('div', 'rxdbv-flex1')
-    ]);
-    screen.appendChild(toolbar);
-
     // query bar
     const queryInput = el('input', 'rxdbv-query-input', undefined, {
         value: uiState.queryInput,
@@ -244,7 +237,9 @@ export function renderCollectionScreen(ctx: PageContext) {
         ], uiState.view, view => {
             uiState.view = view;
             ctx.renderContent();
-        })
+        }),
+        el('div', 'rxdbv-flex1'),
+        observeToggle
     ]));
 
     const applyInput = (commit = true) => {
@@ -1218,15 +1213,7 @@ function openDeleteModal(
         : '?';
     const hasReplication = !!ctx.events && ctx.events.replications.some(r => r.collectionName === collectionName);
 
-    const input = el('input', 'rxdbv-input rxdbv-modal-input', undefined, {
-        placeholder: collectionName
-    }) as HTMLInputElement;
     const deleteButton = el('button', 'rxdbv-btn-danger-solid', 'Delete ' + formatInteger(count) + ' documents') as HTMLButtonElement;
-    deleteButton.disabled = true;
-    deleteButton.title = 'enabled after typing the collection name';
-    input.addEventListener('input', () => {
-        deleteButton.disabled = input.value !== collectionName;
-    });
 
     const backdrop = el('div', 'rxdbv-modal-backdrop');
     const close = () => backdrop.remove();
@@ -1251,8 +1238,6 @@ function openDeleteModal(
             hasReplication ? 'Deletes replicate to all connected peers. ' : '',
             'Tombstones remain until cleanup.'
         ]),
-        el('div', 'rxdbv-modal-confirm-label', 'Type the collection name to confirm:'),
-        input,
         el('div', 'rxdbv-modal-actions', [
             el('button', 'rxdbv-btn', 'Cancel', { onClick: close }),
             deleteButton
@@ -1264,5 +1249,5 @@ function openDeleteModal(
         }
     });
     ctx.root.appendChild(backdrop);
-    input.focus();
+    deleteButton.focus();
 }

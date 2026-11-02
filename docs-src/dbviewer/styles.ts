@@ -275,7 +275,7 @@ export const DBVIEWER_STYLES = `
  * brand color.
  */
 /* the tab row sits directly above the content box */
-.rxdbv-tabs-row { display: flex; padding: 10px 12px 0; }
+.rxdbv-tabs-row { display: flex; align-items: center; padding: 10px 12px 0; }
 .rxdbv-tabs {
     display: inline-flex;
     align-items: stretch;
@@ -474,7 +474,7 @@ export const DBVIEWER_STYLES = `
     cursor: pointer;
     font-family: inherit;
 }
-.rxdbv-pager:disabled { cursor: default; }
+.rxdbv-pager:disabled { color: var(--rxdbv-fg-dim); opacity: 0.5; cursor: default; }
 .rxdbv-pager:not(:disabled):hover { background: var(--rxdbv-fg); color: var(--rxdbv-bg-dark); }
 
 /* JSON view */
@@ -600,8 +600,6 @@ export const DBVIEWER_STYLES = `
 .rxdbv-modal-title { font-weight: 700; font-size: 14px; }
 .rxdbv-modal-body { color: var(--rxdbv-fg-muted); margin-top: 8px; line-height: 1.55; font-size: 11.5px; }
 .rxdbv-modal-body code { font-family: var(--rxdbv-mono); color: var(--rxdbv-fg); }
-.rxdbv-modal-confirm-label { color: var(--rxdbv-fg-dim); margin-top: 12px; font-size: 11px; }
-.rxdbv-modal-input { width: 100%; margin-top: 4px; background: var(--rxdbv-bg-dark); font-size: 12px; }
 .rxdbv-modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; }
 .rxdbv-btn-danger-solid {
     box-sizing: border-box;
