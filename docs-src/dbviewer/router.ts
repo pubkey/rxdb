@@ -155,6 +155,25 @@ function renderPhoneLayout(ctx: PageContext) {
                     ctx.renderContent();
                 }
             }));
+            const collectionTools: { view: typeof ctx.nav.view; label: string; }[] = [
+                { view: 'schema', label: 'Schema' },
+                { view: 'changes', label: 'Changes' }
+            ];
+            collectionTools.forEach(tool => {
+                if (tool.view === 'changes' && ctx.source.kind === 'dump') {
+                    return;
+                }
+                listWrap.appendChild(el('div', 'rxdbv-phone-row rxdbv-phone-subrow', [
+                    el('span', 'rxdbv-flex1', tool.label),
+                    el('span', 'rxdbv-dim', undefined, { html: DBVIEWER_ICON_ARROW_RIGHT })
+                ], {
+                    onClick: () => {
+                        ctx.nav = { view: tool.view, collectionName: info.name };
+                        ctx.phoneNav = { screen: 'tool', toolView: tool.view, collectionName: info.name };
+                        ctx.renderContent();
+                    }
+                }));
+            });
         });
         if (phoneCollections.some(info => !!info.viewOnly)) {
             listWrap.appendChild(el('div', 'rxdbv-rail-header', 'SYSTEM', { style: 'padding:16px 14px 4px' }));
@@ -187,8 +206,6 @@ function renderPhoneLayout(ctx: PageContext) {
         }
         const tools: { view: typeof ctx.nav.view; label: string; }[] = [
             { view: 'live', label: 'Live' },
-            { view: 'schema', label: 'Schema' },
-            { view: 'changes', label: 'Changes' },
             { view: 'storage', label: 'Storage' },
             { view: 'cleanup', label: 'Cleanup' },
             { view: 'export', label: 'Export/Import' },

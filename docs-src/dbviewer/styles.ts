@@ -240,6 +240,10 @@ export const DBVIEWER_STYLES = `
     cursor: pointer;
     transition: background 180ms ease-in-out, color 180ms ease-in-out;
 }
+.rxdbv-rail-subitem {
+    padding-left: 26px;
+    font-size: 11px;
+}
 .rxdbv-rail-item:hover { background: rgba(255, 255, 255, 0.05); }
 .rxdbv-rail-item.rxdbv-active {
     border-left-color: var(--rxdbv-pink);
@@ -867,6 +871,7 @@ export const DBVIEWER_STYLES = `
     font-size: 13px;
 }
 .rxdbv-phone-row:hover { background: rgba(255, 255, 255, 0.04); }
+.rxdbv-phone-subrow { padding-left: 30px; font-size: 12px; color: var(--rxdbv-fg-muted); }
 .rxdbv-phone-note { padding: 12px 14px; border-top: 1px solid rgba(255, 255, 255, 0.08); color: var(--rxdbv-fg-dim); font-size: 11px; }
 .rxdbv-phone-field { padding: 8px 14px; border-bottom: 1px solid rgba(255, 255, 255, 0.06); font-size: 13px; }
 .rxdbv-phone-header-title {

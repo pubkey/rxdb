@@ -160,12 +160,17 @@ export function renderChangesPanel(ctx: PageContext) {
         return;
     }
 
+    const scopeCollection = ctx.nav.collectionName || null;
+    const scopedChanges = () => scopeCollection
+        ? events.changes.filter(entry => entry.collectionName === scopeCollection)
+        : events.changes;
+
     let paused = false;
     let filterText = '';
-    let selectedEntry: ViewerChangeEntry | null = events.changes[0] || null;
+    let selectedEntry: ViewerChangeEntry | null = scopedChanges()[0] || null;
 
     const filterInput = buildInput({
-        placeholder: 'filter: collection or id…'
+        placeholder: scopeCollection ? 'filter: id…' : 'filter: collection or id…'
     }, 'rxdbv-filter-input');
     filterInput.addEventListener('input', () => {
         filterText = filterInput.value.toLowerCase();
@@ -184,7 +189,13 @@ export function renderChangesPanel(ctx: PageContext) {
         title: 'live — the list updates as changes happen',
         onClick: () => {
             if (paused) {
-                events.changes.length = 0;
+                if (scopeCollection) {
+                    const kept = events.changes.filter(entry => entry.collectionName !== scopeCollection);
+                    events.changes.length = 0;
+                    events.changes.push(...kept);
+                } else {
+                    events.changes.length = 0;
+                }
                 selectedEntry = null;
                 renderDetail();
             }
@@ -213,7 +224,10 @@ export function renderChangesPanel(ctx: PageContext) {
 
     const renderList = () => {
         clearChildren(listHost);
-        sessionCounter.textContent = (paused ? 'paused' : 'recording') + ' · ' + formatInteger(events.sessionWrites) + ' writes this session';
+        const scopedCount = scopedChanges().length;
+        sessionCounter.textContent = (paused ? 'paused' : 'recording') + ' · ' + (scopeCollection
+            ? formatInteger(scopedCount) + (scopedCount === 1 ? ' change recorded' : ' changes recorded')
+            : formatInteger(events.sessionWrites) + ' writes this session');
         const header = el('div', 'rxdbv-table-header', [
             el('div', '', 'time'),
             el('div', '', 'op'),
@@ -223,7 +237,7 @@ export function renderChangesPanel(ctx: PageContext) {
         ]);
         header.style.gridTemplateColumns = template;
         listHost.appendChild(header);
-        const visible = events.changes.filter(entry => {
+        const visible = scopedChanges().filter(entry => {
             if (!filterText) {
                 return true;
             }

@@ -359,13 +359,15 @@ function Rail(props: { ctx: PageContext; }) {
 
     const tools: { view: ViewerNavView; label: string; }[] = [
         { view: 'live', label: 'Live' },
-        { view: 'schema', label: 'Schema' },
-        { view: 'changes', label: 'Changes' },
         { view: 'storage', label: 'Storage' },
         { view: 'cleanup', label: 'Cleanup' },
         { view: 'export', label: 'Export/Import' }
     ];
     const dumpDisabled: ViewerNavView[] = ['live', 'changes'];
+    const collectionTools: { view: ViewerNavView; label: string; }[] = [
+        { view: 'schema', label: 'Schema' },
+        { view: 'changes', label: 'Changes' }
+    ];
 
     return (
         <div className="rxdbv-rail">
@@ -374,14 +376,34 @@ function Rail(props: { ctx: PageContext; }) {
                 const active = nav.view === 'collection' && ctx.currentCollectionName() === info.name;
                 const count = ctx.countsCache.get(info.name);
                 return (
-                    <div
-                        key={info.name}
-                        className={'rxdbv-rail-item' + (active ? ' rxdbv-active' : '')}
-                        onClick={() => ctx.navigate({ view: 'collection', collectionName: info.name })}
-                    >
-                        <span className="rxdbv-rail-label">{info.name}</span>
-                        <span className="rxdbv-rail-count">{typeof count === 'number' ? formatInteger(count) : '…'}</span>
-                    </div>
+                    <React.Fragment key={info.name}>
+                        <div
+                            className={'rxdbv-rail-item' + (active ? ' rxdbv-active' : '')}
+                            onClick={() => ctx.navigate({ view: 'collection', collectionName: info.name })}
+                        >
+                            <span className="rxdbv-rail-label">{info.name}</span>
+                            <span className="rxdbv-rail-count">{typeof count === 'number' ? formatInteger(count) : '…'}</span>
+                        </div>
+                        {collectionTools.map(tool => {
+                            const toolActive = nav.view === tool.view && nav.collectionName === info.name;
+                            const disabled = ctx.source.kind === 'dump' && dumpDisabled.includes(tool.view);
+                            return (
+                                <div
+                                    key={info.name + '-' + tool.view}
+                                    className={'rxdbv-rail-item rxdbv-rail-subitem' + (toolActive ? ' rxdbv-active' : '')}
+                                    title={disabled ? 'not available on a dump' : info.name + ' ' + tool.label}
+                                    style={disabled ? { opacity: 0.45, cursor: 'default' } : undefined}
+                                    onClick={() => {
+                                        if (!disabled) {
+                                            ctx.navigate({ view: tool.view, collectionName: info.name });
+                                        }
+                                    }}
+                                >
+                                    <span className="rxdbv-rail-label">{tool.label}</span>
+                                </div>
+                            );
+                        })}
+                    </React.Fragment>
                 );
             })}
             {collections.filter(info => !info.viewOnly).length === 0 ? (
