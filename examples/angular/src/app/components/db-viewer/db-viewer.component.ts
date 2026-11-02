@@ -9,8 +9,8 @@ import {
     inject,
     signal
 } from '@angular/core';
-import { mountRxDBViewer } from 'rxdb/plugins/dbviewer';
-import type { RxDBViewerHandle } from 'rxdb/plugins/dbviewer';
+import { connectRxDBViewer, mountRxDBViewer } from 'rxdb/plugins/dbviewer';
+import type { RxDBViewerConnectHandle, RxDBViewerHandle } from 'rxdb/plugins/dbviewer';
 
 import { DatabaseService } from '../../services/database.service';
 
@@ -21,6 +21,8 @@ import { DatabaseService } from '../../services/database.service';
  *
  * On load the viewer url is logged to the browser console.
  * Opening the app with #dbviewer in the url opens the viewer directly.
+ * Opening the app with ?debug=dbviewer-webrtc connects the database
+ * over WebRTC and logs the pairing url to open from another device.
  */
 @Component({
     selector: 'db-viewer',
@@ -34,6 +36,7 @@ export class DbViewerComponent implements OnInit, AfterViewInit, OnDestroy {
 
     public readonly open = signal(false);
     private viewerHandle?: RxDBViewerHandle;
+    private connectHandle?: RxDBViewerConnectHandle;
 
     @ViewChild('viewerHost') viewerHost?: ElementRef<HTMLElement>;
 
@@ -47,6 +50,27 @@ export class DbViewerComponent implements OnInit, AfterViewInit, OnDestroy {
             'background:#ED168F;color:#FFFFFF;font-weight:bold;',
             ''
         );
+        if (new URLSearchParams(window.location.search).get('debug') === 'dbviewer-webrtc') {
+            this.zone.runOutsideAngular(() => {
+                connectRxDBViewer({
+                    database: this.dbService.db as any,
+                    /**
+                     * Local copy of the hosted viewer page
+                     * (see postinstall:dbviewer). The pairing data
+                     * travels in the url hash, so the page connects
+                     * on open without further input.
+                     */
+                    viewerUrl: window.location.origin + '/assets/dbviewer.html'
+                }).then(handle => {
+                    this.connectHandle = handle;
+                    console.log(
+                        '%c RxDB %c dbviewer pairing url: ' + handle.url,
+                        'background:#ED168F;color:#FFFFFF;font-weight:bold;',
+                        ''
+                    );
+                }).catch(err => console.error('dbviewer webrtc connect failed', err));
+            });
+        }
     }
 
     ngAfterViewInit() {
@@ -102,6 +126,10 @@ export class DbViewerComponent implements OnInit, AfterViewInit, OnDestroy {
         if (this.viewerHandle) {
             this.viewerHandle.remove();
             this.viewerHandle = undefined;
+        }
+        if (this.connectHandle) {
+            this.connectHandle.close();
+            this.connectHandle = undefined;
         }
     }
 }

@@ -336,7 +336,7 @@ console.log(viewer.url);
 await viewer.close();
 ```
 
-The url carries the room id and the signaling server in its hash, so the page connects on open without further input. Opening the page without a hash shows the same connect form for manual entry:
+The url carries the room id and the signaling server in its hash, so the page connects on open without further input. The [angular example](https://github.com/pubkey/rxdb/tree/master/examples/angular) wires this up behind a debug flag: opening the app with `?debug=dbviewer-webrtc` connects the database and logs the pairing url to the console. Opening the page without a hash shows the same connect form for manual entry:
 
 <p align="center">
   <img src="./files/dbviewer-connect.png" alt="RxDB database viewer WebRTC connect form" width="760" />
