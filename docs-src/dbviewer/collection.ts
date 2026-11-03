@@ -263,32 +263,74 @@ export function renderCollectionScreen(ctx: PageContext) {
     const skipWrap = buildNumberInput('skip', uiState.skip, 0, parsed => {
         uiState.skip = parsed;
     });
-    const sortTextInput = el('input', 'rxdbv-query-input', undefined, {
-        value: uiState.sortInput,
-        placeholder: '-field'
-    }) as HTMLInputElement;
-    const sortWrap = el('div', 'rxdbv-input rxdbv-num-input-wrap rxdbv-sort-input-wrap', [
-        el('span', 'rxdbv-dim', 'sort'),
-        sortTextInput
-    ], { title: 'Sort for the query: -power sorts descending, power ascending, several fields separated by comma' });
-    const commitSort = () => {
-        const parsed = parseViewerSortInput(sortTextInput.value);
-        if (parsed.error) {
-            sortWrap.classList.add('rxdbv-error');
-            sortWrap.title = parsed.error;
-            return;
+    const sortableFields: string[] = (() => {
+        const list: string[] = [primaryPath];
+        if (info && info.jsonSchema && info.jsonSchema.properties) {
+            Object.entries(info.jsonSchema.properties).forEach(([name, propSchema]: [string, any]) => {
+                const type = propSchema && propSchema.type;
+                if (!name.startsWith('_') && name !== primaryPath &&
+                    (type === 'string' || type === 'number' || type === 'integer' || type === 'boolean')) {
+                    list.push(name);
+                }
+            });
         }
-        sortWrap.classList.remove('rxdbv-error');
-        uiState.sortInput = sortTextInput.value;
+        list.push('_meta.lwt');
+        return list;
+    })();
+    const currentSort = parseViewerSortInput(uiState.sortInput);
+    const currentSortPart = currentSort.sort && currentSort.sort.length > 0 ? currentSort.sort[0] : null;
+    const currentSortField = currentSortPart ? Object.keys(currentSortPart)[0] : null;
+    const currentSortDirection: 'asc' | 'desc' = currentSortPart && currentSortField ? currentSortPart[currentSortField] : 'asc';
+    if (currentSortField && !sortableFields.includes(currentSortField)) {
+        sortableFields.push(currentSortField);
+    }
+    const applySort = (field: string | null, direction: 'asc' | 'desc') => {
+        uiState.sortInput = field ? (direction === 'desc' ? '-' : '') + field : '';
         uiState.page = 0;
         ctx.renderContent();
     };
-    sortTextInput.addEventListener('change', commitSort);
-    sortTextInput.addEventListener('keydown', event => {
-        if ((event as KeyboardEvent).key === 'Enter') {
-            commitSort();
+    const sortDropdownHost = el('div');
+    let sortOpen = false;
+    const renderSortDropdown = () => {
+        clearChildren(sortDropdownHost);
+        if (!sortOpen) {
+            return;
+        }
+        const dropdown = el('div', 'rxdbv-sort-dropdown');
+        const addRow = (label: string, field: string | null) => {
+            const active = field === currentSortField || (field === null && currentSortField === null);
+            dropdown.appendChild(el('div', 'rxdbv-query-dropdown-row' + (active ? ' rxdbv-active' : ''), [
+                el('span', 'rxdbv-mono', label)
+            ], {
+                onClick: () => applySort(field, currentSortDirection)
+            }));
+        };
+        addRow('none', null);
+        sortableFields.forEach(field => addRow(field, field));
+        sortDropdownHost.appendChild(dropdown);
+    };
+    const sortFieldButton = el('button', 'rxdbv-sort-field', (currentSortField || 'none') + ' ▾', {
+        title: 'Field the query is sorted by',
+        onClick: () => {
+            sortOpen = !sortOpen;
+            renderSortDropdown();
         }
     });
+    const sortDirButton = el('button', 'rxdbv-sort-dir', currentSortDirection, {
+        title: 'Sort direction, click to flip',
+        onClick: () => {
+            if (currentSortField) {
+                applySort(currentSortField, currentSortDirection === 'asc' ? 'desc' : 'asc');
+            }
+        }
+    }) as HTMLButtonElement;
+    sortDirButton.disabled = !currentSortField;
+    const sortWrap = el('div', 'rxdbv-input rxdbv-sort-input-wrap', [
+        el('span', 'rxdbv-dim', 'sort'),
+        sortFieldButton,
+        sortDirButton,
+        sortDropdownHost
+    ]);
     const runButton = el('button', 'rxdbv-btn-primary', 'Run') as HTMLButtonElement;
     const explainButton = el('button', 'rxdbv-btn', 'Explain', {
         title: 'Explain this query: used index, execution plan and findings',

@@ -384,8 +384,33 @@ export const DBVIEWER_STYLES = `
 .rxdbv-query-input-wrap { flex: 1; display: flex; font-size: 11.5px; }
 .rxdbv-num-input-wrap { width: 102px; flex: none; display: flex; font-size: 11.5px; }
 .rxdbv-num-input-wrap .rxdbv-query-input { text-align: right; width: 100%; }
-.rxdbv-sort-input-wrap { width: 150px; }
-.rxdbv-sort-input-wrap .rxdbv-query-input { text-align: left; }
+.rxdbv-sort-input-wrap { width: 180px; position: relative; gap: 6px; }
+.rxdbv-sort-field,
+.rxdbv-sort-dir {
+    background: transparent;
+    border: 0;
+    padding: 0;
+    color: var(--rxdbv-fg);
+    font-family: var(--rxdbv-mono);
+    font-size: 11px;
+    cursor: pointer;
+}
+.rxdbv-sort-field { flex: 1; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rxdbv-sort-dir { color: var(--rxdbv-fg-muted); }
+.rxdbv-sort-dir:hover { color: var(--rxdbv-fg); }
+.rxdbv-sort-dir:disabled { color: var(--rxdbv-fg-dim); cursor: default; }
+.rxdbv-sort-dropdown {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: -2px;
+    min-width: calc(100% + 4px);
+    background: var(--rxdbv-bg-code);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    z-index: 40;
+    max-height: 280px;
+    overflow-y: auto;
+    font-size: 11px;
+}
 .rxdbv-input.rxdbv-error { border-color: var(--rxdbv-danger); }
 .rxdbv-query-input-wrap.rxdbv-error { border-color: var(--rxdbv-danger); }
 .rxdbv-query-input-wrap.rxdbv-focus { border-color: var(--rxdbv-pink); }
