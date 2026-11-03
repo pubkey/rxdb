@@ -478,6 +478,7 @@ export const DBVIEWER_STYLES = `
 .rxdbv-grid-header > div { padding: 5px 8px 5px 0; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .rxdbv-grid-header > div.rxdbv-sorted { color: var(--rxdbv-fg); }
 .rxdbv-sort-arrow { color: var(--rxdbv-pink); font-size: 11px; line-height: 1; margin-left: 5px; }
+.rxdbv-sort-arrow-asc { color: var(--rxdbv-success); }
 .rxdbv-grid-virtual { position: relative; }
 .rxdbv-grid-row {
     display: grid;

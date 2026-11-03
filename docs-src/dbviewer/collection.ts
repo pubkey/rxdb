@@ -304,7 +304,7 @@ export function renderCollectionScreen(ctx: PageContext) {
             dropdown.appendChild(el('div', 'rxdbv-query-dropdown-row' + (active ? ' rxdbv-active' : ''), [
                 el('span', 'rxdbv-mono rxdbv-flex1', field === null ? 'none' : field),
                 field === null ? null : el('span', 'rxdbv-dim', direction),
-                field === null ? null : el('span', 'rxdbv-sort-arrow', direction === 'desc' ? '▼' : '▲')
+                field === null ? null : el('span', direction === 'desc' ? 'rxdbv-sort-arrow' : 'rxdbv-sort-arrow rxdbv-sort-arrow-asc', direction === 'desc' ? '▼' : '▲')
             ], {
                 onClick: () => applySort(field, direction)
             }));
@@ -325,7 +325,7 @@ export function renderCollectionScreen(ctx: PageContext) {
     });
     const sortDirButton = el('button', 'rxdbv-sort-dir', [
         el('span', '', currentSortDirection),
-        el('span', 'rxdbv-sort-arrow', currentSortDirection === 'desc' ? '▼' : '▲')
+        el('span', currentSortDirection === 'desc' ? 'rxdbv-sort-arrow' : 'rxdbv-sort-arrow rxdbv-sort-arrow-asc', currentSortDirection === 'desc' ? '▼' : '▲')
     ], {
         title: 'Sort direction, click to flip',
         onClick: () => {
@@ -649,12 +649,12 @@ function renderTableView(
         const sorted = firstSortField === sortKey;
         const cell: (string | HTMLElement)[] = [label];
         if (sorted) {
-            cell.push(el('span', 'rxdbv-sort-arrow', firstSortDirection === 'desc' ? '▼' : '▲'));
+            cell.push(el('span', firstSortDirection === 'desc' ? 'rxdbv-sort-arrow' : 'rxdbv-sort-arrow rxdbv-sort-arrow-asc', firstSortDirection === 'desc' ? '▼' : '▲'));
         }
         return el('div', 'rxdbv-sortable' + (sorted ? ' rxdbv-sorted' : ''), cell, {
             title: 'Sort by ' + label,
             onClick: () => {
-                const descending = !sorted || firstSortDirection === 'asc';
+                const descending = sorted && firstSortDirection === 'asc';
                 uiState.sortInput = (descending ? '-' : '') + sortKey;
                 uiState.page = 0;
                 ctx.renderContent();

@@ -294,7 +294,7 @@ export function renderChangesPanel(ctx: PageContext) {
         const sortableHeader = (label: string, field: typeof sortField) => {
             const cell: (string | HTMLElement)[] = [label];
             if (sortField === field) {
-                cell.push(el('span', 'rxdbv-sort-arrow', sortDirection === -1 ? '▼' : '▲'));
+                cell.push(el('span', sortDirection === -1 ? 'rxdbv-sort-arrow' : 'rxdbv-sort-arrow rxdbv-sort-arrow-asc', sortDirection === -1 ? '▼' : '▲'));
             }
             return el('div', '', cell, {
                 style: 'cursor:pointer',
@@ -304,7 +304,7 @@ export function renderChangesPanel(ctx: PageContext) {
                         sortDirection = sortDirection === -1 ? 1 : -1;
                     } else {
                         sortField = field;
-                        sortDirection = -1;
+                        sortDirection = 1;
                     }
                     renderList();
                 }
