@@ -582,6 +582,12 @@ export function flatCloneDocWithMeta<RxDocType>(
 
 export type WrappedRxStorageInstance<RxDocumentType, Internals, InstanceCreationOptions> = RxStorageInstance<RxDocumentType, any, InstanceCreationOptions> & {
     originalStorageInstance: RxStorageInstance<RxDocumentType, Internals, InstanceCreationOptions>;
+    /**
+     * The bulkWrite() calls to the original storage instance that have not resolved yet.
+     * A storage can make written documents visible to queries before it emits their
+     * change events, but it always emits them before bulkWrite() resolves.
+     */
+    pendingWrites?: Set<Promise<unknown>>;
 };
 
 /**
@@ -608,8 +614,17 @@ export function getWrappedStorageInstance<
 
     const primaryPath = getPrimaryFieldOfPrimaryKey(storageInstance.schema.primaryKey);
 
+    const pendingWrites = new Set<Promise<unknown>>();
+    function trackPendingWrite<T>(writePromise: Promise<T>): Promise<T> {
+        pendingWrites.add(writePromise);
+        const remove = () => pendingWrites.delete(writePromise);
+        writePromise.then(remove, remove);
+        return writePromise;
+    }
+
     const ret: WrappedRxStorageInstance<RxDocType, Internals, InstanceCreationOptions> = {
         originalStorageInstance: storageInstance,
+        pendingWrites,
         schema: storageInstance.schema,
         internals: storageInstance.internals,
         collectionName: storageInstance.collectionName,
@@ -705,12 +720,12 @@ export function getWrappedStorageInstance<
                 });
             }
 
-            const writeResult = await database.lockedRun(
+            const writeResult = await trackPendingWrite(database.lockedRun(
                 () => storageInstance.bulkWrite(
                     toStorageWriteRows,
                     context
                 )
-            );
+            ));
 
             /**
              * The RxStorageInstance MUST NOT allow to insert already _deleted documents,
@@ -772,12 +787,12 @@ export function getWrappedStorageInstance<
                         };
                     });
 
-                const subResult = await database.lockedRun(
+                const subResult = await trackPendingWrite(database.lockedRun(
                     () => storageInstance.bulkWrite(
                         reInserts,
                         context
                     )
-                );
+                ));
 
 
                 useWriteResult.error = useWriteResult.error.concat(subResult.error);

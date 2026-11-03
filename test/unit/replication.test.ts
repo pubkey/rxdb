@@ -2401,6 +2401,7 @@ describe('replication.test.ts', () => {
             sub2 = collection.findOne('a').$.subscribe((doc) => {
                 emitted.push(doc);
             });
+            await waitUntil(() => emitted.length === 1);
 
             const postDoc = { id: 'a', foo: 'changed-after' };
             pullStream$.next({ documents: [postDoc], checkpoint: {} });

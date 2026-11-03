@@ -1,5 +1,6 @@
 import assert from 'assert';
-import { clone } from 'async-test-util';
+import { clone, wait } from 'async-test-util';
+import { Subject } from 'rxjs';
 
 import {
     schemaObjects,
@@ -15,6 +16,8 @@ import {
     rxChangeEventToEventReduceChangeEvent,
     RxStorageChangeEvent,
     RxEventReduceOptions,
+    RxStorage,
+    RxStorageInstance,
     defaultResultWindowBuffer
 } from '../../plugins/core/index.mjs';
 
@@ -510,6 +513,168 @@ describe('event-reduce.test.js', () => {
             assert.strictEqual(query._execOverDatabaseCount, execCountBefore + 1);
 
             col.database.close();
+        });
+        /**
+         * Wraps a storage so that bulkWrite() commits the documents
+         * but emits their change events only after openGate() is called.
+         * This is allowed by the RxStorage contract, which only requires that the
+         * events are emitted before bulkWrite() resolves. Storages like Dexie
+         * also commit the transaction before they emit the events.
+         */
+        function gatedEventsStorage(storage: RxStorage<any, any>) {
+            let gate: Promise<void> | undefined;
+            let openGate = () => { };
+            let onCommitted = () => { };
+            let onQueried = () => { };
+            const ret: RxStorage<any, any> & {
+                /**
+                 * Resolves when the next bulkWrite() is committed
+                 * but its events are not emitted yet.
+                 */
+                closeGate(): Promise<void>;
+                openGate(): void;
+                /**
+                 * Resolves when the next query() has returned its result.
+                 */
+                waitForQuery(): Promise<void>;
+            } = {
+                name: storage.name,
+                rxdbVersion: storage.rxdbVersion,
+                async createStorageInstance(params) {
+                    const instance = await storage.createStorageInstance(params);
+                    const changes$ = new Subject<any>();
+                    let held: any[] = [];
+                    let holding = false;
+                    instance.changeStream().subscribe(bulk => {
+                        if (holding) {
+                            held.push(bulk);
+                        } else {
+                            changes$.next(bulk);
+                        }
+                    });
+                    return new Proxy(instance, {
+                        get(target: any, prop: keyof RxStorageInstance<any, any, any>) {
+                            if (prop === 'changeStream') {
+                                return () => changes$.asObservable();
+                            }
+                            if (prop === 'bulkWrite') {
+                                return async (...args: any[]) => {
+                                    const useGate = gate;
+                                    if (useGate) {
+                                        holding = true;
+                                    }
+                                    const result = await target.bulkWrite(...args);
+                                    if (useGate) {
+                                        onCommitted();
+                                        await useGate;
+                                        holding = false;
+                                        const emit = held;
+                                        held = [];
+                                        emit.forEach(bulk => changes$.next(bulk));
+                                    }
+                                    return result;
+                                };
+                            }
+                            if (prop === 'query') {
+                                return async (...args: any[]) => {
+                                    const result = await target.query(...args);
+                                    onQueried();
+                                    return result;
+                                };
+                            }
+                            const value = target[prop];
+                            return typeof value === 'function' ? value.bind(target) : value;
+                        }
+                    });
+                },
+                closeGate() {
+                    gate = new Promise<void>(res => {
+                        openGate = () => {
+                            gate = undefined;
+                            res();
+                        };
+                    });
+                    return new Promise<void>(res => onCommitted = res);
+                },
+                openGate() {
+                    openGate();
+                },
+                waitForQuery() {
+                    return new Promise<void>(res => onQueried = res);
+                }
+            };
+            return ret;
+        }
+        it('should not apply the change event of a write twice when the query result already contains the write', async () => {
+            const storage = gatedEventsStorage(config.storage.getStorage());
+            const colNoEventReduce = await createCollection(false);
+            const colWithBuffer = await createCollection({
+                resultWindowBuffer: (normalizedQuery) => ({
+                    skip: normalizedQuery.skip > 0 ? 3 : 0,
+                    limit: normalizedQuery.limit ? 3 : 0
+                })
+            }, storage);
+            const query: MangoQuery = {
+                selector: { age: { $gt: 30 } },
+                sort: [{ lastName: 'asc' }],
+                skip: 2
+            };
+            async function ensureEqualAndNoDuplicates() {
+                const res1 = await colNoEventReduce.find(query).exec();
+                const res2 = await colWithBuffer.find(query).exec();
+                const keys2 = res2.map(d => d.primary);
+                assert.strictEqual(new Set(keys2).size, keys2.length, 'duplicate primary keys: ' + keys2.join(','));
+                ensureResultsEqual(res1, res2);
+            }
+
+            const initialDocs = [
+                { passportId: 'doc-b', firstName: 'b', lastName: 'lb', age: 40 },
+                { passportId: 'doc-c', firstName: 'c', lastName: 'lc', age: 40 },
+                { passportId: 'doc-d', firstName: 'd', lastName: 'ld', age: 40 },
+                { passportId: 'doc-e', firstName: 'e', lastName: 'le', age: 40 },
+                { passportId: 'doc-f', firstName: 'f', lastName: 'lf', age: 20 }
+            ];
+            await colNoEventReduce.bulkInsert(initialDocs);
+            await colWithBuffer.bulkInsert(initialDocs);
+
+            // doc-a sorts before all rows, doc-z after all rows
+            const gatedDocs = [
+                { passportId: 'doc-a', firstName: 'a', lastName: 'la', age: 40 },
+                { passportId: 'doc-z', firstName: 'z', lastName: 'lz', age: 40 }
+            ];
+            await colNoEventReduce.bulkInsert(gatedDocs);
+            const committed = storage.closeGate();
+            const writePromise = colWithBuffer.bulkInsert(gatedDocs);
+            await committed;
+
+            /**
+             * The first query runs while the documents are committed
+             * but their change events are not emitted yet.
+             * Subscribe so the query instance keeps its buffer.
+             */
+            const queried = storage.waitForQuery();
+            const sub = colWithBuffer.find(query).$.subscribe();
+            const execPromise = colWithBuffer.find(query).exec();
+            await queried;
+            // let the query process its result before the events are emitted
+            await wait(50);
+            storage.openGate();
+            await writePromise;
+            await execPromise;
+            await ensureEqualAndNoDuplicates();
+
+            const docF = await colWithBuffer.findOne('doc-f').exec(true);
+            await docF.incrementalPatch({ age: 50 });
+            await (await colNoEventReduce.findOne('doc-f').exec(true)).incrementalPatch({ age: 50 });
+            await ensureEqualAndNoDuplicates();
+
+            await (await colWithBuffer.findOne('doc-a').exec(true)).remove();
+            await (await colNoEventReduce.findOne('doc-a').exec(true)).remove();
+            await ensureEqualAndNoDuplicates();
+
+            sub.unsubscribe();
+            await colNoEventReduce.database.close();
+            await colWithBuffer.database.close();
         });
         new Array(isFastMode() ? 1 : 5).fill(0).forEach(() => {
             it('random writes: should have the same results as without event-reduce', async () => {
