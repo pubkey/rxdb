@@ -297,16 +297,22 @@ export function renderCollectionScreen(ctx: PageContext) {
             return;
         }
         const dropdown = el('div', 'rxdbv-sort-dropdown');
-        const addRow = (label: string, field: string | null) => {
-            const active = field === currentSortField || (field === null && currentSortField === null);
+        const addRow = (field: string | null, direction: 'asc' | 'desc') => {
+            const active = field === null
+                ? currentSortField === null
+                : field === currentSortField && direction === currentSortDirection;
             dropdown.appendChild(el('div', 'rxdbv-query-dropdown-row' + (active ? ' rxdbv-active' : ''), [
-                el('span', 'rxdbv-mono', label)
+                el('span', 'rxdbv-mono rxdbv-flex1', field === null ? 'none' : field),
+                field === null ? null : el('span', 'rxdbv-dim', direction)
             ], {
-                onClick: () => applySort(field, currentSortDirection)
+                onClick: () => applySort(field, direction)
             }));
         };
-        addRow('none', null);
-        sortableFields.forEach(field => addRow(field, field));
+        addRow(null, 'asc');
+        sortableFields.forEach(field => {
+            addRow(field, 'asc');
+            addRow(field, 'desc');
+        });
         sortDropdownHost.appendChild(dropdown);
     };
     const sortFieldButton = el('button', 'rxdbv-sort-field', (currentSortField || 'none') + ' ▾', {
