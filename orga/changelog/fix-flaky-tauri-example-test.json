@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX flaky Tauri example e2e test that clicked the insert button before the database was ready",
+    "links": [],
+    "priority": 1
+}

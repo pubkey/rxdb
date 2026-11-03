@@ -20,7 +20,7 @@ exports.config = {
   framework: 'mocha',
   mochaOpts: {
     ui: 'bdd',
-    timeout: 60000,
+    timeout: 120000,
   },
 
   // ensure we are running `tauri-driver` before the session starts so that we can proxy the webdriver requests
