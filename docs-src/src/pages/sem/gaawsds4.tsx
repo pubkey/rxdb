@@ -36,17 +36,21 @@ const variations = {
             <>Migrate one collection at a time</>,
             <>Free and open source</>
         ]
-    },
-    c: {
-        title: <>Same <b>Local-First Model</b>, New <b>Database</b></>,
-        text: <>Your app already saves data locally, observes it and syncs in the background. RxDB works the same way, so the switch replaces the data layer and keeps your app architecture.</>,
-        bulletpoints: [
-            <>Save, query and observe locally</>,
-            <>Background replication</>,
-            <>Reactive queries for your UI</>,
-            <>Keep your app architecture</>
-        ]
     }
+    /**
+     * Variation 'c' is retired, the page tests 'a' against 'b'.
+     * Kept commented out so its letter is never reused for different copy.
+     */
+    // c: {
+    //     title: <>Same <b>Local-First Model</b>, New <b>Database</b></>,
+    //     text: <>Your app already saves data locally, observes it and syncs in the background. RxDB works the same way, so the switch replaces the data layer and keeps your app architecture.</>,
+    //     bulletpoints: [
+    //         <>Save, query and observe locally</>,
+    //         <>Background replication</>,
+    //         <>Reactive queries for your UI</>,
+    //         <>Keep your app architecture</>
+    //     ]
+    // }
 };
 
 const variationKeys = Object.keys(variations) as (keyof typeof variations)[];

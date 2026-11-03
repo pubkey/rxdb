@@ -36,17 +36,21 @@ const variations = {
             <>React hooks and Signals support</>,
             <>No subscription wiring per screen</>
         ]
-    },
-    c: {
-        title: <><b>Offline Sync</b> You Can <b>Log, Test and Debug</b></>,
-        text: <>Data that silently stops syncing is hard to fix when the sync engine is a black box. RxDB's replication is open source and runs in your code, with conflict handling you define and events you can observe.</>,
-        bulletpoints: [
-            <>Open-source replication protocol</>,
-            <>Custom conflict handlers</>,
-            <>Observable replication state</>,
-            <>Same behavior on every platform</>
-        ]
     }
+    /**
+     * Variation 'c' is retired, the page tests 'a' against 'b'.
+     * Kept commented out so its letter is never reused for different copy.
+     */
+    // c: {
+    //     title: <><b>Offline Sync</b> You Can <b>Log, Test and Debug</b></>,
+    //     text: <>Data that silently stops syncing is hard to fix when the sync engine is a black box. RxDB's replication is open source and runs in your code, with conflict handling you define and events you can observe.</>,
+    //     bulletpoints: [
+    //         <>Open-source replication protocol</>,
+    //         <>Custom conflict handlers</>,
+    //         <>Observable replication state</>,
+    //         <>Same behavior on every platform</>
+    //     ]
+    // }
 };
 
 const variationKeys = Object.keys(variations) as (keyof typeof variations)[];

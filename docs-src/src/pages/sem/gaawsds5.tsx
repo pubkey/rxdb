@@ -36,17 +36,21 @@ const variations = {
             <>Offline writes sync later</>,
             <>Custom conflict handlers</>
         ]
-    },
-    c: {
-        title: <><b>Offline Sync</b> You Run on <b>Your Own Servers</b></>,
-        text: <>RxDB's core is free and open source, and its replication works against backends you control. No proprietary cloud decides your pricing or when your data layer gets retired.</>,
-        bulletpoints: [
-            <>Free, open-source core</>,
-            <>Self-hostable replication</>,
-            <>Runs on IndexedDB, OPFS or SQLite</>,
-            <>No vendor lock-in</>
-        ]
     }
+    /**
+     * Variation 'c' is retired, the page tests 'a' against 'b'.
+     * Kept commented out so its letter is never reused for different copy.
+     */
+    // c: {
+    //     title: <><b>Offline Sync</b> You Run on <b>Your Own Servers</b></>,
+    //     text: <>RxDB's core is free and open source, and its replication works against backends you control. No proprietary cloud decides your pricing or when your data layer gets retired.</>,
+    //     bulletpoints: [
+    //         <>Free, open-source core</>,
+    //         <>Self-hostable replication</>,
+    //         <>Runs on IndexedDB, OPFS or SQLite</>,
+    //         <>No vendor lock-in</>
+    //     ]
+    // }
 };
 
 const variationKeys = Object.keys(variations) as (keyof typeof variations)[];
