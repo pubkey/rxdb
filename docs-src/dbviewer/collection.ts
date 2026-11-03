@@ -303,7 +303,8 @@ export function renderCollectionScreen(ctx: PageContext) {
                 : field === currentSortField && direction === currentSortDirection;
             dropdown.appendChild(el('div', 'rxdbv-query-dropdown-row' + (active ? ' rxdbv-active' : ''), [
                 el('span', 'rxdbv-mono rxdbv-flex1', field === null ? 'none' : field),
-                field === null ? null : el('span', 'rxdbv-dim', direction)
+                field === null ? null : el('span', 'rxdbv-dim', direction),
+                field === null ? null : el('span', 'rxdbv-sort-arrow', direction === 'desc' ? '▼' : '▲')
             ], {
                 onClick: () => applySort(field, direction)
             }));
@@ -322,7 +323,10 @@ export function renderCollectionScreen(ctx: PageContext) {
             renderSortDropdown();
         }
     });
-    const sortDirButton = el('button', 'rxdbv-sort-dir', currentSortDirection, {
+    const sortDirButton = el('button', 'rxdbv-sort-dir', [
+        el('span', '', currentSortDirection),
+        el('span', 'rxdbv-sort-arrow', currentSortDirection === 'desc' ? '▼' : '▲')
+    ], {
         title: 'Sort direction, click to flip',
         onClick: () => {
             if (currentSortField) {
