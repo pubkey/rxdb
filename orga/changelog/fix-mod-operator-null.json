@@ -1,0 +1,11 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX the `$mod` query operator matching documents where the field is `null`, because `null % 5 === 0` in JavaScript. Like in MongoDB, `$mod` now only matches numbers",
+    "links": [
+        {
+            "url": "https://github.com/pubkey/rxdb/issues/9371",
+            "linkText": "#9371"
+        }
+    ],
+    "priority": 5
+}

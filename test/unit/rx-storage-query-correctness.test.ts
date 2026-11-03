@@ -2879,8 +2879,8 @@ describe('rx-storage-query-correctness.test.ts', () => {
                 expectedResultDocIds: ['d2', 'd4', 'd5', 'd6']
             },
             {
-                info: '$mod with remainder 0',
-                query: { selector: { age: { $gte: 0, $mod: [5, 0] } }, sort: [{ id: 'asc' }] },
+                info: '$mod does not match missing and null fields',
+                query: { selector: { age: { $mod: [5, 0] } }, sort: [{ id: 'asc' }] },
                 expectedResultDocIds: ['d1', 'd2', 'd3']
             },
             {

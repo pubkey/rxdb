@@ -1,5 +1,6 @@
 import { Context } from 'mingo/core';
 import { Query } from 'mingo/query';
+import { resolve } from 'mingo/util';
 import type { MangoQuerySelector } from './types/index.d.ts';
 import {
     $elemMatch,
@@ -18,9 +19,24 @@ import {
     $and,
     $not,
     $type,
-    $size,
-    $mod
+    $size
 } from 'mingo/operators/query';
+
+/**
+ * The $mod operator of mingo also matches null values
+ * because null % 5 === 0 in JavaScript.
+ * Like in MongoDB, $mod must only match numbers.
+ */
+function $modNumbersOnly(selector: string, value: any) {
+    return (obj: any) => {
+        if (!Array.isArray(value) || value.length !== 2) {
+            return false;
+        }
+        const lhs = resolve(obj, selector, { unwrapArray: true });
+        const values = Array.isArray(lhs) ? lhs : [lhs];
+        return values.some(v => typeof v === 'number' && v % value[0] === value[1]);
+    };
+}
 
 let mingoInitDone = false;
 let context: Context;
@@ -52,7 +68,7 @@ export function getMingoQuery<RxDocType>(
                 $lte,
                 $ne,
                 $nin,
-                $mod,
+                $mod: $modNumbersOnly as any,
                 $not,
                 $or,
                 $size,
