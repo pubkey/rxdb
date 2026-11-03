@@ -13,10 +13,9 @@ import {
     where,
     orderBy,
     limit,
-    getDocs,
-    getDoc,
+    getDocsFromServer,
+    getDocFromServer,
     onSnapshot,
-    runTransaction,
     writeBatch,
     serverTimestamp,
     QueryDocumentSnapshot,
@@ -161,34 +160,32 @@ export function replicateFirestore<RxDocType>(
                      * @link https://medium.com/firebase-developers/the-secrets-of-firestore-fieldvalue-servertimestamp-revealed-29dd7a38a82b
                      */
                     await waitForPendingWrites(options.firestore.database);
-                    await runTransaction(options.firestore.database, async (_tx: any) => {
-                        useDocs = [];
-                        const [
-                            newerQueryResult,
-                            sameTimeQueryResult
-                        ] = await Promise.all([
-                            getDocs(newerQuery),
-                            sameTimeQuery ? getDocs(sameTimeQuery) : undefined
-                        ]);
+                    useDocs = [];
+                    const [
+                        newerQueryResult,
+                        sameTimeQueryResult
+                    ] = await Promise.all([
+                        getDocsFromServer(newerQuery),
+                        sameTimeQuery ? getDocsFromServer(sameTimeQuery) : undefined
+                    ]);
 
-                        if (
-                            newerQueryResult.metadata.hasPendingWrites ||
-                            (sameTimeQuery && ensureNotFalsy(sameTimeQueryResult).metadata.hasPendingWrites)
-                        ) {
-                            return;
-                        } else {
-                            mustsReRun = false;
+                    if (
+                        newerQueryResult.metadata.hasPendingWrites ||
+                        (sameTimeQuery && ensureNotFalsy(sameTimeQueryResult).metadata.hasPendingWrites)
+                    ) {
+                        continue;
+                    } else {
+                        mustsReRun = false;
 
-                            if (sameTimeQuery) {
-                                useDocs = ensureNotFalsy(sameTimeQueryResult).docs as any;
-                            }
-                            const missingAmount = batchSize - useDocs.length;
-                            if (missingAmount > 0) {
-                                const additionalDocs = newerQueryResult.docs.slice(0, missingAmount).filter((x: any) => !!x);
-                                useDocs = useDocs.concat(additionalDocs as any);
-                            }
+                        if (sameTimeQuery) {
+                            useDocs = ensureNotFalsy(sameTimeQueryResult).docs as any;
                         }
-                    });
+                        const missingAmount = batchSize - useDocs.length;
+                        if (missingAmount > 0) {
+                            const additionalDocs = newerQueryResult.docs.slice(0, missingAmount).filter((x: any) => !!x);
+                            useDocs = useDocs.concat(additionalDocs as any);
+                        }
+                    }
                 }
 
                 if (useDocs.length === 0) {
@@ -239,92 +236,82 @@ export function replicateFirestore<RxDocType>(
                     return docId;
                 });
                 await waitForPendingWrites(options.firestore.database);
-                let conflicts: WithDeleted<RxDocType>[] = [];
+                const conflicts: WithDeleted<RxDocType>[] = [];
 
                 /**
-                 * Everything must run INSIDE of the transaction
-                 * because on tx-errors, firebase will re-run the transaction on some cases.
-                 * @link https://firebase.google.com/docs/firestore/manage-data/transactions#transaction_failure
-                 * @link https://firebase.google.com/docs/firestore/manage-data/transactions
+                 * @link https://stackoverflow.com/a/48423626/3443137
                  */
-                await runTransaction(options.firestore.database, async (_tx: any) => {
-                    conflicts = []; // reset in case the tx has re-run.
-                    /**
-                     * @link https://stackoverflow.com/a/48423626/3443137
-                     */
-
-                    const getQuery = (ids: string[]) => {
-                        return getDocs(
-                            query(
-                                options.firestore.collection,
-                                where(documentId(), 'in', ids)
-                            )
+                const getQuery = (ids: string[]) => {
+                    return getDocsFromServer(
+                        query(
+                            options.firestore.collection,
+                            where(documentId(), 'in', ids)
                         )
-                        .then((result: any) => result.docs)
-                        .catch((error: any) => {
-                            if (error?.code && (error as FirestoreError).code === 'permission-denied') {
-                                // Query may fail due to rules using 'resource' with non existing ids
-                                // So try to get the docs one by one
-                                return Promise.all(
-                                    ids.map(
-                                        id => getDoc(doc(options.firestore.collection, id))
-                                    )
+                    )
+                    .then((result: any) => result.docs)
+                    .catch((error: any) => {
+                        if (error?.code && (error as FirestoreError).code === 'permission-denied') {
+                            // Query may fail due to rules using 'resource' with non existing ids
+                            // So try to get the docs one by one
+                            return Promise.all(
+                                ids.map(
+                                    id => getDocFromServer(doc(options.firestore.collection, id))
                                 )
-                                .then((docs: any[]) => docs.filter((doc: any) => doc.exists()));
-                            }
-                            throw error;
-                        });
-                    };
-
-                    const docsInDbResult = await getContentByIds<RxDocType>(docIds, getQuery);
-
-                    const docsInDbById: ById<RxDocType> = {};
-                    docsInDbResult.forEach(row => {
-                        const docDataInDb = stripServerTimestampField(serverTimestampField, row.data());
-                        const docId = row.id;
-                        (docDataInDb as any)[primaryPath] = docId;
-                        docsInDbById[docId] = docDataInDb;
+                            )
+                            .then((docs: any[]) => docs.filter((doc: any) => doc.exists()));
+                        }
+                        throw error;
                     });
+                };
 
-                    /**
-                     * @link https://firebase.google.com/docs/firestore/manage-data/transactions#batched-writes
-                     */
-                    const batch = writeBatch(options.firestore.database);
-                    let hasWrite = false;
-                    await Promise.all(
-                        Object.entries(writeRowsById).map(async ([docId, writeRow]) => {
-                            const docInDb: RxDocType | undefined = docsInDbById[docId];
+                const docsInDbResult = await getContentByIds<RxDocType>(docIds, getQuery);
 
-                            if (
-                                docInDb &&
-                                (
-                                    !writeRow.assumedMasterState ||
-                                    collection.conflictHandler.isEqual(docInDb as any, writeRow.assumedMasterState, 'replication-firestore-push') === false
-                                )
-                            ) {
-                                // conflict
-                                conflicts.push(docInDb as any);
-                            } else {
-                                // no conflict
-                                hasWrite = true;
-                                const docRef = doc(options.firestore.collection, docId);
-                                const writeDocData = flatClone(writeRow.newDocumentState);
-                                (writeDocData as any)[serverTimestampField] = serverTimestamp();
-                                if (!docInDb) {
-                                    // insert
-                                    batch.set(docRef, stripPrimaryKey(primaryPath, writeDocData));
-                                } else {
-                                    // update
-                                    batch.update(docRef, stripPrimaryKey(primaryPath, writeDocData));
-                                }
-                            }
-                        })
-                    );
-
-                    if (hasWrite) {
-                        await batch.commit();
-                    }
+                const docsInDbById: ById<RxDocType> = {};
+                docsInDbResult.forEach(row => {
+                    const docDataInDb = stripServerTimestampField(serverTimestampField, row.data());
+                    const docId = row.id;
+                    (docDataInDb as any)[primaryPath] = docId;
+                    docsInDbById[docId] = docDataInDb;
                 });
+
+                /**
+                 * @link https://firebase.google.com/docs/firestore/manage-data/transactions#batched-writes
+                 */
+                const batch = writeBatch(options.firestore.database);
+                let hasWrite = false;
+                await Promise.all(
+                    Object.entries(writeRowsById).map(async ([docId, writeRow]) => {
+                        const docInDb: RxDocType | undefined = docsInDbById[docId];
+
+                        if (
+                            docInDb &&
+                            (
+                                !writeRow.assumedMasterState ||
+                                collection.conflictHandler.isEqual(docInDb as any, writeRow.assumedMasterState, 'replication-firestore-push') === false
+                            )
+                        ) {
+                            // conflict
+                            conflicts.push(docInDb as any);
+                        } else {
+                            // no conflict
+                            hasWrite = true;
+                            const docRef = doc(options.firestore.collection, docId);
+                            const writeDocData = flatClone(writeRow.newDocumentState);
+                            (writeDocData as any)[serverTimestampField] = serverTimestamp();
+                            if (!docInDb) {
+                                // insert
+                                batch.set(docRef, stripPrimaryKey(primaryPath, writeDocData));
+                            } else {
+                                // update
+                                batch.update(docRef, stripPrimaryKey(primaryPath, writeDocData));
+                            }
+                        }
+                    })
+                );
+
+                if (hasWrite) {
+                    await batch.commit();
+                }
                 await waitForPendingWrites(options.firestore.database);
                 return conflicts;
             },

@@ -3,6 +3,7 @@
  * You need a running firebase backend
  */
 import assert from 'assert';
+import { waitUntil } from 'async-test-util';
 
 import {
     randomToken,
@@ -10,7 +11,8 @@ import {
     ensureNotFalsy,
     WithDeleted,
     createRxDatabase,
-    addRxPlugin
+    addRxPlugin,
+    promiseWait
 } from '../plugins/core/index.mjs';
 
 import * as firebase from 'firebase/app';
@@ -42,7 +44,12 @@ import {
     orderBy,
     limit,
     getDoc,
-    QueryConstraint
+    getDocFromServer,
+    QueryConstraint,
+    Firestore,
+    disableNetwork,
+    enableNetwork,
+    terminate
 } from 'firebase/firestore';
 import {
     FirestoreOptions,
@@ -94,6 +101,43 @@ describe('replication-firestore.test.ts', function () {
             collection: useCollection,
             database
         };
+    }
+    /**
+     * Returns a FirestoreOptions with its own Firestore instance,
+     * so that tests can break the client without affecting the other tests.
+     */
+    function getIsolatedFirestoreState(): FirestoreOptions<TestDocType> {
+        const isolatedApp = firebase.initializeApp({
+            projectId,
+            databaseURL: 'http://localhost:8080?ns=' + projectId
+        }, randomToken(10));
+        const isolatedDatabase = getFirestore(isolatedApp);
+        connectFirestoreEmulator(isolatedDatabase, 'localhost', 8080);
+        return {
+            projectId,
+            collection: getFirestoreCollection(isolatedDatabase, 'public', randomToken(10), randomToken(10)) as any,
+            database: isolatedDatabase
+        };
+    }
+    /**
+     * Makes the Firestore client fail to get an auth token
+     * like Firebase Auth does when its token refresh has a network error.
+     * There is no public API to inject this failure,
+     * so this replaces getToken() on the private _authCredentials field.
+     * Returns a function that restores the original getToken().
+     */
+    function failAuthTokenRequests(firestore: Firestore): () => void {
+        const authCredentials = (firestore as any)._authCredentials;
+        const getTokenBefore = authCredentials.getToken;
+        authCredentials.getToken = () => Promise.reject(
+            new firebase.FirebaseError('auth/network-request-failed', 'Firebase: Error (auth/network-request-failed).')
+        );
+        return () => {
+            authCredentials.getToken = getTokenBefore;
+        };
+    }
+    function getServerDoc(firestoreState: FirestoreOptions<any>, id: string) {
+        return getDocFromServer(DocRef(database, firestoreState.collection.path, id));
     }
     async function syncOnce(collection: RxCollection, firestoreState: FirestoreOptions<any>, options?: Pick<SyncOptionsFirestore<any>, 'pull' | 'push'>) {
         const replicationState = replicateFirestore({
@@ -383,6 +427,71 @@ describe('replication-firestore.test.ts', function () {
 
             const docsOnServer = await getAllDocsOfFirestore(firestoreState, where('owner', '==', ownerUid));
             assert.strictEqual(docsOnServer.length, 2);
+        });
+
+        it('pull and push emit errors while offline and recover after the network is back', async () => {
+            const firestoreState = getIsolatedFirestoreState();
+            const collection = await humansCollection.create(0);
+            const replicationState = replicateFirestore<TestDocType>({
+                replicationIdentifier: firestoreState.projectId,
+                firestore: firestoreState,
+                collection: collection as any,
+                pull: {},
+                push: {},
+                live: true,
+                retryTime: 500
+            });
+            const errorCodes: string[] = [];
+            replicationState.error$.subscribe(err => errorCodes.push(err.code));
+            await replicationState.awaitInitialReplication();
+
+            await disableNetwork(firestoreState.database);
+            replicationState.reSync();
+            await waitUntil(() => errorCodes.includes('RC_PULL'), 5000);
+
+            await collection.insert(schemaObjects.humanData('offline-doc'));
+            await waitUntil(() => errorCodes.includes('RC_PUSH'), 5000);
+            assert.strictEqual((await getServerDoc(firestoreState, 'offline-doc')).exists(), false);
+
+            await enableNetwork(firestoreState.database);
+            await replicationState.awaitInSync();
+            assert.strictEqual((await getServerDoc(firestoreState, 'offline-doc')).exists(), true);
+
+            await collection.database.close();
+            await terminate(firestoreState.database);
+        });
+        it('recovers after the auth token request failed with a network error', async () => {
+            const firestoreState = getIsolatedFirestoreState();
+            const collection = await humansCollection.create(0);
+            const replicationState = replicateFirestore<TestDocType>({
+                replicationIdentifier: firestoreState.projectId,
+                firestore: firestoreState,
+                collection: collection as any,
+                pull: {},
+                push: {},
+                live: true,
+                retryTime: 500
+            });
+            await replicationState.awaitInitialReplication();
+
+            const restoreAuthTokenRequests = failAuthTokenRequests(firestoreState.database);
+            replicationState.reSync();
+            await collection.insert(schemaObjects.humanData('auth-error-doc'));
+            await promiseWait(3000);
+            restoreAuthTokenRequests();
+
+            await Promise.race([
+                replicationState.awaitInSync(),
+                promiseWait(10000).then(() => {
+                    throw new Error('awaitInSync() did not resolve after the auth token works again');
+                })
+            ]);
+            assert.strictEqual((await getServerDoc(firestoreState, 'auth-error-doc')).exists(), true);
+            // the client must still be usable, a failed client throws INTERNAL ASSERTION FAILED on every call
+            await getDocFromServer(DocRef(firestoreState.collection, 'auth-error-doc'));
+
+            await collection.database.close();
+            await terminate(firestoreState.database);
         });
 
     });
