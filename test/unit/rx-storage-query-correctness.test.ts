@@ -2735,4 +2735,164 @@ describe('rx-storage-query-correctness.test.ts', () => {
             }
         ]
     });
+
+    /**
+     * Missing fields and fields with the value null
+     * must be handled the same way on all storages.
+     * @link https://github.com/pubkey/rxdb/issues/9371
+     */
+    testCorrectQueries<{ id: string; a?: string | null; b?: string | null; }>({
+        testTitle: '$exists, $nin, $eq and $ne on missing and null fields',
+        data: [
+            { id: 'd1', a: 'x', b: null },
+            { id: 'd2', a: 'x', b: 'z' },
+            { id: 'd3' },
+            { id: 'd4', a: null },
+            { id: 'd5', a: 'y' },
+            { id: 'd6', a: '' }
+        ],
+        schema: {
+            version: 0,
+            primaryKey: 'id',
+            type: 'object',
+            properties: {
+                id: { type: 'string', maxLength: 10 },
+                a: { type: ['string', 'null'] },
+                b: { type: ['string', 'null'] }
+            },
+            required: ['id']
+        },
+        queries: [
+            {
+                info: '$exists: true matches fields with the value null',
+                query: { selector: { a: { $exists: true } }, sort: [{ id: 'asc' }] },
+                expectedResultDocIds: ['d1', 'd2', 'd4', 'd5', 'd6']
+            },
+            {
+                info: '$exists: false matches only missing fields',
+                query: { selector: { a: { $exists: false } }, sort: [{ id: 'asc' }] },
+                expectedResultDocIds: ['d3']
+            },
+            {
+                info: '$exists: true on a field that is null in one document',
+                query: { selector: { b: { $exists: true } }, sort: [{ id: 'asc' }] },
+                expectedResultDocIds: ['d1', 'd2']
+            },
+            {
+                info: '$exists: false on a field that is null in one document',
+                query: { selector: { b: { $exists: false } }, sort: [{ id: 'asc' }] },
+                expectedResultDocIds: ['d3', 'd4', 'd5', 'd6']
+            },
+            {
+                info: '$nin matches missing and null fields',
+                query: { selector: { a: { $nin: ['y'] } }, sort: [{ id: 'asc' }] },
+                expectedResultDocIds: ['d1', 'd2', 'd3', 'd4', 'd6']
+            },
+            {
+                info: '$nin with multiple values matches missing and null fields',
+                query: { selector: { a: { $nin: ['x', 'y'] } }, sort: [{ id: 'asc' }] },
+                expectedResultDocIds: ['d3', 'd4', 'd6']
+            },
+            {
+                info: '$nin with null excludes missing and null fields',
+                query: { selector: { a: { $nin: ['y', null] } }, sort: [{ id: 'asc' }] },
+                expectedResultDocIds: ['d1', 'd2', 'd6']
+            },
+            {
+                info: '$nin with only null',
+                query: { selector: { a: { $nin: [null] } }, sort: [{ id: 'asc' }] },
+                expectedResultDocIds: ['d1', 'd2', 'd5', 'd6']
+            },
+            {
+                info: '$ne matches missing and null fields',
+                query: { selector: { a: { $ne: 'y' } }, sort: [{ id: 'asc' }] },
+                expectedResultDocIds: ['d1', 'd2', 'd3', 'd4', 'd6']
+            },
+            {
+                info: '$eq: null matches missing and null fields',
+                query: { selector: { a: { $eq: null } }, sort: [{ id: 'asc' }] },
+                expectedResultDocIds: ['d3', 'd4']
+            },
+            {
+                info: '$ne: null matches only fields with a value',
+                query: { selector: { a: { $ne: null } }, sort: [{ id: 'asc' }] },
+                expectedResultDocIds: ['d1', 'd2', 'd5', 'd6']
+            }
+        ]
+    });
+
+    testCorrectQueries<{ id: string; name?: string | null; age?: number | null; }>({
+        testTitle: '$regex, $not and $mod on plain fields',
+        data: [
+            { id: 'd1', name: 'Alice', age: 10 },
+            { id: 'd2', name: 'alice', age: 15 },
+            { id: 'd3', name: 'Bob', age: 20 },
+            { id: 'd4' },
+            { id: 'd5', name: null, age: null },
+            { id: 'd6', name: 'Carol', age: 21 }
+        ],
+        schema: {
+            version: 0,
+            primaryKey: 'id',
+            type: 'object',
+            properties: {
+                id: { type: 'string', maxLength: 10 },
+                name: { type: ['string', 'null'] },
+                age: { type: ['number', 'null'] }
+            },
+            required: ['id']
+        },
+        queries: [
+            {
+                info: '$regex is case sensitive by default',
+                query: { selector: { name: { $regex: '^a' } }, sort: [{ id: 'asc' }] },
+                expectedResultDocIds: ['d2']
+            },
+            {
+                info: '$regex with $options i',
+                query: { selector: { name: { $regex: '^a', $options: 'i' } }, sort: [{ id: 'asc' }] },
+                expectedResultDocIds: ['d1', 'd2']
+            },
+            {
+                info: '$regex in the middle of the string',
+                query: { selector: { name: { $regex: 'o' } }, sort: [{ id: 'asc' }] },
+                expectedResultDocIds: ['d3', 'd6']
+            },
+            {
+                info: '$not with $eq matches missing and null fields',
+                query: { selector: { name: { $not: { $eq: 'Bob' } } }, sort: [{ id: 'asc' }] },
+                expectedResultDocIds: ['d1', 'd2', 'd4', 'd5', 'd6']
+            },
+            {
+                info: '$not with $regex',
+                query: { selector: { name: { $not: { $regex: '^a', $options: 'i' } } }, sort: [{ id: 'asc' }] },
+                expectedResultDocIds: ['d3', 'd4', 'd5', 'd6']
+            },
+            {
+                info: '$not with $gt matches missing and null fields',
+                query: { selector: { age: { $not: { $gt: 15 } } }, sort: [{ id: 'asc' }] },
+                expectedResultDocIds: ['d1', 'd2', 'd4', 'd5']
+            },
+            {
+                info: '$not with $in',
+                query: { selector: { age: { $not: { $in: [10, 20] } } }, sort: [{ id: 'asc' }] },
+                expectedResultDocIds: ['d2', 'd4', 'd5', 'd6']
+            },
+            {
+                info: '$mod with remainder 0',
+                query: { selector: { age: { $gte: 0, $mod: [5, 0] } }, sort: [{ id: 'asc' }] },
+                expectedResultDocIds: ['d1', 'd2', 'd3']
+            },
+            {
+                info: '$mod with remainder 1',
+                query: { selector: { age: { $mod: [10, 1] } }, sort: [{ id: 'asc' }] },
+                expectedResultDocIds: ['d6']
+            },
+            {
+                info: '$mod combined with a range',
+                query: { selector: { $and: [{ age: { $mod: [5, 0] } }, { age: { $gt: 10 } }] }, sort: [{ id: 'asc' }] },
+                expectedResultDocIds: ['d2', 'd3']
+            }
+        ]
+    });
 });
