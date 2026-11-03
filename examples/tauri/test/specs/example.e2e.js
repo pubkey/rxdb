@@ -5,6 +5,10 @@ describe('Heroes', () => {
     expect(text).toEqual('RxDB Heroes Tauri');
   });
   it('should insert a hero', async () => {
+    // wait until the database is created and window.addHero() exists
+    const dbReady = await $('body[data-db-ready="true"]');
+    await dbReady.waitForExist({ timeout: 60000 });
+
     const name = await $('#input-name');
     const color = await $('#input-color');
     const submit = await $('#input-submit');

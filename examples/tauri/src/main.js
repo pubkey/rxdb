@@ -74,5 +74,11 @@ async function run() {
     await db.heroes.insert(obj);
     console.log("inserting hero DONE");
   };
+
+  /**
+   * Signal that the database is ready and addHero() can be used,
+   * so that the e2e tests do not click the insert button too early.
+   */
+  document.body.setAttribute("data-db-ready", "true");
 }
 run();
