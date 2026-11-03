@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX flaky RxStorage `.cleanup()` test that could fail when the storage uses another instance of `now()` and the deletion happened in the same millisecond",
+    "links": [],
+    "priority": 1
+}

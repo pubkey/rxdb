@@ -3447,6 +3447,14 @@ describe('rx-storage-implementations.test.ts (implementation: ' + config.storage
                 const doc = mustBeThereButDeleted[0];
                 assert.ok(doc._deleted);
 
+                /**
+                 * cleanup(0) only removes documents with a lwt below the now() of the storage.
+                 * The storage can use another instance of now() with its own sub-millisecond counter
+                 * (like the premium storages in the integration tests), so wait until the
+                 * deletion time is in the past.
+                 */
+                await waitUntil(() => Date.now() > doc._meta.lwt);
+
                 // clean up the deleted document
                 while (!await storageInstance.cleanup(0)) { }
 
