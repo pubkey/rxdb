@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX the result window buffer of a query could contain the same document twice, or a document that should be skipped, when a write ran while the query was executed and the storage emitted the change event of that write only after the query had already returned the written document",
+    "links": [],
+    "priority": 5
+}

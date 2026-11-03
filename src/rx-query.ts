@@ -375,7 +375,17 @@ export class RxQueryBase<
          * convergence more and more under write pressure.
          *
          * @link https://github.com/pubkey/rxdb/issues/7067
+         *
+         * A write that ran concurrently can already be visible in our result
+         * while its change event is not emitted yet. Its event would then be applied
+         * again on top of a result that already contains it, which the result window
+         * buffer does not tolerate. The storage emits the events before bulkWrite()
+         * resolves, so we wait for the pending writes before comparing the counter.
          */
+        const pendingWrites = this.collection.storageInstance.pendingWrites;
+        if (pendingWrites && pendingWrites.size > 0) {
+            await Promise.allSettled(Array.from(pendingWrites));
+        }
         if (this.collection._changeEventBuffer.getCounter() !== counterBefore) {
             await promiseWait(20);
             return this._execOverDatabase(rerunCount + 1);
