@@ -381,6 +381,43 @@ getDatabaseConnection(
 ): Promise<SQLiteDatabaseClass>;
 ```
 
+## Query Operators
+
+The premium SQLite storage translates the [Mango query](./rx-query.md) selector into a SQL `WHERE` clause, so that SQLite can use the indexes and only returns the matching rows. Not every operator has a SQL translation. The operators without one are run in memory with the same query matcher that the other storages use, so the results are the same on all storages.
+
+**Translated to SQL:**
+- `$eq`, `$ne`, `$gt`, `$gte`, `$lt`, `$lte`
+- `$in`, `$nin`
+- `$exists`
+- `$and`, `$or`, `$nor`
+- `$not` as a field operator, when its inner operator is one of the above
+
+**Run in memory:**
+- `$regex` (with or without `$options`)
+- `$elemMatch`
+- `$size`
+- `$type`
+- `$mod`
+- `$not` with an inner operator that is run in memory, for example `{ name: { $not: { $regex: '^a' } } }`
+
+When a selector contains an operator that is run in memory, only that part of the selector is left out of the SQL query. All other top-level parts and all parts inside of `$and` still run in SQL. SQLite returns the pre-filtered rows in batches of `50` and RxDB checks each row with the query matcher. Inside of `$or`, `$nor` and `$not` a part cannot be left out on its own, because that would change the result. So when one branch of an `$or` contains an operator that is run in memory, the whole `$or` is run in memory.
+
+```ts
+// SQL filters by priority, the $regex is checked in memory on the remaining rows.
+const result = await myDatabase.todos.find({
+    selector: {
+        priority: { $gt: 5 },
+        name: { $regex: '^Learn' }
+    }
+}).exec();
+```
+
+Keep in mind that a query with an operator that is run in memory has to read and parse each pre-filtered row. On big collections, combine it with an indexed field like in the example above, so that SQLite returns as few rows as possible. A search field that runs a `$regex` query on each keystroke without any other filter reads the whole table each time.
+
+Also notice that `count()` cannot run in SQL when the selector contains an operator that is run in memory. The storage then counts the rows in memory and reports a slow count, which throws the error [`QU14`](./errors.md#QU14) unless you set [`allowSlowCount`](./rx-query.md#allowslowcount) when creating the database.
+
+The trial version of the SQLite storage does not translate any operator to SQL. It always fetches all documents and runs the query in memory.
+
 ## Known Problems of SQLite in JavaScript apps
 
 - Some JavaScript runtimes do not contain a `Buffer` API which is used by SQLite to store binary attachments data as `BLOB`. You can set `storeAttachmentsAsBase64String: true` if you want to store the attachments data as base64 string instead. This increases the database size but makes it work even without having a `Buffer`.
@@ -411,6 +448,11 @@ const storage = getRxStorageSQLite({
 <FaqItem question="Does SQLite natively support querying and parsing JSON objects?">
 
 Yes, starting natively from version `3.38.0`, SQLite includes comprehensive built-in core JSON functions like `JSON_EXTRACT`. The **[RxDB SQLite Storage](./rx-storage.md)** engine utilizes these exact JSON extension methods to seamlessly run complex NoSQL document queries, indexes, and sorting operations directly within the SQLite runtime, bridging the gap between flat tabular paradigms and rich document store flexibility.
+
+</FaqItem>
+<FaqItem question="Which query operators does the RxDB SQLite storage run in SQL?">
+
+The premium **[SQLite RxStorage](#query-operators)** translates `$eq`, `$ne`, `$gt`, `$gte`, `$lt`, `$lte`, `$in`, `$nin`, `$exists`, `$and`, `$or`, `$nor` and the field-level `$not` to SQL. `$regex`, `$elemMatch`, `$size`, `$type` and `$mod` are checked in memory on the rows that the translated part of the query returns. The results are the same as on all other storages.
 
 </FaqItem>
 <FaqItem question="How can you save and export a SQLite database from a local environment?">
