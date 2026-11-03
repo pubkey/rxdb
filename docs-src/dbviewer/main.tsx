@@ -275,7 +275,8 @@ function boot() {
         source: ViewerSource,
         hub: ReturnType<typeof createPageHub> | null,
         info: ViewerInfo,
-        onClose: () => void
+        onClose: () => void,
+        transport: 'iframe' | 'webrtc' | 'dump' = 'iframe'
     ) => {
         reactRoot.render(
             <ViewerApp
@@ -285,6 +286,7 @@ function boot() {
                 pageSize={resolvePageSize(info.pageSize)}
                 showCloseButton={info.showCloseButton}
                 onClose={onClose}
+                transport={transport}
             />
         );
     };
@@ -306,7 +308,7 @@ function boot() {
                         readOnly: true,
                         pageSize: 0,
                         showCloseButton: false
-                    }, () => undefined);
+                    }, () => undefined, 'dump');
                 }}
                 onWebRTC={(signalingServerUrl, roomId, setStatus, setError) => {
                     connectWebRTC(signalingServerUrl, roomId, setStatus, setError);
@@ -336,7 +338,7 @@ function boot() {
                 setError('the device did not answer the handshake');
                 return;
             }
-            renderLive(result.source, result.hub, result.info, () => undefined);
+            renderLive(result.source, result.hub, result.info, () => undefined, 'webrtc');
         }).catch(error => {
             setError(String(error && error.message ? error.message : error));
         });
@@ -397,13 +399,13 @@ function boot() {
         const onClose = () => hostWindow.postMessage({ type: 'rxdbv-close' }, hostOrigin);
         if (info.dump) {
             const source = createDumpSource(info.dump, info.dumpFilename, info.rxdbVersion);
-            renderLive(source, null, info, onClose);
+            renderLive(source, null, info, onClose, 'dump');
             return;
         }
         const transport = createWindowPageTransport(hostWindow, hostOrigin);
         createRemoteSource(info, transport).then(source => {
             const hub = createPageHub(source);
-            renderLive(source, hub, info, onClose);
+            renderLive(source, hub, info, onClose, 'iframe');
         }).catch(() => {
             renderStandalone();
         });

@@ -11,6 +11,7 @@ import type { PageContext } from './context.ts';
 import {
     buildInput,
     clearChildren,
+    downloadJson,
     el
 } from './dom.ts';
 
@@ -215,6 +216,13 @@ export function renderChangesPanel(ctx: PageContext) {
     panel.appendChild(el('div', 'rxdbv-toolbar', [
         filterInput,
         el('div', 'rxdbv-flex1'),
+        el('button', 'rxdbv-btn rxdbv-btn-small', 'Download JSON', {
+            title: 'Download the recorded changes of this collection as a JSON array',
+            onClick: () => {
+                const name = ctx.source.databaseName + '-' + (scopeCollection || 'all') + '-changes.json';
+                downloadJson(name, scopedChanges());
+            }
+        }),
         observeButton
     ]));
 

@@ -302,6 +302,45 @@ export function deepEquals(a: any, b: any): boolean {
     return JSON.stringify(a) === JSON.stringify(b);
 }
 
+export type ViewerSortPart = {
+    [field: string]: 'asc' | 'desc';
+};
+
+/**
+ * In-memory sort for the dump mode and the system collections
+ * where no live database is available to sort the query.
+ * Missing values sort last in both directions.
+ */
+export function sortViewerDocs(docs: any[], sort?: ViewerSortPart[]): any[] {
+    if (!sort || sort.length === 0) {
+        return docs;
+    }
+    const parts = sort.map(part => {
+        const field = Object.keys(part)[0];
+        return { field, factor: part[field] === 'desc' ? -1 : 1 };
+    }).filter(part => !!part.field);
+    if (parts.length === 0) {
+        return docs;
+    }
+    return docs.slice().sort((a, b) => {
+        for (const part of parts) {
+            const left = resolvePath(a, part.field);
+            const right = resolvePath(b, part.field);
+            if (left === right) {
+                continue;
+            }
+            if (typeof left === 'undefined' || left === null) {
+                return 1;
+            }
+            if (typeof right === 'undefined' || right === null) {
+                return -1;
+            }
+            return (left < right ? -1 : 1) * part.factor;
+        }
+        return 0;
+    });
+}
+
 /**
  * Minimal Mango selector matcher used in dump mode
  * where no live database is available to run queries.

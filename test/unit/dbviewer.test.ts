@@ -410,6 +410,53 @@ describe('dbviewer.test.ts', () => {
             await db.close();
         });
     });
+    describe('query sorting', () => {
+        it('sorts over the whole collection in the live source and in a dump', async () => {
+            const db = await createRxDatabase({
+                name: randomToken(10),
+                storage: config.storage.getStorage()
+            });
+            await db.addCollections({
+                docs: {
+                    schema: {
+                        version: 0,
+                        primaryKey: 'id',
+                        type: 'object',
+                        properties: {
+                            id: { type: 'string', maxLength: 100 },
+                            power: { type: 'number' }
+                        },
+                        required: ['id']
+                    }
+                }
+            });
+            await db.docs.bulkInsert([
+                { id: 'a', power: 10 },
+                { id: 'b', power: 30 },
+                { id: 'c', power: 20 }
+            ]);
+            const source = createLiveDataSource(db as any);
+            const descending = await source.query('docs', {}, 0, 2, [{ power: 'desc' }]);
+            assert.deepStrictEqual(descending.docs.map(doc => doc.id), ['b', 'c']);
+            const secondPage = await source.query('docs', {}, 2, 2, [{ power: 'desc' }]);
+            assert.deepStrictEqual(secondPage.docs.map(doc => doc.id), ['a']);
+
+            const dumpSource = createDumpDataSource({
+                name: 'dumped',
+                collections: [{
+                    name: 'docs',
+                    docs: [
+                        { id: 'a', power: 10 },
+                        { id: 'b', power: 30 },
+                        { id: 'c', power: 20 }
+                    ]
+                }]
+            });
+            const dumpSorted = await dumpSource.query('docs', {}, 0, 10, [{ power: 'asc' }]);
+            assert.deepStrictEqual(dumpSorted.docs.map(doc => doc.id), ['a', 'c', 'b']);
+            await db.close();
+        });
+    });
     describe('system collections', () => {
         it('lists internal store, local documents and rx-state as view-only and rejects writes', async () => {
             const { addRxPlugin } = await import('../../plugins/core/index.mjs');

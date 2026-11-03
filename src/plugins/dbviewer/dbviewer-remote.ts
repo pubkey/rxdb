@@ -92,8 +92,8 @@ export function attachViewerBridge(options: ViewerBridgeOptions): ViewerBridgeHa
         info: () => Promise.resolve(info),
         listCollections: () => Promise.resolve(source.listCollections()),
         count: (collectionName: string, selector?: any) => source.count(collectionName, selector),
-        query: (collectionName: string, selector: any, skip: number, limit: number) =>
-            source.query(collectionName, selector, skip, limit),
+        query: (collectionName: string, selector: any, skip: number, limit: number, sort?: any) =>
+            source.query(collectionName, selector, skip, limit, sort),
         getById: (collectionName: string, id: string) => source.getById(collectionName, id),
         insert: (collectionName: string, doc: any) => source.insert(collectionName, doc),
         update: (collectionName: string, id: string, changedFields: any) =>

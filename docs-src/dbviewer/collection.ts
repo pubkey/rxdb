@@ -9,6 +9,7 @@ import {
     shortRev,
     viewerTypeOf
 } from '../../src/plugins/dbviewer/dbviewer-helpers.ts';
+import type { ViewerSortPart } from '../../src/plugins/dbviewer/dbviewer-helpers.ts';
 import type { PageContext } from './context.ts';
 import {
     base64ToBlob,
@@ -47,6 +48,8 @@ type DrawerState = {
     doc: any;
     staged: Map<string, string>;
     expanded: Set<string>;
+    jsonMode: boolean;
+    jsonDraft: string | null;
 };
 
 type CollectionUiState = {
@@ -62,8 +65,8 @@ type CollectionUiState = {
     drawer: DrawerState | null;
     freshIds: Map<string, number>;
     lastResult: { docs: any[]; total: number | null; } | null;
-    sortField: string | null;
-    sortDirection: 1 | -1;
+    sortInput: string;
+    allMatching: boolean;
     historyOpen: boolean;
 };
 
@@ -83,13 +86,56 @@ function getUiState(ctx: PageContext, collectionName: string): CollectionUiState
             drawer: null,
             freshIds: new Map(),
             lastResult: null,
-            sortField: null,
-            sortDirection: -1,
+            sortInput: '',
+            allMatching: false,
             historyOpen: false
         } as CollectionUiState;
         ctx.collectionState.set(collectionName, state);
     }
     return state;
+}
+
+/**
+ * Parses the sort input of the query bar. Accepts '-field' for
+ * descending, 'field desc' / 'field asc', and several fields
+ * separated by comma, like '-power, name'.
+ */
+export function parseViewerSortInput(text: string): { sort: ViewerSortPart[] | undefined; error: string | null; } {
+    const trimmed = (text || '').trim();
+    if (!trimmed) {
+        return { sort: undefined, error: null };
+    }
+    const parts: ViewerSortPart[] = [];
+    for (const raw of trimmed.split(',')) {
+        const token = raw.trim();
+        if (!token) {
+            continue;
+        }
+        let field = token;
+        let direction: 'asc' | 'desc' = 'asc';
+        if (field.startsWith('-')) {
+            field = field.slice(1).trim();
+            direction = 'desc';
+        } else {
+            const words = field.split(/\s+/);
+            if (words.length === 2) {
+                field = words[0];
+                const dir = words[1].toLowerCase();
+                if (dir === 'desc') {
+                    direction = 'desc';
+                } else if (dir !== 'asc') {
+                    return { sort: undefined, error: 'invalid direction: ' + words[1] };
+                }
+            } else if (words.length > 2) {
+                return { sort: undefined, error: 'invalid sort: ' + token };
+            }
+        }
+        if (!field) {
+            return { sort: undefined, error: 'invalid sort: ' + token };
+        }
+        parts.push({ [field]: direction });
+    }
+    return { sort: parts.length > 0 ? parts : undefined, error: null };
 }
 
 type StoredQueries = {
@@ -217,6 +263,32 @@ export function renderCollectionScreen(ctx: PageContext) {
     const skipWrap = buildNumberInput('skip', uiState.skip, 0, parsed => {
         uiState.skip = parsed;
     });
+    const sortTextInput = el('input', 'rxdbv-query-input', undefined, {
+        value: uiState.sortInput,
+        placeholder: '-field'
+    }) as HTMLInputElement;
+    const sortWrap = el('div', 'rxdbv-input rxdbv-num-input-wrap rxdbv-sort-input-wrap', [
+        el('span', 'rxdbv-dim', 'sort'),
+        sortTextInput
+    ], { title: 'Sort for the query: -power sorts descending, power ascending, several fields separated by comma' });
+    const commitSort = () => {
+        const parsed = parseViewerSortInput(sortTextInput.value);
+        if (parsed.error) {
+            sortWrap.classList.add('rxdbv-error');
+            sortWrap.title = parsed.error;
+            return;
+        }
+        sortWrap.classList.remove('rxdbv-error');
+        uiState.sortInput = sortTextInput.value;
+        uiState.page = 0;
+        ctx.renderContent();
+    };
+    sortTextInput.addEventListener('change', commitSort);
+    sortTextInput.addEventListener('keydown', event => {
+        if ((event as KeyboardEvent).key === 'Enter') {
+            commitSort();
+        }
+    });
     const runButton = el('button', 'rxdbv-btn-primary', 'Run') as HTMLButtonElement;
     const explainButton = el('button', 'rxdbv-btn', 'Explain', {
         title: 'Explain this query: used index, execution plan and findings',
@@ -226,7 +298,7 @@ export function renderCollectionScreen(ctx: PageContext) {
         }
     });
     const dropdownHost = el('div');
-    const querybar = el('div', 'rxdbv-querybar', [historyButton, inputWrap, limitWrap, skipWrap, explainButton, runButton, dropdownHost]);
+    const querybar = el('div', 'rxdbv-querybar', [historyButton, inputWrap, limitWrap, skipWrap, sortWrap, explainButton, runButton, dropdownHost]);
     screen.appendChild(querybar);
     const errorHost = el('div');
     screen.appendChild(errorHost);
@@ -288,6 +360,7 @@ export function renderCollectionScreen(ctx: PageContext) {
         }
         uiState.page = 0;
         uiState.selection.clear();
+        uiState.allMatching = false;
         rememberRecentQuery(queryInput.value.trim());
         rerun();
     };
@@ -295,17 +368,6 @@ export function renderCollectionScreen(ctx: PageContext) {
     queryInput.addEventListener('keydown', event => {
         if (event.key === 'Enter') {
             run();
-        } else if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 's') {
-            event.preventDefault();
-            const name = prompt('Name of this favourite query:');
-            if (name) {
-                const stored = readStoredQueries();
-                stored.favourites = stored.favourites
-                    .filter(entry => entry.query !== queryInput.value.trim())
-                    .concat([{ name, query: queryInput.value.trim() }])
-                    .slice(-10);
-                writeStoredQueries(stored);
-            }
         }
     });
     queryInput.addEventListener('input', () => {
@@ -352,7 +414,22 @@ export function renderCollectionScreen(ctx: PageContext) {
                 el('span', 'rxdbv-query-text rxdbv-dim', 'Run a query to record it here')
             ]));
         }
-        dropdown.appendChild(el('div', 'rxdbv-query-dropdown-footer', '↵ run · ⌘S save as favourite'));
+        dropdown.appendChild(el('div', 'rxdbv-query-dropdown-footer', [
+            el('a', '', '☆ Save current query as favourite', {
+                onClick: () => {
+                    const name = prompt('Name of this favourite query:');
+                    if (name) {
+                        const storedNow = readStoredQueries();
+                        storedNow.favourites = storedNow.favourites
+                            .filter(entry => entry.query !== queryInput.value.trim())
+                            .concat([{ name, query: queryInput.value.trim() }])
+                            .slice(-10);
+                        writeStoredQueries(storedNow);
+                        renderHistoryDropdown();
+                    }
+                }
+            })
+        ]));
         dropdownHost.appendChild(dropdown);
     };
 
@@ -451,7 +528,8 @@ function runQuery(
     primaryPath: string
 ) {
     const skip = uiState.skip + uiState.page * uiState.limit;
-    ctx.source.query(collectionName, uiState.appliedSelector, skip, uiState.limit).then(result => {
+    const parsedSort = parseViewerSortInput(uiState.sortInput);
+    ctx.source.query(collectionName, uiState.appliedSelector, skip, uiState.limit, parsedSort.sort).then(result => {
         if (ctx.destroyed) {
             return;
         }
@@ -488,18 +566,6 @@ function renderResult(
     }
 
     const docs = result.docs.slice();
-    if (uiState.sortField) {
-        const field = uiState.sortField;
-        const direction = uiState.sortDirection;
-        docs.sort((a, b) => {
-            const av = field === '_updated' ? (a._meta ? a._meta.lwt : 0) : a[field];
-            const bv = field === '_updated' ? (b._meta ? b._meta.lwt : 0) : b[field];
-            if (av === bv) {
-                return 0;
-            }
-            return (av < bv ? -1 : 1) * direction;
-        });
-    }
 
     if (uiState.view === 'json') {
         renderJsonView(ctx, uiState, resultHost, docs, primaryPath);
@@ -523,21 +589,22 @@ function renderTableView(
 
     const headerCells: HTMLElement[] = [];
     headerCells.push(el('div', 'rxdbv-grid-checkbox-cell', [buildSelectAllCheckbox(ctx, uiState, docs, primaryPath)]));
+    const parsedSort = parseViewerSortInput(uiState.sortInput);
+    const firstSort = parsedSort.sort && parsedSort.sort.length > 0 ? parsedSort.sort[0] : null;
+    const firstSortField = firstSort ? Object.keys(firstSort)[0] : null;
+    const firstSortDirection = firstSort && firstSortField ? firstSort[firstSortField] : null;
     const sortableHeader = (label: string, sortKey: string) => {
-        const sorted = uiState.sortField === sortKey;
+        const sorted = firstSortField === sortKey;
         const cell: (string | HTMLElement)[] = [label];
         if (sorted) {
-            cell.push(el('span', 'rxdbv-sort-arrow', uiState.sortDirection === -1 ? '▼' : '▲'));
+            cell.push(el('span', 'rxdbv-sort-arrow', firstSortDirection === 'desc' ? '▼' : '▲'));
         }
         return el('div', 'rxdbv-sortable' + (sorted ? ' rxdbv-sorted' : ''), cell, {
-            title: 'Sort this page by ' + label,
+            title: 'Sort by ' + label,
             onClick: () => {
-                if (uiState.sortField === sortKey) {
-                    uiState.sortDirection = uiState.sortDirection === -1 ? 1 : -1;
-                } else {
-                    uiState.sortField = sortKey;
-                    uiState.sortDirection = -1;
-                }
+                const descending = !sorted || firstSortDirection === 'asc';
+                uiState.sortInput = (descending ? '-' : '') + sortKey;
+                uiState.page = 0;
                 ctx.renderContent();
             }
         });
@@ -545,7 +612,7 @@ function renderTableView(
     headerCells.push(sortableHeader(primaryPath, primaryPath));
     fields.forEach(field => headerCells.push(sortableHeader(field, field)));
     headerCells.push(el('div', '', '_rev'));
-    headerCells.push(sortableHeader('updated', '_updated'));
+    headerCells.push(sortableHeader('updated', '_meta.lwt'));
 
     const header = el('div', 'rxdbv-grid-header', headerCells);
     header.style.gridTemplateColumns = template;
@@ -553,7 +620,7 @@ function renderTableView(
     const scroll = el('div', 'rxdbv-grid-scroll');
     scroll.appendChild(header);
 
-    docs.forEach(doc => {
+    const buildRow = (doc: any): HTMLElement => {
         const id = String(doc[primaryPath]);
         const selected = uiState.selection.has(id) ||
             (uiState.drawer !== null && uiState.drawer.docId === id);
@@ -568,6 +635,7 @@ function renderTableView(
                 uiState.selection.add(id);
             } else {
                 uiState.selection.delete(id);
+                uiState.allMatching = false;
             }
             ctx.renderContent();
         });
@@ -601,8 +669,48 @@ function renderTableView(
             }
         });
         row.style.gridTemplateColumns = template;
-        scroll.appendChild(row);
-    });
+        return row;
+    };
+
+    /**
+     * The rows are windowed: only the visible slice plus an
+     * overscan exists in the DOM, so a limit of 10k documents
+     * does not create 10k rows.
+     */
+    const ROW_HEIGHT = 24;
+    const OVERSCAN = 10;
+    const rowsHost = el('div', 'rxdbv-grid-virtual');
+    rowsHost.style.height = (docs.length * ROW_HEIGHT) + 'px';
+    scroll.appendChild(rowsHost);
+    let renderedFrom = -1;
+    let renderedTo = -1;
+    const renderWindow = () => {
+        const viewTop = scroll.scrollTop;
+        const viewHeight = scroll.clientHeight || 800;
+        const from = Math.max(0, Math.floor(viewTop / ROW_HEIGHT) - OVERSCAN);
+        const to = Math.min(docs.length, Math.ceil((viewTop + viewHeight) / ROW_HEIGHT) + OVERSCAN);
+        if (from === renderedFrom && to === renderedTo) {
+            return;
+        }
+        renderedFrom = from;
+        renderedTo = to;
+        clearChildren(rowsHost);
+        for (let index = from; index < to; index++) {
+            const row = buildRow(docs[index]);
+            row.style.position = 'absolute';
+            row.style.top = (index * ROW_HEIGHT) + 'px';
+            row.style.left = '0';
+            row.style.right = '0';
+            rowsHost.appendChild(row);
+        }
+    };
+    scroll.addEventListener('scroll', renderWindow);
+    renderWindow();
+    setTimeout(() => {
+        if (!ctx.destroyed) {
+            renderWindow();
+        }
+    }, 0);
     resultHost.appendChild(scroll);
 }
 
@@ -619,6 +727,7 @@ function buildSelectAllCheckbox(
         event.stopPropagation();
         if (allSelected) {
             uiState.selection.clear();
+            uiState.allMatching = false;
         } else {
             docs.forEach(doc => uiState.selection.add(String(doc[primaryPath])));
         }
@@ -709,8 +818,14 @@ function renderFooter(
     const skip = uiState.skip + uiState.page * uiState.limit;
     const rangeEnd = skip + result.docs.length;
     const totalText = result.total === null ? '—' : formatInteger(result.total);
-    const selectionCount = uiState.selection.size;
+    const selectionCount = uiState.allMatching && result.total !== null ? result.total : uiState.selection.size;
     const readOnly = isReadOnlyCollection(ctx, collectionName);
+    const pageFullySelected = result.docs.length > 0 &&
+        result.docs.every(doc => uiState.selection.has(String(doc[primaryPath])));
+    const offerAllMatching = !uiState.allMatching &&
+        pageFullySelected &&
+        result.total !== null &&
+        result.total > uiState.selection.size;
 
     const previousButton = el('button', 'rxdbv-pager', undefined, {
         html: DBVIEWER_ICON_ARROW_LEFT,
@@ -734,12 +849,24 @@ function renderFooter(
         previousButton,
         nextButton,
         selectionCount > 0 ? el('span', 'rxdbv-selection-actions', [
-            el('span', 'rxdbv-dim', formatInteger(selectionCount) + ' selected'),
+            el('span', 'rxdbv-dim', formatInteger(selectionCount) + ' selected' + (uiState.allMatching ? ' (all matching)' : '')),
+            offerAllMatching ? el('button', 'rxdbv-btn rxdbv-btn-small', 'Select all ' + formatInteger(result.total as number) + ' matching', {
+                onClick: () => {
+                    uiState.allMatching = true;
+                    ctx.renderContent();
+                }
+            }) : null,
             el('button', 'rxdbv-btn rxdbv-btn-small', 'Delete', {
                 onClick: () => openDeleteModal(ctx, collectionName, uiState)
             }),
             el('button', 'rxdbv-btn rxdbv-btn-small', 'Export selection', {
                 onClick: () => {
+                    if (uiState.allMatching) {
+                        queryAllMatching(ctx, collectionName, uiState).then(matchingDocs => {
+                            downloadJson(ctx.source.databaseName + '-' + collectionName + '-selection.json', matchingDocs);
+                        }).catch(err => showViewerError(ctx.root, 'Export failed', err));
+                        return;
+                    }
                     const result2 = uiState.lastResult;
                     if (!result2) {
                         return;
@@ -831,7 +958,9 @@ function openDrawer(
         docId: String(doc[primaryPath]),
         doc,
         staged: new Map(),
-        expanded: new Set()
+        expanded: new Set(),
+        jsonMode: false,
+        jsonDraft: null
     };
     ctx.renderContent();
 }
@@ -866,7 +995,9 @@ function openNewDocumentDrawer(
         mode: 'new',
         doc: template,
         staged: new Map(),
-        expanded: new Set()
+        expanded: new Set(),
+        jsonMode: false,
+        jsonDraft: null
     };
     ctx.renderContent();
 }
@@ -934,6 +1065,153 @@ function buildDrawer(
             }
         })
     ]));
+
+    const DRAWER_INTERNAL_FIELDS = ['_rev', '_meta', '_attachments', '_deleted'];
+    const stripDrawerInternals = (doc: any): any => {
+        const result: any = {};
+        Object.keys(doc || {}).forEach(key => {
+            if (!DRAWER_INTERNAL_FIELDS.includes(key)) {
+                result[key] = doc[key];
+            }
+        });
+        return result;
+    };
+
+    if (!readOnly) {
+        container.appendChild(el('div', 'rxdbv-drawer-tabs', [
+            buildTabs([
+                { value: 'fields', label: 'Fields' },
+                { value: 'json', label: 'JSON' }
+            ], drawer.jsonMode ? 'json' : 'fields', mode => {
+                drawer.jsonMode = mode === 'json';
+                if (drawer.jsonMode && drawer.jsonDraft === null) {
+                    const { doc: seedDoc } = buildDrawerDocument(drawer);
+                    drawer.jsonDraft = JSON.stringify(stripDrawerInternals(seedDoc), null, 2);
+                }
+                renderDrawer();
+            })
+        ]));
+    }
+
+    if (!readOnly && drawer.jsonMode) {
+        const textarea = el('textarea', 'rxdbv-json-edit') as HTMLTextAreaElement;
+        textarea.value = drawer.jsonDraft || '';
+        textarea.spellcheck = false;
+        const errorLine = el('div', 'rxdbv-json-edit-error');
+        const originalDoc = stripDrawerInternals(drawer.doc);
+
+        const validateJsonDraft = (): { doc: any; changed: string[]; error: string | null; } => {
+            let parsed: any;
+            try {
+                parsed = JSON.parse(textarea.value);
+            } catch (err: any) {
+                return { doc: null, changed: [], error: 'invalid JSON: ' + err.message };
+            }
+            if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+                return { doc: null, changed: [], error: 'the document must be a JSON object' };
+            }
+            parsed = stripDrawerInternals(parsed);
+            if (drawer.mode === 'edit') {
+                if (String(parsed[primaryPath]) !== String(originalDoc[primaryPath])) {
+                    return { doc: null, changed: [], error: 'the primary key (' + primaryPath + ') cannot be changed' };
+                }
+                const keys = Array.from(new Set(Object.keys(originalDoc).concat(Object.keys(parsed))));
+                const changed = keys.filter(key => JSON.stringify(originalDoc[key]) !== JSON.stringify(parsed[key]));
+                return { doc: parsed, changed, error: null };
+            }
+            if (typeof parsed[primaryPath] === 'undefined' || parsed[primaryPath] === '') {
+                return { doc: null, changed: [], error: 'the primary key (' + primaryPath + ') is required' };
+            }
+            return { doc: parsed, changed: Object.keys(parsed), error: null };
+        };
+
+        const code = el('div', 'rxdbv-willrun-code');
+        const renderJsonWillRun = (currentDoc: any, currentChangedFields: string[]) => {
+            const lines = buildViewerWillRun(
+                ctx.source.databaseName,
+                collectionName,
+                currentDoc,
+                currentChangedFields,
+                drawer.mode === 'new' ? 'insert' : 'patch',
+                drawer.docId
+            );
+            code.innerHTML = '<span class="rxdbv-plain-line"><span class="rxdbv-comment">// applied on save — nothing has run yet</span></span>' +
+                lines.map(line => line.changed
+                    ? '<span class="rxdbv-changed-line">' + escapeHtml(line.text) + '</span>'
+                    : '<span class="rxdbv-plain-line">' + escapeHtml(line.text) + '</span>'
+                ).join('');
+        };
+
+        const applyJsonButton = el('button', 'rxdbv-btn-primary', 'Apply changes') as HTMLButtonElement;
+        const refreshJsonState = () => {
+            drawer.jsonDraft = textarea.value;
+            const validated = validateJsonDraft();
+            errorLine.textContent = validated.error ? '✕ ' + validated.error : '';
+            const currentlyEdited = validated.changed.length > 0 || drawer.mode === 'new';
+            applyJsonButton.disabled = !!validated.error || !currentlyEdited;
+            editedBadge.style.display = !validated.error && currentlyEdited ? '' : 'none';
+            if (!validated.error) {
+                renderJsonWillRun(validated.doc, validated.changed);
+            }
+        };
+        textarea.addEventListener('input', refreshJsonState);
+
+        applyJsonButton.addEventListener('click', () => {
+            const validated = validateJsonDraft();
+            if (validated.error || (validated.changed.length === 0 && drawer.mode !== 'new')) {
+                return;
+            }
+            const changedOnly: any = {};
+            validated.changed.forEach(field => {
+                changedOnly[field] = validated.doc[field];
+            });
+            const write = drawer.mode === 'new'
+                ? ctx.source.insert(collectionName, validated.doc)
+                : ctx.source.update(collectionName, drawer.docId as string, changedOnly);
+            write.then(() => {
+                ctx.viewerWriteTimes.push(Date.now());
+                if (drawer.mode === 'new') {
+                    uiState.drawer = null;
+                    rerun();
+                    ctx.renderContent();
+                    return;
+                }
+                return ctx.source.getById(collectionName, drawer.docId as string).then(freshDoc => {
+                    if (freshDoc) {
+                        drawer.doc = freshDoc;
+                    }
+                    drawer.staged.clear();
+                    drawer.jsonDraft = null;
+                    drawer.jsonDraft = JSON.stringify(stripDrawerInternals(drawer.doc), null, 2);
+                    rerun();
+                    ctx.renderContent();
+                });
+            }).catch(err => {
+                showViewerError(ctx.root, drawer.mode === 'new' ? 'Insert failed' : 'Update failed', err);
+            });
+        });
+
+        container.appendChild(el('div', '', [textarea, errorLine], { style: 'padding:10px 12px 0' }));
+        container.appendChild(el('div', 'rxdbv-drawer-section rxdbv-bordered rxdbv-willrun', 'WILL RUN'));
+        container.appendChild(code);
+        container.appendChild(el('div', 'rxdbv-drawer-actions', [
+            applyJsonButton,
+            el('button', 'rxdbv-btn', 'Discard', {
+                onClick: () => {
+                    if (drawer.mode === 'new') {
+                        uiState.drawer = null;
+                        ctx.renderContent();
+                    } else {
+                        drawer.jsonDraft = JSON.stringify(stripDrawerInternals(drawer.doc), null, 2);
+                        drawer.staged.clear();
+                        renderDrawer();
+                    }
+                }
+            })
+        ]));
+        refreshJsonState();
+        return container;
+    }
 
     container.appendChild(el('div', 'rxdbv-drawer-section', 'FIELDS'));
     Object.entries(mergedDoc).forEach(([field, value]) => {
@@ -1202,24 +1480,68 @@ function renderDrawerAttachments(
     });
 }
 
+/**
+ * Reads every document that matches the applied selector of the
+ * current query in pages, for the all-matching bulk actions.
+ */
+function queryAllMatching(
+    ctx: PageContext,
+    collectionName: string,
+    uiState: CollectionUiState
+): Promise<any[]> {
+    const pageSize = 500;
+    const docs: any[] = [];
+    const readPage = (skip: number): Promise<any[]> =>
+        ctx.source.query(collectionName, uiState.appliedSelector, skip, pageSize).then(result => {
+            docs.push(...result.docs);
+            if (result.docs.length === pageSize) {
+                return readPage(skip + pageSize);
+            }
+            return docs;
+        });
+    return readPage(0);
+}
+
 function openDeleteModal(
     ctx: PageContext,
     collectionName: string,
     uiState: CollectionUiState
 ) {
-    const count = uiState.selection.size;
     const total = uiState.lastResult && uiState.lastResult.total !== null
-        ? formatInteger(uiState.lastResult.total)
-        : '?';
+        ? uiState.lastResult.total
+        : null;
+    const count = uiState.allMatching && total !== null ? total : uiState.selection.size;
+    const totalText = total === null ? '?' : formatInteger(total);
     const hasReplication = !!ctx.events && ctx.events.replications.some(r => r.collectionName === collectionName);
 
     const deleteButton = el('button', 'rxdbv-btn-danger-solid', 'Delete ' + formatInteger(count) + ' documents') as HTMLButtonElement;
 
     const backdrop = el('div', 'rxdbv-modal-backdrop');
     const close = () => backdrop.remove();
+    const collectIds = (): Promise<string[]> => {
+        if (!uiState.allMatching) {
+            return Promise.resolve(Array.from(uiState.selection));
+        }
+        const info = ctx.source.listCollections().find(c => c.name === collectionName);
+        const primaryPath = info ? info.primaryPath : 'id';
+        return queryAllMatching(ctx, collectionName, uiState)
+            .then(docs => docs.map(doc => String(doc[primaryPath])));
+    };
     deleteButton.addEventListener('click', () => {
-        ctx.source.removeByIds(collectionName, Array.from(uiState.selection)).then(() => {
+        deleteButton.disabled = true;
+        collectIds().then(ids => {
+            const chunkSize = 500;
+            const removeChunk = (index: number): Promise<void> => {
+                if (index >= ids.length) {
+                    return Promise.resolve();
+                }
+                return ctx.source.removeByIds(collectionName, ids.slice(index, index + chunkSize))
+                    .then(() => removeChunk(index + chunkSize));
+            };
+            return removeChunk(0);
+        }).then(() => {
             uiState.selection.clear();
+            uiState.allMatching = false;
             ctx.viewerWriteTimes.push(Date.now());
             close();
             ctx.renderContent();
@@ -1232,7 +1554,7 @@ function openDeleteModal(
     backdrop.appendChild(el('div', 'rxdbv-modal', [
         el('div', 'rxdbv-modal-title', 'Delete ' + formatInteger(count) + ' documents?'),
         el('div', 'rxdbv-modal-body', [
-            'This removes ' + formatInteger(count) + ' selected of ' + total + ' documents in ',
+            'This removes ' + formatInteger(count) + ' selected of ' + totalText + ' documents in ',
             el('code', '', collectionName),
             '. ',
             hasReplication ? 'Deletes replicate to all connected peers. ' : '',

@@ -14,8 +14,10 @@ import {
 } from '../local-documents/local-documents-helper.ts';
 import {
     matchesViewerSelector,
+    sortViewerDocs,
     VIEWER_INTERNAL_FIELDS
 } from './dbviewer-helpers.ts';
+import type { ViewerSortPart } from './dbviewer-helpers.ts';
 import type {
     RxDBViewerDump
 } from './dbviewer-types.ts';
@@ -57,7 +59,7 @@ export type ViewerDataSource = {
     rawDatabase?: RxDatabase;
     listCollections(): ViewerCollectionInfo[];
     count(collectionName: string, selector?: any): Promise<number | null>;
-    query(collectionName: string, selector: any, skip: number, limit: number): Promise<ViewerQueryResult>;
+    query(collectionName: string, selector: any, skip: number, limit: number, sort?: ViewerSortPart[]): Promise<ViewerQueryResult>;
     getById(collectionName: string, id: string): Promise<any | null>;
     upsert(collectionName: string, doc: any): Promise<void>;
     insert(collectionName: string, doc: any): Promise<void>;
@@ -197,11 +199,11 @@ export function createLiveDataSource(database: RxDatabase): ViewerDataSource {
                 return null;
             }
         },
-        async query(collectionName: string, selector: any, skip: number, limit: number) {
+        async query(collectionName: string, selector: any, skip: number, limit: number, sort?: ViewerSortPart[]) {
             const system = findSystemCollection(collectionName);
             if (system) {
                 const all = await readAllSystemDocs(system);
-                const matching = all.filter(doc => matchesViewerSelector(doc, selector));
+                const matching = sortViewerDocs(all.filter(doc => matchesViewerSelector(doc, selector)), sort);
                 return {
                     docs: matching.slice(skip, skip + limit),
                     total: matching.length
@@ -214,7 +216,8 @@ export function createLiveDataSource(database: RxDatabase): ViewerDataSource {
             const docs = await collection.find({
                 selector,
                 skip,
-                limit
+                limit,
+                sort
             }).exec();
             let total: number | null = null;
             try {
@@ -330,9 +333,9 @@ export function createDumpDataSource(
             }
             return docs.filter(doc => matchesViewerSelector(doc, selector)).length;
         },
-        async query(collectionName: string, selector: any, skip: number, limit: number) {
+        async query(collectionName: string, selector: any, skip: number, limit: number, sort?: ViewerSortPart[]) {
             const docs = collectionsByName.get(collectionName) || [];
-            const matching = docs.filter(doc => matchesViewerSelector(doc, selector));
+            const matching = sortViewerDocs(docs.filter(doc => matchesViewerSelector(doc, selector)), sort);
             return {
                 docs: matching.slice(skip, skip + limit),
                 total: matching.length

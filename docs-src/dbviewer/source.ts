@@ -1,3 +1,4 @@
+import type { ViewerSortPart } from '../../src/plugins/dbviewer/dbviewer-helpers.ts';
 import {
     createDumpDataSource
 } from '../../src/plugins/dbviewer/dbviewer-data.ts';
@@ -41,7 +42,7 @@ export type ViewerSource = {
     listCollections(): ViewerCollectionInfo[];
     refreshCollections(): Promise<void>;
     count(collectionName: string, selector?: any): Promise<number | null>;
-    query(collectionName: string, selector: any, skip: number, limit: number): Promise<ViewerQueryResult>;
+    query(collectionName: string, selector: any, skip: number, limit: number, sort?: ViewerSortPart[]): Promise<ViewerQueryResult>;
     getById(collectionName: string, id: string): Promise<any | null>;
     insert(collectionName: string, doc: any): Promise<void>;
     update(collectionName: string, id: string, changedFields: any): Promise<void>;
@@ -169,7 +170,7 @@ export async function createRemoteSource(
         listCollections: () => collectionsCache,
         refreshCollections,
         count: (collectionName, selector) => call('count', collectionName, selector),
-        query: (collectionName, selector, skip, limit) => call('query', collectionName, selector, skip, limit),
+        query: (collectionName, selector, skip, limit, sort) => call('query', collectionName, selector, skip, limit, sort),
         getById: (collectionName, id) => call('getById', collectionName, id),
         insert: (collectionName, doc) => call('insert', collectionName, doc),
         update: (collectionName, id, changedFields) => call('update', collectionName, id, changedFields),
@@ -217,7 +218,7 @@ export function createDumpSource(
         listCollections: () => dataSource.listCollections(),
         refreshCollections: () => Promise.resolve(),
         count: (collectionName, selector) => dataSource.count(collectionName, selector),
-        query: (collectionName, selector, skip, limit) => dataSource.query(collectionName, selector, skip, limit),
+        query: (collectionName, selector, skip, limit, sort) => dataSource.query(collectionName, selector, skip, limit, sort),
         getById: (collectionName, id) => dataSource.getById(collectionName, id),
         insert: (collectionName, doc) => dataSource.insert(collectionName, doc),
         update: (collectionName, id, changedFields) => dataSource.update(collectionName, id, changedFields),

@@ -30,6 +30,7 @@ export type ViewerAppProps = {
     pageSize: number;
     showCloseButton: boolean;
     onClose: () => void;
+    transport?: 'iframe' | 'webrtc' | 'dump';
 };
 
 /**
@@ -275,6 +276,17 @@ export function ViewerApp(props: ViewerAppProps) {
                         ) : null}
                         {toolTitle ? ' / ' + toolTitle : ''}
                     </span>
+                    {props.transport === 'iframe' || props.transport === 'webrtc' ? (
+                        <span
+                            className="rxdbv-topbar-transport"
+                            title={props.transport === 'webrtc'
+                                ? 'connected to the database on the device over WebRTC'
+                                : 'embedded in the app, talking over postMessage'}
+                        >
+                            <span className="rxdbv-transport-dot" />
+                            {props.transport === 'webrtc' ? 'WebRTC' : 'iframe'}
+                        </span>
+                    ) : null}
                     <div className="rxdbv-flex1" />
                     <button
                         className="rxdbv-btn"
@@ -319,10 +331,17 @@ function DumpBanner(props: { ctx: PageContext; }) {
     const source = ctx.source;
     const filename = source.dumpFilename || (source.databaseName + '.json');
     const asOf = source.dumpTime ? formatClockTime(source.dumpTime).slice(0, 5) : '';
+    const collections = source.listCollections();
+    const counts = collections.map(info => ctx.countsCache.get(info.name));
+    const totalDocs = counts.length > 0 && counts.every(count => typeof count === 'number')
+        ? (counts as number[]).reduce((sum, count) => sum + count, 0)
+        : null;
+    const contentText = ' · ' + collections.length + (collections.length === 1 ? ' collection' : ' collections') +
+        (totalDocs !== null ? ' · ' + formatInteger(totalDocs) + (totalDocs === 1 ? ' document' : ' documents') : '');
     return (
         <div className="rxdbv-banner-dump">
             <span className="rxdbv-mono">{'Reading dump ' + filename}</span>
-            <span className="rxdbv-dim">{'· read-only · data as of ' + asOf}</span>
+            <span className="rxdbv-dim">{'· read-only · data as of ' + asOf + contentText}</span>
             <div className="rxdbv-flex1" />
             {ctx.liveSource ? (
                 <button className="rxdbv-btn rxdbv-btn-small" onClick={() => ctx.closeDump()}>Close dump</button>

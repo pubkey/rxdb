@@ -213,7 +213,7 @@ export const DBVIEWER_STYLES = `
 
 /* body layout */
 .rxdbv-body { flex: 1; display: flex; min-height: 0; }
-.rxdbv-content { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.rxdbv-content { flex: 1; display: flex; flex-direction: column; min-width: 0; min-height: 0; }
 
 /* rail */
 .rxdbv-rail {
@@ -250,6 +250,18 @@ export const DBVIEWER_STYLES = `
     padding-left: 26px;
     font-size: 11px;
 }
+.rxdbv-topbar-transport {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-left: 10px;
+    padding: 1px 7px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    color: var(--rxdbv-fg-muted);
+    font-size: 10px;
+    font-family: var(--rxdbv-mono);
+}
+.rxdbv-transport-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--rxdbv-success); }
 .rxdbv-topbar-crumb { cursor: pointer; }
 .rxdbv-topbar-crumb:hover { color: var(--rxdbv-pink); }
 .rxdbv-rail-group { cursor: default; }
@@ -372,6 +384,9 @@ export const DBVIEWER_STYLES = `
 .rxdbv-query-input-wrap { flex: 1; display: flex; font-size: 11.5px; }
 .rxdbv-num-input-wrap { width: 102px; flex: none; display: flex; font-size: 11.5px; }
 .rxdbv-num-input-wrap .rxdbv-query-input { text-align: right; width: 100%; }
+.rxdbv-sort-input-wrap { width: 150px; }
+.rxdbv-sort-input-wrap .rxdbv-query-input { text-align: left; }
+.rxdbv-input.rxdbv-error { border-color: var(--rxdbv-danger); }
 .rxdbv-query-input-wrap.rxdbv-error { border-color: var(--rxdbv-danger); }
 .rxdbv-query-input-wrap.rxdbv-focus { border-color: var(--rxdbv-pink); }
 .rxdbv-query-input {
@@ -438,8 +453,12 @@ export const DBVIEWER_STYLES = `
 .rxdbv-grid-header > div { padding: 5px 8px 5px 0; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .rxdbv-grid-header > div.rxdbv-sorted { color: var(--rxdbv-fg); }
 .rxdbv-sort-arrow { color: var(--rxdbv-pink); font-size: 11px; line-height: 1; margin-left: 5px; }
+.rxdbv-grid-virtual { position: relative; }
 .rxdbv-grid-row {
     display: grid;
+    align-items: center;
+    height: 24px;
+    box-sizing: border-box;
     padding: 0 12px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     font-size: 11px;
@@ -449,8 +468,8 @@ export const DBVIEWER_STYLES = `
 .rxdbv-grid-row:hover { background: rgba(255, 255, 255, 0.04); }
 .rxdbv-grid-row.rxdbv-selected { background: rgba(237, 22, 143, 0.10); }
 .rxdbv-grid-row.rxdbv-fresh { animation: rxdbvRowIn 2s ease-out; }
-.rxdbv-grid-row > div { padding: 4px 8px 4px 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.rxdbv-grid-checkbox-cell { padding: 4px 0 !important; }
+.rxdbv-grid-row > div { padding: 0 8px 0 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rxdbv-grid-checkbox-cell { padding: 0 !important; }
 .rxdbv-root input[type='checkbox'] { accent-color: var(--rxdbv-pink); width: 12px; height: 12px; margin: 0; }
 .rxdbv-cell-edit-input {
     background: var(--rxdbv-bg);
@@ -533,6 +552,28 @@ export const DBVIEWER_STYLES = `
 .rxdbv-badge-edited { font-size: 9px; border: 1px solid rgba(237, 22, 143, 0.5); color: var(--rxdbv-pink); padding: 1px 6px; }
 .rxdbv-close { color: var(--rxdbv-fg-dim); cursor: pointer; font-size: 14px; }
 .rxdbv-close:hover { color: var(--rxdbv-fg); }
+.rxdbv-drawer-tabs { padding: 10px 12px 0; }
+.rxdbv-json-edit {
+    width: 100%;
+    min-height: 240px;
+    box-sizing: border-box;
+    background: var(--rxdbv-bg-code);
+    border: 2px solid #666;
+    color: var(--rxdbv-fg);
+    font-family: var(--rxdbv-mono);
+    font-size: 11px;
+    line-height: 1.5;
+    padding: 8px 10px;
+    resize: vertical;
+    outline: none;
+}
+.rxdbv-json-edit-error {
+    color: var(--rxdbv-danger);
+    font-family: var(--rxdbv-mono);
+    font-size: 10.5px;
+    min-height: 15px;
+    padding: 4px 0;
+}
 .rxdbv-drawer-section {
     padding: 8px 12px 2px;
     font-size: 9px;
@@ -711,8 +752,8 @@ export const DBVIEWER_STYLES = `
     .rxdbv-split-left .rxdbv-table-row {
         grid-template-columns: 72px 52px 1fr 1fr !important;
     }
-    .rxdbv-split-left .rxdbv-table-header > div:nth-child(5),
-    .rxdbv-split-left .rxdbv-table-row > div:nth-child(5) { display: none; }
+    .rxdbv-split-left .rxdbv-table-header > div:nth-child(3),
+    .rxdbv-split-left .rxdbv-table-row > div:nth-child(3) { display: none; }
     .rxdbv-split-left .rxdbv-table-header > div,
     .rxdbv-split-left .rxdbv-table-row > div {
         min-width: 0;
