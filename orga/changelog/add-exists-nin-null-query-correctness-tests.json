@@ -1,0 +1,11 @@
+{
+    "$schema": "./schema.json",
+    "text": "ADD query correctness tests for `$exists`, `$nin`, `$eq` and `$ne` on missing and `null` fields, and for `$regex`, `$not` and `$mod` on plain fields, so all storages are checked against the same results",
+    "links": [
+        {
+            "url": "https://github.com/pubkey/rxdb/issues/9371",
+            "linkText": "#9371"
+        }
+    ],
+    "priority": 1
+}
