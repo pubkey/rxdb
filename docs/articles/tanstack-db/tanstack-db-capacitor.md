@@ -3,6 +3,7 @@
 > Add durable offline storage to your Capacitor or Ionic app. Use RxDB as the TanStack DB collection backend for reactive, local-first hybrid mobile apps.
 
 import {Steps} from '@site/src/components/steps';
+import {Faq, FaqItem} from '@site/src/components/faq';
 
 # TanStack DB with Capacitor & Ionic: Offline Storage Guide
 
@@ -19,13 +20,13 @@ For production hybrid apps the recommended option is the [SQLite RxStorage](../.
 Two versions of the SQLite storage exist:
 
 - **Trial version**: ships free with RxDB core as `getRxStorageSQLiteTrial`. It passes the full storage test suite but uses no indexes, is limited to `500` non-deleted documents, and runs queries in memory. Use it for evaluation and prototypes only.
-- **[RxDB Premium 👑](/premium/) version**: the production-ready `getRxStorageSQLite` with full query support and performance optimizations.
+- **[RxDB Premium <PremiumIcon />](/premium/) version**: the production-ready `getRxStorageSQLite` with full query support and performance optimizations.
 
 While testing and prototyping you can also use the free [localStorage-based storage](../../rx-storage-localstorage.md) inside the webview and switch to SQLite later. Switching storages is a configuration change, not a rewrite. Your TanStack DB code does not change at all.
 
 ## Example: Todo App with Capacitor, SQLite, and TanStack DB
 
-The following example wires up an Ionic React todo list. RxDB owns durability through SQLite, TanStack DB sits on top as the reactive query layer. Every write on the TanStack DB collection is persisted to disk, and every change in RxDB streams back into memory through the change feed. The example uses the free trial storage so that you can run it without a license. For production you swap in the [premium 👑](/premium/) storage with the same `sqliteBasics` adapter.
+The following example wires up an Ionic React todo list. RxDB owns durability through SQLite, TanStack DB sits on top as the reactive query layer. Every write on the TanStack DB collection is persisted to disk, and every change in RxDB streams back into memory through the change feed. The example uses the free trial storage so that you can run it without a license. For production you swap in the [premium <PremiumIcon />](/premium/) storage with the same `sqliteBasics` adapter.
 
 <Steps>
 
@@ -169,40 +170,39 @@ The RxDB collection is the better choice when you want a full database under you
 
 ## FAQ
 
-<details>
-    <summary>Does TanStack DB work with Capacitor and Ionic?</summary>
+<Faq>
+
+<FaqItem question="Does TanStack DB work with Capacitor and Ionic?">
 
 Yes. TanStack DB is plain JavaScript and runs in the Capacitor webview with React, Angular, Vue, Solid, or Svelte bindings. It keeps data in memory, so pair it with a persistent collection implementation like the **[RxDB collection](./rxdb-collection-for-tanstack-db.md)** to make the data survive app restarts.
 
-</details>
+</FaqItem>
 
-<details>
-    <summary>Can I use IndexedDB or localStorage for TanStack DB in a Capacitor app?</summary>
+<FaqItem question="Can I use IndexedDB or localStorage for TanStack DB in a Capacitor app?">
 
 Yes, but only for prototyping. Webview storages work inside Capacitor, and the OS can delete them when the device runs low on space. For production, use the **[SQLite RxStorage](../../rx-storage-sqlite.md)** which writes to the device filesystem and is not subject to webview cleanup.
 
-</details>
+</FaqItem>
 
-<details>
-    <summary>Is the RxDB SQLite storage for Capacitor free?</summary>
+<FaqItem question="Is the RxDB SQLite storage for Capacitor free?">
 
-No, not the full version. The production SQLite storage is part of the **[RxDB Premium 👑](/premium/)** plugins. A free trial version (`getRxStorageSQLiteTrial`) ships with RxDB core and is limited to `500` documents without indexes, and the free localStorage-based storage works for testing inside the webview.
+No, not the full version. The production SQLite storage is part of the **[RxDB Premium <PremiumIcon />](/premium/)** plugins. A free trial version (`getRxStorageSQLiteTrial`) ships with RxDB core and is limited to `500` documents without indexes, and the free localStorage-based storage works for testing inside the webview.
 
-</details>
+</FaqItem>
 
-<details>
-    <summary>Does the RxDB collection for TanStack DB work with Ionic Angular or Vue?</summary>
+<FaqItem question="Does the RxDB collection for TanStack DB work with Ionic Angular or Vue?">
 
 Yes. The `rxdbCollectionOptions()` function targets the framework-independent `createCollection()` API, so it works with `@tanstack/angular-db`, `@tanstack/vue-db`, and the other official bindings. **[RxDB](../../rx-database.md)** itself is framework-agnostic as well.
 
-</details>
+</FaqItem>
 
-<details>
-    <summary>Does the same code run as a PWA in the browser?</summary>
+<FaqItem question="Does the same code run as a PWA in the browser?">
 
 Yes. Swap the SQLite storage for the **[IndexedDB RxStorage](../../rx-storage-indexeddb.md)** or another browser storage and the rest of the code stays identical. See [Building an Offline PWA with TanStack DB and RxDB](./tanstack-db-pwa.md) for the browser setup.
 
-</details>
+</FaqItem>
+
+</Faq>
 
 ## Follow Up
 

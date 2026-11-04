@@ -261,20 +261,22 @@ console.log(distance); // 25.20443
 
 With this we can sort multiple embeddings by how good they match our search query vector.
 
+When you only need to sort or compare distances, use `euclideanDistanceSquared()` instead. It returns the squared distance and skips the `Math.sqrt()` call. Because the square root does not change the order of non-negative numbers, the sorted result is the same. Keep `euclideanDistance()` when the real distance value matters, for example when you store it as an index value and query a range around it.
+
 ## Searching the Vector database with a full table scan
 
 To find out if our embeddings have been stored correctly and that our vector comparison works as should, let's run a basic query to ensure everything functions as expected. In this query, we aim to find documents similar to a given user input text. The process involves calculating the embedding from the input text, fetching all documents, calculating the distance between their embeddings and the query embedding, and then sorting them based on their similarity.
 
 ```ts
-import { euclideanDistance } from 'rxdb/plugins/vector';
+import { euclideanDistanceSquared } from 'rxdb/plugins/vector';
 import { sortByObjectNumberProperty } from 'rxdb/plugins/core';
 
 const userInput = 'new york people';
 const queryVector = await getEmbeddingFromText(userInput);
 const candidates = await vectorCollection.find().exec();
-const withDistance = candidates.map(doc => ({ 
+const withDistance = candidates.map(doc => ({
     doc,
-    distance: euclideanDistance(queryVector, doc.embedding)
+    distance: euclideanDistanceSquared(queryVector, doc.embedding)
 }));
 const queryResult = withDistance
     .sort(sortByObjectNumberProperty('distance'))
@@ -532,14 +534,14 @@ From these benchmarks, it's evident that models with larger vector outputs **tak
 
 There are multiple other techniques to improve the performance of your local vector database:
 
-- **Shorten embeddings**: The storing and retrieval of embeddings can be improved by "shortening" the embedding. To do that, you just strip away numbers from your vector. For example `[0.56, 0.12, -0.34, 0.78, -0.90]` becomes `[0.56, 0.12]`. That's it, you now have a smaller embedding that is faster to read out of the storage and calculating distances is faster because it has to process less numbers. The downside is that you loose precision in your search results. Sometimes shortening the embeddings makes more sense as a pre-query step where you first compare the shortened vectors and later fetch the "real" vectors for the 10 most matching documents to improve their sort order.
+- **Shorten embeddings**: The storing and retrieval of embeddings can be improved by "shortening" the embedding. To do that, you just strip away numbers from your vector. For example `[0.56, 0.12, -0.34, 0.78, -0.90]` becomes `[0.56, 0.12]`. That's it, you now have a smaller embedding that is faster to read out of the storage and calculating distances is faster because it has to process less numbers. The downside is that you lose precision in your search results. Models trained with Matryoshka representation learning, like [EmbeddingGemma 2](./embeddinggemma-2-vector-search.md), are built for this and lose little quality when shortened. Sometimes shortening the embeddings makes more sense as a pre-query step where you first compare the shortened vectors and later fetch the "real" vectors for the 10 most matching documents to improve their sort order.
 
 - **Optimize the variables in our Setup**: In this examples we picked our variables in a non-optimal way. You can get huge performance improvements by setting different values:
     - We picked 5 indexes for the embeddings. Using less indexes improves your query performance with the cost of less good results.
     - For queries that search by fetching a specific embedding distance we used the `indexDistance` value of `0.003`. Using a lower value means we read less document from the storage. This is faster but reduces the precision of the results which means we will get a less optimal result compared to a full table scan.
     - For queries that search by fetching a given amount of documents per index side, we set the value `docsPerIndexSide` to `100`. Increasing this value means you fetch more data from the storage but also get a better precision in the search results. Decreasing it can improve query performance with worse precision.
 
-- **Use faster models**: There are many ways to improve performance of machine learning models. If your embedding calculation is too slow, try other models. **Smaller** mostly means **faster**. The model `Xenova/all-MiniLM-L6-v2` which is used in this tutorial is about [1 year old](https://huggingface.co/Xenova/all-MiniLM-L6-v2/tree/main). There exist better, more modern models to use. Huggingface makes these convenient to use. You only have to switch out the model name with any other model from [that site](https://huggingface.co/models?pipeline_tag=feature-extraction&library=transformers.js).
+- **Use faster models**: There are many ways to improve performance of machine learning models. If your embedding calculation is too slow, try other models. **Smaller** mostly means **faster**. The model `Xenova/all-MiniLM-L6-v2` which is used in this tutorial is about [1 year old](https://huggingface.co/Xenova/all-MiniLM-L6-v2/tree/main). There exist better, more modern models to use, for example [EmbeddingGemma 2 with Matryoshka embeddings](./embeddinggemma-2-vector-search.md) which can be truncated to 256 dimensions. Huggingface makes these convenient to use. You only have to switch out the model name with any other model from [that site](https://huggingface.co/models?pipeline_tag=feature-extraction&library=transformers.js).
 
 - **Narrow down the search space**: By utilizing other "normal" filter operators to your query, you can narrow down the search space and optimize performance. For example in an email search you could additionally use a operator that limits the results to all emails that are not older than one year.
 

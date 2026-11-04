@@ -75,7 +75,7 @@ The Turso Database README says it "runs in production today at multiple organiza
 
 ### 6. Open Questions After the Acquisition
 
-Supabase writes that "For existing users, nothing changes" and that Turso continues its SQLite work. Neither the Supabase post nor the [Turso post](https://turso.tech/blog/turso-is-joining-supabase) mentions libSQL, pricing, or the browser and offline sync roadmap. Notice that this is the third hosted sync product in 2026 whose future changed through an acquisition, after [Electric Cloud](./electricsql-alternative.md) and [Instant Cloud](./instantdb-alternative.md). RxDB is independent and funded by [👑 RxDB Premium](/premium/) plugins, and its replication runs against your own backend.
+Supabase writes that "For existing users, nothing changes" and that Turso continues its SQLite work. Neither the Supabase post nor the [Turso post](https://turso.tech/blog/turso-is-joining-supabase) mentions libSQL, pricing, or the browser and offline sync roadmap. Notice that this is the third hosted sync product in 2026 whose future changed through an acquisition, after [Electric Cloud](./electricsql-alternative.md) and [Instant Cloud](./instantdb-alternative.md). RxDB is independent and funded by [<PremiumIcon /> RxDB Premium](/premium/) plugins, and its replication runs against your own backend.
 
 ## Code Sample: A Reactive Query in RxDB
 
@@ -130,9 +130,9 @@ const replicationState = replicateRxCollection({
   live: true,
   pull: {
     async handler(checkpoint, batchSize) {
-      const response = await fetch(
-        `https://api.example.com/todos/pull?checkpoint=${JSON.stringify(checkpoint)}&limit=${batchSize}`
-      );
+      const url = 'https://api.example.com/todos/pull' +
+        `?checkpoint=${JSON.stringify(checkpoint)}&limit=${batchSize}`;
+      const response = await fetch(url);
       return await response.json(); // { documents, checkpoint }
     }
   },

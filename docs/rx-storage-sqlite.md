@@ -27,7 +27,7 @@ There are two versions of the SQLite storage available for RxDB:
 
 - The **trial version** which comes directly shipped with RxDB Core. It contains an SQLite storage that allows you to try out RxDB on devices that support SQLite, like React Native or Electron. While the trial version does pass the full RxDB storage test-suite, it is not made for production. It is not using indexes, has no [attachment support](./rx-attachment.md), is limited to store 500 non-deleted documents and fetches the whole storage state to run queries in memory. **Use it for evaluation and prototypes only!**
 
-- The **[RxDB Premium 👑](/premium/) version** which contains the full production-ready SQLite storage. It contains a full load of performance optimizations and full query support. To use the SQLite storage you have to import `getRxStorageSQLite` from the [RxDB Premium 👑](/premium/) package and then add the correct `sqliteBasics` adapter depending on which sqlite module you want to use. This can then be used as storage when creating the [RxDatabase](./rx-database.md). In the following you can see some examples for some of the most common SQLite packages.
+- The **[RxDB Premium <PremiumIcon />](/premium/) version** which contains the full production-ready SQLite storage. It contains a full load of performance optimizations and full query support. To use the SQLite storage you have to import `getRxStorageSQLite` from the [RxDB Premium <PremiumIcon />](/premium/) package and then add the correct `sqliteBasics` adapter depending on which sqlite module you want to use. This can then be used as storage when creating the [RxDatabase](./rx-database.md). In the following you can see some examples for some of the most common SQLite packages.
 
 <Tabs>
 
@@ -53,7 +53,7 @@ const myRxDatabase = await createRxDatabase({
 });
 ```
 
-## RxDB Premium 👑
+## RxDB Premium <PremiumIcon />
 
 ```ts
 // Import the SQLite Storage from the premium plugins.
@@ -378,6 +378,49 @@ getDatabaseConnection(
 ): Promise<SQLiteDatabaseClass>;
 ```
 
+## Query Operators
+
+The premium SQLite storage translates the [Mango query](./rx-query.md) selector into a SQL `WHERE` clause, so that SQLite can use the indexes and only returns the matching rows. Not every operator has a SQL translation. The operators without one are run in memory with the same query matcher that the other storages use, so the results are the same on all storages.
+
+**Translated to SQL:**
+- `$eq`, `$ne`, `$gt`, `$gte`, `$lt`, `$lte`
+- `$in`, `$nin`
+- `$exists`
+- `$and`, `$or`, `$nor`
+- `$size`
+- `$type` with the types `string`, `number`, `boolean`, `bool`, `null`, `object` and `array`
+- `$mod` with integer arguments, on fields with a `number` or `integer` schema
+- `$elemMatch` on arrays of objects and on arrays of scalar values, for example `{ tags: { $elemMatch: { $eq: 'rxdb' } } }`
+- `$not` as a field operator, when its inner operator is one of the above
+
+On array fields like `tags`, the comparison operators match when at least one item of the array matches, so `{ tags: 'rxdb' }` returns all todos that have the tag `rxdb`. SQLite iterates the array items with [`json_each()`](https://www.sqlite.org/json1.html#jeach).
+
+**Run in memory:**
+- `$regex` (with or without `$options`)
+- `$type` with other types like `int`, `long` or numeric type codes
+- `$mod` with non-integer arguments or on fields without a number schema
+- `$elemMatch` on arrays of arrays, or with an operator directly on the items of an array of objects
+- Comparisons on paths through an array, for example `{ 'subtasks.0': 'todo3' }`
+- `$not` with an inner operator that is run in memory, for example `{ name: { $not: { $regex: '^a' } } }`
+
+When a selector contains an operator that is run in memory, only that part of the selector is left out of the SQL query. All other top-level parts and all parts inside of `$and` still run in SQL. SQLite returns the pre-filtered rows in batches of `50` and RxDB checks each row with the query matcher. Inside of `$or`, `$nor` and `$not` a part cannot be left out on its own, because that would change the result. So when one branch of an `$or` contains an operator that is run in memory, the whole `$or` is run in memory.
+
+```ts
+// SQL filters by priority, the $regex is checked in memory on the remaining rows.
+const result = await myDatabase.todos.find({
+    selector: {
+        priority: { $gt: 5 },
+        name: { $regex: '^Learn' }
+    }
+}).exec();
+```
+
+Keep in mind that a query with an operator that is run in memory has to read and parse each pre-filtered row. On big collections, combine it with an indexed field like in the example above, so that SQLite returns as few rows as possible. A search field that runs a `$regex` query on each keystroke without any other filter reads the whole table each time.
+
+Also notice that `count()` cannot run in SQL when the selector contains an operator that is run in memory. The storage then counts the rows in memory and reports a slow count, which throws the error [`QU14`](./errors.md#QU14) unless you set [`allowSlowCount`](./rx-query.md#allowslowcount) when creating the database.
+
+The trial version of the SQLite storage does not translate any operator to SQL. It always fetches all documents and runs the query in memory.
+
 ## Known Problems of SQLite in JavaScript apps
 
 - Some JavaScript runtimes do not contain a `Buffer` API which is used by SQLite to store binary attachments data as `BLOB`. You can set `storeAttachmentsAsBase64String: true` if you want to store the attachments data as base64 string instead. This increases the database size but makes it work even without having a `Buffer`.
@@ -408,6 +451,11 @@ const storage = getRxStorageSQLite({
 <FaqItem question="Does SQLite natively support querying and parsing JSON objects?">
 
 Yes, starting natively from version `3.38.0`, SQLite includes comprehensive built-in core JSON functions like `JSON_EXTRACT`. The **[RxDB SQLite Storage](./rx-storage.md)** engine utilizes these exact JSON extension methods to seamlessly run complex NoSQL document queries, indexes, and sorting operations directly within the SQLite runtime, bridging the gap between flat tabular paradigms and rich document store flexibility.
+
+</FaqItem>
+<FaqItem question="Which query operators does the RxDB SQLite storage run in SQL?">
+
+The premium **[SQLite RxStorage](#query-operators)** translates `$eq`, `$ne`, `$gt`, `$gte`, `$lt`, `$lte`, `$in`, `$nin`, `$exists`, `$and`, `$or`, `$nor`, `$size`, `$elemMatch`, the field-level `$not` and the common cases of `$type` and `$mod` to SQL. `$regex` is checked in memory on the rows that the translated part of the query returns. The results are the same as on all other storages.
 
 </FaqItem>
 <FaqItem question="How can you save and export a SQLite database from a local environment?">

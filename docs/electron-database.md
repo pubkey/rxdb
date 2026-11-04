@@ -47,7 +47,7 @@ Because of the [flexible storage](https://rxdb.info/rx-storage.html) layer of Rx
 - The [Dexie.js RxStorage](./rx-storage-dexie.md)
 - The [Node.js Filesystem](./rx-storage-filesystem-node.md)
 
-It is recommended to use the [SQLite RxStorage](./rx-storage-sqlite.md) because it has the best performance and is the easiest to set up. However it is part of the [👑 Premium Plugins](/premium/) which must be purchased, so to try out RxDB with Electron, you might want to use one of the other options. To start with RxDB, I would recommend using the LocalStorage [RxStorage](./rx-storage.md) in the renderer processes. Because RxDB is able to broadcast the database state between browser tabs, having multiple renderer processes is not a problem like it would be when you use plain IndexedDB without RxDB.
+It is recommended to use the [SQLite RxStorage](./rx-storage-sqlite.md) because it has the best performance and is the easiest to set up. However it is part of the [<PremiumIcon /> Premium Plugins](/premium/) which must be purchased, so to try out RxDB with Electron, you might want to use one of the other options. To start with RxDB, I would recommend using the LocalStorage [RxStorage](./rx-storage.md) in the renderer processes. Because RxDB is able to broadcast the database state between browser tabs, having multiple renderer processes is not a problem like it would be when you use plain IndexedDB without RxDB.
 In production, you would always run the RxStorage in the main process with the [RxStorage Electron IpcRenderer & IpcMain](./electron.md#rxstorage-electron-ipcrenderer--ipcmain) plugins.
 
 First, you have to install all dependencies via `npm install rxdb rxjs`.
@@ -130,7 +130,7 @@ In your renderer process, you can now call the ipcHandler and fetch data from SQ
 const rows = await ipcRenderer.invoke('db-query', "SELECT * FROM Users");
 ```
 
-The downside of SQLite (or SQL in general) is that it is lacking many features that are handful when using a database together with **UI based** applications. It is not possible to observe queries or document fields and there is no replication method to sync data with a server. This makes SQLite a good solution when you just want to store data on the client or process expensive SQL queries on the server, but it is not suitable for more complex operations like two-way replication, encryption, compression and so on. Also developer helpers like TypeScript type safety are totally out of reach.
+The downside of SQLite (or SQL in general) is that it is lacking many features that are handful when using a database together with **UI based** applications. It is not possible to observe queries or document fields and there is no replication method to [sync the SQLite data](./articles/sqlite-sync.md) with a server. This makes SQLite a good solution when you just want to store data on the client or process expensive SQL queries on the server, but it is not suitable for more complex operations like two-way replication, encryption, compression and so on. Also developer helpers like TypeScript type safety are totally out of reach.
 
 <RxdbLogo alt="RxDB Electron Database" width={170} />
 

@@ -3,6 +3,7 @@
 > Make your PWA work offline with TanStack DB. Use RxDB for durable IndexedDB/OPFS storage and sync so data persists across sessions, reloads, and no network.
 
 import {Steps} from '@site/src/components/steps';
+import {Faq, FaqItem} from '@site/src/components/faq';
 
 # Building an Offline PWA with TanStack DB and RxDB
 
@@ -26,8 +27,8 @@ TanStack DB keeps collection data in memory by design. When the user closes the 
 RxDB abstracts the storage layer behind the [RxStorage](../../rx-storage.md) interface, so you can pick the browser storage that fits your app:
 
 - **[localStorage-based storage](../../rx-storage-localstorage.md)**: Free and part of the RxDB core. Zero configuration, good for demos, prototypes, and small datasets. The example below uses it.
-- **[IndexedDB RxStorage](../../rx-storage-indexeddb.md)** (part of [RxDB Premium 👑](/premium/)): The recommended choice for professional PWAs. It stores data asynchronously and handles larger datasets.
-- **[OPFS RxStorage](../../rx-storage-opfs.md)** (part of [RxDB Premium 👑](/premium/)): Built on the Origin Private File System, a browser API for file access inside a sandboxed, origin-specific filesystem. It runs inside a WebWorker and reads up to 4x faster than IndexedDB in the [RxDB storage benchmarks](../../rx-storage-performance.md).
+- **[IndexedDB RxStorage](../../rx-storage-indexeddb.md)** (part of [RxDB Premium <PremiumIcon />](/premium/)): The recommended choice for professional PWAs. It stores data asynchronously and handles larger datasets.
+- **[OPFS RxStorage](../../rx-storage-opfs.md)** (part of [RxDB Premium <PremiumIcon />](/premium/)): Built on the Origin Private File System, a browser API for file access inside a sandboxed, origin-specific filesystem. It runs inside a WebWorker and reads up to 4x faster than IndexedDB in the [RxDB storage benchmarks](../../rx-storage-performance.md).
 
 Switching storages is a configuration change, not a rewrite. You can start with localStorage today and move to IndexedDB or OPFS when your data grows.
 
@@ -181,40 +182,39 @@ When the device reconnects, the replication resumes from its checkpoint, pushes 
 
 ## FAQ
 
-<details>
-    <summary>Does TanStack DB work offline in a PWA?</summary>
+<Faq>
+
+<FaqItem question="Does TanStack DB work offline in a PWA?">
 
 Yes, when the collection implementation persists data. TanStack DB itself keeps collections in memory, so a reload or app restart clears them. With the **[RxDB collection](./rxdb-collection-for-tanstack-db.md)** the data is stored durably in the browser and loads back on every start, with or without a network connection.
 
-</details>
+</FaqItem>
 
-<details>
-    <summary>Which storage should a TanStack DB offline PWA use?</summary>
+<FaqItem question="Which storage should a TanStack DB offline PWA use?">
 
-For professional apps, IndexedDB or OPFS. The free **[localStorage-based storage](../../rx-storage-localstorage.md)** is the simplest start but is limited to around 5 MB. The [IndexedDB](../../rx-storage-indexeddb.md) and [OPFS](../../rx-storage-opfs.md) storages from [RxDB Premium 👑](/premium/) handle larger datasets and perform better.
+For professional apps, IndexedDB or OPFS. The free **[localStorage-based storage](../../rx-storage-localstorage.md)** is the simplest start but is limited to around 5 MB. The [IndexedDB](../../rx-storage-indexeddb.md) and [OPFS](../../rx-storage-opfs.md) storages from [RxDB Premium <PremiumIcon />](/premium/) handle larger datasets and perform better.
 
-</details>
+</FaqItem>
 
-<details>
-    <summary>Do I still need a service worker when I use RxDB?</summary>
+<FaqItem question="Do I still need a service worker when I use RxDB?">
 
 Yes. RxDB makes your data available offline, but the app shell itself, HTML, JavaScript, and CSS, must be cached by a service worker so the **[PWA](../progressive-web-app-database.md)** can load without a network. The two work independently and cover different halves of the offline experience.
 
-</details>
+</FaqItem>
 
-<details>
-    <summary>What happens when the user opens the PWA in several tabs?</summary>
+<FaqItem question="What happens when the user opens the PWA in several tabs?">
 
 All tabs share the same RxDB storage, and **[leader election](../../leader-election.md)** makes sure that only one tab runs the replication. Changes from any tab stream into the TanStack DB collections of all other tabs. See the [multi-tab guide](./tanstack-db-multi-tab.md) for details.
 
-</details>
+</FaqItem>
 
-<details>
-    <summary>Can the browser delete my PWA's local data?</summary>
+<FaqItem question="Can the browser delete my PWA's local data?">
 
 Yes, under disk pressure or after long inactivity, and Safari is the most aggressive here. Request persistent storage with `navigator.storage.persist()` and treat the backend as the **[source of truth](../../replication.md)** so the client can re-sync when local data was evicted. The [storage limit guide](../indexeddb-max-storage-limit.md) covers quotas per browser.
 
-</details>
+</FaqItem>
+
+</Faq>
 
 ## Follow Up
 

@@ -3,6 +3,7 @@
 > Sync TanStack DB to CouchDB, a REST API, or your own server with RxDB replication - a backend-agnostic, self-hostable alternative to hosted sync services.
 
 import {Steps} from '@site/src/components/steps';
+import {Faq, FaqItem} from '@site/src/components/faq';
 
 # Sync TanStack DB with CouchDB & Self-Hosted Backends
 
@@ -168,7 +169,7 @@ const replicationState = await replicateServer({
 });
 ```
 
-RxServer covers the parts that are tedious to build yourself: an `authHandler` parses the request headers into auth data, a `queryModifier` restricts which documents each user can replicate, and a `changeValidator` restricts which writes are accepted. The client-side replication state emits `unauthorized$` when auth headers must be refreshed and `outdatedClient$` when the app runs against a newer server schema. The Express adapter ships with the free `rxdb-server` package. The Fastify and Koa adapters are part of [RxDB Premium 👑](/premium/).
+RxServer covers the parts that are tedious to build yourself: an `authHandler` parses the request headers into auth data, a `queryModifier` restricts which documents each user can replicate, and a `changeValidator` restricts which writes are accepted. The client-side replication state emits `unauthorized$` when auth headers must be refreshed and `outdatedClient$` when the app runs against a newer server schema. The Express adapter ships with the free `rxdb-server` package. The Fastify and Koa adapters are part of [RxDB Premium <PremiumIcon />](/premium/).
 
 ## Example: TanStack DB with CouchDB Sync
 
@@ -293,40 +294,39 @@ All three keep the client code identical above the replication layer. The TanSta
 
 ## FAQ
 
-<details>
-    <summary>Can TanStack DB sync with CouchDB?</summary>
+<Faq>
+
+<FaqItem question="Can TanStack DB sync with CouchDB?">
 
 Yes. TanStack DB itself does not talk to backends, but with the official RxDB collection underneath, the **[CouchDB replication plugin](../../replication-couchdb.md)** syncs the backing RxCollection with any CouchDB server. All pulled documents stream into the TanStack DB collection automatically.
 
-</details>
+</FaqItem>
 
-<details>
-    <summary>Does TanStack DB work with PouchDB?</summary>
+<FaqItem question="Does TanStack DB work with PouchDB?">
 
 No, and it does not have to. The **[PouchDB RxStorage](../../rx-storage-pouchdb.md)** was removed from RxDB because of its performance overhead. Instead RxDB replicates directly with CouchDB-compatible endpoints through the CouchDB replication plugin, so you get CouchDB sync while using a fast local storage like IndexedDB or SQLite.
 
-</details>
+</FaqItem>
 
-<details>
-    <summary>Can I sync TanStack DB with my own REST API?</summary>
+<FaqItem question="Can I sync TanStack DB with my own REST API?">
 
 Yes. The RxDB **[Sync Engine](../../replication.md)** only needs a pull endpoint, a push endpoint, and optionally a Server-Sent Events stream for ongoing changes. The [HTTP replication tutorial](../../replication-http.md) shows a complete Express implementation that you can port to any server language.
 
-</details>
+</FaqItem>
 
-<details>
-    <summary>Is RxServer free to self-host?</summary>
+<FaqItem question="Is RxServer free to self-host?">
 
-Yes. The `rxdb-server` package with the Express adapter is free and open source, including replication endpoints, auth handlers, query modifiers, and change validators. Only the Fastify and Koa adapters are part of **[RxDB Premium 👑](/premium/)**. See the [RxServer docs](../../rx-server.md) for details.
+Yes. The `rxdb-server` package with the Express adapter is free and open source, including replication endpoints, auth handlers, query modifiers, and change validators. Only the Fastify and Koa adapters are part of **[RxDB Premium <PremiumIcon />](/premium/)**. See the [RxServer docs](../../rx-server.md) for details.
 
-</details>
+</FaqItem>
 
-<details>
-    <summary>Do I need a hosted sync service for TanStack DB offline sync?</summary>
+<FaqItem question="Do I need a hosted sync service for TanStack DB offline sync?">
 
 No. Hosted services like Electric or PowerSync are one option, but the **[RxDB collection](./rxdb-collection-for-tanstack-db.md)** replicates with backends you host yourself: CouchDB, your own REST API, or RxServer. Your data stays on your infrastructure and your auth stays under your control.
 
-</details>
+</FaqItem>
+
+</Faq>
 
 ## Follow Up
 
