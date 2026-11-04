@@ -270,20 +270,22 @@ console.log(distance); // 25.20443
 
 With this we can sort multiple embeddings by how good they match our search query vector.
 
+When you only need to sort or compare distances, use `euclideanDistanceSquared()` instead. It returns the squared distance and skips the `Math.sqrt()` call. Because the square root does not change the order of non-negative numbers, the sorted result is the same. Keep `euclideanDistance()` when the real distance value matters, for example when you store it as an index value and query a range around it.
+
 ## Searching the Vector database with a full table scan
 
 To find out if our embeddings have been stored correctly and that our vector comparison works as should, let's run a basic query to ensure everything functions as expected. In this query, we aim to find documents similar to a given user input text. The process involves calculating the embedding from the input text, fetching all documents, calculating the distance between their embeddings and the query embedding, and then sorting them based on their similarity.
 
 ```ts
-import { euclideanDistance } from 'rxdb/plugins/vector';
+import { euclideanDistanceSquared } from 'rxdb/plugins/vector';
 import { sortByObjectNumberProperty } from 'rxdb/plugins/core';
 
 const userInput = 'new york people';
 const queryVector = await getEmbeddingFromText(userInput);
 const candidates = await vectorCollection.find().exec();
-const withDistance = candidates.map(doc => ({ 
+const withDistance = candidates.map(doc => ({
     doc,
-    distance: euclideanDistance(queryVector, doc.embedding)
+    distance: euclideanDistanceSquared(queryVector, doc.embedding)
 }));
 const queryResult = withDistance
     .sort(sortByObjectNumberProperty('distance'))
