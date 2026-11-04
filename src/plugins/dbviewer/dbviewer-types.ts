@@ -58,7 +58,7 @@ export type RxDBViewerOptions = {
      * Url of the viewer page that is loaded into the iframe.
      * The page is a single self-contained html file, so the
      * viewer UI is not part of the rxdb build.
-     * [default='https://rxdb.info/dbviewer/index.html']
+     * [default='https://rxdb.info/db-viewer/index.html']
      */
     viewerUrl?: string;
 };
