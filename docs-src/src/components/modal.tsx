@@ -1,74 +1,105 @@
-// Modal.tsx
-import React, { useEffect, useRef } from 'react';
-import type { ModalProps as AntdModalProps } from 'antd';
-import { Modal as AntdModal } from 'antd';
+import React, { useEffect, useId, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { IconClose } from './icons/close';
 import { triggerTrackingEvent } from './trigger-event';
 
-export interface ModalProps
-    extends Omit<AntdModalProps, 'closeIcon' | 'rootClassName'> {
-    /** Extra class applied to the modal root for styling hooks */
-    className?: string;
+export type ModalProps = {
+    open: boolean;
+    onCancel?: (event: React.SyntheticEvent) => void;
     title?: string;
-}
+    /**
+     * Width of the dialog, 'auto' makes it as wide as its content.
+     * [default=520]
+     */
+    width?: number | string;
+    style?: React.CSSProperties;
+    /** Extra class applied to the dialog for styling hooks */
+    className?: string;
+    children?: React.ReactNode;
+};
 
+/**
+ * Modal based on the native <dialog> element.
+ * showModal() puts the dialog into the top layer, so it renders above
+ * all other content, traps the focus and closes on Escape.
+ * It is rendered into document.body so that it does not inherit styles
+ * from the component that opens it, for example the markdown styles of a docs page.
+ * The content is rendered lazily on the first open and kept mounted afterwards
+ * so that iframes keep their state when the modal is reopened.
+ */
 export function Modal(
     {
-        centered = true,
-        maskClosable = false,
-        footer = null,
-        styles,
-        className,
+        open,
+        onCancel,
         // use invisible space as default to ensure h3 is still in full height
-        title = '‎',
-        children,
-        ...rest
+        title = '\u200e',
+        width = 520,
+        style,
+        className,
+        children
     }: ModalProps
 ) {
-    return (
-        <AntdModal
-            centered={centered}
-            maskClosable={maskClosable}
-            footer={footer}
-            // keep AntD's default width; don't set `width`
-            rootClassName={['my-modal', className].filter(Boolean).join(' ')}
-            styles={{
-                content: {
-                    borderRadius: 0,
-                    backgroundColor: 'var(--bg-color)',
-                    color: 'white',
-                    fontWeight: 700,
-                    padding: 16,
-                    paddingTop: 12,
-                    width: '90vw',
-                    maxWidth: '100%',
-                    maxHeight: '90vh'
-                },
-                header: { margin: 0, padding: '16px 20px', borderBottom: '1px solid #f0f0f0' },
-                body: { padding: 0 },
-                footer: { padding: 16 },
-                ...styles,
+    const dialogRef = useRef<HTMLDialogElement>(null);
+    const titleId = useId();
+    const [hasOpened, setHasOpened] = useState(open);
+
+    useEffect(() => {
+        if (open) {
+            setHasOpened(true);
+        }
+    }, [open]);
+
+    useEffect(() => {
+        const dialog = dialogRef.current;
+        if (!dialog) {
+            return;
+        }
+        if (open && !dialog.open) {
+            dialog.showModal();
+            // focus the dialog itself instead of its first button, Tab then moves into it
+            dialog.focus();
+        } else if (!open && dialog.open) {
+            dialog.close();
+        }
+    }, [open, hasOpened]);
+
+    if (!hasOpened || typeof document === 'undefined') {
+        return null;
+    }
+
+    return createPortal(
+        <dialog
+            ref={dialogRef}
+            className={['my-modal', className].filter(Boolean).join(' ')}
+            style={{ width: width === 'auto' ? 'fit-content' : width, ...style }}
+            aria-labelledby={titleId}
+            tabIndex={-1}
+            onCancel={(event) => {
+                // Escape key: let the parent update its state, it closes the dialog
+                event.preventDefault();
+                onCancel?.(event);
             }}
-            closeIcon={
-                <span
+            onClose={(event) => {
+                // the browser closed the dialog on its own, sync the parent state
+                if (open) {
+                    onCancel?.(event);
+                }
+            }}
+        >
+            <div className="my-modal__content">
+                <button
+                    type="button"
                     className="my-modal__close"
-                    style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        width: 28,
-                        height: 28,
-                        borderRadius: 8,
-                    }}
+                    aria-label="Close"
+                    onClick={(event) => onCancel?.(event)}
                 >
                     <IconClose clickable />
-                </span>
-            }
-            {...rest}
-        >
-            <h3>{title}</h3>
-            {children}
-        </AntdModal>
+                </button>
+                <h3 id={titleId}>{title}</h3>
+                {children}
+            </div>
+        </dialog>,
+        document.body
     );
 }
 
@@ -140,7 +171,6 @@ export function IframeFormModal(props: {
         open={props.open}
         width={'auto'}
         onCancel={handleClose}
-        footer={null}
     >
         <iframe
             ref={iframeRef}

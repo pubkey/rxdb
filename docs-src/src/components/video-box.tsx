@@ -43,7 +43,7 @@ type VideoModalProps = {
     videoId: string;
     title: string;
     startAt?: number;
-    onClose: (e: React.MouseEvent) => void;
+    onClose: (e: React.SyntheticEvent) => void;
 };
 
 
@@ -237,8 +237,6 @@ export function VideoModal({ open, videoId, title, startAt, onClose }: VideoModa
         <Modal
             open={open}
             onCancel={onClose}
-            onOk={onClose}
-            footer={null}
             width="auto"
             style={{ maxWidth: '90%' }}
             title={title}
