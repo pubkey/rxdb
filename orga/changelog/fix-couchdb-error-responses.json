@@ -1,6 +1,11 @@
 {
     "$schema": "./schema.json",
     "text": "FIX CouchDB replication failing with `responseJson.forEach is not a function` when CouchDB returns an error response. The push and the live pull now throw [`RC_COUCHDB_3`](https://rxdb.info/errors.html#RC_COUCHDB_3) with the HTTP status and the CouchDB error body, for example `illegal_docid` for primary keys that start with an underscore. The live pull stream no longer stops on an error response and runs a resync after a failed longpoll request so that no server changes are missed",
-    "links": [],
+    "links": [
+        {
+            "url": "https://github.com/pubkey/rxdb/pull/9406",
+            "linkText": "#9406"
+        }
+    ],
     "priority": 5
 }
