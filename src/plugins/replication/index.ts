@@ -37,6 +37,7 @@ import type {
 import { RxDBLeaderElectionPlugin } from '../leader-election/index.ts';
 import {
     arrayFilterNotEmpty,
+    createPromiseWithResolvers,
     ensureNotFalsy,
     errorToPlainJson,
     flatClone,
@@ -157,10 +158,9 @@ export class RxReplicationState<RxDocType, CheckpointType> {
                 }
             });
         });
-        const startPromise = new Promise<void>(res => {
-            this.callOnStart = res;
-        });
-        this.startPromise = startPromise;
+        const startPromiseWithResolvers = createPromiseWithResolvers<void>();
+        this.callOnStart = startPromiseWithResolvers.resolve;
+        this.startPromise = startPromiseWithResolvers.promise;
     }
 
     private callOnStart: () => void = undefined as any;

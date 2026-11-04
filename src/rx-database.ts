@@ -46,7 +46,8 @@ import {
     getDefaultRxDocumentMeta,
     defaultHashSha256,
     RXDB_VERSION,
-    deepEqual
+    deepEqual,
+    createPromiseWithResolvers
 } from './plugins/utils/index.ts';
 import {
     newRxError
@@ -728,19 +729,6 @@ function throwIfDatabaseNameUsed(
             link: 'https://rxdb.info/rx-database.html#ignoreduplicate'
         });
     }
-}
-
-/**
- * Polyfill for https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/withResolvers
- */
-function createPromiseWithResolvers<T>() {
-    let resolve!: (value: T | PromiseLike<T>) => void;
-    let reject!: (reason?: any) => void;
-    const promise = new Promise<T>((res, rej) => {
-        resolve = res;
-        reject = rej;
-    });
-    return { promise, resolve, reject };
 }
 
 function getDatabaseNameKey(

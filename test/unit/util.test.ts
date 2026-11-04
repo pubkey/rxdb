@@ -30,7 +30,9 @@ import {
     getHeightOfRevision,
     createRevision,
     flattenObject,
-    getFromObjectOrThrow
+    getFromObjectOrThrow,
+    createPromiseWithResolvers,
+    promiseWaitSkippable
 } from '../../plugins/core/index.mjs';
 import config from './config.ts';
 
@@ -588,6 +590,32 @@ describe('util.test.js', () => {
             it(`should throw error for #${i} argument`, () => {
                 assert.throws(() => ensureInteger(value));
             });
+        });
+    });
+    describe('.createPromiseWithResolvers()', () => {
+        it('should resolve the promise from the outside', async () => {
+            const { promise, resolve } = createPromiseWithResolvers<string>();
+            resolve('foobar');
+            assert.strictEqual(await promise, 'foobar');
+        });
+        it('should reject the promise from the outside', async () => {
+            const { promise, reject } = createPromiseWithResolvers<string>();
+            reject(new Error('foobar'));
+            await assert.rejects(promise, /foobar/);
+        });
+    });
+    describe('.promiseWaitSkippable()', () => {
+        it('should resolve after the time', async () => {
+            const startTime = Date.now();
+            await promiseWaitSkippable(50).promise;
+            assert.ok(Date.now() - startTime >= 40);
+        });
+        it('should resolve directly when skipped', async () => {
+            const startTime = Date.now();
+            const { promise, skip } = promiseWaitSkippable(10000);
+            skip();
+            await promise;
+            assert.ok(Date.now() - startTime < 5000);
         });
     });
     describe('.batchArray()', () => {
