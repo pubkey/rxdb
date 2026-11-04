@@ -1,0 +1,11 @@
+{
+    "$schema": "./schema.json",
+    "text": "ADD query correctness test that `$mod` does not match documents where the field is `null`. It fails until mingo ships the upstream fix",
+    "links": [
+        {
+            "url": "https://github.com/kofrasa/mingo/pull/642",
+            "linkText": "mingo#642"
+        }
+    ],
+    "priority": 1
+}
