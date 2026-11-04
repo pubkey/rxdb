@@ -2885,6 +2885,7 @@ html #cc-main .cc__link {
     box-sizing: border-box;
     width: 90vw;
     max-width: 100%;
+    margin: 0 auto;
     max-height: 90vh;
     padding: 12px 16px 16px;
     border-radius: 0;
