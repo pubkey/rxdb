@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "ADD `euclideanDistanceSquared()` to the vector plugin. It returns the same order as `euclideanDistance()` without computing the square root, so it can be used to sort vector search results",
+    "links": [],
+    "priority": 7
+}

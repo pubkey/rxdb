@@ -1,6 +1,7 @@
 import assert from 'assert';
 import {
     euclideanDistance,
+    euclideanDistanceSquared,
     manhattanDistance,
     cosineSimilarity,
     jaccardSimilarity
@@ -29,6 +30,41 @@ describe('vector-distance.test.ts', () => {
             const result = euclideanDistance([1, 2, 3, 4], [5, 6, 7, 8]);
             const expected = Math.sqrt(16 + 16 + 16 + 16);
             assert.ok(Math.abs(result - expected) < 1e-10);
+        });
+    });
+
+    describe('.euclideanDistanceSquared()', () => {
+        it('should return 0 for identical vectors', () => {
+            const result = euclideanDistanceSquared([1, 2, 3], [1, 2, 3]);
+            assert.strictEqual(result, 0);
+        });
+        it('should compute the squared distance for simple vectors', () => {
+            const result = euclideanDistanceSquared([0, 0], [3, 4]);
+            assert.strictEqual(result, 25);
+        });
+        it('should compute the squared distance for negative values', () => {
+            const result = euclideanDistanceSquared([-1, -2], [1, 2]);
+            assert.strictEqual(result, 20);
+        });
+        it('should be the square of euclideanDistance()', () => {
+            const A = [0.3, -1.2, 4.5, 0.01];
+            const B = [-2.1, 0.7, 1.9, 3.3];
+            const expected = Math.pow(euclideanDistance(A, B), 2);
+            assert.ok(Math.abs(euclideanDistanceSquared(A, B) - expected) < 1e-10);
+        });
+        it('should sort random vectors in the same order as euclideanDistance()', () => {
+            const randomVector = (dimensions: number) => new Array(dimensions).fill(0).map(() => Math.random() * 2 - 1);
+            const query = randomVector(384);
+            const vectors = new Array(200).fill(0).map(() => randomVector(384));
+            const byDistance = vectors
+                .map((vector, idx) => ({ idx, distance: euclideanDistance(query, vector) }))
+                .sort((a, b) => a.distance - b.distance)
+                .map(r => r.idx);
+            const bySquaredDistance = vectors
+                .map((vector, idx) => ({ idx, distance: euclideanDistanceSquared(query, vector) }))
+                .sort((a, b) => a.distance - b.distance)
+                .map(r => r.idx);
+            assert.deepStrictEqual(bySquaredDistance, byDistance);
         });
     });
 
