@@ -108,6 +108,37 @@ describe('vector-distance.test.ts', () => {
             const result = cosineSimilarity([1, 1, 1, 1], [1, 1, 1, 1]);
             assert.ok(Math.abs(result - 1) < 1e-10);
         });
+        it('should match the reference formula on random embedding-sized vectors', () => {
+            function referenceCosineSimilarity(A: number[], B: number[]): number {
+                const dotProduct = A.reduce((sum, a, i) => sum + a * B[i], 0);
+                const magnitudeA = Math.sqrt(A.reduce((sum, a) => sum + a * a, 0));
+                const magnitudeB = Math.sqrt(B.reduce((sum, b) => sum + b * b, 0));
+                return dotProduct / (magnitudeA * magnitudeB);
+            }
+            const randomVector = (dimensions: number) => new Array(dimensions).fill(0).map(() => Math.random() * 2 - 1);
+            for (let run = 0; run < 50; run++) {
+                const A = randomVector(384);
+                const B = randomVector(384);
+                const result = cosineSimilarity(A, B);
+                const expected = referenceCosineSimilarity(A, B);
+                assert.ok(Math.abs(result - expected) < 1e-12, 'run ' + run + ': ' + result + ' !== ' + expected);
+            }
+        });
+        it('should be symmetric', () => {
+            const A = [0.3, -1.2, 4.5, 0.01];
+            const B = [-2.1, 0.7, 1.9, 3.3];
+            assert.strictEqual(cosineSimilarity(A, B), cosineSimilarity(B, A));
+        });
+        it('should not depend on the magnitude of the vectors', () => {
+            const A = [0.3, -1.2, 4.5, 0.01];
+            const B = [-2.1, 0.7, 1.9, 3.3];
+            const scaledA = A.map(v => v * 1000);
+            assert.ok(Math.abs(cosineSimilarity(A, B) - cosineSimilarity(scaledA, B)) < 1e-12);
+        });
+        it('should return NaN when one vector has zero magnitude', () => {
+            const result = cosineSimilarity([0, 0, 0], [1, 2, 3]);
+            assert.ok(Number.isNaN(result));
+        });
     });
 
     describe('.jaccardSimilarity()', () => {

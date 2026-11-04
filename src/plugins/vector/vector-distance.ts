@@ -27,11 +27,22 @@ export function manhattanDistance(A: Vector, B: Vector) {
 }
 
 
+/**
+ * Computes the dot product and both squared magnitudes
+ * in a single pass over the vectors.
+ */
 export function cosineSimilarity(A: Vector, B: Vector): number {
-    const dotProduct = A.reduce((sum, a, i) => sum + a * B[i], 0);
-    const magnitudeA = Math.sqrt(A.reduce((sum, a) => sum + a * a, 0));
-    const magnitudeB = Math.sqrt(B.reduce((sum, b) => sum + b * b, 0));
-    return dotProduct / (magnitudeA * magnitudeB);
+    let dotProduct = 0;
+    let sumA = 0;
+    let sumB = 0;
+    for (let i = 0; i < A.length; i++) {
+        const a = A[i];
+        const b = B[i];
+        dotProduct += a * b;
+        sumA += a * a;
+        sumB += b * b;
+    }
+    return dotProduct / (Math.sqrt(sumA) * Math.sqrt(sumB));
 }
 
 
