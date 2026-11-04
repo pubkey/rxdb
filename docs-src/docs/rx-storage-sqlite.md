@@ -390,14 +390,20 @@ The premium SQLite storage translates the [Mango query](./rx-query.md) selector 
 - `$in`, `$nin`
 - `$exists`
 - `$and`, `$or`, `$nor`
+- `$size`
+- `$type` with the types `string`, `number`, `boolean`, `bool`, `null`, `object` and `array`
+- `$mod` with integer arguments, on fields with a `number` or `integer` schema
+- `$elemMatch` on arrays of objects and on arrays of scalar values, for example `{ tags: { $elemMatch: { $eq: 'rxdb' } } }`
 - `$not` as a field operator, when its inner operator is one of the above
+
+On array fields like `tags`, the comparison operators match when at least one item of the array matches, so `{ tags: 'rxdb' }` returns all todos that have the tag `rxdb`. SQLite iterates the array items with [`json_each()`](https://www.sqlite.org/json1.html#jeach).
 
 **Run in memory:**
 - `$regex` (with or without `$options`)
-- `$elemMatch`
-- `$size`
-- `$type`
-- `$mod`
+- `$type` with other types like `int`, `long` or numeric type codes
+- `$mod` with non-integer arguments or on fields without a number schema
+- `$elemMatch` on arrays of arrays, or with an operator directly on the items of an array of objects
+- Comparisons on paths through an array, for example `{ 'subtasks.0': 'todo3' }`
 - `$not` with an inner operator that is run in memory, for example `{ name: { $not: { $regex: '^a' } } }`
 
 When a selector contains an operator that is run in memory, only that part of the selector is left out of the SQL query. All other top-level parts and all parts inside of `$and` still run in SQL. SQLite returns the pre-filtered rows in batches of `50` and RxDB checks each row with the query matcher. Inside of `$or`, `$nor` and `$not` a part cannot be left out on its own, because that would change the result. So when one branch of an `$or` contains an operator that is run in memory, the whole `$or` is run in memory.
@@ -452,7 +458,7 @@ Yes, starting natively from version `3.38.0`, SQLite includes comprehensive buil
 </FaqItem>
 <FaqItem question="Which query operators does the RxDB SQLite storage run in SQL?">
 
-The premium **[SQLite RxStorage](#query-operators)** translates `$eq`, `$ne`, `$gt`, `$gte`, `$lt`, `$lte`, `$in`, `$nin`, `$exists`, `$and`, `$or`, `$nor` and the field-level `$not` to SQL. `$regex`, `$elemMatch`, `$size`, `$type` and `$mod` are checked in memory on the rows that the translated part of the query returns. The results are the same as on all other storages.
+The premium **[SQLite RxStorage](#query-operators)** translates `$eq`, `$ne`, `$gt`, `$gte`, `$lt`, `$lte`, `$in`, `$nin`, `$exists`, `$and`, `$or`, `$nor`, `$size`, `$elemMatch`, the field-level `$not` and the common cases of `$type` and `$mod` to SQL. `$regex` is checked in memory on the rows that the translated part of the query returns. The results are the same as on all other storages.
 
 </FaqItem>
 <FaqItem question="How can you save and export a SQLite database from a local environment?">
