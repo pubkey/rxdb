@@ -1,0 +1,15 @@
+{
+    "$schema": "./schema.json",
+    "text": "ADD the dbviewer plugin (beta): a database viewer devtool that mounts into any DOM element and lets you inspect and edit a running RxDatabase or a static `exportJSON()` dump. It ships a data grid with a Mango query bar and document drawer, a JSON view, a live activity map, and schema, explain, replication, changes, storage and cleanup panels. System collections like the internal store, local documents and RxState collections are listed view-only. The hosted viewer page can also pair with a database on another device over WebRTC via `connectRxDBViewer()`. Added testcases for the viewer helpers and the dump data source",
+    "links": [
+        {
+            "url": "https://rxdb.info/db-viewer.html",
+            "linkText": "docs"
+        },
+        {
+            "url": "https://github.com/pubkey/rxdb/pull/8942",
+            "linkText": "#8942"
+        }
+    ],
+    "priority": 10
+}

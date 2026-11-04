@@ -1402,6 +1402,32 @@ export const ERROR_MESSAGES = {
         docs: ''
     },
 
+    // dbviewer plugin errors
+    DVW1: {
+        message: 'dbviewer must run in a browser environment',
+        cause: 'mountRxDBViewer() was called in an environment without a DOM, for example plain Node.js.',
+        fix: 'Only mount the viewer in environments that have a document, like a browser, Electron renderer or a webview.',
+        docs: 'https://rxdb.info/db-viewer.html'
+    },
+    DVW2: {
+        message: 'dbviewer needs a database or a dump',
+        cause: 'mountRxDBViewer() was called without a database and without a dump.',
+        fix: 'Pass either a live RxDatabase via options.database or a JSON export via options.dump.',
+        docs: 'https://rxdb.info/db-viewer.html'
+    },
+    DVW3: {
+        message: 'dbviewer roomId too short',
+        cause: 'connectRxDBViewer() was called with a roomId that has fewer than 6 characters.',
+        fix: 'Use a long random roomId or omit it to get a generated one. Everyone who knows it gets full access to the database, so treat it like a password.',
+        docs: 'https://rxdb.info/db-viewer.html'
+    },
+    DVW4: {
+        message: 'dbviewer collection is view-only',
+        cause: 'A write was attempted on a view-only collection: the internal store, a local documents store or the collection of an RxState.',
+        fix: 'These collections can be browsed and exported in the dbviewer but not edited, because writing them directly corrupts the state their owner keeps in memory.',
+        docs: 'https://rxdb.info/db-viewer.html'
+    },
+
     // change-event-buffer errors
     COB1: {
         message: 'ChangeEventBuffer out of bounds',
