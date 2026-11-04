@@ -9,15 +9,16 @@ import {
     inject,
     signal
 } from '@angular/core';
-import { connectRxDBViewer, mountRxDBViewer } from 'rxdb/plugins/dbviewer';
 import type { RxDBViewerConnectHandle, RxDBViewerHandle } from 'rxdb/plugins/dbviewer';
 
 import { DatabaseService } from '../../services/database.service';
 
 /**
  * Docks the RxDB database viewer devtool to the bottom of the page.
- * The viewer is mounted lazily on the first open, so server side
- * rendering and the initial page load are not affected.
+ * The plugin is loaded with a dynamic import() and the viewer is
+ * mounted lazily on the first open, so the plugin code stays out of
+ * the main bundle and server side rendering and the initial page
+ * load are not affected.
  *
  * On load the viewer url is logged to the browser console.
  * Opening the app with #dbviewer in the url opens the viewer directly.
@@ -52,7 +53,7 @@ export class DbViewerComponent implements OnInit, AfterViewInit, OnDestroy {
         );
         if (new URLSearchParams(window.location.search).get('debug') === 'dbviewer-webrtc') {
             this.zone.runOutsideAngular(() => {
-                connectRxDBViewer({
+                import('rxdb/plugins/dbviewer').then(({ connectRxDBViewer }) => connectRxDBViewer({
                     database: this.dbService.db as any,
                     /**
                      * Local copy of the hosted viewer page
@@ -61,7 +62,7 @@ export class DbViewerComponent implements OnInit, AfterViewInit, OnDestroy {
                      * on open without further input.
                      */
                     viewerUrl: window.location.origin + '/assets/dbviewer.html'
-                }).then(handle => {
+                })).then(handle => {
                     this.connectHandle = handle;
                     console.log(
                         '%c RxDB %c dbviewer pairing url: ' + handle.url,
@@ -98,24 +99,29 @@ export class DbViewerComponent implements OnInit, AfterViewInit, OnDestroy {
                     return;
                 }
                 this.zone.runOutsideAngular(() => {
-                    this.viewerHandle = mountRxDBViewer({
-                        database: this.dbService.db as any,
-                        parent: host,
-                        showCloseButton: true,
+                    import('rxdb/plugins/dbviewer').then(({ mountRxDBViewer }) => {
+                        if (this.viewerHandle) {
+                            return;
+                        }
+                        this.viewerHandle = mountRxDBViewer({
+                            database: this.dbService.db as any,
+                            parent: host,
+                            showCloseButton: true,
+                            /**
+                             * Local copy of the hosted viewer page
+                             * (see postinstall:dbviewer), so the example
+                             * works offline and against unreleased builds.
+                             */
+                            viewerUrl: 'assets/dbviewer.html'
+                        });
                         /**
-                         * Local copy of the hosted viewer page
-                         * (see postinstall:dbviewer), so the example
-                         * works offline and against unreleased builds.
+                         * The close icon lives inside the viewer chrome,
+                         * the host only decides what closing means:
+                         * here it hides the dock.
                          */
-                        viewerUrl: 'assets/dbviewer.html'
-                    });
-                    /**
-                     * The close icon lives inside the viewer chrome,
-                     * the host only decides what closing means:
-                     * here it hides the dock.
-                     */
-                    this.viewerHandle.close$.subscribe(() => {
-                        this.zone.run(() => this.open.set(false));
+                        this.viewerHandle.close$.subscribe(() => {
+                            this.zone.run(() => this.open.set(false));
+                        });
                     });
                 });
             });

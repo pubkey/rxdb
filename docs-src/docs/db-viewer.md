@@ -80,6 +80,15 @@ const viewer = mountRxDBViewer({
 viewer.remove();
 ```
 
+The plugin adds about `13 kB` (gzip) to your bundle when you import `mountRxDBViewer`, and about `48 kB` (gzip) when `connectRxDBViewer` with its WebRTC connection is included. Because the viewer is a devtool that is not needed on page load, it is recommended to load the plugin with a dynamic `import()` at the moment the viewer opens. Then the plugin costs nothing on the initial page load:
+
+```ts
+async function openViewer(db: RxDatabase, parent: HTMLElement) {
+    const { mountRxDBViewer } = await import('rxdb/plugins/dbviewer');
+    return mountRxDBViewer({ database: db, parent });
+}
+```
+
 You can also register the plugin to get a `launchDbViewer()` method on the database:
 
 ```ts
@@ -103,7 +112,7 @@ import {
     AfterViewInit, Component, ElementRef,
     NgZone, OnDestroy, ViewChild, inject
 } from '@angular/core';
-import { mountRxDBViewer, RxDBViewerHandle } from 'rxdb/plugins/dbviewer';
+import type { RxDBViewerHandle } from 'rxdb/plugins/dbviewer';
 import { DatabaseService } from '../services/database.service';
 
 @Component({
@@ -118,8 +127,10 @@ export class DbViewerComponent implements AfterViewInit, OnDestroy {
 
     ngAfterViewInit() {
         // mounting outside of the angular zone keeps the
-        // viewer updates out of change detection
-        this.zone.runOutsideAngular(() => {
+        // viewer updates out of change detection. The dynamic
+        // import() keeps the plugin out of the main bundle.
+        this.zone.runOutsideAngular(async () => {
+            const { mountRxDBViewer } = await import('rxdb/plugins/dbviewer');
             this.viewerHandle = mountRxDBViewer({
                 database: this.dbService.db,
                 parent: this.viewerHost.nativeElement
