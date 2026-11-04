@@ -467,5 +467,87 @@ describe('replication-couchdb.test.ts', () => {
 
             await collection.database.close();
         });
+        it('should emit a readable error when CouchDB rejects the pushed documents', async () => {
+            const server = await SpawnServer.spawn();
+            const collection = await humansCollection.create(0);
+
+            /**
+             * CouchDB reserves document ids that start with an underscore
+             * and rejects the whole _bulk_docs request with HTTP 400.
+             */
+            await collection.insert(schemaObjects.humanData('_reserved-id'));
+
+            const replicationState = replicateCouchDB({
+                replicationIdentifier: randomToken(10),
+                url: server.url,
+                collection,
+                fetch: fetchWithCouchDBAuth,
+                live: true,
+                retryTime: 100,
+                push: {}
+            });
+            const error: any = await firstValueFrom(replicationState.error$);
+
+            assert.strictEqual(error.code, 'RC_COUCHDB_3');
+            assert.strictEqual(error.parameters.status, 400);
+            assert.strictEqual(error.parameters.body.error, 'illegal_docid');
+            assert.ok(error.parameters.url.includes('_bulk_docs'));
+
+            const serverDocs = await getAllServerDocs(server.url);
+            assert.strictEqual(serverDocs.length, 0);
+
+            await replicationState.cancel();
+            await collection.database.close();
+        });
+        it('should keep the live pull stream running after CouchDB returned an error response', async () => {
+            const server = await SpawnServer.spawn();
+            const collection = await humansCollection.create(0);
+
+            let failedLongpollRequests = 0;
+            const fetchFailingFirstLongpoll: typeof fetch = (url, init) => {
+                if (
+                    failedLongpollRequests === 0 &&
+                    (typeof url === 'string' ? url : url instanceof URL ? url.href : url.url).includes('feed=longpoll')
+                ) {
+                    failedLongpollRequests++;
+                    return Promise.resolve(new Response(
+                        JSON.stringify({ error: 'unauthorized', reason: 'Name or password is incorrect.' }),
+                        { status: 401, headers: { 'content-type': 'application/json' } }
+                    ));
+                }
+                return fetchWithCouchDBAuth(url, init);
+            };
+
+            const replicationState = replicateCouchDB({
+                replicationIdentifier: randomToken(10),
+                url: server.url,
+                collection,
+                fetch: fetchFailingFirstLongpoll,
+                live: true,
+                retryTime: 100,
+                pull: {}
+            });
+            const streamError: any = await firstValueFrom(replicationState.error$);
+            assert.strictEqual(streamError.code, 'RC_STREAM');
+            assert.strictEqual(streamError.parameters.error.code, 'RC_COUCHDB_3');
+            assert.strictEqual(streamError.parameters.error.parameters.status, 401);
+            assert.strictEqual(streamError.parameters.error.parameters.body.error, 'unauthorized');
+
+            await replicationState.awaitInitialReplication();
+            const writeResponse = await fetchWithCouchDBAuth(server.url + 'after-error', {
+                method: 'PUT',
+                headers: { 'content-type': 'application/json' },
+                body: JSON.stringify({ firstName: 'Alice', lastName: 'Kelso', age: 30 })
+            });
+            assert.strictEqual(writeResponse.status, 201);
+
+            await waitUntil(async () => {
+                const doc = await collection.findOne('after-error').exec();
+                return !!doc;
+            }, 5000);
+
+            await replicationState.cancel();
+            await collection.database.close();
+        });
     });
 });

@@ -5,6 +5,7 @@ import type {
 } from '../../types/index.d.ts';
 import { b64EncodeUnicode, flatClone } from '../../plugins/utils/index.ts';
 import { URLQueryParams } from './couchdb-types.ts';
+import { newRxError } from '../../rx-error.ts';
 
 
 export const COUCHDB_NEW_REPLICATION_PLUGIN_IDENTITY_PREFIX = 'couchdb';
@@ -68,6 +69,45 @@ export function couchSwapPrimaryToId<RxDocType>(
     return ret;
 }
 
+
+/**
+ * Reads the JSON body of a CouchDB response.
+ * Throws when the HTTP status is not ok or the body
+ * does not have the expected shape, so that the replication
+ * emits the status and the CouchDB error body
+ * like {"error":"illegal_docid","reason":"..."}
+ * instead of failing later on a missing property.
+ */
+export async function getCouchDBResponseJson<T>(
+    response: Response,
+    url: string,
+    isValid: (json: any) => boolean
+): Promise<T> {
+    const text = await response.text();
+    let json: any;
+    try {
+        json = JSON.parse(text);
+    } catch (_err) {
+        json = undefined;
+    }
+    if (!response.ok || !isValid(json)) {
+        throw newRxError('RC_COUCHDB_3', {
+            url: removeCredentialsFromUrl(url),
+            status: response.status,
+            body: typeof json === 'undefined' ? text : json
+        });
+    }
+    return json;
+}
+
+/**
+ * The url can contain basic auth credentials like
+ * http://user:password@example.com/db/
+ * which must not end up in error messages and logs.
+ */
+export function removeCredentialsFromUrl(url: string): string {
+    return url.replace(/^([a-z][a-z0-9+.-]*:\/\/)[^/@]*@/i, '$1');
+}
 
 export function getDefaultFetch() {
     if (

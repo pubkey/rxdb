@@ -42,7 +42,9 @@ import {
     couchDBDocToRxDocData,
     mergeUrlQueryParams,
     couchSwapPrimaryToId,
-    getDefaultFetch
+    getDefaultFetch,
+    getCouchDBResponseJson,
+    removeCredentialsFromUrl
 } from './couchdb-helper.ts';
 import { awaitRetry } from '../replication/replication-helper.ts';
 
@@ -157,8 +159,9 @@ export function replicateCouchDB<RxDocType>(
                  * First get the current master state from the remote
                  * to check for conflicts
                  */
+                const docsByIdUrl = options.url + '_all_docs?' + mergeUrlQueryParams({});
                 const docsByIdResponse = await replicationState.fetch(
-                    options.url + '_all_docs?' + mergeUrlQueryParams({}),
+                    docsByIdUrl,
                     {
                         method: 'POST',
                         headers: {
@@ -171,7 +174,11 @@ export function replicateCouchDB<RxDocType>(
                         })
                     }
                 );
-                const docsByIdRows: CouchAllDocsResponse = await docsByIdResponse.json();
+                const docsByIdRows = await getCouchDBResponseJson<CouchAllDocsResponse>(
+                    docsByIdResponse,
+                    docsByIdUrl,
+                    json => !!json && Array.isArray(json.rows)
+                );
                 const nonConflictRows: typeof rows = [];
                 const remoteRevById = new Map<string, string>();
                 await Promise.all(
@@ -220,14 +227,22 @@ export function replicateCouchDB<RxDocType>(
                         body: JSON.stringify(body)
                     }
                 );
-                const responseJson: CouchBulkDocResultRow[] = await response.json();
+                const responseJson = await getCouchDBResponseJson<CouchBulkDocResultRow[]>(
+                    response,
+                    url,
+                    json => Array.isArray(json)
+                );
 
                 // get conflicting writes
                 const conflictAgainIds: string[] = [];
                 responseJson.forEach(writeResultRow => {
                     const isConflict = writeResultRow.error === 'conflict';
                     if (!writeResultRow.ok && !isConflict) {
-                        throw newRxError('SNH', { args: { writeResultRow } });
+                        throw newRxError('RC_COUCHDB_3', {
+                            url: removeCredentialsFromUrl(url),
+                            status: response.status,
+                            body: writeResultRow
+                        });
                     }
                     if (isConflict) {
                         conflictAgainIds.push(writeResultRow.id);
@@ -243,7 +258,11 @@ export function replicateCouchDB<RxDocType>(
                     keys: JSON.stringify(conflictAgainIds)
                 });
                 const conflictResponse = await replicationState.fetch(getConflictDocsUrl);
-                const conflictResponseJson: CouchAllDocsResponse = await conflictResponse.json();
+                const conflictResponseJson = await getCouchDBResponseJson<CouchAllDocsResponse>(
+                    conflictResponse,
+                    getConflictDocsUrl,
+                    json => !!json && Array.isArray(json.rows)
+                );
                 conflictResponseJson.rows.forEach(conflictAgainRow => {
                     conflicts.push(couchDBDocToRxDocData(collection.schema.primaryPath, conflictAgainRow.doc));
                 });
@@ -293,7 +312,11 @@ export function replicateCouchDB<RxDocType>(
                     let jsonResponse: CouchdbChangesResult;
                     try {
                         lastRequestStartTime = now();
-                        jsonResponse = await (await replicationState.fetch(url)).json();
+                        jsonResponse = await getCouchDBResponseJson<CouchdbChangesResult>(
+                            await replicationState.fetch(url),
+                            url,
+                            json => !!json && Array.isArray(json.results)
+                        );
                     } catch (err: any) {
                         replicationState.subjects.error.next(
                             newRxError('RC_STREAM', {
@@ -317,6 +340,13 @@ export function replicateCouchDB<RxDocType>(
                                 replicationState.retryTime
                             );
                         }
+                        /**
+                         * When since is still 'now', the next longpoll request
+                         * would miss the changes that happened on the server
+                         * while the requests failed. A RESYNC runs the
+                         * checkpoint based pull which fetches them.
+                         */
+                        pullStream$.next('RESYNC');
                         continue;
                     }
                     const documents: WithDeleted<RxDocType>[] = jsonResponse.results
