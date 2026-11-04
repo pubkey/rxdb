@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "CHANGE move `createPromiseWithResolvers()` into the utils plugin and reuse it in the replication start promise and in `promiseWaitSkippable()`. ADD tests for both helpers",
+    "links": [],
+    "priority": 1
+}

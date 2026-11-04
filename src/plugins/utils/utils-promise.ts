@@ -9,6 +9,24 @@ export function promiseWait(ms: number = 0): Promise<void> {
     return new Promise(res => setTimeout(res, ms));
 }
 
+/**
+ * Same as Promise.withResolvers() which is not supported in all runtimes.
+ * @link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/withResolvers
+ */
+export function createPromiseWithResolvers<T>(): {
+    promise: Promise<T>;
+    resolve: (value: T | PromiseLike<T>) => void;
+    reject: (reason?: any) => void;
+} {
+    let resolve!: (value: T | PromiseLike<T>) => void;
+    let reject!: (reason?: any) => void;
+    const promise = new Promise<T>((res, rej) => {
+        resolve = res;
+        reject = rej;
+    });
+    return { promise, resolve, reject };
+}
+
 export function promiseWaitSkippable(
     ms: number = 0
 ): {
@@ -18,18 +36,13 @@ export function promiseWaitSkippable(
     let timeoutId: ReturnType<typeof setTimeout> | undefined;
     let settled = false;
 
-    let resolveFn!: () => void;
-
-    const promise = new Promise<void>((resolve) => {
-        resolveFn = resolve;
-
-        timeoutId = setTimeout(() => {
-            if (settled) return;
-            settled = true;
-            cleanup();
-            resolve();
-        }, ms);
-    });
+    const { promise, resolve: resolveFn } = createPromiseWithResolvers<void>();
+    timeoutId = setTimeout(() => {
+        if (settled) return;
+        settled = true;
+        cleanup();
+        resolveFn();
+    }, ms);
 
     function cleanup() {
         if (timeoutId) {
