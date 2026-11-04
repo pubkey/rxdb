@@ -463,6 +463,8 @@
     "test:browser:remote:loop": "npm run test:browser:remote && npm run test:browser:remote:loop",
     "test:browser:custom": " npm run transpile && cross-env CI=true DEFAULT_STORAGE=custom  karma start ./config/karma.conf.cjs --single-run",
     "test:browser:custom:chromium": " npm run transpile && cross-env CI=true DEFAULT_STORAGE=custom  karma start ./config/karma.conf.cjs --single-run --browsers Chromium",
+    "test:browser:custom:chrome": " npm run transpile && cross-env CI=true DEFAULT_STORAGE=custom  karma start ./config/karma.conf.cjs --single-run --browsers Chrome",
+    "test:browser:custom:firefox": " npm run transpile && cross-env CI=true DEFAULT_STORAGE=custom  karma start ./config/karma.conf.cjs --single-run --browsers Firefox",
     "test:replication-firestore": "npm run transpile && firebase emulators:exec \"cross-env DEFAULT_STORAGE=dexie mocha --expose-gc --config ./config/.mocharc.cjs ./test_tmp/replication-firestore.test.js\" --only firestore --config \"config/firestore.json\" --project \"rxdb-test\"",
     "test:replication-appwrite": "npm run transpile && cross-env DEFAULT_STORAGE=dexie karma start ./config/karma.appwrite.conf.cjs",
     "test:replication-couchdb": "npm run transpile && concurrently \"npm run couch:start\" \"cross-env NATIVE_COUCHDB=5984 DEFAULT_STORAGE=dexie mocha --config ./config/.mocharc.cjs ./test_tmp/replication-couchdb.test.js\" --success first --kill-others",
