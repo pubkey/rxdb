@@ -2068,41 +2068,6 @@ samp .cm-comment {
     color: #7f848e;
 }
 
-.observe-code-example-tabs {
-    color: white;
-    padding-bottom: 20px;
-}
-
-.observe-code-example-tabs .ant-tabs-tab {
-    margin-left: 10px;
-}
-
-.observe-code-example-tabs .ant-tabs-tab-btn {
-    color: white;
-}
-
-.ant-tabs-tab-btn {
-    color: white !important;
-}
-
-.ant-tabs-tab-btn[aria-selected="true"] {
-    color: var(--color-top) !important;
-}
-
-.ant-tabs-ink-bar {
-    background: var(--color-top) !important;
-}
-
-.observe-code-example-tabs .ant-tabs-tab-icon {
-    margin-inline-end: 5px !important;
-}
-
-.observe-code-example-tabs .ant-tabs-tab-icon img {
-    height: 30px;
-    float: left;
-    margin-top: -6px;
-}
-
 /*
  * The animation must use the same steps as the soundwave of the heartbeat.mp3
  * @link https://planetcalc.com/8627/
@@ -3104,48 +3069,6 @@ html #cc-main .cc__link {
     top: 0px;
 }
 
-
-
-.block.faq .ant-collapse {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    background-color: transparent;
-}
-
-.block.faq .ant-collapse-header {
-    font-size: 1.15em;
-    font-weight: 600;
-    line-height: 150%;
-    color: white;
-    flex-direction: row-reverse;
-    align-items: center;
-    padding: 0;
-    gap: 16px;
-}
-
-.block.faq .ant-collapse-item {
-    border: none;
-    border-radius: 24px;
-    font-size: 1.15em;
-    font-weight: 600;
-    line-height: 150%;
-
-    color: white;
-    background-color: #222834;
-    border: none;
-    border-radius: 24px;
-    padding: 26.5px 24px;
-}
-
-.block.faq .ant-collapse-content-box {
-    padding: 12px 0 0 !important;
-    font-size: 1em;
-    line-height: 150%;
-    white-space: pre-line;
-    color: white;
-    font-weight: 400;
-}
 
 
 

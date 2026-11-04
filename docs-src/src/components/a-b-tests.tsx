@@ -4,7 +4,6 @@ import { getUtmCampaign, SEM_VARIATION_STORAGE_PREFIX } from './trigger-event';
 // import { ReplicationDiagram } from './replication-diagram';
 // import { ScrollToSection, SemPage } from '../pages';
 // import { OfflineSection } from './offline-section';
-// import { RealtimeSection } from './realtime-section';
 // import { RuntimesSection } from './runtimes-section';
 // import { SyncSection } from './sync-section';
 // import { ScrollToSection, SemPage } from '../pages';
@@ -90,7 +89,6 @@ export function ABTestContent(
     //         <RuntimesSection sem={props.sem} runtimesRef={props.refs.runtimesRef} dark={true} />
     //         <SyncSection sem={props.sem} replicationRef={props.refs.replicationRef} dark={false} />
     //         <OfflineSection sem={props.sem} offlineRef={props.refs.offlineRef} dark={true} />
-    //         <RealtimeSection sem={props.sem} realtimeRef={props.refs.realtimeRef} dark={false} />
     //     </>;
     // return <></>;
     const VariationElement = CURRENT_TEST_RUN.variations[variationId];
