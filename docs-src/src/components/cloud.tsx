@@ -4,7 +4,7 @@ import React, {
   useEffect,
   useState
 } from 'react';
-import { replicationLinks } from './sync-section';
+import { replicationLinks } from './replication-links';
 import ExecutionEnvironment from '@docusaurus/ExecutionEnvironment';
 
 interface CloudProps {

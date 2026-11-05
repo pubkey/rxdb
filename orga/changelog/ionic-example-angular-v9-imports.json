@@ -1,0 +1,11 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX the Ionic example for `@ionic/angular` v9, which no longer has the `@ionic/angular/standalone` entry point",
+    "links": [
+        {
+            "url": "https://github.com/pubkey/rxdb/pull/9420",
+            "linkText": "#9420"
+        }
+    ],
+    "priority": 1
+}

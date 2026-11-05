@@ -11,7 +11,7 @@ import {
     IonLabel,
     IonList,
     ToastController
-} from '@ionic/angular/standalone';
+} from '@ionic/angular';
 
 import { DatabaseService } from '../../services/database.service';
 
