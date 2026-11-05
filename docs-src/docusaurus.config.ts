@@ -202,6 +202,9 @@ const config: Config = {
         defaultLocale: 'en',
         locales: ['en'],
     },
+    clientModules: [
+        './src/client-modules/prefetch-on-hover.ts',
+    ],
     plugins: [
         [
             'docusaurus-plugin-llms',
