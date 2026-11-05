@@ -4,7 +4,7 @@ import { getSemVariation } from '../../components/a-b-tests';
 
 /**
  * SEM landingpage for "gadxie1".
- * A/b tests 3 variations of the title, description and bulletpoints.
+ * A/b tests multiple variations of the title, description and bulletpoints.
  * The variation is picked randomly per visitor and kept stable via localStorage.
  */
 
@@ -36,16 +36,22 @@ const variations = {
             <>Open source and battle-tested</>
         ]
     },
-    c: {
-        title: <>From <b>Single-Tab Cache</b> to <b>Synced App</b></>,
-        text: <>Your app already stores data locally. RxDB turns that local store into an offline-first, multi-device app: data syncs in realtime to any backend and every open tab stays consistent.</>,
-        bulletpoints: [
-            <>Offline-first by design</>,
-            <>Realtime sync across devices</>,
-            <>Every tab stays consistent</>,
-            <>Works with React, Angular, Vue</>
-        ]
-    }
+    /**
+     * Variation 'c' was retired on 2026-11-05 after the A/B readout on this
+     * page: variation 'a' beat it on time on page and on pages per visit.
+     * Kept on record (commented out, not deleted) so its letter and copy stay
+     * reserved and are never reused for different copy.
+     */
+    // c: {
+    //     title: <>From <b>Single-Tab Cache</b> to <b>Synced App</b></>,
+    //     text: <>Your app already stores data locally. RxDB turns that local store into an offline-first, multi-device app: data syncs in realtime to any backend and every open tab stays consistent.</>,
+    //     bulletpoints: [
+    //         <>Offline-first by design</>,
+    //         <>Realtime sync across devices</>,
+    //         <>Every tab stays consistent</>,
+    //         <>Works with React, Angular, Vue</>
+    //     ]
+    // }
 };
 
 export default function Page() {
