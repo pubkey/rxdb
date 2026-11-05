@@ -58,6 +58,11 @@ const config: Config = {
          * whether the banner is shown. The commands are queued on dataLayer
          * before the async gtag/GTM libraries boot, so the default applies to
          * the very first hit.
+         *
+         * gtag.js itself is loaded by the GTM container, which also sends the
+         * page views. The config command is required so that the
+         * gtag('event', ...) calls of triggerTrackingEvent() reach GA4.
+         * It sets send_page_view: false because GTM already sends them.
          */
         {
             tagName: 'script',
@@ -74,6 +79,8 @@ const config: Config = {
                     region: ${JSON.stringify(EU_EEA_REGION_CODES)}
                 });
                 gtag('set', 'ads_data_redaction', true);
+                gtag('js', new Date());
+                gtag('config', 'G-62D63SY3S0', { send_page_view: false });
             `.replace(/\s+/g, ' ').trim(),
         },
         { tagName: 'meta', attributes: { name: 'theme-color', content: '#ed168f' } },
@@ -433,13 +440,11 @@ Topic-specific documentation files:
             'classic',
             /** @type {import('@docusaurus/preset-classic').Options} */
             {
-                // Only enable analytics in production builds. In local dev (or when
-                // an ad-blocker blocks the gtag script) window.gtag is undefined and
-                // the route-change tracker throws "window.gtag is not a function".
-                gtag: process.env.NODE_ENV === 'production' ? {
-                    trackingID: 'G-62D63SY3S0',
-                    anonymizeIP: false,
-                } : undefined,
+                /**
+                 * Only enable analytics in production builds.
+                 * The GA4 tag (G-62D63SY3S0) is configured inside the GTM container,
+                 * which loads gtag.js and tracks page views on route changes.
+                 */
                 googleTagManager: process.env.NODE_ENV === 'production' ? {
                     containerId: 'GTM-PL63TR5',
                 } : undefined,
