@@ -11,9 +11,7 @@ import {CenteredImage} from '@site/src/components/centered-image';
 
 But plain SQLite alone is not enough for a modern desktop application. It has no way to observe queries, no sync to a backend, no encryption and it can only run in the Electron **main** process, not in the **renderer** where your UI lives. This article shows how to combine SQLite with [RxDB](https://rxdb.info/) to get the reliability of SQLite together with reactive queries, [replication](../replication.md) and [encryption](../encryption.md), while keeping all heavy database work out of the UI process.
 
-  
-  &nbsp;&nbsp;&nbsp;
-  
+&nbsp;&nbsp;&nbsp;
 
 ## Why SQLite is a good fit for Electron
 

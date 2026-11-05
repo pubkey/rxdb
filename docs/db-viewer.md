@@ -43,7 +43,7 @@ Below 640px the viewer switches to stacked touch screens with the same collectio
 
 ## How it works
 
-The plugin itself contains no UI code. `mountRxDBViewer()` creates an iframe that loads the viewer page, a single self-contained html file hosted at [rxdb.info/dbviewer/index.html](https://rxdb.info/dbviewer/index.html), and serves the database to it over `postMessage`. This keeps the whole viewer UI out of the rxdb build, so the plugin adds only the small bridge to your bundle. Data access, the [query planner](./query-optimizer.md) analysis and the event streams run in your application window, the page inside the iframe is plain UI and never gets direct access to the database object.
+The plugin itself contains no UI code. `mountRxDBViewer()` creates an iframe that loads the viewer page, a single self-contained html file hosted at [rxdb.info/db-viewer/index.html](https://rxdb.info/db-viewer/index.html), and serves the database to it over `postMessage`. This keeps the whole viewer UI out of the rxdb build, so the plugin adds only the small bridge to your bundle. Data access, the [query planner](./query-optimizer.md) analysis and the event streams run in your application window, the page inside the iframe is plain UI and never gets direct access to the database object.
 
 When your app has to work without network access, download the page once and serve it from your own origin, see [Self-Hosting the Viewer Page](#self-hosting-the-viewer-page).
 
@@ -267,7 +267,7 @@ const viewer = mountRxDBViewer({
      * (optional) Url of the viewer page that is loaded
      * into the iframe. Point this to a self-hosted copy
      * when your app must work without network access.
-     * [default='https://rxdb.info/dbviewer/index.html']
+     * [default='https://rxdb.info/db-viewer/index.html']
      */
     viewerUrl: 'https://example.com/dbviewer.html'
 });
@@ -279,9 +279,9 @@ viewer.close$.subscribe(() => {
 
 ## Self-Hosting the Viewer Page
 
-By default the iframe loads the viewer page from `https://rxdb.info/dbviewer/index.html`. When your app must work offline, or your security policy forbids loading pages from other origins, serve the page from your own origin instead. The page is one self-contained html file without further assets, so self-hosting is a file copy:
+By default the iframe loads the viewer page from `https://rxdb.info/db-viewer/index.html`. When your app must work offline, or your security policy forbids loading pages from other origins, serve the page from your own origin instead. The page is one self-contained html file without further assets, so self-hosting is a file copy:
 
-1. **Get the file**. Download it once from [rxdb.info/dbviewer/index.html](https://rxdb.info/dbviewer/index.html), or build it from the rxdb repository with `npm run build:dbviewer`, which writes it to `docs-src/static/dbviewer/index.html`.
+1. **Get the file**. Download it once from [rxdb.info/db-viewer/index.html](https://rxdb.info/db-viewer/index.html), or build it from the rxdb repository with `npm run build:dbviewer`, which writes it to `docs-src/static/db-viewer/index.html`.
 2. **Serve it as a static asset** of your app, for example as `public/dbviewer.html`. The page must be served over http(s), a `file://` url does not work because `postMessage` needs an origin.
 3. **Point the plugin at it** with the `viewerUrl` option:
 
@@ -321,13 +321,13 @@ const viewer = await connectRxDBViewer({
     signalingServerUrl: 'wss://example.com/signaling',
     /**
      * (optional) Url of the hosted viewer page.
-     * [default='https://rxdb.info/dbviewer/index.html']
+     * [default='https://rxdb.info/db-viewer/index.html']
      */
     viewerUrl: 'https://example.com/dbviewer.html'
 });
 
 // the full url to open the viewer with, for example
-// https://rxdb.info/dbviewer/index.html#room=abc...&signaling=...
+// https://rxdb.info/db-viewer/index.html#room=abc...&signaling=...
 console.log(viewer.url);
 
 // later: stop serving the database

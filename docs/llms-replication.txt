@@ -474,6 +474,12 @@ server {
 
 ## Known problems
 
+### Primary keys that start with an underscore
+
+CouchDB reserves document ids that start with an underscore (`_`) for its own documents like `_design/...` and `_local/...`. When you push a document whose primary key starts with `_`, CouchDB rejects the whole `_bulk_docs` request with HTTP `400` and `{"error":"illegal_docid","reason":"Only reserved document ids may start with underscore."}`. The other documents of that batch are not written either.
+
+The replication emits this as an [`RC_COUCHDB_3`](./errors.md#RC_COUCHDB_3) error on `replicationState.error$`. The error parameters contain the `status`, the request `url` and the CouchDB error `body`. To fix it, use primary keys that do not start with an underscore, for example by adding a prefix to your ids before you insert them.
+
 ### Database missing
 
 In contrast to PouchDB, this plugin **does NOT** automatically create missing CouchDB databases.

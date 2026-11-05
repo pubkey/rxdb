@@ -1,0 +1,1 @@
+{"version":3,"file":"assets/js/c141421f.eeadf42f.js","sources":["webpack://rxdb/json|/home/runner/work/rxdb/rxdb/docs-src/.docusaurus/docusaurus-theme-search-algolia/default/__plugin.json"],"sourcesContent":["module.exports = JSON.parse('{\"name\":\"docusaurus-theme-search-algolia\",\"id\":\"default\"}')"],"names":["JSON"],"mappings":"wFAAA,EAAO,OAAO,CAAGA,KAAK,KAAK,CAAC,4D"}

@@ -1,0 +1,2 @@
+"use strict";(self.webpackChunkrxdb=self.webpackChunkrxdb||[]).push([["1668"],{86569(e,r,s){s.r(r),s.d(r,{default:()=>l});var a=s(74848);s(96540);var u=s(34164),c=s(34308),d=s(88287),n=s(22831),t=s(45434);function l(e){return(0,a.jsx)(c.e3,{className:(0,u.A)(d.G.wrapper.docsPages),children:(0,a.jsx)(t.A,{children:(0,n.v)(e.route.routes)})})}}}]);
+//# sourceMappingURL=5e95c892.ed4d79cd.js.map
