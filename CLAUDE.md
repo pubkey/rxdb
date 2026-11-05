@@ -25,6 +25,8 @@
 ## Docs Hosting
 - The docs at rxdb.info are deployed via GitHub Pages from the `docs` branch. They are NOT hosted on Cloudflare Pages; the deploy step in `.github/workflows/cloudflare-pages.yml` is commented out and inactive.
 - GitHub Pages serves static files only: there are no server-side functions and no access to request logs. Any feature that needs server-side logic or log analysis requires an external endpoint.
+- Do NOT suggest putting Cloudflare (or another CDN) in front of the docs, for example to change cache headers. The docs stay on plain GitHub Pages.
+- The docs font is embedded as base64 WOFF2 inside `docs-src/src/css/custom.css` on purpose, so the initial page load needs fewer network requests. Do NOT move it into a separate font file or suggest preloading it instead.
 
 ## Code Style & Patterns
 - **Language**: TypeScript

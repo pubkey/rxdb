@@ -88,7 +88,45 @@ const config: Config = {
         // field above, so browsers that do not support SVG favicons fall back to the .ico.
         { tagName: 'link', attributes: { rel: 'icon', type: 'image/x-icon', href: '/files/logo/icon.ico' } },
         { tagName: 'link', attributes: { rel: 'apple-touch-icon', href: '/img/apple-touch-icon.png', sizes: '180x180' } },
-        { tagName: 'link', attributes: { rel: 'preconnect', href: 'https://region1.analytics.google.com/' } },
+        /**
+         * Google Tag Manager (GTM-PL63TR5), which also loads gtag.js for GA4.
+         * It is started after the window load event when the browser is idle,
+         * so that the about 365 KB of Google scripts do not compete with the
+         * page's own resources during the initial load. Everything that is
+         * pushed to the dataLayer before that (consent defaults, events) is
+         * queued and processed when GTM boots.
+         */
+        ...(process.env.NODE_ENV === 'production' ? [{
+            tagName: 'script',
+            attributes: { type: 'text/javascript' },
+            innerHTML: `
+                (function () {
+                    window.dataLayer = window.dataLayer || [];
+                    var started = false;
+                    function loadGtm() {
+                        if (started) { return; }
+                        started = true;
+                        window.dataLayer.push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' });
+                        var script = document.createElement('script');
+                        script.async = true;
+                        script.src = 'https://www.googletagmanager.com/gtm.js?id=GTM-PL63TR5';
+                        document.head.appendChild(script);
+                    }
+                    function scheduleGtm() {
+                        if ('requestIdleCallback' in window) {
+                            window.requestIdleCallback(loadGtm, { timeout: 3000 });
+                        } else {
+                            setTimeout(loadGtm, 1000);
+                        }
+                    }
+                    if (document.readyState === 'complete') {
+                        scheduleGtm();
+                    } else {
+                        window.addEventListener('load', scheduleGtm, { once: true });
+                    }
+                })();
+            `.replace(/\s+/g, ' ').trim(),
+        }] : []),
         {
             tagName: 'script',
             attributes: { type: 'application/ld+json' },
@@ -441,13 +479,12 @@ Topic-specific documentation files:
             /** @type {import('@docusaurus/preset-classic').Options} */
             {
                 /**
-                 * Only enable analytics in production builds.
+                 * Google Tag Manager is not loaded through the preset because the
+                 * preset injects gtm.js directly into the head. It is loaded
+                 * with a delay by the script in headTags above.
                  * The GA4 tag (G-62D63SY3S0) is configured inside the GTM container,
                  * which loads gtag.js and tracks page views on route changes.
                  */
-                googleTagManager: process.env.NODE_ENV === 'production' ? {
-                    containerId: 'GTM-PL63TR5',
-                } : undefined,
                 sitemap: {
                     lastmod: 'date',
                     changefreq: 'weekly',
