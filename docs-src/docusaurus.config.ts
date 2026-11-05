@@ -82,8 +82,6 @@ const config: Config = {
         { tagName: 'link', attributes: { rel: 'icon', type: 'image/x-icon', href: '/files/logo/icon.ico' } },
         { tagName: 'link', attributes: { rel: 'apple-touch-icon', href: '/img/apple-touch-icon.png', sizes: '180x180' } },
         { tagName: 'link', attributes: { rel: 'preconnect', href: 'https://region1.analytics.google.com/' } },
-        { tagName: 'link', attributes: { rel: 'preconnect', href: 'https://www.redditstatic.com/' } },
-        { tagName: 'link', attributes: { rel: 'preconnect', href: 'https://pixel-config.reddit.com/' } },
         {
             tagName: 'script',
             attributes: { type: 'application/ld+json' },
@@ -169,6 +167,20 @@ const config: Config = {
     organizationName: 'pubkey', // Usually your GitHub org/user name.
     projectName: 'rxdb', // Usually your repo name.
 
+    future: {
+        /**
+         * Docusaurus Faster: Rspack bundler, SWC loader and minifier,
+         * Lightning CSS minifier and SSG worker threads.
+         * @link https://docusaurus.io/blog/releases/3.6#docusaurus-faster
+         */
+        experimental_faster: true,
+        v4: {
+            /**
+             * Required by the ssgWorkerThreads option of experimental_faster.
+             */
+            removeLegacyPostBuildHeadAttribute: true,
+        },
+    },
     onBrokenLinks: 'throw',
     markdown: {
         hooks: {
