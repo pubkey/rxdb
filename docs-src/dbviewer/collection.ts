@@ -182,7 +182,6 @@ export function renderCollectionScreen(ctx: PageContext) {
     const host = ctx.contentHost;
     const info = ctx.source.listCollections().find(c => c.name === collectionName);
     const primaryPath = info ? info.primaryPath : 'id';
-    const readOnly = isReadOnlyCollection(ctx, collectionName);
 
     const screen = el('div', 'rxdbv-content', undefined, { style: 'position:relative' });
     host.appendChild(screen);
@@ -196,19 +195,20 @@ export function renderCollectionScreen(ctx: PageContext) {
     };
 
     // toolbar row 1
+    const observeDisabled = ctx.source.readOnly;
     const observeToggle = el('button', 'rxdbv-btn rxdbv-observe' +
         (uiState.observe ? ' rxdbv-active' : '') +
-        (readOnly ? ' rxdbv-disabled' : ''), [
+        (observeDisabled ? ' rxdbv-disabled' : ''), [
         el('span', 'rxdbv-observe-dot'),
         'Live'
     ], {
-        title: readOnly ? readOnlyReason(ctx) : (
+        title: observeDisabled ? 'not available on a dump' : (
             uiState.observe ?
                 'live — the list updates as documents change' :
                 'Update the current result live as documents change'
         ),
         onClick: () => {
-            if (readOnly) {
+            if (observeDisabled) {
                 return;
             }
             uiState.observe = !uiState.observe;
