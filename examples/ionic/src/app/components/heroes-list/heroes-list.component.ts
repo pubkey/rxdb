@@ -15,7 +15,7 @@ import {
     IonProgressBar,
     IonSpinner,
     ModalController
-} from '@ionic/angular/standalone';
+} from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import { create, trash } from 'ionicons/icons';
 import type { Observable } from 'rxjs';

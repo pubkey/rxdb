@@ -98,6 +98,7 @@ export const DBVIEWER_STYLES = `
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    white-space: nowrap;
     gap: 7px;
     height: 31px;
     padding: 0 17px;
@@ -375,13 +376,14 @@ export const DBVIEWER_STYLES = `
 /* query bar */
 .rxdbv-querybar {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: 8px;
     padding: 8px 12px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     position: relative;
 }
-.rxdbv-query-input-wrap { flex: 1; display: flex; font-size: 11.5px; }
+.rxdbv-query-input-wrap { flex: 1 1 240px; min-width: 240px; display: flex; font-size: 11.5px; }
 .rxdbv-num-input-wrap { width: 102px; flex: none; display: flex; font-size: 11.5px; }
 .rxdbv-num-input-wrap .rxdbv-query-input { text-align: right; width: 100%; }
 .rxdbv-sort-input-wrap { width: 180px; position: relative; gap: 6px; }

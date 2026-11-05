@@ -11,7 +11,7 @@ import {
     IonTitle,
     IonToolbar,
     ModalController
-} from '@ionic/angular/standalone';
+} from '@ionic/angular';
 
 import type { RxHeroDocument } from '../../RxDB.d';
 

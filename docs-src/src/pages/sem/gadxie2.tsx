@@ -68,16 +68,22 @@ const variations = {
     //         <>Replication to your own backend</>
     //     ]
     // },
-    e: {
-        title: <>Change Your <b>Schema</b> Without Losing <b>Local Data</b></>,
-        text: <>RxDB versions your schema. When you ship a new app version, the migration strategies you define transform the documents already stored on the user's device, so an update never starts from an empty database. Schema validation catches bad writes before they reach storage.</>,
-        bulletpoints: [
-            <>Versioned schemas with migrations</>,
-            <>Existing device data is migrated</>,
-            <>Validation before every write</>,
-            <>TypeScript types from your schema</>
-        ]
-    }
+    /**
+     * Variation 'e' was retired on 2026-11-05 after the A/B readout on this
+     * page: variation 'b' beat it on pages per visit and pricing visits.
+     * Kept on record (commented out, not deleted) so its letter and copy stay
+     * reserved and are never reused for different copy.
+     */
+    // e: {
+    //     title: <>Change Your <b>Schema</b> Without Losing <b>Local Data</b></>,
+    //     text: <>RxDB versions your schema. When you ship a new app version, the migration strategies you define transform the documents already stored on the user's device, so an update never starts from an empty database. Schema validation catches bad writes before they reach storage.</>,
+    //     bulletpoints: [
+    //         <>Versioned schemas with migrations</>,
+    //         <>Existing device data is migrated</>,
+    //         <>Validation before every write</>,
+    //         <>TypeScript types from your schema</>
+    //     ]
+    // }
 };
 
 const variationKeys = Object.keys(variations) as (keyof typeof variations)[];
