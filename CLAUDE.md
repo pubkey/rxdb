@@ -58,10 +58,10 @@ npm run check-types
 ```
 
 ## Changelog Rule
-- Whenever you add a testcase or implement a FIX, add a changelog entry file under `orga/changelog/`.
+- Whenever you add a testcase, implement a FIX, or deprecate a feature, plugin, or storage, add a changelog entry file under `orga/changelog/`. Deprecations use the `CHANGE` prefix.
 - Changelog entries are JSON files that must match `orga/changelog/schema.json` with the fields `text`, `links` (`url` and `linkText`) and `priority` (1 to 10). See `orga/changelog/README.md`.
 - Prefer including a link to the root issue or pull request in the `links` of that changelog entry.
-- Do NOT add a changelog entry for changes that are neither a testcase nor a FIX. For example, adding a SEM landingpage under `docs-src/src/pages/sem/` must not produce a changelog entry.
+- Do NOT add a changelog entry for changes that are neither a testcase, a FIX, nor a deprecation. For example, adding a SEM landingpage under `docs-src/src/pages/sem/` must not produce a changelog entry.
 
 ## Example Schema Rule
 - Whenever a docs page needs an example schema, example documents, or example queries, use the shared `todos` example schema from the "Example Schema" section of `docs-src/docs/rx-schema.md`. Do NOT invent a new schema (heroes, humans, users, etc.).
@@ -279,6 +279,7 @@ Do not reproduce (authentic errors in old pages; write the correct form):
 - `<Tabs>` wraps headings that become tab labels; can nest inside `<Steps>`.
 - `<PremiumBlock />` after the intro on premium plugin pages.
 - `<BetaBlock since="17.0.0" />` for beta features.
+- `<DeprecatedBlock since="17.0.0" removedIn="18.0.0" replacement={<a href="./rx-storage-sqlite.html">SQLite RxStorage</a>} />` right after the intro on pages of deprecated plugins and storages. All props are optional, extra text goes in as children.
 - `<PerformanceChart title="Browser Storages" data={PERFORMANCE_DATA_BROWSER} metrics={PERFORMANCE_METRICS} />` with data from `performance-data`.
 - `<VideoBox videoId="..." title="..." duration="m:ss" />` inside `<center>`.
 - `<QuoteBlock author="..." year="..." sourceLink="...">quote</QuoteBlock>` for cited quotes.
