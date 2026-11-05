@@ -467,32 +467,32 @@ function addCommunityChatButton() {
  * non-EU visitors, where marketing is granted by default).
  */
 function loadMarketingPixels() {
-    // reddit pixel TODO move into google tag manager
-    // @ts-ignore eslint-disable-next-line
-    (function (w, d) {
-        if (!(w as any).rdt) {
-            // @ts-ignore
-            const rdt: any = (w as any).rdt = function () {
-                // @ts-ignore
-                if (rdt.sendEvent) {
-                    rdt.sendEvent.apply(rdt, arguments);
-                } else {
-                    rdt.callQueue.push(arguments);
-                }
-            };
-            rdt.callQueue = [];
-            const t = d.createElement('script');
-            t.src = 'https://www.redditstatic.com/ads/pixel.js';
-            t.async = true;
-            const s: any = d.getElementsByTagName('script')[0];
-            s.parentNode.insertBefore(t, s);
-        }
+    // // reddit pixel TODO move into google tag manager
+    // // @ts-ignore eslint-disable-next-line
+    // (function (w, d) {
+        // if (!(w as any).rdt) {
+            // // @ts-ignore
+            // const rdt: any = (w as any).rdt = function () {
+                // // @ts-ignore
+                // if (rdt.sendEvent) {
+                    // rdt.sendEvent.apply(rdt, arguments);
+                // } else {
+                    // rdt.callQueue.push(arguments);
+                // }
+            // };
+            // rdt.callQueue = [];
+            // const t = d.createElement('script');
+            // t.src = 'https://www.redditstatic.com/ads/pixel.js';
+            // t.async = true;
+            // const s: any = d.getElementsByTagName('script')[0];
+            // s.parentNode.insertBefore(t, s);
+        // }
 
-        // Initialize pixel and track page visit
-        (w as any).rdt('init', 'a2_irjdz88999o9');
-        (w as any).rdt('track', 'PageVisit');
-    })(window, document);
-    // /reddit pixel
+        // // Initialize pixel and track page visit
+        // (w as any).rdt('init', 'a2_irjdz88999o9');
+        // (w as any).rdt('track', 'PageVisit');
+    // })(window, document);
+    // // /reddit pixel
 
 
 

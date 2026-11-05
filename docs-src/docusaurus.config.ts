@@ -82,8 +82,6 @@ const config: Config = {
         { tagName: 'link', attributes: { rel: 'icon', type: 'image/x-icon', href: '/files/logo/icon.ico' } },
         { tagName: 'link', attributes: { rel: 'apple-touch-icon', href: '/img/apple-touch-icon.png', sizes: '180x180' } },
         { tagName: 'link', attributes: { rel: 'preconnect', href: 'https://region1.analytics.google.com/' } },
-        { tagName: 'link', attributes: { rel: 'preconnect', href: 'https://www.redditstatic.com/' } },
-        { tagName: 'link', attributes: { rel: 'preconnect', href: 'https://pixel-config.reddit.com/' } },
         {
             tagName: 'script',
             attributes: { type: 'application/ld+json' },
