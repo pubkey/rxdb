@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX TypeScript errors `TS2339` in `calculateNewResultsWithResultWindowBuffer()` when the RxDB sources are type-checked without `strictNullChecks`",
+    "links": [],
+    "priority": 1
+}
