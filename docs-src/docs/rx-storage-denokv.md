@@ -12,6 +12,10 @@ import {CenteredImage} from '@site/src/components/centered-image';
 With the DenoKV [RxStorage](./rx-storage.md) layer for [RxDB](https://rxdb.info), you can run a fully featured **NoSQL database** on top of the [DenoKV API](https://docs.deno.com/kv/manual).
 This gives you the benefits and features of the RxDB JavaScript Database, combined with the global availability and distribution features of the DenoKV.
 
+:::note The DenoKV RxStorage is deprecated
+On October 9, 2026, the Deno team [announced that it is joining Cloudflare](https://deno.com/blog/cloudflare). Deno Deploy, which hosts the globally replicated DenoKV, keeps operating for six months and then shuts down. The Deno runtime gets bug fixes and security updates for one more year, after which its development ends. Because of that, the DenoKV RxStorage is deprecated and will be removed in the next major RxDB version. For new projects, pick another [RxStorage](./rx-storage.md), for example the [SQLite RxStorage](./rx-storage-sqlite.md) or the [FoundationDB RxStorage](./rx-storage-foundationdb.md).
+:::
+
 
 <CenteredImage src="./files/icons/deno.svg" alt="DenoKV Database" width={160} />
 

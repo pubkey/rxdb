@@ -2,6 +2,15 @@
 
 This list contains things that have to be done but will create breaking changes.
 
+## Remove the DenoKV RxStorage
+
+The Deno team joined Cloudflare on October 9, 2026 (https://deno.com/blog/cloudflare). Deno Deploy, which hosts the globally replicated DenoKV, shuts down six months after that, and the Deno runtime only gets bug fixes and security updates for one more year. The DenoKV RxStorage was deprecated for that reason.
+
+In the next major:
+- Remove `src/plugins/storage-denokv`, its `exports` entry in `package.json` and its case in `test/unit/config.ts`.
+- Remove the `test:deno:denokv` scripts and the `run deno tests:denokv` step in `.github/workflows/main.yml`.
+- Remove `docs-src/docs/rx-storage-denokv.md`, its sidebar entry, and the links to it from other docs pages. Add a redirect from `rx-storage-denokv.html` to `rx-storage.html`.
+
 ## sortObject() performance improvements
 
 https://github.com/pubkey/rxdb/pull/9153

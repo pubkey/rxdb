@@ -27,6 +27,12 @@ export class RxStorageDenoKV implements RxStorage<DenoKVStorageInternals<any>, D
 }
 
 
+/**
+ * @deprecated Deno Deploy, which hosts the globally replicated DenoKV,
+ * shuts down and the development of the Deno runtime ends.
+ * This storage will be removed in the next major RxDB version.
+ * @link https://rxdb.info/rx-storage-denokv.html
+ */
 export function getRxStorageDenoKV(
     settings: DenoKVSettings = {
         consistencyLevel: 'strong'
