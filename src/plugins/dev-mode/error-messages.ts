@@ -882,6 +882,12 @@ export const ERROR_MESSAGES = {
         fix: 'Check the CouchDB server and the URL.',
         docs: 'https://rxdb.info/replication-couchdb.html?console=errors&code=RC_COUCHDB_2'
     },
+    RC_COUCHDB_3: {
+        message: 'replicateCouchDB() got an error response from the CouchDB server.',
+        cause: 'The CouchDB server rejected the request or returned a body without the expected format. The status and the CouchDB error body are in the error parameters. A common cause is a primary key that starts with an underscore, which CouchDB reserves and rejects with {"error":"illegal_docid"}.',
+        fix: 'Inspect the status and body parameters. Make sure no primary key starts with an underscore and that the CouchDB user has write access to the database.',
+        docs: 'https://rxdb.info/replication-couchdb.html?console=errors&code=RC_COUCHDB_3'
+    },
     RC_OUTDATED: {
         message: 'Outdated client, update required. Replication was canceled',
         cause: 'The client version is too old for the server.',
