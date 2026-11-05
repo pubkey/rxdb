@@ -1187,8 +1187,7 @@ function buildDrawer(
                 drawer.mode === 'new' ? 'insert' : 'patch',
                 drawer.docId
             );
-            code.innerHTML = '<span class="rxdbv-plain-line"><span class="rxdbv-comment">// applied on save — nothing has run yet</span></span>' +
-                lines.map(line => line.changed
+            code.innerHTML = lines.map(line => line.changed
                     ? '<span class="rxdbv-changed-line">' + escapeHtml(line.text) + '</span>'
                     : '<span class="rxdbv-plain-line">' + escapeHtml(line.text) + '</span>'
                 ).join('');
@@ -1395,8 +1394,7 @@ function buildDrawer(
                 drawer.mode === 'new' ? 'insert' : 'patch',
                 drawer.docId
             );
-            code.innerHTML = '<span class="rxdbv-plain-line"><span class="rxdbv-comment">// applied on save — nothing has run yet</span></span>' +
-                lines.map(line => line.changed
+            code.innerHTML = lines.map(line => line.changed
                     ? '<span class="rxdbv-changed-line">' + escapeHtml(line.text) + '</span>'
                     : '<span class="rxdbv-plain-line">' + escapeHtml(line.text) + '</span>'
                 ).join('');
