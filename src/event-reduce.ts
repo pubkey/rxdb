@@ -278,7 +278,11 @@ export function calculateNewResultsWithResultWindowBuffer<RxDocumentType>(
         rxChangeEvent => rxChangeEventToEventReduceChangeEvent(rxChangeEvent) as ChangeEvent<RxDocumentData<RxDocumentType>>
     );
     const result = applyChangeEventsToResultWindowBuffer(resultWindowBuffer, changeEvents);
-    if (result.runFullQueryAgain) {
+    /**
+     * Compare with === so that the union type is also narrowed
+     * when strictNullChecks is disabled, like in the docs-src tsconfig.
+     */
+    if (result.runFullQueryAgain === true) {
         // the result window does not fit into the buffer anymore, the query refills it
         return {
             runFullQueryAgain: true
