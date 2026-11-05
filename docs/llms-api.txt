@@ -193,7 +193,7 @@ How to combine these types is shown in the [TypeScript tutorial](./tutorials/typ
 | [Dexie.js](./rx-storage-dexie.md) | `import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';` |
 | [SQLite Trial](./rx-storage-sqlite.md) | `import { getRxStorageSQLiteTrial } from 'rxdb/plugins/storage-sqlite';` |
 | [MongoDB](./rx-storage-mongodb.md) | `import { getRxStorageMongoDB } from 'rxdb/plugins/storage-mongodb';` |
-| [DenoKV](./rx-storage-denokv.md) | `import { getRxStorageDenoKV } from 'rxdb/plugins/storage-denokv';` |
+| [DenoKV](./rx-storage-denokv.md) (deprecated) | `import { getRxStorageDenoKV } from 'rxdb/plugins/storage-denokv';` |
 | [FoundationDB](./rx-storage-foundationdb.md) | `import { getRxStorageFoundationDB } from 'rxdb/plugins/storage-foundationdb';` |
 | [Remote](./rx-storage-remote.md) | `import { getRxStorageRemote } from 'rxdb/plugins/storage-remote';` |
 | [Electron IpcRenderer](./electron.md) | `import { getRxStorageIpcRenderer } from 'rxdb/plugins/electron';` |
@@ -358,7 +358,7 @@ let storage = getRxStorageExpoAsync();
 
 #### And more...
 
-There are many more storages such as [MongoDB](./rx-storage-mongodb.md), [DenoKV](./rx-storage-denokv.md), [Filesystem](./rx-storage-filesystem-node.md), [Memory](./rx-storage-memory.md), [Memory-Mapped](./rx-storage-memory-mapped.md), [FoundationDB](./rx-storage-foundationdb.md) and more. [Browse the full list of storages](/rx-storage.html).
+There are many more storages such as [MongoDB](./rx-storage-mongodb.md), [Filesystem](./rx-storage-filesystem-node.md), [Memory](./rx-storage-memory.md), [Memory-Mapped](./rx-storage-memory-mapped.md), [FoundationDB](./rx-storage-foundationdb.md) and more. [Browse the full list of storages](/rx-storage.html).
 
 </Tabs>
 
@@ -3776,7 +3776,7 @@ To use RxDB on the server side, the MongoDB RxStorage provides a way of having a
 
 #### DenoKV
 
-To use RxDB in Deno. The DenoKV RxStorage provides a way of having a secure, scalable and performant storage based on the Deno Key Value Store. [Read more](./rx-storage-denokv.md)
+To use RxDB in Deno. The DenoKV RxStorage provides a way of having a secure, scalable and performant storage based on the Deno Key Value Store. It is deprecated because Deno Deploy shuts down, and it will be removed in the next major version. [Read more](./rx-storage-denokv.md)
 
 #### FoundationDB
 

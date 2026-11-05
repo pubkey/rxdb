@@ -189,7 +189,7 @@ How to combine these types is shown in the [TypeScript tutorial](./tutorials/typ
 | [Dexie.js](./rx-storage-dexie.md) | `import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';` |
 | [SQLite Trial](./rx-storage-sqlite.md) | `import { getRxStorageSQLiteTrial } from 'rxdb/plugins/storage-sqlite';` |
 | [MongoDB](./rx-storage-mongodb.md) | `import { getRxStorageMongoDB } from 'rxdb/plugins/storage-mongodb';` |
-| [DenoKV](./rx-storage-denokv.md) | `import { getRxStorageDenoKV } from 'rxdb/plugins/storage-denokv';` |
+| [DenoKV](./rx-storage-denokv.md) (deprecated) | `import { getRxStorageDenoKV } from 'rxdb/plugins/storage-denokv';` |
 | [FoundationDB](./rx-storage-foundationdb.md) | `import { getRxStorageFoundationDB } from 'rxdb/plugins/storage-foundationdb';` |
 | [Remote](./rx-storage-remote.md) | `import { getRxStorageRemote } from 'rxdb/plugins/storage-remote';` |
 | [Electron IpcRenderer](./electron.md) | `import { getRxStorageIpcRenderer } from 'rxdb/plugins/electron';` |

@@ -162,7 +162,7 @@ To use RxDB on the server side, the MongoDB RxStorage provides a way of having a
 
 #### DenoKV
 
-To use RxDB in Deno. The DenoKV RxStorage provides a way of having a secure, scalable and performant storage based on the Deno Key Value Store. [Read more](./rx-storage-denokv.md)
+To use RxDB in Deno. The DenoKV RxStorage provides a way of having a secure, scalable and performant storage based on the Deno Key Value Store. It is deprecated because Deno Deploy shuts down, and it will be removed in the next major version. [Read more](./rx-storage-denokv.md)
 
 #### FoundationDB
 

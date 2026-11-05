@@ -539,11 +539,18 @@ const loggingStorage = wrappedLoggerStorage({
 ## DenoKV RxStorage
 
 import {CenteredImage} from '@site/src/components/centered-image';
+import {DeprecatedBlock} from '@site/src/components/deprecated-block';
 
 # RxDB Database on top of Deno Key Value Store
 
 With the DenoKV [RxStorage](./rx-storage.md) layer for [RxDB](https://rxdb.info), you can run a fully featured **NoSQL database** on top of the [DenoKV API](https://docs.deno.com/kv/manual).
 This gives you the benefits and features of the RxDB JavaScript Database, combined with the global availability and distribution features of the DenoKV.
+
+<DeprecatedBlock removedIn="18.0.0" replacement={<>the SQLite RxStorage or the FoundationDB RxStorage</>}>
+
+On October 9, 2026, the Deno team [announced that it is joining Cloudflare](https://deno.com/blog/cloudflare). Deno Deploy, which hosts the globally replicated DenoKV, keeps operating for six months and then shuts down. The Deno runtime gets bug fixes and security updates for one more year, after which its development ends.
+
+</DeprecatedBlock>
 
 <CenteredImage src="./files/icons/deno.svg" alt="DenoKV Database" width={160} />
 
@@ -3487,7 +3494,7 @@ To use RxDB on the server side, the MongoDB RxStorage provides a way of having a
 
 #### DenoKV
 
-To use RxDB in Deno. The DenoKV RxStorage provides a way of having a secure, scalable and performant storage based on the Deno Key Value Store. [Read more](./rx-storage-denokv.md)
+To use RxDB in Deno. The DenoKV RxStorage provides a way of having a secure, scalable and performant storage based on the Deno Key Value Store. It is deprecated because Deno Deploy shuts down, and it will be removed in the next major version. [Read more](./rx-storage-denokv.md)
 
 #### FoundationDB
 
