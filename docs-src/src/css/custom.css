@@ -2068,41 +2068,6 @@ samp .cm-comment {
     color: #7f848e;
 }
 
-.observe-code-example-tabs {
-    color: white;
-    padding-bottom: 20px;
-}
-
-.observe-code-example-tabs .ant-tabs-tab {
-    margin-left: 10px;
-}
-
-.observe-code-example-tabs .ant-tabs-tab-btn {
-    color: white;
-}
-
-.ant-tabs-tab-btn {
-    color: white !important;
-}
-
-.ant-tabs-tab-btn[aria-selected="true"] {
-    color: var(--color-top) !important;
-}
-
-.ant-tabs-ink-bar {
-    background: var(--color-top) !important;
-}
-
-.observe-code-example-tabs .ant-tabs-tab-icon {
-    margin-inline-end: 5px !important;
-}
-
-.observe-code-example-tabs .ant-tabs-tab-icon img {
-    height: 30px;
-    float: left;
-    margin-top: -6px;
-}
-
 /*
  * The animation must use the same steps as the soundwave of the heartbeat.mp3
  * @link https://planetcalc.com/8627/
@@ -2883,14 +2848,98 @@ html #cc-main .cc__link {
     width: 100%;
 }
 
-/* dialog */
-.ant-modal-body h3 {
-    width: calc(100% - 40px);
-    margin-bottom: 12px;
+/* dialog, see src/components/modal.tsx */
+.my-modal {
+    max-width: calc(100vw - 32px);
+    max-height: none;
+    padding: 0;
+    border: none;
+    background: transparent;
+    overflow: visible;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    font-size: 14px;
+    line-height: 1.5714285714285714;
+    font-weight: 700;
+    color: white;
+    list-style: none;
 }
 
-.ant-modal-content {
-    background-color: transparent;
+.my-modal:focus {
+    outline: none;
+}
+
+.my-modal[open] {
+    animation: my-modal-zoom-in 0.3s cubic-bezier(0.08, 0.82, 0.17, 1);
+}
+
+.my-modal::backdrop {
+    background-color: rgba(0, 0, 0, 0.45);
+}
+
+.my-modal[open]::backdrop {
+    animation: my-modal-fade-in 0.2s linear;
+}
+
+.my-modal__content {
+    position: relative;
+    box-sizing: border-box;
+    width: 90vw;
+    max-width: 100%;
+    margin: 0 auto;
+    max-height: 90vh;
+    padding: 12px 16px 16px;
+    border-radius: 0;
+    background-color: var(--bg-color);
+    box-shadow: 0 6px 16px 0 rgba(0, 0, 0, 0.08), 0 3px 6px -4px rgba(0, 0, 0, 0.12), 0 9px 28px 8px rgba(0, 0, 0, 0.05);
+}
+
+.my-modal__close {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    cursor: pointer;
+}
+
+.my-modal h3 {
+    width: calc(100% - 40px);
+    margin: 0 0 12px 0;
+}
+
+@keyframes my-modal-zoom-in {
+    from {
+        transform: scale(0.2);
+        opacity: 0;
+    }
+
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes my-modal-fade-in {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@media (max-width: 767px) {
+    .my-modal {
+        max-width: calc(100vw - 16px);
+    }
 }
 
 
@@ -3104,48 +3153,6 @@ html #cc-main .cc__link {
     top: 0px;
 }
 
-
-
-.block.faq .ant-collapse {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    background-color: transparent;
-}
-
-.block.faq .ant-collapse-header {
-    font-size: 1.15em;
-    font-weight: 600;
-    line-height: 150%;
-    color: white;
-    flex-direction: row-reverse;
-    align-items: center;
-    padding: 0;
-    gap: 16px;
-}
-
-.block.faq .ant-collapse-item {
-    border: none;
-    border-radius: 24px;
-    font-size: 1.15em;
-    font-weight: 600;
-    line-height: 150%;
-
-    color: white;
-    background-color: #222834;
-    border: none;
-    border-radius: 24px;
-    padding: 26.5px 24px;
-}
-
-.block.faq .ant-collapse-content-box {
-    padding: 12px 0 0 !important;
-    font-size: 1em;
-    line-height: 150%;
-    white-space: pre-line;
-    color: white;
-    font-weight: 400;
-}
 
 
 
