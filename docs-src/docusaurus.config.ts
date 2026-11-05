@@ -167,6 +167,20 @@ const config: Config = {
     organizationName: 'pubkey', // Usually your GitHub org/user name.
     projectName: 'rxdb', // Usually your repo name.
 
+    future: {
+        /**
+         * Docusaurus Faster: Rspack bundler, SWC loader and minifier,
+         * Lightning CSS minifier and SSG worker threads.
+         * @link https://docusaurus.io/blog/releases/3.6#docusaurus-faster
+         */
+        experimental_faster: true,
+        v4: {
+            /**
+             * Required by the ssgWorkerThreads option of experimental_faster.
+             */
+            removeLegacyPostBuildHeadAttribute: true,
+        },
+    },
     onBrokenLinks: 'throw',
     markdown: {
         hooks: {
