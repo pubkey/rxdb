@@ -30,7 +30,7 @@ dist/
 .vscode
 ai-context.txt
 docs-src/static/files/video-thumbnails/
-docs-src/static/dbviewer/
+docs-src/static/db-viewer/
 ERROR-MESSAGES.md
 .chrome-profile-perf/
 /docs/

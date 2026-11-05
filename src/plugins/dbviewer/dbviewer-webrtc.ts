@@ -37,7 +37,7 @@ export type RxDBViewerConnectOptions = {
     /**
      * Url of the hosted viewer page that the returned url
      * points to.
-     * [default='https://rxdb.info/dbviewer/index.html']
+     * [default='https://rxdb.info/db-viewer/index.html']
      */
     viewerUrl?: string;
     /**

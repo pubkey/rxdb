@@ -1,7 +1,7 @@
 /**
  * Builds the database viewer page as a single self-contained
- * html file: docs-src/static/dbviewer/index.html
- * The docs build publishes it on https://rxdb.info/dbviewer/index.html
+ * html file: docs-src/static/db-viewer/index.html
+ * The docs build publishes it on https://rxdb.info/db-viewer/index.html
  * where the dbviewer plugin loads it into an iframe.
  */
 import { build } from 'esbuild';
@@ -15,7 +15,7 @@ import { fileURLToPath } from 'node:url';
 
 const rootDir = join(dirname(fileURLToPath(import.meta.url)), '..');
 const entry = join(rootDir, 'docs-src/dbviewer/main.tsx');
-const outFile = join(rootDir, 'docs-src/static/dbviewer/index.html');
+const outFile = join(rootDir, 'docs-src/static/db-viewer/index.html');
 
 /**
  * The viewer uses the same font as the docs pages. The font is

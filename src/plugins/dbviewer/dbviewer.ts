@@ -16,7 +16,7 @@ import type {
  * iframe and serves the database to it over postMessage, so the
  * whole UI stays out of the rxdb build.
  */
-export const DBVIEWER_DEFAULT_URL = 'https://rxdb.info/dbviewer/index.html';
+export const DBVIEWER_DEFAULT_URL = 'https://rxdb.info/db-viewer/index.html';
 
 /**
  * Mounts the RxDB database viewer into the given parent element.

@@ -463,6 +463,7 @@ export const DBVIEWER_STYLES = `
 .rxdbv-grid-scroll { flex: 1; overflow: auto; }
 .rxdbv-grid-header {
     display: grid;
+    align-items: center;
     padding: 0 12px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.14);
     font-size: 10px;
@@ -495,7 +496,7 @@ export const DBVIEWER_STYLES = `
 .rxdbv-grid-row.rxdbv-selected { background: rgba(237, 22, 143, 0.10); }
 .rxdbv-grid-row.rxdbv-fresh { animation: rxdbvRowIn 2s ease-out; }
 .rxdbv-grid-row > div { padding: 0 8px 0 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.rxdbv-grid-checkbox-cell { padding: 0 !important; }
+.rxdbv-grid-checkbox-cell { padding: 0 !important; display: flex; align-items: center; }
 .rxdbv-root input[type='checkbox'] { accent-color: var(--rxdbv-pink); width: 12px; height: 12px; margin: 0; }
 .rxdbv-cell-edit-input {
     background: var(--rxdbv-bg);
