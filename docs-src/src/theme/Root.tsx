@@ -64,12 +64,62 @@ let trackerSuiteStarted = false;
 let marketingPixelsLoaded = false;
 let gtagLoaded = false;
 
+const INTERACTION_EVENTS = ['pointerdown', 'keydown', 'touchstart', 'scroll', 'wheel'] as const;
+let hasInteracted = false;
+const interactionCallbacks: (() => void)[] = [];
+function onInteraction(event: Event) {
+    /**
+     * Only scrolling the page counts. Elements like the slider on the
+     * homepage scroll themselves without any input of the visitor.
+     */
+    if (hasInteracted || (event.type === 'scroll' && event.target !== document)) {
+        return;
+    }
+    hasInteracted = true;
+    INTERACTION_EVENTS.forEach(name => window.removeEventListener(name, onInteraction, true));
+    interactionCallbacks.splice(0).forEach(callback => callback());
+}
+if (typeof window !== 'undefined') {
+    INTERACTION_EVENTS.forEach(name => window.addEventListener(name, onInteraction, { capture: true, passive: true }));
+}
+
+/**
+ * Runs the callback on the first interaction of the visitor (pointer, key,
+ * touch, scroll or wheel) or 3 seconds after the window load event,
+ * whatever happens first. When the visitor already interacted, for example by
+ * clicking the consent banner, the callback runs directly.
+ */
+function onFirstInteractionOrAfterLoad(callback: () => void) {
+    let done = false;
+    const run = () => {
+        if (done) {
+            return;
+        }
+        done = true;
+        callback();
+    };
+    if (hasInteracted) {
+        run();
+        return;
+    }
+    interactionCallbacks.push(run);
+    const startFallback = () => setTimeout(run, 3000);
+    if (document.readyState === 'complete') {
+        startFallback();
+    } else {
+        window.addEventListener('load', startFallback, { once: true });
+    }
+}
+
 /**
  * Loads gtag.js for Google Analytics 4. The consent defaults and the
  * gtag('config') command are already queued on the dataLayer by the inline
  * script in docusaurus.config.ts and are processed when the script boots.
  * It is only loaded after the visitor granted the analytics consent, so EU/EEA
  * visitors without a decision do not send any request to Google.
+ * The script blocks the main thread for a few hundred milliseconds on mobile,
+ * so it is loaded on the first interaction or 3 seconds after the page load
+ * instead of directly during the initial load.
  */
 function loadGtag() {
     if (gtagLoaded || process.env.NODE_ENV !== 'production') {
@@ -95,7 +145,7 @@ function applyConsent(state: ConsentState): void {
     setTrackingConsent(anyTracking);
 
     if (state.analytics && !gtagLoaded) {
-        whenPageIsIdle(loadGtag);
+        onFirstInteractionOrAfterLoad(loadGtag);
     }
 
     if (anyTracking && !trackerSuiteStarted) {
