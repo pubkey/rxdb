@@ -3,7 +3,7 @@
  *
  * - The banner UI comes from the fully client-side npm package
  *   `vanilla-cookieconsent` (no external server, no cookie scanning service).
- * - Google Analytics / Google Tag Manager are gated through Google Consent
+ * - Google Analytics (gtag.js) is gated through Google Consent
  *   Mode v2. The "denied" default for EU/EEA regions is set in an inline
  *   script in docusaurus.config.ts; here we only send the "update" once the
  *   visitor made a choice.
@@ -19,8 +19,7 @@ export type ConsentState = {
 
 /**
  * Sends the Google Consent Mode v2 update signal. This unlocks (or keeps
- * denied) the storage that GA4 and Google Ads use, both for the gtag script
- * and for tags managed inside the GTM container.
+ * denied) the storage that GA4 and Google Ads use.
  */
 export function updateGoogleConsent(state: ConsentState): void {
     const gtag = (window as any).gtag;
