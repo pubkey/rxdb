@@ -38,7 +38,11 @@ export function FeaturesSection(props: {
     dark: boolean;
     sem?: SemPage;
 }) {
-    const [isMobile, setIsMobile] = useState(() => ExecutionEnvironment.canUseDOM ? window.innerWidth < 900 : false);
+    /**
+     * Starts with false on the client as well, so the first client render
+     * matches the server-rendered HTML. The real value is set after mounting.
+     */
+    const [isMobile, setIsMobile] = useState(false);
     const [showMore, setShowMore] = useState(false);
 
     useEffect(() => {
@@ -53,6 +57,7 @@ export function FeaturesSection(props: {
             }
         };
 
+        handleResize();
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
     }, []);
