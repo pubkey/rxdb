@@ -59,7 +59,8 @@ const config: Config = {
          * before gtag.js boots, so the default applies to the very first hit.
          *
          * gtag.js itself is loaded by src/theme/Root.tsx after the analytics
-         * consent was given, when the page is idle. The config command then sends
+         * consent was given, on the first interaction of the visitor or 3 seconds
+         * after the page load. The config command then sends
          * the page_view of the first page. Page views of client-side navigations
          * are sent by the enhanced measurement of the GA4 data stream
          * (browser history events).
@@ -458,7 +459,8 @@ Topic-specific documentation files:
                 /**
                  * Analytics is not loaded through the preset because the preset
                  * injects the script directly into the head. gtag.js is loaded
-                 * by src/theme/Root.tsx after the consent, when the page is idle.
+                 * by src/theme/Root.tsx after the consent, on the first interaction
+                 * or 3 seconds after the page load.
                  */
                 sitemap: {
                     lastmod: 'date',
