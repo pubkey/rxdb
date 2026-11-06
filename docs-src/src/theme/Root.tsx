@@ -62,6 +62,25 @@ function whenPageIsIdle(callback: () => void): () => void {
  */
 let trackerSuiteStarted = false;
 let marketingPixelsLoaded = false;
+let gtagLoaded = false;
+
+/**
+ * Loads gtag.js for Google Analytics 4. The consent defaults and the
+ * gtag('config') command are already queued on the dataLayer by the inline
+ * script in docusaurus.config.ts and are processed when the script boots.
+ * It is only loaded after the visitor granted the analytics consent, so EU/EEA
+ * visitors without a decision do not send any request to Google.
+ */
+function loadGtag() {
+    if (gtagLoaded || process.env.NODE_ENV !== 'production') {
+        return;
+    }
+    gtagLoaded = true;
+    const script = document.createElement('script');
+    script.async = true;
+    script.src = 'https://www.googletagmanager.com/gtag/js?id=G-62D63SY3S0';
+    document.head.appendChild(script);
+}
 
 /**
  * Applies a consent decision: updates Google Consent Mode, unlocks the
@@ -74,6 +93,10 @@ function applyConsent(state: ConsentState): void {
 
     const anyTracking = state.analytics || state.marketing;
     setTrackingConsent(anyTracking);
+
+    if (state.analytics && !gtagLoaded) {
+        whenPageIsIdle(loadGtag);
+    }
 
     if (anyTracking && !trackerSuiteStarted) {
         trackerSuiteStarted = true;

@@ -56,13 +56,13 @@ const config: Config = {
          * Google detects the region server-side from the IP, so this stays
          * accurate independent of the timezone heuristic used to decide
          * whether the banner is shown. The commands are queued on dataLayer
-         * before the async gtag/GTM libraries boot, so the default applies to
-         * the very first hit.
+         * before gtag.js boots, so the default applies to the very first hit.
          *
-         * gtag.js itself is loaded by the GTM container, which also sends the
-         * page views. The config command is required so that the
-         * gtag('event', ...) calls of triggerTrackingEvent() reach GA4.
-         * It sets send_page_view: false because GTM already sends them.
+         * gtag.js itself is loaded by src/theme/Root.tsx after the analytics
+         * consent was given, when the page is idle. The config command then sends
+         * the page_view of the first page. Page views of client-side navigations
+         * are sent by the enhanced measurement of the GA4 data stream
+         * (browser history events).
          */
         {
             tagName: 'script',
@@ -80,7 +80,7 @@ const config: Config = {
                 });
                 gtag('set', 'ads_data_redaction', true);
                 gtag('js', new Date());
-                gtag('config', 'G-62D63SY3S0', { send_page_view: false });
+                gtag('config', 'G-62D63SY3S0');
             `.replace(/\s+/g, ' ').trim(),
         },
         { tagName: 'meta', attributes: { name: 'theme-color', content: '#ed168f' } },
@@ -88,45 +88,6 @@ const config: Config = {
         // field above, so browsers that do not support SVG favicons fall back to the .ico.
         { tagName: 'link', attributes: { rel: 'icon', type: 'image/x-icon', href: '/files/logo/icon.ico' } },
         { tagName: 'link', attributes: { rel: 'apple-touch-icon', href: '/img/apple-touch-icon.png', sizes: '180x180' } },
-        /**
-         * Google Tag Manager (GTM-PL63TR5), which also loads gtag.js for GA4.
-         * It is started after the window load event when the browser is idle,
-         * so that the about 365 KB of Google scripts do not compete with the
-         * page's own resources during the initial load. Everything that is
-         * pushed to the dataLayer before that (consent defaults, events) is
-         * queued and processed when GTM boots.
-         */
-        ...(process.env.NODE_ENV === 'production' ? [{
-            tagName: 'script',
-            attributes: { type: 'text/javascript' },
-            innerHTML: `
-                (function () {
-                    window.dataLayer = window.dataLayer || [];
-                    var started = false;
-                    function loadGtm() {
-                        if (started) { return; }
-                        started = true;
-                        window.dataLayer.push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' });
-                        var script = document.createElement('script');
-                        script.async = true;
-                        script.src = 'https://www.googletagmanager.com/gtm.js?id=GTM-PL63TR5';
-                        document.head.appendChild(script);
-                    }
-                    function scheduleGtm() {
-                        if ('requestIdleCallback' in window) {
-                            window.requestIdleCallback(loadGtm, { timeout: 3000 });
-                        } else {
-                            setTimeout(loadGtm, 1000);
-                        }
-                    }
-                    if (document.readyState === 'complete') {
-                        scheduleGtm();
-                    } else {
-                        window.addEventListener('load', scheduleGtm, { once: true });
-                    }
-                })();
-            `.replace(/\s+/g, ' ').trim(),
-        }] : []),
         {
             tagName: 'script',
             attributes: { type: 'application/ld+json' },
@@ -487,10 +448,6 @@ Topic-specific documentation files:
         //   type: 'text/javascript',
         //   async: true
         // }
-        // {
-        //   src: 'https://www.googletagmanager.com/gtag/js?id=G-62D63SY3S0',
-        //   async: true,
-        // },
     ],
 
     presets: [
@@ -499,11 +456,9 @@ Topic-specific documentation files:
             /** @type {import('@docusaurus/preset-classic').Options} */
             {
                 /**
-                 * Google Tag Manager is not loaded through the preset because the
-                 * preset injects gtm.js directly into the head. It is loaded
-                 * with a delay by the script in headTags above.
-                 * The GA4 tag (G-62D63SY3S0) is configured inside the GTM container,
-                 * which loads gtag.js and tracks page views on route changes.
+                 * Analytics is not loaded through the preset because the preset
+                 * injects the script directly into the head. gtag.js is loaded
+                 * by src/theme/Root.tsx after the consent, when the page is idle.
                  */
                 sitemap: {
                     lastmod: 'date',
