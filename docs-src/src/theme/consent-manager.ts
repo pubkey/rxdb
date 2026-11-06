@@ -103,7 +103,7 @@ export async function initEuConsentBanner(
                             {
                                 title: 'Analytics',
                                 description:
-                                    'Google Analytics 4 and Google Tag Manager, used to understand how the website is used so we can improve it.',
+                                    'Google Analytics 4, used to understand how the website is used so we can improve it.',
                                 linkedCategory: 'analytics',
                             },
                             {
