@@ -36,6 +36,12 @@ import type {
 } from '@docsearch/react';
 
 import { triggerTrackingEvent } from '../../components/trigger-event';
+import { loadStylesheet } from '../load-stylesheet';
+/**
+ * The modal styles are only needed when the search is opened,
+ * so they are not part of the global styles.css.
+ */
+import docSearchModalCssUrl from '@docsearch/css/dist/modal.css?lazy-css';
 
 import type { AutocompleteState } from '@algolia/autocomplete-core';
 import type { FacetFilters } from 'algoliasearch/lite';
@@ -73,8 +79,7 @@ function importDocSearchModalIfNeeded() {
   }
   return Promise.all([
     import('@docsearch/react/modal'),
-    import('@docsearch/react/style'),
-    import('./styles.css'),
+    loadStylesheet(docSearchModalCssUrl),
   ]).then(([{ DocSearchModal: Modal }]) => {
     DocSearchModal = Modal;
   });

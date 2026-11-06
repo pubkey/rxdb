@@ -13,6 +13,12 @@ import { EU_EEA_REGION_CODES } from './src/theme/eu-consent';
 import remarkArticleByline from './src/remark/article-byline';
 
 /**
+ * Query for CSS imports that are loaded on demand,
+ * see the custom-webpack-tweaks plugin.
+ */
+const LAZY_CSS_QUERY = /lazy-css/;
+
+/**
  * The RxDB version from the root package.json, used for the
  * softwareVersion field of the JSON-LD structured data so it
  * stays in sync with each release.
@@ -404,7 +410,20 @@ Topic-specific documentation files:
         function myWebpackTweaks() {
             return {
                 name: 'custom-webpack-tweaks',
-                configureWebpack(_config, _isServer, _utils) {
+                configureWebpack(webpackConfig, _isServer, _utils) {
+                    /**
+                     * Docusaurus merges all CSS into a single render-blocking
+                     * styles.css, including the CSS of lazy loaded chunks.
+                     * Stylesheets imported with the ?lazy-css query are excluded
+                     * from that and emitted as their own hashed file instead.
+                     * The import returns the URL of that file so the code can
+                     * load it with loadStylesheet() when it is needed.
+                     */
+                    webpackConfig.module.rules.forEach((rule: any) => {
+                        if (rule && rule.test instanceof RegExp && rule.test.test('x.css')) {
+                            rule.resourceQuery = { not: LAZY_CSS_QUERY };
+                        }
+                    });
                     return {
                         // Emit source maps in the production build so tools like
                         // Lighthouse can map the minified bundle back to the source
@@ -423,6 +442,14 @@ Topic-specific documentation files:
                              * use html-preload on them.
                              */
                             rules: [
+                                {
+                                    test: /\.css$/i,
+                                    resourceQuery: LAZY_CSS_QUERY,
+                                    type: 'asset/resource',
+                                    generator: {
+                                        filename: 'assets/css/[name].[contenthash:8][ext]',
+                                    },
+                                },
                                 {
                                     test: /\.(woff(2)?|ttf|eot|otf)$/,
                                     type: 'asset/resource',

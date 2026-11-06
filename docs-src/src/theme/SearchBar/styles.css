@@ -9,7 +9,8 @@
     var(--ifm-transition-timing-default);
 }
 
-.DocSearch-Container {
+/* Higher specificity because the modal stylesheet is loaded later. */
+html .DocSearch-Container {
   z-index: calc(var(--ifm-z-index-fixed) + 1);
 }
 

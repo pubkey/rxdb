@@ -12,3 +12,12 @@
 /// <reference types="@docusaurus/plugin-content-docs" />
 /// <reference types="@docusaurus/plugin-content-blog" />
 /// <reference types="@docusaurus/plugin-content-pages" />
+
+/**
+ * A stylesheet imported with the ?lazy-css query is emitted as its own file
+ * instead of being merged into styles.css. The import is the URL of that file.
+ */
+declare module '*.css?lazy-css' {
+    const url: string;
+    export default url;
+}
