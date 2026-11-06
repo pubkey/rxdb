@@ -11,6 +11,7 @@ import type { Options as RehypePrettyCodeOptions, Theme } from 'rehype-pretty-co
 import { createCssVariablesTheme, ThemeRegistrationAny } from 'shiki';
 import { EU_EEA_REGION_CODES } from './src/theme/eu-consent';
 import remarkArticleByline from './src/remark/article-byline';
+import preloadRouteChunksPlugin from './src/plugins/preload-route-chunks';
 
 /**
  * The RxDB version from the root package.json, used for the
@@ -223,6 +224,7 @@ const config: Config = {
         './src/client-modules/prefetch-on-hover.ts',
     ],
     plugins: [
+        preloadRouteChunksPlugin,
         [
             'docusaurus-plugin-llms',
             {
