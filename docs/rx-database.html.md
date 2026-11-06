@@ -1,0 +1,311 @@
+# RxDatabase - The Core of Your Realtime Data
+
+> Get started with RxDatabase and integrate multiple storages. Learn to create, encrypt, and optimize your realtime database today.
+
+# RxDatabase
+
+An RxDatabase Object contains your [collections](./rx-collection.md) and handles the synchronization of change events.
+
+## Creation
+
+The database is created by the asynchronous `.createRxDatabase()` function of the core RxDB module. It has the following parameters:
+
+```javascript
+import { createRxDatabase } from 'rxdb/plugins/core';
+import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
+
+const db = await createRxDatabase({
+  name: 'heroesdb',                   // <- name
+  storage: getRxStorageLocalstorage(),       // <- RxStorage
+
+  /* Optional parameters: */
+  password: 'myPassword',             // <- password (optional)
+  multiInstance: true,                // <- multiInstance (optional, default: true)
+  eventReduce: true,                  // <- eventReduce (optional, default: true)
+  cleanupPolicy: {}                   // <- custom cleanup policy (optional)
+});
+```
+
+### name
+
+The database name is a string which uniquely identifies the database. When two RxDatabases have the same name and use the same `RxStorage`, their data can be assumed as equal and they will share events between each other.
+Depending on the storage or adapter this can also be used to define the filesystem folder of your data.
+
+:::note Prefix the name on staging deployments
+When you deploy your app to a staging area, prefix the database name with the staging id. Browser storages like IndexedDB, OPFS, and localStorage are scoped to the origin and not to the URL path. Let's say your app lives on `example.com` and you have a feature preview at `example.com/commit-42/`. Both deployments run on the same origin, so with the same database name the preview reads and writes the stored data of the production app. This can corrupt data when the preview uses a different [schema version](./migration-schema.md) or stores test documents. To fix this, use `commit-42-mydatabasename` as name for the preview.
+
+```ts
+// your own deploy config, for example 'commit-42' on a feature preview
+// and '' on production
+const stagingId = import.meta.env.VITE_STAGING_ID;
+
+const db = await createRxDatabase({
+  name: stagingId ? stagingId + '-mydatabasename' : 'mydatabasename',
+  storage: getRxStorageLocalstorage()
+});
+```
+:::
+
+### storage
+
+RxDB works on top of an implementation of the [RxStorage](./rx-storage.md) interface. This interface is an abstraction that allows you to use different underlying databases that actually handle the documents. Depending on your use case you might use a different `storage` with different tradeoffs in performance, bundle size or supported runtimes.
+
+There are many `RxStorage` implementations that can be used depending on the JavaScript environment and performance requirements.
+For example you can use the [LocalStorage RxStorage](./rx-storage-localstorage.md) in the browser or use the [MongoDB RxStorage](./rx-storage-mongodb.md) in Node.js.
+
+- [List of RxStorage implementations](./rx-storage.md)
+
+```javascript
+
+// use the LocalStorage that stores data in the browser.
+import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
+
+const db = await createRxDatabase({
+  name: 'mydatabase',
+  storage: getRxStorageLocalstorage()
+});
+
+
+// ...or use the MongoDB RxStorage in Node.js.
+import { getRxStorageMongoDB } from 'rxdb/plugins/storage-mongodb';
+
+const dbMongo = await createRxDatabase({
+  name: 'mydatabase',
+  storage: getRxStorageMongoDB({
+    connection: 'mongodb://localhost:27017,localhost:27018,localhost:27019'
+  })
+});
+```
+
+### password
+`(optional)`
+If you want to use encrypted fields in the collections of a database, you have to set a password for it. The password must be a string with at least 12 characters.
+
+[Read more about encryption here](./encryption.md).
+
+### multiInstance
+`(optional=true)`
+When you create more than one instance of the same database in a single javascript-runtime, you should set `multiInstance` to ```true```. This will enable the event sharing between the two instances. For example when the user has opened multiple browser windows, events will be shared between them so that both windows react to the same changes.
+`multiInstance` should be set to `false` when you have single instances like a single Node.js process, a React Native app, a Cordova app or a single-window [Electron](./electron-database.md) app which can decrease the startup time because no instance coordination has to be done.
+
+### eventReduce
+`(optional=true)`
+
+Optimizes observed and recurring queries with the [EventReduce algorithm](./event-reduce.md). `true` uses the default options. Set `eventReduce: false` to disable it,
+or pass an object to configure it, like the size of the result window buffer. See [EventReduce](./event-reduce.md) for all options.
+
+### ignoreDuplicate
+`(optional=false)`
+If you create multiple RxDatabase-instances with the same name and same adapter, it's very likely that you have done something wrong.
+To prevent this common mistake, RxDB will throw an error when you do this.
+In some rare cases like unit-tests, you want to do this intentionally by setting `ignoreDuplicate` to `true`. Because setting `ignoreDuplicate: true` in production will decrease the performance by having multiple instances of the same database, `ignoreDuplicate` is only allowed to be set in [dev-mode](./dev-mode.md).
+
+```js
+const db1 = await createRxDatabase({
+  name: 'heroesdb',
+  storage: getRxStorageLocalstorage(),
+  ignoreDuplicate: true
+});
+const db2 = await createRxDatabase({
+  name: 'heroesdb',
+  storage: getRxStorageLocalstorage(),
+  // this create-call will not throw because
+  // you explicitly allow it
+  ignoreDuplicate: true
+});
+```
+
+### closeDuplicates
+`(optional=false)`
+
+Closes all other RxDatabase instances that have the same storage+name combination.
+
+```js
+const db1 = await createRxDatabase({
+  name: 'heroesdb',
+  storage: getRxStorageLocalstorage(),
+  closeDuplicates: true
+});
+const db2 = await createRxDatabase({
+  name: 'heroesdb',
+  storage: getRxStorageLocalstorage(),
+  closeDuplicates: true // this create-call will close db1
+});
+
+// db1 is now closed.
+```
+
+### hashFunction
+
+By default, RxDB will use `crypto.subtle.digest('SHA-256', data)` for hashing. If you need a different hash function or the `crypto.subtle` API is not supported in your JavaScript runtime, you can provide your own hash function instead. A hash function gets a `string`, `ArrayBuffer`, or `Blob` as input and returns a `Promise` that resolves a string. When a `Blob` is received (for attachment digest hashing), convert it to a string or ArrayBuffer before hashing.
+
+```ts
+// example hash function that runs in plain JavaScript
+import { sha256 } from 'ohash';
+import { blobToBase64String } from 'rxdb';
+async function myOwnHashFunction(input: string | ArrayBuffer | Blob) {
+    if (typeof Blob !== 'undefined' && input instanceof Blob) {
+        input = await blobToBase64String(input);
+    } else if (input instanceof ArrayBuffer) {
+        input = new TextDecoder().decode(new Uint8Array(input));
+    }
+    return sha256(input);
+}
+const db = await createRxDatabase({
+  hashFunction: myOwnHashFunction
+  /* ... */
+});
+```
+
+If you get the error message `TypeError: Cannot read properties of undefined (reading 'digest')` this likely means that you are neither running on `localhost` nor on `https` which is why your browser might not allow access to `crypto.subtle.digest`.
+
+### liveQueryUpdateThrottleTime
+`(optional, default: 0 = disabled)`
+
+Groups write-triggered live query updates to limit how often RxDB re-evaluates queries during write bursts. See [liveQueryUpdateThrottleTime](./rx-query.md#livequeryupdatethrottletime) for full documentation.
+
+## Methods
+
+### Observe with $
+Calling this will return an [RxJS Observable](http://reactivex.io/documentation/observable.html) which streams all write events of the `RxDatabase`.
+
+```javascript
+myDb.$.subscribe(changeEvent => console.dir(changeEvent));
+```
+
+### exportJSON()
+
+Creates a JSON export of every piece of data in every collection of this database. Needs the `json-dump` plugin. [Read more](./json-import-export.md)
+
+An export can also be opened read-only in the [database viewer](./db-viewer.md), which is useful when you cannot reach the device that runs the database.
+
+```javascript
+const json = await myDatabase.exportJSON();
+```
+
+### importJSON()
+
+Imports a previously exported JSON dump back into the database. The collections have to be created before. [Read more](./json-import-export.md)
+
+```javascript
+await emptyDatabase.importJSON(json);
+```
+
+### backup()
+
+Writes the current (or ongoing) database state to the filesystem. [Read more](./backup.md)
+
+### waitForLeadership()
+Returns a Promise which resolves when the RxDatabase becomes [elected leader](./leader-election.md).
+
+### requestIdlePromise()
+Returns a promise which resolves when the database is in idle. This works similar to [requestIdleCallback](https://developer.mozilla.org/de/docs/Web/API/Window/requestIdleCallback) but tracks the idleness of the database instead of the CPU.
+Use this for semi-important tasks like cleanups which should not affect the speed of important tasks.
+
+```javascript
+
+myDatabase.requestIdlePromise().then(() => {
+    // this will run at the moment the database has nothing else to do
+    myCollection.customCleanupFunction();
+});
+
+// with timeout
+myDatabase.requestIdlePromise(1000 /* time in ms */).then(() => {
+    // this will run at the moment the database has nothing else to do
+    // or the timeout has passed
+    myCollection.customCleanupFunction();
+});
+
+```
+
+### close()
+Closes the database's object instance. This is to free up memory and stop all observers and replications.
+Returns a `Promise` that resolves when the database is closed.
+Closing a database will not remove the database's data. When you create the database again with `createRxDatabase()`, all data will still be there.
+```javascript
+await myDatabase.close();
+```
+
+### remove()
+Wipes all documents from the storage. Use this to free up disk space.
+
+```javascript
+await myDatabase.remove();
+// database instance is now gone
+```
+
+You can also clear a database without removing its instance by using `removeRxDatabase()`. This is useful if you want to migrate data or reset the user's state by renaming the database. Then you can remove the previous data with `removeRxDatabase()` without creating a RxDatabase first. Notice that this will only remove the
+stored data on the storage. It will not clear the cache of any [RxDatabase](./rx-database.md) instances.
+
+```ts
+removeRxDatabase(
+    databaseName: string,
+    storage: RxStorage,
+    multiInstance: boolean = true,
+    password?: string
+): Promise<string[]> // resolves with the names of the removed collections
+```
+
+Pass the same [RxStorage](./rx-storage.md) that was used to create the database, not a string.
+
+```ts
+import { removeRxDatabase } from 'rxdb';
+import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
+
+await removeRxDatabase('mydatabasename', getRxStorageLocalstorage());
+```
+
+#### Removing an encrypted database
+
+When the database uses the [encryption plugin](./encryption.md), the storage is wrapped with `wrappedKeyEncryptionCryptoJsStorage()`. To remove such a database, pass the wrapped storage and the password. Without the password, RxDB cannot open the storage instances of collections that have encrypted fields and `removeRxDatabase()` throws the error [`EN3`](./errors.md#EN3) ("Schema contains encrypted properties but no password is given").
+
+```ts
+import { removeRxDatabase } from 'rxdb';
+import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
+import {
+    wrappedKeyEncryptionCryptoJsStorage
+} from 'rxdb/plugins/encryption-crypto-js';
+
+const encryptedStorage = wrappedKeyEncryptionCryptoJsStorage({
+    storage: getRxStorageLocalstorage()
+});
+
+// throws EN3 because the password is missing
+// await removeRxDatabase('mydatabasename', encryptedStorage);
+
+await removeRxDatabase(
+    'mydatabasename',
+    encryptedStorage,
+    true, // multiInstance, same value as in createRxDatabase()
+    'myLongAndStupidPassword'
+);
+```
+
+When you still have the `RxDatabase` instance, call `myDatabase.remove()` instead. It uses the storage and the password the database was created with, so you do not have to pass them again.
+
+### isRxDatabase
+Returns true if the given object is an instance of RxDatabase. Returns false if not.
+```javascript
+import { isRxDatabase } from 'rxdb';
+const is = isRxDatabase(myObj);
+```
+
+### collections$
+
+Emits events whenever an [RxCollection](./rx-collection.md) is added or removed to the instance of the RxDatabase. Notice that this only emits the JavaScript instance of the RxCollection class, it does not emit events across browser tabs.
+
+```javascript
+const sub = myDatabase.collections$.subscribe(event => {
+  console.dir(event);
+});
+
+await myDatabase.addCollections({
+  heroes: {
+    schema: mySchema
+  }
+});
+
+// -> emits the event
+
+sub.unsubscribe();
+```

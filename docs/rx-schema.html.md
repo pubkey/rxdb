@@ -1,0 +1,481 @@
+# Design Perfect Schemas in RxDB
+
+> Learn how to define, secure, and validate your data in RxDB. Master primary keys, indexes, encryption, and more with the RxSchema approach.
+
+import {Faq, FaqItem} from '@site/src/components/faq';
+
+# RxSchema
+
+Schemas define the structure of the documents of a collection. Which field should be used as the primary key, which fields should be used as indexes, and what should be encrypted. Every collection has its own schema. With RxDB, schemas are defined with the [JSON Schema](https://json-schema.org/blog/posts/rxdb-case-study) standard which you might know from other projects.
+
+## Example Schema
+
+This example schema describes a `todos` collection with the following settings:
+
+- `id` is the **primaryKey**. It is a unique, indexed, required `string` which identifies a single document.
+- `name` is the required title of the todo.
+- `done` is a required `boolean` with `default: false`, so it can be left out on insert.
+- `dueAt` is an ISO 8601 date-time string. It has a `maxLength` so that it can be used in an index. ISO strings sort in chronological order.
+- `priority` is an integer between `0` and `10`. Number fields in an index must have `minimum`, `maximum`, and `multipleOf`.
+- `tags` is an array of strings with `default: []`.
+- `assignee` is an optional nested object with a required `name`.
+- `subtasks` is an array of ids of other todos. The `ref: 'todos'` keyword makes it possible to load these documents with [population](./population.md).
+- `note` is an optional string. It can be [encrypted](./encryption.md) by adding it to the `encrypted` array.
+- The `indexes` speed up sorting by `dueAt` and queries on `done` and `priority`.
+
+```js
+export const todoSchema = {
+    title: 'todo schema',
+    version: 0,
+    primaryKey: 'id',
+    type: 'object',
+    properties: {
+        id: {
+            type: 'string',
+            maxLength: 100 // <- the primary key must have maxLength
+        },
+        name: {
+            type: 'string'
+        },
+        done: {
+            type: 'boolean',
+            default: false
+        },
+        dueAt: {
+            type: 'string',
+            format: 'date-time',
+            maxLength: 30 // <- string fields in an index must have maxLength
+        },
+        priority: {
+            type: 'integer',
+            minimum: 0,
+            maximum: 10,
+            // number fields in an index must have minimum, maximum and multipleOf
+            multipleOf: 1
+        },
+        tags: {
+            type: 'array',
+            default: [],
+            items: {
+                type: 'string'
+            }
+        },
+        assignee: {
+            type: 'object',
+            properties: {
+                name: {
+                    type: 'string'
+                },
+                email: {
+                    type: 'string'
+                }
+            },
+            required: ['name']
+        },
+        subtasks: {
+            type: 'array',
+            ref: 'todos', // <- the values are ids of other todos documents
+            items: {
+                type: 'string'
+            }
+        },
+        note: {
+            type: 'string'
+        }
+    },
+    required: ['id', 'name', 'done', 'dueAt', 'priority', 'tags'],
+    indexes: [
+        'dueAt',
+        ['done', 'priority']
+    ]
+};
+```
+
+## Create a collection with the schema
+
+```ts
+await myDatabase.addCollections({
+    todos: {
+        schema: todoSchema
+    }
+});
+console.dir(myDatabase.todos.name);
+// > todos
+```
+
+## version
+The `version` field is a number, starting with `0`.
+When the version is greater than 0, you have to provide the `migrationStrategies` to create a collection with this schema.
+
+## primaryKey
+
+The `primaryKey` field contains the fieldname of the property that will be used as primary key for the whole collection.
+The value of the primary key of the document must be a `string`, unique, final and required.
+
+### composite primary key
+
+You can define a composite primary key which is composed from multiple properties of the document data.
+
+```javascript
+const mySchema = {
+  keyCompression: true, // set this to true, to enable the keyCompression
+  version: 0,
+  title: 'human schema with composite primary',
+  primaryKey: {
+      // where should the composed string be stored
+      key: 'id',
+      // fields that will be used to create the composed key
+      fields: [
+          'firstName',
+          'lastName'
+      ],
+      // separator which is used to concat the fields values.
+      separator: '|'
+  },
+  type: 'object',
+  properties: {
+      id: {
+          type: 'string',
+          maxLength: 100 // <- the primary key must have set maxLength
+      },
+      firstName: {
+          type: 'string'
+      },
+      lastName: {
+          type: 'string'
+      }
+  },
+  required: [
+    'id', 
+    'firstName',
+    'lastName'
+  ]
+};
+```
+
+You can then find a document by using the relevant parts to create the composite primaryKey:
+
+```ts
+
+// inserting with composite primary
+await myRxCollection.insert({
+    // id, <- do not set the id, it will be filled by RxDB
+    firstName: 'foo',
+    lastName: 'bar'
+});
+
+// find by composite primary
+const id = myRxCollection.schema.getPrimaryOfDocumentData({
+    firstName: 'foo',
+    lastName: 'bar'
+});
+const myRxDocument = await myRxCollection.findOne(id).exec();
+
+```
+
+## Indexes
+RxDB supports secondary indexes which are defined at the schema-level of the collection.
+
+Indexes are only allowed on field types `string`, `integer` and `number`. Some RxStorages allow to use `boolean` fields as index.
+
+Depending on the field type, you must have set some meta attributes like `maxLength` or `minimum`. This is required so that RxDB
+is able to know the maximum string representation length of a field, which is needed to craft custom indexes in several `RxStorage` implementations.
+
+**Performance Note:** Having a large `maxLength` for indexed fields and primary keys can negatively impact performance and storage size on many storages. Therefore, you should only set it as large as strictly needed for your application.
+
+:::note
+RxDB will always append the `primaryKey` to all indexes to ensure a deterministic sort order of query results. You do not have to add the `primaryKey` to any index.
+:::
+
+### Index-example
+
+```javascript
+const todoSchemaWithIndexes = {
+  version: 0,
+  title: 'todo schema with indexes',
+  keyCompression: true,
+  primaryKey: 'id',
+  type: 'object',
+  properties: {
+      id: {
+          type: 'string',
+          maxLength: 100 // <- the primary key must have set maxLength
+      },
+      name: {
+          type: 'string'
+      },
+      done: {
+          type: 'boolean'
+      },
+      dueAt: {
+          type: 'string',
+          format: 'date-time',
+          // string-fields used as an index,
+          // must have set maxLength.
+          maxLength: 30
+      },
+      priority: {
+          type: 'integer',
+
+          // number fields used in an index, must set
+          // minimum, maximum and multipleOf
+          minimum: 0,
+          maximum: 10,
+          multipleOf: 1
+      },
+      assignee: {
+          type: 'object',
+          properties: {
+              name: {
+                  type: 'string'
+              },
+              email: {
+                  type: 'string'
+              }
+          }
+      }
+  },
+  required: [
+      'id',
+      'name',
+      'dueAt',
+      'priority',
+      'done' // <- boolean fields that are used in an index must be required.
+  ],
+  indexes: [
+    'dueAt', // <- this will create a simple index for the `dueAt` field
+    // <- compound-index for these two fields
+    ['done', 'priority'],
+    'done'
+  ]
+};
+```
+
+# internalIndexes
+
+When you use RxDB on the server-side, you might want to use internalIndexes to speed up internal queries. [Read more](./rx-server.md#server-only-indexes)
+
+## attachments
+To use attachments in the collection, you have to add the `attachments`-attribute to the schema. [See RxAttachment](./rx-attachment.md).
+
+## default
+Default values can only be defined for first-level fields.
+Whenever you insert a document unset fields will be filled with default-values.
+
+```javascript
+const todoSchemaWithDefaults = {
+  version: 0,
+  primaryKey: 'id',
+  type: 'object',
+  properties: {
+      id: {
+          type: 'string',
+          maxLength: 100 // <- the primary key must have set maxLength
+      },
+      name: {
+          type: 'string'
+      },
+      done: {
+          type: 'boolean',
+          default: false // <- default will be used
+      },
+      tags: {
+          type: 'array',
+          default: [], // <- default will be used
+          items: {
+              type: 'string'
+          }
+      }
+  },
+  required: ['id', 'name', 'done', 'tags']
+};
+
+await myDatabase.todos.insert({
+    id: 'todo4',
+    name: 'Clean the kitchen'
+});
+const doc = await myDatabase.todos.findOne('todo4').exec();
+console.log(doc.done, doc.tags);
+// > false []
+```
+
+## final
+By setting a field to `final`, you make sure it cannot be modified later. Final fields are always required.
+Final fields cannot be observed because they will not change.
+
+Advantages:
+
+- With final fields you can ensure that no-one accidentally modifies the data.
+- When you enable the `eventReduce` algorithm, some performance-improvements are done.
+
+```javascript
+const todoSchemaWithFinalName = {
+  version: 0,
+  primaryKey: 'id',
+  type: 'object',
+  properties: {
+      id: {
+          type: 'string',
+          maxLength: 100 // <- the primary key must have set maxLength
+      },
+      name: {
+          type: 'string',
+          final: true
+      },
+      done: {
+          type: 'boolean'
+      }
+  },
+  required: ['id', 'name', 'done']
+};
+```
+
+## Non allowed properties
+
+The schema is not only used to validate objects before they are written into the database, but also used to map getters to observe and populate single fieldnames, key compression and other things. Therefore you can not use every schema which would be valid for the spec of [json-schema.org](http://json-schema.org/).
+For example, fieldnames must match the regex `^[a-zA-Z](?:[[a-zA-Z0-9_]*]?[a-zA-Z0-9])?$` and `additionalProperties` is always set to `false`. But don't worry, RxDB will instantly throw an error when you pass an invalid schema into it.
+
+Also the following class properties of `RxDocument` cannot be used as top level fields because they would clash when the RxDocument property is accessed:
+```json
+[
+    "collection",
+    "_data",
+    "_propertyCache",
+    "isInstanceOfRxDocument",
+    "primaryPath",
+    "primary",
+    "revision",
+    "deleted$",
+    "deleted$$",
+    "deleted",
+    "getLatest",
+    "$",
+    "$$",
+    "get$",
+    "get$$",
+    "populate",
+    "get",
+    "toJSON",
+    "toMutableJSON",
+    "update",
+    "incrementalUpdate",
+    "updateCRDT",
+    "putAttachment",
+    "putAttachmentBase64",
+    "getAttachment",
+    "allAttachments",
+    "allAttachments$",
+    "modify",
+    "incrementalModify",
+    "patch",
+    "incrementalPatch",
+    "_saveData",
+    "remove",
+    "incrementalRemove",
+    "close",
+    "deleted",
+    "synced"
+]
+```
+
+## FAQ
+
+    With RxDB you can only store plain JSON data inside of a document. You cannot store a JavaScript `new Date()` instance directly. This is for performance reasons and because `Date` is a mutable object where changing it at any time might cause strange problems that are hard to debug.
+
+    To store a date in RxDB, you have to define a string field with a `format` attribute:
+    ```json
+    {
+       "type": "string",
+       "format": "date-time"
+    }
+    ```
+
+    When storing the data you have to first transform your `Date` object into a string `Date.toISOString()`.
+    Because the `date-time` is sortable, you can do whatever query operations on that field and even use it as an index.
+
+    In JSON Schema, you make a field nullable by allowing multiple types with an array:
+    ```json
+    {
+        "type": ["string", "null"]
+    }
+    ```
+
+    When you use a nullable type like `["string", "null"]`, you should always add that field to the `required` array. If a nullable field is not required, it can end up in three possible states: a string value, `null`, or `undefined` (not set). Having three states instead of two makes your code harder to reason about.
+
+    In RxDB it is recommended to **not** store `null` values at all. Instead, define the field as non-required and leave it `undefined` (not set) when there is no value. A field that is not listed in the `required` array can be omitted from a document. This approach works better with RxDB's internal handling and keeps your data cleaner:
+    ```ts
+    {
+        "version": 0,
+        "primaryKey": "id",
+        "type": "object",
+        "properties": {
+            "id": {
+                "type": "string",
+                "maxLength": 100
+            },
+            "note": {
+                "type": "string"
+            }
+        },
+        "required": ["id"]
+        // "note" is not required, so it can be left undefined (not set)
+    }
+    ```
+
+    By design, RxDB requires that every collection has a schema. This means you cannot create a truly "schema-less" collection where top-level fields are unknown at schema creation time. RxDB must know about all fields of a document at the top level to perform validation, index creation, and other internal optimizations.
+    However, there is a way to store data of arbitrary structure at sub-fields. To do this, define a property with `type: "object"` in your schema. For example:
+    ```ts
+    {
+        "version": 0,
+        "primaryKey": "id",
+        "type": "object",
+        "properties": {
+            "id": {
+                "type": "string",
+                "maxLength": 100
+            },
+            "myDynamicData": {
+                "type": "object"
+                // Here you can store any JSON data
+                // because it's an open object.
+            }
+        },
+        "required": ["id"]
+    }
+    ```
+
+    RxDB automatically sets `additionalProperties: false` at the top level of a schema to ensure that all top-level fields are known in advance. This design choice offers several benefits:
+
+- Prevents collisions with [RxDocument](./rx-document.md) class properties:
+RxDB documents have built-in class methods (e.g., .toJSON, .save) at the top level. By forbidding unknown top-level properties, we avoid accidental naming collisions with these built-in methods.
+
+- Avoids conflicts with user-defined ORM functions:
+Developers can add custom [ORM methods](./orm.md) to RxDocuments. If top-level properties were unbounded, a property name could accidentally conflict with a method name, leading to unexpected behavior.
+
+- Improves TypeScript typings:
+If RxDB didn't know about all top-level fields, the document type would effectively become `any`. That means a simple typo like `myDocument.toJOSN()` would only be caught at runtime, not at build time. By disallowing unknown properties, TypeScript can provide strict typing and catch errors sooner.
+
+    When you make changes to the schema of a collection, you sometimes can get an error like
+`Error: addCollections(): another instance created this collection with a different schema`.
+
+This means you have created a collection before and added document-data to it.
+When you now just change the schema, it is likely that the new schema does not match the saved documents inside of the collection.
+This would cause strange bugs and would be hard to debug, so RxDB checks if your schema has changed and throws an error.
+
+To change the schema in **production**-mode, do the following steps:
+
+- Increase the `version` by 1
+- Add the appropriate [migrationStrategies](https://pubkey.github.io/rxdb/migration-schema.html) so the saved data will be modified to match the new schema
+
+<details>
+    <summary>Why does the top-level schema complain about a missing `_id` primary key field?</summary>
+
+    You encounter an error stating that the top-level schema is missing the `_id` primary key field during [replication](./replication.md). RxDB requires every schema to explicitly define the primary key property. Other databases use an implicit `_id` field. You must add the `_id` property to your schema manually if your backend expects it. You declare `_id` as a string type and set it as the `primaryKey` in your schema definition.
+
+</details>
+
+In **development**-mode, the schema-change can be simplified by **one of these** strategies:
+
+-   Use the memory-storage so your db resets on restart and your schema is not saved permanently
+-   Call `removeRxDatabase('mydatabasename', RxStorage);` before creating a new [RxDatabase](./rx-database.md)-instance
+-   Add a timestamp as suffix to the database-name to create a new one each run like `name: 'mydatabase' + new Date().getTime()`

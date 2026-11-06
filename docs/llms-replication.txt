@@ -13,15 +13,15 @@ import {SyncDiagram} from '@site/src/components/sync-diagram';
 import {HeadlineWithIcon} from '@site/src/components/headline-with-icon';
 import {Faq, FaqItem} from '@site/src/components/faq';
 
-# <HeadlineWithIcon h1 icon={}>RxDB Appwrite Replication</HeadlineWithIcon>
+## RxDB Appwrite Replication
 
 This replication plugin allows you to synchronize documents between RxDB and an Appwrite server. It supports both push and pull replication, live updates via Appwrite's real-time subscriptions, [offline-capability](./offline-first.md) and [conflict resolution](./transactions-conflicts-revisions.md).
 
 <center>
-    <VideoBox videoId="L07xPMyL8sY" title="Appwrite in 100 Seconds" duration="2:35" />
+
 </center>
 
-## Why you should use RxDB with Appwrite?
+### Why you should use RxDB with Appwrite?
 
 **Appwrite** is a secure, open-source backend server that simplifies backend tasks like user authentication, storage, database management, and real-time APIs.  
 **[RxDatabase](./rx-database.md)** is a reactive database for the frontend that offers offline-first capabilities and rich client-side data handling.
@@ -38,23 +38,15 @@ Combining the two provides several benefits:
 
 5. **Simplicity & Modularity**: RxDB’s plugin-based architecture, combined with Appwrite’s Cloud offering makes it one of the easiest way to build local-first [realtime apps](./articles/realtime-database.md) that scale.
 
-<SyncDiagram server={false} backend={{ icon: "/files/icons/appwrite.svg" }} clientConnectionLabel="Realtime API" simulateOffline />
-
-## Preparing the Appwrite Server
+### Preparing the Appwrite Server
 
 You can either use the appwrite cloud or self-host the Appwrite server. In this tutorial we use the Cloud which is recommended for beginners because it is way easier to set up. You can later decide to self-host if needed.
 
-<Steps>
+#### Set up an Appwrite Endpoint and Project
 
-### Set up an Appwrite Endpoint and Project
+##### Self-Hosted
 
-<Tabs>
-
-#### Self-Hosted
-
-<Steps>
-
-##### Docker
+###### Docker
 
 Ensure docker and docker-compose is installed and your version are up to date:
 
@@ -62,7 +54,7 @@ Ensure docker and docker-compose is installed and your version are up to date:
 docker-compose -v
 ```
 
-##### Run the installation script
+###### Run the installation script
 
 The installation script runs inside of a docker container. It will create a docker-compose file and an `.env` file.
 
@@ -74,7 +66,7 @@ docker run -it --rm \
     appwrite/appwrite:1.6.1
 ```
 
-##### Start/Stop
+###### Start/Stop
 
 After the installation is done, you can manually stop and start the appwrite instance with docker compose:
 
@@ -86,61 +78,49 @@ docker-compose down
 docker-compose up
 ```
 
-</Steps>
+##### Appwrite Cloud
 
-#### Appwrite Cloud
-
-<Steps>
-
-##### Create a Cloud Account
+###### Create a Cloud Account
 
 Got to the Appwrite Console, create an account and login.
 
-#### Create a Project
+##### Create a Project
 
 At the console click the `+ Create Project` button to create a new project. Remember the `project-id` which will be used later.
 
-</Steps>
-
-</Tabs>
-
-### Create an Appwrite Database and Collection
+#### Create an Appwrite Database and Collection
 
 After creating an Appwrite project you have to create an Appwrite Database and a collection, you can either do this in code with the node-appwrite SDK or in the Appwrite Console as shown in this video:
 
 <center>
-    <VideoBox videoId="HGlBpna17LQ" title="Appwrite Database Tutorial" duration="9:47" startAt={328} />
+
 </center>
 
-### Add your documents attributes
+#### Add your documents attributes
 
 In the appwrite collection, create all attributes of your documents. You have to define all the fields that your document in your [RxDB schema](./rx-schema.md) knows about. For the `todos` schema used below, these are `name` (string), `done` (boolean), and `priority` (integer). The `id` of the RxDB document is stored as the Appwrite document id. Notice that Appwrite does not allow for nested attributes. So when you use RxDB with Appwrite, you should also not have nested attributes in your RxDB schema.
 
-### Add a `deleted` attribute
+#### Add a `deleted` attribute
 
 Appwrite (natively) hard-deletes documents. But for offline-handling RxDB needs soft-deleted documents on the server so that the deletion state can be replicated with other clients.
 
 In RxDB, `_deleted` indicates that a document is removed locally and you need a similar field in your Appwrite collection on the Server: You must define a deletedField with any name to mark documents as "deleted" in the remote collection. Mostly you would use a boolean field named `deleted` (set it to `required`). The plugin will treat any document with `{ [deletedField]: true }` as deleted and replicate that state to local RxDB.
 
-### Set the Permission on the Appwrite Collection
+#### Set the Permission on the Appwrite Collection
 
 Appwrite uses permissions to control data access on the collection level. Make sure that in the Console at `Collection -> Settings -> Permissions` you have set the permission according to what you want to allow your clients to do. For testing, just enable all of them (Create, Read, Update and Delete).
 
-</Steps>
-
-## Setting up the RxDB - Appwrite Replication
+### Setting up the RxDB - Appwrite Replication
 
 Now that we have set up the Appwrite server, we can go to the client side code and set up RxDB and the replication:
 
-<Steps>
-
-### Install the Appwrite SDK and RxDB:
+#### Install the Appwrite SDK and RxDB:
 
 ```bash
 npm install appwrite rxdb
 ```
 
-### Import the Appwrite SDK and RxDB
+#### Import the Appwrite SDK and RxDB
 
 ```ts
 import {
@@ -158,7 +138,7 @@ import {
 import { Client } from 'appwrite';
 ```
 
-### Create a Database with a Collection
+#### Create a Database with a Collection
 
 ```ts
 const myDatabase = await createRxDatabase({
@@ -199,11 +179,9 @@ await myDatabase.addCollections({
 const collection = myDatabase.todos;
 ```
 
-### Configure the Appwrite Client
+#### Configure the Appwrite Client
 
-<Tabs>
-
-#### Appwrite Cloud
+##### Appwrite Cloud
 
 ```ts
 const client = new Client();
@@ -211,7 +189,7 @@ client.setEndpoint('https://cloud.appwrite.io/v1');
 client.setProject('YOUR_APPWRITE_PROJECT_ID');
 ```
 
-#### Self-Hosted
+##### Self-Hosted
 
 ```ts
 const client = new Client();
@@ -219,9 +197,7 @@ client.setEndpoint('http://localhost/v1');
 client.setProject('YOUR_APPWRITE_PROJECT_ID');
 ```
 
-</Tabs>
-
-### Start the Replication
+#### Start the Replication
 
 ```ts
 const replicationState = replicateAppwrite({
@@ -246,35 +222,21 @@ const replicationState = replicateAppwrite({
 });
 ```
 
-### Do other things with the replication state
+#### Do other things with the replication state
 
 The `RxAppwriteReplicationState` which is returned from `replicateAppwrite()` allows you to run all functionality of the normal [RxReplicationState](./replication.md).
 
-</Steps>
+  ![Appwrite Sync](./files/icons/appwrite.svg)
 
-  
-
-## FAQ
-
-<Faq>
-<FaqItem question="Does Appwrite support multiple databases and subcollections?">
+### FAQ
 
 Yes, Appwrite supports creating multiple top-level databases within a single project, which cleanly partition collections. However, Appwrite is a rigid NoSQL document store that does *not* support nested subcollections (unlike Firebase). When utilizing the **[RxDB Appwrite Replication](./replication.md)** plugin, your local RxDB schema must mirror this flat topology precisely, keeping all documents completely devoid of complex nested relationships.
 
-</FaqItem>
-<FaqItem question="What database driver does Appwrite use under the hood?">
-
 Appwrite uses MariaDB (a highly performant MySQL fork) as its core backing database driver. To offer developers a flat NoSQL experience, Appwrite abstracts the MariaDB relational complexity behind a unified Document API. This architectural mapping allows **[RxDB](./rx-database.md)** to replicate data effortlessly into Appwrite via standard REST endpoints without ever dealing with strict SQL table mappings or migrations.
-
-</FaqItem>
-<FaqItem question="Does Appwrite feature native real-time sync for offline apps?">
 
 Appwrite natively provides robust WebSocket subscriptions allowing clients to receive real-time document events while the network is active. However, Appwrite does *not* feature a built-in offline-first caching or background-sync engine. To achieve true offline capabilities, you must mount the **[RxDB Appwrite Replication](./replication.md)** plugin on the client. RxDB handles all local caching, queues offline writes securely, and automatically pushes local mutations to Appwrite when connectivity returns.
 
-</FaqItem>
-</Faq>
-
-## Limitations of the Appwrite Replication Plugin
+### Limitations of the Appwrite Replication Plugin
 
 - Appwrite primary keys only allow for the characters `a-z`, `A-Z`, `0-9`, and underscore `_` (They cannot start with a leading underscore). Also the primary key has a max length of 36 characters.
 - The Appwrite replication **only works on browsers**. This is because the Appwrite SDK does not support subscriptions in Node.js.
@@ -288,7 +250,7 @@ Appwrite natively provides robust WebSocket subscriptions allowing clients to re
 
 import {HeadlineWithIcon} from '@site/src/components/headline-with-icon';
 
-# <HeadlineWithIcon h1 icon={}>Replication with CouchDB</HeadlineWithIcon>
+## Replication with CouchDB
 
 A plugin to replicate between a [RxCollection](./rx-collection.md) and a CouchDB server.
 
@@ -296,19 +258,19 @@ This plugin uses the RxDB [Sync Engine](./replication.md) to replicate with a Co
 
 Because the way RxDB handles revisions and documents is very similar to CouchDB, using the RxDB replication with a CouchDB endpoint is pretty straightforward.
 
-## Pros
+### Pros
 
 - Faster initial replication.
 - Works with any [RxStorage](./rx-storage.md), not just [PouchDB](./rx-storage-pouchdb.md).
 - Easier [conflict handling](./transactions-conflicts-revisions.md) because conflicts are handled during replication and not afterwards.
 - Does not have to store all document revisions on the client, only stores the newest version.
 
-## Cons
+### Cons
 
 - Does not support the replication of [attachments](./rx-attachment.md).
 - Like all CouchDB replication plugins, this one is also limited to replicating 6 collections in parallel. [Read this for workarounds](./replication-couchdb.md#limitations)
 
-## Usage
+### Usage
 
 Start the replication via `replicateCouchDB()`.
 
@@ -374,11 +336,11 @@ const replicationState = replicateCouchDB(
 
 When you call `replicateCouchDB()` it returns a `RxCouchDBReplicationState` which can be used to subscribe to events, for debugging or other functions. It extends the [RxReplicationState](./replication.md) so any other method that can be used there can also be used on the CouchDB replication state.
 
-## Conflict handling
+### Conflict handling
 
 When conflicts appear during replication, the `conflictHandler` of the `RxCollection` is used, equal to the other replication plugins. Read more about conflict handling [here](./replication.md#conflict-handling).
 
-## Auth example
+### Auth example
 
 Lets say for authentication you need to add a [bearer token](https://swagger.io/docs/specification/authentication/bearer-authentication/) as HTTP header to each request. You can achieve that by crafting a custom `fetch()` method that adds the header field.
 
@@ -447,7 +409,7 @@ const replicationState = replicateCouchDB(
 );
 ```
 
-## Limitations
+### Limitations
 
 Since CouchDB only allows synchronization through HTTP/1.1 long polling requests there is a limitation of 6 active synchronization connections before the browser prevents sending any further request. This limitation is at the level of browser per tab per domain (some browser, especially older ones, might have a different limit, [see here](https://docs.pushtechnology.com/cloud/latest/manual/html/designguide/solution/support/connection_limitations.html)).
 
@@ -472,15 +434,15 @@ server {
 }
 ```
 
-## Known problems
+### Known problems
 
-### Primary keys that start with an underscore
+#### Primary keys that start with an underscore
 
 CouchDB reserves document ids that start with an underscore (`_`) for its own documents like `_design/...` and `_local/...`. When you push a document whose primary key starts with `_`, CouchDB rejects the whole `_bulk_docs` request with HTTP `400` and `{"error":"illegal_docid","reason":"Only reserved document ids may start with underscore."}`. The other documents of that batch are not written either.
 
 The replication emits this as an [`RC_COUCHDB_3`](./errors.md#RC_COUCHDB_3) error on `replicationState.error$`. The error parameters contain the `status`, the request `url` and the CouchDB error `body`. To fix it, use primary keys that do not start with an underscore, for example by adding a prefix to your ids before you insert them.
 
-### Database missing
+#### Database missing
 
 In contrast to PouchDB, this plugin **does NOT** automatically create missing CouchDB databases.
 If your CouchDB server does not have a database yet, you have to create it by yourself by running a `PUT` request to the database `name` url:
@@ -496,7 +458,7 @@ await fetch(
 );
 ```
 
-## React Native
+### React Native
 
 React Native does not have a global `fetch` method. You have to import fetch method with the [cross-fetch](https://www.npmjs.com/package/cross-fetch) package:
 
@@ -521,7 +483,7 @@ const replicationState = replicateCouchDB(
 import {Steps} from '@site/src/components/steps';
 import {HeadlineWithIcon} from '@site/src/components/headline-with-icon';
 
-# <HeadlineWithIcon h1 icon={}>Replication with Firestore from Firebase</HeadlineWithIcon>
+## Replication with Firestore from Firebase
 
 With the `replication-firestore` plugin you can do a two-way realtime replication
 between your client side [RxDB](./) Database and a [Cloud Firestore](https://firebase.google.com/docs/firestore) database that is hosted on the Firebase platform. It will use the [RxDB Sync Engine](./replication.md) to manage the replication streams, error- and [conflict handling](./transactions-conflicts-revisions.md).
@@ -534,17 +496,15 @@ Replicating your Firestore state to RxDB can bring multiple benefits compared to
 - You can use sophisticated [conflict resolution strategies](./replication.md#conflict-handling) so you are not bound to the Firestore [last-write-wins](https://stackoverflow.com/a/47781502/3443137) strategy which is not suitable for many applications.
 - The initial load time of your application can be decreased because it will do an incremental replication on restarts.
 
-## Usage
+### Usage
 
-<Steps>
-
-### Install the firebase package
+#### Install the firebase package
 
 ```bash
 npm install firebase
 ```
 
-### Initialize your Firestore Database
+#### Initialize your Firestore Database
 
 ```ts
 import * as firebase from 'firebase/app';
@@ -563,7 +523,7 @@ const firestoreDatabase = getFirestore(app);
 const firestoreCollection = collection(firestoreDatabase, 'my-collection-name');
 ```
 
-### Start the Replication
+#### Start the Replication
 
 Start the replication by calling `replicateFirestore()` on your [RxCollection](./rx-collection.md).
 
@@ -609,17 +569,15 @@ const replicationState = replicateFirestore({
 
 To observe and cancel the replication, you can use any other methods from the [ReplicationState](./replication.md) like `error$`, `cancel()` and `awaitInitialReplication()`.
 
-</Steps>
-
-## Handling deletes
+### Handling deletes
 
 RxDB requires you to never [fully delete documents](./replication.md#data-layout-on-the-server). This is needed to be able to replicate the deletion state of a document to other instances. The firestore replication will set a boolean `_deleted` field to all documents to indicate the deletion state. You can change this by setting a different `deletedField` in the sync options.
 
-## Do not set `enableIndexedDbPersistence()`
+### Do not set `enableIndexedDbPersistence()`
 
 Firestore has the `enableIndexedDbPersistence()` feature which caches document states locally to [IndexedDB](./rx-storage-indexeddb.md). This is not needed when you replicate your Firestore with RxDB because RxDB itself will store the data locally already.
 
-## Using the replication with an already existing Firestore Database State
+### Using the replication with an already existing Firestore Database State
 
 If you have not used RxDB before and you already have documents inside of your Firestore database, you have
 to manually set the `_deleted` field to `false` and the `serverTimestamp` to all existing documents.
@@ -642,7 +600,7 @@ allDocsResult.forEach(doc => {
 
 Also notice that if you do writes from non-RxDB applications, you have to keep these fields in sync. It is recommended to use the [Firestore triggers](https://firebase.google.com/docs/functions/firestore-events) to ensure that.
 
-## Filtered Replication
+### Filtered Replication
 
 You might need to replicate only a subset of your collection, either to or from Firestore. You can achieve this using `push.filter` and `pull.filter` options.
 
@@ -678,11 +636,11 @@ import {BetaBlock} from '@site/src/components/beta-block';
 import {HeadlineWithIcon} from '@site/src/components/headline-with-icon';
 import {Faq, FaqItem} from '@site/src/components/faq';
 
-# <HeadlineWithIcon h1 icon={}>Replication with Google Drive</HeadlineWithIcon>
+## Replication with Google Drive
 
 The `replication-google-drive` plugin allows you to replicate your client-side [RxDB](./) database to a folder in the user's Google Drive. This enables cross-device [sync](./replication.md) for single users without requiring any backend server.
 
-## Overview
+### Overview
 
 The replication uses the Google Drive API v3 and v2.
 
@@ -691,21 +649,17 @@ The replication uses the Google Drive API v3 and v2.
 - **Cross-Device:** Users can access their data from multiple devices by signing into the same Google account.
 - **Realtime Sync:** Uses [WebRTC](./replication-webrtc.md) for peer-to-peer signaling to achieve near real-time updates. Uses the same google-drive folder instead of a signaling-server.
 
-<BetaBlock since="17.0.0" />
+### Usage
 
-## Usage
-
-<Steps>
-
-### Enable Google Drive API
+#### Enable Google Drive API
 
 You need to enable the Google Drive API in the [Google Cloud Console](https://console.cloud.google.com/) and create credentials (OAuth 2.0 Client ID) for your application.
 
-### Authenticate the User
+#### Authenticate the User
 
 Your application must handle the OAuth flow to get an `accessToken` from Google. You can use libraries like [`@react-oauth/google`](https://www.npmjs.com/package/@react-oauth/google) or the Google Identity Services SDK.
 
-### Start Replication
+#### Start Replication
 
 Once you have the `accessToken`, you can start the replication.
 
@@ -741,9 +695,7 @@ replicationState.awaitInitialReplication().then(() => {
 });
 ```
 
-</Steps>
-
-## Signaling & WebRTC
+### Signaling & WebRTC
 
 Google Drive does not provide real-time events for file changes. If a user changes data on **User Device A**, **User Device B** would not know about it until it periodically polls the Drive API.
 To achieve real-time updates, this plugin uses **WebRTC** to signal changes between connected devices.
@@ -752,7 +704,7 @@ To achieve real-time updates, this plugin uses **WebRTC** to signal changes betw
 2.  Other devices detect these files, read the WebRTC connection data, and establish a direct P2P connection with each other.
 3.  When a device makes a write, it sends a "RESYNC" signal via WebRTC to all connected peers to notify them about the change.
 
-### Polyfill for Node.js
+#### Polyfill for Node.js
 
 WebRTC is native in browsers but requires a polyfill in Node.js. Use `createSimplePeerWrtc()` to wrap the polyfill for compatibility with `simple-peer`:
 
@@ -768,9 +720,9 @@ const replicationState = await replicateGoogleDrive({
 });
 ```
 
-## Options
+### Options
 
-### googleDrive
+#### googleDrive
 
 - **oauthClientId** `string`: The OAuth 2.0 Client ID of your application.
 - **authToken** `string`: The valid access token associated with the user.
@@ -783,7 +735,7 @@ const replicationState = await replicateGoogleDrive({
 - **apiEndpoint** `string` (optional): Defaults to `https://www.googleapis.com`. Useful for mocking or proxies.
 - **transactionTimeout** `number` (optional): Default `10000` (10s). The plugin uses a `transaction` file in Drive to ensure data integrity during writes. This is the timeout after which a lock is considered stale.
 
-### Using the appDataFolder
+#### Using the appDataFolder
 
 By default the plugin stores data in the user visible "My Drive". Set `space: 'appDataFolder'` to store data in Google Drive's hidden, per-application data folder instead. This is useful on Android and other clients where you want app state synced across the user's devices without cluttering their Drive UI.
 
@@ -810,7 +762,7 @@ When using `appDataFolder`:
 - The folder is isolated per OAuth client id. A debug build and a release build with different client ids will not see each other's data.
 - `folderPath` is optional. If omitted, the `docs` and `signaling` subfolders are created directly in the appDataFolder root.
 
-### attachments
+#### attachments
 
 Controls whether binary [attachment](./rx-attachment.md) data is replicated along with documents.
 
@@ -828,39 +780,36 @@ const replicationState = await replicateGoogleDrive({
 
 When attachment replication is enabled, attachment binary data is encoded as base64 and stored in a separate `_attachments_data` field inside the document's JSON file on Drive. The standard `_attachments` field only contains metadata stubs (`digest`, `length`, `type`). On pull, the base64 data is decoded back to `Blob` instances and written to local storage.
 
-### pull & push
+#### pull & push
 
 Standard RxDB [Replication Options](./replication.md) for batch size, modifiers, etc.
 
-## Technical Details
+### Technical Details
 
-### File Mapping
+#### File Mapping
 - Each RxDB document corresponds to **one JSON file** in the `docs` subfolder.
 - The filename is `[primaryKey].json`.
 - This simple mapping makes it easy to inspect or backup data manually.
 
-### Checkpointing
+#### Checkpointing
 - The replication relies on the `modifiedTime` of files in Google Drive.
 
-### Conflict Resolution
+#### Conflict Resolution
 - Conflicts are handled using the standard RxDB [conflict handling](./replication.md#conflict-handling) strategies.
 - The plugin assumes a master-slave replication pattern where the client (RxDB) merges changes.
 - If the `transaction` file is locked by another device, the write retries until the lock is released or times out.
 
-## Limitations
+### Limitations
 
 - **Rate Limits:** Google Drive API has strict rate limits. The plugin attempts to handle 429 errors with exponential backoff, but heavy concurrent writes might hit these limits.
 - **Latency:** Changes take time to propagate and appear in listings (eventual consistency), which the plugin handles internally.
 - **Signaling Delay:** The initial WebRTC handshake requires writing and reading files from Drive, which can take a few seconds. Once connected, signaling is instant.
 
-## Testing
+### Testing
 
 For testing, it is recommended to use [google-drive-mock](https://github.com/pubkey/google-drive-mock). It simulates the Google Drive API so you can run tests without real credentials.
 
-## FAQ
-
-<Faq>
-<FaqItem question="What are the Google Drive API request limits?">
+### FAQ
 
 Google Drive API rate limiting is based on **quota units**, not a flat request count. According to the official Google Drive API usage limits documentation, the default limits are:
 
@@ -879,16 +828,13 @@ The replication plugin already retries with exponential backoff, but for high-tr
 - Official limits: https://developers.google.com/workspace/drive/api/guides/limits
 - Error handling guidance: https://developers.google.com/workspace/drive/api/guides/handle-errors
 
-</FaqItem>
-</Faq>
-
 ---
 
 ## GraphQL Replication
 
 import {HeadlineWithIcon} from '@site/src/components/headline-with-icon';
 
-# <HeadlineWithIcon h1 icon={}>Replication with GraphQL</HeadlineWithIcon>
+## Replication with GraphQL
 
 The GraphQL replication provides handlers for GraphQL to run [replication](./replication.md) with GraphQL as the transport layer.
 
@@ -898,11 +844,11 @@ The GraphQL replication is mostly used when you already have a backend that expo
 To play around, check out the full example of the RxDB [GraphQL replication with server and client](https://github.com/pubkey/rxdb/tree/master/examples/graphql)
 :::
 
-## Usage
+### Usage
 
 Before you use the GraphQL replication, make sure you've learned how the [RxDB replication](./replication.md) works.
 
-### Creating a compatible GraphQL Server
+#### Creating a compatible GraphQL Server
 
 At the server-side, there must exist an endpoint which returns newer rows when the last `checkpoint` is used as input. For example lets say you create a `Query` `pullHuman` which returns a list of document writes that happened after the given checkpoint.
 
@@ -1009,9 +955,9 @@ const rootValue = {
 
 For examples for the other resolvers, consult the [GraphQL Example Project](https://github.com/pubkey/rxdb/blob/master/examples/graphql/server/index.js).
 
-### RxDB Client
+#### RxDB Client
 
-#### Pull replication
+##### Pull replication
 
 For the pull-replication, you first need a `pullQueryBuilder`. This is a function that gets the last replication `checkpoint` and a `limit` as input and returns an object with a GraphQL-query and its variables (or a promise that resolves to the same object). RxDB will use the query builder to construct what is later sent to the GraphQL endpoint.
 
@@ -1101,7 +1047,7 @@ const replicationState = replicateGraphQL(
 );
 ```
 
-#### Push replication
+##### Push replication
 
 For the push-replication, you also need a `queryBuilder`. Here, the builder receives a changed document as input which has to be sent to the server. It also returns a GraphQL-Query and its data.
 
@@ -1166,7 +1112,7 @@ const replicationState = replicateGraphQL(
 );
 ```
 
-#### Pull Stream
+##### Pull Stream
 
 To create a **realtime** replication, you need to create a pull stream that pulls ongoing writes from the server.
 The pull stream gets the `headers` of the `RxReplicationState` as input, so that it can be authenticated on the backend.
@@ -1252,7 +1198,7 @@ const replicationState = replicateGraphQL(
 If it is not possible to create a websocket server on your backend, you can use any other method to pull out the ongoing events from the backend and then you can send them into `RxReplicationState.emitEvent()`.
 :::
 
-### Transforming null to undefined in optional fields
+#### Transforming null to undefined in optional fields
 
 GraphQL fills up non-existent optional values with `null` while RxDB required them to be `undefined`.
 Therefore, if your schema contains optional properties, you have to transform the pulled data to switch out `null` to `undefined`
@@ -1281,7 +1227,7 @@ const replicationState: RxGraphQLReplicationState<RxDocType> = replicateGraphQL(
 );
 ```
 
-### pull.responseModifier
+#### pull.responseModifier
 
 With the `pull.responseModifier` you can modify the whole response from the GraphQL endpoint **before** it is processed by RxDB.
 For example if your endpoint is not capable of returning a valid checkpoint, but instead only returns the plain document array, you can use the `responseModifier` to aggregate the checkpoint from the returned documents.
@@ -1330,7 +1276,7 @@ const replicationState: RxGraphQLReplicationState<RxDocType> = replicateGraphQL(
 );
 ```
 
-### push.responseModifier
+#### push.responseModifier
 
 It's also possible to modify the response of a push mutation. For example if your server returns more than just the conflicting docs:
 
@@ -1370,15 +1316,15 @@ const replicationState: RxGraphQLReplicationState<RxDocType> = replicateGraphQL(
 );
 ```
 
-#### Helper Functions
+##### Helper Functions
 
 RxDB provides the helper functions `graphQLSchemaFromRxSchema()`, `pullQueryBuilderFromRxSchema()`, `pullStreamBuilderFromRxSchema()` and `pushQueryBuilderFromRxSchema()` that can be used to generate handlers and schemas from the [RxJsonSchema](./rx-schema.md). To learn how to use them, please inspect the [GraphQL Example](https://github.com/pubkey/rxdb/tree/master/examples/graphql).
 
-### RxGraphQLReplicationState
+#### RxGraphQLReplicationState
 
 When you call `myCollection.syncGraphQL()` it returns a `RxGraphQLReplicationState` which can be used to subscribe to events, for debugging or other functions. It extends the [RxReplicationState](./replication.md) with some GraphQL specific methods.
 
-#### .setHeaders()
+##### .setHeaders()
 
 Changes the headers for the replication after it has been set up.
 
@@ -1388,7 +1334,7 @@ replicationState.setHeaders({
 });
 ```
 
-#### Sending Cookies
+##### Sending Cookies
 
 The underlying fetch framework uses a `same-origin` policy for credentials by default. That means, cookies and session data is only shared if you backend and frontend run on the same domain and port. Pass the credential parameter to `include` cookies in requests to servers from different origins via:
 
@@ -1424,11 +1370,11 @@ import {Tabs} from '@site/src/components/tabs';
 
 import {HeadlineWithIcon} from '@site/src/components/headline-with-icon';
 
-# <HeadlineWithIcon h1 icon={}>HTTP Replication from a custom server to RxDB clients</HeadlineWithIcon>
+## HTTP Replication from a custom server to RxDB clients
 
 While RxDB has a range of backend-specific replication plugins (like [GraphQL](./replication-graphql.md) or [Firestore](./replication-firestore.md)), the replication is built in a way to make it very easy to replicate data from a custom server to RxDB clients. 
 
-  
+  ![HTTP replication](./files/icons/with-gradient/replication.svg)
 
 Using **HTTP** as a transport protocol makes it simple to create a compatible backend on top of your existing infrastructure. For events that must be sent from the server to the client, we can use [Server-Sent Events](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events).
 
@@ -1436,11 +1382,9 @@ In this tutorial we will implement a HTTP replication between an RxDB client and
 
 To create a compatible server for replication, we will start a server and implement the correct HTTP routes and replication handlers. We need a push-handler, a pull-handler and for the ongoing changes `pull.stream` we use **Server-Sent Events**.
 
-## Setup
+### Setup
 
-<Steps>
-
-### Start the Replication on the RxDB Client
+#### Start the Replication on the RxDB Client
 
 RxDB does not have a specific HTTP-replication plugin because the [replication primitives plugin](./replication.md) is simple enough to start a HTTP replication on top of it.
 We import the `replicateRxCollection` function and start the replication from there for a single [RxCollection](./rx-collection.md).
@@ -1456,7 +1400,7 @@ const replicationState = await replicateRxCollection({
 });
 ```
 
-### Start a Node.js process with Express and MongoDB
+#### Start a Node.js process with Express and MongoDB
 
 On the server side, we start an express server that has a MongoDB connection and serves the HTTP requests of the client.
 
@@ -1479,7 +1423,7 @@ app.listen(80, () => {
 });
 ```
 
-### Implement the Pull Endpoint
+#### Implement the Pull Endpoint
 
 As first HTTP Endpoint, we need to implement the pull handler. This is used by the RxDB replication to fetch all documents writes that happened after a given `checkpoint`.
 
@@ -1521,7 +1465,7 @@ app.get('/pull', async (req, res) => {
 });
 ```
 
-### Implement the Pull Handler
+#### Implement the Pull Handler
 
 On the client we add the `pull.handler` to the replication setting. The handler requests the correct server url and fetches the documents.
 
@@ -1550,7 +1494,7 @@ const replicationState = await replicateRxCollection({
 });
 ```
 
-### Implement the Push Endpoint
+#### Implement the Push Endpoint
 
 To send client side writes to the server, we have to implement the `push.handler`. It gets an array of change rows as input and has to return only the conflicting documents that have not been written to the server. Each change row contains a `newDocumentState` and an optional `assumedMasterState`.
 
@@ -1623,7 +1567,7 @@ app.get('/push', async (req, res) => {
 For simplicity in this tutorial, we do not use transactions. In reality you should run the full push function inside of a MongoDB transaction to ensure that no other process can mix up the document state while the writes are processed. Also you should call batch operations on MongoDB instead of running the operations for each change row.
 :::
 
-### Implement the Push Handler
+#### Implement the Push Handler
 
 With the push endpoint in place, we can add a `push.handler` to the replication settings on the client.
 
@@ -1649,7 +1593,7 @@ const replicationState = await replicateRxCollection({
 });
 ```
 
-### Implement the pullStream$ Endpoint
+#### Implement the pullStream$ Endpoint
 
 While the normal pull handler is used when the replication is in [iteration mode](./replication.md#checkpoint-iteration), we also need a stream of ongoing changes when the replication is in [event observation mode](./replication.md#event-observation). This brings the realtime replication to RxDB where changes on the server or on a client will directly get propagated to the other instances.
 
@@ -1674,7 +1618,7 @@ app.get('/pullStream', (req, res) => {
 How to build the `pullStream$` Observable is not part of this tutorial. This heavily depends on your backend and infrastructure. Likely you have to observe the MongoDB event stream.
 :::
 
-### Implement the pullStream$ Handler
+#### Implement the pullStream$ Handler
 
 From the client we can observe this endpoint and create a `pull.stream$` observable that emits all events that are sent from the server to the client.
 The client connects to an url and receives server-sent-events that contain all ongoing writes.
@@ -1705,7 +1649,7 @@ const replicationState = await replicateRxCollection({
 });
 ```
 
-### pullStream$ RESYNC flag
+#### pullStream$ RESYNC flag
 
 In case the client loses the connection, the EventSource will automatically reconnect but there might have been some changes that have been missed out in the meantime. The replication has to be informed that it might have missed events by emitting a `RESYNC` flag from the `pull.stream$`.
 The replication will then catch up by switching to the [iteration mode](./replication.md#checkpoint-iteration) until it is in sync with the server again.
@@ -1735,9 +1679,7 @@ const replicationState = await replicateRxCollection({
 });
 ```
 
-</Steps>
-
-## Missing implementation details
+### Missing implementation details
 
 In this tutorial we only covered the basics of doing a HTTP replication between RxDB clients and a server. We did not cover the following aspects of the implementation:
 
@@ -1753,11 +1695,11 @@ import {Steps} from '@site/src/components/steps';
 import {BetaBlock} from '@site/src/components/beta-block';
 import {HeadlineWithIcon} from '@site/src/components/headline-with-icon';
 
-# <HeadlineWithIcon h1 icon={}>Replication with Microsoft OneDrive</HeadlineWithIcon>
+## Replication with Microsoft OneDrive
 
 The `replication-microsoft-onedrive` plugin allows you to replicate your client-side [RxDB](./) database to a folder in the user's Microsoft OneDrive. This enables cross-device [sync](./replication.md) for single users without requiring any backend server.
 
-## Overview
+### Overview
 
 The replication uses the Microsoft Graph API.
 
@@ -1766,21 +1708,17 @@ The replication uses the Microsoft Graph API.
 - **Cross-Device:** Users can access their data from multiple devices by signing into the same Microsoft account.
 - **Realtime Sync:** Uses [WebRTC](./replication-webrtc.md) for peer-to-peer signaling to achieve near real-time updates. Uses the same onedrive folder instead of a signaling-server.
 
-<BetaBlock since="17.0.0" />
+### Usage
 
-## Usage
-
-<Steps>
-
-### Enable Microsoft Graph API
+#### Enable Microsoft Graph API
 
 You need to register your application in the [Azure portal](https://portal.azure.com/) and create credentials (OAuth 2.0 Client ID) with `Files.ReadWrite` permissions for your application.
 
-### Authenticate the User
+#### Authenticate the User
 
 Your application must handle the OAuth flow to get an `accessToken` from Microsoft. You can use libraries like `@azure/msal-browser` or `@azure/msal-react`.
 
-### Start Replication
+#### Start Replication
 
 Once you have the `accessToken`, you can start the replication.
 
@@ -1817,9 +1755,7 @@ replicationState.awaitInitialReplication().then(() => {
 });
 ```
 
-</Steps>
-
-## Signaling & WebRTC
+### Signaling & WebRTC
 
 Microsoft OneDrive does not provide real-time events for file changes that a client can easily subscribe to in the browser. If a user changes data on **User Device A**, **User Device B** would not know about it until it periodically polls the API.
 To achieve real-time updates, this plugin uses **WebRTC** to signal changes between connected devices.
@@ -1828,7 +1764,7 @@ To achieve real-time updates, this plugin uses **WebRTC** to signal changes betw
 2.  Other devices detect these files, read the WebRTC connection data, and establish a direct P2P connection with each other.
 3.  When a device makes a write, it sends a "RESYNC" signal via WebRTC to all connected peers to notify them about the change.
 
-### Polyfill for Node.js
+#### Polyfill for Node.js
 
 WebRTC is native in browsers but requires a polyfill in Node.js. Use `createSimplePeerWrtc()` to wrap the polyfill for compatibility with `simple-peer`:
 
@@ -1844,9 +1780,9 @@ const replicationState = await replicateMicrosoftOneDrive({
 });
 ```
 
-## Options
+### Options
 
-### oneDrive
+#### oneDrive
 
 - **authToken** `string`: The valid access token associated with the user.
 - **folderPath** `string`: The path to the folder in Microsoft OneDrive where data should be stored.
@@ -1856,32 +1792,32 @@ const replicationState = await replicateMicrosoftOneDrive({
 - **apiEndpoint** `string` (optional): Defaults to `https://graph.microsoft.com/v1.0/me/drive`. Useful for mocking or proxies.
 - **transactionTimeout** `number` (optional): Default `10000` (10s). The plugin uses a `transaction.json` file in OneDrive to ensure data integrity during writes. This is the timeout after which a lock is considered stale.
 
-### pull & push
+#### pull & push
 
 Standard RxDB [Replication Options](./replication.md) for batch size, modifiers, etc.
 
-## Technical Details
+### Technical Details
 
-### File Mapping
+#### File Mapping
 - Each RxDB document corresponds to **one JSON file** in the `docs` subfolder.
 - The filename is `[primaryKey].json`.
 - This simple mapping makes it easy to inspect or backup data manually.
 
-### Checkpointing
+#### Checkpointing
 - The replication relies on the `lastModifiedDateTime` of files in Microsoft OneDrive.
 
-### Conflict Resolution
+#### Conflict Resolution
 - Conflicts are handled using the standard RxDB [conflict handling](./replication.md#conflict-handling) strategies.
 - The plugin assumes a master-slave replication pattern where the client (RxDB) merges changes.
 - If the `transaction.json` file is locked by another device, the write retries until the lock is released or times out.
 
-## Limitations
+### Limitations
 
 - **Rate Limits:** Microsoft Graph API has strict rate limits. The plugin attempts to handle 429 errors with exponential backoff, but heavy concurrent writes might hit these limits.
 - **Latency:** Changes take time to propagate and appear in listings (eventual consistency), which the plugin handles internally.
 - **Signaling Delay:** The initial WebRTC handshake requires writing and reading files from OneDrive, which can take a few seconds. Once connected, signaling is instant.
 
-## Testing
+### Testing
 
 For testing, it is recommended to use [microsoft-onedrive-mock](https://github.com/pubkey/microsoft-onedrive-mock). It simulates the Microsoft Graph API so you can run tests without real credentials.
 
@@ -1895,13 +1831,13 @@ import {VideoBox} from '@site/src/components/video-box';
 import {SyncDiagram} from '@site/src/components/sync-diagram';
 import {HeadlineWithIcon} from '@site/src/components/headline-with-icon';
 
-# <HeadlineWithIcon h1 icon={} subtitle="Real-Time, Offline-First Sync">MongoDB Replication Plugin</HeadlineWithIcon>
+## MongoDB Replication Plugin
 
 The [MongoDB](https://www.mongodb.com/) Replication Plugin for RxDB delivers seamless, two-way synchronization between [MongoDB](./rx-storage-mongodb.md) and RxDB, enabling [real-time](./articles/realtime-database.md) updates and [offline-first](./offline-first.md) functionality for your applications. Built on **MongoDB Change Streams**, it supports both Atlas and self-hosted deployments, ensuring your data stays consistent across every device and service.
 
 Behind the scenes, the plugin is powered by the RxDB [Sync Engine](./replication.md), which manages the complexities of real-world data replication for you. It automatically handles [conflict detection and resolution](./transactions-conflicts-revisions.md), maintains precise checkpoints for incremental updates, and gracefully manages transitions between offline and online states. This means you don't need to manually implement retry logic, reconcile divergent changes, or worry about data loss during connectivity drops, the Sync Engine ensures consistency and reliability in every sync cycle.
 
-## Key Features
+### Key Features
 
 - **Two-way replication** between MongoDB and RxDB collections
 - **Offline-first support** with automatic incremental re-sync
@@ -1909,7 +1845,7 @@ Behind the scenes, the plugin is powered by the RxDB [Sync Engine](./replication
 - **Conflict resolution** handled by the RxDB Sync Engine
 - **Atlas and self-hosted support** for replica sets and sharded clusters
 
-## Architecture Overview
+### Architecture Overview
 
 The plugin operates in a three-tier architecture: Clients connect to [RxServer](./rx-server.md), which in turn connects to MongoDB. RxServer streams changes from MongoDB to connected clients and pushes client-side updates back to MongoDB.
 
@@ -1917,21 +1853,19 @@ For the client side, RxServer exposes a [replication endpoint](./rx-server.md#re
 
 The following diagram illustrates the flow of updates between clients, RxServer, and MongoDB in a live synchronization setup:
 
-<SyncDiagram backend={{ label: "MongoDB", icon: "/files/icons/mongodb-icon.svg" }} clientConnectionLabel="HTTP" backendConnectionLabel="Change Stream" simulateOffline />
-
 :::note
 The MongoDB Replication Plugin is optimized for Node.js environments (e.g., when RxDB runs within RxServer or other backend services). Direct connections from browsers or mobile apps to MongoDB are not supported because MongoDB does not use HTTP as its wire protocol and requires a driver-level connection to a replica set or sharded cluster.
 :::
 
-## Setting up the Client-RxServer-MongoDB Sync
+### Setting up the Client-RxServer-MongoDB Sync
 
-<Steps>
-
-### Install the Client Dependencies
+#### Install the Client Dependencies
 
 In your JavaScript project, install the RxDB libraries and the MongoDB node.js driver:
 
 ```npm install rxdb rxdb-server mongodb --save```
+
+
 
 ### Set up a MongoDB Server
 
@@ -1963,6 +1897,7 @@ Learn here how to create a MongoDB atlas
 account and how to start a MongoDB cluster
 that runs in the cloud:
 
+<br />
 <center>
     <VideoBox
         videoId="bBA9rUdqmgY"
@@ -1971,7 +1906,9 @@ that runs in the cloud:
     />
 </center>
 
+
 </Tabs>
+<br />
 
 After this step you should have a valid
 connection string that points to a running
@@ -2003,7 +1940,7 @@ have an insert/update-only collection where
 no documents are deleted ever.
 :::
 
-### Create a RxDB Database and Collection
+#### Create a RxDB Database and Collection
 
 Now we create an RxDB
 [database](./rx-database.md) and a
@@ -2043,7 +1980,7 @@ await db.addCollections({
 });
 ```
 
-### Sync the Collection with the MongoDB Server
+#### Sync the Collection with the MongoDB Server
 
 Now we can start a
 [replication](./replication.md) that does a
@@ -2079,7 +2016,7 @@ observing errors or doing start/stop
 operations.
 :::
 
-### Start a RxServer
+#### Start a RxServer
 
 Now that we have a RxDatabase and Collection
 that is replicated with MongoDB, we can
@@ -2110,7 +2047,7 @@ console.log('Replication endpoint:', `http://localhost:8080/${endpoint.urlPath}`
 await server.start();
 ```
 
-### Sync a Client with the RxServer
+#### Sync a Client with the RxServer
 
 On the client-side we create the exact same
 RxDatabase and collection and then replicate
@@ -2158,9 +2095,7 @@ const replicationState = replicateServer({
 
 ```
 
-</Steps>
-
-## Follow Up
+### Follow Up
 
 - Try it out with the RxDB-MongoDB
   [example repository](https://github.com/pubkey/rxdb-mongodb-sync-example)
@@ -2179,7 +2114,7 @@ const replicationState = replicateServer({
 import {Steps} from '@site/src/components/steps';
 import {HeadlineWithIcon} from '@site/src/components/headline-with-icon';
 
-# <HeadlineWithIcon h1 icon={}>Replication with NATS</HeadlineWithIcon>
+## Replication with NATS
 
 With this RxDB plugin you can run a two-way realtime replication with a [NATS](https://nats.io/) server.
 
@@ -2189,13 +2124,15 @@ On the client side the official [NATS npm package](https://www.npmjs.com/package
 NATS is a messaging system that by itself does not have a validation or granulary access control build in.
 Therefore it is not recommended to directly replicate the NATS server with an untrusted RxDB client application. Instead you should replicated from NATS to your Node.js server side RxDB database.
 
-## Precondition
+### Precondition
 
 For the replication endpoint the NATS cluster must have enabled [JetStream](https://docs.nats.io/nats-concepts/jetstream) and store all message data as [structured JSON](https://docs.nats.io/using-nats/developer/sending/structure).
 
 The easiest way to start a compatible NATS server is to use the official docker image:
 
 ```docker run --rm --name rxdb-nats -p 4222:4222 nats:2.9.17 -js```
+
+
 
 ## Usage
 
@@ -2207,7 +2144,7 @@ The easiest way to start a compatible NATS server is to use the official docker 
 npm install nats --save
 ```
 
-### Start the Replication
+#### Start the Replication
 
 To start the replication, import the
 `replicateNats()` method from the RxDB
@@ -2249,9 +2186,7 @@ const replicationState = replicateNats({
 });
 ```
 
-</Steps>
-
-## Handling deletes
+### Handling deletes
 
 RxDB requires you to never
 [fully delete documents](./replication.md#data-layout-on-the-server).
@@ -2267,7 +2202,7 @@ in the sync options.
 
 ## Seamless P2P Data Sync
 
-# The RxDB Plugin `replication-p2p` has been renamed to `replication-webrtc`
+## The RxDB Plugin `replication-p2p` has been renamed to `replication-webrtc`
 
 The new documentation page has been moved to [here](./replication-webrtc.md)
 
@@ -2279,11 +2214,11 @@ The new documentation page has been moved to [here](./replication-webrtc.md)
 
 import {HeadlineWithIcon} from '@site/src/components/headline-with-icon';
 
-# <HeadlineWithIcon h1 icon={}>RxDB Server Replication</HeadlineWithIcon>
+
 
 The *Server Replication Plugin* connects to the [replication](./replication.md) endpoint of an [RxDB Server Replication Endpoint](./rx-server.md#replication-endpoint) and replicates data between the client and the server.
 
-## Usage
+### Usage
 
 The replication server plugin is imported from the `rxdb-server` npm package. Then you start the replication with a given collection and endpoint url by calling `replicateServer()`.
 
@@ -2305,7 +2240,7 @@ const replicationState = await replicateServer({
 });
 ```
 
-## outdatedClient$
+### outdatedClient$
 
 When you update your schema at the server and run a migration, you end up with a different replication url that has a new schema version number at the end.
 Your clients might still be running an old version of your application that will no longer be compatible with the endpoint. Therefore when the client tries to call a server endpoint with an outdated schema version, the `outdatedClient$` observable emits to tell your client that the application must be updated. With that event you can tell the client to update the application.
@@ -2317,7 +2252,7 @@ replicationState.outdatedClient$.subscribe(() => {
 });
 ```
 
-## unauthorized$
+### unauthorized$
 
 When you clients auth data is not valid (or no longer valid), the server will no longer accept any requests from you client and inform the client that the auth headers must be updated.
 The `unauthorized$` observable will emit and expects you to update the headers accordingly so that following requests will be accepted again.
@@ -2330,7 +2265,7 @@ replicationState.unauthorized$.subscribe(() => {
 });
 ```
 
-## forbidden$
+### forbidden$
 
 When you client behaves wrong in any case, like update non-allowed values or changing documents that it is not allowed to,
 the server will drop the connection and the replication state will emit on the `forbidden$` observable.
@@ -2342,7 +2277,7 @@ replicationState.forbidden$.subscribe(() => {
 });
 ```
 
-## Custom EventSource implementation
+### Custom EventSource implementation
 
 For the server send events, the [eventsource](https://github.com/EventSource/eventsource) npm package is used instead of the native `EventSource` API. We need this because the native browser API does not support sending headers with the request which is required by the server to parse the auth data.
 
@@ -2367,17 +2302,17 @@ import {SyncDiagram} from '@site/src/components/sync-diagram';
 import {HeadlineWithIcon} from '@site/src/components/headline-with-icon';
 import {Faq, FaqItem} from '@site/src/components/faq';
 
-# <HeadlineWithIcon h1 icon={} subtitle="Real-Time, Offline-First Sync">Supabase Replication Plugin</HeadlineWithIcon>
+## Supabase Replication Plugin
 
 The **Supabase Replication Plugin** for RxDB delivers seamless, two-way synchronization between your RxDB collections and a Supabase (Postgres) table. It uses **PostgREST** for pull/push and **Supabase Realtime** (logical replication) to stream live updates, so your data stays consistent across devices with first-class [local-first](./articles/local-first-future.md), offline-ready support.
 
 Under the hood, the plugin is powered by the RxDB [Sync Engine](./replication.md). It handles checkpointed incremental pulls, robust retry logic, and [conflict detection/resolution](./transactions-conflicts-revisions.md) for you. You focus on features, and RxDB takes care of sync.
 
 <center>
-    <VideoBox videoId="zBZgdTb-dns" title="Supabase in 100 Seconds" duration="2:36" />
+
 </center>
 
-## Key Features of the RxDB-Supabase Plugin
+### Key Features of the RxDB-Supabase Plugin
 
 - **Cloud Only Backend**: No self-hosted server required. Client devices directly sync with the Supabase Servers.
 - **Two-way replication** between Supabase tables and RxDB [collections](./rx-collection.md)
@@ -2386,9 +2321,7 @@ Under the hood, the plugin is powered by the RxDB [Sync Engine](./replication.md
 - **Conflict resolution** handled by the [RxDB Sync Engine](./replication.md)
 - **Works in browsers and Node.js** with `@supabase/supabase-js`
 
-## Architecture Overview
-
-<SyncDiagram server={false} backend={{ label: "Supabase", icon: "/files/icons/supabase.svg" }} clientConnectionLabel="PostgREST + Realtime" simulateOffline />
+### Architecture Overview
 
 Clients connect **directly to Supabase** using the official JS client. The plugin:
 
@@ -2400,17 +2333,15 @@ Clients connect **directly to Supabase** using the official JS client. The plugi
 Because Supabase exposes Postgres over **HTTP/WebSocket**, you can safely replicate from browsers and mobile apps. Protect your data with **Row Level Security (RLS)** policies; use the **anon** key on clients and the **service role** key only on trusted servers.
 :::
 
-## Setting up RxDB ↔ Supabase Sync
+### Setting up RxDB ↔ Supabase Sync
 
-<Steps>
-
-### Install Dependencies
+#### Install Dependencies
 
 ```bash
 npm install rxdb @supabase/supabase-js
 ```
 
-### Create a Supabase Project & Table
+#### Create a Supabase Project & Table
 
 In your supabase project, create a new table. Ensure that:
 - The primary key must have the type text (Primary keys must always be strings in RxDB)
@@ -2441,7 +2372,7 @@ EXECUTE FUNCTION extensions.moddatetime('_modified');
 alter publication supabase_realtime add table "public"."todos";
 ```
 
-### Create an RxDB Database & Collection
+#### Create an RxDB Database & Collection
 
 Create a normal RxDB database, then add a collection whose **schema mirrors your Supabase table**. The **primary key must match** (same column name and type), and fields should be **top-level simple types** (string/number/boolean). You don’t need to model server internals: the plugin maps the server’s \_deleted flag to doc.\_deleted automatically, and \_modified is optional in your schema (the plugin strips it on push and will include it on pull only if you define it). For browsers use a persistent storage like Localstorage or IndexedDB. For tests you can use the [in-memory storage](./rx-storage-memory.md).
 
@@ -2473,13 +2404,11 @@ await db.addCollections({
 });
 ```
 
-### Create the Supabase Client
+#### Create the Supabase Client
 
 Make a single Supabase client and reuse it across your app. In the browser, use the anon key (RLS-protected). On trusted servers you may use the service role key, but never ship that to clients.
 
-<Tabs>
-
-#### Production
+##### Production
 
 ```ts
 //> client
@@ -2492,7 +2421,7 @@ export const supabase = createClient(
 );
 ```
 
-#### Vite
+##### Vite
 
 ```ts
 //> client
@@ -2506,7 +2435,7 @@ export const supabase = createClient(
 );
 ```
 
-#### Local Development
+##### Local Development
 
 ```ts
 //> client
@@ -2519,9 +2448,7 @@ export const supabase = createClient(
 );
 ```
 
-</Tabs>
-
-### Start Replication
+#### Start Replication
 
 Connect your RxDB collection to the Supabase table to start the replication.
 
@@ -2568,7 +2495,7 @@ await replication.awaitInitialReplication();
 Supabase returns `null` for nullable columns, but in RxDB you often model those fields as optional (i.e., they can be undefined/missing). To avoid schema errors, map `null` → `undefined` in the `pull.modifier` (usually by deleting the key).
 :::
 
-## Using Joins
+### Using Joins
 
 You can use the `pull.queryBuilder` to use joins and also pull data from related tables.
 To do that, you have to create a **new** query object in the `pull.queryBuilder` with the `.select()` method and return it.
@@ -2587,43 +2514,23 @@ const replication = replicateSupabase({
 });
 ```
 
-### Do other things with the replication state
+#### Do other things with the replication state
 
 The `RxSupabaseReplicationState` which is returned from `replicateSupabase()` allows you to run all functionality of the normal [RxReplicationState](./replication.md).
 
-</Steps>
-
-## FAQ
-
-<Faq>
-<FaqItem question="Why use Supabase and RxDB as a cloud document database for Node.js and TypeScript?">
+### FAQ
 
 Supabase and RxDB offer the best of both worlds for Node.js and TypeScript applications. Supabase provides a powerful PostgreSQL backend. You can use PostgreSQL as a document database by storing JSON data. RxDB provides a reactive local document store. You achieve real-time synchronization between the local document store and the Supabase backend. You benefit from strong TypeScript typing on the client and robust SQL querying on the server.
 
-</FaqItem>
-<FaqItem question="How to connect an anonymous key to a Supabase project?">
-
 You connect an anonymous key to a Supabase project by initializing the official `@supabase/supabase-js` client utilizing your project's `SUPABASE_URL` and `SUPABASE_ANON_KEY`. In frontend applications interacting with the **[RxDB Supabase Replication](./replication.md)** plugin, you must inject the `anon` key, while simultaneously configuring strict Row Level Security (RLS) policies within your Supabase PostgreSQL backend to prevent unauthorized data manipulation.
-
-</FaqItem>
-<FaqItem question="Does Supabase support full offline sync and CRDT capabilities?">
 
 Natively, the Supabase JavaScript client does not support advanced [offline-first](./offline-first.md) synchronization pipelines or complex Conflict-free Replicated Data Type (CRDT) architectures. To implement full offline sync capable of continuous background disconnected writes, you must attach the **[RxDB](./rx-database.md)** Supabase Replication Plugin. RxDB acts as the offline-first local CRDT-like cache, deferring all local mutations into a unified outbound queue until the Supabase TCP connection is restored.
 
-</FaqItem>
-<FaqItem question="Should Row Level Security (RLS) be enabled when using Supabase real-time sync?">
-
 Yes, Row Level Security (RLS) is strictly mandatory whenever you expose a Supabase database directly to the frontend. Without RLS, the anonymous `anon` key used by the **[RxDB](./rx-database.md)** client grants full read and write access to your entire PostgreSQL cluster. You must configure RLS policies that enforce `auth.uid() = user_id` checks to guarantee clients only replicate and mutate their own specific documents.
-
-</FaqItem>
-<FaqItem question="How does Supabase Realtime architecture work?">
 
 Supabase Realtime acts as an Elixir-based WebSocket broadcasting server that taps directly into PostgreSQL's logical replication stream. When a row changes on the database, the Realtime server parses the WAL (Write-Ahead Log) and pushes the event down to subscribed clients. The **[RxDB Supabase Replication](./replication.md)** plugin leverages this WebSocket channel strictly for live change detection, triggering rapid localized pulls over PostgREST to guarantee no data is dropped during connection turbulence.
 
-</FaqItem>
-</Faq>
-
-## Follow Up
+### Follow Up
 
 - **Replication API Reference:** Learn the core concepts and lifecycle hooks - [Replication](./replication.md)
 - **Offline-First Guide:** Caching, retries, and conflict strategies - [Local-First](./articles/local-first-future.md)
@@ -2644,27 +2551,23 @@ import {CenteredImage} from '@site/src/components/centered-image';
 import {DocsAnimation} from '@site/src/components/docs-animation';
 import {P2pReplicationMesh} from '@site/src/components/animations/p2p-replication-mesh';
 
-# <HeadlineWithIcon h1 icon={} subtitle="Sync Data between Browsers and Devices in JavaScript">P2P WebRTC Replication with RxDB</HeadlineWithIcon>
+## P2P WebRTC Replication with RxDB
 
 WebRTC P2P data connections are revolutionizing real-time web and mobile development by **eliminating central servers** in scenarios where clients can communicate directly. With the **RxDB** [Sync Engine](./replication.md), you can sync your local database state across multiple browsers or devices via **WebRTC P2P (Peer-to-Peer)** connections, ensuring scalable, secure, and **low-latency** data flows without traditional server bottlenecks.
 
-<DocsAnimation subtitle="Peers replicating directly with each other over WebRTC">
-<P2pReplicationMesh />
-</DocsAnimation>
-
-## What is WebRTC?
+### What is WebRTC?
 
 [WebRTC](https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API) stands for Web [Real-Time](./articles/realtime-database.md) Communication. It is an open standard that enables browsers and native apps to exchange audio, video, or **arbitrary data** directly between peers, bypassing a central server after the initial connection is established. WebRTC uses NAT traversal techniques like [ICE](https://developer.liveswitch.io/liveswitch-server/guides/what-are-stun-turn-and-ice.html) (Interactive Connectivity Establishment) to punch through firewalls and establish direct links. This peer-to-peer nature drastically reduces latency while maintaining **high security** and **end-to-end encryption** capabilities.
 
 For a deeper look at comparing WebRTC with **WebSockets** and **WebTransport**, you can read our [comprehensive overview](./articles/websockets-sse-polling-webrtc-webtransport.md). While WebSockets or WebTransport often work in client-server contexts, WebRTC offers direct peer-to-peer connections ideal for fully decentralized data flows.
 
 <center>
-    
-        
-    
+
+        ![WebRTC](/files/icons/webrtc.svg)
+
 </center>
 
-## Benefits of P2P Sync with WebRTC Compared to Client-Server Architecture
+### Benefits of P2P Sync with WebRTC Compared to Client-Server Architecture
 
 1. **Reduced Latency** - By skipping a central server hop, data travels directly from one client to another, minimizing round-trip times and improving responsiveness.
 2. **Scalability** - New peers can join without overloading a central infrastructure. The sync overhead increases linearly with the number of connections rather than requiring a massive server cluster.
@@ -2672,9 +2575,7 @@ For a deeper look at comparing WebRTC with **WebSockets** and **WebTransport**, 
 4. **Resilience** - In some scenarios, if the central server is unreachable, P2P connections remain operational (assuming a functioning signaling path). Apps can still replicate data among local networks like when they are in the same Wifi or LAN. Notice that the peers still have to find each other through a signaling server, so this is not a full offline mesh. For [DDIL environments](./articles/ddil-database.md) without any infrastructure at all, compare the transports in the [Ditto alternative](./articles/alternatives/ditto-alternative.md) page.
 5. **Cost Savings** - Reducing the reliance on a high-bandwidth server can cut hosting and bandwidth expenses, particularly in high-traffic or IoT-style use cases.
 
-<RxdbLogo alt="JavaScript Embedded Database" />
-
-## Peer-to-Peer (P2P) WebRTC Replication with the RxDB JavaScript Database
+### Peer-to-Peer (P2P) WebRTC Replication with the RxDB JavaScript Database
 
 Traditionally, real-time data synchronization depends on **centralized servers** to manage and distribute updates. In contrast, RxDB’s WebRTC P2P replication allows data to flow **directly** among clients, removing the server as a data store. This approach is **live** and **fully decentralized**, requiring only a [signaling server](#signaling-server) for initial discovery:
 
@@ -2684,19 +2585,15 @@ Traditionally, real-time data synchronization depends on **centralized servers**
 
 Because RxDB is a NoSQL database and the replication protocol is straightforward, setting up robust P2P sync is far **easier** than orchestrating a complex client-server database architecture.
 
-## Using RxDB with the WebRTC Replication Plugin
+### Using RxDB with the WebRTC Replication Plugin
 
 Before you use this plugin, make sure that you understand how [WebRTC works](https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API). Here we build a todo-app that replicates todo-entries between clients:
-
-<CenteredImage src="https://github.com/pubkey/rxdb-quickstart/raw/master/files/p2p-todo-demo.gif" alt="JavaScript Embedded Database" width={500} href="https://rxdb.info/" />
 
 You can find a fully build example of this at the [RxDB Quickstart Repository](https://github.com/pubkey/rxdb-quickstart) which you can also [try out online](https://pubkey.github.io/rxdb-quickstart/).
 
 First you create the [database](./rx-database.md) and then you can configure the replication:
 
-<Steps>
-
-### Create the Database and Collection
+#### Create the Database and Collection
 
 Here we create a database with the [localstorage](./rx-storage-localstorage.md) based storage that stores data inside of the [LocalStorage API](./articles/localstorage.md) in a browser. RxDB has a wide [range of storages](./rx-storage.md) for other JavaScript runtimes.
 
@@ -2735,7 +2632,7 @@ await db.todos.insert({
 });
 ```
 
-### Import the WebRTC replication plugin
+#### Import the WebRTC replication plugin
 
 ```ts
 import {
@@ -2744,7 +2641,7 @@ import {
 } from 'rxdb/plugins/replication-webrtc';
 ```
 
-### Start the P2P replication
+#### Start the P2P replication
 
 To start the replication you have to call `replicateWebRTC` on the [collection](./rx-collection.md).
 
@@ -2795,7 +2692,7 @@ const replicationPool = await replicateWebRTC(
 
 Notice that in difference to the other [replication plugins](./replication.md), the WebRTC replication returns a `replicationPool` instead of a single `RxReplicationState`. The `replicationPool` contains all replication states of the connected peers in the P2P network.
 
-### Observe Errors
+#### Observe Errors
 
 To ensure we log out potential errors, observe the `error$` observable of the pool.
 
@@ -2803,19 +2700,18 @@ To ensure we log out potential errors, observe the `error$` observable of the po
 replicationPool.error$.subscribe(err => console.error('WebRTC Error:', err));
 ```
 
-### Stop the Replication
+#### Stop the Replication
 
 You can also dynamically stop the replication.
 ```ts
 replicationPool.cancel();
 ```
-</Steps>
 
-## Live replications
+### Live replications
 
 The WebRTC replication is **always live** because there can not be a one-time sync when it is always possible to have new Peers that join the connection pool. Therefore you cannot set the `live: false` option like in the other replication plugins.
 
-## Signaling Server
+### Signaling Server
 
 For P2P replication to work with the RxDB WebRTC Replication Plugin, a [signaling server](https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Signaling_and_video_calling) is required. The signaling server helps peers discover each other and establish connections.
 
@@ -2838,7 +2734,7 @@ const serverState = await startSignalingServerSimplePeer({
 
 For custom signaling servers with more complex logic, you can check the [source code of the default one](https://github.com/pubkey/rxdb/blob/master/src/plugins/replication-webrtc/signaling-server.ts).
 
-## Signaling over Nostr Relays
+### Signaling over Nostr Relays
 
 Instead of running your own signaling server, you can let the peers find each other over [Nostr](https://nostr.how/en/what-is-nostr) relays. Nostr is an open protocol where clients publish signed JSON events to relays, which are plain WebSocket servers. There are many public relays, and you can run your own with open source software like [strfry](https://github.com/hoytech/strfry) or [nostr-rs-relay](https://github.com/scsibug/nostr-rs-relay).
 
@@ -2893,7 +2789,7 @@ The same secret key can be used on multiple devices or browser tabs at the same 
 
 The public relays `wss://nos.lol`, `wss://relay.primal.net`, and `wss://nostr.mom` from the example above were tested with this handler on September 30, 2026. Public relays are run by third parties and can be offline, change their policies, or rate limit your app at any time. For production, run your own relay or pick relays that you trust, and pass more than one relay url.
 
-## Peer Validation
+### Peer Validation
 
 By default the replication will replicate with every peer the signaling server tells them about.
 You can prevent invalid peers from replication by passing a custom `isPeerValid()` function that either returns `true` on valid peers and `false` on invalid peers.
@@ -2946,7 +2842,7 @@ const replicationPool = await replicateWebRTC(
 );
 ```
 
-## Connection Handling and Timeouts
+### Connection Handling and Timeouts
 
 The simple-peer connection handler reconnects on its own when the connection to the signaling server or to another peer breaks. Reconnects run with an exponential backoff that starts at `500ms` and is capped at `15s`, so that an unreachable signaling server does not cause a busy loop. A peer connection that is not established within `15s` is dropped and a new attempt is started. Existing WebRTC connections keep replicating while the signaling server is offline.
 
@@ -2966,14 +2862,14 @@ const replicationPool = await replicateWebRTC(
 );
 ```
 
-## Conflict detection in WebRTC replication
+### Conflict detection in WebRTC replication
 
 RxDB's conflict handling works by detecting and resolving conflicts that may arise when multiple clients in a decentralized database system attempt to modify the same data concurrently.
 A **custom conflict handler** can be set up, which is a plain JavaScript function. The conflict handler is run on each replicated document write and resolves the conflict if required. [Find out more about RxDB conflict handling here](https://rxdb.info/transactions-conflicts-revisions.html)
 
-## Known problems
+### Known problems
 
-### SimplePeer requires to have `process.nextTick()`
+#### SimplePeer requires to have `process.nextTick()`
 
 In the browser you might not have a process variable or process.nextTick() method. But the [simple peer](https://github.com/feross/simple-peer) uses that so you have to polyfill it.
 
@@ -2998,7 +2894,7 @@ window.process = {
 
 ```
 
-### Polyfill the WebSocket and WebRTC API in Node.js
+#### Polyfill the WebSocket and WebRTC API in Node.js
 
 While all modern browsers support the WebRTC and WebSocket APIs, they is missing in Node.js which will throw the error `No WebRTC support: Specify opts.wrtc option in this environment`. Therefore you have to polyfill it with a compatible WebRTC and WebSocket polyfill. It is recommended to use the [node-datachannel package](https://github.com/murat-dogan/node-datachannel/tree/master/src/polyfill) for WebRTC which **does not** come with RxDB but has to be installed before via `npm install node-datachannel --save`.
 For the Websocket API use the `ws` package that is included into RxDB.
@@ -3024,32 +2920,20 @@ const replicationPool = await replicateWebRTC(
 );
 ```
 
-## Storing replicated data encrypted on client device
+### Storing replicated data encrypted on client device
 
 Storing replicated data encrypted on client devices using the RxDB Encryption Plugin is a pivotal step towards bolstering **data security** and **user privacy**.
 The WebRTC replication plugin seamlessly integrates with the [RxDB encryption plugins](./encryption.md), providing a robust solution for encrypting sensitive information before it's stored locally. By doing so, it ensures that even if unauthorized access to the device occurs, the data remains protected and unintelligible without the encryption key (or password). This approach is particularly vital in scenarios where user-generated content or confidential data is replicated across devices, as it empowers users with control over their own data while adhering to stringent security standards. [Read more about the encryption plugins here](./encryption.md).
 
-## FAQ
-
-<Faq>
-<FaqItem question="How can WebRTC enable real-time peer-to-peer communications between browsers?">
+### FAQ
 
 WebRTC enables true peer-to-peer (P2P) communication by establishing direct UDP/TCP data channels between browsers, completely bypassing centralized database architectures. Because the WebRTC connection requires initial IP discovery, clients must briefly connect to a WebSocket signaling server or to [Nostr relays](#signaling-over-nostr-relays) to exchange SDP offers and ICE candidates. Once peered, the **[RxDB WebRTC Replication](./replication.md)** plugin streams NoSQL document diffs and [CRDT](./crdt.md) operations instantly across the channel, providing decentralized real-time sync with absolute zero cloud latency.
 
-</FaqItem>
-<FaqItem question="Which distributed database services offer peer discovery and sync plugins?">
-
 RxDB offers comprehensive peer discovery and sync plugins for distributed applications. The WebRTC replication plugin facilitates direct peer-to-peer data synchronization. A signaling server or a set of [Nostr relays](#signaling-over-nostr-relays) handles initial peer discovery and connection establishment. You connect browsers and mobile apps without a central database server. The sync engine automatically replicates local changes across all discovered peers.
-
-</FaqItem>
-<FaqItem question="What are the top databases that sync directly between devices without cloud dependency?">
 
 Very few databases support true decentralized peer-to-peer (P2P) synchronization. **[RxDB](./rx-database.md)** is one of the leading options for this architecture, offering a dedicated WebRTC replication plugin that allows direct, client-to-client data synchronization via [WebRTC data channels](./replication-webrtc.md) without routing through a central cloud database. Other notable decentralized tools include **Ditto**, **GunDB**, and CRDT-based libraries like **Yjs** or **Automerge** (though these are often data structure libraries, not fully queryable databases).
 
-</FaqItem>
-</Faq>
-
-## Follow Up
+### Follow Up
 
 - **Check out the [RxDB Quickstart](./quickstart.md)** to see how to set up your first RxDB database.
 - **Explore advanced features** like [Custom Conflict Handling](./transactions-conflicts-revisions.md) or [Offline-First Performance](./rx-storage-performance.md).
@@ -3062,7 +2946,7 @@ Very few databases support true decentralized peer-to-peer (P2P) synchronization
 
 import {Faq, FaqItem} from '@site/src/components/faq';
 
-# Websocket Replication
+
 
 With the websocket replication plugin, you can spawn a websocket server from a RxDB database in Node.js and replicate with it.
 
@@ -3070,7 +2954,7 @@ With the websocket replication plugin, you can spawn a websocket server from a R
 The websocket replication plugin does not have any concept for authentication or permission handling. It is designed to create an easy **server-to-server** replication. It is **not** made for client-server replication. Make a pull request if you need that feature.
 :::
 
-## Starting the Websocket Server
+### Starting the Websocket Server
 
 ```ts
 import { createRxDatabase } from 'rxdb';
@@ -3092,7 +2976,7 @@ const serverState = await startWebsocketServer({
 await serverState.close();
 ```
 
-## Connect to the Websocket Server
+### Connect to the Websocket Server
 
 The replication has to be started once for each collection that you want to replicate.
 
@@ -3116,55 +3000,28 @@ const replicationState = await replicateWithWebsocketServer({
 await replicationState.cancel();
 ```
 
-## Customize
+### Customize
 
 We use the [ws](https://www.npmjs.com/package/ws) npm library, so you can use all optional configuration provided by it.
 This is especially important to improve performance by opting in of some optional settings.
 
-## FAQ
-
-<Faq>
-<FaqItem question="What is the WebSocket protocol and how does it differ from HTTP?">
+### FAQ
 
 The WebSocket protocol operates over a persistent, full-duplex TCP connection, fundamentally differing from standard HTTP's stateless, unidirectional request-response model. While traditional HTTP requires the client to initiate every exchange and constantly re-send heavy headers, WebSockets remain open indefinitely, allowing the server to push real-time data events down to the client with mere bytes of overhead, which is vital for high-throughput database [Replication](./replication.md).
 
-</FaqItem>
-<FaqItem question="When should you use Server-Sent Events (SSE) vs WebSockets?">
-
 WebSockets should be used when your application demands heavy, bidirectional communication such as live chat, multiplayer gaming, or synchronous database multi-master replication. You should opt for [Server-Sent Events (SSE)](./articles/websockets-sse-polling-webrtc-webtransport.md) if your communication is strictly unidirectional (server-to-client) like delivering live sports scores or stock tickers, as SSE works natively over traditional HTTP/1.1 connections without encountering common corporate firewall and proxy blocks.
-
-</FaqItem>
-<FaqItem question="Does OpenAI and ChatGPT use WebSockets or Server-Sent Events for streaming?">
 
 OpenAI and ChatGPT rely heavily on [Server-Sent Events (SSE)](./articles/websockets-sse-polling-webrtc-webtransport.md) rather than WebSockets to stream their generative text responses. Because LLM generation is inherently a unidirectional operation (the server generating and streaming tokens down to the client after an initial prompt), SSE is the perfect fit. It drastically reduces server overhead by utilizing standard HTTP/1.1 connections and avoids the bidirectional complexities, strict statefulness, and proxy-blocking issues commonly associated with persistent WebSocket streams.
 
-</FaqItem>
-<FaqItem question="How does long polling differ from traditional polling and WebSockets?">
-
 Traditional polling requests data at fixed intervals regardless of state changes, wasting bandwidth and battery. Long polling holds the HTTP connection open until the server has new data or a timeout occurs, simulating a push. Unlike WebSockets, which establish a single, continuous, bidirectional TCP stream, both polling methods are strictly unidirectional and incur the overhead of re-establishing TCP handshakes and heavy HTTP headers for every discrete data event.
-
-</FaqItem>
-<FaqItem question="What are the best load balancing solutions for scaling WebSocket connections?">
 
 Scaling WebSockets requires load balancers that support persistent TCP connections and protocol upgrades (like HAProxy, NGINX, or AWS ALB). Because WebSockets are heavily stateful, you must configure sticky sessions (Session Affinity) to ensure a client's continuous stream routes to the exact same backend node. For distributing real-time replication events globally across multiple horizontal backend nodes, integrating a secondary Pub/Sub mechanism (like Redis Pub/Sub) is highly recommended.
 
-</FaqItem>
-<FaqItem question="Do service worker fetch events intercept WebSocket connections?">
-
 No, Service Worker `fetch` events do not intercept WebSocket connections. The `fetch` event handler in a Service Worker is strictly designed to intercept standard HTTP/HTTPS requests. If you require offline caching or Request interception for your real-time data stream, you must intercept the initial REST calls or implement a custom sync queue inside the Service Worker, which is an architectural pattern databases like **[RxDB](./rx-database.md)** handle inherently on the client side without relying on Service Workers for WS persistence.
-
-</FaqItem>
-<FaqItem question="Are WebSockets significantly faster or more expensive than standard HTTP polling?">
 
 WebSockets are significantly faster (lower latency) because they eliminate the HTTP request/response header overhead for every message, pushing data instantly down an open TCP pipe. However, they are more "expensive" on the server side in terms of memory utilization; each open WebSocket connection consumes a dedicated file descriptor and RAM on the server indefinitely, making massive horizontal scaling more complex and costly compared to completely stateless HTTP polling endpoints.
 
-</FaqItem>
-<FaqItem question="How many Server-Sent Events or WebSocket connections can a server handle per client?">
-
 According to the HTTP/1.1 specification (RFC 2616), browsers traditionally limit clients to a maximum of 6 concurrent connections per domain. This limit is rigidly shared across all open tabs. If a user opens 7 tabs connecting to the same WebSocket or SSE endpoint, the 7th tab will stall indefinitely. To bypass this, sophisticated real-time architectures (like **[RxDB](./rx-database.md)**) utilize [Leader Election](./leader-election.md) via the BroadcastChannel API to designate a single tab to maintain the active Socket connection, sharing the data pipeline across all other passive tabs locally.
-
-</FaqItem>
-</Faq>
 
 ---
 
@@ -3176,7 +3033,7 @@ import {Faq, FaqItem} from '@site/src/components/faq';
 import {DocsAnimation} from '@site/src/components/docs-animation';
 import {ReplicationPushPull} from '@site/src/components/animations/replication-push-pull';
 
-# <HeadlineWithIcon h1 icon={<IconGear />}>RxDB's realtime Sync Engine for Local-First Apps</HeadlineWithIcon>
+## RxDB's realtime Sync Engine for Local-First Apps
 
 The RxDB Sync Engine provides the ability to sync the database state in **realtime** between the clients and the server.
 
@@ -3185,11 +3042,7 @@ For example you can replicate with a [custom GraphQL endpoint](./replication-gra
 
 The replication is made to support the [Local-First](./articles/local-first-future.md) paradigm, so that when the client goes [offline](./offline-first.md), the RxDB [database](./rx-database.md) can still read and write [locally](./articles/local-database.md) and will continue the replication when the client goes online again.
 
-<DocsAnimation subtitle="Pushing and pulling documents between client and server">
-<ReplicationPushPull />
-</DocsAnimation>
-
-## Design Decisions of the Sync Engine
+### Design Decisions of the Sync Engine
 
 In contrast to other (server-side) database replication protocols, the RxDB Sync Engine was designed with these goals in mind:
 
@@ -3200,7 +3053,7 @@ In contrast to other (server-side) database replication protocols, the RxDB Sync
 - **Offline-First Support**: By incorporating conflict handling at the client side, the protocol fully supports [offline-first apps](./offline-first.md). Users can continue making changes while offline, and those updates will sync seamlessly once a connection is reestablished - all without risking data loss or having undefined behavior.
 - **Multi-Tab Support**: When RxDB is used in a browser and multiple tabs of the same application are opened, only exactly one runs the replication at any given time. This reduces client- and backend resources.
 
-## The Sync Engine on the document level
+### The Sync Engine on the document level
 
 On the [RxDocument](./rx-document.md) level, the replication works like git, where the fork/client contains all new writes and must be merged with the master/server before it can push its new state to the master/server.
 
@@ -3216,7 +3069,7 @@ A---B-----------D   master/server state
 - If the master state is equal to the latest master `B` state of the client, the new client state `D` is set as the latest master state.
 - If the master also had changes and so the latest master change is different than the one that the client assumes, we have a conflict that has to be resolved on the client.
 
-## The Sync Engine on the transfer level
+### The Sync Engine on the transfer level
 
 When document states are transferred, all handlers use batches of documents for better performance.
 The server **must** implement the following methods to be compatible with the replication:
@@ -3241,7 +3094,7 @@ The server **must** implement the following methods to be compatible with the re
 
 The replication runs in two **different modes**:
 
-### Checkpoint iteration
+#### Checkpoint iteration
 
 On first initial replication, or when the client comes online again, a checkpoint based iteration is used to catch up with the server state.
 A checkpoint is a subset of the fields of the last pulled document. When the checkpoint is sent to the backend via `pullHandler()`, the backend must be able to respond with all documents that have been written **after** the given checkpoint.
@@ -3249,7 +3102,7 @@ For example if your documents contain an `id` and an `updatedAt` field, these tw
 
 When the checkpoint iteration reaches the last checkpoint, where the backend returns an empty array because there are no newer documents, the replication will automatically switch to the `event observation` mode.
 
-### Event observation
+#### Event observation
 
 While the client is connected to the backend, the events from the backend are observed via `pullStream$` and persisted to the client.
 
@@ -3257,7 +3110,7 @@ If your backend for any reason is not able to provide a full `pullStream$` that 
 
 When the client goes offline and online again, it might happen that the `pullStream$` has missed out some events. Therefore the `pullStream$` should also emit a `RESYNC` event each time the client reconnects, so that the client can become in sync with the backend via the [checkpoint iteration](#checkpoint-iteration) mode.
 
-## Data layout on the server
+### Data layout on the server
 
 To use the replication you first have to ensure that:
 - **documents are deterministically sortable by their last write time**
@@ -3294,7 +3147,7 @@ Then your data is always sortable by `updatedAt`. This ensures that when RxDB fe
 
 By default, the field is `_deleted`. If your remote endpoint uses a different field to mark deleted documents, you can set the `deletedField` in the replication options which will automatically map the field on all pull and push requests.
 
-## Conflict handling
+### Conflict handling
 
 When multiple clients (or the server) modify the same document at the same time (or when they are offline), it can happen that a conflict arises during the replication.
 
@@ -3318,7 +3171,7 @@ You can specify a custom conflict handler by setting the property `conflictHandl
 
 Learn how to create a [custom conflict handler](./transactions-conflicts-revisions.md#custom-conflict-handler).
 
-## replicateRxCollection()
+### replicateRxCollection()
 
 You can start the replication of a single `RxCollection` by calling `replicateRxCollection()` like in the following:
 
@@ -3511,6 +3364,7 @@ const replicationState = await replicateRxCollection({
     },
 });
 
+
 /**
  * Creating the pull stream for realtime replication.
  * Here we use a websocket but any other way of
@@ -3565,14 +3419,14 @@ function connectSocket() {
 
 ```
 
-## Multi Tab support
+### Multi Tab support
 
 For better performance, the replication runs only in one instance when RxDB is used in multiple browser tabs or Node.js processes.
 By setting `waitForLeadership: false` you can enforce that each tab runs its own replication cycles.
 If used in a multi instance setting, so when at database creation `multiInstance: false` was not set,
 you need to import the [leader election plugin](./leader-election.md) so that RxDB can know how many instances exist and which browser tab should run the replication.
 
-## Error handling
+### Error handling
 
 When sending a document to the remote fails for any reason, RxDB will send it again in a later point in time.
 This happens for **all** errors. The document write could have already reached the remote instance and be processed, while only the answering fails.
@@ -3596,15 +3450,15 @@ replicationState.error$.subscribe((error) => {
 });
 ```
 
-## Security
+### Security
 
 Be aware that client side clocks can never be trusted. When you have a client-backend replication, the backend should overwrite the `updatedAt` timestamp or use another field, when it receives the change from the client.
 
-## RxReplicationState
+### RxReplicationState
 
 The function `replicateRxCollection()` returns a `RxReplicationState` that can be used to manage and observe the replication.
 
-### Observable
+#### Observable
 
 To observe the replication, the `RxReplicationState` has some `Observable` properties:
 
@@ -3630,7 +3484,7 @@ myRxReplicationState.active$.subscribe(bool => console.dir(bool));
 myRxReplicationState.conflict$.subscribe(conflict => console.dir(conflict));
 ```
 
-### awaitInitialReplication()
+#### awaitInitialReplication()
 
 With `awaitInitialReplication()` you can await the initial replication that is done when a full replication cycle was successfully finished for the first time. The returned promise will never resolve if you cancel the replication before the initial replication can be done.
 
@@ -3645,7 +3499,7 @@ When only one direction is configured, the other direction completes instantly. 
 await myRxReplicationState.awaitInitialReplication();
 ```
 
-### awaitInSync()
+#### awaitInSync()
 
 Returns a `Promise` that resolves when:
 - `awaitInitialReplication()` has emitted.
@@ -3662,7 +3516,7 @@ await myRxReplicationState.awaitInSync();
 
 :::warning 
 
-#### `awaitInitialReplication()` and `awaitInSync()` should not be used to block the application
+##### `awaitInitialReplication()` and `awaitInSync()` should not be used to block the application
 
 A common mistake in RxDB usage is when developers want to block the app usage until the application is in sync.
 Often they just `await` the promise of `awaitInitialReplication()` or `awaitInSync()` and show a loading spinner until they resolve. This is dangerous and should not be done because:
@@ -3699,7 +3553,7 @@ await hideLoadingSpinner();
 
 :::
 
-### awaitDocumentPushed()
+#### awaitDocumentPushed()
 
 Returns a `Promise` that resolves when a specific `RxDocument` instance was successfully pushed to the server.
 
@@ -3739,7 +3593,7 @@ await Promise.race([
 ]);
 ```
 
-### reSync()
+#### reSync()
 
 Triggers a `RESYNC` cycle where the replication goes into [checkpoint iteration](#checkpoint-iteration) until the client is in sync with the backend. Used in unit tests or when no proper `pull.stream$` can be implemented so that the client only knows that something has been changed but not what.
 
@@ -3754,7 +3608,7 @@ If your backend is not capable of sending events to the client at all, you could
 setInterval(() => myRxReplicationState.reSync(), 10 * 1000);
 ```
 
-### cancel()
+#### cancel()
 
 Cancels the replication. Returns a promise that resolves when everything has been cleaned up.
 
@@ -3779,7 +3633,7 @@ const newReplicationState = replicateRxCollection({
 
 Use `pause()` instead when you want to stop the replication for a while and continue later with the same `RxReplicationState`.
 
-### pause()
+#### pause()
 
 Pauses a running replication. The replication can later be resumed with `RxReplicationState.start()`. In contrast to `cancel()`, a paused replication keeps its state. When `start()` is called after a pause, it runs one resync cycle and then continues the live replication.
 
@@ -3788,7 +3642,7 @@ await myRxReplicationState.pause();
 await myRxReplicationState.start(); // restart
 ```
 
-### remove()
+#### remove()
 
 Cancels the replication and deletes the metadata of the replication state. This can be used to restart the replication "from scratch". Calling `.remove()` will only delete the replication metadata, it will NOT delete the documents from the collection of the replication.
 
@@ -3796,7 +3650,7 @@ Cancels the replication and deletes the metadata of the replication state. This 
 await myRxReplicationState.remove();
 ```
 
-### isStopped()
+#### isStopped()
 
 Returns `true` if the replication is stopped. This can be if a non-live replication is finished or a replication got canceled.
 
@@ -3804,7 +3658,7 @@ Returns `true` if the replication is stopped. This can be if a non-live replicat
 replicationState.isStopped(); // true/false
 ```
 
-### isPaused()
+#### isPaused()
 
 Returns `true` if the replication is paused.
 
@@ -3812,7 +3666,7 @@ Returns `true` if the replication is paused.
 replicationState.isPaused(); // true/false
 ```
 
-### Setting a custom initialCheckpoint
+#### Setting a custom initialCheckpoint
 
 By default, the push replication will start from the beginning of time and push all documents from there to the remote.
 By setting a custom `push.initialCheckpoint`, you can tell the replication to only push writes that are newer than the given checkpoint.
@@ -3856,7 +3710,7 @@ const replicationState = replicateRxCollection({
 });
 ```
 
-### toggleOnDocumentVisible
+#### toggleOnDocumentVisible
 
 Ensures replication continues running when the document is `visible`. This helps avoid situations where the leader-elected tab becomes stale or is hibernated by the browser to save battery.  
 When the tab becomes hidden, replication is automatically paused; when the tab becomes visible again (or the instance becomes leader), replication resumes.
@@ -3870,7 +3724,7 @@ const replicationState = replicateRxCollection({
 });
 ```
 
-### Replication Lifecycle
+#### Replication Lifecycle
 
 | Method | State afterwards | Can `start()` resume it? | Replication metadata |
 | --- | --- | --- | --- |
@@ -3880,7 +3734,7 @@ const replicationState = replicateRxCollection({
 
 The replication is also canceled automatically when its [RxCollection](./rx-collection.md) or [RxDatabase](./rx-database.md) is closed.
 
-## Using the Replication with TypeScript
+### Using the Replication with TypeScript
 
 `replicateRxCollection()` and `RxReplicationState` take two generic types: the document type and the checkpoint type of your backend.
 
@@ -3932,7 +3786,7 @@ const replicationState = startReplication(
 );
 ```
 
-## Storing Local-Only Metadata Alongside Replicated Documents
+### Storing Local-Only Metadata Alongside Replicated Documents
 
 Sometimes you want to store data on the client that belongs to a replicated document but must never be sent to the server, for example a "read" flag, a draft text or a UI state. Keep in mind how the replication treats document fields:
 
@@ -3941,7 +3795,7 @@ Sometimes you want to store data on the client that belongs to a replicated docu
 
 There are two ways to store local-only data that survive replication:
 
-### 1. A separate local collection
+#### 1. A separate local collection
 
 Create a second [RxCollection](./rx-collection.md) that is not replicated and use the same primary key as the replicated document. This keeps the data queryable and reactive, and a remote update of the replicated document does not touch it.
 
@@ -3968,7 +3822,7 @@ await myDatabase.addCollections({
 await myDatabase.todoLocalState.upsert({ id: 'todo1', isRead: true });
 ```
 
-### 2. Local documents
+#### 2. Local documents
 
 For key-value data that does not need queries, use [local documents](./rx-local-document.md). They are stored in a separate storage instance, are never replicated and are not part of the collection schema. They require the `local-documents` plugin and `localDocuments: true` on the collection.
 
@@ -3990,7 +3844,7 @@ const localDoc = await myDatabase.todos.getLocal('ui-state-todo1');
 
 A schema field that you strip in the `push.modifier` does not reach the server, but it does not survive a pull either: as soon as the server sends a newer state of the document, the stripped field is gone from the local document. Only use this pattern for data that can be recomputed.
 
-## Attachment replication
+### Attachment replication
 
 Attachment replication is supported in the RxDB Sync Engine itself. However not all replication plugins support it.
 If you start the replication with a collection which has [enabled RxAttachments](./rx-attachment.md) attachment data will be added to all push- and write data.
@@ -4005,23 +3859,15 @@ With this data, the backend can decide onto which attachments must be deleted, a
 
 Accordingly, the pulled document must contain the same data, if the backend has a new document state with updated attachments.
 
-## Pull-Only Replication
+### Pull-Only Replication
 
 With the replication protocol it is possible to do pull only replications where data is pulled from a backend but not pushed from the client. RxDB implements some performance optimizations for these like not storing server metadata on pull only streams.
 
-## Partial Sync with RxDB
+### Partial Sync with RxDB
 
 RxDB supports partial sync patterns where you dynamically manage multiple replication states for different data scopes. This keeps local storage lean and reduces network overhead. Learn more on the dedicated [Partial Sync](./partial-sync.md) page.
 
-## FAQ
+### FAQ
 
-<Faq>
-<FaqItem question="I have infinite loops in my replication, how to debug?">
-
-    
     When you have infinite loops in your replication or random re-runs of http requests after some time, the reason is likely that your pull-handler
     is crashing. To debug this, add a log to the error$ handler to debug it. `myRxReplicationState.error$.subscribe(err => console.log('error$', err))`.
-    
-
-</FaqItem>
-</Faq>

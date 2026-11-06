@@ -1,0 +1,340 @@
+# RxDocument
+
+> Master RxDB's RxDocument - Insert, find, update, remove, and more for streamlined data handling in modern apps.
+
+An RxDocument is an object which represents the data of a single JSON document stored in a [collection](./rx-collection.md). It can be compared to a single record in a relational database table. You get an `RxDocument` either as return on inserts/updates, or as result-set of [queries](./rx-query.md).
+
+RxDB works on RxDocuments instead of plain JSON data to have more convenient operations on the documents. Also Documents that are fetched multiple times by different queries or operations are automatically de-duplicated by RxDB in memory.
+
+## insert
+To insert a document into a collection, you have to call the collection's `.insert()` function.
+```js
+await myDatabase.todos.insert({
+  id: 'todo1',
+  name: 'Learn RxDB',
+  done: false,
+  dueAt: '2026-01-01T10:00:00.000Z',
+  priority: 8,
+  tags: ['learning', 'rxdb'],
+  assignee: { name: 'Alice', email: 'alice@example.com' },
+  subtasks: ['todo3']
+});
+```
+
+## find
+To find documents in a collection, you have to call the collection's `.find()` function. [See RxQuery](./rx-query.md).
+```js
+const docs = await myDatabase.todos.find().exec(); // <- find all documents
+```
+
+## Functions
+
+### get()
+This will get a single field of the document. If the field is encrypted, it will be automatically decrypted before returning.
+
+```js
+const name = myDocument.get('name'); // returns the name
+// OR
+const name = myDocument.name;
+```
+
+### get$()
+This function returns an observable of the given path's value.
+The current value of this path will be emitted each time the document changes.
+```js
+// get the live-updating value of 'name'
+let isName;
+myDocument.get$('name')
+  .subscribe(newName => {
+    isName = newName;
+  });
+
+await myDocument.incrementalPatch({name: 'Learn RxDB queries'});
+console.dir(isName); // isName is now 'Learn RxDB queries'
+
+// OR
+
+myDocument.name$
+  .subscribe(newName => {
+    isName = newName;
+  });
+
+```
+
+### proxy-get
+All properties of an `RxDocument` are assigned as getters so you can also directly access values instead of using the get()-function.
+
+```js
+  // Identical to myDocument.get('name');
+  const name = myDocument.name;
+  // Can also get nested values.
+  const assigneeName = myDocument.assignee.name;
+
+  // Also usable with observables:
+  myDocument.name$.subscribe(newName => console.log('name is: ' + newName));
+  // > 'name is: Learn RxDB'
+  await myDocument.incrementalPatch({name: 'Learn RxDB queries'});
+  // > 'name is: Learn RxDB queries'
+```
+
+### update()
+Updates the document based on the [Mongo update syntax](https://docs.mongodb.com/manual/reference/operator/update-field/), based on the [mingo library](https://github.com/kofrasa/mingo#updating-documents).
+
+```js
+
+/**
+ * If not done before, you have to add the update plugin.
+ */
+import { addRxPlugin } from 'rxdb';
+import { RxDBUpdatePlugin } from 'rxdb/plugins/update';
+addRxPlugin(RxDBUpdatePlugin);
+
+await myDocument.update({
+    $inc: {
+        priority: 1 // increases priority by 1
+    },
+    $set: {
+        name: 'Learn RxDB queries' // sets name to 'Learn RxDB queries'
+    }
+});
+```
+
+### modify()
+Updates a document's data based on a function that mutates the current data and returns the new value.
+
+```js
+
+const changeFunction = (oldData) => {
+    oldData.priority = oldData.priority + 1;
+    oldData.name = 'Learn RxDB queries';
+    return oldData;
+}
+await myDocument.modify(changeFunction);
+console.log(myDocument.getLatest().name); // 'Learn RxDB queries'
+```
+
+### patch()
+
+Overwrites the given attributes in the document's data.
+
+```js
+await myDocument.patch({
+  name: 'Learn RxDB queries',
+  note: undefined // setting an attribute to undefined will remove it
+});
+console.log(myDocument.getLatest().name); // 'Learn RxDB queries'
+```
+
+### Prevent conflicts with the incremental methods {#incrementalModify}
+
+Making a normal change to the non-latest version of an `RxDocument` will lead to a [`409 CONFLICT`](./errors.md#CONFLICT) error because RxDB
+uses [revision checks](./transactions-conflicts-revisions.md) instead of transactions.
+
+To make a change to a document, no matter what the current state is, you can use the `incremental` methods:
+
+```js
+// update
+await myDocument.incrementalUpdate({
+    $inc: {
+        priority: 1 // increases priority by 1
+    }
+});
+
+// modify
+await myDocument.incrementalModify(docData => {
+  docData.priority = docData.priority + 1;
+  return docData;
+});
+
+// patch
+await myDocument.incrementalPatch({
+  priority: 10
+});
+
+// remove
+await myDocument.incrementalRemove();
+```
+
+### getLatest()
+
+Returns the latest known state of the `RxDocument`.
+
+```js
+const myDocument = await myDatabase.todos.findOne('todo1').exec();
+const docAfterEdit = await myDocument.incrementalPatch({
+  priority: 10
+});
+const latestDoc = myDocument.getLatest();
+console.log(docAfterEdit === latestDoc); // > true
+```
+
+### Observe $ {#observe}
+Calling this will return an [RxJS Observable](https://rxjs.dev/guide/observable) which emits the current newest state of the RxDocument.
+
+```js
+// get all changeEvents
+myDocument.$
+  .subscribe(currentRxDocument => console.dir(currentRxDocument));
+```
+
+### remove()
+This removes the document from the collection. Notice that this will not purge the document from the store but set `_deleted:true` so that it will be no longer returned on queries.
+To fully purge a document, use the [cleanup plugin](./cleanup.md).
+```js
+myDocument.remove();
+```
+
+### Remove and update in a single atomic operation
+
+Sometimes you want to change a document's value and also remove it in the same operation. For example this can be useful when you use [replication](./replication.md) and want to set a `deletedAt` timestamp. Then you might have to ensure that setting this timestamp and deleting the document happens in the same atomic operation.
+
+To do this the modifying operations of a document accept setting the `_deleted` field. For example:
+
+```ts
+
+// update() and remove()
+await doc.update({
+  $set: {
+    deletedAt: new Date().getTime(),
+    _deleted: true
+  }
+});
+
+// modify() and remove()
+await doc.modify(data => {
+  data.done = true;
+  data._deleted = true;
+  return data;
+});
+```
+
+### deleted$
+Emits a boolean value, depending on whether the RxDocument is deleted or not.
+
+```js
+let lastState = null;
+myDocument.deleted$.subscribe(state => lastState = state);
+
+console.log(lastState);
+// false
+
+await myDocument.remove();
+
+console.log(lastState);
+// true
+```
+
+### get deleted
+A getter to get the current value of `deleted$`.
+
+```js
+console.log(myDocument.deleted);
+// false
+
+await myDocument.remove();
+
+console.log(myDocument.deleted);
+// true
+```
+
+### toJSON()
+
+Returns the document's data as plain JSON object. This will return an **immutable** object. To get something that can be modified, use `toMutableJSON()` instead.
+
+```js
+const json = myDocument.toJSON();
+console.dir(json);
+/* { id: 'todo1',
+  name: 'Learn RxDB',
+  done: false,
+  priority: 8 ...
+*/
+```
+
+You can also set `withMetaFields: true` to get additional meta fields like the revision, [attachments](./rx-attachment.md) or the deleted flag.
+
+```js
+const json = myDocument.toJSON(true);
+console.dir(json);
+/* { id: 'todo1',
+  name: 'Learn RxDB',
+  done: false,
+  _deleted: false,
+  _attachments: { ... },
+  _rev: '1-aklsdjfhak'
+*/
+```
+
+### toMutableJSON()
+
+Same as `toJSON()` but returns a deep cloned object that can be mutated afterwards.
+Remember that deep cloning is expensive and should only be done when necessary.
+
+```js
+const json = myDocument.toMutableJSON();
+json.name = 'Learn RxDB queries'; // The returned document can be mutated
+```
+
+:::note All methods of RxDocument are bound to the instance
+When you get a method from a `RxDocument`, the method is automatically bound to the document's instance. This means you do not have to use things like `myMethod.bind(myDocument)` like you would do in jsx.
+:::
+
+### isRxDocument
+Returns true if the given object is an instance of RxDocument. Returns false if not.
+```js
+const is = isRxDocument(myObj);
+```
+
+## Document Lifetime and Immutability
+
+**RxDocument instances are immutable.** Each instance represents a snapshot of the document at the time it was fetched or last written. Modifying a document does not update existing instances of it - it creates a new `RxDocument` instance with the updated data. The old instance retains its original data.
+
+```js
+const doc = await myDatabase.todos.findOne('todo1').exec();
+console.log(doc.priority); // 8
+
+await doc.incrementalPatch({ priority: 10 });
+
+// The original instance still has the old data
+console.log(doc.priority); // 8
+
+// Use getLatest() to get the updated state
+console.log(doc.getLatest().priority); // 10
+```
+
+**RxDB de-duplicates document instances.** When the same document is fetched multiple times without any writes in between, RxDB returns the same instance to save memory. Once a write occurs, subsequent fetches return a new instance reflecting the updated state.
+
+**Calling non-incremental write methods on an outdated instance throws a [`CONFLICT`](./errors.md#CONFLICT) error.** If you hold a reference to a document and another operation modifies that document in the meantime, calling `.patch()`, `.update()`, or `.modify()` on the outdated instance will fail with a conflict error. See [Transactions, Conflicts and Revisions](./transactions-conflicts-revisions.md) for details on how RxDB handles conflicts.
+
+To avoid this, either:
+- Use the [incremental methods](#incrementalModify) (`incrementalPatch`, `incrementalModify`, `incrementalUpdate`) which always fetch the latest state before applying changes.
+- Call `getLatest()` to get the current state before writing.
+- Re-query the collection to get a fresh document.
+
+**How long to keep a reference to an `RxDocument`.** Treat an `RxDocument` like plain JSON data - it is a snapshot valid at the time of retrieval. RxDB manages query result caching internally via [event-reduce](./rx-query.md), so you do not need to cache documents yourself. For components that display document data and need live updates, subscribe to the document's `$` observable instead of holding a static reference.
+
+## Revisions (`_rev`)
+
+Every stored document has a `_rev` field that RxDB sets on each write. You never set it yourself. Read it with `myDocument.revision` or `myDocument.toJSON(true)._rev`.
+
+The revision string has the format `<height>-<token>`, for example `3-dwtwqbarqc`:
+
+- **height**: a number that starts with `1` on insert and increases by one with every write to that document.
+- **token**: the `token` of the [RxDatabase](./rx-database.md) instance that did the write (`myDatabase.token`). It is not a hash of the document content.
+
+```ts
+const doc = await myDatabase.todos.insert({
+  id: 'todo4',
+  name: 'Clean the kitchen',
+  dueAt: '2026-01-04T18:00:00.000Z',
+  priority: 1
+});
+console.log(doc.revision); // '1-dwtwqbarqc'
+
+const doc2 = await doc.incrementalPatch({ priority: 2 });
+console.log(doc2.revision); // '2-dwtwqbarqc'
+```
+
+RxDB uses the revision for optimistic concurrency control. Every write sends the previous document state together with the new one. The storage compares the `_rev` of the previous state with the `_rev` that is currently stored. When they differ, another write happened in the meantime and the write fails with a [`409 CONFLICT`](./errors.md#CONFLICT) error. This is why non-incremental methods like `patch()` throw on an outdated `RxDocument` instance, while the incremental methods retry with the latest state. Read more in [Transactions, Conflicts and Revisions](./transactions-conflicts-revisions.md).
+
+The `_rev` field is local to each client. By default it is stripped before documents are sent by the [replication](./replication.md) and the [conflict handler](./transactions-conflicts-revisions.md#custom-conflict-handler) does not see it. To detect conflicts between clients, the replication compares the assumed master state with the real master state instead. If your backend needs a version field, add your own field like `updatedAt` to the schema.

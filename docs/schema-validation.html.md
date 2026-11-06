@@ -1,0 +1,192 @@
+# Schema Validation
+
+> Validate RxDB document data against JSON schemas using pluggable validation wrappers like ajv, zod, or is-my-json-valid for development and production use.
+
+import { PerformanceChart } from '@site/src/components/performance-chart';
+import { PERFORMANCE_DATA_VALIDATION_INDEXEDDB, PERFORMANCE_DATA_VALIDATION_MEMORY, PERFORMANCE_DATA_VALIDATION_AJV_STANDALONE } from '@site/src/components/performance-data';
+import {Faq, FaqItem} from '@site/src/components/faq';
+import {DocsAnimation} from '@site/src/components/docs-animation';
+import {SchemaValidationLogo} from '@site/src/components/animations/schema-validation-logo';
+
+# Schema validation
+
+RxDB has multiple validation implementations that can be used to ensure that your document data is always matching the provided JSON 
+schema of your [RxCollection](./rx-collection.md).
+
+The schema validation is **not a plugin** but comes in as a wrapper around any other `RxStorage` and it will then validate all data that is written into that storage. This is required for multiple reasons:
+- It allows us to run the validation inside of a [Worker RxStorage](./rx-storage-worker.md) instead of running it in the main JavaScript process.
+- It allows us to configure which [RxDatabase](./rx-database.md) instance must use the validation and which does not. In production it often makes sense to validate user data, but you might not need the validation for data that is only replicated from the backend.
+
+:::warning
+Schema validation can be **CPU expensive** and increases your build size. You should always use a schema validation in development mode. When you also validate in production, use the [validate-ajv-standalone](#validate-ajv-standalone) plugin for the smallest build size and the best performance.
+:::
+
+When no validation is used, any document data can be saved but there might be **undefined behavior** when saving data that does not comply to the schema of a `RxCollection`.
+
+RxDB has different implementations to validate data, each of them is based on a different [JSON Schema library](https://json-schema.org/tools). In this example we use the [LocalStorage RxStorage](./rx-storage-localstorage.md), but you can wrap the validation around **any other** [RxStorage](./rx-storage.md).
+
+### validate-ajv
+
+A validation-module that does the schema-validation. This one is using [ajv](https://github.com/epoberezkin/ajv) as validator which is a bit faster. Better compliant to the jsonschema-standard but also has a bigger build-size.
+
+```javascript
+import { wrappedValidateAjvStorage } from 'rxdb/plugins/validate-ajv';
+import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
+
+// wrap the validation around the main RxStorage
+const storage = wrappedValidateAjvStorage({
+    storage: getRxStorageLocalstorage()
+});
+
+const db = await createRxDatabase({
+    name: randomCouchString(10),
+    storage
+});
+```
+
+### validate-ajv-standalone
+
+The `validate-ajv` plugin ships the full ajv compiler to the client and compiles each schema at runtime. With the `validate-ajv-standalone` plugin you instead compile your schemas at build time with the [ajv standalone tools](https://ajv.js.org/standalone.html) and only ship the generated validate functions. Compared to the `validate-ajv` plugin, this saves about `125 KB` minified (about `39 KB` gzipped) in your bundle size. Each generated validator adds a few KB, for example `5 KB` minified for a todo schema with four fields. Because no code is compiled in the browser, the standalone validators also work with Content Security Policies that do not allow `'unsafe-eval'`.
+
+The storage instance does not get your plain schema. It gets the full schema with the RxDB internal fields like `_deleted`, `_rev` and `_meta`. So at build time you have to call `getStandaloneValidationSchema()`, which returns that full `jsonSchema` and its `hash`. Compile the `jsonSchema` with an ajv instance from `createAjv()` so that ajv knows the RxDB specific schema keywords and formats. Only import `createAjv()` in the build script. When you import it in your app code, ajv ends up in your bundle again:
+
+```js
+// build-validators.mjs, runs at build time in Node.js
+import fs from 'node:fs';
+import standaloneCode from 'ajv/dist/standalone/index.js';
+import {
+    createAjv,
+    getStandaloneValidationSchema
+} from 'rxdb/plugins/validate-ajv-standalone';
+import { todoSchema, userSchema } from './src/schemas.mjs';
+
+const imports = [];
+const entries = [];
+for (const [i, schema] of [todoSchema, userSchema].entries()) {
+    const { hash, jsonSchema } = await getStandaloneValidationSchema(schema);
+    const ajv = createAjv({ code: { source: true, esm: true } });
+    const code = standaloneCode(ajv, ajv.compile(jsonSchema));
+    fs.writeFileSync(`src/validator-${i}.mjs`, code);
+    imports.push(`import v${i} from './validator-${i}.mjs';`);
+    entries.push(`'${hash}': v${i}`);
+}
+fs.writeFileSync(
+    'src/validators.mjs',
+    imports.join('\n') +
+    '\nexport const validatorBySchemaHash = {' + entries.join(',') + '};\n'
+);
+```
+
+In the app, pass the generated `validatorBySchemaHash` map to the storage wrapper. When a storage instance is created, the plugin hashes its schema and looks up the validator. If no validator exists for that hash, it throws the error [`VD3`](./errors.md#VD3).
+
+```ts
+import { createRxDatabase } from 'rxdb/plugins/core';
+import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
+import {
+    wrappedValidateAjvStandaloneStorage
+} from 'rxdb/plugins/validate-ajv-standalone';
+import { validatorBySchemaHash } from './validators.mjs';
+
+const db = await createRxDatabase({
+    name: 'mydb',
+    storage: wrappedValidateAjvStandaloneStorage({
+        storage: getRxStorageDexie(),
+        validatorBySchemaHash
+    })
+});
+```
+
+Keep in mind that:
+- You have to rerun the build script whenever a schema changes, because any change also changes the hash.
+- During a [schema migration](./migration-schema.md), RxDB opens the storage instance of the previous schema version. So you have to include the validators of previous schema versions as long as clients can still have data stored with them.
+- The storage instances that RxDB creates for its own data (the internal store, [local documents](./rx-local-document.md) and replication meta data) are not validated and need no validator.
+- The hash is equal to `await myCollection.schema.hash` when the database uses the default `hashFunction`.
+
+The validation itself runs at the same speed as with `validate-ajv`, because ajv generates the same validation code in both cases. The difference is the startup time: `validate-ajv` compiles each schema when the first document is written, while `validate-ajv-standalone` only looks up the precompiled validator. The following results were measured with the [Memory RxStorage](./rx-storage-memory.md) on Node.js 22 (lower is better). Each test run takes the median of 40 runs, and the chart shows the best of 5 test runs. Each run uses a new schema, so that `validate-ajv` cannot reuse a compiled validator. You can reproduce them with `npm run test:performance:validation`.
+
+### validate-z-schema
+
+Both `is-my-json-valid` and `validate-ajv` use `eval()` to perform validation which might not be wanted when `'unsafe-eval'` is not allowed in Content Security Policies. This one is using [z-schema](https://github.com/zaggino/z-schema) as validator which doesn't use `eval`.
+
+```javascript
+import { wrappedValidateZSchemaStorage } from 'rxdb/plugins/validate-z-schema';
+import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
+
+// wrap the validation around the main RxStorage
+const storage = wrappedValidateZSchemaStorage({
+    storage: getRxStorageLocalstorage()
+});
+
+const db = await createRxDatabase({
+    name: randomCouchString(10),
+    storage
+});
+```
+
+### validate-is-my-json-valid
+
+**WARNING**: The `is-my-json-valid` validation is no longer supported until [this bug](https://github.com/mafintosh/is-my-json-valid/pull/192) is fixed.
+
+The `validate-is-my-json-valid` plugin uses [is-my-json-valid](https://www.npmjs.com/package/is-my-json-valid) for schema validation.
+
+```javascript
+import {
+    wrappedValidateIsMyJsonValidStorage
+} from 'rxdb/plugins/validate-is-my-json-valid';
+import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
+
+// wrap the validation around the main RxStorage
+const storage = wrappedValidateIsMyJsonValidStorage({
+    storage: getRxStorageLocalstorage()
+});
+
+const db = await createRxDatabase({
+    name: randomCouchString(10),
+    storage
+});
+```
+
+## Custom Formats
+
+The schema validators provide methods to add custom formats like a `email` format.
+You have to add these formats **before** you create your database.
+
+### Ajv Custom Format
+
+```ts
+import { getAjv } from 'rxdb/plugins/validate-ajv';
+const ajv = getAjv();
+ajv.addFormat('email', {
+    type: 'string',
+    validate: v => v.includes('@') // ensure email fields contain the @ symbol
+});
+```
+
+### Z-Schema Custom Format
+
+```ts
+import { ZSchemaClass } from 'rxdb/plugins/validate-z-schema';
+ZSchemaClass.registerFormat('email', function (v: string) {
+    return v.includes('@'); // ensure email fields contain the @ symbol
+});
+```
+
+## Performance comparison of the validators
+
+The RxDB team ran performance benchmarks using two storage options on an Ubuntu 24.04 machine with Chrome version `131.0.6778.85`. The testing machine has 32 core `13th Gen Intel(R) Core(TM) i9-13900HX` CPU.
+
+IndexedDB Storage (based on the IndexedDB API in the browser):
+
+Memory Storage: stores everything in memory for extremely fast reads and writes, with no persistence by default. Often used with the RxDB memory-mapped plugin that processes data in memory and later persists to disc in background:
+
+Including a validator library also increases your JavaScript bundle size. Here's how it breaks down (minified + gzip):
+
+| **Build Size** (minified+gzip) | Build Size (IndexedDB) | Build Size (memory) |
+| ------------------------------ | :----------------: | ------------------: |
+| no validator                   |      73103 B       |             39976 B |
+| ajv                            |      106135 B      |             72773 B |
+| z-schema                       |      125186 B      |             91882 B |
+
+## FAQ
+
+Schema validation structurally guarantees that all document mutations strictly comply with the statically defined **[RxCollection](./rx-collection.md)** JSON Schema format before data is physically committed to the underlying `RxStorage`. Yes, both `ajv` (via `ajv-formats`) and `is-my-json-valid` rely natively on `eval()` or `new Function()` during compilation to aggressively optimize their validation runtimes. If your deployment environment enforces extremely strict `unsafe-eval` Content Security Policies (CSP), you must explicitly swap the validator wrapper to **`validate-z-schema`**, which strictly avoids `eval()` at the cost of marginally slower execution.

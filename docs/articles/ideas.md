@@ -1,40 +1,21 @@
 # ideas for articles
 
 > - storing and searching through 1mio emails in a browser database
-- Finding the optimal way to shorten vector embeddings
-- Performance and quality of vector comparison functions (euclideanDistance etc)
-- performance and quality of vector indexing methods
-- What is new in IndexedDB 3.0
-- how progressive syncing beats client-server architecture
-- beating expo sqlite performce with the new expo filesystem and rxdb
-- linkedin post: How RxDB is optimized for LLMs to make you a 100x developer
-- how WebMCP & Local-First gives your app superpowers
-- How Local-First and WebMCP make your app accessible to agents
-- DX for LLMs
-- vibe-coding is the killer-app for local-first
-- agent-first with RxDB
-- "why the indexeddb API is almost perfekt"
-- "how to do auth with RxDB"
-- "Where to store that JWT token?"
-
-# ideas for articles
-
-- storing and searching through 1mio emails in a browser database
-- Finding the optimal way to shorten vector embeddings
-- Performance and quality of vector comparison functions (euclideanDistance etc)
-- performance and quality of vector indexing methods
-- What is new in IndexedDB 3.0
-- how progressive syncing beats client-server architecture
-- beating expo sqlite performce with the new expo filesystem and rxdb
-- linkedin post: How RxDB is optimized for LLMs to make you a 100x developer
-- how WebMCP & Local-First gives your app superpowers
-- How Local-First and WebMCP make your app accessible to agents
-- DX for LLMs
-- vibe-coding is the killer-app for local-first
-- agent-first with RxDB
-- "why the indexeddb API is almost perfekt"
-- "how to do auth with RxDB"
-- "Where to store that JWT token?"
+> - Finding the optimal way to shorten vector embeddings
+> - Performance and quality of vector comparison functions (euclideanDistance etc)
+> - performance and quality of vector indexing methods
+> - What is new in IndexedDB 3.0
+> - how progressive syncing beats client-server architecture
+> - beating expo sqlite performce with the new expo filesystem and rxdb
+> - linkedin post: How RxDB is optimized for LLMs to make you a 100x developer
+> - how WebMCP & Local-First gives your app superpowers
+> - How Local-First and WebMCP make your app accessible to agents
+> - DX for LLMs
+> - vibe-coding is the killer-app for local-first
+> - agent-first with RxDB
+> - "why the indexeddb API is almost perfekt"
+> - "how to do auth with RxDB"
+> - "Where to store that JWT token?"
 
 ## Seo keywords:
 
