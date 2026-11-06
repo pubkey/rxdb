@@ -3,6 +3,16 @@
     "compilerOptions": {
         "baseUrl": ".",
         /**
+         * baseUrl is deprecated in TypeScript 6, but @docusaurus/tsconfig sets it
+         * and resolves the @site/* path alias relative to it.
+         */
+        "ignoreDeprecations": "6.0",
+        /**
+         * TypeScript 6 enables strict by default.
+         * The docs code is written without strict mode.
+         */
+        "strict": false,
+        /**
          * The docs import from the RxDB sources in ../src which use
          * explicit .ts file endings in their imports.
          * Same setting as in the root tsconfig.json.

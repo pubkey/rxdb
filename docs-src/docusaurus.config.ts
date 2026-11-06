@@ -218,7 +218,7 @@ const config: Config = {
          * Lightning CSS minifier and SSG worker threads.
          * @link https://docusaurus.io/blog/releases/3.6#docusaurus-faster
          */
-        experimental_faster: {
+        faster: {
             swcJsLoader: true,
             swcJsMinimizer: true,
             /**
@@ -524,11 +524,11 @@ Topic-specific documentation files:
                         [rehypePrettyCode, rehypePrettyCodeOptions],
                     ],
                 },
-                // blog: {
-                //   showReadingTime: true,
-                //   editUrl:
-                //     'https://github.com/pubkey/rxdb/tree/master/docs/',
-                // },
+                /**
+                 * The docs have no blog. Without this, the preset
+                 * generates an empty /blog/ page.
+                 */
+                blog: false,
                 theme: {
                     customCss: './src/css/custom.css',
                 },
