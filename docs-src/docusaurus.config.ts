@@ -218,7 +218,24 @@ const config: Config = {
          * Lightning CSS minifier and SSG worker threads.
          * @link https://docusaurus.io/blog/releases/3.6#docusaurus-faster
          */
-        experimental_faster: true,
+        experimental_faster: {
+            swcJsLoader: true,
+            swcJsMinimizer: true,
+            /**
+             * The SWC HTML minifier also minifies the CSS inside inline <style> tags.
+             * Components like the docs animations render <style>{`...`}</style>,
+             * so the minified CSS in the HTML no longer matches the text that React
+             * renders on the client. React then throws a hydration error (#418) and
+             * renders the whole page content again, which delays the
+             * Largest Contentful Paint. The Terser HTML minifier keeps the CSS as is.
+             */
+            swcHtmlMinimizer: false,
+            lightningCssMinimizer: true,
+            mdxCrossCompilerCache: true,
+            rspackBundler: true,
+            rspackPersistentCache: true,
+            ssgWorkerThreads: true,
+        },
         v4: {
             /**
              * Required by the ssgWorkerThreads option of experimental_faster.
