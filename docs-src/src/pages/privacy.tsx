@@ -109,11 +109,12 @@ export default function Privacy() {
                             Art. 6 Abs. 1 lit. f DSGVO.
                         </p>
 
-                        <h4>Google Analytics und Google Tag Manager</h4>
+                        <h4>Google Analytics</h4>
                         <p>
-                            Die Website nutzt Google Analytics 4 sowie den Google Tag Manager, Dienste der
-                            Google Ireland Limited, Gordon House, Barrow Street, Dublin 4, Irland. Der Google
-                            Tag Manager verwaltet dabei das Einbinden der eingesetzten Skripte. Google
+                            Die Website nutzt Google Analytics 4, einen Dienst der Google Ireland Limited,
+                            Gordon House, Barrow Street, Dublin 4, Irland. Das Skript von Google Analytics
+                            (gtag.js) wird von Servern von Google geladen. Wird eine Einwilligung eingeholt,
+                            wird es erst geladen, nachdem diese Einwilligung erteilt wurde. Google
                             Analytics verwendet Cookies und ähnliche Technologien, um die Nutzung der
                             Website auszuwerten (zum Beispiel aufgerufene Seiten, Verweildauer, Scroll-Tiefe
                             und ausgelöste Ereignisse). Die dabei erzeugten Informationen können an Server
@@ -305,11 +306,12 @@ export default function Privacy() {
                             the Website under Art. 6(1)(f) GDPR.
                         </p>
 
-                        <h4>Google Analytics and Google Tag Manager</h4>
+                        <h4>Google Analytics</h4>
                         <p>
-                            The Website uses Google Analytics 4 and Google Tag Manager, services provided by
-                            Google Ireland Limited, Gordon House, Barrow Street, Dublin 4, Ireland. Google
-                            Tag Manager manages the inclusion of the scripts used. Google Analytics uses
+                            The Website uses Google Analytics 4, a service provided by Google Ireland Limited,
+                            Gordon House, Barrow Street, Dublin 4, Ireland. The Google Analytics script
+                            (gtag.js) is loaded from Google servers. Where consent is obtained, it is only
+                            loaded after this consent has been given. Google Analytics uses
                             cookies and similar technologies to analyse the use of the Website (for example
                             pages viewed, time on page, scroll depth and triggered events). The information
                             generated may be transferred to and stored on Google servers, including in the
