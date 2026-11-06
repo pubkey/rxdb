@@ -659,7 +659,7 @@
     "eslint-plugin-jsdoc": "65.3.15",
     "exists-file": "3.0.2",
     "express": "5.2.1",
-    "fake-indexeddb": "6.2.6",
+    "fake-indexeddb": "6.2.7",
     "firebase": "13.0.0",
     "firebase-tools": "15.34.1",
     "get-port": "7.2.0",
