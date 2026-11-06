@@ -3,6 +3,9 @@ import { DocSearchButton } from '@docsearch/react/button';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import translations from '@theme/SearchTranslations';
 import type { DocSearchV4Props } from './DocSearch';
+import '@docsearch/css/dist/_variables.css';
+import '@docsearch/css/dist/button.css';
+import './styles.css';
 
 /**
  * The DocSearch component, the Algolia hooks and the connection to the

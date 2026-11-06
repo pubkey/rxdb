@@ -12,6 +12,9 @@
  *   `setTrackingConsent()` in trigger-event.tsx and the marketing callback.
  */
 
+import cookieConsentCssUrl from 'vanilla-cookieconsent/dist/cookieconsent.css?lazy-css';
+import { loadStylesheet } from './load-stylesheet';
+
 export type ConsentState = {
     analytics: boolean;
     marketing: boolean;
@@ -45,9 +48,11 @@ export function updateGoogleConsent(state: ConsentState): void {
 export async function initEuConsentBanner(
     onApply: (state: ConsentState) => void,
 ): Promise<void> {
-    const CookieConsent = await import('vanilla-cookieconsent');
-    // The library ships its own stylesheet, theming is added in custom.css.
-    await import('vanilla-cookieconsent/dist/cookieconsent.css');
+    const [CookieConsent] = await Promise.all([
+        import('vanilla-cookieconsent'),
+        // The library ships its own stylesheet, theming is added in custom.css.
+        loadStylesheet(cookieConsentCssUrl),
+    ]);
 
     const readState = (): ConsentState => ({
         analytics: CookieConsent.acceptedCategory('analytics'),
