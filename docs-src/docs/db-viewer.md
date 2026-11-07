@@ -6,11 +6,12 @@ image: /headers/db-viewer.jpg
 ---
 
 import {Tabs} from '@site/src/components/tabs';
+import {Steps} from '@site/src/components/steps';
 import {BetaBlock} from '@site/src/components/beta-block';
 
 # Database Viewer
 
-With the `dbviewer` plugin you can inspect and edit the data of a running [RxDB](https://rxdb.info/) database. There are two ways to use it: mount it into any DOM element of your own application with `mountRxDBViewer()`, or connect to the database from the outside with `connectRxDBViewer()`, which pairs the hosted viewer page with the app over WebRTC. Both render the same full devtool: a data grid with a Mango query bar, a JSON view, a document detail drawer, and panels for schema analysis, query analysis, [replication](./replication.md), the change stream and storage statistics. It works over a live [RxDatabase](./rx-database.md) and over a static dump created with the [json-dump plugin](./json-import-export.md).
+When you build a local-first app, the data lives on the user's device and not on a server you can just open a SQL console on. So when something looks wrong, you end up writing `console.log()` calls into your app to see what is stored. With the `dbviewer` plugin you instead get a full devtool over a running [RxDB](https://rxdb.info/) database. You can browse every [RxCollection](./rx-collection.md), run queries, edit documents and watch [replication](./replication.md) while your app is running.
 
 <BetaBlock since="17.7.0" />
 
@@ -18,61 +19,57 @@ With the `dbviewer` plugin you can inspect and edit the data of a running [RxDB]
   <img src="./files/dbviewer.png" alt="RxDB database viewer devtool" width="760" />
 </p>
 
-Key features:
+There are three ways to open the viewer:
 
-- **Data grid and JSON view**: Browse documents of any [RxCollection](./rx-collection.md), paginated with `limit` (default: 20) and `skip` inputs and a sort dropdown with `asc`/`desc` direction next to the query bar. Clicking a column header sorts the whole collection, not only the page. The grid renders only the visible rows, so a limit of `10k` does not bloat the DOM. Multi-select works across pages with a select-all-matching action for bulk delete and export, and a Live mode, on by default, updates the result live as documents change.
-- **Mango query bar**: Run MongoDB-style (Mango) selectors against a collection, with history and favourites. The input also accepts relaxed JavaScript object syntax like `{ name: 'foo' }`, unquoted keys and single quotes are converted to JSON. Syntax errors show the exact character position and previous results stay visible.
-- **Document drawer**: Shows fields, internals (`_rev`, `_meta.lwt`), [attachments](./rx-attachment.md) with inline image previews, and a WILL RUN block that previews the exact call before you apply staged edits: `insert()` for new documents, `incrementalPatch()` with only the changed fields for edits. A JSON tab edits the whole document as raw JSON, with the primary key protected against accidental changes.
-- **Live activity map**: Draws the database as a map from app to collections to remote endpoints. Write, query and replication events flow as glyph particles, each collection node shows a 60 second sparkline and its cached [RxQuery](./rx-query.md) count. No document contents are drawn, only names, counts and rates, so the screen is safe to share.
-- **Schema panel**: Opened from the Schema entry below each collection in the sidebar. Samples documents and shows per-field type shares, presence percentages and value details, plus violations against the declared [schema](./rx-schema.md). A toggle switches to the declared JSON schema itself.
-- **Explain button**: Explains the current query with the used index, an execution plan derived from the [query planner](./query-optimizer.md) and findings like missing compound indexes or `$regex` full scans.
-- **Changes and replication feeds**: A network-tab style list of a collection's writes with a unified diff per change, opened from the Changes entry below the collection, downloadable as a JSON array, and per-collection pull/push states with a live feed of replicated documents.
-- **Storage panel**: Engine, document counts, tombstones and attachment bytes per collection.
-- **Cleanup tool**: Shows per collection how many tombstones could be purged and how much of the stored data that is, and runs a [cleanup](./cleanup.md) when the cleanup plugin is loaded.
-- **Export tool**: Downloads the database as one JSON file. You can pick which collections to include and set an optional MongoDB-style (Mango) selector per collection, so only matching documents are exported.
-- **System collections**: The database internal store, [local documents](./rx-local-document.md) and the collections behind [RxState](./rx-state.md) instances are listed in a SYSTEM group. They are view-only: you can browse, query and export them, but editing is disabled.
+- **Mount it into your app** with `mountRxDBViewer()`. The viewer renders into any DOM element you give it.
+- **Connect from another browser** with `connectRxDBViewer()`. The viewer page pairs with your app over WebRTC, which is useful when the app runs on a phone.
+- **Open a JSON dump** that was created with the [json-dump plugin](./json-import-export.md). This works when you cannot reach the device at all.
 
-The live activity map shows the write, query and replication flow of the database in realtime:
+All three show the same UI. Only the way the data gets to the viewer is different.
+
+## What the Viewer Shows
+
+- **Data grid and JSON view**: Lists the documents of a collection with `limit` (default: 20) and `skip` inputs and a sort dropdown. The sort is part of the query, so clicking a column header sorts the whole collection and not only the current page. The grid only renders the visible rows, so a limit of `10k` does not slow down the page. Live mode is on by default and updates the result whenever a matching document changes.
+- **Mango query bar**: Runs MongoDB-style (Mango) selectors with a history and favorites. You do not have to write strict JSON, `{ done: false }` with unquoted keys and single quotes works too. When the selector has a syntax error, the viewer shows the character position and keeps the previous results visible.
+- **Document drawer**: Shows the fields, the internals (`_rev`, `_meta.lwt`) and the [attachments](./rx-attachment.md) of a document, with inline previews for images. A JSON tab lets you edit the whole document as raw JSON. The primary key is protected so you do not change it by accident.
+- **Schema panel**: Samples documents and shows for each field which types it has and in how many documents it is present. Documents that do not match the declared [schema](./rx-schema.md) are listed as violations.
+- **Explain button**: Shows which index the current query uses and the execution plan from the [query planner](./query-optimizer.md). It also points out problems like a missing compound index or a `$regex` that has to scan all documents.
+- **Live activity map**: Draws your app, its collections and the remote endpoints as a map, and every write, query and replication event moves along it. Each collection shows a 60 second sparkline and the number of cached [RxQuery](./rx-query.md) instances. The map only contains names, counts and rates, never document contents, so you can share your screen while it is open.
+- **Changes and replication feeds**: The Changes feed lists the writes of a collection like the network tab of the browser devtools, with a diff per change. You can download it as a JSON array. The Replication panel shows the pull and push state of each replication and the documents that are replicated.
+- **Storage panel**: Shows the storage engine and, per collection, the number of documents, tombstones and attachment bytes.
+- **Cleanup tool**: Shows per collection how many deleted documents could be purged. When the [cleanup plugin](./cleanup.md) is added, you can run the cleanup from here.
+- **Export tool**: Downloads the database as one JSON file. You can pick the collections and set a selector per collection, so only the matching documents end up in the file.
+- **System collections**: The internal store, the [local documents](./rx-local-document.md) and the collections behind [RxState](./rx-state.md) are listed in a SYSTEM group. You can browse, query and export them, but editing is disabled.
+
+On screens smaller than 640px the viewer switches to a touch layout with the same tools.
 
 <p align="center">
   <img src="./files/dbviewer-live-map.png" alt="RxDB database viewer live activity map" width="760" />
 </p>
 
-The Explain button analyzes the current query with the index, the execution plan and findings:
-
 <p align="center">
   <img src="./files/dbviewer-explain.png" alt="RxDB database viewer query explain view" width="760" />
 </p>
 
-The cleanup tool shows how many tombstones a [cleanup](./cleanup.md) could purge:
+## How It Works
 
-<p align="center">
-  <img src="./files/dbviewer-cleanup.png" alt="RxDB database viewer cleanup tool" width="760" />
-</p>
+The plugin itself contains no UI code. `mountRxDBViewer()` creates an iframe that loads the viewer page from [rxdb.info/db-viewer/index.html](https://rxdb.info/db-viewer/index.html) and then serves the database to that iframe over `postMessage`. The page is one self-contained HTML file.
 
-Below 640px the viewer switches to stacked touch screens with the same collections and tools.
-
-## How it works
-
-The plugin itself contains no UI code. `mountRxDBViewer()` creates an iframe that loads the viewer page, a single self-contained html file hosted at [rxdb.info/db-viewer/index.html](https://rxdb.info/db-viewer/index.html), and serves the database to it over `postMessage`. This keeps the whole viewer UI out of the rxdb build, so the plugin adds only the small bridge to your bundle. Data access, the [query planner](./query-optimizer.md) analysis and the event streams run in your application window, the page inside the iframe is plain UI and never gets direct access to the database object.
-
-When your app has to work without network access, download the page once and serve it from your own origin, see [Self-Hosting the Viewer Page](#self-hosting-the-viewer-page).
+This has two effects. At first, the UI is not part of your bundle, only the small bridge is. Also, the page inside the iframe never gets access to the database object. All queries, the query plan analysis and the event streams run in your application window, and the page only receives the results.
 
 ## Usage
 
-Mount the viewer into an element and remove it when you are done:
+<Steps>
+
+### Mount the Viewer
+
+Import `mountRxDBViewer()` and give it your database and the element to render into. Call `remove()` when you no longer need it.
 
 ```ts
-import { createRxDatabase } from 'rxdb';
 import { mountRxDBViewer } from 'rxdb/plugins/dbviewer';
 
-const db = await createRxDatabase({
-    name: 'mydb',
-    storage: someStorage
-});
-
 const viewer = mountRxDBViewer({
-    database: db,
+    database: myDatabase,
     parent: document.getElementById('viewer-panel')
 });
 
@@ -80,28 +77,34 @@ const viewer = mountRxDBViewer({
 viewer.remove();
 ```
 
-The plugin adds about `13 kB` (gzip) to your bundle when you import `mountRxDBViewer`, and about `48 kB` (gzip) when `connectRxDBViewer` with its WebRTC connection is included. Because the viewer is a devtool that is not needed on page load, it is recommended to load the plugin with a dynamic `import()` at the moment the viewer opens. Then the plugin costs nothing on the initial page load:
+### Load It Lazily
+
+Importing `mountRxDBViewer` adds about `13 kB` (gzip) to your bundle, and including `connectRxDBViewer` with its WebRTC connection adds about `48 kB` (gzip). A devtool is not needed on page load, so it is recommended to import the plugin with a dynamic `import()` at the moment the viewer is opened. Then it costs nothing on the initial page load.
 
 ```ts
-async function openViewer(db: RxDatabase, parent: HTMLElement) {
+import type { RxDatabase } from 'rxdb';
+
+async function openViewer(myDatabase: RxDatabase, parent: HTMLElement) {
     const { mountRxDBViewer } = await import('rxdb/plugins/dbviewer');
-    return mountRxDBViewer({ database: db, parent });
+    return mountRxDBViewer({ database: myDatabase, parent });
 }
 ```
 
-You can also register the plugin to get a `launchDbViewer()` method on the database:
+</Steps>
+
+If you prefer a method on the database, add the plugin and call `launchDbViewer()`:
 
 ```ts
 import { addRxPlugin } from 'rxdb';
 import { RxDBDbViewerPlugin } from 'rxdb/plugins/dbviewer';
 addRxPlugin(RxDBDbViewerPlugin);
 
-const viewer = db.launchDbViewer({ parent: document.body });
+const viewer = myDatabase.launchDbViewer({ parent: document.body });
 ```
 
 ### Usage with Frameworks
 
-In a framework component, mount the viewer when the component appears and call `remove()` when it is destroyed. The `close$` observable tells the host when the close icon was clicked, the host then decides what closing means, for example hiding the panel.
+In a framework component you mount the viewer when the component is rendered and call `remove()` when it is destroyed. Notice that the viewer does not close itself. When `showCloseButton` is set, a click on the close icon emits on `close$` and your app decides what closing means, for example hiding the panel.
 
 <Tabs>
 
@@ -126,7 +129,7 @@ export class DbViewerComponent implements AfterViewInit, OnDestroy {
     @ViewChild('viewerHost') viewerHost!: ElementRef<HTMLElement>;
 
     ngAfterViewInit() {
-        // mounting outside of the angular zone keeps the
+        // Mounting outside of the Angular zone keeps the
         // viewer updates out of change detection. The dynamic
         // import() keeps the plugin out of the main bundle.
         this.zone.runOutsideAngular(async () => {
@@ -145,7 +148,7 @@ export class DbViewerComponent implements AfterViewInit, OnDestroy {
 }
 ```
 
-A complete integration with an "Open DB Viewer" toggle and the `close$` wiring is in the [angular example](https://github.com/pubkey/rxdb/tree/master/examples/angular).
+The [Angular example](https://github.com/pubkey/rxdb/tree/master/examples/angular) has a complete integration with an "Open DB Viewer" toggle and the `close$` wiring.
 
 ### React
 
@@ -159,12 +162,12 @@ export function DbViewer() {
     useEffect(() => {
         let removed = false;
         let handle: ReturnType<typeof mountRxDBViewer> | undefined;
-        getDatabase().then(db => {
+        getDatabase().then(myDatabase => {
             if (removed || !hostRef.current) {
                 return;
             }
             handle = mountRxDBViewer({
-                database: db,
+                database: myDatabase,
                 parent: hostRef.current
             });
         });
@@ -191,9 +194,9 @@ const viewerHost = ref(null);
 let handle;
 
 onMounted(async () => {
-    const db = await getDatabase();
+    const myDatabase = await getDatabase();
     handle = mountRxDBViewer({
-        database: db,
+        database: myDatabase,
         parent: viewerHost.value
     });
 });
@@ -221,9 +224,9 @@ let viewerHost;
 
 onMount(() => {
     let handle;
-    getDatabase().then(db => {
+    getDatabase().then(myDatabase => {
         handle = mountRxDBViewer({
-            database: db,
+            database: myDatabase,
             parent: viewerHost
         });
     });
@@ -240,7 +243,6 @@ onMount(() => {
 
 </Tabs>
 
-
 ## Options
 
 ```ts
@@ -249,16 +251,16 @@ const viewer = mountRxDBViewer({
      * The live database to inspect.
      * Either database or dump must be given.
      */
-    database: db,
+    database: myDatabase,
     /**
-     * (optional) A static export created with db.exportJSON().
+     * (optional) A static export created with exportJSON().
      * Opens the viewer in read-only dump mode.
      */
     dump: myDumpJson,
     /**
      * (optional) Filename shown in the dump banner.
      */
-    dumpFilename: 'mydb-2026-08-05.json',
+    dumpFilename: 'my-database-2026-08-05.json',
     /**
      * (optional) Element the viewer is mounted into.
      * [default=document.body]
@@ -271,8 +273,8 @@ const viewer = mountRxDBViewer({
     pageSize: 100,
     /**
      * (optional) Renders a close icon in the top bar.
-     * Clicking it emits on the close$ observable of the handle,
-     * the host decides what closing means.
+     * Clicking it emits on the close$ observable of the handle.
+     * The viewer stays mounted until remove() is called.
      * [default=false]
      */
     showCloseButton: true,
@@ -290,34 +292,34 @@ viewer.close$.subscribe(() => {
 });
 ```
 
-## Self-Hosting the Viewer Page
+## Editing Is Explicit
 
-By default the iframe loads the viewer page from `https://rxdb.info/db-viewer/index.html`. When your app must work offline, or your security policy forbids loading pages from other origins, serve the page from your own origin instead. The page is one self-contained html file without further assets, so self-hosting is a file copy:
-
-1. **Get the file**. Download it once from [rxdb.info/db-viewer/index.html](https://rxdb.info/db-viewer/index.html), or build it from the rxdb repository with `npm run build:dbviewer`, which writes it to `docs-src/static/db-viewer/index.html`.
-2. **Serve it as a static asset** of your app, for example as `public/dbviewer.html`. The page must be served over http(s), a `file://` url does not work because `postMessage` needs an origin.
-3. **Point the plugin at it** with the `viewerUrl` option:
+A devtool that writes to your data without asking is a good way to lose data. Therefore the viewer never writes silently. When you change a value in the grid or the drawer, the change is only staged. A WILL RUN block shows the exact call that will be executed when you click Apply changes, and nothing runs before that:
 
 ```ts
-const viewer = mountRxDBViewer({
-    database: db,
-    viewerUrl: 'https://example.com/dbviewer.html'
+// applied on save, nothing has run yet
+await myDatabase.todos.findOne('todo1').incrementalPatch({
+    name: 'Learn RxDB in depth'
 });
 ```
 
-The [angular example](https://github.com/pubkey/rxdb/tree/master/examples/angular) does this in its `postinstall` script: it copies the built page into `src/assets/dbviewer.html` and mounts with `viewerUrl: 'assets/dbviewer.html'`.
+Edits of an existing document run `incrementalPatch()` with only the changed fields. New documents run `insert()`. This means your [middleware hooks](./middleware.md) of the insert path do not fire for an update. When a write fails, for example because the [schema validation](./schema-validation.md) rejects the document, the viewer shows the [RxError](./errors.md) with its parameters as JSON.
 
-Keep in mind that the page and the plugin talk over a versioned `postMessage` protocol. When you update rxdb, refresh your self-hosted copy so both sides match.
+Deleting is the most dangerous operation, so it needs one more step. The confirmation dialog tells you how many documents match, that the deletes are replicated to connected peers, and that the tombstones stay in the storage until the next [cleanup](./cleanup.md). The delete button stays disabled until you type the name of the collection.
+
+<p align="center">
+  <img src="./files/dbviewer-cleanup.png" alt="RxDB database viewer cleanup tool" width="760" />
+</p>
 
 ## Remote Pairing over WebRTC
 
-When the database runs on a device you cannot attach a debugger to, for example a phone in field testing, pair the hosted viewer page with that device over WebRTC. In the app, connect the database and open the returned url in any browser:
+Mounting the viewer into your app does not help much when the app runs on a phone in field testing and you cannot attach a debugger to it. For that case you call `connectRxDBViewer()` in the app and open the returned url in any browser on your own machine:
 
 ```ts
 import { connectRxDBViewer } from 'rxdb/plugins/dbviewer';
 
 const viewer = await connectRxDBViewer({
-    database: db,
+    database: myDatabase,
     /**
      * (optional) The pairing room id. Everyone who knows it
      * gets FULL read and write access to the database,
@@ -327,7 +329,7 @@ const viewer = await connectRxDBViewer({
     roomId: 'a-long-random-id',
     /**
      * (optional) Url of the WebRTC signaling server.
-     * The default server is for tryouts only, in production
+     * The default server is for tryouts only. In production
      * you run your own, see the replication-webrtc docs.
      * [default='wss://signaling.rxdb.info/']
      */
@@ -339,7 +341,7 @@ const viewer = await connectRxDBViewer({
     viewerUrl: 'https://example.com/dbviewer.html'
 });
 
-// the full url to open the viewer with, for example
+// The full url to open the viewer with, for example
 // https://rxdb.info/db-viewer/index.html#room=abc...&signaling=...
 console.log(viewer.url);
 
@@ -347,87 +349,89 @@ console.log(viewer.url);
 await viewer.close();
 ```
 
-The url carries the room id and the signaling server in its hash, so the page connects on open without further input. The [angular example](https://github.com/pubkey/rxdb/tree/master/examples/angular) wires this up behind a debug flag: opening the app with `?debug=dbviewer-webrtc` connects the database and logs the pairing url to the console. Opening the page without a hash shows the same connect form for manual entry:
+The url contains the room id and the signaling server in its hash, so the page connects as soon as it is opened. When you open the page without a hash, it shows a form where you enter the values by hand. A room id must have at least 6 characters, otherwise [`DVW3`](./errors.md#DVW3) is thrown.
 
 <p align="center">
   <img src="./files/dbviewer-connect.png" alt="RxDB database viewer WebRTC connect form" width="760" />
 </p>
 
-The full devtool works over the channel: grids, queries, edits, the explain view and the live feeds, because it speaks the same bridge protocol as the iframe mount.
+Over the WebRTC channel you get the same devtool as with the iframe mount, including edits, the explain view and the live feeds. This is because both use the same bridge protocol and only the transport is different. The signaling server only brokers the connection. The data itself flows directly between your browser and the device. You can run your own signaling server with `startSignalingServerSimplePeer()` as described in the [WebRTC replication docs](./replication-webrtc.md).
 
-The signaling server only brokers the connection, the data itself flows directly between the browser and the device. You can run your own signaling server with `startSignalingServerSimplePeer()`, see the [WebRTC replication docs](./replication-webrtc.md).
+The [Angular example](https://github.com/pubkey/rxdb/tree/master/examples/angular) puts this behind a debug flag. When you open the app with `?debug=dbviewer-webrtc`, it connects the database and logs the pairing url to the console.
 
-## Dump mode
+## Dump Mode
 
-When you cannot reach the device that runs the database, work from an export instead. On the device, run `await db.exportJSON()` with the [json-dump plugin](./json-import-export.md), save the result, and open it in the viewer:
+Sometimes you cannot reach the device at all, for example when a user reports a bug and sends you their data. In that case you work with an export. On the device, call `await myDatabase.exportJSON()` from the [json-dump plugin](./json-import-export.md), save the result and open it in the viewer:
 
 ```ts
 import { mountRxDBViewer } from 'rxdb/plugins/dbviewer';
 
 mountRxDBViewer({
     dump: exportedJson,
-    dumpFilename: 'mydb-2026-08-05.json'
+    dumpFilename: 'my-database-2026-08-05.json'
 });
 ```
 
-Editing, the Live mode, the Live map and the feeds are disabled with a "not available on a dump" hint. The grid, queries, the Schema panel and the Storage counts work fully. A dump file can also be opened at runtime from the Export/Import tool.
+The grid, the queries, the Schema panel and the storage counts work the same as with a live database. Editing, Live mode, the activity map and the feeds need a running database, so they are disabled and show a "not available on a dump" hint. You can also open a dump file at runtime from the Export/Import tool.
 
-## Editing is explicit
+## Self-Hosting the Viewer Page
 
-The viewer never writes silently. Edits in the grid or the drawer are staged first, and the WILL RUN block always shows the exact call that Apply changes will execute. Edits of an existing document run `incrementalPatch()` with only the changed fields, so [middleware hooks](./middleware.md) of the insert path never fire for an update:
+By default the iframe loads the viewer page from `https://rxdb.info/db-viewer/index.html`. This will not work when your app has to run offline, or when your Content Security Policy does not allow pages from other origins. In these cases you serve the page from your own origin. Because the page is one HTML file without further assets, self-hosting is just a file copy:
+
+1. **Get the file**. Download it once from [rxdb.info/db-viewer/index.html](https://rxdb.info/db-viewer/index.html), or build it from the RxDB repository with `npm run build:dbviewer`, which writes it to `docs-src/static/db-viewer/index.html`.
+2. **Serve it as a static asset** of your app, for example as `public/dbviewer.html`. It has to be served over http(s). A `file://` url does not work because `postMessage` needs an origin.
+3. **Set the `viewerUrl` option** to the url of your copy:
 
 ```ts
-// applied on save, nothing has run yet
-await mydb.todos.findOne("a1b2c3").incrementalPatch({
-  "title": "Buy milk (2%)"
-})
+const viewer = mountRxDBViewer({
+    database: myDatabase,
+    viewerUrl: 'https://example.com/dbviewer.html'
+});
 ```
 
-New documents run `insert()`. When a write fails, for example because the [schema validation](./schema-validation.md) rejects the document, the error shows as a popup with the parameters of the [RxError](./errors.md) serialized as JSON.
+The [Angular example](https://github.com/pubkey/rxdb/tree/master/examples/angular) does this in its `postinstall` script. It copies the built page to `src/assets/dbviewer.html` and mounts the viewer with `viewerUrl: 'assets/dbviewer.html'`.
 
-Deleting documents opens a confirmation that states the blast radius: how many documents match, that deletes replicate to connected peers, and that tombstones remain until [cleanup](./cleanup.md). The delete button stays disabled until you type the collection name.
+Keep in mind that the page and the plugin talk over a versioned protocol. When you update RxDB, also update your self-hosted copy so that both sides match.
 
 ## Limitations
 
-- The viewer renders into the DOM, so it runs in browsers, Electron renderers and webviews, but not in plain Node.js.
-- By default the viewer page is loaded from rxdb.info, which needs network access on first load. For offline apps, [host the page yourself](#self-hosting-the-viewer-page) and set `viewerUrl`.
-- Sorting in the grid orders the current page, not the whole collection, because arbitrary fields are not guaranteed to be indexed.
-- The reads counter of the Live map is derived from the query cache counters, so reads that bypass the cache are not counted.
-- Remote pairing to a database on another device is not part of this plugin yet. Use [dump mode](#dump-mode) or the [remote storage](./rx-storage-remote.md) instead.
+- The viewer renders into the DOM. It runs in browsers, Electron renderers and webviews, but not in plain Node.js.
+- With the default `viewerUrl`, the first load needs network access to rxdb.info. For offline apps, [host the page yourself](#self-hosting-the-viewer-page).
+- The reads counter of the activity map is derived from the query cache counters. Reads that bypass the cache are not counted.
 
 ## FAQ
 
 <details>
     <summary>Can I inspect an RxDB database in production?</summary>
 
-Yes. The viewer is a normal plugin and mounts wherever you decide to render it, for example behind a feature flag or an admin route. Keep in mind that everyone who can open the viewer can read and edit all data of the local database.
+Yes. The viewer is a normal plugin and is only shown where you mount it, for example behind a feature flag or an admin route. Keep in mind that everyone who can open the viewer can read and edit all data of the local **[RxDatabase](./rx-database.md)**.
 
 </details>
 
 <details>
-    <summary>Does the dbviewer plugin increase my build size?</summary>
+    <summary>Does the RxDB database viewer increase my bundle size?</summary>
 
-No, not in a relevant way. The viewer UI is a hosted static page that loads inside an iframe, only the mount function and the postMessage bridge are part of the rxdb build. Apps that never call `mountRxDBViewer()` do not load the page at all.
+Only a little. The UI is a hosted page that loads inside an iframe, so only the mount function and the bridge are part of your bundle, which is about `13 kB` (gzip). With a dynamic `import()` the plugin is not loaded at all until you open the viewer.
 
 </details>
 
 <details>
     <summary>Can the viewer page read my database when I do not open it?</summary>
 
-No. The page only receives data through the postMessage bridge that `mountRxDBViewer()` attaches, and the bridge only answers requests of the iframe it created. Without a mount there is no iframe and no bridge.
+No. The page only receives data over the bridge that `mountRxDBViewer()` or `connectRxDBViewer()` creates. Without that call there is no iframe, no WebRTC connection and no bridge.
 
 </details>
 
 <details>
-    <summary>Does the viewer work with any RxStorage?</summary>
+    <summary>Does the database viewer work with any RxStorage?</summary>
 
-Yes. The viewer talks to the database through the normal query API, so every [RxStorage](./rx-storage.md) works. The Storage panel additionally counts tombstones through the storage instance, which works on all official storages.
+Yes. The viewer reads the data through the normal query API, so it works with every **[RxStorage](./rx-storage.md)**. To count tombstones, the Storage panel also reads from the storage instance, which works with all official storages.
 
 </details>
 
 <details>
-    <summary>Does the viewer show replications that start after mounting?</summary>
+    <summary>Does the viewer show replications that start after it was mounted?</summary>
 
-Yes. The Replication panel polls for states created with `replicateRxCollection()` or one of the replication plugins in the same JavaScript context, so states that start later are picked up automatically.
+Yes. The Replication panel polls for replication states created with `replicateRxCollection()` or one of the **[replication plugins](./replication.md)** in the same JavaScript context. Replications that start later show up without a reload.
 
 </details>
