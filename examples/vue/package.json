@@ -47,7 +47,7 @@
     "local-web-server": "5.4.2",
     "sass": "^1.80.0",
     "sass-loader": "17.0.1",
-    "testcafe": "3.7.6",
+    "testcafe": "3.7.7",
     "typescript": "5.9.3"
   }
 }
