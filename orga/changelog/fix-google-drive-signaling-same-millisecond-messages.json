@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX Google Drive replication skipped a WebRTC signaling message when another message of the same sender was created in the same millisecond and read in an earlier poll, because the message id was parsed from the wrong part of the file name",
+    "links": [],
+    "priority": 4
+}

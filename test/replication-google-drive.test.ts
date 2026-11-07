@@ -39,7 +39,9 @@ import {
     replicateGoogleDrive,
     SignalingState,
     cleanupOldSignalingMessages,
-    SignalingOptions
+    SignalingOptions,
+    readMessages,
+    insertMultipartFile
 } from '../src/plugins/replication-google-drive/index.ts';
 import config from './unit/config.ts';
 import {
@@ -1153,6 +1155,22 @@ describe('replication-google-drive.test.ts', function () {
                 options.initData.signalingFolderId
             );
             await state.close();
+        });
+        it('should not skip a message that was sent in the same millisecond as an already read one', async () => {
+            const processedMessageIds = new Set<string>();
+            const signalingFolderId = options.initData.signalingFolderId;
+
+            /**
+             * now() can return the same millisecond with a different
+             * decimal part, like 1794000000000.01 and 1794000000000.02
+             */
+            await insertMultipartFile(options, signalingFolderId, 'sender_1794000000000.01_msgone.json', { nr: 1 });
+            const firstRead = await readMessages(options, options.initData, processedMessageIds);
+            assert.deepStrictEqual(firstRead.map(m => m.data), [{ nr: 1 }]);
+
+            await insertMultipartFile(options, signalingFolderId, 'sender_1794000000000.02_msgtwo.json', { nr: 2 });
+            const secondRead = await readMessages(options, options.initData, processedMessageIds);
+            assert.deepStrictEqual(secondRead.map(m => m.data), [{ nr: 2 }]);
         });
         it('two clients should now about each other', async () => {
             const state1 = new SignalingState(
