@@ -11,7 +11,7 @@ import {BetaBlock} from '@site/src/components/beta-block';
 
 # Database Viewer
 
-When you build a local-first app, the data lives on the user's device and not on a server you can just open a SQL console on. So when something looks wrong, you end up writing `console.log()` calls into your app to see what is stored. With the `dbviewer` plugin you instead get a full devtool over a running [RxDB](https://rxdb.info/) database. You can browse every [RxCollection](./rx-collection.md), run queries, edit documents and watch [replication](./replication.md) while your app is running.
+When you build a local-first app, the data lives on the user's device and not on a server where you can just log in and look at it. So when something looks wrong, you end up writing `console.log()` calls into your app to see what is stored. With the `dbviewer` plugin you instead get a full devtool over a running [RxDB](https://rxdb.info/) database. You can browse every [RxCollection](./rx-collection.md), run queries, edit documents and watch [replication](./replication.md) while your app is running.
 
 <BetaBlock since="17.7.0" />
 
