@@ -51,6 +51,10 @@ On screens smaller than 640px the viewer switches to a touch layout with the sam
   <img src="./files/dbviewer-explain.png" alt="RxDB database viewer query explain view" width="760" />
 </p>
 
+<p align="center">
+  <img src="./files/dbviewer-cleanup.png" alt="RxDB database viewer cleanup tool" width="760" />
+</p>
+
 ## How It Works
 
 The plugin itself contains no UI code. `mountRxDBViewer()` creates an iframe that loads the viewer page from [rxdb.info/db-viewer/index.html](https://rxdb.info/db-viewer/index.html) and then serves the database to that iframe over `postMessage`. The page is one self-contained HTML file.
@@ -291,25 +295,6 @@ viewer.close$.subscribe(() => {
     // hide the panel that contains the viewer
 });
 ```
-
-## Editing Is Explicit
-
-A devtool that writes to your data without asking is a good way to lose data. Therefore the viewer never writes silently. When you change a value in the grid or the drawer, the change is only staged. A WILL RUN block shows the exact call that will be executed when you click Apply changes, and nothing runs before that:
-
-```ts
-// applied on save, nothing has run yet
-await myDatabase.todos.findOne('todo1').incrementalPatch({
-    name: 'Learn RxDB in depth'
-});
-```
-
-Edits of an existing document run `incrementalPatch()` with only the changed fields. New documents run `insert()`. This means your [middleware hooks](./middleware.md) of the insert path do not fire for an update. When a write fails, for example because the [schema validation](./schema-validation.md) rejects the document, the viewer shows the [RxError](./errors.md) with its parameters as JSON.
-
-Deleting is the most dangerous operation, so it needs one more step. The confirmation dialog tells you how many documents match, that the deletes are replicated to connected peers, and that the tombstones stay in the storage until the next [cleanup](./cleanup.md). The delete button stays disabled until you type the name of the collection.
-
-<p align="center">
-  <img src="./files/dbviewer-cleanup.png" alt="RxDB database viewer cleanup tool" width="760" />
-</p>
 
 ## Remote Pairing over WebRTC
 
