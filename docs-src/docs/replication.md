@@ -423,9 +423,11 @@ you need to import the [leader election plugin](./leader-election.md) so that Rx
 
 When sending a document to the remote fails for any reason, RxDB will send it again in a later point in time.
 This happens for **all** errors. The document write could have already reached the remote instance and be processed, while only the answering fails.
-The remote instance must be designed to handle this properly and to not crash on duplicate data transmissions. 
-Depending on your use case, it might be ok to just write the duplicate document data again.
-But for a more resilient error handling you could compare the last write timestamps or add a unique write id field to the document. This field can then be used to detect duplicates and ignore re-sent data.
+The remote instance must be designed to handle this properly and to not crash on duplicate data transmissions.
+
+You do not need a request id or a write id to detect these duplicates. Each push row contains the `assumedMasterState`, and the backend MUST only apply the row when the current master state equals it, otherwise it returns the current master state as a conflict. This makes the push idempotent per document: when a retried row was already applied, the master no longer equals the `assumedMasterState`, so the backend returns a conflict instead of writing again. RxDB detects that the returned master state is exactly the state it has sent and handles the row as successfully pushed. Because the replication sends full document states and not operations like "increment by one", applying the same row twice cannot change the result.
+
+The trouble starts when the backend ignores the `assumedMasterState` and does an unconditional upsert. Then a retried push can overwrite writes of other clients that happened in between. Also, push batches are not atomic: a request can fail after some rows have been written, so the backend has to handle each row on its own.
 
 Also the replication has an `.error$` stream that emits all [RxError](./errors.md) objects that arise during replication.
 Notice that these errors contain an inner `.parameters.errors` field that contains the original error. Also they contain a `.parameters.direction` field that indicates if the error was thrown during `pull` or `push`. You can use these to properly handle errors. For example when the client is outdated, the server might respond with a `426 Upgrade Required` error code that can then be used to force a page reload.

@@ -423,6 +423,25 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
                     const masterWriteResult = await replicationHandler.masterWrite(writeBatch);
                     masterWriteResult.forEach(conflictDoc => {
                         const id = (conflictDoc as any)[state.primaryPath];
+                        const sentState = writeRowsToMaster[id] ? writeRowsToMaster[id].newDocumentState : undefined;
+                        /**
+                         * When the response of an earlier push was lost, the retry
+                         * gets a conflict where the master already contains
+                         * exactly the state that was sent. This is not a conflict,
+                         * the write has been applied, so it is handled like a success.
+                         * Otherwise the conflict handler might overwrite
+                         * newer local writes with the old pushed state.
+                         */
+                        if (
+                            sentState &&
+                            state.input.conflictHandler.isEqual(
+                                conflictDoc as any,
+                                sentState,
+                                'upstream-check-if-equal'
+                            )
+                        ) {
+                            return;
+                        }
                         conflictIds.add(id);
                         conflictsById[id] = conflictDoc;
                     });
