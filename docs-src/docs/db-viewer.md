@@ -361,7 +361,7 @@ The grid, the queries, the Schema panel and the storage counts work the same as 
 
 ## Self-Hosting the Viewer Page
 
-By default the iframe loads the viewer page from `https://rxdb.info/db-viewer/index.html`. This will not work when your app has to run offline, or when your Content Security Policy does not allow pages from other origins. In these cases you serve the page from your own origin. Because the page is one HTML file without further assets, self-hosting is just a file copy:
+By default the iframe loads the viewer page from `https://rxdb.info/db-viewer/index.html`. This will not work when your app has to run offline, or when your Content Security Policy does not allow pages from other origins. In these cases you serve the page from your own origin. Because the page is one self-contained HTML file, self-hosting is just a file copy:
 
 1. **Get the file**. Download it once from [rxdb.info/db-viewer/index.html](https://rxdb.info/db-viewer/index.html), or build it from the RxDB repository with `npm run build:dbviewer`, which writes it to `docs-src/static/db-viewer/index.html`.
 2. **Serve it as a static asset** of your app, for example as `public/dbviewer.html`. It has to be served over http(s). A `file://` url does not work because `postMessage` needs an origin.
