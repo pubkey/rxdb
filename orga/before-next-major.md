@@ -88,6 +88,24 @@ These things have to be handled:
 
 Open question, not decided: whether the free plugin should keep using `crypto-js` at all. `encryptString()` calls `AES.encrypt(value, password)` with the password as a string, which makes crypto-js derive the key with the OpenSSL compatible scheme (MD5, one iteration) and produce unauthenticated AES-CBC. `MINIMUM_PASSWORD_LENGTH` is `8`. The [encryption docs](https://rxdb.info/encryption.html) now carry a warning that points security relevant users at `encryption-web-crypto`. Moving the free plugin to the Web Crypto API as well, or deprecating it, is a separate decision and a separate breaking change, because it changes the ciphertext format and makes existing stored data unreadable without a migration.
 
+## Enable enum-compression in the key-compression plugin
+
+`jsonschema-key-compression` can store the value of a property as the index of that value inside of the `enum` of the property. With the enum `['admin', 'editor', 'viewer']` the value `'editor'` is stored as the number `1`. It is opt-in with the fourth parameter of `createCompressionTable()`, exactly because turning it on changes the stored format. See https://github.com/pubkey/jsonschema-key-compression/pull/756
+
+Only enums where every value is a string are compressed, and only when the property name has the same enum at every place where it occurs in the schema, so the gain depends on the schema. On the test object of the library it is 300 to 291 characters raw and 181 to 174 gzipped, and the gain grows with the length of the enum values.
+
+In the next major:
+- Pass `true` as the fourth parameter of the `createCompressionTable()` call in `getCompressionStateByRxJsonSchema()` in `src/plugins/key-compression/index.ts`. Nothing else in the plugin has to change, `compressObject()`, `decompressObject()`, `compressQuery()` and `createCompressedJsonSchema()` all read the enum-table from the compression-table.
+- Also rename the key-compression plugin to be just called 'compression', because it then no longer compresses only the keys.
+
+Why it is breaking, and what has to be handled:
+
+- **Documents that are already stored keep the string value.** The compressed schema declares `type: 'number'` with the indexes as `enum` for such a field, so an old document no longer validates against it, and a query for `'editor'` is compressed to `1` and does not match it. This needs a schema version bump and a migration strategy that rewrites every document. `decompressObject()` leaves a value that is not an index untouched, so the old string should survive the read of the migration and be written back as an index, but that has to be verified against the storages, not assumed.
+- **Indexes over an enum field change their stored values** from strings to numbers. The indexes are rebuilt by the migration anyway, but any code that reads an index value directly, or a `$gt`/`$lt` bound that is sent to the storage for such a field, is affected. The indexes themselves stay correctly ordered, because the library assigns them in the alphabetical order of the values.
+- **`$type` and `$mod` are not transformed by `compressQuery()`.** On an enum field they would run against the number instead of the string. Decide whether to document that or to throw in dev-mode.
+- **It assumes the data matches the schema.** A document that stores a number where the schema declares a string-enum cannot be told apart from an already compressed value. The schema validation plugins catch this, but they are optional, so this should at least be a dev-mode check or a line in the docs.
+- It needs the `jsonschema-key-compression` release that contains enum-compression, which is not released yet.
+
 ---------------------------------
 ## Maybe later (not sure if should be done)
 
@@ -105,9 +123,6 @@ In the RxJsonSchema, a property of a document can have multiple types like
 This is bad and should not be used. Instead each field must have exactly one type.
 Having mixed types causes many confusion, for example when the type is `['string', 'number']`,
 you could run a query selector like `$gt: 10` where it now is not clear if the string `foobar` is matching or not.
-
-## Add enum-compression to the key-compression plugin
-- Also rename the key-compression plugin to be just called 'compression'
 
 ## RxStorage: Add RxStorage.info() which also calls parents
 
