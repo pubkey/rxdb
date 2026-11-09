@@ -598,7 +598,7 @@
     "graphql": "17.0.2",
     "graphql-ws": "6.4.1",
     "is-my-json-valid": "2.20.6",
-    "js-base64": "3.9.5",
+    "js-base64": "3.9.6",
     "jsonschema-key-compression": "1.7.0",
     "mingo": "7.2.5",
     "nostr-tools": "2.25.2",
