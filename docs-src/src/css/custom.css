@@ -1399,6 +1399,20 @@ footer a:visited {
     cursor: pointer;
 }
 
+/**
+ * The close icon scales up when its clickable parent is hovered,
+ * so the whole click area triggers the effect, not only the painted
+ * squares of the svg.
+ */
+.icon-close--clickable {
+    transition: transform 0.2s ease-in-out;
+}
+
+button:hover > .icon-close--clickable,
+.close-popup:hover > .icon-close--clickable {
+    transform: scale(1.2);
+}
+
 .call-to-action-popup a {}
 
 #__docusaurus {
