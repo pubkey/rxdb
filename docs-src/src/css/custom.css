@@ -1543,6 +1543,34 @@ html #cc-main a {
     margin: 0 0 12px 0;
 }
 
+/* zoomable screenshots, see src/components/centered-image.tsx */
+.centered-image__zoom {
+    display: inline-block;
+    max-width: 100%;
+    padding: 0;
+    border: none;
+    background: transparent;
+    cursor: zoom-in;
+}
+
+.centered-image__zoom:focus-visible {
+    outline: 2px solid var(--ifm-color-primary);
+    outline-offset: 4px;
+}
+
+.centered-image__modal .my-modal__content {
+    width: auto;
+    overflow: auto;
+}
+
+.centered-image__full {
+    display: block;
+    max-width: 100%;
+    max-height: calc(90vh - 80px);
+    margin: 0 auto;
+    object-fit: contain;
+}
+
 @keyframes my-modal-zoom-in {
     from {
         transform: scale(0.2);
