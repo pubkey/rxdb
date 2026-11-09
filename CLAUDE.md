@@ -24,6 +24,7 @@
 
 ## Runtime Environment
 - A GitHub token is available in the env var `GITHUB_ACCESS_TOKEN` (never print it). Use it for GitHub API calls in scripts.
+- A Firecrawl API key is available in the env var `FIRECRAWL_API` (never print it). Use it to crawl public web pages, for example docs or competitor pages for articles. Do NOT use it to scrape GitHub profiles or to collect personal data.
 
 ## Docs Hosting
 - The docs at rxdb.info are deployed via GitHub Pages from the `docs` branch. They are NOT hosted on Cloudflare Pages; the deploy step in `.github/workflows/cloudflare-pages.yml` is commented out and inactive.
