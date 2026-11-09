@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 
 export function IconClose({
   className = '',
@@ -9,8 +9,6 @@ export function IconClose({
   style?: React.CSSProperties;
   clickable?: boolean;
 }) {
-  const [hovered, setHovered] = useState(false);
-
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -18,16 +16,12 @@ export function IconClose({
       height="20"
       viewBox="0 0 20 20"
       fill="none"
-      className={className}
+      className={(clickable ? 'icon-close--clickable ' : '') + className}
       style={{
-        ...style,
-        transform: hovered && clickable ? 'scale(1.2)' : 'scale(1)',
-        transition: clickable ? 'transform 0.2s ease-in-out' : undefined,
         display: 'inline-block',
         cursor: clickable ? 'pointer' : 'default',
+        ...style,
       }}
-      onMouseEnter={() => clickable && setHovered(true)}
-      onMouseLeave={() => clickable && setHovered(false)}
     >
       <path d="M4 16H8L8 12H4L4 16Z" fill="white" />
       <path d="M0 20H4L4 16H0L0 20Z" fill="white" />
