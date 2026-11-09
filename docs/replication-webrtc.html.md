@@ -190,7 +190,7 @@ const serverState = await startSignalingServerSimplePeer({
 });
 ```
 
-For custom signaling servers with more complex logic, you can check the [source code of the default one](https://github.com/pubkey/rxdb/blob/master/src/plugins/replication-webrtc/signaling-server.ts).
+For custom signaling servers with more complex logic, you can check the [source code of the default one](https://github.com/pubkey/rxdb/blob/master/src/plugins/replication-webrtc/signaling-server.ts). The same signaling server also works for [pairing the database viewer](./db-viewer.md#remote-pairing-over-webrtc) with an app that runs on another device.
 
 ## Signaling over Nostr Relays
 

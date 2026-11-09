@@ -6,7 +6,7 @@ import {PremiumBlock} from '@site/src/components/premium-block';
 
 # Query Optimizer
 
-The query optimizer can be used to determine which index is the best to use for a given query.
+The query optimizer can be used to determine which index is the best to use for a given query. To see which index a single query uses right now, run it with the Explain button of the [database viewer](./db-viewer.md).
 Because RxDB is used in client side applications, it cannot do any background checks or measurements to optimize the query plan because that would cause significant performance problems.
 
 ## Usage

@@ -431,7 +431,7 @@ Be aware that client side clocks can never be trusted. When you have a client-ba
 
 ## RxReplicationState
 
-The function `replicateRxCollection()` returns a `RxReplicationState` that can be used to manage and observe the replication.
+The function `replicateRxCollection()` returns a `RxReplicationState` that can be used to manage and observe the replication. To watch the pull and push state and the replicated documents without writing any code, open the Replication panel of the [database viewer](./db-viewer.md).
 
 ### Observable
 

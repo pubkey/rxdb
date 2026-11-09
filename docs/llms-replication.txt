@@ -2732,7 +2732,7 @@ const serverState = await startSignalingServerSimplePeer({
 });
 ```
 
-For custom signaling servers with more complex logic, you can check the [source code of the default one](https://github.com/pubkey/rxdb/blob/master/src/plugins/replication-webrtc/signaling-server.ts).
+For custom signaling servers with more complex logic, you can check the [source code of the default one](https://github.com/pubkey/rxdb/blob/master/src/plugins/replication-webrtc/signaling-server.ts). The same signaling server also works for [pairing the database viewer](./db-viewer.md#remote-pairing-over-webrtc) with an app that runs on another device.
 
 ### Signaling over Nostr Relays
 
@@ -3456,7 +3456,7 @@ Be aware that client side clocks can never be trusted. When you have a client-ba
 
 ### RxReplicationState
 
-The function `replicateRxCollection()` returns a `RxReplicationState` that can be used to manage and observe the replication.
+The function `replicateRxCollection()` returns a `RxReplicationState` that can be used to manage and observe the replication. To watch the pull and push state and the replicated documents without writing any code, open the Replication panel of the [database viewer](./db-viewer.md).
 
 #### Observable
 

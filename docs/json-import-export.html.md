@@ -65,7 +65,7 @@ Notice that importing fires a change event for each inserted document, so open [
 
 ## Export a database
 
-On the database level, `exportJSON()` runs the export for every collection and puts the results into one object.
+On the database level, `exportJSON()` runs the export for every collection and puts the results into one object. You can open such a dump read-only in the [database viewer](./db-viewer.md#dump-mode) to browse and query it.
 
 ```ts
 const json = await myDatabase.exportJSON();
