@@ -22,6 +22,9 @@
 - **Generate Error Messages**: `npm run generate:error-messages`
 - **Start Docs Server**: `npm run docs:serve`
 
+## Runtime Environment
+- A GitHub token is available in the env var `GITHUB_ACCESS_TOKEN` (never print it). Use it for GitHub API calls in scripts.
+
 ## Docs Hosting
 - The docs at rxdb.info are deployed via GitHub Pages from the `docs` branch. They are NOT hosted on Cloudflare Pages; the deploy step in `.github/workflows/cloudflare-pages.yml` is commented out and inactive.
 - GitHub Pages serves static files only: there are no server-side functions and no access to request logs. Any feature that needs server-side logic or log analysis requires an external endpoint.
