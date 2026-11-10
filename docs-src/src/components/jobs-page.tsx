@@ -40,10 +40,10 @@ const LANG_NAMES: { [lang in JobsLang]: string } = {
 const TEXTS = {
     en: {
         title: JOBS_TITLE,
-        description: 'Open working student positions at RxDB in Stuttgart, Germany. 17 € per hour.',
+        description: 'Open positions at RxDB: working students in Stuttgart, Germany, and a remote B2B sales role for customers in the USA.',
         headline: 'Careers at',
         switchLanguage: 'Diese Seite auf Deutsch lesen',
-        intro: 'RxDB is a database that runs in the browser and on the phone. Apps built with it keep working without a network connection and sync once the connection is back. RxDB is an open source project used by developers all over the world, and we are looking for people who want to build things, not just collect credit points. Both open positions are Werkstudent roles in Stuttgart, Germany 🇩🇪.',
+        intro: 'RxDB is a database that runs in the browser and on the phone. Apps built with it keep working without a network connection and sync once the connection is back. RxDB is an open source project used by developers all over the world, and we are looking for people who want to build things, not just collect credit points. The working student positions are in Stuttgart, Germany 🇩🇪. The sales position is fully remote.',
         customersTitle: 'Who uses RxDB',
         /**
          * Only customers that are public on the rxdb.info start page are
@@ -68,9 +68,11 @@ const TEXTS = {
         sectionRequirements: 'What you bring',
         sectionConditions: 'What you get',
         /**
-         * The conditions are identical for both positions, so they live in one
-         * place and are rendered into each advert. Each advert has to stand on
-         * its own, because a visitor reads one of them and never the other.
+         * The conditions are identical for all working student positions, so
+         * they live in one place and are rendered into each of their adverts.
+         * Each advert has to stand on its own, because a visitor reads one of
+         * them and never the other. A position with other conditions sets its
+         * own `summary` and `conditions`.
          */
         conditions: [
             '17 € per hour',
@@ -98,9 +100,7 @@ const TEXTS = {
             }
         ],
         /**
-         * Both positions are German Werkstudent jobs based in Stuttgart. The
-         * English titles keep the German term, which is the actual employment
-         * status rather than a translation. Same order as in JOBS.
+         * Same order as in JOBS.
          */
         jobs: [
             {
@@ -136,15 +136,57 @@ const TEXTS = {
                     'You are curious about software. You do not write code in this role, but you follow what happens on screen and can read a short snippet.',
                     'You have a feel for what makes people stop scrolling'
                 ]
+            },
+            {
+                title: 'B2B Sales Representative (m/f/d), Developer Tools, Remote',
+                teaser: 'You find and win the companies that build their apps with RxDB. Most of them are in the USA. You talk to CTOs and lead developers, understand what their app needs, and show them how RxDB Premium and our consulting solve it. You earn commission on every deal you close.',
+                summary: 'Freelance, commission based, fully remote, sales in English',
+                tasks: [
+                    'Find companies that build offline-first and local-first apps and need RxDB Premium, support or consulting',
+                    'Reach out to CTOs, tech leads and developers by email, LinkedIn and phone',
+                    'Run discovery calls and demos in English, mostly with customers in the USA',
+                    'Take deals from the first contact to the signed contract',
+                    'Keep all leads and deals up to date in Pipedrive',
+                    'Report back what customers ask for, so it ends up in the product'
+                ],
+                requirements: [
+                    'Several years of B2B sales experience, ideally with software, SaaS or developer tools. Show us numbers: deals closed, deal sizes, quota.',
+                    'Fluent English, spoken and written. Selling to US companies is not new to you.',
+                    'Basic programming knowledge. You can read a JavaScript snippet and talk to developers without a script.',
+                    'You work on your own, keep your pipeline full, and do not need anyone to tell you what to do next'
+                ],
+                conditions: [
+                    'Freelance contract with commission on every closed deal',
+                    'Fully remote, from wherever you are. Your hours overlap with US business hours.',
+                    'Workload by arrangement, part-time or full-time',
+                    'Start date by arrangement',
+                    'Direct line to the founder, no layers of management'
+                ]
             }
         ]
     },
     de: JOBS_TEXTS_DE
 };
 
-const JOBS = [
+type JobConfig = {
+    id: string;
+    formUrl: string;
+    /**
+     * Date the position was first published. Search engines use it to
+     * decide how fresh a JobPosting is.
+     */
+    datePosted: string;
+    /**
+     * Remote positions are marked as TELECOMMUTE in the JobPosting markup
+     * and have no fixed hourly wage.
+     */
+    remote?: boolean;
+};
+
+const JOBS: JobConfig[] = [
     {
         id: 'frontend',
+        datePosted: '2026-10-21',
         /**
          * Each position has its own Pipedrive webform, so an application
          * arrives already assigned to a position and the form does not have
@@ -154,15 +196,34 @@ const JOBS = [
     },
     {
         id: 'video',
+        datePosted: '2026-10-21',
         formUrl: 'https://webforms.pipedrive.com/f/6ULD69TOWMqORnAypjPo1bdwhsesN2fDV6KxV3qLLYIPaJhOP8rNnznmTTk7Pojq39'
+    },
+    {
+        id: 'sales',
+        datePosted: '2026-11-10',
+        // TODO replace with the own Pipedrive webform of the sales position
+        formUrl: 'https://webforms.pipedrive.com/f/czK0WxW1wnP2HOdt6VkTVENuSfO4WvZsVeFXTCAy1a6wazfJcSa0BHBiWNoj1YKZTZ',
+        remote: true
     }
 ];
 
-/**
- * Date the current positions were first published. Search engines use it to
- * decide how fresh a JobPosting is, so update it when a new position is added.
- */
-const JOBS_DATE_POSTED = '2026-10-21';
+type JobTexts = {
+    title: string;
+    teaser: string;
+    tasks: string[];
+    requirements: string[];
+    summary?: string;
+    conditions?: string[];
+};
+
+function jobSummary(lang: JobsLang, job: JobTexts): string {
+    return job.summary ?? TEXTS[lang].summary;
+}
+
+function jobConditions(lang: JobsLang, job: JobTexts): string[] {
+    return job.conditions ?? TEXTS[lang].conditions;
+}
 
 /**
  * Must match the hourly wage that is named in the visible texts.
@@ -189,44 +250,61 @@ function htmlList(title: string, items: string[]): string {
  */
 function jobPostingsJsonLd(lang: JobsLang) {
     const t = TEXTS[lang];
-    return t.jobs.map(job => ({
-        '@context': 'https://schema.org',
-        '@type': 'JobPosting',
-        title: job.title,
-        description: '<p>' + escapeHtml(job.teaser) + '</p>' +
-            htmlList(t.sectionTasks, job.tasks) +
-            htmlList(t.sectionRequirements, job.requirements) +
-            htmlList(t.sectionConditions, t.conditions),
-        datePosted: JOBS_DATE_POSTED,
-        employmentType: 'PART_TIME',
-        url: 'https://rxdb.info' + URLS[lang],
-        inLanguage: lang,
-        hiringOrganization: {
-            '@type': 'Organization',
-            name: 'RxDB',
-            sameAs: 'https://rxdb.info/',
-            logo: 'https://rxdb.info/files/logo/logo.svg'
-        },
-        jobLocation: {
-            '@type': 'Place',
-            address: {
-                '@type': 'PostalAddress',
-                addressLocality: 'Stuttgart',
-                addressRegion: 'Baden-Württemberg',
-                addressCountry: 'DE'
+    return t.jobs.map((job: JobTexts, i) => {
+        const config = JOBS[i];
+        const base = {
+            '@context': 'https://schema.org',
+            '@type': 'JobPosting',
+            title: job.title,
+            description: '<p>' + escapeHtml(job.teaser) + '</p>' +
+                htmlList(t.sectionTasks, job.tasks) +
+                htmlList(t.sectionRequirements, job.requirements) +
+                htmlList(t.sectionConditions, jobConditions(lang, job)),
+            datePosted: config.datePosted,
+            url: 'https://rxdb.info' + URLS[lang],
+            inLanguage: lang,
+            hiringOrganization: {
+                '@type': 'Organization',
+                name: 'RxDB',
+                sameAs: 'https://rxdb.info/',
+                logo: 'https://rxdb.info/files/logo/logo.svg'
             }
-        },
-        baseSalary: {
-            '@type': 'MonetaryAmount',
-            currency: 'EUR',
-            value: {
-                '@type': 'QuantitativeValue',
-                value: JOBS_HOURLY_WAGE_EUR,
-                unitText: 'HOUR'
-            }
-        },
-        workHours: '10-20 hours per week'
-    }));
+        };
+        if (config.remote) {
+            return {
+                ...base,
+                employmentType: 'CONTRACTOR',
+                jobLocationType: 'TELECOMMUTE',
+                applicantLocationRequirements: {
+                    '@type': 'Country',
+                    name: 'USA'
+                }
+            };
+        }
+        return {
+            ...base,
+            employmentType: 'PART_TIME',
+            jobLocation: {
+                '@type': 'Place',
+                address: {
+                    '@type': 'PostalAddress',
+                    addressLocality: 'Stuttgart',
+                    addressRegion: 'Baden-Württemberg',
+                    addressCountry: 'DE'
+                }
+            },
+            baseSalary: {
+                '@type': 'MonetaryAmount',
+                currency: 'EUR',
+                value: {
+                    '@type': 'QuantitativeValue',
+                    value: JOBS_HOURLY_WAGE_EUR,
+                    unitText: 'HOUR'
+                }
+            },
+            workHours: '10-20 hours per week'
+        };
+    });
 }
 
 function Section(props: { title: string; items: string[]; }) {
@@ -302,7 +380,7 @@ export function JobsPage(props: { lang: JobsLang; }) {
         triggerTrackingEvent('jobs_form_open_' + JOBS[index].id, 0.5);
     };
 
-    const job = openJob === null ? null : t.jobs[openJob];
+    const job: JobTexts | null = openJob === null ? null : t.jobs[openJob];
 
     return (
         <>
@@ -440,7 +518,7 @@ export function JobsPage(props: { lang: JobsLang; }) {
                                                 opacity: 0.7,
                                                 flexGrow: 1
                                             }}>
-                                                {t.summary}
+                                                {jobSummary(lang, entry)}
                                             </div>
                                             <div style={{ textAlign: 'center', marginTop: 28 }}>
                                                 <Button primary onClick={(event) => {
@@ -480,7 +558,7 @@ export function JobsPage(props: { lang: JobsLang; }) {
                                     <div style={{ fontSize: 15, lineHeight: '23px' }}>{job.teaser}</div>
                                     <Section title={t.sectionTasks} items={job.tasks} />
                                     <Section title={t.sectionRequirements} items={job.requirements} />
-                                    <Section title={t.sectionConditions} items={t.conditions} />
+                                    <Section title={t.sectionConditions} items={jobConditions(lang, job)} />
                                 </div>
                                 <div style={{
                                     textAlign: 'center',

@@ -9,10 +9,10 @@ export const JOBS_TEXTS_DE = {
      * here. Only JOBS_TITLE is exempt from the suffix.
      */
     title: 'Jobs & offene Stellen',
-    description: 'Offene Werkstudentenstellen bei RxDB in Stuttgart. 17 € pro Stunde.',
+    description: 'Offene Stellen bei RxDB: Werkstudenten in Stuttgart und eine Remote-Stelle im B2B-Vertrieb für Kunden in den USA.',
     headline: 'Karriere bei',
     switchLanguage: 'Read this page in English',
-    intro: 'RxDB ist eine Datenbank, die im Browser und auf dem Handy läuft. Apps, die damit gebaut sind, funktionieren ohne Netz weiter und synchronisieren, sobald wieder eine Verbindung da ist. RxDB ist ein Open-Source-Projekt, das Entwickler auf der ganzen Welt nutzen, und wir suchen Leute, die etwas bauen wollen, statt nur Credit Points zu sammeln. Beide offenen Stellen sind Werkstudentenstellen in Stuttgart 🇩🇪.',
+    intro: 'RxDB ist eine Datenbank, die im Browser und auf dem Handy läuft. Apps, die damit gebaut sind, funktionieren ohne Netz weiter und synchronisieren, sobald wieder eine Verbindung da ist. RxDB ist ein Open-Source-Projekt, das Entwickler auf der ganzen Welt nutzen, und wir suchen Leute, die etwas bauen wollen, statt nur Credit Points zu sammeln. Die Werkstudentenstellen sind in Stuttgart 🇩🇪, die Vertriebsstelle ist komplett remote.',
     customersTitle: 'Wer RxDB einsetzt',
     customers: [
         'Venice.ai, eine KI-Plattform mit über 3 Millionen Nutzern, streamt die Antworten ihrer KI direkt in RxDB.',
@@ -86,6 +86,32 @@ export const JOBS_TEXTS_DE = {
                 'Du drehst und schneidest selbstständig. Zeig uns deine besten Arbeitsproben, ein Portfolio, einen Kanal oder ein Reel.',
                 'Du interessierst dich für Software. Programmieren gehört nicht zur Stelle, aber du verstehst, was auf dem Bildschirm passiert, und kannst ein kurzes Code-Snippet lesen.',
                 'Du hast ein Gespür dafür, was Leute beim Scrollen stoppen lässt'
+            ]
+        },
+        {
+            title: 'B2B Sales Representative (m/w/d), Developer Tools, Remote',
+            teaser: 'Du findest und gewinnst die Firmen, die ihre Apps mit RxDB bauen. Die meisten davon sitzen in den USA. Du sprichst mit CTOs und Lead-Entwicklern, verstehst, was ihre App braucht, und zeigst ihnen, wie RxDB Premium und unser Consulting das lösen. An jedem Abschluss verdienst du Provision.',
+            summary: 'Freelance, auf Provision, komplett remote, Vertrieb auf Englisch',
+            tasks: [
+                'Firmen finden, die Offline-First- und Local-First-Apps bauen und RxDB Premium, Support oder Consulting brauchen',
+                'CTOs, Tech Leads und Entwickler per E-Mail, LinkedIn und Telefon ansprechen',
+                'Discovery Calls und Demos auf Englisch führen, vor allem mit Kunden in den USA',
+                'Deals vom ersten Kontakt bis zum unterschriebenen Vertrag führen',
+                'Alle Leads und Deals in Pipedrive aktuell halten',
+                'Weitergeben, was Kunden fragen, damit es im Produkt landet'
+            ],
+            requirements: [
+                'Mehrere Jahre Erfahrung im B2B-Vertrieb, idealerweise mit Software, SaaS oder Developer Tools. Zeig uns Zahlen: Abschlüsse, Dealgrößen, Quote.',
+                'Fließendes Englisch in Wort und Schrift. Verkaufen an Firmen in den USA ist für dich nichts Neues.',
+                'Grundkenntnisse im Programmieren. Du kannst ein JavaScript-Snippet lesen und mit Entwicklern ohne Skript reden.',
+                'Du arbeitest selbstständig, hältst deine Pipeline voll und brauchst niemanden, der dir sagt, was als Nächstes zu tun ist'
+            ],
+            conditions: [
+                'Freelance-Vertrag mit Provision auf jeden Abschluss',
+                'Komplett remote, von wo du willst. Deine Arbeitszeit überschneidet sich mit den US-Geschäftszeiten.',
+                'Umfang nach Absprache, Teilzeit oder Vollzeit',
+                'Start nach Absprache',
+                'Direkter Draht zum Gründer, keine Hierarchieebenen'
             ]
         }
     ]
