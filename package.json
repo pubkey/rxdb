@@ -660,7 +660,7 @@
     "exists-file": "3.0.2",
     "express": "5.2.1",
     "fake-indexeddb": "6.2.7",
-    "firebase": "13.0.0",
+    "firebase": "13.2.0",
     "firebase-tools": "15.34.2",
     "get-port": "7.2.0",
     "global-jsdom": "30.0.0",
