@@ -12,7 +12,7 @@ exports.config = {
     {
       maxInstances: 1,
       'tauri:options': {
-        application: './src-tauri/target/release/tauri',
+        application: './src-tauri/target/debug/tauri',
       },
     },
   ],
