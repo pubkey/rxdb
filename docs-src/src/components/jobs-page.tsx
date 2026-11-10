@@ -202,8 +202,7 @@ const JOBS: JobConfig[] = [
     {
         id: 'sales',
         datePosted: '2026-11-10',
-        // TODO replace with the own Pipedrive webform of the sales position
-        formUrl: 'https://webforms.pipedrive.com/f/czK0WxW1wnP2HOdt6VkTVENuSfO4WvZsVeFXTCAy1a6wazfJcSa0BHBiWNoj1YKZTZ',
+        formUrl: 'https://webforms.pipedrive.com/f/5XciDj8cGZzCInjoVwiSLoSoFUGNxdPuTPaFmYInYmzBMKiBtrm8HJmbBZUODrTYZB',
         remote: true
     }
 ];
