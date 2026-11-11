@@ -1,6 +1,11 @@
 import { countUntilNotMatching } from './plugins/utils/index.ts';
 import { newRxError } from './rx-error.ts';
 import { getSchemaByObjectPath } from './rx-schema-helper.ts';
+import { getStringLengthOfIndexNumber } from './custom-index.ts';
+import {
+    INDEX_MAX,
+    INDEX_MIN
+} from './query-planner-bounds.ts';
 import type {
     FilledMangoQuery,
     MangoQuerySelector,
@@ -11,24 +16,16 @@ import type {
     RxQueryPlanerOpts
 } from './types/index.d.ts';
 
-export const INDEX_MAX = String.fromCharCode(65535);
+export {
+    INDEX_MAX,
+    INDEX_MIN
+};
 
 /**
  * The biggest single character string that is sorted
  * before all strings that start with INDEX_MAX.
  */
 const INDEX_MAX_LOWER_BOUND = String.fromCharCode(65534);
-
-/**
- * Do not use -Infinity here because it would be
- * transformed to null on JSON.stringify() which can break things
- * when the query plan is sent to the storage as json.
- * @link https://stackoverflow.com/a/16644751
- * Notice that for IndexedDB IDBKeyRange we have
- * to transform the value back to -Infinity
- * before we can use it in IDBKeyRange.bound.
- */
-export const INDEX_MIN = Number.MIN_SAFE_INTEGER;
 
 /**
  * Returns the query plan which contains
@@ -172,29 +169,40 @@ export function getQueryPlan<RxDocType>(
             }
 
             /**
-             * When a numeric bound falls outside the schema minimum/maximum,
-             * getNumberIndexString() clamps it to the boundary value.
-             * An exclusive bound clamped to the same string as a boundary
-             * document would incorrectly exclude that document, so we
-             * promote it to inclusive here.
+             * A query value can be any number, also one that is outside
+             * of the schema minimum/maximum or between two steps of the
+             * index precision. getNumberIndexString() cannot represent
+             * these values, so the bound is moved to the next value
+             * that is representable inside of the queried range.
              */
             const schemaPart = getSchemaByObjectPath(schema, indexField);
-            if (schemaPart && (schemaPart.type === 'number' || schemaPart.type === 'integer')) {
-                if (
-                    !matcherOpts.inclusiveStart &&
-                    typeof matcherOpts.startKey === 'number' &&
-                    typeof schemaPart.minimum === 'number' &&
-                    matcherOpts.startKey < schemaPart.minimum
-                ) {
-                    matcherOpts.inclusiveStart = true;
-                }
-                if (
-                    !matcherOpts.inclusiveEnd &&
-                    typeof matcherOpts.endKey === 'number' &&
-                    typeof schemaPart.maximum === 'number' &&
-                    matcherOpts.endKey > schemaPart.maximum
-                ) {
-                    matcherOpts.inclusiveEnd = true;
+            if (
+                schemaPart &&
+                (schemaPart.type === 'number' || schemaPart.type === 'integer') &&
+                typeof schemaPart.minimum === 'number' &&
+                typeof schemaPart.maximum === 'number' &&
+                typeof schemaPart.multipleOf === 'number'
+            ) {
+                const startKey = matcherOpts.startKey;
+                const endKey = matcherOpts.endKey;
+                const hasStart = typeof startKey === 'number' && startKey !== INDEX_MIN;
+                const hasEnd = typeof endKey === 'number' && endKey !== INDEX_MIN;
+                if (hasStart || hasEnd) {
+                    const parsedLengths = getStringLengthOfIndexNumber(schemaPart);
+                    if (hasStart) {
+                        const bound = getRepresentableNumberBound(parsedLengths, startKey as number, true);
+                        if (bound) {
+                            matcherOpts.startKey = bound.key;
+                            matcherOpts.inclusiveStart = bound.inclusive;
+                        }
+                    }
+                    if (hasEnd) {
+                        const bound = getRepresentableNumberBound(parsedLengths, endKey as number, false);
+                        if (bound) {
+                            matcherOpts.endKey = bound.key;
+                            matcherOpts.inclusiveEnd = bound.inclusive;
+                        }
+                    }
                 }
             }
 
@@ -259,6 +267,41 @@ export function getQueryPlan<RxDocType>(
     }
 
     return currentBestQueryPlan;
+}
+
+/**
+ * Returns the bound that must be used in the index range
+ * when the given query value has no index string of its own,
+ * or undefined when the value is representable.
+ * A lower bound is moved up and an upper bound is moved down
+ * to the next representable value, which is then inclusive.
+ * A lower bound above the maximum or an upper bound below
+ * the minimum becomes exclusive so that the range is empty.
+ */
+export function getRepresentableNumberBound(
+    parsedLengths: ReturnType<typeof getStringLengthOfIndexNumber>,
+    value: number,
+    isLowerBound: boolean
+): { key: number; inclusive: boolean; } | undefined {
+    if (value < parsedLengths.minimum) {
+        return { key: parsedLengths.minimum, inclusive: isLowerBound };
+    }
+    if (value > parsedLengths.maximum) {
+        return { key: parsedLengths.maximum, inclusive: !isLowerBound };
+    }
+    const multiplier = parsedLengths.multiplier;
+    const scaled = value * multiplier;
+    /**
+     * Values that differ from a step only by the floating point
+     * error get the index string of that step, same as document values.
+     */
+    if (Math.abs(scaled - Math.round(scaled)) <= Number.EPSILON * 4 * Math.max(1, Math.abs(scaled))) {
+        return undefined;
+    }
+    return {
+        key: (isLowerBound ? Math.ceil(scaled) : Math.floor(scaled)) / multiplier,
+        inclusive: true
+    };
 }
 
 export const LOGICAL_OPERATORS = new Set(['$eq', '$gt', '$gte', '$lt', '$lte']);

@@ -2729,6 +2729,149 @@ describe('rx-storage-query-correctness.test.ts', () => {
         ]
     });
 
+    testCorrectQueries<{ id: string; score: number; }>({
+        testTitle: 'query value that is not a multipleOf step or outside the schema minimum/maximum of an indexed integer field',
+        data: [
+            { id: 'aa', score: 0 },
+            { id: 'bb', score: 4 },
+            { id: 'cc', score: 5 },
+            { id: 'dd', score: 10 }
+        ],
+        schema: {
+            version: 0,
+            indexes: [['score']],
+            primaryKey: 'id',
+            type: 'object',
+            properties: {
+                id: { type: 'string', maxLength: 2 },
+                score: { type: 'integer', minimum: 0, maximum: 10, multipleOf: 1 }
+            },
+            required: ['id', 'score']
+        },
+        queries: [
+            {
+                info: '$lt between two steps',
+                query: { selector: { score: { $lt: 4.5 } }, sort: [{ score: 'asc' }] },
+                selectorSatisfiedByIndex: true,
+                expectedResultDocIds: ['aa', 'bb']
+            },
+            {
+                info: '$lte between two steps',
+                query: { selector: { score: { $lte: 4.5 } }, sort: [{ score: 'asc' }] },
+                selectorSatisfiedByIndex: true,
+                expectedResultDocIds: ['aa', 'bb']
+            },
+            {
+                info: '$gte between two steps',
+                query: { selector: { score: { $gte: 4.5 } }, sort: [{ score: 'asc' }] },
+                selectorSatisfiedByIndex: true,
+                expectedResultDocIds: ['cc', 'dd']
+            },
+            {
+                info: '$gt between two steps',
+                query: { selector: { score: { $gt: 4.5 } }, sort: [{ score: 'asc' }] },
+                selectorSatisfiedByIndex: true,
+                expectedResultDocIds: ['cc', 'dd']
+            },
+            {
+                info: '$gt and $lt between two steps',
+                query: { selector: { score: { $gt: 3.5, $lt: 5.5 } }, sort: [{ score: 'asc' }] },
+                expectedResultDocIds: ['bb', 'cc']
+            },
+            {
+                info: '$eq between two steps',
+                query: { selector: { score: 4.5 }, sort: [{ score: 'asc' }] },
+                expectedResultDocIds: []
+            },
+            {
+                info: '$eq above the maximum',
+                query: { selector: { score: 11 }, sort: [{ score: 'asc' }] },
+                expectedResultDocIds: []
+            },
+            {
+                info: '$eq below the minimum',
+                query: { selector: { score: -1 }, sort: [{ score: 'asc' }] },
+                expectedResultDocIds: []
+            },
+            {
+                info: '$lte below the minimum',
+                query: { selector: { score: { $lte: -1 } }, sort: [{ score: 'asc' }] },
+                expectedResultDocIds: []
+            },
+            {
+                info: '$gte above the maximum',
+                query: { selector: { score: { $gte: 20 } }, sort: [{ score: 'asc' }] },
+                expectedResultDocIds: []
+            },
+            {
+                info: '$gte below the minimum and $lte above the maximum',
+                query: { selector: { score: { $gte: -5, $lte: 20 } }, sort: [{ score: 'asc' }] },
+                expectedResultDocIds: ['aa', 'bb', 'cc', 'dd']
+            },
+            {
+                info: '$gte on a step',
+                query: { selector: { score: { $gte: 4 } }, sort: [{ score: 'asc' }] },
+                selectorSatisfiedByIndex: true,
+                expectedResultDocIds: ['bb', 'cc', 'dd']
+            }
+        ]
+    });
+    testCorrectQueries<{ id: string; score: number; }>({
+        testTitle: 'query value between the steps of an indexed number field with a decimal multipleOf',
+        data: [
+            { id: 'aa', score: -1 },
+            { id: 'bb', score: -0.5 },
+            { id: 'cc', score: 0.5 },
+            { id: 'dd', score: 1 }
+        ],
+        schema: {
+            version: 0,
+            indexes: [['score']],
+            primaryKey: 'id',
+            type: 'object',
+            properties: {
+                id: { type: 'string', maxLength: 2 },
+                score: { type: 'number', minimum: -10, maximum: 10, multipleOf: 0.5 }
+            },
+            required: ['id', 'score']
+        },
+        queries: [
+            {
+                info: '$gt slightly below a step',
+                query: { selector: { score: { $gt: 0.46 } }, sort: [{ score: 'asc' }] },
+                selectorSatisfiedByIndex: true,
+                expectedResultDocIds: ['cc', 'dd']
+            },
+            {
+                info: '$lt slightly above a step',
+                query: { selector: { score: { $lt: 0.54 } }, sort: [{ score: 'asc' }] },
+                selectorSatisfiedByIndex: true,
+                expectedResultDocIds: ['aa', 'bb', 'cc']
+            },
+            {
+                info: '$gte slightly above a negative step',
+                query: { selector: { score: { $gte: -0.46 } }, sort: [{ score: 'asc' }] },
+                expectedResultDocIds: ['cc', 'dd']
+            },
+            {
+                info: '$lte slightly below a negative step',
+                query: { selector: { score: { $lte: -0.54 } }, sort: [{ score: 'asc' }] },
+                expectedResultDocIds: ['aa']
+            },
+            {
+                info: '$eq slightly above a step',
+                query: { selector: { score: 0.52 }, sort: [{ score: 'asc' }] },
+                expectedResultDocIds: []
+            },
+            {
+                info: '$eq on a step',
+                query: { selector: { score: 0.5 }, sort: [{ score: 'asc' }] },
+                selectorSatisfiedByIndex: true,
+                expectedResultDocIds: ['cc']
+            }
+        ]
+    });
+
     /**
      * @link https://github.com/pubkey/rxdb/issues/9371
      */
