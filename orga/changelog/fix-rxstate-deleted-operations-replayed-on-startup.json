@@ -1,0 +1,5 @@
+{
+    "text": "FIX `RxState` restored an outdated state after a reload when `set()` was called while the cleanup merged the state operations, because the deleted operation documents were applied again on startup",
+    "links": [],
+    "priority": 5
+}

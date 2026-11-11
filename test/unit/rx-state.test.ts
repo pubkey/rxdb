@@ -11,9 +11,12 @@ import {
     deepEqual,
     lastOfArray,
     RxReactivityFactory,
+    RxCleanupPolicy,
     RxState,
-    runXTimes
+    runXTimes,
+    randomDelayStorage
 } from '../../plugins/core/index.mjs';
+import { getRxStorageMemory } from '../../plugins/storage-memory/index.mjs';
 import {
     isDeno,
     isFastMode
@@ -27,6 +30,8 @@ addRxPlugin(RxDBStatePlugin);
 import { RxDBAttachmentsPlugin } from '../../plugins/attachments/index.mjs';
 addRxPlugin(RxDBAttachmentsPlugin);
 import { RxDBJsonDumpPlugin } from '../../plugins/json-dump/index.mjs';
+import { RxDBCleanupPlugin } from '../../plugins/cleanup/index.mjs';
+addRxPlugin(RxDBCleanupPlugin);
 import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.mjs';
 addRxPlugin(RxDBJsonDumpPlugin);
 
@@ -320,6 +325,72 @@ addRxPlugin(RxDBJsonDumpPlugin);
                 assert.strictEqual(state.a, amount);
 
                 state.collection.database.remove();
+            });
+            it('should restore the last state after a reload when writes happen while the automatic cleanup runs', async () => {
+                type CounterState = {
+                    [key: string]: number;
+                };
+                const databaseName = randomToken(10);
+                /**
+                 * Use a storage where reads and writes take some time
+                 * like on a persistent storage, so that writes to the state
+                 * overlap with the running cleanup.
+                 */
+                const storage = wrappedValidateAjvStorage({
+                    storage: randomDelayStorage({
+                        storage: getRxStorageMemory(),
+                        delayTimeBefore: () => 2,
+                        delayTimeAfter: () => 2
+                    })
+                });
+                const openState = async (cleanupPolicy?: Partial<RxCleanupPolicy>) => {
+                    const database = await createRxDatabase({
+                        name: databaseName,
+                        storage,
+                        cleanupPolicy
+                    });
+                    return database.addState<CounterState>();
+                };
+
+                // fill the state while no cleanup runs
+                const initialWrites = 10;
+                let state = await openState();
+                await state.set('', () => ({ k0: 0 }));
+                let t = 1;
+                while (t < initialWrites) {
+                    const value = t;
+                    await state.set('k' + value, () => value);
+                    t++;
+                }
+                await state.collection.database.close();
+
+                // reopen so that the cleanup directly starts while new writes happen
+                state = await openState({
+                    awaitReplicationsInSync: false,
+                    minimumCollectionAge: 0,
+                    runEach: 1000 * 60 * 60,
+                    waitForLeadership: false
+                });
+                const writesDuringCleanup = 30;
+                while (t < initialWrites + writesDuringCleanup) {
+                    const value = t;
+                    await state.set('k' + value, () => value);
+                    await wait(5);
+                    t++;
+                }
+                // wait until the cleanup has removed the old operations
+                await waitUntil(async () => {
+                    const docs = await state.collection.find().exec();
+                    return docs.length <= writesDuringCleanup + 1;
+                });
+
+                const stateBeforeClose = state.get();
+                assert.strictEqual(Object.keys(stateBeforeClose).length, initialWrites + writesDuringCleanup);
+                await state.collection.database.close();
+
+                state = await openState();
+                assert.deepStrictEqual(state.get(), stateBeforeClose);
+                await state.collection.database.remove();
             });
         });
         describe('multiInstance', () => {

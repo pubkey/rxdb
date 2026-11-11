@@ -18,6 +18,7 @@ import type {
     RxDatabase,
     RxQuery,
     RxDocument,
+    RxDocumentData,
     RxError,
     RxStorageWriteErrorConflict,
     Paths
@@ -408,6 +409,7 @@ export async function createRxState<T>(
      * This ensures we can do non-async accesses to the
      * correct state.
      */
+    const stateDocuments: RxDocumentData<RxStateDocument>[] = [];
     let done = false;
     let checkpoint: any = undefined;
     while (!done) {
@@ -423,12 +425,29 @@ export async function createRxState<T>(
         } else {
             for (let index = 0; index < documents.length; index++) {
                 const document = documents[index];
-                rxState._state = mergeOperationsIntoState(rxState._state, document.ops);
                 if (document.id > rxState._lastMergedId) {
                     rxState._lastMergedId = document.id;
                 }
+                /**
+                 * The operations of a deleted document are already
+                 * contained in the write of the cleanup that deleted it,
+                 * so they must not be applied again.
+                 */
+                if (!document._deleted) {
+                    stateDocuments.push(document);
+                }
             }
         }
+    }
+    /**
+     * The ids are incremental, so sorting by id
+     * applies the operations in the order of the writes.
+     * The time of the last write cannot be used for that
+     * because it does not have to match the order of the ids.
+     */
+    stateDocuments.sort((a, b) => a.id < b.id ? -1 : 1);
+    for (let index = 0; index < stateDocuments.length; index++) {
+        rxState._state = mergeOperationsIntoState(rxState._state, stateDocuments[index].ops);
     }
     rxState._initDone = true;
 
