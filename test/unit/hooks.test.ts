@@ -417,6 +417,38 @@ describe('hooks.test.js', () => {
 
                     c.database.close();
                 });
+                it('should fully remove the document when the hook changes an indexed field', async () => {
+                    const c = await humansCollection.create(2);
+                    const firstDoc = await c.findOne().exec(true);
+                    const storedFirstName = firstDoc.firstName;
+
+                    const emitted: RxChangeEvent<any>[] = [];
+                    c.$.subscribe(event => emitted.push(event));
+
+                    c.preRemove((data) => {
+                        data.firstName = 'by-hook';
+                    }, false);
+                    await firstDoc.remove();
+
+                    const all = await c.find().exec();
+                    assert.strictEqual(all.length, 1);
+                    assert.notStrictEqual(all[0].primary, firstDoc.primary);
+
+                    const byIndex = await c.find({
+                        selector: { firstName: { $gt: '' } },
+                        sort: [{ firstName: 'asc' }]
+                    }).exec();
+                    assert.strictEqual(byIndex.length, 1);
+                    assert.strictEqual(await c.count({ selector: { firstName: { $gt: '' } } }).exec(), 1);
+
+                    const ev = emitted[0];
+                    assert.strictEqual(ev.operation, 'DELETE');
+                    assert.strictEqual(ev.documentData.firstName, 'by-hook');
+                    assert.ok(ev.previousDocumentData);
+                    assert.strictEqual(ev.previousDocumentData.firstName, storedFirstName);
+
+                    c.database.close();
+                });
             });
             describe('negative', () => { });
         });

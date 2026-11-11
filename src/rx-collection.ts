@@ -600,7 +600,8 @@ export class RxCollectionBase<
 
         const docsData: RxDocumentData<RxDocumentType>[] = [];
         const docsMap: Map<string, RxDocumentData<RxDocumentType>> = new Map();
-        Array.from(rxDocumentMap.values()).forEach(rxDocument => {
+        const rxDocuments = Array.from(rxDocumentMap.values());
+        rxDocuments.forEach(rxDocument => {
             const data: RxDocumentData<RxDocumentType> = rxDocument.toMutableJSON(true) as any;
             docsData.push(data);
             docsMap.set(rxDocument.primary, data);
@@ -612,11 +613,16 @@ export class RxCollectionBase<
                 return this._runHooks('pre', 'remove', doc, rxDocumentMap.get(primary));
             })
         );
-        const removeDocs: BulkWriteRow<RxDocumentType>[] = docsData.map(doc => {
+        /**
+         * The preRemove hooks are allowed to mutate the plain data,
+         * so the previous state must be the stored state of the RxDocument.
+         * Storages derive the old index strings from it.
+         */
+        const removeDocs: BulkWriteRow<RxDocumentType>[] = docsData.map((doc, idx) => {
             const writeDoc = flatClone(doc);
             writeDoc._deleted = true;
             return {
-                previous: doc,
+                previous: rxDocuments[idx]._data,
                 document: writeDoc
             };
         });
