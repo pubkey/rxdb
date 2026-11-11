@@ -321,8 +321,97 @@ describe('hooks.test.js', () => {
                     assert.strictEqual(receivedInstance.primary, human.passportId);
                     c.database.close();
                 });
+                it('should await async hooks on incremental writes like on non-incremental writes', async () => {
+                    const c = await humansCollection.createPrimary(0);
+                    const human = schemaObjects.simpleHumanData();
+                    await c.insert(human);
+                    const doc = await c.findOne(human.passportId).exec(true);
+                    let hooksDone = 0;
+                    c.postSave(async function () {
+                        await promiseWait(50);
+                        hooksDone++;
+                    }, false);
+                    c.postSave(async function () {
+                        await promiseWait(50);
+                        hooksDone++;
+                    }, true);
+
+                    const patched = await doc.patch({ firstName: 'foobar1' });
+                    assert.strictEqual(hooksDone, 2);
+
+                    const incrementalPatched = await patched.incrementalPatch({ firstName: 'foobar2' });
+                    assert.strictEqual(hooksDone, 4);
+                    assert.strictEqual(incrementalPatched.firstName, 'foobar2');
+
+                    await incrementalPatched.incrementalModify(d => {
+                        d.firstName = 'foobar3';
+                        return d;
+                    });
+                    assert.strictEqual(hooksDone, 6);
+
+                    await c.incrementalUpsert(Object.assign({}, human, { firstName: 'foobar4' }));
+                    assert.strictEqual(hooksDone, 8);
+
+                    c.database.close();
+                });
+                it('should be able to run an incremental write inside of a hook', async () => {
+                    const c = await humansCollection.createPrimary(0);
+                    const human = schemaObjects.simpleHumanData();
+                    const otherHuman = schemaObjects.simpleHumanData();
+                    await c.bulkInsert([human, otherHuman]);
+                    const doc = await c.findOne(human.passportId).exec(true);
+                    const otherDoc = await c.findOne(otherHuman.passportId).exec(true);
+                    c.postSave(async function (data) {
+                        if (data.passportId === human.passportId) {
+                            await otherDoc.incrementalPatch({ firstName: 'from-hook' });
+                        }
+                    }, false);
+                    await doc.incrementalPatch({ firstName: 'foobar' });
+                    assert.strictEqual(otherDoc.getLatest().firstName, 'from-hook');
+                    c.database.close();
+                });
             });
-            describe('negative', () => { });
+            describe('negative', () => {
+                it('should reject the incremental write when a hook throws', async () => {
+                    const c = await humansCollection.createPrimary(0);
+                    const human = schemaObjects.simpleHumanData();
+                    const otherHuman = schemaObjects.simpleHumanData();
+                    await c.bulkInsert([human, otherHuman]);
+                    const doc = await c.findOne(human.passportId).exec(true);
+                    const otherDoc = await c.findOne(otherHuman.passportId).exec(true);
+                    c.postSave(async function (data) {
+                        await promiseWait(10);
+                        if (data.passportId === human.passportId) {
+                            throw new Error('postSave-hook-error');
+                        }
+                    }, false);
+
+                    await assert.rejects(
+                        () => doc.patch({ firstName: 'foobar1' }),
+                        /postSave-hook-error/
+                    );
+
+                    const results = await Promise.allSettled([
+                        doc.getLatest().incrementalPatch({ firstName: 'foobar2' }),
+                        otherDoc.incrementalPatch({ firstName: 'foobar2' })
+                    ]);
+                    assert.strictEqual(results[0].status, 'rejected');
+                    assert.ok(
+                        results[0].status === 'rejected' &&
+                        (results[0].reason as Error).message.includes('postSave-hook-error')
+                    );
+                    assert.strictEqual(results[1].status, 'fulfilled');
+
+                    /**
+                     * The hook runs after the write,
+                     * so the document is stored even when the hook throws.
+                     */
+                    assert.strictEqual(doc.getLatest().firstName, 'foobar2');
+                    assert.strictEqual(otherDoc.getLatest().firstName, 'foobar2');
+
+                    c.database.close();
+                });
+            });
         });
     });
     describe('remove', () => {

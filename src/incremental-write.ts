@@ -20,6 +20,7 @@ import {
     getFromMapOrCreate,
     getFromMapOrThrow,
     getHeightOfRevision,
+    isPromise,
     stripMetaDataFromDocument
 } from './plugins/utils/index.ts';
 import { getWrittenDocumentsFromBulkWriteResponse } from './rx-storage-helper.ts';
@@ -54,7 +55,7 @@ export class IncrementalWriteQueue<RxDocType> {
         public readonly primaryPath: StringKeys<RxDocumentData<RxDocType>>,
         // can be used to run hooks etc.
         public readonly preWrite: (newData: RxDocumentData<RxDocType>, oldData: RxDocumentData<RxDocType>) => MaybePromise<void>,
-        public readonly postWrite: (docData: RxDocumentData<RxDocType>) => void
+        public readonly postWrite: (docData: RxDocumentData<RxDocType>) => MaybePromise<void>
 
     ) { }
 
@@ -160,13 +161,32 @@ export class IncrementalWriteQueue<RxDocType> {
             }
 
             if (writeResult) {
-                // process success
+                /**
+                 * Process success.
+                 * The run does not wait for the post-write of a document
+                 * so that a post-write which adds new writes to this queue cannot block it.
+                 * The document is already stored when the post-write runs,
+                 * so a failing post-write only rejects the write calls of its own document.
+                 */
                 await Promise.all(
                     getWrittenDocumentsFromBulkWriteResponse(this.primaryPath, writeRows, writeResult).map(result => {
                         const docId = result[this.primaryPath] as string;
-                        this.postWrite(result);
                         const items = getFromMapOrThrow(itemsById, docId);
-                        items.forEach(item => item.resolve(result));
+                        let postWriteResult: MaybePromise<void>;
+                        try {
+                            postWriteResult = this.postWrite(result);
+                        } catch (err: any) {
+                            items.forEach(item => item.reject(err));
+                            return;
+                        }
+                        if (isPromise(postWriteResult)) {
+                            (postWriteResult as Promise<void>).then(
+                                () => items.forEach(item => item.resolve(result)),
+                                (err: any) => items.forEach(item => item.reject(err))
+                            );
+                        } else {
+                            items.forEach(item => item.resolve(result));
+                        }
                     })
                 );
 

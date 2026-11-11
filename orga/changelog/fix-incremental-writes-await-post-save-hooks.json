@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX incremental writes like `incrementalPatch()`, `incrementalModify()` and `incrementalUpsert()` did not wait for async `postSave` hooks and turned an error thrown in a `postSave` hook into an unhandled promise rejection instead of rejecting the write call",
+    "links": [],
+    "priority": 5
+}
