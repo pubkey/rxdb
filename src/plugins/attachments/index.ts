@@ -280,10 +280,13 @@ export const RxDBAttachmentsPlugin: RxPlugin = {
                              * (e.g. a field update) would cause a new emission, which is
                              * both wasteful and surprising for consumers that only care
                              * about attachment changes.
+                             * The attachment meta data (digest, length, type) is compared
+                             * together with the ids so that replacing the content of an
+                             * existing attachment emits the new RxAttachment.
                              */
                             distinctUntilChanged((prev: RxDocument, curr: RxDocument) => deepEqual(
-                                Object.keys(prev._data._attachments),
-                                Object.keys(curr._data._attachments)
+                                prev._data._attachments,
+                                curr._data._attachments
                             )),
                             map((rxDocument: RxDocument) => {
                                 return Object.entries(
