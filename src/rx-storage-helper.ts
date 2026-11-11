@@ -613,6 +613,7 @@ export function getWrappedStorageInstance<
     overwritable.deepFreezeWhenDevMode(rxJsonSchema);
 
     const primaryPath = getPrimaryFieldOfPrimaryKey(storageInstance.schema.primaryKey);
+    const hasAttachments = !!storageInstance.schema.attachments;
 
     const pendingWrites = new Set<Promise<unknown>>();
     function trackPendingWrite<T>(writePromise: Promise<T>): Promise<T> {
@@ -706,6 +707,13 @@ export function getWrappedStorageInstance<
                         document._meta = insertMeta;
                         document._rev = firstRevision;
                     }
+                    /**
+                     * The storage removes the attachments data of deleted documents,
+                     * so the deleted document state must not reference any attachments.
+                     */
+                    if (hasAttachments && document._deleted) {
+                        document._attachments = {};
+                    }
                     toStorageWriteRows[index] = {
                         document,
                         previous
@@ -773,7 +781,12 @@ export function getWrappedStorageInstance<
                     .map((error) => {
                         reInsertIds.add(error.documentId);
                         return {
-                            previous: error.documentInDb,
+                            /**
+                             * The attachments data of a deleted document is removed from the storage.
+                             * Clearing the attachment stubs of the previous state ensures that
+                             * the storage writes the data of all attachments of the re-inserted document.
+                             */
+                            previous: hasAttachments ? Object.assign({}, error.documentInDb, { _attachments: {} }) : error.documentInDb,
                             document: Object.assign(
                                 {},
                                 error.writeRow.document,

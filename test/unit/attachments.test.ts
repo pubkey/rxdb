@@ -41,6 +41,7 @@ import {
 import { RxDBMigrationSchemaPlugin } from '../../plugins/migration-schema/index.mjs';
 addRxPlugin(RxDBMigrationSchemaPlugin);
 import { RxDBUpdatePlugin } from '../../plugins/update/index.mjs';
+import { replicateRxCollection } from '../../plugins/replication/index.mjs';
 addRxPlugin(RxDBUpdatePlugin);
 
 
@@ -318,6 +319,40 @@ describe('attachments.test.ts', () => {
             assert.ok(hasThrown);
 
             c.database.remove();
+        });
+        it('should push a document that was deleted while it had an attachment', async () => {
+            const c = await humansCollection.createAttachments(0);
+            const doc = await c.insert(schemaObjects.humanData());
+            await doc.putAttachment({
+                id: 'cat.txt',
+                data: createBlob('meow I am a kitty with a knife', 'text/plain'),
+                type: 'text/plain'
+            });
+            await doc.getLatest().remove();
+
+            const pushedDeletedFlags: boolean[] = [];
+            const errors: Error[] = [];
+            const replicationState = replicateRxCollection<HumanDocumentType, undefined>({
+                collection: c,
+                replicationIdentifier: randomToken(10),
+                live: false,
+                retryTime: 50,
+                push: {
+                    handler: (rows) => {
+                        rows.forEach(row => pushedDeletedFlags.push(row.newDocumentState._deleted));
+                        return Promise.resolve([]);
+                    }
+                }
+            });
+            const errorSub = replicationState.error$.subscribe(err => errors.push(err));
+            await AsyncTestUtil.waitUntil(() => pushedDeletedFlags.length > 0 || errors.length > 0);
+            errorSub.unsubscribe();
+            assert.deepStrictEqual(errors, []);
+            assert.deepStrictEqual(pushedDeletedFlags, [true]);
+            await replicationState.awaitInitialReplication();
+
+            await replicationState.cancel();
+            await c.database.remove();
         });
     });
     describe('atomicity', () => {
@@ -834,6 +869,67 @@ describe('attachments.test.ts', () => {
 
             db2.close();
         });
+        it('should migrate when a deleted document had an attachment', async () => {
+            const dbName = randomToken(10);
+            type DocData = {
+                id: string;
+            };
+            const schema0: RxJsonSchema<DocData> = {
+                version: 0,
+                type: 'object',
+                primaryKey: 'id',
+                properties: {
+                    id: {
+                        type: 'string',
+                        maxLength: 100
+                    }
+                },
+                attachments: {},
+                required: ['id']
+            };
+            const schema1: RxJsonSchema<DocData> = clone(schema0);
+            schema1.version = 1;
+
+            const db = await createRxDatabase({
+                name: dbName,
+                storage: config.storage.getStorage(),
+            });
+            const col = await db.addCollections({
+                heroes: {
+                    schema: schema0
+                }
+            });
+            const doc: RxDocument<DocData> = await col.heroes.insert({
+                id: 'alice'
+            });
+            await doc.putAttachment({
+                id: 'foobar',
+                data: createBlob('barfoo', 'text/plain'),
+                type: 'text/plain'
+            });
+            await doc.getLatest().remove();
+            await col.heroes.insert({
+                id: 'bob'
+            });
+            await db.close();
+
+            const db2 = await createRxDatabase({
+                name: dbName,
+                storage: config.storage.getStorage(),
+            });
+            const col2 = await db2.addCollections({
+                heroes: {
+                    schema: schema1,
+                    migrationStrategies: {
+                        1: (oldDoc: WithAttachmentsData<DocData>) => oldDoc
+                    }
+                }
+            });
+            const docs: RxDocument<DocData>[] = await col2.heroes.find().exec();
+            assert.deepStrictEqual(docs.map(d => d.primary), ['bob']);
+
+            await db2.remove();
+        });
         it('should delete the attachment during migration', async () => {
             const dbName = randomToken(10);
             type DocData = {
@@ -1193,6 +1289,28 @@ describe('attachments.test.ts', () => {
             const text = await blobToString(retrievedData);
             assert.strictEqual(text, 'hello inline');
             col.database.close();
+        });
+        it('insert with the same inline attachment after the document was deleted', async () => {
+            const col = await humansCollection.createAttachments(0);
+            const docData: HumanDocumentType & { _attachments: { id: string; type: string; data: Blob; }[]; } = Object.assign(
+                schemaObjects.humanData(),
+                {
+                    _attachments: [
+                        {
+                            id: 'inline.txt',
+                            type: 'text/plain',
+                            data: createBlob('hello inline', 'text/plain')
+                        }
+                    ]
+                }
+            );
+            const doc = await col.insert(docData);
+            await doc.remove();
+
+            const doc2 = await col.insert(docData);
+            const attachment = ensureNotFalsy(doc2.getAttachment('inline.txt'));
+            assert.strictEqual(await attachment.getStringData(), 'hello inline');
+            await col.database.close();
         });
         it('bulkInsert with inline attachments', async () => {
             const col = await humansCollection.createAttachments(0);
