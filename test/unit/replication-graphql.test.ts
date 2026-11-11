@@ -62,7 +62,8 @@ import {
 
 import {
     buildSchema,
-    parse as parseQuery
+    parse as parseQuery,
+    validate as validateQuery
 } from 'graphql';
 import { ReplicationPushHandlerResult, RxDocumentData } from '../../plugins/core/index.mjs';
 import { HumanWithTimestampDocumentType } from '../../src/plugins/test-utils/schema-objects.ts';
@@ -2145,6 +2146,77 @@ describe('replication-graphql.test.ts', () => {
 
                 const parsed = parseQuery(output.query);
                 assert.ok(parsed);
+            });
+            it('should create valid queries for array fields of primitives and of objects', async () => {
+                const todoSchema: RxJsonSchema<{
+                    id: string;
+                    name: string;
+                    tags: string[];
+                    subtasks: { title: string; done: boolean; }[];
+                    updatedAt: number;
+                }> = {
+                    version: 0,
+                    primaryKey: 'id',
+                    type: 'object',
+                    properties: {
+                        id: { type: 'string', maxLength: 100 },
+                        name: { type: 'string' },
+                        tags: {
+                            type: 'array',
+                            items: { type: 'string' }
+                        },
+                        subtasks: {
+                            type: 'array',
+                            items: {
+                                type: 'object',
+                                properties: {
+                                    title: { type: 'string' },
+                                    done: { type: 'boolean' }
+                                }
+                            }
+                        },
+                        updatedAt: { type: 'number' }
+                    },
+                    required: ['id', 'name', 'updatedAt']
+                };
+                const input = {
+                    schema: todoSchema,
+                    checkpointFields: ['id', 'updatedAt'],
+                    headerFields: ['Authorization']
+                };
+                const graphQLSchema = buildSchema(
+                    graphQLSchemaFromRxSchema({ todos: input }).asString
+                );
+
+                const pullOutput = await pullQueryBuilderFromRxSchema('todos', input)(null, batchSize);
+                const streamOutput = await pullStreamBuilderFromRxSchema('todos', input)({});
+                const pushOutput = await pushQueryBuilderFromRxSchema('todos', input)([]);
+
+                [pullOutput, streamOutput, pushOutput].forEach(output => {
+                    const parsed = parseQuery(output.query);
+                    const validationErrors = validateQuery(graphQLSchema, parsed);
+                    assert.deepStrictEqual(
+                        validationErrors.map(error => error.message),
+                        [],
+                        output.query
+                    );
+                });
+
+                const wantDocumentFields = `documents {
+                    id
+                    name
+                    tags
+                    subtasks {
+                        title
+                        done
+                    }
+                    updatedAt
+                    _deleted
+                }`;
+                assert.ok(
+                    normalizeString(pullOutput.query).includes(normalizeString(wantDocumentFields)),
+                    pullOutput.query
+                );
             });
         });
         describe('.pullStreamBuilderFromRxSchema()', () => {
