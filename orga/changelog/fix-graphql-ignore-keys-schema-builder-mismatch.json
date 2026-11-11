@@ -1,0 +1,5 @@
+{
+    "text": "FIX the GraphQL helpers `graphQLSchemaFromRxSchema()` and `pushQueryBuilderFromRxSchema()` did not match when `ignoreInputKeys` or `ignoreOutputKeys` are set. The `PullBulk` documents type is now built from the output schema and the push mutation no longer selects fields from `ignoreOutputKeys`.",
+    "links": [],
+    "priority": 4
+}

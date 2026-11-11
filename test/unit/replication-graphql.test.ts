@@ -33,6 +33,7 @@ import {
     pushQueryBuilderFromRxSchema,
     RxGraphQLReplicationState,
     pullStreamBuilderFromRxSchema,
+    GraphQLSchemaFromRxSchemaInputSingleCollection,
     graphQLRequest
 } from '../../plugins/replication-graphql/index.mjs';
 import {
@@ -62,7 +63,8 @@ import {
 
 import {
     buildSchema,
-    parse as parseQuery
+    parse as parseQuery,
+    validate as validateQuery
 } from 'graphql';
 import { ReplicationPushHandlerResult, RxDocumentData } from '../../plugins/core/index.mjs';
 import { HumanWithTimestampDocumentType } from '../../src/plugins/test-utils/schema-objects.ts';
@@ -2282,6 +2284,52 @@ describe('replication-graphql.test.ts', () => {
                 }]);
                 const pushDoc = pushData.variables.humanPushRow[0].newDocumentState;
                 assert.ok(pushDoc.deleted);
+            });
+            it('generated queries must be valid against the generated schema when ignoreInputKeys or ignoreOutputKeys are set', async () => {
+                const inputs: GraphQLSchemaFromRxSchemaInputSingleCollection[] = [
+                    { ignoreOutputKeys: ['age'] },
+                    { ignoreInputKeys: ['deletedAt'] },
+                    { ignoreInputKeys: ['deletedAt'], ignoreOutputKeys: ['age'] }
+                ].map(ignore => Object.assign({
+                    schema: schemas.humanWithTimestamp,
+                    checkpointFields: [
+                        'id',
+                        'updatedAt'
+                    ],
+                    headerFields: [
+                        'Authorization'
+                    ]
+                }, ignore));
+                for (const input of inputs) {
+                    const graphQLSchema = buildSchema(
+                        graphQLSchemaFromRxSchema({ human: input }).asString
+                    );
+                    const pullQuery = await pullQueryBuilderFromRxSchema('human', input)({
+                        id: 'foo',
+                        updatedAt: 12343
+                    }, batchSize);
+                    const pushQuery = await pushQueryBuilderFromRxSchema('human', input)([]);
+                    const streamQuery = await pullStreamBuilderFromRxSchema('human', input)({
+                        Authorization: 'foobar'
+                    });
+                    [pullQuery, pushQuery, streamQuery].forEach(built => {
+                        const errors = validateQuery(graphQLSchema, parseQuery(built.query));
+                        assert.deepStrictEqual(
+                            errors.map(error => error.message),
+                            [],
+                            built.query
+                        );
+                    });
+                }
+
+                /**
+                 * Fields from ignoreOutputKeys must not be
+                 * part of any output type.
+                 */
+                const withIgnoredOutput = graphQLSchemaFromRxSchema({ human: inputs[0] });
+                withIgnoredOutput.types.forEach(typeDefinition => {
+                    assert.strictEqual(typeDefinition.includes('age'), false, typeDefinition);
+                });
             });
         });
         describe('integrations', () => {

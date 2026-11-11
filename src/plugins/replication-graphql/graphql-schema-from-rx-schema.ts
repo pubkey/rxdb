@@ -181,7 +181,7 @@ export function graphQLSchemaFromRxSchema(
                 properties: {
                     documents: {
                         type: 'array',
-                        items: inputSchema as any
+                        items: outputSchema as any
                     },
                     checkpoint: checkpointSchema as any
                 },

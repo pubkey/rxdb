@@ -103,7 +103,7 @@ export function pushQueryBuilderFromRxSchema(
     const operationName = ucfirst(queryName);
 
     const variableName = collectionName + prefixes.pushRow;
-    const returnFields = generateGQLOutputFields({ schema: input.schema, spaceCount: 2 })
+    const returnFields = generateGQLOutputFields({ schema: input.schema, spaceCount: 2, ignoreOutputKeys: input.ignoreOutputKeys })
 
     const builder: RxGraphQLReplicationPushQueryBuilder = (pushRows) => {
         const query = '' +
