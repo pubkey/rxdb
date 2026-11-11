@@ -428,6 +428,49 @@ describe('attachments.test.ts', () => {
 
             c.database.remove();
         });
+        it('should resolve putAttachment() when a later write of the same batch removes the attachment', async () => {
+            const c = await humansCollection.createAttachments(1);
+            let doc = await c.findOne().exec(true);
+            await doc.putAttachment({
+                id: 'cat.txt',
+                data: createBlob('meow', 'text/plain'),
+                type: 'text/plain'
+            });
+            doc = doc.getLatest();
+            const attachment = ensureNotFalsy(doc.getAttachment('cat.txt'));
+
+            /**
+             * The slow modifier keeps the write queue busy
+             * so that the following two writes run in the same batch.
+             */
+            const slowWrite = doc.incrementalModify(async (docData) => {
+                await promiseWait(100);
+                return docData;
+            });
+            const newData = createBlob('meow I am a kitty with a knife', 'text/jpeg');
+            const putPromise = doc.putAttachment({
+                id: 'cat.txt',
+                data: newData,
+                type: 'text/jpeg'
+            });
+            await promiseWait(20);
+            const removePromise = attachment.remove();
+
+            await slowWrite;
+            const putResult = await putPromise;
+            await removePromise;
+
+            assert.strictEqual(putResult.id, 'cat.txt');
+            assert.strictEqual(putResult.type, 'text/jpeg');
+            assert.strictEqual(putResult.length, newData.size);
+            assert.strictEqual(putResult.digest, await c.database.hashFunction(newData));
+            assert.strictEqual(putResult.doc.getAttachment('cat.txt'), null);
+
+            doc = await c.findOne().exec(true);
+            assert.strictEqual(doc.getAttachment('cat.txt'), null);
+
+            c.database.remove();
+        });
     });
     describe('.allAttachments()', () => {
         it('should find all attachments', async () => {

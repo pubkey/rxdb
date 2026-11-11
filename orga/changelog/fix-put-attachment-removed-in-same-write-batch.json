@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `putAttachment()` and `putAttachments()` rejected with a `TypeError` when a later write of the same incremental write batch removed the attachment again",
+    "links": [],
+    "priority": 4
+}

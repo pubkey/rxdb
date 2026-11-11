@@ -147,9 +147,18 @@ async function _putAttachmentsImpl<RxDocType>(
     );
 
     const newDocument = doc.collection._docCache.getCachedRxDocument(writeResult);
+    /**
+     * The write result is the document state after the whole batch of incremental writes.
+     * A later write of the same batch can have removed the attachment,
+     * so the written attachment data is used when the result does not contain it.
+     */
     return prepared.map((att) => fromStorageInstanceResult(
         att.id,
-        writeResult._attachments[att.id],
+        writeResult._attachments[att.id] || {
+            length: att.data.size,
+            type: att.type,
+            digest: att.digest
+        },
         newDocument
     ));
 }
