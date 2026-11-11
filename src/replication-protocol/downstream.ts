@@ -1,7 +1,9 @@
 import {
     firstValueFrom,
     filter,
-    mergeMap
+    merge,
+    mergeMap,
+    timer as rxjsTimer
 } from 'rxjs';
 import { newRxError } from '../rx-error.ts';
 import { getWrittenDocumentsFromBulkWriteResponse, stackCheckpoints } from '../rx-storage-helper.ts';
@@ -24,8 +26,7 @@ import {
     getDefaultRevision,
     getHeightOfRevision,
     now,
-    PROMISE_RESOLVE_VOID,
-    promiseWait
+    PROMISE_RESOLVE_VOID
 } from '../plugins/utils/index.ts';
 import {
     getLastCheckpointDoc,
@@ -232,15 +233,15 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
      * Waits for the retry time, resolves earlier when the replication is canceled.
      */
     function awaitPersistRetry(): Promise<any> {
-        return Promise.race([
-            promiseWait(state.input.retryTime === undefined ? 5000 : state.input.retryTime),
-            firstValueFrom(
+        return firstValueFrom(
+            merge(
+                rxjsTimer(state.input.retryTime === undefined ? 5000 : state.input.retryTime),
                 state.events.canceled.pipe(
                     filter((canceled: boolean) => !!canceled)
-                ),
-                { defaultValue: true }
-            )
-        ]);
+                )
+            ),
+            { defaultValue: true }
+        );
     }
 
 
@@ -278,13 +279,27 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
     let persistenceQueue = PROMISE_RESOLVE_VOID;
 
     /**
-     * Is true when persisting a batch has failed
-     * with an error that is not bound to a single document.
+     * Is true when a storage call has thrown while persisting a batch.
      * While it is true, no checkpoint is stored because that checkpoint
      * would be behind the documents that have not been persisted.
      * It is reset when the documents are pulled again from the last stored checkpoint.
      */
     let persistFailed = false;
+
+    /**
+     * An error thrown by a storage call can be transient,
+     * so the documents of the batch must be pulled again.
+     * All other errors, like a write error of a single document
+     * or pulled document data from which no write row can be built,
+     * will happen again when the same documents are pulled again.
+     * These are only emitted to the error stream and the batch is not retried.
+     */
+    function retryBatchOnError<T>(storageCall: Promise<T>): Promise<T> {
+        return storageCall.catch(err => {
+            persistFailed = true;
+            throw err;
+        });
+    }
     const nonPersistedFromMaster: {
         checkpoint?: CheckpointType;
         docs: ById<WithDeleted<RxDocType>>;
@@ -329,14 +344,13 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
             const writeRowsToForkById: ById<BulkWriteRow<RxDocType>> = {};
             const writeRowsToMeta: BulkWriteRowById<RxStorageReplicationMeta<RxDocType, CheckpointType>> = {};
             const useMetaWriteRows: BulkWriteRow<RxStorageReplicationMeta<RxDocType, CheckpointType>>[] = [];
-            let hasDocumentWriteError = false;
 
             return Promise.all([
-                state.input.forkInstance.findDocumentsById(docIds, true),
-                getAssumedMasterState(
+                retryBatchOnError(state.input.forkInstance.findDocumentsById(docIds, true)),
+                retryBatchOnError(getAssumedMasterState(
                     state,
                     docIds
-                )
+                ))
             ]).then(([
                 currentForkStateList,
                 assumedMasterState
@@ -524,10 +538,10 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
                 );
             }).then(async () => {
                 if (writeRowsToFork.length > 0) {
-                    return state.input.forkInstance.bulkWrite(
+                    return retryBatchOnError(state.input.forkInstance.bulkWrite(
                         writeRowsToFork,
                         await state.downstreamBulkWriteFlag
-                    ).then((forkWriteResult) => {
+                    )).then((forkWriteResult) => {
                         const success = getWrittenDocumentsFromBulkWriteResponse(
                             state.primaryPath,
                             writeRowsToFork,
@@ -555,17 +569,16 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
                             mustThrow = throwMe;
                         });
                         if (mustThrow) {
-                            hasDocumentWriteError = true;
                             throw mustThrow;
                         }
                     });
                 }
             }).then(() => {
                 if (!state.skipStoringPullMeta && useMetaWriteRows.length > 0) {
-                    return state.input.metaInstance.bulkWrite(
+                    return retryBatchOnError(state.input.metaInstance.bulkWrite(
                         stripAttachmentsDataFromMetaWriteRows(state, useMetaWriteRows),
                         'replication-down-write-meta'
-                    ).then(metaWriteResult => {
+                    )).then(metaWriteResult => {
                         metaWriteResult.error
                             .forEach(writeError => {
                                 state.events.error.next(newRxError('RC_PULL', {
@@ -589,17 +602,6 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
                     'down',
                     useCheckpoint
                 );
-            }).catch(unhandledError => {
-                /**
-                 * A write error of a single document, like a schema validation error,
-                 * will happen again when the same document is pulled again.
-                 * All other errors leave the batch unpersisted
-                 * so the documents must be pulled again.
-                 */
-                if (!hasDocumentWriteError) {
-                    persistFailed = true;
-                }
-                throw unhandledError;
             });
         }).catch(unhandledError => state.events.error.next(unhandledError));
         return persistenceQueue;

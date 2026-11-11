@@ -1851,6 +1851,72 @@ describe('replication.test.ts', () => {
             localCollection.database.close();
             remoteCollection.database.close();
         });
+        it('should not pull a batch again and again when a pulled document can never be written', async () => {
+            const collection = await humansCollection.createHumanWithTimestamp(0, randomToken(10), false);
+            const validDocument = (id: string): WithDeleted<HumanWithTimestampDocumentType> => ({
+                id,
+                name: 'alice',
+                age: 20,
+                updatedAt: 1,
+                _deleted: false
+            });
+
+            /**
+             * Injected failure: A handler that returns a document
+             * without primary key, so no write row can be built for its batch.
+             */
+            const documentWithoutPrimaryKey = {
+                name: 'bob',
+                age: 20,
+                updatedAt: 1,
+                _deleted: false
+            } as WithDeleted<HumanWithTimestampDocumentType>;
+
+            let firstBatchPulls = 0;
+            const firstBatchPulledTwice = new Subject<void>();
+            const replicationState = replicateRxCollection<HumanWithTimestampDocumentType, { batch: number; }>({
+                collection,
+                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                live: true,
+                retryTime: 10,
+                pull: {
+                    batchSize: 2,
+                    handler: (checkpoint) => {
+                        if (!checkpoint) {
+                            firstBatchPulls = firstBatchPulls + 1;
+                            if (firstBatchPulls === 2) {
+                                firstBatchPulledTwice.next();
+                            }
+                            return Promise.resolve({
+                                documents: [documentWithoutPrimaryKey, validDocument('first-batch')],
+                                checkpoint: { batch: 1 }
+                            });
+                        }
+                        return Promise.resolve({
+                            documents: checkpoint.batch === 1 ? [validDocument('second-batch')] : [],
+                            checkpoint: { batch: 2 }
+                        });
+                    }
+                }
+            });
+            const errors: (RxError | RxTypeError)[] = [];
+            replicationState.error$.subscribe(err => errors.push(err));
+
+            await Promise.race([
+                replicationState.awaitInitialReplication(),
+                firstValueFrom(firstBatchPulledTwice)
+            ]);
+            assert.strictEqual(firstBatchPulls, 1, 'must not pull the failing batch again');
+            await replicationState.awaitInSync();
+
+            assert.strictEqual(errors.length, 1);
+            assert.strictEqual(errors[0].code, 'DOC18');
+            assert.strictEqual(firstBatchPulls, 1);
+            const secondBatchDoc = await collection.findOne('second-batch').exec();
+            assert.ok(secondBatchDoc);
+
+            collection.database.close();
+        });
     });
     describe('issues', () => {
         /**
