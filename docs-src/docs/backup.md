@@ -102,6 +102,17 @@ const subscription = backupState.writeEvents$
 */
 ```
 
+## error$
+
+When a backup run fails, for example because the backup directory is not accessible, the error is emitted on the `error$` Observable. A failed run does not stop the backup. The next run starts again from the last stored checkpoint, so the documents of the failed run are written again. When the initial backup run fails, `awaitInitialBackup()` rejects with the same error.
+
+```ts
+const subscription = backupState.error$
+    .subscribe(error =>
+        console.dir(error)
+    );
+```
+
 ## Folder Names
 
 Each document is written into a folder that is named by its primary key, and each attachment into a file that is named by its attachment id. Chars that are not allowed in file names on all operating systems (`<>:"/\|?*`, control chars, and a trailing `.` or whitespace) and the `%` char are percent-encoded. Also reserved Windows names like `CON` or `NUL` get their first char encoded. A document with the primary key `todo:1` is stored in the folder `todo%3A1`. Use `toFileName()` to get the folder name of a primary key:

@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX backup plugin: a failed backup run (for example when the backup directory is not accessible) stopped all later runs and caused unhandled promise rejections in live mode. Later runs now continue from the last checkpoint, `awaitInitialBackup()` rejects when the initial run fails instead of never resolving, and the errors are emitted on the new `RxBackupState.error$` observable",
+    "links": [],
+    "priority": 5
+}
