@@ -50,6 +50,16 @@ export async function fillWriteDataForAttachmentsChange<RxDocType>(
         });
     }
 
+    /**
+     * The storage removes the attachments data when a document gets deleted,
+     * so a deleted document has no attachments, even when its stored state
+     * still contains attachment stubs.
+     */
+    if (newDocument._deleted) {
+        newDocument._attachments = {};
+        return newDocument;
+    }
+
     const docId: string = (newDocument as any)[primaryPath];
     const originalAttachmentsIds = new Set(
         originalDocument && originalDocument._attachments
