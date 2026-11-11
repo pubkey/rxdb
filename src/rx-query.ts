@@ -758,15 +758,25 @@ function _isResultsInSync(rxQuery: RxQueryBase<any, any>): boolean {
 function _ensureEqual(rxQuery: RxQueryBase<any, any>): Promise<boolean> {
     if (rxQuery.collection.awaitBeforeReads.size > 0) {
         return Promise.all(Array.from(rxQuery.collection.awaitBeforeReads).map(fn => fn()))
-            .then(() => {
-                rxQuery._ensureEqualQueue = rxQuery._ensureEqualQueue
-                    .then(() => __ensureEqual(rxQuery));
-                return rxQuery._ensureEqualQueue;
-            });
+            .then(() => _enqueueEnsureEqual(rxQuery));
     }
+    return _enqueueEnsureEqual(rxQuery);
+}
 
-    rxQuery._ensureEqualQueue = rxQuery._ensureEqualQueue
-        .then(() => __ensureEqual(rxQuery));
+/**
+ * Appends a run of __ensureEqual() to the queue of the query.
+ * The run is started when the previous run has settled,
+ * no matter if that one was fulfilled or rejected.
+ * So an error is only passed to the caller that started the failed run
+ * and the following runs are still processed.
+ *
+ * @performance
+ * The same function is used as fulfillment- and rejection-handler,
+ * so that no additional Promise must be allocated to catch the error.
+ */
+function _enqueueEnsureEqual(rxQuery: RxQueryBase<any, any>): Promise<boolean> {
+    const run = () => __ensureEqual(rxQuery);
+    rxQuery._ensureEqualQueue = rxQuery._ensureEqualQueue.then(run, run);
     return rxQuery._ensureEqualQueue;
 }
 
@@ -916,6 +926,14 @@ function __ensureEqual<RxDocType>(rxQuery: RxQueryBase<RxDocType, any>): Promise
                     rxQuery._setResultData(newResultData as any);
                 }
                 return ret;
+            }, err => {
+                /**
+                 * The results are not in sync with the database
+                 * when the execution failed. Reset the state so that
+                 * the next call runs the query over the database again.
+                 */
+                rxQuery._latestChangeEvent = -1;
+                throw err;
             });
     }
     return Promise.resolve(ret); // true if results have changed
