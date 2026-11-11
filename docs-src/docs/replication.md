@@ -99,6 +99,8 @@ If your backend for any reason is not able to provide a full `pullStream$` that 
 
 When the client goes offline and online again, it might happen that the `pullStream$` has missed out some events. Therefore the `pullStream$` should also emit a `RESYNC` event each time the client reconnects, so that the client can become in sync with the backend via the [checkpoint iteration](#checkpoint-iteration) mode.
 
+When the `pullStream$` observable itself errors, the replication emits an [`RC_STREAM`](./errors.md#RC_STREAM) error on [`error$`](#error-handling) and no longer receives events from that stream, so the `pullStream$` should handle connection problems by reconnecting and emitting `RESYNC` instead of erroring.
+
 ## Data layout on the server
 
 To use the replication you first have to ensure that:

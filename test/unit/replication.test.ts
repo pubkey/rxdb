@@ -632,6 +632,36 @@ describe('replication.test.ts', () => {
             localCollection.database.close();
             remoteCollection.database.close();
         });
+        it('should emit an RxError on error$ when the pull.stream$ errors', async () => {
+            const { localCollection, remoteCollection } = await getTestCollections({ local: 0, remote: 0 });
+            const pullStream$ = new Subject<RxReplicationPullStreamItem<HumanWithTimestampDocumentType, CheckpointType>>();
+            const replicationState = replicateRxCollection<HumanWithTimestampDocumentType, CheckpointType>({
+                collection: localCollection,
+                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                live: true,
+                pull: {
+                    handler: getPullHandler(remoteCollection),
+                    stream$: pullStream$.asObservable()
+                }
+            });
+            const emittedErrors: (RxError | RxTypeError)[] = [];
+            replicationState.error$.subscribe(err => emittedErrors.push(err));
+            await replicationState.awaitInSync();
+
+            pullStream$.error(new Error('websocket closed'));
+            await waitUntil(() => emittedErrors.length > 0);
+
+            const emitted = emittedErrors[0];
+            assert.strictEqual(emitted.rxdb, true);
+            assert.strictEqual(emitted.code, 'RC_STREAM');
+            assert.strictEqual(emitted.parameters.direction, 'pull');
+            assert.ok(emitted.parameters.errors);
+            assert.strictEqual(emitted.parameters.errors[0].message, 'websocket closed');
+            assert.strictEqual(emittedErrors.length, 1);
+
+            localCollection.database.close();
+            remoteCollection.database.close();
+        });
         /**
          * @link https://github.com/pubkey/rxdb/issues/3994
          */

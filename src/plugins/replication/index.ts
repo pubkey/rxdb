@@ -478,7 +478,11 @@ export class RxReplicationState<RxDocType, CheckpointType> {
                         }
                     },
                     error: (err: any) => {
-                        this.subjects.error.next(err);
+                        const emitError = (err as RxError).rxdb ? err : newRxError('RC_STREAM', {
+                            errors: toArray(err).map(er => errorToPlainJson(er)),
+                            direction: 'pull'
+                        });
+                        this.subjects.error.next(emitError);
                     }
                 })
             );
