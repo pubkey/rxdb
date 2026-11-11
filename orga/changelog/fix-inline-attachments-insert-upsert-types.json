@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX the TypeScript types of `insert()`, `bulkInsert()`, `upsert()`, `bulkUpsert()` and `incrementalUpsert()` rejected the documented inline `_attachments` array",
+    "links": [],
+    "priority": 4
+}
