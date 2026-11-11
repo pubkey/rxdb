@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `migrateStorage()` deleted documents from the old storage even when writing them to the new storage failed with a non-conflict error (for example a schema validation error), which lost these documents. These documents now stay in the old storage and `migrateStorage()` rejects with the error `DM6`",
+    "links": [],
+    "priority": 6
+}

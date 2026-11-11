@@ -6,7 +6,8 @@ import {
     addRxPlugin,
     ensureNotFalsy,
     createBlob,
-    RxDatabase
+    RxDatabase,
+    clone
 } from '../../plugins/core/index.mjs';
 
 import {
@@ -479,6 +480,99 @@ testStorages.forEach(storages => {
                 await db.col2.findOne().exec(true);
 
                 await db.remove();
+            });
+            it('should not lose documents that could not be written to the new storage', async () => {
+                const name = DB_PREFIX + randomToken(12);
+                const collectionName = randomToken(12);
+
+                /**
+                 * The old database allows a higher age
+                 * than the schema of the new database.
+                 */
+                const schemaWithHigherMaxAge = clone(human);
+                schemaWithHigherMaxAge.properties.age.maximum = 250;
+                const oldDatabaseName = name + '-old';
+                const oldDb = await (storages.createRxDatabaseOld as any)({
+                    name: oldDatabaseName,
+                    storage: storages.old() as any,
+                    multiInstance: false
+                });
+                await oldDb.addCollections({
+                    [collectionName]: {
+                        schema: schemaWithHigherMaxAge as any
+                    }
+                });
+                const validDocs = new Array(4).fill(0).map(() => schemaObjects.humanData());
+                const invalidDocs = new Array(2).fill(0).map(() => schemaObjects.humanData(undefined, 200));
+                await oldDb[collectionName].bulkInsert(validDocs.concat(invalidDocs));
+                await destroyOrClose(oldDb);
+
+                // the new database validates the documents and does not accept the higher age
+                const db = await storages.createRxDatabaseNew({
+                    name,
+                    storage: wrappedValidateAjvStorage({
+                        storage: storages.new()
+                    }),
+                    multiInstance: false
+                });
+                await db.addCollections({
+                    [collectionName]: {
+                        schema: human
+                    }
+                });
+                let migrationError: any;
+                try {
+                    await migrateStorage({
+                        database: db,
+                        oldDatabaseName,
+                        oldStorage: storages.old() as any,
+                        batchSize: 10
+                    });
+                } catch (err) {
+                    migrationError = err;
+                }
+                const col: RxCollection<HumanDocumentType> = db[collectionName];
+                const migratedDocs = await col.find().exec();
+                assert.deepStrictEqual(
+                    migratedDocs.map(d => d.passportId).sort(),
+                    validDocs.map(d => d.passportId).sort()
+                );
+
+                /**
+                 * Run the migration again into a database that accepts the higher age.
+                 * The documents that could not be migrated in the first run
+                 * must still be in the old storage and end up in that database.
+                 */
+                const dbHigherMaxAge = await storages.createRxDatabaseNew({
+                    name: name + '-second',
+                    storage: wrappedValidateAjvStorage({
+                        storage: storages.new()
+                    }),
+                    multiInstance: false
+                });
+                await dbHigherMaxAge.addCollections({
+                    [collectionName]: {
+                        schema: schemaWithHigherMaxAge
+                    }
+                });
+                await migrateStorage({
+                    database: dbHigherMaxAge,
+                    oldDatabaseName,
+                    oldStorage: storages.old() as any,
+                    batchSize: 10
+                });
+                const colHigherMaxAge: RxCollection<HumanDocumentType> = dbHigherMaxAge[collectionName];
+                const remainingDocs = await colHigherMaxAge.find().exec();
+                assert.deepStrictEqual(
+                    remainingDocs.map(d => d.passportId).sort(),
+                    invalidDocs.map(d => d.passportId).sort()
+                );
+
+                assert.ok(migrationError, 'first migrateStorage() must reject');
+                assert.strictEqual(migrationError.code, 'DM6');
+
+                await db.remove();
+                await dbHigherMaxAge.remove();
             });
         });
     });

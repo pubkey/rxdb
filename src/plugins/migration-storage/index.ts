@@ -9,7 +9,8 @@ import {
     RxStorage,
     prepareQuery,
     PreparedQuery,
-    FilledMangoQuery
+    FilledMangoQuery,
+    newRxError
 } from '../../index.ts';
 
 export type RxStorageOld<A, B> = RxStorage<A, B> | any;
@@ -182,16 +183,24 @@ export async function migrateCollection<RxDocType>(
         );
         log('written batch to new storage');
 
-        // TODO we should throw on non-conflict errors here.
-        // if (Object.keys(writeToNewResult.error).length > 0) {
-        //     throw new Error('could not write to new storage');
-        // }
+        /**
+         * A conflict (409) means that the document already exists
+         * in the new storage, so it can be removed from the old storage.
+         * Documents with any other write error exist only in the old storage
+         * and must be kept there.
+         */
+        const nonConflictErrors = writeToNewResult.error.filter(error => error.status !== 409);
+        const notMigratedIds = new Set<string>(
+            nonConflictErrors.map(error => error.documentId)
+        );
 
         /**
          * Remove the docs from the old storage
          */
-        const writeToOldRows = docs.map((_doc: any, idx: number) => {
-            const previous = docsNonMutated[idx];
+        const migratedDocs: any[] = docsNonMutated.filter(
+            (doc: any) => !notMigratedIds.has(doc[primaryPath])
+        );
+        const writeToOldRows = migratedDocs.map((previous: any) => {
             if (!previous._meta) {
                 previous._meta = {
                     lwt: new Date().getTime()
@@ -216,25 +225,37 @@ export async function migrateCollection<RxDocType>(
                 document: newDoc,
             }
         });
-        try {
-            const writeToOldResult = await oldStorageInstance.bulkWrite(
-                writeToOldRows,
-                'migrate-between-rxdb-versions'
-            );
-            if (Object.keys(writeToOldResult.error).length > 0) {
-                console.dir({
+        if (writeToOldRows.length > 0) {
+            try {
+                const writeToOldResult = await oldStorageInstance.bulkWrite(
                     writeToOldRows,
-                    errors: writeToOldResult.error
-                });
-                throw new Error('got error while deleting migrated documents on the old storage');
+                    'migrate-between-rxdb-versions'
+                );
+                if (Object.keys(writeToOldResult.error).length > 0) {
+                    console.dir({
+                        writeToOldRows,
+                        errors: writeToOldResult.error
+                    });
+                    throw new Error('got error while deleting migrated documents on the old storage');
+                }
+            } catch (err) {
+                log('could not delete on old instance');
+                console.dir(err);
+                throw err;
             }
-        } catch (err) {
-            log('could not delete on old instance');
-            console.dir(err);
-            throw err;
         }
         log('deleted batch on old storage');
         await oldStorageInstance.cleanup(0);
+
+        if (nonConflictErrors.length > 0) {
+            log('could not write all documents to the new storage');
+            await oldStorageInstance.close();
+            throw newRxError('DM6', {
+                collection: collection.name,
+                ids: Array.from(notMigratedIds),
+                writeError: nonConflictErrors[0]
+            });
+        }
 
         // run the handler if provided
         if (afterMigrateBatch) {
