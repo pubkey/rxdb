@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX dev-mode schema check threw a plain `TypeError` instead of the `SC21` RxError when `indexes` contains a field that is not defined in the schema `properties`",
+    "links": [],
+    "priority": 4
+}
