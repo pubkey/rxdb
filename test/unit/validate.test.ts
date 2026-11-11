@@ -708,6 +708,59 @@ validationImplementations.forEach(
             });
         });
         describe('issues', () => {
+            it('should accept decimal values that are a multiple of a decimal multipleOf', async () => {
+                const db = await createRxDatabase({
+                    name: randomToken(10),
+                    storage: validationImplementation.implementation({
+                        storage: getRxStorageMemory()
+                    })
+                });
+                const collections = await db.addCollections({
+                    products: {
+                        schema: {
+                            version: 0,
+                            primaryKey: 'id',
+                            type: 'object',
+                            properties: {
+                                id: {
+                                    type: 'string',
+                                    maxLength: 100
+                                },
+                                price: {
+                                    type: 'number',
+                                    minimum: 0,
+                                    maximum: 100000,
+                                    multipleOf: 0.01
+                                }
+                            },
+                            required: ['id', 'price'],
+                            indexes: ['price']
+                        }
+                    }
+                });
+                const validPrices = [19.99, 0.07, 1.15, 4.35, 33.33, 0.5, 99.99, 12345.67];
+                for (const price of validPrices) {
+                    await collections.products.insert({
+                        id: 'product-' + price,
+                        price
+                    });
+                }
+                const docs = await collections.products.find({ sort: [{ price: 'asc' }] }).exec();
+                assert.deepStrictEqual(
+                    docs.map(d => d.price),
+                    validPrices.slice(0).sort((a, b) => a - b)
+                );
+
+                await assertThrows(
+                    () => collections.products.insert({
+                        id: 'invalid-price',
+                        price: 1.005
+                    }),
+                    'RxError',
+                    'VD2'
+                );
+                await db.close();
+            });
             /**
              * date-time is used by most users and also in the quickstart guide
              * and docs, so it must be supported by default.
