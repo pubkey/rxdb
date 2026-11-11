@@ -1073,13 +1073,18 @@ export function randomDelayStorage<Internals, InstanceCreationOptions>(
                 schema: storageInstance.schema,
                 collectionName: storageInstance.collectionName,
                 bulkWrite(a, b) {
-                    randomDelayStorageWriteQueue = randomDelayStorageWriteQueue.then(async () => {
+                    const ret = randomDelayStorageWriteQueue.then(async () => {
                         await promiseWait(input.delayTimeBefore());
                         const response = await storageInstance.bulkWrite(a, b);
                         await promiseWait(input.delayTimeAfter());
                         return response;
                     });
-                    const ret = randomDelayStorageWriteQueue;
+                    /**
+                     * A rejected write must only reject for its own caller.
+                     * The queue itself must stay resolved so that
+                     * later writes still reach the wrapped storage.
+                     */
+                    randomDelayStorageWriteQueue = ret.catch(() => { });
                     return ret;
                 },
                 async findDocumentsById(a, b) {
