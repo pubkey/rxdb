@@ -2794,6 +2794,103 @@ describe('migration-schema.test.ts', function () {
 
             await db2.remove();
         });
+        it('must migrate the documents of a failed batch when the migration runs again', async () => {
+            const name = randomToken(10);
+            const docsAmount = 10;
+            const batchSize = 2;
+            const getSchema = (version: number) => ({
+                version,
+                primaryKey: 'id',
+                type: 'object' as const,
+                properties: {
+                    id: {
+                        type: 'string',
+                        maxLength: 100
+                    },
+                    n: {
+                        type: 'number'
+                    }
+                },
+                required: ['id', 'n']
+            });
+            const docIds = new Array(docsAmount).fill(0).map((_v, i) => 'd' + i);
+
+            const db = await createRxDatabase({
+                name,
+                storage: config.storage.getStorage(),
+                multiInstance: false
+            });
+            await db.addCollections({
+                docs: {
+                    schema: getSchema(0)
+                }
+            });
+            await db.docs.bulkInsert(
+                docIds.map((id, i) => ({ id, n: i }))
+            );
+            await db.close();
+
+            // the strategy fails for a document that is not in the last batch
+            const db2 = await createRxDatabase({
+                name,
+                storage: config.storage.getStorage(),
+                multiInstance: false
+            });
+            await db2.addCollections({
+                docs: {
+                    schema: getSchema(1),
+                    autoMigrate: false,
+                    migrationStrategies: {
+                        1: (doc: any) => {
+                            if (doc.id === 'd3') {
+                                throw new Error('failing migration strategy');
+                            }
+                            return doc;
+                        }
+                    }
+                }
+            });
+            await assertThrows(
+                () => db2.docs.getMigrationState().migratePromise(batchSize),
+                'RxError',
+                'DM4'
+            );
+            await db2.close();
+
+            // run again with a working strategy
+            const db3 = await createRxDatabase({
+                name,
+                storage: config.storage.getStorage(),
+                multiInstance: false
+            });
+            await db3.addCollections({
+                docs: {
+                    schema: getSchema(1),
+                    autoMigrate: false,
+                    migrationStrategies: {
+                        1: (doc: any) => doc
+                    }
+                }
+            });
+            const migrationState = db3.docs.getMigrationState();
+            let done = false;
+            const sub = migrationState.$.subscribe(status => {
+                if (status.status === 'DONE') {
+                    done = true;
+                }
+            });
+            migrationState.migratePromise(batchSize).catch(() => { });
+            await waitUntil(() => done);
+            sub.unsubscribe();
+
+            const docs = await db3.docs.find({ sort: [{ n: 'asc' }] }).exec();
+            assert.deepStrictEqual(
+                docs.map(d => d.id),
+                docIds
+            );
+
+            await db3.remove();
+        });
         /**
          * An interrupted schema migration could never complete.
          * As soon as a document was already stored in the new storage,
