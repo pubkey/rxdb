@@ -226,3 +226,11 @@ To prevent deadlocks, consider:
 - Avoid circular dependencies between pipelines.
 - Prefer one-directional data flow.
 
+### Reads from inside the handler are detected by the stack trace
+
+The handler itself must be able to read from the destination collection while all other reads are blocked. RxDB detects these reads by looking at the JavaScript stack trace of the query.
+
+Some JavaScript engines do not keep the calling async functions in the stack trace after an awaited timer or network request. In such an environment RxDB cannot tell a read of the handler apart from an external read. To not block the handler forever, reads on the destination collection then pass while the handler is running in the same JavaScript process. This means a query that starts in the middle of a handler run can return partially processed data. Queries that start before the handler runs and queries from other browser tabs still wait for the pipeline.
+
+In engines that keep async stack traces, a read that the handler starts inside of a detached callback, like a `setTimeout()` callback, is still treated as an external read and blocks the handler forever. Always `await` the reads in the `async` handler function or in `async` functions that are awaited by it.
+
