@@ -3045,5 +3045,69 @@ describe('replication.test.ts', () => {
             await localCollection.database.close();
             await remoteCollection.database.close();
         });
+        it('should push all documents when paused during a failing push batch and resumed while the next batch is running', async () => {
+            const { localCollection, remoteCollection } = await getTestCollections({ local: 3, remote: 0 });
+            const realPushHandler = getPushHandler(remoteCollection);
+
+            let firstHandlerRunning: () => void = () => { };
+            const firstHandlerRunningPromise = new Promise<void>(res => firstHandlerRunning = res);
+            let failFirstHandler: () => void = () => { };
+            const failFirstHandlerPromise = new Promise<void>(res => failFirstHandler = res);
+            let secondModifierRunning: () => void = () => { };
+            const secondModifierRunningPromise = new Promise<void>(res => secondModifierRunning = res);
+            let continueSecondModifier: () => void = () => { };
+            const continueSecondModifierPromise = new Promise<void>(res => continueSecondModifier = res);
+
+            let handlerCalls = 0;
+            let modifierCalls = 0;
+            const replicationState = replicateRxCollection<HumanWithTimestampDocumentType, any>({
+                collection: localCollection,
+                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                live: true,
+                retryTime: 20,
+                push: {
+                    batchSize: 1,
+                    modifier: async (doc) => {
+                        modifierCalls++;
+                        if (modifierCalls === 2) {
+                            secondModifierRunning();
+                            await continueSecondModifierPromise;
+                        }
+                        return doc;
+                    },
+                    handler: async (rows) => {
+                        handlerCalls++;
+                        if (handlerCalls === 1) {
+                            firstHandlerRunning();
+                            await failFirstHandlerPromise;
+                            throw new Error('simulated network error');
+                        }
+                        return realPushHandler(rows);
+                    }
+                }
+            });
+
+            // pause while the first batch is in the push handler, then let that push fail
+            await firstHandlerRunningPromise;
+            await replicationState.pause();
+            failFirstHandler();
+
+            // resume while the second batch has not reached the push handler
+            await secondModifierRunningPromise;
+            await replicationState.start();
+            continueSecondModifier();
+
+            await replicationState.awaitInSync();
+
+            const remoteDocs = await remoteCollection.find().exec();
+            assert.strictEqual(
+                remoteDocs.length,
+                3,
+                'documents of the batch that was paused must reach the remote after resume'
+            );
+
+            await localCollection.database.close();
+            await remoteCollection.database.close();
+        });
     });
 });
