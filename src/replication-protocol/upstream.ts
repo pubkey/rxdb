@@ -446,12 +446,15 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
              * does not tell if all batches have been sent.
              * Without this check the meta instance and the checkpoint would
              * be updated, causing the documents to never be retried on resume.
+             * The documents are put back into the non-persisted list so that
+             * a later cycle, which stores a checkpoint behind them, pushes them too.
              */
             if (
                 hasNotSentBatch ||
                 state.events.canceled.getValue() ||
                 state.events.paused.getValue()
             ) {
+                nonPersistedFromMaster.docs = Object.assign(upDocsById, nonPersistedFromMaster.docs);
                 return false;
             }
 

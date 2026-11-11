@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX replication did not push documents of a push batch that was interrupted by `pause()` when a later batch of the same initial sync succeeded after `start()` and stored its checkpoint",
+    "links": [],
+    "priority": 5
+}
