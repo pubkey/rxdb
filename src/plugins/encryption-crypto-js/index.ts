@@ -55,6 +55,24 @@ export function decryptString(cipherText: string, password: any): string {
     return ret;
 }
 
+/**
+ * AES.encrypt() with a password returns the OpenSSL format
+ * which is the base64 of 'Salted__' + salt + ciphertext.
+ * So each output of encryptString() starts with this prefix.
+ */
+const CIPHER_TEXT_PREFIX = 'U2FsdGVkX1';
+
+/**
+ * Returns false for values that have not been created by encryptString().
+ * Documents can contain such plain values in their encrypted fields
+ * when they have been written while the paths in schema.encrypted
+ * did not match the stored field names.
+ * These values are returned as they are and get encrypted on the next write.
+ */
+function isCipherText(value: any): value is string {
+    return typeof value === 'string' && value.startsWith(CIPHER_TEXT_PREFIX);
+}
+
 export type InternalStorePasswordDocType = InternalStoreDocType<{
     hash: string;
 }>;
@@ -169,7 +187,10 @@ export function wrappedKeyEncryptionCryptoJsStorage<Internals, InstanceCreationO
                     encryptedPaths
                         .forEach(path => {
                             const value = getProperty(docData, path);
-                            if (typeof value === 'undefined') {
+                            if (
+                                typeof value === 'undefined' ||
+                                !isCipherText(value)
+                            ) {
                                 return;
                             }
                             const decrypted = decryptString(value, password);

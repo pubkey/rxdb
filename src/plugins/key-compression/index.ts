@@ -122,6 +122,16 @@ export function getCompressionStateByRxJsonSchema(
                 compressedSchema.indexes = newIndexes;
             }
 
+            /**
+             * The paths of the encrypted fields must point to the compressed keys
+             * so that an encryption storage below this wrapper finds the values.
+             */
+            if (schema.encrypted) {
+                compressedSchema.encrypted = schema.encrypted.map(
+                    path => compressedPath(table, path)
+                );
+            }
+
             const compressionState = {
                 table,
                 schema,

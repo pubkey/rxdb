@@ -27,6 +27,7 @@ import {
     getComposedPrimaryKeyOfDocumentData,
     getFromMapOrThrow,
     RxStorage,
+    RxStorageInstanceCreationParams,
     WrappedRxStorageInstance
 } from '../../plugins/core/index.mjs';
 
@@ -37,6 +38,11 @@ import {
 } from '../../plugins/encryption-crypto-js/index.mjs';
 import { replicateRxCollection } from '../../plugins/replication/index.mjs';
 import { getRxStorageMemory } from '../../plugins/storage-memory/index.mjs';
+import {
+    getRxStorageLocalstorage,
+    getLocalStorageMock
+} from '../../plugins/storage-localstorage/index.mjs';
+import { wrappedKeyCompressionStorage } from '../../plugins/key-compression/index.mjs';
 import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.mjs';
 
 
@@ -811,6 +817,192 @@ describe('encryption.test.ts', () => {
                 'SC43'
             );
             await db.remove();
+        });
+        describe('encryption inside of key-compression', () => {
+            type TodoDocType = {
+                id: string;
+                name: string;
+                note?: string;
+                assignee?: {
+                    name: string;
+                    email?: string;
+                };
+            };
+            const todoSchema: RxJsonSchema<TodoDocType> = {
+                version: 0,
+                primaryKey: 'id',
+                type: 'object',
+                keyCompression: true,
+                properties: {
+                    id: {
+                        type: 'string',
+                        maxLength: 100
+                    },
+                    name: {
+                        type: 'string'
+                    },
+                    note: {
+                        type: 'string'
+                    },
+                    assignee: {
+                        type: 'object',
+                        properties: {
+                            name: { type: 'string' },
+                            email: { type: 'string' }
+                        },
+                        required: ['name']
+                    }
+                },
+                required: ['id', 'name']
+            };
+            function storageContains(ls: typeof localStorage, search: string): boolean {
+                for (let i = 0; i < ls.length; i++) {
+                    const value = ls.getItem(ensureNotFalsy(ls.key(i)));
+                    if (value && value.includes(search)) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+            it('should not store the encrypted fields in plain text', async () => {
+                const ls = getLocalStorageMock();
+                const db = await createRxDatabase<{ todos: RxCollection<TodoDocType>; }>({
+                    name: randomToken(10),
+                    storage: wrappedValidateAjvStorage({
+                        storage: wrappedKeyCompressionStorage({
+                            storage: wrappedKeyEncryptionCryptoJsStorage({
+                                storage: getRxStorageLocalstorage({ localStorage: ls })
+                            })
+                        })
+                    }),
+                    password: await getPassword()
+                });
+                await db.addCollections({
+                    todos: {
+                        schema: Object.assign({}, todoSchema, {
+                            encrypted: ['note', 'assignee.email']
+                        })
+                    }
+                });
+                await db.todos.insert({
+                    id: 'todo2',
+                    name: 'Buy groceries',
+                    note: 'Milk, eggs, bread',
+                    assignee: { name: 'Bob', email: 'bob@example.com' }
+                });
+
+                const doc = await db.todos.findOne('todo2').exec(true);
+                assert.strictEqual(doc.note, 'Milk, eggs, bread');
+                assert.strictEqual(ensureNotFalsy(doc.assignee).email, 'bob@example.com');
+
+                assert.strictEqual(storageContains(ls, 'Buy groceries'), true);
+                assert.strictEqual(storageContains(ls, 'Milk, eggs, bread'), false);
+                assert.strictEqual(storageContains(ls, 'bob@example.com'), false);
+
+                await db.remove();
+            });
+            it('should not store a top-level encrypted field in plain text', async () => {
+                const ls = getLocalStorageMock();
+                const db = await createRxDatabase<{ todos: RxCollection<TodoDocType>; }>({
+                    name: randomToken(10),
+                    storage: wrappedValidateAjvStorage({
+                        storage: wrappedKeyCompressionStorage({
+                            storage: wrappedKeyEncryptionCryptoJsStorage({
+                                storage: getRxStorageLocalstorage({ localStorage: ls })
+                            })
+                        })
+                    }),
+                    password: await getPassword()
+                });
+                await db.addCollections({
+                    todos: {
+                        schema: Object.assign({}, todoSchema, {
+                            encrypted: ['note']
+                        })
+                    }
+                });
+                await db.todos.insert({
+                    id: 'todo2',
+                    name: 'Buy groceries',
+                    note: 'Milk, eggs, bread'
+                });
+                const doc = await db.todos.findOne('todo2').exec(true);
+                assert.strictEqual(doc.note, 'Milk, eggs, bread');
+                assert.strictEqual(storageContains(ls, 'Milk, eggs, bread'), false);
+
+                await db.remove();
+            });
+            it('should read documents that have been stored without encryption and encrypt them on the next write', async () => {
+                /**
+                 * Removes the encrypted fields from the schema
+                 * so that the encryption storage below it stores plain text.
+                 */
+                function withoutEncryptedFields<Internals, InstanceCreationOptions>(
+                    innerStorage: RxStorage<Internals, InstanceCreationOptions>
+                ): RxStorage<Internals, InstanceCreationOptions> {
+                    return Object.assign({}, innerStorage, {
+                        createStorageInstance<RxDocType>(
+                            params: RxStorageInstanceCreationParams<RxDocType, InstanceCreationOptions>
+                        ) {
+                            const schemaWithoutEncrypted = Object.assign({}, params.schema);
+                            delete schemaWithoutEncrypted.encrypted;
+                            return innerStorage.createStorageInstance(
+                                Object.assign({}, params, { schema: schemaWithoutEncrypted })
+                            );
+                        }
+                    });
+                }
+                const ls = getLocalStorageMock();
+                const name = randomToken(10);
+                const password = await getPassword();
+                const schema = Object.assign({}, todoSchema, {
+                    encrypted: ['note']
+                });
+                const plainDb = await createRxDatabase<{ todos: RxCollection<TodoDocType>; }>({
+                    name,
+                    storage: wrappedValidateAjvStorage({
+                        storage: wrappedKeyCompressionStorage({
+                            storage: withoutEncryptedFields(
+                                wrappedKeyEncryptionCryptoJsStorage({
+                                    storage: getRxStorageLocalstorage({ localStorage: ls })
+                                })
+                            )
+                        })
+                    }),
+                    password
+                });
+                await plainDb.addCollections({ todos: { schema } });
+                await plainDb.todos.insert({
+                    id: 'todo2',
+                    name: 'Buy groceries',
+                    note: 'Milk, eggs, bread'
+                });
+                assert.strictEqual(storageContains(ls, 'Milk, eggs, bread'), true);
+                await plainDb.close();
+
+                const db = await createRxDatabase<{ todos: RxCollection<TodoDocType>; }>({
+                    name,
+                    storage: wrappedValidateAjvStorage({
+                        storage: wrappedKeyCompressionStorage({
+                            storage: wrappedKeyEncryptionCryptoJsStorage({
+                                storage: getRxStorageLocalstorage({ localStorage: ls })
+                            })
+                        })
+                    }),
+                    password
+                });
+                await db.addCollections({ todos: { schema } });
+                const doc = await db.todos.findOne('todo2').exec(true);
+                assert.strictEqual(doc.note, 'Milk, eggs, bread');
+
+                await doc.incrementalPatch({ name: 'Buy more groceries' });
+                const docAfter = await db.todos.findOne('todo2').exec(true);
+                assert.strictEqual(docAfter.note, 'Milk, eggs, bread');
+                assert.strictEqual(storageContains(ls, 'Buy more groceries'), true);
+                assert.strictEqual(storageContains(ls, 'Milk, eggs, bread'), false);
+
+                await db.remove();
+            });
         });
     });
     describe('SECURITY', () => {

@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX fields listed in `encrypted` have been stored in plain text when the encryption storage is used inside of `wrappedKeyCompressionStorage()` (the order shown in the RxStorage docs) and the schema has `keyCompression: true`. A nested encrypted path made `addCollections()` throw a `TypeError`. The key-compression plugin now also compresses the `encrypted` paths. Documents that have been stored in plain text stay readable with the crypto-js encryption plugin and are encrypted on their next write.",
+    "links": [],
+    "priority": 6
+}
