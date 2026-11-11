@@ -10,10 +10,15 @@ import type {
 import {
     createRevision,
     ensureNotFalsy,
+    errorToPlainJson,
     getDefaultRevision,
     getDefaultRxDocumentMeta,
     now
 } from '../plugins/utils/index.ts';
+import {
+    newRxError,
+    rxStorageWriteErrorToRxError
+} from '../rx-error.ts';
 
 export async function getLastCheckpointDoc<RxDocType, CheckpointType>(
     state: RxStorageInstanceReplicationState<RxDocType>,
@@ -127,7 +132,7 @@ export async function setCheckpoint<RxDocType, CheckpointType>(
                 } else {
                     const error = result.error[0];
                     if (error.status !== 409) {
-                        throw error;
+                        throw rxStorageWriteErrorToRxError(error);
                     } else {
                         previousCheckpointDoc = ensureNotFalsy(error.documentInDb);
                         newDoc._rev = createRevision(
@@ -138,6 +143,18 @@ export async function setCheckpoint<RxDocType, CheckpointType>(
                 }
             }
         }
+    }).catch(err => {
+        /**
+         * A failed checkpoint write must not reject the checkpointQueue
+         * because all later replication cycles, cancel() and remove() are chained onto it.
+         * The checkpoint is written again with the next replication cycle.
+         */
+        state.events.error.next(
+            err.rxdb ? err : newRxError(direction === 'down' ? 'RC_PULL' : 'RC_PUSH', {
+                direction: direction === 'down' ? 'pull' : 'push',
+                errors: [errorToPlainJson(err)]
+            })
+        );
     });
     await state.checkpointQueue;
 }
