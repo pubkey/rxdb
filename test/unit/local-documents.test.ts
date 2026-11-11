@@ -200,6 +200,70 @@ describe('local-documents.test.ts', () => {
             });
         });
     });
+    describe('non-incremental mutation functions', () => {
+        type LocalDocType = {
+            foo: string;
+            added?: string;
+        };
+        describe('.patch()', () => {
+            it('should patch the data and return the updated document', async () => {
+                const c = await humansCollection.create(0);
+                const doc = await c.insertLocal<LocalDocType>('foobar', {
+                    foo: 'bar'
+                });
+
+                const updated = await doc.patch({
+                    added: 'foo'
+                });
+                assert.deepStrictEqual(updated.toJSON().data, { foo: 'bar', added: 'foo' });
+
+                const fromStorage = ensureNotFalsy(await c.getLocal<LocalDocType>('foobar'));
+                assert.deepStrictEqual(fromStorage.toJSON(), {
+                    id: 'foobar',
+                    data: { foo: 'bar', added: 'foo' }
+                });
+
+                c.database.close();
+            });
+            it('should throw a conflict when called on an outdated document', async () => {
+                const c = await humansCollection.create(0);
+                const doc = await c.insertLocal<LocalDocType>('foobar', {
+                    foo: 'bar'
+                });
+                await doc.patch({ added: 'first' });
+                await AsyncTestUtil.assertThrows(
+                    () => doc.patch({ added: 'second' }),
+                    'RxError',
+                    'CONFLICT'
+                );
+                const fromStorage = ensureNotFalsy(await c.getLocal<LocalDocType>('foobar'));
+                assert.strictEqual(fromStorage.get('added'), 'first');
+                c.database.close();
+            });
+        });
+        describe('.modify()', () => {
+            it('should modify the data and return the updated document', async () => {
+                const c = await humansCollection.create(0);
+                const doc = await c.insertLocal<LocalDocType>('foobar', {
+                    foo: 'bar'
+                });
+
+                const updated = await doc.modify(data => {
+                    data.added = 'foo';
+                    return data;
+                });
+                assert.deepStrictEqual(updated.toJSON().data, { foo: 'bar', added: 'foo' });
+
+                const fromStorage = ensureNotFalsy(await c.getLocal<LocalDocType>('foobar'));
+                assert.deepStrictEqual(fromStorage.toJSON(), {
+                    id: 'foobar',
+                    data: { foo: 'bar', added: 'foo' }
+                });
+
+                c.database.close();
+            });
+        });
+    });
     describe('.getLocal$()', () => {
         const id = 'foo';
         it('should emit null when not exists', async () => {
@@ -436,6 +500,22 @@ describe('local-documents.test.ts', () => {
                 foo: 'bar'
             });
             await doc.remove();
+            const doc2 = await c.getLocal('foobar');
+            assert.strictEqual(doc2, null);
+            c.database.close();
+        });
+    });
+    describe('.incrementalRemove()', () => {
+        it('should remove the document', async () => {
+            const c = await humansCollection.create(0);
+            const doc = await c.insertLocal('foobar', {
+                foo: 'bar'
+            });
+            // outdated document instance
+            await doc.incrementalPatch({ foo: 'bar2' });
+
+            const removed = await doc.incrementalRemove();
+            assert.strictEqual(removed.deleted, true);
             const doc2 = await c.getLocal('foobar');
             assert.strictEqual(doc2, null);
             c.database.close();

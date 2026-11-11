@@ -39,10 +39,13 @@ export declare type RxLocalDocument<Parent, Data = any, Reactivity = unknown> = 
 
         /**
              * Because local documents store their relevant data inside of the 'data' property,
-             * the incremental mutation methods are changed a bit to only allow to change parts of the data property.
+             * the mutation methods are changed a bit to only allow to change parts of the data property.
              */
+        modify(mutationFunction: LocalDocumentModifyFunction<Data>): Promise<RxLocalDocument<Parent, Data, Reactivity>>;
+        patch(patch: Partial<Data>): Promise<RxLocalDocument<Parent, Data, Reactivity>>;
         incrementalModify(mutationFunction: LocalDocumentModifyFunction<Data>): Promise<RxLocalDocument<Parent, Data, Reactivity>>;
         incrementalPatch(patch: Partial<Data>): Promise<RxLocalDocument<Parent, Data, Reactivity>>;
+        incrementalRemove(): Promise<RxLocalDocument<Parent, Data, Reactivity>>;
 
         $: Observable<RxLocalDocument<Parent, Data, Reactivity>>;
     }

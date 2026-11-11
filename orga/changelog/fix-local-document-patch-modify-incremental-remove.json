@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `patch()`, `modify()` and `incrementalRemove()` of a `RxLocalDocument` threw a `TypeError` and `patch()` wrote the patched fields outside of the `data` property. They now work on the `data` of the local document like `incrementalPatch()` and `incrementalModify()` and return the updated `RxLocalDocument`",
+    "links": [],
+    "priority": 5
+}

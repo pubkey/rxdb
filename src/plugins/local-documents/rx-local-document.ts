@@ -17,7 +17,6 @@ import {
 } from '../../rx-error.ts';
 import {
     getWrappedStorageInstance,
-    getWrittenDocumentsFromBulkWriteResponse,
     writeSingle
 } from '../../rx-storage-helper.ts';
 import type {
@@ -35,6 +34,7 @@ import type {
     RxStorageChangeEvent
 } from '../../types/';
 import {
+    clone,
     deepEqual,
     ensureNotFalsy,
     flatClone,
@@ -208,23 +208,56 @@ const RxLocalDocumentPrototype: any = {
             return docData;
         });
     },
-    async _saveData(this: RxLocalDocument<any>, newData: RxDocumentData<RxLocalDocumentData>) {
+    async modify<DocData>(
+        this: RxLocalDocument<any, DocData>,
+        mutationFunction: LocalDocumentModifyFunction<any>
+    ) {
+        const newData: RxDocumentData<RxLocalDocumentData<any>> = clone(this._data);
+        newData.data = await mutationFunction(newData.data, this);
+        return (this as any)._saveData(newData);
+    },
+    patch(patch: Partial<any>) {
+        return this.modify((docData: any) => {
+            Object
+                .entries(patch)
+                .forEach(([k, v]) => {
+                    docData[k] = v;
+                });
+            return docData;
+        });
+    },
+    async _saveData(
+        this: RxLocalDocument<any>,
+        newData: RxDocumentData<RxLocalDocumentData>
+    ): Promise<RxLocalDocument<any>> {
         const state = await getLocalDocStateByParent(this.parent);
         const oldData: RxDocumentData<RxLocalDocumentData> = this._data;
-        newData.id = (this as any).id;
-        const writeRows = [{
-            previous: oldData,
-            document: newData
-        }];
-        return state.storageInstance.bulkWrite(writeRows, 'local-document-save-data')
-            .then((res) => {
-                if (res.error[0]) {
-                    throw res.error[0];
-                }
-                const success = getWrittenDocumentsFromBulkWriteResponse(this.collection.schema.primaryPath, writeRows, res)[0];
-                newData = flatClone(newData);
-                newData._rev = success._rev;
+
+        // deleted documents cannot be changed
+        if (oldData._deleted) {
+            throw newRxError('DOC11', {
+                id: this.primary,
+                document: this
             });
+        }
+        newData = flatClone(newData);
+        newData.id = this.primary;
+        try {
+            const writeResult = await writeSingle(state.storageInstance, {
+                previous: oldData,
+                document: newData
+            }, 'local-document-save-data');
+            return state.docCache.getCachedRxDocument(writeResult) as any;
+        } catch (error: any) {
+            if (error && error.status === 409) {
+                throw newRxError('CONFLICT', {
+                    id: this.primary,
+                    writeError: error,
+                    data: newData
+                });
+            }
+            throw error;
+        }
     },
 
     async remove(this: RxLocalDocument<any>): Promise<RxLocalDocument<any>> {
@@ -236,6 +269,16 @@ const RxLocalDocumentPrototype: any = {
             document: writeData
         }, 'local-document-remove')
             .then((writeResult) => state.docCache.getCachedRxDocument(writeResult) as any);
+    },
+    async incrementalRemove(this: RxLocalDocument<any>): Promise<RxLocalDocument<any>> {
+        const state = await getLocalDocStateByParent(this.parent);
+        return state.incrementalWriteQueue.addWrite(
+            this._data as any,
+            (docData) => {
+                docData._deleted = true;
+                return docData;
+            }
+        ).then(result => state.docCache.getCachedRxDocument(result as any) as any);
     }
 };
 
