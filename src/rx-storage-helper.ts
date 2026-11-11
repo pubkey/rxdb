@@ -777,6 +777,16 @@ export function getWrappedStorageInstance<
                     }) as any;
             if (reInsertErrors.length > 0) {
                 const reInsertIds = new Set<string>();
+                /**
+                 * The write row inside of the error can have passed a serialization boundary,
+                 * like in the remote storage, where attachment data is no longer a Blob.
+                 * So the document of the row that was sent to the storage is used for the re-insert.
+                 */
+                const sentDocumentById = new Map<string, RxDocumentWriteData<RxDocType>>();
+                for (let index = 0; index < toStorageWriteRows.length; index++) {
+                    const sentDocument = toStorageWriteRows[index].document;
+                    sentDocumentById.set((sentDocument as any)[primaryPath], sentDocument);
+                }
                 const reInserts: BulkWriteRow<RxDocType>[] = reInsertErrors
                     .map((error) => {
                         reInsertIds.add(error.documentId);
@@ -789,7 +799,7 @@ export function getWrappedStorageInstance<
                             previous: hasAttachments ? Object.assign({}, error.documentInDb, { _attachments: {} }) : error.documentInDb,
                             document: Object.assign(
                                 {},
-                                error.writeRow.document,
+                                sentDocumentById.get(error.documentId) || error.writeRow.document,
                                 {
                                     _rev: createRevision(
                                         database.token,
