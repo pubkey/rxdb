@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX the DenoKV RxStorage imported `PROMISE_RESOLVE_VOID` from the dev-only package `rxdb-old`, so `rxdb/plugins/storage-denokv` could not be resolved in projects that install RxDB. `npm run test:deps` now also checks the DenoKV plugin and fails when a checked plugin imports a devDependency",
+    "links": [],
+    "priority": 5
+}
