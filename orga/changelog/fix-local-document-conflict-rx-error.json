@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `insertLocal()` on an existing id and `RxLocalDocument.remove()` on an outdated document instance rejected with the plain storage write error object instead of an `RxError` with the code `CONFLICT`",
+    "links": [],
+    "priority": 4
+}

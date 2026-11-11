@@ -28,6 +28,27 @@ export function getLocalDocStateByParent(parent: LocalDocumentParent): Promise<L
     return statePromise;
 }
 
+/**
+ * Rethrows the error of a local document write.
+ * A storage write conflict (status 409) is thrown as RxError
+ * with the code CONFLICT, same as on normal documents.
+ */
+export function throwLocalDocumentWriteError(
+    parent: LocalDocumentParent,
+    id: string,
+    error: any
+): never {
+    if (error && error.status === 409) {
+        throw newRxError('CONFLICT', {
+            database: parent.database ? parent.database.name : parent.name,
+            collection: parent.database ? parent.name : '',
+            id,
+            writeError: error
+        });
+    }
+    throw error;
+}
+
 export function createLocalDocumentStorageInstance(
     databaseInstanceToken: string,
     storage: RxStorage<any, any>,
