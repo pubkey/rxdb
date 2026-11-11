@@ -289,6 +289,7 @@ export function categorizeBulkWriteRows<RxDocType>(
             if (hasAttachments) {
                 const atts = document._attachments;
                 const attKeys = Object.keys(atts);
+                const attachmentsAddLengthBefore = attachmentsAdd.length;
                 for (let a = 0; a < attKeys.length; a++) {
                     const attachmentId = attKeys[a];
                     const attachmentData = atts[attachmentId];
@@ -303,7 +304,7 @@ export function categorizeBulkWriteRows<RxDocType>(
                             attachmentId,
                             context
                         };
-                        errors.push(attachmentError);
+                        break;
                     } else {
                         attachmentsAdd.push({
                             documentId: docId,
@@ -313,22 +314,27 @@ export function categorizeBulkWriteRows<RxDocType>(
                         });
                     }
                 }
-            }
-            let insertedRow: BulkWriteRowProcessed<RxDocType> | undefined;
-            if (!attachmentError) {
-                const row: BulkWriteRowProcessed<RxDocType> = hasAttachments ? stripAttachmentsDataFromRow(writeRow) : writeRow as any;
-                insertedRow = row;
-                bulkInsertDocs.push(row);
-                if (onInsert) {
-                    onInsert(document);
+                if (attachmentError) {
+                    /**
+                     * The document is not written, so none of its
+                     * attachments must be stored and no event must be emitted.
+                     */
+                    attachmentsAdd.length = attachmentsAddLengthBefore;
+                    errors.push(attachmentError);
+                    continue;
                 }
-                newestRow = row;
             }
+            const insertedRow: BulkWriteRowProcessed<RxDocType> = hasAttachments ? stripAttachmentsDataFromRow(writeRow) : writeRow as any;
+            bulkInsertDocs.push(insertedRow);
+            if (onInsert) {
+                onInsert(document);
+            }
+            newestRow = insertedRow;
 
             if (!documentDeleted) {
                 let eventDocData = document as RxDocumentData<RxDocType>;
                 if (hasAttachments) {
-                    eventDocData = insertedRow ? insertedRow.document : stripAttachmentsDataFromDocument(document);
+                    eventDocData = insertedRow.document;
                 }
                 const event = {
                     documentId: docId,
@@ -462,18 +468,23 @@ export function categorizeBulkWriteRows<RxDocType>(
             }
 
             if (attachmentError) {
-                errors.push(attachmentError);
-            } else {
                 /**
-                 * updatedRow already has attachments stripped (line above),
-                 * so push it directly without stripping again.
+                 * The document is not written,
+                 * so no event must be emitted for it.
                  */
-                bulkUpdateDocs.push(updatedRow);
-                if (onUpdate) {
-                    onUpdate(document);
-                }
-                newestRow = updatedRow as any;
+                errors.push(attachmentError);
+                continue;
             }
+
+            /**
+             * updatedRow already has attachments stripped (line above),
+             * so push it directly without stripping again.
+             */
+            bulkUpdateDocs.push(updatedRow);
+            if (onUpdate) {
+                onUpdate(document);
+            }
+            newestRow = updatedRow as any;
 
             let eventDocumentData: RxDocumentData<RxDocType> | undefined;
             let previousEventDocumentData: RxDocumentData<RxDocType> | undefined;

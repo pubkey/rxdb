@@ -3106,6 +3106,134 @@ describe('rx-storage-implementations.test.ts (implementation: ' + config.storage
                 sub.unsubscribe();
                 storageInstance.remove();
             });
+            it('should return a 510 error and emit no event when a new attachment has no data', async () => {
+                const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
+                    databaseInstanceToken: randomToken(10),
+                    databaseName: randomToken(12),
+                    collectionName: randomToken(12),
+                    schema: Object.assign(
+                        getPseudoSchemaForVersion<TestDocType>(0, 'key'),
+                        {
+                            attachments: {}
+                        }
+                    ),
+                    options: {},
+                    multiInstance: false,
+                    devMode: true
+                });
+                const emitted: EventBulk<RxStorageChangeEvent<any>, any>[] = [];
+                const sub = storageInstance.changeStream().subscribe(x => {
+                    emitted.push(x);
+                });
+
+                const dataBlob = createBlob('aaaaaaaaaa', 'text/plain');
+                const digest = await defaultHashSha256(dataBlob);
+                const getStubWriteData = (key: string): RxDocumentWriteData<TestDocType> => ({
+                    key,
+                    value: 'one',
+                    _rev: EXAMPLE_REVISION_1,
+                    _deleted: false,
+                    _meta: {
+                        lwt: now()
+                    },
+                    _attachments: {
+                        withData: {
+                            length: dataBlob.size,
+                            data: dataBlob,
+                            type: 'text/plain',
+                            digest
+                        },
+                        stubOne: {
+                            length: dataBlob.size,
+                            type: 'text/plain',
+                            digest
+                        },
+                        stubTwo: {
+                            length: dataBlob.size,
+                            type: 'text/plain',
+                            digest
+                        }
+                    }
+                });
+
+                // insert where the errored row is the only row of the write
+                const insertOnlyResult = await storageInstance.bulkWrite(
+                    [{ document: getStubWriteData('insert-only') }],
+                    testContext
+                );
+                assert.strictEqual(insertOnlyResult.error.length, 1);
+                assert.strictEqual(insertOnlyResult.error[0].status, 510);
+                assert.strictEqual(insertOnlyResult.error[0].documentId, 'insert-only');
+
+                // insert together with a valid row
+                const validDocument: RxDocumentWriteData<TestDocType> = {
+                    key: 'valid',
+                    value: 'one',
+                    _rev: EXAMPLE_REVISION_1,
+                    _deleted: false,
+                    _meta: {
+                        lwt: now()
+                    },
+                    _attachments: {}
+                };
+                const mixedResult = await storageInstance.bulkWrite(
+                    [
+                        { document: getStubWriteData('insert-mixed') },
+                        { document: validDocument }
+                    ],
+                    testContext
+                );
+                assert.strictEqual(mixedResult.error.length, 1);
+                assert.strictEqual(mixedResult.error[0].status, 510);
+                assert.strictEqual(mixedResult.error[0].documentId, 'insert-mixed');
+
+                // update that adds an attachment without data
+                const previous = ensureNotFalsy(await getSingleDocument(storageInstance, 'valid'));
+                const updateResult = await storageInstance.bulkWrite(
+                    [{
+                        previous,
+                        document: {
+                            key: 'valid',
+                            value: 'two',
+                            _rev: EXAMPLE_REVISION_2,
+                            _deleted: false,
+                            _meta: {
+                                lwt: now()
+                            },
+                            _attachments: {
+                                stubOne: {
+                                    length: dataBlob.size,
+                                    type: 'text/plain',
+                                    digest
+                                }
+                            }
+                        }
+                    }],
+                    testContext
+                );
+                assert.strictEqual(updateResult.error.length, 1);
+                assert.strictEqual(updateResult.error[0].status, 510);
+
+                // the storage state must only contain the valid insert
+                const docsInStorage = await storageInstance.findDocumentsById(
+                    ['insert-only', 'insert-mixed', 'valid'],
+                    true
+                );
+                assert.deepStrictEqual(docsInStorage.map(d => d.key), ['valid']);
+                assert.strictEqual(docsInStorage[0].value, 'one');
+                assert.deepStrictEqual(docsInStorage[0]._attachments, {});
+
+                // only the valid insert must have emitted an event
+                await waitUntil(() => flattenEvents(emitted).length >= 1);
+                await wait(isFastMode() ? 50 : 200);
+                assert.deepStrictEqual(
+                    flattenEvents(emitted).map(event => event.operation + ':' + event.documentId),
+                    ['INSERT:valid']
+                );
+
+                sub.unsubscribe();
+                storageInstance.remove();
+            });
             it('should be able to add multiple attachments, one each write', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
                     databaseInstanceToken: randomToken(10),
