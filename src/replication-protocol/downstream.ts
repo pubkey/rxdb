@@ -303,13 +303,13 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
                 currentForkStateList.forEach(doc => currentForkState.set((doc as any)[primaryPath], doc));
                 return Promise.all(
                     docIds.map(async (docId) => {
-                        const forkStateFullDoc: RxDocumentData<RxDocType> | undefined = currentForkState.get(docId);
-                        const forkStateDocData: WithDeletedAndAttachments<RxDocType> | undefined = forkStateFullDoc
+                        let forkStateFullDoc: RxDocumentData<RxDocType> | undefined = currentForkState.get(docId);
+                        let forkStateDocData: WithDeletedAndAttachments<RxDocType> | undefined = forkStateFullDoc
                             ? writeDocToDocState(forkStateFullDoc, state.hasAttachments, false)
                             : undefined
                             ;
                         const masterState = downDocsById[docId];
-                        const assumedMaster = assumedMasterState[docId];
+                        let assumedMaster = assumedMasterState[docId];
 
                         if (
                             assumedMaster &&
@@ -375,8 +375,51 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
                              * synced from the master but the process exited before
                              * the metadata was written.
                              * @link https://github.com/pubkey/rxdb/pull/7804
+                             *
+                             * The upstream might be pushing that local write right now.
+                             * When the master accepts it without a conflict,
+                             * the pulled master state is newer than the pushed state
+                             * and no later pull would return it again.
+                             * So we wait for the upstream and only drop the master state
+                             * if the fork state is still not equal to the assumed master state
+                             * or if the pull did not return a new master state.
                              */
-                            return PROMISE_RESOLVE_VOID;
+                            await state.streamQueue.up;
+                            if (state.events.canceled.getValue()) {
+                                return PROMISE_RESOLVE_VOID;
+                            }
+                            const [forkStateAfterUp, assumedMasterAfterUp] = await Promise.all([
+                                state.input.forkInstance.findDocumentsById([docId], true),
+                                getAssumedMasterState(state, [docId])
+                            ]);
+                            const newAssumedMaster = assumedMasterAfterUp[docId];
+                            const newForkStateDocData = forkStateAfterUp[0]
+                                ? writeDocToDocState(forkStateAfterUp[0], state.hasAttachments, false)
+                                : undefined;
+                            if (
+                                !newForkStateDocData ||
+                                !newAssumedMaster ||
+                                newAssumedMaster.metaDocument.isResolvedConflict !== (assumedMaster ? assumedMaster.metaDocument.isResolvedConflict : undefined) ||
+                                !state.input.conflictHandler.isEqual(
+                                    newAssumedMaster.docData,
+                                    newForkStateDocData,
+                                    'downstream-check-if-equal-0'
+                                ) ||
+                                (
+                                    assumedMaster &&
+                                    state.input.conflictHandler.isEqual(
+                                        assumedMaster.docData,
+                                        masterState,
+                                        'downstream-check-if-equal-0'
+                                    )
+                                )
+                            ) {
+                                return PROMISE_RESOLVE_VOID;
+                            }
+                            forkStateFullDoc = forkStateAfterUp[0];
+                            forkStateDocData = newForkStateDocData;
+                            assumedMaster = newAssumedMaster;
+                            isAssumedMasterEqualToForkState = true;
                         }
 
                         const areStatesExactlyEqual = !forkStateDocData
