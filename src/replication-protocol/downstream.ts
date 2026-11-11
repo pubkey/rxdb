@@ -24,7 +24,8 @@ import {
     getDefaultRevision,
     getHeightOfRevision,
     now,
-    PROMISE_RESOLVE_VOID
+    PROMISE_RESOLVE_VOID,
+    promiseWait
 } from '../plugins/utils/index.ts';
 import {
     getLastCheckpointDoc,
@@ -177,42 +178,69 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
             return;
         }
 
-        state.checkpointQueue = state.checkpointQueue.then(() => getLastCheckpointDoc(state, 'down'));
-        let lastCheckpoint: CheckpointType = await state.checkpointQueue;
-
-
-        const promises: Promise<any>[] = [];
+        /**
+         * When persisting a batch has failed, the documents of that batch
+         * are still missing on the fork. Therefore we have to
+         * pull again from the last stored checkpoint until
+         * all batches have been persisted.
+         */
         while (!state.events.canceled.getValue()) {
-            lastTimeMasterChangesRequested = timer++;
-            const downResult = await replicationHandler.masterChangesSince(
-                lastCheckpoint,
-                state.input.pullBatchSize
-            );
+            persistFailed = false;
+            state.checkpointQueue = state.checkpointQueue.then(() => getLastCheckpointDoc(state, 'down'));
+            let lastCheckpoint: CheckpointType = await state.checkpointQueue;
 
-            if (downResult.documents.length === 0) {
+            const promises: Promise<any>[] = [];
+            while (!state.events.canceled.getValue()) {
+                lastTimeMasterChangesRequested = timer++;
+                const downResult = await replicationHandler.masterChangesSince(
+                    lastCheckpoint,
+                    state.input.pullBatchSize
+                );
+
+                if (downResult.documents.length === 0) {
+                    break;
+                }
+
+                lastCheckpoint = stackCheckpoints([lastCheckpoint, downResult.checkpoint]);
+
+                promises.push(
+                    persistFromMaster(
+                        downResult.documents,
+                        lastCheckpoint
+                    )
+                );
+
+                /**
+                 * By definition we stop pull when the pulled documents
+                 * do not fill up the pullBatchSize because we
+                 * can assume that the remote has no more documents.
+                 */
+                if (downResult.documents.length < state.input.pullBatchSize) {
+                    break;
+                }
+
+            }
+            await Promise.all(promises);
+            if (!persistFailed) {
                 break;
             }
-
-            lastCheckpoint = stackCheckpoints([lastCheckpoint, downResult.checkpoint]);
-
-            promises.push(
-                persistFromMaster(
-                    downResult.documents,
-                    lastCheckpoint
-                )
-            );
-
-            /**
-             * By definition we stop pull when the pulled documents
-             * do not fill up the pullBatchSize because we
-             * can assume that the remote has no more documents.
-             */
-            if (downResult.documents.length < state.input.pullBatchSize) {
-                break;
-            }
-
+            await awaitPersistRetry();
         }
-        await Promise.all(promises);
+    }
+
+    /**
+     * Waits for the retry time, resolves earlier when the replication is canceled.
+     */
+    function awaitPersistRetry(): Promise<any> {
+        return Promise.race([
+            promiseWait(state.input.retryTime === undefined ? 5000 : state.input.retryTime),
+            firstValueFrom(
+                state.events.canceled.pipe(
+                    filter((canceled: boolean) => !!canceled)
+                ),
+                { defaultValue: true }
+            )
+        ]);
     }
 
 
@@ -231,7 +259,11 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
         return persistFromMaster(
             docsOfAllTasks,
             ensureNotFalsy(lastCheckpoint)
-        );
+        ).then(() => {
+            if (persistFailed) {
+                return awaitPersistRetry().then(() => downstreamResyncOnce());
+            }
+        });
     }
 
 
@@ -244,6 +276,15 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
      * by processing the documents in bulks.
      */
     let persistenceQueue = PROMISE_RESOLVE_VOID;
+
+    /**
+     * Is true when persisting a batch has failed
+     * with an error that is not bound to a single document.
+     * While it is true, no checkpoint is stored because that checkpoint
+     * would be behind the documents that have not been persisted.
+     * It is reset when the documents are pulled again from the last stored checkpoint.
+     */
+    let persistFailed = false;
     const nonPersistedFromMaster: {
         checkpoint?: CheckpointType;
         docs: ById<WithDeleted<RxDocType>>;
@@ -288,6 +329,7 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
             const writeRowsToForkById: ById<BulkWriteRow<RxDocType>> = {};
             const writeRowsToMeta: BulkWriteRowById<RxStorageReplicationMeta<RxDocType, CheckpointType>> = {};
             const useMetaWriteRows: BulkWriteRow<RxStorageReplicationMeta<RxDocType, CheckpointType>>[] = [];
+            let hasDocumentWriteError = false;
 
             return Promise.all([
                 state.input.forkInstance.findDocumentsById(docIds, true),
@@ -513,6 +555,7 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
                             mustThrow = throwMe;
                         });
                         if (mustThrow) {
+                            hasDocumentWriteError = true;
                             throw mustThrow;
                         }
                     });
@@ -533,6 +576,9 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
                     });
                 }
             }).then(() => {
+                if (persistFailed) {
+                    return;
+                }
                 /**
                  * For better performance we do not await checkpoint writes,
                  * but to ensure order on parallel checkpoint writes,
@@ -543,6 +589,17 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
                     'down',
                     useCheckpoint
                 );
+            }).catch(unhandledError => {
+                /**
+                 * A write error of a single document, like a schema validation error,
+                 * will happen again when the same document is pulled again.
+                 * All other errors leave the batch unpersisted
+                 * so the documents must be pulled again.
+                 */
+                if (!hasDocumentWriteError) {
+                    persistFailed = true;
+                }
+                throw unhandledError;
             });
         }).catch(unhandledError => state.events.error.next(unhandledError));
         return persistenceQueue;

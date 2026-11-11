@@ -67,6 +67,7 @@ import type {
     RxReplicationWriteToMasterRow,
     RxStorage,
     RxStorageDefaultCheckpoint,
+    RxStorageInstanceCreationParams,
     WithDeleted
 } from '../../plugins/core/index.mjs';
 import { firstValueFrom, map, Subject, timer } from 'rxjs';
@@ -1779,6 +1780,73 @@ describe('replication.test.ts', () => {
 
             const nonCheckpointMetaDocs = result.documents.filter(d => d.isCheckpoint === '0');
             assert.deepStrictEqual(nonCheckpointMetaDocs, [], 'must not have non-checkpoint meta documents');
+
+            localCollection.database.close();
+            remoteCollection.database.close();
+        });
+        it('should not skip the documents of a pulled batch when the write to the local storage fails once', async () => {
+            const baseStorage = config.storage.getStorage();
+            let downstreamWrites = 0;
+            /**
+             * A storage where the second write of the
+             * downstream replication rejects, like on a transient storage error.
+             */
+            const storageWithOneFailingWrite: RxStorage<any, any> = {
+                name: baseStorage.name,
+                rxdbVersion: baseStorage.rxdbVersion,
+                async createStorageInstance<RxDocType>(params: RxStorageInstanceCreationParams<RxDocType, any>) {
+                    const instance = await baseStorage.createStorageInstance<RxDocType>(params);
+                    const originalBulkWrite = instance.bulkWrite.bind(instance);
+                    instance.bulkWrite = (rows, context) => {
+                        if (context.startsWith('replication-downstream')) {
+                            downstreamWrites = downstreamWrites + 1;
+                            if (downstreamWrites === 2) {
+                                return Promise.reject(new Error('transient storage error'));
+                            }
+                        }
+                        return originalBulkWrite(rows, context);
+                    };
+                    return instance;
+                }
+            };
+            const localCollection = await humansCollection.createHumanWithTimestamp(0, randomToken(10), false, storageWithOneFailingWrite);
+            const remoteCollection = await humansCollection.createHumanWithTimestamp(6, randomToken(10), false);
+            const remoteIds = (await remoteCollection.find().exec()).map(d => d.primary).sort();
+
+            const startReplication = () => replicateRxCollection({
+                collection: localCollection,
+                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                live: true,
+                retryTime: 50,
+                pull: {
+                    batchSize: 2,
+                    handler: getPullHandler(remoteCollection)
+                }
+            });
+
+            const replicationState = startReplication();
+            const errors: (RxError | RxTypeError)[] = [];
+            replicationState.error$.subscribe(err => errors.push(err));
+            await replicationState.awaitInitialReplication();
+            await replicationState.awaitInSync();
+
+            assert.ok(downstreamWrites >= 2);
+            assert.strictEqual(errors.length, 1);
+            assert.deepStrictEqual(
+                (await localCollection.find().exec()).map(d => d.primary).sort(),
+                remoteIds
+            );
+            await replicationState.cancel();
+
+            // must also be complete after a restart from the stored checkpoint
+            const replicationState2 = startReplication();
+            ensureReplicationHasNoErrors(replicationState2);
+            await replicationState2.awaitInitialReplication();
+            await replicationState2.awaitInSync();
+            assert.deepStrictEqual(
+                (await localCollection.find().exec()).map(d => d.primary).sort(),
+                remoteIds
+            );
 
             localCollection.database.close();
             remoteCollection.database.close();
