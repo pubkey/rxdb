@@ -656,7 +656,7 @@
     "esbuild": "0.28.2",
     "eslint": "10.14.0",
     "eslint-plugin-import": "2.32.0",
-    "eslint-plugin-jsdoc": "65.4.2",
+    "eslint-plugin-jsdoc": "65.4.3",
     "exists-file": "3.0.2",
     "express": "5.2.1",
     "fake-indexeddb": "6.2.7",
