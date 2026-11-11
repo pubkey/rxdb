@@ -343,6 +343,33 @@ describe('local-documents.test.ts', () => {
             sub.unsubscribe();
             c.database.close();
         });
+        it('database: should not emit when a local document of a collection with the same id is written', async () => {
+            const c = await humansCollection.create(0);
+            const db = c.database;
+            await db.insertLocal(id, { foo: 'db' });
+
+            const dbEmits: any[] = [];
+            const sub = db.getLocal$(id).subscribe((x) => {
+                dbEmits.push(x ? x.toJSON() : null);
+            });
+            await waitUntil(() => dbEmits.length === 1);
+
+            await c.insertLocal(id, { foo: 'col' });
+            await c.upsertLocal(id, { foo: 'col2' });
+
+            // a write to the local document of the database is used as marker that all previous events have been processed
+            await db.upsertLocal(id, { foo: 'db2' });
+            await waitUntil(() => dbEmits.length > 1 && dbEmits[dbEmits.length - 1].data.foo === 'db2');
+            await wait(isFastMode() ? 50 : 150);
+
+            assert.deepStrictEqual(
+                dbEmits.map(e => e.data.foo),
+                ['db', 'db2']
+            );
+
+            sub.unsubscribe();
+            c.database.close();
+        });
     });
     describe('.upsertLocal()', () => {
         describe('positive', () => {

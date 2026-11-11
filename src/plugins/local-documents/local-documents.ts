@@ -23,6 +23,7 @@ import { Observable } from 'rxjs';
 
 import { getLocalDocStateByParent } from './local-documents-helper.ts';
 import { getSingleDocument, writeSingle } from '../../rx-storage-helper.ts';
+import { isRxDatabase } from '../../rx-database.ts';
 
 
 
@@ -134,6 +135,12 @@ export async function getLocal<DocData = any, Reactivity = unknown>(this: any, i
 }
 
 export function getLocal$<DocData = any, Reactivity = unknown>(this: RxCollection, id: string): Observable<RxLocalDocument<DocData, any, Reactivity> | null> {
+    /**
+     * The event stream of a RxDatabase contains the events of all its collections.
+     * A local document of a collection can have the same id as a local document of the database,
+     * so events that belong to a collection must be skipped when the parent is the database.
+     */
+    const parentIsDatabase = isRxDatabase(this);
     return this.$.pipe(
         startWith(null),
         mergeMap(async (cE: RxChangeEvent<RxLocalDocumentData> | null) => {
@@ -151,7 +158,11 @@ export function getLocal$<DocData = any, Reactivity = unknown>(this: RxCollectio
         mergeMap(async (changeEventOrDoc: { changeEvent?: RxChangeEvent<RxLocalDocumentData>; doc?: any }) => {
             if (changeEventOrDoc.changeEvent) {
                 const cE = changeEventOrDoc.changeEvent;
-                if (!cE.isLocal || cE.documentId !== id) {
+                if (
+                    !cE.isLocal ||
+                    cE.documentId !== id ||
+                    (parentIsDatabase && cE.collectionName)
+                ) {
                     return {
                         use: false
                     };
