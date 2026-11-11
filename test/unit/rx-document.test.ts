@@ -1247,6 +1247,64 @@ describe('rx-document.test.js', () => {
 
                 db.close();
             });
+            it('should return the values of data keys that end with an underscore or a dollar sign', async () => {
+                type MetaDocType = {
+                    id: string;
+                    meta: {
+                        user_: string;
+                        price$: number;
+                        total$$: number;
+                        obj_: {
+                            y: number;
+                        };
+                    };
+                };
+                const db = await createRxDatabase<{ todos: RxCollection<MetaDocType>; }>({
+                    name: randomToken(10),
+                    storage: config.storage.getStorage(),
+                });
+                const cols = await db.addCollections({
+                    todos: {
+                        schema: {
+                            version: 0,
+                            primaryKey: 'id',
+                            type: 'object',
+                            properties: {
+                                id: {
+                                    type: 'string',
+                                    maxLength: 100
+                                },
+                                meta: {
+                                    type: 'object'
+                                }
+                            },
+                            required: ['id', 'meta']
+                        }
+                    }
+                });
+                const meta = {
+                    user_: 'alice',
+                    price$: 5,
+                    total$$: 7,
+                    obj_: {
+                        y: 1
+                    }
+                };
+                const doc = await cols.todos.insert({
+                    id: 'todo1',
+                    meta
+                });
+
+                assert.strictEqual(doc.meta.user_, 'alice');
+                assert.strictEqual(doc.meta.price$, 5);
+                assert.strictEqual(doc.meta.total$$, 7);
+                assert.deepStrictEqual(doc.meta.obj_, { y: 1 });
+                assert.strictEqual(doc.meta.obj_.y, 1);
+                assert.deepStrictEqual(JSON.parse(JSON.stringify(doc.get('meta'))), meta);
+                assert.deepStrictEqual(Object.assign({}, doc.meta), meta);
+
+                db.close();
+            });
         });
     });
     describe('issues', () => {

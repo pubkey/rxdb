@@ -547,6 +547,8 @@ function getNestedDocumentProperty(doc: RxDocument, objPath: string, valueObj: a
     return ret;
 }
 
+const HAS_OWN_PROPERTY = Object.prototype.hasOwnProperty;
+
 function createDocumentPropertyValue(doc: RxDocument, objPath: string, valueObj: any): any {
     // direct return if array or non-object
     if (
@@ -575,8 +577,16 @@ function createDocumentPropertyValue(doc: RxDocument, objPath: string, valueObj:
                 }
 
 
+                /**
+                 * The '$', '$$' and '_' suffixes are only accessors
+                 * when the object has no data key with that exact name.
+                 * Free-form objects can contain such keys
+                 * and their values must be returned instead.
+                 */
                 const lastChar = property.charAt(property.length - 1);
-                if (lastChar === '$') {
+                const isAccessor = (lastChar === '$' || lastChar === '_') &&
+                    !HAS_OWN_PROPERTY.call(target, property);
+                if (isAccessor && lastChar === '$') {
                     if (property.endsWith('$$')) {
                         const key = property.slice(0, -2);
                         return doc.get$$(trimDots(objPath + '.' + key));
@@ -584,7 +594,7 @@ function createDocumentPropertyValue(doc: RxDocument, objPath: string, valueObj:
                         const key = property.slice(0, -1);
                         return doc.get$(trimDots(objPath + '.' + key));
                     }
-                } else if (lastChar === '_') {
+                } else if (isAccessor) {
                     const key = property.slice(0, -1);
                     return doc.populate(trimDots(objPath + '.' + key));
                 } else {
