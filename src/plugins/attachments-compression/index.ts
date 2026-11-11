@@ -158,6 +158,16 @@ export function wrappedAttachmentsCompressionStorage<Internals, InstanceCreation
                 const mode = params.schema.attachments.compression;
                 const compressibleTypes = params.schema.attachments.compressibleTypes || DEFAULT_COMPRESSIBLE_TYPES;
 
+                /**
+                 * modifyToStorage() replaces the attachment data on the write row
+                 * of the caller, because the caller derives the written document state
+                 * (like the attachment length) from its own write rows.
+                 * When a write fails, the caller can send the same write row again.
+                 * The already compressed blobs are tracked here
+                 * so that they are not compressed a second time.
+                 */
+                const compressedBlobs = new WeakSet<Blob>();
+
                 async function modifyToStorage(docData: RxDocumentWriteData<RxDocType>) {
                     await Promise.all(
                         Object.values(docData._attachments).map(async (attachment) => {
@@ -165,8 +175,13 @@ export function wrappedAttachmentsCompressionStorage<Internals, InstanceCreation
                                 return;
                             }
                             const attachmentWriteData = attachment as RxAttachmentWriteData;
+                            if (compressedBlobs.has(attachmentWriteData.data)) {
+                                return;
+                            }
                             if (isCompressibleType(attachmentWriteData.type, compressibleTypes)) {
-                                attachmentWriteData.data = await compressBlob(mode, attachmentWriteData.data);
+                                const compressedBlob = await compressBlob(mode, attachmentWriteData.data);
+                                compressedBlobs.add(compressedBlob);
+                                attachmentWriteData.data = compressedBlob;
                                 /**
                                  * Prefix the digest to signal that this attachment is compressed.
                                  * This is intentional: the stored digest is 'c-' + hash(originalData),

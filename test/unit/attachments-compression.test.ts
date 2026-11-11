@@ -17,6 +17,7 @@ import {
     createBlob,
     blobToString,
     CompressionMode,
+    RxAttachmentCreator,
     ensureNotFalsy
 } from '../../plugins/core/index.mjs';
 
@@ -143,6 +144,63 @@ modes.forEach(mode => {
                 const dataString = await blobToString(data);
                 assert.strictEqual(dataString, dat);
                 c.database.close();
+            });
+            it('should return the plain data after re-inserting a deleted document with an inline attachment', async () => {
+                type HumanWithInlineAttachments = HumanDocumentType & {
+                    _attachments?: RxAttachmentCreator[];
+                };
+                const db = await createRxDatabase<{ humans: RxCollection<HumanWithInlineAttachments>; }>({
+                    name: randomToken(10),
+                    storage: wrappedAttachmentsCompressionStorage({
+                        storage: config.storage.getStorage()
+                    }),
+                    multiInstance: false,
+                    ignoreDuplicate: true
+                });
+                const schemaJson = clone(schemas.human);
+                schemaJson.attachments = {
+                    compression: mode
+                };
+                const collections = await db.addCollections({
+                    humans: {
+                        schema: schemaJson
+                    }
+                });
+                const c = collections.humans;
+                const humanData = schemaObjects.humanData();
+                const getInsertData = (text: string): HumanWithInlineAttachments => Object.assign(
+                    {},
+                    humanData,
+                    {
+                        _attachments: [{
+                            id: 'cat.txt',
+                            type: 'text/plain',
+                            data: createBlob(text, 'text/plain')
+                        }]
+                    }
+                );
+
+                const firstText = 'meow I am the first kitty '.repeat(20);
+                const firstDoc = await c.insert(getInsertData(firstText));
+                assert.strictEqual(
+                    await ensureNotFalsy(firstDoc.getAttachment('cat.txt')).getStringData(),
+                    firstText
+                );
+                await firstDoc.remove();
+
+                const secondText = 'meow I am the second kitty '.repeat(20);
+                const secondDoc = await c.insert(getInsertData(secondText));
+                assert.strictEqual(
+                    await ensureNotFalsy(secondDoc.getAttachment('cat.txt')).getStringData(),
+                    secondText
+                );
+
+                const foundDoc = await c.findOne(humanData.passportId).exec(true);
+                assert.strictEqual(
+                    await ensureNotFalsy(foundDoc.getAttachment('cat.txt')).getStringData(),
+                    secondText
+                );
+                await db.close();
             });
         });
         describe('compare size', () => {
