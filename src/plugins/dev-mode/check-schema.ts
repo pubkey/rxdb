@@ -580,5 +580,23 @@ export function checkSchema(jsonSchema: RxJsonSchema<any>) {
                     });
                 }
             });
+
+        /**
+         * The CRDT operations repeat the values of all fields they set.
+         * When the CRDT field is not encrypted, the values of the
+         * encrypted fields are stored in plain text inside of the operations.
+         */
+        if (jsonSchema.crdt && jsonSchema.encrypted.length > 0) {
+            const crdtField = jsonSchema.crdt.field;
+            const crdtFieldIsEncrypted = jsonSchema.encrypted.some(
+                propPath => crdtField === propPath || crdtField.startsWith(propPath + '.')
+            );
+            if (!crdtFieldIsEncrypted) {
+                throw newRxError('CRDT5', {
+                    field: crdtField,
+                    schema: jsonSchema
+                });
+            }
+        }
     }
 }

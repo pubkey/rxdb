@@ -33,6 +33,8 @@ import {
     getCRDTConflictHandler
 } from '../../plugins/crdt/index.mjs';
 import { RxDBUpdatePlugin } from '../../plugins/update/index.mjs';
+import { wrappedKeyEncryptionCryptoJsStorage } from '../../plugins/encryption-crypto-js/index.mjs';
+import { getRxStorageLocalstorage, getLocalStorageMock } from '../../plugins/storage-localstorage/index.mjs';
 addRxPlugin(RxDBUpdatePlugin);
 addRxPlugin(RxDBcrdtPlugin);
 import config from './config.ts';
@@ -101,6 +103,109 @@ describe('crdt.test.ts', () => {
             const collection = await getCRDTCollection();
             assert.ok(collection.conflictHandler !== defaultConflictHandler);
             collection.database.close();
+        });
+        it('should not store the values of encrypted fields in plain text inside of the CRDT operations', async () => {
+            type SecretTodo = {
+                id: string;
+                name: string;
+                note: string;
+                crdts?: CRDTDocumentField<SecretTodo>;
+            };
+            function getSchema(encrypted: string[]): RxJsonSchema<SecretTodo> {
+                return {
+                    version: 0,
+                    primaryKey: 'id',
+                    type: 'object',
+                    properties: {
+                        id: {
+                            type: 'string',
+                            maxLength: 100
+                        },
+                        name: {
+                            type: 'string'
+                        },
+                        note: {
+                            type: 'string'
+                        },
+                        crdts: getCRDTSchemaPart()
+                    },
+                    required: ['id', 'name', 'note'],
+                    encrypted,
+                    crdt: {
+                        field: 'crdts'
+                    }
+                };
+            }
+            const localStorageMock = getLocalStorageMock();
+            function getStoredValues(): string {
+                const values: string[] = [];
+                for (let i = 0; i < localStorageMock.length; i++) {
+                    const key = ensureNotFalsy(localStorageMock.key(i));
+                    values.push(key + ensureNotFalsy(localStorageMock.getItem(key)));
+                }
+                return values.join('\n');
+            }
+            const db = await createRxDatabase({
+                name: randomToken(10),
+                storage: wrappedValidateAjvStorage({
+                    storage: wrappedKeyEncryptionCryptoJsStorage({
+                        storage: getRxStorageLocalstorage({
+                            localStorage: localStorageMock
+                        })
+                    })
+                }),
+                password: 'mysecretpassword',
+                multiInstance: false
+            });
+
+            await AsyncTestUtil.assertThrows(
+                () => db.addCollections({
+                    unprotected: {
+                        schema: getSchema(['note'])
+                    }
+                }),
+                'RxError',
+                'CRDT5'
+            );
+
+            const collections = await db.addCollections({
+                todos: {
+                    schema: getSchema(['note', 'crdts'])
+                }
+            });
+            const doc = await collections.todos.insert({
+                id: 'todo1',
+                name: 'Learn RxDB',
+                note: 'PLAINNOTE-INSERT'
+            });
+            await doc.updateCRDT({
+                ifMatch: {
+                    $set: {
+                        note: 'PLAINNOTE-UPDATE'
+                    }
+                }
+            });
+            await collections.todos.insertCRDT({
+                ifMatch: {
+                    $set: {
+                        id: 'todo2',
+                        name: 'Buy groceries',
+                        note: 'PLAINNOTE-CRDT'
+                    }
+                }
+            });
+
+            const stored = getStoredValues();
+            assert.ok(stored.includes('todo1'));
+            assert.strictEqual(stored.includes('PLAINNOTE'), false);
+
+            const docAfter = await collections.todos.findOne('todo1').exec(true);
+            assert.strictEqual(docAfter.note, 'PLAINNOTE-UPDATE');
+            assert.strictEqual(ensureNotFalsy(docAfter.toJSON().crdts).operations.length, 2);
+            const doc2 = await collections.todos.findOne('todo2').exec(true);
+            assert.strictEqual(doc2.note, 'PLAINNOTE-CRDT');
+
+            await db.close();
         });
     });
 

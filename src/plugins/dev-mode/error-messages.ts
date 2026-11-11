@@ -1241,6 +1241,12 @@ export const ERROR_MESSAGES = {
         fix: 'Use updateCRDT() instead of modify().',
         docs: 'https://rxdb.info/crdt.html?console=errors&code=CRDT4'
     },
+    CRDT5: {
+        message: 'The schema has encrypted fields but the CRDT field is not encrypted.',
+        cause: 'The CRDT operations repeat the values of the encrypted fields, so these values would be stored in plain text inside of the CRDT field.',
+        fix: 'Add the CRDT field to the encrypted array of the schema.',
+        docs: 'https://rxdb.info/crdt.html?console=errors&code=CRDT5'
+    },
 
     // plugins/storage-dexie/
     DXE1: {

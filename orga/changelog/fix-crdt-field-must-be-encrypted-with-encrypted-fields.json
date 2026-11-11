@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX the CRDT plugin stored the values of `encrypted` fields in plain text inside of the CRDT operations when the CRDT field itself was not listed in `encrypted`. The dev-mode schema check now throws `CRDT5` for such a schema. Existing collections of that shape have to add the CRDT field to `encrypted` and migrate to a new schema version",
+    "links": [],
+    "priority": 6
+}

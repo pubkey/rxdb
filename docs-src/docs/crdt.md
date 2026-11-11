@@ -76,6 +76,7 @@ To use CRDTs with RxDB, you need the following:
 - Add a field to your schema that defines where to store the CRDT operations via `getCRDTSchemaPart()`
 - Set the `crdt` options in your schema.
 - Do **NOT** set a custom conflict handler, the plugin will use its own one.
+- When your schema has [encrypted fields](./encryption.md), you MUST also add the CRDT field to the `encrypted` array, like `encrypted: ['note', 'crdts']`. The CRDT operations repeat the values of the fields they set, so without this the values of your encrypted fields are stored in plain text inside of the CRDT field. In [dev-mode](./dev-mode.md) RxDB throws the error [`CRDT5`](./errors.md#CRDT5) when the CRDT field is not encrypted.
 
 
 ```ts
