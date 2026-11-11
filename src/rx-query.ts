@@ -297,7 +297,13 @@ export class RxQueryBase<
         const counterBefore = this.collection._changeEventBuffer.getCounter();
 
         if (this.op === 'findByIds') {
-            const ids: string[] = ensureNotFalsy(this.mangoQuery.selector as any)[this.collection.schema.primaryPath].$in;
+            /**
+             * Each document must be in the result only once,
+             * so an id that is given multiple times is only fetched once.
+             */
+            const ids: string[] = Array.from(
+                new Set<string>(ensureNotFalsy(this.mangoQuery.selector as any)[this.collection.schema.primaryPath].$in)
+            );
             const docsData: RxDocumentData<RxDocType>[] = [];
             const mustBeQueried: string[] = [];
             // first try to fill from docCache
