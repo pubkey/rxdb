@@ -659,6 +659,12 @@ export const ERROR_MESSAGES = {
         fix: 'Run the storage migration.',
         docs: 'https://rxdb.info/migration-storage.html?console=errors&code=DM5'
     },
+    DM8: {
+        message: 'The migration was canceled before it has finished',
+        cause: 'The database or the collection was closed, or cancel() was called on the RxMigrationState, while the migration was running.',
+        fix: 'Do not close the database or collection while the migration is running. Run the migration again on a new instance to continue it.',
+        docs: 'https://rxdb.info/migration-schema.html?console=errors&code=DM8'
+    },
 
     // plugins/attachments.js
     AT1: {

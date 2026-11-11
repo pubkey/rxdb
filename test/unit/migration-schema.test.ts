@@ -451,6 +451,75 @@ describe('migration-schema.test.ts', function () {
                     assert.ok(failed);
                     await col.database.close();
                 });
+                it('should reject when the database is closed while the migration is running', async () => {
+                    let strategyCalls = 0;
+                    const col = await humansCollection.createMigrationCollection(10, {
+                        3: async (doc: any) => {
+                            strategyCalls = strategyCalls + 1;
+                            await promiseWait(50);
+                            doc.age = parseInt(doc.age, 10);
+                            return doc;
+                        }
+                    });
+                    const settled: Promise<string> = col.migratePromise(1).then(
+                        () => 'resolved',
+                        (err: any) => err.code
+                    );
+                    await waitUntil(() => strategyCalls > 0);
+                    await col.database.close();
+                    const result = await Promise.race([
+                        settled,
+                        promiseWait(2000).then(() => 'pending')
+                    ]);
+                    assert.strictEqual(result, 'DM8');
+                });
+                it('should reject addCollections() when the database is closed while the auto migration is running', async () => {
+                    const name = randomToken(10);
+                    const db = await createRxDatabase({
+                        name,
+                        storage: config.storage.getStorage()
+                    });
+                    const cols = await db.addCollections({
+                        human: {
+                            schema: schemas.simpleHuman
+                        }
+                    });
+                    await cols.human.bulkInsert(
+                        new Array(30).fill(0).map(() => schemaObjects.simpleHumanAge())
+                    );
+                    await db.close();
+
+                    const db2 = await createRxDatabase({
+                        name,
+                        storage: config.storage.getStorage()
+                    });
+                    let strategyCalls = 0;
+                    const settled: Promise<string> = db2.addCollections({
+                        human: {
+                            schema: schemas.simpleHumanV3,
+                            migrationStrategies: {
+                                1: (doc: any) => doc,
+                                2: (doc: any) => doc,
+                                3: async (doc: any) => {
+                                    strategyCalls = strategyCalls + 1;
+                                    await promiseWait(200);
+                                    doc.age = parseInt(doc.age, 10);
+                                    return doc;
+                                }
+                            }
+                        }
+                    }).then(
+                        () => 'resolved',
+                        (err: any) => err.code
+                    );
+                    await waitUntil(() => strategyCalls > 0);
+                    await db2.close();
+                    const result = await Promise.race([
+                        settled,
+                        promiseWait(2000).then(() => 'pending')
+                    ]);
+                    assert.strictEqual(result, 'DM8');
+                });
             });
         });
         describe('writes during migration', () => {

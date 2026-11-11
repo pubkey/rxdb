@@ -1,5 +1,6 @@
 import {
     Observable,
+    ReplaySubject,
     Subject,
     distinctUntilChanged,
     filter,
@@ -101,6 +102,12 @@ export class RxMigrationState {
      */
     public openStorageInstances = new Set<RxStorageInstance<any, any, any>>();
     public canceled: boolean = false;
+    /**
+     * Emits when cancel() interrupts a migration that is not finished,
+     * so that migratePromise() can reject instead of waiting forever
+     * for a status that is never written.
+     */
+    public readonly interrupted$ = new ReplaySubject<true>(1);
     public broadcastChannel?: BroadcastChannel;
     public heartbeatInterval?: ReturnType<typeof setInterval>;
     constructor(
@@ -695,6 +702,9 @@ export class RxMigrationState {
     public async cancel() {
         this.canceled = true;
         this.stopHeartbeat();
+        if (this.collection.migrationInProgress) {
+            this.interrupted$.next(true);
+        }
         this.collection.migrationInProgress = false;
         await Promise.all(
             Array.from(this.replicationStates.values())
@@ -823,10 +833,15 @@ export class RxMigrationState {
                 this.$.pipe(
                     filter((d: RxMigrationStatus) => d.status === 'ERROR')
                 )
-            )
+            ),
+            firstValueFrom(this.interrupted$).then(() => undefined)
         ]);
 
-        if (result.status === 'ERROR') {
+        if (!result) {
+            throw newRxError('DM8', {
+                collection: this.collection.name
+            });
+        } else if (result.status === 'ERROR') {
             throw newRxError('DM4', {
                 collection: this.collection.name,
                 error: result.error
