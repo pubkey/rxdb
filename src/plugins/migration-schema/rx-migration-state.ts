@@ -1,5 +1,6 @@
 import {
     Observable,
+    ReplaySubject,
     Subject,
     defer,
     distinctUntilChanged,
@@ -116,6 +117,12 @@ export class RxMigrationState {
     private readonly canceledPromise: Promise<void> = new Promise<void>(res => {
         this.resolveCanceled = res;
     });
+    /**
+     * Emits when cancel() interrupts a migration that is not finished,
+     * so that migratePromise() can reject instead of waiting forever
+     * for a status that is never written.
+     */
+    public readonly interrupted$ = new ReplaySubject<true>(1);
     public broadcastChannel?: BroadcastChannel;
     public heartbeatInterval?: ReturnType<typeof setInterval>;
     constructor(
@@ -814,6 +821,9 @@ export class RxMigrationState {
         this.canceled = true;
         this.resolveCanceled();
         this.stopHeartbeat();
+        if (this.collection.migrationInProgress) {
+            this.interrupted$.next(true);
+        }
         this.collection.migrationInProgress = false;
         await Promise.all(
             Array.from(this.replicationStates.values())
@@ -963,17 +973,24 @@ export class RxMigrationState {
          * after that error has been removed.
          */
         await this.errorStatusReset;
-        const result = await firstValueFrom(
-            observeSingle<RxMigrationStatusDocument>(
-                this.database.internalStore,
-                this.statusDocId
-            ).pipe(
-                map(d => d.data),
-                filter((d: RxMigrationStatus) => d.status === 'DONE' || d.status === 'ERROR')
-            )
-        );
+        const result = await Promise.race([
+            firstValueFrom(
+                observeSingle<RxMigrationStatusDocument>(
+                    this.database.internalStore,
+                    this.statusDocId
+                ).pipe(
+                    map(d => d.data),
+                    filter((d: RxMigrationStatus) => d.status === 'DONE' || d.status === 'ERROR')
+                )
+            ),
+            firstValueFrom(this.interrupted$).then(() => undefined)
+        ]);
 
-        if (result.status === 'ERROR') {
+        if (!result) {
+            throw newRxError('DM8', {
+                collection: this.collection.name
+            });
+        } else if (result.status === 'ERROR') {
             throw newRxError('DM4', {
                 collection: this.collection.name,
                 error: result.error

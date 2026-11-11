@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `migratePromise()` and `addCollections()` with `autoMigrate` never settled when the database or collection was closed, or the migration state was canceled, while the schema migration was running. They now reject with the error `DM8`",
+    "links": [],
+    "priority": 5
+}
