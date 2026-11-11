@@ -217,6 +217,53 @@ describe('attachments.test.ts', () => {
             });
             await c.database.close();
         });
+        it('should not let an attachment id with "||" overwrite the attachment of another document', async () => {
+            const c = await humansCollection.createAttachments(0);
+            const docWithSeparator = await c.insert(schemaObjects.humanData('todo1||b'));
+            const otherDoc = await c.insert(schemaObjects.humanData('todo1'));
+
+            await docWithSeparator.putAttachment({
+                id: 'c.txt',
+                data: createBlob('data of todo1||b', 'text/plain'),
+                type: 'text/plain'
+            });
+
+            const errors: any[] = [];
+            await otherDoc.putAttachment({
+                id: 'b||c.txt',
+                data: createBlob('data of todo1', 'text/plain'),
+                type: 'text/plain'
+            }).catch(err => errors.push(err));
+            await otherDoc.putAttachments([
+                {
+                    id: 'ok.txt',
+                    data: createBlob('ok', 'text/plain'),
+                    type: 'text/plain'
+                },
+                {
+                    id: 'b||c.txt',
+                    data: createBlob('data of todo1', 'text/plain'),
+                    type: 'text/plain'
+                }
+            ]).catch(err => errors.push(err));
+            await otherDoc.putAttachmentBase64({
+                id: 'b||c.txt',
+                length: 13,
+                data: await blobToBase64String(createBlob('data of todo1', 'text/plain')),
+                type: 'text/plain'
+            }).catch(err => errors.push(err));
+
+            const attachment = ensureNotFalsy(
+                docWithSeparator.getLatest().getAttachment('c.txt')
+            );
+            assert.strictEqual(await attachment.getStringData(), 'data of todo1||b');
+
+            assert.strictEqual(errors.length, 3);
+            errors.forEach(err => assert.strictEqual(err.code, 'AT5'));
+            assert.deepStrictEqual(otherDoc.getLatest().allAttachments(), []);
+
+            await c.database.close();
+        });
     });
     describe('.getAttachment()', () => {
         it('should get the attachment', async () => {

@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX an attachment id that contains `||` could overwrite or delete the attachment data of another document, because the storages build the attachment key as `documentId + '||' + attachmentId`. BREAKING: `putAttachment()`, `putAttachments()`, `putAttachmentBase64()` and inline attachments now throw the error `AT5` when the attachment id contains `||`",
+    "links": [],
+    "priority": 5
+}

@@ -83,6 +83,8 @@ const attachment = await myDocument.putAttachment(
 );
 ```
 
+The attachment `id` must not contain `||` because the storages use it as the separator between the document id and the attachment id, so `putAttachment()`, `putAttachments()`, `putAttachmentBase64()`, and inline attachments throw the error [`AT5`](./errors.md#AT5) for such an id.
+
 :::warning
 Expo/React-Native does not support the `Blob` API natively. Make sure you use your own polyfill that properly supports `blob.arrayBuffer()` when using RxAttachments or use the `putAttachmentBase64()` and `getDataBase64()` so that you do not have to create blobs.
 :::
