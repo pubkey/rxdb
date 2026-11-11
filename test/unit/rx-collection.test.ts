@@ -2353,6 +2353,57 @@ describe('rx-collection.test.ts', () => {
                     db.close();
                 });
             });
+            describe('garbage collection', () => {
+                it('should release a removed collection while the database stays open', async function () {
+                    const gc = global.gc;
+                    if (
+                        !gc ||
+                        config.storage.name.includes('random-delay')
+                    ) {
+                        return;
+                    }
+                    this.timeout(60 * 1000);
+                    const db = await createRxDatabase<{ human: RxCollection<HumanDocumentType>; }>({
+                        name: randomToken(10),
+                        storage: config.storage.getStorage()
+                    });
+
+                    /**
+                     * The collection is created and removed in its own function scope
+                     * so that only the WeakRef points to it afterwards.
+                     */
+                    async function addAndRemoveCollection(): Promise<WeakRef<RxCollection<HumanDocumentType>>> {
+                        const collections = await db.addCollections({
+                            human: {
+                                schema: schemas.human
+                            }
+                        });
+                        await collections.human.insert(schemaObjects.humanData());
+                        const docs = await collections.human.find().exec();
+                        assert.strictEqual(docs.length, 1);
+                        const ref = new WeakRef(collections.human);
+                        await collections.human.remove();
+                        return ref;
+                    }
+                    const weakRefs: WeakRef<RxCollection<HumanDocumentType>>[] = [];
+                    for (let i = 0; i < 3; i++) {
+                        weakRefs.push(await addAndRemoveCollection());
+                    }
+
+                    const intervalId = setInterval(() => gc(), 100);
+                    try {
+                        await waitUntil(
+                            () => weakRefs.every(ref => !ref.deref()),
+                            10 * 1000,
+                            100
+                        );
+                    } finally {
+                        clearInterval(intervalId);
+                    }
+
+                    await db.close();
+                });
+            });
             describe('negative', () => {
                 it('should not have the collection in the collections-list', async () => {
                     const c = await humansCollection.createPrimary(0);

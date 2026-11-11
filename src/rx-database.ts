@@ -523,9 +523,7 @@ export class RxDatabaseBase<
                     type: 'ADDED'
                 });
                 if (!(this as any)[collectionName]) {
-                    Object.defineProperty(this, collectionName, {
-                        get: () => (this.collections as any)[collectionName]
-                    });
+                    defineCollectionGetter(this, collectionName);
                 }
             })
         );
@@ -729,6 +727,22 @@ function throwIfDatabaseNameUsed(
             link: 'https://rxdb.info/rx-database.html#ignoreduplicate'
         });
     }
+}
+
+/**
+ * Defined at the module scope so that the getter
+ * only references the database and the collection name.
+ * A getter created inside of addCollections() would keep
+ * the created RxCollection instances in memory
+ * for the whole lifetime of the database.
+ */
+function defineCollectionGetter(
+    database: RxDatabaseBase<any, any, any, any>,
+    collectionName: string
+) {
+    Object.defineProperty(database, collectionName, {
+        get: () => database.collections[collectionName]
+    });
 }
 
 function getDatabaseNameKey(
