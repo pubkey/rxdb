@@ -924,6 +924,12 @@ export const ERROR_MESSAGES = {
         fix: 'Check if the server is reachable. The client retries the connection on its own.',
         docs: 'https://rxdb.info/replication-websocket.html?console=errors&code=RC_WEBSOCKET_TIMEOUT'
     },
+    RC_WEBSOCKET_DISCONNECTED: {
+        message: 'RxReplication websocket client lost the connection while waiting for the answer to a request',
+        cause: 'The websocket connection was closed after a pull or push request was sent, so the answer of the server can no longer arrive.',
+        fix: 'Check if the server is reachable. The client reconnects on its own and the replication retries the request.',
+        docs: 'https://rxdb.info/replication-websocket.html?console=errors&code=RC_WEBSOCKET_DISCONNECTED'
+    },
 
     // plugins/dev-mode/check-schema.js
     SC1: {

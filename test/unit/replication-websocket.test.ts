@@ -220,6 +220,94 @@ describe('replication-websocket.test.ts', () => {
         await localCollection.database.close();
         await remoteCollection.database.close();
     });
+    it('should recover when the connection is lost while a request is pending', async () => {
+        const { localCollection, remoteCollection } = await getTestCollections({
+            local: 1,
+            remote: 1
+        });
+        const portAndUrl = await nextPortAndUrl();
+        const serverState = startWebsocketServer({
+            database: remoteCollection.database,
+            port: portAndUrl.port
+        });
+
+        /**
+         * Drop the first connection as soon as the first pull request arrives,
+         * so that the client never gets an answer to that request.
+         */
+        let droppedConnections = 0;
+        const connectionSub = serverState.onConnection$.subscribe(ws => {
+            ws.on('message', data => {
+                if (!Buffer.isBuffer(data)) {
+                    return;
+                }
+                const message = JSON.parse(data.toString('utf-8'));
+                if (droppedConnections === 0 && message.method === 'masterChangesSince') {
+                    droppedConnections++;
+                    ws.terminate();
+                }
+            });
+        });
+
+        const replicationState = await replicateWithWebsocketServer<TestDocType, any>({
+            replicationIdentifier: randomToken(10),
+            collection: localCollection,
+            url: portAndUrl.url
+        });
+        replicationState.retryTime = 100;
+        const errors: any[] = [];
+        replicationState.error$.subscribe(err => errors.push(err));
+
+        const inSync = await Promise.race([
+            replicationState.awaitInSync().then(() => true),
+            wait(7000).then(() => false)
+        ]);
+        assert.strictEqual(droppedConnections, 1);
+        assert.strictEqual(inSync, true, 'replication must get in sync after the reconnect');
+
+        const serverDocs = await remoteCollection.find().exec();
+        assert.strictEqual(serverDocs.length, 2);
+        const clientDocs = await localCollection.find().exec();
+        assert.strictEqual(clientDocs.length, 2);
+
+        // the failed request must be reported
+        assert.ok(errors.length > 0);
+
+        connectionSub.unsubscribe();
+        await localCollection.database.close();
+        await remoteCollection.database.close();
+    });
+    it('should close the socket when the replication is canceled', async () => {
+        const { localCollection, remoteCollection } = await getTestCollections({
+            local: 1,
+            remote: 1
+        });
+        const portAndUrl = await nextPortAndUrl();
+        const serverState = startWebsocketServer({
+            database: remoteCollection.database,
+            port: portAndUrl.port
+        });
+        let openConnections = 0;
+        const connectionSub = serverState.onConnection$.subscribe(ws => {
+            openConnections++;
+            ws.once('close', () => openConnections--);
+        });
+
+        const replicationState = await replicateWithWebsocketServer<TestDocType, any>({
+            replicationIdentifier: randomToken(10),
+            collection: localCollection,
+            url: portAndUrl.url
+        });
+        await replicationState.awaitInSync();
+        assert.strictEqual(openConnections, 1);
+
+        await replicationState.cancel();
+        await waitUntil(() => openConnections === 0, 4000);
+
+        connectionSub.unsubscribe();
+        await localCollection.database.close();
+        await remoteCollection.database.close();
+    });
     it('should be able to replicate multiple collections at once', async () => {
         const { localCollection, remoteCollection } = await getTestCollections({
             local: 0,
