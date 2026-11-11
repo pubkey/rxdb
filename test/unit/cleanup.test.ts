@@ -15,13 +15,18 @@ import {
     RxCollection,
     RxJsonSchema,
     ensureNotFalsy,
-    removeRxDatabase
+    removeRxDatabase,
+    RxStorage
 } from '../../plugins/core/index.mjs';
 
 import { replicateRxCollection } from '../../plugins/replication/index.mjs';
 
 import { RxDBCleanupPlugin } from '../../plugins/cleanup/index.mjs';
 import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.mjs';
+import {
+    getRxStorageLocalstorage,
+    getLocalStorageMock
+} from '../../plugins/storage-localstorage/index.mjs';
 import { DEFAULT_CLEANUP_POLICY } from '../../plugins/cleanup/index.mjs';
 addRxPlugin(RxDBCleanupPlugin);
 
@@ -240,10 +245,26 @@ describe('cleanup.test.js', () => {
 
             await db.close();
         });
-        it('must not purge a re-inserted document when its tombstone was written in the same bulk write as other tombstones', async () => {
+        /**
+         * Runs on the storage of the test config and on the localStorage storage,
+         * because the localStorage storage has its own cleanup index.
+         */
+        const tombstoneBulkStorages: { name: string; getStorage: () => RxStorage<any, any>; }[] = [
+            {
+                name: config.storage.name,
+                getStorage: () => config.storage.getStorage()
+            },
+            {
+                name: 'localstorage with mock',
+                getStorage: () => wrappedValidateAjvStorage({
+                    storage: getRxStorageLocalstorage({ localStorage: getLocalStorageMock() })
+                })
+            }
+        ];
+        tombstoneBulkStorages.forEach(testStorage => it('must not purge a re-inserted document when its tombstone was written in the same bulk write as other tombstones (' + testStorage.name + ')', async () => {
             const db = await createRxDatabase({
                 name: randomToken(10),
-                storage: config.storage.getStorage()
+                storage: testStorage.getStorage()
             });
             const cols = await db.addCollections({
                 humans: {
@@ -284,7 +305,7 @@ describe('cleanup.test.js', () => {
             assert.deepStrictEqual(remaining.map(d => d.passportId), ['b', 'd']);
 
             await db.close();
-        });
+        }));
         it('minimumDeletedTime not respected', async () => {
             const dbName = 'test-cleanup-' + Date.now() + '-' + randomToken(10);
             try {
