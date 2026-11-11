@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX the replication skipped the documents of a pulled batch forever when writing that batch to the local storage failed, because a later batch stored a checkpoint behind the failed documents. Now the checkpoint is not stored after a failed write and the documents are pulled again after the `retryTime`",
+    "links": [],
+    "priority": 6
+}
