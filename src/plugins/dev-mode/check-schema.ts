@@ -177,11 +177,25 @@ export function validateFieldsDeep(rxJsonSchema: RxJsonSchema<any>): true {
         }
     }
 
-    function traverse(currentObj: any, currentPath: any) {
+    /**
+     * The values of these schema keywords are document data,
+     * so their keys are not field names and must not be checked.
+     */
+    const dataKeywords = ['default', 'enum', 'const', 'examples'];
+
+    /**
+     * @param isFieldMap true if the keys of currentObj are field names,
+     * like in the value of 'properties'. Then a key like 'default'
+     * is a field and not a schema keyword.
+     */
+    function traverse(currentObj: any, currentPath: any, isFieldMap: boolean) {
         if (!currentObj || typeof currentObj !== 'object') {
             return;
         }
         Object.keys(currentObj).forEach(attributeName => {
+            if (!isFieldMap && dataKeywords.includes(attributeName)) {
+                return;
+            }
             const schemaObj = currentObj[attributeName];
             if (
                 !currentObj.properties &&
@@ -197,10 +211,14 @@ export function validateFieldsDeep(rxJsonSchema: RxJsonSchema<any>): true {
             }
             let nextPath = currentPath;
             if (attributeName !== 'properties') nextPath = nextPath + '.' + attributeName;
-            traverse(schemaObj, nextPath);
+            traverse(
+                schemaObj,
+                nextPath,
+                !isFieldMap && (attributeName === 'properties' || attributeName === 'patternProperties')
+            );
         });
     }
-    traverse(rxJsonSchema, '');
+    traverse(rxJsonSchema, '', false);
     return true;
 }
 

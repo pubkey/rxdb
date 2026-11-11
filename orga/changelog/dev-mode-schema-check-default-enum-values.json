@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX The dev-mode schema check no longer treats the keys inside of `default`, `enum`, `const` and `examples` values as field names. A schema with a default like `{ 'dark-mode': { enabled: true } }` or `{ theme: { default: 'light' } }` was rejected with `SC1` or `SC7`",
+    "links": [],
+    "priority": 4
+}
