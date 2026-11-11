@@ -723,6 +723,12 @@ export const ERROR_MESSAGES = {
         fix: 'Set usesRxDatabaseInWorker: true in your storage options. For example: getRxStorageOPFS({ usesRxDatabaseInWorker: true }).',
         docs: 'https://rxdb.info/encryption.html?console=errors&code=EN5'
     },
+    EN6: {
+        message: 'Encrypted attachments with attachments.compression require the attachments-compression storage to be wrapped around the encryption storage',
+        cause: 'The schema has attachments.encrypted and attachments.compression set, but the encryption storage wraps the attachments-compression storage (or no attachments-compression storage is used). In this order the encrypted data would be compressed and the stored attachments cannot be read back.',
+        fix: 'Wrap the encryption storage with the compression storage: wrappedAttachmentsCompressionStorage({ storage: wrappedKeyEncryptionCryptoJsStorage({ storage }) }).',
+        docs: 'https://rxdb.info/rx-attachment.html?console=errors&code=EN6#attachment-compression'
+    },
 
     // plugins/json-dump.js
     JD1: {

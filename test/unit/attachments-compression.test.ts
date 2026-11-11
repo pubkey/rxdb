@@ -26,6 +26,9 @@ import {
     decompressBlob,
     isCompressibleType
 } from '../../plugins/attachments-compression/index.mjs';
+import {
+    wrappedKeyEncryptionCryptoJsStorage
+} from '../../plugins/encryption-crypto-js/index.mjs';
 
 const modes: CompressionMode[] = ['deflate', 'gzip'];
 modes.forEach(mode => {
@@ -143,6 +146,35 @@ modes.forEach(mode => {
                 const dataString = await blobToString(data);
                 assert.strictEqual(dataString, dat);
                 c.database.close();
+            });
+        });
+        describe('wrapper order', () => {
+            it('should throw when the encryption is wrapped around the attachments-compression', async () => {
+                const db = await createRxDatabase({
+                    name: randomToken(10),
+                    password: 'mypassword123',
+                    storage: wrappedKeyEncryptionCryptoJsStorage({
+                        storage: wrappedAttachmentsCompressionStorage({
+                            storage: config.storage.getStorage()
+                        })
+                    }),
+                    multiInstance: false
+                });
+                const schemaJson = clone(schemas.human);
+                schemaJson.attachments = {
+                    encrypted: true,
+                    compression: mode
+                };
+                await AsyncTestUtil.assertThrows(
+                    () => db.addCollections({
+                        human: {
+                            schema: schemaJson
+                        }
+                    }),
+                    'RxError',
+                    'EN6'
+                );
+                await db.close();
             });
         });
         describe('compare size', () => {
