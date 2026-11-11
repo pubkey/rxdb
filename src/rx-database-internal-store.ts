@@ -227,13 +227,16 @@ export async function ensureStorageTokenDocumentExists<Collections extends Colle
             });
         }
 
-        if (
-            passwordHash &&
-            passwordHash !== conflictError.documentInDb.data.passwordHash
-        ) {
+        /**
+         * A missing password must also be rejected
+         * when the database was created with a password.
+         * Storages can return a missing hash as undefined or null.
+         */
+        const existingPasswordHash = conflictError.documentInDb.data.passwordHash || undefined;
+        if (passwordHash !== existingPasswordHash) {
             throw newRxError('DB1', {
                 passwordHash,
-                existingPasswordHash: conflictError.documentInDb.data.passwordHash
+                existingPasswordHash
             });
         }
 
