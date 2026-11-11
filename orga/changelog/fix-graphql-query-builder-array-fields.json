@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `pullQueryBuilderFromRxSchema()`, `pullStreamBuilderFromRxSchema()` and `pushQueryBuilderFromRxSchema()` of the GraphQL replication generated invalid GraphQL queries for schemas with array fields. Arrays of primitives were requested with an empty selection set and arrays of objects were requested twice.",
+    "links": [],
+    "priority": 5
+}
