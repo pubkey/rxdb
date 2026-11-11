@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `insertCRDT()` of the CRDT plugin stored a plain `$set` of the calculated document instead of the given CRDT operation, so conditional inserts (`selector` with `ifMatch`/`ifNotMatch`) of multiple clients were merged to the wrong document state",
+    "links": [],
+    "priority": 5
+}
