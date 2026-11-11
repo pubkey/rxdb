@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX CouchDB replication push created a document again that was deleted on the CouchDB server instead of handling the deletion as a conflict, and wrote a broken conflict state when the document got deleted on the server during the push",
+    "links": [],
+    "priority": 5
+}

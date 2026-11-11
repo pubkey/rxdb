@@ -179,12 +179,51 @@ export function replicateCouchDB<RxDocType>(
                     docsByIdUrl,
                     json => !!json && Array.isArray(json.rows)
                 );
+                /**
+                 * For a deleted document, _all_docs returns a row
+                 * with value.deleted=true and doc=null.
+                 * The tombstone itself must be fetched by its revision.
+                 * A tombstone that was created with a DELETE request only contains
+                 * _id, _rev and _deleted which does not match the schema of the collection,
+                 * so the missing fields are taken from the local state of the document.
+                 * @link https://docs.couchdb.org/en/stable/api/document/common.html#get--db-docid
+                 */
+                const fetchDeletedMasterState = async (
+                    docId: string,
+                    rev: string
+                ): Promise<WithDeleted<RxDocType>> => {
+                    const localState = getFromMapOrThrow(pushRowsById, docId).newDocumentState;
+                    const tombstoneUrl = options.url + encodeURIComponent(docId) + '?' + mergeUrlQueryParams({ rev });
+                    const tombstone = await getCouchDBResponseJson<any>(
+                        await replicationState.fetch(tombstoneUrl),
+                        tombstoneUrl,
+                        json => !!json && json._id === docId
+                    );
+                    tombstone._deleted = true;
+                    return Object.assign(
+                        {},
+                        localState,
+                        couchDBDocToRxDocData<RxDocType>(primaryPath, tombstone)
+                    );
+                };
+
                 const nonConflictRows: typeof rows = [];
                 const remoteRevById = new Map<string, string>();
                 await Promise.all(
                     docsByIdRows.rows.map(async (row) => {
                         if (!row.doc) {
-                            nonConflictRows.push(getFromMapOrThrow(pushRowsById, row.key));
+                            const pushRowWithoutMasterDoc = getFromMapOrThrow(pushRowsById, row.key);
+                            const assumedDeleted = !!pushRowWithoutMasterDoc.assumedMasterState &&
+                                pushRowWithoutMasterDoc.assumedMasterState._deleted;
+                            if (
+                                row.value &&
+                                row.value.deleted &&
+                                !assumedDeleted
+                            ) {
+                                conflicts.push(await fetchDeletedMasterState(row.key, row.value.rev));
+                            } else {
+                                nonConflictRows.push(pushRowWithoutMasterDoc);
+                            }
                             return;
                         }
                         const realMasterState: WithDeleted<RxDocType> = couchDBDocToRxDocData(primaryPath, row.doc);
@@ -263,9 +302,19 @@ export function replicateCouchDB<RxDocType>(
                     getConflictDocsUrl,
                     json => !!json && Array.isArray(json.rows)
                 );
-                conflictResponseJson.rows.forEach(conflictAgainRow => {
-                    conflicts.push(couchDBDocToRxDocData(collection.schema.primaryPath, conflictAgainRow.doc));
-                });
+                await Promise.all(
+                    conflictResponseJson.rows.map(async (conflictAgainRow) => {
+                        if (
+                            !conflictAgainRow.doc &&
+                            conflictAgainRow.value &&
+                            conflictAgainRow.value.deleted
+                        ) {
+                            conflicts.push(await fetchDeletedMasterState(conflictAgainRow.key, conflictAgainRow.value.rev));
+                        } else {
+                            conflicts.push(couchDBDocToRxDocData(collection.schema.primaryPath, conflictAgainRow.doc));
+                        }
+                    })
+                );
 
                 return conflicts;
             },
