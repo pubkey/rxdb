@@ -218,6 +218,32 @@ describe('query-builder.test.js', () => {
 
             c.database.close();
         });
+        it('mod() should use all given arguments to build the $mod condition', async () => {
+            const c = await humansCollection.create(0);
+            await c.bulkInsert([
+                { passportId: 'a', firstName: 'Alice', lastName: 'A', age: 5 },
+                { passportId: 'b', firstName: 'Bob', lastName: 'B', age: 6 },
+                { passportId: 'c', firstName: 'Carol', lastName: 'C', age: 7 }
+            ]);
+
+            const withPath = c.find().mod('age', 2, 0);
+            assert.deepStrictEqual(withPath.mangoQuery.selector, { age: { $mod: [2, 0] } });
+            const withPathDocs = await withPath.exec();
+            assert.deepStrictEqual(withPathDocs.map(d => d.passportId), ['b']);
+
+            const afterWhere = c.find().where('age').mod(2, 1);
+            assert.deepStrictEqual(afterWhere.mangoQuery.selector, { age: { $mod: [2, 1] } });
+            const afterWhereDocs = await afterWhere.exec();
+            assert.deepStrictEqual(afterWhereDocs.map(d => d.passportId), ['a', 'c']);
+
+            const withArray = await c.find().where('age').mod([2, 0]).exec();
+            assert.deepStrictEqual(withArray.map(d => d.passportId), ['b']);
+
+            const builder = createQueryBuilder().where('age').mod(2, 0);
+            assert.deepStrictEqual(builder.toJSON().query.selector, { age: { $mod: [2, 0] } });
+
+            c.database.close();
+        });
         it('should not have an all() method because $all is not a supported query operator', async () => {
             const c = await humansCollection.create(0);
             const query = c.find();
