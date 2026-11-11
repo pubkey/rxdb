@@ -158,6 +158,14 @@ export function wrappedAttachmentsCompressionStorage<Internals, InstanceCreation
                 const mode = params.schema.attachments.compression;
                 const compressibleTypes = params.schema.attachments.compressibleTypes || DEFAULT_COMPRESSIBLE_TYPES;
 
+                /**
+                 * Contains the Blobs that were created by this instance via compressBlob().
+                 * The compressed Blob is set on the given attachment object, and callers
+                 * like bulkUpsert() or a retry after a conflict write the same attachment
+                 * object again. These Blobs must not be compressed a second time.
+                 */
+                const compressedBlobs = new WeakSet<Blob>();
+
                 async function modifyToStorage(docData: RxDocumentWriteData<RxDocType>) {
                     await Promise.all(
                         Object.values(docData._attachments).map(async (attachment) => {
@@ -165,6 +173,9 @@ export function wrappedAttachmentsCompressionStorage<Internals, InstanceCreation
                                 return;
                             }
                             const attachmentWriteData = attachment as RxAttachmentWriteData;
+                            if (compressedBlobs.has(attachmentWriteData.data)) {
+                                return;
+                            }
                             if (isCompressibleType(attachmentWriteData.type, compressibleTypes)) {
                                 attachmentWriteData.data = await compressBlob(mode, attachmentWriteData.data);
                                 /**
@@ -180,6 +191,7 @@ export function wrappedAttachmentsCompressionStorage<Internals, InstanceCreation
                                 if (!attachmentWriteData.digest.startsWith(COMPRESSED_DIGEST_PREFIX)) {
                                     attachmentWriteData.digest = COMPRESSED_DIGEST_PREFIX + attachmentWriteData.digest;
                                 }
+                                compressedBlobs.add(attachmentWriteData.data);
                             }
                         })
                     );

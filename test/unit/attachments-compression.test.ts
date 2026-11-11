@@ -144,6 +144,37 @@ modes.forEach(mode => {
                 assert.strictEqual(dataString, dat);
                 c.database.close();
             });
+            it('should return the written data after upsert() and bulkUpsert() with inline attachments on an existing document', async () => {
+                const c = await createCompressedAttachmentsCollection();
+                const existingDoc = await c.findOne().exec(true);
+                const dat = AsyncTestUtil.randomString(100) + ' ' + AsyncTestUtil.randomString(100);
+
+                const upsertData = Object.assign({}, existingDoc.toMutableJSON(), {
+                    _attachments: [{
+                        id: 'upsert.txt',
+                        type: 'text/plain',
+                        data: createBlob(dat, 'text/plain')
+                    }]
+                });
+                const upsertedDoc = await c.upsert(upsertData);
+                const upsertAttachment = ensureNotFalsy(upsertedDoc.getAttachment('upsert.txt'));
+                assert.strictEqual(await upsertAttachment.getStringData(), dat);
+
+                const bulkUpsertData = Object.assign({}, existingDoc.toMutableJSON(), {
+                    _attachments: [{
+                        id: 'bulk-upsert.txt',
+                        type: 'text/plain',
+                        data: createBlob(dat, 'text/plain')
+                    }]
+                });
+                const bulkResult = await c.bulkUpsert([bulkUpsertData]);
+                assert.deepStrictEqual(bulkResult.error, []);
+                const bulkAttachment = ensureNotFalsy(bulkResult.success[0].getAttachment('bulk-upsert.txt'));
+                assert.strictEqual(await bulkAttachment.getStringData(), dat);
+                assert.strictEqual((await bulkAttachment.getData()).size, dat.length);
+
+                c.database.close();
+            });
         });
         describe('compare size', () => {
             it('should have a smaller size when compression is used', async () => {
