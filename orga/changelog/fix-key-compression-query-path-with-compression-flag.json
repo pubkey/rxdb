@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX key-compression plugin threw a plain `Error` of `jsonschema-key-compression` when the selector, sort, or index of a query contained a path with a key that starts with the compression flag `|`. It now throws the RxError `KC1` that names the path",
+    "links": [],
+    "priority": 4
+}

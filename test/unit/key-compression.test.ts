@@ -2,6 +2,7 @@
  * this test is for the keycompression-capabilities of rxdb
  */
 import assert from 'assert';
+import { assertThrows } from 'async-test-util';
 import config from './config.ts';
 
 
@@ -561,6 +562,61 @@ describe('key-compression.test.js', () => {
             const result = await query.exec();
 
             assert.deepStrictEqual(result.map(d => d.passportId), ['1', '2']);
+            db.close();
+        });
+        it('should throw an RxError when a query path starts with the compression flag', async () => {
+            type DocType = {
+                id: string;
+                meta: {
+                    [k: string]: number;
+                };
+            };
+            const schema: RxJsonSchema<DocType> = {
+                version: 0,
+                keyCompression: true,
+                primaryKey: 'id',
+                type: 'object',
+                properties: {
+                    id: {
+                        type: 'string',
+                        maxLength: 100
+                    },
+                    meta: {
+                        type: 'object',
+                        additionalProperties: {
+                            type: 'number'
+                        }
+                    }
+                },
+                required: ['id', 'meta']
+            };
+            const db = await createRxDatabase<{ docs: RxCollection<DocType>; }>({
+                name: randomToken(10),
+                storage: wrappedKeyCompressionStorage({
+                    storage: config.storage.getStorage()
+                })
+            });
+            const collections = await db.addCollections({
+                docs: { schema }
+            });
+            await collections.docs.insert({ id: 'a', meta: { foo: 1 } });
+
+            const queries: MangoQuery<DocType>[] = [
+                { selector: { 'meta.|a': 1 } },
+                { selector: { $or: [{ id: 'a' }, { 'meta.|a': { $gt: 0 } }] } },
+                { selector: {}, sort: [{ 'meta.|a': 'asc' }] }
+            ];
+            for (const query of queries) {
+                await assertThrows(
+                    () => collections.docs.find(query).exec(),
+                    'RxError',
+                    ['KC1', 'meta.|a']
+                );
+            }
+
+            const result = await collections.docs.find({ selector: { 'meta.foo': 1 } }).exec();
+            assert.strictEqual(result.length, 1);
+
             db.close();
         });
         it('should forward the query index hint through key compression', async () => {

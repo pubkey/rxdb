@@ -1242,6 +1242,14 @@ export const ERROR_MESSAGES = {
         docs: 'https://rxdb.info/crdt.html?console=errors&code=CRDT4'
     },
 
+    // plugins/key-compression/
+    KC1: {
+        message: 'The query uses a path with a key that starts with the compression flag "|". Such keys are reserved by the key-compression and cannot be stored or queried.',
+        cause: 'A selector, sort, or index path of the query contains a key that starts with "|" on a collection with keyCompression: true.',
+        fix: 'Rename the key so that it does not start with "|" or disable keyCompression in the schema.',
+        docs: 'https://rxdb.info/key-compression.html?console=errors&code=KC1'
+    },
+
     // plugins/storage-dexie/
     DXE1: {
         message: 'non-required index fields are not possible with the dexie.js RxStorage: https://github.com/pubkey/rxdb/pull/6643#issuecomment-2505310082',

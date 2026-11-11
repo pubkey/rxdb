@@ -38,6 +38,7 @@ import {
     isMaybeReadonlyArray
 } from '../../plugins/utils/index.ts';
 import { prepareQuery } from '../../rx-query-helper.ts';
+import { newRxError } from '../../rx-error.ts';
 
 declare type CompressionState = {
     table: CompressionTable;
@@ -132,6 +133,49 @@ export function getCompressionStateByRxJsonSchema(
     );
 }
 
+/**
+ * Keys that start with the compression flag are reserved
+ * by the format of jsonschema-key-compression, so no stored document
+ * can have such a key and compressQuery() cannot compress such a path.
+ * Returns the first path of the selector, sort, or index of the query
+ * that contains a segment which starts with the compression flag.
+ */
+export function findQueryPathWithCompressionFlag(
+    query: FilledMangoQuery<any>
+): string | undefined {
+    const hasFlag = (path: string) => path
+        .split('.')
+        .some(segment => segment.startsWith(DEFAULT_COMPRESSION_FLAG));
+    function findInSelector(selector: any): string | undefined {
+        if (Array.isArray(selector)) {
+            for (const item of selector) {
+                const found = findInSelector(item);
+                if (found) {
+                    return found;
+                }
+            }
+        } else if (
+            typeof selector === 'object' &&
+            selector !== null &&
+            !(selector instanceof RegExp)
+        ) {
+            for (const key of Object.keys(selector)) {
+                if (!key.startsWith('$') && hasFlag(key)) {
+                    return key;
+                }
+                const found = findInSelector(selector[key]);
+                if (found) {
+                    return found;
+                }
+            }
+        }
+        return undefined;
+    }
+    return findInSelector(query.selector) ||
+        findInSelector(query.sort) ||
+        (query.index ? query.index.find(hasFlag) : undefined);
+}
+
 export function wrappedKeyCompressionStorage<Internals, InstanceCreationOptions>(
     args: {
         storage: RxStorage<Internals, InstanceCreationOptions>;
@@ -188,6 +232,13 @@ export function wrappedKeyCompressionStorage<Internals, InstanceCreationOptions>
                 overwriteMethods.forEach(methodName => {
                     const methodBefore = wrappedInstance[methodName].bind(wrappedInstance);
                     (wrappedInstance as any)[methodName] = async (preparedQuery: PreparedQuery<RxDocType>) => {
+                        const reservedPath = findQueryPathWithCompressionFlag(preparedQuery.query);
+                        if (reservedPath) {
+                            throw newRxError('KC1', {
+                                path: reservedPath,
+                                query: preparedQuery.query
+                            });
+                        }
                         const compressedQuery: FilledMangoQuery<RxDocType> = compressQuery(
                             compressionState.table,
                             preparedQuery.query as any
