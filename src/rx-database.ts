@@ -55,6 +55,7 @@ import {
 } from './rx-error.ts';
 import {
     createRxSchema,
+    getPreviousVersions,
     RxSchema
 } from './rx-schema.ts';
 import {
@@ -416,6 +417,7 @@ export class RxDatabaseBase<
          * so we can overlap these I/O operations to reduce time-to-first-insert.
          */
         const collectionStorageInstancePromises: { [key: string]: Promise<RxStorageInstance<any, any, any>>; } = {};
+        const storageInstanceCreationParamsByCollectionName: { [key: string]: RxStorageInstanceCreationParams<any, any>; } = {};
         Object.keys(collectionCreators).forEach((collectionName) => {
             const useArgs = useArgsByCollectionName[collectionName];
             const storageInstanceCreationParams: RxStorageInstanceCreationParams<any, any> = {
@@ -429,6 +431,7 @@ export class RxDatabaseBase<
                 devMode: overwritable.isDevMode()
             };
             runPluginHooks('preCreateRxStorageInstance', storageInstanceCreationParams);
+            storageInstanceCreationParamsByCollectionName[collectionName] = storageInstanceCreationParams;
             const promise = createRxCollectionStorageInstance(
                 this.asRxDatabase,
                 storageInstanceCreationParams
@@ -506,6 +509,7 @@ export class RxDatabaseBase<
             throw err;
         }
 
+        const conflictingMetaDocIds = new Set(putDocsResult.error.map(error => error.documentId));
         const ret: { [key in keyof CreatedCollections]: RxCollection<any, {}, {}, {}, Reactivity> } = {} as any;
         await Promise.all(
             Object.keys(collectionCreators).map(async (collectionName) => {
@@ -514,6 +518,37 @@ export class RxDatabaseBase<
                 const collection = await createRxCollection({
                     ...useArgs,
                     storageInstance
+                }).catch(async (err) => {
+                    /**
+                     * If the creation fails, the meta document and the storage instance
+                     * that have been created by this call must not stay,
+                     * so that the collection can be added again with another schema.
+                     * When a meta document of a previous schema version exists,
+                     * a migration might have written documents into the new storage instance.
+                     * Then everything is kept so that the migration can be continued later.
+                     */
+                    const jsonSchema = useArgs.schema.jsonSchema;
+                    const previousMetaDocs = await this.internalStore.findDocumentsById(
+                        getPreviousVersions(jsonSchema).map(version => getPrimaryKeyOfInternalDocument(
+                            collectionName + '-' + version,
+                            INTERNAL_CONTEXT_COLLECTION
+                        )),
+                        false
+                    );
+                    if (
+                        !conflictingMetaDocIds.has(getPrimaryKeyOfInternalDocument(
+                            _collectionNamePrimary(collectionName, jsonSchema),
+                            INTERNAL_CONTEXT_COLLECTION
+                        )) &&
+                        previousMetaDocs.length === 0
+                    ) {
+                        const newStorageInstance = await this.storage.createStorageInstance(
+                            storageInstanceCreationParamsByCollectionName[collectionName]
+                        );
+                        await newStorageInstance.remove();
+                        await this.removeCollectionDoc(collectionName, jsonSchema);
+                    }
+                    throw err;
                 });
                 (ret as any)[collectionName] = collection;
 
