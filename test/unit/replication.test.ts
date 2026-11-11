@@ -234,6 +234,65 @@ describe('replication.test.ts', () => {
             localCollection.database.close();
             remoteCollection.database.close();
         });
+        it('should run the pull modifier on the conflict documents that are returned by the push handler', async () => {
+            const localCollection = await humansCollection.createHumanWithTimestamp(0, randomToken(10), false);
+            await localCollection.insert(schemaObjects.humanWithTimestampData({
+                id: 'conflict-doc',
+                name: 'local'
+            }));
+
+            /**
+             * The server stores the name with a prefix.
+             * The push modifier transforms into the server format,
+             * the pull modifier transforms back into the local format.
+             */
+            const SERVER_PREFIX = 'server:';
+            let pushCalls = 0;
+            const replicationState = replicateRxCollection<HumanWithTimestampDocumentType, any>({
+                collection: localCollection,
+                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                live: false,
+                pull: {
+                    handler: (lastPulledCheckpoint: CheckpointType) => Promise.resolve({
+                        documents: [],
+                        checkpoint: lastPulledCheckpoint
+                    }),
+                    modifier: (doc) => {
+                        doc = clone(doc);
+                        assert.ok(doc.name.startsWith(SERVER_PREFIX));
+                        doc.name = doc.name.slice(SERVER_PREFIX.length);
+                        return doc;
+                    }
+                },
+                push: {
+                    handler: (rows) => {
+                        pushCalls++;
+                        if (pushCalls > 1) {
+                            return Promise.resolve([]);
+                        }
+                        // the first push conflicts with the document state of the server
+                        return Promise.resolve(
+                            rows.map(row => ({
+                                ...row.newDocumentState,
+                                name: SERVER_PREFIX + 'master'
+                            }))
+                        );
+                    },
+                    modifier: (doc) => {
+                        doc = clone(doc);
+                        doc.name = SERVER_PREFIX + doc.name;
+                        return doc;
+                    }
+                }
+            });
+            ensureReplicationHasNoErrors(replicationState);
+            await replicationState.awaitInitialReplication();
+
+            const localDoc = await localCollection.findOne('conflict-doc').exec(true);
+            assert.strictEqual(localDoc.name, 'master');
+
+            await localCollection.database.close();
+        });
         it('should skip the document when the push-modifier returns null', async () => {
             const { localCollection, remoteCollection } = await getTestCollections({
                 local: 0,

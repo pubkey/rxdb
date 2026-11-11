@@ -436,8 +436,15 @@ export class RxReplicationState<RxDocType, CheckpointType> {
                         collection: this.collection
                     });
 
+                    /**
+                     * The conflicts are document states of the master,
+                     * so they run through the pull modifier
+                     * like the documents from the pull handler and the pull stream.
+                     */
                     const conflicts = handlePulledDocuments(this.collection, this.deletedField, ensureNotFalsy(result));
-                    return conflicts;
+                    return Promise.all(
+                        conflicts.map(d => pullModifier(d))
+                    );
                 }
             }
         });
