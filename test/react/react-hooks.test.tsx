@@ -57,10 +57,7 @@ function createWrapper(db: RxDatabase) {
 
 describe('react-hooks.test.tsx', () => {
     /**
-     * Query objects must be defined outside the renderHook callback
-     * so they maintain the same reference across re-renders.
-     * Otherwise, the useCallback dependency array in useRxQueryBase
-     * sees a new query object each render and triggers an infinite loop.
+     * Shared query object that keeps the same reference across re-renders.
      */
     const allDocsQuery = { selector: {} };
 
@@ -163,6 +160,80 @@ describe('react-hooks.test.tsx', () => {
             await db.close();
         });
 
+        it('should set loading to false and return the new results after the query changed', async () => {
+            const db = await createDatabase();
+            const collection: RxCollection<SimpleHumanDocumentType> = db.collections.humans;
+            await collection.bulkInsert([
+                { passportId: 'alice', age: '20' },
+                { passportId: 'bob', age: '30' }
+            ]);
+            const queryAlice = { selector: { passportId: 'alice' } };
+            const queryBob = { selector: { passportId: 'bob' } };
+
+            const { result, rerender } = renderHook(
+                (props: { query: typeof queryAlice; }) => useRxQuery({
+                    collection,
+                    query: props.query
+                }),
+                {
+                    wrapper: createWrapper(db),
+                    initialProps: { query: queryAlice }
+                }
+            );
+            await waitFor(() => {
+                assert.strictEqual(result.current.loading, false);
+            });
+            assert.deepStrictEqual(
+                result.current.results.map(d => d.passportId),
+                ['alice']
+            );
+
+            rerender({ query: queryBob });
+            await waitFor(() => {
+                assert.deepStrictEqual(
+                    result.current.results.map(d => d.passportId),
+                    ['bob']
+                );
+            });
+            await waitFor(() => {
+                assert.strictEqual(result.current.loading, false);
+            });
+            assert.strictEqual(result.current.error, null);
+
+            await db.close();
+        });
+
+        it('should not run the query again on each render when an equal query object is passed inline', async () => {
+            const db = await createDatabase();
+            const collection: RxCollection<SimpleHumanDocumentType> = db.collections.humans;
+            await collection.insert(schemaObjects.simpleHumanAge());
+
+            let renderCount = 0;
+            const { result } = renderHook(
+                () => {
+                    renderCount = renderCount + 1;
+                    return useRxQuery({
+                        collection,
+                        query: { selector: {} }
+                    });
+                },
+                { wrapper: createWrapper(db) }
+            );
+            await waitFor(() => {
+                assert.strictEqual(result.current.loading, false);
+            });
+            assert.strictEqual(result.current.results.length, 1);
+
+            const renderCountAfterResults = renderCount;
+            await act(async () => {
+                await new Promise(res => setTimeout(res, 200));
+            });
+            assert.strictEqual(renderCount, renderCountAfterResults);
+            assert.strictEqual(result.current.loading, false);
+
+            await db.close();
+        });
+
         it('should throw when given an invalid collection', () => {
             assert.throws(() => {
                 renderHook(
@@ -244,6 +315,49 @@ describe('react-hooks.test.tsx', () => {
 
             await waitFor(() => {
                 assert.strictEqual(result.current.results.length, 1);
+            });
+            assert.strictEqual(result.current.error, null);
+
+            await db.close();
+        });
+
+        it('should set loading to false and return the new results after the query changed', async () => {
+            const db = await createDatabase();
+            const collection: RxCollection<SimpleHumanDocumentType> = db.collections.humans;
+            await collection.bulkInsert([
+                { passportId: 'alice', age: '20' },
+                { passportId: 'bob', age: '30' }
+            ]);
+            const queryAlice = { selector: { passportId: 'alice' } };
+            const queryBob = { selector: { passportId: 'bob' } };
+
+            const { result, rerender } = renderHook(
+                (props: { query: typeof queryAlice; }) => useLiveRxQuery({
+                    collection,
+                    query: props.query
+                }),
+                {
+                    wrapper: createWrapper(db),
+                    initialProps: { query: queryAlice }
+                }
+            );
+            await waitFor(() => {
+                assert.strictEqual(result.current.loading, false);
+            });
+            assert.deepStrictEqual(
+                result.current.results.map(d => d.passportId),
+                ['alice']
+            );
+
+            rerender({ query: queryBob });
+            await waitFor(() => {
+                assert.deepStrictEqual(
+                    result.current.results.map(d => d.passportId),
+                    ['bob']
+                );
+            });
+            await waitFor(() => {
+                assert.strictEqual(result.current.loading, false);
             });
             assert.strictEqual(result.current.error, null);
 

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import type {
     MangoQuery,
@@ -91,24 +91,37 @@ export function useRxQueryBase<
         dbCollection = collection;
     }
 
-    const emitResults = (res: RxDocument<RxDocumentType, OrmMethods>[]) => {
-        setResults(res);
-        if (loading) {
-            setLoading(false);
-        }
-    };
+    /**
+     * The query is compared by its content, so that an equal query object
+     * that is created inline on each render does not run the query again.
+     */
+    const queryKey = JSON.stringify(query);
 
-    const emitError = (e: Error) => {
-        setError(e.message);
-        if (loading) {
-            setLoading(false);
-        }
-    };
-
-    const runQuery = useCallback(() => {
+    useEffect(() => {
         if (dbCollection == null) {
             return;
         }
+
+        /**
+         * Results of a query that has been replaced
+         * or whose component has been unmounted must not be emitted.
+         */
+        let active = true;
+        const emitResults = (res: RxDocument<RxDocumentType, OrmMethods>[]) => {
+            if (!active) {
+                return;
+            }
+            setResults(res);
+            setLoading(false);
+        };
+        const emitError = (e: Error) => {
+            if (!active) {
+                return;
+            }
+            setError(e.message);
+            setLoading(false);
+        };
+
         setError(null);
         setLoading(true);
         const rxQuery = dbCollection.find(query);
@@ -119,6 +132,7 @@ export function useRxQueryBase<
             });
 
             return () => {
+                active = false;
                 subscription.unsubscribe();
             };
         } else {
@@ -126,19 +140,11 @@ export function useRxQueryBase<
                 (res) => emitResults(res),
                 (e) => emitError(e as Error)
             );
+            return () => {
+                active = false;
+            };
         }
-    }, [dbCollection, query]);
-
-    useEffect(() => {
-        if (collection == null) {
-            return;
-        }
-
-        const cleanup = runQuery();
-        if (typeof cleanup === 'function') {
-            return cleanup;
-        }
-    }, [runQuery]);
+    }, [dbCollection, queryKey, live]);
 
     return { results, loading, error };
 }
