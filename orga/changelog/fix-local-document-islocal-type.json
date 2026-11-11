@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX the type of `RxLocalDocument.isLocal` declared a method `isLocal()` while the runtime has a property, so the type-correct call `localDoc.isLocal()` threw `isLocal is not a function`. The type is now `readonly isLocal: true`. The local documents docs no longer show the non-existing `set()` and `save()` methods",
+    "links": [],
+    "priority": 4
+}
