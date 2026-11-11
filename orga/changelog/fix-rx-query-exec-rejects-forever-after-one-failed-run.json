@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX when one `RxQuery.exec()` failed, for example because the RxStorage rejected the query, all later `exec()` calls and subscriptions of that query and of equal queries from the query cache rejected with the same old error forever. Now only the failed run rejects and the next run queries the storage again",
+    "links": [],
+    "priority": 5
+}

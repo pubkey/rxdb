@@ -102,6 +102,10 @@ export class RxQueryBase<
      */
     public _execOverDatabaseCount: number = 0;
     /**
+     * The value of _execOverDatabaseCount of the latest run that has failed.
+     */
+    public _failedExecOverDatabaseCount: number = 0;
+    /**
      * @performance
      * Use Date.now() instead of now() for creation time.
      * The monotonic uniqueness guarantee of now() is not needed here
@@ -778,10 +782,21 @@ function _ensureEqual(rxQuery: RxQueryBase<any, any>): Promise<boolean> {
     return _enqueueEnsureEqual(rxQuery);
 }
 
+/**
+ * Appends a run of __ensureEqual() to the queue of the query.
+ * The run is started when the previous run has settled,
+ * no matter if that one was fulfilled or rejected.
+ * So an error is only passed to the caller that started the failed run
+ * and the following runs are still processed.
+ *
+ * @performance
+ * The same function is used as fulfillment- and rejection-handler,
+ * so that no additional Promise must be allocated to catch the error.
+ */
 function _enqueueEnsureEqual(rxQuery: RxQueryBase<any, any>): Promise<boolean> {
     const execCountWhenQueued = rxQuery._execOverDatabaseCount;
-    rxQuery._ensureEqualQueue = rxQuery._ensureEqualQueue
-        .then(() => __ensureEqual(rxQuery, execCountWhenQueued));
+    const run = () => __ensureEqual(rxQuery, execCountWhenQueued);
+    rxQuery._ensureEqualQueue = rxQuery._ensureEqualQueue.then(run, run);
     return rxQuery._ensureEqualQueue;
 }
 
@@ -818,8 +833,12 @@ function __ensureEqual<RxDocType>(
          * A run over the database that was started after this call was queued
          * already contains all writes that were finished when this call was made.
          * So its result is used instead of running the query again.
+         * A failed run has no result that could be used.
          */
-        rxQuery._execOverDatabaseCount > execCountWhenQueued
+        (
+            rxQuery._execOverDatabaseCount > execCountWhenQueued &&
+            rxQuery._failedExecOverDatabaseCount !== rxQuery._execOverDatabaseCount
+        )
     ) {
         return PROMISE_RESOLVE_FALSE;
     }
@@ -945,6 +964,15 @@ function __ensureEqual<RxDocType>(
                     rxQuery._setResultData(newResultData as any);
                 }
                 return ret;
+            }, err => {
+                /**
+                 * The results are not in sync with the database
+                 * when the execution failed. Reset the state so that
+                 * the next call runs the query over the database again.
+                 */
+                rxQuery._latestChangeEvent = -1;
+                rxQuery._failedExecOverDatabaseCount = rxQuery._execOverDatabaseCount;
+                throw err;
             });
     }
     return Promise.resolve(ret); // true if results have changed
