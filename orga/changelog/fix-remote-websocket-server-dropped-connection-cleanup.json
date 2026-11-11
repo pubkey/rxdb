@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX the remote storage websocket server did not clean up after a client connection that dropped without calling `close()`, so the subscriptions of that connection leaked and the storage instance on the server was never closed",
+    "links": [],
+    "priority": 5
+}

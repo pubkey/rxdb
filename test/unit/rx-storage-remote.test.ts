@@ -7,6 +7,10 @@ import {
     fillWithDefaultSettings,
     randomToken
 } from '../../plugins/core/index.mjs';
+import type {
+    RxStorage,
+    RxStorageInstanceCreationParams
+} from '../../plugins/core/index.mjs';
 import {
     schemaObjects,
     schemas,
@@ -19,7 +23,7 @@ import {
 } from '../../plugins/storage-remote-websocket/index.mjs';
 import { getRxStorageMemory } from '../../plugins/storage-memory/index.mjs';
 import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.mjs';
-import { assertThrows } from 'async-test-util';
+import { assertThrows, waitUntil } from 'async-test-util';
 import { nextPort } from '../helper/port-manager.ts';
 
 describe('rx-storage-remote.test.ts', () => {
@@ -32,10 +36,73 @@ describe('rx-storage-remote.test.ts', () => {
      * In this while we only add additional tests
      * that are specific to the remote storage plugin.
      */
-    if (
-        !isNode ||
-        config.storage.name !== 'remote'
-    ) {
+    if (!isNode) {
+        return;
+    }
+    /**
+     * These tests create the remote storage explicitly,
+     * so they run independent of the default storage.
+     */
+    describe('dropped connections', () => {
+        it('should close the storage instance on the server when the last client connection drops without sending close()', async () => {
+            const port = await nextPort();
+            const memoryStorage = getRxStorageMemory();
+            let created = 0;
+            let closed = 0;
+            const countingStorage: RxStorage<any, any> = {
+                name: memoryStorage.name,
+                rxdbVersion: memoryStorage.rxdbVersion,
+                async createStorageInstance<RxDocType>(params: RxStorageInstanceCreationParams<RxDocType, any>) {
+                    const instance = await memoryStorage.createStorageInstance<RxDocType>(params);
+                    created++;
+                    const closeInstance = instance.close.bind(instance);
+                    instance.close = () => {
+                        closed++;
+                        return closeInstance();
+                    };
+                    return instance;
+                }
+            };
+            const server = startRxStorageRemoteWebsocketServer({
+                port,
+                storage: countingStorage
+            });
+            const instanceParams = {
+                databaseInstanceToken: randomToken(10),
+                databaseName: randomToken(10),
+                collectionName: randomToken(10),
+                devMode: true,
+                multiInstance: false,
+                options: {},
+                schema: fillWithDefaultSettings(schemas.human)
+            };
+
+            const droppedClientStorage = getRxStorageRemoteWebsocket({
+                url: 'ws://localhost:' + port,
+                mode: 'one'
+            });
+            const droppedInstance = await droppedClientStorage.createStorageInstance(instanceParams);
+            assert.strictEqual(created, 1);
+
+            // drop the connection without a close() call from the client
+            server.serverState.server.clients.forEach(socket => socket.terminate());
+            await waitUntil(() => closed === 1, 2000);
+
+            // a new client can open and close the same storage instance
+            const otherClientStorage = getRxStorageRemoteWebsocket({
+                url: 'ws://localhost:' + port,
+                mode: 'one'
+            });
+            const otherInstance = await otherClientStorage.createStorageInstance(instanceParams);
+            await otherInstance.close();
+            assert.strictEqual(created, 2);
+            assert.strictEqual(closed, 2);
+
+            await droppedInstance.close().catch(() => { });
+            await server.serverState.close();
+        });
+    });
+    if (config.storage.name !== 'remote') {
         return;
     }
     const memoryStorageWithValidation = wrappedValidateAjvStorage({ storage: getRxStorageMemory() });
