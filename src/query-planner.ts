@@ -3,6 +3,7 @@ import { newRxError } from './rx-error.ts';
 import { getSchemaByObjectPath } from './rx-schema-helper.ts';
 import type {
     FilledMangoQuery,
+    JsonSchema,
     MangoQuerySelector,
     RxDocumentData,
     RxJsonSchema,
@@ -101,6 +102,7 @@ export function getQueryPlan<RxDocType>(
     indexes.forEach((index) => {
         let inclusiveEnd = true;
         let inclusiveStart = true;
+        let hasLossyKey = false;
         const opts: RxQueryPlanerOpts[] = index.map(indexField => {
             const matcher = (selector as any)[indexField];
             const operators = matcher ? Object.keys(matcher) : [];
@@ -132,6 +134,31 @@ export function getQueryPlan<RxDocType>(
                 });
             }
 
+            /**
+             * A key that the index string cannot represent exactly
+             * is mapped to the same index string as other values.
+             * The bound must then be inclusive so that the index range
+             * contains all matching documents, and the
+             * query matcher has to filter the results.
+             */
+            const schemaPart = getSchemaByObjectPath(schema, indexField);
+            if (schemaPart && operators.length > 0) {
+                if (
+                    typeof matcherOpts.startKey !== 'undefined' &&
+                    isIndexKeyLossy(schemaPart, matcherOpts.startKey, true)
+                ) {
+                    hasLossyKey = true;
+                    matcherOpts.inclusiveStart = true;
+                }
+                if (
+                    typeof matcherOpts.endKey !== 'undefined' &&
+                    isIndexKeyLossy(schemaPart, matcherOpts.endKey, false)
+                ) {
+                    hasLossyKey = true;
+                    matcherOpts.inclusiveEnd = true;
+                }
+            }
+
             // fill missing attributes
             if (typeof matcherOpts.startKey === 'undefined') {
                 matcherOpts.startKey = INDEX_MIN;
@@ -153,7 +180,6 @@ export function getQueryPlan<RxDocType>(
              * document would incorrectly exclude that document, so we
              * promote it to inclusive here.
              */
-            const schemaPart = getSchemaByObjectPath(schema, indexField);
             if (schemaPart && (schemaPart.type === 'number' || schemaPart.type === 'integer')) {
                 if (
                     !matcherOpts.inclusiveStart &&
@@ -206,7 +232,7 @@ export function getQueryPlan<RxDocType>(
             inclusiveEnd,
             inclusiveStart,
             sortSatisfiedByIndex: !hasDescSorting && optimalSortIndexCompareString === indexCompareString,
-            selectorSatisfiedByIndex: isSelectorSatisfiedByIndex(index, query.selector, startKeys, endKeys)
+            selectorSatisfiedByIndex: !hasLossyKey && isSelectorSatisfiedByIndex(index, query.selector, startKeys, endKeys)
         };
         const quality = rateQueryPlan(
             schema,
@@ -240,6 +266,46 @@ export const LOGICAL_OPERATORS = new Set(['$eq', '$gt', '$gte', '$lt', '$lte']);
 export const LOWER_BOUND_LOGICAL_OPERATORS = new Set(['$eq', '$gt', '$gte']);
 export const UPPER_BOUND_LOGICAL_OPERATORS = new Set(['$eq', '$lt', '$lte']);
 
+
+/**
+ * Returns true if the index string of the given key
+ * can be equal to the index string of a different value,
+ * so that the index range alone cannot decide
+ * if a document matches the bound.
+ * - A key with a type that is different from the field type (like null).
+ * - A string that ends with a space, because index strings are padded with spaces.
+ * - A number that is not a multiple of the index precision.
+ * - A number outside of minimum/maximum, because it is clamped to the boundary.
+ *   A startKey below the minimum and an endKey above the maximum
+ *   do not restrict the range and are therefore not lossy.
+ */
+export function isIndexKeyLossy(
+    schemaPart: JsonSchema,
+    key: RxQueryPlanKey | boolean | null,
+    isStartKey: boolean
+): boolean {
+    const type = schemaPart.type;
+    if (type === 'string') {
+        return typeof key !== 'string' ||
+            key.charCodeAt(key.length - 1) === 32;
+    } else if (type === 'boolean') {
+        return typeof key !== 'boolean';
+    } else if (type === 'number' || type === 'integer') {
+        if (typeof key !== 'number') {
+            return true;
+        }
+        if (key < (schemaPart.minimum as number)) {
+            return !isStartKey;
+        }
+        if (key > (schemaPart.maximum as number)) {
+            return isStartKey;
+        }
+        const multipleOfParts = String(schemaPart.multipleOf).split('.');
+        const decimals = multipleOfParts.length > 1 ? multipleOfParts[1].length : 0;
+        return Number(key.toFixed(decimals)) !== key;
+    }
+    return false;
+}
 
 export function isSelectorSatisfiedByIndex(
     index: string[],
