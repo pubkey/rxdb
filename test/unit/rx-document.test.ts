@@ -405,6 +405,110 @@ describe('rx-document.test.js', () => {
 
                 c.database.close();
             });
+            it('should not keep references to the objects of the update query', async () => {
+                type DocType = {
+                    id: string;
+                    nested: {
+                        a: number;
+                    };
+                    list: {
+                        a: number;
+                    }[];
+                };
+                const schema: RxJsonSchema<DocType> = {
+                    version: 0,
+                    primaryKey: 'id',
+                    type: 'object',
+                    properties: {
+                        id: {
+                            type: 'string',
+                            maxLength: 100
+                        },
+                        nested: {
+                            type: 'object',
+                            properties: {
+                                a: {
+                                    type: 'number'
+                                }
+                            }
+                        },
+                        list: {
+                            type: 'array',
+                            items: {
+                                type: 'object',
+                                properties: {
+                                    a: {
+                                        type: 'number'
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    required: ['id', 'nested', 'list']
+                };
+                const dbName = randomToken(10);
+                const storage = config.storage.getStorage();
+                const createDb = async () => {
+                    const created = await createRxDatabase<{ docs: RxCollection<DocType>; }>({
+                        name: dbName,
+                        storage
+                    });
+                    await created.addCollections({
+                        docs: {
+                            schema
+                        }
+                    });
+                    return created;
+                };
+                const db = await createDb();
+                const doc = await db.docs.insert({
+                    id: 'foobar',
+                    nested: {
+                        a: 1
+                    },
+                    list: []
+                });
+
+                const sharedSet = { a: 2 };
+                const sharedPush = { a: 3 };
+                const sharedEach = { a: 4 };
+                const updatedDoc = await doc.update({
+                    $set: {
+                        nested: sharedSet
+                    },
+                    $push: {
+                        list: sharedPush
+                    }
+                });
+                await updatedDoc.incrementalUpdate({
+                    $push: {
+                        list: {
+                            $each: [sharedEach]
+                        }
+                    }
+                });
+
+                // mutating the own objects must neither throw nor change the document
+                sharedSet.a = 666;
+                sharedPush.a = 666;
+                sharedEach.a = 666;
+
+                const expectedList = [{ a: 3 }, { a: 4 }];
+                const latest = doc.getLatest();
+                assert.strictEqual(latest.nested.a, 2);
+                assert.deepStrictEqual(latest.toJSON().list, expectedList);
+
+                const queried = await db.docs.findOne('foobar').exec(true);
+                assert.strictEqual(queried.nested.a, 2);
+                assert.deepStrictEqual(queried.toJSON().list, expectedList);
+
+                await db.close();
+                const db2 = await createDb();
+                const reopened = await db2.docs.findOne('foobar').exec(true);
+                assert.strictEqual(reopened.nested.a, 2);
+                assert.deepStrictEqual(reopened.toJSON().list, expectedList);
+                await db2.remove();
+            });
         });
         describe('negative', () => {
             it('should throw on conflict', async () => {
