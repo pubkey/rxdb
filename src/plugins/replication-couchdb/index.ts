@@ -40,6 +40,7 @@ import type {
 } from './couchdb-types.ts';
 import {
     couchDBDocToRxDocData,
+    couchDBChangesDocsToRxDocData,
     mergeUrlQueryParams,
     couchSwapPrimaryToId,
     getDefaultFetch,
@@ -126,8 +127,10 @@ export function replicateCouchDB<RxDocType>(
                         args: { jsonResponse }
                     });
                 }
-                const documents: WithDeleted<RxDocType>[] = jsonResponse.results
-                    .map(row => couchDBDocToRxDocData(collection.schema.primaryPath, ensureNotFalsy(row.doc)));
+                const documents: WithDeleted<RxDocType>[] = await couchDBChangesDocsToRxDocData(
+                    collection,
+                    jsonResponse.results.map(row => ensureNotFalsy(row.doc))
+                );
                 return {
                     documents,
                     checkpoint: {
@@ -349,8 +352,10 @@ export function replicateCouchDB<RxDocType>(
                         pullStream$.next('RESYNC');
                         continue;
                     }
-                    const documents: WithDeleted<RxDocType>[] = jsonResponse.results
-                        .map(row => couchDBDocToRxDocData(collection.schema.primaryPath, ensureNotFalsy(row.doc)));
+                    const documents: WithDeleted<RxDocType>[] = await couchDBChangesDocsToRxDocData(
+                        collection,
+                        jsonResponse.results.map(row => ensureNotFalsy(row.doc))
+                    );
                     since = jsonResponse.last_seq;
 
                     pullStream$.next({
