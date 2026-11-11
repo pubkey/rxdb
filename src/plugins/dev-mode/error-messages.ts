@@ -739,6 +739,12 @@ export const ERROR_MESSAGES = {
     },
 
     // plugins/leader-election.js
+    LE1: {
+        message: 'RxDatabase.leaderElector(): the database is closed already',
+        cause: 'leaderElector() was called for the first time after the database was closed. A closed database cannot take part in the leader election.',
+        fix: 'Call leaderElector() before the database is closed, or create a new database instance.',
+        docs: 'https://rxdb.info/leader-election.html?console=errors&code=LE1'
+    },
 
     // plugins/local-documents.js
     LD1: {
