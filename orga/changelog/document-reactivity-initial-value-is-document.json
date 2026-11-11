@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `RxDocument.$$` and `RxLocalDocument.$$` passed the raw document data (including `_rev` and `_meta`) as initial value to the `reactivity` factory instead of the document instance that the type declares and that is emitted afterwards",
+    "links": [],
+    "priority": 4
+}

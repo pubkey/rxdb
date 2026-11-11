@@ -123,7 +123,7 @@ export const basePrototype = {
         const reactivity = _this.collection.database.getReactivityFactory();
         return reactivity.fromObservable(
             _this.$,
-            _this.getLatest()._data,
+            _this.getLatest(),
             _this.collection.database
         );
     },
