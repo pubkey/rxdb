@@ -10,7 +10,7 @@ import {
     combineLatest,
     filter,
     firstValueFrom,
-    mergeMap,
+    concatMap,
     Subject
 } from 'rxjs';
 import {
@@ -198,7 +198,7 @@ export function rxStorageInstanceToReplicationHandler<RxDocType, MasterCheckpoin
     const primaryPath = getPrimaryFieldOfPrimaryKey(instance.schema.primaryKey);
     const replicationHandler: RxReplicationHandler<RxDocType, MasterCheckpointType> = {
         masterChangeStream$: instance.changeStream().pipe(
-            mergeMap(async (eventBulk: EventBulk<RxStorageChangeEvent<RxDocType>, MasterCheckpointType>) => {
+            concatMap(async (eventBulk: EventBulk<RxStorageChangeEvent<RxDocType>, MasterCheckpointType>) => {
                 const ret: DocumentsWithCheckpoint<RxDocType, MasterCheckpointType> = {
                     checkpoint: eventBulk.checkpoint,
                     documents: await Promise.all(

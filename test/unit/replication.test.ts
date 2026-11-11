@@ -1783,6 +1783,62 @@ describe('replication.test.ts', () => {
             localCollection.database.close();
             remoteCollection.database.close();
         });
+        it('should process the pull.stream$ events in order when the pull.modifier is async', async () => {
+            const { localCollection, remoteCollection } = await getTestCollections({ local: 0, remote: 0 });
+            const pullStream$ = new Subject<RxReplicationPullStreamItem<TestDocType, CheckpointType>>();
+            const id = 'foobar';
+
+            const replicationState = replicateRxCollection<TestDocType, CheckpointType>({
+                collection: localCollection,
+                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                live: true,
+                pull: {
+                    handler: () => Promise.resolve({
+                        documents: [],
+                        checkpoint: null
+                    }),
+                    stream$: pullStream$.asObservable(),
+                    /**
+                     * The modifier takes longer for the
+                     * first event than for the second one.
+                     */
+                    modifier: async (docData: WithDeleted<TestDocType>) => {
+                        await wait(docData.age === 1 ? 200 : 0);
+                        return docData;
+                    }
+                }
+            });
+            ensureReplicationHasNoErrors(replicationState);
+            await replicationState.awaitInitialReplication();
+            await replicationState.awaitInSync();
+
+            const olderState: WithDeleted<TestDocType> = Object.assign(
+                schemaObjects.humanWithTimestampData({ id, age: 1, updatedAt: 1000 }),
+                { _deleted: false }
+            );
+            const newerState: WithDeleted<TestDocType> = Object.assign(
+                {},
+                olderState,
+                { age: 2, updatedAt: 2000 }
+            );
+            pullStream$.next({
+                documents: [olderState],
+                checkpoint: { id, updatedAt: olderState.updatedAt }
+            });
+            pullStream$.next({
+                documents: [newerState],
+                checkpoint: { id, updatedAt: newerState.updatedAt }
+            });
+
+            await wait(isFastMode() ? 400 : 800);
+            await replicationState.awaitInSync();
+
+            const doc = await localCollection.findOne(id).exec(true);
+            assert.strictEqual(doc.age, 2, 'local document must have the newer state');
+
+            localCollection.database.close();
+            remoteCollection.database.close();
+        });
     });
     describe('issues', () => {
         /**
