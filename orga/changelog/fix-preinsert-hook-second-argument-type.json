@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX the TypeScript type of `preInsert` hooks declared an `RxCollection` as second argument although no second argument is passed, so a typed hook that used it threw a `TypeError` on every insert",
+    "links": [],
+    "priority": 4
+}

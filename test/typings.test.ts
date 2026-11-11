@@ -727,6 +727,25 @@ describe('other', () => {
                 return Promise.resolve();
             }, true);
         });
+        it('preInsert must not have an instance as second argument', async () => {
+            const myDb: any = {};
+            const myCollections = await myDb.addCollections({
+                humans: {
+                    schema: {}
+                }
+            });
+            const myCollection: RxCollection<DefaultDocType, DefaultOrmMethods> = myCollections.humans;
+            let myNumber: number;
+            let myString: string;
+            myCollection.preInsert((data) => {
+                myNumber = data.age;
+            }, false);
+            myCollection.preInsert((data, instance) => {
+                myNumber = data.age;
+                // @ts-expect-error preInsert hooks get no second argument
+                myString = instance.name;
+            }, false);
+        });
         describe('query', () => {
             it('should know the where-fields', async () => {
                 const myDb: any = {};
