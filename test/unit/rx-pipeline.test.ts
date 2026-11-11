@@ -529,8 +529,15 @@ describe('rx-pipeline.test.js', () => {
                 new Array(pipelinesAmount).fill(0).map((_v, idx) => source.addPipeline({
                     destination: dest,
                     handler: async (docs) => {
-                        await promiseWait(100);
+                        /**
+                         * The read must be the first call of the handler.
+                         * A read is only detected as coming from inside of the handler
+                         * when the flagged function is in the stack trace.
+                         * Firefox does not add async frames to the stack trace,
+                         * so a read after a timeout would wait for the pipeline itself.
+                         */
                         await dest.find().exec();
+                        await promiseWait(100);
                         for (const doc of docs) {
                             await dest.insert(schemaObjects.humanData(doc.passportId + '-from-p' + idx));
                         }
