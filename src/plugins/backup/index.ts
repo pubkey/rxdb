@@ -50,7 +50,7 @@ export async function backupSingleDocument(
     const data = rxDocument.toJSON(true);
     const writtenFiles: string[] = [];
 
-    const docFolder = documentFolder(options, rxDocument.primary);
+    const docFolder = documentFolder(options, rxDocument.collection.name, rxDocument.primary);
     await clearFolder(docFolder);
 
     const fileLocation = path.join(
@@ -191,7 +191,7 @@ export class RxBackupState {
                             docIds
                                 .filter(docId => !docs.has(docId))
                                 .map(async (docId) => {
-                                    await deleteFolder(documentFolder(this.options, docId));
+                                    await deleteFolder(documentFolder(this.options, collectionName, docId));
                                     this.internalWriteEvents$.next({
                                         collectionName: collection.name,
                                         documentId: docId,

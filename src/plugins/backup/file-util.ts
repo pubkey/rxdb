@@ -5,7 +5,7 @@ import type {
     BackupOptions,
     RxDatabase
 } from '../../types/index.d.ts';
-import { blobToString, now } from '../../plugins/utils/index.ts';
+import { now } from '../../plugins/utils/index.ts';
 
 /**
  * ensure that the given folder exists
@@ -63,14 +63,19 @@ export async function writeToFile(
     location: string,
     data: string | Blob
 ): Promise<void> {
-    if (typeof data !== 'string') {
-        data = await blobToString(data);
-    }
+    /**
+     * Blobs are written as raw bytes because
+     * attachments can contain binary data
+     * which is not valid utf-8.
+     */
+    const content: string | Uint8Array = typeof data === 'string'
+        ? data
+        : new Uint8Array(await data.arrayBuffer());
     return new Promise(function (res, rej) {
         fs.writeFile(
             location,
-            data as string,
-            'utf-8',
+            content,
+            typeof content === 'string' ? 'utf-8' : null,
             (err: Error | null) => {
                 if (err) {
                     rej(err);
@@ -148,12 +153,19 @@ export function toFileName(id: string): string {
     return ret;
 }
 
+/**
+ * The folder of a document is located inside of the folder
+ * of its collection, because documents of different
+ * collections can have the same primary key.
+ */
 export function documentFolder(
     options: BackupOptions,
+    collectionName: string,
     docId: string
 ): string {
     return path.join(
         options.directory,
+        collectionName,
         toFileName(docId)
     );
 }

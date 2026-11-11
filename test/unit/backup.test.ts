@@ -10,6 +10,7 @@ import {
 } from '../../plugins/core/index.mjs';
 import {
     schemaObjects,
+    schemas,
     isNode,
     createAttachments,
     humansCollection
@@ -72,11 +73,11 @@ describe('backup.test.ts', () => {
                 }
             );
 
-            assert.ok(fs.existsSync(path.join(directory, toFileName(firstDoc.primary))));
-            assert.ok(fs.existsSync(path.join(directory, toFileName(firstDoc.primary), 'attachments', 'cat.txt')));
+            assert.ok(fs.existsSync(path.join(directory, 'human', toFileName(firstDoc.primary))));
+            assert.ok(fs.existsSync(path.join(directory, 'human', toFileName(firstDoc.primary), 'attachments', 'cat.txt')));
             assert.ok(
                 fs.existsSync(
-                    path.join(directory, toFileName(firstDoc.primary), 'document.json')
+                    path.join(directory, 'human', toFileName(firstDoc.primary), 'document.json')
                 )
             );
 
@@ -105,11 +106,11 @@ describe('backup.test.ts', () => {
             const backupState = collection.database.backup(options);
             await backupState.awaitInitialBackup();
 
-            assert.ok(fs.existsSync(path.join(directory, toFileName(firstDoc.primary))));
-            assert.ok(fs.existsSync(path.join(directory, toFileName(firstDoc.primary), 'attachments', 'cat.txt')));
+            assert.ok(fs.existsSync(path.join(directory, 'human', toFileName(firstDoc.primary))));
+            assert.ok(fs.existsSync(path.join(directory, 'human', toFileName(firstDoc.primary), 'attachments', 'cat.txt')));
             assert.ok(
                 fs.existsSync(
-                    path.join(directory, toFileName(firstDoc.primary), 'document.json')
+                    path.join(directory, 'human', toFileName(firstDoc.primary), 'document.json')
                 )
             );
 
@@ -164,11 +165,11 @@ describe('backup.test.ts', () => {
             const doc2 = await collection.insert(schemaObjects.humanData());
 
             await waitUntil(() => {
-                return fs.existsSync(path.join(directory, toFileName(doc2.primary)));
+                return fs.existsSync(path.join(directory, 'human', toFileName(doc2.primary)));
             });
             await waitUntil(() => {
                 return fs.existsSync(
-                    path.join(directory, toFileName(doc2.primary), 'document.json')
+                    path.join(directory, 'human', toFileName(doc2.primary), 'document.json')
                 );
             });
 
@@ -201,7 +202,7 @@ describe('backup.test.ts', () => {
             const backupState1 = collection.database.backup(options);
             await backupState1.awaitInitialBackup();
 
-            const docFolder = path.join(directory, toFileName(docId));
+            const docFolder = path.join(directory, 'human', toFileName(docId));
             assert.ok(
                 fs.existsSync(docFolder),
                 'doc folder should exist after initial backup'
@@ -232,6 +233,76 @@ describe('backup.test.ts', () => {
 
             sub.unsubscribe();
             await collection.database.close();
+        });
+        it('should write binary attachment data without changing the bytes', async () => {
+            if (!config.storage.hasAttachments) {
+                return;
+            }
+            const collection = await createAttachments(1);
+            const firstDoc = await collection.findOne().exec(true);
+            const bytes = [0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10, 0x80, 0x81];
+            await firstDoc.putAttachment({
+                id: 'image.jpg',
+                data: new Blob([new Uint8Array(bytes)], { type: 'image/jpeg' }),
+                type: 'image/jpeg'
+            });
+            const directory = getBackupDir();
+            const backupState = collection.database.backup({
+                live: false,
+                directory,
+                attachments: true
+            });
+            await backupState.awaitInitialBackup();
+
+            const written = fs.readFileSync(
+                path.join(directory, 'human', toFileName(firstDoc.primary), 'attachments', 'image.jpg')
+            );
+            assert.deepStrictEqual(Array.from(written), bytes);
+
+            await collection.database.close();
+        });
+        it('should keep the backups of two collections apart when documents have the same primary key', async () => {
+            const collection = await humansCollection.create(0);
+            const database = collection.database;
+            const collections = await database.addCollections({
+                human2: {
+                    schema: schemas.human
+                }
+            });
+            const collection2 = collections.human2;
+            const docId = 'same-id';
+            await collection.insert(schemaObjects.humanData(docId, 20, 'alice'));
+            const doc2 = await collection2.insert(schemaObjects.humanData(docId, 30, 'bob'));
+
+            const directory = getBackupDir();
+            const options = {
+                live: false,
+                directory,
+                attachments: false
+            };
+            const backupState = database.backup(options);
+            await backupState.awaitInitialBackup();
+
+            const readBackup = (collectionName: string) => JSON.parse(
+                fs.readFileSync(
+                    path.join(directory, collectionName, toFileName(docId), 'document.json'),
+                    'utf-8'
+                )
+            );
+            assert.strictEqual(readBackup(collection.name).firstName, 'alice');
+            assert.strictEqual(readBackup(collection2.name).firstName, 'bob');
+
+            // deleting the document in one collection must not touch the backup of the other collection
+            await doc2.remove();
+            const backupState2 = database.backup(options);
+            await backupState2.awaitInitialBackup();
+            assert.strictEqual(readBackup(collection.name).firstName, 'alice');
+            assert.strictEqual(
+                fs.existsSync(path.join(directory, collection2.name, toFileName(docId))),
+                false
+            );
+
+            await database.close();
         });
         it('toFileName() must return unique file names that are valid on all operating systems', () => {
             const ids = [
@@ -274,11 +345,11 @@ describe('backup.test.ts', () => {
             });
             await backupState.awaitInitialBackup();
 
-            const folders = fs.readdirSync(directory).filter(f => f !== 'backup_meta.json' && f !== 'human');
+            const folders = fs.readdirSync(path.join(directory, 'human'));
             assert.strictEqual(folders.length, ids.length);
             ids.forEach(id => {
                 const content = JSON.parse(
-                    fs.readFileSync(path.join(directory, toFileName(id), 'document.json'), 'utf-8')
+                    fs.readFileSync(path.join(directory, 'human', toFileName(id), 'document.json'), 'utf-8')
                 );
                 assert.strictEqual(content.passportId, id);
             });
