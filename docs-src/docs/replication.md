@@ -427,6 +427,62 @@ The remote instance must be designed to handle this properly and to not crash on
 Depending on your use case, it might be ok to just write the duplicate document data again.
 But for a more resilient error handling you could compare the last write timestamps or add a unique write id field to the document. This field can then be used to detect duplicates and ignore re-sent data.
 
+### Detect Duplicate Push Requests with the requestId
+
+To make duplicate detection easier, RxDB calls the `push.handler` with a second argument that contains a `requestId`. The `requestId` is a random string that identifies one push request. When the handler throws and RxDB sends the same rows again, the retry has the **same** `requestId`. A new push request gets a new `requestId`.
+
+Send the `requestId` to the remote together with the rows:
+
+```ts
+const replicationState = replicateRxCollection({
+    /* ... */
+    push: {
+        async handler(docs, context) {
+            const rawResponse = await fetch('https://example.com/api/sync/push', {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    docs,
+                    // same value on all retries of these docs
+                    requestId: context?.requestId
+                })
+            });
+            return await rawResponse.json();
+        }
+    }
+});
+```
+
+On the remote, store the `requestId` together with the response in the same transaction that writes the documents. When a request with a known `requestId` arrives, return the stored response instead of processing the rows again:
+
+```ts
+// > server.ts
+app.post('/api/sync/push', async (req, res) => {
+    const { docs, requestId } = req.body;
+
+    const processed = await pushRequests.findOne({ _id: requestId });
+    if (processed) {
+        // duplicate transmission, the rows have already been written
+        res.json(processed.conflicts);
+        return;
+    }
+
+    const conflicts = await writeRowsAndGetConflicts(docs);
+    await pushRequests.insertOne({ _id: requestId, conflicts });
+    res.json(conflicts);
+});
+```
+
+Keep in mind the following:
+
+- **Optional for the remote**: The `requestId` is only an additional argument of the handler. A remote that does not know about it keeps working like before.
+- **Only kept in memory**: The `requestId` is not persisted. When the JavaScript process is restarted before the push has succeeded, the documents are sent again with a new `requestId` and might be batched differently. The remote still has to detect conflicts by comparing the `assumedMasterState` like described in the [conflict handling](#conflict-handling) section.
+- **Not globally unique by contract**: The `requestId` is a random string with 16 characters. Scope the stored ids to the user or the client when your remote handles many clients.
+- **GraphQL**: In the [GraphQL replication](./replication-graphql.md), the `requestId` is passed as second argument to the `push.queryBuilder`.
+
 Also the replication has an `.error$` stream that emits all [RxError](./errors.md) objects that arise during replication.
 Notice that these errors contain an inner `.parameters.errors` field that contains the original error. Also they contain a `.parameters.direction` field that indicates if the error was thrown during `pull` or `push`. You can use these to properly handle errors. For example when the client is outdated, the server might respond with a `426 Upgrade Required` error code that can then be used to force a page reload.
 

@@ -5,6 +5,7 @@ import {
     ReplicationOptions,
     ReplicationPullHandlerResult,
     ReplicationPullOptions,
+    ReplicationPushHandlerContext,
     ReplicationPushHandlerResult,
     ReplicationPushOptions
 } from './replication.ts';
@@ -25,7 +26,12 @@ export type RxGraphQLReplicationQueryBuilderResponse =
     Promise<RxGraphQLReplicationQueryBuilderResponseObject>;
 export type RxGraphQLReplicationPushQueryBuilder = (
     // typed 'any' because the data might be modified by the push.modifier.
-    rows: RxReplicationWriteToMasterRow<any>[]
+    rows: RxReplicationWriteToMasterRow<any>[],
+    /**
+     * Contains the requestId of the push request,
+     * which is the same on all retries of the same rows.
+     */
+    context?: ReplicationPushHandlerContext
 ) => RxGraphQLReplicationQueryBuilderResponse;
 
 export type RxGraphQLPullWSOptions = Omit<ClientOptions, 'url' | 'shouldRetry' | 'webSocketImpl'>;

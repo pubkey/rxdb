@@ -248,6 +248,8 @@ const pushQueryBuilder = rows => {
 };
 ```
 
+The `pushQueryBuilder` is called with a second argument that contains the `requestId` of the push request. The `requestId` is the same on all retries of the same rows, so you can send it as a variable to the server to [detect duplicate push requests](./replication.md#detect-duplicate-push-requests-with-the-requestid).
+
 With the queryBuilder, you can then setup the push-replication.
 
 ```js

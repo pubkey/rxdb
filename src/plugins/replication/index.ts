@@ -19,6 +19,7 @@ import type {
     ReplicationOptions,
     ReplicationPullHandlerResult,
     ReplicationPullOptions,
+    ReplicationPushHandlerContext,
     ReplicationPushOptions,
     RxCollection,
     RxDocumentData,
@@ -45,6 +46,7 @@ import {
     PROMISE_RESOLVE_FALSE,
     PROMISE_RESOLVE_TRUE,
     PROMISE_RESOLVE_VOID,
+    randomToken,
     toArray,
     toPromise
 } from '../../plugins/utils/index.ts';
@@ -391,6 +393,14 @@ export class RxReplicationState<RxDocType, CheckpointType> {
 
                     let result: WithDeleted<RxDocType>[] = null as any;
 
+                    /**
+                     * Created outside of the retry loop
+                     * so that all retries of the same rows use the same requestId.
+                     */
+                    const pushContext: ReplicationPushHandlerContext = {
+                        requestId: randomToken(16)
+                    };
+
                     // In case all the rows have been filtered and nothing has to be sent
                     if (useRows.length === 0) {
                         done = true;
@@ -399,7 +409,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
 
                     while (!done && !this.isStoppedOrPaused()) {
                         try {
-                            result = await this.push.handler(useRows);
+                            result = await this.push.handler(useRows, pushContext);
                             /**
                              * It is a common problem that people have wrongly behaving backend
                              * that do not return an array with the conflicts on push requests.

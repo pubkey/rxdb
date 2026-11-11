@@ -16,6 +16,7 @@ import { RxDBLeaderElectionPlugin } from '../leader-election/index.ts';
 import type {
     RxCollection,
     ReplicationPullOptions,
+    ReplicationPushHandlerContext,
     ReplicationPushOptions,
     RxReplicationWriteToMasterRow,
     GraphQLServerUrl,
@@ -155,9 +156,10 @@ export function replicateGraphQL<RxDocType, CheckpointType>(
     if (push) {
         replicationPrimitivesPush = {
             async handler(
-                rows: RxReplicationWriteToMasterRow<RxDocType>[]
+                rows: RxReplicationWriteToMasterRow<RxDocType>[],
+                context?: ReplicationPushHandlerContext
             ) {
-                const pushObj = await push.queryBuilder(rows);
+                const pushObj = await push.queryBuilder(rows, context);
                 const result = await graphqlReplicationState.graphQLRequest(pushObj);
 
                 if (result.errors) {

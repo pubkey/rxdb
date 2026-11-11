@@ -77,8 +77,27 @@ export type ReplicationPullOptions<RxDocType, CheckpointType> = {
  * so that they can be resolved on the client.
  */
 export type ReplicationPushHandler<RxDocType> = (
-    docs: RxReplicationWriteToMasterRow<RxDocType>[]
+    docs: RxReplicationWriteToMasterRow<RxDocType>[],
+    /**
+     * Always set when the handler is called by RxDB.
+     * Optional in the type so that handlers
+     * can still be called with only the docs.
+     */
+    context?: ReplicationPushHandlerContext
 ) => Promise<WithDeleted<RxDocType>[]>;
+
+export type ReplicationPushHandlerContext = {
+    /**
+     * A random id that identifies the push request.
+     * When the handler throws and the same rows are sent again,
+     * the retry has the same requestId.
+     * The remote can store the ids of the processed requests
+     * to detect and ignore duplicate transmissions.
+     * The id is only kept in memory. When the JavaScript process
+     * is restarted, the rows are sent again with a new requestId.
+     */
+    requestId: string;
+};
 export type ReplicationPushOptions<RxDocType> = {
     /**
      * A handler that sends the new local changes

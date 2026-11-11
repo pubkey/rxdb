@@ -2931,6 +2931,68 @@ describe('replication.test.ts', () => {
         });
     });
     describe('push-only', () => {
+        it('should call the push handler with the same requestId when a failed push is retried', async () => {
+            const { localCollection, remoteCollection } = await getTestCollections({ local: 1, remote: 0 });
+            const realPushHandler = getPushHandler(remoteCollection);
+
+            const requestIds: string[] = [];
+            const processedRequestIds = new Set<string>();
+            let duplicates = 0;
+            let failNextResponse = true;
+
+            const replicationState = replicateRxCollection({
+                collection: localCollection,
+                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                live: true,
+                retryTime: 10,
+                push: {
+                    async handler(rows: RxReplicationWriteToMasterRow<HumanWithTimestampDocumentType>[], context) {
+                        const requestId = ensureNotFalsy(context).requestId;
+                        requestIds.push(requestId);
+
+                        // the remote uses the requestId to ignore requests that it has already processed
+                        if (processedRequestIds.has(requestId)) {
+                            duplicates = duplicates + 1;
+                            return [];
+                        }
+                        const conflicts = await realPushHandler(rows);
+                        processedRequestIds.add(requestId);
+
+                        // the write reached the remote but the response gets lost
+                        if (failNextResponse) {
+                            failNextResponse = false;
+                            throw new Error('response lost');
+                        }
+                        return conflicts;
+                    }
+                }
+            });
+            const errors: (RxError | RxTypeError)[] = [];
+            replicationState.error$.subscribe(err => errors.push(err));
+
+            await replicationState.awaitInitialReplication();
+            await replicationState.awaitInSync();
+
+            assert.strictEqual(errors.length, 1);
+            assert.strictEqual(requestIds.length, 2);
+            assert.strictEqual(typeof requestIds[0], 'string');
+            assert.ok(requestIds[0].length > 0);
+            assert.strictEqual(requestIds[0], requestIds[1], 'retry must use the same requestId');
+            assert.strictEqual(duplicates, 1);
+
+            // a new push request must have a different requestId
+            await localCollection.insert(schemaObjects.humanWithTimestampData());
+            await replicationState.awaitInSync();
+            assert.strictEqual(requestIds.length, 3);
+            assert.notStrictEqual(requestIds[2], requestIds[0]);
+            assert.strictEqual(duplicates, 1);
+
+            const remoteDocs = await remoteCollection.find().exec();
+            assert.strictEqual(remoteDocs.length, 2);
+
+            await localCollection.database.close();
+            await remoteCollection.database.close();
+        });
         it('should push documents written during pause after resume', async () => {
             const { localCollection, remoteCollection } = await getTestCollections({ local: 2, remote: 0 });
 
