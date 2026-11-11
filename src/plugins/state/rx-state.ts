@@ -65,6 +65,8 @@ export class RxStateBase<T, Reactivity = unknown> {
     public _nonPersisted: {
         path: string;
         modifier: RxStateModifier;
+        resolve: () => void;
+        reject: (err: any) => void;
     }[] = [];
     public _writeQueue = PROMISE_RESOLVE_VOID;
     public _initDone = false;
@@ -125,15 +127,20 @@ export class RxStateBase<T, Reactivity = unknown> {
         this.$.subscribe();
     }
 
-    async set(
+    set(
         path: Paths<T> | '',
         modifier: RxStateModifier
-    ) {
-        this._nonPersisted.push({
-            path,
-            modifier
+    ): Promise<void> {
+        const promise = new Promise<void>((resolve, reject) => {
+            this._nonPersisted.push({
+                path,
+                modifier,
+                resolve,
+                reject
+            });
         });
-        return this._triggerWrite();
+        this._triggerWrite();
+        return promise;
     }
 
     /**
@@ -141,6 +148,11 @@ export class RxStateBase<T, Reactivity = unknown> {
      * and to ensure that multiple js realms do not overwrite
      * each other, the write happens with incremental ids
      * that would throw conflict errors and trigger a retry.
+     *
+     * All set() calls that are queued at the same time are persisted
+     * in a single write. Each call has its own resolve/reject, so a
+     * throwing modifier only rejects and drops its own call.
+     * The returned promise never rejects.
      */
     _triggerWrite() {
         const next = this._writeQueue.then(async () => {
@@ -162,10 +174,18 @@ export class RxStateBase<T, Reactivity = unknown> {
                      */
                     let newState = clone(this._state);
                     const ops: RxStateOperation[] = [];
+                    const validWrites: typeof this._nonPersisted = [];
                     for (let index = 0; index < useWrites.length; index++) {
                         const writeRow = useWrites[index];
                         const value = writeRow.path === '' ? newState : getProperty(newState, writeRow.path);
-                        const newValue = writeRow.modifier(value);
+                        let newValue: any;
+                        try {
+                            newValue = writeRow.modifier(value);
+                        } catch (err) {
+                            writeRow.reject(err);
+                            continue;
+                        }
+                        validWrites.push(writeRow);
                         /**
                          * Here we have to clone the value because
                          * some storages like the memory storage
@@ -186,17 +206,22 @@ export class RxStateBase<T, Reactivity = unknown> {
                             v: clone(newValue)
                         });
                     }
-                    await this.collection.insert({
-                        id: nextId,
-                        sId: this._instanceId,
-                        ops
-                    });
-                    this._state = newState;
-                    this._ownEmits$.next(this._state);
+                    useWrites = validWrites;
+                    if (ops.length > 0) {
+                        await this.collection.insert({
+                            id: nextId,
+                            sId: this._instanceId,
+                            ops
+                        });
+                        this._state = newState;
+                        this._ownEmits$.next(this._state);
+                    }
+                    useWrites.forEach(writeRow => writeRow.resolve());
                     done = true;
                 } catch (err) {
                     if ((err as RxError).code !== 'CONFLICT') {
-                        throw err;
+                        useWrites.forEach(writeRow => writeRow.reject(err));
+                        return;
                     }
                     /**
                      * Yield to the event loop so that cross-instance
@@ -207,8 +232,7 @@ export class RxStateBase<T, Reactivity = unknown> {
                 }
             }
         });
-        // Keep the shared queue alive so a failing write does not block subsequent ones.
-        this._writeQueue = next.catch(() => { });
+        this._writeQueue = next;
         return next;
     }
 
