@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `cancel()`, `remove()`, `collection.close()` and `database.close()` never resolved on a replication with `live: false` while the pull or push handler kept failing",
+    "links": [],
+    "priority": 5
+}
