@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `RxReplicationState.sent$` emitted local writes on a pull-only replication (no `push` handler) although nothing was sent to the remote",
+    "links": [],
+    "priority": 4
+}

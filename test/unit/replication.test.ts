@@ -401,6 +401,44 @@ describe('replication.test.ts', () => {
 
             await localCollection.database.close();
         });
+        it('sent$ must not emit anything when the replication has no push handler', async () => {
+            const { localCollection, remoteCollection } = await getTestCollections({
+                local: 2,
+                remote: 2
+            });
+            const replicationState = replicateRxCollection<HumanWithTimestampDocumentType, any>({
+                collection: localCollection,
+                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                live: true,
+                pull: {
+                    handler: getPullHandler(remoteCollection)
+                }
+            });
+            ensureReplicationHasNoErrors(replicationState);
+
+            const sentDocs: WithDeleted<HumanWithTimestampDocumentType>[] = [];
+            replicationState.sent$.subscribe(d => sentDocs.push(d));
+
+            await replicationState.awaitInitialReplication();
+            await localCollection.insert(schemaObjects.humanWithTimestampData({ id: 'local-only' }));
+            await replicationState.awaitInSync();
+
+            // the pull direction still works
+            const docsLocal = await localCollection.find().exec();
+            assert.strictEqual(docsLocal.length, 5);
+
+            // nothing was sent to the remote
+            const docsRemote = await remoteCollection.find().exec();
+            assert.strictEqual(docsRemote.length, 2);
+            assert.deepStrictEqual(
+                sentDocs.map(d => d.id),
+                [],
+                'sent$ must not emit without a push handler'
+            );
+
+            await localCollection.database.close();
+            await remoteCollection.database.close();
+        });
         it('should not save pulled documents that do not match the schema', async () => {
             const amount = 5;
             const { localCollection, remoteCollection } = await getTestCollections({ local: 0, remote: amount });
