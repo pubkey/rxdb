@@ -274,6 +274,14 @@ export function isSelectorSatisfiedByIndex(
 
         const operationKeys = Object.keys(operation as any);
 
+        /**
+         * An object without operators is an equality comparison
+         * with the empty object, which only the query matcher can evaluate.
+         */
+        if (operationKeys.length === 0) {
+            return false;
+        }
+
         let lowerLogicOpCount = 0;
         let lastLowerLogicOp: string | undefined;
         let upperLogicOpCount = 0;
