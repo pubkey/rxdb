@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX calling `pause()` and then `start()` on a replication while a push with multiple batches is in flight marked the documents of a not sent batch as pushed, so they never reached the server",
+    "links": [],
+    "priority": 5
+}
