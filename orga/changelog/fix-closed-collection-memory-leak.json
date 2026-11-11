@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX memory leak where a closed or removed `RxCollection` and its cached documents stayed in memory until the `RxDatabase` was closed, because the document cache never unsubscribed from the database event stream and the collection getter on the database kept a reference to the first created collection instance",
+    "links": [],
+    "priority": 5
+}
