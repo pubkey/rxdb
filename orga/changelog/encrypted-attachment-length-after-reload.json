@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `RxAttachment.length` of an encrypted attachment (`attachments: { encrypted: true }`) showed the size of the cipher text instead of the size of the plain data after the document was loaded from the storage. The storage now stores the `length` of the attachment write data. Attachments that were stored before this fix keep the cipher text size as `length` until they are written again, their data is still decrypted correctly",
+    "links": [],
+    "priority": 5
+}

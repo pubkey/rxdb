@@ -540,6 +540,47 @@ describe('attachments.test.ts', () => {
             assert.strictEqual(data, insertData);
             c.database.close();
         });
+        it('should have the length of the plain data when the document is loaded from the storage', async () => {
+            const c = await createEncryptedAttachmentsCollection(1);
+            const doc = await c.findOne().exec(true);
+            const insertData = 'Milk, eggs, bread. '.repeat(50);
+            const attachment = await doc.putAttachment({
+                id: 'list.txt',
+                data: createBlob(insertData, 'text/plain'),
+                type: 'text/plain'
+            });
+            assert.strictEqual(attachment.length, insertData.length);
+
+            const db2 = await createRxDatabase<{ human: RxCollection<HumanDocumentType>; }>({
+                name: c.database.name,
+                password: c.database.password,
+                storage: getEncryptedStorage(),
+                multiInstance: true,
+                eventReduce: true,
+                ignoreDuplicate: true
+            });
+            const schemaJson = clone(schemas.human);
+            schemaJson.attachments = {
+                encrypted: true
+            };
+            const collections2 = await db2.addCollections({
+                human: {
+                    schema: schemaJson
+                }
+            });
+            const doc2 = await collections2.human.findOne(doc.primary).exec(true);
+            const attachment2 = ensureNotFalsy(doc2.getAttachment('list.txt'));
+            const data2 = await attachment2.getData();
+            assert.strictEqual(data2.size, insertData.length);
+            assert.strictEqual(attachment2.length, insertData.length);
+            assert.strictEqual(
+                doc2.toJSON(true)._attachments['list.txt'].length,
+                insertData.length
+            );
+
+            await db2.close();
+            await c.database.close();
+        });
         it('should be able to render an encrypted stored image attachment', async () => {
             if (isNode || isDeno || isBun) {
                 return;

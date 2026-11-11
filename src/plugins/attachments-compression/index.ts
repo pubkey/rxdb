@@ -167,6 +167,7 @@ export function wrappedAttachmentsCompressionStorage<Internals, InstanceCreation
                             const attachmentWriteData = attachment as RxAttachmentWriteData;
                             if (isCompressibleType(attachmentWriteData.type, compressibleTypes)) {
                                 attachmentWriteData.data = await compressBlob(mode, attachmentWriteData.data);
+                                attachmentWriteData.length = attachmentWriteData.data.size;
                                 /**
                                  * Prefix the digest to signal that this attachment is compressed.
                                  * This is intentional: the stored digest is 'c-' + hash(originalData),
