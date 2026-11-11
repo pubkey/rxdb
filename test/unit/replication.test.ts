@@ -49,6 +49,7 @@ import {
     requestIdlePromise,
     prepareQuery,
     addRxPlugin,
+    deepEqual,
     getLastCheckpointDoc,
     defaultConflictHandler
 } from '../../plugins/core/index.mjs';
@@ -69,7 +70,7 @@ import type {
     RxStorageDefaultCheckpoint,
     WithDeleted
 } from '../../plugins/core/index.mjs';
-import { firstValueFrom, map, Subject, timer } from 'rxjs';
+import { filter, firstValueFrom, map, Subject, timer } from 'rxjs';
 import type { HumanWithCompositePrimary, HumanWithTimestampDocumentType } from '../../src/plugins/test-utils/schema-objects.ts';
 import { RxDBAttachmentsPlugin } from '../../plugins/attachments/index.mjs';
 import { RxDBMigrationSchemaPlugin } from '../../plugins/migration-schema/index.mjs';
@@ -754,6 +755,95 @@ describe('replication.test.ts', () => {
 
             localCollection.database.close();
             remoteCollection.database.close();
+        });
+        it('should end on the newest master state when the master changes again while a push conflict is resolved', async () => {
+            const localCollection = await humansCollection.createHumanWithTimestamp(0, randomToken(10), false);
+            type ServerCheckpoint = { seq: number; };
+            const server = new Map<string, { doc: WithDeleted<TestDocType>; seq: number; }>();
+            let seq = 0;
+            const serverWrite = (doc: WithDeleted<TestDocType>) => server.set(doc.id, { doc, seq: ++seq });
+            const getServerDoc = (name: string): WithDeleted<TestDocType> => ({
+                id: 'x',
+                name,
+                age: 1,
+                updatedAt: 1001,
+                _deleted: false
+            });
+
+            serverWrite(getServerDoc('S1'));
+            serverWrite(Object.assign(getServerDoc('other'), { id: 'y' }));
+            await localCollection.insert({
+                id: 'x',
+                name: 'local',
+                age: 1,
+                updatedAt: 1001
+            });
+
+            /**
+             * The pull request reaches the server after the push was answered there.
+             * The push response reaches the client after the pulled documents have been processed,
+             * or after a bounded time when the pulled documents are held back until the push is done.
+             */
+            let firstPushAnswered: () => void = () => { };
+            const firstPushAnsweredPromise = new Promise<void>(res => firstPushAnswered = res);
+            const pullProcessedPromise = firstValueFrom(
+                localCollection.findOne('y').$.pipe(filter(doc => !!doc))
+            );
+            const pushedNames: string[] = [];
+
+            const replicationState = replicateRxCollection<TestDocType, ServerCheckpoint>({
+                collection: localCollection,
+                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                live: true,
+                pull: {
+                    batchSize: 10,
+                    handler: async (checkpoint, batchSize) => {
+                        await firstPushAnsweredPromise;
+                        const rows = Array.from(server.values())
+                            .sort((a, b) => a.seq - b.seq)
+                            .filter(row => row.seq > (checkpoint ? checkpoint.seq : 0))
+                            .slice(0, batchSize);
+                        const lastRow = lastOfArray(rows);
+                        return {
+                            documents: rows.map(row => row.doc),
+                            checkpoint: lastRow ? { seq: lastRow.seq } : checkpoint
+                        };
+                    }
+                },
+                push: {
+                    batchSize: 10,
+                    handler: async (rows) => {
+                        const conflicts: WithDeleted<TestDocType>[] = [];
+                        rows.forEach(row => {
+                            pushedNames.push(row.newDocumentState.name);
+                            const real = server.get(row.newDocumentState.id);
+                            if (real && !deepEqual(real.doc, row.assumedMasterState)) {
+                                conflicts.push(real.doc);
+                            } else {
+                                serverWrite(row.newDocumentState);
+                            }
+                        });
+                        if (pushedNames.length === 1) {
+                            // another client changes the document right after the push was answered
+                            serverWrite(getServerDoc('S2'));
+                            firstPushAnswered();
+                            await Promise.race([pullProcessedPromise, wait(200)]);
+                        }
+                        return conflicts;
+                    }
+                }
+            });
+            ensureReplicationHasNoErrors(replicationState);
+
+            await replicationState.awaitInSync();
+            replicationState.reSync();
+            await replicationState.awaitInSync();
+
+            const localDoc = await localCollection.findOne('x').exec(true);
+            assert.strictEqual(ensureNotFalsy(server.get('x')).doc.name, 'S2');
+            assert.strictEqual(localDoc.name, 'S2', 'pushed states: ' + pushedNames.join(', '));
+
+            localCollection.database.close();
         });
     });
     describe('other', () => {

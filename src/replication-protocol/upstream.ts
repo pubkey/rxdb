@@ -563,6 +563,11 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
                     success
                         .forEach(docData => {
                             const docId = (docData as any)[state.primaryPath];
+                            /**
+                             * The forkInstance can set its own revision on the write,
+                             * so the marker must contain the revision that was stored.
+                             */
+                            conflictWriteMeta[docId].document.isResolvedConflict = docData._rev;
                             useMetaWrites.push(
                                 conflictWriteMeta[docId]
                             );

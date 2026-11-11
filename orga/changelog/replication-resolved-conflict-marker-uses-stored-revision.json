@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX replication: a resolved push conflict was not pushed again because the `isResolvedConflict` marker did not contain the revision that the collection stored. When the master changed again while the conflict was resolved, the client stayed on the outdated master state and reported in-sync",
+    "links": [],
+    "priority": 5
+}
