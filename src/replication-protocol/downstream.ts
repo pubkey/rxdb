@@ -104,10 +104,16 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
                     if (innerTaskWithTime.task === 'RESYNC') {
                         if (useTasks.length === 0) {
                             useTasks.push(innerTaskWithTime.task);
-                            break;
                         } else {
-                            break;
+                            /**
+                             * A RESYNC cannot be processed together with the
+                             * stream events that came in before it.
+                             * It stays in the openTasks so that the next
+                             * run of the queue processes it.
+                             */
+                            openTasks.unshift(innerTaskWithTime);
                         }
+                        break;
                     }
 
                     useTasks.push(innerTaskWithTime.task);
