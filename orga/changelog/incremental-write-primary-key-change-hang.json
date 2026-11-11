@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `incrementalPatch()`, `incrementalModify()` and `incrementalUpdate()` never settled and caused an unhandled rejection when the write changed the primary key of the document (without the dev-mode plugin, or from a `preSave` hook). The call now rejects with `DOC9` and no second document is written",
+    "links": [],
+    "priority": 4
+}
