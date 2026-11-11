@@ -240,6 +240,51 @@ describe('cleanup.test.js', () => {
 
             await db.close();
         });
+        it('must not purge a re-inserted document when its tombstone was written in the same bulk write as other tombstones', async () => {
+            const db = await createRxDatabase({
+                name: randomToken(10),
+                storage: config.storage.getStorage()
+            });
+            const cols = await db.addCollections({
+                humans: {
+                    schema: schemas.human
+                }
+            });
+            const collection: RxCollection<HumanDocumentType> = cols.humans;
+
+            const ids = ['a', 'b', 'c', 'd'];
+            const docsData = ids.map(id => schemaObjects.humanData(id));
+            await collection.bulkInsert(docsData);
+
+            // one bulk write, so all tombstones share the same _meta.lwt
+            const removeResult = await collection.bulkRemove(ids);
+            assert.strictEqual(removeResult.success.length, ids.length);
+            assert.strictEqual(removeResult.error.length, 0);
+
+            await collection.insert(docsData[0]);
+            await collection.cleanup(0);
+
+            const byId = await collection.findOne('a').exec();
+            assert.ok(byId, 'findOne() must return the live document after the cleanup');
+            const all = await collection.find().exec();
+            assert.deepStrictEqual(all.map(d => d.passportId), ['a']);
+            const bySelector = await collection.find({
+                selector: { firstName: docsData[0].firstName }
+            }).exec();
+            assert.deepStrictEqual(bySelector.map(d => d.passportId), ['a']);
+
+            // a second run must not throw
+            await collection.cleanup(0);
+
+            // the purged tombstones must not block new writes and later cleanups
+            await collection.bulkInsert(docsData.slice(1));
+            await collection.bulkRemove(['a', 'c']);
+            await collection.cleanup(0);
+            const remaining = await collection.find({ sort: [{ passportId: 'asc' }] }).exec();
+            assert.deepStrictEqual(remaining.map(d => d.passportId), ['b', 'd']);
+
+            await db.close();
+        });
         it('minimumDeletedTime not respected', async () => {
             const dbName = 'test-cleanup-' + Date.now() + '-' + randomToken(10);
             try {
