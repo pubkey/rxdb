@@ -1042,6 +1042,68 @@ describe('rx-document.test.js', () => {
             sub.unsubscribe();
             db.close();
         });
+        it('should reject incremental writes on a deleted document like the non-incremental methods', async () => {
+            const c = await humansCollection.create(1);
+            const staleDoc = await c.findOne().exec(true);
+            const removeEvents: string[] = [];
+            const sub = c.remove$.subscribe(event => removeEvents.push(event.documentId));
+            let removeHookRuns = 0;
+            c.postRemove(() => {
+                removeHookRuns = removeHookRuns + 1;
+            }, false);
+
+            const deletedDoc = await staleDoc.remove();
+            assert.strictEqual(deletedDoc.deleted, true);
+
+            await AsyncTestUtil.assertThrows(
+                () => deletedDoc.patch({ firstName: 'foobar' }),
+                'RxError',
+                'DOC11'
+            );
+            await AsyncTestUtil.assertThrows(
+                () => deletedDoc.incrementalPatch({ firstName: 'foobar' }),
+                'RxError',
+                'DOC11'
+            );
+            await AsyncTestUtil.assertThrows(
+                () => deletedDoc.incrementalModify(docData => {
+                    docData.firstName = 'foobar';
+                    return docData;
+                }),
+                'RxError',
+                'DOC11'
+            );
+            // a stale RxDocument instance that still has the non-deleted state
+            assert.strictEqual(staleDoc.deleted, false);
+            await AsyncTestUtil.assertThrows(
+                () => staleDoc.incrementalPatch({ firstName: 'foobar' }),
+                'RxError',
+                'DOC11'
+            );
+            await AsyncTestUtil.assertThrows(
+                () => deletedDoc.remove(),
+                'RxError',
+                'DOC13'
+            );
+            await AsyncTestUtil.assertThrows(
+                () => deletedDoc.incrementalRemove(),
+                'RxError',
+                'DOC13'
+            );
+            await AsyncTestUtil.assertThrows(
+                () => staleDoc.incrementalRemove(),
+                'RxError',
+                'DOC13'
+            );
+
+            await wait(isFastMode() ? 20 : 100);
+            assert.strictEqual(deletedDoc.getLatest().firstName, staleDoc.firstName);
+            assert.deepStrictEqual(removeEvents, [staleDoc.primary]);
+            assert.strictEqual(removeHookRuns, 1);
+
+            sub.unsubscribe();
+            c.database.close();
+        });
     });
     describe('Proxy', () => {
         describe('get', () => {

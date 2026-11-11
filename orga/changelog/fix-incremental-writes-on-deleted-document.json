@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `incrementalModify()`, `incrementalPatch()`, `incrementalUpdate()` and `incrementalRemove()` wrote to an already deleted document and emitted additional `DELETE` events instead of rejecting with `DOC11`/`DOC13` like `modify()`, `patch()` and `remove()`",
+    "links": [],
+    "priority": 5
+}
