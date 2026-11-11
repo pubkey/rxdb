@@ -258,7 +258,20 @@ function deepClone<T>(src: T | DeepReadonlyObject<T>): T {
     const dest: any = {};
     // eslint-disable-next-line guard-for-in
     for (const key in src) {
-        dest[key] = deepClone(src[key]);
+        if (key === '__proto__') {
+            /**
+             * Assigning to '__proto__' would call the prototype setter
+             * instead of creating an own property.
+             */
+            Object.defineProperty(dest, key, {
+                value: deepClone(src[key]),
+                enumerable: true,
+                writable: true,
+                configurable: true
+            });
+        } else {
+            dest[key] = deepClone(src[key]);
+        }
     }
     return dest;
 }
