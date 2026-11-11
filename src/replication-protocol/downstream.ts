@@ -27,6 +27,7 @@ import {
     PROMISE_RESOLVE_VOID
 } from '../plugins/utils/index.ts';
 import {
+    ensureInitialCheckpoint,
     getLastCheckpointDoc,
     setCheckpoint
 } from './checkpoint.ts';
@@ -54,14 +55,11 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
         state.input.initialCheckpoint &&
         state.input.initialCheckpoint.downstream
     ) {
-        const checkpointDoc = await getLastCheckpointDoc(state, 'down');
-        if (!checkpointDoc) {
-            await setCheckpoint(
-                state,
-                'down',
-                state.input.initialCheckpoint.downstream
-            );
-        }
+        await ensureInitialCheckpoint(
+            state,
+            'down',
+            state.input.initialCheckpoint.downstream
+        );
     }
 
     const identifierHash = await state.input.hashFunction(state.input.identifier);

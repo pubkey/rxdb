@@ -25,6 +25,7 @@ import {
     PROMISE_RESOLVE_FALSE
 } from '../plugins/utils/index.ts';
 import {
+    ensureInitialCheckpoint,
     getLastCheckpointDoc,
     setCheckpoint
 } from './checkpoint.ts';
@@ -57,14 +58,11 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
         state.input.initialCheckpoint &&
         state.input.initialCheckpoint.upstream
     ) {
-        const checkpointDoc = await getLastCheckpointDoc(state, 'up');
-        if (!checkpointDoc) {
-            await setCheckpoint(
-                state,
-                'up',
-                state.input.initialCheckpoint.upstream
-            );
-        }
+        await ensureInitialCheckpoint(
+            state,
+            'up',
+            state.input.initialCheckpoint.upstream
+        );
     }
 
     const replicationHandler = state.input.replicationHandler;

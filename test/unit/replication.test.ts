@@ -1258,6 +1258,81 @@ describe('replication.test.ts', () => {
             localCollection.database.close();
             remoteCollection.database.close();
         });
+        (['pull', 'push'] as const).forEach(direction => {
+            it('should emit on error$ and retry when reading the checkpoint for the initial ' + direction + ' checkpoint fails', async () => {
+                const innerStorage = config.storage.getStorage();
+                let failReads = 1;
+                const storage: RxStorage<any, any> = {
+                    name: innerStorage.name,
+                    rxdbVersion: innerStorage.rxdbVersion,
+                    async createStorageInstance(params) {
+                        const instance = await innerStorage.createStorageInstance(params);
+                        if (params.collectionName.startsWith('rx-replication-meta-')) {
+                            const findDocumentsById = instance.findDocumentsById.bind(instance);
+                            instance.findDocumentsById = (ids, withDeleted) => {
+                                if (failReads > 0) {
+                                    failReads--;
+                                    return Promise.reject(new Error('checkpoint read failed'));
+                                }
+                                return findDocumentsById(ids, withDeleted);
+                            };
+                        }
+                        return instance;
+                    }
+                };
+                const database = await createRxDatabase({
+                    name: randomToken(10),
+                    storage
+                });
+                await database.addCollections({
+                    humans: {
+                        schema: schemas.humanWithTimestamp
+                    }
+                });
+                const localCollection: RxCollection<TestDocType> = database.humans;
+                const { remoteCollection } = await getTestCollections({ local: 0, remote: 0 });
+
+                let lastCheckpoint: any;
+                const checkpointCollection = direction === 'pull' ? remoteCollection : localCollection;
+                checkpointCollection.checkpoint$.subscribe(checkpoint => lastCheckpoint = checkpoint);
+                await checkpointCollection.insert(schemaObjects.humanWithTimestampData());
+                assert.ok(lastCheckpoint, 'must have last checkpoint');
+
+                const replicationState = replicateRxCollection({
+                    collection: localCollection,
+                    replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                    live: true,
+                    pull: {
+                        handler: getPullHandler(remoteCollection),
+                        initialCheckpoint: direction === 'pull' ? lastCheckpoint : undefined
+                    },
+                    push: {
+                        handler: getPushHandler(remoteCollection),
+                        initialCheckpoint: direction === 'push' ? lastCheckpoint : undefined
+                    }
+                });
+                const errors: (RxError | RxTypeError)[] = [];
+                replicationState.error$.subscribe(err => errors.push(err));
+
+                await replicationState.awaitInitialReplication();
+
+                assert.strictEqual(failReads, 0);
+                assert.strictEqual(errors.length, 1);
+                assert.strictEqual(errors[0].code, direction === 'pull' ? 'RC_PULL' : 'RC_PUSH');
+
+                /**
+                 * The initial checkpoint must still be respected,
+                 * so the document that was written before it is not replicated.
+                 */
+                const localDocs = await localCollection.find().exec();
+                const remoteDocs = await remoteCollection.find().exec();
+                assert.strictEqual(localDocs.length, direction === 'pull' ? 0 : 1);
+                assert.strictEqual(remoteDocs.length, direction === 'pull' ? 1 : 0);
+
+                await database.close();
+                await remoteCollection.database.close();
+            });
+        });
     });
     describe('RxReplicationState.remove()', () => {
         it('should remove the replication state and start the replication from scratch', async () => {
