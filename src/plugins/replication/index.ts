@@ -708,10 +708,16 @@ export class RxReplicationState<RxDocType, CheckpointType> {
 
     async cancel() {
         this.startQueue = this.startQueue.catch(() => { }).then(async () => {
-            await this._cancel();
+            await this._cancel(this.removeRequested);
         });
         await this.startQueue;
     }
+
+    /**
+     * True as soon as remove() was called.
+     * The meta instance must then stay open until remove() has deleted its data.
+     */
+    private removeRequested = false;
 
     async _cancel(doNotClose = false): Promise<any> {
         if (this.isStopped()) {
@@ -758,6 +764,12 @@ export class RxReplicationState<RxDocType, CheckpointType> {
     }
 
     async remove() {
+        /**
+         * Replication plugins overwrite cancel() to release their own resources
+         * like sockets or change streams, so remove() has to go through cancel().
+         */
+        this.removeRequested = true;
+        await this.cancel();
         this.startQueue = this.startQueue.then(async () => {
             const metaInfo = await this.metaInfoPromise;
             await this._cancel(true);

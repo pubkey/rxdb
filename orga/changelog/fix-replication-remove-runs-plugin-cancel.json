@@ -1,0 +1,5 @@
+{
+    "text": "FIX `RxReplicationState.remove()` did not run the `cancel()` of the replication plugins, so the GraphQL WebSocket, the Firestore snapshot listener, the MongoDB change stream and other live stream resources stayed open after the replication state was removed",
+    "links": [],
+    "priority": 5
+}

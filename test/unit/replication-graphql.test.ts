@@ -1722,6 +1722,49 @@ describe('replication-graphql.test.ts', () => {
                 server.close();
                 c.database.close();
             });
+            it('should close the websocket when the replication state is removed', async () => {
+                const capturedWSStates: string[] = [];
+                const [c, server] = await Promise.all([
+                    humansCollection.createHumanWithTimestamp(0),
+                    SpawnServer.spawn()
+                ]);
+                const replicationState = replicateGraphQL({
+                    replicationIdentifier: randomToken(10),
+                    collection: c,
+                    url: server.url,
+                    pull: {
+                        batchSize,
+                        queryBuilder: pullQueryBuilder,
+                        streamQueryBuilder: pullStreamQueryBuilder,
+                        wsOptions: {
+                            on: {
+                                'connected': () => {
+                                    capturedWSStates.push('connected');
+                                },
+                                'closed': () => {
+                                    capturedWSStates.push('closed');
+                                }
+                            }
+                        }
+                    },
+                    live: true,
+                    deletedField: 'deleted'
+                });
+                ensureReplicationHasNoErrors(replicationState);
+                await replicationState.awaitInitialReplication();
+                await waitUntil(() => capturedWSStates.includes('connected'));
+
+                await replicationState.remove();
+                assert.strictEqual(replicationState.isStopped(), true);
+                await waitUntil(() => capturedWSStates.includes('closed'), 2000);
+
+                // a cancel() after the remove() must still work
+                await replicationState.cancel();
+                assert.deepStrictEqual(capturedWSStates, ['connected', 'closed']);
+
+                server.close();
+                c.database.close();
+            });
             it('should respect the pull.responseModifier', async () => {
                 const checkpointIterationModeAmount = 5;
                 const eventObservationModeAmount = 3;
