@@ -572,10 +572,9 @@ export class RxReplicationState<RxDocType, CheckpointType> {
      * Returns a promise that resolves when the given RxDocument instance
      * was successfully pushed to the server.
      *
-     * It resolves either when the document is emitted on sent$ (the live
-     * push case) or, for documents that were already pushed before this was
-     * called, when the assumed master state in the replication meta instance
-     * already contains the given document state.
+     * It resolves when the assumed master state in the replication meta
+     * instance contains the given document state. This is checked when
+     * the method is called and each time the document is emitted on sent$.
      *
      * If the document was overwritten by a newer local write before it could
      * be pushed, the promise resolves as soon as any later state of the
@@ -658,43 +657,58 @@ export class RxReplicationState<RxDocType, CheckpointType> {
 
         return new Promise<void>((resolve, reject) => {
             /**
-             * Every successfully pushed document is emitted on sent$,
-             * so an emission with our primary key proves that this document
-             * reached the master.
+             * Unsubscribes and removes the cancel handler,
+             * so that settled calls do not pile up in onCancel.
+             */
+            const cleanup = () => {
+                sub.unsubscribe();
+                const index = this.onCancel.indexOf(onCancel);
+                if (index !== -1) {
+                    this.onCancel.splice(index, 1);
+                }
+            };
+            const resolveIfPushed = () => {
+                isAlreadyPushed().then(pushed => {
+                    if (pushed) {
+                        cleanup();
+                        resolve();
+                    }
+                }).catch((err: Error) => {
+                    cleanup();
+                    reject(err);
+                });
+            };
+            /**
+             * Every successfully pushed document is emitted on sent$.
+             * An emission with our primary key only proves that some state
+             * of the document reached the master, which can be an older state
+             * than the given one. So the emission is only used as a signal
+             * to compare the given state with the assumed master state again.
              */
             const sub = this.sent$.subscribe({
                 next: (sentDocData) => {
                     if ((sentDocData as any)[primaryPath] === docId) {
-                        sub.unsubscribe();
-                        resolve();
+                        resolveIfPushed();
                     }
                 }
             });
-            this.onCancel.push(() => {
+            /**
+             * Run a final check on cancel so that a document which was pushed
+             * in the last cycle before a (non-live) cancel still resolves.
+             * If it was not pushed before the cancel, the promise stays
+             * pending, which matches the behavior of awaitInitialReplication().
+             */
+            const onCancel = () => {
                 sub.unsubscribe();
-                /**
-                 * Run a final check so that a document which was pushed
-                 * in the last cycle before a (non-live) cancel still resolves.
-                 * If it was not pushed before the cancel, the promise stays
-                 * pending, which matches the behavior of awaitInitialReplication().
-                 */
-                isAlreadyPushed().then(pushed => {
-                    if (pushed) {
-                        resolve();
-                    }
-                }).catch(reject);
-            });
+                resolveIfPushed();
+            };
+            this.onCancel.push(onCancel);
             /**
              * Run the initial check after subscribing so that documents that
              * were already pushed resolve immediately, without missing a
              * sent$ emission that could happen between check and subscribe.
              */
-            isAlreadyPushed().then(pushed => {
-                if (pushed) {
-                    sub.unsubscribe();
-                    resolve();
-                }
-            }).catch(reject);
+            resolveIfPushed();
         });
     }
 
