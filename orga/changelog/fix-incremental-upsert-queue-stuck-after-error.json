@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `RxCollection.incrementalUpsert()` rejected all later calls for the same primary key with the old error after one call had failed, and it kept one queue entry per primary key in memory forever",
+    "links": [],
+    "priority": 5
+}
