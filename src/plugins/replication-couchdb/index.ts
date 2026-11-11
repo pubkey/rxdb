@@ -290,15 +290,32 @@ export function replicateCouchDB<RxDocType>(
     /**
      * Use long polling to get live changes for the pull.stream$
      */
-    if (options.live && options.pull) {
+    if (replicationState.live && options.pull) {
         const startBefore = replicationState.start.bind(replicationState);
+        const pauseBefore = replicationState.pause.bind(replicationState);
+        /**
+         * Only one long polling loop must run at the same time.
+         * The loop ends when the replication is paused
+         * and a new loop is started on the next start() call.
+         */
+        let longPollRunning = false;
+        let longPollPaused = false;
+        replicationState.pause = () => {
+            longPollPaused = true;
+            return pauseBefore();
+        };
         replicationState.start = () => {
+            longPollPaused = false;
+            if (longPollRunning) {
+                return startBefore();
+            }
+            longPollRunning = true;
             let since: string | number = 'now';
             const batchSize = options.pull && options.pull.batchSize ? options.pull.batchSize : 20;
 
             (async () => {
                 let lastRequestStartTime = now();
-                while (!replicationState.isStopped()) {
+                while (!replicationState.isStopped() && !longPollPaused) {
                     const url = options.url + '_changes?' + mergeUrlQueryParams({
                         style: 'all_docs',
                         feed: 'longpoll',
@@ -360,6 +377,7 @@ export function replicateCouchDB<RxDocType>(
                         }
                     });
                 }
+                longPollRunning = false;
             })();
             return startBefore();
         };
