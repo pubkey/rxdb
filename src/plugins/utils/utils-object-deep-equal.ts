@@ -23,8 +23,22 @@ export function deepEqual(a: any, b: any): boolean {
 
 
         if (a.constructor === RegExp) return a.source === b.source && a.flags === b.flags;
-        if (a.valueOf !== Object.prototype.valueOf) return a.valueOf() === b.valueOf();
-        if (a.toString !== Object.prototype.toString) return a.toString() === b.toString();
+        /**
+         * Plain data objects can have fields named 'valueOf' or 'toString'
+         * that contain non-function values, these must be compared like any other field.
+         */
+        const valueOf = a.valueOf;
+        if (
+            valueOf !== Object.prototype.valueOf &&
+            typeof valueOf === 'function' &&
+            typeof b.valueOf === 'function'
+        ) return a.valueOf() === b.valueOf();
+        const toString = a.toString;
+        if (
+            toString !== Object.prototype.toString &&
+            typeof toString === 'function' &&
+            typeof b.toString === 'function'
+        ) return a.toString() === b.toString();
 
         const keys = Object.keys(a);
         length = keys.length;

@@ -23,7 +23,8 @@ import {
     first,
 } from 'rxjs/operators';
 import type {
-    RxChangeEvent
+    RxChangeEvent,
+    RxCollection
 } from '../../plugins/core/index.mjs';
 import { firstValueFrom } from 'rxjs';
 
@@ -299,6 +300,81 @@ describe('reactive-document.test.js', () => {
 
             sub.unsubscribe();
             await c.database.close();
+        });
+        it('get$() on a nested object with fields named toString and valueOf should emit the changes', async () => {
+            type DocType = {
+                id: string;
+                firstName: string;
+                nested: {
+                    toString: string;
+                    valueOf: number;
+                };
+            };
+            const db = await createRxDatabase({
+                name: randomToken(10),
+                storage: config.storage.getStorage()
+            });
+            const cols = await db.addCollections<{ docs: RxCollection<DocType>; }>({
+                docs: {
+                    schema: {
+                        version: 0,
+                        primaryKey: 'id',
+                        type: 'object',
+                        properties: {
+                            id: {
+                                type: 'string',
+                                maxLength: 100
+                            },
+                            firstName: {
+                                type: 'string'
+                            },
+                            nested: {
+                                type: 'object',
+                                properties: {
+                                    toString: {
+                                        type: 'string'
+                                    },
+                                    valueOf: {
+                                        type: 'number'
+                                    }
+                                }
+                            }
+                        },
+                        required: ['id', 'firstName', 'nested']
+                    }
+                }
+            });
+            const doc = await cols.docs.insert({
+                id: 'foobar',
+                firstName: 'alice',
+                nested: {
+                    toString: 'a',
+                    valueOf: 1
+                }
+            });
+
+            const emitted: DocType['nested'][] = [];
+            const errors: unknown[] = [];
+            const sub = doc.get$('nested').subscribe({
+                next: (val: DocType['nested']) => emitted.push(val),
+                error: (err: unknown) => errors.push(err)
+            });
+            await AsyncTestUtil.waitUntil(() => emitted.length === 1);
+
+            await doc.incrementalPatch({ nested: { toString: 'b', valueOf: 1 } });
+            await doc.incrementalPatch({ firstName: 'bob' });
+            await doc.incrementalPatch({ nested: { toString: 'b', valueOf: 2 } });
+            await promiseWait(100);
+
+            assert.deepStrictEqual(errors, []);
+            assert.deepStrictEqual(emitted, [
+                { toString: 'a', valueOf: 1 },
+                { toString: 'b', valueOf: 1 },
+                { toString: 'b', valueOf: 2 }
+            ]);
+
+            sub.unsubscribe();
+            await db.close();
         });
     });
 });

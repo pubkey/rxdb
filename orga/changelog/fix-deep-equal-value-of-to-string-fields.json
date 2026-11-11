@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `deepEqual()` threw `a.valueOf is not a function` when a compared object had a data field named `valueOf` or `toString`, which made `RxDocument.get$()` emit an error for nested objects with such fields",
+    "links": [],
+    "priority": 4
+}

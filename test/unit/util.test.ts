@@ -32,7 +32,8 @@ import {
     flattenObject,
     getFromObjectOrThrow,
     createPromiseWithResolvers,
-    promiseWaitSkippable
+    promiseWaitSkippable,
+    deepEqual
 } from '../../plugins/core/index.mjs';
 import config from './config.ts';
 
@@ -151,6 +152,19 @@ describe('util.test.js', () => {
         });
         it('should throw for missing keys', () => {
             assert.throws(() => getFromObjectOrThrow({ a: 1 }, 'b'));
+        });
+    });
+    describe('.deepEqual()', () => {
+        it('should compare plain objects that have fields named toString or valueOf', () => {
+            assert.strictEqual(deepEqual({ toString: 'a' }, { toString: 'a' }), true);
+            assert.strictEqual(deepEqual({ toString: 'a' }, { toString: 'b' }), false);
+            assert.strictEqual(deepEqual({ valueOf: 1 }, { valueOf: 1 }), true);
+            assert.strictEqual(deepEqual({ valueOf: 1 }, { valueOf: 2 }), false);
+            assert.strictEqual(deepEqual({ valueOf: 1, foo: 'a' }, { valueOf: 1, foo: 'b' }), false);
+        });
+        it('should still compare by valueOf() when it is a function', () => {
+            assert.strictEqual(deepEqual(new Date(5), new Date(5)), true);
+            assert.strictEqual(deepEqual(new Date(5), new Date(6)), false);
         });
     });
     describe('.recursiveDeepCopy()', () => {
