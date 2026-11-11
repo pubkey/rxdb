@@ -221,10 +221,20 @@ export function getStringLengthOfIndexNumber(
     const valueSpan = maximum - minimum;
     const nonDecimals = valueSpan.toString().length;
 
-    const multipleOfParts = multipleOf.toString().split('.');
+    /**
+     * JavaScript prints small numbers in exponent notation,
+     * like 0.00000001 as '1e-8' or 0.00000025 as '2.5e-7'.
+     * So the amount of decimals is the amount of decimals
+     * of the mantissa minus the exponent.
+     */
+    const multipleOfParts = multipleOf.toString().split('e');
+    const mantissaParts = multipleOfParts[0].split('.');
     let decimals = 0;
+    if (mantissaParts.length > 1) {
+        decimals = mantissaParts[1].length;
+    }
     if (multipleOfParts.length > 1) {
-        decimals = multipleOfParts[1].length;
+        decimals = Math.max(0, decimals - parseInt(multipleOfParts[1], 10));
     }
     return {
         minimum,

@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX indexed number fields with a `multipleOf` of `0.0000001` or smaller lost their decimals in the index string because the `multipleOf` is printed in exponent notation (`1e-7`), which led to wrong sort order and wrong `$gt`/`$lt` results on storages that use the custom index strings. Data that was stored with such a schema on a persistent storage has to be migrated to a new schema version to rebuild the index.",
+    "links": [],
+    "priority": 5
+}
