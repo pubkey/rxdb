@@ -1,5 +1,5 @@
 import assert from 'assert';
-import { wait, waitUntil } from 'async-test-util';
+import { assertThrows, wait, waitUntil } from 'async-test-util';
 
 import config from './config.ts';
 import {
@@ -237,6 +237,45 @@ describe('cleanup.test.js', () => {
 
             const latest = collection._docCache.getLatestDocumentDataIfExists(docData.passportId);
             assert.strictEqual(ensureNotFalsy(latest)._deleted, false);
+
+            await db.close();
+        });
+        it('must throw a CONFLICT when an outdated document instance writes to a document that was re-inserted after the cleanup', async () => {
+            const db = await createRxDatabase({
+                name: randomToken(10),
+                storage: config.storage.getStorage()
+            });
+            const cols = await db.addCollections({
+                humans: {
+                    schema: schemas.human
+                }
+            });
+            const collection: RxCollection<HumanDocumentType> = cols.humans;
+
+            const docData = schemaObjects.humanData('foobar');
+            docData.firstName = 'old';
+            const oldDoc = await collection.insert(docData);
+            await oldDoc.remove();
+            await collection.cleanup(0);
+
+            const newDoc = await collection.insert(Object.assign({}, docData, { firstName: 'new' }));
+            assert.strictEqual(newDoc.firstName, 'new');
+
+            await assertThrows(
+                () => oldDoc.patch({ age: 99 }),
+                'RxError',
+                'CONFLICT'
+            );
+
+            const stored = await collection.findOne(docData.passportId).exec(true);
+            assert.strictEqual(stored.firstName, 'new');
+            assert.strictEqual(stored.age, docData.age);
+
+            // writes on the current document instance still work
+            await stored.patch({ age: 50 });
+            const afterPatch = await collection.findOne(docData.passportId).exec(true);
+            assert.strictEqual(afterPatch.firstName, 'new');
+            assert.strictEqual(afterPatch.age, 50);
 
             await db.close();
         });

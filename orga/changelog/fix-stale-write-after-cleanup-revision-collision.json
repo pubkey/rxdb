@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX a non-incremental write (`patch()`, `modify()`, `update()`, `remove()`) on an outdated `RxDocument` instance overwrote a new document with the old data when the old document was removed, purged by `cleanup()` and inserted again with the same primary key. The new document starts again at the first revision, so the conflict check of the storages now also compares `_meta.lwt` and the write throws a `CONFLICT` error",
+    "links": [],
+    "priority": 5
+}
