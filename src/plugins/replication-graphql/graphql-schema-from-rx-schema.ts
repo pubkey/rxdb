@@ -1,6 +1,7 @@
 import { getGraphqlSchemaFromJsonSchema } from 'get-graphql-from-jsonschema';
 
 import { fillWithDefaultSettings } from '../../rx-schema-helper.ts';
+import { newRxError } from '../../rx-error.ts';
 
 import type { RxJsonSchema } from '../../types/index.d.ts';
 import { clone, ensureNotFalsy, flatClone, ucfirst } from '../../plugins/utils/index.ts';
@@ -85,6 +86,9 @@ export function graphQLSchemaFromRxSchema(
 
         // input
         const inputSchema = stripKeysFromSchema(schema, ensureNotFalsy(collectionSettings.ignoreInputKeys));
+        const outputSchema = stripKeysFromSchema(schema, ensureNotFalsy(collectionSettings.ignoreOutputKeys));
+        ensureSchemaHasGraphQLTypes(collectionName, inputSchema);
+        ensureSchemaHasGraphQLTypes(collectionName, outputSchema);
 
         const inputGraphQL = getGraphqlSchemaFromJsonSchema({
             rootName: collectionNameInput,
@@ -163,7 +167,6 @@ export function graphQLSchemaFromRxSchema(
         }
 
         // output
-        const outputSchema = stripKeysFromSchema(schema, ensureNotFalsy(collectionSettings.ignoreOutputKeys));
         const outputGraphQL = getGraphqlSchemaFromJsonSchema({
             rootName: collectionName,
             schema: outputSchema as any,
@@ -326,6 +329,38 @@ function stripKeysFromSchema<T>(schema: RxJsonSchema<T>, strip: string[]): RxJso
         delete cloned.properties[key];
     });
     return cloned;
+}
+
+/**
+ * A GraphQL type must list all of its fields.
+ * Therefore an object without 'properties' and an array without 'items'
+ * have no GraphQL type that could be generated from the JSON schema.
+ */
+function ensureSchemaHasGraphQLTypes(
+    collectionName: string,
+    schemaPart: any,
+    path: string[] = []
+) {
+    const types: string[] = Array.isArray(schemaPart.type) ? schemaPart.type : [schemaPart.type];
+    const isArray = types.includes('array');
+    const isObject = !isArray && types.includes('object');
+    const items = schemaPart.items;
+    if (
+        (isObject && !schemaPart.properties) ||
+        (isArray && (!items || typeof items !== 'object' || Array.isArray(items)))
+    ) {
+        throw newRxError('GQL5', {
+            collection: collectionName,
+            field: path.join('.')
+        });
+    }
+    if (isArray) {
+        ensureSchemaHasGraphQLTypes(collectionName, items, path);
+    } else if (isObject) {
+        Object.entries(schemaPart.properties).forEach(([key, subSchema]) => {
+            ensureSchemaHasGraphQLTypes(collectionName, subSchema, path.concat(key));
+        });
+    }
 }
 
 /**

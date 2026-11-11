@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `graphQLSchemaFromRxSchema()` threw a plain error of the `get-graphql-from-jsonschema` dependency (or a `TypeError`) when the schema contains an object without `properties` or an array without `items`. It now throws the RxError `GQL5` that names the collection and the field path.",
+    "links": [],
+    "priority": 4
+}

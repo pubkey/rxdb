@@ -1233,6 +1233,12 @@ export const ERROR_MESSAGES = {
         docs: 'https://rxdb.info/replication-graphql.html?console=errors&code=GQL3'
     },
     // removed in 13.0.0, use RC_PUSH instead - GQL4: 'GraphQL replication: unknown errors occurred in replication push - see innerErrors for more details',
+    GQL5: {
+        message: 'graphQLSchemaFromRxSchema(): the field has no GraphQL type because it is an object without "properties" or an array without a single "items" schema',
+        cause: 'A GraphQL type must list all of its fields. A free-form object or an array without a schema for its items cannot be converted.',
+        fix: 'Define "properties" for the object or "items" for the array, or exclude the field with ignoreInputKeys and ignoreOutputKeys and write that part of the GraphQL schema by hand.',
+        docs: 'https://rxdb.info/replication-graphql.html?console=errors&code=GQL5'
+    },
 
     // plugins/crdt/
     CRDT1: {
