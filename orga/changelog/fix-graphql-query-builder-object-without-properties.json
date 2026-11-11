@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `pullQueryBuilderFromRxSchema()`, `pullStreamBuilderFromRxSchema()` and `pushQueryBuilderFromRxSchema()` of the GraphQL replication created a query with an empty selection set (`meta { }`), which is a GraphQL syntax error, when the schema contains an object field without `properties`. Such a field is now selected as a leaf field",
+    "links": [],
+    "priority": 4
+}
