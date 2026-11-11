@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `RxDatabase.requestIdlePromise(timeout)` ignored the documented timeout argument and only resolved when the database became idle",
+    "links": [],
+    "priority": 4
+}
