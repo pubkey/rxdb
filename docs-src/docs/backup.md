@@ -95,12 +95,28 @@ const subscription = backupState.writeEvents$
     collectionName: 'humans',
     documentId: 'foobar',
     files: [
-        '/my-backup-folder/foobar/document.json'
+        '/my-backup-folder/humans/foobar/document.json'
     ],
     deleted: false
 }
 */
 ```
+
+## Folder Layout
+
+Each collection has its own folder inside the backup directory, and each document is written into a folder inside its collection folder. Documents of different collections can have the same primary key, so with this layout their backups do not overwrite each other. Attachments are written as raw bytes, so binary data like images is stored unchanged.
+
+```
+/my-backup-folder/
+    backup_meta.json
+    <collectionName>/
+        <primaryKey>/
+            document.json
+            attachments/
+                <attachmentId>
+```
+
+Older RxDB versions (up to `17.6.0`) wrote the document folders directly into the backup directory, without the collection folder. These old folders are not moved or removed. When you continue a backup in such a directory, only the documents that change after the last checkpoint are written to the new location. Start with an empty directory to get a complete backup in the new layout.
 
 ## Folder Names
 

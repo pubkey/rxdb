@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX the backup plugin corrupted binary attachments by writing them as utf-8 text, and documents with the same primary key in different collections overwrote each other's backup. Attachments are now written as raw bytes and document folders are written to `<directory>/<collectionName>/<primaryKey>/`. Backup directories written by older versions keep their old document folders, use an empty directory to get a full backup in the new layout",
+    "links": [],
+    "priority": 6
+}
