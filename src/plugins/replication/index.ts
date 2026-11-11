@@ -54,6 +54,7 @@ import {
     cancelRxStorageReplication,
     getAssumedMasterState,
     getRxReplicationMetaInstanceSchema,
+    MASTER_WRITE_NOT_SENT,
     replicateRxStorageInstance,
     writeDocToDocState
 } from '../../replication-protocol/index.ts';
@@ -477,7 +478,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
                         }
                     }
                     if (this.isStoppedOrPaused()) {
-                        return [];
+                        return MASTER_WRITE_NOT_SENT;
                     }
 
                     await runAsyncPluginHooks('preReplicationMasterWriteDocumentsHandle', {

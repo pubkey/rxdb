@@ -32,6 +32,7 @@ import {
     resolveConflictError
 } from './conflicts.ts';
 import {
+    MASTER_WRITE_NOT_SENT,
     stripAttachmentsDataFromMetaWriteRows,
     writeDocToDocState
 } from './helper.ts';
@@ -404,6 +405,7 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
              * called with more documents than what the batchSize limits.
              */
             const writeBatches = batchArray(writeRowsArray, state.input.pushBatchSize);
+            let hasNotSentBatch = false;
             await Promise.all(
                 writeBatches.map(async (writeBatch) => {
 
@@ -421,6 +423,10 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
                         );
                     }
                     const masterWriteResult = await replicationHandler.masterWrite(writeBatch);
+                    if (masterWriteResult === MASTER_WRITE_NOT_SENT) {
+                        hasNotSentBatch = true;
+                        return;
+                    }
                     masterWriteResult.forEach(conflictDoc => {
                         const id = (conflictDoc as any)[state.primaryPath];
                         conflictIds.add(id);
@@ -430,13 +436,21 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
             );
 
             /**
-             * Check for canceled or paused state before marking documents
-             * as successfully pushed. When the replication is paused during
-             * a push retry, masterWrite() returns [] even though no documents
-             * were actually sent. Without this check the meta instance would
+             * Check for canceled or paused state and for not sent batches
+             * before marking documents as successfully pushed.
+             * When the replication is paused during a push retry,
+             * masterWrite() returns MASTER_WRITE_NOT_SENT because no documents
+             * were actually sent. The replication can already be running again
+             * when the other batches have finished, so the paused state alone
+             * does not tell if all batches have been sent.
+             * Without this check the meta instance and the checkpoint would
              * be updated, causing the documents to never be retried on resume.
              */
-            if (state.events.canceled.getValue() || state.events.paused.getValue()) {
+            if (
+                hasNotSentBatch ||
+                state.events.canceled.getValue() ||
+                state.events.paused.getValue()
+            ) {
                 return false;
             }
 
