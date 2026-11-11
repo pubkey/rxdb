@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `createRxDatabase()` accepted a duplicate database after a previous duplicate creation was rejected with `DB8`, while the first database with the same name and storage was still open",
+    "links": [],
+    "priority": 5
+}
