@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX a replication `pull.modifier` or `push.modifier` that throws, or a pull handler that returns a malformed result, stopped the replication permanently without emitting on `error$`. The error is now emitted as `RC_PULL` or `RC_PUSH` and the replication retries after `retryTime`",
+    "links": [],
+    "priority": 5
+}
