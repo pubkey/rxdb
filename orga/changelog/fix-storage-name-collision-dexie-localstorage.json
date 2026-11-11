@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX the Dexie.js and localStorage RxStorage used the same physical store for two different databases when a collection name contained `--` (for example database `app--staging` with collection `todos` and database `app` with collection `staging--todos`). Both storages now throw the error `UT9` for collection names that contain `--` or start with `-`. BREAKING: collections with such names can no longer be opened on these two storages",
+    "links": [],
+    "priority": 6
+}

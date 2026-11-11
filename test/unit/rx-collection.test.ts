@@ -38,6 +38,7 @@ import {
     now,
     getFromMapOrThrow,
     RxCollectionCreator,
+    RxStorage,
     parseRevision,
     getChangedDocumentsSince,
     hasPremiumFlag,
@@ -48,6 +49,17 @@ import { RxDBUpdatePlugin } from '../../plugins/update/index.mjs';
 addRxPlugin(RxDBUpdatePlugin);
 import { RxDBMigrationPlugin } from '../../plugins/migration-schema/index.mjs';
 addRxPlugin(RxDBMigrationPlugin);
+
+import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.mjs';
+import { getRxStorageDexie } from '../../plugins/storage-dexie/index.mjs';
+import {
+    getRxStorageLocalstorage,
+    getLocalStorageMock
+} from '../../plugins/storage-localstorage/index.mjs';
+import {
+    indexedDB as fakeIndexedDB,
+    IDBKeyRange as fakeIDBKeyRange
+} from 'fake-indexeddb';
 
 import { firstValueFrom } from 'rxjs';
 import { RxDocumentData } from '../../plugins/core/index.mjs';
@@ -222,6 +234,92 @@ describe('rx-collection.test.ts', () => {
                     });
 
                     db.close();
+                });
+                it('not allow names that make the physical name of the dexie and localstorage storage ambiguous', async () => {
+                    const storages: {
+                        storage: RxStorage<any, any>;
+                        databaseNameSuffix: string;
+                        collectionName: string;
+                    }[] = [
+                        {
+                            storage: wrappedValidateAjvStorage({
+                                storage: getRxStorageDexie({
+                                    indexedDB: fakeIndexedDB,
+                                    IDBKeyRange: fakeIDBKeyRange
+                                })
+                            }),
+                            /**
+                             * Dexie joins database name, schema version,
+                             * and collection name with '--'.
+                             */
+                            databaseNameSuffix: '--0--x',
+                            collectionName: 'x--0--todos'
+                        },
+                        {
+                            storage: wrappedValidateAjvStorage({
+                                storage: getRxStorageLocalstorage({
+                                    localStorage: getLocalStorageMock()
+                                })
+                            }),
+                            /**
+                             * The localstorage storage joins database name,
+                             * collection name, and schema version with '--'.
+                             */
+                            databaseNameSuffix: '--staging',
+                            collectionName: 'staging--todos'
+                        }
+                    ];
+                    for (const { storage, databaseNameSuffix, collectionName } of storages) {
+                        const baseName = 'app' + randomToken(10);
+                        const db = await createRxDatabase({
+                            name: baseName + databaseNameSuffix,
+                            storage
+                        });
+                        const collections = await db.addCollections({
+                            todos: {
+                                schema: schemas.human
+                            }
+                        });
+                        await collections.todos.insert(schemaObjects.humanData('todo1'));
+
+                        const otherDb = await createRxDatabase({
+                            name: baseName,
+                            storage
+                        });
+                        await AsyncTestUtil.assertThrows(
+                            () => otherDb.addCollections({
+                                [collectionName]: {
+                                    schema: schemas.human
+                                }
+                            }),
+                            'RxError',
+                            'UT9'
+                        );
+                        await AsyncTestUtil.assertThrows(
+                            () => otherDb.addCollections({
+                                'a--b': {
+                                    schema: schemas.human
+                                }
+                            }),
+                            'RxError',
+                            'UT9'
+                        );
+
+                        // single hyphens stay allowed
+                        const otherCollections = await otherDb.addCollections({
+                            'staging-todos': {
+                                schema: schemas.human
+                            }
+                        });
+                        const otherDocs = await otherCollections['staging-todos'].find().exec();
+                        assert.strictEqual(otherDocs.length, 0);
+                        const docs = await collections.todos.find().exec();
+                        assert.strictEqual(docs.length, 1);
+
+                        await otherCollections['staging-todos'].remove();
+                        await otherDb.close();
+                        await db.remove();
+                    }
                 });
             });
         });

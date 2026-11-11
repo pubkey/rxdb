@@ -890,6 +890,27 @@ export function ensureRxStorageInstanceParamsAreCorrect(
     }
 }
 
+/**
+ * Some storages build the name of their physical store by joining
+ * the database name, the collection name, and the schema version with '--'.
+ * The joined name can only be split back into its parts in one way
+ * when the collection name does not contain '--' and does not start with '-'.
+ * Otherwise two different databases would share one physical store.
+ */
+export function ensureCollectionNameIsUnambiguousInJoinedStorageName(
+    params: RxStorageInstanceCreationParams<any, any>
+) {
+    if (
+        params.collectionName.includes('--') ||
+        params.collectionName.startsWith('-')
+    ) {
+        throw newRxError('UT9', {
+            name: params.collectionName,
+            database: params.databaseName
+        });
+    }
+}
+
 export function hasEncryption(jsonSchema: RxJsonSchema<any>): boolean {
     if (
         (!!jsonSchema.encrypted && jsonSchema.encrypted.length > 0) ||

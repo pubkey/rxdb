@@ -1,4 +1,7 @@
-import { ensureRxStorageInstanceParamsAreCorrect } from '../../rx-storage-helper.ts';
+import {
+    ensureCollectionNameIsUnambiguousInJoinedStorageName,
+    ensureRxStorageInstanceParamsAreCorrect
+} from '../../rx-storage-helper.ts';
 import type { RxStorage, RxStorageInstance, RxStorageInstanceCreationParams } from '../../types/index';
 import { RXDB_VERSION } from '../utils/utils-rxdb-version.ts';
 import {
@@ -26,6 +29,7 @@ export class RxStorageLocalstorage implements RxStorage<
         params: RxStorageInstanceCreationParams<RxDocType, LocalstorageInstanceCreationOptions>
     ): Promise<RxStorageInstanceLocalstorage<RxDocType>> {
         ensureRxStorageInstanceParamsAreCorrect(params);
+        ensureCollectionNameIsUnambiguousInJoinedStorageName(params);
         const useSettings = Object.assign(
             {},
             this.settings,

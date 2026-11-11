@@ -13,7 +13,10 @@ import {
     createDexieStorageInstance,
     RxStorageInstanceDexie
 } from './rx-storage-instance-dexie.ts';
-import { ensureRxStorageInstanceParamsAreCorrect } from '../../rx-storage-helper.ts';
+import {
+    ensureCollectionNameIsUnambiguousInJoinedStorageName,
+    ensureRxStorageInstanceParamsAreCorrect
+} from '../../rx-storage-helper.ts';
 import { RXDB_VERSION } from '../utils/utils-rxdb-version.ts';
 import { newRxError } from '../../rx-error.ts';
 
@@ -30,6 +33,7 @@ export class RxStorageDexie implements RxStorage<DexieStorageInternals, DexieSet
         params: RxStorageInstanceCreationParams<RxDocType, DexieSettings>
     ): Promise<RxStorageInstanceDexie<RxDocType>> {
         ensureRxStorageInstanceParamsAreCorrect(params);
+        ensureCollectionNameIsUnambiguousInJoinedStorageName(params);
 
         /**
          * Dexie does not support non-required indexes and must throw if that is used.
