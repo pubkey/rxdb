@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `RxStorageInstance.bulkWrite()` emitted an `INSERT` or `UPDATE` change event for a row that was rejected with the `510` attachment error (attachment without `data`), and threw `ensureNotFalsy() is falsy` instead of returning the error when that row was the only one of the write",
+    "links": [],
+    "priority": 5
+}
