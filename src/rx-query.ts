@@ -1019,9 +1019,12 @@ export async function queryCollection<RxDocType>(
         }
 
         // Apply limit for both find and findOne
-        const limitIsNumber = typeof mangoQuery.limit === 'number' && mangoQuery.limit > 0;
-        if (limitIsNumber) {
-            const limit = mangoQuery.limit as number;
+        /**
+         * Use typeof so that an explicit `limit: 0` returns no documents,
+         * same as storageInstance.query() does.
+         */
+        const limit = mangoQuery.limit;
+        if (typeof limit === 'number') {
             docs = docs.slice(0, limit);
         }
 

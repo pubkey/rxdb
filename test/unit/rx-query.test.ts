@@ -1320,6 +1320,47 @@ describe('rx-query.test.ts', () => {
 
             c.database.close();
         });
+        it('find({ limit: 0 }) must return an empty result set when the selector uses the primary key', async () => {
+            const c = await humansCollection.create(0);
+            await c.bulkInsert([
+                schemaObjects.humanData('aa', 25, 'alice'),
+                schemaObjects.humanData('bb', 35, 'bob')
+            ]);
+
+            // a selector on a non-primary field that matches the same document
+            const byFirstName = await c.find({
+                selector: { firstName: 'alice' },
+                limit: 0
+            }).exec();
+            assert.strictEqual(byFirstName.length, 0);
+
+            const byPrimary = await c.find({
+                selector: { passportId: 'aa' },
+                limit: 0
+            }).exec();
+            assert.strictEqual(byPrimary.length, 0);
+
+            const byPrimaryIn = await c.find({
+                selector: { passportId: { $in: ['aa', 'bb'] } },
+                limit: 0
+            }).exec();
+            assert.strictEqual(byPrimaryIn.length, 0);
+
+            const byBuilder = await c.find({
+                selector: { passportId: 'aa' }
+            }).limit(0).exec();
+            assert.strictEqual(byBuilder.length, 0);
+
+            const emitted = await firstValueFrom(
+                c.find({
+                    selector: { passportId: 'aa' },
+                    limit: 0
+                }).$
+            );
+            assert.strictEqual(emitted.length, 0);
+
+            c.database.close();
+        });
 
     });
     describe('updates to the result of the query', () => {

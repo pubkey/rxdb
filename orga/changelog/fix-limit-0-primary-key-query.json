@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `find()` with `limit: 0` returned documents instead of an empty result when the selector matches by primary key",
+    "links": [],
+    "priority": 4
+}
