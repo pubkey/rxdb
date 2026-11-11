@@ -131,7 +131,31 @@ export async function insertCRDT<RxDocType>(
 
 
 export function sortOperationComparator<RxDocType>(a: CRDTOperation<RxDocType>, b: CRDTOperation<RxDocType>) {
+    if (a.creator === b.creator) {
+        return a.time > b.time ? 1 : -1;
+    }
     return a.creator > b.creator ? 1 : -1;
+}
+
+/**
+ * The same creator can have different operations at the same
+ * operations index when two instances share one storage token.
+ * Therefore an operation is identified by its creator and its time.
+ */
+function getCRDTOperationId(op: CRDTOperation<any>): string {
+    return op.creator + '|' + op.time;
+}
+
+function hasSameCRDTOperations(
+    a: CRDTDocumentField<any>,
+    b: CRDTDocumentField<any>
+): boolean {
+    return a.operations.length === b.operations.length &&
+        a.operations.every((row, index) => {
+            const otherRow = b.operations[index];
+            return row.length === otherRow.length &&
+                row.every((op, opIndex) => getCRDTOperationId(op) === getCRDTOperationId(otherRow[opIndex]));
+        });
 }
 
 
@@ -261,12 +285,12 @@ export async function mergeCRDTFields<RxDocType>(
         const ids = new Set<string>(); // used to deduplicate
 
         row.forEach(op => {
-            ids.add(op.creator);
+            ids.add(getCRDTOperationId(op));
             mergedOps.push(op);
         });
         if (crdtsB.operations[index]) {
             crdtsB.operations[index].forEach(op => {
-                if (!ids.has(op.creator)) {
+                if (!ids.has(getCRDTOperationId(op))) {
                     mergedOps.push(op);
                 }
             });
@@ -312,7 +336,9 @@ export function getCRDTConflictHandler<RxDocType>(
 
     const conflictHandler: RxConflictHandler<RxDocType> = {
         isEqual(a, b, ctx) {
-            return getCRDTValue(a).hash === getCRDTValue(b).hash;
+            const crdtsA = getCRDTValue(a);
+            const crdtsB = getCRDTValue(b);
+            return crdtsA.hash === crdtsB.hash && hasSameCRDTOperations(crdtsA, crdtsB);
         },
         async resolve(i) {
             const newDocCrdt = getCRDTValue(i.newDocumentState);
