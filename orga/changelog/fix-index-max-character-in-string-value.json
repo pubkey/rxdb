@@ -1,0 +1,5 @@
+{
+    "text": "FIX queries on an indexed string field returned wrong results when a document value or a query value contained the character `U+FFFF`, which the query planner uses as the `INDEX_MAX` marker",
+    "links": [],
+    "priority": 4
+}

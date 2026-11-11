@@ -17,6 +17,13 @@ import type { RxStorageInstanceDexie } from './rx-storage-instance-dexie.ts';
 export function mapKeyForKeyRange(k: any) {
     if (k === INDEX_MIN) {
         return -Infinity;
+    } else if (k === INDEX_MAX) {
+        /**
+         * In IndexedDB an array key is sorted after all
+         * strings and numbers, also after the strings
+         * that start with the INDEX_MAX character.
+         */
+        return [];
     } else {
         return k;
     }

@@ -14,6 +14,12 @@ import type {
 export const INDEX_MAX = String.fromCharCode(65535);
 
 /**
+ * The biggest single character string that is sorted
+ * before all strings that start with INDEX_MAX.
+ */
+const INDEX_MAX_LOWER_BOUND = String.fromCharCode(65534);
+
+/**
  * Do not use -Infinity here because it would be
  * transformed to null on JSON.stringify() which can break things
  * when the query plan is sent to the storage as json.
@@ -101,6 +107,7 @@ export function getQueryPlan<RxDocType>(
     indexes.forEach((index) => {
         let inclusiveEnd = true;
         let inclusiveStart = true;
+        let hasIndexMaxSelectorValue = false;
         const opts: RxQueryPlanerOpts[] = index.map(indexField => {
             const matcher = (selector as any)[indexField];
             const operators = matcher ? Object.keys(matcher) : [];
@@ -130,6 +137,24 @@ export function getQueryPlan<RxDocType>(
                         }
                     }
                 });
+
+                /**
+                 * A selector value that is equal to INDEX_MAX cannot be
+                 * told apart from the "no bound" marker in the query plan.
+                 * As upper bound the marker already spans all values.
+                 * As lower bound the next smaller string is used instead.
+                 * The range is then wider than the selector,
+                 * so the query matcher has to filter the results.
+                 */
+                if (matcherOpts.startKey === INDEX_MAX) {
+                    matcherOpts.startKey = INDEX_MAX_LOWER_BOUND;
+                    matcherOpts.inclusiveStart = true;
+                    hasIndexMaxSelectorValue = true;
+                }
+                if (matcherOpts.endKey === INDEX_MAX) {
+                    matcherOpts.inclusiveEnd = true;
+                    hasIndexMaxSelectorValue = true;
+                }
             }
 
             // fill missing attributes
@@ -206,7 +231,7 @@ export function getQueryPlan<RxDocType>(
             inclusiveEnd,
             inclusiveStart,
             sortSatisfiedByIndex: !hasDescSorting && optimalSortIndexCompareString === indexCompareString,
-            selectorSatisfiedByIndex: isSelectorSatisfiedByIndex(index, query.selector, startKeys, endKeys)
+            selectorSatisfiedByIndex: !hasIndexMaxSelectorValue && isSelectorSatisfiedByIndex(index, query.selector, startKeys, endKeys)
         };
         const quality = rateQueryPlan(
             schema,
