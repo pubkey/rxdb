@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX queries on indexed fields returned wrong documents in storages that use the custom index strings (memory, localstorage) when the bound could not be represented exactly by the index string, like `$gte: 5.5` on a field with `multipleOf: 1`, a number outside of `minimum`/`maximum`, a string that ends with a space or `$eq: null`. The query planner now sets `selectorSatisfiedByIndex: false` for these bounds so that the query matcher filters the results.",
+    "links": [],
+    "priority": 5
+}
