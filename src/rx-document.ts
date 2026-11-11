@@ -605,18 +605,26 @@ function createDocumentPropertyValue(doc: RxDocument, objPath: string, valueObj:
                     }
 
                     const nestedPath = trimDots(objPath + '.' + property);
-                    /**
-                     * Property names that contain path syntax characters
-                     * must use getProperty() so that their cache key
-                     * cannot point to a value of another path.
-                     */
                     if (
                         typeof plainValue === 'object' &&
-                        property !== '__proto__' &&
-                        !property.includes('.') &&
-                        !property.includes('[') &&
-                        !property.includes('\\')
+                        property !== '__proto__'
                     ) {
+                        /**
+                         * Property names that contain path syntax characters
+                         * are escaped so that their path and cache key
+                         * point to this key and not to a value of another path.
+                         */
+                        if (
+                            property.includes('.') ||
+                            property.includes('[') ||
+                            property.includes('\\')
+                        ) {
+                            return getNestedDocumentProperty(
+                                doc,
+                                objPath + '.' + property.replace(/[\\.[]/g, '\\$&'),
+                                plainValue
+                            );
+                        }
                         return getNestedDocumentProperty(doc, nestedPath, plainValue);
                     }
                     return getDocumentProperty(doc, nestedPath);
