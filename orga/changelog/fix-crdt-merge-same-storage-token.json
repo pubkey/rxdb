@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX the CRDT plugin dropped one of two concurrent operations and reported both sides as equal when fork and master have the same storage token, for example when two collections of the same database are replicated with each other. Operations are now identified by `creator` and `time`",
+    "links": [],
+    "priority": 5
+}
