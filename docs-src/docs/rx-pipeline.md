@@ -81,7 +81,9 @@ const pipeline = await emailCollection.addPipeline({
     handler: async (docs) => {
         for (const doc of docs) {
             // remove previous mapping
-            await emailByReceiverCollection.find({emailId: doc.primary}).remove();
+            await emailByReceiverCollection.find({
+                selector: { emailId: doc.primary }
+            }).remove();
             // add new mapping
             if(!doc.deleted) {
                 await emailByReceiverCollection.bulkInsert(
@@ -100,7 +102,7 @@ With this you can efficiently query for "all emails that a person received" by r
 
 ```ts
 const mailIds = await emailByReceiverCollection.find({
-    receiver: 'foobar@example.com'
+    selector: { receiver: 'foobar@example.com' }
 }).exec();
 ```
 
@@ -115,7 +117,9 @@ const pipeline = await emailCollection.addPipeline({
     handler: async (docs) => {
         for (const doc of docs) {
             // remove previous mapping
-            await mailByWordCollection.find({emailId: doc.primary}).remove();
+            await mailByWordCollection.find({
+                selector: { emailId: doc.primary }
+            }).remove();
             // add new mapping
             if(!doc.deleted) {
                 const words = doc.text.split(' ');
@@ -134,7 +138,9 @@ const pipeline = await emailCollection.addPipeline({
 With this you can efficiently query for "all emails that contain a given word" by running:
 
 ```ts
-const mailIds = await emailByReceiverCollection.find({word: 'foobar'}).exec();
+const mailIds = await mailByWordCollection.find({
+    selector: { word: 'foobar' }
+}).exec();
 ```
 
 ### UseCase: Download data based on source documents
