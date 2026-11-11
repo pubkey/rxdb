@@ -116,7 +116,7 @@ The plugin dynamically reads your RxDB schema to assemble a prompt description a
 **Read Operations**:
 - `rxdb_query`: Run complex NoSQL queries against the local database.
 - `rxdb_count`: Count the number of documents matching a specific query.
-- `rxdb_changes`: Fetch the replication changestream since a given checkpoint.
+- `rxdb_changes`: Fetch the replication changestream since a given checkpoint. Deleted documents are returned with `_deleted: true`.
 - `rxdb_wait_changes`: Listen to live UI updates by pausing until a matching document changes occurs.
 
 **Write Operations**:

@@ -193,6 +193,25 @@ describe('webmcp.test.ts', () => {
         );
     });
 
+    itWithDom('changes tool should mark removed documents as deleted', async () => {
+        db.registerWebMCP();
+        const tools = getTools();
+        const changesTool = tools.find((t: any) => t.name.startsWith(`rxdb_changes_${db.name}_humans`));
+
+        await collection.insert(schemaObjects.humanData('removed_alice'));
+        const live = await collection.insert(schemaObjects.humanData('removed_bob'));
+        const doc = await collection.findOne('removed_alice').exec(true);
+        await doc.remove();
+
+        const changesResult = await executeTool(changesTool.name, { limit: 10 });
+        const removedDoc = changesResult.documents.find((d: any) => d.passportId === 'removed_alice');
+        const liveDoc = changesResult.documents.find((d: any) => d.passportId === live.passportId);
+        assert.ok(removedDoc);
+        assert.ok(liveDoc);
+        assert.strictEqual(removedDoc._deleted, true, 'removed document must be marked as deleted');
+        assert.strictEqual(liveDoc._deleted, undefined, 'live document must not carry a _deleted field');
+    });
+
     itWithDom('should iterate over changes using checkpoint', async () => {
         db.registerWebMCP();
         const tools = getTools();
