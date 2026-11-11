@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `deepEqual()` treated equal objects as different when they contain a field named `constructor`, so a collection whose schema has a property named `constructor` could not be opened a second time on the memory storage in dev-mode",
+    "links": [],
+    "priority": 4
+}
