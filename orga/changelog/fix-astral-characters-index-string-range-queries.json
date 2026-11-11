@@ -1,0 +1,5 @@
+{
+    "text": "FIX range queries on indexed string fields returned wrong documents on the storages with custom index strings (memory, localstorage, and others) when the queried value contains astral characters like emojis or is longer than the `maxLength` of the field. The stored index strings are not changed.",
+    "links": [],
+    "priority": 4
+}

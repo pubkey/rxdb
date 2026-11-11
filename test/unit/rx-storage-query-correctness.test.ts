@@ -1464,6 +1464,116 @@ describe('rx-storage-query-correctness.test.ts', () => {
         ]
     });
     /**
+     * The maxLength of a string counts unicode code points,
+     * so a valid value with astral characters can have
+     * more UTF-16 code units than the maxLength.
+     */
+    testCorrectQueries<{ id: string; name: string; }>({
+        testTitle: 'range queries on an indexed string field with values and bounds that have more UTF-16 code units than maxLength',
+        data: [
+            {
+                id: 'zz',
+                name: '😀😀😀'
+            },
+            {
+                id: 'aa',
+                name: '😀😀😀ab'
+            },
+            {
+                id: 'mm',
+                name: 'abc'
+            },
+            {
+                id: 'yy',
+                name: 'abcde'
+            }
+        ],
+        schema: {
+            version: 0,
+            primaryKey: 'id',
+            type: 'object',
+            properties: {
+                id: {
+                    type: 'string',
+                    maxLength: 10
+                },
+                name: {
+                    type: 'string',
+                    maxLength: 5
+                }
+            },
+            required: ['id', 'name'],
+            indexes: ['name']
+        },
+        queries: [
+            {
+                info: '$lte with astral bound',
+                query: {
+                    selector: { name: { $lte: '😀😀😀' } },
+                    sort: [{ id: 'asc' }]
+                },
+                expectedResultDocIds: ['mm', 'yy', 'zz']
+            },
+            {
+                info: '$lt with astral bound',
+                query: {
+                    selector: { name: { $lt: '😀😀😀ab' } },
+                    sort: [{ id: 'asc' }]
+                },
+                expectedResultDocIds: ['mm', 'yy', 'zz']
+            },
+            {
+                info: '$gt with astral bound',
+                query: {
+                    selector: { name: { $gt: '😀😀😀' } },
+                    sort: [{ id: 'asc' }]
+                },
+                expectedResultDocIds: ['aa']
+            },
+            {
+                info: '$gte with astral bound',
+                query: {
+                    selector: { name: { $gte: '😀😀😀' } },
+                    sort: [{ id: 'asc' }]
+                },
+                expectedResultDocIds: ['aa', 'zz']
+            },
+            {
+                info: '$eq with astral bound',
+                query: {
+                    selector: { name: { $eq: '😀😀😀' } },
+                    sort: [{ id: 'asc' }]
+                },
+                expectedResultDocIds: ['zz']
+            },
+            {
+                info: '$lte with a bound that is longer than maxLength',
+                query: {
+                    selector: { name: { $lte: 'abcdefgh' } },
+                    sort: [{ id: 'asc' }]
+                },
+                expectedResultDocIds: ['mm', 'yy']
+            },
+            {
+                info: '$gt with a bound that is longer than maxLength',
+                query: {
+                    selector: { name: { $gt: 'abcdaaaa' } },
+                    sort: [{ id: 'asc' }]
+                },
+                expectedResultDocIds: ['aa', 'yy', 'zz']
+            },
+            {
+                info: '$gt with a bound that fits into maxLength',
+                query: {
+                    selector: { name: { $gt: 'abc' } },
+                    sort: [{ id: 'asc' }]
+                },
+                selectorSatisfiedByIndex: true,
+                expectedResultDocIds: ['aa', 'yy', 'zz']
+            }
+        ]
+    });
+    /**
      * @link https://github.com/pubkey/rxdb/issues/4571
      */
     testCorrectQueries({

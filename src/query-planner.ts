@@ -30,6 +30,29 @@ const INDEX_MAX_LOWER_BOUND = String.fromCharCode(65534);
  */
 export const INDEX_MIN = Number.MIN_SAFE_INTEGER;
 
+const SURROGATE_CODE_UNIT_REGEX = /[\uD800-\uDFFF]/;
+
+/**
+ * The maxLength of a string field counts unicode code points
+ * while the custom index strings give each string field
+ * a slot of maxLength UTF-16 code units.
+ * A string with astral characters (like emojis) can be valid
+ * and still be longer than its slot, so that the
+ * following fields of its index string are shifted.
+ * Returns true if the given query bound either does not fit into the slot
+ * or can have the same first maxLength code units as such a shifted value.
+ * In both cases the index range of the bound is not exact.
+ */
+export function isStringBoundNotExactInIndex(
+    bound: string,
+    maxLength: number
+): boolean {
+    return bound !== INDEX_MAX && (
+        bound.length > maxLength ||
+        SURROGATE_CODE_UNIT_REGEX.test(bound)
+    );
+}
+
 /**
  * Returns the query plan which contains
  * information about how to run the query
@@ -108,6 +131,7 @@ export function getQueryPlan<RxDocType>(
         let inclusiveEnd = true;
         let inclusiveStart = true;
         let hasIndexMaxSelectorValue = false;
+        let boundsExactInIndex = true;
         const opts: RxQueryPlanerOpts[] = index.map(indexField => {
             const matcher = (selector as any)[indexField];
             const operators = matcher ? Object.keys(matcher) : [];
@@ -179,6 +203,27 @@ export function getQueryPlan<RxDocType>(
              * promote it to inclusive here.
              */
             const schemaPart = getSchemaByObjectPath(schema, indexField);
+            /**
+             * A string bound that is not exact in the index
+             * must be inclusive so that no document is skipped,
+             * and the query matcher has to filter the results.
+             */
+            if (schemaPart && schemaPart.type === 'string' && typeof schemaPart.maxLength === 'number') {
+                if (
+                    typeof matcherOpts.startKey === 'string' &&
+                    isStringBoundNotExactInIndex(matcherOpts.startKey, schemaPart.maxLength)
+                ) {
+                    matcherOpts.inclusiveStart = true;
+                    boundsExactInIndex = false;
+                }
+                if (
+                    typeof matcherOpts.endKey === 'string' &&
+                    isStringBoundNotExactInIndex(matcherOpts.endKey, schemaPart.maxLength)
+                ) {
+                    matcherOpts.inclusiveEnd = true;
+                    boundsExactInIndex = false;
+                }
+            }
             if (schemaPart && (schemaPart.type === 'number' || schemaPart.type === 'integer')) {
                 if (
                     !matcherOpts.inclusiveStart &&
@@ -231,7 +276,9 @@ export function getQueryPlan<RxDocType>(
             inclusiveEnd,
             inclusiveStart,
             sortSatisfiedByIndex: !hasDescSorting && optimalSortIndexCompareString === indexCompareString,
-            selectorSatisfiedByIndex: !hasIndexMaxSelectorValue && isSelectorSatisfiedByIndex(index, query.selector, startKeys, endKeys)
+            selectorSatisfiedByIndex: !hasIndexMaxSelectorValue &&
+                boundsExactInIndex &&
+                isSelectorSatisfiedByIndex(index, query.selector, startKeys, endKeys)
         };
         const quality = rateQueryPlan(
             schema,

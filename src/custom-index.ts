@@ -24,7 +24,8 @@ import {
 } from './plugins/utils/index.ts';
 import {
     INDEX_MAX,
-    INDEX_MIN
+    INDEX_MIN,
+    isStringBoundNotExactInIndex
 } from './query-planner.ts';
 import {
     newRxError
@@ -331,7 +332,11 @@ export function getStartIndexStringFromLowerBound(
     lowerBound: (string | boolean | number | null | undefined)[]
 ): string {
     let str = '';
+    let notExact = false;
     index.forEach((fieldName, idx) => {
+        if (notExact) {
+            return;
+        }
         const schemaPart = getSchemaByObjectPath(
             schema,
             fieldName
@@ -343,7 +348,18 @@ export function getStartIndexStringFromLowerBound(
             case 'string':
                 const maxLength = ensureNotFalsy(schemaPart.maxLength, 'maxLength not set');
                 if (typeof bound === 'string') {
-                    if (bound === INDEX_MAX) {
+                    if (isStringBoundNotExactInIndex(bound, maxLength)) {
+                        /**
+                         * Index strings of values that are longer than maxLength
+                         * are not aligned to the field slots.
+                         * To not miss any of them, the bound string ends
+                         * with the first maxLength code units of the bound
+                         * so that it is lower than all index strings
+                         * which start with these code units.
+                         */
+                        str += bound.slice(0, maxLength);
+                        notExact = true;
+                    } else if (bound === INDEX_MAX) {
                         str += ''.padEnd(maxLength, INDEX_MAX);
                     } else {
                         str += (bound as string).padEnd(maxLength, ' ');
@@ -406,7 +422,11 @@ export function getStartIndexStringFromUpperBound(
     upperBound: (string | boolean | number | null | undefined)[]
 ): string {
     let str = '';
+    let notExact = false;
     index.forEach((fieldName, idx) => {
+        if (notExact) {
+            return;
+        }
         const schemaPart = getSchemaByObjectPath(
             schema,
             fieldName
@@ -417,7 +437,18 @@ export function getStartIndexStringFromUpperBound(
         switch (type) {
             case 'string':
                 const maxLength = ensureNotFalsy(schemaPart.maxLength, 'maxLength not set');
-                if (typeof bound === 'string' && bound !== INDEX_MAX) {
+                if (typeof bound === 'string' && isStringBoundNotExactInIndex(bound, maxLength)) {
+                    /**
+                     * Index strings of values that are longer than maxLength
+                     * are not aligned to the field slots.
+                     * To not miss any of them, the bound string ends
+                     * with the first maxLength code units of the bound
+                     * followed by INDEX_MAX so that it is higher than all index strings
+                     * which start with these code units.
+                     */
+                    str += bound.padEnd(maxLength, ' ').slice(0, maxLength) + INDEX_MAX;
+                    notExact = true;
+                } else if (typeof bound === 'string' && bound !== INDEX_MAX) {
                     str += (bound as string).padEnd(maxLength, ' ');
                 } else if (bound === INDEX_MIN) {
                     /**
