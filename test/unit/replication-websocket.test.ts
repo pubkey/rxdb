@@ -20,6 +20,7 @@ import {
     randomToken
 } from '../../plugins/core/index.mjs';
 import { nextPort } from '../helper/port-manager.ts';
+import { WebSocket } from 'ws';
 
 describe('replication-websocket.test.ts', () => {
     if (!config.storage.hasReplication) {
@@ -218,6 +219,72 @@ describe('replication-websocket.test.ts', () => {
         });
 
         await localCollection.database.close();
+        await remoteCollection.database.close();
+    });
+    it('should answer invalid requests with an error response and keep serving the connection', async () => {
+        const remoteCollection = await humansCollection.createHumanWithTimestamp(1, undefined, false);
+        const portAndUrl = await nextPortAndUrl();
+        await startWebsocketServer({
+            database: remoteCollection.database,
+            port: portAndUrl.port
+        });
+
+        const socket = new WebSocket(portAndUrl.url);
+        const responses: { id: string; collection: string; result?: any; error?: any; }[] = [];
+        socket.onmessage = ev => {
+            if (typeof ev.data === 'string') {
+                responses.push(JSON.parse(ev.data));
+            }
+        };
+        await new Promise<void>((res, rej) => {
+            socket.once('open', () => res());
+            socket.once('error', rej);
+        });
+        async function request(message: { id: string; collection: string; method: string; params: any; }) {
+            socket.send(JSON.stringify(message));
+            await waitUntil(() => responses.some(response => response.id === message.id));
+            return responses.find(response => response.id === message.id) as typeof responses[0];
+        }
+
+        socket.send('this is not json');
+
+        const unknownCollection = await request({
+            id: 'unknown-collection',
+            collection: 'doesnotexist',
+            method: 'masterChangesSince',
+            params: [null, 10]
+        });
+        assert.ok(unknownCollection.error);
+        assert.strictEqual(unknownCollection.result, undefined);
+
+        const unknownMethod = await request({
+            id: 'unknown-method',
+            collection: remoteCollection.name,
+            method: '__defineGetter__',
+            params: []
+        });
+        assert.ok(unknownMethod.error);
+        assert.strictEqual(unknownMethod.result, undefined);
+
+        const invalidParams = await request({
+            id: 'invalid-params',
+            collection: remoteCollection.name,
+            method: 'masterChangesSince',
+            params: 'foobar'
+        });
+        assert.ok(invalidParams.error);
+        assert.strictEqual(invalidParams.result, undefined);
+
+        const valid = await request({
+            id: 'valid-request',
+            collection: remoteCollection.name,
+            method: 'masterChangesSince',
+            params: [null, 10]
+        });
+        assert.strictEqual(valid.error, undefined);
+        assert.strictEqual(valid.result.documents.length, 1);
+
+        socket.close();
         await remoteCollection.database.close();
     });
     it('should be able to replicate multiple collections at once', async () => {

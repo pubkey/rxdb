@@ -21,6 +21,14 @@ import {
     PROMISE_RESOLVE_VOID, getFromMapOrCreate
 } from '../../plugins/utils/index.ts';
 import { Subject } from 'rxjs';
+import { newRxError } from '../../rx-error.ts';
+
+/**
+ * Only these members of the replication handler
+ * can be requested by a client.
+ */
+const REQUESTABLE_METHODS = ['masterChangesSince', 'masterWrite'] as const;
+type RequestableMethod = typeof REQUESTABLE_METHODS[number];
 
 export function startSocketServer(options: ServerOptions): WebsocketServerState {
     const wss = new WebSocketServer(options);
@@ -66,7 +74,9 @@ export function getReplicationHandlerByCollection<RxDocType>(
     collectionName: string
 ): RxReplicationHandler<RxDocType, any> {
     if (!database.collections[collectionName]) {
-        throw new Error('collection ' + collectionName + ' does not exist');
+        throw newRxError('RC_WEBSOCKET_COLLECTION', {
+            collection: collectionName
+        });
     }
 
     const collection = database.collections[collectionName];
@@ -97,36 +107,70 @@ export function startWebsocketServer(options: WebsocketServerOptions): Websocket
             onCloseHandlers.map(fn => fn());
         };
         ws.on('message', async (messageString: string) => {
-            const message: WebsocketMessageType = JSON.parse(messageString);
-            const handler = getReplicationHandlerByCollection(database, message.collection);
-            if (message.method === 'auth') {
-                return;
-            }
-            const method = handler[message.method];
-
-            /**
-             * If it is not a function,
-             * it means that the client requested the masterChangeStream$
-             */
-            if (typeof method !== 'function') {
-                const changeStreamSub = handler.masterChangeStream$.subscribe((ev: any) => {
-                    const streamResponse: WebsocketMessageResponseType = {
-                        id: 'stream',
+            let message: WebsocketMessageType | undefined;
+            try {
+                message = JSON.parse(messageString) as WebsocketMessageType;
+                const handler = getReplicationHandlerByCollection(database, message.collection);
+                if (message.method === 'auth') {
+                    return;
+                }
+                if (message.method === 'masterChangeStream$') {
+                    const collectionName = message.collection;
+                    const changeStreamSub = handler.masterChangeStream$.subscribe((ev: any) => {
+                        const streamResponse: WebsocketMessageResponseType = {
+                            id: 'stream',
+                            collection: collectionName,
+                            result: ev
+                        };
+                        ws.send(JSON.stringify(streamResponse));
+                    });
+                    onCloseHandlers.push(() => changeStreamSub.unsubscribe());
+                    return;
+                }
+                if (
+                    !REQUESTABLE_METHODS.includes(message.method as RequestableMethod) ||
+                    !Array.isArray(message.params)
+                ) {
+                    throw newRxError('RC_WEBSOCKET_REQUEST', {
                         collection: message.collection,
-                        result: ev
-                    };
-                    ws.send(JSON.stringify(streamResponse));
-                });
-                onCloseHandlers.push(() => changeStreamSub.unsubscribe());
-                return;
+                        method: message.method
+                    });
+                }
+                const method = handler[message.method as RequestableMethod];
+                const result = await (method as any)(...message.params);
+                const response: WebsocketMessageResponseType = {
+                    id: message.id,
+                    collection: message.collection,
+                    result
+                };
+                ws.send(JSON.stringify(response));
+            } catch (err: any) {
+                /**
+                 * A failing request must never crash the server process.
+                 * The error is sent back to the client when the request has an id,
+                 * so that the client does not wait forever for the response.
+                 * The stack is left out because it contains server-side file paths.
+                 */
+                if (
+                    !message ||
+                    typeof message.id !== 'string' ||
+                    ws.readyState !== ws.OPEN
+                ) {
+                    return;
+                }
+                const errorResponse: WebsocketMessageResponseType = {
+                    id: message.id,
+                    collection: message.collection,
+                    result: undefined,
+                    error: {
+                        name: err && err.name,
+                        message: err && err.message,
+                        code: err && err.code,
+                        parameters: err && err.parameters
+                    }
+                };
+                ws.send(JSON.stringify(errorResponse));
             }
-            const result = await (method as any)(...message.params);
-            const response: WebsocketMessageResponseType = {
-                id: message.id,
-                collection: message.collection,
-                result
-            };
-            ws.send(JSON.stringify(response));
         });
     });
 
