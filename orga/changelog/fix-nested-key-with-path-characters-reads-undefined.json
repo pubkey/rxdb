@@ -1,0 +1,5 @@
+{
+    "text": "FIX nested property access on an `RxDocument` returned `undefined` (or the value of another path) for a key that contains `.`, `[` or `\\` and holds an object, for example `doc.meta['a.b']` on a free-form object field",
+    "links": [],
+    "priority": 4
+}
