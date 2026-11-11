@@ -66,10 +66,17 @@ export function pullStreamBuilderFromRxSchema(
     const queryName = prefixes.stream + ucCollectionName;
     const outputFields = generateGQLOutputFields({ schema, ignoreOutputKeys: input.ignoreOutputKeys })
 
+    /**
+     * graphQLSchemaFromRxSchema() only defines the headers input type
+     * and the headers argument of the subscription when headerFields are set.
+     */
+    const hasHeaderFields = ensureNotFalsy(input.headerFields).length > 0;
     const headersName = ucCollectionName + 'Input' + prefixes.headers;
+    const variablesString = hasHeaderFields ? '($headers: ' + headersName + ')' : '';
+    const argumentsString = hasHeaderFields ? '(headers: $headers)' : '';
 
-    const query = 'subscription on' + ucfirst(ensureNotFalsy(prefixes.stream)) + '($headers: ' + headersName + ') {\n' +
-        SPACING + queryName + '(headers: $headers) {\n' +
+    const query = 'subscription on' + ucfirst(ensureNotFalsy(prefixes.stream)) + variablesString + ' {\n' +
+        SPACING + queryName + argumentsString + ' {\n' +
         SPACING + SPACING + SPACING + 'documents {\n' +
         outputFields + '\n' +
         SPACING + SPACING + SPACING + '}\n' +

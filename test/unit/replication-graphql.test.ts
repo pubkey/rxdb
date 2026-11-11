@@ -62,7 +62,8 @@ import {
 
 import {
     buildSchema,
-    parse as parseQuery
+    parse as parseQuery,
+    validate as validateQuery
 } from 'graphql';
 import { ReplicationPushHandlerResult, RxDocumentData } from '../../plugins/core/index.mjs';
 import { HumanWithTimestampDocumentType } from '../../src/plugins/test-utils/schema-objects.ts';
@@ -2181,6 +2182,33 @@ describe('replication-graphql.test.ts', () => {
                 const parsed = parseQuery(output.query);
                 assert.ok(parsed);
             });
+            it('should create a query that is valid against the schema of graphQLSchemaFromRxSchema()', async () => {
+                const inputs = [
+                    {
+                        schema: schemas.humanWithTimestamp,
+                        checkpointFields: [
+                            'id',
+                            'updatedAt'
+                        ]
+                    },
+                    {
+                        schema: schemas.humanWithTimestamp,
+                        checkpointFields: [
+                            'id',
+                            'updatedAt'
+                        ],
+                        headerFields: ['AUTH_TOKEN']
+                    }
+                ];
+                for (const input of inputs) {
+                    const graphqlSchema = buildSchema(
+                        graphQLSchemaFromRxSchema({ human: input }).asString
+                    );
+                    const output = await pullStreamBuilderFromRxSchema('human', input)({});
+                    const errors = validateQuery(graphqlSchema, parseQuery(output.query));
+                    assert.deepStrictEqual(errors.map(error => error.message), []);
+                }
+            });
             it('builder should work with nested schemas', async () => {
                 const builder = pullStreamBuilderFromRxSchema(
                     'human', {
@@ -2193,8 +2221,8 @@ describe('replication-graphql.test.ts', () => {
 
                 const output = await builder({});
                 const parsed = parseQuery(output.query);
-                const want = `subscription onStream($headers:HumanInputHeaders) {
-                    streamHuman(headers:$headers) {
+                const want = `subscription onStream {
+                    streamHuman {
                         documents {
                             id
                             name

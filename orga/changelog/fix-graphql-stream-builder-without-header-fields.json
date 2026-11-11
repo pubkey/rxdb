@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `pullStreamBuilderFromRxSchema()` of the GraphQL replication created a subscription query with a `$headers` variable of an undefined type when no `headerFields` are set, so the query was invalid against the schema of `graphQLSchemaFromRxSchema()`",
+    "links": [],
+    "priority": 4
+}
