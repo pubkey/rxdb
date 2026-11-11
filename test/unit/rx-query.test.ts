@@ -661,6 +661,40 @@ describe('rx-query.test.ts', () => {
             );
             c.database.close();
         });
+        it('exec() on a query of a closed collection must throw COL21', async () => {
+            const c = await humansCollection.create(2);
+            const notExecuted = c.find();
+            const notExecutedFindOne = c.findOne();
+            const notExecutedCount = c.count();
+            const executed = c.find({ selector: { age: { $gte: 0 } } });
+            const executedResult = await executed.exec();
+            assert.strictEqual(executedResult.length, 2);
+
+            await c.database.close();
+
+            for (const query of [notExecuted, notExecutedFindOne, notExecutedCount, executed]) {
+                await assertThrows(
+                    () => query.exec(),
+                    'RxError',
+                    'COL21'
+                );
+            }
+        });
+        it('exec() on a query of a removed collection must throw COL21', async () => {
+            const c = await humansCollection.create(2);
+            const query = c.find();
+            const result = await query.exec();
+            assert.strictEqual(result.length, 2);
+
+            await c.remove();
+            await assertThrows(
+                () => query.exec(),
+                'RxError',
+                'COL21'
+            );
+
+            await c.database.close();
+        });
 
         /**
          * Helper to track storageInstance.query() calls.

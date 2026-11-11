@@ -66,6 +66,7 @@ import {
 
 } from './rx-query-helper.ts';
 import { RxQuerySingleResult } from './rx-query-single-result.ts';
+import { ensureRxCollectionIsNotClosed } from './rx-collection-helper.ts';
 
 let _queryCount = 0;
 const newQueryID = function (): number {
@@ -409,6 +410,8 @@ export class RxQueryBase<
                 op: this.op
             });
         }
+
+        ensureRxCollectionIsNotClosed(this.collection);
 
         /**
          * run _ensureEqual() here,

@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `RxQuery.exec()` on a query of a closed or removed collection now rejects with the `COL21` error instead of a plain `ensureNotFalsy()` error or the old cached result.",
+    "links": [],
+    "priority": 4
+}
