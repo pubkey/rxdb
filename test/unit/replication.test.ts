@@ -994,14 +994,20 @@ describe('replication.test.ts', () => {
                 }));
 
                 let resolved = false;
-                replicationState.awaitDocumentPushed(doc).then(() => {
+                const pushedPromise = replicationState.awaitDocumentPushed(doc).then(() => {
                     resolved = true;
                 });
                 await wait(isFastMode() ? 100 : 400);
                 assert.strictEqual(resolved, false);
 
+                /**
+                 * Each call reads the assumed master state on its own,
+                 * so the order in which two calls resolve is not defined.
+                 * Both calls must resolve after the push.
+                 */
                 continuePush();
                 await replicationState.awaitDocumentPushed(doc);
+                await pushedPromise;
                 assert.strictEqual(resolved, true);
 
                 await localCollection.database.close();
