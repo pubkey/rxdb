@@ -26,6 +26,14 @@ import {
     getDefaultRevision,
     now
 } from '../../plugins/utils/index.ts';
+import { RX_STATE_SCHEMA_TITLE } from '../state/helpers.ts';
+
+/**
+ * Prefix of the collection names that the RxState plugin uses.
+ * The dump only has the name of a collection,
+ * so the import has to identify these collections by their name.
+ */
+const RX_STATE_COLLECTION_NAME_PREFIX = 'rx-state-';
 
 function dumpRxDatabase(
     this: RxDatabase,
@@ -44,7 +52,13 @@ function dumpRxDatabase(
     const useCollections = Object.keys(this.collections)
         .filter(colName => !collections || collections.includes(colName))
         .filter(colName => colName.charAt(0) !== '_')
-        .map(colName => this.collections[colName]);
+        .map(colName => this.collections[colName])
+        /**
+         * The collection of an RxState is internal
+         * and only exists after addState() was called,
+         * so it is not part of the database dump.
+         */
+        .filter(col => col.schema.jsonSchema.title !== RX_STATE_SCHEMA_TITLE);
 
     return Promise.all(
         useCollections
@@ -63,7 +77,15 @@ const importDumpRxDatabase = function (
      * collections must be created before the import
      * because we do not know about the other collection-settings here
      */
-    const missingCollections = dump.collections
+    /**
+     * A dump can contain the internal collection of an RxState.
+     * It is skipped when the state was not added to this database.
+     */
+    const useCollections = dump.collections.filter((col: any) => {
+        return this.collections[col.name] ||
+            !col.name.startsWith(RX_STATE_COLLECTION_NAME_PREFIX);
+    });
+    const missingCollections = useCollections
         .filter((col: any) => !this.collections[col.name])
         .map((col: any) => col.name);
     if (missingCollections.length > 0) {
@@ -73,7 +95,7 @@ const importDumpRxDatabase = function (
     }
 
     return Promise.all(
-        dump.collections
+        useCollections
             .map((colDump: any) => this.collections[colDump.name].importJSON(colDump))
     );
 };

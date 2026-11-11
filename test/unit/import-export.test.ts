@@ -10,8 +10,10 @@ import {
     createBlob,
     createBlobFromBase64,
     blobToString,
-    ensureNotFalsy
+    ensureNotFalsy,
+    addRxPlugin
 } from '../../plugins/core/index.mjs';
+import { RxDBStatePlugin } from '../../plugins/state/index.mjs';
 
 import AsyncTestUtil from 'async-test-util';
 import config from './config.ts';
@@ -238,6 +240,60 @@ describe('import-export.test.js', () => {
                     assert.strictEqual(docs.length, 5);
                     db.remove();
                     db2.remove();
+                });
+                it('should not export the internal collection of an RxState', async () => {
+                    addRxPlugin(RxDBStatePlugin);
+                    const col = await humansCollection.create(5);
+                    const db = col.database;
+                    const state = await db.addState<{ foo: string; }>('app');
+                    await state.set('foo', () => 'bar');
+
+                    const json = await db.exportJSON();
+                    assert.deepStrictEqual(
+                        json.collections.map(c => c.name),
+                        [col.name]
+                    );
+
+                    const col2 = await humansCollection.create(0);
+                    const db2 = col2.database;
+                    await db2.importJSON(json);
+                    const docs = await col2.find().exec();
+                    assert.strictEqual(docs.length, 5);
+
+                    db.remove();
+                    db2.remove();
+                });
+                it('should import a dump that contains the collection of an RxState', async () => {
+                    addRxPlugin(RxDBStatePlugin);
+                    const col = await humansCollection.create(5);
+                    const db = col.database;
+                    const state = await db.addState<{ foo: string; }>('app');
+                    await state.set('foo', () => 'bar');
+
+                    const json = await db.exportJSON();
+                    json.collections = json.collections
+                        .filter(c => c.name === col.name)
+                        .concat([await state.collection.exportJSON()]);
+
+                    // without the RxState
+                    const col2 = await humansCollection.create(0);
+                    const db2 = col2.database;
+                    await db2.importJSON(json);
+                    const docs = await col2.find().exec();
+                    assert.strictEqual(docs.length, 5);
+
+                    // with the RxState
+                    const col3 = await humansCollection.create(0);
+                    const db3 = col3.database;
+                    const state3 = await db3.addState<{ foo: string; }>('app');
+                    await db3.importJSON(json);
+                    const docs3 = await col3.find().exec();
+                    assert.strictEqual(docs3.length, 5);
+                    await AsyncTestUtil.waitUntil(() => state3.get('foo') === 'bar');
+
+                    db.remove();
+                    db2.remove();
+                    db3.remove();
                 });
             });
             describe('negative', () => {
