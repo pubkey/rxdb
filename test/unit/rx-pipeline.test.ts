@@ -176,6 +176,62 @@ describe('rx-pipeline.test.js', () => {
             c1.database.close();
             c2.database.close();
         });
+        it('should resolve when the destination collection was closed', async () => {
+            const c1 = await humansCollection.create(0);
+            await c1.database.waitForLeadership();
+            const c2 = await humansCollection.create(0);
+            const pipeline = await c1.addPipeline({
+                destination: c2,
+                handler: async (docs) => {
+                    for (const doc of docs) {
+                        await c2.insert(schemaObjects.humanData(doc.passportId));
+                    }
+                },
+                identifier: randomToken(10)
+            });
+            await c1.insert(schemaObjects.humanData('foobar'));
+            await pipeline.awaitIdle();
+
+            await c2.database.close();
+            await c1.insert(schemaObjects.humanData('foobar2'));
+
+            const result = await Promise.race([
+                pipeline.awaitIdle().then(() => 'idle'),
+                promiseWait(1000).then(() => 'timeout')
+            ]);
+            assert.strictEqual(result, 'idle');
+
+            await c1.database.close();
+        });
+        it('should finish the running batch when the destination collection is closed', async () => {
+            const c1 = await humansCollection.create(0);
+            await c1.database.waitForLeadership();
+            const c2 = await humansCollection.create(0);
+            const written: string[] = [];
+            const pipeline = await c1.addPipeline({
+                destination: c2,
+                handler: async (docs) => {
+                    for (const doc of docs) {
+                        await promiseWait(50);
+                        await c2.insert(schemaObjects.humanData(doc.passportId));
+                        written.push(doc.passportId);
+                    }
+                },
+                identifier: randomToken(10)
+            });
+            await c1.bulkInsert([
+                schemaObjects.humanData('foobar1'),
+                schemaObjects.humanData('foobar2'),
+                schemaObjects.humanData('foobar3')
+            ]);
+            await promiseWait(20);
+            const idlePromise = pipeline.awaitIdle();
+            await c2.database.close();
+            await idlePromise;
+            assert.strictEqual(written.length, 3);
+
+            await c1.database.close();
+        });
     });
     describe('error handling', () => {
         it('should not swallow the error if the handler throws', async () => {

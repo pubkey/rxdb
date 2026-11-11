@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX the pipeline was not closed when its destination collection was closed, so `pipeline.awaitIdle()` never resolved after later writes to the source and a running handler batch was interrupted with `COL21`",
+    "links": [],
+    "priority": 5
+}
