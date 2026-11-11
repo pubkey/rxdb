@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX the Dexie.js RxStorage accepted an index on a nested field like `assignee.name` where the field or one of its parent objects is not required. Documents without that field were missing from the results of queries that use the index, including `find()` and `count()` without a selector. The storage now throws `DXE1` for these schemas, same as for optional top-level index fields. Each part of the path of a nested index field must be in the `required` array of its parent object",
+    "links": [],
+    "priority": 6
+}

@@ -1677,8 +1677,10 @@ describe('rx-query.test.ts', () => {
                                 maxLength: 100
                             },
                         },
+                        required: ['title']
                     }
                 },
+                required: ['id', 'info'],
                 indexes: ['info.title']
             };
             const db = await createRxDatabase({

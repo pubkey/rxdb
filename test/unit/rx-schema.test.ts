@@ -1105,11 +1105,14 @@ describe('rx-schema.test.ts', () => {
                                         maximum: 10000,
                                         multipleOf: 1
                                     }
-                                }
+                                },
+                                required: ['time']
                             }
                         },
+                        required: ['watch']
                     },
                 },
+                required: ['id', 'fileInfo'],
                 indexes: ['fileInfo.watch.time']
             };
             const db = await createRxDatabase({
@@ -1217,9 +1220,11 @@ describe('rx-schema.test.ts', () => {
                                 type: 'string',
                                 maxLength: 100
                             }
-                        }
+                        },
+                        required: ['name', 'content']
                     },
                 },
+                required: ['id', 'properties'],
                 indexes: ['properties.name', 'properties.content']
             };
 
@@ -1265,9 +1270,11 @@ describe('rx-schema.test.ts', () => {
                                 type: 'string',
                                 maxLength: 100
                             }
-                        }
+                        },
+                        required: ['name', 'properties']
                     },
                 },
+                required: ['id', 'properties'],
                 indexes: ['properties.name', 'properties.properties']
             };
 

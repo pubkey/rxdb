@@ -33,20 +33,28 @@ export class RxStorageDexie implements RxStorage<DexieStorageInternals, DexieSet
 
         /**
          * Dexie does not support non-required indexes and must throw if that is used.
+         * IndexedDB does not add a document to an index when the key path
+         * cannot be resolved, so each part of a nested index field must be required.
          * @link https://github.com/pubkey/rxdb/pull/6643#issuecomment-2505310082
          */
         if (params.schema.indexes) {
             const indexFields = params.schema.indexes.flat();
-            indexFields
-                .filter(indexField => !indexField.includes('.'))
-                .forEach(indexField => {
-                    if (!params.schema.required || !params.schema.required.includes(indexField as any)) {
+            indexFields.forEach(indexField => {
+                let schemaPart: {
+                    required?: string[] | readonly string[] | boolean;
+                    properties?: Record<string, any>;
+                } | undefined = params.schema as any;
+                for (const pathPart of indexField.split('.')) {
+                    const required: unknown = schemaPart ? schemaPart.required : undefined;
+                    if (!Array.isArray(required) || !required.includes(pathPart)) {
                         throw newRxError('DXE1', {
                             field: indexField,
                             schema: params.schema,
                         });
                     }
-                });
+                    schemaPart = schemaPart && schemaPart.properties ? schemaPart.properties[pathPart] : undefined;
+                }
+            });
         }
 
         return createDexieStorageInstance(this, params, this.settings);

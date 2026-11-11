@@ -232,11 +232,13 @@ export const humanSubIndex: RxJsonSchema<HumanWithSubOtherDocumentType> = overwr
                     maximum: 150,
                     multipleOf: 1
                 }
-            }
+            },
+            required: ['age']
         }
     },
     required: [
-        'passportId'
+        'passportId',
+        'other'
     ],
     indexes: ['other.age']
 });
@@ -981,7 +983,8 @@ export function averageSchema(): RxJsonSchema<AverageSchemaDocumentType> {
                         type: 'string',
                         maxLength: 10
                     }
-                }
+                },
+                required: ['deep1']
             },
             list: {
                 type: 'array',
@@ -1001,7 +1004,8 @@ export function averageSchema(): RxJsonSchema<AverageSchemaDocumentType> {
         required: [
             'id',
             'var1',
-            'var2'
+            'var2',
+            'deep'
         ],
         indexes: [
             'var1',

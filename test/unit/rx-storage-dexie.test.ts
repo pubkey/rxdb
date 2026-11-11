@@ -3,10 +3,12 @@ import assert from 'assert';
 import config from './config.ts';
 import {
     randomToken,
-    createRxDatabase
+    createRxDatabase,
+    RxCollection
 } from '../../plugins/core/index.mjs';
 
 import {
+    getRxStorageDexie,
     getDexieStoreSchema,
     fromDexieToStorage,
     fromStorageToDexie
@@ -17,8 +19,11 @@ import {
     isNode
 } from '../../plugins/test-utils/index.mjs';
 import {
-    indexedDB as fakeIndexedDB
+    indexedDB as fakeIndexedDB,
+    IDBKeyRange as fakeIDBKeyRange
 } from 'fake-indexeddb';
+import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.mjs';
+import type { RxJsonSchema } from '../../plugins/core/index.mjs';
 
 import { assertThrows } from 'async-test-util';
 
@@ -26,6 +31,106 @@ import { assertThrows } from 'async-test-util';
  * RxStorageDexie specific tests
  */
 describe('rx-storage-dexie.test.js', () => {
+    /**
+     * These tests create the dexie storage by themselves
+     * so that they run with every DEFAULT_STORAGE.
+     */
+    describe('explicitly created dexie storage', () => {
+        type TodoDocType = {
+            id: string;
+            name: string;
+            assignee?: {
+                name?: string;
+            };
+        };
+        function getDexieStorage() {
+            return wrappedValidateAjvStorage({
+                storage: getRxStorageDexie({
+                    indexedDB: fakeIndexedDB,
+                    IDBKeyRange: fakeIDBKeyRange
+                })
+            });
+        }
+        function getTodoSchema(
+            required: RxJsonSchema<TodoDocType>['required'],
+            assigneeRequired?: string[]
+        ): RxJsonSchema<TodoDocType> {
+            return {
+                version: 0,
+                primaryKey: 'id',
+                type: 'object',
+                properties: {
+                    id: {
+                        type: 'string',
+                        maxLength: 100
+                    },
+                    name: {
+                        type: 'string'
+                    },
+                    assignee: {
+                        type: 'object',
+                        properties: {
+                            name: {
+                                type: 'string',
+                                maxLength: 100
+                            }
+                        },
+                        required: assigneeRequired
+                    }
+                },
+                required,
+                indexes: ['assignee.name']
+            };
+        }
+        it('should throw on an index on a nested field that is not required on each level', async () => {
+            const schemas = [
+                // parent object is optional
+                getTodoSchema(['id', 'name'], ['name']),
+                // nested field is optional
+                getTodoSchema(['id', 'name', 'assignee']),
+                // both are optional
+                getTodoSchema(['id', 'name'])
+            ];
+            for (const schema of schemas) {
+                const db = await createRxDatabase<{ todos: RxCollection<TodoDocType>; }>({
+                    name: randomToken(10),
+                    storage: getDexieStorage()
+                });
+                await assertThrows(
+                    () => db.addCollections({
+                        todos: {
+                            schema
+                        }
+                    }),
+                    'RxError',
+                    'DXE1'
+                );
+                await db.close();
+            }
+        });
+        it('should find all documents when the nested index field is required on each level', async () => {
+            const db = await createRxDatabase<{ todos: RxCollection<TodoDocType>; }>({
+                name: randomToken(10),
+                storage: getDexieStorage()
+            });
+            await db.addCollections({
+                todos: {
+                    schema: getTodoSchema(['id', 'name', 'assignee'], ['name'])
+                }
+            });
+            await db.todos.bulkInsert([
+                { id: 'todo1', name: 'Learn RxDB', assignee: { name: 'Alice' } },
+                { id: 'todo2', name: 'Buy groceries', assignee: { name: 'Bob' } }
+            ]);
+            const all = await db.todos.find({ sort: [{ id: 'asc' }] }).exec();
+            assert.deepStrictEqual(all.map(d => d.id), ['todo1', 'todo2']);
+            const byIndex = await db.todos.find({
+                selector: { 'assignee.name': 'Bob' }
+            }).exec();
+            assert.deepStrictEqual(byIndex.map(d => d.id), ['todo2']);
+            await db.remove();
+        });
+    });
     if (config.storage.name !== 'dexie') {
         return;
     }

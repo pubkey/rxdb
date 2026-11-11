@@ -100,6 +100,10 @@ describe('rx-storage-query-correctness.test.ts', () => {
                 if (!required.includes(indexField as any)) {
                     (required as any).push(indexField);
                 }
+                const topLevelField = indexField.split('.')[0];
+                if (!required.includes(topLevelField as any)) {
+                    (required as any).push(topLevelField);
+                }
             });
         }
 
