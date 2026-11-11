@@ -529,7 +529,13 @@ export function attachmentWriteDataToNormalData(writeData: RxAttachmentData | Rx
         return writeData as any;
     }
     const ret: RxAttachmentData = {
-        length: data.size,
+        /**
+         * The length in the write data is the length of the data
+         * as seen by the user. Storage wrappers like the encryption plugin
+         * replace the data with a transformed Blob of a different size,
+         * so the size of the Blob is only used when no length is given.
+         */
+        length: typeof writeData.length === 'number' ? writeData.length : data.size,
         digest: writeData.digest,
         type: writeData.type
     };

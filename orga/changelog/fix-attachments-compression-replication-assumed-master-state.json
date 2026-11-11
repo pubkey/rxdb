@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX with `attachments.compression`, a pulled document was stored in the replication state with the internal `c-` digest and the compressed length of its attachments, so a backend that compares the `assumedMasterState` answered each later push with a conflict and the local change was dropped. The compression wrapper no longer mutates the written documents, and newly written compressed attachments have the plain digest and the `length` of the uncompressed data on the `RxAttachment` and in replicated documents",
+    "links": [],
+    "priority": 6
+}

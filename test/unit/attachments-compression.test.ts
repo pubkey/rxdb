@@ -17,8 +17,14 @@ import {
     createBlob,
     blobToString,
     CompressionMode,
-    ensureNotFalsy
+    ensureNotFalsy,
+    deepEqual,
+    RxStorage,
+    RxAttachmentData,
+    RxAttachmentWriteData,
+    WithDeletedAndAttachments
 } from '../../plugins/core/index.mjs';
+import { replicateRxCollection } from '../../plugins/replication/index.mjs';
 
 import {
     wrappedAttachmentsCompressionStorage,
@@ -28,6 +34,31 @@ import {
 } from '../../plugins/attachments-compression/index.mjs';
 
 const modes: CompressionMode[] = ['deflate', 'gzip'];
+
+/**
+ * Wraps the given RxStorage and tracks the size of the attachment data
+ * that reaches it, by attachment id.
+ */
+const storedAttachmentSizes = new Map<string, number>();
+function wrappedSizeTrackingStorage<Internals, InstanceCreationOptions>(
+    storage: RxStorage<Internals, InstanceCreationOptions>
+): RxStorage<Internals, InstanceCreationOptions> {
+    return Object.assign({}, storage, {
+        async createStorageInstance(params: Parameters<typeof storage.createStorageInstance>[0]) {
+            const instance = await storage.createStorageInstance(params);
+            const bulkWrite = instance.bulkWrite.bind(instance);
+            instance.bulkWrite = (rows, context) => {
+                rows.forEach(row => Object.entries(row.document._attachments).forEach(([attachmentId, attachment]) => {
+                    if ('data' in attachment) {
+                        storedAttachmentSizes.set(attachmentId, attachment.data.size);
+                    }
+                }));
+                return bulkWrite(rows, context);
+            };
+            return instance;
+        }
+    });
+}
 modes.forEach(mode => {
     describe('attachments-compression.test.ts (mode: ' + mode + ')', () => {
         if (
@@ -55,7 +86,7 @@ modes.forEach(mode => {
             const db = await createRxDatabase<{ [prop: string]: RxCollection<HumanDocumentType>; }>({
                 name: randomToken(10),
                 storage: wrappedAttachmentsCompressionStorage({
-                    storage: config.storage.getStorage()
+                    storage: wrappedSizeTrackingStorage(config.storage.getStorage())
                 }),
                 multiInstance,
                 eventReduce: true,
@@ -157,8 +188,8 @@ modes.forEach(mode => {
                 const plainData = 'foobar '.repeat(10);
 
                 const docCompressed = await c.findOne().exec(true);
-                const attachmentCompressed = await docCompressed.putAttachment({
-                    id: 'cat.txt',
+                await docCompressed.putAttachment({
+                    id: 'compare-size.txt',
                     data: createBlob(plainData, 'text/plain'),
                     type: 'text/plain'
                 });
@@ -170,7 +201,7 @@ modes.forEach(mode => {
                     type: 'text/plain'
                 });
                 assert.ok(
-                    (attachmentCompressed.length * 1.5) < attachmentB.length
+                    (ensureNotFalsy(storedAttachmentSizes.get('compare-size.txt')) * 1.5) < attachmentB.length
                 );
                 c.database.close();
                 c2.database.close();
@@ -184,17 +215,19 @@ modes.forEach(mode => {
                 const plainData = 'hello world repeating text '.repeat(20);
                 const originalBlob = createBlob(plainData, 'text/plain');
                 const attachment = await doc.putAttachment({
-                    id: 'readme.txt',
+                    id: 'compressible.txt',
                     data: originalBlob,
                     type: 'text/plain'
                 });
                 assert.ok(attachment);
 
                 // Stored size should be smaller than original (text compresses well)
+                const storedSize = ensureNotFalsy(storedAttachmentSizes.get('compressible.txt'));
                 assert.ok(
-                    attachment.length < originalBlob.size,
-                    'compressed attachment (' + attachment.length + ') should be smaller than original (' + originalBlob.size + ')'
+                    storedSize < originalBlob.size,
+                    'compressed attachment (' + storedSize + ') should be smaller than original (' + originalBlob.size + ')'
                 );
+                assert.strictEqual(attachment.length, originalBlob.size);
 
                 const data = await attachment.getData();
                 const dataString = await blobToString(data);
@@ -252,7 +285,7 @@ modes.forEach(mode => {
 
                 // Store both on compressed collection
                 const textAttachment = await doc.putAttachment({
-                    id: 'readme.txt',
+                    id: 'mixed.txt',
                     data: createBlob(textData, 'text/plain'),
                     type: 'text/plain'
                 });
@@ -270,9 +303,10 @@ modes.forEach(mode => {
                 });
 
                 // Compressed text should be strictly smaller than uncompressed
+                const storedTextSize = ensureNotFalsy(storedAttachmentSizes.get('mixed.txt'));
                 assert.ok(
-                    textAttachment.length < textAttachmentUncompressed.length,
-                    'compressed text (' + textAttachment.length + ') should be smaller than uncompressed (' + textAttachmentUncompressed.length + ')'
+                    storedTextSize < textAttachmentUncompressed.length,
+                    'compressed text (' + storedTextSize + ') should be smaller than uncompressed (' + textAttachmentUncompressed.length + ')'
                 );
 
                 // JPEG stored size should be exactly the original (not compressed, no overhead)
@@ -291,6 +325,105 @@ modes.forEach(mode => {
 
                 c.database.close();
                 c2.database.close();
+            });
+        });
+
+        describe('replication', () => {
+            it('should push a local change of a pulled document that has a compressed attachment', async () => {
+                const c = await createCompressedAttachmentsCollection(0, undefined, false);
+                const blob = createBlob('Milk, eggs, bread. '.repeat(20), 'text/plain');
+                const digest = await c.database.hashFunction(blob);
+                type MasterDoc = WithDeletedAndAttachments<HumanDocumentType>;
+                const toStubs = (docState: MasterDoc) => {
+                    const stubs: { [attachmentId: string]: RxAttachmentData; } = {};
+                    Object.entries(docState._attachments ?? {}).forEach(([attachmentId, att]) => {
+                        stubs[attachmentId] = {
+                            digest: att.digest,
+                            length: att.length,
+                            type: att.type
+                        };
+                    });
+                    return Object.assign({}, docState, { _attachments: stubs });
+                };
+
+                // the master has one document with one attachment
+                let masterState: MasterDoc = Object.assign(
+                    schemaObjects.humanData('todo1'),
+                    {
+                        _deleted: false,
+                        _attachments: {
+                            'list.txt': {
+                                digest,
+                                length: blob.size,
+                                type: 'text/plain'
+                            }
+                        }
+                    }
+                );
+                // each handler call returns new objects like a backend that answers with JSON
+                const getMasterWithData = (): MasterDoc => {
+                    const attachments: { [attachmentId: string]: RxAttachmentWriteData; } = {};
+                    Object.entries(toStubs(masterState)._attachments).forEach(([attachmentId, stub]) => {
+                        attachments[attachmentId] = Object.assign({}, stub, { data: blob.slice(0, blob.size, blob.type) });
+                    });
+                    return Object.assign({}, masterState, { _attachments: attachments });
+                };
+
+                let pushCalls = 0;
+                let conflicts = 0;
+                const replicationState = replicateRxCollection<HumanDocumentType, { done: boolean; }>({
+                    collection: c,
+                    replicationIdentifier: 'compressed-attachments-replication',
+                    live: true,
+                    pull: {
+                        handler: (checkpoint) => Promise.resolve(checkpoint ? {
+                            documents: [],
+                            checkpoint
+                        } : {
+                            documents: [getMasterWithData()],
+                            checkpoint: { done: true }
+                        })
+                    },
+                    push: {
+                        handler: (rows) => {
+                            pushCalls++;
+                            const row = rows[0];
+                            // conflict detection: the assumed master state must be equal to the master state
+                            if (
+                                !row.assumedMasterState ||
+                                !deepEqual(toStubs(row.assumedMasterState), toStubs(masterState))
+                            ) {
+                                conflicts++;
+                                return Promise.resolve([getMasterWithData()]);
+                            }
+                            masterState = toStubs(row.newDocumentState);
+                            return Promise.resolve([]);
+                        }
+                    }
+                });
+                await replicationState.awaitInSync();
+                assert.strictEqual(pushCalls, 0, 'must not push a document that was only pulled');
+
+                const doc = await c.findOne('todo1').exec(true);
+                await doc.incrementalPatch({ firstName: 'changed' });
+                await replicationState.awaitInSync();
+                assert.strictEqual(conflicts, 0);
+                assert.strictEqual(masterState.firstName, 'changed');
+                assert.deepStrictEqual(toStubs(masterState)._attachments, {
+                    'list.txt': {
+                        digest,
+                        length: blob.size,
+                        type: 'text/plain'
+                    }
+                });
+                const docAfter = await c.findOne('todo1').exec(true);
+                assert.strictEqual(docAfter.firstName, 'changed');
+                const attachment = ensureNotFalsy(docAfter.getAttachment('list.txt'));
+                assert.strictEqual(attachment.digest, digest);
+                assert.strictEqual(attachment.length, blob.size);
+                assert.strictEqual(await blobToString(await attachment.getData()), await blobToString(blob));
+
+                await c.database.remove();
             });
         });
 

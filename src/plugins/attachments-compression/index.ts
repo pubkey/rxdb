@@ -2,6 +2,7 @@ import { wrapRxStorageInstance } from '../../plugin-helpers.ts';
 import type {
     RxStorage,
     RxStorageInstanceCreationParams,
+    RxDocumentData,
     RxDocumentWriteData,
     CompressionMode,
     RxAttachmentWriteData
@@ -119,12 +120,24 @@ export async function decompressBlob(
 
 
 /**
- * Digest prefix that marks an attachment as having been
+ * Digest prefixes that mark an attachment as having been
  * stored with compression. Used by getAttachmentData to
- * determine whether decompression is needed, without
- * having to fetch the full document to inspect the MIME type.
+ * determine whether decompression is needed.
+ *
+ * The stored digest of a compressed attachment is
+ * COMPRESSED_HIDDEN_DIGEST_PREFIX + hash(originalData) and the stored length
+ * is the length of the original data. The prefix only exists inside of the
+ * wrapped storage. Everything above the wrapper works with the plain digest,
+ * so that the attachment stubs of a document are equal to the stubs of
+ * the same document on a replication master or on a collection without compression.
+ *
+ * Attachments with the COMPRESSED_DIGEST_PREFIX have the prefix as part of their
+ * digest above the wrapper and their length is the length of the compressed data.
+ * Such attachments exist in stored data and in the replication states
+ * that belong to it, so they are passed through as they are.
  */
 const COMPRESSED_DIGEST_PREFIX = 'c-';
+const COMPRESSED_HIDDEN_DIGEST_PREFIX = 'c2-';
 
 /**
  * A RxStorage wrapper that compresses attachment data on writes
@@ -158,32 +171,56 @@ export function wrappedAttachmentsCompressionStorage<Internals, InstanceCreation
                 const mode = params.schema.attachments.compression;
                 const compressibleTypes = params.schema.attachments.compressibleTypes || DEFAULT_COMPRESSIBLE_TYPES;
 
+                /**
+                 * The passed document is not mutated because callers like the
+                 * replication protocol keep using the given object after the write.
+                 */
                 async function modifyToStorage(docData: RxDocumentWriteData<RxDocType>) {
-                    await Promise.all(
-                        Object.values(docData._attachments).map(async (attachment) => {
-                            if (!(attachment as RxAttachmentWriteData).data) {
-                                return;
+                    const attachments = docData._attachments;
+                    const attachmentIds = Object.keys(attachments);
+                    if (attachmentIds.length === 0) {
+                        return docData;
+                    }
+                    const useAttachments = await Promise.all(
+                        attachmentIds.map(async (attachmentId) => {
+                            const attachment = attachments[attachmentId];
+                            if (!isCompressibleType(attachment.type, compressibleTypes)) {
+                                return attachment;
                             }
-                            const attachmentWriteData = attachment as RxAttachmentWriteData;
-                            if (isCompressibleType(attachmentWriteData.type, compressibleTypes)) {
-                                attachmentWriteData.data = await compressBlob(mode, attachmentWriteData.data);
-                                /**
-                                 * Prefix the digest to signal that this attachment is compressed.
-                                 * This is intentional: the stored digest is 'c-' + hash(originalData),
-                                 * NOT hash(compressedData). RxDB does not use digests for integrity
-                                 * verification — only for change detection (comparing before vs after).
-                                 * Change detection remains correct because both sides of any comparison
-                                 * consistently carry the 'c-' prefix for compressed attachments.
-                                 * All write paths flow through this modifyToStorage wrapper so the
-                                 * prefix is always applied, regardless of which API was used to write.
-                                 */
-                                if (!attachmentWriteData.digest.startsWith(COMPRESSED_DIGEST_PREFIX)) {
-                                    attachmentWriteData.digest = COMPRESSED_DIGEST_PREFIX + attachmentWriteData.digest;
-                                }
+                            const useAttachment = flatClone(attachment);
+                            if (!useAttachment.digest.startsWith(COMPRESSED_DIGEST_PREFIX)) {
+                                useAttachment.digest = COMPRESSED_HIDDEN_DIGEST_PREFIX + useAttachment.digest;
                             }
+                            if ((useAttachment as RxAttachmentWriteData).data) {
+                                (useAttachment as RxAttachmentWriteData).data = await compressBlob(
+                                    mode,
+                                    (useAttachment as RxAttachmentWriteData).data
+                                );
+                            }
+                            return useAttachment;
                         })
                     );
-                    return docData;
+                    const ret = flatClone(docData);
+                    ret._attachments = {};
+                    attachmentIds.forEach((attachmentId, idx) => ret._attachments[attachmentId] = useAttachments[idx]);
+                    return ret;
+                }
+
+                function modifyFromStorage(docData: RxDocumentData<RxDocType>) {
+                    const attachments = docData._attachments;
+                    let ret = docData;
+                    Object.entries(attachments).forEach(([attachmentId, attachment]) => {
+                        if (attachment.digest.startsWith(COMPRESSED_HIDDEN_DIGEST_PREFIX)) {
+                            if (ret === docData) {
+                                ret = flatClone(docData);
+                                ret._attachments = flatClone(attachments);
+                            }
+                            ret._attachments[attachmentId] = Object.assign({}, attachment, {
+                                digest: attachment.digest.slice(COMPRESSED_HIDDEN_DIGEST_PREFIX.length)
+                            });
+                        }
+                    });
+                    return ret;
                 }
 
                 /**
@@ -210,20 +247,29 @@ export function wrappedAttachmentsCompressionStorage<Internals, InstanceCreation
                     params.schema,
                     instance,
                     modifyToStorage,
-                    d => d
+                    modifyFromStorage
                 );
 
                 /**
-                 * Override getAttachmentData to decompress based on the
-                 * digest prefix rather than looking up the document's MIME type.
+                 * The attachment is compressed when its stored digest has the prefix.
+                 * Callers pass the plain digest, so the stored digest
+                 * is read from the document.
                  */
                 wrappedInstance.getAttachmentData = async (
                     documentId: string,
                     attachmentId: string,
                     digest: string
                 ) => {
-                    const data = await instance.getAttachmentData(documentId, attachmentId, digest);
-                    if (digest.startsWith(COMPRESSED_DIGEST_PREFIX)) {
+                    let storedDigest = digest;
+                    if (!digest.startsWith(COMPRESSED_DIGEST_PREFIX)) {
+                        const docs = await instance.findDocumentsById([documentId], true);
+                        const storedAttachment = docs[0] ? docs[0]._attachments[attachmentId] : undefined;
+                        if (storedAttachment && storedAttachment.digest === COMPRESSED_HIDDEN_DIGEST_PREFIX + digest) {
+                            storedDigest = storedAttachment.digest;
+                        }
+                    }
+                    const data = await instance.getAttachmentData(documentId, attachmentId, storedDigest);
+                    if (storedDigest !== digest || digest.startsWith(COMPRESSED_DIGEST_PREFIX)) {
                         return decompressBlob(mode, data);
                     }
                     return data;

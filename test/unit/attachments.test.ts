@@ -1058,13 +1058,17 @@ describe('attachments.test.ts', () => {
             const baseStorage = storageChain[storageChain.length - 1];
             const encryptionWrapper = storageChain[storageChain.length - 2];
 
+            // the layers below the compression wrapper use the stored digest of the attachment
+            const storedDocs = await baseStorage.findDocumentsById([doc.primary], false);
+            const storedDigest: string = storedDocs[0]._attachments['secret.txt'].digest;
+
             // 1. Raw data from base storage should not be plaintext (encrypted)
-            const rawData: Blob = await baseStorage.getAttachmentData(doc.primary, 'secret.txt', attachment.digest);
+            const rawData: Blob = await baseStorage.getAttachmentData(doc.primary, 'secret.txt', storedDigest);
             const rawString = await blobToString(rawData);
             assert.notStrictEqual(rawString, textData, 'raw stored data should not be plaintext (encrypted)');
 
             // 2. Data from encryption layer is decrypted but still compressed
-            const decryptedCompressedData: Blob = await encryptionWrapper.getAttachmentData(doc.primary, 'secret.txt', attachment.digest);
+            const decryptedCompressedData: Blob = await encryptionWrapper.getAttachmentData(doc.primary, 'secret.txt', storedDigest);
 
             // Compressed size should be strictly smaller than original text
             assert.ok(
