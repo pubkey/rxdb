@@ -234,6 +234,61 @@ describe('replication.test.ts', () => {
             localCollection.database.close();
             remoteCollection.database.close();
         });
+        it('should still pull newer master states when the push-modifier mutates its input document', async () => {
+            const { localCollection, remoteCollection } = await getTestCollections({
+                local: 0,
+                remote: 0
+            });
+            const replicationState = replicateRxCollection<HumanWithTimestampDocumentType, any>({
+                collection: localCollection,
+                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                live: true,
+                pull: {
+                    handler: getPullHandler(remoteCollection)
+                },
+                push: {
+                    handler: getPushHandler(remoteCollection),
+                    modifier: (doc) => {
+                        doc.name = 'push-modified';
+                        return doc;
+                    }
+                }
+            });
+            ensureReplicationHasNoErrors(replicationState);
+            await replicationState.awaitInitialReplication();
+
+            const docData = schemaObjects.humanWithTimestampData({
+                name: 'from-local',
+                age: 1
+            });
+            await localCollection.insert(docData);
+            await replicationState.awaitInSync();
+
+            const remoteDoc = await remoteCollection.findOne(docData.id).exec(true);
+            assert.strictEqual(remoteDoc.name, 'push-modified');
+
+            // another client changes the document on the master
+            await remoteDoc.incrementalPatch({ age: 2 });
+            replicationState.reSync();
+            await replicationState.awaitInSync();
+
+            const localDoc = await localCollection.findOne(docData.id).exec(true);
+            assert.strictEqual(localDoc.age, 2);
+
+            // a second push also runs the modifier on the assumed master state
+            await localDoc.incrementalPatch({ age: 3 });
+            await replicationState.awaitInSync();
+            const remoteDocAfter = await remoteCollection.findOne(docData.id).exec(true);
+            assert.strictEqual(remoteDocAfter.age, 3);
+            await remoteDocAfter.incrementalPatch({ age: 4 });
+            replicationState.reSync();
+            await replicationState.awaitInSync();
+            const localDocAfter = await localCollection.findOne(docData.id).exec(true);
+            assert.strictEqual(localDocAfter.age, 4);
+
+            await localCollection.database.close();
+            await remoteCollection.database.close();
+        });
         it('should skip the document when the push-modifier returns null', async () => {
             const { localCollection, remoteCollection } = await getTestCollections({
                 local: 0,

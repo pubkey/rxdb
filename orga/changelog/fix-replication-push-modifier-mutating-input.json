@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX a replication `push.modifier` that mutates its input document changed the stored assumed master state, so that later master changes to that document were no longer pulled",
+    "links": [],
+    "priority": 5
+}
