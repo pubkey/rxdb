@@ -10,6 +10,7 @@ import type {
     StringKeys
 } from './types/index.d.ts';
 import {
+    clone,
     ensureNotFalsy,
     flatClone,
     getProperty,
@@ -367,7 +368,12 @@ export function fillObjectWithDefaults(rxSchema: RxSchema<any>, obj: any): any {
         if (obj[key] === undefined) {
             const val = rxSchema.defaultValues[key];
             if (typeof val === 'object' && val !== null) {
-                obj[key] = Array.isArray(val) ? val.slice() : { ...val };
+                /**
+                 * Deep clone so that nested objects and arrays
+                 * of the default value are not shared with the schema
+                 * or with other filled objects.
+                 */
+                obj[key] = clone(val);
             } else {
                 obj[key] = val;
             }
