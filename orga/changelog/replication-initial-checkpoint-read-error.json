@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX replication with `pull.initialCheckpoint` or `push.initialCheckpoint` caused an unhandled promise rejection and never started when the meta storage rejected while the initial checkpoint was read or written. The error is now emitted on `error$` and the operation is retried.",
+    "links": [],
+    "priority": 5
+}

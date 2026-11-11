@@ -10,10 +10,15 @@ import type {
 import {
     createRevision,
     ensureNotFalsy,
+    errorToPlainJson,
     getDefaultRevision,
     getDefaultRxDocumentMeta,
-    now
+    now,
+    promiseWait
 } from '../plugins/utils/index.ts';
+import { newRxError } from '../rx-error.ts';
+
+const INITIAL_CHECKPOINT_RETRY_TIME = 200;
 
 export async function getLastCheckpointDoc<RxDocType, CheckpointType>(
     state: RxStorageInstanceReplicationState<RxDocType>,
@@ -151,4 +156,32 @@ export async function getCheckpointKey<RxDocType>(
         input.forkInstance.collectionName
     ].join('||'));
     return 'rx_storage_replication_' + hash;
+}
+
+/**
+ * Stores the initial checkpoint when no checkpoint
+ * is stored for the direction.
+ * A failing meta storage must not stop the replication,
+ * so errors are emitted and the operation is retried.
+ */
+export async function ensureInitialCheckpoint<RxDocType, CheckpointType>(
+    state: RxStorageInstanceReplicationState<RxDocType>,
+    direction: RxStorageReplicationDirection,
+    initialCheckpoint: CheckpointType
+) {
+    while (!state.events.canceled.getValue()) {
+        try {
+            const checkpointDoc = await getLastCheckpointDoc(state, direction);
+            if (!checkpointDoc) {
+                await setCheckpoint(state, direction, initialCheckpoint);
+            }
+            return;
+        } catch (err: any) {
+            state.events.error.next(newRxError(direction === 'down' ? 'RC_PULL' : 'RC_PUSH', {
+                direction: direction === 'down' ? 'pull' : 'push',
+                error: errorToPlainJson(err)
+            }));
+            await promiseWait(INITIAL_CHECKPOINT_RETRY_TIME);
+        }
+    }
 }
