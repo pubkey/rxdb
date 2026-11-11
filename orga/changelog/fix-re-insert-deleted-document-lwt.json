@@ -1,0 +1,5 @@
+{
+    "text": "FIX inserting a document that was deleted before kept the `_meta.lwt` of the first conflicting write attempt, so a write that ran in between had a newer `lwt` and checkpoint based consumers like the replication push could skip the re-inserted document",
+    "links": [],
+    "priority": 5
+}
