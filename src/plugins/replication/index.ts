@@ -79,6 +79,12 @@ import {
 
 export const REPLICATION_STATE_BY_COLLECTION: WeakMap<RxCollection, RxReplicationState<any, any>[]> = new WeakMap();
 
+/**
+ * Time in milliseconds to wait before a failed
+ * handler call is retried when no retryTime is set.
+ */
+const DEFAULT_RETRY_TIME = 1000 * 5;
+
 export class RxReplicationState<RxDocType, CheckpointType> {
     public readonly subs: Subscription[] = [];
     public readonly subjects = {
@@ -327,7 +333,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
                                 direction: 'pull'
                             });
                             this.subjects.error.next(emitError);
-                            await awaitRetry(this.collection, ensureNotFalsy(this.retryTime));
+                            await awaitRetry(this.collection, this.retryTime ?? DEFAULT_RETRY_TIME);
                         }
                     }
 
@@ -424,7 +430,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
                                 direction: 'push'
                             });
                             this.subjects.error.next(emitError);
-                            await awaitRetry(this.collection, ensureNotFalsy(this.retryTime));
+                            await awaitRetry(this.collection, this.retryTime ?? DEFAULT_RETRY_TIME);
                         }
                     }
                     if (this.isStoppedOrPaused()) {
@@ -818,7 +824,7 @@ export function replicateRxCollection<RxDocType, CheckpointType>(
         pull,
         push,
         live = true,
-        retryTime = 1000 * 5,
+        retryTime = DEFAULT_RETRY_TIME,
         waitForLeadership = true,
         autoStart = true,
         toggleOnDocumentVisible = true

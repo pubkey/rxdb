@@ -755,6 +755,59 @@ describe('replication.test.ts', () => {
             localCollection.database.close();
             remoteCollection.database.close();
         });
+        it('should retry failed pull and push handler calls when retryTime is 0', async () => {
+            const { localCollection, remoteCollection } = await getTestCollections({ local: 1, remote: 1 });
+            const pullHandler = getPullHandler(remoteCollection);
+            const pushHandler = getPushHandler(remoteCollection);
+            let pullCalls = 0;
+            let pushCalls = 0;
+            const replicationState = replicateRxCollection({
+                collection: localCollection,
+                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                live: true,
+                retryTime: 0,
+                pull: {
+                    handler: async (checkpoint, batchSize) => {
+                        await wait(0);
+                        pullCalls++;
+                        if (pullCalls < 3) {
+                            throw new Error('pull handler offline');
+                        }
+                        return pullHandler(checkpoint, batchSize);
+                    }
+                },
+                push: {
+                    handler: async (rows) => {
+                        await wait(0);
+                        pushCalls++;
+                        if (pushCalls < 3) {
+                            throw new Error('push handler offline');
+                        }
+                        return pushHandler(rows);
+                    }
+                }
+            });
+            const errors: (RxError | RxTypeError)[] = [];
+            replicationState.error$.subscribe(err => errors.push(err));
+
+            const initialReplicationDone = await Promise.race([
+                replicationState.awaitInitialReplication().then(() => true),
+                wait(2000).then(() => false)
+            ]);
+            assert.strictEqual(initialReplicationDone, true, 'awaitInitialReplication() must resolve after the retries');
+
+            const docsLocal = await localCollection.find().exec();
+            const docsRemote = await remoteCollection.find().exec();
+            assert.strictEqual(docsLocal.length, 2);
+            assert.strictEqual(docsRemote.length, 2);
+            assert.deepStrictEqual(
+                errors.map(err => err.code).sort(),
+                ['RC_PULL', 'RC_PULL', 'RC_PUSH', 'RC_PUSH']
+            );
+
+            await localCollection.database.close();
+            await remoteCollection.database.close();
+        });
     });
     describe('other', () => {
         describe('autoStart', () => {
