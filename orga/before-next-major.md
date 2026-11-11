@@ -106,6 +106,31 @@ Why it is breaking, and what has to be handled:
 - **It assumes the data matches the schema.** A document that stores a number where the schema declares a string-enum cannot be told apart from an already compressed value. The schema validation plugins catch this, but they are optional, so this should at least be a dev-mode check or a line in the docs.
 - It needs the `jsonschema-key-compression` release that contains enum-compression, which is not released yet.
 
+## Replication: Add `newDocumentRevision` to the push rows
+
+When a push request fails, RxDB sends the rows again. The write could have already reached the remote while only the response got lost, so the remote gets the same write twice. A push row has no identity that the remote could use to detect that:
+
+```ts
+{
+    assumedMasterState: { id: 'todo1', name: 'Learn RxDB', done: false, _deleted: false },
+    newDocumentState: { id: 'todo1', name: 'Learn RxDB', done: true, _deleted: false }
+}
+```
+
+The fork document already has such an identity, its `_rev` (`<height>-<databaseInstanceToken>`, see `createRevision()`). It is stored with the document, so it is the same on each retry, also after the JavaScript process was restarted and when the rows are batched differently. But `writeDocToDocState()` strips `_rev` and `_meta` before the rows are given to the push handler.
+
+In the next major:
+- Add `newDocumentRevision: string` to `RxReplicationWriteToMasterRow` in `src/types/replication-protocol.d.ts` and set it in `persistToMaster()` in `src/replication-protocol/upstream.ts` from `fullDocData._rev`.
+- The remote stores the last applied revision of each document and skips a row when the `newDocumentRevision` of that document was already applied. This makes the push idempotent per document, which also covers a batch that was only partially written before the request died.
+- Document it in the "Error handling" section of `docs-src/docs/replication.md` and in `replication-http.md`, and update the replication plugins and the server plugin to use it.
+
+Why it is breaking, and what has to be handled:
+
+- **The rows get a new field.** Remotes that validate the rows strictly reject it, for example a GraphQL input type like `HumanInputPushRow` or a schema validation on the server. `pushQueryBuilderFromRxSchema()` and `graphQLSchemaFromRxSchema()` have to add the field.
+- **The revision is only unique per document.** The remote has to use the primary key together with the revision. The height starts at `1` again when a deleted document was purged by the cleanup plugin and is inserted again with the same primary key on the same device, so the remote must not keep the applied revisions forever.
+- **Rows that are changed by the `push.modifier`** keep the revision of the unmodified fork document. Decide if that is documented or if the modifier also gets the revision.
+- Until then, the `push.handler` is called with a `requestId` as second argument, see [#9463](https://github.com/pubkey/rxdb/pull/9463). It is the same on retries of the same request but it is only kept in memory, so it changes when the app is restarted. Decide if the `requestId` is still needed when the rows have a `newDocumentRevision`.
+
 ---------------------------------
 ## Maybe later (not sure if should be done)
 
