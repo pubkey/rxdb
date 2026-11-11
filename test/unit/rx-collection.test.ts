@@ -2175,6 +2175,52 @@ describe('rx-collection.test.ts', () => {
 
                     db.close();
                 });
+                it('should still work for the same primary key after a previous call has failed', async () => {
+                    const c = await humansCollection.create(0);
+                    const docData = schemaObjects.humanData();
+                    const otherDocData = schemaObjects.humanData();
+
+                    // age is above the maximum of the schema
+                    const invalidData = clone(docData);
+                    invalidData.age = 200;
+                    await assertThrows(
+                        () => c.incrementalUpsert(invalidData),
+                        'RxError',
+                        'VD2'
+                    );
+
+                    const doc = await c.incrementalUpsert(docData);
+                    assert.ok(isRxDocument(doc));
+                    assert.strictEqual(doc.age, docData.age);
+
+                    // must also work when the document already exists
+                    const invalidUpdate = clone(docData);
+                    invalidUpdate.age = 200;
+                    await assertThrows(
+                        () => c.incrementalUpsert(invalidUpdate),
+                        'RxError',
+                        'schema validation error'
+                    );
+                    const validUpdate = clone(docData);
+                    validUpdate.firstName = 'foobar';
+                    const updatedDoc = await c.incrementalUpsert(validUpdate);
+                    assert.strictEqual(updatedDoc.firstName, 'foobar');
+
+                    // a failed call must not block calls that were queued behind it
+                    const invalidOther = clone(otherDocData);
+                    invalidOther.age = 200;
+                    const results = await Promise.allSettled([
+                        c.incrementalUpsert(invalidOther),
+                        c.incrementalUpsert(otherDocData)
+                    ]);
+                    assert.strictEqual(results[0].status, 'rejected');
+                    assert.strictEqual(results[1].status, 'fulfilled');
+
+                    const found = await c.findOne(otherDocData.passportId).exec(true);
+                    assert.strictEqual(found.age, otherDocData.age);
+
+                    c.database.close();
+                });
                 it('#9026 issue: a rejected bulkWrite permanently wedges the incremental-write queue', async () => {
                     const collection = await humansCollection.create(1);
                     const myDocument = await collection.findOne().exec(true);
