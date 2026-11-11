@@ -38,6 +38,11 @@ import {
     wrappedAttachmentsCompressionStorage,
     decompressBlob
 } from '../../plugins/attachments-compression/index.mjs';
+import {
+    getRxStorageLocalstorage,
+    getLocalStorageMock
+} from '../../plugins/storage-localstorage/index.mjs';
+import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.mjs';
 import { RxDBMigrationSchemaPlugin } from '../../plugins/migration-schema/index.mjs';
 addRxPlugin(RxDBMigrationSchemaPlugin);
 import { RxDBUpdatePlugin } from '../../plugins/update/index.mjs';
@@ -161,6 +166,59 @@ describe('attachments.test.ts', () => {
             assert.strictEqual(attachment.id, 'cat.txt');
             assert.strictEqual(attachment.type, 'text/plain');
             c.database.close();
+        });
+        it('should store and return an empty attachment', async () => {
+            const storages = [
+                config.storage.getStorage(),
+                wrappedValidateAjvStorage({
+                    storage: getRxStorageLocalstorage({ localStorage: getLocalStorageMock() })
+                })
+            ];
+            for (const storage of storages) {
+                const db = await createRxDatabase<{ humans: RxCollection<HumanDocumentType>; }>({
+                    name: randomToken(10),
+                    storage,
+                    multiInstance: false
+                });
+                const schemaJson = clone(schemas.human);
+                schemaJson.attachments = {};
+                const collections = await db.addCollections({
+                    humans: {
+                        schema: schemaJson
+                    }
+                });
+                const doc = await collections.humans.insert(schemaObjects.humanData());
+
+                const attachment = await doc.putAttachment({
+                    id: 'empty.txt',
+                    data: createBlob('', 'text/plain'),
+                    type: 'text/plain'
+                });
+                assert.strictEqual(attachment.id, 'empty.txt');
+                assert.strictEqual(attachment.length, 0);
+                assert.strictEqual(await attachment.getStringData(), '');
+
+                const updated = await doc.getLatest().putAttachment({
+                    id: 'empty.txt',
+                    data: createBlob('meow', 'text/plain'),
+                    type: 'text/plain'
+                });
+                assert.strictEqual(await updated.getStringData(), 'meow');
+                const emptyAgain = await doc.getLatest().putAttachment({
+                    id: 'empty.txt',
+                    data: createBlob('', 'text/plain'),
+                    type: 'text/plain'
+                });
+                assert.strictEqual(emptyAgain.length, 0);
+
+                const found = ensureNotFalsy(doc.getLatest().getAttachment('empty.txt'));
+                assert.strictEqual(found.type, 'text/plain');
+                const blob = await found.getData();
+                assert.strictEqual(blob.size, 0);
+                assert.strictEqual(await found.getStringData(), '');
+
+                await db.remove();
+            }
         });
         it('should insert two attachments', async () => {
             const c = await humansCollection.createAttachments(1);

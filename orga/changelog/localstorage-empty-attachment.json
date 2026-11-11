@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX writing an attachment with empty data threw `ensureNotFalsy() is falsy` on the localstorage RxStorage",
+    "links": [],
+    "priority": 4
+}
