@@ -26,7 +26,7 @@ mySourceCollection.$.subscribe(event => {/* ...process...*/});
 While this could work in some cases, it causes many problems that are fixed by using the pipeline plugin instead:
 - In an RxPipeline, only the [Leading Instance](./leader-election.md) runs the operations. For example when you have multiple browser tabs open, only one will run the processing and when that tab is closed, another tab will become elected leader and continue the pipeline processing.
 - On sudden stops and restarts of the JavaScript process, the processing will continue at the correct checkpoint and not miss out any documents even on unexpected crashes.
-- Reads/Writes on the destination collection are halted while the pipeline is processing. This ensures your queries only return fully processed documents and no partial results. So when you run a query to the destination collection directly after a write to the source collection, you can be sure your query results are up to date and the pipeline has already been run at the moment the query resolved:
+- Queries on the destination collection are halted while the pipeline is processing. This ensures your queries only return fully processed documents and no partial results. So when you run a query to the destination collection directly after a write to the source collection, you can be sure your query results are up to date and the pipeline has already been run at the moment the query resolved:
 
 ```ts
 await mySourceCollection.insert({/* ... */});
@@ -191,11 +191,11 @@ Pipeline handlers must never throw. If you run operations inside of the handler 
 
 ### Be careful when doing http requests in the handler
 
-When you run http requests inside of your handler, you no longer have an [offline first](./offline-first.md) application because reads to the destination collection will be blocked until all handlers have finished. When your client is offline, therefore the collection will be blocked for reads and writes.
+When you run http requests inside of your handler, you no longer have an [offline first](./offline-first.md) application because reads to the destination collection will be blocked until all handlers have finished. When your client is offline, queries on the destination collection are blocked until the requests succeed.
 
-### Pipelines temporarily block external reads and writes
+### Pipelines temporarily block external reads
 
-While a pipeline is running, **all reads and writes to its destination collection are blocked**. This guarantees that queries never observe partially processed data, but it also means that pipelines can block each other if they interact incorrectly.
+While a pipeline is running, **all queries on its destination collection are blocked**. Writes to the destination collection from outside of the handler are not blocked. This guarantees that queries never observe partially processed data, but it also means that pipelines can block each other if they interact incorrectly.
 
 Problems occur when multiple pipelines:
 

@@ -84,7 +84,7 @@ const dbMongo = await createRxDatabase({
 
 ### password
 `(optional)`
-If you want to use encrypted fields in the collections of a database, you have to set a password for it. The password must be a string with at least 12 characters.
+If you want to use encrypted fields in the collections of a database, you have to set a password for it. The format of the password depends on which encryption plugin is used. With the `encryption-crypto-js` plugin, the password must be a string with at least 8 characters.
 
 [Read more about encryption here](./encryption.md).
 
