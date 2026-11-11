@@ -640,6 +640,35 @@ describe('replication-graphql.test.ts', () => {
                 server.close();
                 c.database.close();
             });
+            it('should pull all documents when pull.batchSize is not set', async () => {
+                const amount = 30;
+                const [c, server] = await Promise.all([
+                    humansCollection.createHumanWithTimestamp(0),
+                    SpawnServer.spawn(getTestData(amount)),
+                ]);
+                const requestedLimits: number[] = [];
+                const replicationState = replicateGraphQL({
+                    replicationIdentifier: randomToken(10),
+                    collection: c,
+                    url: server.url,
+                    pull: {
+                        queryBuilder: (checkpoint: any, limit: number) => {
+                            requestedLimits.push(limit);
+                            return pullQueryBuilder(checkpoint, limit);
+                        }
+                    },
+                    live: false,
+                    deletedField: 'deleted',
+                });
+                await replicationState.awaitInitialReplication();
+
+                const docs = await c.find().exec();
+                assert.strictEqual(docs.length, amount);
+                assert.deepStrictEqual(requestedLimits, [100]);
+
+                server.close();
+                c.database.close();
+            });
             it('should retry on errors', async () => {
                 const amount = batchSize * 4;
                 const testData = getTestData(amount);

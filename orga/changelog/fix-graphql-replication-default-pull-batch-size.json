@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX the GraphQL replication pulled only the first 20 documents per sync cycle when `pull.batchSize` was not set, because the `pull.queryBuilder` was called with the limit `20` while the replication protocol used the default batch size `100`. The `pull.queryBuilder` now gets the same batch size that the replication protocol uses",
+    "links": [],
+    "priority": 5
+}

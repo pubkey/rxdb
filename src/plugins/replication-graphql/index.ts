@@ -119,10 +119,10 @@ export function replicateGraphQL<RxDocType, CheckpointType>(
 
     let replicationPrimitivesPull: ReplicationPullOptions<RxDocType, CheckpointType> | undefined;
     if (pull) {
-        const pullBatchSize = pull.batchSize ? pull.batchSize : 20;
         replicationPrimitivesPull = {
             async handler(
-                lastPulledCheckpoint: CheckpointType | undefined
+                lastPulledCheckpoint: CheckpointType | undefined,
+                pullBatchSize: number
             ) {
                 const pullGraphQL = await pull.queryBuilder(lastPulledCheckpoint, pullBatchSize);
                 const result = await graphqlReplicationState.graphQLRequest(pullGraphQL);
