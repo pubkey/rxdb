@@ -1,0 +1,5 @@
+{
+    "text": "FIX `putAttachmentBase64()` and `createBlobFromBase64()` stored wrong attachment data or threw `fetch failed` when the attachment `type` contained a comma or a `#`",
+    "links": [],
+    "priority": 4
+}
