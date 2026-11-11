@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX localStorage RxStorage `cleanup()` could purge a live document and throw on every later run when several documents were deleted in one bulk write and one of them was inserted again. The cleanup index now contains the primary key and is rebuilt once from the stored documents when data with the previous index layout is found",
+    "links": [],
+    "priority": 6
+}
