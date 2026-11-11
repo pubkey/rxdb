@@ -1091,11 +1091,31 @@ export class RxCollectionBase<
         return ret;
     }
 
-    async close(): Promise<boolean> {
+    /**
+     * Contains the promise of the currently running close() call
+     * so that concurrent calls share one run
+     * instead of closing the collection multiple times.
+     */
+    private closePromise: Promise<boolean> | null = null;
+
+    close(): Promise<boolean> {
         if (this.closed) {
             return PROMISE_RESOLVE_FALSE;
         }
+        if (!this.closePromise) {
+            this.closePromise = this._close().catch(err => {
+                /**
+                 * When closing failed, a later call
+                 * must be able to run the close logic again.
+                 */
+                this.closePromise = null;
+                throw err;
+            });
+        }
+        return this.closePromise;
+    }
 
+    private async _close(): Promise<boolean> {
         OPEN_COLLECTIONS.delete(this);
 
 

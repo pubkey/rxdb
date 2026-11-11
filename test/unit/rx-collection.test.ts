@@ -2364,6 +2364,32 @@ describe('rx-collection.test.ts', () => {
                 });
             });
         });
+        describe('.close()', () => {
+            it('should close the collection only once when close() is called twice without awaiting', async () => {
+                const c = await humansCollection.createPrimary(0);
+                const db = c.database;
+                const closedEvents: string[] = [];
+                const sub = db.collections$.subscribe(event => {
+                    if (event.type === 'CLOSED') {
+                        closedEvents.push(event.collection.name);
+                    }
+                });
+
+                const results = await Promise.all([
+                    c.close(),
+                    c.close()
+                ]);
+                assert.deepStrictEqual(results, [true, true]);
+                assert.deepStrictEqual(closedEvents, [c.name]);
+                assert.strictEqual(c.closed, true);
+
+                assert.strictEqual(await c.close(), false);
+                assert.deepStrictEqual(closedEvents, [c.name]);
+
+                sub.unsubscribe();
+                await db.close();
+            });
+        });
         describe('.findByIds()', () => {
             it('should not crash', async () => {
                 const c = await humansCollection.create();
