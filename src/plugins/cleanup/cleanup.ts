@@ -87,7 +87,7 @@ export async function cleanupRxCollection(
         if (rxCollection.closed) {
             return false;
         }
-        RXSTORAGE_CLEANUP_QUEUE = RXSTORAGE_CLEANUP_QUEUE
+        const cleanupRun = RXSTORAGE_CLEANUP_QUEUE
             .then(async () => {
                 if (rxCollection.closed) {
                     return true;
@@ -112,7 +112,13 @@ export async function cleanupRxCollection(
 
                 return (await Promise.all(allDone)).every(v => v);
             });
-        isDone = await RXSTORAGE_CLEANUP_QUEUE;
+        /**
+         * The queue must continue with the next cleanup
+         * when this run rejects. The error is only thrown
+         * to the caller of this run.
+         */
+        RXSTORAGE_CLEANUP_QUEUE = cleanupRun.catch(() => true);
+        isDone = await cleanupRun;
     }
     await runAsyncPluginHooks('postCleanup', {
         collectionName: rxCollection.name,

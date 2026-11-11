@@ -14,6 +14,9 @@ import {
     addRxPlugin,
     RxCollection,
     RxJsonSchema,
+    RxStorage,
+    RxStorageInstance,
+    RxStorageInstanceCreationParams,
     ensureNotFalsy,
     removeRxDatabase,
     RxStorage
@@ -473,6 +476,104 @@ describe('cleanup.test.js', () => {
             assert.strictEqual(result2, true);
 
             await db.close();
+        });
+        it('a rejected storage cleanup must only reject its own caller and not block later cleanups', async () => {
+            /**
+             * A user-supplied RxStorage where the first cleanup() call
+             * of the humans collection rejects,
+             * like it happens on a transient storage error.
+             */
+            const baseStorage = config.storage.getStorage();
+            const humansInstances: RxStorageInstance<any, any, any>[] = [];
+            let failNextCleanup = true;
+            const failingStorage: RxStorage<any, any> = Object.assign(
+                {},
+                baseStorage,
+                {
+                    async createStorageInstance<RxDocType>(
+                        params: RxStorageInstanceCreationParams<RxDocType, any>
+                    ): Promise<RxStorageInstance<RxDocType, any, any>> {
+                        const instance = await baseStorage.createStorageInstance(params);
+                        if (params.collectionName !== 'humans') {
+                            return instance;
+                        }
+                        const origCleanup = instance.cleanup.bind(instance);
+                        instance.cleanup = (minimumDeletedTime: number) => {
+                            if (failNextCleanup) {
+                                failNextCleanup = false;
+                                return Promise.reject(new Error('injected cleanup failure'));
+                            }
+                            return origCleanup(minimumDeletedTime);
+                        };
+                        humansInstances.push(instance);
+                        return instance;
+                    }
+                }
+            );
+
+            const dbA = await createRxDatabase<{ humans: RxCollection<HumanDocumentType>; }>({
+                name: randomToken(10),
+                storage: failingStorage,
+                multiInstance: false
+            });
+            const dbB = await createRxDatabase<{ humans: RxCollection<HumanDocumentType>; }>({
+                name: randomToken(10),
+                storage: config.storage.getStorage(),
+                multiInstance: false
+            });
+            await dbA.addCollections({ humans: { schema: schemas.human } });
+            await dbB.addCollections({ humans: { schema: schemas.human } });
+            const collectionA = dbA.humans;
+            const collectionB = dbB.humans;
+
+            const docDataA = schemaObjects.humanData('doc-a');
+            const docDataB = schemaObjects.humanData('doc-b');
+            const docA = await collectionA.insert(docDataA);
+            const docB = await collectionB.insert(docDataB);
+            await docA.remove();
+            await docB.remove();
+
+            // ensure the clock of the storage has passed the write time of the deletes
+            await wait(10);
+
+            let firstError: Error | undefined;
+            try {
+                await collectionA.cleanup(0);
+            } catch (err) {
+                firstError = err as Error;
+            }
+
+            let cleanupResultB: boolean | undefined;
+            let cleanupResultA: boolean | undefined;
+            let laterError: Error | undefined;
+            try {
+                cleanupResultB = await collectionB.cleanup(0);
+                cleanupResultA = await collectionA.cleanup(0);
+            } catch (err) {
+                laterError = err as Error;
+            }
+
+            const tombstonesA = await humansInstances[0].findDocumentsById([docDataA.passportId], true);
+            await collectionA.insert(docDataA);
+            await collectionB.insert(docDataB);
+            const reInsertedA = await collectionA.findOne(docDataA.passportId).exec();
+            const reInsertedB = await collectionB.findOne(docDataB.passportId).exec();
+
+            await dbA.close();
+            await dbB.close();
+
+            assert.ok(firstError, 'the caller of the failed cleanup must get the error');
+            assert.ok(firstError.message.includes('injected cleanup failure'));
+            assert.strictEqual(
+                laterError,
+                undefined,
+                'later cleanup() calls must not reject with the error of a previous cleanup: ' + (laterError ? laterError.message : '')
+            );
+            assert.strictEqual(cleanupResultB, true);
+            assert.strictEqual(cleanupResultA, true);
+            assert.strictEqual(tombstonesA.length, 0, 'the tombstone must be purged from the storage');
+            assert.ok(reInsertedA);
+            assert.ok(reInsertedB);
         });
         it('fields with umlauts and emojis could break the state after cleanup in some storages', async () => {
             type DocType = {

@@ -1,0 +1,5 @@
+{
+    "text": "FIX after one storage `cleanup()` call rejected, `RxCollection.cleanup()` rejected with the same stale error for all collections of all databases in the JavaScript process and the cleanup plugin never purged deleted documents again. A failed cleanup now only rejects its own caller and later cleanups run.",
+    "links": [],
+    "priority": 5
+}
