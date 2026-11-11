@@ -47,6 +47,15 @@ export class RxPipeline<RxDocType> {
     lastProcessedDocTime = new BehaviorSubject(0);
     somethingChanged = new Subject();
 
+    /**
+     * Is false until it is known that the source collection
+     * contains no documents that are newer than the stored checkpoint.
+     * Source documents that have been written before the pipeline
+     * was created, emit no event to this instance, so the storage
+     * must be asked for them.
+     */
+    initialStateKnown = false;
+    changeCount = 0;
 
 
     waitBeforeWriteFn = async () => {
@@ -82,6 +91,9 @@ export class RxPipeline<RxDocType> {
         public readonly batchSize = 100
     ) {
         this.checkpointId = 'rx-pipeline-' + identifier;
+        this.subs.push(
+            this.somethingChanged.subscribe(() => this.changeCount = this.changeCount + 1)
+        );
         this.source.onClose.push(() => this.close());
         this.destination.awaitBeforeReads.add(this.waitBeforeWriteFn);
         this.subs.push(
@@ -192,10 +204,28 @@ export class RxPipeline<RxDocType> {
             if (this.error) {
                 throw this.error;
             }
-            if (this.lastProcessedDocTime.getValue() >= this.lastSourceDocTime.getValue()) {
+            if (this.lastProcessedDocTime.getValue() < this.lastSourceDocTime.getValue()) {
+                await firstValueFrom(this.somethingChanged);
+            } else if (
+                this.initialStateKnown ||
+                this.stopped ||
+                this.source.closed ||
+                this.destination.closed
+            ) {
                 done = true;
             } else {
-                await firstValueFrom(this.somethingChanged);
+                const changeCountBefore = this.changeCount;
+                const hasUnprocessed = await hasUnprocessedDocuments(this);
+                if (this.changeCount !== changeCountBefore) {
+                    /**
+                     * The pipeline state has changed while the storage was asked,
+                     * so the result might be outdated and must be fetched again.
+                     */
+                } else if (hasUnprocessed) {
+                    await firstValueFrom(this.somethingChanged);
+                } else {
+                    this.initialStateKnown = true;
+                }
             }
         }
     }
@@ -203,6 +233,7 @@ export class RxPipeline<RxDocType> {
     async close() {
         await this.processQueue;
         this.stopped = true;
+        this.somethingChanged.next({});
         this.destination.awaitBeforeReads.delete(this.waitBeforeWriteFn);
         this.subs.forEach(s => s.unsubscribe());
         await this.processQueue;
@@ -247,6 +278,22 @@ export async function getCheckpointDoc<RxDocType>(
     } else {
         return undefined;
     }
+}
+
+/**
+ * Returns true when the source collection contains documents
+ * that are newer than the stored checkpoint of the pipeline.
+ */
+export async function hasUnprocessedDocuments<RxDocType>(
+    pipeline: RxPipeline<RxDocType>
+): Promise<boolean> {
+    const checkpointDoc = await getCheckpointDoc(pipeline);
+    const docsSinceResult = await getChangedDocumentsSince(
+        pipeline.source.storageInstance,
+        1,
+        checkpointDoc ? checkpointDoc.data.checkpoint : undefined
+    );
+    return docsSinceResult.documents.length > 0;
 }
 
 export async function setCheckpointDoc<RxDocType>(
@@ -296,6 +343,7 @@ export async function addPipeline<RxDocType>(
     const startPromise = waitForLeadership ? this.database.waitForLeadership() : PROMISE_RESOLVE_VOID;
     startPromise.then(() => {
         pipeline.trigger();
+        pipeline.somethingChanged.next({});
         pipeline.subs.push(
             this.eventBulks$.pipe(
                 filter((bulk: RxChangeEventBulk<RxDocType>) => {
