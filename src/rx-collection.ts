@@ -111,7 +111,7 @@ import {
     RX_COLLECTION_BULK_INSERT_CONTEXT
 } from './rx-storage-helper.ts';
 import { IncrementalWriteQueue } from './incremental-write.ts';
-import { beforeDocumentUpdateWrite } from './rx-document.ts';
+import { beforeDocumentUpdateWrite, isRxDocument } from './rx-document.ts';
 import { overwritable } from './overwritable.ts';
 import type { RxPipeline, RxPipelineOptions } from './plugins/pipeline/index.ts';
 import { defaultConflictHandler } from './replication-protocol/default-conflict-handler.ts';
@@ -396,7 +396,7 @@ export class RxCollectionBase<
     }
 
     async insert(
-        json: RxDocumentType | RxDocument
+        json: RxDocumentType
     ): Promise<RxDocument<RxDocumentType, OrmMethods, Reactivity>> {
         isWriteAllowed(this);
         const writeResult = await this.bulkInsert([json as any]);
@@ -408,7 +408,7 @@ export class RxCollectionBase<
     }
 
     async insertIfNotExists(
-        json: RxDocumentType | RxDocument
+        json: RxDocumentType
     ): Promise<RxDocument<RxDocumentType, OrmMethods, Reactivity>> {
         const writeResult = await this.bulkInsert([json as any]);
         if (writeResult.error.length > 0) {
@@ -455,6 +455,7 @@ export class RxCollectionBase<
         if (this.hasHooks('pre', 'insert')) {
             insertRows = await Promise.all(
                 docsData.map(docData => {
+                    ensureIsNotRxDocument(this, docData);
                     const useDocData = fillObjectDataBeforeInsert(this.schema, docData, true);
                     return this._runHooks('pre', 'insert', useDocData)
                         .then(() => {
@@ -475,6 +476,7 @@ export class RxCollectionBase<
             const schema = this.schema;
             for (let index = 0; index < docsData.length; index++) {
                 const docData = docsData[index];
+                ensureIsNotRxDocument(this, docData);
                 const useDocData = fillObjectDataBeforeInsert(schema, docData);
                 ids.add((useDocData as any)[primaryPath]);
                 insertRows[index] = { document: useDocData };
@@ -1189,6 +1191,23 @@ export class RxCollectionBase<
  * adds the hook-functions to the collections prototype
  * this runs only once
  */
+/**
+ * An RxDocument instance is not plain document data.
+ * Its own properties would be stored instead of the document fields
+ * which results in a stored document without a primary key.
+ */
+function ensureIsNotRxDocument(
+    collection: RxCollectionBase<any, any, any, any, any>,
+    docData: any
+) {
+    if (isRxDocument(docData)) {
+        throw newRxError('COL1', {
+            collection: collection.name,
+            id: docData.primary
+        });
+    }
+}
+
 function _applyHookFunctions(
     collection: RxCollection<any, any>
 ) {

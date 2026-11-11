@@ -328,8 +328,8 @@ export const ERROR_MESSAGES = {
     // rx-collection
     COL1: {
         message: 'RxDocument.insert() You cannot insert an existing document',
-        cause: 'You tried to insert a document with a primary key that already exists.',
-        fix: 'Use upsert() if you want to overwrite.',
+        cause: 'You passed an RxDocument instance to insert(), insertIfNotExists() or bulkInsert(). These methods only accept plain document data.',
+        fix: 'Insert the plain data of the document instead, for example with myRxDocument.toMutableJSON().',
         docs: 'https://rxdb.info/rx-collection.html?console=errors&code=COL1#insert'
     },
     COL2: {
