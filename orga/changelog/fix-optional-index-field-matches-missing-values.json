@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX queries and `count()` on an optional index field returned documents that do not have the field (for example `{ priority: 0 }`, `{ priority: { $lt: 5 } }` or `{ dueAt: '' }`) on storages that use the custom index strings (memory, localstorage). The query planner no longer treats the selector as satisfied by the index when the index range can contain documents without the field",
+    "links": [],
+    "priority": 5
+}

@@ -2148,6 +2148,129 @@ describe('rx-storage-query-correctness.test.ts', () => {
             }
         ],
     });
+    testCorrectQueries<{
+        id: string;
+        name: string;
+        dueAt?: string;
+        priority?: number;
+    }>({
+        testTitle: 'documents without an optional index field must not match a selector on that field',
+        /**
+         * IndexedDB has some non-indexable types, so this does not work in dexie.
+         * @link https://github.com/pubkey/rxdb/pull/6643#issuecomment-2505310082
+         */
+        notRunIfTrue: () => config.storage.name.includes('dexie'),
+        data: [
+            {
+                id: 'todo1',
+                name: 'Learn RxDB',
+                dueAt: '2026-01-01T10:00:00.000Z',
+                priority: 8
+            },
+            {
+                id: 'todo2',
+                name: 'Buy groceries',
+                dueAt: '2026-01-02T09:30:00.000Z',
+                priority: 0
+            },
+            {
+                id: 'todo3',
+                name: 'Set up replication',
+                priority: 10
+            },
+            {
+                id: 'todo4',
+                name: 'Clean the kitchen',
+                dueAt: '2026-01-04T18:00:00.000Z'
+            }
+        ],
+        schema: {
+            primaryKey: 'id',
+            type: 'object',
+            version: 0,
+            properties: {
+                id: {
+                    type: 'string',
+                    maxLength: 100
+                },
+                name: {
+                    type: 'string'
+                },
+                dueAt: {
+                    type: 'string',
+                    maxLength: 30
+                },
+                priority: {
+                    type: 'integer',
+                    minimum: 0,
+                    maximum: 10,
+                    multipleOf: 1
+                }
+            },
+            required: ['id', 'name'],
+            indexes: ['dueAt', 'priority']
+        },
+        queries: [
+            {
+                info: '$eq on the minimum of an optional number field',
+                query: {
+                    selector: { priority: 0 },
+                    sort: [{ id: 'asc' }]
+                },
+                expectedResultDocIds: ['todo2']
+            },
+            {
+                info: '$lt on an optional number field',
+                query: {
+                    selector: { priority: { $lt: 5 } },
+                    sort: [{ id: 'asc' }]
+                },
+                expectedResultDocIds: ['todo2']
+            },
+            {
+                info: '$gte on the minimum of an optional number field',
+                query: {
+                    selector: { priority: { $gte: 0 } },
+                    sort: [{ id: 'asc' }]
+                },
+                expectedResultDocIds: ['todo1', 'todo2', 'todo3']
+            },
+            {
+                info: '$gt above the minimum of an optional number field',
+                query: {
+                    selector: { priority: { $gt: 5 } },
+                    sort: [{ id: 'asc' }]
+                },
+                selectorSatisfiedByIndex: true,
+                expectedResultDocIds: ['todo1', 'todo3']
+            },
+            {
+                info: '$eq empty string on an optional string field',
+                query: {
+                    selector: { dueAt: '' },
+                    sort: [{ id: 'asc' }]
+                },
+                expectedResultDocIds: []
+            },
+            {
+                info: '$lt on an optional string field',
+                query: {
+                    selector: { dueAt: { $lt: '2026-01-03' } },
+                    sort: [{ id: 'asc' }]
+                },
+                expectedResultDocIds: ['todo1', 'todo2']
+            },
+            {
+                info: '$gt on an optional string field',
+                query: {
+                    selector: { dueAt: { $gt: '2026-01-02' } },
+                    sort: [{ id: 'asc' }]
+                },
+                selectorSatisfiedByIndex: true,
+                expectedResultDocIds: ['todo2', 'todo4']
+            }
+        ]
+    });
     /**
      * @link https://github.com/pubkey/rxdb/issues/6792
      * @link https://github.com/pubkey/rxdb/issues/6792#issuecomment-2624555824

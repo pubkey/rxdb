@@ -206,7 +206,8 @@ export function getQueryPlan<RxDocType>(
             inclusiveEnd,
             inclusiveStart,
             sortSatisfiedByIndex: !hasDescSorting && optimalSortIndexCompareString === indexCompareString,
-            selectorSatisfiedByIndex: isSelectorSatisfiedByIndex(index, query.selector, startKeys, endKeys)
+            selectorSatisfiedByIndex: isSelectorSatisfiedByIndex(index, query.selector, startKeys, endKeys) &&
+                !canIndexRangeContainDocsWithoutSelectorField(schema, index, query.selector, startKeys)
         };
         const quality = rateQueryPlan(
             schema,
@@ -355,6 +356,92 @@ export function isSelectorSatisfiedByIndex(
     }
 
     return true;
+}
+
+/**
+ * Returns true if the field is set in all documents,
+ * which is the case when the field and all of its
+ * parent objects are required by the schema.
+ */
+export function isFieldRequiredBySchema(
+    schema: RxJsonSchema<any>,
+    fieldName: string
+): boolean {
+    let schemaPart: any = schema;
+    for (const pathPart of fieldName.split('.')) {
+        if (
+            !schemaPart ||
+            !Array.isArray(schemaPart.required) ||
+            !schemaPart.required.includes(pathPart) ||
+            !schemaPart.properties
+        ) {
+            return false;
+        }
+        schemaPart = schemaPart.properties[pathPart];
+    }
+    return true;
+}
+
+/**
+ * A document where an optional index field is not set, gets the same index string
+ * as a document where a string field is '' or where a number field
+ * is 0 (moved into the minimum/maximum range of the schema).
+ * So the index cannot distinguish these documents and when
+ * the index range of the query can contain them, the selector is not
+ * satisfied by the index and the query matcher must filter the results.
+ * The range cannot contain them when the lower bound of the field
+ * is greater than the index value of the missing field.
+ */
+export function canIndexRangeContainDocsWithoutSelectorField(
+    schema: RxJsonSchema<any>,
+    index: string[],
+    selector: MangoQuerySelector<any>,
+    startKeys: RxQueryPlanKey[]
+): boolean {
+    for (let i = 0; i < index.length; i++) {
+        const fieldName = index[i];
+        if (
+            !Object.prototype.hasOwnProperty.call(selector, fieldName) ||
+            isFieldRequiredBySchema(schema, fieldName)
+        ) {
+            continue;
+        }
+        const schemaPart = getSchemaByObjectPath(schema, fieldName);
+        const startKey = startKeys[i];
+        if (!schemaPart) {
+            return true;
+        }
+        if (schemaPart.type === 'string') {
+            const maxLength = schemaPart.maxLength ? schemaPart.maxLength : 0;
+            if (
+                typeof startKey !== 'string' ||
+                startKey.padEnd(maxLength, ' ') <= ''.padEnd(maxLength, ' ')
+            ) {
+                return true;
+            }
+        } else if (schemaPart.type === 'number' || schemaPart.type === 'integer') {
+            if (
+                typeof startKey !== 'number' ||
+                typeof schemaPart.minimum !== 'number' ||
+                typeof schemaPart.maximum !== 'number'
+            ) {
+                return true;
+            }
+            const minimum = Math.floor(schemaPart.minimum);
+            const maximum = Math.ceil(schemaPart.maximum);
+            const missingValue = Math.min(Math.max(0, minimum), maximum);
+            /**
+             * The non-decimal part is the start of the number index string,
+             * so a greater floored value always gives a greater index string.
+             */
+            if (Math.floor(Math.min(startKey, maximum)) <= missingValue) {
+                return true;
+            }
+        } else {
+            return true;
+        }
+    }
+    return false;
 }
 
 /**
