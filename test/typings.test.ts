@@ -671,6 +671,33 @@ describe('local documents', () => {
         const x: string = typedLocalDoc.get('data').foo;
         const x2: string = typedLocalDocUpsert.get('data').foo;
     });
+    it('should propagate the Reactivity of the parent to the local document', async () => {
+        interface SetReactivityLambda extends ReactivityLambda {
+            readonly _result: Set<this['_data']>;
+        }
+        const myDb: RxDatabase<{}, any, any, SetReactivityLambda> = {} as any;
+        const myCollection: RxCollection<DefaultDocType, {}, {}, {}, SetReactivityLambda> = {} as any;
+
+        const dbLocalDoc = await myDb.insertLocal<{ foo: string; }>('foobar', { foo: 'bar' });
+        const deletedSignal: Set<boolean> = dbLocalDoc.deleted$$;
+        const fieldSignal: Set<any> = dbLocalDoc.get$$('data.foo');
+        const docSignalSize: number = dbLocalDoc.$$.size;
+        // @ts-expect-error deleted$$ should not be assignable to number
+        const wrong: number = dbLocalDoc.deleted$$;
+
+        const upsertedLocalDoc = await myDb.upsertLocal<{ foo: string; }>('foobar', { foo: 'bar' });
+        const upsertedSignal: Set<boolean> = upsertedLocalDoc.deleted$$;
+
+        const collectionLocalDoc = await myCollection.getLocal<{ foo: string; }>('foobar');
+        if (collectionLocalDoc) {
+            const collectionSignal: Set<boolean> = collectionLocalDoc.deleted$$;
+        }
+        myCollection.getLocal$<{ foo: string; }>('foobar').subscribe(localDoc => {
+            if (localDoc) {
+                const emittedSignal: Set<boolean> = localDoc.deleted$$;
+            }
+        });
+    });
     it('should allow to access different property', async () => {
         const myDb: RxDatabase = {} as any;
         const typedLocalDoc = await myDb.getLocal<{ foo: string; }>('foobar');

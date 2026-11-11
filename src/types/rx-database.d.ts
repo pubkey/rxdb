@@ -188,7 +188,7 @@ export interface RxLocalDocumentMutation<StorageType, Reactivity = unknown> {
     >;
 }
 
-export interface RxDatabaseGenerated<Collections, Reactivity> extends RxLocalDocumentMutation<RxDatabase<Collections, any, any, Reactivity>> { }
+export interface RxDatabaseGenerated<Collections, Reactivity> extends RxLocalDocumentMutation<RxDatabase<Collections, any, any, Reactivity>, Reactivity> { }
 
 /**
  * Extract the **DocumentType** of a collection.

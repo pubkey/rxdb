@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `$$`, `deleted$$` and `get$$()` of a `RxLocalDocument` were typed `unknown` because `insertLocal()`, `upsertLocal()`, `getLocal()` and `getLocal$()` did not pass the `Reactivity` type of the database or collection",
+    "links": [],
+    "priority": 3
+}
