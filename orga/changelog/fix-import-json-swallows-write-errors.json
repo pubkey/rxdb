@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `importJSON()` of the json-dump plugin resolved with the internal storage write response and ignored write errors. It now rejects with a `CONFLICT` error when a document of the dump already exists and with `VD2` when a document does not match the schema, and it resolves with `void` as typed. Added testcases.",
+    "links": [],
+    "priority": 6
+}

@@ -9,6 +9,9 @@ import {
 import {
     newRxError
 } from '../../rx-error.ts';
+import {
+    throwIfIsStorageWriteError
+} from '../../rx-storage-helper.ts';
 import type {
     RxDatabase,
     RxCollection,
@@ -55,10 +58,10 @@ function dumpRxDatabase(
     });
 }
 
-const importDumpRxDatabase = function (
+const importDumpRxDatabase = async function (
     this: RxDatabase,
     dump: any
-) {
+): Promise<void> {
     /**
      * collections must be created before the import
      * because we do not know about the other collection-settings here
@@ -72,7 +75,7 @@ const importDumpRxDatabase = function (
         });
     }
 
-    return Promise.all(
+    await Promise.all(
         dump.collections
             .map((colDump: any) => this.collections[colDump.name].importJSON(colDump))
     );
@@ -177,7 +180,7 @@ async function importAttachmentsOfDocument(
 async function importDumpRxCollection<RxDocType>(
     this: RxCollection<RxDocType>,
     exportedJSON: any
-): Promise<any> {
+): Promise<void> {
     // check schemaHash
     if (exportedJSON.schemaHash !== await this.schema.hash) {
         throw newRxError('JD2', {
@@ -213,10 +216,19 @@ async function importDumpRxCollection<RxDocType>(
             };
         })
     );
-    return this.storageInstance.bulkWrite(
+    const writeResult = await this.storageInstance.bulkWrite(
         rows as any,
         'json-dump-import'
     );
+    const firstError = writeResult.error[0];
+    if (firstError) {
+        throwIfIsStorageWriteError(
+            this as any,
+            firstError.documentId,
+            firstError.writeRow.document,
+            firstError
+        );
+    }
 }
 
 export const RxDBJsonDumpPlugin: RxPlugin = {

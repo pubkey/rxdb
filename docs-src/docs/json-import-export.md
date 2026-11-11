@@ -64,6 +64,8 @@ await myCollection.importJSON(json);
 
 The collection has to exist and its schema has to be the same one the dump was created from. When the hashes do not match, RxDB throws the error [`JD2`](./errors.md#JD2).
 
+Every document of the dump is written as a new insert. When a document with the same primary key already exists in the collection, that document is not overwritten and `importJSON()` rejects with a [`CONFLICT`](./errors.md#CONFLICT) error. The other documents of the dump are still written. The same goes for a document that does not pass the [schema validation](./schema-validation.md), which rejects with the error [`VD2`](./errors.md#VD2).
+
 Notice that importing fires a change event for each inserted document, so open [queries](./rx-query.md) and their subscriptions update on their own.
 
 ## Export a database
@@ -169,7 +171,7 @@ Use the json-dump plugin when you need one JSON object that you can move around,
 </FaqItem>
 <FaqItem question="Can I use a JSON dump to sync two devices?">
 
-No. A dump has no revisions and no deletions, so importing it a second time overwrites the target state instead of merging it. For two databases that both accept writes, use the [RxDB replication](./replication.md), which handles conflicts, deletions, and checkpoints.
+No. A dump has no revisions and no deletions, so it cannot be merged into a collection that already contains the same documents. `importJSON()` rejects with a [`CONFLICT`](./errors.md#CONFLICT) error in that case. For two databases that both accept writes, use the [RxDB replication](./replication.md), which handles conflicts, deletions, and checkpoints.
 
 </FaqItem>
 </Faq>

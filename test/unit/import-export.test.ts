@@ -110,6 +110,28 @@ describe('import-export.test.js', () => {
                     col.database.remove();
                     differentSchemaCol.database.remove();
                 });
+                it('should reject when a document of the dump already exists', async () => {
+                    const col = await humansCollection.create(3);
+                    const json = await col.exportJSON();
+                    const firstDocData = ensureNotFalsy(json.docs[0]);
+                    const doc = await col.findOne(firstDocData.passportId).exec(true);
+                    await doc.patch({ firstName: 'changed' });
+
+                    await AsyncTestUtil.assertThrows(
+                        () => col.importJSON(json),
+                        'RxError',
+                        'CONFLICT'
+                    );
+                    const docAfter = await col.findOne(firstDocData.passportId).exec(true);
+                    assert.strictEqual(docAfter.firstName, 'changed');
+
+                    const emptyCol = await humansCollection.create(0);
+                    const result = await emptyCol.importJSON(json);
+                    assert.strictEqual(result, undefined);
+
+                    col.database.remove();
+                    emptyCol.database.remove();
+                });
             });
         });
     });
@@ -284,6 +306,24 @@ describe('import-export.test.js', () => {
 
                     db.remove();
                     db2.remove();
+                });
+                it('should reject when a document of the dump already exists', async () => {
+                    const col = await humansCollection.create(3);
+                    const db = col.database;
+                    const json = await db.exportJSON();
+
+                    await AsyncTestUtil.assertThrows(
+                        () => db.importJSON(json),
+                        'RxError',
+                        'CONFLICT'
+                    );
+
+                    const col2 = await humansCollection.create(0);
+                    const result = await col2.database.importJSON(json);
+                    assert.strictEqual(result, undefined);
+
+                    db.remove();
+                    col2.database.remove();
                 });
             });
         });
