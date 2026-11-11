@@ -665,6 +665,12 @@ export const ERROR_MESSAGES = {
         fix: 'Run the storage migration.',
         docs: 'https://rxdb.info/migration-storage.html?console=errors&code=DM5'
     },
+    DM6: {
+        message: 'migrateStorage() could not write some documents to the new storage. These documents have not been deleted from the old storage.',
+        cause: 'The new storage rejected the documents with a non-conflict error, for example because they do not match the schema of a validation wrapper.',
+        fix: 'Check the writeError and the document ids in the error parameters, fix the cause and run migrateStorage() again.',
+        docs: 'https://rxdb.info/migration-storage.html?console=errors&code=DM6'
+    },
 
     // plugins/attachments.js
     AT1: {
