@@ -16,6 +16,7 @@ import {
     flatClone,
     deepEqual,
     PROMISE_RESOLVE_NULL,
+    PROMISE_RESOLVE_VOID,
     RXJS_SHARE_REPLAY_DEFAULTS,
     getProperty,
     ensureNotFalsy
@@ -507,7 +508,15 @@ export function beforeDocumentUpdateWrite<RxDocType>(
     if (overwritable.isDevMode()) {
         collection.schema.validateChange(oldData, newData);
     }
-    return collection._runHooks('pre', 'save', newData, oldData);
+    if (!collection.hasHooks('pre', 'save')) {
+        return PROMISE_RESOLVE_VOID;
+    }
+    return collection._runHooks(
+        'pre',
+        'save',
+        newData,
+        collection._docCache.getCachedRxDocument(oldData)
+    );
 }
 
 

@@ -220,6 +220,30 @@ describe('hooks.test.js', () => {
                     assert.strictEqual(count, 1);
                     c.database.close();
                 });
+                it('should pass the RxDocument as second parameter', async () => {
+                    const c = await humansCollection.createPrimary(0);
+                    const human = schemaObjects.simpleHumanData();
+                    human.firstName = 'alice';
+                    await c.insert(human);
+                    const doc = await c.findOne(human.passportId).exec(true);
+                    const calls: { isDoc: boolean; jsonId: string; firstName: string; }[] = [];
+                    c.preSave(function (_data, rxDocument) {
+                        calls.push({
+                            isDoc: isRxDocument(rxDocument),
+                            jsonId: rxDocument.toJSON().passportId,
+                            firstName: rxDocument.get('firstName')
+                        });
+                    }, false);
+
+                    const patched = await doc.patch({ firstName: 'bob' });
+                    await patched.incrementalPatch({ firstName: 'carol' });
+
+                    assert.strictEqual(calls.length, 2);
+                    assert.deepStrictEqual(calls.map(call => call.isDoc), [true, true]);
+                    assert.deepStrictEqual(calls.map(call => call.firstName), ['alice', 'bob']);
+                    assert.deepStrictEqual(calls.map(call => call.jsonId), [human.passportId, human.passportId]);
+                    c.database.close();
+                });
                 it('should save a modified document', async () => {
                     const c = await humansCollection.createPrimary(0);
                     const human = schemaObjects.simpleHumanData();

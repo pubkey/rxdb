@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX the `preSave` hook got the plain previous document data as second parameter instead of the `RxDocument` instance as typed and documented, so calling `rxDocument.toJSON()` or `rxDocument.get()` inside the hook threw a TypeError",
+    "links": [],
+    "priority": 5
+}
