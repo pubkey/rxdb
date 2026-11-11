@@ -222,45 +222,52 @@ export class RxMigrationState {
         }
 
         /**
-         * Instead of writing a custom migration protocol,
-         * we do a push-only replication from the old collection data to the new one.
-         * This also ensure that restarting the replication works without problems.
+         * All steps of the migration run are inside of this try-catch
+         * so that each failure is written to the status document
+         * where it can be observed by migratePromise() and by other instances.
          */
-        const oldCollectionMeta = await this.oldCollectionMeta;
-        const oldStorageInstance = await this.database.storage.createStorageInstance({
-            databaseName: this.database.name,
-            collectionName: this.collection.name,
-            databaseInstanceToken: this.database.token,
-            multiInstance: this.database.multiInstance,
-            options: {},
-            schema: ensureNotFalsy(oldCollectionMeta).data.schema,
-            password: this.database.password,
-            devMode: overwritable.isDevMode()
-        });
-        this.openStorageInstances.add(oldStorageInstance);
-
-
-        const connectedInstances = await this.getConnectedStorageInstances();
-
-
-        /**
-         * Initially write the migration status into a meta document.
-         */
-        const totalCount = await this.countAllDocuments(
-            [oldStorageInstance].concat(connectedInstances.map(r => r.oldStorage))
-        );
-        await this.updateStatus(s => {
-            s.count.total = totalCount;
-            return s;
-        });
-
-
+        let openedOldStorageInstance: RxStorageInstance<any, any, any> | undefined;
         try {
+            /**
+             * Instead of writing a custom migration protocol,
+             * we do a push-only replication from the old collection data to the new one.
+             * This also ensure that restarting the replication works without problems.
+             */
+            const oldCollectionMeta = await this.oldCollectionMeta;
+            const oldStorageInstance = await this.database.storage.createStorageInstance({
+                databaseName: this.database.name,
+                collectionName: this.collection.name,
+                databaseInstanceToken: this.database.token,
+                multiInstance: this.database.multiInstance,
+                options: {},
+                schema: ensureNotFalsy(oldCollectionMeta).data.schema,
+                password: this.database.password,
+                devMode: overwritable.isDevMode()
+            });
+            openedOldStorageInstance = oldStorageInstance;
+            this.openStorageInstances.add(oldStorageInstance);
+
+
+            const connectedInstances = await this.getConnectedStorageInstances();
+
+
+            /**
+             * Initially write the migration status into a meta document.
+             */
+            const totalCount = await this.countAllDocuments(
+                [oldStorageInstance].concat(connectedInstances.map(r => r.oldStorage))
+            );
+            await this.updateStatus(s => {
+                s.count.total = totalCount;
+                return s;
+            });
+
+
             /**
              * First migrate the connected storages,
              * afterwards migrate the normal collection.
-            */
-            await Promise.all(
+             */
+        await Promise.all(
                 connectedInstances.map(async (connectedInstance) => {
                     await addConnectedStorageToCollection(
                         this.collection,
@@ -288,10 +295,66 @@ export class RxMigrationState {
                 this.collection.storageInstance.originalStorageInstance,
                 batchSize
             );
-        } catch (err) {
-            this.openStorageInstances.delete(oldStorageInstance);
-            await oldStorageInstance.close();
+
+            /**
+             * Remove old collection meta doc with retry on conflict.
+             * The _rev of the meta doc may have changed since we fetched it
+             * at the start of migration (due to updateStatus() calls),
+             * so we re-fetch before each deletion attempt.
+             * @link https://github.com/pubkey/rxdb/issues/7791
+             */
+            while (true) {
+                const currentMeta = await getOldCollectionMeta(this);
+                if (!currentMeta) {
+                    break;
+                }
+                try {
+                    await writeSingle(
+                        this.database.internalStore,
+                        {
+                            previous: currentMeta,
+                            document: Object.assign(
+                                {},
+                                currentMeta,
+                                {
+                                    _deleted: true
+                                }
+                            )
+                        },
+                        'rx-migration-remove-collection-meta'
+                    );
+                    break;
+                } catch (error) {
+                    const isConflict = isBulkWriteConflictError<InternalStoreCollectionDocType>(error);
+                    if (isConflict && !!isConflict.documentInDb._deleted) {
+                        break;
+                    } else if (isConflict) {
+                        continue;
+                    } else {
+                        throw error;
+                    }
+                }
+            }
+
             this.collection.migrationInProgress = false;
+            await this.updateStatus(s => {
+                s.status = 'DONE';
+                return s;
+            });
+        } catch (err) {
+            if (openedOldStorageInstance && this.openStorageInstances.has(openedOldStorageInstance)) {
+                this.openStorageInstances.delete(openedOldStorageInstance);
+                await openedOldStorageInstance.close().catch(() => { });
+            }
+            this.collection.migrationInProgress = false;
+            /**
+             * Operations on the storages fail when the migration is canceled,
+             * for example because the database is closed.
+             * A canceled migration must not be marked as failed.
+             */
+            if (this.canceled) {
+                return;
+            }
             await this.updateStatus(s => {
                 /**
                  * When a frozen leader was taken over by another tab
@@ -306,54 +369,7 @@ export class RxMigrationState {
                 s.error = errorToPlainJson(err as Error);
                 return s;
             });
-            return;
         }
-
-        /**
-         * Remove old collection meta doc with retry on conflict.
-         * The _rev of the meta doc may have changed since we fetched it
-         * at the start of migration (due to updateStatus() calls),
-         * so we re-fetch before each deletion attempt.
-         * @link https://github.com/pubkey/rxdb/issues/7791
-         */
-        while (true) {
-            const currentMeta = await getOldCollectionMeta(this);
-            if (!currentMeta) {
-                break;
-            }
-            try {
-                await writeSingle(
-                    this.database.internalStore,
-                    {
-                        previous: currentMeta,
-                        document: Object.assign(
-                            {},
-                            currentMeta,
-                            {
-                                _deleted: true
-                            }
-                        )
-                    },
-                    'rx-migration-remove-collection-meta'
-                );
-                break;
-            } catch (error) {
-                const isConflict = isBulkWriteConflictError<InternalStoreCollectionDocType>(error);
-                if (isConflict && !!isConflict.documentInDb._deleted) {
-                    break;
-                } else if (isConflict) {
-                    continue;
-                } else {
-                    throw error;
-                }
-            }
-        }
-
-        this.collection.migrationInProgress = false;
-        await this.updateStatus(s => {
-            s.status = 'DONE';
-            return s;
-        });
     }
 
     /**
@@ -756,7 +772,10 @@ export class RxMigrationState {
 
                         // atm we can only migrate replication states.
                         if (connectedStorage.schema.title !== META_INSTANCE_SCHEMA_TITLE) {
-                            throw new Error('unknown migration handling for schema');
+                            throw newRxError('DM7', {
+                                collection: this.collection.name,
+                                schema: connectedStorage.schema
+                            });
                         }
 
                         const newSchema = getRxReplicationMetaInstanceSchema(
@@ -799,7 +818,22 @@ export class RxMigrationState {
 
 
     async migratePromise(batchSize?: number): Promise<RxMigrationStatus> {
-        this.startMigration(batchSize).catch(() => { });
+        /**
+         * Rejects when the migration run fails without writing the ERROR status,
+         * for example when the status document itself cannot be written.
+         * DM1 is ignored because then the migration was already started
+         * by a previous call and its outcome is observed via the status document.
+         */
+        const startFailedPromise = this.startMigration(batchSize).then(
+            () => new Promise<never>(() => { }),
+            (err: RxError | RxTypeError) => {
+                if (err.code === 'DM1') {
+                    return new Promise<never>(() => { });
+                }
+                throw err;
+            }
+        );
+        startFailedPromise.catch(() => { });
         const must = await this.mustMigrate;
         if (!must) {
             return {
@@ -814,6 +848,7 @@ export class RxMigrationState {
         }
 
         const result = await Promise.race([
+            startFailedPromise,
             firstValueFrom(
                 this.$.pipe(
                     filter((d: RxMigrationStatus) => d.status === 'DONE')

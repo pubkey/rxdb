@@ -659,6 +659,12 @@ export const ERROR_MESSAGES = {
         fix: 'Run the storage migration.',
         docs: 'https://rxdb.info/migration-storage.html?console=errors&code=DM5'
     },
+    DM7: {
+        message: 'Cannot migrate the connected storage because there is no migration handling for its schema',
+        cause: 'The collection has a connected storage that is not a replication meta storage.',
+        fix: 'Only connect storages to a collection that are known to the schema migration, like the meta instances of a replication.',
+        docs: 'https://rxdb.info/migration-schema.html?console=errors&code=DM7'
+    },
 
     // plugins/attachments.js
     AT1: {
