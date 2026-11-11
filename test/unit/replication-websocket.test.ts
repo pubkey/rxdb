@@ -149,6 +149,30 @@ describe('replication-websocket.test.ts', () => {
         localCollection.database.close();
         remoteCollection.database.close();
     });
+    it('should close the websocket connection when the replication is canceled', async () => {
+        const { localCollection, remoteCollection } = await getTestCollections({
+            local: 1,
+            remote: 1
+        });
+        const portAndUrl = await nextPortAndUrl();
+        const serverState = startWebsocketServer({
+            database: remoteCollection.database,
+            port: portAndUrl.port
+        });
+        const replicationState = await replicateWithWebsocketServer({
+            replicationIdentifier: randomToken(10),
+            collection: localCollection,
+            url: portAndUrl.url
+        });
+        await replicationState.awaitInSync();
+        assert.strictEqual(serverState.server.clients.size, 1);
+
+        await replicationState.cancel();
+        await waitUntil(() => serverState.server.clients.size === 0, 2000);
+
+        await localCollection.database.close();
+        await remoteCollection.database.close();
+    });
     it('should continue the replication when the connection is broken and established again', async () => {
         if (isFastMode()) {
             return;
