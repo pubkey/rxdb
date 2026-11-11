@@ -1722,6 +1722,65 @@ describe('replication-graphql.test.ts', () => {
                 server.close();
                 c.database.close();
             });
+            it('should not open another stream subscription when start() is called after pause()', async () => {
+                const capturedWSStates: string[] = [];
+                let streamResponses = 0;
+                const [c, server] = await Promise.all([
+                    humansCollection.createHumanWithTimestamp(0),
+                    SpawnServer.spawn()
+                ]);
+                const replicationState = replicateGraphQL({
+                    replicationIdentifier: randomToken(10),
+                    collection: c,
+                    url: server.url,
+                    pull: {
+                        batchSize,
+                        queryBuilder: pullQueryBuilder,
+                        streamQueryBuilder: pullStreamQueryBuilder,
+                        responseModifier(
+                            originalResponse: ReplicationPullHandlerResult<HumanWithTimestampDocumentType, any>,
+                            origin
+                        ) {
+                            if (origin === 'stream') {
+                                streamResponses = streamResponses + 1;
+                            }
+                            return originalResponse;
+                        },
+                        wsOptions: {
+                            on: {
+                                'closed': () => {
+                                    capturedWSStates.push('closed');
+                                }
+                            }
+                        }
+                    },
+                    live: true,
+                    deletedField: 'deleted'
+                });
+                ensureReplicationHasNoErrors(replicationState);
+                await replicationState.awaitInSync();
+
+                await replicationState.pause();
+                await replicationState.start();
+                await replicationState.pause();
+                await replicationState.start();
+                await replicationState.awaitInSync();
+
+                await server.setDocument(getTestData(1)[0]);
+                await waitUntil(async () => {
+                    const docs = await c.find().exec();
+                    return docs.length === 1;
+                });
+                await wait(200);
+                assert.strictEqual(streamResponses, 1);
+
+                // cancel() must release the websocket
+                await replicationState.cancel();
+                await waitUntil(() => capturedWSStates.includes('closed'), 2000);
+
+                server.close();
+                c.database.close();
+            });
             it('should respect the pull.responseModifier', async () => {
                 const checkpointIterationModeAmount = 5;
                 const eventObservationModeAmount = 3;
