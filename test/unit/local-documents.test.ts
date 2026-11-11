@@ -72,6 +72,34 @@ describe('local-documents.test.ts', () => {
                 assert.ok(thrown);
                 c.database.close();
             });
+            it('should throw an RxError with the code CONFLICT if already exists', async () => {
+                const c = await humansCollection.create(0);
+                await c.insertLocal('foobar', {
+                    foo: 'bar'
+                });
+                await AsyncTestUtil.assertThrows(
+                    () => c.insertLocal('foobar', {
+                        foo: 'bar2'
+                    }),
+                    'RxError',
+                    'CONFLICT'
+                );
+                await c.database.insertLocal('foobar', {
+                    foo: 'bar'
+                });
+                await AsyncTestUtil.assertThrows(
+                    () => c.database.insertLocal('foobar', {
+                        foo: 'bar2'
+                    }),
+                    'RxError',
+                    'CONFLICT'
+                );
+                const doc = await c.upsertLocal('foobar', {
+                    foo: 'bar3'
+                });
+                assert.strictEqual(doc.get('foo'), 'bar3');
+                c.database.close();
+            });
         });
     });
     describe('.getLocal()', () => {
@@ -438,6 +466,25 @@ describe('local-documents.test.ts', () => {
             await doc.remove();
             const doc2 = await c.getLocal('foobar');
             assert.strictEqual(doc2, null);
+            c.database.close();
+        });
+        it('should throw an RxError with the code CONFLICT when called on an outdated document instance', async () => {
+            const c = await humansCollection.create(0);
+            const doc = await c.insertLocal('foobar', {
+                foo: 'bar'
+            });
+            await doc.incrementalPatch({
+                foo: 'bar2'
+            });
+            await AsyncTestUtil.assertThrows(
+                () => doc.remove(),
+                'RxError',
+                'CONFLICT'
+            );
+            const latest = ensureNotFalsy(await c.getLocal('foobar'));
+            assert.strictEqual(latest.get('foo'), 'bar2');
+            await latest.remove();
+            assert.strictEqual(await c.getLocal('foobar'), null);
             c.database.close();
         });
     });
