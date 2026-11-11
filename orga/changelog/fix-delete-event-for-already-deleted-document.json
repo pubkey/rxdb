@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX a write that replaces a deleted document with another deleted state (like a replication pull of a changed, already deleted document) emitted a second `DELETE` event on `collection.$` and `remove$` and made EventReduce drop a document from the results of queries with `skip`",
+    "links": [],
+    "priority": 5
+}
