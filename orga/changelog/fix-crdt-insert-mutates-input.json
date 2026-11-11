@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `insert()` and `bulkInsert()` on a collection with the CRDT plugin wrote the schema default values and the `crdts` field into the object passed by the caller and failed when that object was frozen. The document data is now cloned before the CRDT operations are added",
+    "links": [],
+    "priority": 4
+}

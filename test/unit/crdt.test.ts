@@ -133,6 +133,31 @@ describe('crdt.test.ts', () => {
 
             collection.database.close();
         });
+        it('should not mutate the given document data and accept frozen data', async () => {
+            const collection = await getCRDTCollection();
+
+            const writeData = schemaObjects.humanData();
+            const writeDataBefore = clone(writeData);
+            await collection.insert(writeData);
+            assert.deepStrictEqual(writeData, writeDataBefore);
+
+            const bulkWriteData = schemaObjects.humanData();
+            const bulkWriteDataBefore = clone(bulkWriteData);
+            await collection.bulkInsert([bulkWriteData]);
+            assert.deepStrictEqual(bulkWriteData, bulkWriteDataBefore);
+
+            const frozenData = Object.freeze(schemaObjects.humanData());
+            const doc = await collection.insert(frozenData);
+            const docData = doc.toJSON(true);
+            assert.strictEqual(docData.passportId, frozenData.passportId);
+            assert.ok(docData.crdts);
+            assert.strictEqual(
+                docData.crdts.operations[0][0].body[0].ifMatch?.$set?.passportId,
+                frozenData.passportId
+            );
+
+            collection.database.close();
+        });
     });
     describe('.insertCRDT()', () => {
         it('should insert the document', async () => {
