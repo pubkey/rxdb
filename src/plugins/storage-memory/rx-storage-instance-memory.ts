@@ -585,7 +585,10 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
             !data ||
             data.digest !== digest
         ) {
-            throw new Error('attachment does not exist: ' + key);
+            return Promise.reject(newRxError('AT6', {
+                documentId,
+                id: attachmentId
+            }));
         }
         return Promise.resolve(data.writeData.data);
     }

@@ -575,10 +575,20 @@ export class RxStorageInstanceLocalstorage<RxDocType> implements RxStorageInstan
         return PROMISE_RESOLVE_TRUE;
     }
 
-    async getAttachmentData(documentId: string, attachmentId: string): Promise<Blob> {
-        const stored = ensureNotFalsy(
-            this.localStorage.getItem(this.attachmentsKey + '-' + documentId + '||' + attachmentId)
-        );
+    async getAttachmentData(documentId: string, attachmentId: string, digest: string): Promise<Blob> {
+        const doc = this.getDoc(documentId);
+        const attachmentMeta = doc && doc._attachments ? doc._attachments[attachmentId] : undefined;
+        const stored = this.localStorage.getItem(this.attachmentsKey + '-' + documentId + '||' + attachmentId);
+        if (
+            !stored ||
+            !attachmentMeta ||
+            attachmentMeta.digest !== digest
+        ) {
+            throw newRxError('AT6', {
+                documentId,
+                id: attachmentId
+            });
+        }
         // Stored value is a data URL like "data:<mime>;base64,<payload>".
         // Fall back to application/octet-stream for legacy bare base64 payloads.
         let dataUrl = stored;

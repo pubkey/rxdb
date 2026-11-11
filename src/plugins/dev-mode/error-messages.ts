@@ -691,6 +691,12 @@ export const ERROR_MESSAGES = {
         fix: 'Ensure documents have the _attachments property set.',
         docs: 'https://rxdb.info/rx-attachment.html?console=errors&code=AT4'
     },
+    AT6: {
+        message: 'attachment data does not exist for the given digest',
+        cause: 'The attachment was replaced or removed after the RxAttachment object was created, so its digest no longer matches the stored attachment.',
+        fix: 'Get the attachment again from the latest document state with doc.getLatest().getAttachment(id) before reading its data.',
+        docs: 'https://rxdb.info/rx-attachment.html?console=errors&code=AT6'
+    },
 
     // plugins/encryption-crypto-js.js
     EN1: {

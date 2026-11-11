@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `getAttachmentData()` of the Dexie and localStorage RxStorage ignored the `digest` parameter, so `getData()` on an `RxAttachment` object of a replaced attachment returned the new data. The memory, Dexie and localStorage storages now all reject with the RxError `AT6` when the digest no longer matches the stored attachment",
+    "links": [],
+    "priority": 5
+}

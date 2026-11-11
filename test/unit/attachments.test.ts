@@ -1,6 +1,6 @@
 import assert from 'assert';
 import config from './config.ts';
-import AsyncTestUtil, { randomBoolean } from 'async-test-util';
+import AsyncTestUtil, { randomBoolean, assertThrows } from 'async-test-util';
 
 import {
     schemaObjects,
@@ -25,6 +25,7 @@ import {
     RxCollection,
     ensureNotFalsy,
     RxStorageInstance,
+    RxStorage,
     blobToBase64String,
     createBlobFromBase64,
     createBlob,
@@ -42,6 +43,16 @@ import { RxDBMigrationSchemaPlugin } from '../../plugins/migration-schema/index.
 addRxPlugin(RxDBMigrationSchemaPlugin);
 import { RxDBUpdatePlugin } from '../../plugins/update/index.mjs';
 addRxPlugin(RxDBUpdatePlugin);
+import { getRxStorageDexie } from '../../plugins/storage-dexie/index.mjs';
+import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.mjs';
+import {
+    getRxStorageLocalstorage,
+    getLocalStorageMock
+} from '../../plugins/storage-localstorage/index.mjs';
+import {
+    indexedDB as fakeIndexedDB,
+    IDBKeyRange as fakeIDBKeyRange
+} from 'fake-indexeddb';
 
 
 const STATIC_FILE_SERVER_URL = 'http://localhost:18001/';
@@ -387,6 +398,79 @@ describe('attachments.test.ts', () => {
             const dataString = await blobToString(data);
             assert.strictEqual(dataString, dat);
             c.database.remove();
+        });
+        it('should throw the same error on all storages when the attachment was replaced or removed', async () => {
+            const storages: { [name: string]: RxStorage<any, any>; } = {
+                default: config.storage.getStorage(),
+                localstorage: wrappedValidateAjvStorage({
+                    storage: getRxStorageLocalstorage({
+                        localStorage: getLocalStorageMock()
+                    })
+                })
+            };
+            if (!isDeno) {
+                storages.dexie = wrappedValidateAjvStorage({
+                    storage: getRxStorageDexie({
+                        indexedDB: fakeIndexedDB,
+                        IDBKeyRange: fakeIDBKeyRange
+                    })
+                });
+            }
+            for (const [storageName, storage] of Object.entries(storages)) {
+                /**
+                 * The remote storage wraps the RxError of the remote
+                 * instance into a plain Error that contains the error code.
+                 */
+                const errorName = storageName === 'default' && config.storage.name === 'remote' ? 'Error' : 'RxError';
+                const db = await createRxDatabase<{ humans: RxCollection<HumanDocumentType>; }>({
+                    name: randomToken(10),
+                    storage,
+                    multiInstance: false
+                });
+                const schemaJson = clone(schemas.human);
+                schemaJson.attachments = {};
+                await db.addCollections({
+                    humans: {
+                        schema: schemaJson
+                    }
+                });
+                let doc = await db.humans.insert(schemaObjects.humanData());
+                const oldAttachment = await doc.putAttachment({
+                    id: 'cat.txt',
+                    data: createBlob('version one', 'text/plain'),
+                    type: 'text/plain'
+                });
+                assert.strictEqual(await oldAttachment.getStringData(), 'version one');
+
+                doc = doc.getLatest();
+                const newAttachment = await doc.putAttachment({
+                    id: 'cat.txt',
+                    data: createBlob('version two is longer', 'text/plain'),
+                    type: 'text/plain'
+                });
+                assert.strictEqual(oldAttachment.length, 11);
+                assert.notStrictEqual(oldAttachment.digest, newAttachment.digest);
+                await assertThrows(
+                    () => oldAttachment.getStringData(),
+                    errorName,
+                    'AT6'
+                );
+                await assertThrows(
+                    () => oldAttachment.getData(),
+                    errorName,
+                    'AT6'
+                );
+                assert.strictEqual(await newAttachment.getStringData(), 'version two is longer');
+
+                await newAttachment.remove();
+                await assertThrows(
+                    () => newAttachment.getStringData(),
+                    errorName,
+                    'AT6'
+                );
+
+                await db.remove();
+            }
         });
     });
     describe('RxAttachment.getStringData()', () => {

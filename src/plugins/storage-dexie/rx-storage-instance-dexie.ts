@@ -296,21 +296,29 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
         return true;
     }
 
-    async getAttachmentData(documentId: string, attachmentId: string, _digest: string): Promise<Blob> {
+    async getAttachmentData(documentId: string, attachmentId: string, digest: string): Promise<Blob> {
         ensureNotClosed(this);
         const state = await this.internals;
         const id = attachmentObjectId(documentId, attachmentId);
         return await state.dexieDb.transaction(
             'r',
+            state.dexieTable,
             state.dexieAttachmentsTable,
             async () => {
-
+                const [docInDb] = await getDocsInDb<RxDocType>(this.internals, [documentId]);
                 const attachment = await state.dexieAttachmentsTable.get(id);
-                if (attachment) {
-                    return attachment.data;
-                } else {
-                    throw new Error('attachment missing documentId: ' + documentId + ' attachmentId: ' + attachmentId);
+                const attachmentMeta = docInDb && docInDb._attachments ? docInDb._attachments[attachmentId] : undefined;
+                if (
+                    !attachment ||
+                    !attachmentMeta ||
+                    attachmentMeta.digest !== digest
+                ) {
+                    throw newRxError('AT6', {
+                        documentId,
+                        id: attachmentId
+                    });
                 }
+                return attachment.data;
             });
     }
 
