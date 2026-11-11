@@ -17,8 +17,11 @@ import {
 } from '../../plugins/replication-websocket/index.mjs';
 import {
     RxCollection,
-    randomToken
+    randomToken,
+    addRxPlugin,
+    createBlob
 } from '../../plugins/core/index.mjs';
+import { RxDBAttachmentsPlugin } from '../../plugins/attachments/index.mjs';
 import { nextPort } from '../helper/port-manager.ts';
 
 describe('replication-websocket.test.ts', () => {
@@ -148,6 +151,74 @@ describe('replication-websocket.test.ts', () => {
 
         localCollection.database.close();
         remoteCollection.database.close();
+    });
+    it('should replicate the attachment data in both directions', async () => {
+        if (!config.storage.hasAttachments) {
+            return;
+        }
+        addRxPlugin(RxDBAttachmentsPlugin);
+        const localCollection = await humansCollection.createAttachments(0, undefined, false);
+        const remoteCollection = await humansCollection.createAttachments(0, undefined, false);
+
+        const serverDoc = await remoteCollection.insert(schemaObjects.humanData());
+        await serverDoc.putAttachment({
+            id: 'cat.txt',
+            data: createBlob('meow', 'text/plain'),
+            type: 'text/plain'
+        });
+
+        const portAndUrl = await nextPortAndUrl();
+        await startWebsocketServer({
+            database: remoteCollection.database,
+            port: portAndUrl.port
+        });
+        const replicationState = await replicateWithWebsocketServer({
+            replicationIdentifier: randomToken(10),
+            collection: localCollection,
+            url: portAndUrl.url
+        });
+        const errors: any[] = [];
+        replicationState.error$.subscribe(err => errors.push(err));
+        await replicationState.awaitInSync();
+
+        // server -> client via the initial pull
+        const serverDocOnClient = await localCollection.findOne(serverDoc.primary).exec(true);
+        const attachmentOnClient = serverDocOnClient.getAttachment('cat.txt');
+        assert.ok(attachmentOnClient);
+        assert.strictEqual(await attachmentOnClient.getStringData(), 'meow');
+
+        // client -> server via push
+        const clientDoc = await localCollection.insert(schemaObjects.humanData());
+        await clientDoc.putAttachment({
+            id: 'dog.txt',
+            data: createBlob('woof', 'text/plain'),
+            type: 'text/plain'
+        });
+        await replicationState.awaitInSync();
+        const clientDocOnServer = await remoteCollection.findOne(clientDoc.primary).exec(true);
+        const attachmentOnServer = clientDocOnServer.getAttachment('dog.txt');
+        assert.ok(attachmentOnServer);
+        assert.strictEqual(await attachmentOnServer.getStringData(), 'woof');
+
+        // server -> client via the change stream
+        await serverDoc.getLatest().putAttachment({
+            id: 'bird.txt',
+            data: createBlob('tweet', 'text/plain'),
+            type: 'text/plain'
+        });
+        await waitUntil(async () => {
+            const doc = await localCollection.findOne(serverDoc.primary).exec(true);
+            return !!doc.getAttachment('bird.txt');
+        });
+        const streamedDoc = await localCollection.findOne(serverDoc.primary).exec(true);
+        const streamedAttachment = streamedDoc.getAttachment('bird.txt');
+        assert.ok(streamedAttachment);
+        assert.strictEqual(await streamedAttachment.getStringData(), 'tweet');
+
+        assert.deepStrictEqual(errors, []);
+
+        await localCollection.database.close();
+        await remoteCollection.database.close();
     });
     it('should continue the replication when the connection is broken and established again', async () => {
         if (isFastMode()) {

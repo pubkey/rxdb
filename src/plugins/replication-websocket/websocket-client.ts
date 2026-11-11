@@ -21,13 +21,19 @@ import {
     map,
     Subject,
     firstValueFrom,
-    BehaviorSubject
+    BehaviorSubject,
+    concatMap
 } from 'rxjs';
 import type {
     RxError,
     RxReplicationWriteToMasterRow
 } from '../../types/index.d.ts';
 import { newRxError } from '../../rx-error.ts';
+import {
+    deserializeAttachmentsOfDocs,
+    deserializeAttachmentsOfPullResult,
+    serializeAttachmentsOfWriteRows
+} from './websocket-attachments.ts';
 
 export type WebsocketClient = {
     url: string;
@@ -115,7 +121,7 @@ export async function replicateWithWebsocketServer<RxDocType, CheckpointType>(
             batchSize: options.batchSize,
             stream$: messages$.pipe(
                 filter((msg: WebsocketMessageResponseType) => msg.id === 'stream' && msg.collection === options.collection.name),
-                map((msg: WebsocketMessageResponseType) => msg.result)
+                concatMap((msg: WebsocketMessageResponseType) => deserializeAttachmentsOfPullResult<RxDocType, CheckpointType>(msg.result))
             ),
             async handler(lastPulledCheckpoint: CheckpointType | undefined, batchSize: number) {
                 const requestId = getRequestId();
@@ -132,26 +138,28 @@ export async function replicateWithWebsocketServer<RxDocType, CheckpointType>(
                         map((msg: WebsocketMessageResponseType) => msg.result)
                     )
                 );
+                await deserializeAttachmentsOfDocs<RxDocType>(result.documents);
                 return result;
             }
         },
         push: {
             batchSize: options.batchSize,
-            handler(docs: RxReplicationWriteToMasterRow<RxDocType>[]) {
+            async handler(docs: RxReplicationWriteToMasterRow<RxDocType>[]) {
                 const requestId = getRequestId();
                 const request: WebsocketMessageType = {
                     id: requestId,
                     collection: options.collection.name,
                     method: 'masterWrite',
-                    params: [docs]
+                    params: [await serializeAttachmentsOfWriteRows(docs)]
                 };
                 wsClient.send(JSON.stringify(request));
-                return firstValueFrom(
+                const conflicts = await firstValueFrom(
                     messages$.pipe(
                         filter((msg: WebsocketMessageResponseType) => msg.id === requestId),
                         map((msg: WebsocketMessageResponseType) => msg.result)
                     )
                 );
+                return deserializeAttachmentsOfDocs<RxDocType>(conflicts);
             }
         }
     });

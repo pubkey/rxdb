@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX the websocket replication corrupted attachments. The attachment `Blob` data was sent through `JSON.stringify()` and stored as `{}` on the other side, so that reading the attachment threw `blob.slice is not a function`. The attachment data is now sent as base64 string and restored to a `Blob` on the receiving side",
+    "links": [],
+    "priority": 5
+}
