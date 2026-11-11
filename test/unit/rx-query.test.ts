@@ -2332,6 +2332,28 @@ describe('rx-query.test.ts', () => {
             assert.strictEqual(result.deleted, true);
             c.database.close();
         });
+        it('find().remove() and findByIds().remove() should throw CONFLICT when a document was changed concurrently', async () => {
+            const c = await humansCollection.create(1);
+            const doc = await c.findOne().exec(true);
+            // the hook writes the document after the query results have been fetched
+            c.preRemove(async (_data, rxDocument) => {
+                await rxDocument.incrementalPatch({ firstName: randomToken(10) });
+            }, false);
+
+            const docError = await doc.remove().then(() => undefined, err => err);
+            assert.strictEqual(ensureNotFalsy(docError).code, 'CONFLICT');
+
+            const findError = await c.find().remove().then(() => undefined, err => err);
+            assert.strictEqual(ensureNotFalsy(findError).code, 'CONFLICT');
+            assert.strictEqual(findError.parameters.id, doc.primary);
+
+            const findByIdsError = await c.findByIds([doc.primary]).remove().then(() => undefined, err => err);
+            assert.strictEqual(ensureNotFalsy(findByIdsError).code, 'CONFLICT');
+
+            const stillThere = await c.findOne().exec(true);
+            assert.strictEqual(stillThere.deleted, false);
+            c.database.close();
+        });
     });
     describe('sort by nested field', () => {
         it('should not throw when a parent object of the sort field is null', async () => {
