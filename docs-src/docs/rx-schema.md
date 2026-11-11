@@ -185,6 +185,8 @@ Indexes are only allowed on field types `string`, `integer` and `number`. Some R
 Depending on the field type, you must have set some meta attributes like `maxLength` or `minimum`. This is required so that RxDB
 is able to know the maximum string representation length of a field, which is needed to craft custom indexes in several `RxStorage` implementations.
 
+For an indexed number field, `maximum - minimum` must not be greater than `Number.MAX_SAFE_INTEGER` (`9007199254740991`), because a wider range cannot be mapped to exact index strings and the [dev-mode](./dev-mode.md) throws the error [`SC44`](./errors.md#SC44). Only a field with `minimum: 0` can have a bigger `maximum`, which must be lower than `1e21`.
+
 **Performance Note:** Having a large `maxLength` for indexed fields and primary keys can negatively impact performance and storage size on many storages. Therefore, you should only set it as large as strictly needed for your application.
 
 :::note

@@ -445,6 +445,30 @@ export function checkSchema(jsonSchema: RxJsonSchema<any>) {
                             });
                         }
 
+                        /**
+                         * The index string of a number is built from
+                         * (Math.floor(value) - Math.floor(minimum)).toString().
+                         * That subtraction is only exact for all values
+                         * when the range fits into the safe integers
+                         * or when the minimum is zero,
+                         * and toString() switches to the exponent notation at 1e21.
+                         */
+                        const flooredMinimum = Math.floor(minimum);
+                        const valueSpan = Math.ceil(maximum) - flooredMinimum;
+                        if (
+                            valueSpan >= 1e21 ||
+                            (
+                                flooredMinimum !== 0 &&
+                                valueSpan > Number.MAX_SAFE_INTEGER
+                            )
+                        ) {
+                            throw newRxError('SC44', {
+                                index,
+                                field: fieldName,
+                                schema: jsonSchema
+                            });
+                        }
+
                         break;
                     case 'boolean':
                         /**

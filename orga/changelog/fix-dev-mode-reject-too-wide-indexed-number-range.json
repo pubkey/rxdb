@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX wrong query results on indexed number fields where `maximum - minimum` is greater than `Number.MAX_SAFE_INTEGER`, because different values got the same index string. The dev-mode now throws the error `SC44` for such a schema",
+    "links": [],
+    "priority": 5
+}

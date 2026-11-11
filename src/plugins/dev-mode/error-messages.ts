@@ -1151,6 +1151,12 @@ export const ERROR_MESSAGES = {
         fix: 'Reduce the maxLength.',
         docs: 'https://rxdb.info/rx-schema.html?console=errors&code=SC42#indexes'
     },
+    SC44: {
+        message: 'The range between minimum and maximum of an indexed number field is too wide. (maximum - minimum) must not be greater than Number.MAX_SAFE_INTEGER, otherwise different values get the same index string and queries return wrong results. Only when the minimum is 0, the maximum can be bigger, up to 1e21 (exclusive).',
+        cause: 'An indexed number field has a maximum - minimum that is greater than Number.MAX_SAFE_INTEGER (9007199254740991).',
+        fix: 'Reduce the minimum and maximum of the field to the range that your values need, or remove the field from the indexes.',
+        docs: 'https://rxdb.info/rx-schema.html?console=errors&code=SC44#indexes'
+    },
     SC43: {
         message: 'Encrypted fields must not be nested inside other encrypted fields. When a parent path is encrypted, the whole object at that path is encrypted so specifying child paths is not allowed.',
         cause: 'An encrypted field is a child of another encrypted field.',

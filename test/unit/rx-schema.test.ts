@@ -1589,6 +1589,73 @@ describe('rx-schema.test.ts', () => {
 
             db.close();
         });
+        it('must throw on an indexed number field whose range is too wide for an exact index string', async () => {
+            const db = await createRxDatabase({
+                name: randomToken(10),
+                storage: config.storage.getStorage()
+            });
+            const getSchema = (minimum: number, maximum: number): RxJsonSchema<{ id: string; nr: number; }> => ({
+                version: 0,
+                type: 'object',
+                primaryKey: 'id',
+                properties: {
+                    id: {
+                        type: 'string',
+                        maxLength: 100
+                    },
+                    nr: {
+                        type: 'number',
+                        minimum,
+                        maximum,
+                        multipleOf: 1
+                    }
+                },
+                indexes: [
+                    ['nr']
+                ],
+                required: ['id', 'nr']
+            });
+
+            const brokenRanges: [number, number][] = [
+                [Number.MIN_SAFE_INTEGER, Number.MAX_SAFE_INTEGER],
+                [-10, Number.MAX_SAFE_INTEGER],
+                [0, 1e21]
+            ];
+            for (const [minimum, maximum] of brokenRanges) {
+                await assertThrows(
+                    () => db.addCollections({
+                        test: {
+                            schema: getSchema(minimum, maximum)
+                        }
+                    }),
+                    'RxError',
+                    'SC44'
+                );
+            }
+
+            const collections = await db.addCollections({
+                safe: {
+                    schema: getSchema(-1000, Number.MAX_SAFE_INTEGER - 1000)
+                },
+                zerobased: {
+                    schema: getSchema(0, 10000000000000000)
+                }
+            });
+            for (const collection of [collections.safe, collections.zerobased]) {
+                await collection.bulkInsert([
+                    { id: 'a', nr: 1 },
+                    { id: 'b', nr: 2 },
+                    { id: 'c', nr: 3 }
+                ]);
+                const docs = await collection.find({
+                    selector: { nr: { $gt: 1 } },
+                    sort: [{ nr: 'asc' }]
+                }).exec();
+                assert.deepStrictEqual(docs.map(d => d.primary), ['b', 'c']);
+            }
+
+            db.close();
+        });
     });
     describe('.getJsonSchemaWithoutMeta()', () => {
         it('should not contain any RxDB-internal meta properties like _rev', async () => {
