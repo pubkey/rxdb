@@ -2352,6 +2352,56 @@ describe('rx-collection.test.ts', () => {
 
                     db.close();
                 });
+                it('should not emit the events of a re-created collection on the observables of the removed collection', async () => {
+                    const db = await createRxDatabase({
+                        name: randomToken(10),
+                        storage: config.storage.getStorage()
+                    });
+                    const collections = await db.addCollections({
+                        human: {
+                            schema: schemas.primaryHuman
+                        }
+                    });
+                    const collection = collections.human;
+                    const docData = schemaObjects.humanData();
+                    const oldDoc = await collection.insert(docData);
+
+                    const emitted: string[] = [];
+                    let completed = false;
+                    const sub = collection.$.subscribe({
+                        next: event => emitted.push(event.operation + ':' + event.documentId),
+                        complete: () => completed = true
+                    });
+                    const insertSub = collection.insert$.subscribe(event => emitted.push('insert$:' + event.documentId));
+
+                    await collection.remove();
+
+                    const collections2 = await db.addCollections({
+                        human: {
+                            schema: schemas.primaryHuman
+                        }
+                    });
+                    const collection2 = collections2.human;
+                    const otherData = schemaObjects.humanData(docData.passportId);
+                    otherData.firstName = 'other-' + docData.firstName;
+                    await collection2.insert(otherData);
+                    await collection2.insert(schemaObjects.humanData());
+                    await collection2.find().exec();
+
+                    assert.deepStrictEqual(emitted, []);
+                    assert.strictEqual(oldDoc.getLatest().firstName, docData.firstName);
+                    assert.strictEqual(completed, true);
+
+                    const lateEmitted: string[] = [];
+                    const lateSub = collection.$.subscribe(event => lateEmitted.push(event.documentId));
+                    await collection2.insert(schemaObjects.humanData());
+                    assert.deepStrictEqual(lateEmitted, []);
+
+                    sub.unsubscribe();
+                    insertSub.unsubscribe();
+                    lateSub.unsubscribe();
+                    await db.close();
+                });
             });
             describe('negative', () => {
                 it('should not have the collection in the collections-list', async () => {

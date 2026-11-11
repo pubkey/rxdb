@@ -1,7 +1,8 @@
 import {
     filter,
     map,
-    mergeMap
+    mergeMap,
+    takeUntil
 } from 'rxjs';
 
 import {
@@ -57,6 +58,7 @@ import { fillPrimaryKey } from './rx-schema-helper.ts';
 import {
     Subscription,
     Observable,
+    ReplaySubject,
     Subject
 } from 'rxjs';
 
@@ -174,6 +176,7 @@ export class RxCollectionBase<
 
         if (database) { // might be falsy on pseudoInstance
             this.eventBulks$ = database.eventBulks$.pipe(
+                takeUntil(this._closed$),
                 filter((changeEventBulk: RxChangeEventBulk<any>) => changeEventBulk.collectionName === this.name)
             );
         } else { }
@@ -231,6 +234,15 @@ export class RxCollectionBase<
     */
     public onClose: (() => MaybePromise<any>)[] = [];
     public closed = false;
+
+    /**
+     * Emits when the collection is closed.
+     * Completes the event streams of this collection instance so that
+     * they do not emit the events of another collection instance
+     * with the same name. Replays so that it also completes
+     * subscriptions which are created after the close.
+     */
+    public _closed$ = new ReplaySubject<void>(1);
 
     /**
      * Set to true while a schema migration is running for this collection.
@@ -1132,6 +1144,7 @@ export class RxCollectionBase<
                  * will then stuck and never resolve.
                  */
                 this._subs.forEach(sub => sub.unsubscribe());
+                this._closed$.next();
 
                 delete this.database.collections[this.name];
                 this.database.collectionsSubject$.next({
