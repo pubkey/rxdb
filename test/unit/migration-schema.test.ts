@@ -2731,6 +2731,94 @@ describe('migration-schema.test.ts', function () {
             await db2.close();
         });
         /**
+         * The error of a failed migration is stored in the migration status document.
+         * When the app starts again with a working migration strategy,
+         * that run must not fail with the stored error of the previous run.
+         */
+        it('must run the migration again after a previous run has failed with a throwing migration strategy', async () => {
+            const name = randomToken(10);
+            const docsAmount = 5;
+            const getSchema = (version: number) => ({
+                version,
+                primaryKey: 'id',
+                type: 'object' as const,
+                properties: {
+                    id: {
+                        type: 'string',
+                        maxLength: 100
+                    },
+                    n: {
+                        type: 'number'
+                    }
+                },
+                required: ['id', 'n']
+            });
+
+            const db = await createRxDatabase({
+                name,
+                storage: config.storage.getStorage()
+            });
+            await db.addCollections({
+                docs: {
+                    schema: getSchema(0)
+                }
+            });
+            await db.docs.bulkInsert(
+                new Array(docsAmount).fill(0).map((_v, i) => ({
+                    id: 'd' + i,
+                    n: i
+                }))
+            );
+            await db.close();
+
+            // first start with the new schema version and a migration strategy that throws
+            const db2 = await createRxDatabase({
+                name,
+                storage: config.storage.getStorage()
+            });
+            await assertThrows(
+                () => db2.addCollections({
+                    docs: {
+                        schema: getSchema(1),
+                        migrationStrategies: {
+                            1: () => {
+                                throw new Error('buggy strategy');
+                            }
+                        }
+                    }
+                }),
+                'RxError',
+                ['DM4', 'buggy strategy']
+            );
+            await db2.close();
+
+            // second start with a working migration strategy
+            const db3 = await createRxDatabase({
+                name,
+                storage: config.storage.getStorage()
+            });
+            await db3.addCollections({
+                docs: {
+                    schema: getSchema(1),
+                    migrationStrategies: {
+                        1: (doc: any) => {
+                            doc.n = doc.n + 100;
+                            return doc;
+                        }
+                    }
+                }
+            });
+            const docs = await db3.docs.find({ sort: [{ id: 'asc' }] }).exec();
+            assert.deepStrictEqual(
+                docs.map(d => d.n),
+                new Array(docsAmount).fill(0).map((_v, i) => i + 100)
+            );
+            const status = await db3.docs.getMigrationState().migratePromise();
+            assert.strictEqual(status.status, 'DONE');
+
+            await db3.remove();
+        });
+        /**
          * The migration pushes multiple batches in parallel into the new storage.
          * With multiInstance: false, the premium IndexedDB storage lost
          * whole batches when three or more batches were needed.

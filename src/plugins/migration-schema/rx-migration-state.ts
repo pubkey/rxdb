@@ -1,6 +1,7 @@
 import {
     Observable,
     Subject,
+    defer,
     distinctUntilChanged,
     filter,
     firstValueFrom,
@@ -83,6 +84,11 @@ export class RxMigrationState {
 
 
     private started: boolean = false;
+    /**
+     * Resolves when the stored error of a previous migration run
+     * has been removed from the status document.
+     */
+    private errorStatusReset?: Promise<void>;
     public readonly oldCollectionMeta: ReturnType<typeof getOldCollectionMeta>;
     public readonly mustMigrate: ReturnType<typeof mustMigrate>;
     public readonly statusDocId: string;
@@ -121,10 +127,15 @@ export class RxMigrationState {
         );
         addMigrationStateToDatabase(this);
 
-        this.$ = observeSingle<RxMigrationStatusDocument>(
+        /**
+         * The status document is fetched when the observable is subscribed,
+         * so that new subscribers start with the current status
+         * and not with the status from the time when this state was created.
+         */
+        this.$ = defer(() => observeSingle<RxMigrationStatusDocument>(
             this.database.internalStore,
             this.statusDocId
-        ).pipe(
+        )).pipe(
             filter((d: RxMigrationStatusDocument | null) => !!d),
             map((d: RxMigrationStatusDocument | null) => ensureNotFalsy(d).data),
             /**
@@ -181,6 +192,8 @@ export class RxMigrationState {
         this.database.onClose.push(() => this.cancel());
 
         try {
+            this.errorStatusReset = this.resetErrorStatus();
+            await this.errorStatusReset;
             await this.runMigration(batchSize);
         } finally {
             this.stopHeartbeat();
@@ -194,6 +207,31 @@ export class RxMigrationState {
                 this.broadcastChannel = undefined;
             }
         }
+    }
+
+    /**
+     * The status document is stored in the database,
+     * so it can still contain the error of a migration run
+     * that has failed before the database was opened this time.
+     * A new run must start with the 'RUNNING' status, otherwise
+     * migratePromise() rejects with the stored error
+     * and the heartbeat does not refresh the status document.
+     */
+    private async resetErrorStatus(): Promise<void> {
+        const statusDoc = await getSingleDocument<RxMigrationStatusDocument>(
+            this.database.internalStore,
+            this.statusDocId
+        );
+        if (!statusDoc || statusDoc.data.status !== 'ERROR') {
+            return;
+        }
+        await this.updateStatus(s => {
+            if (s.status === 'ERROR') {
+                s.status = 'RUNNING';
+                delete s.error;
+            }
+            return s;
+        });
     }
 
     private async runMigration(batchSize: number): Promise<void> {
@@ -813,18 +851,22 @@ export class RxMigrationState {
             };
         }
 
-        const result = await Promise.race([
-            firstValueFrom(
-                this.$.pipe(
-                    filter((d: RxMigrationStatus) => d.status === 'DONE')
-                )
-            ),
-            firstValueFrom(
-                this.$.pipe(
-                    filter((d: RxMigrationStatus) => d.status === 'ERROR')
-                )
+        /**
+         * this.$ can replay the stored error of a previous run
+         * to a new subscriber. To not get that error,
+         * the status is observed from the point in time
+         * after that error has been removed.
+         */
+        await this.errorStatusReset;
+        const result = await firstValueFrom(
+            observeSingle<RxMigrationStatusDocument>(
+                this.database.internalStore,
+                this.statusDocId
+            ).pipe(
+                map(d => d.data),
+                filter((d: RxMigrationStatus) => d.status === 'DONE' || d.status === 'ERROR')
             )
-        ]);
+        );
 
         if (result.status === 'ERROR') {
             throw newRxError('DM4', {
