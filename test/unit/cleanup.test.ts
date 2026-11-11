@@ -15,7 +15,9 @@ import {
     RxCollection,
     RxJsonSchema,
     ensureNotFalsy,
-    removeRxDatabase
+    removeRxDatabase,
+    RxStorage,
+    RxStorageInstanceCreationParams
 } from '../../plugins/core/index.mjs';
 
 import { replicateRxCollection } from '../../plugins/replication/index.mjs';
@@ -23,7 +25,10 @@ import { replicateRxCollection } from '../../plugins/replication/index.mjs';
 import { RxDBCleanupPlugin } from '../../plugins/cleanup/index.mjs';
 import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.mjs';
 import { DEFAULT_CLEANUP_POLICY } from '../../plugins/cleanup/index.mjs';
+import { RxDBStatePlugin } from '../../plugins/state/index.mjs';
+import { getRxStorageMemory } from '../../plugins/storage-memory/index.mjs';
 addRxPlugin(RxDBCleanupPlugin);
+addRxPlugin(RxDBStatePlugin);
 
 describe('cleanup.test.js', () => {
     describe('basics', () => {
@@ -407,6 +412,76 @@ describe('cleanup.test.js', () => {
             assert.strictEqual(result2, true);
 
             await db.close();
+        });
+        it('a failed cleanup of one RxState must not stop the cleanup of the RxState of another database', async () => {
+            /**
+             * Storage that rejects the first write
+             * which deletes documents of a RxState collection.
+             */
+            let failedWrites = 0;
+            const memoryStorage = getRxStorageMemory();
+            const failingStorage: RxStorage<any, any> = {
+                name: memoryStorage.name,
+                rxdbVersion: memoryStorage.rxdbVersion,
+                async createStorageInstance<RxDocType>(
+                    params: RxStorageInstanceCreationParams<RxDocType, any>
+                ) {
+                    const instance = await memoryStorage.createStorageInstance<RxDocType>(params);
+                    const bulkWrite = instance.bulkWrite.bind(instance);
+                    instance.bulkWrite = (rows, context) => {
+                        if (
+                            failedWrites === 0 &&
+                            params.collectionName.startsWith('rx-state-') &&
+                            rows.some(row => row.document._deleted)
+                        ) {
+                            failedWrites++;
+                            return Promise.reject(new Error('disk full'));
+                        }
+                        return bulkWrite(rows, context);
+                    };
+                    return instance;
+                }
+            };
+            const cleanupPolicy = {
+                awaitReplicationsInSync: false,
+                minimumCollectionAge: 0,
+                minimumDeletedTime: 0,
+                runEach: 10,
+                waitForLeadership: false
+            };
+
+            const failingDb = await createRxDatabase({
+                name: randomToken(10),
+                storage: wrappedValidateAjvStorage({
+                    storage: failingStorage
+                }),
+                multiInstance: false,
+                cleanupPolicy
+            });
+            const failingState = await failingDb.addState('one');
+            for (let i = 0; i < 10; i++) {
+                await failingState.set('k' + i, () => i);
+            }
+            await waitUntil(() => failedWrites === 1);
+
+            const healthyDb = await createRxDatabase({
+                name: randomToken(10),
+                storage: config.storage.getStorage(),
+                multiInstance: false,
+                cleanupPolicy
+            });
+            const healthyState = await healthyDb.addState('two');
+            for (let i = 0; i < 10; i++) {
+                await healthyState.set('k' + i, () => i);
+            }
+            await waitUntil(async () => {
+                const docs = await healthyState.collection.find().exec();
+                return docs.length <= 5;
+            }, 2000);
+            assert.strictEqual(healthyState.get('k9'), 9);
+
+            await failingDb.close();
+            await healthyDb.close();
         });
         it('fields with umlauts and emojis could break the state after cleanup in some storages', async () => {
             type DocType = {
