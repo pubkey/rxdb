@@ -214,6 +214,96 @@ describe('crdt.test.ts', () => {
 
             collection.database.close();
         });
+        it('should merge the conditional insert of two clients', async () => {
+            const clientACollection = await getCRDTCollection();
+            const clientBCollection = await getCRDTCollection();
+            const writeData = schemaObjects.humanData('foobar', 1);
+
+            const [docA, docB] = await Promise.all(
+                [clientACollection, clientBCollection].map(collection => collection.insertCRDT({
+                    selector: {
+                        passportId: {
+                            $exists: false
+                        }
+                    },
+                    ifMatch: {
+                        $set: writeData
+                    },
+                    ifNotMatch: {
+                        $inc: {
+                            age: 1
+                        }
+                    }
+                }))
+            );
+            assert.strictEqual(docA.age, 1);
+            assert.strictEqual(docB.age, 1);
+
+            const resolved = await clientACollection.conflictHandler.resolve({
+                newDocumentState: docA.toMutableJSON(true),
+                realMasterState: docB.toMutableJSON(true)
+            }, 'crdt-conditional-insert');
+
+            // one client inserted the document, the other one incremented the age
+            assert.strictEqual(resolved.age, 2);
+            assert.strictEqual(resolved.firstName, writeData.firstName);
+
+            clientACollection.database.close();
+            clientBCollection.database.close();
+        });
+        it('should keep the default values on a conditional insert', async () => {
+            type DocType = {
+                passportId: string;
+                firstName: string;
+                score?: number;
+            };
+            const schemaWithDefault: RxJsonSchema<DocType> = {
+                version: 0,
+                primaryKey: 'passportId',
+                type: 'object',
+                properties: {
+                    passportId: { type: 'string', maxLength: 100 },
+                    firstName: { type: 'string', maxLength: 100 },
+                    score: { type: 'integer', minimum: 0, maximum: 1000, default: 5 }
+                },
+                required: ['firstName', 'passportId']
+            };
+            const clientACollection = await getCRDTCollection<DocType>(schemaWithDefault);
+            const clientBCollection = await getCRDTCollection<DocType>(schemaWithDefault);
+
+            const [docA, docB] = await Promise.all(
+                [clientACollection, clientBCollection].map(collection => collection.insertCRDT({
+                    selector: {
+                        passportId: {
+                            $exists: false
+                        }
+                    },
+                    ifMatch: {
+                        $set: {
+                            passportId: 'foobar',
+                            firstName: 'Alice'
+                        }
+                    },
+                    ifNotMatch: {
+                        $inc: {
+                            score: 1
+                        }
+                    }
+                }))
+            );
+            assert.strictEqual(docA.score, 5);
+            assert.strictEqual(docB.score, 5);
+
+            const resolved = await clientACollection.conflictHandler.resolve({
+                newDocumentState: docA.toMutableJSON(true),
+                realMasterState: docB.toMutableJSON(true)
+            }, 'crdt-conditional-insert-defaults');
+            assert.strictEqual(resolved.score, 6);
+            assert.strictEqual(resolved.firstName, 'Alice');
+
+            clientACollection.database.close();
+            clientBCollection.database.close();
+        });
     });
     describe('.remove()', () => {
         it('should delete the document via .remove', async () => {
