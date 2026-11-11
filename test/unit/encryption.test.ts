@@ -203,6 +203,51 @@ describe('encryption.test.ts', () => {
             db.close();
             db2.close();
         });
+        it('prevent opening a database without password when it was created with a password', async () => {
+            if (!config.storage.hasPersistence) {
+                return;
+            }
+            const name = randomToken(10);
+            const password = await getPassword();
+            const db = await createRxDatabase({
+                name,
+                storage,
+                password
+            });
+            await db.addCollections({
+                humans: {
+                    schema: schemas.human
+                }
+            });
+            await db.close();
+
+            const db2 = await createRxDatabase({
+                name,
+                storage
+            });
+            await AsyncTestUtil.assertThrows(
+                () => db2.addCollections({
+                    humans: {
+                        schema: schemas.human
+                    }
+                }),
+                'RxError',
+                'DB1'
+            );
+            await db2.close();
+
+            const db3 = await createRxDatabase({
+                name,
+                storage,
+                password
+            });
+            await db3.addCollections({
+                humans: {
+                    schema: schemas.human
+                }
+            });
+            await db3.remove();
+        });
     });
     describe('RxCollection creation', () => {
         it('create encrypted collection', async () => {
