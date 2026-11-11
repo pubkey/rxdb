@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX when `addCollections()` failed because the RxStorage rejected the creation of the storage instance (like `DXE1` on the Dexie RxStorage), the collection meta document stayed in the internal store so that `database.remove()` failed with the same error and the collection could not be added with a corrected schema",
+    "links": [],
+    "priority": 5
+}

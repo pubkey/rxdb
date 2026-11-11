@@ -75,6 +75,7 @@ import {
     flatCloneDocWithMeta,
     getSingleDocument,
     getWrappedStorageInstance,
+    getWrittenDocumentsFromBulkWriteResponse,
     INTERNAL_STORAGE_NAME,
     WrappedRxStorageInstance
 } from './rx-storage-helper.ts';
@@ -503,6 +504,41 @@ export class RxDatabaseBase<
                 )
             );
             throw err;
+        }
+
+        /**
+         * A collection whose storage instance could not be created
+         * must not keep the meta document that was written by this call.
+         * Otherwise database.remove() would try to create
+         * that storage instance again and fail with the same error.
+         */
+        const failedCollectionNames: string[] = [];
+        await Promise.all(
+            Object.entries(collectionStorageInstancePromises).map(
+                ([collectionName, promise]) => promise.catch(() => failedCollectionNames.push(collectionName))
+            )
+        );
+        if (failedCollectionNames.length > 0) {
+            const removeMetaDocRows = getWrittenDocumentsFromBulkWriteResponse(
+                'id',
+                bulkPutDocs,
+                putDocsResult
+            )
+                .filter(doc => failedCollectionNames.includes(doc.data.name))
+                .map(doc => ({
+                    previous: doc,
+                    document: Object.assign({}, doc, { _deleted: true })
+                }));
+            await Promise.all([
+                removeMetaDocRows.length > 0 ? this.internalStore.bulkWrite(
+                    removeMetaDocRows,
+                    'rx-database-add-collection-rollback'
+                ).catch(() => { }) : undefined,
+                ...Object.values(collectionStorageInstancePromises).map(
+                    promise => promise.then(instance => instance.close()).catch(() => { })
+                )
+            ]);
+            await collectionStorageInstancePromises[failedCollectionNames[0]];
         }
 
         const ret: { [key in keyof CreatedCollections]: RxCollection<any, {}, {}, {}, Reactivity> } = {} as any;

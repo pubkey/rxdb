@@ -13,7 +13,10 @@ import {
     RxCollectionEvent,
     dbCount,
     DEFAULT_EVENT_REDUCE_OPTIONS,
-    ensureNotFalsy
+    ensureNotFalsy,
+    newRxError,
+    RxJsonSchema,
+    RxStorage
 } from '../../plugins/core/index.mjs';
 
 import AsyncTestUtil, { waitUntil } from 'async-test-util';
@@ -565,6 +568,96 @@ describe('rx-database.test.ts', () => {
                 );
                 db1.close();
                 db2.close();
+            });
+            it('must not leave the collection behind when the storage rejects the creation of the storage instance', async () => {
+                type OptionalIndexDocType = {
+                    id: string;
+                    age?: number;
+                };
+                const getSchema = (required: (keyof OptionalIndexDocType)[]): RxJsonSchema<OptionalIndexDocType> => ({
+                    version: 0,
+                    primaryKey: 'id',
+                    type: 'object',
+                    properties: {
+                        id: {
+                            type: 'string',
+                            maxLength: 100
+                        },
+                        age: {
+                            type: 'number',
+                            minimum: 0,
+                            maximum: 150,
+                            multipleOf: 1
+                        }
+                    },
+                    required,
+                    indexes: ['age']
+                });
+
+                /**
+                 * Same as the Dexie RxStorage, this storage
+                 * does not support indexes on non-required top-level fields.
+                 */
+                const memoryStorage = getRxStorageMemory();
+                const failingStorage: RxStorage<any, any> = {
+                    name: memoryStorage.name,
+                    rxdbVersion: memoryStorage.rxdbVersion,
+                    createStorageInstance(params) {
+                        const required: string[] = params.schema.required ? params.schema.required.slice() : [];
+                        const notRequiredIndexField = (params.schema.indexes ? params.schema.indexes : [])
+                            .flat()
+                            .find(field => !field.includes('.') && !required.includes(field));
+                        if (notRequiredIndexField) {
+                            return Promise.reject(newRxError('DXE1', {
+                                field: notRequiredIndexField,
+                                schema: params.schema
+                            }));
+                        }
+                        return memoryStorage.createStorageInstance(params);
+                    }
+                };
+                const storage = wrappedValidateAjvStorage({ storage: failingStorage });
+
+                // database.remove() must work after the failed call
+                const db1 = await createRxDatabase({
+                    name: randomToken(10),
+                    storage
+                });
+                await AsyncTestUtil.assertThrows(
+                    () => db1.addCollections({
+                        humans: {
+                            schema: getSchema(['id'])
+                        }
+                    }),
+                    'RxError',
+                    'DXE1'
+                );
+                assert.deepStrictEqual(Object.keys(db1.collections), []);
+                await db1.remove();
+
+                // adding the collection with a corrected schema must work after the failed call
+                const db2 = await createRxDatabase({
+                    name: randomToken(10),
+                    storage
+                });
+                await AsyncTestUtil.assertThrows(
+                    () => db2.addCollections({
+                        humans: {
+                            schema: getSchema(['id'])
+                        }
+                    }),
+                    'RxError',
+                    'DXE1'
+                );
+                const collections = await db2.addCollections({
+                    humans: {
+                        schema: getSchema(['id', 'age'])
+                    }
+                });
+                await collections.humans.insert({ id: 'alice', age: 30 });
+                const docs = await collections.humans.find({ selector: { age: { $gt: 20 } } }).exec();
+                assert.strictEqual(docs.length, 1);
+                await db2.remove();
             });
         });
     });
