@@ -23,7 +23,8 @@ import {
     randomToken,
     ensureNotFalsy,
     deepFreeze,
-    addRxPlugin
+    addRxPlugin,
+    randomDelayStorage
 } from '../../plugins/core/index.mjs';
 import { RxDBUpdatePlugin } from '../../plugins/update/index.mjs';
 addRxPlugin(RxDBUpdatePlugin);
@@ -1421,6 +1422,122 @@ describe('rx-query.test.ts', () => {
                     db.close();
                 });
             });
+        it('exec() must resolve in bounded time and stay correct while other writes are running on a slow storage', async function () {
+            this.timeout(120 * 1000);
+            const db = await createRxDatabase({
+                name: randomToken(10),
+                storage: wrappedValidateAjvStorage({
+                    storage: randomDelayStorage({
+                        storage: getRxStorageMemory(),
+                        delayTimeBefore: () => 20,
+                        delayTimeAfter: () => 0
+                    })
+                }),
+                eventReduce: true
+            });
+            const collections = await db.addCollections({
+                humans: { schema: schemas.human }
+            });
+            const c = collections.humans;
+
+            const expectedIds = new Set<string>();
+            const initialDocs = new Array(10).fill(0).map((_v, idx) => schemaObjects.humanData('initial-' + idx));
+            await c.bulkInsert(initialDocs);
+            initialDocs.forEach(d => expectedIds.add(d.passportId));
+
+            const findQuery = c.find().sort('passportId');
+            const limitQuery = c.find({ sort: [{ passportId: 'asc' }], limit: 5 });
+            const countQuery = c.count();
+
+            let lastFindEmit: string[] = [];
+            let lastLimitEmit: string[] = [];
+            let lastCountEmit = -1;
+            const subs = [
+                findQuery.$.subscribe(docs => lastFindEmit = docs.map(d => d.primary)),
+                limitQuery.$.subscribe(docs => lastLimitEmit = docs.map(d => d.primary)),
+                countQuery.$.subscribe(count => lastCountEmit = count)
+            ];
+
+            /**
+             * Writes that match the queries, so that an event
+             * which is applied twice or not at all changes the results.
+             */
+            let stopWriter = false;
+            let writeCount = 0;
+            const writer = (async () => {
+                while (!stopWriter) {
+                    const id = 'write-' + (writeCount++).toString().padStart(6, '0');
+                    const doc = await c.insert(schemaObjects.humanData(id));
+                    expectedIds.add(id);
+                    if (writeCount % 3 === 0) {
+                        await doc.remove();
+                        expectedIds.delete(id);
+                    }
+                    if (writeCount % 4 === 0) {
+                        const removeId = 'initial-' + (writeCount / 4);
+                        const removeDoc = await c.findOne(removeId).exec();
+                        if (removeDoc) {
+                            await removeDoc.remove();
+                            expectedIds.delete(removeId);
+                        }
+                    }
+                    await promiseWait(5);
+                }
+            })();
+
+            const maxExecTime = 10 * 1000;
+            const execInTime = async <T>(run: () => Promise<T>): Promise<T | 'timeout'> => {
+                let timeout: ReturnType<typeof setTimeout> | undefined;
+                const result = await Promise.race([
+                    run(),
+                    new Promise<'timeout'>(res => {
+                        timeout = setTimeout(() => res('timeout'), maxExecTime);
+                    })
+                ]);
+                clearTimeout(timeout);
+                return result;
+            };
+
+            let timedOut = false;
+            try {
+                for (let i = 0; i < 3 && !timedOut; i++) {
+                    const runs = [
+                        () => findQuery.exec(),
+                        () => limitQuery.exec(),
+                        () => countQuery.exec(),
+                        () => c.find({ selector: { age: { $gt: i } } }).exec()
+                    ];
+                    for (const run of runs) {
+                        if (await execInTime<unknown>(run) === 'timeout') {
+                            timedOut = true;
+                            break;
+                        }
+                    }
+                }
+            } finally {
+                stopWriter = true;
+                await writer;
+            }
+            assert.strictEqual(timedOut, false, 'exec() did not resolve while writes are running');
+            assert.ok(writeCount > 5, 'writes must have been running, got ' + writeCount);
+
+            const expectedSorted = Array.from(expectedIds).sort();
+            const findResult = await findQuery.exec();
+            assert.deepStrictEqual(findResult.map(d => d.primary), expectedSorted);
+            const limitResult = await limitQuery.exec();
+            assert.deepStrictEqual(limitResult.map(d => d.primary), expectedSorted.slice(0, 5));
+            assert.strictEqual(await countQuery.exec(), expectedSorted.length);
+
+            await waitUntil(() => lastFindEmit.length === expectedSorted.length && lastCountEmit === expectedSorted.length, 10000, 20);
+            // give wrongly applied events time to arrive
+            await promiseWait(200);
+            assert.deepStrictEqual(lastFindEmit, expectedSorted);
+            assert.deepStrictEqual(lastLimitEmit, expectedSorted.slice(0, 5));
+            assert.strictEqual(lastCountEmit, expectedSorted.length);
+
+            subs.forEach(sub => sub.unsubscribe());
+            await db.close();
+        });
         /**
          * @link https://github.com/pubkey/rxdb/pull/7497
          */
