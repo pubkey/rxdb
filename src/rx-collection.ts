@@ -970,7 +970,7 @@ export class RxCollectionBase<
         throw pluginMissing('webmcp');
     }
 
-    insertCRDT(_updateObj: CRDTEntry<any> | CRDTEntry<any>[]): RxDocument<RxDocumentType, OrmMethods, Reactivity> {
+    insertCRDT(_updateObj: CRDTEntry<any> | CRDTEntry<any>[]): Promise<RxDocument<RxDocumentType, OrmMethods, Reactivity>> {
         throw pluginMissing('crdt');
     }
 
