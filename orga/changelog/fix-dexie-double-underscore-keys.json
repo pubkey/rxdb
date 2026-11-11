@@ -1,0 +1,5 @@
+{
+    "text": "FIX the Dexie RxStorage returned document keys that start with `__` (for example `__typename` in a nested object) with a leading `|` instead, and lost a field when an object contained both `__key` and `|key`",
+    "links": [],
+    "priority": 5
+}

@@ -137,6 +137,24 @@ export function dexieReplaceIfStartsWithPipeRevert(str: string): string {
     }
 }
 
+/**
+ * Document keys that start with a pipe-char are stored with the DEXIE_PIPE_SUBSTITUTE
+ * instead of the pipe-char so that they can be used in IndexedDB indexes.
+ * A key that starts with the DEXIE_PIPE_SUBSTITUTE in the document data
+ * has to stay distinguishable from that, so it is stored with a leading pipe-char instead.
+ * The mapping swaps both prefixes which means that
+ * calling the function again on the stored key returns the original key.
+ */
+export function dexieSwapPipeAndSubstitute(key: string): string {
+    if (key.startsWith('|')) {
+        return DEXIE_PIPE_SUBSTITUTE + key.substring(1);
+    } else if (key.startsWith(DEXIE_PIPE_SUBSTITUTE)) {
+        return '|' + key.substring(DEXIE_PIPE_SUBSTITUTE.length);
+    } else {
+        return key;
+    }
+}
+
 
 /**
  * IndexedDB does not support boolean indexing.
@@ -201,7 +219,7 @@ export function fromStorageToDexieField(documentData: RxDocumentData<any>): any 
             if (typeof value === 'object') {
                 value = fromStorageToDexieField(value);
             }
-            ret[dexieReplaceIfStartsWithPipe(key)] = value;
+            ret[dexieSwapPipeAndSubstitute(key)] = value;
         });
         return ret;
     }
@@ -218,7 +236,7 @@ export function fromDexieToStorageField(documentData: any): RxDocumentData<any> 
             if (typeof value === 'object' || Array.isArray(documentData)) {
                 value = fromDexieToStorageField(value);
             }
-            ret[dexieReplaceIfStartsWithPipeRevert(key)] = value;
+            ret[dexieSwapPipeAndSubstitute(key)] = value;
         });
         return ret;
     }
