@@ -106,6 +106,59 @@ Why it is breaking, and what has to be handled:
 - **It assumes the data matches the schema.** A document that stores a number where the schema declares a string-enum cannot be told apart from an already compressed value. The schema validation plugins catch this, but they are optional, so this should at least be a dev-mode check or a line in the docs.
 - It needs the `jsonschema-key-compression` release that contains enum-compression, which is not released yet.
 
+## Replication: Add `newDocumentRevision` to the push rows
+
+When a push request fails, RxDB sends the rows again. The write could have already reached the remote while only the response got lost, so the remote gets the same write twice. A push row has no identity that the remote could use to detect that:
+
+```ts
+{
+    assumedMasterState: { id: 'todo1', name: 'Learn RxDB', done: false, _deleted: false },
+    newDocumentState: { id: 'todo1', name: 'Learn RxDB', done: true, _deleted: false }
+}
+```
+
+The fork document already has such an identity, its `_rev` (`<height>-<databaseInstanceToken>`, see `createRevision()` in `src/plugins/utils/utils-revision.ts`). It is stored with the document, so it is the same on each retry, also after the JavaScript process was restarted and when the rows are batched differently. But `writeDocToDocState()` in `src/replication-protocol/helper.ts` strips `_rev` and `_meta` before the rows are given to the push handler.
+
+In the next major, a push row looks like this:
+
+```ts
+{
+    assumedMasterState: { id: 'todo1', name: 'Learn RxDB', done: false, _deleted: false },
+    newDocumentState: { id: 'todo1', name: 'Learn RxDB', done: true, _deleted: false },
+    newDocumentRevision: '2-ipivwauvdn'
+}
+```
+
+The remote stores the last applied revision of each document and skips a row when the `newDocumentRevision` of that document was already applied. This makes the push idempotent per document, which also covers a batch that was only partially written before the request died.
+
+What has to be changed:
+
+- **Type**: Add `newDocumentRevision: string` to `RxReplicationWriteToMasterRow` in `src/types/replication-protocol.d.ts`.
+- **Upstream**: Set it in `persistToMaster()` in `src/replication-protocol/upstream.ts` from `fullDocData._rev` where `writeRowsToMaster[docId]` is created.
+- **Replication plugin**: The `masterWrite()` wrapper in `src/plugins/replication/index.ts` creates a new row object when a custom `deletedField` is used. It spreads the row, so the field is kept, but add a test for it.
+- **Schema migration**: `src/plugins/migration-schema/rx-migration-state.ts` calls `masterWrite()` with its own migrated rows and has to set the field too.
+- **Receiving side**: `rxStorageInstanceToReplicationHandler()` in `src/replication-protocol/index.ts` is the remote of the WebRTC and WebSocket replications. Decide if its `masterWrite()` uses the revision to skip duplicates or if the comparison with the `assumedMasterState` is enough there.
+- **RxServer**: The [rxdb-server](https://github.com/pubkey/rxdb-server) has to implement the duplicate detection in its replication endpoint and must have tests for it: a push that is sent twice with the same `newDocumentRevision` must only be applied once, also when the server was restarted in between and when the second request has the rows in a different batch.
+- **GraphQL**: `graphQLSchemaFromRxSchema()` has to add the field to the `PushRow` input type and `pushQueryBuilderFromRxSchema()` has to send it.
+- **Other replication plugins**: CouchDB, Firestore, MongoDB, Supabase, Appwrite, NATS, Google Drive, and Microsoft OneDrive read the rows in their push handlers. Check that the additional field does not end up in the written document and use it for duplicate detection where the backend makes that possible.
+- **Tests**: Add a test to `test/unit/replication.test.ts` where the push handler writes the rows and then throws, so that the retry has the same `newDocumentRevision`. Add one that restarts the replication between the failed and the successful push. `getPushHandler()` in `src/plugins/test-utils/replication.ts` can be used as the remote.
+- **Docs**: Add a section to `docs-src/docs/replication.md` that covers how to correctly handle duplicate pushes on the remote. It replaces the vague advice in the "Error handling" section to "add a unique write id field to the document". The section must contain:
+    - Why duplicates happen (retry after a lost response, restart of the app, partially written batch).
+    - A backend example that stores the last applied revision per document and skips a row with a known `newDocumentRevision`, in the same transaction that writes the document.
+    - What the remote returns for a skipped row. It must not return it as a conflict, otherwise the client runs the conflict handler for its own write.
+    - That the revision must be used together with the primary key and how long the remote has to keep the applied revisions.
+    - What to do with writes that have side effects on the remote (counters, payments, emails), because these are the cases where a duplicate does real damage.
+- **Other docs**: Add the field to the push endpoint of `docs-src/docs/replication-http.md` and update the push rows that are shown in `replication-graphql.md`, `rx-server.md`, and `migration-schema.md`. Mention it in the release notes of the major as a breaking change for custom backends.
+
+Why it is breaking, and what has to be handled:
+
+- **The rows get a new field.** Remotes that validate the rows strictly reject it, for example a GraphQL input type like `HumanInputPushRow` or a schema validation on the server.
+- **The revision is only unique per document.** The remote has to use the primary key together with the revision. The height starts at `1` again when a deleted document was purged by the cleanup plugin and is inserted again with the same primary key on the same device, so the remote must not keep the applied revisions forever.
+- **Rows that are changed by the `push.modifier`** keep the revision of the unmodified fork document. Decide if that is documented or if the modifier also gets the revision.
+- **Conflicts**: When the conflict handler resolves a conflict, the resolved document is written to the fork with a new revision and pushed as a new row. This must not be detected as a duplicate, which works because the revision height is increased.
+
+A non-breaking variant was tried in [#9463](https://github.com/pubkey/rxdb/pull/9463). It called the `push.handler` with a second argument that contained a random `requestId` which was the same on all retries of a request. It was dropped because the `requestId` was only kept in memory: After a restart of the app the same writes are pushed with a new `requestId`, and the rows can be batched differently so that the same request no longer exists.
+
 ---------------------------------
 ## Maybe later (not sure if should be done)
 
