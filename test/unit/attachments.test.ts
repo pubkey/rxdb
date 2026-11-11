@@ -32,8 +32,11 @@ import {
     RxDocumentWriteData,
     addRxPlugin,
     randomOfArray,
-    promiseWait
+    promiseWait,
+    deepEqual,
+    WithDeletedAndAttachments
 } from '../../plugins/core/index.mjs';
+import { replicateRxCollection } from '../../plugins/replication/index.mjs';
 import {
     wrappedAttachmentsCompressionStorage,
     decompressBlob
@@ -580,6 +583,122 @@ describe('attachments.test.ts', () => {
 
             await db2.close();
             await c.database.close();
+        });
+        it('should replicate a local change of a second client when the backend compares the assumed master state', async () => {
+            type DocWithAttachments = WithDeletedAndAttachments<HumanDocumentType>;
+            const collectionA = await createEncryptedAttachmentsCollection(0);
+            const collectionB = await createEncryptedAttachmentsCollection(0);
+
+            /**
+             * The backend stores the document with attachment stubs
+             * and the attachment data in a separate store.
+             * A push is a conflict when the assumed master state
+             * is not equal to the stored document.
+             * After some conflicts the backend accepts the write,
+             * so that the replication always comes to an end.
+             */
+            let master: DocWithAttachments | undefined;
+            let masterVersion = 0;
+            const blobs = new Map<string, Blob>();
+            function stripData(docData: DocWithAttachments): DocWithAttachments {
+                const attachments: NonNullable<DocWithAttachments['_attachments']> = {};
+                Object.entries(docData._attachments ?? {}).forEach(([id, attachment]) => {
+                    attachments[id] = {
+                        digest: attachment.digest,
+                        length: attachment.length,
+                        type: attachment.type
+                    };
+                });
+                return Object.assign({}, docData, { _attachments: attachments });
+            }
+            function withData(docData: DocWithAttachments): DocWithAttachments {
+                const attachments: NonNullable<DocWithAttachments['_attachments']> = {};
+                Object.entries(docData._attachments ?? {}).forEach(([id, attachment]) => {
+                    attachments[id] = Object.assign({}, attachment, { data: ensureNotFalsy(blobs.get(attachment.digest)) });
+                });
+                return Object.assign({}, docData, { _attachments: attachments });
+            }
+            const pushedLengths: number[] = [];
+            let conflicts = 0;
+            async function syncOnce(collection: RxCollection<HumanDocumentType>): Promise<boolean> {
+                const replicationState = replicateRxCollection<HumanDocumentType, { version: number; }>({
+                    collection,
+                    replicationIdentifier: 'encrypted-attachments-replication',
+                    live: false,
+                    pull: {
+                        handler: (checkpoint) => {
+                            const lastVersion = checkpoint ? checkpoint.version : 0;
+                            const documents: DocWithAttachments[] = [];
+                            if (master && lastVersion < masterVersion) {
+                                documents.push(withData(master));
+                            }
+                            return Promise.resolve({
+                                documents,
+                                checkpoint: { version: masterVersion }
+                            });
+                        }
+                    },
+                    push: {
+                        handler: async (rows) => {
+                            await promiseWait(0);
+                            const conflictDocs: DocWithAttachments[] = [];
+                            rows.forEach(row => {
+                                const newState: DocWithAttachments = row.newDocumentState;
+                                const assumedState: DocWithAttachments | undefined = row.assumedMasterState;
+                                Object.values(newState._attachments ?? {}).forEach(attachment => {
+                                    pushedLengths.push(attachment.length);
+                                });
+                                if (
+                                    master &&
+                                    conflicts < 10 &&
+                                    (!assumedState || !deepEqual(stripData(assumedState), master))
+                                ) {
+                                    conflicts++;
+                                    conflictDocs.push(withData(master));
+                                    return;
+                                }
+                                Object.values(newState._attachments ?? {}).forEach(attachment => {
+                                    if ('data' in attachment) {
+                                        blobs.set(attachment.digest, attachment.data);
+                                    }
+                                });
+                                master = stripData(newState);
+                                masterVersion++;
+                            });
+                            return conflictDocs;
+                        }
+                    }
+                });
+                const inSync = await Promise.race([
+                    replicationState.awaitInitialReplication().then(() => true),
+                    promiseWait(2000).then(() => false)
+                ]);
+                await replicationState.cancel();
+                return inSync;
+            }
+
+            const insertData = 'Milk, eggs, bread';
+            const docA = await collectionA.insert(schemaObjects.humanData());
+            await docA.putAttachment({
+                id: 'list.txt',
+                data: createBlob(insertData, 'text/plain'),
+                type: 'text/plain'
+            });
+            assert.strictEqual(await syncOnce(collectionA), true);
+            assert.strictEqual(await syncOnce(collectionB), true);
+
+            const docB = await collectionB.findOne(docA.primary).exec(true);
+            const attachmentB = ensureNotFalsy(docB.getAttachment('list.txt'));
+            assert.strictEqual(await attachmentB.getStringData(), insertData);
+            await docB.incrementalPatch({ firstName: 'foobar' });
+
+            assert.strictEqual(await syncOnce(collectionB), true, 'client B must get in sync, conflicts: ' + conflicts);
+            assert.strictEqual(conflicts, 0);
+            assert.strictEqual(ensureNotFalsy(master).firstName, 'foobar');
+            pushedLengths.forEach(length => assert.strictEqual(length, insertData.length));
+
+            await collectionA.database.close();
+            await collectionB.database.close();
         });
         it('should be able to render an encrypted stored image attachment', async () => {
             if (isNode || isDeno || isBun) {
