@@ -10,7 +10,7 @@ import {
     combineLatest,
     filter,
     firstValueFrom,
-    mergeMap,
+    concatMap,
     Observable,
     Subject,
     Subscription
@@ -306,7 +306,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
             replicationHandler: {
                 masterChangeStream$: this.remoteEvents$.asObservable().pipe(
                     filter((_v: RxReplicationPullStreamItem<RxDocType, CheckpointType>) => !!this.pull || _v === 'RESYNC'),
-                    mergeMap(async (ev: RxReplicationPullStreamItem<RxDocType, CheckpointType>) => {
+                    concatMap(async (ev: RxReplicationPullStreamItem<RxDocType, CheckpointType>) => {
                         if (ev === 'RESYNC') {
                             return ev;
                         }
