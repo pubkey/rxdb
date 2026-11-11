@@ -161,9 +161,19 @@ export class RxReplicationState<RxDocType, CheckpointType> {
         const startPromiseWithResolvers = createPromiseWithResolvers<void>();
         this.callOnStart = startPromiseWithResolvers.resolve;
         this.startPromise = startPromiseWithResolvers.promise;
+        const stopRequestedPromiseWithResolvers = createPromiseWithResolvers<void>();
+        this.callOnStopRequested = stopRequestedPromiseWithResolvers.resolve;
+        this.stopRequestedPromise = stopRequestedPromiseWithResolvers.promise;
     }
 
     private callOnStart: () => void = undefined as any;
+
+    /**
+     * Resolves as soon as cancel() or remove() is called,
+     * before these calls are processed in the startQueue.
+     */
+    private stopRequestedPromise: Promise<void>;
+    private callOnStopRequested: () => void = undefined as any;
 
     public internalReplicationState?: RxStorageInstanceReplicationState<RxDocType>;
     public metaInstance?: RxStorageInstance<RxStorageReplicationMeta<RxDocType, CheckpointType>, any, {}, any>;
@@ -489,9 +499,22 @@ export class RxReplicationState<RxDocType, CheckpointType> {
          * and then automatically get canceled.
          */
         if (!this.live) {
-            await awaitRxStorageReplicationFirstInSync(this.internalReplicationState);
-            await awaitRxStorageReplicationInSync(this.internalReplicationState);
-            await this._cancel();
+            const internalReplicationState = this.internalReplicationState;
+            /**
+             * cancel() and remove() are queued behind this _start() call.
+             * When the handlers keep failing, the first sync never finishes,
+             * so the waiting must end when a stop is requested.
+             * The queued cancel() or remove() then stops the replication.
+             */
+            const hasFinished = await Promise.race([
+                awaitRxStorageReplicationFirstInSync(internalReplicationState)
+                    .then(() => awaitRxStorageReplicationInSync(internalReplicationState))
+                    .then(() => true),
+                this.stopRequestedPromise.then(() => false)
+            ]);
+            if (hasFinished) {
+                await this._cancel();
+            }
         }
         this.callOnStart();
     }
@@ -707,6 +730,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
 
 
     async cancel() {
+        this.callOnStopRequested();
         this.startQueue = this.startQueue.catch(() => { }).then(async () => {
             await this._cancel();
         });
@@ -758,6 +782,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
     }
 
     async remove() {
+        this.callOnStopRequested();
         this.startQueue = this.startQueue.then(async () => {
             const metaInfo = await this.metaInfoPromise;
             await this._cancel(true);

@@ -580,6 +580,51 @@ describe('replication.test.ts', () => {
             localCollection.database.close();
             remoteCollection.database.close();
         });
+        it('cancel() and database.close() must resolve while the handler of a non-live replication keeps failing', async () => {
+            const startFailingReplication = async () => {
+                const collection = await humansCollection.createHumanWithTimestamp(0, randomToken(10), false);
+                let handlerCalls = 0;
+                const replicationState = replicateRxCollection<HumanWithTimestampDocumentType, any>({
+                    collection,
+                    replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                    live: false,
+                    retryTime: 20,
+                    pull: {
+                        handler: async () => {
+                            handlerCalls++;
+                            await wait(0);
+                            throw new Error('server is offline');
+                        }
+                    }
+                });
+                await waitUntil(() => handlerCalls >= 2);
+                return {
+                    collection,
+                    replicationState,
+                    getHandlerCalls: () => handlerCalls
+                };
+            };
+            const resolvesInTime = (promise: Promise<any>) => Promise.race([
+                promise.then(() => true),
+                wait(2000).then(() => false)
+            ]);
+
+            // cancel()
+            const first = await startFailingReplication();
+            const cancelResolved = await resolvesInTime(first.replicationState.cancel());
+            assert.strictEqual(cancelResolved, true, 'cancel() must resolve');
+            assert.strictEqual(first.replicationState.isStopped(), true);
+            const callsAfterCancel = first.getHandlerCalls();
+            await wait(100);
+            assert.strictEqual(first.getHandlerCalls(), callsAfterCancel, 'handler must not be retried after cancel()');
+            await first.collection.database.close();
+
+            // database.close()
+            const second = await startFailingReplication();
+            const closeResolved = await resolvesInTime(second.collection.database.close());
+            assert.strictEqual(closeResolved, true, 'database.close() must resolve');
+            assert.strictEqual(second.replicationState.isStopped(), true);
+        });
     });
     describe('live replication', () => {
         it('should replicate all writes', async () => {
