@@ -30,7 +30,14 @@ import {
     overwritable,
     RxCollection,
     RxDocumentWriteData,
-    RxError
+    RxError,
+    fillObjectDataBeforeInsert,
+    normalizeInlineAttachments,
+    throwIfIsStorageWriteError
+} from '../../index.ts';
+import type {
+    RxStorageWriteError,
+    UpsertOptions
 } from '../../index.ts';
 import { mingoUpdater } from '../update/mingo-updater.ts';
 import { fillObjectWithDefaults, fillPrimaryKey } from '../../rx-schema-helper.ts';
@@ -570,6 +577,137 @@ export const RxDBcrdtPlugin: RxPlugin = {
                         })
                     );
                     return bulkInsertBefore(useDocsData);
+                };
+
+                /**
+                 * An upsert on an existing document must append
+                 * an operation to the CRDT history of that document
+                 * so that the upsert is not lost when the document
+                 * is merged with the state of another instance.
+                 * The operation sets all given fields and unsets all other
+                 * fields of the schema so that it overwrites the document
+                 * the same way on each instance.
+                 */
+                const upsertExistingDocument = async function (
+                    doc: RxDocument<any>,
+                    writeData: any,
+                    options?: UpsertOptions
+                ): Promise<RxDocument<any>> {
+                    const storageToken = await collection.database.storageToken;
+                    const setMe: Record<string, any> = {};
+                    Object.entries(writeData).forEach(([key, value]) => {
+                        if (
+                            !key.startsWith('_') &&
+                            key !== crdtField &&
+                            typeof value !== 'undefined'
+                        ) {
+                            setMe[key] = value;
+                        }
+                    });
+                    const unsetMe: Record<string, any> = {};
+                    Object.keys(collection.schema.jsonSchema.properties).forEach(key => {
+                        if (
+                            !key.startsWith('_') &&
+                            key !== crdtField &&
+                            key !== collection.schema.primaryPath &&
+                            !Object.prototype.hasOwnProperty.call(setMe, key)
+                        ) {
+                            unsetMe[key] = '';
+                        }
+                    });
+                    const ifMatch: Record<string, any> = {
+                        $set: setMe
+                    };
+                    if (Object.keys(unsetMe).length > 0) {
+                        ifMatch.$unset = unsetMe;
+                    }
+                    const newAttachments = writeData._attachments;
+                    return doc.incrementalModify(async (docData: any) => {
+                        const crdtDocField: CRDTDocumentField<any> = clone(getCrdt(docData));
+                        const operation: CRDTOperation<any> = {
+                            body: [{ ifMatch }],
+                            creator: storageToken,
+                            time: now()
+                        };
+                        crdtDocField.operations.push([operation]);
+                        crdtDocField.hash = await hashCRDTOperations(collection.database.hashFunction, crdtDocField);
+                        const previousAttachments = docData._attachments;
+                        docData = runOperationOnDocument(
+                            collection.schema.jsonSchema,
+                            docData,
+                            operation
+                        );
+                        setProperty(docData, crdtField, crdtDocField);
+                        docData._attachments = options?.deleteExistingAttachments === true
+                            ? newAttachments
+                            : Object.assign({}, previousAttachments, newAttachments);
+                        return docData;
+                    }, RX_CRDT_CONTEXT);
+                };
+
+                collection.bulkUpsert = async function (docsData: any[], options?: UpsertOptions) {
+                    const primaryPath = collection.schema.primaryPath;
+                    const writeDataById = new Map<string, any>();
+                    const insertData = docsData.map(docData => {
+                        const useJson: any = fillObjectDataBeforeInsert(collection.schema, docData);
+                        const primary: string = useJson[primaryPath];
+                        if (!primary) {
+                            throw newRxError('COL3', {
+                                primaryPath: primaryPath as string,
+                                data: useJson,
+                                schema: collection.schema.jsonSchema
+                            });
+                        }
+                        writeDataById.set(primary, useJson);
+                        // bulkInsert() mutates its input, so it gets its own copy.
+                        return Object.assign({}, useJson);
+                    });
+
+                    const insertResult = await collection.bulkInsert(insertData);
+                    const success = insertResult.success.slice(0);
+                    const error: RxStorageWriteError<any>[] = [];
+                    await Promise.all(
+                        insertResult.error.map(async (err) => {
+                            if (err.status !== 409) {
+                                error.push(err);
+                                return;
+                            }
+                            const doc = await collection.findOne(err.documentId).exec();
+                            if (!doc) {
+                                error.push(err);
+                                return;
+                            }
+                            const writeData = writeDataById.get(err.documentId);
+                            if (collection.schema.jsonSchema.attachments) {
+                                writeData._attachments = await normalizeInlineAttachments(
+                                    collection.database.hashFunction,
+                                    writeData._attachments
+                                );
+                            }
+                            success.push(await upsertExistingDocument(doc, writeData, options));
+                        })
+                    );
+                    return {
+                        success,
+                        error
+                    };
+                };
+
+                collection.incrementalUpsert = async function (json: any, options?: UpsertOptions) {
+                    const primary = fillObjectDataBeforeInsert(collection.schema, json)[collection.schema.primaryPath];
+                    if (!primary) {
+                        throw newRxError('COL4', {
+                            data: json
+                        });
+                    }
+                    const result = await collection.bulkUpsert([json], options);
+                    throwIfIsStorageWriteError(
+                        collection,
+                        primary as string,
+                        json,
+                        result.error[0]
+                    );
+                    return result.success[0];
                 };
             }
         }

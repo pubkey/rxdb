@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `upsert()`, `bulkUpsert()` and `incrementalUpsert()` on an existing document of a CRDT collection replaced the CRDT operation history with a single operation, so the upsert was lost when the document was merged with the state of another client. The upsert now appends an operation to the existing history. Added testcases",
+    "links": [],
+    "priority": 5
+}
