@@ -7,7 +7,7 @@ export type CouchChangeRow = {
     seq: number;
     deleted?: true;
     changes: {
-        rev: 'string';
+        rev: string;
     }[];
     /**
      * only if include_docs === true
@@ -86,7 +86,7 @@ export type CouchBulkDocResultRow = {
     id: string;
     rev: string;
 
-    error?: 'conflict';
+    error?: 'conflict' | string;
     reason?: string;
 };
 
