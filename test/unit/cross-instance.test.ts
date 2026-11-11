@@ -15,6 +15,7 @@ import {
     randomToken,
     promiseWait,
     RxDatabase,
+    RxCollection,
     RxDocument,
     ensureNotFalsy,
 } from '../../plugins/core/index.mjs';
@@ -27,6 +28,12 @@ import {
     getEncryptedStorage,
     HumanDocumentType
 } from '../../plugins/test-utils/index.mjs';
+import { getRxStorageDexie } from '../../plugins/storage-dexie/index.mjs';
+import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.mjs';
+import {
+    indexedDB as fakeIndexedDB,
+    IDBKeyRange as fakeIDBKeyRange
+} from 'fake-indexeddb';
 
 describe('cross-instance.test.js', () => {
     if (!config.storage.hasMultiInstance) {
@@ -135,6 +142,83 @@ describe('cross-instance.test.js', () => {
         });
     });
 
+    describe('RxQuery', () => {
+        it('should not apply a write of another instance twice when the query result already contains it', async () => {
+            /**
+             * The dexie storage sends the events to the other instances asynchronously,
+             * so a query can read a write of another instance before the event of that write arrives.
+             */
+            const storage = wrappedValidateAjvStorage({
+                storage: getRxStorageDexie({
+                    indexedDB: fakeIndexedDB,
+                    IDBKeyRange: fakeIDBKeyRange
+                })
+            });
+            const name = randomToken(10);
+            const createCollection = async () => {
+                const db = await createRxDatabase<{ human: RxCollection<HumanDocumentType>; }>({
+                    name,
+                    storage,
+                    multiInstance: true,
+                    ignoreDuplicate: true,
+                    allowSlowCount: true
+                });
+                const collections = await db.addCollections({
+                    human: {
+                        schema: schemas.human
+                    }
+                });
+                return collections.human;
+            };
+            const c1 = await createCollection();
+            const c2 = await createCollection();
+
+            const wrong: string[] = [];
+            for (let i = 0; i < 20; i++) {
+                const docData = schemaObjects.humanData('doc-' + i, i, 'first-' + i);
+
+                // c1 inserts while c2 runs new queries for the first time
+                const insertPromise = c1.insert(docData);
+                for (let k = 0; k < (i % 10); k++) {
+                    await promiseWait(0);
+                }
+                const countQuery = c2.count({ selector: { firstName: docData.firstName } });
+                const findQuery = c2.find({ selector: { firstName: docData.firstName } });
+                let lastCount = -1;
+                let lastIds: string[] = [];
+                const sub1 = countQuery.$.subscribe(count => lastCount = count);
+                const sub2 = findQuery.$.subscribe(docs => lastIds = docs.map(d => d.primary));
+                const doc = await insertPromise;
+                await wait(50);
+                const countExec = await countQuery.exec();
+                if (lastCount !== 1 || countExec !== 1 || lastIds.length !== 1) {
+                    wrong.push('insert ' + i + ': count$=' + lastCount + ' count.exec()=' + countExec + ' find$=' + lastIds.join(','));
+                }
+                sub1.unsubscribe();
+                sub2.unsubscribe();
+
+                // c1 removes while c2 runs a new query for the first time
+                const removePromise = doc.remove();
+                for (let k = 0; k < (i % 10); k++) {
+                    await promiseWait(0);
+                }
+                const countQuery2 = c2.count({ selector: { age: i } });
+                let lastCount2 = -1;
+                const sub3 = countQuery2.$.subscribe(count => lastCount2 = count);
+                await removePromise;
+                await wait(50);
+                const countExec2 = await countQuery2.exec();
+                if (lastCount2 !== 0 || countExec2 !== 0) {
+                    wrong.push('remove ' + i + ': count$=' + lastCount2 + ' count.exec()=' + countExec2);
+                }
+                sub3.unsubscribe();
+            }
+            assert.deepStrictEqual(wrong, []);
+
+            await c1.database.close();
+            await c2.database.close();
+        });
+    });
     describe('Document.$', () => {
         it('get event on doc2 when doc1 is changed', async () => {
             const name = randomToken(10);

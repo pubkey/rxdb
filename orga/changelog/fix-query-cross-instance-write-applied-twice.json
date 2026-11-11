@@ -1,0 +1,5 @@
+{
+    "text": "FIX with `multiInstance: true`, a write of another instance (browser tab) was applied twice to a query when the query was executed between the write and the arrival of its change event. `count()` then returned `2` instead of `1` after an insert or `-1` after a remove, and `find()` results contained the same document twice",
+    "links": [],
+    "priority": 5
+}
