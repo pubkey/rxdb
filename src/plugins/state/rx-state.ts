@@ -66,6 +66,8 @@ export class RxStateBase<T, Reactivity = unknown> {
     public _nonPersisted: {
         path: string;
         modifier: RxStateModifier;
+        resolve: () => void;
+        reject: (err: any) => void;
     }[] = [];
     public _writeQueue = PROMISE_RESOLVE_VOID;
     public _initDone = false;
@@ -145,15 +147,20 @@ export class RxStateBase<T, Reactivity = unknown> {
         this.$.subscribe();
     }
 
-    async set(
+    set(
         path: Paths<T> | '',
         modifier: RxStateModifier
-    ) {
-        this._nonPersisted.push({
-            path,
-            modifier
+    ): Promise<void> {
+        const promise = new Promise<void>((resolve, reject) => {
+            this._nonPersisted.push({
+                path,
+                modifier,
+                resolve,
+                reject
+            });
         });
-        return this._triggerWrite();
+        this._triggerWrite();
+        return promise;
     }
 
     /**
@@ -161,6 +168,11 @@ export class RxStateBase<T, Reactivity = unknown> {
      * and to ensure that multiple js realms do not overwrite
      * each other, the write happens with incremental ids
      * that would throw conflict errors and trigger a retry.
+     *
+     * All set() calls that are queued at the same time are persisted
+     * in a single write. Each call has its own resolve/reject, so a
+     * throwing modifier only rejects and drops its own call.
+     * The returned promise never rejects.
      */
     _triggerWrite() {
         const next = this._writeQueue.then(async () => {
@@ -170,15 +182,26 @@ export class RxStateBase<T, Reactivity = unknown> {
             let useWrites: typeof this._nonPersisted = [];
             let done = false;
             while (!done) {
-                const lastIdDoc = await this._lastIdQuery.exec();
-                /**
-                 * The query can return an operations document
-                 * before its change event has been merged into the state.
-                 * The modifiers must run on a state that
-                 * contains all operations with a lower id.
-                 */
-                if (lastIdDoc && lastIdDoc.id > this._lastMergedId) {
-                    await this._mergeMissingOperations();
+                try {
+                    const lastIdDoc = await this._lastIdQuery.exec();
+                    /**
+                     * The query can return an operations document
+                     * before its change event has been merged into the state.
+                     * The modifiers must run on a state that
+                     * contains all operations with a lower id.
+                     */
+                    if (lastIdDoc && lastIdDoc.id > this._lastMergedId) {
+                        await this._mergeMissingOperations();
+                    }
+                } catch (err) {
+                    /**
+                     * Without the latest operations no write can be done,
+                     * so all waiting calls are rejected.
+                     */
+                    useWrites = useWrites.concat(this._nonPersisted);
+                    this._nonPersisted = [];
+                    useWrites.forEach(writeRow => writeRow.reject(err));
+                    return;
                 }
                 useWrites = useWrites.concat(this._nonPersisted);
                 this._nonPersisted = [];
@@ -191,10 +214,18 @@ export class RxStateBase<T, Reactivity = unknown> {
                      */
                     let newState = clone(this._state);
                     const ops: RxStateOperation[] = [];
+                    const validWrites: typeof this._nonPersisted = [];
                     for (let index = 0; index < useWrites.length; index++) {
                         const writeRow = useWrites[index];
                         const value = writeRow.path === '' ? newState : getProperty(newState, writeRow.path);
-                        const newValue = writeRow.modifier(value);
+                        let newValue: any;
+                        try {
+                            newValue = writeRow.modifier(value);
+                        } catch (err) {
+                            writeRow.reject(err);
+                            continue;
+                        }
+                        validWrites.push(writeRow);
                         if (newValue === undefined) {
                             /**
                              * An operation cannot contain undefined as value
@@ -233,25 +264,30 @@ export class RxStateBase<T, Reactivity = unknown> {
                             v: clone(newValue)
                         });
                     }
-                    await this.collection.insert({
-                        id: nextId,
-                        sId: this._instanceId,
-                        ops
-                    });
-                    /**
-                     * When a newer operation was merged during the insert,
-                     * the state already contains this write
-                     * and must not be replaced with the older newState.
-                     */
-                    if (this._lastMergedId < nextId) {
-                        this._lastMergedId = nextId;
-                        this._state = newState;
+                    useWrites = validWrites;
+                    if (ops.length > 0) {
+                        await this.collection.insert({
+                            id: nextId,
+                            sId: this._instanceId,
+                            ops
+                        });
+                        /**
+                         * When a newer operation was merged during the insert,
+                         * the state already contains this write
+                         * and must not be replaced with the older newState.
+                         */
+                        if (this._lastMergedId < nextId) {
+                            this._lastMergedId = nextId;
+                            this._state = newState;
+                        }
+                        this._ownEmits$.next(this._state);
                     }
-                    this._ownEmits$.next(this._state);
+                    useWrites.forEach(writeRow => writeRow.resolve());
                     done = true;
                 } catch (err) {
                     if ((err as RxError).code !== 'CONFLICT') {
-                        throw err;
+                        useWrites.forEach(writeRow => writeRow.reject(err));
+                        return;
                     }
                     /**
                      * The conflict error contains the operations document
@@ -270,8 +306,7 @@ export class RxStateBase<T, Reactivity = unknown> {
                 }
             }
         });
-        // Keep the shared queue alive so a failing write does not block subsequent ones.
-        this._writeQueue = next.catch(() => { });
+        this._writeQueue = next;
         return next;
     }
 
