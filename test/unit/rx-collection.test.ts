@@ -1407,6 +1407,70 @@ describe('rx-collection.test.ts', () => {
                     db1.close();
                     db2.close();
                 });
+                it('should close the collection when an onClose handler throws', async () => {
+                    const db = await getDb();
+                    await db.addCollections({
+                        humans: { schema: schemas.human }
+                    });
+                    const col = db.humans;
+                    let secondHandlerCalled = false;
+                    col.onClose.push(() => {
+                        throw new Error('onClose handler failed');
+                    });
+                    col.onClose.push(() => secondHandlerCalled = true);
+
+                    await assertThrows(
+                        () => col.close(),
+                        'Error',
+                        'onClose handler failed'
+                    );
+                    assert.strictEqual(secondHandlerCalled, true);
+                    assert.strictEqual(col.closed, true);
+                    assert.strictEqual(db.collections.humans, undefined);
+
+                    await db.close();
+                });
+                it('should close the collection and run the onRemove handlers when another instance removes it and a handler throws', async () => {
+                    if (!config.storage.hasMultiInstance) {
+                        return;
+                    }
+                    const dbName = randomToken(10);
+                    async function createDb() {
+                        const db = await createRxDatabase<{ humans: RxCollection<HumanDocumentType>; }>({
+                            name: dbName,
+                            storage: config.storage.getStorage(),
+                            ignoreDuplicate: true
+                        });
+                        await db.addCollections({
+                            humans: { schema: schemas.human }
+                        });
+                        return db;
+                    }
+                    const db1 = await createDb();
+                    const db2 = await createDb();
+                    const col1 = db1.humans;
+
+                    let onRemoveCalls = 0;
+                    col1.onClose.push(() => {
+                        throw new Error('onClose handler failed');
+                    });
+                    col1.onRemove.push(() => {
+                        onRemoveCalls++;
+                        return Promise.reject(new Error('onRemove handler failed'));
+                    });
+                    col1.onRemove.push(() => {
+                        onRemoveCalls++;
+                    });
+
+                    await db2.humans.remove();
+
+                    await waitUntil(() => col1.closed);
+                    await waitUntil(() => onRemoveCalls === 2);
+                    assert.strictEqual(db1.collections.humans, undefined);
+
+                    await db1.close();
+                    await db2.close();
+                });
             });
             describe('.bulkRemove()', () => {
                 describe('positive', () => {
