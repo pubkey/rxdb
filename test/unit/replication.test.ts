@@ -67,6 +67,7 @@ import type {
     RxReplicationWriteToMasterRow,
     RxStorage,
     RxStorageDefaultCheckpoint,
+    RxStorageInstanceCreationParams,
     WithDeleted
 } from '../../plugins/core/index.mjs';
 import { firstValueFrom, map, Subject, timer } from 'rxjs';
@@ -881,6 +882,78 @@ describe('replication.test.ts', () => {
 
                 localCollection.database.close();
                 remoteCollection.database.close();
+            });
+            it('should report a failed checkpoint read on error$ and continue the replication', async () => {
+                const innerStorage = config.storage.getStorage();
+                let failNextMetaRead = false;
+                const storage: RxStorage<any, any> = {
+                    name: innerStorage.name,
+                    rxdbVersion: innerStorage.rxdbVersion,
+                    async createStorageInstance<RxDocType>(
+                        params: RxStorageInstanceCreationParams<RxDocType, any>
+                    ) {
+                        const instance = await innerStorage.createStorageInstance<RxDocType>(params);
+                        if (params.collectionName.startsWith('rx-replication-meta-')) {
+                            const findDocumentsById = instance.findDocumentsById.bind(instance);
+                            instance.findDocumentsById = (ids, withDeleted) => {
+                                if (failNextMetaRead) {
+                                    failNextMetaRead = false;
+                                    return Promise.reject(new Error('injected checkpoint read failure'));
+                                }
+                                return findDocumentsById(ids, withDeleted);
+                            };
+                        }
+                        return instance;
+                    }
+                };
+                const db = await createRxDatabase<{ humans: RxCollection<TestDocType>; }>({
+                    name: randomToken(10),
+                    storage
+                });
+                await db.addCollections({
+                    humans: {
+                        schema: schemas.humanWithTimestamp
+                    }
+                });
+                const localCollection = db.humans;
+                const remoteCollection = await humansCollection.createHumanWithTimestamp(1, randomToken(10), false);
+
+                failNextMetaRead = true;
+                const replicationState = replicateRxCollection<TestDocType, any>({
+                    collection: localCollection,
+                    replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                    live: true,
+                    pull: {
+                        handler: getPullHandler(remoteCollection),
+                        stream$: getPullStream(remoteCollection)
+                    },
+                    push: {
+                        handler: getPushHandler(remoteCollection)
+                    }
+                });
+                const errors: (RxError | RxTypeError)[] = [];
+                replicationState.error$.subscribe(err => errors.push(err));
+
+                const inSync = await Promise.race([
+                    replicationState.awaitInSync().then(() => true),
+                    wait(2000).then(() => false)
+                ]);
+                assert.strictEqual(inSync, true, 'awaitInSync() must resolve');
+                assert.strictEqual(errors.length, 1);
+                assert.ok(['RC_PULL', 'RC_PUSH'].includes(errors[0].code));
+                assert.strictEqual(
+                    ensureNotFalsy(errors[0].parameters.errors)[0].message,
+                    'injected checkpoint read failure'
+                );
+                assert.strictEqual((await localCollection.find().exec()).length, 1);
+
+                await localCollection.insert(schemaObjects.humanWithTimestampData());
+                await replicationState.awaitInSync();
+                await waitUntil(async () => (await remoteCollection.find().exec()).length === 2);
+
+                await replicationState.cancel();
+                await db.close();
+                await remoteCollection.database.close();
             });
         });
         describe('.awaitDocumentPushed()', () => {

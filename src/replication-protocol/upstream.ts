@@ -26,6 +26,7 @@ import {
 } from '../plugins/utils/index.ts';
 import {
     getLastCheckpointDoc,
+    getLastCheckpointDocQueued,
     setCheckpoint
 } from './checkpoint.ts';
 import {
@@ -144,8 +145,7 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
             return;
         }
 
-        state.checkpointQueue = state.checkpointQueue.then(() => getLastCheckpointDoc(state, 'up'));
-        let lastCheckpoint: CheckpointType = await state.checkpointQueue;
+        let lastCheckpoint = await getLastCheckpointDocQueued<RxDocType, CheckpointType>(state, 'up') as CheckpointType;
 
         const promises: Set<Promise<any>> = new Set();
 

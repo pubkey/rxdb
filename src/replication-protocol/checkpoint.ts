@@ -10,10 +10,20 @@ import type {
 import {
     createRevision,
     ensureNotFalsy,
+    errorToPlainJson,
     getDefaultRevision,
     getDefaultRxDocumentMeta,
-    now
+    now,
+    promiseWait,
+    toArray
 } from '../plugins/utils/index.ts';
+import { newRxError } from '../rx-error.ts';
+
+/**
+ * Time in milliseconds to wait
+ * before a failed read of the checkpoint document is retried.
+ */
+export const CHECKPOINT_READ_RETRY_TIME = 200;
 
 export async function getLastCheckpointDoc<RxDocType, CheckpointType>(
     state: RxStorageInstanceReplicationState<RxDocType>,
@@ -42,6 +52,32 @@ export async function getLastCheckpointDoc<RxDocType, CheckpointType>(
     }
 }
 
+/**
+ * Reads the checkpoint inside of the checkpointQueue.
+ * A failed read is emitted to the error-event and retried,
+ * so that the checkpointQueue never ends up rejected
+ * which would block all later checkpoint reads and writes.
+ */
+export function getLastCheckpointDocQueued<RxDocType, CheckpointType>(
+    state: RxStorageInstanceReplicationState<RxDocType>,
+    direction: RxStorageReplicationDirection
+): Promise<undefined | CheckpointType> {
+    const ret = state.checkpointQueue.then(async () => {
+        while (!state.events.canceled.getValue()) {
+            try {
+                return await getLastCheckpointDoc<RxDocType, CheckpointType>(state, direction);
+            } catch (err: any) {
+                state.events.error.next(newRxError(direction === 'down' ? 'RC_PULL' : 'RC_PUSH', {
+                    direction: direction === 'down' ? 'pull' : 'push',
+                    errors: toArray(err).map(er => errorToPlainJson(er))
+                }));
+                await promiseWait(CHECKPOINT_READ_RETRY_TIME);
+            }
+        }
+    });
+    state.checkpointQueue = ret;
+    return ret;
+}
 
 /**
  * Sets the checkpoint,

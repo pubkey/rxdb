@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX a rejected read of the replication checkpoint document from the meta storage instance blocked the replication forever. The checkpoint queue stayed rejected, nothing was pulled or pushed again, `awaitInSync()` never resolved, and `cancel()` rejected with the storage error. Now the failed read is emitted on `error$` as `RC_PULL` or `RC_PUSH` and retried.",
+    "links": [],
+    "priority": 5
+}
