@@ -65,7 +65,19 @@ export async function cleanupRxState(
                     return true;
                 }
                 await rxDatabase.requestIdlePromise();
-                return state._cleanup();
+                if (rxCollection.closed) {
+                    return true;
+                }
+                return state._cleanup().catch(err => {
+                    /**
+                     * The collection can be closed while the cleanup is running.
+                     * Then the cleanup run ends without an error.
+                     */
+                    if (rxCollection.closed) {
+                        return true;
+                    }
+                    throw err;
+                });
             });
         isDone = await RXSTATE_CLEANUP_QUEUE;
     }

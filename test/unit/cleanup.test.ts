@@ -6,6 +6,7 @@ import {
     schemaObjects,
     schemas,
     isFastMode,
+    isNode,
     HumanDocumentType
 } from '../../plugins/test-utils/index.mjs';
 import {
@@ -28,7 +29,9 @@ import {
     getLocalStorageMock
 } from '../../plugins/storage-localstorage/index.mjs';
 import { DEFAULT_CLEANUP_POLICY } from '../../plugins/cleanup/index.mjs';
+import { RxDBStatePlugin } from '../../plugins/state/index.mjs';
 addRxPlugin(RxDBCleanupPlugin);
+addRxPlugin(RxDBStatePlugin);
 
 describe('cleanup.test.js', () => {
     describe('basics', () => {
@@ -473,6 +476,55 @@ describe('cleanup.test.js', () => {
             assert.strictEqual(result2, true);
 
             await db.close();
+        });
+        it('closing the database while the RxState cleanup waits for idle must not cause an unhandled rejection', async () => {
+            const db = await createRxDatabase({
+                name: randomToken(10),
+                storage: config.storage.getStorage(),
+                multiInstance: false,
+                cleanupPolicy: {
+                    minimumCollectionAge: 0,
+                    minimumDeletedTime: 0,
+                    runEach: 10,
+                    waitForLeadership: false
+                }
+            });
+            await db.addState();
+
+            const unhandled: any[] = [];
+            const nodeHandler = (err: any) => unhandled.push(err);
+            const browserHandler = (event: any) => {
+                event.preventDefault();
+                unhandled.push(event.reason);
+            };
+            /**
+             * The listener is prepended so that the test fails with an assertion
+             * before the global handlers of the test setup exit the process.
+             */
+            const otherNodeHandlers = isNode ? process.listeners('unhandledRejection') : [];
+            if (isNode) {
+                process.removeAllListeners('unhandledRejection');
+                process.on('unhandledRejection', nodeHandler);
+            } else if (typeof window !== 'undefined') {
+                window.addEventListener('unhandledrejection', browserHandler, true);
+            }
+
+            try {
+                await db.close();
+                await wait(isFastMode() ? 100 : 300);
+            } finally {
+                if (isNode) {
+                    process.removeListener('unhandledRejection', nodeHandler);
+                    otherNodeHandlers.forEach(handler => process.on('unhandledRejection', handler));
+                } else if (typeof window !== 'undefined') {
+                    window.removeEventListener('unhandledrejection', browserHandler, true);
+                }
+            }
+
+            assert.deepStrictEqual(
+                unhandled.map(err => err && err.code ? err.code : err),
+                []
+            );
         });
         it('fields with umlauts and emojis could break the state after cleanup in some storages', async () => {
             type DocType = {
