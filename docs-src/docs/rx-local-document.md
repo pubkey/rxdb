@@ -113,7 +113,8 @@ const subscription = myCollection.getLocal$('foobar').subscribe(documentOrNull =
 
 ## RxLocalDocument
 
-A `RxLocalDocument` behaves like a normal `RxDocument`.
+A `RxLocalDocument` behaves like a normal [RxDocument](./rx-document.md).
+To change the data, you have to use `incrementalPatch()` or `incrementalModify()`. Both only work on the data of the local document and they return the updated `RxLocalDocument`.
 
 ```javascript
 const localDoc = await myCollection.getLocal('foobar');
@@ -122,8 +123,14 @@ const localDoc = await myCollection.getLocal('foobar');
 const foo = localDoc.get('foo');
 
 // change data
-localDoc.set('foo', 'bar2');
-await localDoc.save();
+await localDoc.incrementalPatch({ foo: 'bar2' });
+await localDoc.incrementalModify(data => {
+    data.foo = 'bar3';
+    return data;
+});
+
+// the isLocal property is true on every RxLocalDocument
+console.log(localDoc.isLocal); // > true
 
 // observe data
 localDoc.get$('foo').subscribe(value => { /* .. */ });
@@ -141,7 +148,7 @@ const foo = localDoc.foo; // undefined
 const foo = localDoc.get('foo'); // works!
 
 localDoc.foo = 'bar'; // does not work!
-localDoc.set('foo', 'bar'); // works
+await localDoc.incrementalPatch({ foo: 'bar' }); // works
 ```
 
 For the usage with typescript, you can have access to the typed data of the document over `toJSON()`
