@@ -364,6 +364,41 @@ describe('rx-pipeline.test.js', () => {
             await c1.database.close();
             await c2.database.close();
         });
+        it('should settle a pending awaitIdle() and pending destination reads when the pipeline is closed', async () => {
+            const identifier = randomToken(10);
+            const name = randomToken(10);
+            const c1 = await humansCollection.createMultiInstance(name);
+            await c1.database.waitForLeadership();
+            const c2 = await humansCollection.createMultiInstance(name);
+
+            // c2 is not the leader, so this pipeline never processes anything.
+            const pipeline = await c2.addPipeline({
+                destination: c2,
+                handler: () => { },
+                identifier
+            });
+            await c2.insert(schemaObjects.humanData());
+
+            const settled: string[] = [];
+            const idlePromise = pipeline.awaitIdle().then(() => settled.push('awaitIdle'));
+            const readPromise = c2.find().exec().then(() => settled.push('read'));
+            await promiseWait(50);
+            assert.deepStrictEqual(settled, []);
+
+            await pipeline.close();
+            await Promise.race([
+                Promise.all([idlePromise, readPromise]),
+                promiseWait(1000)
+            ]);
+            assert.deepStrictEqual(settled.sort(), ['awaitIdle', 'read']);
+
+            // calls after the close must not hang either
+            await pipeline.awaitIdle();
+            await c2.find().exec();
+
+            await c1.database.close();
+            await c2.database.close();
+        });
     });
     describe('transactional behavior', () => {
         it('should not block reads/writes that come from inside the pipeline handler', async () => {
