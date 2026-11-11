@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `RxCollection.insertIfNotExists()` rejected with the plain storage write error object instead of an `RxError` when the write failed for another reason than a conflict. It now throws the same `RxError` as `insert()`, like `VD2` on a schema validation error",
+    "links": [],
+    "priority": 4
+}
