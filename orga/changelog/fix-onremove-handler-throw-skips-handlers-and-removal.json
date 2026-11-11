@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `collection.remove()` and `database.remove()` skipped the remaining `onRemove` handlers and left the stored data in place when one `onRemove` handler threw. All handlers run now, the data is removed, and the call then rejects with the first handler error",
+    "links": [],
+    "priority": 5
+}

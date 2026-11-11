@@ -21,6 +21,7 @@ import {
     normalizeInlineAttachments,
     createRxCollectionStorageInstance,
     removeCollectionStorages,
+    runOnRemoveHandlers,
     ensureRxCollectionIsNotClosed,
     isWriteAllowed
 } from './rx-collection-helper.ts';
@@ -1147,7 +1148,7 @@ export class RxCollectionBase<
      */
     async remove(): Promise<any> {
         await this.close();
-        await Promise.all(this.onRemove.map(fn => fn()));
+        const handlerErrors = await runOnRemoveHandlers([this]);
         /**
          * TODO here we should pass the already existing
          * storage instances instead of creating new ones.
@@ -1162,6 +1163,9 @@ export class RxCollectionBase<
             this.database.password,
             this.database.hashFunction
         );
+        if (handlerErrors.length > 0) {
+            throw handlerErrors[0];
+        }
     }
 
     get asRxCollection(): RxCollection<RxDocumentType, OrmMethods, StaticMethods, any, Reactivity> {
