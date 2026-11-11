@@ -755,6 +755,50 @@ describe('replication.test.ts', () => {
             localCollection.database.close();
             remoteCollection.database.close();
         });
+        it('should emit an RxError on error$ when the conflictHandler throws', async () => {
+            const throwingConflictHandler: RxConflictHandler<TestDocType> = {
+                isEqual: (a, b) => a.name === b.name && a.age === b.age,
+                resolve: () => {
+                    throw new Error('conflict handler broke');
+                }
+            };
+            const localCollection = await humansCollection.createHumanWithTimestamp(
+                0,
+                randomToken(10),
+                false,
+                config.storage.getStorage(),
+                throwingConflictHandler
+            );
+            const remoteCollection = await humansCollection.createHumanWithTimestamp(0, randomToken(10), false);
+
+            // insert a document with the same id on both sides so that the push creates a conflict
+            await Promise.all([localCollection, remoteCollection].map((c, i) => c.insert({
+                id: 'conflicting-doc',
+                name: 'name-' + i,
+                updatedAt: 1001,
+                age: i
+            })));
+
+            const replicationState = replicateRxCollection({
+                collection: localCollection,
+                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                live: true,
+                push: {
+                    handler: getPushHandler(remoteCollection)
+                }
+            });
+            const error = await firstValueFrom(replicationState.error$);
+
+            assert.strictEqual(error.rxdb, true, 'must be an RxError');
+            assert.strictEqual(error.code, 'RC_UNHANDLED');
+            const innerErrors = ensureNotFalsy(error.parameters.errors);
+            assert.strictEqual(innerErrors.length, 1);
+            assert.ok(innerErrors[0].message.includes('conflict handler broke'));
+
+            await replicationState.cancel();
+            localCollection.database.close();
+            remoteCollection.database.close();
+        });
     });
     describe('other', () => {
         describe('autoStart', () => {

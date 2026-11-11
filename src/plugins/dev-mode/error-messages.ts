@@ -858,6 +858,12 @@ export const ERROR_MESSAGES = {
         fix: 'Check the error details in the .errors observable.',
         docs: 'https://rxdb.info/replication.html?console=errors&code=RC_PUSH'
     },
+    RC_UNHANDLED: {
+        message: 'RxReplication had an unhandled error - see .errors for more details',
+        cause: 'Code that runs inside of the replication cycle threw an error that is not an RxError, for example the conflictHandler of the collection or the RxStorage.',
+        fix: 'Check the error details in .errors and fix the code that throws.',
+        docs: 'https://rxdb.info/replication.html?console=errors&code=RC_UNHANDLED'
+    },
     RC_PUSH_NO_AR: {
         message: 'RxReplication push handler did not return an array with the conflicts',
         cause: 'The push handler returned a non-array value.',

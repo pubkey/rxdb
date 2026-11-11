@@ -443,8 +443,16 @@ export class RxReplicationState<RxDocType, CheckpointType> {
         });
 
         this.subs.push(
-            this.internalReplicationState.events.error.subscribe((err: RxError | RxTypeError) => {
-                this.subjects.error.next(err);
+            this.internalReplicationState.events.error.subscribe((err: any | Error | Error[] | RxError | RxTypeError) => {
+                /**
+                 * The replication protocol also emits errors that are not created by RxDB,
+                 * like the error of a throwing conflict handler.
+                 * These are wrapped so that error$ only emits RxErrors.
+                 */
+                const emitError = (err as RxError).rxdb ? err : newRxError('RC_UNHANDLED', {
+                    errors: toArray(err).map(er => errorToPlainJson(er))
+                });
+                this.subjects.error.next(emitError);
             }),
             this.internalReplicationState.events.processed.down
                 .subscribe((row: BulkWriteRow<RxDocType>) => this.subjects.received.next(row.document as any)),

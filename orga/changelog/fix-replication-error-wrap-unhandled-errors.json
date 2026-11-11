@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `RxReplicationState.error$` emitted the plain `Error` of a throwing `conflictHandler` instead of an `RxError`. Errors that are not created by RxDB are now wrapped into an `RxError` with the code `RC_UNHANDLED` and the original error in `parameters.errors`",
+    "links": [],
+    "priority": 4
+}
