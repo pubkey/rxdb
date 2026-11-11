@@ -339,6 +339,64 @@ describe('typings.test.ts', function () {
                 type: 'text/plain'
             });
         });
+        it('should accept inline attachments on insert and upsert', async () => {
+            type DocType = {
+                passportId: string;
+                age: number;
+            };
+            const myCollection: RxCollection<DocType> = {} as any;
+            const _attachments = [
+                {
+                    id: 'cat.txt',
+                    type: 'text/plain',
+                    data: createBlob('foo bar', 'text/plain')
+                }
+            ];
+
+            const insertedDoc: RxDocument<DocType> = await myCollection.insert({
+                passportId: 'foobar',
+                age: 1,
+                _attachments
+            });
+            await myCollection.bulkInsert([{
+                passportId: 'foobar',
+                age: 1,
+                _attachments
+            }]);
+            await myCollection.upsert({
+                passportId: 'foobar',
+                age: 1,
+                _attachments
+            });
+            await myCollection.bulkUpsert([{
+                passportId: 'foobar',
+                age: 1,
+                _attachments
+            }]);
+            await myCollection.incrementalUpsert({
+                passportId: 'foobar',
+                age: 1,
+                _attachments
+            });
+
+            // documents without attachments must still be accepted
+            const plainData: DocType = { passportId: 'foobar', age: 1 };
+            await myCollection.insert(plainData);
+            await myCollection.bulkInsert([plainData]);
+
+            await myCollection.insert({
+                passportId: 'foobar',
+                age: 1,
+                // @ts-expect-error unknown fields are still not allowed
+                unknownField: 'foobar'
+            });
+            await myCollection.insert({
+                passportId: 'foobar',
+                age: 1,
+                // @ts-expect-error inline attachments must be an array of { id, type, data }
+                _attachments: [{ id: 'cat.txt' }]
+            });
+        });
         it('.toJSON() should have _rev', async () => {
             const myDb: any = {};
 
