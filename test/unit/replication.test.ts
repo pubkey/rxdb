@@ -1413,6 +1413,40 @@ describe('replication.test.ts', () => {
             localCollection.database.close();
             remoteCollection.database.close();
         });
+        it('remove() after cancel() should resolve and delete the meta data', async () => {
+            const { localCollection, remoteCollection } = await getTestCollections({ local: 1, remote: 1 });
+            const calledCheckpoints: any[] = [];
+            const startReplication = async () => {
+                const replicationState = replicateRxCollection({
+                    collection: localCollection,
+                    replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                    live: true,
+                    pull: {
+                        handler: (checkpoint, batchSize) => {
+                            calledCheckpoints.push(checkpoint);
+                            return getPullHandler(remoteCollection)(checkpoint, batchSize);
+                        },
+                    },
+                    push: {
+                        handler: getPushHandler(remoteCollection),
+                    }
+                });
+                await replicationState.awaitInSync();
+                return replicationState;
+            };
+            const firstReplicationState = await startReplication();
+            await firstReplicationState.cancel();
+            await firstReplicationState.remove();
+
+            const secondReplicationState = await startReplication();
+
+            // both runs must have started without a checkpoint
+            assert.deepStrictEqual(calledCheckpoints, [undefined, undefined]);
+
+            await secondReplicationState.cancel();
+            localCollection.database.close();
+            remoteCollection.database.close();
+        });
         it('should remove replication state from REPLICATION_STATE_BY_COLLECTION on cancel()', async () => {
             const { localCollection, remoteCollection } = await getTestCollections({ local: 0, remote: 0 });
             const replicationState = replicateRxCollection({

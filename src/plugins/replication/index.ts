@@ -148,7 +148,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
         replicationStates.push(this);
 
         // stop the replication when the collection gets closed
-        this.collection.onClose.push(() => this.cancel());
+        this.collection.onClose.push(this.cancelOnCollectionClose);
 
         // create getters for the observables
         Object.keys(this.subjects).forEach(key => {
@@ -164,6 +164,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
     }
 
     private callOnStart: () => void = undefined as any;
+    private cancelOnCollectionClose = () => this.cancel();
 
     public internalReplicationState?: RxStorageInstanceReplicationState<RxDocType>;
     public metaInstance?: RxStorageInstance<RxStorageReplicationMeta<RxDocType, CheckpointType>, any, {}, any>;
@@ -732,8 +733,25 @@ export class RxReplicationState<RxDocType, CheckpointType> {
         if (this.metaInstance && !doNotClose) {
             promises.push(
                 ensureNotFalsy(this.internalReplicationState).checkpointQueue
-                    .then(() => ensureNotFalsy(this.metaInstance).close())
+                    .then(() => {
+                        /**
+                         * Unset the closed instance so that a later remove()
+                         * creates a new one instead of using the closed one.
+                         */
+                        const metaInstance = ensureNotFalsy(this.metaInstance);
+                        this.metaInstance = undefined;
+                        return metaInstance.close();
+                    })
             );
+        }
+
+        /**
+         * A stopped replication state must no longer be
+         * referenced by the collection.
+         */
+        const onCloseIndex = this.collection.onClose.indexOf(this.cancelOnCollectionClose);
+        if (onCloseIndex !== -1) {
+            this.collection.onClose.splice(onCloseIndex, 1);
         }
 
         this.subs.forEach(sub => sub.unsubscribe());
@@ -776,7 +794,8 @@ export class RxReplicationState<RxDocType, CheckpointType> {
 
             /**
              * If the replication was never started (e.g. autoStart: false
-             * and start() was never called), we still have to
+             * and start() was never called) or when it was already canceled
+             * and its meta storage instance is closed, we still have to
              * create the meta storage instance and then remove its data.
              * This is required so that old meta data from a previous
              * replication with the same identifier is properly deleted.
