@@ -1,4 +1,5 @@
 import type {
+    RxCollection,
     RxDocumentData,
     StringKeys,
     WithDeleted
@@ -6,6 +7,7 @@ import type {
 import { b64EncodeUnicode, flatClone } from '../../plugins/utils/index.ts';
 import { URLQueryParams } from './couchdb-types.ts';
 import { newRxError } from '../../rx-error.ts';
+import { writeDocToDocState } from '../../replication-protocol/helper.ts';
 
 
 export const COUCHDB_NEW_REPLICATION_PLUGIN_IDENTITY_PREFIX = 'couchdb';
@@ -32,6 +34,54 @@ export function couchDBDocToRxDocData<RxDocType>(
     delete doc._rev;
 
     return doc;
+}
+
+/**
+ * Transforms the documents of a CouchDB _changes response
+ * into the document states for the pull replication.
+ *
+ * A document that was deleted with a DELETE request is stored
+ * in CouchDB as a tombstone that only contains _id, _rev and _deleted.
+ * Such a state does not match the schema of the collection,
+ * so the missing fields are taken from the local state of the document.
+ * A tombstone of a document that is not known locally is left out
+ * because there is nothing to delete.
+ * @link https://docs.couchdb.org/en/stable/api/document/common.html#delete--db-docid
+ */
+export async function couchDBChangesDocsToRxDocData<RxDocType>(
+    collection: RxCollection<RxDocType, any, any, any>,
+    couchDocs: any[]
+): Promise<WithDeleted<RxDocType>[]> {
+    const primaryPath = collection.schema.primaryPath;
+    const docs = couchDocs.map(couchDoc => couchDBDocToRxDocData<RxDocType>(primaryPath, couchDoc));
+    const isTombstoneWithoutBody = (doc: WithDeleted<RxDocType>) => doc._deleted &&
+        Object.keys(doc).every(key => key === primaryPath || key.startsWith('_'));
+    const tombstoneIds: string[] = docs
+        .filter(doc => isTombstoneWithoutBody(doc))
+        .map(doc => (doc as any)[primaryPath]);
+    if (tombstoneIds.length === 0) {
+        return docs;
+    }
+
+    const localDocs: RxDocumentData<RxDocType>[] = await collection.storageInstance.findDocumentsById(tombstoneIds, true);
+    const localDocById = new Map<string, RxDocumentData<RxDocType>>();
+    localDocs.forEach(localDoc => localDocById.set((localDoc as any)[primaryPath], localDoc));
+
+    const ret: WithDeleted<RxDocType>[] = [];
+    docs.forEach(doc => {
+        if (!isTombstoneWithoutBody(doc)) {
+            ret.push(doc);
+            return;
+        }
+        const localDoc = localDocById.get((doc as any)[primaryPath]);
+        if (localDoc) {
+            ret.push(Object.assign(
+                writeDocToDocState(localDoc, false, false),
+                doc
+            ));
+        }
+    });
+    return ret;
 }
 
 
