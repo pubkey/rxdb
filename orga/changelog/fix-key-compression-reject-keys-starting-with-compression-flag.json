@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX with the key-compression plugin, a document that has an object key starting with the compression flag `|` made the whole `bulkInsert()`/`bulkWrite()` call reject with a plain `Error` of `jsonschema-key-compression`. Now only that document is rejected with a `422` write error (`VD2`) and the other documents of the bulk are written. The reserved `|` key prefix is documented.",
+    "links": [],
+    "priority": 4
+}

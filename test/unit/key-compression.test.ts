@@ -479,6 +479,75 @@ describe('key-compression.test.js', () => {
 
             db.close();
         });
+        it('should reject only the document that has a key which starts with the compression flag', async () => {
+            type FreeFormDocType = {
+                id: string;
+                free: Record<string, string>;
+            };
+            const mySchema: RxJsonSchema<FreeFormDocType> = {
+                version: 0,
+                primaryKey: 'id',
+                type: 'object',
+                keyCompression: true,
+                properties: {
+                    id: {
+                        type: 'string',
+                        maxLength: 100
+                    },
+                    free: {
+                        type: 'object'
+                    }
+                },
+                required: ['id', 'free']
+            };
+            const db = await createRxDatabase<{ mycollection: RxCollection<FreeFormDocType>; }>({
+                name: randomToken(10),
+                storage: wrappedKeyCompressionStorage({ storage: config.storage.getStorage() }),
+                ignoreDuplicate: true
+            });
+            await db.addCollections({
+                mycollection: {
+                    schema: mySchema
+                }
+            });
+            const collection = db.mycollection;
+
+            const result = await collection.bulkInsert([
+                { id: 'good', free: { 'a|b': 'pipe-inside' } },
+                { id: 'bad', free: { '|a': 'pipe-first' } }
+            ]);
+            assert.deepStrictEqual(result.success.map(doc => doc.primary), ['good']);
+            assert.strictEqual(result.error.length, 1);
+            const writeError = result.error[0];
+            assert.strictEqual(writeError.documentId, 'bad');
+            assert.strictEqual(writeError.status, 422);
+            assert.deepStrictEqual(writeError.writeRow.document.free, { '|a': 'pipe-first' });
+
+            await assert.rejects(
+                () => collection.insert({ id: 'bad', free: { '|a': 'pipe-first' } }),
+                (err: any) => {
+                    assert.strictEqual(err.rxdb, true);
+                    assert.strictEqual(err.code, 'VD2');
+                    return true;
+                }
+            );
+
+            const goodDoc = await collection.findOne('good').exec(true);
+            await assert.rejects(
+                () => goodDoc.incrementalPatch({ free: { '|a': 'pipe-first' } }),
+                (err: any) => {
+                    assert.strictEqual(err.rxdb, true);
+                    return true;
+                }
+            );
+
+            const docs = await collection.find().exec();
+            assert.deepStrictEqual(docs.map(doc => doc.toJSON()), [
+                { id: 'good', free: { 'a|b': 'pipe-inside' } }
+            ]);
+
+            await db.close();
+        });
         it('#6267 boolean indexes broken with key-compression', async () => {
             const schema = {
                 version: 0,
