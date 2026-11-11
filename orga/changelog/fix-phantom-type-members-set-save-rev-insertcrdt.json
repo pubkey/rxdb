@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX the TypeScript types declared `RxDocument.set()`, `RxDocument.save()` and `RxAttachment.rev` which do not exist at runtime, and `insertCRDT()` was typed to return a document instead of a `Promise`",
+    "links": [],
+    "priority": 4
+}

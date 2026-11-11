@@ -341,6 +341,31 @@ describe('typings.test.ts', function () {
                 type: 'text/plain'
             });
         });
+        it('should not declare members that do not exist at runtime', async () => {
+            type DocType = {
+                passportId: string;
+                age: number;
+            };
+            const myCollection: RxCollection<DocType> = {} as any;
+            const oneDoc: RxDocument<DocType> = {} as any;
+            const attachment: RxAttachment<DocType> = {} as any;
+
+            // @ts-expect-error set() does not exist on a RxDocument
+            oneDoc.set('age', 2);
+            // @ts-expect-error save() does not exist on a RxDocument
+            await oneDoc.save();
+            // @ts-expect-error rev does not exist on a RxAttachment
+            const rev = attachment.rev;
+
+            const insertPromise: Promise<RxDocument<DocType>> = myCollection.insertCRDT({
+                ifMatch: {
+                    $set: {
+                        passportId: 'foobar',
+                        age: 1
+                    }
+                }
+            });
+        });
         it('.toJSON() should have _rev', async () => {
             const myDb: any = {};
 
