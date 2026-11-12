@@ -31,7 +31,7 @@
     "react-native-get-random-values": "2.0.0",
     "react-native-quick-base64": "3.0.1",
     "react-test-renderer": "19.3.1",
-    "rimraf": "6.1.3",
+    "rimraf": "6.1.4",
     "rxjs": "7.8.2",
     "schedule": "0.5.0",
     "stream": "0.0.3"
@@ -39,8 +39,8 @@
   "//": "NOTICE: For the Github CI we use the local RxDB build (rxdb-local.tgz). In your app should just install 'rxdb' from npm instead",
   "//overrides": "babel-preset-expo pins the react-native codegen packages to a version that cannot parse the react-native sources. They have to match the installed react-native version so that 'expo export' can bundle.",
   "overrides": {
-    "@react-native/codegen": "0.88.0",
-    "@react-native/babel-plugin-codegen": "0.88.0"
+    "@react-native/codegen": "0.88.1",
+    "@react-native/babel-plugin-codegen": "0.88.1"
   },
   "dependencies": {
     "expo-crypto": "57.0.4",

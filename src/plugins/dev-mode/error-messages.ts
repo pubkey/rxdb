@@ -882,6 +882,12 @@ export const ERROR_MESSAGES = {
         fix: 'Check the CouchDB server and the URL.',
         docs: 'https://rxdb.info/replication-couchdb.html?console=errors&code=RC_COUCHDB_2'
     },
+    RC_COUCHDB_3: {
+        message: 'replicateCouchDB() got an error response from the CouchDB server.',
+        cause: 'The CouchDB server rejected the request or returned a body without the expected format. The status and the CouchDB error body are in the error parameters. A common cause is a primary key that starts with an underscore, which CouchDB reserves and rejects with {"error":"illegal_docid"}.',
+        fix: 'Inspect the status and body parameters. Make sure no primary key starts with an underscore and that the CouchDB user has write access to the database.',
+        docs: 'https://rxdb.info/replication-couchdb.html?console=errors&code=RC_COUCHDB_3'
+    },
     RC_OUTDATED: {
         message: 'Outdated client, update required. Replication was canceled',
         cause: 'The client version is too old for the server.',
@@ -1400,6 +1406,32 @@ export const ERROR_MESSAGES = {
         cause: 'The schema field type is not supported for indexing.',
         fix: 'Use a supported type (string, boolean, number, integer) for the indexed field.',
         docs: ''
+    },
+
+    // dbviewer plugin errors
+    DVW1: {
+        message: 'dbviewer must run in a browser environment',
+        cause: 'mountRxDBViewer() was called in an environment without a DOM, for example plain Node.js.',
+        fix: 'Only mount the viewer in environments that have a document, like a browser, Electron renderer or a webview.',
+        docs: 'https://rxdb.info/db-viewer.html'
+    },
+    DVW2: {
+        message: 'dbviewer needs a database or a dump',
+        cause: 'mountRxDBViewer() was called without a database and without a dump.',
+        fix: 'Pass either a live RxDatabase via options.database or a JSON export via options.dump.',
+        docs: 'https://rxdb.info/db-viewer.html'
+    },
+    DVW3: {
+        message: 'dbviewer roomId too short',
+        cause: 'connectRxDBViewer() was called with a roomId that has fewer than 6 characters.',
+        fix: 'Use a long random roomId or omit it to get a generated one. Everyone who knows it gets full access to the database, so treat it like a password.',
+        docs: 'https://rxdb.info/db-viewer.html'
+    },
+    DVW4: {
+        message: 'dbviewer collection is view-only',
+        cause: 'A write was attempted on a view-only collection: the internal store, a local documents store or the collection of an RxState.',
+        fix: 'These collections can be browsed and exported in the dbviewer but not edited, because writing them directly corrupts the state their owner keeps in memory.',
+        docs: 'https://rxdb.info/db-viewer.html'
     },
 
     // change-event-buffer errors

@@ -21,6 +21,13 @@ export const TEST_DATA_CHARSET_LAST_SORTED = ensureNotFalsy(lastOfArray(TEST_DAT
 const someEmojisArr = ['😊', '💩', '👵', '🍌', '🏳️‍🌈', '😃'];
 
 const baseChars = TEST_DATA_CHARSET.split('');
+/**
+ * CouchDB reserves document ids that start with an underscore
+ * and rejects them with {"error":"illegal_docid"}.
+ * The random strings are used as primary keys, so the first
+ * char must not be an underscore.
+ */
+const firstChars = baseChars.filter(char => char !== '_');
 let allChars = baseChars.slice(0);
 allChars = allChars.concat(someEmojisArr);
 
@@ -48,7 +55,7 @@ export function randomStringWithSpecialChars(
              * with an emoji. This can likely be fixed by upgrading foundationdb to the
              * latest version.
              */
-            text += baseChars[Math.floor(Math.random() * baseChars.length)];
+            text += firstChars[Math.floor(Math.random() * firstChars.length)];
         } else {
             text += allChars[Math.floor(Math.random() * allChars.length)];
         }

@@ -1,0 +1,407 @@
+import {
+    diffViewerJson,
+    escapeHtml,
+    formatByteSize,
+    formatClockTime,
+    formatInteger,
+    shortRev
+} from '../../src/plugins/dbviewer/dbviewer-helpers.ts';
+import type { ViewerChangeEntry } from '../../src/plugins/dbviewer/dbviewer-types.ts';
+import type { PageContext } from './context.ts';
+import {
+    buildInput,
+    clearChildren,
+    downloadJson,
+    el
+} from './dom.ts';
+
+/**
+ * Replication panel: per-collection pull/push states with
+ * last errors, and the live feed of replicated documents.
+ */
+export function renderReplicationPanel(ctx: PageContext) {
+    const panel = el('div', 'rxdbv-panel-scroll');
+    ctx.contentHost.appendChild(panel);
+    const events = ctx.events;
+    const scopeCollection = ctx.nav.collectionName || null;
+    const replications = events
+        ? (scopeCollection ? events.replications.filter(r => r.collectionName === scopeCollection) : events.replications)
+        : [];
+
+    if (!events || replications.length === 0) {
+        panel.appendChild(el('div', 'rxdbv-empty-state', [
+            el('div', 'rxdbv-empty-inner', [
+                el('div', 'rxdbv-empty-title', 'No replication running'),
+                el('div', 'rxdbv-empty-body', [
+                    ctx.source.kind === 'dump'
+                        ? 'A dump is a static file, the replication live feed is not available on a dump.'
+                        : 'Start a replication in the app, for example with ',
+                    ctx.source.kind === 'dump' ? '' : el('code', '', 'replicateRxCollection({ ... })'),
+                    ctx.source.kind === 'dump' ? '' : ', and its state shows up here.'
+                ])
+            ])
+        ]));
+        return;
+    }
+
+    const identifiers = Array.from(new Set(replications.map(r => r.identifier))).join(', ');
+    panel.appendChild(el('div', 'rxdbv-toolbar', [
+        el('span', 'rxdbv-muted', replications.length + ' states · ' + identifiers, { style: 'font-size:11px' })
+    ]));
+
+    const template = '110px 110px 110px 1fr 1fr';
+    const header = el('div', 'rxdbv-table-header', [
+        el('div', '', 'collection'),
+        el('div', '', 'pull'),
+        el('div', '', 'push'),
+        el('div', '', 'identifier'),
+        el('div', '', 'last error')
+    ]);
+    header.style.gridTemplateColumns = template;
+    panel.appendChild(header);
+    const rowsHost = el('div');
+    panel.appendChild(rowsHost);
+
+    const feedHeader = el('div', '', [
+        el('span', 'rxdbv-section-label', 'LIVE FEED', { style: 'padding:0' }),
+        el('span', '', undefined, { style: 'width:7px;height:7px;border-radius:50%;background:var(--rxdbv-success)' }),
+        el('div', 'rxdbv-flex1')
+    ], { style: 'display:flex;align-items:center;gap:8px;padding:14px 12px 4px' });
+    let paused = false;
+    const pauseButton = el('button', 'rxdbv-btn rxdbv-btn-small', 'Pause', {
+        onClick: () => {
+            paused = !paused;
+            pauseButton.textContent = paused ? 'Resume' : 'Pause';
+            if (!paused) {
+                renderAll();
+            }
+        }
+    });
+    feedHeader.appendChild(pauseButton);
+    panel.appendChild(feedHeader);
+    const feedHost = el('div');
+    panel.appendChild(feedHost);
+
+    const renderStates = () => {
+        clearChildren(rowsHost);
+        replications.forEach(info => {
+            const stateGlyph = (active: boolean) => {
+                if (info.lastError && info.lastErrorTime && Date.now() - info.lastErrorTime < 60 * 1000) {
+                    return el('div', '', '▲ error', { style: 'color:var(--rxdbv-danger)' });
+                }
+                if (info.stopped) {
+                    return el('div', 'rxdbv-muted', '■ stopped');
+                }
+                if (active) {
+                    return el('div', '', '● streaming', { style: 'color:var(--rxdbv-success)' });
+                }
+                return el('div', 'rxdbv-muted', '○ idle');
+            };
+            const row = el('div', 'rxdbv-table-row', [
+                el('div', 'rxdbv-mono', info.collectionName),
+                stateGlyph(info.active),
+                stateGlyph(info.active),
+                el('div', 'rxdbv-mono rxdbv-muted', info.identifier, { style: 'font-size:10.5px' }),
+                el('div', 'rxdbv-mono', info.lastError
+                    ? info.lastError + (info.lastErrorTime ? ' · ' + formatClockTime(info.lastErrorTime) : '')
+                    : '—', {
+                    style: 'font-size:10.5px;color:' + (info.lastError ? 'var(--rxdbv-danger)' : 'var(--rxdbv-fg-dim)')
+                })
+            ]);
+            row.style.gridTemplateColumns = template;
+            rowsHost.appendChild(row);
+        });
+    };
+
+    const renderFeed = () => {
+        clearChildren(feedHost);
+        events.replicationFeed
+            .filter(entry => !scopeCollection || entry.collectionName === scopeCollection)
+            .slice(0, 60).forEach(entry => {
+            const directionLabel = el('span', 'rxdbv-mono', entry.direction === 'pull' ? 'PULL' : 'PUSH', {
+                style: 'width:42px;font-weight:700;color:' + (entry.direction === 'pull' ? 'var(--rxdbv-info)' : 'var(--rxdbv-pink)')
+            });
+            feedHost.appendChild(el('div', '', [
+                directionLabel,
+                el('span', 'rxdbv-dim rxdbv-mono', formatClockTime(entry.time, true).slice(0, 10), { style: 'width:90px' }),
+                el('span', 'rxdbv-mono', entry.collectionName, { style: 'width:90px' }),
+                el('span', 'rxdbv-mono rxdbv-muted', entry.documentId, { style: 'width:110px;overflow:hidden;text-overflow:ellipsis' }),
+                el('span', 'rxdbv-mono rxdbv-dim rxdbv-flex1', shortRev(entry.rev) + ' · ' + formatByteSize(entry.byteSize))
+            ], { style: 'display:flex;gap:12px;margin:0 12px;padding:4px 10px;border-bottom:1px solid rgba(255,255,255,0.05);font-size:11px;align-items:center' }));
+        });
+        if (events.replicationFeed.length === 0) {
+            feedHost.appendChild(el('div', 'rxdbv-dim', 'No documents replicated since the viewer opened.', { style: 'padding:8px 22px;font-size:11px' }));
+        }
+    };
+
+    const renderAll = () => {
+        renderStates();
+        renderFeed();
+    };
+    renderAll();
+
+    const subscription = events.changed$.subscribe(() => {
+        if (!paused && !ctx.destroyed) {
+            renderAll();
+        }
+    });
+    ctx.setCleanup(() => subscription.unsubscribe());
+}
+
+/**
+ * Changes panel: master/detail split with the live write feed
+ * on the left and a unified diff of the selected change on the right.
+ */
+export function renderChangesPanel(ctx: PageContext) {
+    const panel = el('div', 'rxdbv-content');
+    ctx.contentHost.appendChild(panel);
+    const events = ctx.events;
+    if (!events) {
+        panel.appendChild(el('div', 'rxdbv-empty-state', [
+            el('div', 'rxdbv-empty-inner', [
+                el('div', 'rxdbv-empty-title', 'Not available on a dump'),
+                el('div', 'rxdbv-empty-body', 'A dump is a static file, there are no live changes to record.')
+            ])
+        ]));
+        return;
+    }
+
+    const scopeCollection = ctx.nav.collectionName || null;
+    const scopedChanges = () => scopeCollection
+        ? events.changes.filter(entry => entry.collectionName === scopeCollection)
+        : events.changes;
+
+    let paused = false;
+    let filterText = '';
+    let selectedEntry: ViewerChangeEntry | null = scopedChanges()[0] || null;
+
+    const filterInput = buildInput({
+        placeholder: scopeCollection ? 'filter: id…' : 'filter: collection or id…'
+    }, 'rxdbv-filter-input');
+    filterInput.addEventListener('input', () => {
+        filterText = filterInput.value.toLowerCase();
+        renderList();
+    });
+    const sessionCounter = el('span', 'rxdbv-dim', '', { style: 'font-size:10px' });
+    /**
+     * Same Live button as the collection view. While active the
+     * list updates live. One click pauses, the next click clears
+     * the list once and continues observing.
+     */
+    const observeButton = el('button', 'rxdbv-btn rxdbv-observe rxdbv-active', [
+        el('span', 'rxdbv-observe-dot'),
+        'Live'
+    ], {
+        title: 'live — the list updates as changes happen',
+        onClick: () => {
+            if (paused) {
+                if (scopeCollection) {
+                    const kept = events.changes.filter(entry => entry.collectionName !== scopeCollection);
+                    events.changes.length = 0;
+                    events.changes.push(...kept);
+                } else {
+                    events.changes.length = 0;
+                }
+                selectedEntry = null;
+                renderDetail();
+            }
+            paused = !paused;
+            observeButton.classList.toggle('rxdbv-active', !paused);
+            observeButton.title = paused
+                ? 'Paused. Click to clear the list and continue observing.'
+                : 'live — the list updates as changes happen';
+            renderList();
+        }
+    });
+    panel.appendChild(el('div', 'rxdbv-toolbar', [
+        filterInput,
+        el('div', 'rxdbv-flex1'),
+        el('button', 'rxdbv-btn rxdbv-btn-small', 'Download JSON', {
+            title: 'Download the recorded changes of this collection as a JSON array',
+            onClick: () => {
+                const name = ctx.source.databaseName + '-' + (scopeCollection || 'all') + '-changes.json';
+                downloadJson(name, scopedChanges());
+            }
+        }),
+        observeButton
+    ]));
+
+    const listHost = el('div', 'rxdbv-split-left');
+    const detailHost = el('div', 'rxdbv-split-right');
+    panel.appendChild(el('div', 'rxdbv-split', [listHost, detailHost]));
+    panel.appendChild(el('div', 'rxdbv-grid-footer', [sessionCounter]));
+
+    const template = '100px 70px 60px 110px 1fr';
+    const opColor = (operation: string) =>
+        operation === 'INSERT' ? 'var(--rxdbv-success)' : (operation === 'DELETE' ? 'var(--rxdbv-danger)' : 'var(--rxdbv-warning)');
+
+    /**
+     * One line that names the changed top-level fields with their
+     * old and new values, like "power: 100 → 94, _deleted: false → true".
+     */
+    const changeSummary = (entry: ViewerChangeEntry): string => {
+        const previous = entry.previousDocumentData || {};
+        const next = entry.documentData || {};
+        const formatValue = (value: any): string => {
+            if (typeof value === 'undefined') {
+                return '∅';
+            }
+            const text = typeof value === 'object' ? JSON.stringify(value) : String(value);
+            return text.length > 24 ? text.slice(0, 24) + '…' : text;
+        };
+        const keys = Array.from(new Set(Object.keys(previous).concat(Object.keys(next))))
+            .filter(key => key !== '_rev' && key !== '_meta' && key !== '_attachments');
+        const parts: string[] = [];
+        keys.forEach(key => {
+            if (JSON.stringify((previous as any)[key]) === JSON.stringify((next as any)[key])) {
+                return;
+            }
+            if (!entry.previousDocumentData) {
+                parts.push(key + ': ' + formatValue((next as any)[key]));
+            } else {
+                parts.push(key + ': ' + formatValue((previous as any)[key]) + ' → ' + formatValue((next as any)[key]));
+            }
+        });
+        return parts.join(', ');
+    };
+
+    let sortField: 'time' | 'op' | 'source' | 'id' | 'change' = 'time';
+    let sortDirection: 1 | -1 = -1;
+    const sourceLabel = (entry: ViewerChangeEntry) => entry.fromReplication ? 'sync' : 'self';
+    const sourceTitle = (entry: ViewerChangeEntry) => entry.fromReplication
+        ? 'replication (pulled from the remote)'
+        : 'app write (not from replication). An app write from another tab of the same database looks the same as one from this tab.';
+
+    const renderList = () => {
+        clearChildren(listHost);
+        const scopedCount = scopedChanges().length;
+        sessionCounter.textContent = (paused ? 'paused · ' : '') + formatInteger(scopedCount) + (scopedCount === 1 ? ' change recorded' : ' changes recorded');
+        const sortValue = (entry: ViewerChangeEntry): string | number => {
+            if (sortField === 'time') {
+                return entry.time;
+            }
+            if (sortField === 'op') {
+                return entry.operation;
+            }
+            if (sortField === 'source') {
+                return sourceLabel(entry);
+            }
+            if (sortField === 'id') {
+                return entry.documentId;
+            }
+            return changeSummary(entry);
+        };
+        const sortableHeader = (label: string, field: typeof sortField) => {
+            const cell: (string | HTMLElement)[] = [label];
+            if (sortField === field) {
+                cell.push(el('span', sortDirection === -1 ? 'rxdbv-sort-arrow' : 'rxdbv-sort-arrow rxdbv-sort-arrow-asc', sortDirection === -1 ? '▼' : '▲'));
+            }
+            return el('div', '', cell, {
+                style: 'cursor:pointer',
+                title: 'Sort by ' + label,
+                onClick: () => {
+                    if (sortField === field) {
+                        sortDirection = sortDirection === -1 ? 1 : -1;
+                    } else {
+                        sortField = field;
+                        sortDirection = 1;
+                    }
+                    renderList();
+                }
+            });
+        };
+        const header = el('div', 'rxdbv-table-header', [
+            sortableHeader('time', 'time'),
+            sortableHeader('op', 'op'),
+            sortableHeader('source', 'source'),
+            sortableHeader('id', 'id'),
+            sortableHeader('change', 'change')
+        ]);
+        header.style.gridTemplateColumns = template;
+        listHost.appendChild(header);
+        const visible = scopedChanges().filter(entry => {
+            if (!filterText) {
+                return true;
+            }
+            return entry.collectionName.toLowerCase().includes(filterText) ||
+                entry.documentId.toLowerCase().includes(filterText);
+        }).slice(0, 100).sort((a, b) => {
+            const left = sortValue(a);
+            const right = sortValue(b);
+            if (left === right) {
+                return 0;
+            }
+            return (left < right ? -1 : 1) * sortDirection;
+        });
+        visible.forEach(entry => {
+            const row = el('div', 'rxdbv-table-row rxdbv-clickable rxdbv-mono' + (entry === selectedEntry ? ' rxdbv-selected' : ''), [
+                el('div', 'rxdbv-dim', formatClockTime(entry.time, true)),
+                el('div', '', entry.operation, { style: 'font-weight:700;color:' + opColor(entry.operation) }),
+                el('div', 'rxdbv-muted', sourceLabel(entry), { title: sourceTitle(entry) }),
+                el('div', 'rxdbv-muted', entry.documentId),
+                el('div', 'rxdbv-dim', changeSummary(entry), { style: 'overflow:hidden;text-overflow:ellipsis;white-space:nowrap' })
+            ], {
+                onClick: () => {
+                    selectedEntry = entry;
+                    renderList();
+                    renderDetail();
+                }
+            });
+            row.style.gridTemplateColumns = template;
+            listHost.appendChild(row);
+        });
+        if (visible.length === 0) {
+            listHost.appendChild(el('div', 'rxdbv-dim', 'This screen updates as the app writes. Nothing has been recorded yet.', { style: 'padding:12px;font-size:11px' }));
+        }
+    };
+
+    const renderDetail = () => {
+        clearChildren(detailHost);
+        const entry = selectedEntry;
+        if (!entry) {
+            detailHost.appendChild(el('div', 'rxdbv-dim', 'Select a change to see its diff.', { style: 'padding:12px;font-size:11px' }));
+            return;
+        }
+        detailHost.appendChild(el('div', '', [
+            el('span', 'rxdbv-mono', entry.operation, { style: 'font-weight:700;color:' + opColor(entry.operation) }),
+            el('span', 'rxdbv-mono', entry.collectionName + ' / ' + entry.documentId),
+            el('span', 'rxdbv-mono rxdbv-dim', (entry.revFrom ? shortRev(entry.revFrom) + ' → ' : '→ ') + shortRev(entry.revTo))
+        ], { style: 'display:flex;gap:8px;align-items:center;padding:8px 12px;border-bottom:1px solid rgba(255,255,255,0.08);font-size:11px' }));
+
+        const diff = diffViewerJson(entry.previousDocumentData || null, entry.documentData || null);
+        const diffBlock = el('div', 'rxdbv-diff-block');
+        diffBlock.innerHTML = diff.map(line => {
+            if (line.kind === 'removed') {
+                return '<span class="rxdbv-diff-line-removed">- ' + escapeHtml(line.text) + '</span>';
+            }
+            if (line.kind === 'added') {
+                return '<span class="rxdbv-diff-line-added">+ ' + escapeHtml(line.text) + '</span>';
+            }
+            return '<span class="rxdbv-diff-line-same">  ' + escapeHtml(line.text) + '</span>';
+        }).join('');
+        detailHost.appendChild(diffBlock);
+        detailHost.appendChild(el('div', '', [
+            el('button', 'rxdbv-btn rxdbv-btn-small', 'Open document', {
+                onClick: () => ctx.navigate({ view: 'collection', collectionName: entry.collectionName })
+            })
+        ], { style: 'padding: 2px 12px 8px' }));
+    };
+
+    renderList();
+    renderDetail();
+
+    let pendingRender = false;
+    const subscription = events.changed$.subscribe(() => {
+        if (paused || ctx.destroyed || pendingRender) {
+            return;
+        }
+        pendingRender = true;
+        setTimeout(() => {
+            pendingRender = false;
+            if (!paused && !ctx.destroyed) {
+                renderList();
+            }
+        }, 150);
+    });
+    ctx.setCleanup(() => subscription.unsubscribe());
+}

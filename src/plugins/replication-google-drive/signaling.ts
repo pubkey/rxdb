@@ -335,8 +335,13 @@ export async function readMessages(
 
 
 
+/**
+ * File names have the format [sessionId]_[now()]_[messageId].json
+ * where now() can contain a decimal point, so only the
+ * .json ending is stripped before the name is split.
+ */
 function messageIdByFilename(name: string): string {
-    const fileName = name.split('.')[0];
+    const fileName = name.endsWith('.json') ? name.slice(0, -5) : name;
     const messageId = ensureNotFalsy(lastOfArray(fileName.split('_')));
     return messageId;
 }

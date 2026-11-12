@@ -13,6 +13,12 @@ import { EU_EEA_REGION_CODES } from './src/theme/eu-consent';
 import remarkArticleByline from './src/remark/article-byline';
 
 /**
+ * Query for CSS imports that are loaded on demand,
+ * see the custom-webpack-tweaks plugin.
+ */
+const LAZY_CSS_QUERY = /lazy-css/;
+
+/**
  * The RxDB version from the root package.json, used for the
  * softwareVersion field of the JSON-LD structured data so it
  * stays in sync with each release.
@@ -56,8 +62,14 @@ const config: Config = {
          * Google detects the region server-side from the IP, so this stays
          * accurate independent of the timezone heuristic used to decide
          * whether the banner is shown. The commands are queued on dataLayer
-         * before the async gtag/GTM libraries boot, so the default applies to
-         * the very first hit.
+         * before gtag.js boots, so the default applies to the very first hit.
+         *
+         * gtag.js itself is loaded by src/theme/Root.tsx after the analytics
+         * consent was given, on the first interaction of the visitor or 3 seconds
+         * after the page load. The config command then sends
+         * the page_view of the first page. Page views of client-side navigations
+         * are sent by the enhanced measurement of the GA4 data stream
+         * (browser history events).
          */
         {
             tagName: 'script',
@@ -74,6 +86,8 @@ const config: Config = {
                     region: ${JSON.stringify(EU_EEA_REGION_CODES)}
                 });
                 gtag('set', 'ads_data_redaction', true);
+                gtag('js', new Date());
+                gtag('config', 'G-62D63SY3S0');
             `.replace(/\s+/g, ' ').trim(),
         },
         { tagName: 'meta', attributes: { name: 'theme-color', content: '#ed168f' } },
@@ -81,9 +95,6 @@ const config: Config = {
         // field above, so browsers that do not support SVG favicons fall back to the .ico.
         { tagName: 'link', attributes: { rel: 'icon', type: 'image/x-icon', href: '/files/logo/icon.ico' } },
         { tagName: 'link', attributes: { rel: 'apple-touch-icon', href: '/img/apple-touch-icon.png', sizes: '180x180' } },
-        { tagName: 'link', attributes: { rel: 'preconnect', href: 'https://region1.analytics.google.com/' } },
-        { tagName: 'link', attributes: { rel: 'preconnect', href: 'https://www.redditstatic.com/' } },
-        { tagName: 'link', attributes: { rel: 'preconnect', href: 'https://pixel-config.reddit.com/' } },
         {
             tagName: 'script',
             attributes: { type: 'application/ld+json' },
@@ -169,6 +180,37 @@ const config: Config = {
     organizationName: 'pubkey', // Usually your GitHub org/user name.
     projectName: 'rxdb', // Usually your repo name.
 
+    future: {
+        /**
+         * Docusaurus Faster: Rspack bundler, SWC loader and minifier,
+         * Lightning CSS minifier and SSG worker threads.
+         * @link https://docusaurus.io/blog/releases/3.6#docusaurus-faster
+         */
+        faster: {
+            swcJsLoader: true,
+            swcJsMinimizer: true,
+            /**
+             * The SWC HTML minifier also minifies the CSS inside inline <style> tags.
+             * Components like the docs animations render <style>{`...`}</style>,
+             * so the minified CSS in the HTML no longer matches the text that React
+             * renders on the client. React then throws a hydration error (#418) and
+             * renders the whole page content again, which delays the
+             * Largest Contentful Paint. The Terser HTML minifier keeps the CSS as is.
+             */
+            swcHtmlMinimizer: false,
+            lightningCssMinimizer: true,
+            mdxCrossCompilerCache: true,
+            rspackBundler: true,
+            rspackPersistentCache: true,
+            ssgWorkerThreads: true,
+        },
+        v4: {
+            /**
+             * Required by the ssgWorkerThreads option of experimental_faster.
+             */
+            removeLegacyPostBuildHeadAttribute: true,
+        },
+    },
     onBrokenLinks: 'throw',
     markdown: {
         hooks: {
@@ -183,6 +225,9 @@ const config: Config = {
         defaultLocale: 'en',
         locales: ['en'],
     },
+    clientModules: [
+        './src/client-modules/prefetch-on-hover.ts',
+    ],
     plugins: [
         [
             'docusaurus-plugin-llms',
@@ -300,6 +345,7 @@ Topic-specific documentation files:
                     'fulltext-search.md',
                     'query-optimizer.md',
                     'webmcp.md',
+                    'dbviewer.md',
                     'third-party-plugins.md',
                     // Performance
                     'rx-storage-performance.md',
@@ -364,7 +410,20 @@ Topic-specific documentation files:
         function myWebpackTweaks() {
             return {
                 name: 'custom-webpack-tweaks',
-                configureWebpack(_config, _isServer, _utils) {
+                configureWebpack(webpackConfig, _isServer, _utils) {
+                    /**
+                     * Docusaurus merges all CSS into a single render-blocking
+                     * styles.css, including the CSS of lazy loaded chunks.
+                     * Stylesheets imported with the ?lazy-css query are excluded
+                     * from that and emitted as their own hashed file instead.
+                     * The import returns the URL of that file so the code can
+                     * load it with loadStylesheet() when it is needed.
+                     */
+                    webpackConfig.module.rules.forEach((rule: any) => {
+                        if (rule && rule.test instanceof RegExp && rule.test.test('x.css')) {
+                            rule.resourceQuery = { not: LAZY_CSS_QUERY };
+                        }
+                    });
                     return {
                         // Emit source maps in the production build so tools like
                         // Lighthouse can map the minified bundle back to the source
@@ -383,6 +442,14 @@ Topic-specific documentation files:
                              * use html-preload on them.
                              */
                             rules: [
+                                {
+                                    test: /\.css$/i,
+                                    resourceQuery: LAZY_CSS_QUERY,
+                                    type: 'asset/resource',
+                                    generator: {
+                                        filename: 'assets/css/[name].[contenthash:8][ext]',
+                                    },
+                                },
                                 {
                                     test: /\.(woff(2)?|ttf|eot|otf)$/,
                                     type: 'asset/resource',
@@ -409,10 +476,6 @@ Topic-specific documentation files:
         //   type: 'text/javascript',
         //   async: true
         // }
-        // {
-        //   src: 'https://www.googletagmanager.com/gtag/js?id=G-62D63SY3S0',
-        //   async: true,
-        // },
     ],
 
     presets: [
@@ -420,16 +483,12 @@ Topic-specific documentation files:
             'classic',
             /** @type {import('@docusaurus/preset-classic').Options} */
             {
-                // Only enable analytics in production builds. In local dev (or when
-                // an ad-blocker blocks the gtag script) window.gtag is undefined and
-                // the route-change tracker throws "window.gtag is not a function".
-                gtag: process.env.NODE_ENV === 'production' ? {
-                    trackingID: 'G-62D63SY3S0',
-                    anonymizeIP: false,
-                } : undefined,
-                googleTagManager: process.env.NODE_ENV === 'production' ? {
-                    containerId: 'GTM-PL63TR5',
-                } : undefined,
+                /**
+                 * Analytics is not loaded through the preset because the preset
+                 * injects the script directly into the head. gtag.js is loaded
+                 * by src/theme/Root.tsx after the consent, on the first interaction
+                 * or 3 seconds after the page load.
+                 */
                 sitemap: {
                     lastmod: 'date',
                     changefreq: 'weekly',
@@ -449,11 +508,11 @@ Topic-specific documentation files:
                         [rehypePrettyCode, rehypePrettyCodeOptions],
                     ],
                 },
-                // blog: {
-                //   showReadingTime: true,
-                //   editUrl:
-                //     'https://github.com/pubkey/rxdb/tree/master/docs/',
-                // },
+                /**
+                 * The docs have no blog. Without this, the preset
+                 * generates an empty /blog/ page.
+                 */
+                blog: false,
                 theme: {
                     customCss: './src/css/custom.css',
                 },

@@ -17,9 +17,9 @@
     "async-test-util": "2.5.0",
     "concurrently": "10.0.6",
     "copyfiles": "2.4.1",
-    "testcafe": "3.7.6",
+    "testcafe": "3.7.7",
     "typescript": "5.9.3",
-    "vite": "8.3.4"
+    "vite": "8.3.5"
   },
   "//": "NOTICE: For the Github CI we use the local RxDB build (rxdb-local.tgz). In your app should just install 'rxdb' from npm instead",
   "dependencies": {

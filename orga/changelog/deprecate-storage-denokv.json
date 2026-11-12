@@ -1,0 +1,15 @@
+{
+    "$schema": "./schema.json",
+    "text": "CHANGE The [DenoKV RxStorage](https://rxdb.info/rx-storage-denokv.html) is deprecated and will be removed in the next major version, because Deno Deploy shuts down and the development of the Deno runtime ends.",
+    "links": [
+        {
+            "url": "https://github.com/pubkey/rxdb/pull/9419",
+            "linkText": "#9419"
+        },
+        {
+            "url": "https://deno.com/blog/cloudflare",
+            "linkText": "Deno is joining Cloudflare"
+        }
+    ],
+    "priority": 7
+}

@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "PERFORMANCE `cosineSimilarity()` of the vector plugin computes the dot product and both magnitudes in a single loop instead of three `reduce()` passes, which makes it about 35% faster for 384-dimensional vectors",
+    "links": [],
+    "priority": 7
+}

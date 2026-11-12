@@ -2,7 +2,7 @@ import BrowserIcon from '@site/static/files/icons/browser.svg';
 import MobileIcon from '@site/static/files/icons/mobile.svg';
 import DesktopIcon from '@site/static/files/icons/desktop.svg';
 import ServerIcon from '@site/static/files/icons/server.svg';
-import { replicationLinks } from './sync-section';
+import { replicationLinks } from './replication-links';
 import { useState } from 'react';
 
 

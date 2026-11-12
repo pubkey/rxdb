@@ -1,4 +1,5 @@
-import { ReactNode } from 'react';
+import React, { ReactNode } from 'react';
+import { IconDeprecated } from './icons/deprecated';
 
 /**
  * Marks a feature or plugin as deprecated. Counterpart to
@@ -38,6 +39,7 @@ export function DeprecatedBlock(props: {
             }}
         >
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: 8 }}>
+                <IconDeprecated style={{ color: '#eb3d51' }} />
                 <strong style={{ fontSize: '1.05em' }}>Deprecated</strong>
                 {props.since && (
                     <span style={{ fontSize: '0.9em', opacity: 0.85 }}>

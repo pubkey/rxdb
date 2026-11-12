@@ -3,7 +3,7 @@
  *
  * - The banner UI comes from the fully client-side npm package
  *   `vanilla-cookieconsent` (no external server, no cookie scanning service).
- * - Google Analytics / Google Tag Manager are gated through Google Consent
+ * - Google Analytics (gtag.js) is gated through Google Consent
  *   Mode v2. The "denied" default for EU/EEA regions is set in an inline
  *   script in docusaurus.config.ts; here we only send the "update" once the
  *   visitor made a choice.
@@ -12,6 +12,9 @@
  *   `setTrackingConsent()` in trigger-event.tsx and the marketing callback.
  */
 
+import cookieConsentCssUrl from 'vanilla-cookieconsent/dist/cookieconsent.css?lazy-css';
+import { loadStylesheet } from './load-stylesheet';
+
 export type ConsentState = {
     analytics: boolean;
     marketing: boolean;
@@ -19,8 +22,7 @@ export type ConsentState = {
 
 /**
  * Sends the Google Consent Mode v2 update signal. This unlocks (or keeps
- * denied) the storage that GA4 and Google Ads use, both for the gtag script
- * and for tags managed inside the GTM container.
+ * denied) the storage that GA4 and Google Ads use.
  */
 export function updateGoogleConsent(state: ConsentState): void {
     const gtag = (window as any).gtag;
@@ -46,9 +48,11 @@ export function updateGoogleConsent(state: ConsentState): void {
 export async function initEuConsentBanner(
     onApply: (state: ConsentState) => void,
 ): Promise<void> {
-    const CookieConsent = await import('vanilla-cookieconsent');
-    // The library ships its own stylesheet, theming is added in custom.css.
-    await import('vanilla-cookieconsent/dist/cookieconsent.css');
+    const [CookieConsent] = await Promise.all([
+        import('vanilla-cookieconsent'),
+        // The library ships its own stylesheet, theming is added in custom.css.
+        loadStylesheet(cookieConsentCssUrl),
+    ]);
 
     const readState = (): ConsentState => ({
         analytics: CookieConsent.acceptedCategory('analytics'),
@@ -104,7 +108,7 @@ export async function initEuConsentBanner(
                             {
                                 title: 'Analytics',
                                 description:
-                                    'Google Analytics 4 and Google Tag Manager, used to understand how the website is used so we can improve it.',
+                                    'Google Analytics 4, used to understand how the website is used so we can improve it.',
                                 linkedCategory: 'analytics',
                             },
                             {

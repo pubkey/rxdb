@@ -22,16 +22,16 @@
     "cap:open:ios": "npm run cap:sync && npx cap open ios"
   },
   "dependencies": {
-    "@angular/common": "22.2.3",
-    "@angular/compiler": "22.2.3",
-    "@angular/core": "22.2.3",
-    "@angular/forms": "22.2.3",
-    "@angular/platform-browser": "22.2.3",
-    "@angular/router": "22.2.3",
+    "@angular/common": "22.2.4",
+    "@angular/compiler": "22.2.4",
+    "@angular/core": "22.2.4",
+    "@angular/forms": "22.2.4",
+    "@angular/platform-browser": "22.2.4",
+    "@angular/router": "22.2.4",
     "@capacitor/android": "8.5.3",
     "@capacitor/core": "8.5.3",
     "@capacitor/ios": "8.5.3",
-    "@ionic/angular": "8.8.19",
+    "@ionic/angular": "9.0.10",
     "ionicons": "8.1.0",
     "rxdb": "file:rxdb-local.tgz",
     "rxjs": "7.8.2",
@@ -39,14 +39,14 @@
     "zone.js": "0.16.3"
   },
   "devDependencies": {
-    "@angular/build": "22.2.4",
-    "@angular/cli": "22.2.4",
-    "@angular/compiler-cli": "22.2.3",
+    "@angular/build": "22.2.6",
+    "@angular/cli": "22.2.6",
+    "@angular/compiler-cli": "22.2.4",
     "@capacitor/cli": "8.5.3",
     "async-test-util": "2.5.0",
     "concurrently": "10.0.6",
     "local-web-server": "5.4.2",
-    "testcafe": "3.7.6",
+    "testcafe": "3.7.7",
     "typescript": "6.0.3"
   }
 }

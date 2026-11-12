@@ -2,6 +2,15 @@
 
 This list contains things that have to be done but will create breaking changes.
 
+## Remove the DenoKV RxStorage
+
+The Deno team joined Cloudflare on October 9, 2026 (https://deno.com/blog/cloudflare). Deno Deploy, which hosts the globally replicated DenoKV, shuts down six months after that, and the Deno runtime only gets bug fixes and security updates for one more year. The DenoKV RxStorage was deprecated for that reason.
+
+In the next major:
+- Remove `src/plugins/storage-denokv`, its `exports` entry in `package.json` and its case in `test/unit/config.ts`.
+- Remove the `test:deno:denokv` scripts and the `run deno tests:denokv` step in `.github/workflows/main.yml`.
+- Remove `docs-src/docs/rx-storage-denokv.md`, its sidebar entry, and the links to it from other docs pages. Add a redirect from `rx-storage-denokv.html` to `rx-storage.html`.
+
 ## sortObject() performance improvements
 
 https://github.com/pubkey/rxdb/pull/9153
@@ -79,6 +88,77 @@ These things have to be handled:
 
 Open question, not decided: whether the free plugin should keep using `crypto-js` at all. `encryptString()` calls `AES.encrypt(value, password)` with the password as a string, which makes crypto-js derive the key with the OpenSSL compatible scheme (MD5, one iteration) and produce unauthenticated AES-CBC. `MINIMUM_PASSWORD_LENGTH` is `8`. The [encryption docs](https://rxdb.info/encryption.html) now carry a warning that points security relevant users at `encryption-web-crypto`. Moving the free plugin to the Web Crypto API as well, or deprecating it, is a separate decision and a separate breaking change, because it changes the ciphertext format and makes existing stored data unreadable without a migration.
 
+## Enable enum-compression in the key-compression plugin
+
+`jsonschema-key-compression` can store the value of a property as the index of that value inside of the `enum` of the property. With the enum `['admin', 'editor', 'viewer']` the value `'editor'` is stored as the number `1`. It is opt-in with the fourth parameter of `createCompressionTable()`, exactly because turning it on changes the stored format. See https://github.com/pubkey/jsonschema-key-compression/pull/756
+
+Only enums where every value is a string are compressed, and only when the property name has the same enum at every place where it occurs in the schema, so the gain depends on the schema. On the test object of the library it is 300 to 291 characters raw and 181 to 174 gzipped, and the gain grows with the length of the enum values.
+
+In the next major:
+- Pass `true` as the fourth parameter of the `createCompressionTable()` call in `getCompressionStateByRxJsonSchema()` in `src/plugins/key-compression/index.ts`. Nothing else in the plugin has to change, `compressObject()`, `decompressObject()`, `compressQuery()` and `createCompressedJsonSchema()` all read the enum-table from the compression-table.
+- Also rename the key-compression plugin to be just called 'compression', because it then no longer compresses only the keys.
+
+Why it is breaking, and what has to be handled:
+
+- **Documents that are already stored keep the string value.** The compressed schema declares `type: 'number'` with the indexes as `enum` for such a field, so an old document no longer validates against it, and a query for `'editor'` is compressed to `1` and does not match it. This needs a schema version bump and a migration strategy that rewrites every document. `decompressObject()` leaves a value that is not an index untouched, so the old string should survive the read of the migration and be written back as an index, but that has to be verified against the storages, not assumed.
+- **Indexes over an enum field change their stored values** from strings to numbers. The indexes are rebuilt by the migration anyway, but any code that reads an index value directly, or a `$gt`/`$lt` bound that is sent to the storage for such a field, is affected. The indexes themselves stay correctly ordered, because the library assigns them in the alphabetical order of the values.
+- **`$type` and `$mod` are not transformed by `compressQuery()`.** On an enum field they would run against the number instead of the string. Decide whether to document that or to throw in dev-mode.
+- **It assumes the data matches the schema.** A document that stores a number where the schema declares a string-enum cannot be told apart from an already compressed value. The schema validation plugins catch this, but they are optional, so this should at least be a dev-mode check or a line in the docs.
+- It needs the `jsonschema-key-compression` release that contains enum-compression, which is not released yet.
+
+## Replication: Add `newDocumentRevision` to the push rows
+
+When a push request fails, RxDB sends the rows again. The write could have already reached the remote while only the response got lost, so the remote gets the same write twice. A push row has no identity that the remote could use to detect that:
+
+```ts
+{
+    assumedMasterState: { id: 'todo1', name: 'Learn RxDB', done: false, _deleted: false },
+    newDocumentState: { id: 'todo1', name: 'Learn RxDB', done: true, _deleted: false }
+}
+```
+
+The fork document already has such an identity, its `_rev` (`<height>-<databaseInstanceToken>`, see `createRevision()` in `src/plugins/utils/utils-revision.ts`). It is stored with the document, so it is the same on each retry, also after the JavaScript process was restarted and when the rows are batched differently. But `writeDocToDocState()` in `src/replication-protocol/helper.ts` strips `_rev` and `_meta` before the rows are given to the push handler.
+
+In the next major, a push row looks like this:
+
+```ts
+{
+    assumedMasterState: { id: 'todo1', name: 'Learn RxDB', done: false, _deleted: false },
+    newDocumentState: { id: 'todo1', name: 'Learn RxDB', done: true, _deleted: false },
+    newDocumentRevision: '2-ipivwauvdn'
+}
+```
+
+The remote stores the last applied revision of each document and skips a row when the `newDocumentRevision` of that document was already applied. This makes the push idempotent per document, which also covers a batch that was only partially written before the request died.
+
+What has to be changed:
+
+- **Type**: Add `newDocumentRevision: string` to `RxReplicationWriteToMasterRow` in `src/types/replication-protocol.d.ts`.
+- **Upstream**: Set it in `persistToMaster()` in `src/replication-protocol/upstream.ts` from `fullDocData._rev` where `writeRowsToMaster[docId]` is created.
+- **Replication plugin**: The `masterWrite()` wrapper in `src/plugins/replication/index.ts` creates a new row object when a custom `deletedField` is used. It spreads the row, so the field is kept, but add a test for it.
+- **Schema migration**: `src/plugins/migration-schema/rx-migration-state.ts` calls `masterWrite()` with its own migrated rows and has to set the field too.
+- **Receiving side**: `rxStorageInstanceToReplicationHandler()` in `src/replication-protocol/index.ts` is the remote of the WebRTC and WebSocket replications. Decide if its `masterWrite()` uses the revision to skip duplicates or if the comparison with the `assumedMasterState` is enough there.
+- **RxServer**: The [rxdb-server](https://github.com/pubkey/rxdb-server) has to implement the duplicate detection in its replication endpoint and must have tests for it: a push that is sent twice with the same `newDocumentRevision` must only be applied once, also when the server was restarted in between and when the second request has the rows in a different batch.
+- **GraphQL**: `graphQLSchemaFromRxSchema()` has to add the field to the `PushRow` input type and `pushQueryBuilderFromRxSchema()` has to send it.
+- **Other replication plugins**: CouchDB, Firestore, MongoDB, Supabase, Appwrite, NATS, Google Drive, and Microsoft OneDrive read the rows in their push handlers. Check that the additional field does not end up in the written document and use it for duplicate detection where the backend makes that possible.
+- **Tests**: Add a test to `test/unit/replication.test.ts` where the push handler writes the rows and then throws, so that the retry has the same `newDocumentRevision`. Add one that restarts the replication between the failed and the successful push. `getPushHandler()` in `src/plugins/test-utils/replication.ts` can be used as the remote.
+- **Docs**: Add a section to `docs-src/docs/replication.md` that covers how to correctly handle duplicate pushes on the remote. It replaces the vague advice in the "Error handling" section to "add a unique write id field to the document". The section must contain:
+    - Why duplicates happen (retry after a lost response, restart of the app, partially written batch).
+    - A backend example that stores the last applied revision per document and skips a row with a known `newDocumentRevision`, in the same transaction that writes the document.
+    - What the remote returns for a skipped row. It must not return it as a conflict, otherwise the client runs the conflict handler for its own write.
+    - That the revision must be used together with the primary key and how long the remote has to keep the applied revisions.
+    - What to do with writes that have side effects on the remote (counters, payments, emails), because these are the cases where a duplicate does real damage.
+- **Other docs**: Add the field to the push endpoint of `docs-src/docs/replication-http.md` and update the push rows that are shown in `replication-graphql.md`, `rx-server.md`, and `migration-schema.md`. Mention it in the release notes of the major as a breaking change for custom backends.
+
+Why it is breaking, and what has to be handled:
+
+- **The rows get a new field.** Remotes that validate the rows strictly reject it, for example a GraphQL input type like `HumanInputPushRow` or a schema validation on the server.
+- **The revision is only unique per document.** The remote has to use the primary key together with the revision. The height starts at `1` again when a deleted document was purged by the cleanup plugin and is inserted again with the same primary key on the same device, so the remote must not keep the applied revisions forever.
+- **Rows that are changed by the `push.modifier`** keep the revision of the unmodified fork document. Decide if that is documented or if the modifier also gets the revision.
+- **Conflicts**: When the conflict handler resolves a conflict, the resolved document is written to the fork with a new revision and pushed as a new row. This must not be detected as a duplicate, which works because the revision height is increased.
+
+A non-breaking variant was tried in [#9463](https://github.com/pubkey/rxdb/pull/9463). It called the `push.handler` with a second argument that contained a random `requestId` which was the same on all retries of a request. It was dropped because the `requestId` was only kept in memory: After a restart of the app the same writes are pushed with a new `requestId`, and the rows can be batched differently so that the same request no longer exists.
+
 ---------------------------------
 ## Maybe later (not sure if should be done)
 
@@ -96,9 +176,6 @@ In the RxJsonSchema, a property of a document can have multiple types like
 This is bad and should not be used. Instead each field must have exactly one type.
 Having mixed types causes many confusion, for example when the type is `['string', 'number']`,
 you could run a query selector like `$gt: 10` where it now is not clear if the string `foobar` is matching or not.
-
-## Add enum-compression to the key-compression plugin
-- Also rename the key-compression plugin to be just called 'compression'
 
 ## RxStorage: Add RxStorage.info() which also calls parents
 

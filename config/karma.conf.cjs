@@ -176,6 +176,14 @@ module.exports = async function (config) {
          * as failed. Helps with flaky tests in CI.
          */
         configuration.retryLimit = 3;
+
+        /**
+         * Fail directly when the browser disconnects.
+         * A reconnected browser does not run the remaining tests again,
+         * so each retry only waits for the browserNoActivityTimeout
+         * and the CI run hangs for a long time before it fails.
+         */
+        configuration.browserDisconnectTolerance = 0;
     }
 
     configuration.browserConsoleLogOptions = {

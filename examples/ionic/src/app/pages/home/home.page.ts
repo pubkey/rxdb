@@ -4,7 +4,7 @@ import {
     IonHeader,
     IonTitle,
     IonToolbar
-} from '@ionic/angular/standalone';
+} from '@ionic/angular';
 
 import { HeroInsertComponent } from '../../components/hero-insert/hero-insert.component';
 import { HeroesListComponent } from '../../components/heroes-list/heroes-list.component';

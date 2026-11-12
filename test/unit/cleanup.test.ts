@@ -335,7 +335,18 @@ describe('cleanup.test.js', () => {
 
             const doc = await collection.insert(schemaObjects.humanData());
             const docPrimary = doc.primary;
-            await doc.remove();
+            const deletedDoc = await doc.remove();
+
+            /**
+             * The storage only purges documents whose _meta.lwt is lower than its own now().
+             * When the storage runs in another JavaScript context (like the worker storage),
+             * its now() has its own sub-millisecond counter and can return a value lower
+             * than the lwt that was set in the main thread during the same millisecond.
+             * So wait until the clock has passed the lwt, otherwise the real cleanup call
+             * can randomly skip the document.
+             */
+            const deletedLwt = deletedDoc.toJSON(true)._meta.lwt;
+            await waitUntil(() => Date.now() > deletedLwt + 1);
 
             // cleanup() should loop internally: first call returns false, second does real work
             await collection.cleanup(0);

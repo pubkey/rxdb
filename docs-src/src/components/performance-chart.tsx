@@ -1,5 +1,5 @@
 import React, { Suspense } from 'react';
-import ExecutionEnvironment from '@docusaurus/ExecutionEnvironment';
+import useIsBrowser from '@docusaurus/useIsBrowser';
 import { JsonLd } from './json-ld';
 
 // Lazy load the chart implementation so recharts isn't in the main bundle
@@ -85,6 +85,12 @@ function DatasetJsonLd({ data, metrics, title }: { data: PerformanceDataPoint[];
 }
 
 export function PerformanceChart({ data, metrics, title, skipMetrics, logScale }: PerformanceChartProps) {
+    /**
+     * false on the server and during hydration, true after it.
+     * So the first client render matches the server-rendered HTML
+     * and React does not throw a hydration error.
+     */
+    const isBrowser = useIsBrowser();
     if (!metrics && data && data.length > 0) {
         // Auto-generate metrics from the first data object if not provided
         const keys = Object.keys(data[0]).filter(k => k !== 'name');
@@ -112,7 +118,7 @@ export function PerformanceChart({ data, metrics, title, skipMetrics, logScale }
         : null;
 
     // Recharts only renders properly in the browser
-    if (!ExecutionEnvironment.canUseDOM) {
+    if (!isBrowser) {
         return (
             <>
                 {seoContent}
