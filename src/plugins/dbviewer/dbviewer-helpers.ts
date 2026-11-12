@@ -1,3 +1,9 @@
+import {
+    getQueryMatcher,
+    getSortComparator,
+    normalizeMangoQuery
+} from '../../rx-query-helper.ts';
+import type { RxJsonSchema } from '../../types/index.d.ts';
 import type {
     ViewerChangeEntry,
     ViewerDiffLine,
@@ -237,61 +243,6 @@ export function parseViewerSelector(input: string): ViewerSelectorParseResult {
     }
 }
 
-function resolvePath(doc: any, path: string): any {
-    const parts = path.split('.');
-    let current = doc;
-    for (const part of parts) {
-        if (current === null || typeof current === 'undefined') {
-            return undefined;
-        }
-        current = current[part];
-    }
-    return current;
-}
-
-function compareValues(a: any, b: any): number {
-    if (a === b) {
-        return 0;
-    }
-    if (typeof a === 'number' && typeof b === 'number') {
-        return a < b ? -1 : 1;
-    }
-    return String(a) < String(b) ? -1 : 1;
-}
-
-function matchOperator(value: any, operator: string, operand: any): boolean {
-    switch (operator) {
-        case '$eq':
-            return deepEquals(value, operand);
-        case '$ne':
-            return !deepEquals(value, operand);
-        case '$gt':
-            return typeof value !== 'undefined' && compareValues(value, operand) > 0;
-        case '$gte':
-            return typeof value !== 'undefined' && compareValues(value, operand) >= 0;
-        case '$lt':
-            return typeof value !== 'undefined' && compareValues(value, operand) < 0;
-        case '$lte':
-            return typeof value !== 'undefined' && compareValues(value, operand) <= 0;
-        case '$in':
-            if (!Array.isArray(operand)) {
-                return false;
-            }
-            if (Array.isArray(value)) {
-                return value.some(v => operand.some(o => deepEquals(v, o)));
-            }
-            return operand.some(o => deepEquals(value, o));
-        case '$nin':
-            return !matchOperator(value, '$in', operand);
-        case '$exists':
-            return operand ? typeof value !== 'undefined' : typeof value === 'undefined';
-        case '$regex':
-            return typeof value === 'string' && new RegExp(operand).test(value);
-        default:
-            return false;
-    }
-}
-
 export function deepEquals(a: any, b: any): boolean {
     if (a === b) {
         return true;
@@ -307,74 +258,60 @@ export type ViewerSortPart = {
 };
 
 /**
- * In-memory sort for the dump mode and the system collections
- * where no live database is available to sort the query.
- * Missing values sort last in both directions.
+ * A dump file contains no RxSchema.
+ * The query helpers of the RxDB core only need
+ * the primary key of the schema.
  */
-export function sortViewerDocs(docs: any[], sort?: ViewerSortPart[]): any[] {
-    if (!sort || sort.length === 0) {
-        return docs;
-    }
-    const parts = sort.map(part => {
-        const field = Object.keys(part)[0];
-        return { field, factor: part[field] === 'desc' ? -1 : 1 };
-    }).filter(part => !!part.field);
-    if (parts.length === 0) {
-        return docs;
-    }
-    return docs.slice().sort((a, b) => {
-        for (const part of parts) {
-            const left = resolvePath(a, part.field);
-            const right = resolvePath(b, part.field);
-            if (left === right) {
-                continue;
-            }
-            if (typeof left === 'undefined' || left === null) {
-                return 1;
-            }
-            if (typeof right === 'undefined' || right === null) {
-                return -1;
-            }
-            return (left < right ? -1 : 1) * part.factor;
-        }
-        return 0;
-    });
+function getViewerQuerySchema(primaryPath: string): RxJsonSchema<any> {
+    return {
+        version: 0,
+        primaryKey: primaryPath,
+        type: 'object',
+        properties: {}
+    };
 }
 
 /**
- * Minimal Mango selector matcher used in dump mode
- * where no live database is available to run queries.
- * Supports equality, $eq, $ne, $gt, $gte, $lt, $lte,
- * $in, $nin, $exists, $regex, $and, $or and dot paths.
+ * In-memory sort for the dump mode and the system collections
+ * where no live database is available to sort the query.
+ * Uses the sort comparator of the RxDB core so the order
+ * equals the order of a query on a live collection,
+ * including the primary key as last sort field.
+ * Without a primaryPath, documents with equal sort values
+ * keep the order of the given array.
  */
-export function matchesViewerSelector(doc: any, selector: any): boolean {
-    if (!selector) {
-        return true;
+export function sortViewerDocs(docs: any[], sort?: ViewerSortPart[], primaryPath?: string): any[] {
+    const parts = (sort || []).filter(part => Object.keys(part).length > 0);
+    if (parts.length === 0) {
+        return docs;
     }
-    return Object.entries(selector).every(([key, condition]) => {
-        if (key === '$and') {
-            return Array.isArray(condition) && (condition as any[]).every(sub => matchesViewerSelector(doc, sub));
-        }
-        if (key === '$or') {
-            return Array.isArray(condition) && (condition as any[]).some(sub => matchesViewerSelector(doc, sub));
-        }
-        if (key === '$nor') {
-            return Array.isArray(condition) && !(condition as any[]).some(sub => matchesViewerSelector(doc, sub));
-        }
-        const value = resolvePath(doc, key);
-        if (
-            condition !== null &&
-            typeof condition === 'object' &&
-            !Array.isArray(condition) &&
-            Object.keys(condition as object).some(k => k.startsWith('$'))
-        ) {
-            return Object.entries(condition as object).every(([operator, operand]) => matchOperator(value, operator, operand));
-        }
-        if (Array.isArray(value) && !Array.isArray(condition)) {
-            return value.some(v => deepEquals(v, condition));
-        }
-        return deepEquals(value, condition);
-    });
+    const schema = getViewerQuerySchema(primaryPath || 'id');
+    const comparator = getSortComparator(
+        schema,
+        primaryPath ?
+            normalizeMangoQuery(schema, { selector: {}, sort: parts }) :
+            { selector: {}, sort: parts, skip: 0 }
+    );
+    return docs.slice().sort((a, b) => comparator(a, b) || 0);
+}
+
+/**
+ * Returns the matcher function for a Mango selector, used in
+ * dump mode and on the system collections where no live
+ * collection is available to run queries. Uses the query
+ * matcher of the RxDB core so a selector matches the same
+ * documents as on a live collection.
+ */
+export function getViewerSelectorMatcher(selector: any): (doc: any) => boolean {
+    const schema = getViewerQuerySchema('id');
+    return getQueryMatcher(
+        schema,
+        normalizeMangoQuery(schema, { selector: selector || {} }, true)
+    );
+}
+
+export function matchesViewerSelector(doc: any, selector: any): boolean {
+    return getViewerSelectorMatcher(selector)(doc);
 }
 
 function stringDetail(values: string[], isPrimary: boolean): string {

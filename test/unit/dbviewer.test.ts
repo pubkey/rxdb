@@ -252,6 +252,110 @@ describe('dbviewer.test.ts', () => {
             const byId = await source.getById('todos', 'a1');
             assert.strictEqual(byId.title, 'foo');
         });
+        it('gives the same documents as the live source for the same selector and sort', async () => {
+            const db = await createRxDatabase({
+                name: randomToken(10),
+                storage: config.storage.getStorage()
+            });
+            await db.addCollections({
+                docs: {
+                    schema: {
+                        version: 0,
+                        primaryKey: 'id',
+                        type: 'object',
+                        properties: {
+                            id: { type: 'string', maxLength: 100 },
+                            name: { type: 'string' },
+                            n: { type: 'number' },
+                            tags: { type: 'array', items: { type: 'string' } },
+                            opt: { type: ['string', 'null'] }
+                        },
+                        required: ['id']
+                    }
+                }
+            });
+            const docs = [
+                { id: 'a', name: 'Alice', n: 2, tags: ['a', 'b'], opt: null },
+                { id: 'b', name: 'bob', n: 1, tags: ['b'], opt: 'v' },
+                { id: 'c', name: 'alice', tags: [] },
+                { id: 'd', name: 'Carol', n: 1, tags: ['a'] }
+            ];
+            await db.docs.bulkInsert(docs);
+            const liveSource = createLiveDataSource(db as any);
+            const dumpSource = createDumpDataSource({
+                name: 'dumped',
+                collections: [{ name: 'docs', docs }]
+            });
+            const cases: { selector: any; sort: { [field: string]: 'asc' | 'desc'; }[]; ids: string[]; }[] = [
+                { selector: { name: { $regex: 'ali', $options: 'i' } }, sort: [{ id: 'asc' }], ids: ['a', 'c'] },
+                { selector: { opt: null }, sort: [{ id: 'asc' }], ids: ['a', 'c', 'd'] },
+                { selector: { opt: { $ne: null } }, sort: [{ id: 'asc' }], ids: ['b'] },
+                { selector: { tags: { $ne: 'a' } }, sort: [{ id: 'asc' }], ids: ['b', 'c'] },
+                { selector: { tags: { $size: 1 } }, sort: [{ id: 'asc' }], ids: ['b', 'd'] },
+                { selector: { tags: { $elemMatch: { $eq: 'a' } } }, sort: [{ id: 'asc' }], ids: ['a', 'd'] },
+                { selector: { n: { $not: { $gt: 1 } } }, sort: [{ id: 'asc' }], ids: ['b', 'c', 'd'] },
+                { selector: { n: { $mod: [2, 0] } }, sort: [{ id: 'asc' }], ids: ['a'] },
+                { selector: {}, sort: [{ n: 'asc' }], ids: ['c', 'b', 'd', 'a'] },
+                { selector: {}, sort: [{ n: 'desc' }], ids: ['a', 'b', 'd', 'c'] }
+            ];
+            for (const testCase of cases) {
+                const label = JSON.stringify(testCase.selector) + ' ' + JSON.stringify(testCase.sort);
+                const liveResult = await liveSource.query('docs', testCase.selector, 0, 100, testCase.sort);
+                assert.deepStrictEqual(liveResult.docs.map(doc => doc.id), testCase.ids, 'live ' + label);
+                const dumpResult = await dumpSource.query('docs', testCase.selector, 0, 100, testCase.sort);
+                assert.deepStrictEqual(dumpResult.docs.map(doc => doc.id), testCase.ids, 'dump ' + label);
+                assert.strictEqual(dumpResult.total, testCase.ids.length, 'dump total ' + label);
+                assert.strictEqual(await dumpSource.count('docs', testCase.selector), testCase.ids.length, 'dump count ' + label);
+            }
+            await db.close();
+        });
+        it('sorts equal and missing values like the live source when the primary key is not the id field', async () => {
+            const db = await createRxDatabase({
+                name: randomToken(10),
+                storage: config.storage.getStorage()
+            });
+            await db.addCollections({
+                docs: {
+                    schema: {
+                        version: 0,
+                        primaryKey: 'key',
+                        type: 'object',
+                        properties: {
+                            key: { type: 'string', maxLength: 100 },
+                            id: { type: 'string' },
+                            n: { type: 'number' }
+                        },
+                        required: ['key']
+                    }
+                }
+            });
+            await db.docs.bulkInsert([
+                { key: 'k2', id: 'y', n: 10 },
+                { key: 'k5', n: 1 },
+                { key: 'k1', id: 'z', n: 2 },
+                { key: 'k4', id: 'x', n: 1 },
+                { key: 'k3', id: 'x' }
+            ]);
+            const liveSource = createLiveDataSource(db as any);
+            const dumpSource = createDumpDataSource({
+                name: 'dumped',
+                collections: [await liveSource.exportCollection('docs')]
+            });
+            const cases: { sort: { [field: string]: 'asc' | 'desc'; }[]; keys: string[]; }[] = [
+                { sort: [{ n: 'asc' }], keys: ['k3', 'k4', 'k5', 'k1', 'k2'] },
+                { sort: [{ n: 'desc' }], keys: ['k2', 'k1', 'k4', 'k5', 'k3'] },
+                { sort: [{ id: 'asc' }], keys: ['k5', 'k3', 'k4', 'k2', 'k1'] },
+                { sort: [{ key: 'desc' }], keys: ['k5', 'k4', 'k3', 'k2', 'k1'] }
+            ];
+            for (const testCase of cases) {
+                const label = JSON.stringify(testCase.sort);
+                const liveResult = await liveSource.query('docs', {}, 0, 100, testCase.sort);
+                assert.deepStrictEqual(liveResult.docs.map(doc => doc.key), testCase.keys, 'live ' + label);
+                const dumpResult = await dumpSource.query('docs', {}, 0, 100, testCase.sort);
+                assert.deepStrictEqual(dumpResult.docs.map(doc => doc.key), testCase.keys, 'dump ' + label);
+            }
+            await db.close();
+        });
         it('rejects writes', async () => {
             const source = createDumpDataSource(dump);
             await assert.rejects(() => source.upsert('todos', { id: 'x' }));
@@ -525,6 +629,33 @@ describe('dbviewer.test.ts', () => {
                 () => source.removeByIds(stateInfo.name, ['x']),
                 (err: any) => err.code === 'DVW4'
             );
+
+            await db.close();
+        });
+        it('evaluates selectors and sort on a system collection like on a normal collection', async () => {
+            const { addRxPlugin } = await import('../../plugins/core/index.mjs');
+            const { RxDBLocalDocumentsPlugin } = await import('../../plugins/local-documents/index.mjs');
+            addRxPlugin(RxDBLocalDocumentsPlugin);
+            const db = await createRxDatabase({
+                name: randomToken(10),
+                storage: config.storage.getStorage(),
+                multiInstance: false,
+                localDocuments: true
+            });
+            await db.insertLocal('local-a', { name: 'Alice', n: 2 });
+            await db.insertLocal('local-b', { name: 'bob', n: 1 });
+            await db.insertLocal('local-c', { name: 'alice' });
+            const source = createLiveDataSource(db as any);
+
+            const byRegex = await source.query('.local', { 'data.name': { $regex: 'ali', $options: 'i' } }, 0, 100, [{ id: 'asc' }]);
+            assert.deepStrictEqual(byRegex.docs.map(doc => doc.id), ['local-a', 'local-c']);
+            assert.strictEqual(await source.count('.local', { 'data.name': { $regex: 'ali', $options: 'i' } }), 2);
+
+            const byNull = await source.query('.local', { 'data.n': null }, 0, 100, [{ id: 'asc' }]);
+            assert.deepStrictEqual(byNull.docs.map(doc => doc.id), ['local-c']);
+
+            const sorted = await source.query('.local', {}, 0, 100, [{ 'data.n': 'asc' }]);
+            assert.deepStrictEqual(sorted.docs.map(doc => doc.id), ['local-c', 'local-b', 'local-a']);
 
             await db.close();
         });
