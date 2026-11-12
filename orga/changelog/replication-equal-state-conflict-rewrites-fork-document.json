@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX When a push was answered with a conflict although the master already had the same document state, the replication wrote that state to the client document again with a new revision. With three instances that replicate with each other (like in the WebRTC replication), this rejected the push of a newer state from another instance, rolled the newer state back and could make the instances push the document endlessly. Now only the replication meta data is updated in that case",
+    "links": [],
+    "priority": 5
+}

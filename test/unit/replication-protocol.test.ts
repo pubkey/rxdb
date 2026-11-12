@@ -34,7 +34,8 @@ import {
     promiseSeries,
     prepareQuery,
     runXTimes,
-    ensureNotFalsy
+    ensureNotFalsy,
+    defaultConflictHandler
 } from '../../plugins/core/index.mjs';
 
 
@@ -688,6 +689,93 @@ describe(testContext + ' (implementation: ' + config.storage.name + ')', () => {
             await cleanUp(replicationStateAtoB, masterInstance);
             await cleanUp(replicationStateBtoC, masterInstance);
             await cleanUp(replicationStateCtoMaster, masterInstance);
+        });
+        it('three instances in a full mesh must keep the newest write of a document that is updated directly after the insert', async () => {
+            const instances = await Promise.all([
+                createRxStorageInstance(0),
+                createRxStorageInstance(0),
+                createRxStorageInstance(0)
+            ]);
+            const MAX_PUSH_CALLS = 200;
+            let pushCalls = 0;
+            const handlers = instances.map(instance => {
+                const handler = rxStorageInstanceToReplicationHandler(
+                    instance,
+                    defaultConflictHandler,
+                    randomToken(10)
+                );
+                const wrappedHandler: typeof handler = {
+                    masterChangeStream$: handler.masterChangeStream$,
+                    masterChangesSince: handler.masterChangesSince.bind(handler),
+                    masterWrite(rows) {
+                        pushCalls = pushCalls + 1;
+                        if (pushCalls > MAX_PUSH_CALLS) {
+                            /**
+                             * Stops an endless push loop,
+                             * so that the test can fail instead of blocking the process.
+                             */
+                            return new Promise(() => { });
+                        }
+                        return handler.masterWrite(rows);
+                    }
+                };
+                return wrappedHandler;
+            });
+
+            /**
+             * Each pair of instances is connected by one replication,
+             * the instance with the lower index is the master.
+             */
+            const pairs: [number, number][] = [[1, 0], [2, 0], [2, 1]];
+            const metaInstances = await Promise.all(
+                pairs.map(() => createMetaInstance(instances[0].schema))
+            );
+            const replicationStates = pairs.map(([forkIndex, masterIndex], i) => replicateRxStorageInstance({
+                identifier: randomToken(10),
+                replicationHandler: handlers[masterIndex],
+                forkInstance: instances[forkIndex],
+                metaInstance: metaInstances[i],
+                pullBatchSize: 100,
+                pushBatchSize: 100,
+                conflictHandler: defaultConflictHandler,
+                skipStoringPullMeta: false,
+                hashFunction: defaultHashSha256
+            }));
+            await Promise.all(replicationStates.map(replicationState => awaitRxStorageReplicationFirstInSync(replicationState)));
+
+            const insertData = getDocData({ firstName: 'inserted' });
+            const insertResult = await instances[2].bulkWrite([{ document: insertData }], testContext);
+            assert.deepStrictEqual(insertResult.error, []);
+            const updateData = Object.assign({}, insertData, {
+                firstName: 'updated',
+                _rev: createRevision(randomToken(10), insertData)
+            });
+            const updateResult = await instances[2].bulkWrite([{ previous: insertData, document: updateData }], testContext);
+            assert.deepStrictEqual(updateResult.error, []);
+
+            async function getFirstNames(): Promise<(string | undefined)[]> {
+                const docs = await Promise.all(
+                    instances.map(instance => instance.findDocumentsById([insertData.passportId], false))
+                );
+                return docs.map(result => result[0] ? result[0].firstName : undefined);
+            }
+            await waitUntil(async () => {
+                if (pushCalls > MAX_PUSH_CALLS) {
+                    return true;
+                }
+                const firstNames = await getFirstNames();
+                return firstNames.every(firstName => firstName === 'updated');
+            }, 10 * 1000, 20);
+
+            assert.ok(pushCalls <= MAX_PUSH_CALLS, 'must not push the document again and again');
+            assert.deepStrictEqual(await getFirstNames(), ['updated', 'updated', 'updated']);
+            await Promise.all(replicationStates.map(replicationState => awaitRxStorageReplicationInSync(replicationState)));
+            assert.deepStrictEqual(await getFirstNames(), ['updated', 'updated', 'updated']);
+            assert.ok(pushCalls <= MAX_PUSH_CALLS);
+
+            await Promise.all(replicationStates.map(replicationState => cancelRxStorageReplication(replicationState)));
+            await Promise.all(instances.map(instance => instance.close()));
+            await Promise.all(metaInstances.map(metaInstance => metaInstance.remove()));
         });
         it('on multi instance it should be able to mount on top of the same storage config with a different instance', async () => {
             if (!config.storage.hasMultiInstance) {

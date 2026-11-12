@@ -479,6 +479,7 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
                 state.stats.up.persistToMasterHadConflicts = state.stats.up.persistToMasterHadConflicts + 1;
                 const conflictWriteFork: BulkWriteRow<RxDocType>[] = [];
                 const conflictWriteMeta: BulkWriteRowById<RxStorageReplicationMeta<RxDocType, any>> = {};
+                const equalStateWriteMeta: BulkWriteRow<RxStorageReplicationMeta<RxDocType, any>>[] = [];
                 await Promise.all(
                     Object
                         .entries(conflictsById)
@@ -489,6 +490,35 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
                                 assumedMasterState: writeToMasterRow.assumedMasterState,
                                 realMasterState
                             };
+                            if (
+                                writeToMasterRow.newDocumentState &&
+                                state.input.conflictHandler.isEqual(
+                                    realMasterState,
+                                    writeToMasterRow.newDocumentState,
+                                    'upstream-check-if-equal'
+                                )
+                            ) {
+                                /**
+                                 * The master already has the state of the fork,
+                                 * so there is nothing to resolve.
+                                 * Only the assumed master state must be stored.
+                                 * Writing the same state to the fork again would
+                                 * create a new revision which conflicts
+                                 * with other writes to that document.
+                                 */
+                                state.events.resolvedConflicts.next({
+                                    input,
+                                    output: forkStateById[docId]
+                                });
+                                const assumedMasterDoc = assumedMasterState[docId];
+                                return getMetaWriteRow(
+                                    state,
+                                    realMasterState,
+                                    assumedMasterDoc ? assumedMasterDoc.metaDocument : undefined
+                                ).then(row => {
+                                    equalStateWriteMeta.push(row);
+                                });
+                            }
                             return resolveConflictError(
                                 state,
                                 input,
@@ -521,6 +551,13 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
                  */
                 if (state.events.canceled.getValue()) {
                     return false;
+                }
+
+                if (!state.skipStoringPullMeta && equalStateWriteMeta.length > 0) {
+                    await state.input.metaInstance.bulkWrite(
+                        stripAttachmentsDataFromMetaWriteRows(state, equalStateWriteMeta),
+                        'replication-up-write-meta'
+                    );
                 }
 
                 if (conflictWriteFork.length > 0) {
