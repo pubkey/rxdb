@@ -2081,6 +2081,53 @@ describe('rx-collection.test.ts', () => {
 
                     c.database.close();
                 });
+                it('should run in call order with the incremental writes of the RxDocument when the document is not known at call time', async () => {
+                    const c = await humansCollection.createPrimary(0);
+
+                    // two calls for a new document, then a write on the result of the first call
+                    const docData = schemaObjects.simpleHumanData();
+                    const upsert1 = c.incrementalUpsert(docData);
+                    const upsert2 = c.incrementalUpsert(Object.assign({}, docData, { firstName: 'upsert2', lastName: 'upsert2' }));
+                    const doc = await upsert1;
+                    await Promise.all([
+                        upsert2,
+                        doc.incrementalPatch({ lastName: 'patch' })
+                    ]);
+                    let latest = await c.findOne(docData.passportId).exec(true);
+                    assert.strictEqual(latest.firstName, 'upsert2');
+                    assert.strictEqual(latest.lastName, 'patch');
+
+                    // a postInsert hook that writes to the new document while a second call is queued
+                    const docData2 = schemaObjects.simpleHumanData();
+                    c.postInsert(async (_data, insertedDoc) => {
+                        if (insertedDoc.primary === docData2.passportId) {
+                            await insertedDoc.incrementalPatch({ lastName: 'hook' });
+                        }
+                    }, false);
+                    await Promise.all([
+                        c.incrementalUpsert(docData2),
+                        c.incrementalUpsert(Object.assign({}, docData2, { firstName: 'upsert2', lastName: 'upsert2' }))
+                    ]);
+                    latest = await c.findOne(docData2.passportId).exec(true);
+                    assert.strictEqual(latest.firstName, 'upsert2');
+                    assert.strictEqual(latest.lastName, 'hook');
+
+                    // a stored document that is not in the cache, fetched while the call is running
+                    const name = c.database.name;
+                    await c.database.close();
+                    const c2 = await humansCollection.createPrimary(0, name);
+                    const upsert = c2.incrementalUpsert(Object.assign({}, docData, { firstName: 'upsert3', lastName: 'upsert3' }));
+                    const found = await c2.findOne(docData.passportId).exec(true);
+                    await Promise.all([
+                        upsert,
+                        found.incrementalPatch({ lastName: 'patch3' })
+                    ]);
+                    latest = await c2.findOne(docData.passportId).exec(true);
+                    assert.strictEqual(latest.firstName, 'upsert3');
+                    assert.strictEqual(latest.lastName, 'patch3');
+
+                    c2.database.close();
+                });
                 it('should work when inserting on a slow storage', async () => {
                     if (!isNode) return;
                     // use a 'slow' adapter because memory might be to fast

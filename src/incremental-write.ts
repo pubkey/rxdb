@@ -50,6 +50,13 @@ export class IncrementalWriteQueue<RxDocType> {
     public queueByDocId = new Map<string, IncrementalWriteQueueItem<RxDocType>[]>();
     public isRunning: boolean = false;
 
+    /**
+     * Writes that have been called while the state of their document was not known.
+     * They are added to the queue before the next write to the same document,
+     * so that all writes to one document run in call order.
+     */
+    public waitingByDocId = new Map<string, ((docData: RxDocumentData<RxDocType>) => void)[]>();
+
     constructor(
         public readonly storageInstance: RxStorageInstance<RxDocType, any, any>,
         public readonly primaryPath: StringKeys<RxDocumentData<RxDocType>>,
@@ -69,6 +76,7 @@ export class IncrementalWriteQueue<RxDocType> {
         ownWrite?: boolean
     ): Promise<RxDocumentData<RxDocType>> {
         const docId: string = lastKnownDocumentState[this.primaryPath] as any;
+        this.addWaiting(docId, lastKnownDocumentState);
         const ar = getFromMapOrCreate(this.queueByDocId, docId, () => []);
         const ret = new Promise<RxDocumentData<RxDocType>>((resolve, reject) => {
             const item: IncrementalWriteQueueItem<RxDocType> = {
@@ -82,6 +90,14 @@ export class IncrementalWriteQueue<RxDocType> {
             this.triggerRun();
         });
         return ret;
+    }
+
+    addWaiting(docId: string, docData: RxDocumentData<RxDocType>) {
+        const waiting = this.waitingByDocId.get(docId);
+        if (waiting) {
+            this.waitingByDocId.delete(docId);
+            waiting.forEach(fn => fn(docData));
+        }
     }
 
     async triggerRun(): Promise<void> {
