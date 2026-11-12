@@ -8,6 +8,7 @@ import {
     createRxDatabase,
     randomToken,
     addRxPlugin,
+    deepEqual,
     lastOfArray,
     RxReactivityFactory,
     RxState,
@@ -17,6 +18,11 @@ import {
     isDeno,
     isFastMode
 } from '../../plugins/test-utils/index.mjs';
+import { getRxStorageDexie } from '../../plugins/storage-dexie/index.mjs';
+import {
+    indexedDB as fakeIndexedDB,
+    IDBKeyRange as fakeIDBKeyRange
+} from 'fake-indexeddb';
 import {
     nextRxStateId,
     RxDBStatePlugin
@@ -525,6 +531,70 @@ addRxPlugin(RxDBJsonDumpPlugin);
 
                 state1.collection.database.close();
                 state2.collection.database.close();
+            });
+            it('should not lose a write when eventReduce is disabled and the events of the other instance arrive delayed', async () => {
+                if (isDeno) {
+                    return;
+                }
+                type CounterState = {
+                    a?: number;
+                    cnt?: number;
+                };
+                /**
+                 * The Dexie storage is created here because the events
+                 * between its instances are sent asynchronously,
+                 * also when the tests run with another storage.
+                 */
+                const storage = wrappedValidateAjvStorage({
+                    storage: getRxStorageDexie({
+                        indexedDB: fakeIndexedDB,
+                        IDBKeyRange: fakeIDBKeyRange
+                    })
+                });
+                const databaseName = randomToken(10);
+                const openState = async () => {
+                    const database = await createRxDatabase({
+                        name: databaseName,
+                        storage,
+                        multiInstance: true,
+                        ignoreDuplicate: true,
+                        eventReduce: false
+                    });
+                    const state: RxState<CounterState> = await database.addState<CounterState>();
+                    return state;
+                };
+                const increment = (v?: number) => (v ? v : 0) + 1;
+                const state1 = await openState();
+                const state2 = await openState();
+
+                const rounds = 20;
+                for (let round = 1; round <= rounds; round++) {
+                    await state1.set('a', () => round);
+                    await Promise.all([
+                        state1.set('a', () => round + 0.5),
+                        state1.set('cnt', increment),
+                        state2.set('cnt', increment)
+                    ]);
+                    const expected = { a: round + 0.5, cnt: round * 2 };
+                    try {
+                        await waitUntil(() => deepEqual(state1.get(), expected) && deepEqual(state2.get(), expected), 2000);
+                    } catch (err) {
+                        assert.deepStrictEqual(
+                            [state1.get(), state2.get()],
+                            [expected, expected],
+                            'wrong state in round ' + round
+                        );
+                    }
+                }
+
+                const freshState = await openState();
+                assert.deepStrictEqual(freshState.get(), { a: rounds + 0.5, cnt: rounds * 2 });
+                assert.deepStrictEqual(state1.get(), freshState.get());
+                assert.deepStrictEqual(state2.get(), freshState.get());
+
+                await state1.collection.database.close();
+                await state2.collection.database.close();
+                await freshState.collection.database.remove();
             });
         });
         describe('issues', () => {

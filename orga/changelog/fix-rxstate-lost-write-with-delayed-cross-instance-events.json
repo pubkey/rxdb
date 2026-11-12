@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `RxState.set()` ran the modifier on a stale state and lost writes of other instances when `eventReduce: false` is set on a multiInstance storage with asynchronous cross-instance events. The state now loads operations that are not merged yet from the storage before it runs the modifiers and no longer overwrites operations that were merged during the write",
+    "links": [],
+    "priority": 5
+}
