@@ -766,6 +766,55 @@ describe('rx-database.test.ts', () => {
 
             assert.strictEqual(onRemoveCalled, true, 'collection onRemove handler should have been called when database.remove() is called');
         });
+        it('should run all collection onRemove handlers and remove the data when one handler throws', async () => {
+            const name = randomToken(10);
+            const storage = config.storage.getStorage();
+            const db = await createRxDatabase({
+                name,
+                storage
+            });
+            await db.addCollections({
+                humans: {
+                    schema: schemas.human
+                }
+            });
+            await db.humans.insert(schemaObjects.humanData());
+
+            const ran: string[] = [];
+            db.humans.onRemove.push(() => {
+                ran.push('first');
+            });
+            db.humans.onRemove.push(() => {
+                throw new Error('onRemove handler failed');
+            });
+            db.humans.onRemove.push(() => {
+                ran.push('third');
+            });
+
+            let thrown: Error | undefined;
+            try {
+                await db.remove();
+            } catch (err) {
+                thrown = err as Error;
+            }
+            assert.deepStrictEqual(ran, ['first', 'third']);
+            assert.ok(thrown);
+            assert.strictEqual(thrown.message, 'onRemove handler failed');
+
+            const db2 = await createRxDatabase({
+                name,
+                storage
+            });
+            await db2.addCollections({
+                humans: {
+                    schema: schemas.human
+                }
+            });
+            const docsAfter = await db2.humans.find().exec();
+            assert.strictEqual(docsAfter.length, 0);
+
+            await db2.remove();
+        });
         it('should have deleted the local documents', async () => {
             const name = randomToken(10);
             const db = await createRxDatabase({

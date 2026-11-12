@@ -87,7 +87,7 @@ import {
     INTERNAL_STORE_SCHEMA,
     _collectionNamePrimary
 } from './rx-database-internal-store.ts';
-import { createRxCollectionStorageInstance, removeCollectionStorages } from './rx-collection-helper.ts';
+import { createRxCollectionStorageInstance, removeCollectionStorages, runOnRemoveHandlers } from './rx-collection-helper.ts';
 import { overwritable } from './overwritable.ts';
 import type { RxMigrationState } from './plugins/migration-schema/index.ts';
 import type { RxReactivityFactory } from './types/plugins/reactivity.d.ts';
@@ -694,10 +694,12 @@ export class RxDatabaseBase<
          */
         const collections = Object.values(this.collections as any) as RxCollection[];
         await this.close();
-        await Promise.all(
-            collections.map(col => Promise.all(col.onRemove.map(fn => fn())))
-        );
-        return removeRxDatabase(this.name, this.storage, this.multiInstance, this.password);
+        const handlerErrors = await runOnRemoveHandlers(collections);
+        const removedCollectionNames = await removeRxDatabase(this.name, this.storage, this.multiInstance, this.password);
+        if (handlerErrors.length > 0) {
+            throw handlerErrors[0];
+        }
+        return removedCollectionNames;
     }
 
     get asRxDatabase(): RxDatabase<

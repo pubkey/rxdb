@@ -1407,6 +1407,45 @@ describe('rx-collection.test.ts', () => {
                     db1.close();
                     db2.close();
                 });
+                it('should run all onRemove handlers and remove the data when one handler throws', async () => {
+                    const db = await createRxDatabase<{ humans: RxCollection<HumanDocumentType>; }>({
+                        name: randomToken(10),
+                        storage: config.storage.getStorage()
+                    });
+                    const collections = await db.addCollections({
+                        humans: { schema: schemas.human }
+                    });
+                    await collections.humans.insert(schemaObjects.humanData());
+
+                    const ran: string[] = [];
+                    collections.humans.onRemove.push(() => {
+                        ran.push('first');
+                    });
+                    collections.humans.onRemove.push(() => {
+                        throw new Error('onRemove handler failed');
+                    });
+                    collections.humans.onRemove.push(() => {
+                        ran.push('third');
+                    });
+
+                    let thrown: Error | undefined;
+                    try {
+                        await collections.humans.remove();
+                    } catch (err) {
+                        thrown = err as Error;
+                    }
+                    assert.deepStrictEqual(ran, ['first', 'third']);
+                    assert.ok(thrown);
+                    assert.strictEqual(thrown.message, 'onRemove handler failed');
+
+                    const collectionsAfter = await db.addCollections({
+                        humans: { schema: schemas.human }
+                    });
+                    const docsAfter = await collectionsAfter.humans.find().exec();
+                    assert.strictEqual(docsAfter.length, 0);
+
+                    await db.remove();
+                });
             });
             describe('.bulkRemove()', () => {
                 describe('positive', () => {

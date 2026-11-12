@@ -1,6 +1,7 @@
 import type {
     HashFunction,
     InternalStoreDocType,
+    MaybePromise,
     RxAttachmentWriteData,
     RxCollection,
     RxDatabase,
@@ -144,6 +145,22 @@ export async function createRxCollectionStorageInstance<RxDocumentType, Internal
         storageInstanceCreationParams
     );
     return storageInstance;
+}
+
+/**
+ * Calls all onRemove handlers of the given collections.
+ * A handler that throws or rejects does not prevent the other handlers from running.
+ * Resolves with the errors of the failed handlers, in handler order.
+ */
+export async function runOnRemoveHandlers(
+    collections: { onRemove: (() => MaybePromise<any>)[]; }[]
+): Promise<any[]> {
+    const results = await Promise.allSettled(
+        collections.flatMap(collection => collection.onRemove.map(fn => new Promise(res => res(fn()))))
+    );
+    return results
+        .filter((result): result is PromiseRejectedResult => result.status === 'rejected')
+        .map(result => result.reason);
 }
 
 /**
