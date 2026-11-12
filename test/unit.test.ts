@@ -62,6 +62,7 @@ import './unit/replication-multiinstance.test.ts';
 import './unit/replication-graphql.test.ts';
 import './unit/replication-websocket.test.ts';
 import './unit/replication-webrtc.test.ts';
+import './unit/replication-couchdb.test.ts';
 import './unit/encryption.test.ts';
 import './unit/rx-state.test.ts';
 import './unit/migration-schema.test.ts';

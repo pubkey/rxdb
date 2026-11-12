@@ -351,7 +351,20 @@ export function replicateCouchDB<RxDocType>(
                     }
                     const documents: WithDeleted<RxDocType>[] = jsonResponse.results
                         .map(row => couchDBDocToRxDocData(collection.schema.primaryPath, ensureNotFalsy(row.doc)));
+                    const requestedSince = since;
                     since = jsonResponse.last_seq;
+
+                    if (requestedSince === 'now') {
+                        /**
+                         * The server resolves 'now' when the request arrives,
+                         * so changes between the last pulled checkpoint and
+                         * that moment are not part of this response.
+                         * Emitting its last_seq as checkpoint would skip them,
+                         * so a RESYNC runs the checkpoint based pull instead.
+                         */
+                        pullStream$.next('RESYNC');
+                        continue;
+                    }
 
                     pullStream$.next({
                         documents,
