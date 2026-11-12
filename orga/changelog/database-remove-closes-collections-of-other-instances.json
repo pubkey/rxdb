@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `myDatabase.remove()` did not notify the other instances of a `multiInstance` database. Their collections stayed open, returned the removed documents from the cache, and on some storages wrote them back into a re-created storage. Now the collections of the other instances are closed like after `collection.remove()` and their operations reject with `COL21`",
+    "links": [],
+    "priority": 5
+}

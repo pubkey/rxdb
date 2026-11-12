@@ -697,7 +697,7 @@ export class RxDatabaseBase<
         await Promise.all(
             collections.map(col => Promise.all(col.onRemove.map(fn => fn())))
         );
-        return removeRxDatabase(this.name, this.storage, this.multiInstance, this.password);
+        return removeRxDatabase(this.name, this.storage, this.multiInstance, this.password, this.hashFunction);
     }
 
     get asRxDatabase(): RxDatabase<
@@ -941,7 +941,13 @@ export async function removeRxDatabase(
     databaseName: string,
     storage: RxStorage<any, any>,
     multiInstance: boolean = true,
-    password?: string
+    password?: string,
+    /**
+     * If a hash function is provided,
+     * the meta documents of the collections are deleted
+     * so that other instances of the database close these collections.
+     */
+    hashFunction?: HashFunction
 ): Promise<string[]> {
     const databaseInstanceToken = randomToken(10);
     const dbInternalsStorageInstance = await createRxDatabaseStorageInstance(
@@ -965,7 +971,8 @@ export async function removeRxDatabase(
             databaseName,
             collectionName,
             multiInstance,
-            password
+            password,
+            hashFunction
         ))
     );
 
