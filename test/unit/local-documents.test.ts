@@ -15,7 +15,10 @@ import {
     RxJsonSchema,
     ensureNotFalsy,
     RxLocalDocument,
-    RxCollection
+    RxCollection,
+    RxStorage,
+    RxStorageInstance,
+    RxStorageInstanceCreationParams
 } from '../../plugins/core/index.mjs';
 
 
@@ -686,6 +689,143 @@ describe('local-documents.test.ts', () => {
             sub.unsubscribe();
             db.close();
             db2.close();
+        });
+        describe('reads that race with a write of another instance', () => {
+            type HeldRead = {
+                /**
+                 * Resolves when the storage has returned the result of the read.
+                 */
+                started: Promise<void>;
+                /**
+                 * Lets the held read return its result to RxDB.
+                 */
+                release: () => void;
+            };
+            /**
+             * Returns a storage where the next read of the given document
+             * can be held back after it got its result from the storage,
+             * like a read that is slower than the write of another instance.
+             */
+            function getStorageWithHeldRead(docId: string): {
+                storage: RxStorage<any, any>;
+                holdNextRead: () => HeldRead;
+            } {
+                const storage = config.storage.getStorage();
+                let onStarted: (() => void) | undefined;
+                let waitForRelease: Promise<void> | undefined;
+                const wrappedStorage: RxStorage<any, any> = Object.assign({}, storage, {
+                    async createStorageInstance<RxDocType>(
+                        params: RxStorageInstanceCreationParams<RxDocType, any>
+                    ): Promise<RxStorageInstance<RxDocType, any, any>> {
+                        const instance = await storage.createStorageInstance<RxDocType>(params);
+                        const findDocumentsById = instance.findDocumentsById.bind(instance);
+                        instance.findDocumentsById = async (ids, withDeleted) => {
+                            const result = await findDocumentsById(ids, withDeleted);
+                            if (onStarted && waitForRelease && ids.includes(docId)) {
+                                const started = onStarted;
+                                const released = waitForRelease;
+                                onStarted = undefined;
+                                waitForRelease = undefined;
+                                started();
+                                await released;
+                            }
+                            return result;
+                        };
+                        return instance;
+                    }
+                });
+                return {
+                    storage: wrappedStorage,
+                    holdNextRead() {
+                        let release: () => void = () => { };
+                        waitForRelease = new Promise<void>(res => release = res);
+                        const started = new Promise<void>(res => onStarted = res);
+                        return { started, release };
+                    }
+                };
+            }
+            it('getLocal() must not keep an older state when the document is written during the read', async () => {
+                const name = randomToken(10);
+                const db = await createRxDatabase({
+                    name,
+                    storage: config.storage.getStorage(),
+                    localDocuments: true
+                });
+                const wrapped = getStorageWithHeldRead('foobar');
+                const db2 = await createRxDatabase({
+                    name,
+                    storage: wrapped.storage,
+                    ignoreDuplicate: true,
+                    localDocuments: true
+                });
+
+                await db.insertLocal<TestDocType>('foobar', { foo: 'bar' });
+
+                const heldRead = wrapped.holdNextRead();
+                const firstRead = db2.getLocal<TestDocType>('foobar');
+                await heldRead.started;
+
+                const eventArrived = firstValueFrom(
+                    db2.$.pipe(
+                        filter(event => event.isLocal && event.documentId === 'foobar' && event.documentData.data.foo === 'bar2')
+                    )
+                );
+                await db.upsertLocal<TestDocType>('foobar', { foo: 'bar2' });
+                await eventArrived;
+                /**
+                 * A read of another local document makes the instance
+                 * process the event before the held read returns.
+                 */
+                await db2.getLocal('other');
+                heldRead.release();
+
+                await firstRead;
+
+                const docAfterWrite = ensureNotFalsy(await db2.getLocal<TestDocType>('foobar'));
+                assert.strictEqual(docAfterWrite.toJSON().data.foo, 'bar2');
+
+                await db.close();
+                await db2.close();
+            });
+            it('getLocal$() must not emit an older state after a newer one', async () => {
+                const name = randomToken(10);
+                const db = await createRxDatabase({
+                    name,
+                    storage: config.storage.getStorage(),
+                    localDocuments: true
+                });
+                const wrapped = getStorageWithHeldRead('foobar');
+                const db2 = await createRxDatabase({
+                    name,
+                    storage: wrapped.storage,
+                    ignoreDuplicate: true,
+                    localDocuments: true
+                });
+
+                const emitted: (string | null)[] = [];
+                const sub = db2.getLocal$<TestDocType>('foobar').subscribe(doc => {
+                    emitted.push(doc ? doc.toJSON().data.foo : null);
+                });
+                await waitUntil(() => emitted.length === 1);
+
+                /**
+                 * The read for the event of the insert is held back
+                 * so that the read for the event of the upsert resolves first.
+                 */
+                const heldRead = wrapped.holdNextRead();
+                await db.insertLocal<TestDocType>('foobar', { foo: 'bar' });
+                await heldRead.started;
+                await db.upsertLocal<TestDocType>('foobar', { foo: 'bar2' });
+                await waitUntil(() => emitted.length === 2);
+                heldRead.release();
+                await waitUntil(() => emitted.length === 3);
+
+                assert.deepStrictEqual(emitted, [null, 'bar2', 'bar2']);
+
+                sub.unsubscribe();
+                await db.close();
+                await db2.close();
+            });
         });
         it('BUG insertLocal not send to other instance', async () => {
             const name = randomToken(10);

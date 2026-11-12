@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `getLocal()` cached an older state of a local document as the latest state and `getLocal$()` emitted an older state after a newer one when another instance wrote the local document while the read from the storage was running",
+    "links": [],
+    "priority": 5
+}
