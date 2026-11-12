@@ -1,6 +1,4 @@
 console.log('######## init.test.js ########');
-import sourceMapSupport from 'source-map-support';
-sourceMapSupport.install();
 /**
  * core-js does not define an `exports` map, so the full path
  * to the file must be used, otherwise node.js cannot resolve
