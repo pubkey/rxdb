@@ -71,7 +71,13 @@ export const HOOKS = {
      */
     preMigrateDocument: [],
     /**
-     * runs after the migration of a document has been done
+     * runs after a document has been run through the migration strategies
+     * and before the migrated document is written to the new storage
+     * {
+     *   collection: RxCollection,
+     *   oldDocData: Object, // original doc-data
+     *   migratedDocData: Object // migrated doc-data, can be mutated by the hook
+     * }
      */
     postMigrateDocument: [],
     /**

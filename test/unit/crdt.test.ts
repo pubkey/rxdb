@@ -38,6 +38,8 @@ addRxPlugin(RxDBcrdtPlugin);
 import config from './config.ts';
 import { replicateRxCollection } from '../../plugins/replication/index.mjs';
 import { ReplicationPullHandler, ReplicationPushHandler } from '../../plugins/core/index.mjs';
+import { RxDBMigrationSchemaPlugin } from '../../plugins/migration-schema/index.mjs';
+addRxPlugin(RxDBMigrationSchemaPlugin);
 
 describe('crdt.test.ts', () => {
     type WithCRDTs<RxDocType> = RxDocType & {
@@ -257,6 +259,83 @@ describe('crdt.test.ts', () => {
      * call them because it might break the document state
      * when the operations are not CRDTs.
      */
+    describe('schema migration', () => {
+        it('should keep a document writable and mergeable after a migration strategy changed its data', async () => {
+            const name = randomToken(10);
+            const storage = wrappedValidateAjvStorage({
+                storage: config.storage.getStorage()
+            });
+            const schemaV0 = enableCRDTinSchema<HumanDocumentType>(schemas.human);
+            const schemaV1 = clone(schemaV0);
+            schemaV1.version = 1;
+
+            const dbV0 = await createRxDatabase({
+                name,
+                storage,
+                multiInstance: false
+            });
+            await dbV0.addCollections({
+                docs: {
+                    schema: schemaV0
+                }
+            });
+            const oldCollection: RxCollection<WithCRDTs<HumanDocumentType>> = dbV0.docs;
+            await oldCollection.bulkInsert([
+                schemaObjects.humanData('changed', 0, 'alice'),
+                schemaObjects.humanData('unchanged', 0, 'bob')
+            ]);
+            const oldDocs = await oldCollection.find().exec();
+            await Promise.all(
+                oldDocs.map(oldDoc => oldDoc.updateCRDT({ ifMatch: { $inc: { age: 1 } } }))
+            );
+            await dbV0.close();
+
+            const dbV1 = await createRxDatabase({
+                name,
+                storage,
+                multiInstance: false
+            });
+            await dbV1.addCollections({
+                docs: {
+                    schema: schemaV1,
+                    migrationStrategies: {
+                        1: (oldDoc: WithCRDTs<HumanDocumentType>) => {
+                            if (oldDoc.passportId === 'changed') {
+                                oldDoc.firstName = 'migrated';
+                            }
+                            return oldDoc;
+                        }
+                    }
+                }
+            });
+            const collection: RxCollection<WithCRDTs<HumanDocumentType>> = dbV1.docs;
+
+            // the history is kept when the migration strategy did not change the document
+            const unchangedDoc = await collection.findOne('unchanged').exec(true);
+            assert.strictEqual(unchangedDoc.toJSON().crdts?.operations.length, 2);
+
+            const doc = await collection.findOne('changed').exec(true);
+            assert.strictEqual(doc.firstName, 'migrated');
+            assert.strictEqual(doc.age, 1);
+
+            // a later write must work on the migrated state
+            await doc.updateCRDT({ ifMatch: { $inc: { age: 1 } } });
+            assert.strictEqual(doc.getLatest().firstName, 'migrated');
+            assert.strictEqual(doc.getLatest().age, 2);
+
+            // a document that is built from the operations must have the migrated state
+            const docState = doc.getLatest().toMutableJSON(true);
+            const resolved = await collection.conflictHandler.resolve({
+                newDocumentState: docState,
+                realMasterState: docState
+            }, 'test');
+            assert.strictEqual(resolved.firstName, 'migrated');
+            assert.strictEqual(resolved.age, 2);
+
+            await dbV1.close();
+        });
+    });
+
     describe('disallowed methods', () => {
         it('should throw on incrementalModify', async () => {
             const collection = await getCRDTCollection();

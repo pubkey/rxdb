@@ -332,6 +332,35 @@ export function getCRDTConflictHandler<RxDocType>(
 
 export const RX_CRDT_CONTEXT = 'rx-crdt';
 
+/**
+ * Returns true when running the operations
+ * leads to the same document data as the given state.
+ */
+function isStateEqualToOperations<RxDocType>(
+    schema: RxJsonSchema<RxDocumentData<RxDocType>>,
+    docData: WithDeleted<RxDocType>,
+    crdts: CRDTDocumentField<RxDocType>
+): boolean {
+    function withoutMeta(doc: any) {
+        const ret: any = {
+            _deleted: !!doc._deleted
+        };
+        Object.entries(doc).forEach(([k, v]) => {
+            if (
+                !k.startsWith('_') &&
+                typeof v !== 'undefined'
+            ) {
+                ret[k] = v;
+            }
+        });
+        return ret;
+    }
+    return deepEqual(
+        withoutMeta(docData),
+        withoutMeta(rebuildFromCRDT(schema, docData, clone(crdts)))
+    );
+}
+
 export const RxDBcrdtPlugin: RxPlugin = {
     name: 'crdt',
     rxdb: true,
@@ -447,6 +476,58 @@ export const RxDBcrdtPlugin: RxPlugin = {
                     data.database.hashFunction,
                     data.schema
                 );
+            }
+        },
+        /**
+         * The migration strategies change the document data
+         * but they do not know about the CRDT operations.
+         * When the migrated state is no longer the result of the stored operations,
+         * the operations are replaced with a single operation that sets the migrated state.
+         * This ensures that later writes and merges are based on the migrated state.
+         */
+        postMigrateDocument: {
+            after: async ({ collection, migratedDocData }) => {
+                const schema = collection.schema.jsonSchema;
+                if (!schema.crdt) {
+                    return;
+                }
+                const crdtField = schema.crdt.field;
+                const crdtsBefore: CRDTDocumentField<any> | undefined = getProperty(migratedDocData, crdtField);
+                if (
+                    crdtsBefore &&
+                    isStateEqualToOperations(schema, migratedDocData, crdtsBefore)
+                ) {
+                    return;
+                }
+                const setMe: Record<string, any> = {};
+                Object.entries(migratedDocData).forEach(([key, value]) => {
+                    if (
+                        !key.startsWith('_') &&
+                        key !== crdtField &&
+                        typeof value !== 'undefined'
+                    ) {
+                        setMe[key] = clone(value);
+                    }
+                });
+                if (migratedDocData._deleted) {
+                    setMe._deleted = true;
+                }
+                const crdts: CRDTDocumentField<any> = {
+                    operations: [
+                        [{
+                            creator: await collection.database.storageToken,
+                            body: [{
+                                ifMatch: {
+                                    $set: setMe
+                                }
+                            }],
+                            time: now()
+                        }]
+                    ],
+                    hash: ''
+                };
+                crdts.hash = await hashCRDTOperations(collection.database.hashFunction, crdts);
+                setProperty(migratedDocData, crdtField, crdts);
             }
         },
         createRxCollection: {

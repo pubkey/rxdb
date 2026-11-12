@@ -21,6 +21,7 @@ import {
     toPromise
 } from '../utils/index.ts';
 import { RxMigrationState } from './rx-migration-state.ts';
+import { runAsyncPluginHooks } from '../../hooks.ts';
 
 export async function getOldCollectionMeta(
     migrationState: RxMigrationState
@@ -117,7 +118,11 @@ export function migrateDocumentData(
             doc._meta = meta;
         }
         doc._deleted = deleted;
-        return doc;
+        return runAsyncPluginHooks('postMigrateDocument', {
+            collection,
+            oldDocData: docData,
+            migratedDocData: doc
+        }).then(() => doc);
     });
 }
 

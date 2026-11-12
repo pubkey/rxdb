@@ -277,6 +277,11 @@ When replicating document data with the [RxDB replication](./replication.md) or 
 
 When any instances makes a write to the document, it is required to update the CRDT operations accordingly. For example if your custom backend updates a document, it must also do that by adding a CRDT operation. In [dev-mode](./dev-mode.md) RxDB will refuse to store any document data where the document properties do not match the result of the CRDT operations.
 
+## CRDTs with schema migration
+
+A [migration strategy](./migration-schema.md) changes the document data, but it does not know about the stored CRDT operations. When the migrated document is no longer the result of its CRDT operations, RxDB replaces the operations of that document with a single operation that sets the migrated state. This means the operation history from before the migration is dropped for that document, and later writes and merges are based on the migrated state. Documents that are not changed by the migration strategy keep their operations.
+
+Run the same migration on all instances before they replicate again, so that all of them work on the migrated document state.
 
 ## Why not automerge.js or yjs?
 
