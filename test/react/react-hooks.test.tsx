@@ -19,6 +19,7 @@ import {
 import { RxDBDevModePlugin } from '../../plugins/dev-mode/index.mjs';
 import { getRxStorageMemory } from '../../plugins/storage-memory/index.mjs';
 import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.mjs';
+import { replicateRxCollection } from '../../plugins/replication/index.mjs';
 
 import {
     RxDatabaseProvider,
@@ -26,6 +27,7 @@ import {
     useRxDocument,
     useRxQuery,
     useLiveRxQuery,
+    useReplicationStatus,
 } from '../../plugins/react/index.mjs';
 
 addRxPlugin(RxDBDevModePlugin);
@@ -280,6 +282,137 @@ describe('react-hooks.test.tsx', () => {
 
             assert.strictEqual(countRxQuerySubscribers(rxQuery), 0);
 
+            await db.close();
+        });
+    });
+
+    describe('useReplicationStatus', () => {
+        it('should clear the error after the replication has recovered', async () => {
+            const db = await createDatabase();
+            const collection: RxCollection<SimpleHumanDocumentType> = db.collections.humans;
+            let fail = true;
+            const replicationState = replicateRxCollection<SimpleHumanDocumentType, { id: string; } | undefined>({
+                collection,
+                replicationIdentifier: 'recovering-' + randomToken(10),
+                live: true,
+                retryTime: 20,
+                pull: {
+                    handler: (checkpoint) => {
+                        if (fail) {
+                            return Promise.reject(new Error('offline'));
+                        }
+                        return Promise.resolve({ documents: [], checkpoint });
+                    }
+                }
+            });
+            const { result } = renderHook(() => useReplicationStatus(replicationState));
+
+            await waitFor(() => {
+                assert.ok(result.current.error);
+            });
+
+            fail = false;
+            await act(async () => {
+                await replicationState.awaitInSync();
+            });
+            await waitFor(() => {
+                assert.strictEqual(result.current.syncing, false);
+                assert.strictEqual(result.current.error ? result.current.error.code : null, null);
+            });
+
+            await replicationState.cancel();
+            await db.close();
+        });
+
+        it('should not return the state of the previous replication when the replicationState changes', async () => {
+            const db = await createDatabase();
+            await db.addCollections({
+                humans2: {
+                    schema: schemas.simpleHuman
+                }
+            });
+            const collection: RxCollection<SimpleHumanDocumentType> = db.collections.humans;
+            const collection2: RxCollection<SimpleHumanDocumentType> = db.collections.humans2;
+
+            const workingReplicationState = replicateRxCollection<SimpleHumanDocumentType, { id: string; } | undefined>({
+                collection: collection2,
+                replicationIdentifier: 'working-' + randomToken(10),
+                live: true,
+                pull: {
+                    handler: (checkpoint) => Promise.resolve({ documents: [], checkpoint })
+                }
+            });
+            await workingReplicationState.awaitInSync();
+
+            /**
+             * This replication pulls one document
+             * and fails on each call afterwards.
+             */
+            let calls = 0;
+            const failingReplicationState = replicateRxCollection<SimpleHumanDocumentType, { id: string; } | undefined>({
+                collection,
+                replicationIdentifier: 'failing-' + randomToken(10),
+                live: true,
+                retryTime: 20,
+                pull: {
+                    batchSize: 1,
+                    handler: () => {
+                        calls = calls + 1;
+                        if (calls > 1) {
+                            return Promise.reject(new Error('offline'));
+                        }
+                        return Promise.resolve({
+                            documents: [{
+                                passportId: 'pulled',
+                                age: '20',
+                                _deleted: false
+                            }],
+                            checkpoint: { id: 'pulled' }
+                        });
+                    }
+                }
+            });
+            type Props = {
+                replicationState: typeof failingReplicationState | null;
+            };
+            const initialProps: Props = { replicationState: failingReplicationState };
+            const { result, rerender } = renderHook(
+                (props: Props) => useReplicationStatus(props.replicationState),
+                { initialProps }
+            );
+            await waitFor(() => {
+                assert.ok(result.current.error);
+                assert.ok(result.current.lastSyncedAt);
+            });
+
+            rerender({ replicationState: workingReplicationState });
+            assert.deepStrictEqual({
+                ...result.current,
+                error: result.current.error ? result.current.error.code : null
+            }, {
+                syncing: false,
+                error: null,
+                lastSyncedAt: null,
+                canceled: false
+            });
+
+            rerender({ replicationState: failingReplicationState });
+            await waitFor(() => {
+                assert.ok(result.current.error);
+            });
+            rerender({ replicationState: null });
+            assert.deepStrictEqual({
+                ...result.current,
+                error: result.current.error ? result.current.error.code : null
+            }, {
+                syncing: false,
+                error: null,
+                lastSyncedAt: null,
+                canceled: false
+            });
+
+            await failingReplicationState.cancel();
+            await workingReplicationState.cancel();
             await db.close();
         });
     });
