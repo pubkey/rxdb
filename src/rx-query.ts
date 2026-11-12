@@ -1,6 +1,8 @@
 import {
     BehaviorSubject,
     Observable,
+    defer,
+    from,
     merge,
     of
 } from 'rxjs';
@@ -195,13 +197,17 @@ export class RxQueryBase<
                     share()
                 ),
                 /**
-                 * Each subscriber ensures the results on its own once,
+                 * Each subscriber gets the current result set on subscribe.
+                 * When the result set is known to be up to date, it is emitted
+                 * synchronously inside of subscribe().
+                 * Otherwise the subscriber ensures the results on its own once,
                  * so that its first value contains all writes that were done
                  * before the subscription, also when the shared update
                  * of these writes is still running or throttled.
                  */
-                of(null).pipe(
-                    mergeMap(() => _ensureEqual(this as any))
+                defer(() => _isResultCurrent(this as any) ?
+                    of(false) :
+                    from(_ensureEqual(this as any))
                 )
             ).pipe(
                 // use the current result set, written by _ensureEqual().
@@ -257,6 +263,12 @@ export class RxQueryBase<
 
     // stores the changeEvent-number of the last handled change-event
     public _latestChangeEvent: -1 | number = -1;
+
+    /**
+     * True while the query runs over the database to replace the result set.
+     * During that time _latestChangeEvent can already be ahead of the result set.
+     */
+    public _execRunning = false;
 
     /**
      * ensures that the exec-runs
@@ -756,6 +768,15 @@ function _isResultsInSync(rxQuery: RxQueryBase<any, any>): boolean {
     }
 }
 
+/**
+ * Returns true if the query has a result set
+ * that contains all change events known to this instance.
+ */
+function _isResultCurrent(rxQuery: RxQueryBase<any, any>): boolean {
+    return !!rxQuery._result &&
+        !rxQuery._execRunning &&
+        _isResultsInSync(rxQuery);
+}
 
 /**
  * wraps __ensureEqual()
@@ -873,8 +894,10 @@ function __ensureEqual<RxDocType>(rxQuery: RxQueryBase<RxDocType, any>): Promise
 
     // oh no we have to re-execute the whole query over the database
     if (mustReExec) {
+        rxQuery._execRunning = true;
         return rxQuery._execOverDatabase()
             .then(result => {
+                rxQuery._execRunning = false;
                 const newResultData = result.result;
 
                 /**

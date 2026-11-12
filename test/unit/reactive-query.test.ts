@@ -17,6 +17,7 @@ import { firstValueFrom } from 'rxjs';
 import {
     createRxDatabase,
     RxDocument,
+    RxQuery,
     isRxDocument,
     promiseWait,
     randomToken,
@@ -141,6 +142,52 @@ describe('reactive-query.test.js', () => {
             await waitUntil(() => emitted.length > 1 && emitted[emitted.length - 1].length === 2);
 
             sub.unsubscribe();
+            c.database.close();
+        });
+        it('a later subscriber of an idle query must get the current result synchronously on subscribe', async () => {
+            const c = await humansCollection.create(0);
+            await c.bulkInsert([
+                schemaObjects.humanData('a1'),
+                schemaObjects.humanData('a2')
+            ]);
+            const queries = [
+                c.find({ selector: {}, sort: [{ passportId: 'asc' }] }),
+                c.findOne('a1'),
+                c.count(),
+                c.findByIds(['a1', 'a2'])
+            ];
+            const toPlain = (result: any): any => {
+                if (typeof result === 'number') {
+                    return result;
+                } else if (result instanceof Map) {
+                    return Array.from(result.keys());
+                } else if (Array.isArray(result)) {
+                    return result.map(d => d.primary);
+                } else {
+                    return result.primary;
+                }
+            };
+            const expected = [
+                ['a1', 'a2'],
+                'a1',
+                2,
+                ['a1', 'a2']
+            ];
+            for (let i = 0; i < queries.length; i++) {
+                const query: RxQuery<any, any> = queries[i];
+                const firstEmitted: any[] = [];
+                const firstSub = query.$.subscribe(result => firstEmitted.push(toPlain(result)));
+                await waitUntil(() => firstEmitted.length === 1);
+
+                const laterEmitted: any[] = [];
+                const laterSub = query.$.subscribe(result => laterEmitted.push(toPlain(result)));
+                assert.deepStrictEqual(laterEmitted, [expected[i]]);
+
+                await wait(isFastMode() ? 20 : 100);
+                assert.deepStrictEqual(laterEmitted, [expected[i]]);
+                firstSub.unsubscribe();
+                laterSub.unsubscribe();
+            }
             c.database.close();
         });
         it('subscribing many times should not result in many database-requests', async () => {
