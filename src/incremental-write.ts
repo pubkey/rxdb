@@ -34,6 +34,7 @@ export type IncrementalWriteModifier<RxDocType> = (
 type IncrementalWriteQueueItem<RxDocType> = {
     lastKnownDocumentState: RxDocumentData<RxDocType>;
     modifier: IncrementalWriteModifier<RxDocType>;
+    ownWrite?: boolean;
     resolve: (d: RxDocumentData<RxDocType>) => void;
     reject: (error: RxError) => void;
     /**
@@ -65,7 +66,12 @@ export class IncrementalWriteQueue<RxDocType> {
 
     addWrite(
         lastKnownDocumentState: RxDocumentData<RxDocType>,
-        modifier: IncrementalWriteModifier<RxDocType>
+        modifier: IncrementalWriteModifier<RxDocType>,
+        /**
+         * If true, the write is not merged into the
+         * same storage write as the earlier writes of that document.
+         */
+        ownWrite?: boolean
     ): Promise<RxDocumentData<RxDocType>> {
         const docId: string = lastKnownDocumentState[this.primaryPath] as any;
         const ar = getFromMapOrCreate(this.queueByDocId, docId, () => []);
@@ -73,6 +79,7 @@ export class IncrementalWriteQueue<RxDocType> {
             const item: IncrementalWriteQueueItem<RxDocType> = {
                 lastKnownDocumentState,
                 modifier,
+                ownWrite,
                 resolve,
                 reject
             };
@@ -99,6 +106,13 @@ export class IncrementalWriteQueue<RxDocType> {
          */
         const itemsById = this.queueByDocId;
         this.queueByDocId = new Map();
+        itemsById.forEach((items, docId) => {
+            const cutAt = items.findIndex((item, idx) => idx && item.ownWrite);
+            if (cutAt > 0) {
+                // this item and the ones after it stay in the queue for the next run
+                this.queueByDocId.set(docId, items.splice(cutAt));
+            }
+        });
         /**
          * Items that are not processed in this run because
          * an item of the same document must be written alone first.
