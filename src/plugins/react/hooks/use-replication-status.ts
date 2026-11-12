@@ -70,31 +70,29 @@ export function useReplicationStatus(
         });
 
         /**
-         * An error of a failed handler call has the 'direction' parameter.
-         * The handler is called again until it succeeds, so the replication
-         * has recovered from that error when it becomes idle afterwards.
-         * Other errors are not retried and are kept until
-         * a later replication cycle runs without such an error.
+         * The error is cleared when a complete active phase
+         * has run after it without emitting a new error.
+         * An error that was emitted during an active phase
+         * is kept when that phase ends, because the hook cannot know
+         * whether the failed operation was retried.
          */
         let wasActive = false;
-        let hadErrorWithoutRetry = false;
+        let hadErrorInActivePhase = false;
 
         const subs = [
             replicationState.active$.subscribe((active: boolean) => {
                 if (active && !wasActive) {
-                    hadErrorWithoutRetry = false;
+                    hadErrorInActivePhase = false;
                 }
                 const recovered = wasActive &&
                     !active &&
-                    !hadErrorWithoutRetry &&
+                    !hadErrorInActivePhase &&
                     !replicationState.isStoppedOrPaused();
                 wasActive = active;
                 update(() => recovered ? { syncing: active, error: null } : { syncing: active });
             }),
             replicationState.error$.subscribe((err: RxError | RxTypeError) => {
-                if (!err.parameters || !err.parameters.direction) {
-                    hadErrorWithoutRetry = true;
-                }
+                hadErrorInActivePhase = true;
                 update(() => ({ error: err }));
             }),
             replicationState.canceled$.subscribe((isCanceled: boolean) => {

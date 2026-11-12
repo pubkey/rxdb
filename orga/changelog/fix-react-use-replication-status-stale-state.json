@@ -1,5 +1,5 @@
 {
-    "text": "FIX `useReplicationStatus()` of the React plugin kept returning the `error` after the replication had recovered, and it returned the `error` and `lastSyncedAt` of the previous replication when the `replicationState` argument changed or became `null`",
+    "text": "FIX `useReplicationStatus()` of the React plugin never cleared the `error`. The `error` is now cleared when a later replication cycle has completed without an error. Also the hook returned the `error` and `lastSyncedAt` of the previous replication when the `replicationState` argument changed or became `null`",
     "links": [],
     "priority": 5
 }

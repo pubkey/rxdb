@@ -314,6 +314,8 @@ describe('react-hooks.test.tsx', () => {
             fail = false;
             await act(async () => {
                 await replicationState.awaitInSync();
+                replicationState.reSync();
+                await replicationState.awaitInSync();
             });
             await waitFor(() => {
                 assert.strictEqual(result.current.syncing, false);
@@ -321,6 +323,75 @@ describe('react-hooks.test.tsx', () => {
             });
 
             await replicationState.cancel();
+            await db.close();
+        });
+
+        it('should keep any error of a handler until a later replication cycle has run without an error', async () => {
+            const db = await createDatabase();
+            await db.addCollections({
+                server: {
+                    schema: schemas.simpleHuman
+                }
+            });
+            const collection: RxCollection<SimpleHumanDocumentType> = db.collections.humans;
+            const serverCollection: RxCollection<SimpleHumanDocumentType> = db.collections.server;
+            await serverCollection.insert({ passportId: 'existing', age: '20' });
+
+            /**
+             * The handler rejects once with a plain Error
+             * or with the RxError of a failed write to another collection.
+             */
+            const errorKinds: ('error' | 'rxerror')[] = ['error', 'rxerror'];
+            for (const errorKind of errorKinds) {
+                let fail = false;
+                const replicationState = replicateRxCollection<SimpleHumanDocumentType, undefined>({
+                    collection,
+                    replicationIdentifier: 'handler-' + errorKind + '-' + randomToken(10),
+                    live: true,
+                    retryTime: 20,
+                    push: {
+                        handler: async () => {
+                            if (fail) {
+                                fail = false;
+                                if (errorKind === 'rxerror') {
+                                    await serverCollection.insert({ passportId: 'existing', age: '20' });
+                                }
+                                throw new Error('offline');
+                            }
+                            return [];
+                        }
+                    }
+                });
+                const { result, unmount } = renderHook(() => useReplicationStatus(replicationState));
+                await act(async () => {
+                    await replicationState.awaitInSync();
+                });
+
+                fail = true;
+                await act(async () => {
+                    await collection.insert({ passportId: errorKind + '-first', age: '20' });
+                    await replicationState.awaitInSync();
+                });
+                await waitFor(() => {
+                    assert.strictEqual(result.current.syncing, false);
+                });
+                assert.strictEqual(
+                    result.current.error ? result.current.error.code : null,
+                    errorKind === 'rxerror' ? 'CONFLICT' : 'RC_PUSH'
+                );
+
+                await act(async () => {
+                    await collection.insert({ passportId: errorKind + '-second', age: '20' });
+                    await replicationState.awaitInSync();
+                });
+                await waitFor(() => {
+                    assert.strictEqual(result.current.syncing, false);
+                    assert.strictEqual(result.current.error ? result.current.error.code : null, null);
+                });
+
+                unmount();
+                await replicationState.cancel();
+            }
             await db.close();
         });
 
