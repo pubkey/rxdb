@@ -67,6 +67,7 @@ import type {
     RxReplicationWriteToMasterRow,
     RxStorage,
     RxStorageDefaultCheckpoint,
+    RxStorageInstanceCreationParams,
     WithDeleted
 } from '../../plugins/core/index.mjs';
 import { firstValueFrom, map, Subject, timer } from 'rxjs';
@@ -2974,6 +2975,69 @@ describe('replication.test.ts', () => {
                 3,
                 'push-only replication must sync documents written during pause after resume'
             );
+
+            await localCollection.database.close();
+            await remoteCollection.database.close();
+        });
+        it('should report and retry when the storage rejects one read of the changed documents', async () => {
+            const baseStorage = config.storage.getStorage();
+            let rejectNextRead = false;
+            let rejectedReads = 0;
+            function rejectOnce<T>(fn: () => Promise<T>): Promise<T> {
+                if (rejectNextRead) {
+                    rejectNextRead = false;
+                    rejectedReads = rejectedReads + 1;
+                    return Promise.reject(new Error('simulated storage read error'));
+                }
+                return fn();
+            }
+            const storage: RxStorage<any, any> = {
+                name: baseStorage.name,
+                rxdbVersion: baseStorage.rxdbVersion,
+                async createStorageInstance<RxDocType>(params: RxStorageInstanceCreationParams<RxDocType, any>) {
+                    const instance = await baseStorage.createStorageInstance<RxDocType>(params);
+                    if (params.collectionName !== 'humans') {
+                        return instance;
+                    }
+                    const query = instance.query.bind(instance);
+                    instance.query = (preparedQuery) => rejectOnce(() => query(preparedQuery));
+                    if (instance.getChangedDocumentsSince) {
+                        const getChangedDocumentsSince = instance.getChangedDocumentsSince.bind(instance);
+                        instance.getChangedDocumentsSince = (limit, checkpoint) => rejectOnce(
+                            () => getChangedDocumentsSince(limit, checkpoint)
+                        );
+                    }
+                    return instance;
+                }
+            };
+            const localCollection = await humansCollection.createHumanWithTimestamp(0, randomToken(10), false, storage);
+            const remoteCollection = await humansCollection.createHumanWithTimestamp(0, randomToken(10), false);
+            await localCollection.insert(schemaObjects.humanWithTimestampData({ id: 'before-start' }));
+
+            rejectNextRead = true;
+            const replicationState = replicateRxCollection({
+                collection: localCollection,
+                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                live: true,
+                retryTime: 50,
+                push: {
+                    handler: getPushHandler(remoteCollection)
+                }
+            });
+            const errors: (RxError | RxTypeError)[] = [];
+            replicationState.error$.subscribe(err => errors.push(err));
+
+            await replicationState.awaitInitialReplication();
+            await replicationState.awaitInSync();
+            assert.strictEqual(rejectedReads, 1);
+            assert.strictEqual(errors.length, 1);
+            assert.strictEqual(errors[0].code, 'RC_PUSH');
+            assert.ok(await remoteCollection.findOne('before-start').exec());
+
+            await localCollection.insert(schemaObjects.humanWithTimestampData({ id: 'after-error' }));
+            await replicationState.awaitInSync();
+            assert.ok(await remoteCollection.findOne('after-error').exec());
+            assert.strictEqual(errors.length, 1);
 
             await localCollection.database.close();
             await remoteCollection.database.close();

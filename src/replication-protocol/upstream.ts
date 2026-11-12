@@ -21,8 +21,11 @@ import {
     batchArray,
     clone,
     ensureNotFalsy,
+    errorToPlainJson,
     getHeightOfRevision,
-    PROMISE_RESOLVE_FALSE
+    PROMISE_RESOLVE_FALSE,
+    promiseWait,
+    toArray
 } from '../plugins/utils/index.ts';
 import {
     getLastCheckpointDoc,
@@ -175,7 +178,20 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
                 state.input.forkInstance,
                 state.input.pushBatchSize,
                 lastCheckpoint
-            );
+            ).catch(err => {
+                state.events.error.next(newRxError('RC_PUSH', {
+                    direction: 'push',
+                    errors: toArray(err).map(er => errorToPlainJson(er))
+                }));
+            });
+            /**
+             * A failed read from the forkInstance must not reject the streamQueue
+             * because all later upstream cycles are chained onto it.
+             */
+            if (!upResult) {
+                await promiseWait(state.input.retryTime ?? 200);
+                continue;
+            }
             if (upResult.documents.length === 0) {
                 break;
             }
