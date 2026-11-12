@@ -2,6 +2,7 @@ import type {
     BulkWriteRow,
     RxDocumentData,
     RxDocumentWriteData,
+    RxStorageBulkWriteResponse,
     RxStorageInstance,
     RxStorageInstanceReplicationState,
     RxStorageReplicationMeta,
@@ -12,13 +13,14 @@ import {
     clone,
     createBlobFromBase64,
     createRevision,
+    deepEqual,
     errorToPlainJson,
     flatClone,
     getDefaultRevision,
     now,
-    promiseWait,
     toArray
 } from '../plugins/utils/index.ts';
+import { Subscription } from 'rxjs';
 import { newRxError } from '../rx-error.ts';
 import { stripAttachmentsDataFromDocument } from '../rx-storage-helper.ts';
 
@@ -94,26 +96,78 @@ export function stripAttachmentsDataFromMetaWriteRows<RxDocType>(
  * A rejected write is emitted to the error-event and retried after the retryTime
  * because without the meta rows, later changes of these documents
  * are pushed without the assumed master state.
+ * After the replication was canceled, the metaInstance is no longer accessed.
  */
 export async function writeMetaRowsOfPulledDocuments<RxDocType>(
     state: RxStorageInstanceReplicationState<RxDocType>,
     rows: BulkWriteRow<RxStorageReplicationMeta<RxDocType, any>>[],
     context: string
-) {
-    while (true) {
+): Promise<RxStorageBulkWriteResponse<RxStorageReplicationMeta<RxDocType, any>>> {
+    let isRetry = false;
+    while (!state.events.canceled.getValue()) {
         try {
-            return await state.input.metaInstance.bulkWrite(rows, context);
+            const result = await state.input.metaInstance.bulkWrite(rows, context);
+            if (!isRetry) {
+                return result;
+            }
+            /**
+             * A storage can reject a write that it has applied.
+             * The retry then gets a conflict for a row
+             * that is stored exactly as it had to be written.
+             */
+            const rowsById = new Map(rows.map(row => [row.document.id, row.document]));
+            return {
+                error: result.error.filter(writeError => {
+                    const wanted = rowsById.get(writeError.documentId);
+                    const stored = writeError.status === 409 ? writeError.documentInDb : undefined;
+                    return !wanted || !stored ||
+                        stored._rev !== wanted._rev ||
+                        stored.isResolvedConflict !== wanted.isResolvedConflict ||
+                        !deepEqual(stored.docData, wanted.docData);
+                })
+            };
         } catch (err: any) {
             if (state.events.canceled.getValue()) {
-                throw err;
+                break;
             }
             state.events.error.next(newRxError('RC_PULL', {
                 direction: 'pull',
                 errors: toArray(err).map(er => errorToPlainJson(er))
             }));
-            await promiseWait(state.input.retryTime ?? 200);
+            isRetry = true;
+            await waitUntilCanceled(state, state.input.retryTime ?? 200);
         }
     }
+    return { error: [] };
+}
+
+/**
+ * Resolves after the given time
+ * or directly when the replication is canceled.
+ */
+export function waitUntilCanceled(
+    state: RxStorageInstanceReplicationState<any>,
+    time: number
+): Promise<void> {
+    return new Promise<void>(res => {
+        const done = () => {
+            clearTimeout(timeout);
+            sub.unsubscribe();
+            res();
+        };
+        const timeout = setTimeout(done, time);
+        const sub = new Subscription();
+        sub.add(
+            state.events.canceled.subscribe({
+                next: canceled => {
+                    if (canceled) {
+                        done();
+                    }
+                },
+                complete: done
+            })
+        );
+    });
 }
 
 /**
