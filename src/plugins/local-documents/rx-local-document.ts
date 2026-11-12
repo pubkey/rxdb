@@ -47,6 +47,7 @@ import {
     getLocalDocStateByParent,
     LOCAL_DOC_STATE_BY_PARENT,
     LOCAL_DOC_STATE_BY_PARENT_RESOLVED,
+    LOCAL_DOC_STATE_RECREATE_BY_PARENT,
     RX_LOCAL_DOCUMENT_SCHEMA
 } from './local-documents-helper.ts';
 import { isRxDatabase } from '../../rx-database.ts';
@@ -395,5 +396,15 @@ export function createLocalDocStateByParent(parent: LocalDocumentParent): void {
         return state;
     })();
     LOCAL_DOC_STATE_BY_PARENT.set(parent, statePromise);
+    /**
+     * A failed creation must not stay cached,
+     * so that the next call to the local documents API creates the state again.
+     */
+    statePromise.catch(() => {
+        if (LOCAL_DOC_STATE_BY_PARENT.get(parent) === statePromise) {
+            LOCAL_DOC_STATE_BY_PARENT.delete(parent);
+            LOCAL_DOC_STATE_RECREATE_BY_PARENT.set(parent, () => createLocalDocStateByParent(parent));
+        }
+    });
 }
 

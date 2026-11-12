@@ -15,11 +15,13 @@ import {
     RxJsonSchema,
     ensureNotFalsy,
     RxLocalDocument,
-    RxCollection
+    RxCollection,
+    RxStorage,
+    RxStorageInstanceCreationParams
 } from '../../plugins/core/index.mjs';
 
 
-import { LOCAL_DOC_STATE_BY_PARENT_RESOLVED, RxDBLocalDocumentsPlugin } from '../../plugins/local-documents/index.mjs';
+import { LOCAL_DOC_STATE_BY_PARENT_RESOLVED, RX_LOCAL_DOCUMENT_SCHEMA_TITLE, RxDBLocalDocumentsPlugin } from '../../plugins/local-documents/index.mjs';
 addRxPlugin(RxDBLocalDocumentsPlugin);
 import config from './config.ts';
 import {
@@ -452,6 +454,86 @@ describe('local-documents.test.ts', () => {
             const doc2 = await db.getLocal('foobar');
             assert.strictEqual(doc1, doc2);
             db.close();
+        });
+    });
+    describe('failed creation of the local documents storage instance', () => {
+        it('should create the storage instance again and still close the database', async () => {
+            const baseStorage = config.storage.getStorage();
+            const failedCollectionNames = new Set<string>();
+            const wrappedStorage: RxStorage<any, any> = {
+                name: baseStorage.name,
+                rxdbVersion: baseStorage.rxdbVersion,
+                createStorageInstance(
+                    params: RxStorageInstanceCreationParams<any, any>
+                ) {
+                    if (
+                        params.schema.title === RX_LOCAL_DOCUMENT_SCHEMA_TITLE &&
+                        !failedCollectionNames.has(params.collectionName)
+                    ) {
+                        failedCollectionNames.add(params.collectionName);
+                        return Promise.reject(new Error('createStorageInstance failed once'));
+                    }
+                    return baseStorage.createStorageInstance(params);
+                }
+            };
+            const db = await createRxDatabase({
+                name: randomToken(10),
+                storage: wrappedStorage,
+                localDocuments: true
+            });
+            const cols = await db.addCollections({
+                humans: {
+                    schema: schemas.human,
+                    localDocuments: true
+                }
+            });
+            const collection = cols.humans;
+            await waitUntil(() => failedCollectionNames.size === 2);
+            await wait(0);
+
+            await db.insertLocal('foobar', { foo: 'bar' });
+            const dbDoc = await db.getLocal('foobar');
+            assert.strictEqual(ensureNotFalsy(dbDoc).get('foo'), 'bar');
+
+            await collection.upsertLocal('foobar', { foo: 'bar2' });
+            const collectionDoc = await collection.getLocal('foobar');
+            assert.strictEqual(ensureNotFalsy(collectionDoc).get('foo'), 'bar2');
+
+            await db.close();
+            assert.strictEqual(db.closed, true);
+            assert.strictEqual(collection.closed, true);
+        });
+        it('should close the database when the storage instance could never be created', async () => {
+            const baseStorage = config.storage.getStorage();
+            const wrappedStorage: RxStorage<any, any> = {
+                name: baseStorage.name,
+                rxdbVersion: baseStorage.rxdbVersion,
+                createStorageInstance(
+                    params: RxStorageInstanceCreationParams<any, any>
+                ) {
+                    if (params.schema.title === RX_LOCAL_DOCUMENT_SCHEMA_TITLE) {
+                        return Promise.reject(new Error('createStorageInstance failed'));
+                    }
+                    return baseStorage.createStorageInstance(params);
+                }
+            };
+            const db = await createRxDatabase({
+                name: randomToken(10),
+                storage: wrappedStorage,
+                localDocuments: true
+            });
+            const cols = await db.addCollections({
+                humans: {
+                    schema: schemas.human
+                }
+            });
+            await AsyncTestUtil.assertThrows(
+                () => db.getLocal('foobar'),
+                Error,
+                'createStorageInstance failed'
+            );
+            await db.close();
+            assert.strictEqual(cols.humans.closed, true);
         });
     });
     describe('multi-instance', () => {

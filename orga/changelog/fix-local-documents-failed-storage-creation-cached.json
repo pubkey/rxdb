@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX when the creation of the local documents storage instance failed once, the rejected promise was an unhandled rejection and stayed cached, so that `getLocal()`, `insertLocal()` and `upsertLocal()` rejected forever and `database.close()` rejected without closing the collections. Now the next local documents call creates the storage instance again and `close()` resolves",
+    "links": [],
+    "priority": 4
+}
