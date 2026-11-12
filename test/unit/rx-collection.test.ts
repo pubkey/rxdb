@@ -2532,6 +2532,26 @@ describe('rx-collection.test.ts', () => {
 
                 c.database.close();
             });
+            it('should not return a deleted document when the ids array contains an id twice', async () => {
+                const c = await humansCollection.create(2);
+                const docs = await c.find().exec();
+                const removeId = docs[0].primary;
+                const keepId = docs[1].primary;
+                const query = c.findByIds([removeId, keepId, removeId]);
+
+                const before = await query.exec();
+                assert.deepStrictEqual(Array.from(before.keys()).sort(), [removeId, keepId].sort());
+
+                await docs[0].remove();
+
+                const after = await query.exec();
+                assert.deepStrictEqual(Array.from(after.keys()), [keepId]);
+
+                const emitted = await firstValueFrom(query.$);
+                assert.deepStrictEqual(Array.from(emitted.keys()), [keepId]);
+
+                c.database.close();
+            });
         });
     });
     describe('.findByIds.$()', () => {
