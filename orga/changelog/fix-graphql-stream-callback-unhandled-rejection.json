@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX the GraphQL replication caused an unhandled promise rejection and skipped the documents of a websocket stream event when the event contained `errors` or when the `pull.responseModifier` threw. The error is now emitted on `error$` as `RC_STREAM` and the documents are pulled via a `RESYNC`.",
+    "links": [],
+    "priority": 5
+}

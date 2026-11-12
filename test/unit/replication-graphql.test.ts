@@ -1781,6 +1781,53 @@ describe('replication-graphql.test.ts', () => {
                 server.close();
                 c.database.close();
             });
+            it('should emit an RC_STREAM error and still pull the documents when the pull.responseModifier throws on a stream event', async () => {
+                const [c, server] = await Promise.all([
+                    humansCollection.createHumanWithTimestamp(0),
+                    SpawnServer.spawn()
+                ]);
+                let failOnStream = true;
+                const replicationState = replicateGraphQL<HumanWithTimestampDocumentType, any>({
+                    replicationIdentifier: randomToken(10),
+                    collection: c,
+                    url: server.url,
+                    pull: {
+                        batchSize,
+                        queryBuilder: pullQueryBuilder,
+                        streamQueryBuilder: pullStreamQueryBuilder,
+                        responseModifier(originalResponse, origin) {
+                            if (origin === 'stream' && failOnStream) {
+                                failOnStream = false;
+                                throw new Error('responseModifier failed');
+                            }
+                            return originalResponse;
+                        }
+                    },
+                    live: true,
+                    retryTime: 100,
+                    deletedField: 'deleted'
+                });
+                const errors: any[] = [];
+                const errorSub = replicationState.error$.subscribe(err => errors.push(err));
+                await replicationState.awaitInSync();
+
+                await server.setDocument(getTestData(1)[0]);
+                await waitUntil(() => errors.length > 0, 4000);
+                assert.strictEqual(errors.length, 1);
+                assert.strictEqual(errors[0].rxdb, true);
+                assert.strictEqual(errors[0].code, 'RC_STREAM');
+                assert.ok(JSON.stringify(errors[0].parameters.errors).includes('responseModifier failed'));
+
+                await waitUntil(async () => {
+                    const docs = await c.find().exec();
+                    return docs.length === 1;
+                }, 4000);
+                assert.strictEqual(errors.length, 1);
+
+                errorSub.unsubscribe();
+                server.close();
+                c.database.close();
+            });
         });
 
 
