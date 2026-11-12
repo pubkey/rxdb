@@ -447,7 +447,7 @@ export class RxCollectionBase<
             insertRows = await Promise.all(
                 docsData.map(docData => {
                     const useDocData = fillObjectDataBeforeInsert(this.schema, docData, true);
-                    return this._runHooks('pre', 'insert', useDocData, this)
+                    return this._runHooks('pre', 'insert', useDocData)
                         .then(() => {
                             if (typeof this.schema.jsonSchema.primaryKey !== 'string') {
                                 fillPrimaryKey(

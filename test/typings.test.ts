@@ -727,7 +727,7 @@ describe('other', () => {
                 return Promise.resolve();
             }, true);
         });
-        it('preInsert must have the collection as second argument', async () => {
+        it('preInsert must only have the data as parameter', async () => {
             const myDb: any = {};
             const myCollections = await myDb.addCollections({
                 humans: {
@@ -736,19 +736,16 @@ describe('other', () => {
             });
             const myCollection: RxCollection<DefaultDocType, DefaultOrmMethods> = myCollections.humans;
             let myNumber: number;
-            let myString: string;
             myCollection.preInsert((data) => {
                 myNumber = data.age;
             }, false);
-            myCollection.preInsert(async (data, instance) => {
+            myCollection.preInsert(function (data) {
                 myNumber = data.age;
-                myString = instance.name;
-                const doc = await instance.findOne().exec();
-                if (doc) {
-                    myNumber = doc.age;
-                }
-                // @ts-expect-error the second argument is the RxCollection, not an RxDocument
-                myString = instance.primary;
+            }, true);
+            // @ts-expect-error preInsert hooks are called with the data only
+            myCollection.preInsert((data, instance) => {
+                myNumber = data.age;
+                return instance;
             }, false);
         });
         describe('query', () => {

@@ -73,13 +73,8 @@ export type RxCollectionHookCallbackNonAsync<RxDocumentType, OrmMethods, Reactiv
     data: RxDocumentType,
     instance: RxDocument<RxDocumentType, OrmMethods, Reactivity>
 ) => void | any;
-export type RxCollectionHookNoInstanceCallback<
-    RxDocumentType,
-    OrmMethods,
-    Reactivity
-> = (
-    data: RxDocumentType,
-    instance: RxCollection<RxDocumentType, OrmMethods, Reactivity>
+export type RxCollectionHookNoInstanceCallback<RxDocumentType> = (
+    data: RxDocumentType
 ) => Promise<void> | void | any;
 
 export type RxCollection<
@@ -95,7 +90,7 @@ export type RxCollection<
 export interface RxCollectionGenerated<RxDocumentType = any, OrmMethods = {}, Reactivity = unknown> extends RxLocalDocumentMutation<RxCollection<RxDocumentType, OrmMethods, any, any, Reactivity>> {
 
     // HOOKS
-    preInsert(fun: RxCollectionHookNoInstanceCallback<RxDocumentType, OrmMethods, Reactivity>, parallel: boolean): void;
+    preInsert(fun: RxCollectionHookNoInstanceCallback<RxDocumentType>, parallel: boolean): void;
     preSave(fun: RxCollectionHookCallback<RxDocumentType, OrmMethods, Reactivity>, parallel: boolean): void;
     preRemove(fun: RxCollectionHookCallback<RxDocumentType, OrmMethods, Reactivity>, parallel: boolean): void;
     postInsert(fun: RxCollectionHookCallback<RxDocumentType, OrmMethods, Reactivity>, parallel: boolean): void;
