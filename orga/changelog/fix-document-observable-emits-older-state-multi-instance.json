@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `RxDocument.$`, `deleted$` and `get$()` emitted an older document state after a newer one when, with `multiInstance: true`, the event of another instance arrived after the event of a later own write to the same document (Dexie RxStorage)",
+    "links": [],
+    "priority": 5
+}
