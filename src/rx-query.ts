@@ -487,13 +487,21 @@ export class RxQueryBase<
             /**
              * JSON writes Infinity, -Infinity and NaN as null.
              * Queries that differ only in these values must not get the same key,
-             * so the values that became null are appended in their order.
+             * so each non-finite number is appended together with its position
+             * among the values that JSON wrote as null.
+             * A property with the value undefined is not part of the JSON string
+             * and therefore does not count, only an undefined array item is written as null.
              * @performance Only queries whose string contains 'null' need the second run.
              */
             if (value.includes('null')) {
-                JSON.stringify(stringObj, (_k, v) => {
-                    if (v == null || (typeof v === 'number' && !isFinite(v))) {
-                        value += ',' + v;
+                let nullPosition = 0;
+                JSON.stringify(stringObj, function (this: any, _k, v) {
+                    const nonFinite = typeof v === 'number' && !isFinite(v);
+                    if (nonFinite) {
+                        value += ',' + nullPosition + ':' + v;
+                    }
+                    if (nonFinite || v === null || (v === undefined && Array.isArray(this))) {
+                        nullPosition++;
                     }
                     return v;
                 });

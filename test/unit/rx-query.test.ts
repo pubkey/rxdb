@@ -315,6 +315,41 @@ describe('rx-query.test.ts', () => {
 
             col.database.close();
         });
+        it('should share the cached query between equal queries when one has properties that are undefined', async () => {
+            const col = await createMemoryHumansCollection();
+            await col.bulkInsert([
+                schemaObjects.humanData('doc-a', 10),
+                schemaObjects.humanData('doc-b', 20)
+            ]);
+            const options: { limit?: number; index?: string[]; } = {};
+
+            const plain = col.find({ selector: { firstName: 'null' } });
+            assert.ok(plain === col.find({ selector: { firstName: 'null' }, limit: options.limit }));
+            assert.ok(plain === col.find({ selector: { firstName: 'null' }, index: options.index }));
+            assert.ok(
+                col.find({ selector: { firstName: 'annull' } }).limit(2) ===
+                col.find({ selector: { firstName: 'annull' }, limit: 2 })
+            );
+            assert.ok(
+                col.find({ selector: { firstName: 'null' } }).sort({ age: 'asc' }) ===
+                col.find({ selector: { firstName: 'null' }, sort: [{ age: 'asc' }] })
+            );
+
+            const all = col.find({ selector: { age: { $gt: -Infinity } } });
+            assert.ok(all === col.find({ selector: { age: { $gt: -Infinity } }, limit: options.limit }));
+            assert.ok(all !== col.find({ selector: { age: { $gt: Infinity } }, limit: options.limit }));
+            assert.ok(
+                col.find({ selector: { age: { $gt: -Infinity, $lt: Infinity } } }) !==
+                col.find({ selector: { age: { $gt: Infinity, $lt: -Infinity } } })
+            );
+            assert.ok(
+                col.find({ selector: { firstName: 'Infinity', age: { $gt: Infinity } } }) !==
+                col.find({ selector: { firstName: 'Infinity', age: { $gt: NaN } } })
+            );
+            assert.strictEqual((await all.exec()).length, 2);
+
+            col.database.close();
+        });
         it('should throw on a skip or limit that is NaN or negative', async () => {
             const col = await createMemoryHumansCollection();
             await col.bulkInsert([
