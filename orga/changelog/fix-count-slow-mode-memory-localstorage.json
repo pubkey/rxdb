@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX (BREAKING) the memory and localStorage RxStorage reported `mode: 'fast'` for a `count()` whose selector is not satisfied by the index, so `collection.count()` did not throw `QU14` in production builds without `allowSlowCount` like it does on the Dexie RxStorage and in dev-mode. They now report `mode: 'slow'`. If your app runs such count queries on these storages, set `allowSlowCount: true` or use `find()` and the length of the result",
+    "links": [],
+    "priority": 6
+}

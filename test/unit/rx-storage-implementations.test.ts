@@ -33,6 +33,7 @@ import {
     PreparedQuery,
     RxDocumentData,
     RxDocumentWriteData,
+    RxStorage,
     RxStorageBulkWriteResponse,
     RxStorageChangeEvent,
     RxStorageInstance,
@@ -67,6 +68,11 @@ import {
     isDeno
 } from '../../plugins/test-utils/index.mjs';
 import { compressObject } from 'jsonschema-key-compression';
+import { getRxStorageMemory } from '../../plugins/storage-memory/index.mjs';
+import {
+    getRxStorageLocalstorage,
+    getLocalStorageMock
+} from '../../plugins/storage-localstorage/index.mjs';
 
 addRxPlugin(RxDBQueryBuilderPlugin);
 
@@ -2177,6 +2183,60 @@ describe('rx-storage-implementations.test.ts (implementation: ' + config.storage
                 await ensureCountIs(2);
 
                 storageInstance.remove();
+            });
+            it('memory and localStorage storage must report mode=slow when the selector is not satisfied by the index', async () => {
+                const schema = getTestDataSchema();
+                const storages: RxStorage<any, any>[] = [
+                    getRxStorageMemory(),
+                    getRxStorageLocalstorage({ localStorage: getLocalStorageMock() })
+                ];
+                for (const storage of storages) {
+                    const storageInstance = await storage.createStorageInstance<TestDocType>({
+                        databaseInstanceToken: randomToken(10),
+                        databaseName: randomToken(12),
+                        collectionName: randomToken(12),
+                        schema,
+                        options: {},
+                        multiInstance: false,
+                        devMode: true
+                    });
+                    await storageInstance.bulkWrite([
+                        { document: getWriteData({ value: 'foobar' }) },
+                        { document: getWriteData({ value: 'barfoo' }) }
+                    ], testContext);
+
+                    const satisfiedQuery = prepareQuery<TestDocType>(
+                        schema,
+                        {
+                            selector: { _deleted: { $eq: false }, value: { $eq: 'foobar' } },
+                            sort: [{ value: 'asc' }, { key: 'asc' }],
+                            skip: 0
+                        }
+                    );
+                    assert.strictEqual(satisfiedQuery.queryPlan.selectorSatisfiedByIndex, true);
+                    assert.deepStrictEqual(
+                        await storageInstance.count(satisfiedQuery),
+                        { count: 1, mode: 'fast' },
+                        storage.name
+                    );
+
+                    const notSatisfiedQuery = prepareQuery<TestDocType>(
+                        schema,
+                        {
+                            selector: { _deleted: { $eq: false }, value: { $regex: '^foo' } },
+                            sort: [{ value: 'asc' }, { key: 'asc' }],
+                            skip: 0
+                        }
+                    );
+                    assert.strictEqual(notSatisfiedQuery.queryPlan.selectorSatisfiedByIndex, false);
+                    assert.deepStrictEqual(
+                        await storageInstance.count(notSatisfiedQuery),
+                        { count: 1, mode: 'slow' },
+                        storage.name
+                    );
+
+                    await storageInstance.remove();
+                }
             });
 
         });

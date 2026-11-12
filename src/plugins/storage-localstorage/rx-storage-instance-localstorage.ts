@@ -505,7 +505,7 @@ export class RxStorageInstanceLocalstorage<RxDocType> implements RxStorageInstan
         const result = await this.query(preparedQuery);
         return {
             count: result.documents.length,
-            mode: 'fast'
+            mode: preparedQuery.queryPlan.selectorSatisfiedByIndex ? 'fast' : 'slow'
         };
     }
 

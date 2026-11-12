@@ -521,7 +521,7 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
 
         return Promise.resolve({
             count,
-            mode: 'fast' as const
+            mode: 'slow' as const
         });
     }
 
