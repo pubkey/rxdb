@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX With `autoMigrate: false`, a replication that was started before the schema migration had finished replicated into the not yet migrated collection. The migration then dropped the unpushed local changes and deleted documents came back. The replication now waits with its start until the migration of the collection is done",
+    "links": [],
+    "priority": 5
+}

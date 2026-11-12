@@ -963,6 +963,179 @@ describe('migration-schema.test.ts', function () {
             await db2.close();
             await remoteDb.close();
         });
+        it('a replication that is started before a manual migration must not drop the unpushed local changes', async () => {
+            type TodoDocType = {
+                id: string;
+                name: string;
+            };
+            type ServerDocType = TodoDocType & { _deleted: boolean; };
+            type CheckpointType = { index: number; };
+            const getSchema = (version: number) => ({
+                version,
+                primaryKey: 'id',
+                type: 'object',
+                properties: {
+                    id: {
+                        type: 'string',
+                        maxLength: 100
+                    },
+                    name: {
+                        type: 'string'
+                    }
+                },
+                required: ['id', 'name']
+            } as const);
+
+            const serverState = new Map<string, ServerDocType>();
+            const serverChanges: string[] = [];
+            const pushed: ServerDocType[] = [];
+            const startReplication = (collection: RxCollection<TodoDocType>) => {
+                const state = replicateRxCollection<TodoDocType, CheckpointType>({
+                    collection,
+                    replicationIdentifier: 'replication-before-migration',
+                    live: true,
+                    waitForLeadership: false,
+                    pull: {
+                        handler(checkpoint) {
+                            const from = checkpoint ? checkpoint.index : 0;
+                            return Promise.resolve({
+                                documents: serverChanges.slice(from).map(id => ensureNotFalsy(serverState.get(id))),
+                                checkpoint: { index: serverChanges.length }
+                            });
+                        }
+                    },
+                    push: {
+                        handler(rows) {
+                            rows.forEach(row => {
+                                pushed.push(row.newDocumentState);
+                                serverState.set(row.newDocumentState.id, row.newDocumentState);
+                                serverChanges.push(row.newDocumentState.id);
+                            });
+                            return Promise.resolve([]);
+                        }
+                    }
+                });
+                ensureReplicationHasNoErrors(state);
+                return state;
+            };
+
+            const name = randomToken(10);
+            const db = await createRxDatabase<{ todos: RxCollection<TodoDocType>; }>({
+                name,
+                storage: config.storage.getStorage()
+            });
+            await db.addCollections({
+                todos: {
+                    schema: getSchema(0)
+                }
+            });
+            await db.todos.bulkInsert([
+                { id: 'todo1', name: 'Learn RxDB' },
+                { id: 'todo2', name: 'Buy groceries' }
+            ]);
+            const replicationState = startReplication(db.todos);
+            await replicationState.awaitInSync();
+            await replicationState.cancel();
+            assert.strictEqual(serverState.size, 2);
+
+            // local changes that are not pushed before the app is updated
+            await db.todos.findOne('todo1').exec(true).then(doc => doc.incrementalPatch({ name: 'changed offline' }));
+            await db.todos.findOne('todo2').exec(true).then(doc => doc.remove());
+            await db.close();
+            pushed.length = 0;
+
+            const db2 = await createRxDatabase<{ todos: RxCollection<TodoDocType>; }>({
+                name,
+                storage: config.storage.getStorage()
+            });
+            await db2.addCollections({
+                todos: {
+                    schema: getSchema(1),
+                    autoMigrate: false,
+                    migrationStrategies: {
+                        1: (oldDoc: TodoDocType) => oldDoc
+                    }
+                }
+            });
+            const replicationState2 = startReplication(db2.todos);
+            await wait(isFastMode() ? 200 : 500);
+            await db2.todos.migratePromise();
+            await replicationState2.awaitInSync();
+
+            const localDocs = await db2.todos.find({ sort: [{ id: 'asc' }] }).exec();
+            assert.deepStrictEqual(
+                localDocs.map(doc => doc.toJSON()),
+                [{ id: 'todo1', name: 'changed offline' }]
+            );
+            assert.deepStrictEqual(
+                pushed.map(doc => [doc.id, doc.name, doc._deleted]).sort(),
+                [
+                    ['todo1', 'changed offline', false],
+                    ['todo2', 'Buy groceries', true]
+                ]
+            );
+            assert.deepStrictEqual(ensureNotFalsy(serverState.get('todo1')).name, 'changed offline');
+            assert.deepStrictEqual(ensureNotFalsy(serverState.get('todo2'))._deleted, true);
+
+            await replicationState2.cancel();
+            await db2.close();
+        });
+        it('start() of a replication that waits for a manual migration must settle when the database is closed', async () => {
+            const name = randomToken(10);
+            const db = await createRxDatabase({
+                name,
+                storage: config.storage.getStorage()
+            });
+            await db.addCollections({
+                humans: {
+                    schema: schemas.simpleHuman
+                }
+            });
+            await db.humans.insert(schemaObjects.simpleHumanAge());
+            await db.close();
+
+            const db2 = await createRxDatabase({
+                name,
+                storage: config.storage.getStorage()
+            });
+            await db2.addCollections({
+                humans: {
+                    schema: schemas.simpleHumanV3,
+                    autoMigrate: false,
+                    migrationStrategies: {
+                        1: (oldDoc: any) => oldDoc,
+                        2: (oldDoc: any) => oldDoc,
+                        3: (oldDoc: any) => oldDoc
+                    }
+                }
+            });
+            let pullCalls = 0;
+            const replicationState = replicateRxCollection<any, any>({
+                collection: db2.humans,
+                replicationIdentifier: 'start-during-pending-migration',
+                live: true,
+                autoStart: false,
+                waitForLeadership: false,
+                pull: {
+                    handler() {
+                        pullCalls++;
+                        return Promise.resolve({ documents: [], checkpoint: null });
+                    }
+                }
+            });
+            let settled = false;
+            const startPromise = replicationState.start().then(() => settled = true);
+            await wait(100);
+            assert.strictEqual(settled, false);
+
+            await db2.close();
+            await Promise.race([
+                startPromise,
+                wait(1000)
+            ]);
+            assert.strictEqual(settled, true);
+            assert.strictEqual(pullCalls, 0);
+        });
         /**
          * @link https://github.com/pubkey/rxdb/pull/7204
          */

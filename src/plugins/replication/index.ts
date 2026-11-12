@@ -77,6 +77,12 @@ import {
 } from '../../hooks.ts';
 
 
+/**
+ * Time in milliseconds after which a replication that waits
+ * for a schema migration checks again if the collection is migrated.
+ */
+const MIGRATION_RECHECK_INTERVAL = 20;
+
 export const REPLICATION_STATE_BY_COLLECTION: WeakMap<RxCollection, RxReplicationState<any, any>[]> = new WeakMap();
 
 export class RxReplicationState<RxDocType, CheckpointType> {
@@ -186,6 +192,41 @@ export class RxReplicationState<RxDocType, CheckpointType> {
                     replicationIdentifier: this.replicationIdentifier
                 }
             }));
+        }
+        /**
+         * While a schema migration is pending or running, the storage of the
+         * collection does not contain the migrated documents and the
+         * replication meta data of the previous schema version yet.
+         * Replicating in that state pulls the master state into the storage
+         * and the migration then handles the unpushed local changes as conflicts.
+         * So the start is delayed in the same way as writes are blocked.
+         * This wait is not part of the startQueue so that
+         * pause(), cancel() and remove() do not have to wait for the migration.
+         * When the replication is canceled or the collection is closed
+         * during the wait, start() resolves without starting.
+         */
+        if (this.collection.migrationInProgress) {
+            return new Promise<void>(res => {
+                const done = () => {
+                    clearInterval(interval);
+                    res();
+                };
+                const interval = setInterval(() => {
+                    if (
+                        !this.collection.migrationInProgress ||
+                        this.collection.closed ||
+                        this.isStopped()
+                    ) {
+                        done();
+                    }
+                }, MIGRATION_RECHECK_INTERVAL);
+                this.onCancel.push(done);
+            }).then(() => {
+                if (this.isStopped() || this.collection.closed) {
+                    return;
+                }
+                return this.start();
+            });
         }
         const startPromise = this.startQueue.then(() => {
             return this._start();
