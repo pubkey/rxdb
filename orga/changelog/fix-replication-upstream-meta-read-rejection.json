@@ -1,0 +1,5 @@
+{
+    "text": "FIX a single rejected read of the replication meta data during a push dropped the documents of that push cycle, so they were never pushed, and `error$` emitted the plain error of the storage. The error is now emitted on `error$` as `RC_PUSH` and the read is retried after `retryTime`.",
+    "links": [],
+    "priority": 5
+}
