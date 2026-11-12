@@ -226,9 +226,8 @@ const docs = await myDatabase.todos.bulkUpsert([
 
 ### incrementalUpsert()
 
-When you run many upsert operations on the same RxDocument in a very short timespan, you might get a `409 Conflict` error.
-This means that you tried to run a `.upsert()` on the document, while the previous upsert operation was still running.
-To prevent these types of errors, you can run incremental upsert operations.
+When you run many `.upsert()` operations on the same RxDocument in a short timespan, the operations run in parallel and do not wait for each other.
+To run them one after another in the order of the calls, you can run incremental upsert operations. They are queued per primary key.
 The behavior is similar to [RxDocument.incrementalModify](./rx-document.md#incrementalModify).
 
 ```js
@@ -241,7 +240,7 @@ const docData = {
 
 myDatabase.todos.upsert(docData);
 myDatabase.todos.upsert(docData);
-// -> throws because of parallel update to the same document
+// -> both calls run in parallel
 
 myDatabase.todos.incrementalUpsert(docData);
 myDatabase.todos.incrementalUpsert(docData);
@@ -249,7 +248,7 @@ myDatabase.todos.incrementalUpsert(docData);
 
 // wait until last upsert finished
 await myDatabase.todos.incrementalUpsert(docData);
-// -> works
+// -> the upserts ran one after another
 ```
 
 ### find()
