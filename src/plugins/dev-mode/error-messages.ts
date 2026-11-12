@@ -456,9 +456,9 @@ export const ERROR_MESSAGES = {
         docs: ''
     },
     WMCP2: {
-        message: 'registerWebMCP(): The WebMCP tools of another database or collection, or of an earlier registerWebMCP() call, are already registered with the same tool names',
-        cause: 'The tool names are built by joining the database name, the collection name and the schema version with underscores. Database "a_b" with collection "c" gets the same tool names as database "a" with collection "b_c". Calling registerWebMCP() twice for the same collection also produces the same tool names.',
-        fix: 'Rename the database or the collection so that the joined names differ, or register the tools at a different registry with the modelContext option. Call registerWebMCP() only once per collection.',
+        message: 'registerWebMCP(): The WebMCP tools of this collection are already registered at the same registry',
+        cause: 'registerWebMCP() was called a second time for the same database, collection and schema version at the same WebMCP registry. A registry cannot hold two tools with the same name.',
+        fix: 'Call registerWebMCP() only once per collection. To expose the same collection a second time, register the tools at a different registry with the modelContext option.',
         docs: 'https://rxdb.info/webmcp.html?console=errors&code=WMCP2'
     },
     CONFLICT: {

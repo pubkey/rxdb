@@ -109,7 +109,7 @@ describe('webmcp.test.ts', () => {
 
         const tools = getTools();
         assert.strictEqual(tools.length, 7);
-        const queryToolName = `rxdb_query_${db.name}_humans_${collection.schema.version}`;
+        const queryToolName = `rxdb_query_${db.name}.humans.${collection.schema.version}`;
         const queryTool = tools.find((t: any) => t.name.startsWith(queryToolName));
         assert.ok(queryTool, 'queryTool not found');
         assert.ok(queryTool.name.startsWith(queryToolName));
@@ -125,13 +125,13 @@ describe('webmcp.test.ts', () => {
         assert.strictEqual(result[0].passportId, 'alice');
 
         // Test count execution
-        const countTool = tools.find((t: any) => t.name.startsWith(`rxdb_count_${db.name}_humans`));
+        const countTool = tools.find((t: any) => t.name.startsWith(`rxdb_count_${db.name}.humans.`));
         assert.ok(countTool);
         const countResult = await executeTool(countTool.name, { query: { selector: { age: { $gt: 0 } } } });
         assert.strictEqual(countResult.count, 1);
 
         // Test changes execution
-        const changesTool = tools.find((t: any) => t.name.startsWith(`rxdb_changes_${db.name}_humans`));
+        const changesTool = tools.find((t: any) => t.name.startsWith(`rxdb_changes_${db.name}.humans.`));
         assert.ok(changesTool);
         const changesResult = await executeTool(changesTool.name, { limit: 10 });
         assert.strictEqual(changesResult.documents.length, 1);
@@ -142,7 +142,7 @@ describe('webmcp.test.ts', () => {
     itWithDom('should wait for changes using wait_changes tool', async () => {
         db.registerWebMCP();
         const tools = getTools();
-        const waitTool = tools.find((t: any) => t.name.startsWith(`rxdb_wait_changes_${db.name}_humans`));
+        const waitTool = tools.find((t: any) => t.name.startsWith(`rxdb_wait_changes_${db.name}.humans.`));
         assert.ok(waitTool);
         let waitResolved = false;
         const waitPromise = executeTool(waitTool.name, {}).then(() => {
@@ -162,8 +162,8 @@ describe('webmcp.test.ts', () => {
     itWithDom('changes tool should return documents without internal meta fields', async () => {
         db.registerWebMCP();
         const tools = getTools();
-        const queryTool = tools.find((t: any) => t.name.startsWith(`rxdb_query_${db.name}_humans`));
-        const changesTool = tools.find((t: any) => t.name.startsWith(`rxdb_changes_${db.name}_humans`));
+        const queryTool = tools.find((t: any) => t.name.startsWith(`rxdb_query_${db.name}.humans.`));
+        const changesTool = tools.find((t: any) => t.name.startsWith(`rxdb_changes_${db.name}.humans.`));
 
         await collection.insert(schemaObjects.humanData('meta_alice'));
 
@@ -196,7 +196,7 @@ describe('webmcp.test.ts', () => {
     itWithDom('should iterate over changes using checkpoint', async () => {
         db.registerWebMCP();
         const tools = getTools();
-        const changesTool = tools.find((t: any) => t.name.startsWith(`rxdb_changes_${db.name}_humans`));
+        const changesTool = tools.find((t: any) => t.name.startsWith(`rxdb_changes_${db.name}.humans.`));
 
         await collection.insert(schemaObjects.humanData('c_alice'));
         await collection.insert(schemaObjects.humanData('c_bob'));
@@ -214,9 +214,9 @@ describe('webmcp.test.ts', () => {
     itWithDom('should execute modifier tools successfully (insert/upsert/delete)', async () => {
         db.registerWebMCP();
         const tools = getTools();
-        const insertTool = tools.find((t: any) => t.name.startsWith(`rxdb_insert_${db.name}_humans`));
-        const upsertTool = tools.find((t: any) => t.name.startsWith(`rxdb_upsert_${db.name}_humans`));
-        const deleteTool = tools.find((t: any) => t.name.startsWith(`rxdb_delete_${db.name}_humans`));
+        const insertTool = tools.find((t: any) => t.name.startsWith(`rxdb_insert_${db.name}.humans.`));
+        const upsertTool = tools.find((t: any) => t.name.startsWith(`rxdb_upsert_${db.name}.humans.`));
+        const deleteTool = tools.find((t: any) => t.name.startsWith(`rxdb_delete_${db.name}.humans.`));
 
         // Insert
         const docData = schemaObjects.humanData('mod_alice');
@@ -257,18 +257,21 @@ describe('webmcp.test.ts', () => {
 
         const tools = getTools();
         assert.strictEqual(tools.length, 4); // Only query/count/changes/wait should be registered
-        const insertTool = tools.find((t: any) => t.name.startsWith(`rxdb_insert_${db.name}_humans`));
+        const insertTool = tools.find((t: any) => t.name.startsWith(`rxdb_insert_${db.name}.humans.`));
         assert.ok(!insertTool);
     });
 
-    it('should throw WMCP2 before registering anything when the tool names are already registered', async () => {
-        const toolNames: string[] = [];
+    it('should give different tool names to database "a_b" with collection "c" and database "a" with collection "b_c"', async () => {
+        const registryTools = new Map<string, any>();
         const modelContext = {
             registerTool(tool: any, registerOptions?: any) {
-                toolNames.push(tool.name);
+                if (registryTools.has(tool.name)) {
+                    throw new TypeError('duplicate tool name ' + tool.name);
+                }
+                registryTools.set(tool.name, tool);
                 if (registerOptions && registerOptions.signal) {
                     registerOptions.signal.addEventListener('abort', () => {
-                        toolNames.splice(toolNames.indexOf(tool.name), 1);
+                        registryTools.delete(tool.name);
                     });
                 }
             }
@@ -283,39 +286,95 @@ describe('webmcp.test.ts', () => {
             storage: config.storage.getStorage()
         });
         await db1.addCollections({ c: { schema: schemas.human } });
-        await db2.addCollections({
-            aaa: { schema: schemas.human },
-            b_c: { schema: schemas.human }
-        });
+        await db2.addCollections({ b_c: { schema: schemas.human } });
 
         db1.registerWebMCP({ modelContext });
+        db2.registerWebMCP({ modelContext });
+        assert.strictEqual(registryTools.size, 14);
+        const toolNameRegex = /^[A-Za-z0-9_.-]{1,128}$/;
+        Array.from(registryTools.keys()).forEach(name => assert.ok(toolNameRegex.test(name), name));
+
+        // each tool works on its own collection
+        const insertName1 = 'rxdb_insert_' + token + '_b.c.0';
+        const insertName2 = 'rxdb_insert_' + token + '.b_c.0';
+        const queryName1 = 'rxdb_query_' + token + '_b.c.0';
+        const queryName2 = 'rxdb_query_' + token + '.b_c.0';
+        await registryTools.get(insertName1).execute({ document: schemaObjects.humanData('doc-of-db1') }, {});
+        await registryTools.get(insertName2).execute({ document: schemaObjects.humanData('doc-of-db2') }, {});
+        const result1 = await registryTools.get(queryName1).execute({ query: { selector: {} } }, {});
+        const result2 = await registryTools.get(queryName2).execute({ query: { selector: {} } }, {});
+        assert.deepStrictEqual(result1.map((doc: any) => doc.passportId), ['doc-of-db1']);
+        assert.deepStrictEqual(result2.map((doc: any) => doc.passportId), ['doc-of-db2']);
+        assert.strictEqual((await db1.c.find().exec()).length, 1);
+        assert.strictEqual((await db2.b_c.find().exec()).length, 1);
+
+        await db1.close();
+        assert.strictEqual(registryTools.size, 7);
+        assert.ok(registryTools.has(queryName2));
+        await db2.close();
+        assert.strictEqual(registryTools.size, 0);
+    });
+
+    it('should throw WMCP2 before registering anything when the same collection is registered twice', async () => {
+        const toolNames: string[] = [];
+        const modelContext = {
+            registerTool(tool: any, registerOptions?: any) {
+                toolNames.push(tool.name);
+                if (registerOptions && registerOptions.signal) {
+                    registerOptions.signal.addEventListener('abort', () => {
+                        toolNames.splice(toolNames.indexOf(tool.name), 1);
+                    });
+                }
+            }
+        };
+        const database = await createRxDatabase({
+            name: randomToken(10),
+            storage: config.storage.getStorage()
+        });
+        await database.addCollections({
+            aaa: { schema: schemas.human },
+            bbb: { schema: schemas.human }
+        });
+
+        database.aaa.registerWebMCP({ modelContext });
         assert.strictEqual(toolNames.length, 7);
 
-        // other database and collection that produce the same tool names
+        // same collection registered twice
         await assertThrows(
-            () => db2.registerWebMCP({ modelContext }),
+            () => database.aaa.registerWebMCP({ modelContext }),
+            'RxError',
+            'WMCP2'
+        );
+        assert.strictEqual(toolNames.length, 7);
+
+        // nothing of the database is registered when one of its collections is already registered
+        await assertThrows(
+            () => database.registerWebMCP({ modelContext }),
             'RxError',
             'WMCP2'
         );
         assert.strictEqual(toolNames.length, 7);
         assert.strictEqual(new Set(toolNames).size, 7);
 
-        // same collection registered twice
-        await assertThrows(
-            () => db1.c.registerWebMCP({ modelContext }),
-            'RxError',
-            'WMCP2'
-        );
+        // the same collection at another registry is not affected
+        const otherToolNames: string[] = [];
+        database.aaa.registerWebMCP({
+            modelContext: {
+                registerTool(tool: any) {
+                    otherToolNames.push(tool.name);
+                }
+            }
+        });
+        assert.strictEqual(otherToolNames.length, 7);
+
+        // the names are free again after the collection is closed
+        await database.aaa.close();
+        assert.strictEqual(toolNames.length, 0);
+        database.registerWebMCP({ modelContext });
         assert.strictEqual(toolNames.length, 7);
 
-        // the names are free again after the first collection is closed
-        await db1.close();
+        await database.close();
         assert.strictEqual(toolNames.length, 0);
-        db2.registerWebMCP({ modelContext });
-        assert.strictEqual(toolNames.length, 14);
-        assert.strictEqual(new Set(toolNames).size, 14);
-
-        await db2.close();
     });
 
     it('should free the tool names and unregister its tools when the registration fails', async () => {
@@ -368,7 +427,7 @@ describe('webmcp.test.ts', () => {
         await database.addCollections({ aaa: { schema: schemas.human } });
 
         // the registry throws at a tool of the second collection of the database
-        failAt = 'rxdb_changes_' + database.name + '_bbb';
+        failAt = 'rxdb_changes_' + database.name + '.bbb.';
         error = registerAndGetError(database);
         assert.strictEqual(error.name, 'RangeError');
         assert.deepStrictEqual(toolNames, []);
@@ -473,7 +532,7 @@ describe('webmcp.test.ts', () => {
             storage: config.storage.getStorage()
         });
         await database.addCollections({ aaa: { schema: schemas.human } });
-        const suffix = database.name + '_aaa_' + database.aaa.schema.version;
+        const suffix = database.name + '.aaa.' + database.aaa.schema.version;
         const foreignTools = ['rxdb_query_', 'rxdb_count_', 'rxdb_insert_'].map(prefix => ({
             name: prefix + suffix,
             description: 'tool of the page',
@@ -525,7 +584,7 @@ describe('webmcp.test.ts', () => {
         const sub2 = error$.subscribe((e: any) => errors.push(e));
 
         const tools = getTools();
-        const queryTool = tools.find((t: any) => t.name.startsWith(`rxdb_query_${db.name}_humans`));
+        const queryTool = tools.find((t: any) => t.name.startsWith(`rxdb_query_${db.name}.humans.`));
         await executeTool(queryTool.name, { query: { selector: { age: { $gt: 0 } } } });
 
         assert.strictEqual(logs.length, 1);
@@ -533,7 +592,7 @@ describe('webmcp.test.ts', () => {
         assert.ok(!logs[0].error);
 
         // Test error
-        const deleteTool = tools.find((t: any) => t.name.startsWith(`rxdb_delete_${db.name}_humans`));
+        const deleteTool = tools.find((t: any) => t.name.startsWith(`rxdb_delete_${db.name}.humans.`));
         try {
             await executeTool(deleteTool.name, { id: 'does-not-exist' });
         } catch (err) { }
@@ -558,7 +617,7 @@ describe('webmcp.test.ts', () => {
         });
 
         await waitUntil(() => {
-            const queryTool = getTools().find((t: any) => t.name.includes('aliens') && t.name.startsWith(`rxdb_query_${db.name}`));
+            const queryTool = getTools().find((t: any) => t.name === `rxdb_query_${db.name}.aliens.0`);
             return !!queryTool;
         });
     });
@@ -636,13 +695,13 @@ describe('webmcp.test.ts', () => {
             assert.deepStrictEqual(
                 tools.map(t => t.name),
                 [
-                    'rxdb_query_remotedb_remotehumans_0',
-                    'rxdb_count_remotedb_remotehumans_0',
-                    'rxdb_changes_remotedb_remotehumans_0',
-                    'rxdb_wait_changes_remotedb_remotehumans_0',
-                    'rxdb_insert_remotedb_remotehumans_0',
-                    'rxdb_upsert_remotedb_remotehumans_0',
-                    'rxdb_delete_remotedb_remotehumans_0'
+                    'rxdb_query_remotedb.remotehumans.0',
+                    'rxdb_count_remotedb.remotehumans.0',
+                    'rxdb_changes_remotedb.remotehumans.0',
+                    'rxdb_wait_changes_remotedb.remotehumans.0',
+                    'rxdb_insert_remotedb.remotehumans.0',
+                    'rxdb_upsert_remotedb.remotehumans.0',
+                    'rxdb_delete_remotedb.remotehumans.0'
                 ]
             );
 

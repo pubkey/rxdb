@@ -34,16 +34,18 @@ type WebMCPTargetIdentity = Pick<WebMCPTarget, 'databaseName' | 'collectionName'
 
 /**
  * All tool names of a target end with this suffix.
+ * The parts are joined with a dot because a dot is allowed in a tool name
+ * but cannot be part of a database or collection name. This ensures that
+ * two different targets never get the same tool names.
  */
 export function getWebMCPToolNameSuffix(target: WebMCPTargetIdentity): string {
-    return `${target.databaseName}_${target.collectionName}_${target.schemaVersion}`;
+    return `${target.databaseName}.${target.collectionName}.${target.schemaVersion}`;
 }
 
 /**
  * The targets that have their tools registered, by registry and tool name suffix.
- * Database and collection names can contain underscores, so two different
- * targets can end up with the same tool names. A registry cannot hold
- * two tools with the same name.
+ * A registry cannot hold two tools with the same name, so the tools
+ * of a target can only be registered once at the same registry.
  */
 const REGISTERED_TARGETS = new WeakMap<object, Map<string, WebMCPTargetIdentity>>();
 
@@ -60,16 +62,11 @@ export function ensureWebMCPToolNamesNotRegistered(
     const modelContext = getModelContext(options);
     const registered = modelContext ? REGISTERED_TARGETS.get(modelContext) : undefined;
     const toolNameSuffix = getWebMCPToolNameSuffix(target);
-    const other = registered ? registered.get(toolNameSuffix) : undefined;
-    if (other) {
+    if (registered && registered.has(toolNameSuffix)) {
         throw newRxError('WMCP2', {
             name: toolNameSuffix,
             database: target.databaseName,
-            collection: target.collectionName,
-            args: {
-                registeredDatabase: other.databaseName,
-                registeredCollection: other.collectionName
-            }
+            collection: target.collectionName
         });
     }
 }
