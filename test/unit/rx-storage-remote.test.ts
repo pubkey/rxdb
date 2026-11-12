@@ -21,6 +21,15 @@ import { getRxStorageMemory } from '../../plugins/storage-memory/index.mjs';
 import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.mjs';
 import { assertThrows } from 'async-test-util';
 import { nextPort } from '../helper/port-manager.ts';
+import { Subject } from 'rxjs';
+import {
+    exposeRxStorageRemote,
+    getRxStorageRemote
+} from '../../plugins/storage-remote/index.mjs';
+import type {
+    MessageFromRemote,
+    MessageToRemote
+} from '../../plugins/storage-remote/index.mjs';
 
 describe('rx-storage-remote.test.ts', () => {
     /**
@@ -32,6 +41,76 @@ describe('rx-storage-remote.test.ts', () => {
      * In this while we only add additional tests
      * that are specific to the remote storage plugin.
      */
+    /**
+     * Uses an in-process message channel and its own base storage,
+     * so it runs with each config.storage.
+     */
+    describe('mode: one with a failed messageChannelCreator() call', () => {
+        function getOneModeRemote() {
+            const toRemote$ = new Subject<MessageToRemote>();
+            const fromRemote$ = new Subject<MessageFromRemote>();
+            exposeRxStorageRemote({
+                storage: getRxStorageMemory(),
+                messages$: toRemote$,
+                send(msg) {
+                    fromRemote$.next(msg);
+                }
+            });
+            const state = {
+                creatorCalls: 0
+            };
+            const storage = getRxStorageRemote({
+                identifier: 'one-mode-' + randomToken(10),
+                mode: 'one',
+                messageChannelCreator: () => {
+                    state.creatorCalls = state.creatorCalls + 1;
+                    if (state.creatorCalls === 1) {
+                        return Promise.reject(new Error('message-channel-failed-once'));
+                    }
+                    return Promise.resolve({
+                        messages$: fromRemote$,
+                        send(msg: MessageToRemote) {
+                            toRemote$.next(msg);
+                        },
+                        close() {
+                            return Promise.resolve();
+                        }
+                    });
+                }
+            });
+            return { storage, state };
+        }
+        function getCreationParams() {
+            return {
+                databaseInstanceToken: randomToken(10),
+                databaseName: randomToken(10),
+                collectionName: 'human',
+                devMode: true,
+                multiInstance: false,
+                options: {},
+                schema: fillWithDefaultSettings(schemas.human)
+            };
+        }
+        it('should call messageChannelCreator() again after the first createStorageInstance() failed', async () => {
+            const { storage, state } = getOneModeRemote();
+            await assertThrows(
+                () => storage.createStorageInstance(getCreationParams()),
+                Error,
+                'message-channel-failed-once'
+            );
+            const storageInstance = await storage.createStorageInstance(getCreationParams());
+            assert.strictEqual(state.creatorCalls, 2);
+            await storageInstance.close();
+        });
+        it('should not have an unhandled rejection when messageChannelCreator() fails before the first createStorageInstance()', async () => {
+            const { storage, state } = getOneModeRemote();
+            await new Promise(res => setTimeout(res, 50));
+            assert.strictEqual(state.creatorCalls, 1);
+            const storageInstance = await storage.createStorageInstance(getCreationParams());
+            assert.strictEqual(state.creatorCalls, 2);
+            await storageInstance.close();
+        });
+    });
     if (
         !isNode ||
         config.storage.name !== 'remote'
