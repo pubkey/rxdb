@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `RxState.set()` with a path into an array like `state.set('list.1.name', ...)` rejected with `Cannot use string index` while `RxState.get()` could read the same path",
+    "links": [],
+    "priority": 4
+}
