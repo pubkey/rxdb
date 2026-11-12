@@ -28,6 +28,7 @@ import {
     trimDots,
     parseRevision,
     getHeightOfRevision,
+    sortObject,
     createRevision,
     flattenObject,
     getFromObjectOrThrow,
@@ -82,6 +83,27 @@ describe('util.test.js', () => {
         });
     });
     describe('.sortObject()', () => {
+        it('should not mutate the arrays of the given object', () => {
+            const input = {
+                b: ['b', 'a', 'c'],
+                a: {
+                    nested: ['z', 'y']
+                }
+            };
+            const sorted = sortObject(input);
+            assert.deepStrictEqual(sorted, {
+                a: {
+                    nested: ['y', 'z']
+                },
+                b: ['a', 'b', 'c']
+            });
+            assert.deepStrictEqual(input.b, ['b', 'a', 'c']);
+            assert.deepStrictEqual(input.a.nested, ['z', 'y']);
+
+            const inputArray = ['b', 'a'];
+            assert.deepStrictEqual(sortObject(inputArray), ['a', 'b']);
+            assert.deepStrictEqual(inputArray, ['b', 'a']);
+        });
     });
     describe('.trimDots()', () => {
         it('should return the same string when no boundary dots exist', () => {
