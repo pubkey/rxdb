@@ -20,6 +20,8 @@ import { RxDBPipelinePlugin } from '../../plugins/pipeline/index.mjs';
 import { RxDBLocalDocumentsPlugin } from '../../plugins/local-documents/index.mjs';
 addRxPlugin(RxDBPipelinePlugin);
 addRxPlugin(RxDBLocalDocumentsPlugin);
+import { RxDBCleanupPlugin } from '../../plugins/cleanup/index.mjs';
+addRxPlugin(RxDBCleanupPlugin);
 import { RxDBLeaderElectionPlugin } from '../../plugins/leader-election/index.mjs';
 import { assertThrows } from 'async-test-util';
 addRxPlugin(RxDBLeaderElectionPlugin);
@@ -173,6 +175,55 @@ describe('rx-pipeline.test.js', () => {
             assert.ok(pipeline.lastSourceDocTime.getValue() > 10);
             assert.ok(pipeline.lastProcessedDocTime.getValue() > 10);
 
+            c1.database.close();
+            c2.database.close();
+        });
+        it('should become idle when cleanup() purged a tombstone that was not processed yet', async () => {
+            const c1 = await humansCollection.create(0);
+            await c1.database.waitForLeadership();
+            const c2 = await humansCollection.create(0);
+
+            let handlerStarted: () => void = () => { };
+            const handlerStartedPromise = new Promise<void>(res => handlerStarted = res);
+            let releaseHandler: () => void = () => { };
+            const releaseHandlerPromise = new Promise<void>(res => releaseHandler = res);
+
+            const pipeline = await c1.addPipeline({
+                destination: c2,
+                handler: async (docs) => {
+                    handlerStarted();
+                    await releaseHandlerPromise;
+                    for (const doc of docs) {
+                        if (!doc.deleted) {
+                            await c2.insert(schemaObjects.humanData(doc.passportId));
+                        }
+                    }
+                },
+                identifier: randomToken(10)
+            });
+
+            // the handler is held while it processes the first document
+            await c1.insert(schemaObjects.humanData('first'));
+            await handlerStartedPromise;
+
+            const second = await c1.insert(schemaObjects.humanData('second'));
+            await second.remove();
+            await c1.cleanup(0);
+            releaseHandler();
+
+            const idleResult = await Promise.race([
+                pipeline.awaitIdle().then(() => 'idle'),
+                promiseWait(2000).then(() => 'timeout')
+            ]);
+            assert.strictEqual(idleResult, 'idle');
+
+            const readResult = await Promise.race([
+                c2.find().exec().then(docs => docs.map(d => d.passportId)),
+                promiseWait(2000).then(() => 'timeout')
+            ]);
+            assert.deepStrictEqual(readResult, ['first']);
+
+            await pipeline.close();
             c1.database.close();
             c2.database.close();
         });
