@@ -163,12 +163,6 @@ export class RxMigrationState {
          * If no migration is actually needed, the flag is cleared again below.
          */
         this.collection.migrationInProgress = true;
-        const must = await this.mustMigrate;
-        if (!must) {
-            this.collection.migrationInProgress = false;
-            return;
-        }
-        this.started = true;
 
         /**
          * Ensure the migration is cleaned up when the collection or the
@@ -176,14 +170,35 @@ export class RxMigrationState {
          * migrateStorage()) guarantees the broadcastChannel / leader
          * election is released even if the migration throws before the
          * replication is set up.
+         * This must be done before the first await, because close() only
+         * calls the handlers that are registered at the time it is called.
          */
         this.collection.onClose.push(() => this.cancel());
         this.database.onClose.push(() => this.cancel());
 
+        const must = await this.mustMigrate;
+        if (!must) {
+            this.collection.migrationInProgress = false;
+            return;
+        }
+        this.started = true;
+
         try {
             await this.runMigration(batchSize);
+        } catch (err) {
+            /**
+             * A canceled migration is not a failed migration.
+             * The storages are closed while the migration still uses them,
+             * so their errors are expected and must not reach the caller.
+             */
+            if (!this.canceled) {
+                throw err;
+            }
         } finally {
             this.stopHeartbeat();
+            if (this.canceled) {
+                await this.closeOpenStorageInstances();
+            }
             /**
              * Always close the broadcastChannel so that the tab does not
              * stay leader forever if the migration throws on any code path.
@@ -220,6 +235,9 @@ export class RxMigrationState {
             }
             this.startHeartbeat();
         }
+        if (this.canceled) {
+            return;
+        }
 
         /**
          * Instead of writing a custom migration protocol,
@@ -238,6 +256,9 @@ export class RxMigrationState {
             devMode: overwritable.isDevMode()
         });
         this.openStorageInstances.add(oldStorageInstance);
+        if (this.canceled) {
+            return;
+        }
 
 
         const connectedInstances = await this.getConnectedStorageInstances();
@@ -292,6 +313,15 @@ export class RxMigrationState {
             this.openStorageInstances.delete(oldStorageInstance);
             await oldStorageInstance.close();
             this.collection.migrationInProgress = false;
+            /**
+             * When the collection or the database is closed during the migration,
+             * the operations on the closed storages throw.
+             * This must not be stored as a failed migration, because the
+             * migration continues the next time the collection is created.
+             */
+            if (this.canceled) {
+                return;
+            }
             await this.updateStatus(s => {
                 /**
                  * When a frozen leader was taken over by another tab
@@ -306,6 +336,9 @@ export class RxMigrationState {
                 s.error = errorToPlainJson(err as Error);
                 return s;
             });
+            return;
+        }
+        if (this.canceled) {
             return;
         }
 
@@ -548,6 +581,9 @@ export class RxMigrationState {
             devMode: overwritable.isDevMode()
         });
         this.openStorageInstances.add(replicationMetaStorageInstance);
+        if (this.canceled) {
+            return;
+        }
 
         const replicationHandlerBase = rxStorageInstanceToReplicationHandler(
             newStorage,
@@ -661,7 +697,21 @@ export class RxMigrationState {
             });
         });
 
-        await awaitRxStorageReplicationFirstInSync(replicationState);
+        /**
+         * A canceled replication never reaches the in-sync state,
+         * so waiting for it must end when the migration is canceled.
+         */
+        await Promise.race([
+            awaitRxStorageReplicationFirstInSync(replicationState),
+            firstValueFrom(
+                replicationState.events.canceled.pipe(
+                    filter((canceled: boolean) => !!canceled)
+                )
+            )
+        ]);
+        if (this.canceled) {
+            return;
+        }
         await awaitRxStorageReplicationInSync(replicationState);
 
         await this.updateStatusQueue;
@@ -698,23 +748,47 @@ export class RxMigrationState {
         this.collection.migrationInProgress = false;
         await Promise.all(
             Array.from(this.replicationStates.values())
-                .map(state => cancelRxStorageReplication(state))
+                .map(async (state) => {
+                    await cancelRxStorageReplication(state).catch(() => { });
+                    /**
+                     * The canceled replication still finishes the batch it is working on.
+                     * Wait for that, so that it does not run operations
+                     * on storage instances that are closed below.
+                     */
+                    while (true) {
+                        const { up, down } = state.streamQueue;
+                        const checkpointQueue = state.checkpointQueue;
+                        await Promise.allSettled([up, down, checkpointQueue]);
+                        if (
+                            up === state.streamQueue.up &&
+                            down === state.streamQueue.down &&
+                            checkpointQueue === state.checkpointQueue
+                        ) {
+                            break;
+                        }
+                    }
+                })
         );
+        await this.updateStatusQueue.catch(() => { });
 
         /**
          * Close the storage instances that were opened by the migration.
          * After the replications are canceled, migrateStorage() does not
          * continue and therefore never closes them on its own.
          */
+        await this.closeOpenStorageInstances();
+
+        if (this.broadcastChannel) {
+            await this.broadcastChannel.close();
+        }
+    }
+
+    private async closeOpenStorageInstances() {
         const openInstances = Array.from(this.openStorageInstances);
         this.openStorageInstances.clear();
         await Promise.all(
             openInstances.map(instance => instance.close().catch(() => { }))
         );
-
-        if (this.broadcastChannel) {
-            await this.broadcastChannel.close();
-        }
     }
 
     public async countAllDocuments(
