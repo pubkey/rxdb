@@ -218,6 +218,47 @@ describe('query-builder.test.js', () => {
 
             c.database.close();
         });
+        it('should keep limit(0) when another building step is chained after it', async () => {
+            const c = await humansCollection.create(0);
+            await c.bulkInsert([
+                { passportId: 'a', firstName: 'Alice', lastName: 'A', age: 5 },
+                { passportId: 'b', firstName: 'Bob', lastName: 'B', age: 7 },
+                { passportId: 'c', firstName: 'Carol', lastName: 'C', age: 7 }
+            ]);
+
+            const mangoSorted = await c.find({
+                selector: {},
+                sort: [{ firstName: 'asc' }],
+                limit: 0
+            }).exec();
+            const builderSorted = await c.find().limit(0).sort('firstName').exec();
+            assert.deepStrictEqual(
+                builderSorted.map(d => d.passportId),
+                mangoSorted.map(d => d.passportId)
+            );
+
+            const mangoWhere = await c.find({
+                selector: {
+                    age: {
+                        $gt: 3
+                    }
+                },
+                limit: 0
+            }).exec();
+            const builderWhere = await c.find({
+                selector: {},
+                limit: 0
+            }).where('age').gt(3).exec();
+            assert.deepStrictEqual(
+                builderWhere.map(d => d.passportId),
+                mangoWhere.map(d => d.passportId)
+            );
+
+            const limitLast = await c.find().where('age').gt(3).limit(0).exec();
+            assert.deepStrictEqual(limitLast.map(d => d.passportId), []);
+
+            c.database.close();
+        });
         it('should not have an all() method because $all is not a supported query operator', async () => {
             const c = await humansCollection.create(0);
             const query = c.find();
