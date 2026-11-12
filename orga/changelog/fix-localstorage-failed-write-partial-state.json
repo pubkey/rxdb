@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX the localStorage RxStorage left a partial write behind (document without index entry, attachment stub without data) when `localStorage.setItem()` threw during `bulkWrite()`, for example with a `QuotaExceededError`. A rejected write now puts the previous values of the changed keys back",
+    "links": [],
+    "priority": 5
+}

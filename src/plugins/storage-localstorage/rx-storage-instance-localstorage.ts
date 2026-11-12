@@ -237,9 +237,36 @@ export class RxStorageInstanceLocalstorage<RxDocType> implements RxStorageInstan
         ret.error = categorized.errors;
 
 
-        const indexValues = Object.values(this.internals.indexes).map(idx => {
-            return this.getIndex(idx.index);
+        const indexStrings = Object.values(this.internals.indexes).map(idx => {
+            return this.localStorage.getItem(this.indexesKey + idx.indexName);
         });
+        const indexValues: LocalstorageIndex[] = indexStrings.map(indexString => {
+            return indexString ? JSON.parse(indexString) : [];
+        });
+
+        /**
+         * localStorage has no transactions and setItem() throws
+         * when the quota is exceeded. Each changed key is remembered
+         * together with its previous value, so that a failing setItem()
+         * puts the previous values back and does not leave a partial write behind.
+         */
+        const changedKeys: [string, () => string | null][] = [];
+        const setItem = (key: string, value: string, getPreviousValue: () => string | null) => {
+            try {
+                this.localStorage.setItem(key, value);
+            } catch (err) {
+                changedKeys.reverse().forEach(([changedKey, getPrevious]) => {
+                    const previousValue = getPrevious();
+                    if (previousValue === null) {
+                        this.localStorage.removeItem(changedKey);
+                    } else {
+                        this.localStorage.setItem(changedKey, previousValue);
+                    }
+                });
+                throw err;
+            }
+            changedKeys.push([key, getPreviousValue]);
+        };
 
         [
             categorized.bulkInsertDocs,
@@ -247,10 +274,15 @@ export class RxStorageInstanceLocalstorage<RxDocType> implements RxStorageInstan
         ].forEach(rows => {
             rows.forEach(row => {
                 // write new document data
-                this.setDoc(row.document);
+                const docId = row.document[this.primaryPath] as string;
+                const previousDoc = docsInDb.get(docId);
+                setItem(
+                    this.docsKey + '-' + docId,
+                    JSON.stringify(row.document),
+                    () => previousDoc ? JSON.stringify(previousDoc) : null
+                );
 
                 // update the indexes
-                const docId = row.document[this.primaryPath] as string;
                 Object.values(this.internals.indexes).forEach((idx, i) => {
                     const indexValue = indexValues[i];
                     const newIndexString = idx.getIndexableString(row.document);
@@ -310,36 +342,47 @@ export class RxStorageInstanceLocalstorage<RxDocType> implements RxStorageInstan
 
         indexValues.forEach((indexValue, i) => {
             const index = Object.values(this.internals.indexes);
-            this.setIndex(index[i].index, indexValue);
+            setItem(
+                this.indexesKey + index[i].indexName,
+                JSON.stringify(indexValue),
+                () => indexStrings[i]
+            );
         });
 
         // attachments — use pre-converted base64 data (synchronous)
         categorized.attachmentsAdd.forEach(attachment => {
             const base64 = ensureNotFalsy(attachmentBase64Map.get(attachment.attachmentData.data));
             const mimeType = attachment.attachmentData.type || 'application/octet-stream';
-            this.localStorage.setItem(
-                this.attachmentsKey +
+            const attachmentKey = this.attachmentsKey +
                 '-' + attachment.documentId +
-                '||' + attachment.attachmentId,
-                'data:' + mimeType + ';base64,' + base64
+                '||' + attachment.attachmentId;
+            const previousData = this.localStorage.getItem(attachmentKey);
+            setItem(
+                attachmentKey,
+                'data:' + mimeType + ';base64,' + base64,
+                () => previousData
             );
         });
         categorized.attachmentsUpdate.forEach(attachment => {
             const base64 = ensureNotFalsy(attachmentBase64Map.get(attachment.attachmentData.data));
             const mimeType = attachment.attachmentData.type || 'application/octet-stream';
-            this.localStorage.setItem(
-                this.attachmentsKey +
+            const attachmentKey = this.attachmentsKey +
                 '-' + attachment.documentId +
-                '||' + attachment.attachmentId,
-                'data:' + mimeType + ';base64,' + base64
+                '||' + attachment.attachmentId;
+            const previousData = this.localStorage.getItem(attachmentKey);
+            setItem(
+                attachmentKey,
+                'data:' + mimeType + ';base64,' + base64,
+                () => previousData
             );
         });
         categorized.attachmentsRemove.forEach(attachment => {
-            this.localStorage.removeItem(
-                this.attachmentsKey +
+            const attachmentKey = this.attachmentsKey +
                 '-' + attachment.documentId +
-                '||' + attachment.attachmentId
-            );
+                '||' + attachment.attachmentId;
+            const previousData = this.localStorage.getItem(attachmentKey);
+            this.localStorage.removeItem(attachmentKey);
+            changedKeys.push([attachmentKey, () => previousData]);
         });
 
         if (categorized.eventBulk.events.length > 0) {
@@ -353,9 +396,10 @@ export class RxStorageInstanceLocalstorage<RxDocType> implements RxStorageInstan
                 eventBulk: categorized.eventBulk
             };
             const itemString = JSON.stringify(storageItemData);
-            this.localStorage.setItem(
+            setItem(
                 this.changestreamStorageKey,
-                itemString
+                itemString,
+                () => null
             );
             storageEventStream$.next({
                 fromStorageEvent: false,
