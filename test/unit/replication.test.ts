@@ -1746,6 +1746,101 @@ describe('replication.test.ts', () => {
             localCollection.database.close();
             remoteCollection.database.close();
         });
+        it('pause() while start() waits for a manual schema migration must keep the replication paused', async () => {
+            type TodoDocType = {
+                id: string;
+                name: string;
+            };
+            const getSchema = (version: number) => ({
+                version,
+                primaryKey: 'id',
+                type: 'object',
+                properties: {
+                    id: {
+                        type: 'string',
+                        maxLength: 100
+                    },
+                    name: {
+                        type: 'string'
+                    }
+                },
+                required: ['id', 'name']
+            } as const);
+            const name = randomToken(10);
+            const db = await createRxDatabase<{ todos: RxCollection<TodoDocType>; }>({
+                name,
+                storage: config.storage.getStorage()
+            });
+            await db.addCollections({
+                todos: {
+                    schema: getSchema(0)
+                }
+            });
+            await db.todos.insert({ id: 'todo1', name: 'Learn RxDB' });
+            await db.close();
+
+            const db2 = await createRxDatabase<{ todos: RxCollection<TodoDocType>; }>({
+                name,
+                storage: config.storage.getStorage()
+            });
+            await db2.addCollections({
+                todos: {
+                    schema: getSchema(1),
+                    autoMigrate: false,
+                    migrationStrategies: {
+                        1: (oldDoc: TodoDocType) => oldDoc
+                    }
+                }
+            });
+            let pullCalls = 0;
+            let pushCalls = 0;
+            const replicationState = replicateRxCollection<TodoDocType, { index: number; }>({
+                collection: db2.todos,
+                replicationIdentifier: 'pause-during-pending-migration',
+                live: true,
+                autoStart: false,
+                waitForLeadership: false,
+                pull: {
+                    handler() {
+                        pullCalls++;
+                        return Promise.resolve({
+                            documents: pullCalls === 1 ? [{ id: 'todo2', name: 'Buy groceries', _deleted: false }] : [],
+                            checkpoint: { index: 1 }
+                        });
+                    }
+                },
+                push: {
+                    handler() {
+                        pushCalls++;
+                        return Promise.resolve([]);
+                    }
+                }
+            });
+            ensureReplicationHasNoErrors(replicationState);
+            const startPromise = replicationState.start();
+            const secondStartPromise = replicationState.start();
+            await wait(50);
+            await replicationState.pause();
+
+            await db2.todos.migratePromise();
+            await Promise.all([startPromise, secondStartPromise]);
+            assert.strictEqual(replicationState.isPaused(), true);
+            await wait(isFastMode() ? 100 : 300);
+            assert.strictEqual(replicationState.isPaused(), true);
+            assert.strictEqual(pullCalls, 0);
+            assert.strictEqual(pushCalls, 0);
+
+            await replicationState.start();
+            assert.strictEqual(replicationState.isPaused(), false);
+            await replicationState.awaitInSync();
+            assert.ok(pullCalls > 0);
+            assert.ok(pushCalls > 0);
+            const docs = await db2.todos.find({ sort: [{ id: 'asc' }] }).exec();
+            assert.deepStrictEqual(docs.map(doc => doc.id), ['todo1', 'todo2']);
+
+            await replicationState.cancel();
+            await db2.close();
+        });
     });
     describe('pull-only', () => {
         it('should not store document metadata on pull only replications', async () => {

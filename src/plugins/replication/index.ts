@@ -171,6 +171,12 @@ export class RxReplicationState<RxDocType, CheckpointType> {
 
     private callOnStart: () => void = undefined as any;
 
+    /**
+     * True when pause() was called while the collection
+     * still needed a schema migration and start() was not called since.
+     */
+    private pausedDuringMigration: boolean = false;
+
     public internalReplicationState?: RxStorageInstanceReplicationState<RxDocType>;
     public metaInstance?: RxStorageInstance<RxStorageReplicationMeta<RxDocType, CheckpointType>, any, {}, any>;
     public remoteEvents$: Subject<RxReplicationPullStreamItem<RxDocType, CheckpointType>> = new Subject();
@@ -204,7 +210,10 @@ export class RxReplicationState<RxDocType, CheckpointType> {
          * pause(), cancel() and remove() do not have to wait for the migration.
          * When the replication is canceled or the collection is closed
          * during the wait, start() resolves without starting.
+         * A pause() during the wait is kept so that the replication
+         * is paused from its first moment on, until the next start() call.
          */
+        this.pausedDuringMigration = false;
         if (this.collection.migrationInProgress) {
             return new Promise<void>(res => {
                 const done = () => {
@@ -225,7 +234,10 @@ export class RxReplicationState<RxDocType, CheckpointType> {
                 if (this.isStopped() || this.collection.closed) {
                     return;
                 }
-                return this.start();
+                const pausedDuringMigration = this.pausedDuringMigration;
+                const started = this.start();
+                this.pausedDuringMigration = pausedDuringMigration;
+                return started;
             });
         }
         const startPromise = this.startQueue.then(() => {
@@ -254,7 +266,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
         }
 
         if (this.internalReplicationState) {
-            this.internalReplicationState.events.paused.next(false);
+            this.internalReplicationState.events.paused.next(this.pausedDuringMigration);
         }
 
         /**
@@ -483,6 +495,10 @@ export class RxReplicationState<RxDocType, CheckpointType> {
             }
         });
 
+        if (this.pausedDuringMigration) {
+            this.internalReplicationState.events.paused.next(true);
+        }
+
         this.subs.push(
             this.internalReplicationState.events.error.subscribe((err: RxError | RxTypeError) => {
                 this.subjects.error.next(err);
@@ -538,6 +554,13 @@ export class RxReplicationState<RxDocType, CheckpointType> {
     }
 
     pause() {
+        /**
+         * A non-live replication cancels itself when it is in sync,
+         * which it cannot reach while it is paused.
+         */
+        if (this.live && this.collection.migrationInProgress) {
+            this.pausedDuringMigration = true;
+        }
         this.startQueue = this.startQueue.then(() => {
             /**
              * It must be possible to .pause() the replication
