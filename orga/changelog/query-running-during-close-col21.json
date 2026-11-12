@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX a query that is still running while its collection or database gets closed no longer fails with a raw storage error like `RxStorageInstanceDexie is closed` or the Dexie.js `DatabaseClosedError`. `RxQuery.exec()` now rejects with the `COL21` RxError and the `RxQuery.$` observable no longer emits an error",
+    "links": [],
+    "priority": 4
+}

@@ -66,6 +66,7 @@ import {
 
 } from './rx-query-helper.ts';
 import { RxQuerySingleResult } from './rx-query-single-result.ts';
+import { ensureRxCollectionIsNotClosed } from './rx-collection-helper.ts';
 
 let _queryCount = 0;
 const newQueryID = function (): number {
@@ -181,7 +182,15 @@ export class RxQueryBase<
                  * When enabled, liveQueryUpdateThrottleTime groups change-triggered
                  * reruns before this point so downstream throttling is not too late.
                  */
-                mergeMap(() => _ensureEqual(this as any)),
+                mergeMap(() => _ensureEqual(this as any).catch(err => {
+                    /**
+                     * Closing the collection while the query runs
+                     * must not make the observable emit an error.
+                     */
+                    if (!this.collection.closed) {
+                        throw err;
+                    }
+                })),
                 // use the current result set, written by _ensureEqual().
                 map(() => this._result),
                 // do not run stuff above for each new subscriber, only once.
@@ -415,7 +424,11 @@ export class RxQueryBase<
          * this will make sure that errors in the query which throw inside of the RxStorage,
          * will be thrown at this execution context and not in the background.
          */
-        await _ensureEqual(this as any);
+        await _ensureEqual(this as any).catch(err => {
+            // a storage that got closed while the query was running, rejects with its own error.
+            ensureRxCollectionIsNotClosed(this.collection);
+            throw err;
+        });
         const useResult = ensureNotFalsy(this._result);
         return useResult.getValue(throwIfMissing);
     }

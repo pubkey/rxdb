@@ -33,6 +33,11 @@ addRxPlugin(RxDBQueryBuilderPlugin);
 import { firstValueFrom } from 'rxjs';
 import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.mjs';
 import { getRxStorageMemory } from '../../plugins/storage-memory/index.mjs';
+import { getRxStorageDexie } from '../../plugins/storage-dexie/index.mjs';
+import {
+    indexedDB as fakeIndexedDB,
+    IDBKeyRange as fakeIDBKeyRange
+} from 'fake-indexeddb';
 
 describe('rx-query.test.ts', () => {
     describe('.constructor', () => {
@@ -640,6 +645,63 @@ describe('rx-query.test.ts', () => {
             assert.strictEqual(allDocs.length, 10);
 
             db2.close();
+        });
+        it('exec() and $ of a query that is running while the collection gets closed must not fail with a raw storage error', async () => {
+            const db = await createRxDatabase({
+                name: randomToken(10),
+                storage: wrappedValidateAjvStorage({
+                    storage: getRxStorageDexie({
+                        indexedDB: fakeIndexedDB,
+                        IDBKeyRange: fakeIDBKeyRange
+                    })
+                })
+            });
+            const cols = await db.addCollections({
+                humans: {
+                    schema: schemas.human
+                }
+            });
+            const c = cols.humans;
+            await c.bulkInsert([
+                schemaObjects.humanData(),
+                schemaObjects.humanData()
+            ]);
+
+            const emitted: number[] = [];
+            const errors: any[] = [];
+            const sub = c.find({ selector: { age: { $gte: 0 } } }).$.subscribe({
+                next: docs => emitted.push(docs.length),
+                error: err => errors.push(err)
+            });
+
+            /**
+             * The writes run while the queries are running,
+             * so the queries have to run again over the storage
+             * which is closed at that time.
+             */
+            const findPromise = c.find().exec();
+            const countPromise = c.count().exec();
+            const findByIdsPromise = c.findByIds(['foobar']).exec();
+            await c.insert(schemaObjects.humanData());
+            await c.insert(schemaObjects.humanData());
+            await c.close();
+
+            const results = await Promise.allSettled([
+                findPromise,
+                countPromise,
+                findByIdsPromise
+            ]);
+            await promiseWait(100);
+            results.forEach(result => {
+                if (result.status === 'rejected') {
+                    assert.strictEqual(result.reason.code, 'COL21', String(result.reason));
+                }
+            });
+            assert.deepStrictEqual(errors, []);
+            emitted.forEach(length => assert.ok(length >= 2));
+
+            sub.unsubscribe();
+            await db.close();
         });
         it('exec(true) should throw if missing', async () => {
             const c = await humansCollection.create(0);
