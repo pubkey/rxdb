@@ -2058,6 +2058,74 @@ describe('replication-graphql.test.ts', () => {
                 assert.ok(parsed);
                 assert.equal(normalizeString(output.query), normalizeString(want));
             });
+            it('should select an object field without properties as leaf field', async () => {
+                const input = {
+                    schema: {
+                        version: 0,
+                        primaryKey: 'id',
+                        type: 'object',
+                        properties: {
+                            id: {
+                                type: 'string',
+                                maxLength: 100
+                            },
+                            meta: {
+                                type: 'object'
+                            },
+                            nested: {
+                                type: 'object',
+                                properties: {
+                                    name: {
+                                        type: 'string'
+                                    },
+                                    freeForm: {
+                                        type: 'object',
+                                        properties: {}
+                                    }
+                                }
+                            },
+                            updatedAt: {
+                                type: 'number'
+                            }
+                        },
+                        required: ['id', 'updatedAt']
+                    },
+                    checkpointFields: [
+                        'id',
+                        'updatedAt'
+                    ]
+                } as const;
+                const pullOutput = await pullQueryBuilderFromRxSchema(
+                    'human',
+                    {
+                        schema: input.schema,
+                        checkpointFields: input.checkpointFields.slice(0)
+                    }
+                )(null, batchSize);
+                const streamOutput = await pullStreamBuilderFromRxSchema(
+                    'human',
+                    {
+                        schema: input.schema,
+                        checkpointFields: input.checkpointFields.slice(0)
+                    }
+                )({});
+                const pushOutput = await pushQueryBuilderFromRxSchema(
+                    'human',
+                    {
+                        schema: input.schema,
+                        checkpointFields: input.checkpointFields.slice(0)
+                    }
+                )([]);
+
+                [pullOutput, streamOutput, pushOutput].forEach(output => {
+                    assert.ok(parseQuery(output.query));
+                    assert.ok(
+                        normalizeString(output.query).includes(
+                            normalizeString('id meta nested { name freeForm } updatedAt _deleted')
+                        )
+                    );
+                });
+            });
             it('issue #7532 Array type is omitted in GraphQL query builder', async () => {
                 const builder = pullQueryBuilderFromRxSchema(
                     'human', {
