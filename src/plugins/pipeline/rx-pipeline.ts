@@ -83,6 +83,12 @@ export class RxPipeline<RxDocType> {
     ) {
         this.checkpointId = 'rx-pipeline-' + identifier;
         this.source.onClose.push(() => this.close());
+        /**
+         * The checkpoint belongs to the derived data in the destination.
+         * When that data is removed, a pipeline with the same identifier
+         * must process all source documents again.
+         */
+        this.destination.onRemove.push(() => this.remove());
         this.destination.awaitBeforeReads.add(this.waitBeforeWriteFn);
         this.subs.push(
             this.source.eventBulks$.pipe(
@@ -224,8 +230,16 @@ export class RxPipeline<RxDocType> {
                 previous: checkpointDoc,
                 document: newDoc,
             }], 'rx-pipeline');
-            if (writeResult.error.length > 0) {
-                throw writeResult.error;
+            /**
+             * Multiple pipeline instances with the same identifier
+             * can remove the same checkpoint at the same time.
+             * A conflict with an already deleted checkpoint is fine.
+             */
+            const errors = writeResult.error.filter(
+                err => err.status !== 409 || !err.documentInDb._deleted
+            );
+            if (errors.length > 0) {
+                throw errors;
             }
         }
     }

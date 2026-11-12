@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX the checkpoint of an RxPipeline survived `destination.remove()`, so a pipeline that was created again with the same identifier on the re-created destination collection skipped the already processed source documents. Removing the destination collection now also removes the pipeline checkpoint, the same as `pipeline.remove()`",
+    "links": [],
+    "priority": 5
+}
