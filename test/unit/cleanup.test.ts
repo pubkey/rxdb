@@ -148,6 +148,68 @@ describe('cleanup.test.js', () => {
             await replicationState.cancel();
             await db.remove();
         });
+        it('should not purge a deleted document that a paused replication has not pushed yet', async () => {
+            const db = await createRxDatabase({
+                name: randomToken(10),
+                storage: config.storage.getStorage()
+            });
+            const cols = await db.addCollections({
+                humans: {
+                    schema: schemas.human
+                }
+            });
+            const collection: RxCollection<HumanDocumentType> = cols.humans;
+
+            const serverState = new Map<string, boolean>();
+            const replicationState = replicateRxCollection<HumanDocumentType, any>({
+                collection,
+                replicationIdentifier: 'my-rep',
+                deletedField: '_deleted',
+                waitForLeadership: false,
+                pull: {
+                    handler() {
+                        return Promise.resolve({
+                            checkpoint: {},
+                            documents: []
+                        });
+                    }
+                },
+                push: {
+                    handler(rows) {
+                        rows.forEach(row => serverState.set(
+                            row.newDocumentState.passportId,
+                            row.newDocumentState._deleted
+                        ));
+                        return Promise.resolve([]);
+                    }
+                },
+                live: true
+            });
+
+            const doc = await collection.insert(schemaObjects.humanData());
+            await replicationState.awaitInSync();
+            assert.strictEqual(serverState.get(doc.primary), false);
+
+            await replicationState.pause();
+            await doc.remove();
+            const cleanupPromise = collection.cleanup(0);
+            await Promise.race([
+                cleanupPromise,
+                wait(isFastMode() ? 200 : 500)
+            ]);
+            await replicationState.start();
+            await cleanupPromise;
+            await replicationState.awaitInSync();
+            assert.strictEqual(serverState.get(doc.primary), true);
+
+            // a canceled replication does not block the cleanup
+            await replicationState.pause();
+            const cleanupPromiseCanceled = collection.cleanup(0);
+            await replicationState.cancel();
+            await cleanupPromiseCanceled;
+
+            await db.remove();
+        });
         /**
          * While the metadata of a replication is append-only
          * we still have to run the cleanup on it because some storages

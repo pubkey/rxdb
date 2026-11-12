@@ -1,9 +1,9 @@
 import type { RxCleanupPolicy, RxCollection } from '../../types/index.d.ts';
-import { PROMISE_RESOLVE_TRUE, getFromMapOrCreate } from '../../plugins/utils/index.ts';
+import { PROMISE_RESOLVE_TRUE, ensureNotFalsy, getFromMapOrCreate } from '../../plugins/utils/index.ts';
 import { REPLICATION_STATE_BY_COLLECTION } from '../replication/index.ts';
 import { DEFAULT_CLEANUP_POLICY } from './cleanup-helper.ts';
 import { runAsyncPluginHooks } from '../../hooks.ts';
-import { filter, firstValueFrom } from 'rxjs';
+import { filter, firstValueFrom, merge } from 'rxjs';
 
 /**
  * Even on multiple databases,
@@ -83,6 +83,32 @@ export async function cleanupRxCollection(
                     }
                 })
             );
+            /**
+             * awaitInSync() resolves on a paused replication
+             * while its upstream ignores all local changes.
+             * A purged tombstone could never be pushed after the next start(),
+             * so we wait until the replication is started again or canceled
+             * and then await the sync again.
+             */
+            const paused = replicationStates.filter(
+                replicationState => replicationState.isPaused() && !replicationState.isStopped()
+            );
+            if (paused.length > 0) {
+                await Promise.all(
+                    paused.map(replicationState => firstValueFrom(
+                        merge(
+                            ensureNotFalsy(replicationState.internalReplicationState).events.paused.pipe(
+                                filter(isPaused => !isPaused)
+                            ),
+                            replicationState.canceled$.pipe(
+                                filter(isCanceled => !!isCanceled)
+                            )
+                        ),
+                        { defaultValue: null }
+                    ))
+                );
+                continue;
+            }
         }
         if (rxCollection.closed) {
             return false;

@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX the cleanup with `awaitReplicationsInSync: true` purged deleted documents while a replication of the collection was paused, so the deletion was never pushed to the server after `start()`. The cleanup now waits until the paused replication is started again or canceled.",
+    "links": [],
+    "priority": 5
+}

@@ -110,6 +110,8 @@ await myRxCollection.cleanup(1000);
 await myRxCollection.cleanup(0);
 ```
 
+When `awaitReplicationsInSync` is `true` and a [replication](./replication.md) of the collection is paused with `pause()`, the cleanup does not purge anything because the paused replication has not pushed the deleted documents yet. The promise returned by `cleanup()` resolves after the replication is started again with `start()` and in sync, or after it is canceled.
+
 ## Using the cleanup plugin to empty a collection
 
 When you have a collection with documents and you want to empty it by purging all documents, the recommended way is to call `myRxCollection.remove()`. However, this will destroy the JavaScript class of the collection and stop all listeners and observables.
