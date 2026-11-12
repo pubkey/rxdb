@@ -1221,10 +1221,12 @@ function _incrementalUpsertEnsureRxDocumentExists<RxDocType>(
 > {
     /**
      * Optimisation shortcut,
-     * first try to find the document in the doc-cache
+     * first try to find the document in the doc-cache.
+     * A cached deleted state is not used because the storage
+     * might no longer have that document after a cleanup.
      */
     const docDataFromCache = rxCollection._docCache.getLatestDocumentDataIfExists(primary);
-    if (docDataFromCache) {
+    if (docDataFromCache && !docDataFromCache._deleted) {
         return Promise.resolve({
             doc: rxCollection._docCache.getCachedRxDocuments([docDataFromCache])[0],
             inserted: false
