@@ -142,5 +142,7 @@ export declare class RxQuery<
     }): RxQuery<RxDocumentType, RxQueryResult, OrmMethods, Reactivity>;
     exists(queryObj: any): RxQuery<RxDocumentType, RxQueryResult, OrmMethods, Reactivity>;
     elemMatch(queryObj: any): RxQuery<RxDocumentType, RxQueryResult, OrmMethods, Reactivity>;
-    mod(p1: any, p2: any, p3: any): RxQuery<RxDocumentType, RxQueryResult, OrmMethods, Reactivity>;
+    mod(queryObj: [number, number]): RxQuery<RxDocumentType, RxQueryResult, OrmMethods, Reactivity>;
+    mod(divisor: number, remainder: number): RxQuery<RxDocumentType, RxQueryResult, OrmMethods, Reactivity>;
+    mod(path: keyof RxDocumentType | string, divisor: number, remainder: number): RxQuery<RxDocumentType, RxQueryResult, OrmMethods, Reactivity>;
 }

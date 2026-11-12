@@ -152,25 +152,27 @@ export class NoSqlQueryBuilderClass<DocType> {
 
     /**
      * Specifies a `$mod` condition
+     * ####Example
+     *     query.where('age').mod([2, 0])
+     *     query.where('age').mod(2, 0)
+     *     query.mod('age', 2, 0)
+     *     query.mod('age', [2, 0])
      */
-    mod(_path: string, _val: number): NoSqlQueryBuilder<DocType> {
+    mod(val: [number, number]): NoSqlQueryBuilder<DocType>;
+    mod(divisor: number, remainder: number): NoSqlQueryBuilder<DocType>;
+    mod(path: string, val: [number, number]): NoSqlQueryBuilder<DocType>;
+    mod(path: string, divisor: number, remainder: number): NoSqlQueryBuilder<DocType>;
+    mod(...args: any[]): NoSqlQueryBuilder<DocType> {
         let val;
         let path;
 
-        if (1 === arguments.length) {
-            this._ensurePath('mod');
-            val = arguments[0];
-            path = this._path;
-        } else if (2 === arguments.length && !Array.isArray(arguments[1])) {
-            this._ensurePath('mod');
-            val = (arguments as any).slice();
-            path = this._path;
-        } else if (3 === arguments.length) {
-            val = (arguments as any).slice(1);
-            path = arguments[0];
+        if (typeof args[0] === 'string') {
+            path = args[0];
+            val = Array.isArray(args[1]) ? args[1] : [args[1], args[2]];
         } else {
-            val = arguments[1];
-            path = arguments[0];
+            this._ensurePath('mod');
+            path = this._path;
+            val = Array.isArray(args[0]) ? args[0] : [args[0], args[1]];
         }
 
         const conds = (this._conditions as any)[path] || ((this._conditions as any)[path] = {});
