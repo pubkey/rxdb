@@ -737,6 +737,12 @@ export const ERROR_MESSAGES = {
         fix: 'Use the same password.',
         docs: 'https://rxdb.info/json-import-export.html?console=errors&code=JD3'
     },
+    JD4: {
+        message: 'importJSON(): documents of the dump already exist in the collection and the conflict mode is "abort"',
+        cause: 'importJSON() was called with the conflict mode "abort" and at least one primary key of the dump already exists in the target collection. Nothing was imported.',
+        fix: 'Remove the intersecting documents first or call importJSON() with the conflict mode "skip" or "merge".',
+        docs: 'https://rxdb.info/json-import-export.html?console=errors&code=JD4'
+    },
 
     // plugins/leader-election.js
 

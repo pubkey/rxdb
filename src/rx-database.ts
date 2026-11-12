@@ -12,6 +12,7 @@ import type {
     RxDumpDatabase,
     RxDumpDatabaseAny,
     RxDumpOptions,
+    RxDumpImportConflictMode,
     BackupOptions,
     RxStorage,
     RxStorageInstance,
@@ -571,7 +572,12 @@ export class RxDatabaseBase<
      * @param _exportedJSON The previously exported data from the `<db>.exportJSON()` method.
      * @note When an interface is loaded in this collection all base properties of the type are typed as `any`
      * since data could be encrypted.
+     * @param _conflictMode What to do with documents of the dump that already exist in the collections. [default='skip']
      */
+    importJSON(
+        _exportedJSON: RxDumpDatabaseAny<Collections>,
+        _conflictMode?: RxDumpImportConflictMode
+    ): Promise<void>;
     importJSON(_exportedJSON: RxDumpDatabaseAny<Collections>): Promise<void> {
         throw pluginMissing('json-dump');
     }

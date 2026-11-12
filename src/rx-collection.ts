@@ -69,6 +69,7 @@ import type {
     RxDumpCollection,
     RxDumpCollectionAny,
     RxDumpOptions,
+    RxDumpImportConflictMode,
     MangoQuery,
     MangoQueryNoLimit,
     RxCacheReplacementPolicy,
@@ -947,7 +948,12 @@ export class RxCollectionBase<
     /**
      * Import the parsed JSON export into the collection.
      * @param _exportedJSON The previously exported data from the `<collection>.exportJSON()` method.
+     * @param _conflictMode What to do with documents of the dump that already exist in the collection. [default='skip']
      */
+    importJSON(
+        _exportedJSON: RxDumpCollectionAny<RxDocumentType>,
+        _conflictMode?: RxDumpImportConflictMode
+    ): Promise<void>;
     importJSON(_exportedJSON: RxDumpCollectionAny<RxDocumentType>): Promise<void> {
         throw pluginMissing('json-dump');
     }
