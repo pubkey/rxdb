@@ -218,6 +218,86 @@ describe('query-builder.test.js', () => {
 
             c.database.close();
         });
+        it('should keep a selector shorthand value when exists() or elemMatch() is chained on the same field', async () => {
+            const c = await humansCollection.create(0);
+            await c.bulkInsert([
+                { passportId: 'a', firstName: 'Alice', lastName: 'A', age: 0 },
+                { passportId: 'b', firstName: 'Bob', lastName: 'B', age: 7 },
+                { passportId: 'c', firstName: 'Carol', lastName: 'C', age: 7 }
+            ]);
+
+            const existsQuery = c.find({
+                selector: {
+                    age: 7
+                }
+            }).where('age').exists(true);
+            assert.deepStrictEqual(existsQuery.mangoQuery.selector, {
+                age: {
+                    $eq: 7,
+                    $exists: true
+                }
+            });
+            const existsResult = await existsQuery.exec();
+            assert.deepStrictEqual(existsResult.map(d => d.passportId), ['b', 'c']);
+
+            const falsyShorthandResult = await c.find({
+                selector: {
+                    age: 0
+                }
+            }).where('age').exists(true).exec();
+            assert.deepStrictEqual(falsyShorthandResult.map(d => d.passportId), ['a']);
+
+            const elemMatchQuery = c.find({
+                selector: {
+                    age: 7
+                }
+            }).where('age').elemMatch({ $gt: 3 });
+            assert.deepStrictEqual(elemMatchQuery.mangoQuery.selector, {
+                age: {
+                    $eq: 7,
+                    $elemMatch: {
+                        $gt: 3
+                    }
+                }
+            });
+
+            c.database.close();
+        });
+        it('should merge a null operator value via .where(object)', async () => {
+            const c = await humansCollection.create(0);
+            await c.bulkInsert([
+                { passportId: 'a', firstName: 'Alice', lastName: 'A', age: 5 },
+                { passportId: 'b', firstName: 'Bob', lastName: 'B', age: 7 }
+            ]);
+
+            const query = c.find().where({
+                firstName: {
+                    $ne: 'Alice'
+                }
+            }).where({
+                firstName: {
+                    $ne: null
+                }
+            });
+            assert.deepStrictEqual(query.mangoQuery.selector, {
+                firstName: {
+                    $ne: null
+                }
+            });
+            const result = await query.exec();
+            assert.deepStrictEqual(result.map(d => d.passportId), ['a', 'b']);
+
+            const sameAsMango = await c.find({
+                selector: {
+                    firstName: {
+                        $ne: null
+                    }
+                }
+            }).exec();
+            assert.deepStrictEqual(sameAsMango.map(d => d.passportId), ['a', 'b']);
+
+            c.database.close();
+        });
         it('should not have an all() method because $all is not a supported query operator', async () => {
             const c = await humansCollection.create(0);
             const query = c.find();

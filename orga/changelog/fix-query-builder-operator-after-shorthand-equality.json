@@ -1,0 +1,5 @@
+{
+    "text": "FIX query-builder plugin: `exists()`, `mod()` and `elemMatch()` on a field that already has a shorthand equality value in the selector threw a raw `TypeError` (or dropped a falsy value like `0`). They now convert the value to `$eq` like `gt()` and `in()` do. Merging a `null` value with `where()` no longer throws a `TypeError`.",
+    "links": [],
+    "priority": 4
+}

@@ -173,7 +173,7 @@ export class NoSqlQueryBuilderClass<DocType> {
             path = arguments[0];
         }
 
-        const conds = (this._conditions as any)[path] || ((this._conditions as any)[path] = {});
+        const conds = getOperatorConditions(this._conditions, path);
         conds.$mod = val;
         return this as any;
     }
@@ -207,7 +207,7 @@ export class NoSqlQueryBuilderClass<DocType> {
             val = arguments[1];
         }
 
-        const conds = (this._conditions as any)[path] || ((this._conditions as any)[path] = {});
+        const conds = getOperatorConditions(this._conditions, path);
         conds.$exists = val;
         return this as any;
     }
@@ -257,7 +257,7 @@ export class NoSqlQueryBuilderClass<DocType> {
             criteria = criteria._conditions;
         }
 
-        const conds = (this._conditions as any)[path] || ((this._conditions as any)[path] = {});
+        const conds = getOperatorConditions(this._conditions, path);
         conds.$elemMatch = criteria;
         return this as any;
     }
@@ -586,6 +586,20 @@ function _pushArr(opts: any, field: string, value: any) {
 
 function isOperatorObject(value: any): boolean {
     return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+/**
+ * Returns the operator object of the given path so that an operator can be set on it.
+ * A shorthand value like { age: 5 } is converted to { age: { $eq: 5 } }
+ * so that the equality condition is kept next to the new operator.
+ */
+function getOperatorConditions(conditions: any, path: string): any {
+    const existing = conditions[path];
+    if (isOperatorObject(existing)) {
+        return existing;
+    }
+    conditions[path] = existing === undefined ? {} : { $eq: existing };
+    return conditions[path];
 }
 
 /**
