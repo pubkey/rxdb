@@ -1,7 +1,8 @@
 import {
     firstValueFrom,
     filter,
-    mergeMap
+    mergeMap,
+    Subscription
 } from 'rxjs';
 import { newRxError } from '../rx-error.ts';
 import { getWrittenDocumentsFromBulkWriteResponse, stackCheckpoints } from '../rx-storage-helper.ts';
@@ -134,15 +135,24 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
     addNewTask('RESYNC');
 
     /**
-     * True when the upstream emitted an error while it was active
-     * and did not finish a push or get idle since then.
+     * Emits the errors of a failed push to the master.
+     * Errors of the pull direction or of the storage instances
+     * are emitted on the same subject, they say nothing about the running push.
+     */
+    const pushError$ = state.events.error.pipe(
+        filter(err => !!err.parameters && err.parameters.direction === 'push')
+    );
+
+    /**
+     * True when a push failed while the upstream was active
+     * and the upstream did not finish a push or get idle since then.
      * A failed push might be retried forever by the replication handler,
      * so the downstream must not wait for the upstream while this is set.
      */
     let upstreamHasFailed = false;
     if (!state.events.canceled.getValue()) {
         const upstreamFailedSubs = [
-            state.events.error.subscribe(() => {
+            pushError$.subscribe(() => {
                 if (state.events.active.up.getValue()) {
                     upstreamHasFailed = true;
                 }
@@ -418,10 +428,15 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
                              * so that the other pulled documents are still written.
                              */
                             if (!upstreamHasFailed) {
-                                await Promise.race([
-                                    state.streamQueue.up,
-                                    firstValueFrom(state.events.error, { defaultValue: undefined })
-                                ]);
+                                const pushErrorSub = new Subscription();
+                                try {
+                                    await Promise.race([
+                                        state.streamQueue.up,
+                                        new Promise<void>(res => pushErrorSub.add(pushError$.subscribe(() => res())))
+                                    ]);
+                                } finally {
+                                    pushErrorSub.unsubscribe();
+                                }
                             }
                             if (upstreamHasFailed || state.events.canceled.getValue()) {
                                 return PROMISE_RESOLVE_VOID;
