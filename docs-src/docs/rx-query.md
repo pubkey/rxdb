@@ -252,6 +252,26 @@ This works in contrast to most other databases where a query without sorting wou
 :::
 
 
+## Limit {#limit}
+
+The `limit` of a query sets the maximum number of documents in the result. Together with `sort` and `skip` it is used for [pagination](./rx-query-examples.md#pagination-with-skip-and-limit).
+
+Setting `limit: 0` makes the query return zero documents. This behavior is equal to SQL databases, where `LIMIT 0` returns no rows. It is required because the limit is often calculated from variables in your own code. When that calculation ends at `0`, it makes sense to fetch zero documents instead of all documents of the collection. To get all documents, leave out the `limit`.
+
+```ts
+const pageSize = 0;
+const results = await myDatabase.todos.find({
+  selector: {},
+  sort: [{ priority: 'desc' }],
+  limit: pageSize
+}).exec();
+// > []
+```
+
+A query with `limit: 0` does not read from the [RxStorage](./rx-storage.md). When it is [observed](#observe), it emits an empty array once and does not emit again after writes.
+
+A negative `limit` throws the error [`QU23`](./errors.md#QU23) when the query is created. This check is part of the RxDB core, so it also throws when [dev-mode](./dev-mode.md) is not used. The same rules apply to the `limit()` method of the [query builder plugin](./query-builder.md#limit-and-skip).
+
 ## Setting a specific index
 
 By default, the query will be sent to the RxStorage, where a query planner will determine which one of the available indexes must be used. This is the step you would otherwise write by hand, as shown in [IndexedDB query](./articles/indexeddb/indexeddb-query.md).
@@ -462,6 +482,8 @@ const preparedQuery = prepareQuery(
 );
 const result = await myDatabase.todos.storageInstance.query(preparedQuery);
 ```
+
+Same as with a normal query, the storage returns no documents when the prepared query has `limit: 0`. The check for a [negative limit](#limit) runs when an `RxQuery` is created, so a prepared query that you build yourself must not contain a negative `limit`.
 
 Keep in mind what you lose when you query the storage directly:
 
