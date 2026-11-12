@@ -342,6 +342,9 @@ export class RxDatabaseBase<
     async addCollections<CreatedCollections = Partial<Collections>>(collectionCreators: {
         [key in keyof CreatedCollections]: RxCollectionCreator<any>
     }): Promise<{ [key in keyof CreatedCollections]: RxCollection<any, {}, {}, {}, Reactivity> }> {
+        if (this.closePromise) {
+            throw newRxError('DB15', { database: this.name });
+        }
         const jsonSchemas: { [key in keyof CreatedCollections]: RxJsonSchema<any> } = {} as any;
         const schemas: { [key in keyof CreatedCollections]: RxSchema<any> } = {} as any;
         const bulkPutDocs: BulkWriteRow<InternalStoreCollectionDocType>[] = [];
