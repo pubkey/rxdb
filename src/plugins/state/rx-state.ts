@@ -37,6 +37,7 @@ import {
 import {
     RX_STATE_COLLECTION_SCHEMA,
     isValidWeakMapKey,
+    toRxStateReadPath,
     toRxStateWritePath,
     nextRxStateId
 } from './helpers.ts';
@@ -226,7 +227,7 @@ export class RxStateBase<T, Reactivity = unknown> {
                     for (let index = 0; index < useWrites.length; index++) {
                         const writeRow = useWrites[index];
                         const path = toRxStateWritePath(newState, writeRow.path);
-                        const value = writeRow.path === '' ? newState : getProperty(newState, writeRow.path);
+                        const value = writeRow.path === '' ? newState : getProperty(newState, toRxStateReadPath(writeRow.path));
                         let newValue: any;
                         try {
                             newValue = writeRow.modifier(value);
@@ -245,7 +246,7 @@ export class RxStateBase<T, Reactivity = unknown> {
                             if (writeRow.path === '') {
                                 newState = {};
                             } else {
-                                deleteProperty(newState, writeRow.path);
+                                deleteProperty(newState, path);
                             }
                             ops.push({
                                 k: '',
@@ -351,7 +352,7 @@ export class RxStateBase<T, Reactivity = unknown> {
             if (operation.k === '') {
                 state = clone(operation.v);
             } else {
-                setProperty(state, operation.k, clone(operation.v));
+                setProperty(state, toRxStateWritePath(state, operation.k), clone(operation.v));
             }
         }
         this._state = state;
@@ -361,7 +362,7 @@ export class RxStateBase<T, Reactivity = unknown> {
         if (!path) {
             ret = this._state;
         } else {
-            ret = getProperty(this._state, path);
+            ret = getProperty(this._state, toRxStateReadPath(path));
         }
 
         /**
@@ -570,7 +571,7 @@ export function mergeOperationsIntoState<T>(
         if (operation.k === '') {
             state = clone(operation.v);
         } else {
-            setProperty(state, operation.k, clone(operation.v));
+            setProperty(state, toRxStateWritePath(state, operation.k), clone(operation.v));
         }
     }
     return state;
