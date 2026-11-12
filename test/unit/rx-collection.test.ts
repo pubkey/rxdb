@@ -2592,6 +2592,53 @@ describe('rx-collection.test.ts', () => {
 
             c.database.close();
         });
+        it('should not emit again when the write does not change the result', async () => {
+            for (const eventReduce of [false, true]) {
+                const db = await createRxDatabase({
+                    name: randomToken(10),
+                    storage: config.storage.getStorage(),
+                    eventReduce,
+                    liveQueryUpdateThrottleTime: 20
+                });
+                const collections = await db.addCollections({
+                    humans: {
+                        schema: schemas.primaryHuman
+                    }
+                });
+                const c: RxCollection<HumanDocumentType> = collections.humans;
+                await c.bulkInsert([
+                    schemaObjects.humanData('id-b'),
+                    schemaObjects.humanData('other')
+                ]);
+                const emitted: string[][] = [];
+                const sub = c.findByIds(['id-b', 'id-a']).$.subscribe(result => {
+                    emitted.push(
+                        Array.from(result.values()).map(d => d.primary + '|' + d.revision).sort()
+                    );
+                });
+                await waitUntil(() => emitted.length === 1);
+
+                await c.insert(schemaObjects.humanData('id-a'));
+                await waitUntil(() => emitted.length === 2);
+                assert.strictEqual(emitted[1].length, 2);
+
+                // more writes than the change event buffer contains, none of them changes the result
+                const other = await c.findOne('other').exec(true);
+                await other.incrementalPatch({ firstName: 'foobar' });
+                await c.bulkInsert(
+                    new Array(110).fill(0).map((_, i) => schemaObjects.humanData('unrelated' + i))
+                );
+                await c.find().exec();
+                await wait(isFastMode() ? 100 : 200);
+
+                assert.deepStrictEqual(emitted.slice(2), []);
+                const execResult = await c.findByIds(['id-b', 'id-a']).exec();
+                assert.strictEqual(execResult.size, 2);
+
+                sub.unsubscribe();
+                await db.remove();
+            }
+        });
 
     });
     describe('issues', () => {

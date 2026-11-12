@@ -835,12 +835,30 @@ function __ensureEqual<RxDocType>(rxQuery: RxQueryBase<RxDocType, any>): Promise
                     }
                     return ret;
                 }
+                const primaryPath = rxQuery.collection.schema.primaryPath;
+                const previousResult = rxQuery._result;
                 if (
-                    !rxQuery._result ||
-                    !areRxDocumentArraysEqual(
-                        rxQuery.collection.schema.primaryPath,
-                        newResultData,
-                        rxQuery._result.docsData
+                    !previousResult ||
+                    (
+                        !areRxDocumentArraysEqual(
+                            primaryPath,
+                            newResultData,
+                            previousResult.docsData
+                        ) &&
+                        /**
+                         * The result of a findByIds() query is a Map and its documents
+                         * are not always read in the same order. So the result is also unchanged
+                         * when it contains the same documents in a different order.
+                         */
+                        !(
+                            rxQuery.op === 'findByIds' &&
+                            newResultData.length === previousResult.docsData.length &&
+                            areRxDocumentArraysEqual(
+                                primaryPath,
+                                newResultData,
+                                newResultData.map(docData => previousResult.docsDataMap.get(docData[primaryPath] as any) || {} as any)
+                            )
+                        )
                     )
                 ) {
                     ret = true; // true because results changed

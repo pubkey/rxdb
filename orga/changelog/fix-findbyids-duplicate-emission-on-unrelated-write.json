@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `findByIds().$` emitted the same result again, with the documents in a different order, after a write that did not change the result. This happened with `eventReduce: false` and after more writes than the change event buffer contains",
+    "links": [],
+    "priority": 4
+}
