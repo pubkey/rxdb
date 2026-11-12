@@ -300,7 +300,9 @@ export class RxStorageInstanceLocalstorage<RxDocType> implements RxStorageInstan
                                 ] as any,
                                 compareDocsWithIndex
                             );
-                            indexValue.splice(indexBefore, 1);
+                            if (indexBefore !== -1) {
+                                indexValue.splice(indexBefore, 1);
+                            }
                         }
                     }
                 });
@@ -512,10 +514,11 @@ export class RxStorageInstanceLocalstorage<RxDocType> implements RxStorageInstan
     }
     cleanup(minimumDeletedTime: number): Promise<boolean> {
         const maxDeletionTime = now() - minimumDeletedTime;
-        const indexValue = this.getIndex(CLEANUP_INDEX);
+        const cleanupIndex = getCleanupIndex(this.primaryPath);
+        const indexValue = this.getIndex(cleanupIndex);
         const lowerBoundString = getStartIndexStringFromLowerBound(
             this.schema,
-            CLEANUP_INDEX,
+            cleanupIndex,
             [
                 true,
                 0,
@@ -556,7 +559,9 @@ export class RxStorageInstanceLocalstorage<RxDocType> implements RxStorageInstan
                         ] as any,
                         compareDocsWithIndex
                     );
-                    indexValue.splice(indexBefore, 1);
+                    if (indexBefore !== -1) {
+                        indexValue.splice(indexBefore, 1);
+                    }
                 });
                 indexOfLower++;
             }
@@ -644,7 +649,8 @@ export async function createLocalstorageStorageInstance<RxDocType>(
         const indexAr = toArray(index);
         return indexAr;
     });
-    useIndexesFinal.push(CLEANUP_INDEX);
+    const cleanupIndex = getCleanupIndex(primaryPath);
+    useIndexesFinal.push(cleanupIndex);
     const indexes: ById<IndexMeta<RxDocType>> = {};
     useIndexesFinal.forEach((indexAr, indexId) => {
         const indexName = getIndexName(indexAr);
@@ -671,14 +677,55 @@ export async function createLocalstorageStorageInstance<RxDocType>(
         params.multiInstance,
         params.databaseInstanceToken
     );
+    rebuildCleanupIndexFromLegacyIndex(instance, cleanupIndex);
     return instance;
+}
+
+/**
+ * Stored data can still contain the cleanup index in the layout
+ * of LEGACY_CLEANUP_INDEX, whose index strings are not unique per document.
+ * When that index is found, the cleanup index is built again
+ * from the stored documents and the legacy index is removed.
+ */
+function rebuildCleanupIndexFromLegacyIndex<RxDocType>(
+    instance: RxStorageInstanceLocalstorage<RxDocType>,
+    cleanupIndex: string[]
+) {
+    const legacyKey = instance.indexesKey + getIndexName(LEGACY_CLEANUP_INDEX);
+    if (instance.localStorage.getItem(legacyKey) === null) {
+        return;
+    }
+    const getIndexableString = instance.internals.indexes[getIndexName(cleanupIndex)].getIndexableString;
+    const indexValue: LocalstorageIndex = [];
+    instance.getIndex([instance.primaryPath]).forEach(row => {
+        const docId = row[1];
+        const doc = instance.getDoc(docId);
+        if (doc) {
+            indexValue.push([
+                getIndexableString(doc),
+                docId
+            ]);
+        }
+    });
+    indexValue.sort(compareDocsWithIndex as any);
+    instance.setIndex(cleanupIndex, indexValue);
+    instance.localStorage.removeItem(legacyKey);
 }
 
 
 export function getIndexName(index: string[]): string {
     return index.join('|');
 }
-export const CLEANUP_INDEX: string[] = ['_deleted', '_meta.lwt'];
+
+/**
+ * The primary key is part of the cleanup index
+ * because all documents of one bulk write share the same _meta.lwt
+ * and each index string must belong to exactly one document.
+ */
+export function getCleanupIndex(primaryPath: string): string[] {
+    return ['_deleted', '_meta.lwt', primaryPath];
+}
+export const LEGACY_CLEANUP_INDEX: string[] = ['_deleted', '_meta.lwt'];
 export type IndexMeta<RxDocType> = {
     indexId: string;
     indexName: string;
