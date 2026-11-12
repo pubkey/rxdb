@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX a rejected write of a replication checkpoint document left the checkpoint queue rejected forever, so the replication stopped pulling and pushing, caused unhandled promise rejections, and made `awaitInSync()`, `cancel()` and `database.close()` reject. The error is now emitted on `error$` as an `RxError` and the replication continues",
+    "links": [],
+    "priority": 5
+}

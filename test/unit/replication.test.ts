@@ -1109,6 +1109,64 @@ describe('replication.test.ts', () => {
                 await remoteCollection.database.close();
             });
         });
+        it('should emit an RxError and continue to replicate when the storage rejects a checkpoint write', async () => {
+            const baseStorage = config.storage.getStorage();
+            let rejectNextCheckpointWrite = false;
+            let rejectedWrites = 0;
+            const storage: RxStorage<any, any> = {
+                name: baseStorage.name,
+                rxdbVersion: baseStorage.rxdbVersion,
+                async createStorageInstance(params) {
+                    const instance = await baseStorage.createStorageInstance(params);
+                    const originalBulkWrite = instance.bulkWrite.bind(instance);
+                    instance.bulkWrite = (rows, context) => {
+                        if (context === 'replication-set-checkpoint' && rejectNextCheckpointWrite) {
+                            rejectNextCheckpointWrite = false;
+                            rejectedWrites = rejectedWrites + 1;
+                            return Promise.reject(new Error('disk full'));
+                        }
+                        return originalBulkWrite(rows, context);
+                    };
+                    return instance;
+                }
+            };
+            const localCollection = await humansCollection.createHumanWithTimestamp(0, randomToken(10), false, storage);
+            const remoteCollection = await humansCollection.createHumanWithTimestamp(1, randomToken(10), false);
+
+            const replicationState = replicateRxCollection({
+                collection: localCollection,
+                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                live: true,
+                pull: {
+                    handler: getPullHandler(remoteCollection)
+                }
+            });
+            const emitted: (RxError | RxTypeError)[] = [];
+            replicationState.error$.subscribe(err => emitted.push(err));
+            await replicationState.awaitInitialReplication();
+            await replicationState.awaitInSync();
+            assert.strictEqual((await localCollection.find().exec()).length, 1);
+
+            rejectNextCheckpointWrite = true;
+            await remoteCollection.insert(schemaObjects.humanWithTimestampData());
+            replicationState.reSync();
+            await waitUntil(() => rejectedWrites === 1);
+            await waitUntil(() => emitted.length === 1);
+            assert.strictEqual(emitted[0].rxdb, true);
+            // the rejected write is either the checkpoint of the pull or of the push direction
+            assert.ok(['RC_PULL', 'RC_PUSH'].includes(emitted[0].code));
+
+            // the storage accepts writes again
+            await remoteCollection.insert(schemaObjects.humanWithTimestampData());
+            replicationState.reSync();
+            await replicationState.awaitInSync();
+            await waitUntil(async () => (await localCollection.find().exec()).length === 3);
+            assert.strictEqual(emitted.length, 1);
+
+            await replicationState.cancel();
+            await localCollection.database.close();
+            await remoteCollection.database.close();
+        });
         it('should clean up the replication meta storage when the get collection gets removed', async () => {
             const { localCollection, remoteCollection } = await getTestCollections({ local: isFastMode() ? 2 : 5, remote: isFastMode() ? 2 : 5 });
             const localDbName = localCollection.database.name;
