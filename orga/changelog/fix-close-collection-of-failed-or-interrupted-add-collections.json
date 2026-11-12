@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX a collection that was created by an `addCollections()` call which failed (for example with `DM4` from the `autoMigrate` migration) or which was still running when `database.close()` was called, was never closed, so its timeouts (like the 60 seconds wait of the cleanup plugin) kept the JavaScript process alive",
+    "links": [],
+    "priority": 5
+}
