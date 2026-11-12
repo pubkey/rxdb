@@ -21,7 +21,7 @@ export function merge(to: any, from: any): any {
             if (typeof to[key] === 'undefined') {
                 to[key] = from[key];
             } else {
-                if (isObject(from[key]))
+                if (isObject(from[key]) && isObject(to[key]))
                     merge(to[key], from[key]);
                 else
                     to[key] = from[key];
@@ -33,5 +33,5 @@ export function merge(to: any, from: any): any {
  * Determines if `arg` is an object.
  */
 export function isObject(arg: Object | any[] | String | Function | RegExp | any): boolean {
-    return '[object Object]' === arg.toString();
+    return arg !== null && arg !== undefined && '[object Object]' === arg.toString();
 }
