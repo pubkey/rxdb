@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `RxCollection.incrementalUpsert()` followed by `incrementalPatch()`, `incrementalModify()`, `incrementalUpdate()` or `incrementalRemove()` on the same RxDocument applied the document write first, so the upsert overwrote it. The incremental writes on one document now run in the order they were called.",
+    "links": [],
+    "priority": 5
+}

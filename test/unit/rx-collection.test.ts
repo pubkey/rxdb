@@ -2050,6 +2050,37 @@ describe('rx-collection.test.ts', () => {
 
                     c.database.close();
                 });
+                it('should run in call order with the incremental writes of the RxDocument', async () => {
+                    const c = await humansCollection.createPrimary(0);
+                    const docData = schemaObjects.simpleHumanData();
+
+                    const inserted = await c.insert(docData);
+                    await Promise.all([
+                        c.incrementalUpsert(Object.assign({}, docData, { firstName: 'upsert', lastName: 'upsert' })),
+                        inserted.incrementalPatch({ lastName: 'patch' })
+                    ]);
+                    let latest = await c.findOne(docData.passportId).exec(true);
+                    assert.strictEqual(latest.firstName, 'upsert');
+                    assert.strictEqual(latest.lastName, 'patch');
+
+                    // same on a document that was created by incrementalUpsert()
+                    const docData2 = schemaObjects.simpleHumanData();
+                    const upserted = await c.incrementalUpsert(docData2);
+                    await Promise.all([
+                        c.incrementalUpsert(Object.assign({}, docData2, { firstName: 'upsert1', lastName: 'upsert1' })),
+                        upserted.incrementalModify(d => {
+                            d.lastName = d.lastName + '-modify';
+                            return d;
+                        }),
+                        c.incrementalUpsert(Object.assign({}, docData2, { firstName: 'upsert2', lastName: 'upsert2' })),
+                        upserted.incrementalPatch({ firstName: 'patch' })
+                    ]);
+                    latest = await c.findOne(docData2.passportId).exec(true);
+                    assert.strictEqual(latest.firstName, 'patch');
+                    assert.strictEqual(latest.lastName, 'upsert2');
+
+                    c.database.close();
+                });
                 it('should work when inserting on a slow storage', async () => {
                     if (!isNode) return;
                     // use a 'slow' adapter because memory might be to fast

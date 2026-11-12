@@ -792,52 +792,84 @@ export class RxCollectionBase<
         const hasAttachments = !!this.schema.jsonSchema.attachments;
         const deleteExisting = options?.deleteExistingAttachments === true;
 
-        // ensure that it won't try 2 parallel runs
-        let queue = this._incrementalUpsertQueues.get(primary);
-        if (!queue) {
-            queue = PROMISE_RESOLVE_VOID;
-        }
-        queue = queue
-            // Normalize array-format attachments to map format
-            .then(() => {
-                if (hasAttachments) {
-                    const atts = (useJson as any)._attachments;
-                    if (atts == null || Object.keys(atts).length === 0) {
-                        return {};
-                    } else {
-                        return normalizeInlineAttachments(this.database.hashFunction, atts);
-                    }
+        // Normalize array-format attachments to map format
+        const normalizeAttachments = () => {
+            if (hasAttachments) {
+                const atts = (useJson as any)._attachments;
+                if (atts == null || Object.keys(atts).length === 0) {
+                    return {};
+                } else {
+                    return normalizeInlineAttachments(this.database.hashFunction, atts);
                 }
-                return (useJson as any)._attachments;
-            })
+            }
+            return (useJson as any)._attachments;
+        };
+        const updateExisting = (
+            docData: RxDocumentData<RxDocumentType>,
+            newAttachmentsPromise: Promise<any>
+        ) => this.incrementalWriteQueue.addWrite(
+            docData,
+            (docWriteData: any): any => newAttachmentsPromise.then(newAttachments => Object.assign({}, useJson, {
+                _attachments: deleteExisting
+                    ? newAttachments
+                    : Object.assign(
+                        {},
+                        docWriteData._attachments,
+                        newAttachments
+                    )
+            })),
+            true
+        ).then(writeResult => this._docCache.getCachedRxDocument(writeResult) as any);
+
+        const previousQueue = this._incrementalUpsertQueues.get(primary);
+
+        /**
+         * When the document is known and no other call for the same primary
+         * still has to find or insert the document, the write is added
+         * to the incremental write queue directly.
+         * This ensures that it runs in call order with the
+         * incremental writes of the RxDocument, which use the same queue.
+         * Each upsert still runs as its own storage write.
+         */
+        const docDataFromCache = this._docCache.getLatestDocumentDataIfExists(primary);
+        if (!previousQueue && docDataFromCache && !docDataFromCache._deleted) {
+            return updateExisting(
+                docDataFromCache,
+                PROMISE_RESOLVE_VOID.then(normalizeAttachments)
+            );
+        }
+
+        // ensure that it won't try 2 parallel runs
+        const result = (previousQueue || PROMISE_RESOLVE_VOID)
+            .then(normalizeAttachments)
             .then((normalizedAttachments) => {
                 (useJson as any)._attachments = normalizedAttachments;
                 return _incrementalUpsertEnsureRxDocumentExists(this as any, primary as any, useJson);
             })
             .then((wasInserted) => {
                 if (!wasInserted.inserted) {
-                    const doc = wasInserted.doc;
-                    const newAttachments = (useJson as any)._attachments;
-                    return this.incrementalWriteQueue.addWrite(
-                        doc._data as RxDocumentData<RxDocumentType>,
-                        (docWriteData: any): any => {
-                            return Object.assign({}, useJson, {
-                                _attachments: deleteExisting
-                                    ? newAttachments
-                                    : Object.assign(
-                                        {},
-                                        docWriteData._attachments,
-                                        newAttachments
-                                    )
-                            });
-                        }
-                    ).then(writeResult => this._docCache.getCachedRxDocument(writeResult) as any);
+                    return updateExisting(
+                        wasInserted.doc._data as RxDocumentData<RxDocumentType>,
+                        Promise.resolve((useJson as any)._attachments)
+                    );
                 } else {
                     return wasInserted.doc;
                 }
             });
+
+        /**
+         * The stored queue never rejects, so that a failed call
+         * does not make the later calls for the same primary fail.
+         * The entry is removed when no newer call has been queued behind it.
+         */
+        const removeFromQueues = () => {
+            if (this._incrementalUpsertQueues.get(primary) === queue) {
+                this._incrementalUpsertQueues.delete(primary);
+            }
+        };
+        const queue: Promise<void> = result.then(removeFromQueues, removeFromQueues);
         this._incrementalUpsertQueues.set(primary, queue);
-        return queue;
+        return result;
     }
 
     find(queryObj?: MangoQuery<RxDocumentType>): RxQuery<
