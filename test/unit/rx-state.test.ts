@@ -140,6 +140,43 @@ addRxPlugin(RxDBJsonDumpPlugin);
                 await state.set('nes.ted', () => 'foo2');
                 state.collection.database.remove();
             });
+            it('should set an item of an array by its index path', async () => {
+                type ListState = {
+                    list: { name: string; }[];
+                    matrix: number[][];
+                    byNr: { [k: number]: string; };
+                };
+                const databaseName = randomToken(10);
+                const database = await getDatabase(databaseName);
+                const state = await database.addState<ListState>();
+                const database2 = await getDatabase(databaseName);
+                const state2 = await database2.addState<ListState>();
+                const expected: ListState = {
+                    list: [{ name: 'a' }, { name: 'b2' }, { name: 'c2' }],
+                    matrix: [[1, 2], [3, 44]],
+                    byNr: { 1: 'one' }
+                };
+
+                await state.set('list', () => [{ name: 'a' }, { name: 'b' }, { name: 'c' }]);
+                await state.set('matrix', () => [[1, 2], [3, 4]]);
+                await state.set('byNr', () => ({}));
+                await state.set('list.1', () => ({ name: 'b2' }));
+                await state.set('list.2.name', (v: string) => v + '2');
+                await state.set('matrix.1.1', (v: number) => v * 11);
+                await state.set('byNr.1', () => 'one');
+                assert.deepStrictEqual(state.get(), expected);
+                assert.strictEqual(state.get('list.1.name'), 'b2');
+
+                await waitUntil(() => state2.get('byNr.1') === 'one');
+                assert.deepStrictEqual(state2.get(), expected);
+                await database2.close();
+                await database.close();
+
+                const database3 = await getDatabase(databaseName);
+                const state3 = await database3.addState<ListState>();
+                assert.deepStrictEqual(state3.get(), expected);
+                await database3.remove();
+            });
             it('update complete state at once', async () => {
                 const state = await getState();
                 await state.set('foo', () => 'bar');

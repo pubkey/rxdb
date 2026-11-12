@@ -2,6 +2,7 @@ import { overwritable } from '../../overwritable.ts';
 import { newRxError } from '../../rx-error.ts';
 import type { DeepReadonly, RxJsonSchema } from '../../types';
 import type { RxStateDocument } from './types';
+import { getProperty } from '../utils/index.ts';
 
 export const RX_STATE_SCHEMA_TITLE = 'RxStateCollection';
 export const RX_STATE_ID_LENGTH = 14;
@@ -65,6 +66,31 @@ export function nextRxStateId(lastId?: string): string {
     const next = parsed + 1;
     const nextString = next.toString();
     return nextString.padStart(RX_STATE_ID_LENGTH, '0');
+}
+
+const ARRAY_INDEX_REGEX = /^(0|[1-9][0-9]*)$/;
+
+/**
+ * setProperty() only accepts the bracket notation
+ * for array items ('list[1].name') and throws on 'list.1.name'.
+ * The Paths type and RxState.get() use the dot notation,
+ * so each segment that points into an array
+ * of the given state is transformed to the bracket notation.
+ */
+export function toRxStateWritePath(state: any, path: string): string {
+    const segments = path.split('.');
+    let current = state;
+    let ret = '';
+    for (let index = 0; index < segments.length; index++) {
+        const segment = segments[index];
+        if (Array.isArray(current) && ARRAY_INDEX_REGEX.test(segment)) {
+            ret += '[' + segment + ']';
+        } else {
+            ret += (index === 0 ? '' : '.') + segment;
+        }
+        current = current === undefined || current === null ? undefined : getProperty(current, segment);
+    }
+    return ret;
 }
 
 

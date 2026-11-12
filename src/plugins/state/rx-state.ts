@@ -35,6 +35,7 @@ import {
 import {
     RX_STATE_COLLECTION_SCHEMA,
     isValidWeakMapKey,
+    toRxStateWritePath,
     nextRxStateId
 } from './helpers.ts';
 import {
@@ -192,6 +193,7 @@ export class RxStateBase<T, Reactivity = unknown> {
                     const ops: RxStateOperation[] = [];
                     for (let index = 0; index < useWrites.length; index++) {
                         const writeRow = useWrites[index];
+                        const path = toRxStateWritePath(newState, writeRow.path);
                         const value = writeRow.path === '' ? newState : getProperty(newState, writeRow.path);
                         const newValue = writeRow.modifier(value);
                         /**
@@ -202,10 +204,10 @@ export class RxStateBase<T, Reactivity = unknown> {
                         if (writeRow.path === '') {
                             newState = clone(newValue);
                         } else {
-                            setProperty(newState, writeRow.path, clone(newValue));
+                            setProperty(newState, path, clone(newValue));
                         }
                         ops.push({
-                            k: writeRow.path,
+                            k: path,
                             /**
                              * Here we have to clone the value because
                              * some storages like the memory storage
