@@ -329,6 +329,21 @@ export function rxStorageInstanceToReplicationHandler<RxDocType, MasterCheckpoin
                     }
                 });
             }
+            if (hasAttachments) {
+                /**
+                 * The client writes the conflicting master state into its fork,
+                 * so the conflicts must contain the attachments data
+                 * like the documents of masterChangesSince().
+                 */
+                return Promise.all(
+                    conflicts.map(conflict => fillWriteDataForAttachmentsChange(
+                        primaryPath,
+                        instance,
+                        clone(conflict),
+                        undefined
+                    ))
+                );
+            }
             return conflicts;
         }
     };

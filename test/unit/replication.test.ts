@@ -1582,6 +1582,41 @@ describe('replication.test.ts', () => {
             await localCollection.database.close();
             await remoteCollection.database.close();
         });
+        it('should take the master state with its attachments after a push conflict', async () => {
+            const localCollection = await humansCollection.createAttachments(0);
+            const remoteCollection = await humansCollection.createAttachments(0);
+
+            const docData = schemaObjects.humanData('push-conflict-doc');
+            const remoteDoc = await remoteCollection.insert(Object.assign({}, docData, { firstName: 'master' }));
+            await remoteDoc.putAttachment({
+                id: 'master.txt',
+                data: createBlob('master data', 'text/plain'),
+                type: 'text/plain'
+            });
+            await localCollection.insert(Object.assign({}, docData, { firstName: 'fork' }));
+
+            const replicationState = replicateRxCollection({
+                collection: localCollection,
+                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                live: true,
+                push: {
+                    handler: getPushHandler(remoteCollection),
+                }
+            });
+            const errors: (RxError | RxTypeError)[] = [];
+            replicationState.error$.subscribe(err => errors.push(err));
+            await replicationState.awaitInSync();
+
+            assert.deepStrictEqual(errors.map(err => err.message), []);
+            const localDoc = await localCollection.findOne('push-conflict-doc').exec(true);
+            assert.strictEqual(localDoc.firstName, 'master');
+            const attachment = ensureNotFalsy(localDoc.getAttachment('master.txt'));
+            assert.strictEqual(await attachment.getStringData(), 'master data');
+            await ensureEqualState(localCollection, remoteCollection, 'after push conflict');
+
+            await localCollection.database.close();
+            await remoteCollection.database.close();
+        });
     });
     describe('start/pause/restart', () => {
         it('should reject start() with the error from _start()', async () => {
