@@ -1157,6 +1157,12 @@ export const ERROR_MESSAGES = {
         fix: 'Remove the child path from the encrypted array. Encrypting the parent path already encrypts all of its children.',
         docs: 'https://rxdb.info/encryption.html?console=errors&code=SC43'
     },
+    SC46: {
+        message: 'SchemaCheck: an encrypted field cannot be used in an index',
+        cause: 'The schema has an index that contains a field which is listed in "encrypted" or a path below such a field. The storage only stores the ciphertext, so the index cannot be used for queries or sorting.',
+        fix: 'Remove the field from the indexes or from the encrypted fields of the schema.',
+        docs: 'https://rxdb.info/encryption.html?console=errors&code=SC46'
+    },
 
 
     // plugins/dev-mode

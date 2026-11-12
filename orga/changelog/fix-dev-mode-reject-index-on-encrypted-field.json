@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX the dev-mode schema check now throws the error `SC46` in `addCollections()` when the schema has an index that contains an encrypted field. Before, the collection was created and the memory storage rejected every query with a plain `Error` while Dexie.js sorted by the ciphertext",
+    "links": [],
+    "priority": 5
+}
