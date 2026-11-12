@@ -133,7 +133,6 @@ export class RxBackupState {
                 .entries(this.database.collections)
                 .map(async ([collectionName, collection]) => {
                     const primaryKey = collection.schema.primaryPath;
-                    const processedDocuments: Set<string> = new Set();
 
                     await this.database.requestIdlePromise();
 
@@ -159,16 +158,6 @@ export class RxBackupState {
 
                         const docIds: string[] = changesResult.documents
                             .map(doc => doc[primaryKey])
-                            .filter(id => {
-                                if (
-                                    processedDocuments.has(id)
-                                ) {
-                                    return false;
-                                } else {
-                                    processedDocuments.add(id);
-                                    return true;
-                                }
-                            })
                             .filter((elem, pos, arr) => arr.indexOf(elem) === pos); // unique
                         await this.database.requestIdlePromise();
 

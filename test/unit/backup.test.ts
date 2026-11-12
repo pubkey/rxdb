@@ -233,6 +233,54 @@ describe('backup.test.ts', () => {
             sub.unsubscribe();
             await collection.database.close();
         });
+        it('should backup the latest state of a document that is written again while the backup run is in progress', async () => {
+            const collection = await humansCollection.create(0);
+            const insertResult = await collection.bulkInsert(
+                new Array(10).fill(0).map((_v, idx) => schemaObjects.humanData('doc' + idx, 1))
+            );
+            assert.deepStrictEqual(insertResult.error, []);
+            const directory = getBackupDir();
+            const options = {
+                live: false,
+                directory,
+                attachments: false,
+                batchSize: 1
+            };
+
+            const backupState = collection.database.backup(options);
+
+            /**
+             * Update the first document that was written to the backup
+             * while the run still has to process the other documents.
+             */
+            let updatedDocId: string | undefined;
+            let updatePromise: Promise<any> | undefined;
+            const sub = backupState.writeEvents$.subscribe(ev => {
+                if (!updatePromise) {
+                    updatedDocId = ev.documentId;
+                    updatePromise = insertResult.success
+                        .find(doc => doc.primary === ev.documentId)
+                        ?.incrementalPatch({ age: 2 });
+                }
+            });
+            await backupState.awaitInitialBackup();
+            sub.unsubscribe();
+            assert.ok(updatedDocId);
+            await updatePromise;
+
+            // a second run on the same directory continues from the stored checkpoint
+            const backupState2 = collection.database.backup(options);
+            await backupState2.awaitInitialBackup();
+
+            const docInDatabase = await collection.findOne(updatedDocId).exec(true);
+            assert.strictEqual(docInDatabase.age, 2);
+            const content = JSON.parse(
+                fs.readFileSync(path.join(directory, toFileName(updatedDocId), 'document.json'), 'utf-8')
+            );
+            assert.strictEqual(content.age, 2);
+
+            await collection.database.close();
+        });
         it('toFileName() must return unique file names that are valid on all operating systems', () => {
             const ids = [
                 'foobar',
