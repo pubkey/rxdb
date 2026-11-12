@@ -11,6 +11,7 @@ import {
     pluginMissing,
     ensureNotFalsy,
     getFromMapOrThrow,
+    getProperty,
     PROMISE_RESOLVE_FALSE,
     PROMISE_RESOLVE_VOID,
     NON_PREMIUM_COLLECTION_LIMIT,
@@ -401,18 +402,33 @@ export class RxCollectionBase<
     async insertIfNotExists(
         json: RxDocumentType | RxDocument
     ): Promise<RxDocument<RxDocumentType, OrmMethods, Reactivity>> {
+        isWriteAllowed(this);
         /**
          * The insert hooks must only run when a document is inserted,
          * so with preInsert hooks we first have to check if the document exists.
          */
-        const primary: string = (json as any)[this.schema.primaryPath];
-        if (primary && this.hasHooks('pre', 'insert')) {
-            const docsInDb = await this.storageInstance.findDocumentsById([primary], false);
-            if (docsInDb.length > 0) {
-                return mapDocumentsDataToCacheDocs(this._docCache, docsInDb)[0] as any;
+        if (this.hasHooks('pre', 'insert')) {
+            const primaryKey = this.schema.jsonSchema.primaryKey;
+            let primary: string | undefined = (json as any)[this.schema.primaryPath];
+            if (typeof primaryKey !== 'string') {
+                /**
+                 * A composite primary key can only be composed for the lookup
+                 * when all of its fields are set. A missing field might be set
+                 * by a preInsert hook, so then the hooks have to run first.
+                 */
+                const composed = primaryKey.fields.every(
+                    field => typeof getProperty(json, field as string) !== 'undefined'
+                ) ? this.schema.getPrimaryOfDocumentData(json as any) : undefined;
+                primary = !primary || primary === composed ? composed : undefined;
+            }
+            if (primary) {
+                const docsInDb = await this.storageInstance.findDocumentsById([primary], false);
+                if (docsInDb.length > 0) {
+                    return mapDocumentsDataToCacheDocs(this._docCache, docsInDb)[0] as any;
+                }
             }
         }
-        const writeResult = await this.bulkInsert([json as any]);
+        const writeResult = await this._bulkInsertAfterLookup([json as any]);
         if (writeResult.error.length > 0) {
             const error = writeResult.error[0];
             if (error.status === 409) {
@@ -426,13 +442,31 @@ export class RxCollectionBase<
         return writeResult.success[0];
     }
 
+    /**
+     * Calls bulkInsert() for a write method that already checked if writes are allowed
+     * before it awaited the lookup of the existing documents.
+     * A collection that gets closed while that lookup runs must not make the write fail,
+     * so the check is skipped for the synchronous start of this bulkInsert() call.
+     */
+    public _writeAllowedChecked = false;
+    _bulkInsertAfterLookup(docsData: RxDocumentType[]) {
+        this._writeAllowedChecked = true;
+        try {
+            return this.bulkInsert(docsData);
+        } finally {
+            this._writeAllowedChecked = false;
+        }
+    }
+
     async bulkInsert(
         docsData: RxDocumentType[]
     ): Promise<{
         success: RxDocument<RxDocumentType, OrmMethods, Reactivity>[];
         error: RxStorageWriteError<RxDocumentType>[];
     }> {
-        isWriteAllowed(this);
+        if (!this._writeAllowedChecked) {
+            isWriteAllowed(this);
+        }
         /**
          * Optimization shortcut,
          * do nothing when called with an empty array
@@ -731,7 +765,9 @@ export class RxCollectionBase<
          * Without preInsert hooks, we can skip that lookup
          * and directly try to insert all documents in a single write.
          * Duplicate ids are left to bulkInsert() which throws on them.
+         * The check if writes are allowed must run before the lookup is awaited.
          */
+        isWriteAllowed(this);
         const primaryPath = this.schema.primaryPath;
         let updateDocs: RxDocumentData<RxDocumentType>[] = [];
         if (
@@ -746,7 +782,7 @@ export class RxCollectionBase<
             insertData = insertData.filter(d => !existingIds.has((d as any)[primaryPath]));
         }
 
-        const insertResult = await this.bulkInsert(insertData);
+        const insertResult = await this._bulkInsertAfterLookup(insertData);
         const success = insertResult.success.slice(0);
         const error: RxStorageWriteError<RxDocumentType>[] = [];
         insertResult.error.forEach(err => {

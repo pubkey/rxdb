@@ -1,4 +1,5 @@
 import assert from 'assert';
+import { assertThrows } from 'async-test-util';
 import {
     first
 } from 'rxjs/operators';
@@ -188,6 +189,159 @@ describe('hooks.test.js', () => {
                     assert.strictEqual(preSaveCount, 2);
 
                     c.database.close();
+                });
+                it('should reject upsert(), bulkUpsert() and insertIfNotExists() on a closed collection with and without insert hooks', async () => {
+                    for (const closeDatabase of [false, true]) {
+                        for (const withHooks of [false, true]) {
+                            const c = await humansCollection.createPrimary(0);
+                            const existing = schemaObjects.simpleHumanData();
+                            await c.insert(existing);
+                            let preInsertCount = 0;
+                            if (withHooks) {
+                                c.preInsert(function () {
+                                    preInsertCount++;
+                                }, false);
+                            }
+                            if (closeDatabase) {
+                                await c.database.close();
+                            } else {
+                                await c.close();
+                            }
+                            for (const docData of [existing, schemaObjects.simpleHumanData()]) {
+                                await assertThrows(() => c.insertIfNotExists(docData), 'RxError', 'COL21');
+                                await assertThrows(() => c.upsert(docData), 'RxError', 'COL21');
+                                await assertThrows(() => c.bulkUpsert([docData]), 'RxError', 'COL21');
+                            }
+                            assert.strictEqual(preInsertCount, 0);
+                            await c.database.close();
+                        }
+                    }
+                });
+                it('should not reject upsert(), bulkUpsert() and insertIfNotExists() with insert hooks when the collection is closed after the call', async () => {
+                    const createCollection = async () => {
+                        const col = await humansCollection.createPrimary(0);
+                        col.preInsert(function (data) {
+                            data.lastName = 'set-by-pre-insert';
+                        }, false);
+                        return col;
+                    };
+
+                    let c = await createCollection();
+                    let writePromise = c.upsert(schemaObjects.simpleHumanData());
+                    let closePromise = c.close();
+                    let doc = await writePromise;
+                    assert.strictEqual(doc.lastName, 'set-by-pre-insert');
+                    await closePromise;
+                    await c.database.close();
+
+                    c = await createCollection();
+                    writePromise = c.insertIfNotExists(schemaObjects.simpleHumanData());
+                    closePromise = c.close();
+                    doc = await writePromise;
+                    assert.strictEqual(doc.lastName, 'set-by-pre-insert');
+                    await closePromise;
+                    await c.database.close();
+
+                    c = await createCollection();
+                    const bulkPromise = c.bulkUpsert([schemaObjects.simpleHumanData()]);
+                    closePromise = c.close();
+                    const result = await bulkPromise;
+                    assert.deepStrictEqual(result.error, []);
+                    assert.strictEqual(result.success[0].lastName, 'set-by-pre-insert');
+                    await closePromise;
+                    await c.database.close();
+                });
+                it('should run the insert hooks only for the new documents with a composite primary key', async () => {
+                    const db = await createRxDatabase({
+                        name: randomToken(10),
+                        storage: config.storage.getStorage()
+                    });
+                    const collections = await db.addCollections({
+                        humans: {
+                            schema: {
+                                version: 0,
+                                primaryKey: {
+                                    key: 'id',
+                                    fields: ['name', 'number'],
+                                    separator: '|'
+                                },
+                                type: 'object',
+                                properties: {
+                                    id: {
+                                        type: 'string',
+                                        maxLength: 100
+                                    },
+                                    name: {
+                                        type: 'string',
+                                        maxLength: 100
+                                    },
+                                    number: {
+                                        type: 'integer',
+                                        minimum: 0,
+                                        maximum: 9999
+                                    },
+                                    age: {
+                                        type: 'integer'
+                                    }
+                                },
+                                required: [
+                                    'id',
+                                    'name',
+                                    'number'
+                                ]
+                            }
+                        }
+                    });
+                    const c = collections.humans;
+                    const preInsertIds: string[] = [];
+                    c.preInsert(function (data) {
+                        if (typeof data.number === 'undefined') {
+                            data.number = 7;
+                        }
+                        preInsertIds.push(data.name + '|' + data.number);
+                    }, false);
+                    await c.insert({ name: 'alice', number: 5, age: 1 });
+                    assert.deepStrictEqual(preInsertIds, ['alice|5']);
+
+                    // existing document, with and without the composed primary key in the data
+                    let doc = await c.insertIfNotExists({ name: 'alice', number: 5, age: 2 });
+                    assert.strictEqual(doc.id, 'alice|5');
+                    assert.strictEqual(doc.age, 1);
+                    doc = await c.insertIfNotExists({ id: 'alice|5', name: 'alice', number: 5, age: 2 });
+                    assert.strictEqual(doc.age, 1);
+                    doc = await c.upsert({ name: 'alice', number: 5, age: 3 });
+                    assert.strictEqual(doc.age, 3);
+                    assert.deepStrictEqual(preInsertIds, ['alice|5']);
+
+                    // one existing and one new document
+                    const result = await c.bulkUpsert([
+                        { name: 'alice', number: 5, age: 4 },
+                        { name: 'bob', number: 5, age: 4 }
+                    ]);
+                    assert.deepStrictEqual(result.error, []);
+                    assert.strictEqual(result.success.length, 2);
+                    assert.deepStrictEqual(preInsertIds, ['alice|5', 'bob|5']);
+
+                    // new document
+                    doc = await c.insertIfNotExists({ name: 'carol', number: 5, age: 5 });
+                    assert.strictEqual(doc.id, 'carol|5');
+                    assert.deepStrictEqual(preInsertIds, ['alice|5', 'bob|5', 'carol|5']);
+
+                    // a wrong primary key is still rejected
+                    await assertThrows(
+                        () => c.insertIfNotExists({ id: 'foobar', name: 'alice', number: 5 }),
+                        'RxError',
+                        'DOC19'
+                    );
+
+                    // a missing field of the primary key can still be set by the hook
+                    doc = await c.insertIfNotExists({ name: 'dave', age: 6 });
+                    assert.strictEqual(doc.id, 'dave|7');
+                    doc = await c.insertIfNotExists({ name: 'dave', age: 7 });
+                    assert.strictEqual(doc.id, 'dave|7');
+                    assert.strictEqual(doc.age, 6);
+
+                    await db.close();
                 });
                 it('should have the collection bound to the this-scope', async () => {
                     const c = await humansCollection.createPrimary(0);
