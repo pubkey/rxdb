@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `database.close()` on the leading instance gave up the leadership before its collections were closed, so another instance became leader and started its pipeline handler while the handler of the closing leader was still running",
+    "links": [],
+    "priority": 5
+}

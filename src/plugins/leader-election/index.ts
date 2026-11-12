@@ -47,26 +47,39 @@ export function getForDatabase(this: RxDatabase): LeaderElector {
         this
     );
 
+    const elector = getLeaderElectorByBroadcastChannel(broadcastChannel);
+
     /**
-     * Clean up the reference on RxDatabase.close()
+     * Give up the leadership and clean up
+     * the reference on RxDatabase.close()
      */
     const oldClose = this.close.bind(this);
-    this.close = async function () {
-        /**
-         * It is very important that we remove the
-         * potential leader elected broadcast channel
-         * AFTER the database is closed. Otherwise an
-         * instance running in another browser tab can
-         * already start working on stuff and interfering
-         * with a half-closed database and its collections.
-         */
-        const ret = await oldClose();
-        await removeBroadcastChannelReference(this.token, this);
-        return ret;
+    let closePromise: Promise<boolean> | undefined;
+    this.close = function () {
+        if (!closePromise) {
+            closePromise = (async () => {
+                /**
+                 * It is very important that we give up the leadership
+                 * and remove the broadcast channel AFTER the database
+                 * is closed. Otherwise an instance running in another
+                 * browser tab can already become leader and start working
+                 * on stuff (pipelines, replications) while the same work
+                 * is still running on the half-closed database and its collections.
+                 * die() is awaited so that the election is finished before
+                 * the broadcast channel is closed.
+                 */
+                try {
+                    return await oldClose();
+                } finally {
+                    await elector.die();
+                    OPEN_LEADER_ELECTORS.delete(elector);
+                    await removeBroadcastChannelReference(this.token, this);
+                }
+            })();
+        }
+        return closePromise;
     };
 
-
-    const elector = getLeaderElectorByBroadcastChannel(broadcastChannel);
     LEADER_ELECTORS_OF_DB.set(
         this,
         elector
@@ -98,19 +111,6 @@ export function waitForLeadership(this: RxDatabase): Promise<boolean> {
     }
 }
 
-/**
- * runs when the database gets closed
- * Awaits die() so that the election is finished before
- * the broadcast channel is closed further down in close().
- */
-export async function onClose(db: RxDatabase) {
-    const has = LEADER_ELECTORS_OF_DB.get(db);
-    if (has) {
-        await has.die();
-        OPEN_LEADER_ELECTORS.delete(has);
-    }
-}
-
 export const rxdb = true;
 export const prototypes = {
     RxDatabase: (proto: any) => {
@@ -124,9 +124,5 @@ export const RxDBLeaderElectionPlugin: RxPlugin = {
     name: 'leader-election',
     rxdb,
     prototypes,
-    hooks: {
-        preCloseRxDatabase: {
-            after: onClose
-        }
-    }
+    hooks: {}
 };
