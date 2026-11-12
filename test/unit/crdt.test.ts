@@ -660,6 +660,45 @@ describe('crdt.test.ts', () => {
                 clientBCollection.database.close();
                 serverCollection.database.close();
             });
+            it('should merge the operations of two collections of the same database', async () => {
+                const db = await createRxDatabase({
+                    name: randomToken(10),
+                    storage: wrappedValidateAjvStorage({
+                        storage: config.storage.getStorage(),
+                    }),
+                    multiInstance: false
+                });
+                const useSchema = enableCRDTinSchema<HumanDocumentType>(schemas.human);
+                const collections = await db.addCollections<{
+                    fork: RxCollection<TestDocType>;
+                    master: RxCollection<TestDocType>;
+                }>({
+                    fork: { schema: useSchema },
+                    master: { schema: useSchema }
+                });
+                const forkCollection = collections.fork;
+                const masterCollection = collections.master;
+
+                await forkCollection.insert(schemaObjects.humanData('foobar', 0));
+                await replicateOnce(forkCollection, masterCollection);
+
+                const forkDoc = await forkCollection.findOne().exec(true);
+                const masterDoc = await masterCollection.findOne().exec(true);
+                await forkDoc.updateCRDT({ ifMatch: { $inc: { age: 1 } } });
+                await masterDoc.updateCRDT({ ifMatch: { $inc: { age: 10 } } });
+
+                await replicateOnce(forkCollection, masterCollection);
+
+                assert.strictEqual(forkDoc.getLatest().age, 11);
+                assert.strictEqual(masterDoc.getLatest().age, 11);
+                assert.strictEqual(forkDoc.getLatest().toJSON().crdts?.operations[1].length, 2);
+                assert.deepStrictEqual(
+                    forkDoc.getLatest().toJSON().crdts,
+                    masterDoc.getLatest().toJSON().crdts
+                );
+
+                await db.close();
+            });
         });
     });
 });
