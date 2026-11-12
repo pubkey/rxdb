@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `upsert()`, `bulkUpsert()` and `insertIfNotExists()` ran the `preInsert` hooks for documents that already exist. Now the insert hooks only run for the documents that are inserted, like on `incrementalUpsert()`.",
+    "links": [],
+    "priority": 5
+}

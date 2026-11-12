@@ -11,6 +11,7 @@ import {
     pluginMissing,
     ensureNotFalsy,
     getFromMapOrThrow,
+    getProperty,
     PROMISE_RESOLVE_FALSE,
     PROMISE_RESOLVE_VOID,
     NON_PREMIUM_COLLECTION_LIMIT,
@@ -401,7 +402,33 @@ export class RxCollectionBase<
     async insertIfNotExists(
         json: RxDocumentType | RxDocument
     ): Promise<RxDocument<RxDocumentType, OrmMethods, Reactivity>> {
-        const writeResult = await this.bulkInsert([json as any]);
+        isWriteAllowed(this);
+        /**
+         * The insert hooks must only run when a document is inserted,
+         * so with preInsert hooks we first have to check if the document exists.
+         */
+        if (this.hasHooks('pre', 'insert')) {
+            const primaryKey = this.schema.jsonSchema.primaryKey;
+            let primary: string | undefined = (json as any)[this.schema.primaryPath];
+            if (typeof primaryKey !== 'string') {
+                /**
+                 * A composite primary key can only be composed for the lookup
+                 * when all of its fields are set. A missing field might be set
+                 * by a preInsert hook, so then the hooks have to run first.
+                 */
+                const composed = primaryKey.fields.every(
+                    field => typeof getProperty(json, field as string) !== 'undefined'
+                ) ? this.schema.getPrimaryOfDocumentData(json as any) : undefined;
+                primary = !primary || primary === composed ? composed : undefined;
+            }
+            if (primary) {
+                const docsInDb = await this.storageInstance.findDocumentsById([primary], false);
+                if (docsInDb.length > 0) {
+                    return mapDocumentsDataToCacheDocs(this._docCache, docsInDb)[0] as any;
+                }
+            }
+        }
+        const writeResult = await this._bulkInsertAfterLookup([json as any]);
         if (writeResult.error.length > 0) {
             const error = writeResult.error[0];
             if (error.status === 409) {
@@ -415,13 +442,31 @@ export class RxCollectionBase<
         return writeResult.success[0];
     }
 
+    /**
+     * Calls bulkInsert() for a write method that already checked if writes are allowed
+     * before it awaited the lookup of the existing documents.
+     * A collection that gets closed while that lookup runs must not make the write fail,
+     * so the check is skipped for the synchronous start of this bulkInsert() call.
+     */
+    public _writeAllowedChecked = false;
+    _bulkInsertAfterLookup(docsData: RxDocumentType[]) {
+        this._writeAllowedChecked = true;
+        try {
+            return this.bulkInsert(docsData);
+        } finally {
+            this._writeAllowedChecked = false;
+        }
+    }
+
     async bulkInsert(
         docsData: RxDocumentType[]
     ): Promise<{
         success: RxDocument<RxDocumentType, OrmMethods, Reactivity>[];
         error: RxStorageWriteError<RxDocumentType>[];
     }> {
-        isWriteAllowed(this);
+        if (!this._writeAllowedChecked) {
+            isWriteAllowed(this);
+        }
         /**
          * Optimization shortcut,
          * do nothing when called with an empty array
@@ -667,7 +712,7 @@ export class RxCollectionBase<
         error: RxStorageWriteError<RxDocumentType>[];
     }> {
         isWriteAllowed(this);
-        const insertData: RxDocumentType[] = [];
+        let insertData: RxDocumentType[] = [];
         const useJsonByDocId: Map<string, RxDocumentType> = new Map();
 
         // First pass: synchronous work — schema filling and primary key validation
@@ -713,37 +758,62 @@ export class RxCollectionBase<
             insertData.push(useJson);
         }
 
-        const insertResult = await this.bulkInsert(insertData);
+        /**
+         * The insert hooks must only run for the documents that are inserted.
+         * So with preInsert hooks we first have to find the documents that exist already
+         * and update them without calling bulkInsert().
+         * Without preInsert hooks, we can skip that lookup
+         * and directly try to insert all documents in a single write.
+         * Duplicate ids are left to bulkInsert() which throws on them.
+         * The check if writes are allowed must run before the lookup is awaited.
+         */
+        isWriteAllowed(this);
+        const primaryPath = this.schema.primaryPath;
+        let updateDocs: RxDocumentData<RxDocumentType>[] = [];
+        if (
+            this.hasHooks('pre', 'insert') &&
+            useJsonByDocId.size === insertData.length
+        ) {
+            updateDocs = await this.storageInstance.findDocumentsById(
+                Array.from(useJsonByDocId.keys()),
+                false
+            );
+            const existingIds = new Set(updateDocs.map(d => d[primaryPath]));
+            insertData = insertData.filter(d => !existingIds.has((d as any)[primaryPath]));
+        }
+
+        const insertResult = await this._bulkInsertAfterLookup(insertData);
         const success = insertResult.success.slice(0);
         const error: RxStorageWriteError<RxDocumentType>[] = [];
+        insertResult.error.forEach(err => {
+            if (err.status !== 409) {
+                error.push(err);
+            } else {
+                updateDocs.push(ensureNotFalsy(err.documentInDb));
+            }
+        });
 
         // update the ones that existed already
         await Promise.all(
-            insertResult.error.map(async (err) => {
-                if (err.status !== 409) {
-                    error.push(err);
-                } else {
-                    const id = err.documentId;
-                    const writeData = getFromMapOrThrow(useJsonByDocId, id);
-                    const docDataInDb = ensureNotFalsy(err.documentInDb);
-                    const newAttachments = (writeData as any)._attachments;
-                    const deleteExisting = options?.deleteExistingAttachments === true;
-                    const newDoc = await this.incrementalWriteQueue.addWrite(
-                        docDataInDb,
-                        (docWriteData: any): any => {
-                            return Object.assign({}, writeData, {
-                                _attachments: deleteExisting
-                                    ? newAttachments
-                                    : Object.assign(
-                                        {},
-                                        docWriteData._attachments,
-                                        newAttachments
-                                    )
-                            });
-                        }
-                    ).then(writeResult => this._docCache.getCachedRxDocument(writeResult) as any);
-                    success.push(newDoc as any);
-                }
+            updateDocs.map(async (docDataInDb) => {
+                const writeData = getFromMapOrThrow(useJsonByDocId, docDataInDb[primaryPath] as any);
+                const newAttachments = (writeData as any)._attachments;
+                const deleteExisting = options?.deleteExistingAttachments === true;
+                const newDoc = await this.incrementalWriteQueue.addWrite(
+                    docDataInDb,
+                    (docWriteData: any): any => {
+                        return Object.assign({}, writeData, {
+                            _attachments: deleteExisting
+                                ? newAttachments
+                                : Object.assign(
+                                    {},
+                                    docWriteData._attachments,
+                                    newAttachments
+                                )
+                        });
+                    }
+                ).then(writeResult => this._docCache.getCachedRxDocument(writeResult) as any);
+                success.push(newDoc as any);
             })
         );
         return {
