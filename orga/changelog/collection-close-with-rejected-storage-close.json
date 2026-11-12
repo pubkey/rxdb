@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX When the `close()` of the storage instance rejects during `RxCollection.close()`, the collection is now still unregistered from the database and the `CLOSED` event is emitted before the error is thrown. Before, the collection stayed in `database.collections` as a closed collection, a second `close()` did nothing and `addCollections()` with the same name threw `DB3`",
+    "links": [],
+    "priority": 4
+}
