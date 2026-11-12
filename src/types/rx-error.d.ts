@@ -28,6 +28,7 @@ export interface RxErrorParameters {
     readonly rootPath?: string;
     readonly childpath?: string;
     readonly ids?: string[];
+    readonly firstId?: string;
     readonly duplicateIds?: string[];
     readonly obj?: any;
     readonly document?: any;

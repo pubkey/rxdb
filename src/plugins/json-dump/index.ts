@@ -58,12 +58,6 @@ function dumpRxDatabase(
 }
 
 /**
- * Number of document ids
- * that are added to the parameters of the JD4 error.
- */
-const MAX_IDS_IN_CONFLICT_ERROR = 10;
-
-/**
  * Returns the current state of all documents of the dump
  * that already exist in the collection.
  * Deleted documents do not count as existing.
@@ -90,12 +84,11 @@ function throwOnIntersectingDocuments(
     existingDocs: Map<string, any>
 ) {
     if (existingDocs.size > 0) {
-        const ids = Array.from(existingDocs.keys());
         throw newRxError('JD4', {
             collection: collection.name,
-            ids: ids.slice(0, MAX_IDS_IN_CONFLICT_ERROR),
+            firstId: existingDocs.keys().next().value,
             args: {
-                intersectingDocuments: ids.length
+                intersectingDocuments: existingDocs.size
             }
         });
     }

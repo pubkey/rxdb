@@ -71,7 +71,7 @@ Notice that importing fires a change event for each written document, so open [q
 It can happen that a document of the dump has the same primary key as a document that already exists in the collection. The second parameter of `importJSON()` defines what happens with these documents. There are three modes:
 
 - **`skip`** (default): The existing documents are kept as they are and only the other documents of the dump are imported. The skipped documents are not reported as errors.
-- **`abort`**: Before anything is written, RxDB checks if any primary key of the dump already exists. When one does, `importJSON()` throws the error [`JD4`](./errors.md#JD4) and nothing is imported. The error parameters contain the collection name and up to `10` of the intersecting ids.
+- **`abort`**: Before anything is written, RxDB checks if any primary key of the dump already exists. When one does, `importJSON()` throws the error [`JD4`](./errors.md#JD4) and nothing is imported. The error parameters contain the collection name, the id of the first intersecting document as `firstId`, and the number of intersecting documents.
 - **`merge`**: The existing documents are overwritten with the documents of the dump and the other documents are inserted. The overwrite behaves like an [upsert](./rx-collection.md#upsert), so the document gets a new revision on top of its current state and [attachments](./rx-attachment.md) that are not part of the dump are kept.
 
 ```ts

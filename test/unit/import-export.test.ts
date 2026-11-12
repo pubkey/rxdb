@@ -172,7 +172,7 @@ describe('import-export.test.js', () => {
                         'JD4'
                     );
                     assert.strictEqual((err as RxError).code, 'JD4');
-                    assert.deepStrictEqual((err as RxError).parameters.ids, ['alice']);
+                    assert.strictEqual((err as RxError).parameters.firstId, 'alice');
                     assert.strictEqual((err as RxError).parameters.collection, col.name);
                     assert.deepStrictEqual(
                         await getFirstNames(col),
@@ -541,7 +541,7 @@ describe('import-export.test.js', () => {
                         'JD4'
                     );
                     assert.strictEqual((err as RxError).code, 'JD4');
-                    assert.deepStrictEqual((err as RxError).parameters.ids, ['alice']);
+                    assert.strictEqual((err as RxError).parameters.firstId, 'alice');
                     assert.strictEqual((err as RxError).parameters.collection, 'human2');
                     assert.deepStrictEqual(await getFirstNames(db.human), []);
                     assert.deepStrictEqual(await getFirstNames(db.human2), ['alice:existing-alice']);
