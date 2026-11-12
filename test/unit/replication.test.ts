@@ -659,6 +659,128 @@ describe('replication.test.ts', () => {
             await localCollection.database.close();
             await remoteCollection.database.close();
         });
+        it('should not write the meta data of pulled documents again after the replication was canceled', async () => {
+            const innerStorage = config.storage.getStorage();
+            let metaWrites = 0;
+            let onFirstRejection: () => void = () => { };
+            const firstRejection = new Promise<void>(res => onFirstRejection = res);
+            const storage: RxStorage<any, any> = {
+                name: innerStorage.name,
+                rxdbVersion: innerStorage.rxdbVersion,
+                async createStorageInstance<RxDocType>(
+                    params: RxStorageInstanceCreationParams<RxDocType, any>
+                ) {
+                    const instance = await innerStorage.createStorageInstance<RxDocType>(params);
+                    if (params.collectionName.startsWith('rx-replication-meta-')) {
+                        const bulkWrite = instance.bulkWrite.bind(instance);
+                        instance.bulkWrite = (rows, context) => {
+                            if (context === 'replication-down-write-meta') {
+                                metaWrites = metaWrites + 1;
+                                onFirstRejection();
+                                return Promise.reject(new Error('injected meta write failure'));
+                            }
+                            return bulkWrite(rows, context);
+                        };
+                    }
+                    return instance;
+                }
+            };
+            const localCollection = await humansCollection.createHumanWithTimestamp(0, randomToken(10), false, storage);
+            const remoteCollection = await humansCollection.createHumanWithTimestamp(1, randomToken(10), false);
+
+            const retryTime = 50;
+            const replicationState = replicateRxCollection({
+                collection: localCollection,
+                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                live: true,
+                retryTime,
+                pull: {
+                    handler: getPullHandler(remoteCollection)
+                },
+                push: {
+                    handler: getPushHandler(remoteCollection)
+                }
+            });
+            const errors: (RxError | RxTypeError)[] = [];
+            replicationState.error$.subscribe(err => errors.push(err));
+
+            await firstRejection;
+            await replicationState.cancel();
+            const metaWritesAtCancel = metaWrites;
+            const errorsAtCancel = errors.length;
+            await localCollection.database.close();
+
+            await wait(retryTime * 4);
+            assert.strictEqual(metaWrites, metaWritesAtCancel);
+            assert.strictEqual(errors.length, errorsAtCancel);
+
+            await remoteCollection.database.close();
+        });
+        it('should not emit a conflict error when the storage has applied the rejected write of the meta data', async () => {
+            const innerStorage = config.storage.getStorage();
+            let rejectedWrites = 0;
+            const storage: RxStorage<any, any> = {
+                name: innerStorage.name,
+                rxdbVersion: innerStorage.rxdbVersion,
+                async createStorageInstance<RxDocType>(
+                    params: RxStorageInstanceCreationParams<RxDocType, any>
+                ) {
+                    const instance = await innerStorage.createStorageInstance<RxDocType>(params);
+                    if (params.collectionName.startsWith('rx-replication-meta-')) {
+                        const bulkWrite = instance.bulkWrite.bind(instance);
+                        instance.bulkWrite = async (rows, context) => {
+                            const result = await bulkWrite(rows, context);
+                            if (
+                                rejectedWrites === 0 &&
+                                context === 'replication-down-write-meta'
+                            ) {
+                                rejectedWrites = rejectedWrites + 1;
+                                throw new Error('injected meta write failure');
+                            }
+                            return result;
+                        };
+                    }
+                    return instance;
+                }
+            };
+            const localCollection = await humansCollection.createHumanWithTimestamp(0, randomToken(10), false, storage);
+            const remoteCollection = await humansCollection.createHumanWithTimestamp(0, randomToken(10), false);
+            await remoteCollection.insert(schemaObjects.humanWithTimestampData({ id: 'applied-write' }));
+
+            const replicationState = replicateRxCollection({
+                collection: localCollection,
+                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                live: true,
+                retryTime: 50,
+                pull: {
+                    handler: getPullHandler(remoteCollection)
+                },
+                push: {
+                    handler: getPushHandler(remoteCollection)
+                }
+            });
+            const errors: (RxError | RxTypeError)[] = [];
+            replicationState.error$.subscribe(err => errors.push(err));
+            await replicationState.awaitInitialReplication();
+            await replicationState.awaitInSync();
+            assert.strictEqual(rejectedWrites, 1);
+
+            await localCollection.findOne('applied-write').exec(true).then(doc => doc.incrementalPatch({ name: 'updated-locally' }));
+            await replicationState.awaitInSync();
+            assert.strictEqual(
+                (await remoteCollection.findOne('applied-write').exec(true)).name,
+                'updated-locally'
+            );
+
+            assert.strictEqual(errors.length, 1);
+            assert.strictEqual(
+                ensureNotFalsy(errors[0].parameters.errors)[0].message,
+                'injected meta write failure'
+            );
+
+            await localCollection.database.close();
+            await remoteCollection.database.close();
+        });
         it('should replicate all writes', async () => {
             const { localCollection, remoteCollection } = await getTestCollections({ local: 0, remote: 0 });
 
