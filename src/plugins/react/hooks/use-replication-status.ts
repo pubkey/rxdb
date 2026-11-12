@@ -70,29 +70,33 @@ export function useReplicationStatus(
         });
 
         /**
-         * The error is cleared when a complete active phase
-         * has run after it without emitting a new error.
-         * An error that was emitted during an active phase
-         * is kept when that phase ends, because the hook cannot know
-         * whether the failed operation was retried.
+         * An error of a failed handler call has the 'direction' parameter.
+         * The handler is called again until it succeeds, so the replication
+         * has recovered from that error when it becomes idle afterwards.
+         * Errors without that parameter are kept until a later active phase
+         * has run without such an error, because the hook cannot know
+         * whether the failed operation was retried. This includes an RxError
+         * that was rejected by the push handler, which is emitted unchanged.
          */
         let wasActive = false;
-        let hadErrorInActivePhase = false;
+        let hadErrorWithoutRetry = false;
 
         const subs = [
             replicationState.active$.subscribe((active: boolean) => {
                 if (active && !wasActive) {
-                    hadErrorInActivePhase = false;
+                    hadErrorWithoutRetry = false;
                 }
                 const recovered = wasActive &&
                     !active &&
-                    !hadErrorInActivePhase &&
+                    !hadErrorWithoutRetry &&
                     !replicationState.isStoppedOrPaused();
                 wasActive = active;
                 update(() => recovered ? { syncing: active, error: null } : { syncing: active });
             }),
             replicationState.error$.subscribe((err: RxError | RxTypeError) => {
-                hadErrorInActivePhase = true;
+                if (!err.parameters || !err.parameters.direction) {
+                    hadErrorWithoutRetry = true;
+                }
                 update(() => ({ error: err }));
             }),
             replicationState.canceled$.subscribe((isCanceled: boolean) => {
