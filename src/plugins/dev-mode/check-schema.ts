@@ -303,7 +303,7 @@ export function checkSchema(jsonSchema: RxJsonSchema<any>) {
 
     // check version
     if (!Object.prototype.hasOwnProperty.call(jsonSchema, 'version') ||
-        typeof jsonSchema.version !== 'number' ||
+        !Number.isInteger(jsonSchema.version) ||
         jsonSchema.version < 0
     ) {
         throw newRxError('SC11', {
