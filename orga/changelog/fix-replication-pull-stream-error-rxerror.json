@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX replication: when the `pull.stream$` observable errors, `RxReplicationState.error$` now emits an `RC_STREAM` RxError with the original error in `parameters.errors` instead of the raw error object",
+    "links": [],
+    "priority": 4
+}
