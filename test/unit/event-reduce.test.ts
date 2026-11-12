@@ -1,5 +1,5 @@
 import assert from 'assert';
-import { clone, wait } from 'async-test-util';
+import { clone, wait, waitUntil } from 'async-test-util';
 import { Subject } from 'rxjs';
 
 import {
@@ -18,8 +18,12 @@ import {
     RxEventReduceOptions,
     RxStorage,
     RxStorageInstance,
+    RxReplicationPullStreamItem,
     defaultResultWindowBuffer
 } from '../../plugins/core/index.mjs';
+import {
+    replicateRxCollection
+} from '../../plugins/replication/index.mjs';
 
 import {
     wrappedKeyCompressionStorage
@@ -426,6 +430,93 @@ describe('event-reduce.test.js', () => {
         assert.strictEqual(finalResults[2].primary, 'doc-b');
 
         col.database.close();
+    });
+    it('should not shift a skip query when a pulled document replaces a deleted document with another deleted state', async () => {
+        const col = await createCollection(true);
+        await col.bulkInsert(
+            [1, 2, 3, 4, 5].map(nr => ({
+                passportId: 'doc-' + nr,
+                firstName: 'Alice',
+                lastName: 'Smith',
+                age: nr
+            }))
+        );
+
+        const query = col.find({
+            selector: {},
+            skip: 1,
+            sort: [{ age: 'asc' }]
+        });
+        const emitted: string[][] = [];
+        const querySub = query.$.subscribe(docs => emitted.push(docs.map(d => d.primary)));
+        const removedIds: string[] = [];
+        const removeSub = col.remove$.subscribe(event => removedIds.push(event.documentId));
+        await waitUntil(() => emitted.length === 1);
+        assert.deepStrictEqual(emitted[0], ['doc-2', 'doc-3', 'doc-4', 'doc-5']);
+
+        const pullStream$ = new Subject<RxReplicationPullStreamItem<any, { nr: number; }>>();
+        const replicationState = replicateRxCollection<any, { nr: number; }>({
+            collection: col,
+            replicationIdentifier: randomToken(10),
+            live: true,
+            pull: {
+                handler: () => Promise.resolve({
+                    documents: [],
+                    checkpoint: { nr: 1 }
+                }),
+                stream$: pullStream$.asObservable()
+            }
+        });
+        await replicationState.awaitInitialReplication();
+
+        // the remote deletes the document
+        pullStream$.next({
+            documents: [{
+                passportId: 'doc-1',
+                firstName: 'Alice',
+                lastName: 'Smith',
+                age: 1,
+                _deleted: true
+            }],
+            checkpoint: { nr: 2 }
+        });
+        await waitUntil(() => removedIds.length === 1);
+
+        // the remote changes a field of the already deleted document
+        pullStream$.next({
+            documents: [{
+                passportId: 'doc-1',
+                firstName: 'Alice',
+                lastName: 'Changed',
+                age: 1,
+                _deleted: true
+            }],
+            checkpoint: { nr: 3 }
+        });
+        pullStream$.next({
+            documents: [{
+                passportId: 'doc-6',
+                firstName: 'Alice',
+                lastName: 'Smith',
+                age: 6,
+                _deleted: false
+            }],
+            checkpoint: { nr: 4 }
+        });
+        await waitUntil(async () => !!(await col.findOne('doc-6').exec()));
+        await replicationState.awaitInSync();
+
+        const expected = ['doc-3', 'doc-4', 'doc-5', 'doc-6'];
+        const execResult = await query.exec();
+        assert.deepStrictEqual(execResult.map(d => d.primary), expected);
+        await waitUntil(() => emitted[emitted.length - 1].length === expected.length);
+        assert.deepStrictEqual(emitted[emitted.length - 1], expected);
+        assert.deepStrictEqual(removedIds, ['doc-1']);
+
+        querySub.unsubscribe();
+        removeSub.unsubscribe();
+        await replicationState.cancel();
+        await col.database.close();
     });
     it('should throw in dev-mode on UPDATE events without previousDocumentData', () => {
         const documentData: any = {

@@ -16,6 +16,9 @@ import {
 import {
     newRxError
 } from './rx-error.ts';
+import {
+    isDeletedStateUpdateEvent
+} from './rx-change-event.ts';
 
 
 /**
@@ -74,6 +77,17 @@ export class ChangeEventBuffer<RxDocType> {
     }
 
     private _handleChangeEvents(events: RxStorageChangeEvent<RxDocType>[]) {
+        /**
+         * A write from a deleted state to another deleted state
+         * does not change the result of any query.
+         * A query would handle it like the removal of a non-deleted document.
+         */
+        if (events.some(isDeletedStateUpdateEvent)) {
+            events = events.filter(event => !isDeletedStateUpdateEvent(event));
+            if (events.length === 0) {
+                return;
+            }
+        }
         const counterBefore = this.counter;
         this.counter = this.counter + events.length;
         if (events.length > this.limit) {

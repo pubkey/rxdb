@@ -106,6 +106,22 @@ export function flattenEvents<EventType>(
     return nonDuplicate;
 }
 
+/**
+ * Returns true if the event belongs to a write
+ * that replaced a deleted document state with another deleted document state,
+ * like when the replication pulls a changed version of an already deleted document.
+ * The storage emits these events because the replication needs them,
+ * but for the collection the document was deleted before and still is,
+ * so it must not be handled like the removal of a document.
+ */
+export function isDeletedStateUpdateEvent(
+    event: RxStorageChangeEvent<any>
+): boolean {
+    return event.operation === 'DELETE' &&
+        !!event.previousDocumentData &&
+        event.previousDocumentData._deleted;
+}
+
 const EVENT_BULK_CACHE = new Map<RxChangeEventBulk<any>, RxChangeEvent<any>[]>();
 export function rxChangeEventBulkToRxChangeEvents(
     eventBulk: RxChangeEventBulk<any>
@@ -114,21 +130,24 @@ export function rxChangeEventBulkToRxChangeEvents(
         EVENT_BULK_CACHE,
         eventBulk,
         () => {
-            const events: RxChangeEvent<any>[] = new Array(eventBulk.events.length);
+            const events: RxChangeEvent<any>[] = [];
             const rawEvents = eventBulk.events;
             const collectionName = eventBulk.collectionName;
             const isLocal = eventBulk.isLocal;
             const deepFreezeWhenDevMode = overwritable.deepFreezeWhenDevMode;
             for (let index = 0; index < rawEvents.length; index++) {
                 const event = rawEvents[index];
-                events[index] = {
+                if (isDeletedStateUpdateEvent(event)) {
+                    continue;
+                }
+                events.push({
                     documentId: event.documentId,
                     collectionName,
                     isLocal,
                     operation: event.operation,
                     documentData: deepFreezeWhenDevMode(event.documentData) as any,
                     previousDocumentData: deepFreezeWhenDevMode(event.previousDocumentData) as any
-                };
+                });
             }
             return events;
         }
