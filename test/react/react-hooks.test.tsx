@@ -328,6 +328,43 @@ describe('react-hooks.test.tsx', () => {
             await db.close();
         });
 
+        it('should set loading to false when primaryKey or collection is unset while the document is still loading', async () => {
+            const db = await createDatabase();
+            const collection: RxCollection<SimpleHumanDocumentType> = db.collections.humans;
+            const doc = schemaObjects.simpleHumanAge();
+            await collection.insert(doc);
+
+            type Props = {
+                collection: RxCollection<SimpleHumanDocumentType> | null;
+                primaryKey: string | undefined;
+            };
+            const initialProps: Props = { collection, primaryKey: doc.passportId };
+            const { result, rerender } = renderHook(
+                (props: Props) => useRxDocument(props.collection, props.primaryKey),
+                { initialProps }
+            );
+            assert.strictEqual(result.current.loading, true);
+
+            rerender({ collection, primaryKey: undefined });
+            assert.strictEqual(result.current.loading, false);
+            assert.strictEqual(result.current.result, null);
+            assert.strictEqual(result.current.error, null);
+
+            rerender({ collection, primaryKey: doc.passportId });
+            assert.strictEqual(result.current.loading, true);
+            rerender({ collection: null, primaryKey: doc.passportId });
+            assert.strictEqual(result.current.loading, false);
+            assert.strictEqual(result.current.result, null);
+
+            rerender({ collection, primaryKey: doc.passportId });
+            await waitFor(() => {
+                assert.strictEqual(result.current.loading, false);
+            });
+            assert.strictEqual(result.current.result?.passportId, doc.passportId);
+
+            await db.close();
+        });
+
         it('should return the document and set loading to false after subscription resolves', async () => {
             const db = await createDatabase();
             const collection: RxCollection<SimpleHumanDocumentType> = db.collections.humans;

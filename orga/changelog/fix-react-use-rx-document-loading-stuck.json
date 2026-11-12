@@ -1,0 +1,5 @@
+{
+    "text": "FIX `useRxDocument()` of the React plugin kept `loading: true` forever when the `primaryKey` became `undefined` or the collection became `null` while the document was still loading",
+    "links": [],
+    "priority": 5
+}
