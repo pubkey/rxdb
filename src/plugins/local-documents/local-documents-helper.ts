@@ -15,7 +15,18 @@ import { overwritable } from '../../overwritable.ts';
 export const LOCAL_DOC_STATE_BY_PARENT: WeakMap<LocalDocumentParent, Promise<LocalDocumentState>> = new WeakMap();
 export const LOCAL_DOC_STATE_BY_PARENT_RESOLVED: WeakMap<LocalDocumentParent, LocalDocumentState> = new WeakMap();
 
+/**
+ * Contains the parents where the creation of the state has failed,
+ * together with a function that starts the creation again.
+ */
+export const LOCAL_DOC_STATE_RECREATE_BY_PARENT: WeakMap<LocalDocumentParent, () => void> = new WeakMap();
+
 export function getLocalDocStateByParent(parent: LocalDocumentParent): Promise<LocalDocumentState> {
+    const recreate = LOCAL_DOC_STATE_RECREATE_BY_PARENT.get(parent);
+    if (recreate) {
+        LOCAL_DOC_STATE_RECREATE_BY_PARENT.delete(parent);
+        recreate();
+    }
     const statePromise = LOCAL_DOC_STATE_BY_PARENT.get(parent);
     if (!statePromise) {
         const database: RxDatabase = parent.database ? parent.database : parent as any;
@@ -53,10 +64,18 @@ export function createLocalDocumentStorageInstance(
 }
 
 export function closeStateByParent(parent: LocalDocumentParent) {
+    LOCAL_DOC_STATE_RECREATE_BY_PARENT.delete(parent);
     const statePromise = LOCAL_DOC_STATE_BY_PARENT.get(parent);
     if (statePromise) {
         LOCAL_DOC_STATE_BY_PARENT.delete(parent);
-        return statePromise.then(state => state.storageInstance.close());
+        /**
+         * When the creation of the state has failed,
+         * there is no storage instance that must be closed.
+         */
+        return statePromise.then(
+            state => state.storageInstance.close(),
+            () => { }
+        );
     }
 }
 
