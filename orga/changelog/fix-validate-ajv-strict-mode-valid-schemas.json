@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX the `validate-ajv` plugin threw a plain ajv `strict mode` error on each write when the schema contained union types like `['string', 'number']`, the `example` keyword, tuple `items`, or a keyword without a `type` inside of `allOf`. These schemas now compile and the documents are validated. When ajv cannot compile a schema, for example because of a format that was not registered, the new `VD4` RxError is thrown.",
+    "links": [],
+    "priority": 5
+}

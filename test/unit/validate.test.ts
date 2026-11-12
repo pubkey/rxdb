@@ -575,6 +575,61 @@ validationImplementations.forEach(
                     );
                     db.close();
                 });
+                it('should validate documents of a schema with union types, allOf and the example keyword', async () => {
+                    const db = await createRxDatabase({
+                        name: randomToken(10),
+                        storage
+                    });
+                    type DocType = {
+                        id: string;
+                        value?: string | number;
+                        amount?: number;
+                        label?: string;
+                    };
+                    const schema: RxJsonSchema<DocType> = {
+                        version: 0,
+                        primaryKey: 'id',
+                        type: 'object',
+                        properties: {
+                            id: {
+                                type: 'string',
+                                maxLength: 100
+                            },
+                            value: {
+                                type: ['string', 'number']
+                            },
+                            amount: {
+                                allOf: [
+                                    { type: 'number' },
+                                    { minimum: 5 }
+                                ]
+                            },
+                            label: {
+                                type: 'string',
+                                example: 'foobar'
+                            }
+                        },
+                        required: ['id']
+                    };
+                    const collections = await db.addCollections({
+                        items: {
+                            schema
+                        }
+                    });
+                    const collection = collections.items;
+                    await collection.insert({ id: 'a', value: 'foo', amount: 7, label: 'bar' });
+                    await collection.insert({ id: 'b', value: 5 });
+                    const docs = await collection.find({ sort: [{ id: 'asc' }] }).exec();
+                    assert.deepStrictEqual(docs.map(d => d.value), ['foo', 5]);
+
+                    const err = await assertThrows(
+                        () => collection.insert({ id: 'c', value: 'foo', amount: 3 }),
+                        'RxError',
+                        'not match schema'
+                    );
+                    assert.strictEqual((err as any).code, 'VD2');
+                    db.close();
+                });
             });
             describe('RxCollection().upsert()', () => {
                 it('throw when schema not matching', async () => {
@@ -978,6 +1033,31 @@ describe('validate.test.js (custom formats) ', () => {
                 'RxError',
                 'must match format'
             );
+            db.close();
+        });
+        it('should throw an RxError when the schema uses a format that was not registered', async () => {
+            const db = await createRxDatabase({
+                name: randomToken(10),
+                storage: wrappedValidateAjvStorage({
+                    storage: getRxStorageMemory()
+                })
+            });
+            const schemaWithUnknownFormat = clone(schemas.human);
+            schemaWithUnknownFormat.properties.lastName = {
+                type: 'string',
+                format: 'not-registered-format'
+            };
+            const collections = await db.addCollections({
+                human: {
+                    schema: schemaWithUnknownFormat
+                }
+            });
+            const err = await assertThrows(
+                () => collections.human.insert(schemaObjects.humanData()),
+                'RxError',
+                'not-registered-format'
+            );
+            assert.strictEqual((err as any).code, 'VD4');
             db.close();
         });
     });
