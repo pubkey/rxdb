@@ -123,6 +123,72 @@ describe('hooks.test.js', () => {
                     assert.strictEqual(doc, null);
                     c.database.close();
                 });
+                it('should run the insert hooks only for the new documents on upsert(), bulkUpsert() and insertIfNotExists()', async () => {
+                    const c = await humansCollection.createPrimary(0);
+                    const existing = schemaObjects.simpleHumanData();
+                    const added = schemaObjects.simpleHumanData();
+                    await c.insert(existing);
+
+                    const preInsertIds: string[] = [];
+                    const postInsertIds: string[] = [];
+                    let preSaveCount = 0;
+                    c.preInsert(function (data) {
+                        preInsertIds.push(data.passportId);
+                        if (data.firstName === 'no-insert') {
+                            throw new Error('inserts are not allowed');
+                        }
+                        data.lastName = 'set-by-pre-insert';
+                    }, false);
+                    c.postInsert(function (data) {
+                        postInsertIds.push(data.passportId);
+                    }, false);
+                    c.preSave(function () {
+                        preSaveCount++;
+                    }, false);
+
+                    // upsert() of an existing document
+                    let doc = await c.upsert(Object.assign({}, existing, { firstName: 'no-insert' }));
+                    assert.strictEqual(doc.firstName, 'no-insert');
+                    assert.strictEqual(doc.lastName, existing.lastName);
+                    assert.deepStrictEqual(preInsertIds, []);
+                    assert.strictEqual(preSaveCount, 1);
+
+                    // insertIfNotExists() of an existing document
+                    doc = await c.insertIfNotExists(Object.assign({}, existing, { firstName: 'foobar' }));
+                    assert.strictEqual(doc.firstName, 'no-insert');
+                    assert.deepStrictEqual(preInsertIds, []);
+                    assert.strictEqual(preSaveCount, 1);
+
+                    // bulkUpsert() with one existing and one new document
+                    const result = await c.bulkUpsert([
+                        Object.assign({}, existing, { firstName: 'updated' }),
+                        added
+                    ]);
+                    assert.deepStrictEqual(result.error, []);
+                    assert.strictEqual(result.success.length, 2);
+                    assert.deepStrictEqual(preInsertIds, [added.passportId]);
+                    assert.deepStrictEqual(postInsertIds, [added.passportId]);
+                    assert.strictEqual(preSaveCount, 2);
+                    const existingDoc = await c.findOne(existing.passportId).exec(true);
+                    assert.strictEqual(existingDoc.firstName, 'updated');
+                    assert.strictEqual(existingDoc.lastName, existing.lastName);
+                    const addedDoc = await c.findOne(added.passportId).exec(true);
+                    assert.strictEqual(addedDoc.lastName, 'set-by-pre-insert');
+
+                    // new documents still run the insert hooks
+                    const viaUpsert = schemaObjects.simpleHumanData();
+                    const viaInsertIfNotExists = schemaObjects.simpleHumanData();
+                    doc = await c.upsert(viaUpsert);
+                    assert.strictEqual(doc.lastName, 'set-by-pre-insert');
+                    doc = await c.insertIfNotExists(viaInsertIfNotExists);
+                    assert.strictEqual(doc.lastName, 'set-by-pre-insert');
+                    const newIds = [added.passportId, viaUpsert.passportId, viaInsertIfNotExists.passportId];
+                    assert.deepStrictEqual(preInsertIds, newIds);
+                    assert.deepStrictEqual(postInsertIds, newIds);
+                    assert.strictEqual(preSaveCount, 2);
+
+                    c.database.close();
+                });
                 it('should have the collection bound to the this-scope', async () => {
                     const c = await humansCollection.createPrimary(0);
                     (c as any).foo = 'bar';
