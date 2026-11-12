@@ -101,6 +101,15 @@ export class RxMigrationState {
      */
     public openStorageInstances = new Set<RxStorageInstance<any, any, any>>();
     public canceled: boolean = false;
+    private resolveCanceled: () => void = () => { };
+    /**
+     * Resolves when the migration is canceled,
+     * so that waiting for something that never happens
+     * on a canceled migration can be ended.
+     */
+    private readonly canceledPromise: Promise<void> = new Promise<void>(res => {
+        this.resolveCanceled = res;
+    });
     public broadcastChannel?: BroadcastChannel;
     public heartbeatInterval?: ReturnType<typeof setInterval>;
     constructor(
@@ -396,11 +405,14 @@ export class RxMigrationState {
      * because then the leader is likely frozen, throttled or discarded
      * by the browser and this instance takes over the migration.
      * Returns 'DONE' when another instance has finished the migration.
+     * Returns 'CANCELED' when the migration is canceled while waiting,
+     * because cancel() closes the broadcastChannel and the leadership
+     * can no longer be acquired then.
      * @link https://github.com/pubkey/rxdb/issues/9191
      */
     public async awaitLeadershipOrStalledLeader(
         awaitLeadership: () => Promise<any>
-    ): Promise<'LEADER' | 'STALLED' | 'DONE'> {
+    ): Promise<'LEADER' | 'STALLED' | 'DONE' | 'CANCELED'> {
         let waiting = true;
         const startTime = now();
         const leadershipPromise = awaitLeadership().then(() => 'LEADER' as const);
@@ -432,7 +444,11 @@ export class RxMigrationState {
             return new Promise<never>(() => { });
         })();
         try {
-            return await Promise.race([leadershipPromise, stalledPromise]);
+            return await Promise.race([
+                leadershipPromise,
+                stalledPromise,
+                this.canceledPromise.then(() => 'CANCELED' as const)
+            ]);
         } finally {
             waiting = false;
         }
@@ -744,6 +760,7 @@ export class RxMigrationState {
      */
     public async cancel() {
         this.canceled = true;
+        this.resolveCanceled();
         this.stopHeartbeat();
         this.collection.migrationInProgress = false;
         await Promise.all(

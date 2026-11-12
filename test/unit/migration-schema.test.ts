@@ -53,12 +53,6 @@ import { ensureReplicationHasNoErrors } from '../../plugins/test-utils/index.mjs
 import { SimpleHumanAgeDocumentType } from '../../src/plugins/test-utils/schema-objects.ts';
 import { RxDBLeaderElectionPlugin } from '../../plugins/leader-election/index.mjs';
 import { RxDBUpdatePlugin } from '../../plugins/update/index.mjs';
-import { getRxStorageDexie } from '../../plugins/storage-dexie/index.mjs';
-import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.mjs';
-import {
-    indexedDB as fakeIndexedDB,
-    IDBKeyRange as fakeIDBKeyRange
-} from 'fake-indexeddb';
 
 
 describe('migration-schema.test.ts', function () {
@@ -3066,19 +3060,6 @@ describe('migration-schema.test.ts', function () {
                 await db3.close();
             });
 
-            /**
-             * A closed Dexie storage instance throws on each operation,
-             * which a closed memory storage instance does not do.
-             * So the tests that need these errors run on Dexie with fake-indexeddb.
-             */
-            function getDexieTestStorage(): RxStorage<any, any> {
-                return wrappedValidateAjvStorage({
-                    storage: getRxStorageDexie({
-                        indexedDB: fakeIndexedDB,
-                        IDBKeyRange: fakeIDBKeyRange
-                    })
-                });
-            }
             const closingDocsAmount = 6;
             async function createClosingTestState(dbName: string, storage: RxStorage<any, any>) {
                 const db = await createRxDatabase({
@@ -3104,6 +3085,7 @@ describe('migration-schema.test.ts', function () {
                 const hold = new Promise<void>(res => release = res);
                 let strategyStarted: () => void = () => { };
                 const started = new Promise<void>(res => strategyStarted = res);
+                let strategyCalls = 0;
                 const db = await createRxDatabase({
                     name: dbName,
                     storage
@@ -3114,6 +3096,7 @@ describe('migration-schema.test.ts', function () {
                         autoMigrate: false,
                         migrationStrategies: {
                             1: async (docData: any) => {
+                                strategyCalls = strategyCalls + 1;
                                 strategyStarted();
                                 await hold;
                                 docData.migrated = true;
@@ -3122,7 +3105,12 @@ describe('migration-schema.test.ts', function () {
                         }
                     }
                 });
-                return { db, release, started };
+                return {
+                    db,
+                    release,
+                    started,
+                    getStrategyCalls: () => strategyCalls
+                };
             }
             function isSettled(promise: Promise<any>): Promise<boolean> {
                 return Promise.race([
@@ -3152,7 +3140,7 @@ describe('migration-schema.test.ts', function () {
 
             it('must not store an error when the collection is closed directly after the migration was started', async () => {
                 const dbName = randomToken(10);
-                const storage = getDexieTestStorage();
+                const storage = config.storage.getStorage();
                 await createClosingTestState(dbName, storage);
 
                 const state = await openWithHeldStrategy(dbName, storage);
@@ -3161,13 +3149,18 @@ describe('migration-schema.test.ts', function () {
                 await state.db.items.close();
                 state.release();
                 assert.strictEqual(await isSettled(startPromise), true, 'startMigration() must settle');
+                assert.strictEqual(
+                    state.getStrategyCalls(),
+                    0,
+                    'a migration that was canceled before it has started must not run the migration strategy'
+                );
                 await state.db.close();
 
                 await ensureMigrationContinuesAfterReopen(dbName, storage);
             });
             it('must settle startMigration() when the database is closed while a migration strategy is running', async () => {
                 const dbName = randomToken(10);
-                const storage = getDexieTestStorage();
+                const storage = config.storage.getStorage();
                 await createClosingTestState(dbName, storage);
 
                 const state = await openWithHeldStrategy(dbName, storage);
