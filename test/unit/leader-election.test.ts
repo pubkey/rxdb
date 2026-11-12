@@ -198,6 +198,33 @@ describe('leader-election.test.js', () => {
 
             await db2.close();
         });
+        it('a closed database must not take part in the election', async () => {
+            const name = randomToken(10);
+            const c1 = await humansCollection.createMultiInstance(name);
+            const c2 = await humansCollection.createMultiInstance(name);
+            const db1 = c1.database;
+            const db2 = c2.database;
+
+            await db1.close();
+
+            let closedBecameLeader = false;
+            db1.waitForLeadership().then(() => closedBecameLeader = true);
+            assert.strictEqual(db1.isLeader(), false);
+            await Promise.race([
+                db2.waitForLeadership(),
+                AsyncTestUtil.wait(3000)
+            ]);
+            assert.strictEqual(db2.isLeader(), true);
+            assert.strictEqual(closedBecameLeader, false);
+            assert.strictEqual(db1.isLeader(), false);
+            await AsyncTestUtil.assertThrows(
+                () => Promise.resolve().then(() => db1.leaderElector()),
+                'RxError',
+                'LE1'
+            );
+
+            await db2.close();
+        });
         /**
          * close() must not resolve before the broadcast channel is closed.
          * Two promises are dropped on the way there: onClose() does not return

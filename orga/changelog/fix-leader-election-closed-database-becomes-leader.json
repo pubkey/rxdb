@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX calling `waitForLeadership()`, `isLeader()` or `leaderElector()` for the first time after `RxDatabase.close()` made the closed database the leader, so that other instances of the same database never became leader and the broadcast channel was never closed",
+    "links": [],
+    "priority": 5
+}

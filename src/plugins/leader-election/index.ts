@@ -17,6 +17,7 @@ import type {
     RxPlugin
 } from '../../types/index.d.ts';
 import { PROMISE_RESOLVE_TRUE, getFromMapOrCreate } from '../utils/index.ts';
+import { newRxError } from '../../rx-error.ts';
 
 const LEADER_ELECTORS_OF_DB: WeakMap<RxDatabase, LeaderElector> = new WeakMap();
 const LEADER_ELECTOR_BY_BROADCAST_CHANNEL: WeakMap<BroadcastChannel, LeaderElector> = new WeakMap();
@@ -40,6 +41,16 @@ export function getLeaderElectorByBroadcastChannel(broadcastChannel: BroadcastCh
  * @overwrites RxDatabase().leaderElector for caching
  */
 export function getForDatabase(this: RxDatabase): LeaderElector {
+    /**
+     * A closed database must not create a broadcast channel reference
+     * or an elector because nothing would clean them up again.
+     */
+    if (this.closed) {
+        throw newRxError('LE1', {
+            database: this.name
+        });
+    }
+
     const broadcastChannel = getBroadcastChannelReference(
         this.storage.name,
         this.token,
@@ -85,12 +96,22 @@ export function isLeader(this: RxDatabase): boolean {
     if (!this.multiInstance) {
         return true;
     }
+    if (this.closed) {
+        return false;
+    }
     return this.leaderElector().isLeader;
 }
 
 export function waitForLeadership(this: RxDatabase): Promise<boolean> {
     if (!this.multiInstance) {
         return PROMISE_RESOLVE_TRUE;
+    } else if (this.closed) {
+        /**
+         * A closed database never becomes leader,
+         * so the promise stays pending like the one of
+         * a database that is closed while it waits for leadership.
+         */
+        return new Promise<boolean>(() => { });
     } else {
         return this.leaderElector()
             .awaitLeadership()
