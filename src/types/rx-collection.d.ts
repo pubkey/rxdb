@@ -75,17 +75,11 @@ export type RxCollectionHookCallbackNonAsync<RxDocumentType, OrmMethods, Reactiv
 ) => void | any;
 export type RxCollectionHookNoInstanceCallback<
     RxDocumentType,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     OrmMethods,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     Reactivity
 > = (
     data: RxDocumentType,
-    /**
-     * preInsert hooks run before the RxDocument exists,
-     * so no instance is passed.
-     */
-    instance: undefined
+    instance: RxCollection<RxDocumentType, OrmMethods, Reactivity>
 ) => Promise<void> | void | any;
 
 export type RxCollection<

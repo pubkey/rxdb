@@ -51,7 +51,7 @@ describe('hooks.test.js', () => {
                     const human = schemaObjects.humanData();
                     let count = 0;
                     c.preInsert((data, instance) => {
-                        assert.strictEqual(typeof instance, 'undefined');
+                        assert.ok(instance === c);
                         count++;
                     }, false);
                     await c.insert(human);
@@ -63,12 +63,12 @@ describe('hooks.test.js', () => {
                     const human = schemaObjects.humanData();
                     let count = 0;
                     c.preInsert(function (doc, instance) {
-                        assert.strictEqual(typeof instance, 'undefined');
+                        assert.ok(instance === c);
                         count++;
                     }, false);
                     let countp = 0;
                     c.preInsert(function (doc, instance) {
-                        assert.strictEqual(typeof instance, 'undefined');
+                        assert.ok(instance === c);
                         countp++;
                     }, true);
                     await c.insert(human);
@@ -81,7 +81,7 @@ describe('hooks.test.js', () => {
                     const human = schemaObjects.simpleHumanData();
 
                     c.preInsert(function (d, instance) {
-                        assert.strictEqual(typeof instance, 'undefined');
+                        assert.ok(instance === c);
                         d.lastName = 'foobar';
                     }, false);
 
@@ -95,7 +95,7 @@ describe('hooks.test.js', () => {
                     const human = schemaObjects.simpleHumanData();
 
                     c.preInsert(async function (d, instance) {
-                        assert.strictEqual(typeof instance, 'undefined');
+                        assert.ok(instance === c);
                         await promiseWait(10);
                         d.lastName = 'foobar';
                     }, false);
@@ -135,6 +135,43 @@ describe('hooks.test.js', () => {
                     await c.insert(schemaObjects.simpleHumanData());
 
                     assert.ok(hasRun);
+                    c.database.close();
+                });
+                it('should pass the collection as second argument', async () => {
+                    const c = await humansCollection.createPrimary(0);
+                    const received: { hook: string; instance: unknown; }[] = [];
+                    c.preInsert((_data, instance) => {
+                        received.push({ hook: 'series-sync', instance });
+                    }, false);
+                    c.preInsert(async (_data, instance) => {
+                        await promiseWait(1);
+                        received.push({ hook: 'series-async', instance });
+                    }, false);
+                    c.preInsert((_data, instance) => {
+                        received.push({ hook: 'parallel-sync', instance });
+                    }, true);
+                    c.preInsert(async (_data, instance) => {
+                        await promiseWait(1);
+                        received.push({ hook: 'parallel-async', instance });
+                    }, true);
+
+                    const writes: (() => Promise<any>)[] = [
+                        () => c.insert(schemaObjects.simpleHumanData()),
+                        () => c.bulkInsert([schemaObjects.simpleHumanData()]),
+                        () => c.upsert(schemaObjects.simpleHumanData()),
+                        () => c.incrementalUpsert(schemaObjects.simpleHumanData())
+                    ];
+                    for (const write of writes) {
+                        received.length = 0;
+                        await write();
+                        assert.deepStrictEqual(
+                            received.map(r => r.hook).sort(),
+                            ['parallel-async', 'parallel-sync', 'series-async', 'series-sync']
+                        );
+                        received.forEach(r => assert.ok(r.instance === c, r.hook));
+                    }
+                    assert.strictEqual((await c.find().exec()).length, writes.length);
+
                     c.database.close();
                 });
             });

@@ -48,7 +48,7 @@ Here are some other ideas:
 - notifications
 
 ## Usage
-All hooks have the plain data as first parameter, and all but `preInsert` also have the `RxDocument`-instance as second parameter. If you want to modify the data in the hook, change attributes of the first parameter.
+All hooks have the plain data as first parameter. The second parameter is the `RxDocument`-instance, except for `preInsert`, which gets the `RxCollection`-instance because the `RxDocument` does not exist before the insert. If you want to modify the data in the hook, change attributes of the first parameter.
 
 All hook functions are also `this`-bound to the `RxCollection`-instance.
 
@@ -70,23 +70,25 @@ An insert-hook receives the data-object of the new document.
 
 ```js
 // series
-myCollection.preInsert(function(plainData){
+myCollection.preInsert(function(plainData, rxCollection){
     // set age to 50 before saving
     plainData.age = 50;
+    // the RxDocument does not exist yet, so the second parameter is the RxCollection
+    console.log(rxCollection.name);
 }, false);
 
 // parallel
-myCollection.preInsert(function(plainData){
+myCollection.preInsert(function(plainData, rxCollection){
 
 }, true);
 
 // async
-myCollection.preInsert(function(plainData){
+myCollection.preInsert(function(plainData, rxCollection){
   return new Promise(res => setTimeout(res, 100));
 }, false);
 
 // stop the insert-operation
-myCollection.preInsert(function(plainData){
+myCollection.preInsert(function(plainData, rxCollection){
   throw new Error('stop');
 }, false);
 ```

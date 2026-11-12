@@ -727,7 +727,7 @@ describe('other', () => {
                 return Promise.resolve();
             }, true);
         });
-        it('preInsert must not have an instance as second argument', async () => {
+        it('preInsert must have the collection as second argument', async () => {
             const myDb: any = {};
             const myCollections = await myDb.addCollections({
                 humans: {
@@ -740,10 +740,15 @@ describe('other', () => {
             myCollection.preInsert((data) => {
                 myNumber = data.age;
             }, false);
-            myCollection.preInsert((data, instance) => {
+            myCollection.preInsert(async (data, instance) => {
                 myNumber = data.age;
-                // @ts-expect-error preInsert hooks get no second argument
                 myString = instance.name;
+                const doc = await instance.findOne().exec();
+                if (doc) {
+                    myNumber = doc.age;
+                }
+                // @ts-expect-error the second argument is the RxCollection, not an RxDocument
+                myString = instance.primary;
             }, false);
         });
         describe('query', () => {
