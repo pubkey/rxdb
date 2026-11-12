@@ -2128,6 +2128,29 @@ describe('rx-collection.test.ts', () => {
 
                     c2.database.close();
                 });
+                it('should be applied on top of an upsert() that was called before it', async () => {
+                    const c = await humansCollection.createPrimary(0);
+                    const docData = schemaObjects.simpleHumanData();
+                    const doc = await c.insert(docData);
+
+                    await Promise.all([
+                        c.upsert(Object.assign({}, docData, { firstName: 'upsert' })),
+                        c.incrementalUpsert(Object.assign({}, docData, { firstName: 'incrementalUpsert' }))
+                    ]);
+                    assert.strictEqual(doc.getLatest().firstName, 'incrementalUpsert');
+
+                    await Promise.all([
+                        c.incrementalUpsert(Object.assign({}, docData, { firstName: 'incrementalUpsert1' })),
+                        c.bulkUpsert([Object.assign({}, docData, { firstName: 'bulkUpsert' })]),
+                        c.incrementalUpsert(Object.assign({}, docData, { firstName: 'incrementalUpsert2', lastName: 'incrementalUpsert2' })),
+                        doc.incrementalPatch({ lastName: 'patch' })
+                    ]);
+                    const latest = await c.findOne(docData.passportId).exec(true);
+                    assert.strictEqual(latest.firstName, 'incrementalUpsert2');
+                    assert.strictEqual(latest.lastName, 'patch');
+
+                    c.database.close();
+                });
                 it('should work when inserting on a slow storage', async () => {
                     if (!isNode) return;
                     // use a 'slow' adapter because memory might be to fast

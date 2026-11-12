@@ -679,6 +679,43 @@ export class RxCollectionBase<
         isWriteAllowed(this);
         const insertData: RxDocumentType[] = [];
         const useJsonByDocId: Map<string, RxDocumentType> = new Map();
+        const deleteExisting = options?.deleteExistingAttachments === true;
+        const writeQueue = this.incrementalWriteQueue;
+        let attachmentsNormalized: Promise<any> | undefined;
+        /**
+         * True when the update writes must not be added before the result of the insert is known.
+         * This is the case when the insert has finished or when it can be rejected
+         * before it reaches the storage, which is by a preInsert hook or by a duplicate primary key.
+         */
+        let insertSettled = this.hasHooks('pre', 'insert');
+
+        /**
+         * The writes that update the documents that existed already.
+         * A write is added to the incremental write queue when the insert had a conflict,
+         * or before the write of an incrementalUpsert() that was called
+         * after this call, so that the later call is applied on top.
+         */
+        const updateWrites = new Map<string, Promise<RxDocumentData<RxDocumentType>>>();
+        const updateExisting = (
+            id: string,
+            docData: RxDocumentData<RxDocumentType>
+        ) => getFromMapOrCreate(updateWrites, id, () => {
+            const write = writeQueue.addWrite(
+                docData,
+                (docWriteData: any): any => {
+                    const getWriteData = () => {
+                        const writeData: any = getFromMapOrThrow(useJsonByDocId, id);
+                        return _upsertWriteData(writeData, docWriteData, writeData._attachments, deleteExisting);
+                    };
+                    return attachmentsNormalized ? attachmentsNormalized.then(getWriteData) : getWriteData();
+                },
+                false,
+                true
+            );
+            // the rejection is handled when the insert had a conflict
+            write.catch(() => { });
+            return write;
+        });
 
         // First pass: synchronous work — schema filling and primary key validation
         const preparedDocs: RxDocumentType[] = [];
@@ -714,16 +751,31 @@ export class RxCollectionBase<
                 }
             }
             if (normalizePromises.length > 0) {
-                await Promise.all(normalizePromises);
+                attachmentsNormalized = Promise.all(normalizePromises);
             }
         }
         for (const useJson of preparedDocs) {
             const primary: string = (useJson as any)[this.schema.primaryPath];
+            insertSettled = insertSettled || useJsonByDocId.has(primary);
+            const docDataFromCache = !insertSettled && this._docCache.getLatestDocumentDataIfExists(primary);
+            if (docDataFromCache && !docDataFromCache._deleted) {
+                writeQueue.wait(
+                    primary,
+                    (docData, ownWrite) => !insertSettled && !(ownWrite && docData && updateExisting(primary, docData))
+                );
+            }
             useJsonByDocId.set(primary, useJson);
             insertData.push(useJson);
         }
 
-        const insertResult = await this.bulkInsert(insertData);
+        const insertResult = await (
+            attachmentsNormalized ?
+                attachmentsNormalized.then(() => this.bulkInsert(insertData)) :
+                this.bulkInsert(insertData)
+        ).finally(() => {
+            insertSettled = true;
+            useJsonByDocId.forEach((_useJson, id) => writeQueue.addWaiting(id));
+        });
         const success = insertResult.success.slice(0);
         const error: RxStorageWriteError<RxDocumentType>[] = [];
 
@@ -734,24 +786,11 @@ export class RxCollectionBase<
                     error.push(err);
                 } else {
                     const id = err.documentId;
-                    const writeData = getFromMapOrThrow(useJsonByDocId, id);
                     const docDataInDb = ensureNotFalsy(err.documentInDb);
-                    const newAttachments = (writeData as any)._attachments;
-                    const deleteExisting = options?.deleteExistingAttachments === true;
-                    const newDoc = await this.incrementalWriteQueue.addWrite(
-                        docDataInDb,
-                        (docWriteData: any): any => {
-                            return Object.assign({}, writeData, {
-                                _attachments: deleteExisting
-                                    ? newAttachments
-                                    : Object.assign(
-                                        {},
-                                        docWriteData._attachments,
-                                        newAttachments
-                                    )
-                            });
-                        }
-                    ).then(writeResult => this._docCache.getCachedRxDocument(writeResult) as any);
+                    const write = updateExisting(id, docDataInDb);
+                    // the incrementalUpsert() calls that still wait for the document have been called later
+                    writeQueue.addWaiting(id, docDataInDb, true);
+                    const newDoc = await write.then(writeResult => this._docCache.getCachedRxDocument(writeResult) as any);
                     success.push(newDoc as any);
                 }
             })
@@ -805,20 +844,14 @@ export class RxCollectionBase<
             }
             return (useJson as any)._attachments;
         };
+        const writeQueue = this.incrementalWriteQueue;
         const updateExisting = (
-            docData: RxDocumentData<RxDocumentType>,
-            newAttachmentsPromise: Promise<any>
-        ) => this.incrementalWriteQueue.addWrite(
+            docData: RxDocumentData<RxDocumentType>
+        ) => writeQueue.addWrite(
             docData,
-            (docWriteData: any): any => newAttachmentsPromise.then(newAttachments => Object.assign({}, useJson, {
-                _attachments: deleteExisting
-                    ? newAttachments
-                    : Object.assign(
-                        {},
-                        docWriteData._attachments,
-                        newAttachments
-                    )
-            })),
+            (docWriteData: any): any => attachmentsPromise.then(
+                newAttachments => _upsertWriteData(useJson, docWriteData, newAttachments, deleteExisting)
+            ),
             true
         ).then(writeResult => this._docCache.getCachedRxDocument(writeResult) as any);
 
@@ -837,7 +870,7 @@ export class RxCollectionBase<
          */
         const docDataFromCache = this._docCache.getLatestDocumentDataIfExists(primary);
         if (!previousQueue && docDataFromCache && !docDataFromCache._deleted) {
-            return updateExisting(docDataFromCache, attachmentsPromise);
+            return updateExisting(docDataFromCache);
         }
 
         /**
@@ -851,16 +884,13 @@ export class RxCollectionBase<
          */
         const state = { noWrite: false };
         let ownWrite: Promise<any> | undefined;
-        getFromMapOrCreate(
-            this.incrementalWriteQueue.waitingByDocId,
-            primary,
-            () => []
-        ).push(docData => {
-            if (!state.noWrite) {
-                ownWrite = updateExisting(docData, attachmentsPromise);
+        writeQueue.wait(primary, docData => {
+            if (docData && !state.noWrite) {
+                ownWrite = updateExisting(docData);
                 // the rejection is handled when the calls before this one have settled
                 ownWrite.catch(() => { });
             }
+            return !docData;
         });
 
         // ensure that it won't try 2 parallel runs
@@ -870,10 +900,10 @@ export class RxCollectionBase<
                 (useJson as any)._attachments = normalizedAttachments;
                 return ownWrite || _incrementalUpsertEnsureRxDocumentExists(this as any, primary as any, useJson, state)
                     .then((wasInserted) => {
-                        this.incrementalWriteQueue.addWaiting(primary, wasInserted.doc._data as any);
+                        writeQueue.addWaiting(primary, wasInserted.doc._data as any, true);
                         return wasInserted.inserted ?
                             wasInserted.doc :
-                            ownWrite || updateExisting(wasInserted.doc._data as any, attachmentsPromise);
+                            ownWrite || updateExisting(wasInserted.doc._data as any);
                     });
             });
 
@@ -886,7 +916,7 @@ export class RxCollectionBase<
             state.noWrite = true;
             if (this._incrementalUpsertQueues.get(primary) === queue) {
                 this._incrementalUpsertQueues.delete(primary);
-                this.incrementalWriteQueue.waitingByDocId.delete(primary);
+                writeQueue.waitingByDocId.delete(primary);
             }
         };
         const queue: Promise<void> = result.then(removeFromQueues, removeFromQueues);
@@ -1256,6 +1286,26 @@ function _applyHookFunctions(
                 return this.addHook(when, key, fun, parallel);
             };
         });
+    });
+}
+
+/**
+ * Returns the data that an upsert writes to a document that exists already.
+ */
+function _upsertWriteData(
+    writeData: any,
+    docWriteData: any,
+    newAttachments: any,
+    deleteExisting: boolean
+) {
+    return Object.assign({}, writeData, {
+        _attachments: deleteExisting
+            ? newAttachments
+            : Object.assign(
+                {},
+                docWriteData._attachments,
+                newAttachments
+            )
     });
 }
 

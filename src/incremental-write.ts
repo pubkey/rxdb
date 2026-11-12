@@ -39,6 +39,8 @@ type IncrementalWriteQueueItem<RxDocType> = {
     reject: (error: RxError) => void;
 };
 
+type WaitingWrite<RxDocType> = (docData?: RxDocumentData<RxDocType>, ownWrite?: boolean) => any;
+
 /**
  * The incremental write queue
  * batches up all incremental writes to a collection
@@ -54,8 +56,9 @@ export class IncrementalWriteQueue<RxDocType> {
      * Writes that have been called while the state of their document was not known.
      * They are added to the queue before the next write to the same document,
      * so that all writes to one document run in call order.
+     * A function that returns true stays in the list.
      */
-    public waitingByDocId = new Map<string, ((docData: RxDocumentData<RxDocType>) => void)[]>();
+    public waitingByDocId = new Map<string, WaitingWrite<RxDocType>[]>();
 
     constructor(
         public readonly storageInstance: RxStorageInstance<RxDocType, any, any>,
@@ -73,10 +76,16 @@ export class IncrementalWriteQueue<RxDocType> {
          * If true, the write is not merged into the
          * same storage write as the earlier writes of that document.
          */
-        ownWrite?: boolean
+        ownWrite?: boolean,
+        /**
+         * If true, the waiting writes are not added before this write.
+         */
+        beforeWaiting?: boolean
     ): Promise<RxDocumentData<RxDocType>> {
         const docId: string = lastKnownDocumentState[this.primaryPath] as any;
-        this.addWaiting(docId, lastKnownDocumentState);
+        if (!beforeWaiting) {
+            this.addWaiting(docId, lastKnownDocumentState, ownWrite);
+        }
         const ar = getFromMapOrCreate(this.queueByDocId, docId, () => []);
         const ret = new Promise<RxDocumentData<RxDocType>>((resolve, reject) => {
             const item: IncrementalWriteQueueItem<RxDocType> = {
@@ -92,11 +101,22 @@ export class IncrementalWriteQueue<RxDocType> {
         return ret;
     }
 
-    addWaiting(docId: string, docData: RxDocumentData<RxDocType>) {
+    wait(docId: string, fn: WaitingWrite<RxDocType>) {
+        getFromMapOrCreate(this.waitingByDocId, docId, () => []).push(fn);
+    }
+
+    /**
+     * @param docData without it, only the functions that are no longer needed are removed.
+     * @param ownWrite if true, the pending RxCollection.upsert() calls add their write, too.
+     */
+    addWaiting(docId: string, docData?: RxDocumentData<RxDocType>, ownWrite?: boolean) {
         const waiting = this.waitingByDocId.get(docId);
         if (waiting) {
             this.waitingByDocId.delete(docId);
-            waiting.forEach(fn => fn(docData));
+            const keep = waiting.filter(fn => fn(docData, ownWrite));
+            if (keep.length) {
+                this.waitingByDocId.set(docId, keep);
+            }
         }
     }
 
