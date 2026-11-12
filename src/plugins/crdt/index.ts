@@ -472,6 +472,11 @@ export const RxDBcrdtPlugin: RxPlugin = {
                             writes.map(async (write) => {
                                 const newDocState: typeof write.document = clone(write.document);
                                 const crdts = getCrdt(newDocState);
+                                if (!crdts) {
+                                    throw newRxError('SNH', {
+                                        document: newDocState
+                                    });
+                                }
 
                                 const rebuild = rebuildFromCRDT(
                                     collection.schema.jsonSchema,
@@ -560,7 +565,18 @@ export const RxDBcrdtPlugin: RxPlugin = {
                         return;
                     }
 
-                    const crdtDocField: CRDTDocumentField<any> = clone(getCrdt(data));
+                    /**
+                     * Not all writes hand over the CRDT field to the hooks,
+                     * for example incrementalUpsert() on an existing document
+                     * runs the preSave hooks on the given data.
+                     * Without the CRDT field there are no operations
+                     * that the changes of the hooks can be added to.
+                     */
+                    const crdtsBefore: CRDTDocumentField<any> | undefined = getCrdt(data);
+                    if (!crdtsBefore) {
+                        return;
+                    }
+                    const crdtDocField: CRDTDocumentField<any> = clone(crdtsBefore);
                     crdtDocField.operations.push([{
                         creator: await collection.database.storageToken,
                         body: [{ ifMatch }],

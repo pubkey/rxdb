@@ -22,7 +22,9 @@ import {
     rxStorageInstanceToReplicationHandler,
     RxReplicationWriteToMasterRow,
     defaultConflictHandler,
-    RxConflictHandler
+    RxConflictHandler,
+    RxError,
+    createBlob
 } from '../../plugins/core/index.mjs';
 
 
@@ -349,6 +351,72 @@ describe('crdt.test.ts', () => {
             assert.strictEqual(resolved.lastName, 'from-hook');
             assert.strictEqual(resolved.age, undefined);
             assert.strictEqual(resolved.firstName, 'alice');
+
+            collection.database.close();
+        });
+        it('should not reject with a non-RxError on any write method when hooks change the document', async () => {
+            const schema: RxJsonSchema<HumanDocumentType> = clone(schemas.human);
+            if (config.storage.hasAttachments) {
+                schema.attachments = {};
+            }
+            const collection = await getCRDTCollection(schema);
+            let preSaveRuns = 0;
+            collection.preInsert(docData => {
+                docData.lastName = 'pre-insert';
+            }, false);
+            collection.preSave(docData => {
+                preSaveRuns = preSaveRuns + 1;
+                docData.lastName = 'pre-save-' + preSaveRuns;
+            }, false);
+
+            const doc = await collection.insert(schemaObjects.humanData('insert', 1));
+            assert.strictEqual(doc.lastName, 'pre-insert');
+            const bulkInsertResult = await collection.bulkInsert([schemaObjects.humanData('bulk-insert', 1)]);
+            assert.strictEqual(bulkInsertResult.error.length, 0);
+            assert.strictEqual(bulkInsertResult.success[0].lastName, 'pre-insert');
+
+            // upserts of new documents
+            assert.strictEqual((await collection.upsert(schemaObjects.humanData('upsert', 1))).lastName, 'pre-insert');
+            const bulkUpsertResult = await collection.bulkUpsert([schemaObjects.humanData('bulk-upsert', 1)]);
+            assert.strictEqual(bulkUpsertResult.error.length, 0);
+            assert.strictEqual(
+                (await collection.incrementalUpsert(schemaObjects.humanData('incremental-upsert', 1))).lastName,
+                'pre-insert'
+            );
+
+            // upserts of existing documents
+            await collection.upsert(schemaObjects.humanData('upsert', 2));
+            const bulkUpsertExistingResult = await collection.bulkUpsert([schemaObjects.humanData('bulk-upsert', 2)]);
+            assert.strictEqual(bulkUpsertExistingResult.error.length, 0);
+            /**
+             * incrementalUpsert() on an existing document runs the preSave hooks
+             * on data that does not contain the CRDT field.
+             * If such a write is refused, it must be refused with an RxError.
+             */
+            const incrementalUpsertError = await collection
+                .incrementalUpsert(schemaObjects.humanData('incremental-upsert', 2))
+                .then(() => undefined, (err: RxError) => err);
+            if (incrementalUpsertError) {
+                assert.strictEqual(incrementalUpsertError.rxdb, true, 'not an RxError: ' + incrementalUpsertError);
+                assert.strictEqual(incrementalUpsertError.code, 'SNH');
+            }
+
+            await doc.patch({ age: 2 });
+            await doc.getLatest().incrementalPatch({ age: 3 });
+            await doc.getLatest().updateCRDT({ ifMatch: { $inc: { age: 1 } } });
+            assert.strictEqual(doc.getLatest().age, 4);
+            assert.ok(doc.getLatest().lastName.startsWith('pre-save-'));
+            if (config.storage.hasAttachments) {
+                await doc.getLatest().putAttachment({
+                    id: 'cat.txt',
+                    data: createBlob('meow', 'text/plain'),
+                    type: 'text/plain'
+                });
+                assert.ok(doc.getLatest().getAttachment('cat.txt'));
+            }
+            await doc.getLatest().remove();
+            assert.strictEqual(await collection.findOne('insert').exec(), null);
+            assert.ok(preSaveRuns > 0);
 
             collection.database.close();
         });
