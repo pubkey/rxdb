@@ -277,18 +277,22 @@ function getViewerQuerySchema(primaryPath: string): RxJsonSchema<any> {
  * Uses the sort comparator of the RxDB core so the order
  * equals the order of a query on a live collection,
  * including the primary key as last sort field.
+ * Without a primaryPath, documents with equal sort values
+ * keep the order of the given array.
  */
-export function sortViewerDocs(docs: any[], sort?: ViewerSortPart[], primaryPath: string = 'id'): any[] {
+export function sortViewerDocs(docs: any[], sort?: ViewerSortPart[], primaryPath?: string): any[] {
     const parts = (sort || []).filter(part => Object.keys(part).length > 0);
     if (parts.length === 0) {
         return docs;
     }
-    const schema = getViewerQuerySchema(primaryPath);
+    const schema = getViewerQuerySchema(primaryPath || 'id');
     const comparator = getSortComparator(
         schema,
-        normalizeMangoQuery(schema, { selector: {}, sort: parts })
+        primaryPath ?
+            normalizeMangoQuery(schema, { selector: {}, sort: parts }) :
+            { selector: {}, sort: parts, skip: 0 }
     );
-    return docs.slice().sort(comparator);
+    return docs.slice().sort((a, b) => comparator(a, b) || 0);
 }
 
 /**

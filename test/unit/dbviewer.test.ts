@@ -309,6 +309,53 @@ describe('dbviewer.test.ts', () => {
             }
             await db.close();
         });
+        it('sorts equal and missing values like the live source when the primary key is not the id field', async () => {
+            const db = await createRxDatabase({
+                name: randomToken(10),
+                storage: config.storage.getStorage()
+            });
+            await db.addCollections({
+                docs: {
+                    schema: {
+                        version: 0,
+                        primaryKey: 'key',
+                        type: 'object',
+                        properties: {
+                            key: { type: 'string', maxLength: 100 },
+                            id: { type: 'string' },
+                            n: { type: 'number' }
+                        },
+                        required: ['key']
+                    }
+                }
+            });
+            await db.docs.bulkInsert([
+                { key: 'k2', id: 'y', n: 10 },
+                { key: 'k5', n: 1 },
+                { key: 'k1', id: 'z', n: 2 },
+                { key: 'k4', id: 'x', n: 1 },
+                { key: 'k3', id: 'x' }
+            ]);
+            const liveSource = createLiveDataSource(db as any);
+            const dumpSource = createDumpDataSource({
+                name: 'dumped',
+                collections: [await liveSource.exportCollection('docs')]
+            });
+            const cases: { sort: { [field: string]: 'asc' | 'desc'; }[]; keys: string[]; }[] = [
+                { sort: [{ n: 'asc' }], keys: ['k3', 'k4', 'k5', 'k1', 'k2'] },
+                { sort: [{ n: 'desc' }], keys: ['k2', 'k1', 'k4', 'k5', 'k3'] },
+                { sort: [{ id: 'asc' }], keys: ['k5', 'k3', 'k4', 'k2', 'k1'] },
+                { sort: [{ key: 'desc' }], keys: ['k5', 'k4', 'k3', 'k2', 'k1'] }
+            ];
+            for (const testCase of cases) {
+                const label = JSON.stringify(testCase.sort);
+                const liveResult = await liveSource.query('docs', {}, 0, 100, testCase.sort);
+                assert.deepStrictEqual(liveResult.docs.map(doc => doc.key), testCase.keys, 'live ' + label);
+                const dumpResult = await dumpSource.query('docs', {}, 0, 100, testCase.sort);
+                assert.deepStrictEqual(dumpResult.docs.map(doc => doc.key), testCase.keys, 'dump ' + label);
+            }
+            await db.close();
+        });
         it('rejects writes', async () => {
             const source = createDumpDataSource(dump);
             await assert.rejects(() => source.upsert('todos', { id: 'x' }));

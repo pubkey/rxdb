@@ -335,7 +335,13 @@ export function createDumpDataSource(
         },
         async query(collectionName: string, selector: any, skip: number, limit: number, sort?: ViewerSortPart[]) {
             const docs = collectionsByName.get(collectionName) || [];
-            const matching = sortViewerDocs(docs.filter(getViewerSelectorMatcher(selector)), sort, guessPrimaryPath(docs));
+            /**
+             * A dump contains the schema hash but not the schema, so the
+             * primary key is not known. exportJSON() writes the documents
+             * in the order of the primary key, so keeping the dump order
+             * for equal sort values gives the order of a live query.
+             */
+            const matching = sortViewerDocs(docs.filter(getViewerSelectorMatcher(selector)), sort);
             return {
                 docs: matching.slice(skip, skip + limit),
                 total: matching.length
