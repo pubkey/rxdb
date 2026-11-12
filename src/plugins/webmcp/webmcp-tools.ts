@@ -333,26 +333,34 @@ export function registerWebMCPTarget(
     /**
      * Only the tools that the registry accepted are unregistered,
      * a rejected name can belong to a tool of someone else.
+     * A tool is accepted when registerTool() returned and,
+     * when it returned a promise, after that promise has resolved.
      */
     const registeredTools: WebMCPTool[] = [];
+    const unregisterTool = (tool: WebMCPTool) => {
+        try {
+            if (modelContext.unregisterTool) {
+                modelContext.unregisterTool(tool.name);
+            }
+        } catch (err) { }
+    };
+    let unregistered = false;
     const unregister = () => {
+        /**
+         * A second call must not remove the tool names
+         * or the tools of a later registration with the same names.
+         */
+        if (unregistered) {
+            return;
+        }
+        unregistered = true;
         if (registeredTargets.get(toolNameSuffix) === target) {
             registeredTargets.delete(toolNameSuffix);
         }
         if (controller) {
             controller.abort();
         }
-        /**
-         * The list is emptied so that a second call does not remove
-         * the tools of a later registration with the same names.
-         */
-        registeredTools.splice(0).forEach(tool => {
-            try {
-                if (modelContext.unregisterTool) {
-                    modelContext.unregisterTool(tool.name);
-                }
-            } catch (err) { }
-        });
+        registeredTools.splice(0).forEach(unregisterTool);
     };
 
     /**
@@ -365,24 +373,31 @@ export function registerWebMCPTarget(
                 tool,
                 controller ? { signal: controller.signal } : undefined
             );
-            registeredTools.push(tool);
             /**
              * Spec-conformant registries return a promise that rejects
              * with the abort reason when the tool is unregistered
              * before the registration has finished.
              */
             if (registration && typeof registration.then === 'function') {
-                registration.then(undefined, (err: any) => {
+                registration.then(() => {
+                    /**
+                     * A registry that ignores the signal still adds a tool
+                     * whose registration was pending during unregister().
+                     */
+                    if (unregistered) {
+                        unregisterTool(tool);
+                    } else {
+                        registeredTools.push(tool);
+                    }
+                }, (err: any) => {
                     if (controller && controller.signal.aborted && err === controller.signal.reason) {
                         return;
-                    }
-                    const index = registeredTools.indexOf(tool);
-                    if (index >= 0) {
-                        registeredTools.splice(index, 1);
                     }
                     unregister();
                     error$.next(err);
                 });
+            } else {
+                registeredTools.push(tool);
             }
         });
     } catch (err) {

@@ -447,6 +447,76 @@ describe('webmcp.test.ts', () => {
         assert.strictEqual(toolNames.size, 0);
     });
 
+    it('should not unregister the tools of someone else when the registry rejects duplicate names asynchronously', async () => {
+        const registryTools = new Map<string, any>();
+        const unregisterCalls: string[] = [];
+        let holdRegistrations = false;
+        const heldRegistrations: (() => void)[] = [];
+        const modelContext = {
+            registerTool(tool: any): Promise<void> {
+                if (registryTools.has(tool.name)) {
+                    return Promise.reject(new TypeError('duplicate tool name ' + tool.name));
+                }
+                registryTools.set(tool.name, tool);
+                if (holdRegistrations) {
+                    return new Promise<void>(res => heldRegistrations.push(res));
+                }
+                return Promise.resolve();
+            },
+            unregisterTool(name: string) {
+                unregisterCalls.push(name);
+                registryTools.delete(name);
+            }
+        };
+        const database = await createRxDatabase({
+            name: randomToken(10),
+            storage: config.storage.getStorage()
+        });
+        await database.addCollections({ aaa: { schema: schemas.human } });
+        const suffix = database.name + '_aaa_' + database.aaa.schema.version;
+        const foreignTools = ['rxdb_query_', 'rxdb_count_', 'rxdb_insert_'].map(prefix => ({
+            name: prefix + suffix,
+            description: 'tool of the page',
+            inputSchema: { type: 'object', properties: {} },
+            execute: () => Promise.resolve('foreign')
+        }));
+        const foreignNames = foreignTools.map(tool => tool.name);
+        await Promise.all(foreignTools.map(tool => modelContext.registerTool(tool)));
+        const assertOnlyForeignToolsLeft = () => {
+            assert.deepStrictEqual(Array.from(registryTools.keys()), foreignNames);
+            foreignTools.forEach(tool => assert.strictEqual(registryTools.get(tool.name), tool));
+            assert.deepStrictEqual(unregisterCalls.filter(name => foreignNames.includes(name)), []);
+        };
+
+        // three of the seven tool names are rejected, the four accepted tools are rolled back
+        const { error$ } = database.aaa.registerWebMCP({ modelContext });
+        const emitted: any[] = [];
+        const sub = error$.subscribe((err: any) => emitted.push(err));
+        await waitUntil(() => emitted.length === 3, 1000);
+        sub.unsubscribe();
+        assert.strictEqual(emitted[0].name, 'TypeError');
+        assertOnlyForeignToolsLeft();
+        assert.strictEqual(unregisterCalls.length, 4);
+
+        // registrations that are still pending during unregister() are removed when they resolve
+        foreignNames.forEach(name => registryTools.delete(name));
+        holdRegistrations = true;
+        const registration = registerWebMCPTarget(
+            getWebMCPTargetFromCollection(database.aaa),
+            { modelContext }
+        );
+        assert.strictEqual(registryTools.size, 7);
+        registration.unregister();
+        registration.unregister();
+        assert.strictEqual(unregisterCalls.length, 4);
+        heldRegistrations.forEach(resolve => resolve());
+        await waitUntil(() => registryTools.size === 0, 1000);
+        assert.strictEqual(unregisterCalls.length, 11);
+
+        await database.close();
+        assert.strictEqual(unregisterCalls.length, 11);
+    });
+
     itWithDom('should emit log$ and error$ events for executed tools', async () => {
         const { log$, error$ } = db.registerWebMCP();
         const logs: any[] = [];
