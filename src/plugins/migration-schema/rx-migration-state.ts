@@ -604,6 +604,20 @@ export class RxMigrationState {
                                     return null;
                                 }
 
+                                /**
+                                 * The replication protocol stores the assumed master state
+                                 * without the _attachments field when the collection has no attachments.
+                                 * The migrated assumed master state must have the same shape
+                                 * because it is sent to the push handler which might compare it
+                                 * with the master document.
+                                 */
+                                if (
+                                    newStorage.schema.title === META_INSTANCE_SCHEMA_TITLE &&
+                                    !this.collection.schema.jsonSchema.attachments
+                                ) {
+                                    delete (migratedDocData as any)._attachments;
+                                }
+
                                 const newRow: RxReplicationWriteToMasterRow<any> = {
                                     // drop the assumed master state, we do not have to care about conflicts here.
                                     assumedMasterState: undefined,

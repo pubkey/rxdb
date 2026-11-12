@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX the schema migration added an `_attachments: {}` field to the migrated `assumedMasterState` of the replication for collections without attachments, so that a push handler that compares the `assumedMasterState` with the server document reported a conflict for every document and the local change was dropped",
+    "links": [],
+    "priority": 5
+}
