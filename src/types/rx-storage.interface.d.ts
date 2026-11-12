@@ -96,6 +96,12 @@ export type FilledMangoQuery<RxDocType> = {
      */
     skip: number;
 
+    /**
+     * The maximum amount of returned documents.
+     * With limit: 0 the RxStorage must return zero documents,
+     * only a query without a limit returns all matching documents.
+     * RxDB never sends a negative limit to the RxStorage.
+     */
     limit?: number;
 };
 

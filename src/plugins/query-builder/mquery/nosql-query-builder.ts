@@ -49,7 +49,7 @@ export class NoSqlQueryBuilderClass<DocType> {
             if (mangoQuery.selector) {
                 queryBuilder.find(mangoQuery.selector);
             }
-            if (mangoQuery.limit) {
+            if (typeof mangoQuery.limit === 'number') {
                 queryBuilder.limit(mangoQuery.limit);
             }
             if (mangoQuery.skip) {

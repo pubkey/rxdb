@@ -1301,6 +1301,98 @@ describe('rx-query.test.ts', () => {
 
             c.database.close();
         });
+        it('limit: 0 must return zero documents together with selector, sort, skip and index', async () => {
+            const c = await humansCollection.create(5);
+            const queries: MangoQuery<HumanDocumentType>[] = [
+                { selector: { age: { $gte: 0 } }, limit: 0 },
+                { selector: {}, sort: [{ age: 'desc' }], limit: 0 },
+                { selector: {}, skip: 2, limit: 0 },
+                { selector: {}, sort: [{ passportId: 'asc' }], skip: 1, limit: 0 },
+                { selector: { firstName: { $gt: '' } }, index: ['firstName'], limit: 0 }
+            ];
+            for (const query of queries) {
+                const result = await c.find(query).exec();
+                assert.strictEqual(result.length, 0, JSON.stringify(query));
+            }
+
+            c.database.close();
+        });
+        it('limit: 0 must return zero documents when the query selects by primary key', async () => {
+            const c = await humansCollection.create(0);
+            await c.bulkInsert([
+                schemaObjects.humanData('aa'),
+                schemaObjects.humanData('bb'),
+                schemaObjects.humanData('cc')
+            ]);
+            const queries: MangoQuery<HumanDocumentType>[] = [
+                { selector: { passportId: 'aa' }, limit: 0 },
+                { selector: { passportId: { $eq: 'aa' } }, limit: 0 },
+                { selector: { passportId: { $in: ['aa', 'bb', 'cc'] } }, limit: 0 },
+                { selector: { passportId: { $in: ['aa', 'bb', 'cc'] } }, sort: [{ passportId: 'desc' }], skip: 1, limit: 0 },
+                { selector: { passportId: { $in: ['aa', 'bb'] }, age: { $gte: 0 } }, limit: 0 }
+            ];
+            for (const query of queries) {
+                const result = await c.find(query).exec();
+                assert.strictEqual(result.length, 0, JSON.stringify(query));
+            }
+
+            // the same queries without the limit return documents
+            const withoutLimit = await c.find({ selector: { passportId: { $in: ['aa', 'bb', 'cc'] } } }).exec();
+            assert.strictEqual(withoutLimit.length, 3);
+
+            c.database.close();
+        });
+        it('a live query with limit: 0 must stay empty after writes', async () => {
+            const c = await humansCollection.create(2);
+            const emitted: string[][] = [];
+            const emittedById: string[][] = [];
+            const sub = c.find({
+                selector: {},
+                sort: [{ passportId: 'asc' }],
+                limit: 0
+            }).$.subscribe(docs => emitted.push(docs.map(d => d.passportId)));
+            const subById = c.find({
+                selector: { passportId: { $in: ['aa', 'bb'] } },
+                limit: 0
+            }).$.subscribe(docs => emittedById.push(docs.map(d => d.passportId)));
+            await waitUntil(() => emitted.length === 1 && emittedById.length === 1);
+
+            await c.insert(schemaObjects.humanData('aa'));
+            const docB = await c.insert(schemaObjects.humanData('bb'));
+            const patchedDocB = await docB.incrementalPatch({ age: 99 });
+            await patchedDocB.remove();
+
+            // a query without a limit is used to know that the writes have been handled
+            const all = await c.find({ selector: { passportId: { $in: ['aa', 'bb'] } } }).exec();
+            assert.deepStrictEqual(all.map(d => d.passportId), ['aa']);
+            await promiseWait(50);
+
+            assert.deepStrictEqual(emitted, [[]]);
+            assert.deepStrictEqual(emittedById, [[]]);
+            const resultById = await c.find({ selector: { passportId: 'aa' }, limit: 0 }).exec();
+            assert.strictEqual(resultById.length, 0);
+
+            sub.unsubscribe();
+            subById.unsubscribe();
+            c.database.close();
+        });
+        it('a negative limit must throw when the query is created', async () => {
+            const c = await humansCollection.create(1);
+            for (const limit of [-1, -5, -0.5, -Number.MAX_SAFE_INTEGER]) {
+                await assertThrows(() => c.find({ selector: {}, limit }), 'RxError', 'QU23');
+                await assertThrows(() => c.find({ selector: {}, sort: [{ age: 'asc' }], skip: 1, limit }), 'RxError', 'QU23');
+                await assertThrows(() => c.find({ selector: { passportId: 'aa' }, limit }), 'RxError', 'QU23');
+                await assertThrows(() => c.find({ selector: { passportId: { $in: ['aa', 'bb'] } }, limit }), 'RxError', 'QU23');
+            }
+            const error = await assertThrows(() => c.find({ selector: {}, limit: -1 }), 'RxError', 'QU23');
+            assert.strictEqual((error as RxError).parameters.collection, c.name);
+
+            // the collection still works
+            const result = await c.find({ selector: {}, limit: 1 }).exec();
+            assert.strictEqual(result.length, 1);
+
+            c.database.close();
+        });
         it('find({ limit: 0 }) must return an empty result set', async () => {
             const c = await humansCollection.create(3);
 

@@ -354,6 +354,12 @@ export class RxQueryBase<
                     counter: this.collection._changeEventBuffer.getCounter()
                 };
             }
+        } else if (this.mangoQuery.limit === 0) {
+            // a query with limit 0 never returns documents, the storage is not asked
+            result = {
+                result: [],
+                counter: this.collection._changeEventBuffer.getCounter()
+            };
         } else {
             const resultWindowBuffer = getResultWindowBuffer<RxDocType>(this as any);
             if (resultWindowBuffer) {
@@ -722,6 +728,13 @@ export function createRxQuery<RxDocType>(
         other
     });
 
+    if ((queryObj.limit as number) < 0) {
+        throw newRxError('QU23', {
+            collection: collection.name,
+            query: queryObj
+        });
+    }
+
     let ret = new RxQueryBase<RxDocType, any>(op, queryObj, collection, other);
 
     // ensure when created with same params, only one is created
@@ -835,8 +848,8 @@ function __ensureEqual<RxDocType>(rxQuery: RxQueryBase<RxDocType, any>): Promise
                     ret = true; // true because results changed
                     rxQuery._setResultData(newCount as any);
                 }
-            } else {
-                // 'find' or 'findOne' query
+            } else if (rxQuery.mangoQuery.limit !== 0) {
+                // 'find' or 'findOne' query, with limit 0 no event can change the empty result
                 const resultWindowBuffer = getResultWindowBuffer<RxDocType>(rxQuery as any);
                 const eventReduceResult = resultWindowBuffer ? calculateNewResultsWithResultWindowBuffer(
                     resultWindowBuffer,
