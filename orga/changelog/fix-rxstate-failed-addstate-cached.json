@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX a failed `database.addState()` call was cached per namespace, so every later `addState()` call with that namespace rejected with the same error. Also an error of the internal query of the RxState was thrown as an uncaught exception.",
+    "links": [],
+    "priority": 4
+}

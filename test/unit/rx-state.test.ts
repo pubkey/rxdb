@@ -11,6 +11,9 @@ import {
     lastOfArray,
     RxReactivityFactory,
     RxState,
+    RxStorage,
+    RxStorageInstanceCreationParams,
+    PreparedQuery,
     runXTimes
 } from '../../plugins/core/index.mjs';
 import {
@@ -110,6 +113,119 @@ addRxPlugin(RxDBJsonDumpPlugin);
                 assert.ok(state1 !== state3);
                 assert.ok(state1 === database.states['']);
                 assert.ok(state3 === database.states.foobar);
+
+                await database.remove();
+            });
+        });
+        describe('failing storage', () => {
+            /**
+             * Wraps the storage so that it rejects exactly one call:
+             * either the creation of the storage instance of the state,
+             * or a query on the state. With lastIdQuery=true it rejects the query
+             * for the latest write of the state, otherwise the query that loads the state.
+             */
+            function getStorageThatFailsOnce(
+                failOn: 'createStorageInstance' | 'query',
+                lastIdQuery?: boolean
+            ) {
+                const baseStorage = useSchemaValidator ? wrappedValidateAjvStorage({
+                    storage: config.storage.getStorage()
+                }) : config.storage.getStorage();
+                let failed = false;
+                const isStateCollection = (params: RxStorageInstanceCreationParams<any, any>) => params.collectionName.startsWith('rx-state-');
+                const storage: RxStorage<any, any> = {
+                    name: baseStorage.name,
+                    rxdbVersion: baseStorage.rxdbVersion,
+                    async createStorageInstance<RxDocType>(params: RxStorageInstanceCreationParams<RxDocType, any>) {
+                        if (failOn === 'createStorageInstance' && !failed && isStateCollection(params)) {
+                            failed = true;
+                            throw new Error('storage-failed-once');
+                        }
+                        const instance = await baseStorage.createStorageInstance<RxDocType>(params);
+                        if (failOn === 'query' && isStateCollection(params)) {
+                            const originalQuery = instance.query.bind(instance);
+                            instance.query = (preparedQuery: PreparedQuery<RxDocType>) => {
+                                const firstSort: any = preparedQuery.query.sort[0];
+                                if (!failed && (firstSort.id === 'desc') === lastIdQuery) {
+                                    failed = true;
+                                    return Promise.reject(new Error('storage-failed-once'));
+                                }
+                                return originalQuery(preparedQuery);
+                            };
+                        }
+                        return instance;
+                    }
+                };
+                return {
+                    storage,
+                    hasFailed: () => failed
+                };
+            }
+            it('should not cache a failed addState() call', async () => {
+                const failingStorage = getStorageThatFailsOnce('createStorageInstance');
+                const database = await createRxDatabase({
+                    name: randomToken(10),
+                    storage: failingStorage.storage
+                });
+                await assert.rejects(
+                    () => database.addState<TestState>(),
+                    (err: any) => err.message === 'storage-failed-once'
+                );
+                assert.ok(failingStorage.hasFailed());
+
+                const state = await database.addState<TestState>();
+                await state.set('a', () => 1);
+                assert.strictEqual(state.get('a'), 1);
+                assert.ok(state === await database.addState<TestState>());
+                assert.ok(state === database.states['']);
+
+                await database.remove();
+            });
+            it('should be able to retry addState() when it failed after the collection was created', async () => {
+                const failingStorage = getStorageThatFailsOnce('query', false);
+                const database = await createRxDatabase({
+                    name: randomToken(10),
+                    storage: failingStorage.storage
+                });
+                let firstError: any;
+                try {
+                    await database.addState<TestState>();
+                } catch (err) {
+                    firstError = err;
+                }
+                /**
+                 * Storages that have their own getChangedDocumentsSince()
+                 * do not run a query to load the state.
+                 */
+                if (failingStorage.hasFailed()) {
+                    assert.strictEqual(firstError.message, 'storage-failed-once');
+                } else {
+                    assert.strictEqual(firstError, undefined);
+                }
+
+                const state = await database.addState<TestState>();
+                await state.set('a', () => 1);
+                assert.strictEqual(state.get('a'), 1);
+
+                await database.remove();
+            });
+            it('should not throw an uncaught exception when the internal query of the state fails', async () => {
+                const failingStorage = getStorageThatFailsOnce('query', true);
+                const database = await createRxDatabase({
+                    name: randomToken(10),
+                    storage: failingStorage.storage
+                });
+                const state = await database.addState<TestState>();
+                await waitUntil(() => failingStorage.hasFailed());
+
+                // the error must be given to the call that needs the query result
+                await assert.rejects(
+                    () => state.set('a', () => 1),
+                    (err: any) => err.message === 'storage-failed-once'
+                );
+
+                // wait until an uncaught exception would have been thrown
+                await wait(isFastMode() ? 50 : 200);
 
                 await database.remove();
             });

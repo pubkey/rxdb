@@ -23,7 +23,11 @@ export async function addState<T>(
     const state = await getFromMapOrCreate(
         stateCache,
         namespace,
-        () => createRxState<T>(this, namespace)
+        () => createRxState<T>(this, namespace).catch(err => {
+            // a failed creation must not be cached so that the next call can retry.
+            stateCache.delete(namespace);
+            throw err;
+        })
     );
     this.states[namespace] = state;
     return state as any;
