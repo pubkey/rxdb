@@ -22,7 +22,8 @@ import {
     rxStorageInstanceToReplicationHandler,
     RxReplicationWriteToMasterRow,
     defaultConflictHandler,
-    RxConflictHandler
+    RxConflictHandler,
+    createBlob
 } from '../../plugins/core/index.mjs';
 
 
@@ -614,6 +615,73 @@ describe('crdt.test.ts', () => {
                 await replicationState.awaitInSync();
                 await replicationState.cancel();
             }
+            it('should keep the attachments when a conflict is resolved', async () => {
+                if (!config.storage.hasAttachments) {
+                    return;
+                }
+                const schemaWithAttachments: RxJsonSchema<HumanDocumentType> = clone(schemas.human);
+                schemaWithAttachments.attachments = {};
+                const clientACollection = await getCRDTCollection(schemaWithAttachments);
+                const clientBCollection = await getCRDTCollection(schemaWithAttachments);
+                const serverCollection = await getCRDTCollection(schemaWithAttachments);
+                const collections = [clientACollection, clientBCollection, serverCollection];
+                async function ensureAllHave(age: number, attachments: { [id: string]: string; }) {
+                    for (const collection of collections) {
+                        const doc = await collection.findOne('foobar').exec(true);
+                        assert.strictEqual(doc.age, age);
+                        assert.deepStrictEqual(
+                            doc.allAttachments().map(attachment => attachment.id).sort(),
+                            Object.keys(attachments).sort()
+                        );
+                        for (const [id, data] of Object.entries(attachments)) {
+                            const attachment = ensureNotFalsy(doc.getAttachment(id));
+                            assert.strictEqual(await attachment.getStringData(), data);
+                        }
+                    }
+                }
+
+                await clientACollection.insert(schemaObjects.humanData('foobar', 0));
+                await replicateOnce(clientACollection, serverCollection);
+                await replicateOnce(clientBCollection, serverCollection);
+                const docA = await clientACollection.findOne('foobar').exec(true);
+                const docB = await clientBCollection.findOne('foobar').exec(true);
+
+                // A adds an attachment while B runs a CRDT operation and replicates first
+                await docA.putAttachment({
+                    id: 'a.txt',
+                    data: createBlob('from-a', 'text/plain'),
+                    type: 'text/plain'
+                });
+                await docB.updateCRDT({ ifMatch: { $inc: { age: 1 } } });
+                await replicateOnce(clientBCollection, serverCollection);
+                await replicateOnce(clientACollection, serverCollection);
+                await replicateOnce(clientBCollection, serverCollection);
+                await ensureAllHave(1, { 'a.txt': 'from-a' });
+
+                // B adds an attachment while A runs a CRDT operation and replicates first
+                await docB.getLatest().putAttachment({
+                    id: 'b.txt',
+                    data: createBlob('from-b', 'text/plain'),
+                    type: 'text/plain'
+                });
+                await docA.getLatest().updateCRDT({ ifMatch: { $inc: { age: 1 } } });
+                await replicateOnce(clientACollection, serverCollection);
+                await replicateOnce(clientBCollection, serverCollection);
+                await replicateOnce(clientACollection, serverCollection);
+                await ensureAllHave(2, { 'a.txt': 'from-a', 'b.txt': 'from-b' });
+
+                // an attachment change without a CRDT operation is replicated
+                await docA.getLatest().putAttachment({
+                    id: 'a.txt',
+                    data: createBlob('from-a-2', 'text/plain'),
+                    type: 'text/plain'
+                });
+                await replicateOnce(clientACollection, serverCollection);
+                await replicateOnce(clientBCollection, serverCollection);
+                await ensureAllHave(2, { 'a.txt': 'from-a-2', 'b.txt': 'from-b' });
+
+                await Promise.all(collections.map(collection => collection.database.close()));
+            });
             it('should merge the +1 increments', async () => {
                 const clientACollection = await getCRDTCollection();
                 const clientBCollection = await getCRDTCollection();

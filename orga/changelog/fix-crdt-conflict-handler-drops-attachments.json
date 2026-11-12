@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX the CRDT conflict handler ignored attachments, so an attachment that was put on a document of a CRDT collection was not replicated and disappeared when the document was changed on another instance. Attachment changes are now detected and merged per attachment id when a conflict is resolved",
+    "links": [],
+    "priority": 5
+}

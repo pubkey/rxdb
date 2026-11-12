@@ -287,6 +287,9 @@ There are already CRDT libraries out there that have been considered to be used 
 
 So instead of using YJS or Automerge with a database, you can use RxDB with the CRDT plugin to have a more database specific CRDT approach. This gives you additional features for free such as [schema validation](./schema-validation.md) or [data migration](./migration-schema.md).
 
+## CRDTs with attachments
+
+[Attachments](./rx-attachment.md) are not part of the CRDT operations. When a conflict is resolved, the document fields are built from the merged operations and the attachments are merged per attachment id. An attachment that was added, changed, or removed on the master since the last replication is taken from the master. All other attachments are taken from the fork, so an attachment that was added on the client is still there after the conflict was resolved. When the same attachment was changed on both sides, the master state wins, which is the same rule that the [default conflict handler](./transactions-conflicts-revisions.md) uses for the whole document.
 
 ## When to not use CRDTs
 
