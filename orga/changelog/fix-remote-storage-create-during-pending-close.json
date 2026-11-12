@@ -1,0 +1,5 @@
+{
+    "text": "FIX the remote storage handed out a storage instance that was being closed when a client opened a collection while the last other client closed it, so that all later calls of the new client failed",
+    "links": [],
+    "priority": 5
+}

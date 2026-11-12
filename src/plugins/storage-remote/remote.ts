@@ -29,6 +29,11 @@ export function exposeRxStorageRemote(settings: RxStorageRemoteExposeSettings): 
         storageInstancePromise: Promise<RxStorageInstance<any, any, any>>;
         connectionIds: Set<string>;
         params: RxStorageInstanceCreationParams<any, any>;
+        /**
+         * Set while the close() or remove() call
+         * of the last connection is running.
+         */
+        closing?: Promise<void>;
     };
     const instanceByFullName: Map<string, InstanceState> = new Map();
 
@@ -120,6 +125,14 @@ export function exposeRxStorageRemote(settings: RxStorageRemoteExposeSettings): 
             params.schema.version
         ].join('|');
         let state = instanceByFullName.get(fullName);
+        /**
+         * An instance that is being closed must not be handed out.
+         * Wait until it is closed and removed, so that a new one is created.
+         */
+        while (state && state.closing) {
+            await state.closing;
+            state = instanceByFullName.get(fullName);
+        }
         if (!state) {
             try {
                 state = {
@@ -216,6 +229,7 @@ export function exposeRxStorageRemote(settings: RxStorageRemoteExposeSettings): 
                     return;
                 }
                 let result;
+                let closingDone: (() => void) | undefined;
                 try {
                     if (
                         message.method === 'close' &&
@@ -245,6 +259,13 @@ export function exposeRxStorageRemote(settings: RxStorageRemoteExposeSettings): 
                         return;
                     }
 
+                    if (
+                        message.method === 'close' ||
+                        message.method === 'remove'
+                    ) {
+                        ensureNotFalsy(state).closing = new Promise<void>(res => closingDone = res);
+                    }
+
                     if (message.method === 'getChangedDocumentsSince' && !storageInstance.getChangedDocumentsSince) {
                         result = await getChangedDocumentsSince(
                             storageInstance,
@@ -271,6 +292,11 @@ export function exposeRxStorageRemote(settings: RxStorageRemoteExposeSettings): 
                         settings.send(createErrorAnswer(message, err));
                     } catch (innerErr) {
                         // Connection might have been closed, ignore send errors
+                    }
+                } finally {
+                    if (closingDone) {
+                        ensureNotFalsy(state).closing = undefined;
+                        closingDone();
                     }
                 }
             })
