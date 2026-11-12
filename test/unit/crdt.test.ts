@@ -325,6 +325,58 @@ describe('crdt.test.ts', () => {
         });
     });
 
+    describe('hooks', () => {
+        it('should store the changes of a preInsert hook in the CRDT operations', async () => {
+            const collection = await getCRDTCollection();
+            collection.preInsert(docData => {
+                docData.lastName = 'from-hook';
+                delete docData.age;
+            }, false);
+
+            const doc = await collection.insert(schemaObjects.humanData('foobar', 1));
+            assert.strictEqual(doc.lastName, 'from-hook');
+            assert.strictEqual(doc.age, undefined);
+
+            // a later write must work on the state that was changed by the hook
+            await doc.updateCRDT({ ifMatch: { $set: { firstName: 'alice' } } });
+
+            // a document that is built from the operations must contain the changes of the hook
+            const docState = doc.getLatest().toMutableJSON(true);
+            const resolved = await collection.conflictHandler.resolve({
+                newDocumentState: docState,
+                realMasterState: docState
+            }, 'test');
+            assert.strictEqual(resolved.lastName, 'from-hook');
+            assert.strictEqual(resolved.age, undefined);
+            assert.strictEqual(resolved.firstName, 'alice');
+
+            collection.database.close();
+        });
+        it('should store the changes of a preSave hook in the CRDT operations', async () => {
+            const collection = await getCRDTCollection();
+            collection.preSave(docData => {
+                docData.firstName = docData.firstName.toUpperCase();
+            }, false);
+
+            const doc = await collection.insert(schemaObjects.humanData('foobar', 1, 'alice'));
+            await doc.updateCRDT({ ifMatch: { $set: { firstName: 'bob' } } });
+            assert.strictEqual(doc.getLatest().firstName, 'BOB');
+            await doc.getLatest().updateCRDT({ ifMatch: { $inc: { age: 1 } } });
+            assert.strictEqual(doc.getLatest().firstName, 'BOB');
+            assert.strictEqual(doc.getLatest().age, 2);
+
+            const docState = doc.getLatest().toMutableJSON(true);
+            const resolved = await collection.conflictHandler.resolve({
+                newDocumentState: docState,
+                realMasterState: docState
+            }, 'test');
+            assert.strictEqual(resolved.firstName, 'BOB');
+            assert.strictEqual(resolved.age, 2);
+
+            collection.database.close();
+        });
+    });
+
     describe('.updateCRDT()', () => {
         return; // TODO
         it('should update the document via CRDT', async () => {

@@ -270,6 +270,25 @@ await doc.updateCRDT({
 await doc.remove();
 ```
 
+## CRDTs with hooks
+
+A `preInsert` or `preSave` [hook](./middleware.md) can change the document data after the CRDT operation of the write was created. When a hook changes or removes a top-level field, the CRDT plugin appends one more operation to the document that sets or unsets these fields. This ensures that the document state is the result of its CRDT operations and that the changes of the hook are still there after a conflict was merged.
+
+```ts
+myDatabase.todos.preSave(docData => {
+    docData.name = docData.name.trim();
+}, false);
+
+// stores the operation with the $set and one more operation that sets the trimmed name
+await doc.updateCRDT({
+    ifMatch: {
+        $set: {
+            name: ' Learn RxDB '
+        }
+    }
+});
+```
+
 ## CRDTs with replication
 
 CRDT operations are stored inside of a special field besides your 'normal' document fields.
