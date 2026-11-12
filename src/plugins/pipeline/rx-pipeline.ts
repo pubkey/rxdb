@@ -34,6 +34,7 @@ import { getChangedDocumentsSince } from '../../rx-storage-helper.ts';
 import { mapDocumentsDataToCacheDocs } from '../../doc-cache.ts';
 import { INTERNAL_CONTEXT_PIPELINE_CHECKPOINT, getPrimaryKeyOfInternalDocument } from '../../rx-database-internal-store.ts';
 import { FLAGGED_FUNCTIONS, PIPELINE_FN_PREFIX, blockFlaggedFunctionKey, releaseFlaggedFunctionKey } from './flagged-functions.ts';
+import { getFullStack, stackKeepsFlaggedFunctionAfterAwait } from './handler-detection.ts';
 
 export class RxPipeline<RxDocType> {
     processQueue = PROMISE_RESOLVE_VOID;
@@ -58,14 +59,29 @@ export class RxPipeline<RxDocType> {
         if (this.error) {
             return;
         }
-        const stack = new Error().stack;
+        const stack = getFullStack();
         if (stack && (
             stack.includes(PIPELINE_FN_PREFIX)
         )) {
+        } else if (
+            /**
+             * Where the stack cannot tell if a read comes from inside of the handler,
+             * a read of the handler would wait for its own pipeline forever.
+             * Only in such environments, all reads pass while the handler
+             * is running on this instance.
+             */
+            this.handlerRunning &&
+            !(await stackKeepsFlaggedFunctionAfterAwait())
+        ) {
         } else {
             await this.awaitIdle();
         }
     }
+
+    /**
+     * True while the handler is processing a batch on this instance.
+     */
+    handlerRunning = false;
 
     /**
      * The handler of the pipeline must never throw.
@@ -156,11 +172,13 @@ export class RxPipeline<RxDocType> {
                     // await o[this.secretFunctionName](rxDocuments);
 
                     const fnKey = blockFlaggedFunctionKey();
+                    this.handlerRunning = true;
                     try {
                         await FLAGGED_FUNCTIONS[fnKey](() => _this.handler(rxDocuments));
                     } catch (err: any) {
                         this.error = err;
                     } finally {
+                        this.handlerRunning = false;
                         releaseFlaggedFunctionKey(fnKey);
                     }
 

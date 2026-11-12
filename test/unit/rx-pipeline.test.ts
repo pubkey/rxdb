@@ -410,6 +410,77 @@ describe('rx-pipeline.test.js', () => {
             await c1.database.close();
             await c2.database.close();
         });
+        it('should not block a read of the handler that runs after an awaited timer', async () => {
+            const c1 = await humansCollection.create(0);
+            await c1.database.waitForLeadership();
+            const c2 = await humansCollection.create(0);
+            const pipeline = await c1.addPipeline({
+                destination: c2,
+                handler: async (docs) => {
+                    await promiseWait(10);
+                    const existing = await c2.find().exec();
+                    assert.strictEqual(existing.length, 0);
+                    for (const doc of docs) {
+                        await c2.insert(schemaObjects.humanData(doc.passportId));
+                    }
+                },
+                identifier: randomToken(10)
+            });
+
+            await c1.insert(schemaObjects.humanData('foobar'));
+            const result = await Promise.race([
+                pipeline.awaitIdle().then(() => 'idle'),
+                promiseWait(2000).then(() => 'timeout')
+            ]);
+            assert.strictEqual(result, 'idle');
+            const doc2 = await c2.findOne().exec(true);
+            assert.strictEqual(doc2.passportId, 'foobar');
+
+            await c1.database.close();
+            await c2.database.close();
+        });
+        it('should not block a read of the handler that is called from nested functions', async () => {
+            const c1 = await humansCollection.create(0);
+            await c1.database.waitForLeadership();
+            const c2 = await humansCollection.create(0);
+            /**
+             * Mocha sets the limit to Infinity,
+             * 10 is the default of Node.js and Chrome.
+             */
+            const stackTraceLimitBefore = Error.stackTraceLimit;
+            Error.stackTraceLimit = 10;
+            async function countDestinationDocs(depth: number): Promise<number> {
+                if (depth > 0) {
+                    return countDestinationDocs(depth - 1);
+                }
+                const existing = await c2.find().exec();
+                return existing.length;
+            }
+            const pipeline = await c1.addPipeline({
+                destination: c2,
+                handler: async (docs) => {
+                    const count = await countDestinationDocs(20);
+                    assert.strictEqual(count, 0);
+                    for (const doc of docs) {
+                        await c2.insert(schemaObjects.humanData(doc.passportId));
+                    }
+                },
+                identifier: randomToken(10)
+            });
+
+            await c1.insert(schemaObjects.humanData('foobar'));
+            const result = await Promise.race([
+                pipeline.awaitIdle().then(() => 'idle'),
+                promiseWait(2000).then(() => 'timeout')
+            ]);
+            Error.stackTraceLimit = stackTraceLimitBefore;
+            assert.strictEqual(result, 'idle');
+            const doc2 = await c2.findOne().exec(true);
+            assert.strictEqual(doc2.passportId, 'foobar');
+
+            await c1.database.close();
+            await c2.database.close();
+        });
         it('should be able to do writes dependent on reads', async () => {
             const c1 = await humansCollection.create(0);
             await c1.database.waitForLeadership();
