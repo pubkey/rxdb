@@ -15,6 +15,7 @@ import {
     RxJsonSchema,
     ensureNotFalsy,
     RxCollection,
+    RxError,
     CRDTDocumentField,
     fillWithDefaultSettings,
     defaultHashSha256,
@@ -279,6 +280,24 @@ describe('crdt.test.ts', () => {
                 'RxError',
                 'CRDT4'
             );
+
+            collection.database.close();
+        });
+        it('should return a rejected promise instead of throwing synchronously', async () => {
+            const collection = await getCRDTCollection();
+            const doc = await collection.insert(schemaObjects.humanData('foobar', 1));
+
+            const promises = [
+                doc.modify(d => d),
+                doc.incrementalModify(d => d)
+            ];
+            const errorCodes = await Promise.all(
+                promises.map(promise => promise.then(
+                    () => 'resolved',
+                    (err: RxError) => err.code
+                ))
+            );
+            assert.deepStrictEqual(errorCodes, ['CRDT4', 'CRDT2']);
 
             collection.database.close();
         });
