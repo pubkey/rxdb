@@ -9,7 +9,7 @@ export function deepEqual(a: any, b: any): boolean {
     if (a === b) return true;
 
     if (a && b && typeof a == 'object' && typeof b == 'object') {
-        if (a.constructor !== b.constructor) return false;
+        if (Object.getPrototypeOf(a) !== Object.getPrototypeOf(b)) return false;
 
         let length;
         let i;
