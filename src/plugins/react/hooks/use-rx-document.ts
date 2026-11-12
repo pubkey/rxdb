@@ -35,6 +35,8 @@ export function useRxDocument<
     useEffect(() => {
         if (!collection || primaryKey === undefined) {
             setResult(null);
+            setLoading(false);
+            setError(null);
             return;
         }
 
