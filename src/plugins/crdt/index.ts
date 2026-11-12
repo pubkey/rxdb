@@ -372,10 +372,10 @@ export const RxDBcrdtPlugin: RxPlugin = {
                 if (!this.collection.schema.jsonSchema.crdt) {
                     return oldModify.call(this, fn, context);
                 }
-                throw newRxError('CRDT4', {
+                return Promise.reject(newRxError('CRDT4', {
                     id: this.primary,
                     args: { method: 'modify' }
-                });
+                }));
             };
 
             const oldPatch = proto.patch;
@@ -409,10 +409,10 @@ export const RxDBcrdtPlugin: RxPlugin = {
                 if (context === RX_CRDT_CONTEXT) {
                     return oldincrementalModify.bind(this)(fn);
                 } else {
-                    throw newRxError('CRDT2', {
+                    return Promise.reject(newRxError('CRDT2', {
                         id: this.primary,
                         args: { context }
-                    });
+                    }));
                 }
             };
 
