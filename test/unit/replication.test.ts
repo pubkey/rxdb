@@ -67,6 +67,7 @@ import type {
     RxReplicationWriteToMasterRow,
     RxStorage,
     RxStorageDefaultCheckpoint,
+    RxStorageInstanceCreationParams,
     WithDeleted
 } from '../../plugins/core/index.mjs';
 import { firstValueFrom, map, Subject, timer } from 'rxjs';
@@ -2928,6 +2929,70 @@ describe('replication.test.ts', () => {
 
             serverCollection.database.close();
             clientCollection.database.close();
+        });
+        it('should report and retry when the storage rejects the read of the assumed master state during a push', async () => {
+            const innerStorage = config.storage.getStorage();
+            let rejectedReads = 0;
+            const storage: RxStorage<any, any> = {
+                name: innerStorage.name,
+                rxdbVersion: innerStorage.rxdbVersion,
+                async createStorageInstance<RxDocType>(
+                    params: RxStorageInstanceCreationParams<RxDocType, any>
+                ) {
+                    const instance = await innerStorage.createStorageInstance<RxDocType>(params);
+                    if (params.collectionName.startsWith('rx-replication-meta-')) {
+                        const findDocumentsById = instance.findDocumentsById.bind(instance);
+                        instance.findDocumentsById = (ids, withDeleted) => {
+                            if (
+                                rejectedReads === 0 &&
+                                ids.some(id => id.startsWith('failed-cycle'))
+                            ) {
+                                rejectedReads = rejectedReads + 1;
+                                return Promise.reject(new Error('injected meta read failure'));
+                            }
+                            return findDocumentsById(ids, withDeleted);
+                        };
+                    }
+                    return instance;
+                }
+            };
+            const localCollection = await humansCollection.createHumanWithTimestamp(0, randomToken(10), false, storage);
+            const remoteCollection = await humansCollection.createHumanWithTimestamp(0, randomToken(10), false);
+
+            const replicationState = replicateRxCollection({
+                collection: localCollection,
+                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                live: true,
+                retryTime: 50,
+                push: {
+                    handler: getPushHandler(remoteCollection)
+                }
+            });
+            const errors: (RxError | RxTypeError)[] = [];
+            replicationState.error$.subscribe(err => errors.push(err));
+            await replicationState.awaitInitialReplication();
+
+            await localCollection.insert(schemaObjects.humanWithTimestampData({ id: 'failed-cycle' }));
+            await waitUntil(() => rejectedReads === 1);
+            await replicationState.awaitInSync();
+            assert.ok(
+                await remoteCollection.findOne('failed-cycle').exec(),
+                'document of the failed cycle must be pushed'
+            );
+            assert.strictEqual(errors.length, 1);
+            assert.strictEqual(errors[0].code, 'RC_PUSH');
+            assert.strictEqual(
+                ensureNotFalsy(errors[0].parameters.errors)[0].message,
+                'injected meta read failure'
+            );
+
+            await localCollection.insert(schemaObjects.humanWithTimestampData({ id: 'after-error' }));
+            await replicationState.awaitInSync();
+            assert.ok(await remoteCollection.findOne('after-error').exec());
+            assert.strictEqual(errors.length, 1);
+
+            await localCollection.database.close();
+            await remoteCollection.database.close();
         });
     });
     describe('push-only', () => {

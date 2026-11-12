@@ -21,8 +21,11 @@ import {
     batchArray,
     clone,
     ensureNotFalsy,
+    errorToPlainJson,
     getHeightOfRevision,
-    PROMISE_RESOLVE_FALSE
+    PROMISE_RESOLVE_FALSE,
+    promiseWait,
+    toArray
 } from '../plugins/utils/index.ts';
 import {
     getLastCheckpointDoc,
@@ -322,10 +325,30 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
                 return false;
             }
 
-            const assumedMasterState = await getAssumedMasterState(
-                state,
-                docIds
-            );
+            /**
+             * A failed read from the metaInstance is retried
+             * because the documents of this cycle are no longer
+             * in the non-persistent list and would never be pushed.
+             */
+            let assumedMasterStateResult: Awaited<ReturnType<typeof getAssumedMasterState<RxDocType>>> | undefined;
+            while (!assumedMasterStateResult) {
+                if (state.events.canceled.getValue()) {
+                    return false;
+                }
+                try {
+                    assumedMasterStateResult = await getAssumedMasterState(
+                        state,
+                        docIds
+                    );
+                } catch (err: any) {
+                    state.events.error.next(newRxError('RC_PUSH', {
+                        direction: 'push',
+                        errors: toArray(err).map(er => errorToPlainJson(er))
+                    }));
+                    await promiseWait(state.input.retryTime ?? 200);
+                }
+            }
+            const assumedMasterState = assumedMasterStateResult;
 
             const writeRowsToMaster: ById<RxReplicationWriteToMasterRow<RxDocType>> = {};
             const writeRowsToMasterIds: string[] = [];
