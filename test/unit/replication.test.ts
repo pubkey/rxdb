@@ -887,6 +887,77 @@ describe('replication.test.ts', () => {
 
             await collection.database.close();
         });
+        it('should still pull the other documents while the push of a pulled document keeps failing', async () => {
+            const collection = await humansCollection.createHumanWithTimestamp(0, randomToken(10), false);
+            await collection.insert({
+                id: 'foobar',
+                name: 'client',
+                age: 1,
+                updatedAt: 1001
+            });
+            const docsOnServer: WithDeleted<TestDocType>[] = [
+                {
+                    id: 'foobar',
+                    name: 'server',
+                    age: 1,
+                    updatedAt: 1001,
+                    _deleted: false
+                },
+                {
+                    id: 'other',
+                    name: 'server',
+                    age: 1,
+                    updatedAt: 1001,
+                    _deleted: false
+                }
+            ];
+            let serverRejectsWrites = true;
+            const replicationState = replicateRxCollection<TestDocType, { done: boolean; }>({
+                collection,
+                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                live: true,
+                retryTime: 50,
+                pull: {
+                    handler: (checkpoint) => {
+                        return Promise.resolve({
+                            documents: checkpoint ? [] : docsOnServer,
+                            checkpoint: { done: true }
+                        });
+                    }
+                },
+                push: {
+                    handler: (rows) => {
+                        if (serverRejectsWrites) {
+                            return Promise.reject(new Error('server rejects writes'));
+                        }
+                        // the server already has another state of all pushed documents
+                        return Promise.resolve(
+                            rows.map(row => ensureNotFalsy(docsOnServer.find(d => d.id === row.newDocumentState.id)))
+                        );
+                    }
+                }
+            });
+            const errors: (RxError | RxTypeError)[] = [];
+            const errorSub = replicationState.error$.subscribe(err => errors.push(err));
+
+            await waitUntil(async () => {
+                const otherDoc = await collection.findOne('other').exec();
+                return !!otherDoc;
+            }, 3000);
+            await waitUntil(() => errors.length > 0, 3000);
+            errors.forEach(err => assert.strictEqual(err.code, 'RC_PUSH'));
+            const docWhileFailing = await collection.findOne('foobar').exec(true);
+            assert.strictEqual(docWhileFailing.name, 'client');
+
+            // when the server accepts requests again, the conflict is resolved
+            serverRejectsWrites = false;
+            await replicationState.awaitInSync();
+            const docAfter = await collection.findOne('foobar').exec(true);
+            assert.strictEqual(docAfter.name, 'server');
+
+            errorSub.unsubscribe();
+            await collection.database.close();
+        });
     });
     describe('other', () => {
         describe('autoStart', () => {

@@ -134,6 +134,34 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
     addNewTask('RESYNC');
 
     /**
+     * True when the upstream emitted an error while it was active
+     * and did not finish a push or get idle since then.
+     * A failed push might be retried forever by the replication handler,
+     * so the downstream must not wait for the upstream while this is set.
+     */
+    let upstreamHasFailed = false;
+    if (!state.events.canceled.getValue()) {
+        const upstreamFailedSubs = [
+            state.events.error.subscribe(() => {
+                if (state.events.active.up.getValue()) {
+                    upstreamHasFailed = true;
+                }
+            }),
+            state.events.active.up.subscribe(active => {
+                if (!active) {
+                    upstreamHasFailed = false;
+                }
+            }),
+            state.events.processed.up.subscribe(() => upstreamHasFailed = false)
+        ];
+        firstValueFrom(
+            state.events.canceled.pipe(
+                filter((canceled: boolean) => !!canceled)
+            )
+        ).then(() => upstreamFailedSubs.forEach(sub => sub.unsubscribe()));
+    }
+
+    /**
      * If a write on the master happens, we have to trigger the downstream.
      * Only do this if not canceled yet, otherwise firstValueFrom errors
      * when running on a completed observable.
@@ -383,9 +411,19 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
                              * So we wait for the upstream and only drop the master state
                              * if the fork state is still not equal to the assumed master state
                              * or if the pull did not return a new master state.
+                             *
+                             * A push that fails is retried inside of masterWrite(),
+                             * so the upstream queue does not resolve while the master rejects the push.
+                             * In that case the master state is dropped without waiting,
+                             * so that the other pulled documents are still written.
                              */
-                            await state.streamQueue.up;
-                            if (state.events.canceled.getValue()) {
+                            if (!upstreamHasFailed) {
+                                await Promise.race([
+                                    state.streamQueue.up,
+                                    firstValueFrom(state.events.error, { defaultValue: undefined })
+                                ]);
+                            }
+                            if (upstreamHasFailed || state.events.canceled.getValue()) {
                                 return PROMISE_RESOLVE_VOID;
                             }
                             const [forkStateAfterUp, assumedMasterAfterUp] = await Promise.all([
