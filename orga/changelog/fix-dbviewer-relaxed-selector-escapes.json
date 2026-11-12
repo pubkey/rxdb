@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX the relaxed selector syntax of the database viewer kept backslash escapes like `\\n`, `\\\\` and `\\u0041` literally inside single quoted strings, so `{ name: { $regex: '^\\\\d+$' } }` matched different documents than the same selector with double quotes. Single quoted strings now follow the JSON escape rules",
+    "links": [],
+    "priority": 4
+}

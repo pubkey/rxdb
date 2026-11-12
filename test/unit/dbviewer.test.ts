@@ -72,6 +72,27 @@ describe('dbviewer.test.ts', () => {
                 { url: 'http://x, y:z' }
             );
         });
+        it('single quoted strings handle escapes like double quoted strings', () => {
+            const pairs: [string, string][] = [
+                ['{ name: { $regex: \'^\\\\d+$\' } }', '{ "name": { "$regex": "^\\\\d+$" } }'],
+                ['{ name: \'a\\nb\' }', '{ "name": "a\\nb" }'],
+                ['{ name: \'tab\\there\' }', '{ "name": "tab\\there" }'],
+                ['{ name: \'\\u0041\' }', '{ "name": "\\u0041" }'],
+                ['{ name: \'a\\/b\' }', '{ "name": "a\\/b" }'],
+                ['{ name: \'say \\"hi\\"\' }', '{ "name": "say \\"hi\\"" }']
+            ];
+            pairs.forEach(([singleQuoted, doubleQuoted]) => {
+                const expected = parseViewerSelector(doubleQuoted).selector;
+                assert.ok(expected, doubleQuoted);
+                assert.deepStrictEqual(parseViewerSelector(singleQuoted).selector, expected, singleQuoted);
+            });
+            assert.deepStrictEqual(parseViewerSelector('{ name: { $regex: \'^\\\\d+$\' } }').selector, { name: { $regex: '^\\d+$' } });
+            assert.deepStrictEqual(parseViewerSelector('{ name: \'a\\nb\' }').selector, { name: 'a\nb' });
+            assert.deepStrictEqual(parseViewerSelector('{ name: \'\\u0041\' }').selector, { name: 'A' });
+            assert.deepStrictEqual(parseViewerSelector('{ name: \'it\\\'s\' }').selector, { name: 'it\'s' });
+            assert.deepStrictEqual(parseViewerSelector('{ name: \'say "hi"\' }').selector, { name: 'say "hi"' });
+            assert.deepStrictEqual(parseViewerSelector('{ name: \'a\\\\\' }').selector, { name: 'a\\' });
+        });
         it('should still error on broken relaxed input', () => {
             assert.ok(parseViewerSelector('{ name: }').error);
         });

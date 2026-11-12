@@ -130,18 +130,25 @@ export function relaxViewerSelectorInput(input: string): string {
         }
         if (char === '\'') {
             i = i + 1;
+            /**
+             * The content is written as a JSON string literal, so
+             * backslash escapes follow the JSON rules like in a
+             * double quoted string. Only \' is resolved here and
+             * characters that JSON requires to be escaped are escaped.
+             */
             let value = '';
             while (i < input.length && input[i] !== '\'') {
-                if (input[i] === '\\' && i + 1 < input.length) {
-                    value = value + (input[i + 1] === '\'' ? '\'' : input[i] + input[i + 1]);
+                const c = input[i];
+                if (c === '\\' && i + 1 < input.length) {
+                    value = value + (input[i + 1] === '\'' ? '\'' : c + input[i + 1]);
                     i = i + 2;
                 } else {
-                    value = value + input[i];
+                    value = value + (c === '"' || c < ' ' ? JSON.stringify(c).slice(1, -1) : c);
                     i = i + 1;
                 }
             }
             i = i + 1;
-            out = out + JSON.stringify(value);
+            out = out + '"' + value + '"';
             continue;
         }
         if (char === '{' || char === '[') {
