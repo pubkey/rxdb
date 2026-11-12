@@ -341,11 +341,16 @@ export function categorizeBulkWriteRows<RxDocType>(
             const revInDb: string = documentInDb._rev;
 
             /**
-             * Check for conflict
+             * Check for conflict.
+             * The revision alone does not identify a document state because
+             * after a cleanup purged a deleted document, a new document with the same
+             * primary key starts again at the first revision.
+             * Therefore the write time must also be equal.
              */
             if (
                 !previous ||
-                revInDb !== previous._rev
+                revInDb !== previous._rev ||
+                documentInDb._meta.lwt !== previous._meta.lwt
             ) {
                 // is conflict error
                 const err: RxStorageWriteError<RxDocType> = {
