@@ -47,7 +47,8 @@ import {
     getLocalDocStateByParent,
     LOCAL_DOC_STATE_BY_PARENT,
     LOCAL_DOC_STATE_BY_PARENT_RESOLVED,
-    RX_LOCAL_DOCUMENT_SCHEMA
+    RX_LOCAL_DOCUMENT_SCHEMA,
+    throwLocalDocumentWriteError
 } from './local-documents-helper.ts';
 import { isRxDatabase } from '../../rx-database.ts';
 import { DocumentCache } from '../../doc-cache.ts';
@@ -235,7 +236,10 @@ const RxLocalDocumentPrototype: any = {
             previous: this._data,
             document: writeData
         }, 'local-document-remove')
-            .then((writeResult) => state.docCache.getCachedRxDocument(writeResult) as any);
+            .then(
+                (writeResult) => state.docCache.getCachedRxDocument(writeResult) as any,
+                err => throwLocalDocumentWriteError(this.parent, this.primary, err)
+            );
     }
 };
 
