@@ -14,6 +14,9 @@ import {
     addRxPlugin,
     RxCollection,
     RxJsonSchema,
+    RxStorage,
+    RxStorageInstance,
+    RxStorageInstanceCreationParams,
     ensureNotFalsy,
     removeRxDatabase,
     RxStorage
@@ -95,6 +98,83 @@ describe('cleanup.test.js', () => {
                 true
             );
             assert.ok(deletedDocInStorage.length >= 1);
+
+            await db.close();
+        });
+        it('the automatic cleanup must keep running after one run was rejected by the storage', async () => {
+            /**
+             * A user-supplied RxStorage where single cleanup() calls
+             * of the humans collection reject,
+             * like it happens on a transient storage error.
+             */
+            const baseStorage = config.storage.getStorage();
+            let failNextCleanup = true;
+            let rejectedCleanups = 0;
+            let resolvedCleanups = 0;
+            const failingStorage: RxStorage<any, any> = Object.assign(
+                {},
+                baseStorage,
+                {
+                    async createStorageInstance<RxDocType>(
+                        params: RxStorageInstanceCreationParams<RxDocType, any>
+                    ): Promise<RxStorageInstance<RxDocType, any, any>> {
+                        const instance = await baseStorage.createStorageInstance(params);
+                        if (params.collectionName !== 'humans') {
+                            return instance;
+                        }
+                        const origCleanup = instance.cleanup.bind(instance);
+                        instance.cleanup = async (minimumDeletedTime: number) => {
+                            if (failNextCleanup) {
+                                failNextCleanup = false;
+                                rejectedCleanups++;
+                                throw new Error('injected cleanup failure');
+                            }
+                            const result = await origCleanup(minimumDeletedTime);
+                            resolvedCleanups++;
+                            return result;
+                        };
+                        return instance;
+                    }
+                }
+            );
+
+            const db = await createRxDatabase<{ humans: RxCollection<HumanDocumentType>; }>({
+                name: randomToken(10),
+                storage: failingStorage,
+                cleanupPolicy: {
+                    awaitReplicationsInSync: false,
+                    minimumCollectionAge: 0,
+                    minimumDeletedTime: 0,
+                    runEach: 10,
+                    waitForLeadership: false
+                }
+            });
+            await db.addCollections({
+                humans: {
+                    schema: schemas.human
+                }
+            });
+            const collection = db.humans;
+
+            // the initial automatic cleanup run is rejected by the storage
+            await waitUntil(() => rejectedCleanups === 1);
+
+            // a later write must trigger the next automatic cleanup run
+            const doc = await collection.insert(schemaObjects.humanData());
+            await doc.remove();
+            await waitUntil(() => resolvedCleanups >= 1, 5000);
+
+            // let the automatic cleanup become idle, there are no more writes
+            await wait(isFastMode() ? 100 : 300);
+
+            // a manual cleanup() call must still throw the error of the storage
+            failNextCleanup = true;
+            await assert.rejects(
+                () => collection.cleanup(0),
+                (err: Error) => err.message.includes('injected cleanup failure')
+            );
+            assert.strictEqual(rejectedCleanups, 2);
+            assert.strictEqual(await collection.cleanup(0), true);
 
             await db.close();
         });

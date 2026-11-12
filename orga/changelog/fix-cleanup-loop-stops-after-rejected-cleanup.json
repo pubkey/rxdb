@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX the automatic cleanup of the cleanup plugin stopped forever for a collection, with an unhandled promise rejection, when one `cleanup()` call of the RxStorage rejected. The cleanup loop now keeps running and tries again after `runEach`. A manual `collection.cleanup()` call still rejects with the error. Added a testcase",
+    "links": [],
+    "priority": 5
+}
