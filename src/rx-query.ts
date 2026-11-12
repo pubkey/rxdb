@@ -11,7 +11,7 @@ import {
     map,
     startWith,
     distinctUntilChanged,
-    shareReplay,
+    share,
     takeUntil
 } from 'rxjs/operators';
 import {
@@ -20,7 +20,6 @@ import {
     overwriteGetterForCaching,
     clone,
     PROMISE_RESOLVE_FALSE,
-    RXJS_SHARE_REPLAY_DEFAULTS,
     ensureNotFalsy,
     areRxDocumentArraysEqual,
     promiseWait
@@ -184,17 +183,29 @@ export class RxQueryBase<
                      */
                     startWith(null)
                 );
-            const results$ = updateTrigger$.pipe(
+            const results$ = merge(
+                updateTrigger$.pipe(
+                    /**
+                     * Ensure query results are up to date.
+                     * When enabled, liveQueryUpdateThrottleTime groups change-triggered
+                     * reruns before this point so downstream throttling is not too late.
+                     */
+                    mergeMap(() => _ensureEqual(this as any)),
+                    // do not run stuff above for each new subscriber, only once.
+                    share()
+                ),
                 /**
-                 * Ensure query results are up to date.
-                 * When enabled, liveQueryUpdateThrottleTime groups change-triggered
-                 * reruns before this point so downstream throttling is not too late.
+                 * Each subscriber ensures the results on its own once,
+                 * so that its first value contains all writes that were done
+                 * before the subscription, also when the shared update
+                 * of these writes is still running or throttled.
                  */
-                mergeMap(() => _ensureEqual(this as any)),
+                of(null).pipe(
+                    mergeMap(() => _ensureEqual(this as any))
+                )
+            ).pipe(
                 // use the current result set, written by _ensureEqual().
                 map(() => this._result),
-                // do not run stuff above for each new subscriber, only once.
-                shareReplay(RXJS_SHARE_REPLAY_DEFAULTS),
                 // do not proceed if result set has not changed.
                 distinctUntilChanged((prev: RxQuerySingleResult<RxDocType> | null, curr: RxQuerySingleResult<RxDocType> | null) => {
                     if (prev && prev.time === ensureNotFalsy(curr).time) {

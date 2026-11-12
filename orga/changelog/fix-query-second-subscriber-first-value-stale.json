@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX the first value of `RxQuery.$` did not contain an awaited write when the query already had another subscriber. A new subscriber now gets the current result, like `exec()`",
+    "links": [],
+    "priority": 5
+}

@@ -13,6 +13,7 @@ import {
 } from '../../plugins/test-utils/index.mjs';
 
 import AsyncTestUtil, { wait, waitUntil } from 'async-test-util';
+import { firstValueFrom } from 'rxjs';
 import {
     createRxDatabase,
     RxDocument,
@@ -108,6 +109,38 @@ describe('reactive-query.test.js', () => {
             await promiseWait(10);
             assert.strictEqual(lastValue2.length, 1);
             assert.deepStrictEqual(lastValue, lastValue2);
+            c.database.close();
+        });
+        it('the first value of a second subscriber must contain the writes that were awaited before', async () => {
+            const c = await humansCollection.create(0);
+            await c.bulkInsert([
+                schemaObjects.humanData('a1'),
+                schemaObjects.humanData('a2')
+            ]);
+            const mangoQuery = {
+                selector: {},
+                sort: [{ passportId: 'asc' as const }],
+                skip: 1
+            };
+            const emitted: string[][] = [];
+            const sub = c.find(mangoQuery).$.subscribe(docs => emitted.push(docs.map(d => d.primary)));
+            await waitUntil(() => emitted.length === 1);
+            assert.deepStrictEqual(emitted[0], ['a2']);
+
+            const doc = await c.findOne('a1').exec(true);
+            await doc.remove();
+            await c.bulkInsert([
+                schemaObjects.humanData('a3'),
+                schemaObjects.humanData('a4')
+            ]);
+            const firstValue = await firstValueFrom(c.find(mangoQuery).$);
+            assert.deepStrictEqual(firstValue.map(d => d.primary), ['a3', 'a4']);
+
+            const execResult = await c.find(mangoQuery).exec();
+            assert.deepStrictEqual(execResult.map(d => d.primary), ['a3', 'a4']);
+            await waitUntil(() => emitted.length > 1 && emitted[emitted.length - 1].length === 2);
+
+            sub.unsubscribe();
             c.database.close();
         });
         it('subscribing many times should not result in many database-requests', async () => {
