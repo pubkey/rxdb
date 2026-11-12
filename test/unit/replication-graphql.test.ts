@@ -1650,6 +1650,69 @@ describe('replication-graphql.test.ts', () => {
                 server.close();
                 c.database.close();
             });
+            it('should use the headers of setHeaders() for the next websocket connection', async () => {
+                const [c, server] = await Promise.all([
+                    humansCollection.createHumanWithTimestamp(0),
+                    SpawnServer.spawn()
+                ]);
+                server.requireHeader('token', 'new-token');
+                const streamQueryHeaders: { [k: string]: string; }[] = [];
+                let wsConnected = false;
+                const replicationState = replicateGraphQL<HumanWithTimestampDocumentType, any>({
+                    replicationIdentifier: randomToken(10),
+                    collection: c,
+                    url: server.url,
+                    pull: {
+                        batchSize,
+                        queryBuilder: pullQueryBuilder,
+                        streamQueryBuilder: (headers) => {
+                            streamQueryHeaders.push(headers);
+                            return pullStreamQueryBuilder(headers);
+                        },
+                        includeWsHeaders: true,
+                        wsOptions: {
+                            retryAttempts: 1000,
+                            retryWait: () => wait(50),
+                            on: {
+                                connected: () => {
+                                    wsConnected = true;
+                                }
+                            }
+                        }
+                    },
+                    headers: {
+                        token: 'old-token'
+                    },
+                    live: true,
+                    retryTime: 100,
+                    deletedField: 'deleted'
+                });
+
+                // the server rejects the http requests and the websocket connections with the old token
+                await firstValueFrom(replicationState.error$);
+                await wait(200);
+                assert.strictEqual(wsConnected, false);
+
+                replicationState.setHeaders({
+                    token: 'new-token'
+                });
+                await replicationState.awaitInSync();
+                await waitUntil(() => wsConnected, 4000);
+                assert.deepStrictEqual(
+                    ensureNotFalsy(streamQueryHeaders.pop()),
+                    { token: 'new-token' }
+                );
+
+                // the stream must work on the new connection
+                await server.setDocument(getTestData(1)[0]);
+                await waitUntil(async () => {
+                    const docs = await c.find().exec();
+                    return docs.length === 1;
+                }, 4000);
+
+                server.close();
+                c.database.close();
+            });
             it('should respect pull.wsOptions', async () => {
                 const capturedWSStates: string[] = [];
                 const [c, server] = await Promise.all([
