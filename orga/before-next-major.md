@@ -160,6 +160,19 @@ Why it is breaking, and what has to be handled:
 A non-breaking variant was tried in [#9463](https://github.com/pubkey/rxdb/pull/9463). It called the `push.handler` with a second argument that contained a random `requestId` which was the same on all retries of a request. It was dropped because the `requestId` was only kept in memory: After a restart of the app the same writes are pushed with a new `requestId`, and the rows can be batched differently so that the same request no longer exists.
 
 ---------------------------------
+## Define `final` fields on the top level of the schema
+
+Today a field is made final by setting `final: true` inside the definition of that field in `properties`. A `final: true` inside a nested field is accepted by the schema check but has no effect: `getFinalFields()` in `src/rx-schema-helper.ts` only reads the top level properties, so a nested final field can be changed.
+
+In the next major version, change this to the following:
+
+- Final fields are defined on the top level of the schema, like `required` and `encrypted`: `final: ['name', 'foo.bar.xyz']`.
+- Final fields do not have to be required. When a final field is not set on the first insert, it cannot be added later.
+- Defining `final` inside the definition of a field is no longer possible, also not inside a nested field. To make a nested field final, add its path to the top level list, for example `foo.bar.xyz`.
+
+Until then nothing is changed: no dev-mode check for a nested `final` is added and the docs keep describing the current behavior.
+
+
 ## Maybe later (not sure if should be done)
 
 

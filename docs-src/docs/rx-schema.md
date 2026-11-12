@@ -306,12 +306,8 @@ console.log(doc.done, doc.tags);
 ```
 
 ## final
-By setting a field to `final`, you make sure it cannot be modified later.
+By setting a field to `final`, you make sure it cannot be modified later. Final fields are always required.
 Final fields cannot be observed because they will not change.
-
-A final field is not required automatically. When every document must contain the field, you have to add it to the `required` array of the schema. When a document was inserted without a final field, the field cannot be set at a later point in time because that write throws the error [`DOC9`](./errors.md#DOC9).
-
-`final` can only be set on top-level fields. When `final` is set on a nested field, the [dev-mode](./dev-mode.md) throws the error [`SC45`](./errors.md#SC45). To protect a nested value, set `final` on the top-level field that contains it.
 
 Advantages:
 
