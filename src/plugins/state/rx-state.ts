@@ -82,7 +82,14 @@ export class RxStateBase<T, Reactivity = unknown> {
             ]
         });
         // make it "hot" for better write performance
-        this._lastIdQuery.$.subscribe();
+        this._lastIdQuery.$.subscribe({
+            /**
+             * Errors of the query are thrown to the callers
+             * of _lastIdQuery.exec(), so they must not be
+             * thrown again as uncaught exception from here.
+             */
+            error: () => { }
+        });
 
         this.$ = merge(
             this._ownEmits$,
@@ -323,11 +330,17 @@ export async function createRxState<T>(
     prefix: string
 ): Promise<RxStateBase<T>> {
     const collectionName = 'rx-state-' + prefix;
-    await database.addCollections({
-        [collectionName]: {
-            schema: RX_STATE_COLLECTION_SCHEMA as any
-        }
-    });
+    /**
+     * The collection already exists when a previous
+     * call failed after the collection was created.
+     */
+    if (!database.collections[collectionName]) {
+        await database.addCollections({
+            [collectionName]: {
+                schema: RX_STATE_COLLECTION_SCHEMA as any
+            }
+        });
+    }
     const collection: RxCollection<RxStateDocument> = database.collections[collectionName];
 
     const rxState = new RxStateBase<T>(
