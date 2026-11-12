@@ -2956,6 +2956,101 @@ describe('migration-schema.test.ts', function () {
 
                 await db2.close();
             });
+            it('must not lose documents when an interrupted migration is continued with a newer schema version', async () => {
+                const dbName = randomToken(10);
+                const storage = config.storage.getStorage();
+                const schema2 = Object.assign({}, schema1, { version: 2 });
+
+                const db = await createRxDatabase({
+                    name: dbName,
+                    storage
+                });
+                await db.addCollections({
+                    items: { schema: schema0 }
+                });
+                await db.items.bulkInsert([
+                    { id: 'doc-0', name: 'Document 0' },
+                    { id: 'doc-1', name: 'Document 1' }
+                ]);
+                await db.close();
+
+                /**
+                 * The migration to version 1 handles the first document
+                 * and then fails, so that it is never finished.
+                 */
+                const db2 = await createRxDatabase({
+                    name: dbName,
+                    storage
+                });
+                await db2.addCollections({
+                    items: {
+                        schema: schema1,
+                        autoMigrate: false,
+                        migrationStrategies: {
+                            1: (docData: any) => {
+                                if (docData.id === 'doc-1') {
+                                    throw new Error('migration-interrupted-on-purpose');
+                                }
+                                docData.migrated = true;
+                                return docData;
+                            }
+                        }
+                    }
+                });
+                await assertThrows(
+                    () => db2.items.migratePromise(1),
+                    'RxError',
+                    'DM4'
+                );
+                await db2.close();
+
+                // the next version of the app has the schema version 2
+                const db3 = await createRxDatabase({
+                    name: dbName,
+                    storage
+                });
+                await db3.addCollections({
+                    items: {
+                        schema: schema2,
+                        migrationStrategies: {
+                            1: migrationStrategies[1],
+                            2: (docData: any) => docData
+                        }
+                    }
+                });
+                const docs = await db3.items.find({ sort: [{ id: 'asc' }] }).exec();
+                assert.deepStrictEqual(
+                    docs.map(d => d.toJSON()),
+                    [
+                        { id: 'doc-0', name: 'Document 0', migrated: true },
+                        { id: 'doc-1', name: 'Document 1', migrated: true }
+                    ]
+                );
+                assert.strictEqual(await db3.items.migrationNeeded(), false);
+                const status = await db3.items.getMigrationState().getStatus();
+                assert.strictEqual(status.status, 'DONE');
+                assert.deepStrictEqual(status.count, { total: 2, handled: 2, percent: 100 });
+                await db3.close();
+
+                // nothing is left to migrate on the next start
+                const db4 = await createRxDatabase({
+                    name: dbName,
+                    storage
+                });
+                await db4.addCollections({
+                    items: {
+                        schema: schema2,
+                        autoMigrate: false,
+                        migrationStrategies: {
+                            1: migrationStrategies[1],
+                            2: (docData: any) => docData
+                        }
+                    }
+                });
+                assert.strictEqual(await db4.items.migrationNeeded(), false);
+                assert.strictEqual((await db4.items.find().exec()).length, 2);
+                await db4.remove();
+            });
             it('must finish a migration that was interrupted while pushing a batch', async () => {
                 if (isFastMode()) {
                     return;

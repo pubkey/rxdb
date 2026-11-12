@@ -16,6 +16,7 @@ import type {
     NumberFunctionMap,
     RxCollection,
     RxDatabase,
+    RxDocumentData,
     RxError,
     RxReplicationWriteToMasterRow,
     RxStorageInstance,
@@ -221,26 +222,47 @@ export class RxMigrationState {
             this.startHeartbeat();
         }
 
+        await this.migrateOldCollections(batchSize);
+    }
+
+    /**
+     * Migrates the data of the old collection with the lowest version.
+     * When a migration to a schema version in between was interrupted,
+     * that version has its own collection meta document and a storage
+     * that contains the documents which the interrupted migration had already handled.
+     * These documents are marked as handled in the migration meta of the lowest version,
+     * so the old collections of all previous versions have to be migrated,
+     * one after another from the lowest version upwards.
+     */
+    private async migrateOldCollections(batchSize: number): Promise<void> {
         /**
          * Instead of writing a custom migration protocol,
          * we do a push-only replication from the old collection data to the new one.
          * This also ensure that restarting the replication works without problems.
          */
-        const oldCollectionMeta = await this.oldCollectionMeta;
+        const oldCollectionMeta = await getOldCollectionMeta(this);
+        if (!oldCollectionMeta) {
+            this.collection.migrationInProgress = false;
+            await this.updateStatus(s => {
+                s.status = 'DONE';
+                return s;
+            });
+            return;
+        }
         const oldStorageInstance = await this.database.storage.createStorageInstance({
             databaseName: this.database.name,
             collectionName: this.collection.name,
             databaseInstanceToken: this.database.token,
             multiInstance: this.database.multiInstance,
             options: {},
-            schema: ensureNotFalsy(oldCollectionMeta).data.schema,
+            schema: oldCollectionMeta.data.schema,
             password: this.database.password,
             devMode: overwritable.isDevMode()
         });
         this.openStorageInstances.add(oldStorageInstance);
 
 
-        const connectedInstances = await this.getConnectedStorageInstances();
+        const connectedInstances = await this.getConnectedStorageInstances(oldCollectionMeta);
 
 
         /**
@@ -249,8 +271,15 @@ export class RxMigrationState {
         const totalCount = await this.countAllDocuments(
             [oldStorageInstance].concat(connectedInstances.map(r => r.oldStorage))
         );
+        const isLowestVersion = oldCollectionMeta.key === ensureNotFalsy(await this.oldCollectionMeta).key;
         await this.updateStatus(s => {
-            s.count.total = totalCount;
+            /**
+             * The storages of the versions in between only contain documents
+             * that are also counted in the storage of the lowest version.
+             */
+            if (isLowestVersion) {
+                s.count.total = totalCount;
+            }
             return s;
         });
 
@@ -349,11 +378,7 @@ export class RxMigrationState {
             }
         }
 
-        this.collection.migrationInProgress = false;
-        await this.updateStatus(s => {
-            s.status = 'DONE';
-            return s;
-        });
+        return this.migrateOldCollections(batchSize);
     }
 
     /**
@@ -740,8 +765,10 @@ export class RxMigrationState {
         return ret;
     }
 
-    public async getConnectedStorageInstances() {
-        const oldCollectionMeta = ensureNotFalsy(await this.oldCollectionMeta);
+    public async getConnectedStorageInstances(
+        useOldCollectionMeta?: RxDocumentData<InternalStoreCollectionDocType>
+    ) {
+        const oldCollectionMeta = useOldCollectionMeta ? useOldCollectionMeta : ensureNotFalsy(await this.oldCollectionMeta);
         const ret: {
             oldStorage: RxStorageInstance<any, any, any>;
             newStorage: RxStorageInstance<any, any, any>;
