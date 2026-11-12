@@ -19,6 +19,7 @@ import {
 import { RxDBDevModePlugin } from '../../plugins/dev-mode/index.mjs';
 import { getRxStorageMemory } from '../../plugins/storage-memory/index.mjs';
 import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.mjs';
+import { replicateRxCollection } from '../../plugins/replication/index.mjs';
 
 import {
     RxDatabaseProvider,
@@ -26,6 +27,7 @@ import {
     useRxDocument,
     useRxQuery,
     useLiveRxQuery,
+    useReplicationStatus,
 } from '../../plugins/react/index.mjs';
 
 addRxPlugin(RxDBDevModePlugin);
@@ -280,6 +282,244 @@ describe('react-hooks.test.tsx', () => {
 
             assert.strictEqual(countRxQuerySubscribers(rxQuery), 0);
 
+            await db.close();
+        });
+    });
+
+    describe('useReplicationStatus', () => {
+        it('should clear the error after the replication has recovered', async () => {
+            const db = await createDatabase();
+            const collection: RxCollection<SimpleHumanDocumentType> = db.collections.humans;
+            let fail = true;
+            const replicationState = replicateRxCollection<SimpleHumanDocumentType, { id: string; } | undefined>({
+                collection,
+                replicationIdentifier: 'recovering-' + randomToken(10),
+                live: true,
+                retryTime: 20,
+                pull: {
+                    handler: (checkpoint) => {
+                        if (fail) {
+                            return Promise.reject(new Error('offline'));
+                        }
+                        return Promise.resolve({ documents: [], checkpoint });
+                    }
+                }
+            });
+            const { result } = renderHook(() => useReplicationStatus(replicationState));
+
+            await waitFor(() => {
+                assert.ok(result.current.error);
+            });
+
+            fail = false;
+            await act(async () => {
+                await replicationState.awaitInSync();
+            });
+            await waitFor(() => {
+                assert.strictEqual(result.current.syncing, false);
+                assert.strictEqual(result.current.error ? result.current.error.code : null, null);
+            });
+
+            await replicationState.cancel();
+            await db.close();
+        });
+
+        it('should clear the error of a handler call that was retried when the replication gets idle', async () => {
+            const db = await createDatabase();
+            await db.addCollections({
+                server: {
+                    schema: schemas.simpleHuman
+                }
+            });
+            const collection: RxCollection<SimpleHumanDocumentType> = db.collections.humans;
+            const serverCollection: RxCollection<SimpleHumanDocumentType> = db.collections.server;
+            await serverCollection.insert({ passportId: 'existing', age: '20' });
+
+            /**
+             * The handler rejects once with a plain Error
+             * or with the RxError of a failed write to another collection.
+             * The replication calls the handler again, the second call works.
+             */
+            type FailingHandler = {
+                direction: 'pull' | 'push';
+                errorKind: 'error' | 'rxerror';
+                /**
+                 * An RxError that is rejected by the push handler is emitted unchanged,
+                 * so it cannot be told apart from an error that is not retried.
+                 * It is kept until a later replication cycle has run without an error.
+                 */
+                errorCodeWhenIdle: string | null;
+            };
+            const failingHandlers: FailingHandler[] = [
+                { direction: 'pull', errorKind: 'error', errorCodeWhenIdle: null },
+                { direction: 'pull', errorKind: 'rxerror', errorCodeWhenIdle: null },
+                { direction: 'push', errorKind: 'error', errorCodeWhenIdle: null },
+                { direction: 'push', errorKind: 'rxerror', errorCodeWhenIdle: 'CONFLICT' }
+            ];
+            for (const failingHandler of failingHandlers) {
+                const name = failingHandler.direction + '-' + failingHandler.errorKind;
+                let fail: 'pull' | 'push' | null = null;
+                const failOnce = async (direction: 'pull' | 'push') => {
+                    if (fail !== direction) {
+                        return;
+                    }
+                    fail = null;
+                    if (failingHandler.errorKind === 'rxerror') {
+                        await serverCollection.insert({ passportId: 'existing', age: '20' });
+                    }
+                    throw new Error('offline');
+                };
+                const replicationState = replicateRxCollection<SimpleHumanDocumentType, { id: string; } | undefined>({
+                    collection,
+                    replicationIdentifier: 'handler-' + name + '-' + randomToken(10),
+                    live: true,
+                    retryTime: 20,
+                    pull: {
+                        handler: async (checkpoint) => {
+                            await failOnce('pull');
+                            return { documents: [], checkpoint };
+                        }
+                    },
+                    push: {
+                        handler: async () => {
+                            await failOnce('push');
+                            return [];
+                        }
+                    }
+                });
+                const emittedErrorCodes: string[] = [];
+                const errorSub = replicationState.error$.subscribe(err => emittedErrorCodes.push(err.code));
+                const { result, unmount } = renderHook(() => useReplicationStatus(replicationState));
+                await act(async () => {
+                    await replicationState.awaitInSync();
+                });
+                assert.deepStrictEqual(emittedErrorCodes, [], name);
+
+                fail = failingHandler.direction;
+                await act(async () => {
+                    if (failingHandler.direction === 'pull') {
+                        replicationState.reSync();
+                    } else {
+                        await collection.insert({ passportId: name + '-first', age: '20' });
+                    }
+                    await replicationState.awaitInSync();
+                });
+                await waitFor(() => {
+                    assert.strictEqual(result.current.syncing, false);
+                    assert.strictEqual(
+                        result.current.error ? result.current.error.code : null,
+                        failingHandler.errorCodeWhenIdle,
+                        name
+                    );
+                });
+                assert.strictEqual(emittedErrorCodes.length, 1, name);
+
+                await act(async () => {
+                    await collection.insert({ passportId: name + '-second', age: '20' });
+                    await replicationState.awaitInSync();
+                });
+                await waitFor(() => {
+                    assert.strictEqual(result.current.syncing, false);
+                    assert.strictEqual(result.current.error ? result.current.error.code : null, null, name);
+                });
+                assert.strictEqual(emittedErrorCodes.length, 1, name);
+
+                errorSub.unsubscribe();
+                unmount();
+                await replicationState.cancel();
+            }
+            await db.close();
+        });
+
+        it('should not return the state of the previous replication when the replicationState changes', async () => {
+            const db = await createDatabase();
+            await db.addCollections({
+                humans2: {
+                    schema: schemas.simpleHuman
+                }
+            });
+            const collection: RxCollection<SimpleHumanDocumentType> = db.collections.humans;
+            const collection2: RxCollection<SimpleHumanDocumentType> = db.collections.humans2;
+
+            const workingReplicationState = replicateRxCollection<SimpleHumanDocumentType, { id: string; } | undefined>({
+                collection: collection2,
+                replicationIdentifier: 'working-' + randomToken(10),
+                live: true,
+                pull: {
+                    handler: (checkpoint) => Promise.resolve({ documents: [], checkpoint })
+                }
+            });
+            await workingReplicationState.awaitInSync();
+
+            /**
+             * This replication pulls one document
+             * and fails on each call afterwards.
+             */
+            let calls = 0;
+            const failingReplicationState = replicateRxCollection<SimpleHumanDocumentType, { id: string; } | undefined>({
+                collection,
+                replicationIdentifier: 'failing-' + randomToken(10),
+                live: true,
+                retryTime: 20,
+                pull: {
+                    batchSize: 1,
+                    handler: () => {
+                        calls = calls + 1;
+                        if (calls > 1) {
+                            return Promise.reject(new Error('offline'));
+                        }
+                        return Promise.resolve({
+                            documents: [{
+                                passportId: 'pulled',
+                                age: '20',
+                                _deleted: false
+                            }],
+                            checkpoint: { id: 'pulled' }
+                        });
+                    }
+                }
+            });
+            type Props = {
+                replicationState: typeof failingReplicationState | null;
+            };
+            const initialProps: Props = { replicationState: failingReplicationState };
+            const { result, rerender } = renderHook(
+                (props: Props) => useReplicationStatus(props.replicationState),
+                { initialProps }
+            );
+            await waitFor(() => {
+                assert.ok(result.current.error);
+                assert.ok(result.current.lastSyncedAt);
+            });
+
+            rerender({ replicationState: workingReplicationState });
+            assert.deepStrictEqual({
+                ...result.current,
+                error: result.current.error ? result.current.error.code : null
+            }, {
+                syncing: false,
+                error: null,
+                lastSyncedAt: null,
+                canceled: false
+            });
+
+            rerender({ replicationState: failingReplicationState });
+            await waitFor(() => {
+                assert.ok(result.current.error);
+            });
+            rerender({ replicationState: null });
+            assert.deepStrictEqual({
+                ...result.current,
+                error: result.current.error ? result.current.error.code : null
+            }, {
+                syncing: false,
+                error: null,
+                lastSyncedAt: null,
+                canceled: false
+            });
+
+            await failingReplicationState.cancel();
+            await workingReplicationState.cancel();
             await db.close();
         });
     });
