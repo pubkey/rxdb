@@ -119,7 +119,7 @@ import { useRxCollection } from 'rxdb/plugins/react';
 const collection = useRxCollection('heroes');
 ```
 
-The hook returns the collection once it becomes available. During the initial render, the value may be `undefined`, so components must handle this case.
+The hook returns the collection once it becomes available. During the initial render, the value is `null`, so components must handle this case.
 
 This hook does not subscribe to any data. It only provides access to the collection instance.
 

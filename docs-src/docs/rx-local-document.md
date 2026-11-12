@@ -122,8 +122,7 @@ const localDoc = await myCollection.getLocal('foobar');
 const foo = localDoc.get('foo');
 
 // change data
-localDoc.set('foo', 'bar2');
-await localDoc.save();
+await localDoc.incrementalPatch({ foo: 'bar2' });
 
 // observe data
 localDoc.get$('foo').subscribe(value => { /* .. */ });
@@ -141,7 +140,7 @@ const foo = localDoc.foo; // undefined
 const foo = localDoc.get('foo'); // works!
 
 localDoc.foo = 'bar'; // does not work!
-localDoc.set('foo', 'bar'); // works
+await localDoc.incrementalPatch({ foo: 'bar' }); // works
 ```
 
 For the usage with typescript, you can have access to the typed data of the document over `toJSON()`
@@ -158,5 +157,5 @@ const localDoc = await myCollection.upsertLocal<MyLocalDocumentType>(
 );
 
 // typescript will know that foo is a string
-const foo: string = localDoc.toJSON().foo;
+const foo: string = localDoc.toJSON().data.foo;
 ```

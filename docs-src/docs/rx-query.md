@@ -111,7 +111,7 @@ addRxPlugin(RxDBUpdatePlugin);
 const query = myDatabase.todos.find({
   selector: {
     priority: {
-      $gt: 5
+      $lt: 5
     }
   }
 });
