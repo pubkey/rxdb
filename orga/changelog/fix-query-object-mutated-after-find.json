@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX a cached `RxQuery` returned and emitted the results of another query when the object that was passed to `find()` or `findOne()` was reused and mutated afterwards (for example in a paging loop that changes `skip`)",
+    "links": [],
+    "priority": 5
+}
