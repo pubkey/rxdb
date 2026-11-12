@@ -210,6 +210,48 @@ describe('cleanup.test.js', () => {
 
             await db.remove();
         });
+        it('should not wait for a paused replication that has no push handler', async () => {
+            const db = await createRxDatabase({
+                name: randomToken(10),
+                storage: config.storage.getStorage()
+            });
+            const cols = await db.addCollections({
+                humans: {
+                    schema: schemas.human
+                }
+            });
+            const collection: RxCollection<HumanDocumentType> = cols.humans;
+
+            const replicationState = replicateRxCollection<HumanDocumentType, any>({
+                collection,
+                replicationIdentifier: 'my-rep',
+                deletedField: '_deleted',
+                waitForLeadership: false,
+                pull: {
+                    handler() {
+                        return Promise.resolve({
+                            checkpoint: {},
+                            documents: []
+                        });
+                    }
+                },
+                live: true
+            });
+            await replicationState.awaitInSync();
+            await replicationState.pause();
+
+            const doc = await collection.insert(schemaObjects.humanData());
+            await doc.remove();
+
+            const cleanupResult = await Promise.race([
+                collection.cleanup(0).then(() => 'resolved'),
+                wait(isFastMode() ? 1000 : 3000).then(() => 'timeout')
+            ]);
+            assert.strictEqual(cleanupResult, 'resolved');
+
+            await replicationState.cancel();
+            await db.remove();
+        });
         /**
          * While the metadata of a replication is append-only
          * we still have to run the cleanup on it because some storages

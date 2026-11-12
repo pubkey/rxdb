@@ -110,7 +110,7 @@ await myRxCollection.cleanup(1000);
 await myRxCollection.cleanup(0);
 ```
 
-When `awaitReplicationsInSync` is `true` and a [replication](./replication.md) of the collection is paused with `pause()`, the cleanup does not purge anything because the paused replication has not pushed the deleted documents yet. The promise returned by `cleanup()` resolves after the replication is started again with `start()` and in sync, or after it is canceled.
+When `awaitReplicationsInSync` is `true` and a [replication](./replication.md) of the collection that has a `push` handler is paused with `pause()`, the cleanup does not purge anything because the paused replication has not pushed the deleted documents yet. The promise returned by `cleanup()` resolves after the replication is started again with `start()` and in sync, or after it is canceled. A paused replication without a `push` handler does not block the cleanup.
 
 ## Using the cleanup plugin to empty a collection
 

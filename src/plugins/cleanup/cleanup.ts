@@ -89,9 +89,11 @@ export async function cleanupRxCollection(
              * A purged tombstone could never be pushed after the next start(),
              * so we wait until the replication is started again or canceled
              * and then await the sync again.
+             * A replication without a push handler never pushes
+             * and therefore does not block the cleanup.
              */
             const paused = replicationStates.filter(
-                replicationState => replicationState.isPaused() && !replicationState.isStopped()
+                replicationState => replicationState.push && replicationState.isPaused() && !replicationState.isStopped()
             );
             if (paused.length > 0) {
                 await Promise.all(
