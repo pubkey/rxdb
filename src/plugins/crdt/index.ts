@@ -19,6 +19,7 @@ import {
     deepEqual,
     ensureNotFalsy,
     getProperty,
+    lastOfArray,
     now,
     objectPathMonad,
     setProperty,
@@ -333,6 +334,12 @@ export function getCRDTConflictHandler<RxDocType>(
 export const RX_CRDT_CONTEXT = 'rx-crdt';
 
 /**
+ * Creator of the operation that a schema migration creates
+ * for a document that had no CRDT operations before the migration.
+ */
+const MIGRATION_OPERATION_CREATOR = 'migration';
+
+/**
  * Returns true when running the operations
  * leads to the same document data as the given state.
  */
@@ -484,6 +491,12 @@ export const RxDBcrdtPlugin: RxPlugin = {
          * When the migrated state is no longer the result of the stored operations,
          * the operations are replaced with a single operation that sets the migrated state.
          * This ensures that later writes and merges are based on the migrated state.
+         *
+         * The migration runs this hook for the document itself, for the assumed master state
+         * of each replication and on each instance that migrates on its own.
+         * All of them must end with the same operation for the same document state.
+         * Therefore the new operation takes its creator and its time
+         * from the last operation of the replaced operations and never from the instance or the clock.
          */
         postMigrateDocument: {
             after: async ({ collection, migratedDocData }) => {
@@ -512,16 +525,18 @@ export const RxDBcrdtPlugin: RxPlugin = {
                 if (migratedDocData._deleted) {
                     setMe._deleted = true;
                 }
+                const lastRowBefore = crdtsBefore ? lastOfArray(crdtsBefore.operations) : undefined;
+                const lastOperationBefore = lastRowBefore ? lastOfArray(lastRowBefore) : undefined;
                 const crdts: CRDTDocumentField<any> = {
                     operations: [
                         [{
-                            creator: await collection.database.storageToken,
+                            creator: lastOperationBefore ? lastOperationBefore.creator : MIGRATION_OPERATION_CREATOR,
                             body: [{
                                 ifMatch: {
                                     $set: setMe
                                 }
                             }],
-                            time: now()
+                            time: lastOperationBefore ? lastOperationBefore.time : 1
                         }]
                     ],
                     hash: ''

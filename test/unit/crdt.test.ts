@@ -22,7 +22,8 @@ import {
     rxStorageInstanceToReplicationHandler,
     RxReplicationWriteToMasterRow,
     defaultConflictHandler,
-    RxConflictHandler
+    RxConflictHandler,
+    WithDeleted
 } from '../../plugins/core/index.mjs';
 
 
@@ -333,6 +334,136 @@ describe('crdt.test.ts', () => {
             assert.strictEqual(resolved.age, 2);
 
             await dbV1.close();
+        });
+        describe('operations after the migration', () => {
+            type HumanWithCRDTs = WithCRDTs<HumanDocumentType>;
+            const schemaV0 = enableCRDTinSchema<HumanDocumentType>(schemas.human);
+            const schemaV1 = clone(schemaV0);
+            schemaV1.version = 1;
+
+            async function openCollection(
+                name: string,
+                version: 0 | 1
+            ): Promise<RxCollection<HumanWithCRDTs>> {
+                const db = await createRxDatabase({
+                    name,
+                    storage: wrappedValidateAjvStorage({
+                        storage: config.storage.getStorage()
+                    }),
+                    multiInstance: false
+                });
+                await db.addCollections({
+                    docs: version === 0 ? {
+                        schema: schemaV0
+                    } : {
+                        schema: schemaV1,
+                        migrationStrategies: {
+                            1: (oldDoc: HumanWithCRDTs) => {
+                                oldDoc.firstName = 'migrated';
+                                return oldDoc;
+                            }
+                        }
+                    }
+                });
+                return db.docs;
+            }
+
+            /**
+             * A master that stores each pushed document state in a list,
+             * the pull checkpoint is the position in that list.
+             */
+            function getMaster() {
+                const states: WithDeleted<HumanWithCRDTs>[] = [];
+                const pushedRows: RxReplicationWriteToMasterRow<HumanWithCRDTs>[] = [];
+                async function replicateOnce(collection: RxCollection<HumanWithCRDTs>) {
+                    const replicationState = replicateRxCollection<HumanWithCRDTs, { index: number; }>({
+                        collection,
+                        replicationIdentifier: 'crdt-migration',
+                        live: false,
+                        pull: {
+                            handler(checkpoint) {
+                                return Promise.resolve({
+                                    documents: states.slice(checkpoint ? checkpoint.index : 0),
+                                    checkpoint: { index: states.length }
+                                });
+                            }
+                        },
+                        push: {
+                            handler(rows) {
+                                rows.forEach(row => {
+                                    pushedRows.push(row);
+                                    states.push(row.newDocumentState);
+                                });
+                                return Promise.resolve([]);
+                            }
+                        }
+                    });
+                    ensureReplicationHasNoErrors(replicationState);
+                    await replicationState.awaitInSync();
+                    await replicationState.cancel();
+                }
+                return { pushedRows, replicateOnce };
+            }
+
+            it('should end with the same operations when two instances migrate the same document state', async () => {
+                const master = getMaster();
+                const nameA = randomToken(10);
+                const nameB = randomToken(10);
+
+                const oldCollectionA = await openCollection(nameA, 0);
+                const oldDoc = await oldCollectionA.insert(schemaObjects.humanData('foobar', 0, 'alice'));
+                await oldDoc.updateCRDT({ ifMatch: { $inc: { age: 1 } } });
+                await master.replicateOnce(oldCollectionA);
+                const oldCollectionB = await openCollection(nameB, 0);
+                await master.replicateOnce(oldCollectionB);
+                await oldCollectionA.database.close();
+                await oldCollectionB.database.close();
+
+                const collectionA = await openCollection(nameA, 1);
+                const collectionB = await openCollection(nameB, 1);
+                const docA = await collectionA.findOne('foobar').exec(true);
+                const docB = await collectionB.findOne('foobar').exec(true);
+                assert.strictEqual(docA.firstName, 'migrated');
+                assert.strictEqual(docB.firstName, 'migrated');
+                assert.strictEqual(ensureNotFalsy(docA.toJSON().crdts).operations.length, 1);
+                assert.deepStrictEqual(docA.toJSON().crdts, docB.toJSON().crdts);
+
+                await collectionA.database.close();
+                await collectionB.database.close();
+            });
+            it('should migrate the document and the assumed master state of the replication to the same operations', async () => {
+                const master = getMaster();
+                const name = randomToken(10);
+
+                const oldCollection = await openCollection(name, 0);
+                const oldDoc = await oldCollection.insert(schemaObjects.humanData('foobar', 0, 'alice'));
+                await oldDoc.updateCRDT({ ifMatch: { $inc: { age: 1 } } });
+                await master.replicateOnce(oldCollection);
+                // the second run moves the pull checkpoint behind the state that was pushed by the first run
+                await master.replicateOnce(oldCollection);
+                await oldCollection.database.close();
+                const pushedBeforeMigration = master.pushedRows.length;
+
+                const collection = await openCollection(name, 1);
+                const doc = await collection.findOne('foobar').exec(true);
+                const crdtsAfterMigration = doc.toJSON().crdts;
+
+                // the migrated document equals the migrated assumed master state, so there is nothing to push
+                await master.replicateOnce(collection);
+                assert.strictEqual(master.pushedRows.length, pushedBeforeMigration);
+
+                await doc.updateCRDT({ ifMatch: { $inc: { age: 1 } } });
+                await master.replicateOnce(collection);
+                assert.strictEqual(master.pushedRows.length, pushedBeforeMigration + 1);
+                const pushedRow = master.pushedRows[master.pushedRows.length - 1];
+                assert.strictEqual(pushedRow.newDocumentState.age, 2);
+                assert.deepStrictEqual(
+                    ensureNotFalsy(pushedRow.assumedMasterState).crdts,
+                    crdtsAfterMigration
+                );
+
+                await collection.database.close();
+            });
         });
     });
 

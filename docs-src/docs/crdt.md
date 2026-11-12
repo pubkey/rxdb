@@ -281,6 +281,8 @@ When any instances makes a write to the document, it is required to update the C
 
 A [migration strategy](./migration-schema.md) changes the document data, but it does not know about the stored CRDT operations. When the migrated document is no longer the result of its CRDT operations, RxDB replaces the operations of that document with a single operation that sets the migrated state. This means the operation history from before the migration is dropped for that document, and later writes and merges are based on the migrated state. Documents that are not changed by the migration strategy keep their operations.
 
+The new operation takes its `creator` and its `time` from the last operation of the replaced operations. This means that all instances that migrate the same document state end with the same operation, and a document that was in sync with the [replication](./replication.md) before the migration is still in sync afterwards.
+
 Run the same migration on all instances before they replicate again, so that all of them work on the migrated document state.
 
 ## Why not automerge.js or yjs?
