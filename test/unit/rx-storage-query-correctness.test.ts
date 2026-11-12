@@ -18,8 +18,19 @@ import {
     prepareQuery,
     ensureNotFalsy,
     RxCollection,
-    RxEventReduceOptions
+    RxEventReduceOptions,
+    RxStorage,
+    MangoQuerySelector
 } from '../../plugins/core/index.mjs';
+import { getRxStorageDexie } from '../../plugins/storage-dexie/index.mjs';
+import {
+    getRxStorageLocalstorage,
+    getLocalStorageMock
+} from '../../plugins/storage-localstorage/index.mjs';
+import {
+    indexedDB as fakeIndexedDB,
+    IDBKeyRange as fakeIDBKeyRange
+} from 'fake-indexeddb';
 import {
     schemaObjects,
     EXAMPLE_REVISION_1,
@@ -2870,6 +2881,164 @@ describe('rx-storage-query-correctness.test.ts', () => {
                 expectedResultDocIds: ['cc']
             }
         ]
+    });
+
+    it('number query value that no document can have on a compound index must return no documents', async () => {
+        type TodoDocType = { id: string; name: string; priority: number; };
+        const todoSchema = (index: string[]): RxJsonSchema<TodoDocType> => ({
+            version: 0,
+            primaryKey: 'id',
+            type: 'object',
+            properties: {
+                id: { type: 'string', maxLength: 100 },
+                name: { type: 'string', maxLength: 100 },
+                priority: { type: 'number', minimum: 1, maximum: 10, multipleOf: 1 }
+            },
+            required: ['id', 'name', 'priority'],
+            indexes: [index]
+        });
+        const todos: TodoDocType[] = [
+            { id: 'todo1', name: 'Learn RxDB', priority: 8 },
+            { id: 'todo2', name: 'Buy groceries', priority: 3 },
+            { id: 'todo3', name: 'Set up replication', priority: 10 },
+            { id: 'todo4', name: 'Clean the kitchen', priority: 1 },
+            { id: 'todo5', name: 'Write tests', priority: 10 },
+            { id: 'todo6', name: 'Learn RxDB', priority: 1 }
+        ];
+
+        type Condition<T> = { operators: Record<string, T | T[]>; matches: (value: T) => boolean; };
+        const priorityConditions: Condition<number>[] = [];
+        [-3, 0, 1, 4.5, 8, 10, 10.5, 12].forEach(v => {
+            priorityConditions.push(
+                { operators: { $eq: v }, matches: p => p === v },
+                { operators: { $gt: v }, matches: p => p > v },
+                { operators: { $gte: v }, matches: p => p >= v },
+                { operators: { $lt: v }, matches: p => p < v },
+                { operators: { $lte: v }, matches: p => p <= v }
+            );
+        });
+        [[12, 13], [-3, 0], [0, 12], [4.5], [0, 8], [10, 12]].forEach(values => {
+            priorityConditions.push({ operators: { $in: values }, matches: p => values.includes(p) });
+        });
+        priorityConditions.push(
+            { operators: { $gt: 12, $lt: 20 }, matches: () => false },
+            { operators: { $gte: -5, $lte: 0 }, matches: () => false },
+            { operators: { $gte: 0, $lte: 12 }, matches: () => true }
+        );
+        const nameConditions: (Condition<string> | undefined)[] = [
+            undefined,
+            { operators: { $eq: 'Learn RxDB' }, matches: n => n === 'Learn RxDB' },
+            { operators: { $gt: 'A' }, matches: n => n > 'A' },
+            { operators: { $gte: 'Learn RxDB' }, matches: n => n >= 'Learn RxDB' },
+            { operators: { $lt: 'z' }, matches: n => n < 'z' },
+            { operators: { $lte: 'Learn RxDB' }, matches: n => n <= 'Learn RxDB' }
+        ];
+
+        const storages: { name: string; storage: RxStorage<any, any>; }[] = [
+            { name: config.storage.name, storage: config.storage.getStorage() },
+            {
+                name: 'dexie (fake-indexeddb)',
+                storage: wrappedValidateAjvStorage({
+                    storage: getRxStorageDexie({ indexedDB: fakeIndexedDB, IDBKeyRange: fakeIDBKeyRange })
+                })
+            },
+            {
+                name: 'localstorage (mock)',
+                storage: wrappedValidateAjvStorage({
+                    storage: getRxStorageLocalstorage({ localStorage: getLocalStorageMock() })
+                })
+            }
+        ];
+        const wrong: string[] = [];
+        for (const { name, storage } of storages) {
+            const createDatabase = async (allowSlowCount: boolean) => {
+                const database = await createRxDatabase<{
+                    numberFirst: RxCollection<TodoDocType>;
+                    numberLast: RxCollection<TodoDocType>;
+                }>({
+                    name: randomToken(10),
+                    storage,
+                    allowSlowCount
+                });
+                await database.addCollections({
+                    numberFirst: { schema: todoSchema(['priority', 'name']) },
+                    numberLast: { schema: todoSchema(['name', 'priority']) }
+                });
+                await database.numberFirst.bulkInsert(todos);
+                await database.numberLast.bulkInsert(todos);
+                return database;
+            };
+
+            const myDatabase = await createDatabase(true);
+            for (const collection of [myDatabase.numberFirst, myDatabase.numberLast]) {
+                for (const priorityCondition of priorityConditions) {
+                    for (const nameCondition of nameConditions) {
+                        const selector: MangoQuerySelector<TodoDocType> = { priority: priorityCondition.operators };
+                        if (nameCondition) {
+                            selector.name = nameCondition.operators;
+                        }
+                        const expected = todos
+                            .filter(todo => priorityCondition.matches(todo.priority))
+                            .filter(todo => !nameCondition || nameCondition.matches(todo.name))
+                            .map(todo => todo.id)
+                            .sort();
+                        const found = await collection.find({ selector }).exec();
+                        const foundIds = found.map(doc => doc.id).sort();
+                        const count = await collection.count({ selector }).exec();
+                        if (
+                            JSON.stringify(foundIds) !== JSON.stringify(expected) ||
+                            count !== expected.length
+                        ) {
+                            wrong.push([
+                                name,
+                                collection.name,
+                                JSON.stringify(selector),
+                                'find: ' + JSON.stringify(foundIds),
+                                'count: ' + count,
+                                'expected: ' + JSON.stringify(expected)
+                            ].join(' | '));
+                        }
+                    }
+                }
+            }
+            await myDatabase.remove();
+
+            /**
+             * A value outside of the range must not turn
+             * a count() that uses the index into a slow count.
+             * With the name range, only the index that starts with
+             * the number field can count without the query matcher.
+             */
+            const noSlowCountDatabase = await createDatabase(false);
+            for (const collection of [noSlowCountDatabase.numberFirst, noSlowCountDatabase.numberLast]) {
+                for (const priority of [8, 12, 0, 4.5]) {
+                    for (const nameCondition of [nameConditions[1], nameConditions[2]]) {
+                        if (nameCondition === nameConditions[2] && collection === noSlowCountDatabase.numberLast) {
+                            continue;
+                        }
+                        const selector: MangoQuerySelector<TodoDocType> = {
+                            priority,
+                            name: ensureNotFalsy(nameCondition).operators
+                        };
+                        const expected = todos.filter(
+                            todo => todo.priority === priority && ensureNotFalsy(nameCondition).matches(todo.name)
+                        ).length;
+                        const count = await collection.count({ selector }).exec().catch(err => 'error ' + err.code);
+                        if (count !== expected) {
+                            wrong.push([
+                                name,
+                                collection.name,
+                                JSON.stringify(selector),
+                                'count without allowSlowCount: ' + count,
+                                'expected: ' + expected
+                            ].join(' | '));
+                        }
+                    }
+                }
+            }
+            await noSlowCountDatabase.remove();
+        }
+        assert.deepStrictEqual(wrong, []);
     });
 
     /**

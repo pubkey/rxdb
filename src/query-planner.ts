@@ -105,6 +105,7 @@ export function getQueryPlan<RxDocType>(
         let inclusiveEnd = true;
         let inclusiveStart = true;
         let hasIndexMaxSelectorValue = false;
+        let rangeIsEmpty = false;
         const opts: RxQueryPlanerOpts[] = index.map(indexField => {
             const matcher = (selector as any)[indexField];
             const operators = matcher ? Object.keys(matcher) : [];
@@ -189,6 +190,12 @@ export function getQueryPlan<RxDocType>(
                 const hasEnd = typeof endKey === 'number' && endKey !== INDEX_MIN;
                 if (hasStart || hasEnd) {
                     const parsedLengths = getStringLengthOfIndexNumber(schemaPart);
+                    if (
+                        (hasStart && (startKey as number) > parsedLengths.maximum) ||
+                        (hasEnd && (endKey as number) < parsedLengths.minimum)
+                    ) {
+                        rangeIsEmpty = true;
+                    }
                     if (hasStart) {
                         const bound = getRepresentableNumberBound(parsedLengths, startKey as number, true);
                         if (bound) {
@@ -202,6 +209,9 @@ export function getQueryPlan<RxDocType>(
                             matcherOpts.endKey = bound.key;
                             matcherOpts.inclusiveEnd = bound.inclusive;
                         }
+                    }
+                    if (hasStart && hasEnd && (matcherOpts.startKey as number) > (matcherOpts.endKey as number)) {
+                        rangeIsEmpty = true;
                     }
                 }
             }
@@ -217,8 +227,19 @@ export function getQueryPlan<RxDocType>(
         });
 
 
-        const startKeys = opts.map(opt => opt.startKey);
-        const endKeys = opts.map(opt => opt.endKey);
+        /**
+         * When the number bounds of one field cannot match any value,
+         * no document matches the query. The bounds of the other fields
+         * of a compound index would still span documents, so the plan
+         * gets a range that is empty for every index and every storage:
+         * it starts after the highest key and ends before the lowest key.
+         */
+        if (rangeIsEmpty) {
+            inclusiveStart = false;
+            inclusiveEnd = false;
+        }
+        const startKeys = rangeIsEmpty ? index.map(() => INDEX_MAX) : opts.map(opt => opt.startKey);
+        const endKeys = rangeIsEmpty ? index.map(() => INDEX_MIN) : opts.map(opt => opt.endKey);
 
         /**
          * Compute the index compare string once per index,
@@ -239,9 +260,16 @@ export function getQueryPlan<RxDocType>(
             inclusiveEnd,
             inclusiveStart,
             sortSatisfiedByIndex: !hasDescSorting && optimalSortIndexCompareString === indexCompareString,
-            selectorSatisfiedByIndex: !hasIndexMaxSelectorValue && isSelectorSatisfiedByIndex(index, query.selector, startKeys, endKeys)
+            selectorSatisfiedByIndex: rangeIsEmpty || (
+                !hasIndexMaxSelectorValue &&
+                isSelectorSatisfiedByIndex(index, query.selector, startKeys, endKeys)
+            )
         };
-        const quality = rateQueryPlan(
+        /**
+         * A plan with an empty range reads no documents,
+         * so no other index can be better.
+         */
+        const quality = rangeIsEmpty ? Infinity : rateQueryPlan(
             schema,
             query,
             queryPlan
