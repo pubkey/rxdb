@@ -435,8 +435,11 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
              * a push retry, masterWrite() returns [] even though no documents
              * were actually sent. Without this check the meta instance would
              * be updated, causing the documents to never be retried on resume.
+             * The documents are put back into the non-persisted list so that
+             * a later cycle, which stores a checkpoint behind them, pushes them too.
              */
             if (state.events.canceled.getValue() || state.events.paused.getValue()) {
+                nonPersistedFromMaster.docs = Object.assign(upDocsById, nonPersistedFromMaster.docs);
                 return false;
             }
 
