@@ -35,7 +35,7 @@ import {
     RxError
 } from '../../index.ts';
 import { mingoUpdater } from '../update/mingo-updater.ts';
-import { fillObjectWithDefaults, fillPrimaryKey } from '../../rx-schema-helper.ts';
+import { fillObjectWithDefaults, fillPrimaryKey, getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper.ts';
 
 
 
@@ -343,26 +343,35 @@ function hasSameAttachments(
  * so they are merged per attachment id:
  * An attachment that was changed on the master is taken from the master,
  * all other attachments are taken from the fork.
- * The resolved document is written to the fork,
- * so a changed master attachment can only be used when the master state
+ * The resolved document is written to the fork and pushed to the master afterwards.
+ * A changed master attachment can therefore only be used when the master state
  * contains its data or the fork already has the same attachment.
+ * Without the data there is no resolved state that keeps the attachment of the master,
+ * because each attachment that is missing in the pushed state is removed from the master.
+ * In that case the missing attachment id is given to onMissingData().
  */
 function mergeCRDTAttachments(
     assumedMaster: CRDTAttachments,
     master: CRDTAttachments,
-    fork: CRDTAttachments
+    fork: CRDTAttachments,
+    onMissingData: (attachmentId: string) => void
 ): NonNullable<CRDTAttachments> {
     const ret: NonNullable<CRDTAttachments> = {};
     Object.keys(Object.assign({}, master, fork)).forEach(attachmentId => {
         const masterAttachment = getAttachment(master, attachmentId);
         const forkAttachment = getAttachment(fork, attachmentId);
         let use = forkAttachment;
-        if (!isSameAttachment(getAttachment(assumedMaster, attachmentId), masterAttachment)) {
+        if (
+            !isSameAttachment(getAttachment(assumedMaster, attachmentId), masterAttachment) &&
+            !isSameAttachment(masterAttachment, forkAttachment)
+        ) {
             if (
                 !masterAttachment ||
                 (masterAttachment as RxAttachmentWriteData).data
             ) {
                 use = masterAttachment;
+            } else {
+                onMissingData(attachmentId);
             }
         }
         if (use) {
@@ -378,6 +387,7 @@ export function getCRDTConflictHandler<RxDocType>(
 ): RxConflictHandler<RxDocType> {
     const crdtOptions = ensureNotFalsy(schema.crdt);
     const crdtField = crdtOptions.field;
+    const primaryPath = getPrimaryFieldOfPrimaryKey(schema.primaryKey);
     const getCRDTValue = objectPathMonad<WithDeleted<RxDocType> | RxDocType, CRDTDocumentField<RxDocType>>(crdtField);
 
     const conflictHandler: RxConflictHandler<RxDocType> = {
@@ -404,7 +414,19 @@ export function getCRDTConflictHandler<RxDocType>(
                 mergedDoc._attachments = mergeCRDTAttachments(
                     assumedMasterState ? assumedMasterState._attachments : undefined,
                     realMasterState._attachments,
-                    newDocumentState._attachments
+                    newDocumentState._attachments,
+                    attachmentId => {
+                        /**
+                         * A deleted document has no attachments,
+                         * so the attachment of the master is not needed for it.
+                         */
+                        if (!mergedDoc._deleted) {
+                            throw newRxError('CRDT7', {
+                                documentId: (newDocumentState as any)[primaryPath],
+                                args: { attachmentId }
+                            });
+                        }
+                    }
                 );
             }
             return mergedDoc;
