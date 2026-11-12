@@ -326,7 +326,8 @@ export function registerWebMCPTarget(
 
     /**
      * Tools are unregistered by aborting the signal they were registered with.
-     * Registries that do not support signals are served by unregisterTool().
+     * A registry can ignore the signal and only offer unregisterTool(),
+     * and it is not detectable which one it honors, so both are used.
      */
     const controller = typeof AbortController !== 'undefined' ? new AbortController() : undefined;
     /**
@@ -340,9 +341,12 @@ export function registerWebMCPTarget(
         }
         if (controller) {
             controller.abort();
-            return;
         }
-        registeredTools.forEach(tool => {
+        /**
+         * The list is emptied so that a second call does not remove
+         * the tools of a later registration with the same names.
+         */
+        registeredTools.splice(0).forEach(tool => {
             try {
                 if (modelContext.unregisterTool) {
                     modelContext.unregisterTool(tool.name);

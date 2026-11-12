@@ -393,6 +393,60 @@ describe('webmcp.test.ts', () => {
         assert.deepStrictEqual(toolNames, []);
     });
 
+    it('should unregister its tools at a registry that ignores the signal and has unregisterTool()', async () => {
+        const toolNames = new Set<string>();
+        const unregisterCalls: string[] = [];
+        let failAt: string | undefined;
+        const modelContext = {
+            registerTool(tool: any) {
+                if (toolNames.has(tool.name)) {
+                    throw new TypeError('duplicate tool name ' + tool.name);
+                }
+                if (failAt && tool.name.startsWith(failAt)) {
+                    throw new RangeError('registry rejects ' + tool.name);
+                }
+                toolNames.add(tool.name);
+            },
+            unregisterTool(name: string) {
+                unregisterCalls.push(name);
+                toolNames.delete(name);
+            }
+        };
+        const database = await createRxDatabase({
+            name: randomToken(10),
+            storage: config.storage.getStorage()
+        });
+        await database.addCollections({ aaa: { schema: schemas.human } });
+
+        // the registry throws at the third tool of the collection
+        failAt = 'rxdb_changes_';
+        await assertThrows(
+            () => database.aaa.registerWebMCP({ modelContext }),
+            'RangeError',
+            'registry rejects'
+        );
+        assert.strictEqual(toolNames.size, 0);
+        // only the two tools that the registry accepted are unregistered
+        assert.strictEqual(unregisterCalls.length, 2);
+        assert.ok(!unregisterCalls.find(name => name.startsWith('rxdb_changes_')));
+
+        failAt = undefined;
+        const target = getWebMCPTargetFromCollection(database.aaa);
+        const first = registerWebMCPTarget(target, { modelContext });
+        assert.strictEqual(toolNames.size, 7);
+        first.unregister();
+        assert.strictEqual(toolNames.size, 0);
+
+        // a repeated unregister() must not remove the tools of a later registration
+        registerWebMCPTarget(target, { modelContext });
+        assert.strictEqual(toolNames.size, 7);
+        first.unregister();
+        assert.strictEqual(toolNames.size, 7);
+
+        await database.close();
+        assert.strictEqual(toolNames.size, 0);
+    });
+
     itWithDom('should emit log$ and error$ events for executed tools', async () => {
         const { log$, error$ } = db.registerWebMCP();
         const logs: any[] = [];
