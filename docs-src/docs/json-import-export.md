@@ -169,7 +169,7 @@ Use the json-dump plugin when you need one JSON object that you can move around,
 </FaqItem>
 <FaqItem question="Can I use a JSON dump to sync two devices?">
 
-No. A dump has no revisions and no deletions, so importing it a second time overwrites the target state instead of merging it. For two databases that both accept writes, use the [RxDB replication](./replication.md), which handles conflicts, deletions, and checkpoints.
+No. A dump has no revisions and no deletions, so importing it a second time does not merge it into the target state. The import only inserts documents. A document that already exists in the collection is not overwritten and is returned as a [`409 CONFLICT`](./errors.md#CONFLICT) write error instead. For two databases that both accept writes, use the [RxDB replication](./replication.md), which handles conflicts, deletions, and checkpoints.
 
 </FaqItem>
 </Faq>
