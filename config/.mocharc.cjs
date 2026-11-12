@@ -1,13 +1,13 @@
+const path = require('node:path');
+
 const mochaSettings = {
     bail: true,
     timeout: 10000,
     exit: true,
     reporter: 'spec',
-    /**
-     * Makes Node.js use the source maps of the transpiled files,
-     * so that stack traces point to the original typescript files.
-     */
-    'enable-source-maps': true
+    require: [
+        path.join(__dirname, 'mocha-source-maps.cjs')
+    ]
 };
 
 if (process.env.NODE_PROF) {
