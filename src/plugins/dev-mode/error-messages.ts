@@ -188,6 +188,12 @@ export const ERROR_MESSAGES = {
         fix: 'Write array indexes with the dot notation, for example { \'foo.bar.3\': \'asc\' }.',
         docs: 'https://rxdb.info/rx-query-examples.html?console=errors&code=QU20#sorting'
     },
+    QU22: {
+        message: 'The skip and limit of a query must not be NaN or negative.',
+        cause: 'A query was created with a skip or limit that is NaN, -Infinity or another negative number.',
+        fix: 'Use a number that is zero or greater. Leave out the limit to get all documents.',
+        docs: ''
+    },
 
     // mquery.js
     MQ1: {

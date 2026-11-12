@@ -267,6 +267,57 @@ describe('rx-query.test.ts', () => {
             assert.ok(query1 === query2);
             col.database.close();
         });
+        it('should not share the cached query between queries that differ in a non-finite number', async () => {
+            const col = await humansCollection.create(0);
+            await col.bulkInsert([
+                schemaObjects.humanData('doc-a', 10),
+                schemaObjects.humanData('doc-b', 20)
+            ]);
+            const all = col.find({ selector: { age: { $gt: -Infinity } } });
+            const none = col.find({ selector: { age: { $gt: Infinity } } });
+            const nan = col.find({ selector: { age: { $gt: NaN } } });
+            assert.ok(all !== none);
+            assert.ok(all !== nan);
+            assert.ok(none !== nan);
+            assert.ok(all === col.find({ selector: { age: { $gt: -Infinity } } }));
+
+            assert.strictEqual((await all.exec()).length, 2);
+            assert.strictEqual((await none.exec()).length, 0);
+            assert.strictEqual((await nan.exec()).length, 0);
+            assert.strictEqual((await col.find({ selector: { age: { $lt: Infinity } } }).exec()).length, 2);
+            assert.strictEqual((await col.find({ selector: { age: { $lt: -Infinity } } }).exec()).length, 0);
+
+            const emitted: number[] = [];
+            const sub = none.$.subscribe(docs => emitted.push(docs.length));
+            await waitUntil(() => emitted.length === 1);
+            await col.insert(schemaObjects.humanData('doc-c', 30));
+            assert.strictEqual((await all.exec()).length, 3);
+            assert.strictEqual((await none.exec()).length, 0);
+            sub.unsubscribe();
+            assert.deepStrictEqual(emitted, [0]);
+
+            col.database.close();
+        });
+        it('should throw on a skip or limit that is NaN or negative', async () => {
+            const col = await humansCollection.create(2);
+            assert.strictEqual((await col.find({ selector: {}, limit: Infinity }).exec()).length, 2);
+            assert.strictEqual((await col.find({ selector: {}, skip: Infinity }).exec()).length, 0);
+            assert.strictEqual((await col.find({ selector: {}, skip: 0, limit: 1 }).exec()).length, 1);
+            const invalidParts = [
+                { limit: NaN },
+                { limit: -Infinity },
+                { skip: NaN },
+                { skip: -Infinity }
+            ];
+            for (const queryPart of invalidParts) {
+                await assertThrows(
+                    () => col.find({ selector: {}, ...queryPart }),
+                    'RxError',
+                    'QU22'
+                );
+            }
+            col.database.close();
+        });
 
         it('should distinguish between different sort-orders', async () => {
             const col = await humansCollection.create(0);
