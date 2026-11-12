@@ -220,6 +220,49 @@ describe('react-hooks.test.tsx', () => {
             await db.close();
         });
 
+        it('should work when the collection option switches between a collection name and a collection instance', async () => {
+            const db = await createDatabase();
+            const collection: RxCollection<SimpleHumanDocumentType> = db.collections.humans;
+            await collection.insert(schemaObjects.simpleHumanAge());
+
+            type Props = {
+                collection: string | RxCollection<SimpleHumanDocumentType>;
+            };
+            const initialProps: Props = { collection: 'humans' };
+            const { result, rerender, unmount } = renderHook(
+                (props: Props) => useLiveRxQuery<SimpleHumanDocumentType>({
+                    collection: props.collection,
+                    query: allDocsQuery
+                }),
+                {
+                    wrapper: createWrapper(db),
+                    initialProps
+                }
+            );
+            await waitFor(() => {
+                assert.strictEqual(result.current.results.length, 1);
+            });
+
+            rerender({ collection });
+            await waitFor(() => {
+                assert.strictEqual(result.current.loading, false);
+            });
+            assert.strictEqual(result.current.results.length, 1);
+            assert.strictEqual(result.current.error, null);
+
+            rerender({ collection: 'humans' });
+            await act(async () => {
+                await collection.insert(schemaObjects.simpleHumanAge());
+            });
+            await waitFor(() => {
+                assert.strictEqual(result.current.results.length, 2);
+            });
+            assert.strictEqual(result.current.error, null);
+
+            unmount();
+            await db.close();
+        });
+
         it('should update results when documents are inserted', async () => {
             const db = await createDatabase();
             const collection: RxCollection<SimpleHumanDocumentType> = db.collections.humans;
