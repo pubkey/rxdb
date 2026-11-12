@@ -31,6 +31,8 @@ import {
     getPrimaryKeyOfInternalDocument,
     INTERNAL_CONTEXT_COLLECTION,
     RxStorage,
+    RxJsonSchema,
+    deepEqual,
     now
 } from '../../plugins/core/index.mjs';
 
@@ -962,6 +964,134 @@ describe('migration-schema.test.ts', function () {
 
             await db2.close();
             await remoteDb.close();
+        });
+        it('should migrate the assumed master state to the shape that the replication stores', async () => {
+            type TodoDocType = {
+                id: string;
+                name: string;
+            };
+            type TodoMasterState = TodoDocType & {
+                _deleted: boolean;
+                _attachments?: Record<string, unknown>;
+            };
+            const getTodoSchema = (version: number, withAttachments: boolean): RxJsonSchema<TodoDocType> => {
+                const todoSchema: RxJsonSchema<TodoDocType> = {
+                    version,
+                    primaryKey: 'id',
+                    type: 'object',
+                    properties: {
+                        id: {
+                            type: 'string',
+                            maxLength: 100
+                        },
+                        name: {
+                            type: 'string'
+                        }
+                    },
+                    required: ['id', 'name']
+                };
+                if (withAttachments) {
+                    todoSchema.attachments = {};
+                }
+                return todoSchema;
+            };
+
+            const attachmentModes = config.storage.hasAttachments ? [false, true] : [false];
+            for (const withAttachments of attachmentModes) {
+                let serverDoc: TodoMasterState = {
+                    id: 'todo1',
+                    name: 'Learn RxDB',
+                    _deleted: false
+                };
+                if (withAttachments) {
+                    serverDoc._attachments = {};
+                }
+                const assumedMasterStates: (TodoMasterState | undefined)[] = [];
+
+                /**
+                 * The server detects conflicts by comparing
+                 * the assumed master state with its own document state.
+                 */
+                const startReplication = (collection: RxCollection<TodoDocType>) => {
+                    const repState = replicateRxCollection<TodoDocType, { done: boolean; }>({
+                        collection,
+                        replicationIdentifier: 'migrate-assumed-master-state',
+                        live: false,
+                        waitForLeadership: false,
+                        pull: {
+                            handler: (checkpoint) => Promise.resolve({
+                                documents: checkpoint ? [] : [clone(serverDoc)],
+                                checkpoint: { done: true }
+                            })
+                        },
+                        push: {
+                            handler: (rows) => {
+                                const conflicts: TodoMasterState[] = [];
+                                rows.forEach(row => {
+                                    assumedMasterStates.push(row.assumedMasterState);
+                                    if (deepEqual(row.assumedMasterState, serverDoc)) {
+                                        serverDoc = clone(row.newDocumentState);
+                                    } else {
+                                        conflicts.push(clone(serverDoc));
+                                    }
+                                });
+                                return Promise.resolve(conflicts);
+                            }
+                        }
+                    });
+                    ensureReplicationHasNoErrors(repState);
+                    return repState;
+                };
+
+                const name = randomToken(10);
+                const db = await createRxDatabase<{ todos: RxCollection<TodoDocType>; }>({
+                    name,
+                    storage: config.storage.getStorage()
+                });
+                await db.addCollections({
+                    todos: {
+                        schema: getTodoSchema(0, withAttachments)
+                    }
+                });
+                const repStateBeforeMigration = startReplication(db.todos);
+                await repStateBeforeMigration.awaitInitialReplication();
+                await repStateBeforeMigration.cancel();
+                assert.strictEqual((await db.todos.findOne('todo1').exec(true)).name, 'Learn RxDB');
+                await db.close();
+
+                const db2 = await createRxDatabase<{ todos: RxCollection<TodoDocType>; }>({
+                    name,
+                    storage: config.storage.getStorage()
+                });
+                await db2.addCollections({
+                    todos: {
+                        schema: getTodoSchema(1, withAttachments),
+                        migrationStrategies: {
+                            1: (d: TodoDocType) => d
+                        }
+                    }
+                });
+                const doc = await db2.todos.findOne('todo1').exec(true);
+                await doc.incrementalPatch({ name: 'changed locally' });
+
+                const repStateAfterMigration = startReplication(db2.todos);
+                await repStateAfterMigration.awaitInitialReplication();
+                await repStateAfterMigration.cancel();
+
+                const expectedAssumedMasterState: TodoMasterState = {
+                    id: 'todo1',
+                    name: 'Learn RxDB',
+                    _deleted: false
+                };
+                if (withAttachments) {
+                    expectedAssumedMasterState._attachments = {};
+                }
+                assert.deepStrictEqual(assumedMasterStates, [expectedAssumedMasterState]);
+                assert.strictEqual(serverDoc.name, 'changed locally');
+                assert.strictEqual((await db2.todos.findOne('todo1').exec(true)).name, 'changed locally');
+
+                await db2.close();
+            }
         });
         /**
          * @link https://github.com/pubkey/rxdb/pull/7204
