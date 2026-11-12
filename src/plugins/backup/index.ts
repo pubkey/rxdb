@@ -21,7 +21,6 @@ import type {
 import {
     getFromMapOrCreate,
     PROMISE_RESOLVE_FALSE,
-    PROMISE_RESOLVE_TRUE,
     PROMISE_RESOLVE_VOID
 } from '../../plugins/utils/index.ts';
 import {
@@ -235,13 +234,17 @@ export class RxBackupState {
         );
     }
 
+    /**
+     * Resolves after the running persist has finished,
+     * so that no file is written after the returned promise has resolved.
+     */
     cancel(): Promise<boolean> {
         if (this.isStopped) {
             return PROMISE_RESOLVE_FALSE;
         }
         this.isStopped = true;
         this.subs.forEach(sub => sub.unsubscribe());
-        return PROMISE_RESOLVE_TRUE;
+        return this.persistRunning.then(() => true, () => true);
     }
 }
 
