@@ -959,6 +959,86 @@ describe('replication.test.ts', () => {
             errorSub.unsubscribe();
             await collection.database.close();
         });
+        it('should still pull the other documents while the push handler keeps rejecting with an RxError', async () => {
+            const collection = await humansCollection.createHumanWithTimestamp(0, randomToken(10), false);
+            await collection.insert({
+                id: 'foobar',
+                name: 'client',
+                age: 1,
+                updatedAt: 1001
+            });
+            // the push handler writes each push into this collection
+            const pushLogCollection = await humansCollection.createHumanWithTimestamp(0, randomToken(10), false);
+            const pushLogEntry: TestDocType = {
+                id: 'push-log',
+                name: 'log',
+                age: 1,
+                updatedAt: 1001
+            };
+            await pushLogCollection.insert(pushLogEntry);
+            const docsOnServer: WithDeleted<TestDocType>[] = [
+                {
+                    id: 'foobar',
+                    name: 'server',
+                    age: 1,
+                    updatedAt: 1001,
+                    _deleted: false
+                },
+                {
+                    id: 'other',
+                    name: 'server',
+                    age: 1,
+                    updatedAt: 1001,
+                    _deleted: false
+                }
+            ];
+            let pushLogFails = true;
+            const replicationState = replicateRxCollection<TestDocType, { done: boolean; }>({
+                collection,
+                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                live: true,
+                retryTime: 50,
+                pull: {
+                    handler: (checkpoint) => {
+                        return Promise.resolve({
+                            documents: checkpoint ? [] : docsOnServer,
+                            checkpoint: { done: true }
+                        });
+                    }
+                },
+                push: {
+                    handler: async (rows) => {
+                        if (pushLogFails) {
+                            // rejects with the RxError CONFLICT because the document already exists
+                            await pushLogCollection.insert(pushLogEntry);
+                        }
+                        // the server already has another state of all pushed documents
+                        return rows.map(row => ensureNotFalsy(docsOnServer.find(d => d.id === row.newDocumentState.id)));
+                    }
+                }
+            });
+            const errors: (RxError | RxTypeError)[] = [];
+            const errorSub = replicationState.error$.subscribe(err => errors.push(err));
+
+            await waitUntil(() => errors.length > 0, 3000);
+            await waitUntil(async () => {
+                const otherDoc = await collection.findOne('other').exec();
+                return !!otherDoc;
+            }, 3000);
+            errors.forEach(err => assert.strictEqual(err.code, 'CONFLICT'));
+            const docWhileFailing = await collection.findOne('foobar').exec(true);
+            assert.strictEqual(docWhileFailing.name, 'client');
+
+            // when the push handler works again, the conflict is resolved
+            pushLogFails = false;
+            await replicationState.awaitInSync();
+            const docAfter = await collection.findOne('foobar').exec(true);
+            assert.strictEqual(docAfter.name, 'server');
+
+            errorSub.unsubscribe();
+            await collection.database.close();
+            await pushLogCollection.database.close();
+        });
         it('should not lose a pulled master state when an error of the pull direction is emitted while the push of the same document is running', async () => {
             type ServerCheckpoint = { seq: number; };
             let resolvePullRequested: () => void = () => { };

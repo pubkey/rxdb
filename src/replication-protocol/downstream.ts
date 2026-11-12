@@ -135,15 +135,10 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
     addNewTask('RESYNC');
 
     /**
-     * Emits the errors of a failed push to the master.
-     * Errors of the pull direction or of the storage instances
-     * are emitted on the same subject, they say nothing about the running push.
-     */
-    const pushError$ = state.events.error.pipe(
-        filter(err => !!err.parameters && err.parameters.direction === 'push')
-    );
-
-    /**
+     * The upstream and the push handler emit to events.pushFailed.
+     * The error subject is not used for that because it also contains
+     * the errors of the pull direction, which say nothing about the running push.
+     *
      * True when a push failed while the upstream was active
      * and the upstream did not finish a push or get idle since then.
      * A failed push might be retried forever by the replication handler,
@@ -152,7 +147,7 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
     let upstreamHasFailed = false;
     if (!state.events.canceled.getValue()) {
         const upstreamFailedSubs = [
-            pushError$.subscribe(() => {
+            state.events.pushFailed.subscribe(() => {
                 if (state.events.active.up.getValue()) {
                     upstreamHasFailed = true;
                 }
@@ -432,7 +427,7 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
                                 try {
                                     await Promise.race([
                                         state.streamQueue.up,
-                                        new Promise<void>(res => pushErrorSub.add(pushError$.subscribe(() => res())))
+                                        new Promise<void>(res => pushErrorSub.add(state.events.pushFailed.subscribe(() => res())))
                                     ]);
                                 } finally {
                                     pushErrorSub.unsubscribe();

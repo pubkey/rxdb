@@ -427,7 +427,9 @@ export class RxReplicationState<RxDocType, CheckpointType> {
                              * Emitted via the internal replication state (which forwards to error$),
                              * so that the replication protocol knows that the push has failed.
                              */
-                            ensureNotFalsy(this.internalReplicationState).events.error.next(emitError);
+                            const internalEvents = ensureNotFalsy(this.internalReplicationState).events;
+                            internalEvents.pushFailed.next();
+                            internalEvents.error.next(emitError);
                             await awaitRetry(this.collection, ensureNotFalsy(this.retryTime));
                         }
                     }
