@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `RxState.set()` and `RxDatabase.close()` never settled when another instance wrote to the same state while the database was closing. The pending `set()` now rejects with a `COL21` error instead of retrying the conflicting write forever",
+    "links": [],
+    "priority": 5
+}

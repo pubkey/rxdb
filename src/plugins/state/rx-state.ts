@@ -43,6 +43,7 @@ import {
     RxStateModifier
 } from './types.ts';
 import { runPluginHooks } from '../../hooks.ts';
+import { newRxError } from '../../rx-error.ts';
 
 
 let debugId = 0;
@@ -70,12 +71,16 @@ export class RxStateBase<T, Reactivity = unknown> {
     public _initDone = false;
     public _instanceId = randomToken(RX_STATE_COLLECTION_SCHEMA.properties.sId.maxLength);
     public _ownEmits$ = new Subject<T>();
+    public _closing = false;
 
     constructor(
         public readonly prefix: string,
         public readonly collection: RxCollection<RxStateDocument>
     ) {
-        this.collection.onClose.push(() => this._writeQueue);
+        this.collection.onClose.push(() => {
+            this._closing = true;
+            return this._writeQueue;
+        });
         this._lastIdQuery = this.collection.findOne({
             sort: [
                 { id: 'desc' }
@@ -197,6 +202,17 @@ export class RxStateBase<T, Reactivity = unknown> {
                 } catch (err) {
                     if ((err as RxError).code !== 'CONFLICT') {
                         throw err;
+                    }
+                    /**
+                     * A closing database no longer emits the change events
+                     * of other instances, so the _lastIdQuery would return
+                     * the same conflicting id on each retry.
+                     */
+                    if (this._closing) {
+                        throw newRxError('COL21', {
+                            collection: this.collection.name,
+                            version: this.collection.schema.version
+                        });
                     }
                     /**
                      * Yield to the event loop so that cross-instance
