@@ -90,7 +90,8 @@ import type {
     MangoQuerySelectorAndIndex,
     MigrationStrategies,
     WebMCPOptions,
-    WebMCPLogEvent
+    WebMCPLogEvent,
+    WithInlineAttachments
 } from './types/index.d.ts';
 
 import {
@@ -387,7 +388,7 @@ export class RxCollectionBase<
     }
 
     async insert(
-        json: RxDocumentType | RxDocument
+        json: WithInlineAttachments<RxDocumentType> | RxDocument
     ): Promise<RxDocument<RxDocumentType, OrmMethods, Reactivity>> {
         isWriteAllowed(this);
         const writeResult = await this.bulkInsert([json as any]);
@@ -416,7 +417,7 @@ export class RxCollectionBase<
     }
 
     async bulkInsert(
-        docsData: RxDocumentType[]
+        docsData: WithInlineAttachments<RxDocumentType>[]
     ): Promise<{
         success: RxDocument<RxDocumentType, OrmMethods, Reactivity>[];
         error: RxStorageWriteError<RxDocumentType>[];
@@ -662,7 +663,7 @@ export class RxCollectionBase<
     /**
      * same as bulkInsert but overwrites existing document with same primary
      */
-    async bulkUpsert(docsData: Partial<RxDocumentType>[], options?: UpsertOptions): Promise<{
+    async bulkUpsert(docsData: WithInlineAttachments<Partial<RxDocumentType>>[], options?: UpsertOptions): Promise<{
         success: RxDocument<RxDocumentType, OrmMethods, Reactivity>[];
         error: RxStorageWriteError<RxDocumentType>[];
     }> {
@@ -755,7 +756,7 @@ export class RxCollectionBase<
     /**
      * same as insert but overwrites existing document with same primary
      */
-    async upsert(json: Partial<RxDocumentType>, options?: UpsertOptions): Promise<RxDocument<RxDocumentType, OrmMethods, Reactivity>> {
+    async upsert(json: WithInlineAttachments<Partial<RxDocumentType>>, options?: UpsertOptions): Promise<RxDocument<RxDocumentType, OrmMethods, Reactivity>> {
         isWriteAllowed(this);
         const bulkResult = await this.bulkUpsert([json], options);
         throwIfIsStorageWriteError<RxDocumentType>(
@@ -770,7 +771,7 @@ export class RxCollectionBase<
     /**
      * upserts to a RxDocument, uses incrementalModify if document already exists
      */
-    incrementalUpsert(json: Partial<RxDocumentType>, options?: UpsertOptions): Promise<RxDocument<RxDocumentType, OrmMethods, Reactivity>> {
+    incrementalUpsert(json: WithInlineAttachments<Partial<RxDocumentType>>, options?: UpsertOptions): Promise<RxDocument<RxDocumentType, OrmMethods, Reactivity>> {
         isWriteAllowed(this);
         const useJson = fillObjectDataBeforeInsert(this.schema, json);
         const primary: string = useJson[this.schema.primaryPath] as any;
