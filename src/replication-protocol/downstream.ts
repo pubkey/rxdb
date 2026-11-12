@@ -101,6 +101,21 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
                         continue;
                     }
 
+                    /**
+                     * When the checkpoint iteration was interrupted by a pause,
+                     * the documents between the stored checkpoint and the checkpoint
+                     * of a stream event are not pulled yet. Processing the event
+                     * would store its checkpoint and these documents would be skipped.
+                     * The event can be dropped because the next RESYNC
+                     * continues from the stored checkpoint.
+                     */
+                    if (
+                        resyncInterrupted &&
+                        innerTaskWithTime.task !== 'RESYNC'
+                    ) {
+                        continue;
+                    }
+
                     if (innerTaskWithTime.task === 'RESYNC') {
                         if (useTasks.length === 0) {
                             useTasks.push(innerTaskWithTime.task);
@@ -171,11 +186,13 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
      * and then await all writes at the end.
      */
     let lastTimeMasterChangesRequested: number = -1;
+    let resyncInterrupted = false;
     async function downstreamResyncOnce() {
         state.stats.down.downstreamResyncOnce = state.stats.down.downstreamResyncOnce + 1;
         if (state.events.canceled.getValue()) {
             return;
         }
+        resyncInterrupted = false;
 
         state.checkpointQueue = state.checkpointQueue.then(() => getLastCheckpointDoc(state, 'down'));
         let lastCheckpoint: CheckpointType = await state.checkpointQueue;
@@ -188,6 +205,10 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
                 lastCheckpoint,
                 state.input.pullBatchSize
             );
+
+            if (state.events.paused.getValue()) {
+                resyncInterrupted = true;
+            }
 
             if (downResult.documents.length === 0) {
                 break;

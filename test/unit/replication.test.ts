@@ -1746,6 +1746,82 @@ describe('replication.test.ts', () => {
             localCollection.database.close();
             remoteCollection.database.close();
         });
+        it('should not skip documents when paused during the initial pull while a pull.stream$ event came in', async () => {
+            const { localCollection, remoteCollection } = await getTestCollections({ local: 0, remote: 0 });
+            type ServerDoc = {
+                seq: number;
+                doc: WithDeleted<TestDocType>;
+            };
+            const server: ServerDoc[] = new Array(8).fill(0).map((_v, idx) => ({
+                seq: idx + 1,
+                doc: Object.assign(
+                    schemaObjects.humanWithTimestampData({ id: 'server-doc-' + idx }),
+                    { _deleted: false }
+                )
+            }));
+            const stream$ = new Subject<RxReplicationPullStreamItem<TestDocType, { seq: number; }>>();
+
+            let pullCalls = 0;
+            let releaseFirstPull: () => void = () => { };
+            const firstPullGate = new Promise<void>(res => releaseFirstPull = res);
+            const replicationState = replicateRxCollection<TestDocType, { seq: number; }>({
+                collection: localCollection,
+                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                live: true,
+                pull: {
+                    batchSize: 3,
+                    handler: async (checkpoint, batchSize) => {
+                        pullCalls = pullCalls + 1;
+                        if (pullCalls === 1) {
+                            await firstPullGate;
+                        }
+                        const lastSeq = checkpoint ? checkpoint.seq : 0;
+                        const rows = server
+                            .filter(row => row.seq > lastSeq)
+                            .sort((a, b) => a.seq - b.seq)
+                            .slice(0, batchSize);
+                        const lastRow = lastOfArray(rows);
+                        return {
+                            documents: rows.map(row => row.doc),
+                            checkpoint: lastRow ? { seq: lastRow.seq } : { seq: lastSeq }
+                        };
+                    },
+                    stream$: stream$.asObservable()
+                }
+            });
+            ensureReplicationHasNoErrors(replicationState);
+
+            // the first pull handler call of the initial sync is in flight
+            await waitUntil(() => pullCalls === 1);
+
+            // the server changes a document and emits it on the stream
+            const changedDoc = Object.assign({}, server[1].doc, { name: 'changed-on-server' });
+            server[1] = { seq: 9, doc: changedDoc };
+            stream$.next({
+                documents: [changedDoc],
+                checkpoint: { seq: 9 }
+            });
+
+            await replicationState.pause();
+            releaseFirstPull();
+            await replicationState.awaitInSync();
+
+            await replicationState.start();
+            await replicationState.awaitInSync();
+
+            const localDocs = await localCollection.find({ sort: [{ id: 'asc' }] }).exec();
+            assert.deepStrictEqual(
+                localDocs.map(d => d.primary),
+                server.map(row => row.doc.id).sort()
+            );
+            assert.strictEqual(
+                ensureNotFalsy(localDocs.find(d => d.primary === changedDoc.id)).name,
+                'changed-on-server'
+            );
+
+            await localCollection.database.close();
+            await remoteCollection.database.close();
+        });
     });
     describe('pull-only', () => {
         it('should not store document metadata on pull only replications', async () => {
