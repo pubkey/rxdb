@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `RxDocument.modify()` and `incrementalModify()` on a CRDT collection threw `CRDT4` and `CRDT2` synchronously instead of returning a rejected promise, so `doc.modify(fn).catch()` could not handle the error. Added a testcase",
+    "links": [],
+    "priority": 4
+}
