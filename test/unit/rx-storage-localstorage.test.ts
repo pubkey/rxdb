@@ -8,7 +8,8 @@ import {
     normalizeMangoQuery,
     fillWithDefaultSettings,
     clone,
-    RxJsonSchema
+    RxJsonSchema,
+    RxAttachment
 } from '../../plugins/core/index.mjs';
 import {
     getRxStorageLocalstorage,
@@ -25,6 +26,99 @@ addRxPlugin(RxDBAttachmentsPlugin);
  * test suite.
  */
 describe('rx-storage-localstorage.test.ts', () => {
+    /**
+     * Creates its own localstorage RxStorage,
+     * so it runs with every storage of the test config.
+     */
+    it('a write that fails because setItem() throws must not leave a partial write behind', async () => {
+        const mock = getLocalStorageMock();
+        let throwOnKeyPrefix: string | undefined;
+        const quotaLocalStorage: typeof localStorage = {
+            get length() {
+                return mock.length;
+            },
+            clear: () => { },
+            key: (index: number) => mock.key(index),
+            getItem: (key: string) => mock.getItem(key),
+            removeItem: (key: string) => mock.removeItem(key),
+            setItem: (key: string, value: string) => {
+                if (throwOnKeyPrefix && key.startsWith(throwOnKeyPrefix)) {
+                    throwOnKeyPrefix = undefined;
+                    throw new DOMException('The quota has been exceeded.', 'QuotaExceededError');
+                }
+                mock.setItem(key, value);
+            }
+        };
+        const db = await createRxDatabase({
+            name: randomToken(10),
+            storage: wrappedValidateAjvStorage({
+                storage: getRxStorageLocalstorage({ localStorage: quotaLocalStorage })
+            }),
+            multiInstance: false
+        });
+        const cols = await db.addCollections({
+            docs: {
+                schema: {
+                    version: 0,
+                    primaryKey: 'id',
+                    type: 'object',
+                    properties: {
+                        id: { type: 'string', maxLength: 100 },
+                        name: { type: 'string', maxLength: 100 }
+                    },
+                    required: ['id', 'name'],
+                    attachments: {}
+                }
+            }
+        });
+        const col = cols.docs;
+        await col.insert({ id: 'a', name: 'Alice' });
+
+        // insert: the document is written, the index is not
+        throwOnKeyPrefix = 'RxDB-ls-idx-';
+        await assert.rejects(
+            () => col.insert({ id: 'b', name: 'Bob' }),
+            (err: any) => err.name === 'QuotaExceededError'
+        );
+        const docOfFailedInsert = await col.findOne('b').exec();
+        assert.ok(!docOfFailedInsert, 'the document of the rejected insert must not be stored');
+        await col.insert({ id: 'b', name: 'Bob' });
+        const ids = (await col.find({ sort: [{ id: 'asc' }] }).exec()).map(d => d.id);
+        assert.deepStrictEqual(ids, ['a', 'b']);
+
+        // update: document and index are written, the change event is not
+        const docA = await col.findOne('a').exec(true);
+        throwOnKeyPrefix = 'RxDB-ls-changes-';
+        await assert.rejects(
+            () => docA.patch({ name: 'Alice2' }),
+            (err: any) => err.name === 'QuotaExceededError'
+        );
+        const patched = await docA.patch({ name: 'Alice3' });
+        assert.strictEqual(patched.name, 'Alice3');
+
+        // attachment: document with the attachment stub is written, the attachment data is not
+        const docB = await col.findOne('b').exec(true);
+        throwOnKeyPrefix = 'RxDB-ls-attachment-';
+        await assert.rejects(
+            () => docB.putAttachment({
+                id: 'big.txt',
+                data: new Blob(['too big for the quota'], { type: 'text/plain' }),
+                type: 'text/plain'
+            }),
+            (err: any) => err.name === 'QuotaExceededError'
+        );
+        await docB.getLatest().putAttachment({
+            id: 'small.txt',
+            data: new Blob(['ok'], { type: 'text/plain' }),
+            type: 'text/plain'
+        });
+        const attachments: RxAttachment<any>[] = docB.getLatest().allAttachments();
+        assert.deepStrictEqual(attachments.map(a => a.id), ['small.txt']);
+        assert.strictEqual(await attachments[0].getStringData(), 'ok');
+
+        await db.remove();
+    });
+
     if (config.storage.name !== 'localstorage') {
         return;
     }
