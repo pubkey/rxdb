@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `replicationState.cancel()` of the websocket replication did not close the websocket connection, so the client stayed connected to the server and kept reconnecting until the collection was closed",
+    "links": [],
+    "priority": 5
+}
