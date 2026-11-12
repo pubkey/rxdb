@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `remove()`, `patch()`, `modify()`, `update()` and their incremental variants on a `count()` query threw a raw `TypeError` or resolved with `null`. They now throw the error `QU21`",
+    "links": [],
+    "priority": 4
+}

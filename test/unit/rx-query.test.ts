@@ -1501,6 +1501,31 @@ describe('rx-query.test.ts', () => {
                 c.database.close();
             });
         });
+        describe('count queries', () => {
+            it('must throw QU21 on all update and remove functions', async () => {
+                for (const documentAmount of [2, 0]) {
+                    const c = await humansCollection.create(documentAmount);
+                    const calls: (() => Promise<number>)[] = [
+                        () => c.count().remove(),
+                        () => c.count().incrementalRemove(),
+                        () => c.count().patch({ firstName: 'foobar' }),
+                        () => c.count().incrementalPatch({ firstName: 'foobar' }),
+                        () => c.count().modify(docData => docData),
+                        () => c.count().incrementalModify(docData => docData),
+                        () => c.count().update({ $set: { firstName: 'foobar' } })
+                    ];
+                    for (const call of calls) {
+                        await assertThrows(
+                            () => call(),
+                            'RxError',
+                            'QU21'
+                        );
+                    }
+                    assert.strictEqual(await c.count().exec(), documentAmount);
+                    c.database.close();
+                }
+            });
+        });
     });
     describe('issues', () => {
         new Array(isFastMode() ? 1 : 2)

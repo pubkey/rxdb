@@ -65,7 +65,8 @@ import {
     getSortComparator,
     normalizeMangoQuery,
     prepareQuery,
-    runQueryUpdateFunction
+    runQueryUpdateFunction,
+    throwIfCountQuery
 
 } from './rx-query-helper.ts';
 import { RxQuerySingleResult } from './rx-query-single-result.ts';
@@ -570,6 +571,7 @@ export class RxQueryBase<
                 op: this.op
             });
         }
+        throwIfCountQuery(this.asRxQuery);
         const docs = await this.exec();
         if (Array.isArray(docs)) {
             const result = await this.collection.bulkRemove(docs);

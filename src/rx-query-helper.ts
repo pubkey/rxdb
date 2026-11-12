@@ -255,10 +255,24 @@ export function getQueryMatcher<RxDocType>(
 }
 
 
+/**
+ * The result of a count query is a number,
+ * so it has no documents that can be changed or removed.
+ */
+export function throwIfCountQuery(rxQuery: RxQuery<any, any>) {
+    if (rxQuery.op === 'count') {
+        throw newRxError('QU21', {
+            collection: rxQuery.collection.name,
+            query: rxQuery.mangoQuery
+        });
+    }
+}
+
 export async function runQueryUpdateFunction<RxDocType, RxQueryResult>(
     rxQuery: RxQuery<RxDocType, RxQueryResult>,
     fn: (doc: RxDocument<RxDocType>) => Promise<RxDocument<RxDocType>>
 ): Promise<RxQueryResult> {
+    throwIfCountQuery(rxQuery);
     const docs = await rxQuery.exec();
     if (!docs) {
         // only findOne() queries can return null
