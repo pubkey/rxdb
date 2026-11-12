@@ -53,6 +53,7 @@ import { ensureReplicationHasNoErrors } from '../../plugins/test-utils/index.mjs
 import { SimpleHumanAgeDocumentType } from '../../src/plugins/test-utils/schema-objects.ts';
 import { RxDBLeaderElectionPlugin } from '../../plugins/leader-election/index.mjs';
 import { RxDBUpdatePlugin } from '../../plugins/update/index.mjs';
+import { RxDBLocalDocumentsPlugin } from '../../plugins/local-documents/index.mjs';
 
 
 describe('migration-schema.test.ts', function () {
@@ -339,6 +340,33 @@ describe('migration-schema.test.ts', function () {
                 const docsAfter = await newCollection.find().exec();
                 assert.strictEqual(docsAfter.length, 0);
                 await db.close();
+            });
+            it('should remove a collection or database that has an unfinished migration', async () => {
+                addRxPlugin(RxDBLocalDocumentsPlugin);
+                const removeFunctions: ((col: RxCollection<any>) => Promise<any>)[] = [
+                    col => col.database.remove(),
+                    col => col.remove()
+                ];
+                for (const removeFunction of removeFunctions) {
+                    const dbName = randomToken(10);
+                    const col = await humansCollection.createMigrationCollection(3, {}, dbName, false);
+                    assert.strictEqual(await col.migrationNeeded(), true);
+                    await removeFunction(col);
+                    await col.database.close();
+
+                    const db = await createRxDatabase<{ human: RxCollection<SimpleHumanAgeDocumentType>; }>({
+                        name: dbName,
+                        storage: config.storage.getStorage()
+                    });
+                    const cols = await db.addCollections({
+                        human: {
+                            schema: schemas.simpleHuman
+                        }
+                    });
+                    const docsAfter = await cols.human.find().exec();
+                    assert.strictEqual(docsAfter.length, 0);
+                    await db.remove();
+                }
             });
         });
         describe('.migrate()', () => {

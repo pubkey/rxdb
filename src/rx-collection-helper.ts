@@ -200,6 +200,13 @@ export async function removeCollectionStorages(
         }
     });
 
+    /**
+     * A collection can have multiple meta documents, one per schema version.
+     * The postRemoveRxCollection hooks work on the collection name,
+     * so they must run only once.
+     */
+    const hookRow = removeStorages.find(row => row.isCollection);
+
     // remove all the storages
     await Promise.all(
         removeStorages
@@ -221,7 +228,7 @@ export async function removeCollectionStorages(
                     devMode: overwritable.isDevMode()
                 });
                 await storageInstance.remove();
-                if (row.isCollection) {
+                if (row === hookRow) {
                     await runAsyncPluginHooks('postRemoveRxCollection', {
                         storage,
                         databaseName: databaseName,
