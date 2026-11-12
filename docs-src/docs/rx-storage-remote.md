@@ -86,6 +86,8 @@ const myDb = await createRxDatabase({
 });
 ```
 
+The client does not reconnect when the WebSocket connection to the server is lost. All pending and later requests then reject with the error [`RM3`](./errors.md#RM3) and you have to close the RxDatabase and create it again with a new `getRxStorageRemoteWebsocket()` storage.
+
 
 ## Sending custom messages
 

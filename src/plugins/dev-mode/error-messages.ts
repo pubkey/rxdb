@@ -1297,6 +1297,12 @@ export const ERROR_MESSAGES = {
         fix: 'Ensure both sides use the same RxDB version.',
         docs: 'https://rxdb.info/rx-storage-remote.html?console=errors&code=RM1'
     },
+    RM3: {
+        message: 'The remote websocket storage lost the connection to the server. The storage instances of that connection can no longer be used.',
+        cause: 'The websocket connection was closed by the server or by the network. The server only knows the storage instances of the lost connection, so the client does not reconnect.',
+        fix: 'Close the RxDatabase and create it again with a new getRxStorageRemoteWebsocket() storage.',
+        docs: 'https://rxdb.info/rx-storage-remote.html?console=errors&code=RM3'
+    },
 
     // plugins/replication-mongodb
     MG1: {

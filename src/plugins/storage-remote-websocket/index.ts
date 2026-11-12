@@ -14,7 +14,8 @@ import {
 } from '../replication-websocket/index.ts';
 import { exposeRxStorageRemote } from '../storage-remote/remote.ts';
 import { getRxStorageRemote } from '../storage-remote/rx-storage-remote.ts';
-import { createErrorAnswer } from '../storage-remote/storage-remote-helpers.ts';
+import { createAnswer, createErrorAnswer } from '../storage-remote/storage-remote-helpers.ts';
+import { newRxError } from '../../rx-error.ts';
 import type {
     MessageFromRemote,
     MessageToRemote,
@@ -187,20 +188,58 @@ export function getRxStorageRemoteWebsocket(
         async messageChannelCreator() {
             const messages$ = new Subject<MessageFromRemote>();
             const websocketClient = await createWebSocketClient(options as any);
+            const unansweredRequests = new Map<string, MessageToRemote>();
+            let connectionLost = false;
+            /**
+             * The remote only knows the connections that were created on the lost socket
+             * and the change events that happen while the client is disconnected never arrive.
+             * Therefore a message channel with a lost connection stays unusable
+             * and answers all requests by itself. Only close() calls get a non-error answer
+             * so that the RxStorageInstances and the RxDatabase can still be closed.
+             */
+            function answerWithoutRemote(msg: MessageToRemote) {
+                messages$.next(
+                    msg.method === 'close' ?
+                        createAnswer(msg, null) :
+                        createErrorAnswer(msg, newRxError('RM3', {
+                            url: options.url,
+                            method: msg.method
+                        }))
+                );
+            }
             websocketClient.message$.subscribe((msg: any) => {
                 void deserializeBlobsFromWs(msg)
                     .then(deserialized => {
+                        unansweredRequests.delete(deserialized.answerTo);
                         messages$.next(deserialized);
                     })
                     .catch(err => {
                         console.error('RxDB WebSocket client: failed to deserialize incoming message', err);
                     });
             });
+            websocketClient.connected$.subscribe((isConnected: boolean) => {
+                if (isConnected || connectionLost) {
+                    return;
+                }
+                connectionLost = true;
+                // stops the automatic reconnect of the socket
+                websocketClient.socket.close();
+                const unanswered = Array.from(unansweredRequests.values());
+                unansweredRequests.clear();
+                unanswered.forEach(msg => answerWithoutRemote(msg));
+            });
             return {
                 messages$,
                 async send(msg) {
+                    if (connectionLost) {
+                        answerWithoutRemote(msg);
+                        return;
+                    }
+                    unansweredRequests.set(msg.requestId, msg);
                     const serialized = await serializeBlobsForWs(msg);
-                    websocketClient.socket.send(serialized);
+                    if (!connectionLost) {
+                        websocketClient.socket.send(serialized);
+                    }
                 },
                 close() {
                     websocketClient.socket.close();

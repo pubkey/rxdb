@@ -7,6 +7,10 @@ import {
     fillWithDefaultSettings,
     randomToken
 } from '../../plugins/core/index.mjs';
+import type {
+    RxStorage,
+    RxStorageInstanceCreationParams
+} from '../../plugins/core/index.mjs';
 import {
     schemaObjects,
     schemas,
@@ -19,7 +23,7 @@ import {
 } from '../../plugins/storage-remote-websocket/index.mjs';
 import { getRxStorageMemory } from '../../plugins/storage-memory/index.mjs';
 import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.mjs';
-import { assertThrows } from 'async-test-util';
+import { assertThrows, waitUntil } from 'async-test-util';
 import { nextPort } from '../helper/port-manager.ts';
 
 describe('rx-storage-remote.test.ts', () => {
@@ -32,10 +36,94 @@ describe('rx-storage-remote.test.ts', () => {
      * In this while we only add additional tests
      * that are specific to the remote storage plugin.
      */
-    if (
-        !isNode ||
-        config.storage.name !== 'remote'
-    ) {
+    if (!isNode) {
+        return;
+    }
+    /**
+     * These tests create the remote storage explicitly,
+     * so they run independent of the default storage.
+     */
+    describe('lost websocket connection', () => {
+        it('should reject the pending and the later requests when the connection to the server is lost', async () => {
+            const port = await nextPort();
+            const memoryStorage = getRxStorageMemory();
+            let blockWrites = false;
+            let blockedWrites = 0;
+            let unblock: () => void = () => { };
+            const blocker = new Promise<void>(res => unblock = res);
+            const blockingStorage: RxStorage<any, any> = {
+                name: memoryStorage.name,
+                rxdbVersion: memoryStorage.rxdbVersion,
+                async createStorageInstance<RxDocType>(params: RxStorageInstanceCreationParams<RxDocType, any>) {
+                    const instance = await memoryStorage.createStorageInstance<RxDocType>(params);
+                    const bulkWrite = instance.bulkWrite.bind(instance);
+                    instance.bulkWrite = async (rows, context) => {
+                        if (blockWrites) {
+                            blockedWrites++;
+                            await blocker;
+                        }
+                        return bulkWrite(rows, context);
+                    };
+                    return instance;
+                }
+            };
+            const server = startRxStorageRemoteWebsocketServer({
+                port,
+                storage: blockingStorage
+            });
+            const settleState = (promise: Promise<any>): Promise<string> => Promise.race([
+                promise.then(() => 'resolved', err => 'rejected: ' + err.message),
+                new Promise<string>(res => setTimeout(() => res('pending'), 3000))
+            ]);
+            const name = randomToken(10);
+            const createClientDatabase = async () => {
+                const clientDatabase = await createRxDatabase({
+                    name,
+                    storage: wrappedValidateAjvStorage({
+                        storage: getRxStorageRemoteWebsocket({
+                            url: 'ws://localhost:' + port,
+                            mode: 'storage'
+                        })
+                    }),
+                    multiInstance: false
+                });
+                await clientDatabase.addCollections({
+                    humans: {
+                        schema: schemas.human
+                    }
+                });
+                return clientDatabase;
+            };
+            const database = await createClientDatabase();
+            const firstDoc = await database.humans.insert(schemaObjects.humanData());
+
+            // drop the connection while a request is in flight
+            blockWrites = true;
+            const pendingInsert = database.humans.insert(schemaObjects.humanData());
+            await waitUntil(() => blockedWrites === 1, 2000);
+            server.serverState.server.clients.forEach(socket => socket.terminate());
+
+            const pendingState = await settleState(pendingInsert);
+            assert.ok(pendingState.startsWith('rejected') && pendingState.includes('RM3'), pendingState);
+
+            const laterState = await settleState(database.humans.find().exec());
+            assert.ok(laterState.startsWith('rejected') && laterState.includes('RM3'), laterState);
+
+            assert.strictEqual(await settleState(database.close()), 'resolved');
+
+            // a new database on a new connection works
+            blockWrites = false;
+            unblock();
+            const database2 = await createClientDatabase();
+            const found = await database2.humans.findOne(firstDoc.primary).exec(true);
+            assert.strictEqual(found.passportId, firstDoc.passportId);
+            await database2.humans.insert(schemaObjects.humanData());
+
+            await database2.close();
+            await server.serverState.close();
+        });
+    });
+    if (config.storage.name !== 'remote') {
         return;
     }
     const memoryStorageWithValidation = wrappedValidateAjvStorage({ storage: getRxStorageMemory() });

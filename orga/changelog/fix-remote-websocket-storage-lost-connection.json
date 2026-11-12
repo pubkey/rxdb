@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX the remote websocket storage client let requests hang forever when the connection to the server was lost and rejected all calls with `First call must be a create call` after the automatic reconnect. Pending and later requests now reject with the error `RM3` and `close()` still resolves",
+    "links": [],
+    "priority": 5
+}
