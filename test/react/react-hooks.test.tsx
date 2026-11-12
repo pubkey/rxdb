@@ -59,8 +59,8 @@ describe('react-hooks.test.tsx', () => {
     /**
      * Query objects must be defined outside the renderHook callback
      * so they maintain the same reference across re-renders.
-     * Otherwise, the useCallback dependency array in useRxQueryBase
-     * sees a new query object each render and triggers an infinite loop.
+     * Otherwise, useRxQueryBase has to resolve the query object
+     * to its RxQuery again on each render.
      */
     const allDocsQuery = { selector: {} };
 
@@ -227,6 +227,95 @@ describe('react-hooks.test.tsx', () => {
 
                     unmount();
                 }
+            }
+
+            await db.close();
+        });
+
+        it('should not return the results of the previous database with loading false', async () => {
+            const db = await createDatabase();
+            const db2 = await createDatabase();
+            await db.collections.humans.insert({ passportId: 'first', age: '20' });
+            await db2.collections.humans.insert({ passportId: 'second', age: '20' });
+
+            for (const hook of [useRxQuery, useLiveRxQuery]) {
+                let providedDatabase = db;
+                let expected = 'first';
+                /**
+                 * Contains each render that returned loading=false
+                 * together with other documents than the ones of the provided database.
+                 */
+                const wrongRenders: string[] = [];
+                const { result, rerender, unmount } = renderHook(
+                    () => {
+                        const res = hook<SimpleHumanDocumentType>({
+                            collection: 'humans',
+                            query: allDocsQuery
+                        });
+                        const ids = res.results.map(doc => doc.passportId).join(',');
+                        if (!res.loading && ids !== expected) {
+                            wrongRenders.push(expected + ' got ' + ids);
+                        }
+                        return res;
+                    },
+                    {
+                        wrapper: ({ children }: { children: React.ReactNode; }) => (
+                            <RxDatabaseProvider database={providedDatabase}>{children}</RxDatabaseProvider>
+                        )
+                    }
+                );
+                await waitFor(() => {
+                    assert.strictEqual(result.current.loading, false);
+                });
+
+                providedDatabase = db2;
+                expected = 'second';
+                rerender();
+                assert.deepStrictEqual(wrongRenders, []);
+                await waitFor(() => {
+                    assert.strictEqual(result.current.loading, false);
+                });
+                assert.deepStrictEqual(result.current.results.map(doc => doc.passportId), ['second']);
+                assert.deepStrictEqual(wrongRenders, []);
+
+                unmount();
+            }
+
+            await db.close();
+            await db2.close();
+        });
+
+        it('should not run the query again on each render when an equal query object is created inline', async () => {
+            const db = await createDatabase();
+            const collection: RxCollection<SimpleHumanDocumentType> = db.collections.humans;
+            await collection.insert({ passportId: 'first', age: '20' });
+
+            for (const hook of [useRxQuery, useLiveRxQuery]) {
+                let renders = 0;
+                let loadingRenders = 0;
+                const { result, unmount } = renderHook(() => {
+                    const res = hook<SimpleHumanDocumentType>({
+                        collection,
+                        query: { selector: {} }
+                    });
+                    renders = renders + 1;
+                    if (res.loading) {
+                        loadingRenders = loadingRenders + 1;
+                    }
+                    return res;
+                });
+                await waitFor(() => {
+                    assert.strictEqual(result.current.loading, false);
+                });
+                await act(async () => {
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                });
+                assert.strictEqual(result.current.loading, false);
+                assert.deepStrictEqual(result.current.results.map(doc => doc.passportId), ['first']);
+                assert.ok(renders < 10, 'renders: ' + renders);
+                assert.strictEqual(loadingRenders, 1);
+
+                unmount();
             }
 
             await db.close();

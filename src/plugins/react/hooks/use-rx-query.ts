@@ -1,12 +1,14 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import type {
     MangoQuery,
     RxCollection,
     RxDocument,
+    RxQuery,
 } from '../../../types/index.d.ts';
 import { isRxCollection } from '../../../rx-collection.ts';
 import { useRxCollection } from './use-rx-collection.ts';
+import { useRxDatabase } from './use-rx-database.ts';
 import { newRxError } from '../../../rx-error.ts';
 
 export type UseRxQueryOptions<
@@ -65,20 +67,15 @@ export function useRxQueryBase<
      * The state remembers for which collection and query it was loaded,
      * so that the results of one collection or query are never returned
      * as the loaded results of another one.
+     * The query is remembered as the RxQuery instance of the query cache
+     * of the collection, which is the same instance for all query objects
+     * that RxDB treats as the same query.
      */
     const [state, setState] = useState<{
-        collection: RxCollection<
-            RxDocumentType,
-            OrmMethods,
-            StaticMethods,
-            InstanceCreationOptions,
-            Reactivity
-        >;
-        queryKey: string;
+        rxQuery: RxQuery<RxDocumentType, any, OrmMethods, Reactivity>;
         results: RxDocument<RxDocumentType, OrmMethods>[];
         error: string | null;
     } | null>(null);
-    const queryKey = JSON.stringify(query);
 
     let dbCollection: RxCollection<
         RxDocumentType,
@@ -96,10 +93,15 @@ export function useRxQueryBase<
             Reactivity
         >(collection);
         /**
-         * In the first render after the name has changed,
-         * useRxCollection() still returns the collection of the previous name.
+         * In the first render after the name or the provided database has changed,
+         * useRxCollection() still returns the collection of the previous name or database.
          */
-        dbCollection = collectionByName && collectionByName.name === collection ? collectionByName : null;
+        const database = useRxDatabase();
+        dbCollection = collectionByName &&
+            collectionByName.name === collection &&
+            collectionByName.database === database
+            ? collectionByName
+            : null;
     } else {
         if (!isRxCollection(collection)) {
             throw newRxError('R3', {
@@ -109,11 +111,15 @@ export function useRxQueryBase<
         dbCollection = collection;
     }
 
-    const runQuery = useCallback(() => {
-        if (dbCollection == null) {
+    const rxQuery = useMemo(
+        () => dbCollection ? dbCollection.find(query) : null,
+        [dbCollection, query]
+    );
+
+    useEffect(() => {
+        if (rxQuery == null) {
             return;
         }
-        const queryCollection = dbCollection;
 
         /**
          * A query that has been replaced must not overwrite
@@ -123,8 +129,7 @@ export function useRxQueryBase<
         const emitResults = (res: RxDocument<RxDocumentType, OrmMethods>[]) => {
             if (active) {
                 setState({
-                    collection: queryCollection,
-                    queryKey,
+                    rxQuery,
                     results: res,
                     error: null
                 });
@@ -133,15 +138,13 @@ export function useRxQueryBase<
         const emitError = (e: Error) => {
             if (active) {
                 setState(previous => ({
-                    collection: queryCollection,
-                    queryKey,
-                    results: previous && previous.collection === queryCollection ? previous.results : [],
+                    rxQuery,
+                    results: previous && previous.rxQuery.collection === rxQuery.collection ? previous.results : [],
                     error: e.message
                 }));
             }
         };
 
-        const rxQuery = dbCollection.find(query);
         if (live) {
             const subscription = rxQuery.$.subscribe({
                 next: (res: RxDocument<RxDocumentType, OrmMethods>[]) => emitResults(res),
@@ -161,23 +164,11 @@ export function useRxQueryBase<
                 active = false;
             };
         }
-    }, [dbCollection, query]);
-
-    useEffect(() => {
-        if (collection == null) {
-            return;
-        }
-
-        const cleanup = runQuery();
-        if (typeof cleanup === 'function') {
-            return cleanup;
-        }
-    }, [runQuery]);
+    }, [rxQuery, live]);
 
     if (
         state &&
-        state.collection === dbCollection &&
-        state.queryKey === queryKey
+        state.rxQuery === rxQuery
     ) {
         return {
             results: state.results,
@@ -191,7 +182,7 @@ export function useRxQueryBase<
      * of the same collection are returned.
      */
     return {
-        results: state && state.collection === dbCollection ? state.results : [],
+        results: state && state.rxQuery.collection === dbCollection ? state.results : [],
         loading: true,
         error: null
     };
