@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX a throwing `onClose` handler of an `RxCollection` skipped the other handlers and left the collection open, and handler errors caused an unhandled promise rejection when another instance removed the collection. Also fixed the docs which showed `onClose` and `onRemove` as functions instead of arrays",
+    "links": [],
+    "priority": 4
+}

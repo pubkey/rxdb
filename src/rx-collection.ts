@@ -334,9 +334,16 @@ export class RxCollectionBase<
                 });
                 return !!found;
             })
-        ).subscribe(async () => {
-            await this.close();
-            await Promise.all(this.onRemove.map(fn => fn()));
+        ).subscribe(() => {
+            /**
+             * There is no caller that could handle a rejection here,
+             * so errors of the onClose and onRemove handlers are caught
+             * and all onRemove handlers run even when one handler fails.
+             */
+            this.close()
+                .catch(() => { })
+                .then(() => Promise.all(this.onRemove.map(fn => PROMISE_RESOLVE_VOID.then(() => fn()))))
+                .catch(() => { });
         });
         this._subs.push(listenToRemoveSub);
 
@@ -1099,7 +1106,19 @@ export class RxCollectionBase<
         OPEN_COLLECTIONS.delete(this);
 
 
-        await Promise.all(this.onClose.map(fn => fn()));
+        /**
+         * A failing onClose handler must not stop the other handlers
+         * or the closing of the collection. The first error is thrown
+         * after the collection has been closed.
+         */
+        const handlerErrors: unknown[] = [];
+        await Promise.all(this.onClose.map(async (fn) => {
+            try {
+                await fn();
+            } catch (err) {
+                handlerErrors.push(err);
+            }
+        }));
 
         /**
          * Settings closed = true
@@ -1138,7 +1157,12 @@ export class RxCollectionBase<
                     collection: this.asRxCollection,
                     type: 'CLOSED'
                 });
-                return runAsyncPluginHooks('postCloseRxCollection', this).then(() => true);
+                return runAsyncPluginHooks('postCloseRxCollection', this).then(() => {
+                    if (handlerErrors.length > 0) {
+                        throw handlerErrors[0];
+                    }
+                    return true;
+                });
             });
     }
 
