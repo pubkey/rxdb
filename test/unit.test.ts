@@ -60,6 +60,7 @@ import './unit/replication-protocol.test.ts';
 import './unit/replication.test.ts';
 import './unit/replication-multiinstance.test.ts';
 import './unit/replication-graphql.test.ts';
+import './unit/replication-couchdb.test.ts';
 import './unit/replication-websocket.test.ts';
 import './unit/replication-webrtc.test.ts';
 import './unit/encryption.test.ts';
