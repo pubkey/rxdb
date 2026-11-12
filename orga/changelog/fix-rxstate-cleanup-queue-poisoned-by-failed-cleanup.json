@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX a failed automatic cleanup of one `RxState` rejected the cleanup queue that is shared between all databases, so the cleanup of every other `RxState` never ran again and an unhandled promise rejection was emitted",
+    "links": [],
+    "priority": 4
+}

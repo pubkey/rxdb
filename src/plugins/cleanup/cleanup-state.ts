@@ -66,7 +66,14 @@ export async function cleanupRxState(
                 }
                 await rxDatabase.requestIdlePromise();
                 return state._cleanup();
-            });
+            })
+            /**
+             * The queue is shared between the RxState instances
+             * of all databases. A failed cleanup must only end its own run
+             * and must not reject the queue for the other states.
+             * The cleanup runs again after the next write to the state.
+             */
+            .catch(() => true);
         isDone = await RXSTATE_CLEANUP_QUEUE;
     }
 }
