@@ -1279,6 +1279,12 @@ export const ERROR_MESSAGES = {
         fix: 'Ensure both sides use the same RxDB version.',
         docs: 'https://rxdb.info/rx-storage-remote.html?console=errors&code=RM1'
     },
+    RM2: {
+        message: 'The request cannot be answered because the RxDatabase or RxCollection that is exposed by the remote was closed',
+        cause: 'The exposed RxDatabase or RxCollection was closed on the remote side while a client was still connected.',
+        fix: 'Close the clients before you close the exposed RxDatabase, or create a new connection after the remote exposed a new RxDatabase.',
+        docs: 'https://rxdb.info/rx-storage-remote.html?console=errors&code=RM2'
+    },
 
     // plugins/replication-mongodb
     MG1: {
