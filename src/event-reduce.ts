@@ -23,6 +23,7 @@ import type {
 } from './types/index.d.ts';
 import { rxChangeEventToEventReduceChangeEvent } from './rx-change-event.ts';
 import {
+    areRxDocumentArraysEqual,
     ensureNotFalsy,
     getFromMapOrCreate
 } from './plugins/utils/index.ts';
@@ -144,7 +145,8 @@ export function calculateNewResults<RxDocumentType>(
         };
     }
     const queryParams = getQueryParams(rxQuery);
-    const previousResults: RxDocumentType[] = ensureNotFalsy(rxQuery._result).docsData.slice(0);
+    const docsDataBefore: RxDocumentData<RxDocumentType>[] = ensureNotFalsy(rxQuery._result).docsData;
+    const previousResults: RxDocumentType[] = docsDataBefore.slice(0);
     /**
      * Copy the map to avoid mutating the cached docsDataMap on the result object.
      * runAction() modifies the map in-place (adds/removes entries),
@@ -155,7 +157,7 @@ export function calculateNewResults<RxDocumentType>(
      * to decide whether to skip insertion.
      */
     const previousResultsMap: Map<string, RxDocumentType> = new Map(ensureNotFalsy(rxQuery._result).docsDataMap);
-    let changed: boolean = false;
+    let changeCount = 0;
 
 
     const eventReduceEvents: ChangeEvent<RxDocumentType>[] = [];
@@ -176,7 +178,7 @@ export function calculateNewResults<RxDocumentType>(
         if (actionName === 'runFullQueryAgain') {
             return true;
         } else if (actionName !== 'doNothing') {
-            changed = true;
+            changeCount++;
             runAction(
                 actionName,
                 queryParams,
@@ -194,7 +196,20 @@ export function calculateNewResults<RxDocumentType>(
     } else {
         return {
             runFullQueryAgain: false,
-            changed,
+            /**
+             * Multiple events can cancel each other out, like the insert and the
+             * delete of the same document, which leads to the same results as before.
+             * A single event that runs an action always changes the results,
+             * so the comparison is only done when more than one action has run.
+             */
+            changed: changeCount === 1 || (
+                changeCount > 1 &&
+                !areRxDocumentArraysEqual(
+                    rxQuery.collection.schema.primaryPath,
+                    previousResults as any,
+                    docsDataBefore
+                )
+            ),
             newResults: previousResults
         };
     }
