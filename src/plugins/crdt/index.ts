@@ -437,6 +437,19 @@ export const RxDBcrdtPlugin: RxPlugin = {
                 if (!data.schema.crdt) {
                     return;
                 }
+                /**
+                 * The operations of a document set its top-level fields,
+                 * so the CRDT field must be a top-level field itself.
+                 * A nested path would put the operations into a field
+                 * that is overwritten by the operations.
+                 */
+                if (data.schema.crdt.field.includes('.')) {
+                    throw newRxError('CRDT6', {
+                        collection: data.name,
+                        field: data.schema.crdt.field,
+                        schema: data.schema
+                    });
+                }
                 if (data.conflictHandler) {
                     throw newRxError('CRDT3', {
                         collection: data.name,

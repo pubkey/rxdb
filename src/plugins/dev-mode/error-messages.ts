@@ -1259,6 +1259,12 @@ export const ERROR_MESSAGES = {
         fix: 'Use updateCRDT() instead of modify().',
         docs: 'https://rxdb.info/crdt.html?console=errors&code=CRDT4'
     },
+    CRDT6: {
+        message: 'The crdt.field of the schema must be a top-level field, not a nested path.',
+        cause: 'The CRDT operations set the top-level fields of the document, so a CRDT field inside of another field would be overwritten by its own operations.',
+        fix: 'Store the CRDT operations in a top-level field of the schema.',
+        docs: 'https://rxdb.info/crdt.html?console=errors&code=CRDT6'
+    },
 
     // plugins/storage-dexie/
     DXE1: {
