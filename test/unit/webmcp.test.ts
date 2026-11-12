@@ -318,6 +318,81 @@ describe('webmcp.test.ts', () => {
         await db2.close();
     });
 
+    it('should free the tool names and unregister its tools when the registration fails', async () => {
+        const toolNames: string[] = [];
+        let failAt: string | undefined;
+        let failAsync = false;
+        const modelContext = {
+            registerTool(tool: any, registerOptions?: any) {
+                if (failAt && tool.name.startsWith(failAt)) {
+                    const registryError = new RangeError('registry rejects ' + tool.name);
+                    if (failAsync) {
+                        return Promise.reject(registryError);
+                    }
+                    throw registryError;
+                }
+                toolNames.push(tool.name);
+                if (registerOptions && registerOptions.signal) {
+                    registerOptions.signal.addEventListener('abort', () => {
+                        toolNames.splice(toolNames.indexOf(tool.name), 1);
+                    });
+                }
+            }
+        };
+        const database = await createRxDatabase({
+            name: randomToken(10),
+            storage: config.storage.getStorage()
+        });
+        await database.addCollections({
+            aaa: { schema: schemas.human },
+            bbb: { schema: schemas.human }
+        });
+        const registerAndGetError = (instance: any) => {
+            try {
+                instance.registerWebMCP({ modelContext });
+            } catch (err: any) {
+                return err;
+            }
+        };
+
+        // the registry throws at the third tool of the collection
+        failAt = 'rxdb_changes_';
+        let error = registerAndGetError(database.aaa);
+        assert.strictEqual(error.name, 'RangeError');
+        failAt = undefined;
+        assert.strictEqual(registerAndGetError(database.aaa), undefined);
+        assert.strictEqual(toolNames.length, 7);
+        assert.strictEqual(new Set(toolNames).size, 7);
+        await database.aaa.close();
+        assert.deepStrictEqual(toolNames, []);
+        await database.addCollections({ aaa: { schema: schemas.human } });
+
+        // the registry throws at a tool of the second collection of the database
+        failAt = 'rxdb_changes_' + database.name + '_bbb';
+        error = registerAndGetError(database);
+        assert.strictEqual(error.name, 'RangeError');
+        assert.deepStrictEqual(toolNames, []);
+
+        // the registry rejects the tool asynchronously
+        failAt = 'rxdb_changes_';
+        failAsync = true;
+        const { error$ } = database.aaa.registerWebMCP({ modelContext });
+        const emitted: any[] = [];
+        const sub = error$.subscribe((err: any) => emitted.push(err));
+        await waitUntil(() => emitted.length === 1, 1000);
+        sub.unsubscribe();
+        assert.strictEqual(emitted[0].name, 'RangeError');
+        assert.deepStrictEqual(toolNames, []);
+
+        failAt = undefined;
+        assert.strictEqual(registerAndGetError(database), undefined);
+        assert.strictEqual(toolNames.length, 14);
+        assert.strictEqual(new Set(toolNames).size, 14);
+
+        await database.close();
+        assert.deepStrictEqual(toolNames, []);
+    });
+
     itWithDom('should emit log$ and error$ events for executed tools', async () => {
         const { log$, error$ } = db.registerWebMCP();
         const logs: any[] = [];

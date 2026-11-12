@@ -329,26 +329,11 @@ export function registerWebMCPTarget(
      * Registries that do not support signals are served by unregisterTool().
      */
     const controller = typeof AbortController !== 'undefined' ? new AbortController() : undefined;
-    tools.forEach(tool => {
-        const registration = modelContext.registerTool(
-            tool,
-            controller ? { signal: controller.signal } : undefined
-        );
-        /**
-         * Spec-conformant registries return a promise that rejects
-         * with the abort reason when the tool is unregistered
-         * before the registration has finished.
-         */
-        if (registration && typeof registration.then === 'function') {
-            registration.then(undefined, (err: any) => {
-                if (controller && controller.signal.aborted && err === controller.signal.reason) {
-                    return;
-                }
-                error$.next(err);
-            });
-        }
-    });
-
+    /**
+     * Only the tools that the registry accepted are unregistered,
+     * a rejected name can belong to a tool of someone else.
+     */
+    const registeredTools: WebMCPTool[] = [];
     const unregister = () => {
         if (registeredTargets.get(toolNameSuffix) === target) {
             registeredTargets.delete(toolNameSuffix);
@@ -357,7 +342,7 @@ export function registerWebMCPTarget(
             controller.abort();
             return;
         }
-        tools.forEach(tool => {
+        registeredTools.forEach(tool => {
             try {
                 if (modelContext.unregisterTool) {
                     modelContext.unregisterTool(tool.name);
@@ -365,6 +350,41 @@ export function registerWebMCPTarget(
             } catch (err) { }
         });
     };
+
+    /**
+     * A registration that fails must not leave a part of its tools
+     * or its tool names behind, so that it can be run again.
+     */
+    try {
+        tools.forEach(tool => {
+            const registration = modelContext.registerTool(
+                tool,
+                controller ? { signal: controller.signal } : undefined
+            );
+            registeredTools.push(tool);
+            /**
+             * Spec-conformant registries return a promise that rejects
+             * with the abort reason when the tool is unregistered
+             * before the registration has finished.
+             */
+            if (registration && typeof registration.then === 'function') {
+                registration.then(undefined, (err: any) => {
+                    if (controller && controller.signal.aborted && err === controller.signal.reason) {
+                        return;
+                    }
+                    const index = registeredTools.indexOf(tool);
+                    if (index >= 0) {
+                        registeredTools.splice(index, 1);
+                    }
+                    unregister();
+                    error$.next(err);
+                });
+            }
+        });
+    } catch (err) {
+        unregister();
+        throw err;
+    }
     target.onClose(unregister);
 
     return { error$, log$, unregister };

@@ -21,8 +21,10 @@ export function registerWebMCPDatabase(this: RxDatabase, options?: WebMCPOptions
     const error$ = new Subject<Error>();
     const log$ = new Subject<WebMCPLogEvent>();
 
+    const unregisterFunctions: (() => void)[] = [];
     const registerCollection = (collection: RxCollection<any>) => {
-        const res = collection.registerWebMCP(options);
+        const res = registerWebMCPTarget(getWebMCPTargetFromCollection(collection), options);
+        unregisterFunctions.push(res.unregister);
         res.error$.subscribe(error$);
         res.log$.subscribe(log$);
     };
@@ -36,8 +38,17 @@ export function registerWebMCPDatabase(this: RxDatabase, options?: WebMCPOptions
     });
 
     // Register existing collections
-    for (const [name, collection] of Object.entries(collections)) {
-        registerCollection(collection as RxCollection<any>);
+    try {
+        for (const [name, collection] of Object.entries(collections)) {
+            registerCollection(collection as RxCollection<any>);
+        }
+    } catch (err) {
+        /**
+         * When one collection cannot be registered, the collections
+         * that were registered before it are unregistered again.
+         */
+        unregisterFunctions.forEach(unregister => unregister());
+        throw err;
     }
 
     // Store options and subjects on the database instance so the hook can pick them up dynamically
