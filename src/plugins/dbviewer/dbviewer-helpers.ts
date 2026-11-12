@@ -132,26 +132,22 @@ export function relaxViewerSelectorInput(input: string): string {
             i = i + 1;
             /**
              * The content is written as a JSON string literal.
-             * A backslash starts an escape when a JSON escape or a
-             * single quote follows, so these give the same value as
-             * in a double quoted string. Any other backslash is a
-             * literal backslash, so a regex like '\d+' works as typed.
+             * A backslash is an escape only in front of a backslash,
+             * a single quote or a double quote, and gives that character.
+             * Any other backslash is a literal backslash, so a regex
+             * like '\bfoo\d+' works as typed and \b is not read
+             * as the backspace of a JSON string.
              */
+            const toJsonChar = (c: string) => c === '"' || c === '\\' || c < ' ' ? JSON.stringify(c).slice(1, -1) : c;
             let value = '';
             while (i < input.length && input[i] !== '\'') {
                 const c = input[i];
                 const next = input[i + 1];
-                if (c === '\\' && next === '\'') {
-                    value = value + next;
-                    i = i + 2;
-                } else if (
-                    c === '\\' && next !== undefined &&
-                    ('"\\/bfnrt'.includes(next) || /^u[0-9a-fA-F]{4}$/.test(input.slice(i + 1, i + 6)))
-                ) {
-                    value = value + c + next;
+                if (c === '\\' && (next === '\\' || next === '\'' || next === '"')) {
+                    value = value + toJsonChar(next);
                     i = i + 2;
                 } else {
-                    value = value + (c === '"' || c === '\\' || c < ' ' ? JSON.stringify(c).slice(1, -1) : c);
+                    value = value + toJsonChar(c);
                     i = i + 1;
                 }
             }
