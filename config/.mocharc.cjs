@@ -1,8 +1,13 @@
+const path = require('node:path');
+
 const mochaSettings = {
     bail: true,
     timeout: 10000,
     exit: true,
-    reporter: 'spec'
+    reporter: 'spec',
+    require: [
+        path.join(__dirname, 'mocha-source-maps.cjs')
+    ]
 };
 
 if (process.env.NODE_PROF) {

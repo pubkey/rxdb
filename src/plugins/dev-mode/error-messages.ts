@@ -188,6 +188,12 @@ export const ERROR_MESSAGES = {
         fix: 'Write array indexes with the dot notation, for example { \'foo.bar.3\': \'asc\' }.',
         docs: 'https://rxdb.info/rx-query-examples.html?console=errors&code=QU20#sorting'
     },
+    QU22: {
+        message: 'The query contains a value that cannot be represented in JSON. RxDB queries are JSON, so NaN, Infinity, -Infinity, bigint, functions, symbols, Date, Map, Set and class instances are not allowed.',
+        cause: 'The value at the given path of the query is dropped or changed by JSON.stringify(). Such a query would behave differently depending on the RxStorage and could share a cached RxQuery with a different query.',
+        fix: 'Use only values that are valid JSON: strings, finite numbers, booleans, null, arrays and plain objects. Leave out the limit to get all documents and store dates as strings or numbers.',
+        docs: 'https://rxdb.info/rx-query-examples.html?console=errors&code=QU22#query-rules'
+    },
 
     // mquery.js
     MQ1: {

@@ -2,6 +2,19 @@
 
 
 
+const path = require('node:path');
+const os = require('node:os');
+
+/**
+ * Karma-webpack writes the bundle into this folder and splits it
+ * into multiple chunks. The folder is set here so that the sourcemap
+ * preprocessor can be applied to all of these chunks.
+ */
+const webpackOutputPath = path.join(
+    os.tmpdir(),
+    '_karma_webpack_rxdb_' + process.pid
+);
+
 module.exports = async function (config) {
 
 
@@ -19,11 +32,41 @@ module.exports = async function (config) {
             'webpack',
             'detectBrowsers'
         ],
-        webpack: webpackConfig.default,
+        webpack: Object.assign({}, webpackConfig.default, {
+            /**
+             * Inline source maps are read by the sourcemap preprocessor,
+             * so that stack traces of failing tests point to the original
+             * typescript files instead of the webpack bundle.
+             */
+            devtool: 'inline-source-map',
+            output: {
+                path: webpackOutputPath,
+                devtoolModuleFilenameTemplate: '[absolute-resource-path]'
+            },
+            module: {
+                rules: [
+                    /**
+                     * The tests and the RxDB source are transpiled with babel
+                     * before webpack runs. Loading the source maps of these files
+                     * makes the bundle map back to the files in test/ and src/.
+                     */
+                    {
+                        test: /\.js$/,
+                        include: [
+                            path.join(__dirname, '../test_tmp'),
+                            path.join(__dirname, '../dist')
+                        ],
+                        enforce: 'pre',
+                        use: ['source-map-loader']
+                    }
+                ]
+            }
+        }),
         // Source files that you wanna generate coverage for.
         // Do not include tests or libraries (these files will be instrumented by Istanbul)
         preprocessors: {
-            '../test_tmp/unit.test.js': ['webpack', 'sourcemap']
+            '../test_tmp/unit.test.js': ['webpack', 'sourcemap'],
+            [path.join(webpackOutputPath, '**/*.js')]: ['sourcemap']
         },
         files: [
             '../test_tmp/unit.test.js'
