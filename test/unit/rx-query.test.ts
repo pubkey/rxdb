@@ -15,6 +15,9 @@ import {
     isRxQuery,
     createRxDatabase,
     RxJsonSchema,
+    RxCollection,
+    MangoQuery,
+    MangoQueryNoLimit,
     promiseWait,
     randomToken,
     ensureNotFalsy,
@@ -285,6 +288,79 @@ describe('rx-query.test.ts', () => {
 
             assert.notStrictEqual(q, q2);
             assert.notStrictEqual(q.id, q2.id);
+            col.database.close();
+        });
+        it('should not change the results of a query when the given query object is mutated afterwards', async () => {
+            const col = await humansCollection.createPrimary(0);
+            type DocType = typeof col extends RxCollection<infer T> ? T : never;
+            await col.bulkInsert(['doc-a', 'doc-b', 'doc-c', 'doc-d'].map((passportId, idx) => ({
+                passportId,
+                firstName: idx % 2 === 0 ? 'even' : 'odd',
+                lastName: 'foobar',
+                age: 20 + idx
+            })));
+            const ids = (docs: { passportId: string; }[]) => docs.map(d => d.passportId);
+
+            // paging loop that reuses one query object
+            const pagingQuery: MangoQuery<DocType> = {
+                selector: {},
+                sort: [{ passportId: 'asc' }],
+                skip: 0,
+                limit: 2
+            };
+            const pages = [0, 1].map(page => {
+                pagingQuery.skip = page * 2;
+                return col.find(pagingQuery);
+            });
+            assert.deepStrictEqual(ids(await pages[0].exec()), ['doc-a', 'doc-b']);
+            assert.deepStrictEqual(ids(await pages[1].exec()), ['doc-c', 'doc-d']);
+            assert.deepStrictEqual(
+                ids(await col.find({ selector: {}, sort: [{ passportId: 'asc' }], skip: 0, limit: 2 }).exec()),
+                ['doc-a', 'doc-b']
+            );
+
+            // live query where the object gets another selector
+            const liveQuery: MangoQuery<DocType> = {
+                selector: { firstName: 'even' },
+                sort: [{ passportId: 'asc' }]
+            };
+            const emitted: string[][] = [];
+            const sub = col.find(liveQuery).$.subscribe(docs => emitted.push(ids(docs)));
+            liveQuery.selector = { firstName: 'odd' };
+            await waitUntil(() => emitted.length === 1);
+            await col.insert({ passportId: 'doc-e', firstName: 'odd', lastName: 'foobar', age: 30 });
+            await col.insert({ passportId: 'doc-f', firstName: 'even', lastName: 'foobar', age: 31 });
+            await waitUntil(() => emitted.length === 2);
+            sub.unsubscribe();
+            assert.deepStrictEqual(emitted, [['doc-a', 'doc-c'], ['doc-a', 'doc-c', 'doc-f']]);
+
+            // query by primary key, object changed after the first exec()
+            const byIdQuery: MangoQuery<DocType> = { selector: { passportId: { $in: ['doc-a'] } } };
+            assert.deepStrictEqual(ids(await col.find(byIdQuery).exec()), ['doc-a']);
+            byIdQuery.selector = { passportId: { $in: ['doc-b', 'doc-c'] } };
+            assert.deepStrictEqual(ids(await col.find(byIdQuery).exec()), ['doc-b', 'doc-c']);
+            await col.findOne('doc-a').patch({ age: 50 });
+            assert.deepStrictEqual(
+                ids(await col.find({ selector: { passportId: { $in: ['doc-a'] } } }).exec()),
+                ['doc-a']
+            );
+
+            // array inside of the selector changed before the first exec()
+            const idList = ['doc-d'];
+            const idListQuery = col.find({ selector: { passportId: { $in: idList } } });
+            idList.push('doc-b');
+            assert.deepStrictEqual(ids(await idListQuery.exec()), ['doc-d']);
+            assert.deepStrictEqual(
+                ids(await col.find({ selector: { passportId: { $in: ['doc-d'] } } }).exec()),
+                ['doc-d']
+            );
+
+            // findOne() with a reused object
+            const findOneQuery: MangoQueryNoLimit<DocType> = { selector: { passportId: 'doc-a' } };
+            const findOne = col.findOne(findOneQuery);
+            ensureNotFalsy(findOneQuery.selector).passportId = 'doc-b';
+            assert.strictEqual(ensureNotFalsy(await findOne.exec()).passportId, 'doc-a');
+
             col.database.close();
         });
     });

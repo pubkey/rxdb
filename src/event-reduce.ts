@@ -23,11 +23,10 @@ import type {
 } from './types/index.d.ts';
 import { rxChangeEventToEventReduceChangeEvent } from './rx-change-event.ts';
 import {
-    clone,
     ensureNotFalsy,
     getFromMapOrCreate
 } from './plugins/utils/index.ts';
-import { getQueryMatcher, getSortComparator, normalizeMangoQuery } from './rx-query-helper.ts';
+import { getQueryMatcher, getSortComparator } from './rx-query-helper.ts';
 
 export type EventReduceResultNeg = {
     runFullQueryAgain: true;
@@ -94,10 +93,7 @@ export function getQueryParams<RxDocType>(
         rxQuery,
         () => {
             const collection = rxQuery.collection;
-            const normalizedMangoQuery = normalizeMangoQuery(
-                collection.storageInstance.schema,
-                clone(rxQuery.mangoQuery)
-            );
+            const normalizedMangoQuery = rxQuery.normalizedQuery;
             const primaryKey = collection.schema.primaryPath;
 
             /**

@@ -149,7 +149,7 @@ export class RxQueryBase<
         } else {
             this.isFindOneByIdQuery = isFindOneByIdQuery(
                 this.collection.schema.primaryPath as string,
-                mangoQuery
+                getDetachedQuery(this)
             );
         }
     }
@@ -885,7 +885,8 @@ export async function queryCollection<RxDocType>(
      * but instead can use findDocumentsById()
      */
     if (rxQuery.isFindOneByIdQuery) {
-        const selector = rxQuery.mangoQuery.selector;
+        const mangoQuery = getDetachedQuery(rxQuery);
+        const selector = mangoQuery.selector;
         const primaryPath = collection.schema.primaryPath as string;
         // isFindOneByIdQuery guarantees the primary key is in the selector
         const primarySelectorValue = selector ? (selector as any)[primaryPath] : undefined;
@@ -941,17 +942,17 @@ export async function queryCollection<RxDocType>(
         }
 
         // Apply skip for both find and findOne
-        const skip = typeof rxQuery.mangoQuery.skip === 'number' && rxQuery.mangoQuery.skip > 0
-            ? rxQuery.mangoQuery.skip
+        const skip = typeof mangoQuery.skip === 'number' && mangoQuery.skip > 0
+            ? mangoQuery.skip
             : 0;
         if (skip > 0) {
             docs = docs.slice(skip);
         }
 
         // Apply limit for both find and findOne
-        const limitIsNumber = typeof rxQuery.mangoQuery.limit === 'number' && rxQuery.mangoQuery.limit > 0;
+        const limitIsNumber = typeof mangoQuery.limit === 'number' && mangoQuery.limit > 0;
         if (limitIsNumber) {
-            const limit = rxQuery.mangoQuery.limit as number;
+            const limit = mangoQuery.limit as number;
             docs = docs.slice(0, limit);
         }
 
@@ -967,6 +968,19 @@ export async function queryCollection<RxDocType>(
         counter: collection._changeEventBuffer.getCounter()
     };
 
+}
+
+/**
+ * Returns a query object that is not shared with the caller of find().
+ * RxQuery.mangoQuery is the object that was passed in and can be
+ * mutated by the caller at any time, so the query must be read from
+ * the normalized clone, which also defines the key in the QueryCache.
+ * The query of findByIds() is created internally and never normalized.
+ */
+function getDetachedQuery(
+    rxQuery: RxQueryBase<any, any>
+): MangoQuery<any> {
+    return rxQuery.op === 'findByIds' ? rxQuery.mangoQuery : rxQuery.normalizedQuery;
 }
 
 /**
