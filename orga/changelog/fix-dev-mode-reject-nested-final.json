@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `final: true` on a nested schema field was silently ignored so the nested value could be changed. The dev-mode schema check now throws `SC45` for it. The docs and types no longer claim that final fields are automatically required",
+    "links": [],
+    "priority": 5
+}

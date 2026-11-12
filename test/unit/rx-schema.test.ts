@@ -571,6 +571,39 @@ describe('rx-schema.test.ts', () => {
                         }
                     }));
                 });
+                it('throw when final is set on a non-first-level field (SC45)', () => {
+                    const getSchema = (nestedFinal: boolean): RxJsonSchema<{ foobar: string; name: string; deeper: { name: string; }; }> => ({
+                        version: 0,
+                        primaryKey: 'foobar',
+                        type: 'object',
+                        properties: {
+                            foobar: {
+                                type: 'string',
+                                maxLength: 100
+                            },
+                            name: {
+                                type: 'string',
+                                final: true
+                            },
+                            deeper: {
+                                type: 'object',
+                                properties: {
+                                    name: nestedFinal ? {
+                                        type: 'string',
+                                        final: true
+                                    } : {
+                                        type: 'string'
+                                    }
+                                }
+                            }
+                        }
+                    });
+                    checkSchema(getSchema(false));
+                    assert.throws(
+                        () => checkSchema(getSchema(true)),
+                        (err: any) => err.code === 'SC45' && err.parameters.path === 'deeper.name'
+                    );
+                });
                 it('throw when _id is not primary', () => {
                     assert.throws(() => checkSchema({
                         title: 'schema',

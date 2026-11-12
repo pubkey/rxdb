@@ -146,7 +146,8 @@ export type JsonSchema<RxDocType = any> = {
     ref?: string;
     /**
      * Final fields can never be changed after the document was inserted.
-     * Final fields are automatically required.
+     * Final fields are not automatically required, add them to 'required' when each document must have them.
+     * Only allowed on top-level fields of the schema, not on nested fields.
      * The primary key is always final.
      * @link https://rxdb.info/rx-schema.html
      */

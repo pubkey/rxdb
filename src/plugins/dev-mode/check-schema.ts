@@ -146,6 +146,12 @@ export function validateFieldsDeep(rxJsonSchema: RxJsonSchema<any>): true {
                     path
                 });
             }
+            if (schemaObj.final) {
+                throw newRxError('SC45', {
+                    fieldName,
+                    path: trimDots(path + '.' + fieldName)
+                });
+            }
         }
 
         // first level

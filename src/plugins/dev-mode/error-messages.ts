@@ -1157,6 +1157,12 @@ export const ERROR_MESSAGES = {
         fix: 'Remove the child path from the encrypted array. Encrypting the parent path already encrypts all of its children.',
         docs: 'https://rxdb.info/encryption.html?console=errors&code=SC43'
     },
+    SC45: {
+        message: 'SchemaCheck: final can only be set on top-level fields',
+        cause: 'You set final: true on a nested field. RxDB only enforces final on top-level fields, so the nested value could still be changed.',
+        fix: 'Remove final from the nested field or set final on the top-level field that contains it.',
+        docs: 'https://rxdb.info/rx-schema.html?console=errors&code=SC45#final'
+    },
 
 
     // plugins/dev-mode
