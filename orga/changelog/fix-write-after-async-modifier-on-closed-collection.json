@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX a write that was waiting in an async `incrementalModify()` modifier while the collection or database got closed or removed was still sent to the storage afterwards. On the memory RxStorage the write resolved and was stored on the closed collection, on other storages it rejected with a raw storage error. The write and the incremental writes queued behind it now reject with `COL21` and nothing is written",
+    "links": [],
+    "priority": 5
+}

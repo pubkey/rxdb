@@ -40,7 +40,7 @@ import { overwritable } from './overwritable.ts';
 import { getSchemaByObjectPath } from './rx-schema-helper.ts';
 import { getWrittenDocumentsFromBulkWriteResponse, throwIfIsStorageWriteError } from './rx-storage-helper.ts';
 import { modifierFromPublicToInternal } from './incremental-write.ts';
-import { isWriteAllowed } from './rx-collection-helper.ts';
+import { ensureRxCollectionIsNotClosed, isWriteAllowed } from './rx-collection-helper.ts';
 
 export const basePrototype = {
     get primaryPath() {
@@ -491,6 +491,13 @@ export function beforeDocumentUpdateWrite<RxDocType>(
     newData: RxDocumentWriteData<RxDocType>,
     oldData: RxDocumentData<RxDocType>
 ): Promise<any> {
+    /**
+     * The collection can be closed while an async modifier is running.
+     * This function runs directly before a write to the storage,
+     * which must not happen on a closed collection.
+     */
+    ensureRxCollectionIsNotClosed(collection);
+
     /**
      * Meta values must always be merged
      * instead of overwritten.

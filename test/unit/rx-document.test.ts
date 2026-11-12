@@ -1042,6 +1042,64 @@ describe('rx-document.test.js', () => {
             sub.unsubscribe();
             db.close();
         });
+        it('a write that waits in an async modifier must not reach the storage after the collection was closed or removed', async () => {
+            const storage = config.storage.getStorage();
+            for (const operation of ['close', 'remove'] as const) {
+                const db = await createRxDatabase<{ humans: RxCollection<HumanDocumentType>; }>({
+                    name: randomToken(10),
+                    storage
+                });
+                await db.addCollections({
+                    humans: { schema: schemas.human }
+                });
+                const c = db.humans;
+                const doc = await c.insert(schemaObjects.humanData());
+
+                let modifierEntered: () => void = () => { };
+                const modifierEnteredPromise = new Promise<void>(res => modifierEntered = res);
+                let releaseModifier: () => void = () => { };
+                const releaseModifierPromise = new Promise<void>(res => releaseModifier = res);
+
+                const toError = (promise: Promise<any>) => promise.then(
+                    () => undefined,
+                    (error: any) => error
+                );
+                const writeResultPromise = toError(doc.incrementalModify(async (docData) => {
+                    modifierEntered();
+                    await releaseModifierPromise;
+                    docData.firstName = 'foobar';
+                    return docData;
+                }));
+                await modifierEnteredPromise;
+                const queuedWriteResultPromise = toError(doc.incrementalPatch({ lastName: 'foobar' }));
+
+                if (operation === 'close') {
+                    await c.close();
+                } else {
+                    await c.remove();
+                }
+                releaseModifier();
+
+                const err = await writeResultPromise;
+                assert.ok(err, operation + ': write must reject');
+                assert.strictEqual(err.code, 'COL21', operation);
+                const queuedErr = await queuedWriteResultPromise;
+                assert.ok(queuedErr, operation + ': queued write must reject');
+                assert.strictEqual(queuedErr.code, 'COL21', operation);
+
+                await db.addCollections({
+                    humans: { schema: schemas.human }
+                });
+                const docs = await db.humans.find().exec();
+                assert.deepStrictEqual(
+                    docs.map(d => [d.firstName, d.lastName]),
+                    operation === 'close' ? [[doc.firstName, doc.lastName]] : [],
+                    operation
+                );
+
+                await db.remove();
+            }
+        });
     });
     describe('Proxy', () => {
         describe('get', () => {
