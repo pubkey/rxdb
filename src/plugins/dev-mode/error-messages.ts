@@ -455,6 +455,12 @@ export const ERROR_MESSAGES = {
         fix: 'Ensure the agent queries for the document correctly before trying to delete it.',
         docs: ''
     },
+    WMCP2: {
+        message: 'registerWebMCP(): The WebMCP tools of another database or collection, or of an earlier registerWebMCP() call, are already registered with the same tool names',
+        cause: 'The tool names are built by joining the database name, the collection name and the schema version with underscores. Database "a_b" with collection "c" gets the same tool names as database "a" with collection "b_c". Calling registerWebMCP() twice for the same collection also produces the same tool names.',
+        fix: 'Rename the database or the collection so that the joined names differ, or register the tools at a different registry with the modelContext option. Call registerWebMCP() only once per collection.',
+        docs: 'https://rxdb.info/webmcp.html?console=errors&code=WMCP2'
+    },
     CONFLICT: {
         message: 'Document update conflict. When changing a document you must work on the previous revision',
         cause: 'You tried to update a document but the revision you provided is not the latest one.',

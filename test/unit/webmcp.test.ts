@@ -13,7 +13,7 @@ import {
 import config from './config.ts';
 import { schemaObjects, schemas, isDeno } from '../../plugins/test-utils/index.mjs';
 import { cleanupWebMCPPolyfill, initializeWebMCPPolyfill } from '@mcp-b/webmcp-polyfill';
-import { waitUntil } from 'async-test-util';
+import { assertThrows, waitUntil } from 'async-test-util';
 
 addRxPlugin(RxDBWebMCPPlugin);
 
@@ -259,6 +259,63 @@ describe('webmcp.test.ts', () => {
         assert.strictEqual(tools.length, 4); // Only query/count/changes/wait should be registered
         const insertTool = tools.find((t: any) => t.name.startsWith(`rxdb_insert_${db.name}_humans`));
         assert.ok(!insertTool);
+    });
+
+    it('should throw WMCP2 before registering anything when the tool names are already registered', async () => {
+        const toolNames: string[] = [];
+        const modelContext = {
+            registerTool(tool: any, registerOptions?: any) {
+                toolNames.push(tool.name);
+                if (registerOptions && registerOptions.signal) {
+                    registerOptions.signal.addEventListener('abort', () => {
+                        toolNames.splice(toolNames.indexOf(tool.name), 1);
+                    });
+                }
+            }
+        };
+        const token = randomToken(10);
+        const db1 = await createRxDatabase({
+            name: token + '_b',
+            storage: config.storage.getStorage()
+        });
+        const db2 = await createRxDatabase({
+            name: token,
+            storage: config.storage.getStorage()
+        });
+        await db1.addCollections({ c: { schema: schemas.human } });
+        await db2.addCollections({
+            aaa: { schema: schemas.human },
+            b_c: { schema: schemas.human }
+        });
+
+        db1.registerWebMCP({ modelContext });
+        assert.strictEqual(toolNames.length, 7);
+
+        // other database and collection that produce the same tool names
+        await assertThrows(
+            () => db2.registerWebMCP({ modelContext }),
+            'RxError',
+            'WMCP2'
+        );
+        assert.strictEqual(toolNames.length, 7);
+        assert.strictEqual(new Set(toolNames).size, 7);
+
+        // same collection registered twice
+        await assertThrows(
+            () => db1.c.registerWebMCP({ modelContext }),
+            'RxError',
+            'WMCP2'
+        );
+        assert.strictEqual(toolNames.length, 7);
+
+        // the names are free again after the first collection is closed
+        await db1.close();
+        assert.strictEqual(toolNames.length, 0);
+        db2.registerWebMCP({ modelContext });
+        assert.strictEqual(toolNames.length, 14);
+        assert.strictEqual(new Set(toolNames).size, 14);
+
+        await db2.close();
     });
 
     itWithDom('should emit log$ and error$ events for executed tools', async () => {

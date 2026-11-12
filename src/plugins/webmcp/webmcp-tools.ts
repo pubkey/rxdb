@@ -30,6 +30,50 @@ export function getModelContext(options?: WebMCPOptions): any {
     return undefined;
 }
 
+type WebMCPTargetIdentity = Pick<WebMCPTarget, 'databaseName' | 'collectionName' | 'schemaVersion'>;
+
+/**
+ * All tool names of a target end with this suffix.
+ */
+export function getWebMCPToolNameSuffix(target: WebMCPTargetIdentity): string {
+    return `${target.databaseName}_${target.collectionName}_${target.schemaVersion}`;
+}
+
+/**
+ * The targets that have their tools registered, by registry and tool name suffix.
+ * Database and collection names can contain underscores, so two different
+ * targets can end up with the same tool names. A registry cannot hold
+ * two tools with the same name.
+ */
+const REGISTERED_TARGETS = new WeakMap<object, Map<string, WebMCPTargetIdentity>>();
+
+/**
+ * Throws when the tool names of the target are already
+ * registered at the registry.
+ * Call this before the first tool is registered so that
+ * a failing registration does not leave a part of the tools behind.
+ */
+export function ensureWebMCPToolNamesNotRegistered(
+    target: WebMCPTargetIdentity,
+    options?: WebMCPOptions
+) {
+    const modelContext = getModelContext(options);
+    const registered = modelContext ? REGISTERED_TARGETS.get(modelContext) : undefined;
+    const toolNameSuffix = getWebMCPToolNameSuffix(target);
+    const other = registered ? registered.get(toolNameSuffix) : undefined;
+    if (other) {
+        throw newRxError('WMCP2', {
+            name: toolNameSuffix,
+            database: target.databaseName,
+            collection: target.collectionName,
+            args: {
+                registeredDatabase: other.databaseName,
+                registeredCollection: other.collectionName
+            }
+        });
+    }
+}
+
 /**
  * Builds the WebMCP tool definitions for a given target.
  * The returned tools only talk to the target, so the same
@@ -42,7 +86,7 @@ export function getWebMCPTools(
     log$?: Subject<WebMCPLogEvent>,
     error$?: Subject<Error>
 ): WebMCPTool[] {
-    const toolNameSuffix = `${target.databaseName}_${target.collectionName}_${target.schemaVersion}`;
+    const toolNameSuffix = getWebMCPToolNameSuffix(target);
     const schemaString = JSON.stringify(target.jsonSchema);
 
     const withMiddleware = (toolName: string, fn: (args: any, context: any) => Promise<any>) => {
@@ -268,6 +312,16 @@ export function registerWebMCPTarget(
         return { error$, log$, unregister: () => { } };
     }
 
+    ensureWebMCPToolNamesNotRegistered(target, options);
+    const toolNameSuffix = getWebMCPToolNameSuffix(target);
+    let registered = REGISTERED_TARGETS.get(modelContext);
+    if (!registered) {
+        registered = new Map();
+        REGISTERED_TARGETS.set(modelContext, registered);
+    }
+    registered.set(toolNameSuffix, target);
+    const registeredTargets = registered;
+
     const tools = getWebMCPTools(target, options, log$, error$);
 
     /**
@@ -296,6 +350,9 @@ export function registerWebMCPTarget(
     });
 
     const unregister = () => {
+        if (registeredTargets.get(toolNameSuffix) === target) {
+            registeredTargets.delete(toolNameSuffix);
+        }
         if (controller) {
             controller.abort();
             return;

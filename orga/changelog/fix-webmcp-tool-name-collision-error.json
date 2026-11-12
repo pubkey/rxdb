@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `registerWebMCP()` failed with the error of the WebMCP registry in the middle of the registration when two collections produced the same tool names (database `a_b` with collection `c` and database `a` with collection `b_c`, or a second `registerWebMCP()` call), which left a part of the tools registered. It now throws the RxError `WMCP2` before any tool is registered. The tool names did not change.",
+    "links": [],
+    "priority": 4
+}

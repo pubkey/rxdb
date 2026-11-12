@@ -9,7 +9,10 @@ import type {
 } from '../../types/plugins/webmcp.d.ts';
 import { Subject } from 'rxjs';
 import { getWebMCPTargetFromCollection } from './webmcp-target.ts';
-import { registerWebMCPTarget } from './webmcp-tools.ts';
+import {
+    ensureWebMCPToolNamesNotRegistered,
+    registerWebMCPTarget
+} from './webmcp-tools.ts';
 
 
 export function registerWebMCPDatabase(this: RxDatabase, options?: WebMCPOptions): { error$: Subject<Error>; log$: Subject<WebMCPLogEvent> } {
@@ -23,6 +26,14 @@ export function registerWebMCPDatabase(this: RxDatabase, options?: WebMCPOptions
         res.error$.subscribe(error$);
         res.log$.subscribe(log$);
     };
+
+    Object.values(collections).forEach(collection => {
+        ensureWebMCPToolNamesNotRegistered({
+            databaseName: database.name,
+            collectionName: collection.name,
+            schemaVersion: collection.schema.version
+        }, options);
+    });
 
     // Register existing collections
     for (const [name, collection] of Object.entries(collections)) {
