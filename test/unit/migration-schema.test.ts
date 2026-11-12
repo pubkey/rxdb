@@ -1725,6 +1725,82 @@ describe('migration-schema.test.ts', function () {
             }
         });
 
+        /**
+         * The docs say to wait for migratePromise() before writing.
+         * This must also hold for the instance that does not run the migration itself.
+         */
+        it('must allow writes on all instances directly after addCollections() or migratePromise() has resolved', async () => {
+            if (!config.storage.hasMultiInstance) {
+                return;
+            }
+            const schema0 = {
+                version: 0,
+                primaryKey: 'id',
+                type: 'object',
+                properties: {
+                    id: { type: 'string', maxLength: 100 },
+                    name: { type: 'string' }
+                },
+                required: ['id', 'name']
+            };
+            const schema1 = clone(schema0);
+            schema1.version = 1;
+
+            for (const autoMigrate of [true, false]) {
+                const dbName = randomToken(10);
+                const openDatabase = () => createRxDatabase({
+                    name: dbName,
+                    storage: config.storage.getStorage(),
+                    multiInstance: true,
+                    ignoreDuplicate: true
+                });
+                const db = await openDatabase();
+                await db.addCollections({
+                    items: { schema: schema0 }
+                });
+                await db.items.bulkInsert([
+                    { id: 'doc1', name: 'Document 1' },
+                    { id: 'doc2', name: 'Document 2' }
+                ]);
+                await db.close();
+
+                const dbA = await openDatabase();
+                const dbB = await openDatabase();
+                const collectionCreator = {
+                    items: {
+                        schema: schema1,
+                        autoMigrate,
+                        migrationStrategies: {
+                            1: (doc: any) => doc
+                        }
+                    }
+                };
+                await Promise.all([
+                    dbA.addCollections(collectionCreator),
+                    dbB.addCollections(collectionCreator)
+                ]);
+                if (!autoMigrate) {
+                    const results = await Promise.all([
+                        dbA.items.migratePromise(),
+                        dbB.items.migratePromise()
+                    ]);
+                    assert.deepStrictEqual(results.map(r => r.status), ['DONE', 'DONE']);
+                }
+
+                await Promise.all([
+                    dbA.items.insert({ id: 'fromA', name: 'written on A' }),
+                    dbB.items.insert({ id: 'fromB', name: 'written on B' })
+                ]);
+
+                const status = await dbB.items.getMigrationState().getStatus();
+                assert.strictEqual(status.status, 'DONE');
+                assert.strictEqual(status.count.total, 2);
+
+                await dbA.close();
+                await dbB.close();
+            }
+        });
+
         it('#7008 migrate schema with multiple connected storages', async () => {
             // create a schema
             const mySchema = {

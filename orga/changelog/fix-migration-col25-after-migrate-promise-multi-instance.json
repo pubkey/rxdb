@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX with `multiInstance: true`, the instance that does not run the schema migration itself resolved `addCollections()` and `migratePromise()` while writes on it still threw `COL25` for about 500 milliseconds, and it ran the migration code a second time after the leader had finished",
+    "links": [],
+    "priority": 5
+}

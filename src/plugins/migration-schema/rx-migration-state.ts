@@ -1,6 +1,7 @@
 import {
     Observable,
     Subject,
+    concatMap,
     distinctUntilChanged,
     filter,
     firstValueFrom,
@@ -83,6 +84,11 @@ export class RxMigrationState {
 
 
     private started: boolean = false;
+    /**
+     * True while this instance writes the documents of the migration itself.
+     * With multiInstance: true, this is only the case on the leader instance.
+     */
+    private runsMigration: boolean = false;
     public readonly oldCollectionMeta: ReturnType<typeof getOldCollectionMeta>;
     public readonly mustMigrate: ReturnType<typeof mustMigrate>;
     public readonly statusDocId: string;
@@ -132,6 +138,26 @@ export class RxMigrationState {
              * without changing its data, which must not emit here.
              */
             distinctUntilChanged((a, b) => deepEqual(a, b)),
+            /**
+             * When another instance has finished the migration,
+             * the write block must be released before the DONE status
+             * reaches any subscriber, so that writes directly after
+             * migratePromise() or after the DONE emission do not throw.
+             */
+            concatMap(async (status) => {
+                if (
+                    status.status === 'DONE' &&
+                    !this.runsMigration &&
+                    /**
+                     * The read fails when the database is closed in the meantime,
+                     * which must not end the status stream with an error.
+                     */
+                    !(await mustMigrate(this).catch(() => true))
+                ) {
+                    this.collection.migrationInProgress = false;
+                }
+                return status;
+            }),
             shareReplay(RXJS_SHARE_REPLAY_DEFAULTS)
         );
     }
@@ -214,12 +240,21 @@ export class RxMigrationState {
             const waitResult = await this.awaitLeadershipOrStalledLeader(
                 () => leaderElector.awaitLeadership()
             );
-            if (waitResult === 'DONE' || this.canceled) {
+            /**
+             * The leadership can be acquired after the previous leader
+             * has finished the migration. Then there is nothing left to migrate.
+             */
+            if (
+                waitResult === 'DONE' ||
+                this.canceled ||
+                !(await mustMigrate(this))
+            ) {
                 this.collection.migrationInProgress = false;
                 return;
             }
             this.startHeartbeat();
         }
+        this.runsMigration = true;
 
         /**
          * Instead of writing a custom migration protocol,
@@ -371,6 +406,23 @@ export class RxMigrationState {
         let waiting = true;
         const startTime = now();
         const leadershipPromise = awaitLeadership().then(() => 'LEADER' as const);
+        const donePromise = firstValueFrom(
+            this.$.pipe(
+                filter((d: RxMigrationStatus) => d.status === 'DONE')
+            )
+        ).then(
+            /**
+             * A DONE status only ends the waiting when the old collection is gone.
+             * The status document can also be DONE while old data still has to be migrated,
+             * for example when a previous migration to this version did not reach all documents.
+             */
+            async () => (await mustMigrate(this).catch(() => true)) ? new Promise<never>(() => { }) : 'DONE' as const,
+            /**
+             * The status stream ends without a DONE status when the database is closed,
+             * then the other promises of the race decide the result.
+             */
+            () => new Promise<never>(() => { })
+        );
         const stalledPromise = (async () => {
             while (waiting && !this.canceled) {
                 await promiseWait(MIGRATION_LEADER_TIMING.heartbeatInterval);
@@ -399,7 +451,7 @@ export class RxMigrationState {
             return new Promise<never>(() => { });
         })();
         try {
-            return await Promise.race([leadershipPromise, stalledPromise]);
+            return await Promise.race([leadershipPromise, stalledPromise, donePromise]);
         } finally {
             waiting = false;
         }
