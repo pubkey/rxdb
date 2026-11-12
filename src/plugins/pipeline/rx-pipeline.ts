@@ -83,6 +83,7 @@ export class RxPipeline<RxDocType> {
     ) {
         this.checkpointId = 'rx-pipeline-' + identifier;
         this.source.onClose.push(() => this.close());
+        this.destination.onClose.push(() => this.close());
         this.destination.awaitBeforeReads.add(this.waitBeforeWriteFn);
         this.subs.push(
             this.source.eventBulks$.pipe(
