@@ -48,65 +48,82 @@ describe('replication-couchdb.test.ts (custom fetch)', () => {
             }
         });
     }
-    function isLongpollRequest(input: Parameters<FetchMethodType>[0]): boolean {
-        let url: string;
+    function getRequestUrl(input: Parameters<FetchMethodType>[0]): URL {
         if (typeof input === 'string') {
-            url = input;
+            return new URL(input);
         } else if (input instanceof URL) {
-            url = input.href;
+            return input;
         } else {
-            url = input.url;
+            return new URL(input.url);
         }
-        return url.includes('feed=longpoll');
+    }
+    function isLongpollRequest(input: Parameters<FetchMethodType>[0]): boolean {
+        return getRequestUrl(input).searchParams.get('feed') === 'longpoll';
+    }
+
+    /**
+     * Answers the requests to the _changes endpoint like a CouchDB server:
+     * The normal feed directly returns all changes after the given since.
+     * The longpoll feed keeps the request open until a change
+     * after the given since exists or until the timeout is reached.
+     * A since of 'now' is resolved to the last sequence at the time the request arrives.
+     */
+    function createChangesFeedServer(longpollTimeout: number) {
+        const rows: ChangesResponseBody['results'] = [];
+        let longpollRequests = 0;
+        const fetch: FetchMethodType = async (input) => {
+            const url = getRequestUrl(input);
+            const sinceParam = url.searchParams.get('since');
+            const since = sinceParam === 'now' ? rows.length : Number(sinceParam);
+            if (isLongpollRequest(input)) {
+                longpollRequests = longpollRequests + 1;
+                const startTime = Date.now();
+                while (rows.length <= since && Date.now() - startTime < longpollTimeout) {
+                    await wait(10);
+                }
+            }
+            return jsonResponse({
+                results: rows.filter(row => row.seq > since),
+                last_seq: rows.length
+            });
+        };
+        return {
+            fetch,
+            getLongpollRequests: () => longpollRequests,
+            addDocument(id: string, rev: string, data: Record<string, string | number>) {
+                rows.push({
+                    id,
+                    seq: rows.length + 1,
+                    changes: [{ rev }],
+                    doc: Object.assign({ _id: id, _rev: rev }, data)
+                });
+            }
+        };
     }
 
     describe('live pull stream', () => {
         it('should run the long polling of the changes when the live option is not set', async () => {
             const collection = await humansCollection.create(0);
             const serverDoc = schemaObjects.humanData('doc-from-longpoll');
-            let longpollRequests = 0;
-            let initialReplicationDone = false;
-            const customFetch: FetchMethodType = async (input) => {
-                if (!isLongpollRequest(input)) {
-                    return jsonResponse({ results: [], last_seq: 0 });
-                }
-                longpollRequests = longpollRequests + 1;
-                if (longpollRequests > 1) {
-                    await wait(50);
-                    return jsonResponse({ results: [], last_seq: 1 });
-                }
-                /**
-                 * Like a CouchDB server, keep the request open
-                 * until a change happens after the initial replication.
-                 */
-                await waitUntil(() => initialReplicationDone);
-                return jsonResponse({
-                    results: [{
-                        id: serverDoc.passportId,
-                        seq: 1,
-                        changes: [{ rev: '1-abc' }],
-                        doc: {
-                            _id: serverDoc.passportId,
-                            _rev: '1-abc',
-                            firstName: serverDoc.firstName,
-                            lastName: serverDoc.lastName,
-                            age: 30
-                        }
-                    }],
-                    last_seq: 1
-                });
-            };
+            const server = createChangesFeedServer(100);
             const replicationState = replicateCouchDB({
                 replicationIdentifier: randomToken(10),
                 collection,
                 url: SERVER_URL,
-                fetch: customFetch,
+                fetch: server.fetch,
                 waitForLeadership: false,
                 pull: {}
             });
             assert.strictEqual(replicationState.live, true);
             await replicationState.awaitInitialReplication();
-            initialReplicationDone = true;
+            await waitUntil(() => server.getLongpollRequests() > 0, 2000);
+
+            // a change that happens on the server after the initial replication
+            server.addDocument(serverDoc.passportId, '1-abc', {
+                firstName: serverDoc.firstName,
+                lastName: serverDoc.lastName,
+                age: 30
+            });
 
             await waitUntil(async () => {
                 const doc = await collection.findOne(serverDoc.passportId).exec();
