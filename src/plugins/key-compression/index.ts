@@ -29,7 +29,10 @@ import type {
     RxDocumentData,
     FilledMangoQuery,
     PreparedQuery,
-    RxDocumentWriteData
+    RxDocumentWriteData,
+    BulkWriteRow,
+    RxStorageBulkWriteResponse,
+    RxStorageWriteError
 } from '../../types/index.d.ts';
 import {
     clone,
@@ -183,6 +186,55 @@ export function wrappedKeyCompressionStorage<Internals, InstanceCreationOptions>
                     modifyFromStorage
                 );
 
+
+                const primaryPath = getPrimaryFieldOfPrimaryKey(params.schema.primaryKey);
+                const bulkWriteBefore = wrappedInstance.bulkWrite.bind(wrappedInstance);
+                wrappedInstance.bulkWrite = async (
+                    documentWrites: BulkWriteRow<RxDocType>[],
+                    context: string
+                ) => {
+                    try {
+                        return await bulkWriteBefore(documentWrites, context);
+                    } catch (err) {
+                        /**
+                         * compressObject() throws on object keys that start with the compression flag
+                         * because they cannot be distinguished from compressed keys.
+                         * All rows are compressed before the first one reaches the child storage,
+                         * so nothing has been written when the compression of a row has thrown.
+                         * The rows are only checked one by one after a failed write
+                         * so that successful writes do not pay for the check.
+                         */
+                        const errors: RxStorageWriteError<RxDocType>[] = [];
+                        const continueWrites: BulkWriteRow<RxDocType>[] = [];
+                        documentWrites.forEach(row => {
+                            try {
+                                compressDocumentData(compressionState, row.document);
+                                continueWrites.push(row);
+                            } catch (compressError) {
+                                errors.push({
+                                    status: 422,
+                                    isError: true,
+                                    documentId: (row.document as any)[primaryPath],
+                                    validationErrors: [{
+                                        field: '',
+                                        message: (compressError as Error).message
+                                    }],
+                                    schema: params.schema,
+                                    writeRow: row,
+                                    context
+                                });
+                            }
+                        });
+                        if (errors.length === 0) {
+                            throw err;
+                        }
+                        const writeResult: RxStorageBulkWriteResponse<RxDocType> = continueWrites.length > 0 ?
+                            await bulkWriteBefore(continueWrites, context) :
+                            { error: [] };
+                        writeResult.error = writeResult.error.concat(errors);
+                        return writeResult;
+                    }
+                };
 
                 const overwriteMethods = ['query', 'count'] as const;
                 overwriteMethods.forEach(methodName => {

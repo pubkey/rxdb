@@ -89,3 +89,19 @@ console.log(doc.name);
 
 </Steps>
 
+## Limitations
+
+- **Keys must not start with `|`**: Compressed keys are marked with the compression flag `|` as their first character. This means a key that starts with `|` cannot be distinguished from a compressed key, so it cannot be stored in a collection with `keyCompression: true`. This only affects fields where the keys are not defined in the schema, like an object with `additionalProperties` or `patternProperties`. A write with such a key is rejected with a schema validation error (`insert()` throws [`VD2`](./errors.md#VD2)) and all other documents of the same bulk write are still stored. A `|` at any other position of the key (`a|b`) works.
+
+Let's say the `todos` schema has an additional field `labels: { type: 'object' }` where the keys are not defined in the schema:
+
+```ts
+const result = await myDatabase.todos.bulkInsert([
+    { id: 'todo1', name: 'Learn RxDB', labels: { 'a|b': 'works' } },
+    { id: 'todo2', name: 'Buy groceries', labels: { '|a': 'is rejected' } }
+]);
+console.log(result.success.map(doc => doc.id));
+// > ['todo1']
+console.log(result.error.map(error => error.documentId));
+// > ['todo2']
+```
