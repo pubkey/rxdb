@@ -274,6 +274,56 @@ describe('reactive-query.test.js', () => {
                 db.close();
             }
         });
+        it('must not emit the same result again when grouped writes cancel each other out', async () => {
+            const db = await createRxDatabase({
+                name: randomToken(10),
+                storage: config.storage.getStorage(),
+                multiInstance: false,
+                liveQueryUpdateThrottleTime: 30
+            });
+            const collections = await db.addCollections({
+                humans: {
+                    schema: schemas.human
+                }
+            });
+            const c = collections.humans;
+            await c.insert(schemaObjects.humanData('other-doc'));
+
+            const emitted: { [queryName: string]: string[]; } = {
+                byId: [],
+                byIds: [],
+                findByIds: []
+            };
+            const toString = (docs: RxDocument<HumanDocumentType>[]) => docs.map(d => d.primary + '|' + d.revision).join(',');
+            const subs = [
+                c.find({ selector: { passportId: 'new-doc' } }).$
+                    .subscribe(docs => emitted.byId.push(toString(docs))),
+                c.find({ selector: { passportId: { $in: ['new-doc', 'other-doc'] } } }).$
+                    .subscribe(docs => emitted.byIds.push(toString(docs))),
+                c.findByIds(['new-doc', 'other-doc']).$
+                    .subscribe(docs => emitted.findByIds.push(toString(Array.from(docs.values()))))
+            ];
+            try {
+                await waitUntil(() => Object.values(emitted).every(list => list.length === 1));
+
+                // the document enters and leaves the results inside of one throttle window
+                const doc = await c.insert(schemaObjects.humanData('new-doc'));
+                await doc.remove();
+                await wait(isFastMode() ? 150 : 300);
+
+                Object.entries(emitted).forEach(([queryName, list]) => {
+                    list.forEach((result, index) => {
+                        assert.ok(
+                            index === 0 || result !== list[index - 1],
+                            queryName + ' emitted the same result twice: ' + JSON.stringify(list)
+                        );
+                    });
+                });
+            } finally {
+                subs.forEach(sub => sub.unsubscribe());
+                db.close();
+            }
+        });
         it('doing insert after subscribe should end with the correct results', async () => {
 
             const c = await humansCollection.create(1);
