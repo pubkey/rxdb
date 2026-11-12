@@ -329,6 +329,25 @@ export function rxStorageInstanceToReplicationHandler<RxDocType, MasterCheckpoin
                     }
                 });
             }
+            if (hasAttachments) {
+                /**
+                 * The client writes the conflicting master state into its fork,
+                 * so the conflicts must contain the attachments data
+                 * like the documents of masterChangesSince().
+                 * A deleted master state still lists its attachments
+                 * while the storage no longer has their data
+                 * and the client removes the attachments of a deleted document,
+                 * so deleted conflicts are returned without the data.
+                 */
+                return Promise.all(
+                    conflicts.map(conflict => conflict._deleted ? conflict : fillWriteDataForAttachmentsChange(
+                        primaryPath,
+                        instance,
+                        clone(conflict),
+                        undefined
+                    ))
+                );
+            }
             return conflicts;
         }
     };
