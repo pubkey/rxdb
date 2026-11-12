@@ -61,11 +61,24 @@ export function useRxQueryBase<
     InstanceCreationOptions,
     Reactivity
 > & { live: boolean }): UseRxQueryResult<RxDocumentType, OrmMethods> {
-    const [results, setResults] = useState(
-        [] as RxDocument<RxDocumentType, OrmMethods>[],
-    );
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+    /**
+     * The state remembers for which collection and query it was loaded,
+     * so that the results of one collection or query are never returned
+     * as the loaded results of another one.
+     */
+    const [state, setState] = useState<{
+        collection: RxCollection<
+            RxDocumentType,
+            OrmMethods,
+            StaticMethods,
+            InstanceCreationOptions,
+            Reactivity
+        >;
+        queryKey: string;
+        results: RxDocument<RxDocumentType, OrmMethods>[];
+        error: string | null;
+    } | null>(null);
+    const queryKey = JSON.stringify(query);
 
     let dbCollection: RxCollection<
         RxDocumentType,
@@ -75,13 +88,18 @@ export function useRxQueryBase<
         Reactivity
     > | null;
     if (typeof collection === 'string') {
-        dbCollection = useRxCollection<
+        const collectionByName = useRxCollection<
             RxDocumentType,
             OrmMethods,
             StaticMethods,
             InstanceCreationOptions,
             Reactivity
         >(collection);
+        /**
+         * In the first render after the name has changed,
+         * useRxCollection() still returns the collection of the previous name.
+         */
+        dbCollection = collectionByName && collectionByName.name === collection ? collectionByName : null;
     } else {
         if (!isRxCollection(collection)) {
             throw newRxError('R3', {
@@ -91,26 +109,38 @@ export function useRxQueryBase<
         dbCollection = collection;
     }
 
-    const emitResults = (res: RxDocument<RxDocumentType, OrmMethods>[]) => {
-        setResults(res);
-        if (loading) {
-            setLoading(false);
-        }
-    };
-
-    const emitError = (e: Error) => {
-        setError(e.message);
-        if (loading) {
-            setLoading(false);
-        }
-    };
-
     const runQuery = useCallback(() => {
         if (dbCollection == null) {
             return;
         }
-        setError(null);
-        setLoading(true);
+        const queryCollection = dbCollection;
+
+        /**
+         * A query that has been replaced must not overwrite
+         * the state of the query that replaced it.
+         */
+        let active = true;
+        const emitResults = (res: RxDocument<RxDocumentType, OrmMethods>[]) => {
+            if (active) {
+                setState({
+                    collection: queryCollection,
+                    queryKey,
+                    results: res,
+                    error: null
+                });
+            }
+        };
+        const emitError = (e: Error) => {
+            if (active) {
+                setState(previous => ({
+                    collection: queryCollection,
+                    queryKey,
+                    results: previous && previous.collection === queryCollection ? previous.results : [],
+                    error: e.message
+                }));
+            }
+        };
+
         const rxQuery = dbCollection.find(query);
         if (live) {
             const subscription = rxQuery.$.subscribe({
@@ -119,6 +149,7 @@ export function useRxQueryBase<
             });
 
             return () => {
+                active = false;
                 subscription.unsubscribe();
             };
         } else {
@@ -126,6 +157,9 @@ export function useRxQueryBase<
                 (res) => emitResults(res),
                 (e) => emitError(e as Error)
             );
+            return () => {
+                active = false;
+            };
         }
     }, [dbCollection, query]);
 
@@ -140,7 +174,27 @@ export function useRxQueryBase<
         }
     }, [runQuery]);
 
-    return { results, loading, error };
+    if (
+        state &&
+        state.collection === dbCollection &&
+        state.queryKey === queryKey
+    ) {
+        return {
+            results: state.results,
+            loading: false,
+            error: state.error
+        };
+    }
+
+    /**
+     * While the query is loading, the previous results
+     * of the same collection are returned.
+     */
+    return {
+        results: state && state.collection === dbCollection ? state.results : [],
+        loading: true,
+        error: null
+    };
 }
 
 
