@@ -167,6 +167,34 @@ function runOperationOnDocument<RxDocType>(
     return docData;
 }
 
+/**
+ * Converts the data of a patch into an update operation.
+ * A field with the value undefined is removed via $unset
+ * because an undefined value does not survive the JSON serialization
+ * of the operation, so a replay of the operations
+ * would not remove the field.
+ */
+function patchToCRDTEntry<RxDocType>(patch: Partial<RxDocType>): CRDTEntry<RxDocType> {
+    const setMe: Record<string, any> = {};
+    const unsetMe: Record<string, any> = {};
+    Object.entries(patch).forEach(([key, value]) => {
+        if (typeof value === 'undefined') {
+            unsetMe[key] = '';
+        } else {
+            setMe[key] = value;
+        }
+    });
+    const ifMatch: Record<string, any> = {};
+    const hasUnset = Object.keys(unsetMe).length > 0;
+    if (!hasUnset || Object.keys(setMe).length > 0) {
+        ifMatch.$set = setMe;
+    }
+    if (hasUnset) {
+        ifMatch.$unset = unsetMe;
+    }
+    return { ifMatch };
+}
+
 export async function hashCRDTOperations(
     hashFunction: HashFunction,
     crdts: CRDTDocumentField<any>
@@ -383,11 +411,7 @@ export const RxDBcrdtPlugin: RxPlugin = {
                 if (!this.collection.schema.jsonSchema.crdt) {
                     return oldPatch.call(this, patch);
                 }
-                return this.updateCRDT({
-                    ifMatch: {
-                        $set: patch
-                    }
-                });
+                return this.updateCRDT(patchToCRDTEntry(patch));
             };
 
             const oldincrementalPatch = proto.incrementalPatch;
@@ -395,11 +419,7 @@ export const RxDBcrdtPlugin: RxPlugin = {
                 if (!this.collection.schema.jsonSchema.crdt) {
                     return oldincrementalPatch.bind(this)(patch);
                 }
-                return this.updateCRDT({
-                    ifMatch: {
-                        $set: patch
-                    }
-                });
+                return this.updateCRDT(patchToCRDTEntry(patch));
             };
             const oldincrementalModify = proto.incrementalModify;
             proto.incrementalModify = function (fn: any, context: string) {
