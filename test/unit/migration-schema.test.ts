@@ -53,6 +53,12 @@ import { ensureReplicationHasNoErrors } from '../../plugins/test-utils/index.mjs
 import { SimpleHumanAgeDocumentType } from '../../src/plugins/test-utils/schema-objects.ts';
 import { RxDBLeaderElectionPlugin } from '../../plugins/leader-election/index.mjs';
 import { RxDBUpdatePlugin } from '../../plugins/update/index.mjs';
+import { getRxStorageDexie } from '../../plugins/storage-dexie/index.mjs';
+import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.mjs';
+import {
+    indexedDB as fakeIndexedDB,
+    IDBKeyRange as fakeIDBKeyRange
+} from 'fake-indexeddb';
 
 
 describe('migration-schema.test.ts', function () {
@@ -736,6 +742,90 @@ describe('migration-schema.test.ts', function () {
                 assert.strictEqual(lwtBefore, lwtAfter);
 
                 db2.close();
+            });
+            it('should not reject with the error of the closed storage when the database is closed during a failing auto migration', async () => {
+                /**
+                 * Uses the dexie storage because its closed instances reject all operations.
+                 */
+                const name = randomToken(10);
+                const getStorage = () => wrappedValidateAjvStorage({
+                    storage: getRxStorageDexie({
+                        indexedDB: fakeIndexedDB,
+                        IDBKeyRange: fakeIDBKeyRange
+                    })
+                });
+                const db = await createRxDatabase({
+                    name,
+                    storage: getStorage(),
+                    multiInstance: false
+                });
+                await db.addCollections({
+                    human: {
+                        schema: schemas.simpleHuman
+                    }
+                });
+                await db.human.insert(schemaObjects.simpleHumanAge({ passportId: 'local-1' }));
+                await db.close();
+
+                const db2 = await createRxDatabase({
+                    name,
+                    storage: getStorage(),
+                    multiInstance: false
+                });
+                let strategyStarted: () => void = () => { };
+                const strategyStartedPromise = new Promise<void>(res => strategyStarted = res);
+                let releaseStrategy: () => void = () => { };
+                const releaseStrategyPromise = new Promise<void>(res => releaseStrategy = res);
+                const addResultPromise = db2.addCollections({
+                    human: {
+                        schema: schemas.simpleHumanV3,
+                        autoMigrate: true,
+                        migrationStrategies: {
+                            1: d => d,
+                            2: d => d,
+                            3: async () => {
+                                strategyStarted();
+                                await releaseStrategyPromise;
+                                throw new TypeError('strategy failed');
+                            }
+                        }
+                    }
+                }).then(
+                    () => undefined,
+                    (err: Error) => err
+                );
+                await strategyStartedPromise;
+                await db2.close();
+                releaseStrategy();
+
+                const error = ensureNotFalsy(await addResultPromise);
+                assert.ok(
+                    !error.message.includes('is closed'),
+                    'must not be the error of the closed storage: ' + error.message
+                );
+
+                const db3 = await createRxDatabase({
+                    name,
+                    storage: getStorage(),
+                    multiInstance: false
+                });
+                const cols3 = await db3.addCollections({
+                    human: {
+                        schema: schemas.simpleHumanV3,
+                        autoMigrate: true,
+                        migrationStrategies: {
+                            1: d => d,
+                            2: d => d,
+                            3: d => {
+                                d.age = parseInt(d.age, 10);
+                                return d;
+                            }
+                        }
+                    }
+                });
+                const docs = await cols3.human.find().exec();
+                assert.strictEqual(docs.length, 1);
+                await db3.remove();
             });
         });
         describe('.migrationNeeded()', () => {

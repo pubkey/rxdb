@@ -526,28 +526,35 @@ export class RxDatabaseBase<
                      * When a meta document of a previous schema version exists,
                      * a migration might have written documents into the new storage instance.
                      * Then everything is kept so that the migration can be continued later.
+                     * A database that is closing or closed keeps its data,
+                     * and an error of the rollback must not hide the creation error.
                      */
-                    const jsonSchema = useArgs.schema.jsonSchema;
-                    const previousMetaDocs = await this.internalStore.findDocumentsById(
-                        getPreviousVersions(jsonSchema).map(version => getPrimaryKeyOfInternalDocument(
-                            collectionName + '-' + version,
-                            INTERNAL_CONTEXT_COLLECTION
-                        )),
-                        false
-                    );
-                    if (
-                        !conflictingMetaDocIds.has(getPrimaryKeyOfInternalDocument(
-                            _collectionNamePrimary(collectionName, jsonSchema),
-                            INTERNAL_CONTEXT_COLLECTION
-                        )) &&
-                        previousMetaDocs.length === 0
-                    ) {
-                        const newStorageInstance = await this.storage.createStorageInstance(
-                            storageInstanceCreationParamsByCollectionName[collectionName]
-                        );
-                        await newStorageInstance.remove();
-                        await this.removeCollectionDoc(collectionName, jsonSchema);
+                    if (this.closePromise) {
+                        throw err;
                     }
+                    const jsonSchema = useArgs.schema.jsonSchema;
+                    try {
+                        const previousMetaDocs = await this.internalStore.findDocumentsById(
+                            getPreviousVersions(jsonSchema).map(version => getPrimaryKeyOfInternalDocument(
+                                collectionName + '-' + version,
+                                INTERNAL_CONTEXT_COLLECTION
+                            )),
+                            false
+                        );
+                        if (
+                            !conflictingMetaDocIds.has(getPrimaryKeyOfInternalDocument(
+                                _collectionNamePrimary(collectionName, jsonSchema),
+                                INTERNAL_CONTEXT_COLLECTION
+                            )) &&
+                            previousMetaDocs.length === 0
+                        ) {
+                            const newStorageInstance = await this.storage.createStorageInstance(
+                                storageInstanceCreationParamsByCollectionName[collectionName]
+                            );
+                            await newStorageInstance.remove();
+                            await this.removeCollectionDoc(collectionName, jsonSchema);
+                        }
+                    } catch { }
                     throw err;
                 });
                 (ret as any)[collectionName] = collection;
