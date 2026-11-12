@@ -16,6 +16,7 @@ import {
     sendMessageAndAwaitAnswer,
     getConnectionHandlerSimplePeer,
     WebRTCConnectionHandler,
+    WebRTCConnectionHandlerCreator,
     PeerWithMessage,
     PeerWithResponse,
     SIMPLE_PEER_MAX_MESSAGE_LENGTH,
@@ -33,6 +34,7 @@ import {
 } from 'nostr-tools/pure';
 import {
     schemaObjects,
+    schemas,
     humansCollection,
     isFastMode,
     isDeno,
@@ -287,6 +289,112 @@ describe('replication-webrtc.test.ts', function () {
 
             c1.database.close();
             c3.database.close();
+        });
+    });
+    describe('master and fork', () => {
+        /**
+         * Returns the creators of two connection handlers
+         * that send the messages to each other in memory, without a network.
+         */
+        function getMemoryConnectionHandlers() {
+            const peerIds = ['a', 'b'];
+            const streams = peerIds.map(() => ({
+                connect$: new Subject<string>(),
+                disconnect$: new Subject<string>(),
+                message$: new Subject<PeerWithMessage<string>>(),
+                response$: new Subject<PeerWithResponse<string>>(),
+                error$: new Subject<RxError>()
+            }));
+            const creators = peerIds.map((ownId, i) => {
+                const other = streams[1 - i];
+                const creator: WebRTCConnectionHandlerCreator<string> = () => Promise.resolve({
+                    ...streams[i],
+                    async send(_peer, message) {
+                        const copy = JSON.parse(JSON.stringify(message));
+                        await wait(0);
+                        if ('method' in copy) {
+                            other.message$.next({ peer: ownId, message: copy });
+                        } else {
+                            other.response$.next({ peer: ownId, response: copy });
+                        }
+                    },
+                    close() {
+                        return Promise.resolve();
+                    }
+                });
+                return creator;
+            });
+            return {
+                creators,
+                connect() {
+                    streams[0].connect$.next(peerIds[1]);
+                    streams[1].connect$.next(peerIds[0]);
+                }
+            };
+        }
+        it('should have exactly one master when both peers have the same storage token', async () => {
+            /**
+             * The storage token belongs to the database,
+             * so two collections of the same database have the same storage token.
+             */
+            const db = await createRxDatabase({
+                name: randomToken(10),
+                storage: config.storage.getStorage(),
+                multiInstance: false
+            });
+            const collections = await db.addCollections({
+                humans1: { schema: schemas.human },
+                humans2: { schema: schemas.human }
+            });
+            const c1: RxCollection<any> = collections.humans1;
+            const c2: RxCollection<any> = collections.humans2;
+
+            const handlers = getMemoryConnectionHandlers();
+            const topic = randomToken(10);
+            const pools = await Promise.all(
+                [c1, c2].map((collection, i) => replicateWebRTC<any, string>({
+                    collection,
+                    topic,
+                    connectionHandlerCreator: handlers.creators[i],
+                    pull: {},
+                    push: {}
+                }))
+            );
+            const errors: any[] = [];
+            pools.forEach(pool => pool.error$.subscribe(err => errors.push(err)));
+            handlers.connect();
+            await waitUntil(
+                () => pools.every(pool => pool.peerStates$.getValue().size === 1),
+                1000 * 5
+            );
+            const forks = pools.filter(
+                pool => Array.from(pool.peerStates$.getValue().values())[0].replicationState
+            );
+            assert.strictEqual(forks.length, 1);
+
+            const docData = schemaObjects.humanData('equal-token');
+            await c1.insert(docData);
+            await awaitCollectionsInSync([c1, c2]);
+
+            // concurrent writes to the same document must converge
+            const doc1 = await c1.findOne(docData.passportId).exec(true);
+            const doc2 = await c2.findOne(docData.passportId).exec(true);
+            await Promise.all([
+                doc1.incrementalPatch({ age: 1 }),
+                doc2.incrementalPatch({ age: 2 })
+            ]);
+            await waitUntil(async () => {
+                const ages = await Promise.all(
+                    [c1, c2].map(async (c) => (await c.findOne(docData.passportId).exec(true)).age)
+                );
+                return ages[0] === ages[1] && ages[0] !== docData.age;
+            }, 1000 * 5);
+            await wait(isFastMode() ? 100 : 300);
+            assert.deepStrictEqual(await getJson(c1), await getJson(c2));
+            assert.deepStrictEqual(errors, []);
+
+            await Promise.all(pools.map(pool => pool.cancel()));
+            await db.close();
         });
     });
     describe('reliability', () => {

@@ -1,0 +1,5 @@
+{
+    "text": "FIX the WebRTC replication had no master for a pair of peers with the same storage token (for example a copied database), so both peers ran as fork and concurrent writes never converged",
+    "links": [],
+    "priority": 5
+}

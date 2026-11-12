@@ -3,8 +3,10 @@ import {
     filter,
     firstValueFrom,
     map,
+    merge,
     Subject,
-    Subscription
+    Subscription,
+    timer
 } from 'rxjs';
 import { addRxPlugin } from '../../plugin.ts';
 import { rxStorageInstanceToReplicationHandler } from '../../replication-protocol/index.ts';
@@ -102,9 +104,20 @@ export async function replicateWebRTC<RxDocType, PeerType>(
             });
     }
 
+    /**
+     * The ids of the token requests that were received from the remote peers.
+     * Both sides of a connection know the id of the own token request
+     * and the id of the token request of the other side,
+     * so these ids are used to define the master
+     * when both peers have the same storage token.
+     */
+    const peerTokenRequestIds = new Map<PeerType, string>();
+    const peerTokenRequest$ = new Subject<PeerType>();
+
     pool.subs.push(
         pool.connectionHandler.error$.subscribe((err: RxError | RxTypeError) => pool.error$.next(err)),
         pool.connectionHandler.disconnect$.subscribe((peer: PeerType) => {
+            peerTokenRequestIds.delete(peer);
             pool.connectedPeers.delete(peer);
             pool.peerValidity.delete(peer);
             pool.removePeer(peer);
@@ -122,6 +135,8 @@ export async function replicateWebRTC<RxDocType, PeerType>(
         pool.connectionHandler.message$.subscribe(async (data: PeerWithMessage<PeerType>) => {
             const { peer, message } = data;
             if (message.method === 'token') {
+                peerTokenRequestIds.set(peer, message.id);
+                peerTokenRequest$.next(peer);
                 sendToPeer(peer, {
                     id: message.id,
                     result: storageToken
@@ -164,13 +179,14 @@ export async function replicateWebRTC<RxDocType, PeerType>(
                 return;
             }
 
+            const tokenRequestId = getRequestId();
             let peerToken: string;
             try {
                 const tokenResponse = await sendMessageAndAwaitAnswer(
                     pool.connectionHandler,
                     peer,
                     {
-                        id: getRequestId(),
+                        id: tokenRequestId,
                         method: 'token',
                         params: []
                     },
@@ -189,7 +205,36 @@ export async function replicateWebRTC<RxDocType, PeerType>(
                 }
                 return;
             }
-            const isMaster = await isMasterInWebRTCReplication(collection.database.hashFunction, storageToken, peerToken);
+            let isMaster: boolean;
+            if (peerToken === storageToken) {
+                /**
+                 * With equal storage tokens, comparing the tokens
+                 * would make both sides the fork.
+                 * So the ids of the token requests of both sides are compared instead.
+                 */
+                if (!peerTokenRequestIds.has(peer)) {
+                    await firstValueFrom(
+                        merge(
+                            peerTokenRequest$.pipe(filter((p: PeerType) => p === peer)),
+                            pool.connectionHandler.disconnect$.pipe(filter((p: PeerType) => p === peer)),
+                            timer(requestTimeout)
+                        ),
+                        { defaultValue: undefined }
+                    );
+                }
+                const peerTokenRequestId = peerTokenRequestIds.get(peer);
+                if (!peerTokenRequestId) {
+                    if (pool.isPeerConnected(peer)) {
+                        pool.error$.next(newRxError('RC_WEBRTC_PEER', {
+                            errorText: 'peer with the same storage token did not request the token'
+                        }));
+                    }
+                    return;
+                }
+                isMaster = await isMasterInWebRTCReplication(collection.database.hashFunction, tokenRequestId, peerTokenRequestId);
+            } else {
+                isMaster = await isMasterInWebRTCReplication(collection.database.hashFunction, storageToken, peerToken);
+            }
             if (!pool.isPeerConnected(peer)) {
                 return;
             }
