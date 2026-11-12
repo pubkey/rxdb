@@ -73,7 +73,9 @@ This allows you to selectively migrate only certain collections if desired, by c
 When a collection has `encrypted` fields, you have to wrap the `oldStorage` with the same [encryption](./encryption.md) plugin that the old database used. The old storage is opened with the `password` of the new database, so the new database must be created with the same password as the old one.
 
 ```ts
-import { wrappedKeyEncryptionCryptoJsStorage } from 'rxdb/plugins/encryption-crypto-js';
+import {
+    wrappedKeyEncryptionCryptoJsStorage
+} from 'rxdb/plugins/encryption-crypto-js';
 
 await migrateStorage({
     database: db as any,
