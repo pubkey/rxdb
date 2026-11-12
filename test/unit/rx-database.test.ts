@@ -414,6 +414,9 @@ describe('rx-database.test.ts', () => {
                 await db2.close();
             });
             it('should open a collection again when the schema has a property named "constructor"', async () => {
+                if (!config.storage.hasPersistence) {
+                    return;
+                }
                 type DocType = {
                     id: string;
                     nested: {
@@ -443,7 +446,7 @@ describe('rx-database.test.ts', () => {
                     required: ['id']
                 };
                 const name = randomToken(10);
-                const storage = wrappedValidateAjvStorage({ storage: getRxStorageMemory() });
+                const storage = config.storage.getStorage();
                 const db = await createRxDatabase<{ docs: RxCollection<DocType>; }>({
                     name,
                     storage
