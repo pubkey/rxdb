@@ -16,7 +16,9 @@ import {
     isRxQuery,
     createRxDatabase,
     RxJsonSchema,
-    RxCollection,
+    RxError,
+    MangoQuery,
+    MangoQueryNoLimit,
     promiseWait,
     randomToken,
     ensureNotFalsy,
@@ -267,111 +269,6 @@ describe('rx-query.test.ts', () => {
                 .sort('passportId');
 
             assert.ok(query1 === query2);
-            col.database.close();
-        });
-        /**
-         * These tests run on an explicit memory storage because storages
-         * that send the query as JSON (like the remote storage) turn
-         * non-finite numbers into null before the query is run.
-         */
-        async function createMemoryHumansCollection() {
-            const db = await createRxDatabase<{ humans: RxCollection<HumanDocumentType>; }>({
-                name: randomToken(10),
-                storage: wrappedValidateAjvStorage({ storage: getRxStorageMemory() })
-            });
-            const cols = await db.addCollections({
-                humans: { schema: schemas.human }
-            });
-            return cols.humans;
-        }
-        it('should not share the cached query between queries that differ in a non-finite number', async () => {
-            const col = await createMemoryHumansCollection();
-            await col.bulkInsert([
-                schemaObjects.humanData('doc-a', 10),
-                schemaObjects.humanData('doc-b', 20)
-            ]);
-            const all = col.find({ selector: { age: { $gt: -Infinity } } });
-            const none = col.find({ selector: { age: { $gt: Infinity } } });
-            const nan = col.find({ selector: { age: { $gt: NaN } } });
-            assert.ok(all !== none);
-            assert.ok(all !== nan);
-            assert.ok(none !== nan);
-            assert.ok(all === col.find({ selector: { age: { $gt: -Infinity } } }));
-
-            assert.strictEqual((await all.exec()).length, 2);
-            assert.strictEqual((await none.exec()).length, 0);
-            assert.strictEqual((await nan.exec()).length, 0);
-            assert.strictEqual((await col.find({ selector: { age: { $lt: Infinity } } }).exec()).length, 2);
-            assert.strictEqual((await col.find({ selector: { age: { $lt: -Infinity } } }).exec()).length, 0);
-
-            const emitted: number[] = [];
-            const sub = none.$.subscribe(docs => emitted.push(docs.length));
-            await waitUntil(() => emitted.length === 1);
-            await col.insert(schemaObjects.humanData('doc-c', 30));
-            assert.strictEqual((await all.exec()).length, 3);
-            assert.strictEqual((await none.exec()).length, 0);
-            sub.unsubscribe();
-            assert.deepStrictEqual(emitted, [0]);
-
-            col.database.close();
-        });
-        it('should share the cached query between equal queries when one has properties that are undefined', async () => {
-            const col = await createMemoryHumansCollection();
-            await col.bulkInsert([
-                schemaObjects.humanData('doc-a', 10),
-                schemaObjects.humanData('doc-b', 20)
-            ]);
-            const options: { limit?: number; index?: string[]; } = {};
-
-            const plain = col.find({ selector: { firstName: 'null' } });
-            assert.ok(plain === col.find({ selector: { firstName: 'null' }, limit: options.limit }));
-            assert.ok(plain === col.find({ selector: { firstName: 'null' }, index: options.index }));
-            assert.ok(
-                col.find({ selector: { firstName: 'annull' } }).limit(2) ===
-                col.find({ selector: { firstName: 'annull' }, limit: 2 })
-            );
-            assert.ok(
-                col.find({ selector: { firstName: 'null' } }).sort({ age: 'asc' }) ===
-                col.find({ selector: { firstName: 'null' }, sort: [{ age: 'asc' }] })
-            );
-
-            const all = col.find({ selector: { age: { $gt: -Infinity } } });
-            assert.ok(all === col.find({ selector: { age: { $gt: -Infinity } }, limit: options.limit }));
-            assert.ok(all !== col.find({ selector: { age: { $gt: Infinity } }, limit: options.limit }));
-            assert.ok(
-                col.find({ selector: { age: { $gt: -Infinity, $lt: Infinity } } }) !==
-                col.find({ selector: { age: { $gt: Infinity, $lt: -Infinity } } })
-            );
-            assert.ok(
-                col.find({ selector: { firstName: 'Infinity', age: { $gt: Infinity } } }) !==
-                col.find({ selector: { firstName: 'Infinity', age: { $gt: NaN } } })
-            );
-            assert.strictEqual((await all.exec()).length, 2);
-
-            col.database.close();
-        });
-        it('should throw on a skip or limit that is NaN or negative', async () => {
-            const col = await createMemoryHumansCollection();
-            await col.bulkInsert([
-                schemaObjects.humanData('doc-a', 10),
-                schemaObjects.humanData('doc-b', 20)
-            ]);
-            assert.strictEqual((await col.find({ selector: {}, limit: Infinity }).exec()).length, 2);
-            assert.strictEqual((await col.find({ selector: {}, skip: Infinity }).exec()).length, 0);
-            assert.strictEqual((await col.find({ selector: {}, skip: 0, limit: 1 }).exec()).length, 1);
-            const invalidParts = [
-                { limit: NaN },
-                { limit: -Infinity },
-                { skip: NaN },
-                { skip: -Infinity }
-            ];
-            for (const queryPart of invalidParts) {
-                await assertThrows(
-                    () => col.find({ selector: {}, ...queryPart }),
-                    'RxError',
-                    'QU22'
-                );
-            }
             col.database.close();
         });
 
@@ -1577,6 +1474,111 @@ describe('rx-query.test.ts', () => {
                 'RxError',
                 'QU19'
             );
+
+            c.database.close();
+        });
+        it('should throw on non-finite numbers because a query can only contain values that are valid JSON', async () => {
+            const c = await humansCollection.create(0);
+            const nonFiniteNumbers = [NaN, Infinity, -Infinity];
+            for (const value of nonFiniteNumbers) {
+                const invalidQueries: MangoQueryNoLimit<HumanDocumentType>[] = [
+                    { selector: { age: value } },
+                    { selector: { age: { $gt: value } } },
+                    { selector: { age: { $in: [1, value] } } },
+                    { selector: { age: { $not: { $lt: value } } } },
+                    { selector: { $or: [{ age: 1 }, { age: { $gt: value } }] } },
+                    { selector: { $and: [{ firstName: 'foobar' }, { $nor: [{ age: { $lte: value } }] }] } }
+                ];
+                for (const query of invalidQueries) {
+                    await assertThrows(() => c.find(query), 'RxError', 'QU22');
+                    await assertThrows(() => c.findOne(query), 'RxError', 'QU22');
+                }
+                await assertThrows(() => c.find({ selector: {}, skip: value }), 'RxError', 'QU22');
+                await assertThrows(() => c.find({ selector: {}, limit: value }), 'RxError', 'QU22');
+                await assertThrows(() => c.count({ selector: { age: { $gt: value } } }), 'RxError', 'QU22');
+                await assertThrows(() => c.find().limit(value), 'RxError', 'QU22');
+                await assertThrows(() => c.find().where('age').gt(value), 'RxError', 'QU22');
+            }
+
+            const error = await assertThrows(
+                () => c.find({ selector: { $or: [{ age: 1 }, { age: { $gt: -Infinity } }] } }),
+                'RxError',
+                'QU22'
+            );
+            assert.strictEqual((error as RxError).parameters.path, 'selector.$or.1.age.$gt');
+
+            const validQueries: MangoQuery<HumanDocumentType>[] = [
+                { selector: { age: { $gt: -Number.MAX_VALUE, $lt: Number.MAX_VALUE } } },
+                { selector: { age: { $in: [0, -1.5, Number.MAX_SAFE_INTEGER, Number.MIN_VALUE] } } },
+                { selector: { $or: [{ age: 1e300 }, { age: { $lte: -1e300 } }] }, skip: 0, limit: Number.MAX_SAFE_INTEGER }
+            ];
+            for (const query of validQueries) {
+                await c.find(query).exec();
+            }
+            await c.findOne({ selector: { age: { $gt: -Number.MAX_VALUE } } }).exec();
+
+            c.database.close();
+        });
+        it('should throw on other values that JSON cannot represent and accept all values that are valid JSON', async () => {
+            const c = await humansCollection.create(0);
+            class CustomValue {
+                public foo = 'bar';
+            }
+            const nonJsonValues: unknown[] = [
+                new Date(),
+                BigInt(1),
+                () => 'foobar',
+                Symbol('foobar'),
+                new Map([['foo', 'bar']]),
+                new Set(['foobar']),
+                new CustomValue()
+            ];
+            /**
+             * These values are not allowed by the typings of the query,
+             * so the queries have to be cast to check the runtime behavior.
+             */
+            for (const value of nonJsonValues) {
+                const invalidQueries = [
+                    { selector: { firstName: value } },
+                    { selector: { firstName: { $eq: value } } },
+                    { selector: { firstName: { $in: ['foobar', value] } } },
+                    { selector: { $or: [{ firstName: 'foobar' }, { lastName: { $ne: value } }] } },
+                    { selector: {}, sort: [{ firstName: value }] },
+                    { selector: {}, index: value }
+                ] as MangoQueryNoLimit<HumanDocumentType>[];
+                for (const query of invalidQueries) {
+                    await assertThrows(() => c.find(query), 'RxError', 'QU22');
+                    await assertThrows(() => c.findOne(query), 'RxError', 'QU22');
+                }
+                await assertThrows(
+                    () => c.find({ selector: {}, skip: value } as MangoQuery<HumanDocumentType>),
+                    'RxError',
+                    'QU22'
+                );
+                await assertThrows(
+                    () => c.find({ selector: {}, limit: value } as MangoQuery<HumanDocumentType>),
+                    'RxError',
+                    'QU22'
+                );
+                await assertThrows(
+                    () => c.count({ selector: { firstName: value } } as MangoQuery<HumanDocumentType>),
+                    'RxError',
+                    'QU22'
+                );
+            }
+
+            const validQueries: MangoQueryNoLimit<HumanDocumentType>[] = [
+                { selector: { lastName: { $ne: null } } },
+                { selector: { lastName: { $in: ['foobar', ''] }, age: { $exists: true } } },
+                { selector: { firstName: { $regex: '^foo.*bar$', $options: 'i' } } },
+                { selector: { $and: [{ $or: [{ firstName: { $not: { $regex: 'foo' } } }, { age: { $gte: 0 } }] }] } },
+                { selector: {}, sort: [{ age: 'desc' }, { passportId: 'asc' }] }
+            ];
+            for (const query of validQueries) {
+                await c.find(query).exec();
+                await c.findOne(query).exec();
+            }
+            await c.find({ selector: { lastName: { $ne: null } }, skip: 1, limit: 2 }).exec();
 
             c.database.close();
         });

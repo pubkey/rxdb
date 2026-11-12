@@ -1,0 +1,11 @@
+{
+    "$schema": "./schema.json",
+    "text": "ADD a dev-mode check that throws the error `QU22` when a query contains a value that JSON cannot represent, like `NaN`, `Infinity`, `-Infinity`, `bigint`, a function or a `Date`, in its `selector`, `sort`, `skip`, `limit` or `index`. RxDB queries are JSON, so such values are not supported. Before, they were silently written as `null` or dropped, so that for example `{$gt: -Infinity}` and `{$gt: Infinity}` shared one cached `RxQuery`",
+    "links": [
+        {
+            "url": "https://github.com/pubkey/rxdb/pull/9713",
+            "linkText": "#9713"
+        }
+    ],
+    "priority": 5
+}

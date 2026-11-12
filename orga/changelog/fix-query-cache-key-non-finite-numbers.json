@@ -1,6 +1,0 @@
-{
-    "$schema": "./schema.json",
-    "text": "FIX queries that differ only in `Infinity`, `-Infinity` or `NaN` (like `{$gt: -Infinity}` and `{$gt: Infinity}`) shared one cached `RxQuery` and returned each other's results. A `skip` or `limit` that is `NaN` or negative now throws the error `QU22`",
-    "links": [],
-    "priority": 5
-}

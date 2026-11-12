@@ -484,28 +484,6 @@ export class RxQueryBase<
                 other: this.other
             }, true);
             value = JSON.stringify(stringObj);
-            /**
-             * JSON writes Infinity, -Infinity and NaN as null.
-             * Queries that differ only in these values must not get the same key,
-             * so each non-finite number is appended together with its position
-             * among the values that JSON wrote as null.
-             * A property with the value undefined is not part of the JSON string
-             * and therefore does not count, only an undefined array item is written as null.
-             * @performance Only queries whose string contains 'null' need the second run.
-             */
-            if (value.includes('null')) {
-                let nullPosition = 0;
-                JSON.stringify(stringObj, function (this: any, _k, v) {
-                    const nonFinite = typeof v === 'number' && !isFinite(v);
-                    if (nonFinite) {
-                        value += ',' + nullPosition + ':' + v;
-                    }
-                    if (nonFinite || v === null || (v === undefined && Array.isArray(this))) {
-                        nullPosition++;
-                    }
-                    return v;
-                });
-            }
         }
         this.toString = () => value;
         return value;
@@ -694,13 +672,6 @@ export function createRxQuery<RxDocType>(
         collection,
         other
     });
-
-    if (!((queryObj.skip ?? 0) >= 0 && (queryObj.limit ?? 0) >= 0)) {
-        throw newRxError('QU22', {
-            collection: collection.name,
-            query: queryObj
-        });
-    }
 
     let ret = new RxQueryBase<RxDocType, any>(op, queryObj, collection, other);
 

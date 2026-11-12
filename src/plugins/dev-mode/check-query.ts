@@ -74,6 +74,7 @@ export function checkQuery(args: RxPluginPreCreateRxQueryArgs) {
     }
 
     ensureObjectDoesNotContainRegExp(args.queryObj);
+    ensureQueryIsValidJson(args.queryObj, args.queryObj, '');
 }
 
 
@@ -221,6 +222,48 @@ export function ensureObjectDoesNotContainRegExp(selector: any) {
             ensureObjectDoesNotContainRegExp(value);
         }
     });
+}
+
+/**
+ * RxDB queries are JSON, so they can only contain values
+ * that JSON.stringify() writes without dropping or changing them.
+ * Throws on non-finite numbers (NaN, Infinity, -Infinity), bigint,
+ * functions, symbols and on objects that are not plain objects or arrays,
+ * like Date, Map, Set or class instances.
+ * A value of undefined is not handled here because checkMangoQuery() throws QU19 for it.
+ * @recursive
+ */
+export function ensureQueryIsValidJson(
+    query: any,
+    value: any,
+    path: string
+) {
+    const type = typeof value;
+    let valid = type !== 'function' && type !== 'symbol' && type !== 'bigint';
+    if (type === 'number') {
+        valid = Number.isFinite(value);
+    } else if (type === 'object' && value !== null) {
+        /**
+         * A plain object has Object.prototype or null as prototype.
+         * The prototype is not compared by reference so that plain
+         * objects of other realms (iframe, vm context) are also accepted.
+         */
+        const proto = Object.getPrototypeOf(value);
+        valid = Array.isArray(value) || proto === null || Object.getPrototypeOf(proto) === null;
+        if (valid) {
+            Object.keys(value).forEach(key => ensureQueryIsValidJson(
+                query,
+                value[key],
+                path ? path + '.' + key : key
+            ));
+        }
+    }
+    if (!valid) {
+        throw newRxError('QU22', {
+            path,
+            query
+        });
+    }
 }
 
 
