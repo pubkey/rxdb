@@ -7,7 +7,7 @@ import type {
 } from '../../types/plugins/webmcp.d.ts';
 import { getFromMapOrCreate } from '../utils/index.ts';
 import { REPLICATION_STATE_BY_COLLECTION } from '../replication/index.ts';
-import { filter, first } from 'rxjs';
+import { filter, take } from 'rxjs';
 import { newRxError } from '../../rx-error.ts';
 import { getChangedDocumentsSince } from '../../rx-storage-helper.ts';
 
@@ -56,6 +56,12 @@ export function getWebMCPTargetFromCollection(collection: RxCollection<any>): We
                 return Promise.reject(closedError());
             }
             return new Promise<void>((res, rej) => {
+                const removeOnClose = () => {
+                    const index = collection.onClose.indexOf(onClose);
+                    if (index >= 0) {
+                        collection.onClose.splice(index, 1);
+                    }
+                };
                 const onClose = () => {
                     sub.unsubscribe();
                     rej(closedError());
@@ -63,16 +69,26 @@ export function getWebMCPTargetFromCollection(collection: RxCollection<any>): We
                 /**
                  * The event bulks of a collection also contain the writes
                  * to its local documents, which are not changes of the collection.
+                 * When the database is closed, the stream completes before the
+                 * onClose handlers of the collection run, so a stream that ends
+                 * without a change must reject the call here.
                  */
                 const sub = collection.eventBulks$.pipe(
                     filter((bulk: RxChangeEventBulk<any>) => !bulk.isLocal),
-                    first()
-                ).subscribe(() => {
-                    const index = collection.onClose.indexOf(onClose);
-                    if (index >= 0) {
-                        collection.onClose.splice(index, 1);
+                    take(1)
+                ).subscribe({
+                    next: () => {
+                        removeOnClose();
+                        res();
+                    },
+                    error: () => {
+                        removeOnClose();
+                        rej(closedError());
+                    },
+                    complete: () => {
+                        removeOnClose();
+                        rej(closedError());
                     }
-                    res();
                 });
                 collection.onClose.push(onClose);
             });

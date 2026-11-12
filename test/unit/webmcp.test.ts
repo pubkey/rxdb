@@ -206,6 +206,55 @@ describe('webmcp.test.ts', () => {
         assert.strictEqual(result, 'COL21');
     });
 
+    it('wait_changes tool should reject without an uncaught error on all ways to close', async () => {
+        const closeWays: ((database: any) => Promise<any>)[] = [
+            database => database.humans.close(),
+            database => database.humans.remove(),
+            database => database.close(),
+            database => database.remove()
+        ];
+        for (const closeWay of closeWays) {
+            const database = await createRxDatabase({
+                name: 'webmcp-close-' + Math.random().toString(36).substring(2, 10),
+                storage: config.storage.getStorage()
+            });
+            await database.addCollections({
+                humans: {
+                    schema: schemas.human
+                }
+            });
+            const toolsByName = new Map<string, any>();
+            database.registerWebMCP({
+                modelContext: {
+                    registerTool(tool: any) {
+                        toolsByName.set(tool.name, tool);
+                    }
+                }
+            });
+            const waitTool = toolsByName.get(`rxdb_wait_changes_${database.name}_humans_0`);
+            const settled = [waitTool.execute({}), waitTool.execute({})].map(
+                (waitPromise: Promise<any>) => waitPromise.then(
+                    () => 'resolved',
+                    (err: any) => err.code
+                )
+            );
+            await closeWay(database);
+            const results = await Promise.race([
+                Promise.all(settled),
+                new Promise(res => setTimeout(() => res('pending'), 200))
+            ]);
+            assert.deepStrictEqual(results, ['COL21', 'COL21']);
+            if (!database.closed) {
+                await database.close();
+            }
+        }
+        /**
+         * An error that no subscriber handles is rethrown by RxJS
+         * in a timeout, where the test runner reports it as uncaught.
+         */
+        await new Promise(res => setTimeout(res, 50));
+    });
+
     itWithDom('changes tool should return documents without internal meta fields', async () => {
         db.registerWebMCP();
         const tools = getTools();
