@@ -13,7 +13,7 @@ import {
     RX_LOCAL_DOCUMENT_SCHEMA
 } from '../local-documents/local-documents-helper.ts';
 import {
-    matchesViewerSelector,
+    getViewerSelectorMatcher,
     sortViewerDocs,
     VIEWER_INTERNAL_FIELDS
 } from './dbviewer-helpers.ts';
@@ -187,7 +187,7 @@ export function createLiveDataSource(database: RxDatabase): ViewerDataSource {
                 if (!selector) {
                     return docs.length;
                 }
-                return docs.filter(doc => matchesViewerSelector(doc, selector)).length;
+                return docs.filter(getViewerSelectorMatcher(selector)).length;
             }
             const collection = getLiveCollection(database, collectionName);
             if (!collection) {
@@ -203,7 +203,7 @@ export function createLiveDataSource(database: RxDatabase): ViewerDataSource {
             const system = findSystemCollection(collectionName);
             if (system) {
                 const all = await readAllSystemDocs(system);
-                const matching = sortViewerDocs(all.filter(doc => matchesViewerSelector(doc, selector)), sort);
+                const matching = sortViewerDocs(all.filter(getViewerSelectorMatcher(selector)), sort, system.primaryPath);
                 return {
                     docs: matching.slice(skip, skip + limit),
                     total: matching.length
@@ -331,11 +331,11 @@ export function createDumpDataSource(
             if (!selector) {
                 return docs.length;
             }
-            return docs.filter(doc => matchesViewerSelector(doc, selector)).length;
+            return docs.filter(getViewerSelectorMatcher(selector)).length;
         },
         async query(collectionName: string, selector: any, skip: number, limit: number, sort?: ViewerSortPart[]) {
             const docs = collectionsByName.get(collectionName) || [];
-            const matching = sortViewerDocs(docs.filter(doc => matchesViewerSelector(doc, selector)), sort);
+            const matching = sortViewerDocs(docs.filter(getViewerSelectorMatcher(selector)), sort, guessPrimaryPath(docs));
             return {
                 docs: matching.slice(skip, skip + limit),
                 total: matching.length
