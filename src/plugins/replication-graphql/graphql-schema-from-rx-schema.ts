@@ -87,8 +87,8 @@ export function graphQLSchemaFromRxSchema(
         // input
         const inputSchema = stripKeysFromSchema(schema, ensureNotFalsy(collectionSettings.ignoreInputKeys));
         const outputSchema = stripKeysFromSchema(schema, ensureNotFalsy(collectionSettings.ignoreOutputKeys));
-        ensureSchemaHasGraphQLTypes(collectionName, inputSchema);
-        ensureSchemaHasGraphQLTypes(collectionName, outputSchema);
+        normalizeSchemaForGraphQL(collectionName, inputSchema);
+        normalizeSchemaForGraphQL(collectionName, outputSchema);
 
         const inputGraphQL = getGraphqlSchemaFromJsonSchema({
             rootName: collectionNameInput,
@@ -332,20 +332,35 @@ function stripKeysFromSchema<T>(schema: RxJsonSchema<T>, strip: string[]): RxJso
 }
 
 /**
- * A GraphQL type must list all of its fields.
- * Therefore an object without 'properties' and an array without 'items'
- * have no GraphQL type that could be generated from the JSON schema.
+ * Prepares the schema for get-graphql-from-jsonschema
+ * and throws when a field has no GraphQL type:
+ * - A GraphQL type must list all of its fields.
+ *   Therefore an object without 'properties' and an array without 'items'
+ *   have no GraphQL type that could be generated from the JSON schema.
+ * - A field without 'type' (and without 'oneOf' or 'anyOf'), a field that can only be null
+ *   and a union of an object or array with another type have no GraphQL type either.
+ * - GraphQL has no null type, a field is nullable when it is not marked as required.
+ *   Therefore 'null' is removed from the types of a field
+ *   and the field is removed from the required fields of its parent.
+ * Mutates the given schema.
+ * @returns true when the field can be null
  */
-function ensureSchemaHasGraphQLTypes(
+function normalizeSchemaForGraphQL(
     collectionName: string,
     schemaPart: any,
     path: string[] = []
-) {
-    const types: string[] = Array.isArray(schemaPart.type) ? schemaPart.type : [schemaPart.type];
+): boolean {
+    if (schemaPart.type === undefined && (schemaPart.oneOf || schemaPart.anyOf)) {
+        return false;
+    }
+    const givenTypes: string[] = Array.isArray(schemaPart.type) ? schemaPart.type : [schemaPart.type];
+    const types = givenTypes.filter(type => type && type !== 'null');
     const isArray = types.includes('array');
     const isObject = !isArray && types.includes('object');
     const items = schemaPart.items;
     if (
+        types.length === 0 ||
+        (types.length > 1 && (isArray || isObject)) ||
         (isObject && !schemaPart.properties) ||
         (isArray && (!items || typeof items !== 'object' || Array.isArray(items)))
     ) {
@@ -354,13 +369,18 @@ function ensureSchemaHasGraphQLTypes(
             field: path.join('.')
         });
     }
+    schemaPart.type = types.length === 1 ? types[0] : types;
     if (isArray) {
-        ensureSchemaHasGraphQLTypes(collectionName, items, path);
+        normalizeSchemaForGraphQL(collectionName, items, path);
     } else if (isObject) {
         Object.entries(schemaPart.properties).forEach(([key, subSchema]) => {
-            ensureSchemaHasGraphQLTypes(collectionName, subSchema, path.concat(key));
+            const isNullable = normalizeSchemaForGraphQL(collectionName, subSchema, path.concat(key));
+            if (isNullable && Array.isArray(schemaPart.required)) {
+                schemaPart.required = schemaPart.required.filter((requiredKey: string) => requiredKey !== key);
+            }
         });
     }
+    return givenTypes.includes('null');
 }
 
 /**
