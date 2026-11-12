@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `database.addCollections()` now waits for a pending `collection.remove()` or `collection.close()` of the same collection name. Before, the pending `remove()` closed and emptied the newly added collection, so that later writes threw `COL21` and documents were lost",
+    "links": [],
+    "priority": 5
+}

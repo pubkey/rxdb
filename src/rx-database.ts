@@ -241,6 +241,10 @@ export class RxDatabaseBase<
     public onClose: (() => MaybePromise<any>)[] = [];
     public closed: boolean = false;
     public collections: Collections = {} as any;
+    /**
+     * Pending close() and remove() calls of collections by collection name.
+     */
+    public closingCollections = new Map<string, Promise<any>>();
     public states: { [name: string]: RxState<any, Reactivity>; } = {};
 
     /**
@@ -354,6 +358,8 @@ export class RxDatabaseBase<
                 jsonSchemas[collectionName] = rxJsonSchema;
                 const schema = createRxSchema(rxJsonSchema, this.hashFunction);
                 schemas[collectionName] = schema;
+
+                await this.closingCollections.get(name);
 
                 // collection already exists
                 if ((this.collections as any)[name]) {

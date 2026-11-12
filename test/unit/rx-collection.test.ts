@@ -2298,6 +2298,64 @@ describe('rx-collection.test.ts', () => {
 
                     await db.close();
                 });
+                it('should wait for a pending remove() or close() when the collection is re-added', async () => {
+                    const db = await createRxDatabase({
+                        name: randomToken(10),
+                        storage: config.storage.getStorage()
+                    });
+                    const creator = {
+                        human: {
+                            schema: schemas.primaryHuman
+                        }
+                    };
+                    type ReAddMode = 'same-tick' | 'microtask' | 'closed-event';
+                    const modes: ReAddMode[] = ['same-tick', 'microtask', 'closed-event'];
+                    for (const mode of modes) {
+                        const oldCollection = (await db.addCollections(creator)).human;
+                        await oldCollection.insert(schemaObjects.humanData('old-' + mode));
+
+                        let addPromise: Promise<{ human: RxCollection<HumanDocumentType>; }> | undefined;
+                        const sub = db.collections$.subscribe(event => {
+                            if (mode === 'closed-event' && event.type === 'CLOSED') {
+                                addPromise = db.addCollections(creator);
+                            }
+                        });
+                        const removePromise = oldCollection.remove();
+                        if (mode === 'same-tick') {
+                            addPromise = db.addCollections(creator);
+                        } else if (mode === 'microtask') {
+                            await Promise.resolve();
+                            addPromise = db.addCollections(creator);
+                        } else {
+                            await waitUntil(() => !!addPromise);
+                        }
+                        const newCollection = (await ensureNotFalsy(addPromise)).human;
+                        sub.unsubscribe();
+                        await newCollection.insert(schemaObjects.humanData('new-' + mode));
+                        await removePromise;
+
+                        assert.strictEqual(newCollection.closed, false);
+                        await newCollection.insert(schemaObjects.humanData('new2-' + mode));
+                        const docs = await newCollection.find({ sort: [{ passportId: 'asc' }] }).exec();
+                        assert.deepStrictEqual(
+                            docs.map(d => d.passportId),
+                            ['new-' + mode, 'new2-' + mode]
+                        );
+                        await newCollection.remove();
+                    }
+
+                    // a pending close() keeps the documents
+                    const closeCollection = (await db.addCollections(creator)).human;
+                    await closeCollection.insert(schemaObjects.humanData('kept'));
+                    const closePromise = closeCollection.close();
+                    const reopened = (await db.addCollections(creator)).human;
+                    await closePromise;
+                    await reopened.insert(schemaObjects.humanData('kept2'));
+                    const keptDocs = await reopened.find({ sort: [{ passportId: 'asc' }] }).exec();
+                    assert.deepStrictEqual(keptDocs.map(d => d.passportId), ['kept', 'kept2']);
+
+                    await db.close();
+                });
                 it('should delete when older versions exist', async () => {
                     const db = await createRxDatabase({
                         name: randomToken(10),

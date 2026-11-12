@@ -1091,7 +1091,10 @@ export class RxCollectionBase<
         return ret;
     }
 
-    async close(): Promise<boolean> {
+    close(): Promise<boolean> {
+        return trackClosing(this, this._close());
+    }
+    async _close(): Promise<boolean> {
         if (this.closed) {
             return PROMISE_RESOLVE_FALSE;
         }
@@ -1145,7 +1148,10 @@ export class RxCollectionBase<
     /**
      * remove all data of the collection
      */
-    async remove(): Promise<any> {
+    remove(): Promise<any> {
+        return trackClosing(this, this._remove());
+    }
+    async _remove(): Promise<any> {
         await this.close();
         await Promise.all(this.onRemove.map(fn => fn()));
         /**
@@ -1173,6 +1179,23 @@ export class RxCollectionBase<
  * adds the hook-functions to the collections prototype
  * this runs only once
  */
+/**
+ * Stores the pending close() or remove() call at the database
+ * so that addCollections() with the same collection name
+ * can wait until the storage of the collection is closed or removed.
+ */
+function trackClosing<T>(
+    collection: RxCollectionBase<any, any, any, any, any>,
+    promise: Promise<T>
+): Promise<T> {
+    const closing = collection.database.closingCollections;
+    closing.set(
+        collection.name,
+        Promise.all([closing.get(collection.name), promise.catch(() => { })])
+    );
+    return promise;
+}
+
 function _applyHookFunctions(
     collection: RxCollection<any, any>
 ) {
