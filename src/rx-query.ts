@@ -771,10 +771,13 @@ function _isResultsInSync(rxQuery: RxQueryBase<any, any>): boolean {
 /**
  * Returns true if the query has a result set
  * that contains all change events known to this instance.
+ * Always false when the collection has awaitBeforeReads functions,
+ * because it cannot be known synchronously if a read has to wait for them.
  */
 function _isResultCurrent(rxQuery: RxQueryBase<any, any>): boolean {
     return !!rxQuery._result &&
         !rxQuery._execRunning &&
+        rxQuery.collection.awaitBeforeReads.size === 0 &&
         _isResultsInSync(rxQuery);
 }
 
