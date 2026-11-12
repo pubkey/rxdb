@@ -69,7 +69,7 @@ import type {
     RxStorageDefaultCheckpoint,
     WithDeleted
 } from '../../plugins/core/index.mjs';
-import { firstValueFrom, map, Subject, timer } from 'rxjs';
+import { filter, firstValueFrom, map, Subject, timer } from 'rxjs';
 import type { HumanWithCompositePrimary, HumanWithTimestampDocumentType } from '../../src/plugins/test-utils/schema-objects.ts';
 import { RxDBAttachmentsPlugin } from '../../plugins/attachments/index.mjs';
 import { RxDBMigrationSchemaPlugin } from '../../plugins/migration-schema/index.mjs';
@@ -1745,6 +1745,102 @@ describe('replication.test.ts', () => {
 
             localCollection.database.close();
             remoteCollection.database.close();
+        });
+        it('should apply the pull.stream$ event of a document that was pushed by the restart', async () => {
+            type ServerCheckpoint = { id: string; updatedAt: number; };
+            const collection = await humansCollection.createHumanWithTimestamp(0, undefined, false);
+            const server = new Map<string, WithDeleted<TestDocType>>();
+            let serverClock = 1000;
+            const pullStream$ = new Subject<RxReplicationPullStreamItem<TestDocType, ServerCheckpoint>>();
+            const otherClientDoc: WithDeleted<TestDocType> = Object.assign(
+                schemaObjects.humanWithTimestampData({ id: 'other-client-doc' }),
+                { _deleted: false }
+            );
+            const otherClientDocIsLocal = firstValueFrom(
+                collection.findOne(otherClientDoc.id).$.pipe(filter(doc => !!doc))
+            );
+
+            const replicationState = replicateRxCollection<TestDocType, ServerCheckpoint>({
+                collection,
+                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                live: true,
+                pull: {
+                    stream$: pullStream$.asObservable(),
+                    handler: (checkpoint, batchSize) => {
+                        const minUpdatedAt = checkpoint ? checkpoint.updatedAt : 0;
+                        const documents = Array.from(server.values())
+                            .filter(doc => doc.updatedAt > minUpdatedAt)
+                            .sort((a, b) => a.updatedAt - b.updatedAt)
+                            .slice(0, batchSize);
+                        const last = lastOfArray(documents);
+                        return Promise.resolve({
+                            documents,
+                            checkpoint: last ? { id: last.id, updatedAt: last.updatedAt } : checkpoint
+                        });
+                    }
+                },
+                push: {
+                    handler: async (rows) => {
+                        const conflicts: WithDeleted<TestDocType>[] = [];
+                        const written: WithDeleted<TestDocType>[] = [];
+                        rows.forEach(row => {
+                            const masterState = server.get(row.newDocumentState.id);
+                            if (
+                                masterState &&
+                                (
+                                    !row.assumedMasterState ||
+                                    row.assumedMasterState.updatedAt !== masterState.updatedAt
+                                )
+                            ) {
+                                conflicts.push(masterState);
+                            } else {
+                                // the server sets the updatedAt field
+                                const doc = Object.assign({}, row.newDocumentState, { updatedAt: ++serverClock });
+                                server.set(doc.id, doc);
+                                written.push(doc);
+                            }
+                        });
+                        if (written.length > 0) {
+                            /**
+                             * The server emits the pushed documents on the stream
+                             * together with a write of another client,
+                             * before it answers the push request.
+                             */
+                            const otherDoc = Object.assign({}, otherClientDoc, { updatedAt: ++serverClock });
+                            server.set(otherDoc.id, otherDoc);
+                            pullStream$.next({
+                                documents: written.concat([otherDoc]),
+                                checkpoint: { id: otherDoc.id, updatedAt: otherDoc.updatedAt }
+                            });
+                            /**
+                             * The push response arrives after the client
+                             * had the chance to process the stream event.
+                             */
+                            await Promise.race([
+                                otherClientDocIsLocal,
+                                wait(100)
+                            ]);
+                        }
+                        return conflicts;
+                    }
+                }
+            });
+            ensureReplicationHasNoErrors(replicationState);
+            await replicationState.awaitInSync();
+
+            await replicationState.pause();
+            await collection.insert(schemaObjects.humanWithTimestampData({ id: 'pushed-by-restart', updatedAt: 1 }));
+            await replicationState.start();
+
+            await otherClientDocIsLocal;
+            await replicationState.awaitInSync();
+
+            const serverDoc = ensureNotFalsy(server.get('pushed-by-restart'));
+            assert.strictEqual(serverDoc.updatedAt, 1001);
+            const localDoc = await collection.findOne('pushed-by-restart').exec(true);
+            assert.strictEqual(localDoc.updatedAt, serverDoc.updatedAt);
+
+            await collection.database.close();
         });
     });
     describe('pull-only', () => {

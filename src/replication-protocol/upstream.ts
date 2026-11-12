@@ -239,9 +239,13 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
                 }
 
                 if (taskWithTime.task === 'RESYNC') {
-                    state.events.active.up.next(false);
+                    /**
+                     * The upstream must stay active while the checkpoint iteration
+                     * pushes, so that the downstream delays the stream events
+                     * of the pushed documents until their assumed master state is stored.
+                     */
                     await upstreamInitialSync();
-                    return;
+                    return processTasks();
                 }
 
                 /**
