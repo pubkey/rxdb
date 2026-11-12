@@ -1617,6 +1617,47 @@ describe('replication.test.ts', () => {
             await localCollection.database.close();
             await remoteCollection.database.close();
         });
+        it('should take the deleted master state after a push conflict on a document with attachments', async () => {
+            const localCollection = await humansCollection.createAttachments(0);
+            const remoteCollection = await humansCollection.createAttachments(0);
+
+            const localDoc = await localCollection.insert(schemaObjects.humanData('push-conflict-deleted-doc'));
+            await localDoc.putAttachment({
+                id: 'fork.txt',
+                data: createBlob('fork data', 'text/plain'),
+                type: 'text/plain'
+            });
+
+            const replicationState = replicateRxCollection({
+                collection: localCollection,
+                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                live: true,
+                retryTime: 50,
+                push: {
+                    handler: getPushHandler(remoteCollection),
+                }
+            });
+            const errors: (RxError | RxTypeError)[] = [];
+            replicationState.error$.subscribe(err => errors.push(err));
+            await replicationState.awaitInSync();
+
+            const remoteDoc = await remoteCollection.findOne('push-conflict-deleted-doc').exec(true);
+            assert.strictEqual(await ensureNotFalsy(remoteDoc.getAttachment('fork.txt')).getStringData(), 'fork data');
+            await remoteDoc.remove();
+
+            await localDoc.getLatest().incrementalPatch({ firstName: 'fork change' });
+            await Promise.race([
+                replicationState.awaitInSync(),
+                firstValueFrom(replicationState.error$)
+            ]);
+
+            assert.deepStrictEqual(errors.map(err => err.code), []);
+            const localDocAfter = await localCollection.findOne('push-conflict-deleted-doc').exec();
+            assert.strictEqual(localDocAfter, null);
+
+            await localCollection.database.close();
+            await remoteCollection.database.close();
+        });
     });
     describe('start/pause/restart', () => {
         it('should reject start() with the error from _start()', async () => {
