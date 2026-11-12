@@ -281,6 +281,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
             identifier: 'rxdbreplication' + this.replicationIdentifier,
             conflictHandler: this.collection.conflictHandler,
             waitBeforePersist: this.push ? this.push.waitBeforePersist : undefined,
+            retryTime: this.retryTime,
             replicationHandler: {
                 masterChangeStream$: this.remoteEvents$.asObservable().pipe(
                     filter((_v: RxReplicationPullStreamItem<RxDocType, CheckpointType>) => !!this.pull || _v === 'RESYNC'),

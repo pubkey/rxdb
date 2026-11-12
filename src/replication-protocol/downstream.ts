@@ -32,7 +32,8 @@ import {
 } from './checkpoint.ts';
 import {
     stripAttachmentsDataFromMetaWriteRows,
-    writeDocToDocState
+    writeDocToDocState,
+    writeMetaRowsOfPulledDocuments
 } from './helper.ts';
 import {
     getAssumedMasterState,
@@ -519,7 +520,8 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
                 }
             }).then(() => {
                 if (!state.skipStoringPullMeta && useMetaWriteRows.length > 0) {
-                    return state.input.metaInstance.bulkWrite(
+                    return writeMetaRowsOfPulledDocuments(
+                        state,
                         stripAttachmentsDataFromMetaWriteRows(state, useMetaWriteRows),
                         'replication-down-write-meta'
                     ).then(metaWriteResult => {

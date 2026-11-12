@@ -167,6 +167,13 @@ export type RxStorageInstanceReplicationInput<RxDocType> = {
     hashFunction: HashFunction;
     skipStoringPullMeta: boolean;
 
+    /**
+     * Time in milliseconds to wait
+     * before a failed read from the forkInstance is retried.
+     * [default=200]
+     */
+    retryTime?: number;
+
     initialCheckpoint?: {
         upstream?: any;
         downstream?: any;

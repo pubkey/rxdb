@@ -1,0 +1,5 @@
+{
+    "text": "FIX a single rejected write of the replication meta data during a pull left the pulled documents without meta data, so a later local change of such a document was pushed without the assumed master state and dropped as a conflict, and `error$` emitted the plain error of the storage. The error is now emitted on `error$` as `RC_PULL` and the write is retried after `retryTime`.",
+    "links": [],
+    "priority": 5
+}
