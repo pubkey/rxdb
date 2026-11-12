@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX the query-builder plugin dropped `limit(0)` when another building step like `sort()` or `where()` was chained after it, so the query returned all matching documents",
+    "links": [],
+    "priority": 4
+}
