@@ -1074,7 +1074,13 @@ export class RxCollectionBase<
             .then(() => Promise.all(
                 hooks.parallel
                     .map((hook: any) => hook(data, instance))
-            ));
+            ))
+            /**
+             * The collection can be closed while an async hook is running.
+             * The pre-hooks run directly before a write to the storage,
+             * which must not happen on a closed collection.
+             */
+            .then(() => when === 'pre' && this.hasHooks(when, key) && ensureRxCollectionIsNotClosed(this));
     }
 
     /**
