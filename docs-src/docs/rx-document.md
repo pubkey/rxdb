@@ -204,7 +204,7 @@ To do this the modifying operations of a document accept setting the `_deleted` 
 // update() and remove()
 await doc.update({
   $set: {
-    deletedAt: new Date().getTime(),
+    done: true,
     _deleted: true
   }
 });

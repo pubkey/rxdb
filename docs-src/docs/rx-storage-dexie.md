@@ -56,14 +56,13 @@ import { createRxDatabase } from 'rxdb/plugins/core';
 import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
 
 //> npm install fake-indexeddb --save
-const fakeIndexedDB = require('fake-indexeddb');
-const fakeIDBKeyRange = require('fake-indexeddb/lib/FDBKeyRange');
+import { indexedDB, IDBKeyRange } from 'fake-indexeddb';
 
 const myDatabase = await createRxDatabase({
     name: 'exampledb',
     storage: getRxStorageDexie({
-        indexedDB: fakeIndexedDB,
-        IDBKeyRange: fakeIDBKeyRange
+        indexedDB,
+        IDBKeyRange
     })
 });
 

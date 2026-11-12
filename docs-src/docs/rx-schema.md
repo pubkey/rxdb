@@ -370,6 +370,7 @@ Also the following class properties of `RxDocument` cannot be used as top level 
     "incrementalUpdate",
     "updateCRDT",
     "putAttachment",
+    "putAttachments",
     "putAttachmentBase64",
     "getAttachment",
     "allAttachments",

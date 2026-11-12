@@ -44,9 +44,9 @@ const myPlugin = {
          * some methods are static and can be overwritten in the overwritable-object
          */
         overwritable: {
-            validatePassword: function(password) {
-                if (password && typeof password !== 'string' || password.length < 10)
-                    throw new TypeError('password is not valid');
+            // changes the message of the errors that RxDB throws
+            tunnelErrorMessage: function(code) {
+                return 'RxDB error with the code ' + code;
             }
         },
         /**
