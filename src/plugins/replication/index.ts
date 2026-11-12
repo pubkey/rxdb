@@ -234,12 +234,19 @@ export class RxReplicationState<RxDocType, CheckpointType> {
                 if (this.isStopped() || this.collection.closed) {
                     return;
                 }
-                const pausedDuringMigration = this.pausedDuringMigration;
-                const started = this.start();
-                this.pausedDuringMigration = pausedDuringMigration;
-                return started;
+                return this.queueStart();
             });
         }
+        return this.queueStart();
+    }
+
+    /**
+     * Adds the start to the startQueue.
+     * Replication plugins replace start() on the instance to open their streams,
+     * so everything that has to run again inside of the RxReplicationState
+     * must call this method and not start().
+     */
+    private queueStart(): Promise<void> {
         const startPromise = this.startQueue.then(() => {
             return this._start();
         });

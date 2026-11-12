@@ -49,6 +49,7 @@ import {
 import { RxDBMigrationPlugin } from '../../plugins/migration-schema/index.mjs';
 import { RxDBAttachmentsPlugin } from '../../plugins/attachments/index.mjs';
 import { replicateRxCollection } from '../../plugins/replication/index.mjs';
+import { replicateCouchDB } from '../../plugins/replication-couchdb/index.mjs';
 import { ensureReplicationHasNoErrors } from '../../plugins/test-utils/index.mjs';
 import { SimpleHumanAgeDocumentType } from '../../src/plugins/test-utils/schema-objects.ts';
 import { RxDBLeaderElectionPlugin } from '../../plugins/leader-election/index.mjs';
@@ -1135,6 +1136,96 @@ describe('migration-schema.test.ts', function () {
             ]);
             assert.strictEqual(settled, true);
             assert.strictEqual(pullCalls, 0);
+        });
+        it('a replication plugin that is started before a manual migration must open only one pull stream', async () => {
+            type TodoDocType = {
+                id: string;
+                name: string;
+            };
+            const getSchema = (version: number) => ({
+                version,
+                primaryKey: 'id',
+                type: 'object',
+                properties: {
+                    id: {
+                        type: 'string',
+                        maxLength: 100
+                    },
+                    name: {
+                        type: 'string'
+                    }
+                },
+                required: ['id', 'name']
+            } as const);
+            const name = randomToken(10);
+            const db = await createRxDatabase<{ todos: RxCollection<TodoDocType>; }>({
+                name,
+                storage: config.storage.getStorage()
+            });
+            await db.addCollections({
+                todos: {
+                    schema: getSchema(0)
+                }
+            });
+            await db.todos.insert({ id: 'todo1', name: 'Learn RxDB' });
+            await db.close();
+
+            const db2 = await createRxDatabase<{ todos: RxCollection<TodoDocType>; }>({
+                name,
+                storage: config.storage.getStorage()
+            });
+            await db2.addCollections({
+                todos: {
+                    schema: getSchema(1),
+                    autoMigrate: false,
+                    migrationStrategies: {
+                        1: (oldDoc: TodoDocType) => oldDoc
+                    }
+                }
+            });
+
+            /**
+             * A CouchDB server without documents.
+             * Each longpoll request stays open for a short time
+             * so that two longpoll loops overlap.
+             */
+            let longpollRequests = 0;
+            let openLongpollRequests = 0;
+            let maxOpenLongpollRequests = 0;
+            const fetchMock: typeof fetch = async (input) => {
+                const url = typeof input === 'string' ? input : (input instanceof URL ? input.href : input.url);
+                if (url.includes('feed=longpoll')) {
+                    longpollRequests++;
+                    openLongpollRequests++;
+                    maxOpenLongpollRequests = Math.max(maxOpenLongpollRequests, openLongpollRequests);
+                    await wait(50);
+                    openLongpollRequests--;
+                }
+                if (url.includes('_changes')) {
+                    return new Response(JSON.stringify({ results: [], last_seq: 0 }), { status: 200 });
+                }
+                return new Response(JSON.stringify({ rows: [] }), { status: 200 });
+            };
+            const replicationState = replicateCouchDB<TodoDocType>({
+                replicationIdentifier: 'couchdb-before-migration',
+                collection: db2.todos,
+                url: 'http://localhost:1/todos/',
+                fetch: fetchMock,
+                live: true,
+                waitForLeadership: false,
+                pull: {}
+            });
+            ensureReplicationHasNoErrors(replicationState);
+            await wait(100);
+            await db2.todos.migratePromise();
+            await replicationState.awaitInSync();
+
+            const requestsAfterStart = longpollRequests;
+            await waitUntil(() => longpollRequests >= requestsAfterStart + 4, 5000);
+            assert.strictEqual(maxOpenLongpollRequests, 1);
+
+            await replicationState.cancel();
+            await db2.close();
         });
         /**
          * @link https://github.com/pubkey/rxdb/pull/7204
