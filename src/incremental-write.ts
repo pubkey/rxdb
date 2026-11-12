@@ -22,7 +22,10 @@ import {
     getHeightOfRevision,
     stripMetaDataFromDocument
 } from './plugins/utils/index.ts';
-import { getWrittenDocumentsFromBulkWriteResponse } from './rx-storage-helper.ts';
+import {
+    documentWriteErrorToRxError,
+    getWrittenDocumentsFromBulkWriteResponse
+} from './rx-storage-helper.ts';
 
 
 
@@ -191,7 +194,12 @@ export class IncrementalWriteQueue<RxDocType> {
                                 });
                         } else {
                             // other error -> must be thrown
-                            const rxError = rxStorageWriteErrorToRxError(error);
+                            const rxError = documentWriteErrorToRxError(
+                                this.storageInstance.collectionName,
+                                docId,
+                                error.writeRow.document,
+                                error
+                            ) || rxStorageWriteErrorToRxError(error);
                             items.forEach(item => item.reject(rxError));
                         }
                     });

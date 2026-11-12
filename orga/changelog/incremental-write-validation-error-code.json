@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `incrementalPatch()`, `incrementalModify()`, `incrementalUpdate()` and `incrementalUpsert()` reject with the error code `VD2` instead of `COL20` when the written data does not match the schema. This is the same error code with the same error parameters that `patch()`, `modify()`, `update()` and `upsert()` reject with",
+    "links": [],
+    "priority": 5
+}

@@ -22,7 +22,8 @@ import {
     RxDocumentData,
     RxStorageInstance,
     BulkWriteRow,
-    RxStorage
+    RxStorage,
+    RxError
 } from '../../plugins/core/index.mjs';
 
 import { wrappedValidateZSchemaStorage, ZSchemaClass } from '../../plugins/validate-z-schema/index.mjs';
@@ -626,6 +627,49 @@ validationImplementations.forEach(
                         'schema'
                     );
                     db.close();
+                });
+                it('incremental writes must reject with the same error code as the non-incremental writes', async () => {
+                    const db = await createRxDatabase({
+                        name: randomToken(10),
+                        storage
+                    });
+                    const collections = await db.addCollections({
+                        human: {
+                            schema: schemas.human
+                        }
+                    });
+                    const collection = collections.human;
+                    const docData = schemaObjects.humanData();
+                    const doc = await collection.insert(docData);
+                    const invalidData = Object.assign({}, docData, { age: -1 });
+
+                    const getRejection = async (fn: () => Promise<unknown>) => {
+                        const error = await assertThrows(fn, 'RxError');
+                        return error as RxError;
+                    };
+
+                    const patchError = await getRejection(() => doc.patch({ age: -1 }));
+                    assert.strictEqual(patchError.code, 'VD2');
+
+                    const incrementalErrors = [
+                        await getRejection(() => doc.incrementalPatch({ age: -1 })),
+                        await getRejection(() => doc.incrementalModify((data: typeof docData) => {
+                            data.age = -1;
+                            return data;
+                        })),
+                        await getRejection(() => collection.incrementalUpsert(invalidData))
+                    ];
+                    incrementalErrors.forEach(error => {
+                        assert.strictEqual(error.code, 'VD2');
+                        assert.strictEqual(error.parameters.collection, patchError.parameters.collection);
+                        assert.strictEqual(error.parameters.id, doc.primary);
+                        assert.strictEqual(error.parameters.writeError?.status, 422);
+                        assert.strictEqual(error.parameters.data.age, -1);
+                    });
+
+                    const latest = await collection.findOne(doc.primary).exec(true);
+                    assert.strictEqual(latest.age, docData.age);
+                    await db.close();
                 });
             });
             describe('RxCollection().incrementalUpsert()', () => {

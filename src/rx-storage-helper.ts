@@ -18,6 +18,7 @@ import type {
     RxDatabase,
     RxDocumentData,
     RxDocumentWriteData,
+    RxError,
     RxJsonSchema,
     RxStorageWriteError,
     RxStorageChangeEvent,
@@ -156,6 +157,27 @@ export function stackCheckpoints<CheckpointType>(
     );
 }
 
+/**
+ * Returns the RxError for a conflict (409) or a schema validation (422) write error.
+ * Returns undefined for all other write errors.
+ */
+export function documentWriteErrorToRxError<RxDocType>(
+    collectionName: string,
+    documentId: string,
+    writeData: RxDocumentWriteData<RxDocType> | RxDocType,
+    error: RxStorageWriteError<RxDocType>
+): RxError | undefined {
+    if (error.status === 409 || error.status === 422) {
+        return newRxError(error.status === 409 ? 'CONFLICT' : 'VD2', {
+            collection: collectionName,
+            id: documentId,
+            writeError: error,
+            data: writeData
+        });
+    }
+    return undefined;
+}
+
 export function throwIfIsStorageWriteError<RxDocType>(
     collection: RxCollection<RxDocType, any, any>,
     documentId: string,
@@ -163,23 +185,7 @@ export function throwIfIsStorageWriteError<RxDocType>(
     error: RxStorageWriteError<RxDocType> | undefined
 ) {
     if (error) {
-        if (error.status === 409) {
-            throw newRxError('CONFLICT', {
-                collection: collection.name,
-                id: documentId,
-                writeError: error,
-                data: writeData
-            });
-        } else if (error.status === 422) {
-            throw newRxError('VD2', {
-                collection: collection.name,
-                id: documentId,
-                writeError: error,
-                data: writeData
-            });
-        } else {
-            throw error;
-        }
+        throw documentWriteErrorToRxError(collection.name, documentId, writeData, error) || error;
     }
 }
 
