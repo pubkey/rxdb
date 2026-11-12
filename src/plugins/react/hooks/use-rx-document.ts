@@ -28,13 +28,20 @@ export function useRxDocument<
     collection: RxCollection<RxDocumentType, OrmMethods, any, any, any> | null | undefined,
     primaryKey: string | undefined
 ): UseRxDocumentResult<RxDocumentType, OrmMethods> {
-    const [result, setResult] = useState<RxDocument<RxDocumentType, OrmMethods> | null>(null);
-    const [loading, setLoading] = useState(Boolean(collection) && primaryKey !== undefined);
-    const [error, setError] = useState<string | null>(null);
+    /**
+     * The state remembers for which collection and primaryKey it was loaded,
+     * so that the document of one collection or primaryKey is never returned
+     * as the loaded document of another one.
+     */
+    const [state, setState] = useState<{
+        collection: RxCollection<RxDocumentType, OrmMethods, any, any, any>;
+        primaryKey: string;
+        result: RxDocument<RxDocumentType, OrmMethods> | null;
+        error: string | null;
+    } | null>(null);
 
     useEffect(() => {
         if (!collection || primaryKey === undefined) {
-            setResult(null);
             return;
         }
 
@@ -44,17 +51,24 @@ export function useRxDocument<
             });
         }
 
-        setLoading(true);
-        setError(null);
-
         const subscription = collection.findOne(primaryKey).$.subscribe({
             next: (doc: RxDocument<RxDocumentType, OrmMethods> | null) => {
-                setResult(doc);
-                setLoading(false);
+                setState({
+                    collection,
+                    primaryKey,
+                    result: doc,
+                    error: null
+                });
             },
             error: (err: Error) => {
-                setError(err.message);
-                setLoading(false);
+                setState(previous => ({
+                    collection,
+                    primaryKey,
+                    result: previous && previous.collection === collection && previous.primaryKey === primaryKey
+                        ? previous.result
+                        : null,
+                    error: err.message
+                }));
             }
         });
 
@@ -63,5 +77,27 @@ export function useRxDocument<
         };
     }, [collection, primaryKey]);
 
-    return { result, loading, error };
+    if (!collection || primaryKey === undefined) {
+        return {
+            result: null,
+            loading: false,
+            error: null
+        };
+    }
+    if (
+        state &&
+        state.collection === collection &&
+        state.primaryKey === primaryKey
+    ) {
+        return {
+            result: state.result,
+            loading: false,
+            error: state.error
+        };
+    }
+    return {
+        result: null,
+        loading: true,
+        error: null
+    };
 }
