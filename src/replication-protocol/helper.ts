@@ -12,10 +12,14 @@ import {
     clone,
     createBlobFromBase64,
     createRevision,
+    errorToPlainJson,
     flatClone,
     getDefaultRevision,
-    now
+    now,
+    promiseWait,
+    toArray
 } from '../plugins/utils/index.ts';
+import { newRxError } from '../rx-error.ts';
 import { stripAttachmentsDataFromDocument } from '../rx-storage-helper.ts';
 
 export function docStateToWriteDoc<RxDocType>(
@@ -83,6 +87,33 @@ export function stripAttachmentsDataFromMetaWriteRows<RxDocType>(
             previous: row.previous
         };
     });
+}
+
+/**
+ * Writes the meta rows of the pulled documents to the metaInstance.
+ * A rejected write is emitted to the error-event and retried after the retryTime
+ * because without the meta rows, later changes of these documents
+ * are pushed without the assumed master state.
+ */
+export async function writeMetaRowsOfPulledDocuments<RxDocType>(
+    state: RxStorageInstanceReplicationState<RxDocType>,
+    rows: BulkWriteRow<RxStorageReplicationMeta<RxDocType, any>>[],
+    context: string
+) {
+    while (true) {
+        try {
+            return await state.input.metaInstance.bulkWrite(rows, context);
+        } catch (err: any) {
+            if (state.events.canceled.getValue()) {
+                throw err;
+            }
+            state.events.error.next(newRxError('RC_PULL', {
+                direction: 'pull',
+                errors: toArray(err).map(er => errorToPlainJson(er))
+            }));
+            await promiseWait(state.input.retryTime ?? 200);
+        }
+    }
 }
 
 /**
