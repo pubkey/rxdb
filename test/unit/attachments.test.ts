@@ -264,6 +264,71 @@ describe('attachments.test.ts', () => {
 
             await c.database.close();
         });
+        it('should not let an attachment id that starts with "|" overwrite the attachment of another document', async () => {
+            if (!config.storage.hasAttachments) {
+                return;
+            }
+            const c = await humansCollection.createAttachments(0);
+            const docWithTwoPipes = await c.insert(schemaObjects.humanData('todo1||'));
+            const docWithOnePipe = await c.insert(schemaObjects.humanData('todo1|'));
+
+            await docWithTwoPipes.putAttachment({
+                id: 'b.txt',
+                data: createBlob('data of todo1||', 'text/plain'),
+                type: 'text/plain'
+            });
+
+            const errors: any[] = [];
+            await docWithOnePipe.putAttachment({
+                id: '|b.txt',
+                data: createBlob('data of todo1|', 'text/plain'),
+                type: 'text/plain'
+            }).catch(err => errors.push(err));
+            await docWithOnePipe.putAttachments([
+                {
+                    id: '|b.txt',
+                    data: createBlob('data of todo1|', 'text/plain'),
+                    type: 'text/plain'
+                }
+            ]).catch(err => errors.push(err));
+            await docWithOnePipe.putAttachmentBase64({
+                id: '|b.txt',
+                length: 14,
+                data: await blobToBase64String(createBlob('data of todo1|', 'text/plain')),
+                type: 'text/plain'
+            }).catch(err => errors.push(err));
+
+            const attachment = ensureNotFalsy(
+                docWithTwoPipes.getLatest().getAttachment('b.txt')
+            );
+            assert.strictEqual(await attachment.getStringData(), 'data of todo1||');
+
+            assert.strictEqual(errors.length, 3);
+            errors.forEach(err => assert.strictEqual(err.code, 'AT5'));
+            assert.deepStrictEqual(docWithOnePipe.getLatest().allAttachments(), []);
+
+            /**
+             * A single "|" that is not at the start of the attachment id
+             * and a document id that ends with "|" stay allowed.
+             */
+            await docWithOnePipe.putAttachment({
+                id: 'a|b.txt|',
+                data: createBlob('single pipe', 'text/plain'),
+                type: 'text/plain'
+            });
+            const allowed = ensureNotFalsy(
+                docWithOnePipe.getLatest().getAttachment('a|b.txt|')
+            );
+            assert.strictEqual(await allowed.getStringData(), 'single pipe');
+            assert.strictEqual(
+                await ensureNotFalsy(
+                    docWithTwoPipes.getLatest().getAttachment('b.txt')
+                ).getStringData(),
+                'data of todo1||'
+            );
+
+            await c.database.close();
+        });
     });
     describe('.getAttachment()', () => {
         it('should get the attachment', async () => {

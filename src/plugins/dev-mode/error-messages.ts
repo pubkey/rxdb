@@ -692,9 +692,9 @@ export const ERROR_MESSAGES = {
         docs: 'https://rxdb.info/rx-attachment.html?console=errors&code=AT4'
     },
     AT5: {
-        message: 'attachment id must not contain "||"',
-        cause: 'The storages build the key of the attachment data as documentId + "||" + attachmentId. An attachment id that contains "||" could resolve to the same key as an attachment of another document.',
-        fix: 'Use an attachment id that does not contain "||".',
+        message: 'attachment id must not contain "||" and must not start with "|"',
+        cause: 'The storages build the key of the attachment data as documentId + "||" + attachmentId. An attachment id that contains "||" or starts with "|" could resolve to the same key as an attachment of another document.',
+        fix: 'Use an attachment id that does not contain "||" and does not start with "|".',
         docs: 'https://rxdb.info/rx-attachment.html?console=errors&code=AT5'
     },
 

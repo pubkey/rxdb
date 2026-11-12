@@ -124,11 +124,15 @@ async function _putAttachmentsImpl<RxDocType>(
     /**
      * The storages build the key of the attachment data
      * as documentId + '||' + attachmentId.
-     * An attachment id that contains '||' could resolve
-     * to the same key as an attachment of another document.
+     * That key resolves to exactly one document and attachment
+     * only when the attachment id does not contain '||'
+     * and does not start with '|'. Otherwise a document
+     * with a longer primary key can own the same key:
+     * 'a' + '||' + 'x||b' equals 'a||x' + '||' + 'b' and
+     * 'a' + '||' + '|b' equals 'a|' + '||' + 'b'.
      */
     for (const att of attachments) {
-        if (att.id.includes('||')) {
+        if (att.id.startsWith('|') || att.id.includes('||')) {
             throw newRxError('AT5', {
                 id: att.id,
                 documentId: doc.primary
