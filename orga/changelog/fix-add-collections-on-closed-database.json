@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `RxDatabase.addCollections()` on a closed database resolved with a collection that could never be closed and kept the JavaScript process alive. It now throws the error `DB15`",
+    "links": [],
+    "priority": 4
+}

@@ -324,6 +324,12 @@ export const ERROR_MESSAGES = {
         fix: 'Add a reactivity factory (e.g. for React, Vue, Angular) or use a plugin that adds one.',
         docs: 'https://rxdb.info/reactivity.html?console=errors&code=DB14'
     },
+    DB15: {
+        message: 'The RxDatabase is closed already',
+        cause: 'You called a method on a database after RxDatabase.close() was called.',
+        fix: 'Create a new database instance with createRxDatabase() instead of using the closed one.',
+        docs: 'https://rxdb.info/rx-database.html?console=errors&code=DB15'
+    },
 
     // rx-collection
     COL1: {

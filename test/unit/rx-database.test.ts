@@ -566,6 +566,40 @@ describe('rx-database.test.ts', () => {
                 db1.close();
                 db2.close();
             });
+            it('should throw when called on a closed database', async () => {
+                const db = await createRxDatabase({
+                    name: randomToken(10),
+                    storage: config.storage.getStorage()
+                });
+                await db.close();
+                await AsyncTestUtil.assertThrows(
+                    () => db.addCollections({
+                        human: {
+                            schema: schemas.human
+                        }
+                    }),
+                    'RxError',
+                    'DB15'
+                );
+                assert.deepStrictEqual(Object.keys(db.collections), []);
+
+                const db2 = await createRxDatabase({
+                    name: randomToken(10),
+                    storage: config.storage.getStorage()
+                });
+                const closePromise = db2.close();
+                await AsyncTestUtil.assertThrows(
+                    () => db2.addCollections({
+                        human: {
+                            schema: schemas.human
+                        }
+                    }),
+                    'RxError',
+                    'DB15'
+                );
+                await closePromise;
+                assert.deepStrictEqual(Object.keys(db2.collections), []);
+            });
         });
     });
     describe('schema hash depending on the device locale', () => {
