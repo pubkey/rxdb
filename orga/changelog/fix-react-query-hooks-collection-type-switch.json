@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `useRxQuery()` and `useLiveRxQuery()` of the React plugin crashed with a changed order of React hooks when the `collection` option switched between a collection name and a collection instance",
+    "links": [],
+    "priority": 4
+}

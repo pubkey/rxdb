@@ -6,7 +6,7 @@ import type {
     RxDocument,
 } from '../../../types/index.d.ts';
 import { isRxCollection } from '../../../rx-collection.ts';
-import { useRxCollection } from './use-rx-collection.ts';
+import { useRxCollectionByName } from './use-rx-collection.ts';
 import { newRxError } from '../../../rx-error.ts';
 
 export type UseRxQueryOptions<
@@ -67,6 +67,13 @@ export function useRxQueryBase<
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
+    const collectionByName = useRxCollectionByName<
+        RxDocumentType,
+        OrmMethods,
+        StaticMethods,
+        InstanceCreationOptions,
+        Reactivity
+    >(typeof collection === 'string' ? collection : undefined);
     let dbCollection: RxCollection<
         RxDocumentType,
         OrmMethods,
@@ -75,13 +82,7 @@ export function useRxQueryBase<
         Reactivity
     > | null;
     if (typeof collection === 'string') {
-        dbCollection = useRxCollection<
-            RxDocumentType,
-            OrmMethods,
-            StaticMethods,
-            InstanceCreationOptions,
-            Reactivity
-        >(collection);
+        dbCollection = collectionByName;
     } else {
         if (!isRxCollection(collection)) {
             throw newRxError('R3', {
