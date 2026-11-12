@@ -8,13 +8,15 @@ import {
     schemas,
     humansCollection,
     isNode,
-    isFastMode
+    isFastMode,
+    HumanDocumentType
 } from '../../plugins/test-utils/index.mjs';
 
 import {
     isRxQuery,
     createRxDatabase,
     RxJsonSchema,
+    RxCollection,
     promiseWait,
     randomToken,
     ensureNotFalsy,
@@ -267,8 +269,23 @@ describe('rx-query.test.ts', () => {
             assert.ok(query1 === query2);
             col.database.close();
         });
+        /**
+         * These tests run on an explicit memory storage because storages
+         * that send the query as JSON (like the remote storage) turn
+         * non-finite numbers into null before the query is run.
+         */
+        async function createMemoryHumansCollection() {
+            const db = await createRxDatabase<{ humans: RxCollection<HumanDocumentType>; }>({
+                name: randomToken(10),
+                storage: wrappedValidateAjvStorage({ storage: getRxStorageMemory() })
+            });
+            const cols = await db.addCollections({
+                humans: { schema: schemas.human }
+            });
+            return cols.humans;
+        }
         it('should not share the cached query between queries that differ in a non-finite number', async () => {
-            const col = await humansCollection.create(0);
+            const col = await createMemoryHumansCollection();
             await col.bulkInsert([
                 schemaObjects.humanData('doc-a', 10),
                 schemaObjects.humanData('doc-b', 20)
@@ -299,7 +316,11 @@ describe('rx-query.test.ts', () => {
             col.database.close();
         });
         it('should throw on a skip or limit that is NaN or negative', async () => {
-            const col = await humansCollection.create(2);
+            const col = await createMemoryHumansCollection();
+            await col.bulkInsert([
+                schemaObjects.humanData('doc-a', 10),
+                schemaObjects.humanData('doc-b', 20)
+            ]);
             assert.strictEqual((await col.find({ selector: {}, limit: Infinity }).exec()).length, 2);
             assert.strictEqual((await col.find({ selector: {}, skip: Infinity }).exec()).length, 0);
             assert.strictEqual((await col.find({ selector: {}, skip: 0, limit: 1 }).exec()).length, 1);
