@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `putAttachment()`, `putAttachments()`, `putAttachmentBase64()`, and `RxAttachment.remove()` on a deleted document resolved, returned an attachment without data, and emitted another `DELETE` event. They now reject with `DOC11`",
+    "links": [],
+    "priority": 4
+}

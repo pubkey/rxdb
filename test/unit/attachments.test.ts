@@ -428,6 +428,67 @@ describe('attachments.test.ts', () => {
 
             c.database.remove();
         });
+        it('should reject attachment writes on a deleted document and not emit an event', async () => {
+            if (!config.storage.hasAttachments) {
+                return;
+            }
+            const c = await humansCollection.createAttachments(1);
+            const doc = await c.findOne().exec(true);
+            await doc.putAttachment({
+                id: 'cat.txt',
+                data: createBlob('meow', 'text/plain'),
+                type: 'text/plain'
+            });
+            const attachment = ensureNotFalsy(doc.getLatest().getAttachment('cat.txt'));
+
+            const operations: string[] = [];
+            const sub = c.$.subscribe(event => operations.push(event.operation));
+            const deletedDoc = await doc.getLatest().remove();
+            assert.strictEqual(deletedDoc.deleted, true);
+
+            const creator = {
+                id: 'dog.txt',
+                data: createBlob('woof', 'text/plain'),
+                type: 'text/plain'
+            };
+            // on the deleted document and on an outdated instance of it
+            for (const useDoc of [deletedDoc, doc]) {
+                await AsyncTestUtil.assertThrows(
+                    () => useDoc.putAttachment(creator),
+                    'RxError',
+                    'DOC11'
+                );
+                await AsyncTestUtil.assertThrows(
+                    () => useDoc.putAttachments([creator]),
+                    'RxError',
+                    'DOC11'
+                );
+                await AsyncTestUtil.assertThrows(
+                    () => useDoc.putAttachmentBase64({
+                        id: 'dog.txt',
+                        length: 4,
+                        data: 'd29vZg==',
+                        type: 'text/plain'
+                    }),
+                    'RxError',
+                    'DOC11'
+                );
+            }
+            await AsyncTestUtil.assertThrows(
+                () => attachment.remove(),
+                'RxError',
+                'DOC11'
+            );
+
+            // the events of the rejected writes would arrive before the event of this insert
+            await c.insert(schemaObjects.humanData());
+            await AsyncTestUtil.waitUntil(() => operations.includes('INSERT'));
+            assert.deepStrictEqual(operations, ['DELETE', 'INSERT']);
+            assert.strictEqual(deletedDoc.getLatest().getAttachment('dog.txt'), null);
+
+            sub.unsubscribe();
+            await c.database.close();
+        });
     });
     describe('.allAttachments()', () => {
         it('should find all attachments', async () => {
