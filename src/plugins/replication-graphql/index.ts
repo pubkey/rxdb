@@ -4,7 +4,9 @@
  */
 import {
     ensureNotFalsy,
-    flatClone
+    errorToPlainJson,
+    flatClone,
+    toArray
 } from '../../plugins/utils/index.ts';
 
 import {
@@ -39,6 +41,8 @@ import {
     getGraphQLWebSocket
 } from './graphql-websocket.ts';
 import { Subject } from 'rxjs';
+import { awaitRetry } from '../replication/replication-helper.ts';
+import { newRxError } from '../../rx-error.ts';
 
 
 export class RxGraphQLReplicationState<RxDocType, CheckpointType> extends RxReplicationState<RxDocType, CheckpointType> {
@@ -196,13 +200,18 @@ export function replicateGraphQL<RxDocType, CheckpointType>(
         pull.streamQueryBuilder &&
         live;
 
-    const startBefore = graphqlReplicationState.start.bind(graphqlReplicationState);
-    graphqlReplicationState.start = () => {
+    /**
+     * True while this replication holds a reference
+     * to the websocket client of the url.
+     */
+    let hasSocketRef = false;
+    const openStream = () => {
         if (mustUseSocket) {
             const httpHeaders = pull.includeWsHeaders ? mutateableClientState.headers : undefined;
             const wsClient = getGraphQLWebSocket(ensureNotFalsy(url.ws), httpHeaders, pull.wsOptions);
+            hasSocketRef = true;
 
-            wsClient.on('connected', () => {
+            const unsubscribeConnected = wsClient.on('connected', () => {
                 pullStream$.next('RESYNC');
             });
 
@@ -222,14 +231,44 @@ export function replicateGraphQL<RxDocType, CheckpointType>(
                         }
                         pullStream$.next(data);
                     },
+                    /**
+                     * graphql-ws ends the subscription with an error when its connection retries
+                     * are used up or when the socket was closed with a fatal close code.
+                     * The pullStream$ must stay alive, so the stream is opened again with a new websocket client
+                     * and the RESYNC of its 'connected' event pulls the documents that have been missed.
+                     */
                     error: (error: any) => {
-                        pullStream$.error(error);
+                        if (!hasSocketRef) {
+                            return;
+                        }
+                        hasSocketRef = false;
+                        unsubscribeConnected();
+                        removeGraphQLWebSocketRef(ensureNotFalsy(url.ws));
+                        graphqlReplicationState.subjects.error.next(
+                            newRxError('RC_STREAM', {
+                                errors: toArray(error).map(er => errorToPlainJson(er)),
+                                direction: 'pull'
+                            })
+                        );
+                        awaitRetry(
+                            collection,
+                            ensureNotFalsy(graphqlReplicationState.retryTime)
+                        ).then(() => {
+                            if (!graphqlReplicationState.isStopped()) {
+                                openStream();
+                            }
+                        });
                     },
                     complete: () => {
                         pullStream$.complete();
                     }
                 });
         }
+    };
+
+    const startBefore = graphqlReplicationState.start.bind(graphqlReplicationState);
+    graphqlReplicationState.start = () => {
+        openStream();
         return startBefore();
     };
 
@@ -237,7 +276,8 @@ export function replicateGraphQL<RxDocType, CheckpointType>(
     graphqlReplicationState.cancel = () => {
         if (!graphqlReplicationState.isStopped()) {
             pullStream$.complete();
-            if (mustUseSocket) {
+            if (hasSocketRef) {
+                hasSocketRef = false;
                 removeGraphQLWebSocketRef(ensureNotFalsy(url.ws));
             }
         }

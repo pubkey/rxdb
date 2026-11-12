@@ -53,8 +53,10 @@ import {
 } from '../../plugins/test-utils/index.mjs';
 import {
     GRAPHQL_PATH,
+    GRAPHQL_SUBSCRIPTION_PATH,
     getDocsOnServer
 } from '../helper/graphql-config.ts';
+import { nextPort } from '../helper/port-manager.ts';
 
 import {
     wrappedValidateAjvStorage
@@ -1719,6 +1721,59 @@ describe('replication-graphql.test.ts', () => {
                 assert.equal(capturedWSStates.includes('closed'), true);
                 assert.equal(capturedWSStates.includes('error'), false);
 
+                server.close();
+                c.database.close();
+            });
+            it('should continue the live pull when the server becomes reachable after the websocket retries are used up', async () => {
+                const c = await humansCollection.createHumanWithTimestamp(0);
+                const port = await nextPort();
+                const replicationState = replicateGraphQL<HumanWithTimestampDocumentType, any>({
+                    replicationIdentifier: randomToken(10),
+                    collection: c,
+                    url: {
+                        http: 'http://localhost:' + port + GRAPHQL_PATH,
+                        ws: 'ws://localhost:' + (port + 500) + GRAPHQL_SUBSCRIPTION_PATH
+                    },
+                    pull: {
+                        batchSize,
+                        queryBuilder: pullQueryBuilder,
+                        streamQueryBuilder: pullStreamQueryBuilder,
+                        wsOptions: {
+                            retryAttempts: 1,
+                            retryWait: () => wait(10)
+                        }
+                    },
+                    live: true,
+                    retryTime: 100,
+                    deletedField: 'deleted'
+                });
+                const errors: any[] = [];
+                const errorSub = replicationState.error$.subscribe(err => errors.push(err));
+
+                // wait until the websocket client has given up
+                await waitUntil(() => errors.some(err => err.code !== 'RC_PULL'), 4000);
+                await wait(100);
+
+                const server = await SpawnServer.spawn(getTestData(1), port);
+                await replicationState.awaitInSync();
+                assert.strictEqual((await c.find().exec()).length, 1);
+
+                // RxDB only knows about this write if the stream is alive or sends a RESYNC
+                await server.setDocument(getTestData(1)[0]);
+                await waitUntil(async () => {
+                    const docs = await c.find().exec();
+                    return docs.length === 2;
+                }, 4000);
+
+                // events must arrive over the stream again
+                await wait(300);
+                await server.setDocument(getTestData(1)[0]);
+                await waitUntil(async () => {
+                    const docs = await c.find().exec();
+                    return docs.length === 3;
+                }, 4000);
+
+                errorSub.unsubscribe();
                 server.close();
                 c.database.close();
             });
