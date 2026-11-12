@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX the `validate-z-schema` plugin rejected every document of a schema where `items` is an array of schemas (tuple), because z-schema validated RxDB schemas as draft 2020-12 instead of draft-07 like the ajv validator",
+    "links": [],
+    "priority": 4
+}
