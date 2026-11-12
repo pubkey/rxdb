@@ -93,6 +93,18 @@ describe('dbviewer.test.ts', () => {
             assert.deepStrictEqual(parseViewerSelector('{ name: \'say "hi"\' }').selector, { name: 'say "hi"' });
             assert.deepStrictEqual(parseViewerSelector('{ name: \'a\\\\\' }').selector, { name: 'a\\' });
         });
+        it('single quoted strings keep a backslash that does not start an escape', () => {
+            const cases: [string, string][] = [
+                [String.raw`{ name: { $regex: '\d+' } }`, String.raw`\d+`],
+                [String.raw`{ name: { $regex: '^\w+\.\s$' } }`, String.raw`^\w+\.\s$`],
+                [String.raw`{ name: { $regex: 'C:\dir' } }`, String.raw`C:\dir`],
+                [String.raw`{ name: { $regex: '\u00' } }`, String.raw`\u00`],
+                [String.raw`{ name: { $regex: '\d\'\\' } }`, String.raw`\d'` + '\\']
+            ];
+            cases.forEach(([input, regex]) => {
+                assert.deepStrictEqual(parseViewerSelector(input).selector, { name: { $regex: regex } }, input);
+            });
+        });
         it('should still error on broken relaxed input', () => {
             assert.ok(parseViewerSelector('{ name: }').error);
         });
