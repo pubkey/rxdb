@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `getAttachment()` returned a broken RxAttachment instead of `null` for ids like `toString` or `constructor` that are not stored, and an attachment with the id `__proto__` was dropped without an error. The id `__proto__` is now rejected with the new error `AT7`",
+    "links": [],
+    "priority": 4
+}

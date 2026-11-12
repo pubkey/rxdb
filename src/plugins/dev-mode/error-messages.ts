@@ -691,6 +691,12 @@ export const ERROR_MESSAGES = {
         fix: 'Ensure documents have the _attachments property set.',
         docs: 'https://rxdb.info/rx-attachment.html?console=errors&code=AT4'
     },
+    AT7: {
+        message: 'attachment id must not be "__proto__"',
+        cause: 'The attachments of a document are stored as an object with the attachment id as key. The key "__proto__" cannot be stored as a normal property of an object.',
+        fix: 'Use another attachment id.',
+        docs: 'https://rxdb.info/rx-attachment.html?console=errors&code=AT7'
+    },
 
     // plugins/encryption-crypto-js.js
     EN1: {

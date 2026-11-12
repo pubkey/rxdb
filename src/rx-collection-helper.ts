@@ -66,6 +66,23 @@ export function fillObjectDataBeforeInsert<RxDocType>(
 }
 
 /**
+ * The attachments of a document are stored as a plain object with the attachment id as key.
+ * Assigning the key '__proto__' sets the prototype of that object
+ * instead of adding a property, so the attachment would not be stored.
+ */
+export function ensureAttachmentIdIsStorable(
+    id: string,
+    documentId?: string
+) {
+    if (id === '__proto__') {
+        throw newRxError('AT7', {
+            id,
+            documentId
+        });
+    }
+}
+
+/**
  * Normalizes inline attachment inputs on a document's _attachments.
  * Accepts an array of { id, type, data } objects (aligned with putAttachment API)
  * and converts to the internal map format { [id]: { type, data, digest, length } }.
@@ -96,6 +113,7 @@ export async function normalizeInlineAttachments(
             ) {
                 throw newRxError('AT2', { obj: att });
             }
+            ensureAttachmentIdIsStorable(att.id);
             if (Object.prototype.hasOwnProperty.call(attachmentMap, att.id)) {
                 throw newRxError('AT3', { obj: att });
             }

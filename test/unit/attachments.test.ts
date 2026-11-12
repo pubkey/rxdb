@@ -217,6 +217,41 @@ describe('attachments.test.ts', () => {
             });
             await c.database.close();
         });
+        it('should reject the attachment id __proto__ instead of losing the data', async () => {
+            if (!config.storage.hasAttachments) {
+                return;
+            }
+            const c = await humansCollection.createAttachments(1);
+            const doc = await c.findOne().exec(true);
+            const creator = {
+                id: '__proto__',
+                data: createBlob('meow', 'text/plain'),
+                type: 'text/plain'
+            };
+            await AsyncTestUtil.assertThrows(
+                () => doc.putAttachment(creator),
+                'RxError',
+                'AT7'
+            );
+            await AsyncTestUtil.assertThrows(
+                () => doc.putAttachments([creator]),
+                'RxError',
+                'AT7'
+            );
+            await AsyncTestUtil.assertThrows(
+                () => doc.putAttachmentBase64({
+                    id: '__proto__',
+                    length: 4,
+                    data: 'bWVvdw==',
+                    type: 'text/plain'
+                }),
+                'RxError',
+                'AT7'
+            );
+            assert.strictEqual(doc.getLatest().allAttachments().length, 0);
+            assert.strictEqual(doc.getLatest().getAttachment('__proto__'), null);
+            await c.database.close();
+        });
     });
     describe('.getAttachment()', () => {
         it('should get the attachment', async () => {
@@ -230,6 +265,32 @@ describe('attachments.test.ts', () => {
             doc = await c.findOne().exec(true);
             const attachment: any = doc.getAttachment('cat.txt');
             assert.ok(attachment);
+            await c.database.close();
+        });
+        it('should return null when the id is the name of an Object.prototype member', async () => {
+            if (!config.storage.hasAttachments) {
+                return;
+            }
+            const c = await humansCollection.createAttachments(1);
+            let doc = await c.findOne().exec(true);
+            const ids = ['toString', 'constructor', 'hasOwnProperty', 'valueOf', '__proto__'];
+            ids.forEach(id => assert.strictEqual(doc.getAttachment(id), null, id));
+
+            // an attachment with such an id can be stored and is the only one that is found
+            await doc.putAttachment({
+                id: 'constructor',
+                data: createBlob('meow', 'text/plain'),
+                type: 'text/plain'
+            });
+            doc = doc.getLatest();
+            const attachment = ensureNotFalsy(doc.getAttachment('constructor'));
+            assert.strictEqual(attachment.type, 'text/plain');
+            assert.strictEqual(await attachment.getStringData(), 'meow');
+            assert.deepStrictEqual(doc.allAttachments().map(a => a.id), ['constructor']);
+            ids
+                .filter(id => id !== 'constructor')
+                .forEach(id => assert.strictEqual(doc.getAttachment(id), null, id));
+
             await c.database.close();
         });
         it('should find the attachment after another doc-update', async () => {

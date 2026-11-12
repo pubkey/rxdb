@@ -25,7 +25,10 @@ import {
     assignMethodsToAttachment,
     ensureSchemaSupportsAttachments
 } from './attachments-utils.ts';
-import { isWriteAllowed } from '../../rx-collection-helper.ts';
+import {
+    ensureAttachmentIdIsStorable,
+    isWriteAllowed
+} from '../../rx-collection-helper.ts';
 
 
 
@@ -120,6 +123,10 @@ async function _putAttachmentsImpl<RxDocType>(
         return [];
     }
 
+    for (const att of attachments) {
+        ensureAttachmentIdIsStorable(att.id, doc.primary);
+    }
+
     const prepared = await Promise.all(
         attachments.map(async (att) => ({
             id: att.id,
@@ -194,8 +201,16 @@ export function getAttachment(
 ): RxAttachment | null {
     ensureSchemaSupportsAttachments(this);
     const docData: any = this._data;
-    if (!docData._attachments[id])
+    /**
+     * Only own properties are attachments,
+     * an id like 'toString' must not resolve to a member of Object.prototype.
+     */
+    if (
+        !Object.prototype.hasOwnProperty.call(docData._attachments, id) ||
+        !docData._attachments[id]
+    ) {
         return null;
+    }
 
     const attachmentData = docData._attachments[id];
     const attachment = fromStorageInstanceResult(
