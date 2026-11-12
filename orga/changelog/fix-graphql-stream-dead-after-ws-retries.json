@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX the live pull of the GraphQL replication never resumed after the `graphql-ws` client had used up its connection retries or the socket was closed with a fatal close code, because the pull stream was ended with an error. The error is now emitted on `error$` as `RC_STREAM` and the stream is opened again after the `retryTime`, followed by a `RESYNC`.",
+    "links": [],
+    "priority": 5
+}
