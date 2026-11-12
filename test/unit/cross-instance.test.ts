@@ -17,7 +17,14 @@ import {
     RxDatabase,
     RxDocument,
     ensureNotFalsy,
+    RxCollection
 } from '../../plugins/core/index.mjs';
+import { getRxStorageDexie } from '../../plugins/storage-dexie/index.mjs';
+import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.mjs';
+import {
+    indexedDB as fakeIndexedDB,
+    IDBKeyRange as fakeIDBKeyRange
+} from 'fake-indexeddb';
 
 import {
     schemaObjects,
@@ -25,7 +32,8 @@ import {
     humansCollection,
     getPassword,
     getEncryptedStorage,
-    HumanDocumentType
+    HumanDocumentType,
+    isNode
 } from '../../plugins/test-utils/index.mjs';
 
 describe('cross-instance.test.js', () => {
@@ -135,6 +143,83 @@ describe('cross-instance.test.js', () => {
         });
     });
 
+    describe('RxQuery', () => {
+        it('should have the correct query results when the event of another instance arrives after the event of a later own write', async function () {
+            this.timeout(120 * 1000);
+            if (!isNode) {
+                return;
+            }
+            /**
+             * The Dexie storage sends the events of other instances
+             * asynchronously over the BroadcastChannel.
+             */
+            const storage = wrappedValidateAjvStorage({
+                storage: getRxStorageDexie({
+                    indexedDB: fakeIndexedDB,
+                    IDBKeyRange: fakeIDBKeyRange
+                })
+            });
+            const name = randomToken(10);
+            async function createInstance(): Promise<RxCollection<HumanDocumentType>> {
+                const db = await createRxDatabase<{ human: RxCollection<HumanDocumentType>; }>({
+                    name,
+                    storage,
+                    multiInstance: true,
+                    ignoreDuplicate: true
+                });
+                const collections = await db.addCollections({
+                    human: {
+                        schema: schemas.human
+                    }
+                });
+                return collections.human;
+            }
+            const c1 = await createInstance();
+            const c2 = await createInstance();
+            const query = c1.find({ sort: [{ passportId: 'asc' }] });
+            const toState = (docs: RxDocument<HumanDocumentType>[]) => docs.map(d => d.passportId + '|' + d.firstName);
+
+            let lastEmitted: string[] = [];
+            let lastCount = -1;
+            const eventsByDocId = new Map<string, number>();
+            const subs = [
+                query.$.subscribe(docs => lastEmitted = toState(docs)),
+                c1.count().$.subscribe(count => lastCount = count),
+                c1.$.subscribe(event => eventsByDocId.set(
+                    event.documentId,
+                    (eventsByDocId.get(event.documentId) ?? 0) + 1
+                ))
+            ];
+
+            const iterations = 40;
+            for (let i = 0; i < iterations; i++) {
+                const id = 'doc' + (i + '').padStart(3, '0');
+                /**
+                 * The upsert of c1 runs into a conflict when c2 has stored the document first.
+                 * It then writes on top of the state of c2 and c1 gets its own event
+                 * before the insert event of c2 arrives.
+                 */
+                const [insertResult] = await Promise.allSettled([
+                    c2.insert(schemaObjects.humanData(id, 20, 'other')),
+                    c1.upsert(schemaObjects.humanData(id, 20, 'own'))
+                ]);
+                const expectedEvents = insertResult.status === 'fulfilled' ? 2 : 1;
+                await waitUntil(() => eventsByDocId.get(id) === expectedEvents);
+
+                const storageState = toState(await c2.find({ sort: [{ passportId: 'asc' }] }).exec());
+                assert.strictEqual(storageState.length, i + 1);
+                assert.deepStrictEqual(toState(await query.exec()), storageState, 'exec() in iteration ' + i);
+                await waitUntil(() => lastEmitted.length === storageState.length, 1000).catch(() => { });
+                assert.deepStrictEqual(lastEmitted, storageState, 'find().$ in iteration ' + i);
+                assert.strictEqual(await c1.count().exec(), i + 1, 'count().exec() in iteration ' + i);
+                assert.strictEqual(lastCount, i + 1, 'count().$ in iteration ' + i);
+            }
+
+            subs.forEach(sub => sub.unsubscribe());
+            await c1.database.close();
+            await c2.database.close();
+        });
+    });
     describe('Document.$', () => {
         it('get event on doc2 when doc1 is changed', async () => {
             const name = randomToken(10);
