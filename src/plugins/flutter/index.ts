@@ -1,65 +1,77 @@
+import { addRxPlugin } from '../../plugin.ts';
+import { RXDB_VERSION } from '../utils/utils-rxdb-version.ts';
+import { RxDBLocalDocumentsPlugin } from '../local-documents/index.ts';
+import { RxDBMigrationSchemaPlugin } from '../migration-schema/index.ts';
+import { RxDBJsonDumpPlugin } from '../json-dump/index.ts';
+import { RxDBUpdatePlugin } from '../update/index.ts';
+import {
+    patchFlutterJavaScriptRuntime,
+    receiveFromFlutter,
+    sendToFlutter
+} from './flutter-bridge.ts';
+import {
+    registerFlutterMethodHandlers,
+    setCustomDatabaseCreator,
+    setCustomStorage
+} from './flutter-handlers.ts';
 import type {
-    RxChangeEventBulk,
-    RxDatabase
-} from '../../types/index.d.ts';
+    CreateRxDatabaseFunctionType,
+    FlutterBridgeOptions
+} from './flutter-types.ts';
 
-export type CreateRxDatabaseFunctionType = (databaseName: string) => Promise<RxDatabase>;
-
-export function setFlutterRxDatabaseConnector(
-    createDB: CreateRxDatabaseFunctionType
-) {
-    (process as any).init = async (databaseName: string) => {
-        const db = await createDB(databaseName);
-        db.eventBulks$.subscribe((eventBulk: RxChangeEventBulk<any>) => {
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
-            sendRxDBEvent(JSON.stringify(eventBulk));
-        });
-        (process as any).db = db;
-        const collections: { name: string; primaryKey: string; }[] = [];
-        Object.entries(db.collections).forEach(([collectionName, collection]) => {
-            collections.push({
-                name: collectionName,
-                primaryKey: collection.schema.primaryPath
-            });
-        });
-        return {
-            databaseName,
-            collections
-        };
-    };
-}
+export * from './flutter-types.ts';
+export * from './flutter-bridge.ts';
+export * from './flutter-sqlite.ts';
+export {
+    FLUTTER_DATABASES,
+    FLUTTER_REPLICATIONS,
+    FLUTTER_SUBSCRIPTIONS
+} from './flutter-handlers.ts';
 
 /**
- * Create a simple lokijs adapter so that we can persist string via flutter
- * @link https://github.com/techfort/LokiJS/blob/master/tutorials/Persistence%20Adapters.md#creating-your-own-basic-persistence-adapter
+ * Code of a custom bundle, like creating the RxDB Premium storage,
+ * runs before startRxDBFlutterBridge() is called and may already log.
+ * So the runtime is patched when this module is evaluated, but only
+ * inside a runtime that was prepared by the rxdb Dart package.
  */
-export function getLokijsAdapterFlutter() {
-    const ret = {
-        async loadDatabase(databaseName: string, callback: (v: string | Error) => {}) {
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
-            const serializedDb: string = await readKeyValue(databaseName);
+if (typeof (globalThis as any).__rxdbFlutterSend === 'function') {
+    patchFlutterJavaScriptRuntime();
+}
 
-            const success = true;
-            if (success) {
-                callback(serializedDb);
-            } else {
-                callback(new Error('There was a problem loading the database'));
-            }
-        },
-        async saveDatabase(databaseName: string, dbstring: string, callback: (v: string | Error | null) => {}) {
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
-            await persistKeyValue(databaseName, dbstring);
+let started = false;
 
-            const success = true;  // make your own determinations
-            if (success) {
-                callback(null);
-            } else {
-                callback(new Error('An error was encountered loading " + dbname + " database.'));
-            }
-        }
-    };
-    return ret;
+/**
+ * Starts the bridge so that the rxdb Dart package can
+ * communicate with RxDB inside of the JavaScript runtime.
+ * The prebuilt bundle that ships with the Dart package calls this
+ * without arguments and uses the SQLite trial storage.
+ * In a custom bundle you can pass a different RxStorage,
+ * like the RxDB Premium SQLite storage, or a function
+ * that creates the RxDatabase.
+ */
+export function startRxDBFlutterBridge(
+    options?: FlutterBridgeOptions | CreateRxDatabaseFunctionType
+) {
+    const useOptions: FlutterBridgeOptions = typeof options === 'function' ? { createDatabase: options } : (options || {});
+    if (useOptions.storage) {
+        setCustomStorage(useOptions.storage);
+    }
+    if (useOptions.createDatabase) {
+        setCustomDatabaseCreator(useOptions.createDatabase);
+    }
+    if (started) {
+        return;
+    }
+    started = true;
+    patchFlutterJavaScriptRuntime();
+    addRxPlugin(RxDBLocalDocumentsPlugin);
+    addRxPlugin(RxDBMigrationSchemaPlugin);
+    addRxPlugin(RxDBJsonDumpPlugin);
+    addRxPlugin(RxDBUpdatePlugin);
+    registerFlutterMethodHandlers();
+    (globalThis as any).__rxdbFlutterReceive = receiveFromFlutter;
+    sendToFlutter({
+        t: 'ready',
+        version: RXDB_VERSION
+    });
 }

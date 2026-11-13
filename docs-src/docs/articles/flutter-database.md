@@ -1,233 +1,339 @@
 ---
-title: Supercharge Flutter Apps with the RxDB Database
+title: Flutter Database with RxDB - Reactive, Local-First and SQLite
 slug: flutter-database.html
-description: Harness RxDB's reactive database to bring real-time, offline-first data storage and syncing to your next Flutter application.
+description: Learn how to use RxDB as a local-first Flutter database with observable queries, SQLite storage, and replication handlers written in Dart.
 image: /headers/flutter-database.jpg
 ---
 
-import {Faq, FaqItem} from '@site/src/components/faq';
-import {CenteredImage} from '@site/src/components/centered-image';
+import {Steps} from '@site/src/components/steps';
 
-# RxDB as a Database in a Flutter Application
+# RxDB as a Flutter Database
 
-In the world of mobile application development, Flutter has gained significant popularity due to its cross-platform capabilities and rich UI framework. When it comes to building feature-rich Flutter applications, the choice of a robust and efficient database is crucial. In this article, we will explore [RxDB](https://rxdb.info/) as a database solution for Flutter applications. We'll delve into the core features of RxDB, its benefits over other database options, and how to integrate it into a Flutter app.
-
-
-:::note
-You can find the source code for an example RxDB Flutter Application [at the github repo](https://github.com/pubkey/rxdb/tree/master/examples/flutter)
-:::
+[RxDB](https://rxdb.info/) is a local-first, NoSQL database with observable queries and a [replication](../replication.md) protocol for any backend. With the [rxdb Dart package](https://pub.dev/packages/rxdb) you use RxDB as a **Flutter database**: you define [schemas](../rx-schema.md), run [queries](../rx-query.md), observe results as Dart streams, and implement the pull and push handlers of the replication in Dart. You do not have to write JavaScript. This page explains how the package works, how to set it up, and where its limits are.
 
 <RxdbLogo alt="RxDB Flutter Database" />
 
+## How RxDB Runs in Flutter
 
-### Overview of Flutter Mobile Applications
-Flutter is an open-source UI software development kit created by Google that allows developers to build high-performance [mobile](./mobile-database.md) applications for iOS and Android platforms using a single codebase. Flutter's framework provides a wide range of widgets and tools that enable developers to create visually appealing and responsive applications.
+RxDB is written in TypeScript. The Dart package ships a prebuilt RxDB bundle (about `241 KB` minified) and runs it inside of QuickJS via the [fjs](https://pub.dev/packages/fjs) package, which embeds the QuickJS engine through Rust. The data is stored with the [SQLite RxStorage](../rx-storage-sqlite.md), but the SQL queries are not executed in JavaScript. They are sent to Dart and run with the [sqlite3](https://pub.dev/packages/sqlite3) package, which bundles SQLite for Android, iOS, macOS, Linux, and Windows.
 
+Dart and JavaScript only exchange JSON strings. Each call from Dart, like `collection.insert()`, becomes a request message, and each emission of an RxJS observable, like the result of a query, becomes an event message that is added to a Dart `Stream`. Because the RxDB core is the same code as in the browser or in [React Native](../react-native-database.md), features like [EventReduce](https://github.com/pubkey/event-reduce), conflict handling, and the replication protocol behave the same.
 
-<CenteredImage src="../files/icons/flutter.svg" alt="Flutter" width={60} />
+- **Observable queries**: `find()`, `findOne()`, `count()`, and `findByIds()` return queries whose `$` is a Dart `Stream` that emits the current result and each change.
+- **Documents**: `patch()`, `incrementalPatch()`, `modify()` with a Dart function, MongoDB-style `update()`, and `remove()`.
+- **Replication**: `pull.handler`, `pull.stream`, and `push.handler` are Dart functions, so you can sync with any REST, GraphQL, or WebSocket backend.
+- **Schema migration**: migration strategies are Dart functions, see [schema migration](../migration-schema.md).
+- **Local documents**: key-value data next to your collections, see [local documents](../rx-local-document.md).
 
-### Importance of Databases in Flutter Applications
-Databases play a vital role in Flutter applications by providing a persistent and reliable storage solution for storing and retrieving data. Whether it's user profiles, app settings, or complex data structures, a database helps in efficiently managing and organizing the application's data. Choosing the right database for a Flutter application can significantly impact the performance, scalability, and user experience of the app.
+## Using RxDB in a Flutter App
 
-### Introducing RxDB as a Database Solution
-RxDB is a powerful NoSQL database solution that is designed to work seamlessly with JavaScript-based frameworks, such as Flutter. It stands for Reactive Database and offers a variety of features that make it an excellent choice for building Flutter applications. RxDB combines the simplicity of JavaScript's document-based database model with the reactive programming paradigm, enabling developers to build real-time and [offline-first](../offline-first.md) applications with ease.
+<Steps>
 
-## Getting Started with RxDB
-To understand how RxDB can be utilized in a Flutter application, let's explore its core features and advantages.
+### Install the package
 
-### What is RxDB?
-[RxDB](https://rxdb.info/) is a client-side database built on top of [IndexedDB](../rx-storage-indexeddb.md), which is a low-level [browser-based database](./browser-database.md) API. It provides a simple and intuitive API for performing CRUD operations (Create, Read, Update, Delete) on documents. RxDB's underlying architecture allows for efficient handling of data synchronization between multiple clients and servers.
-
-<RxdbLogo alt="RxDB Flutter Database" />
-
-
-### Reactive Data Handling
-One of the key strengths of RxDB is its reactive data handling. It leverages the power of Observables, a concept from reactive programming, to automatically update the UI in response to data changes. With RxDB, developers can define queries and subscribe to their results, ensuring that the UI is always in sync with the database.
-
-### Offline-First Approach
-RxDB follows an offline-first approach, making it ideal for building Flutter applications that need to function even without an internet connection. It allows data to be stored locally and seamlessly synchronizes it with the server when a connection is available. This ensures that users can access and interact with their data regardless of network availability.
-
-### Data Replication
-Data replication is a critical aspect of building distributed applications. RxDB provides robust replication capabilities that enable synchronization of data between different clients and servers. With its replication plugins, RxDB simplifies the process of setting up real-time data synchronization, ensuring consistency across all connected devices.
-
-### [Observable Queries](../rx-query.md)
-RxDB introduces the concept of observable queries, which are queries that automatically update when the underlying data changes. This feature is particularly useful for keeping the UI up to date with the latest data. By subscribing to an observable query, developers can receive real-time updates and reflect them in the user interface without manual intervention.
-
-### RxDB vs. Other Flutter Database Options
-When considering database options for Flutter applications, developers often come across alternatives such as SQLite or LokiJS. While these databases have their merits, RxDB offers several advantages over them. RxDB's seamless integration with Flutter, its offline-first approach, reactive data handling, and built-in data replication make it a compelling choice for building feature-rich and scalable Flutter applications.
-
-## Using RxDB in a Flutter Application
-Now that we understand the core features of RxDB, let's explore how to integrate it into a Flutter application.
-
-## How RxDB can run in Flutter
-
-RxDB is written in TypeScript and compiled to JavaScript. To run it in a Flutter application, the `flutter_qjs` library is used to spawn a QuickJS JavaScript runtime. RxDB itself runs in that runtime and communicates with the flutter dart runtime. To store data persistent, the [LokiJS RxStorage](../rx-storage-lokijs.md) is used together with a custom storage adapter that persists the database inside of the `shared_preferences` data.
-
-To use RxDB, you have to create a compatible JavaScript file that creates your [RxDatabase](../rx-database.md) and starts some connectors which are used by Flutter to communicate with the JavaScript RxDB database via setFlutterRxDatabaseConnector().
-
-```javascript
-import {
-    createRxDatabase
-} from 'rxdb';
-import {
-    getRxStorageLoki
-} from 'rxdb/plugins/storage-lokijs';
-import {
-    setFlutterRxDatabaseConnector,
-    getLokijsAdapterFlutter
-} from 'rxdb/plugins/flutter';
-
-// do all database creation stuff in this method.
-async function createDB(databaseName) {
-    // create the RxDatabase
-    const db = await createRxDatabase({
-        // the database.name is variable so we can change it on the flutter side
-        name: databaseName,
-        storage: getRxStorageLoki({
-            adapter: getLokijsAdapterFlutter()
-        }),
-        multiInstance: false
-    });
-    await db.addCollections({
-        todos: {
-            schema: {
-                version: 0,
-                primaryKey: 'id',
-                type: 'object',
-                properties: {
-                    id: {
-                        type: 'string',
-                        maxLength: 100
-                    },
-                    name: {
-                        type: 'string'
-                    },
-                    done: {
-                        type: 'boolean',
-                        default: false
-                    },
-                    dueAt: {
-                        type: 'string',
-                        format: 'date-time',
-                        maxLength: 30
-                    }
-                },
-                indexes: ['dueAt'],
-                required: ['id', 'name', 'done', 'dueAt']
-            }
-        }
-    });
-    return db;
-}
-
-// start the connector so that flutter can communicate with the JavaScript process
-setFlutterRxDatabaseConnector(
-    createDB
-);
+```bash
+flutter pub add rxdb
 ```
 
-Before you can use the JavaScript code, you have to bundle it into a single .js file. In this example we do that with webpack in a npm script here which bundles everything into the `javascript/dist/index.js` file.
+### Create the database
 
-To allow Flutter to access that file during runtime, add it to the assets inside of your pubspec.yaml:
-
-```yaml
-flutter:
-  assets:
-    - javascript/dist/index.js
-```
-
-
-Also you need to install RxDB in your flutter part of the application. First you have to use the rxdb dart package as a flutter dependency. Currently the package is not published at the dart pub.dev. Instead you have to install it from the local filesystem inside of your RxDB npm installation.
-
-```yaml
-# inside of pubspec.yaml
-dependencies:
-  rxdb:
-    path: path/to/your/node_modules/rxdb/src/plugins/flutter/dart
-```
-
-Afterwards you can import the rxdb library in your dart code and connect to the JavaScript process from there. For reference, check out the lib/main.dart file.
+`createRxDatabase()` starts the JavaScript runtime, opens SQLite, and creates the collections. By default the SQLite files are stored in the application support directory.
 
 ```dart
 import 'package:rxdb/rxdb.dart';
 
-// start the javascript process and connect to the database
-RxDatabase database = await getRxDatabase("javascript/dist/index.js", databaseName);
+const todoSchema = {
+  'version': 0,
+  'primaryKey': 'id',
+  'type': 'object',
+  'properties': {
+    'id': {'type': 'string', 'maxLength': 100},
+    'name': {'type': 'string'},
+    'done': {'type': 'boolean', 'default': false},
+    'dueAt': {'type': 'string', 'format': 'date-time', 'maxLength': 30},
+    'priority': {
+      'type': 'integer',
+      'minimum': 0,
+      'maximum': 10,
+      'multipleOf': 1,
+    },
+  },
+  'required': ['id', 'name', 'done', 'dueAt'],
+  'indexes': ['dueAt'],
+};
 
-// get a collection
-RxCollection collection = database.getCollection('todos');
+final myDatabase = await createRxDatabase(
+  name: 'mydatabase',
+  collections: {
+    'todos': const RxCollectionCreator(schema: todoSchema),
+  },
+);
+final todos = myDatabase['todos'];
+```
 
-// insert a document
-RxDocument document = await collection.insert({
-    "id": "todo-${DateTime.now().millisecondsSinceEpoch}",
-    "name": nameController.text,
-    "done": false,
-    "dueAt": DateTime.now().toUtc().toIso8601String()
+### Write and query documents
+
+Queries use the same MongoDB-style (Mango) syntax as in JavaScript. Notice that `$` has to be escaped in Dart strings, which is why the operators are written as raw strings like `r'$gt'`.
+
+```dart
+await todos.insert({
+  'id': 'todo1',
+  'name': 'Learn RxDB',
+  'done': false,
+  'dueAt': '2026-01-01T10:00:00.000Z',
+  'priority': 8,
 });
+await todos.bulkInsert([
+  {
+    'id': 'todo2',
+    'name': 'Buy groceries',
+    'done': true,
+    'dueAt': '2026-01-02T09:30:00.000Z',
+    'priority': 3,
+  },
+  {
+    'id': 'todo3',
+    'name': 'Set up replication',
+    'dueAt': '2026-01-03T14:15:00.000Z',
+    'priority': 10,
+  },
+]);
 
-// create a query
-RxQuery<TodoDocType> query = RxDatabaseState.collection.find();
+final importantTodos = await todos.find({
+  'selector': {
+    'priority': {r'$gte': 5},
+  },
+  'sort': [
+    {'dueAt': 'asc'},
+  ],
+  'limit': 10,
+}).exec();
+// > [todo1, todo3]
 
-// create list to store query results
-List<RxDocument<TodoDocType>> documents = [];
+final todo3 = await todos.findOne('todo3').exec();
+await todo3!.incrementalPatch({'done': true});
+```
 
-// subscribe to a query
-query.$().listen((results) {
-    setState(() {
-        documents = results;
-    });
+### Observe the data in the UI
+
+Each query has a `$` stream. Put it into a `StreamBuilder` and the widget re-renders when a matching document is inserted, changed, or removed. RxDB does not re-run the whole query on each write. It uses EventReduce to calculate the new result from the change event when possible.
+
+```dart
+StreamBuilder<List<RxDocument>>(
+  stream: todos.find().$,
+  builder: (context, snapshot) {
+    final docs = snapshot.data ?? const [];
+    return ListView(
+      children: docs
+          .map((doc) => ListTile(
+                title: Text(doc.get('name')),
+                trailing: IconButton(
+                  icon: const Icon(Icons.delete),
+                  onPressed: () => doc.remove(),
+                ),
+              ))
+          .toList(),
+    );
+  },
+);
+```
+
+Same goes for counts, single documents, and single fields:
+
+```dart
+todos.count().$.listen((count) => print('todos: $count'));
+todos.findOne('todo1').$.listen((doc) => print(doc?.data));
+todo3.get$('done').listen((done) => print('done: $done'));
+todos.$.listen((event) => print('${event.operation} ${event.documentId}'));
+```
+
+</Steps>
+
+## Replication with Handlers Written in Dart
+
+The [RxDB replication protocol](../replication.md) runs inside of the JavaScript runtime. It handles checkpoints, retries, batching, and [conflicts](../transactions-conflicts-revisions.md). You only implement how documents are fetched from and sent to your backend. This is the same contract as the [HTTP replication](../replication-http.md), but the handlers are Dart functions.
+
+```dart
+final replication = await todos.replicate(
+  replicationIdentifier: 'todos-http-sync',
+  pull: ReplicationPullOptions(
+    batchSize: 50,
+    handler: (lastCheckpoint, batchSize) async {
+      final response = await http.get(Uri.parse(
+        'https://example.com/pull'
+        '?checkpoint=${jsonEncode(lastCheckpoint)}&limit=$batchSize',
+      ));
+      final body = jsonDecode(response.body);
+      return ReplicationPullResult(
+        documents: List<Map<String, dynamic>>.from(body['documents']),
+        checkpoint: body['checkpoint'],
+      );
+    },
+    // Realtime changes from the server, for example via WebSocket.
+    stream: serverEvents.map((event) => ReplicationPullStreamItem(
+          documents: List<Map<String, dynamic>>.from(event['documents']),
+          checkpoint: event['checkpoint'],
+        )),
+  ),
+  push: ReplicationPushOptions(
+    handler: (rows) async {
+      final response = await http.post(
+        Uri.parse('https://example.com/push'),
+        body: jsonEncode(rows.map((row) => row.toJson()).toList()),
+      );
+      // The server returns the master state of conflicting documents.
+      return List<Map<String, dynamic>>.from(jsonDecode(response.body));
+    },
+  ),
+);
+
+replication.error$.listen((error) => print('replication error: $error'));
+await replication.awaitInitialReplication();
+```
+
+When the client was offline and comes back, call `replication.reSync()` or emit `ReplicationPullStreamItem.resync()` on the pull stream so that the pull handler runs again. When the Dart handler throws, the error is emitted in `error$` and RxDB retries after `retryTime` (default: 5 seconds).
+
+## Schema Migration in Dart
+
+When you change the schema, increase its `version` and add a migration strategy for the new version. The strategy gets the old document data and returns the new data, or `null` to delete the document. Let's say version `1` of the `todoSchema` makes `priority` required:
+
+```dart
+RxCollectionCreator(
+  schema: todoSchemaVersion1,
+  migrationStrategies: {
+    1: (oldDoc) {
+      oldDoc['priority'] = oldDoc['priority'] ?? 0;
+      return oldDoc;
+    },
+  },
+);
+```
+
+## Limits of the Trial Storage
+
+By default the package uses the free SQLite trial storage. It is meant to try out RxDB and has hard limits: it stores at most `500` documents and runs at most `500` operations per collection instance, it does not use indexes, and it does not support attachments. Reaching a limit throws the error [`SQL2`](../errors.md#SQL2) or [`SQL3`](../errors.md#SQL3).
+
+## Switching to the RxDB Premium SQLite Storage
+
+For production apps, switch to the [RxDB Premium <PremiumIcon />](/premium/) SQLite storage. Because the SQL is executed in Dart, the premium storage uses the same `getSQLiteBasicsFlutter()` adapter as the trial storage. The premium code cannot ship inside the public Dart package, so you build a small JavaScript bundle that contains it and point `createRxDatabase()` to that bundle. Everything else in your Dart code stays the same: schemas, queries, and replication handlers do not change. Switching storages is a configuration change, not a rewrite.
+
+<Steps>
+
+### Install RxDB and RxDB Premium
+
+Create a folder like `rxdb-bundle/` next to your Flutter project and install the npm packages. The `rxdb` npm version MUST be the same as the version of the rxdb Dart package, because the bridge between Dart and JavaScript is versioned. Otherwise calls fail with the error [`FL2`](../errors.md#FL2).
+
+```bash
+npm init -y
+npm install rxdb@17.6.0 rxdb-premium@17.6.0 esbuild --save-exact
+```
+
+### Start the bridge with the premium storage
+
+Create `rxdb-bundle/index.js`. The `storage` option replaces the trial storage, all other database options are still set from Dart.
+
+```ts
+import {
+    startRxDBFlutterBridge,
+    getSQLiteBasicsFlutter
+} from 'rxdb/plugins/flutter';
+import { getRxStorageSQLite } from 'rxdb-premium/plugins/storage-sqlite';
+
+startRxDBFlutterBridge({
+    storage: getRxStorageSQLite({
+        sqliteBasics: getSQLiteBasicsFlutter()
+    })
 });
 ```
 
+### Bundle it into a Flutter asset
 
-### Different RxStorage layers for RxDB
-RxDB offers multiple storage options, known as [RxStorage](../rx-storage.md) layers, to store data locally. These options include:
+```bash
+npx esbuild index.js --bundle --minify --format=iife \
+  --platform=neutral --main-fields=module,main --target=es2020 \
+  --define:process.env.NODE_ENV='"production"' \
+  --outfile=../assets/rxdb-premium.js
+```
 
-- [LokiJS RxStorage](../rx-storage-lokijs.md): LokiJS is an in-memory database that can be used as a [storage](./browser-storage.md) layer for RxDB. It provides fast and efficient in-memory data management capabilities.
-- [SQLite RxStorage](../rx-storage-sqlite.md): SQLite is a popular and widely used [embedded database](./embedded-database.md) that offers robust storage capabilities. RxDB utilizes SQLite as a storage layer to persist data on the device.
-- [Memory RxStorage](../rx-storage-memory.md): As the name suggests, Memory RxStorage stores data [in memory](./in-memory-nosql-database.md). While this option does not provide persistence, it can be useful for temporary or cache-based data storage.
-By choosing the appropriate RxStorage layer based on the specific requirements of the application, developers can optimize performance and storage efficiency.
+Add the file to the assets in the `pubspec.yaml` of your app:
 
-## Synchronizing Data with RxDB between Clients and Servers
-One of the key strengths of RxDB is its ability to synchronize data between multiple clients and servers seamlessly. Let's explore how this synchronization can be achieved.
+```yaml
+flutter:
+  assets:
+    - assets/rxdb-premium.js
+```
 
-### Offline-First Approach
-RxDB's offline-first approach ensures that data can be accessed and modified even when there is no internet connection. Changes made offline are automatically synchronized with the server once a connection is reestablished. This ensures data consistency across all devices, providing a seamless user experience.
+### Use the bundle in Dart
 
-### RxDB Replication Plugins
-RxDB provides replication plugins that simplify the process of setting up data [synchronization between clients and servers](../replication.md). These plugins offer various synchronization strategies, such as one-way replication, two-way replication, and [conflict resolution](../transactions-conflicts-revisions.md) mechanisms. By configuring the appropriate replication plugin, developers can easily establish real-time data synchronization in their Flutter applications.
+```dart
+final myDatabase = await createRxDatabase(
+  name: 'mydatabase',
+  jsBundleAsset: 'assets/rxdb-premium.js',
+  collections: {
+    'todos': const RxCollectionCreator(schema: todoSchema),
+  },
+);
+```
 
-## Advanced RxDB Features and Techniques
-RxDB offers a range of advanced features and techniques that enhance its functionality and performance. Let's explore a few of these features:
+</Steps>
 
-### Indexing and Performance Optimization
-Indexing is a technique used to optimize query performance by creating indexes on specific fields. RxDB allows developers to define indexes on document fields, improving the efficiency of queries and data retrieval.
+Keep in mind that the bundle has to be rebuilt each time you update the rxdb Dart package. The same approach works to add other RxDB plugins, for example [encryption](../encryption.md) or [key compression](../key-compression.md): pass a `createDatabase` function to `startRxDBFlutterBridge()` instead of `storage`, and create the database there with the plugins you need. Use `helpers.storage` as the storage and set `hashFunction: flutterHashSha256`, because QuickJS has no `crypto.subtle`. Also notice that every call crosses the bridge between Dart and JavaScript as a JSON message, so reading thousands of documents at once is slower than in a pure JavaScript app. Use `limit` and observe only the data that is on screen.
 
-### Encryption of Local Data
-To ensure data privacy and security, RxDB supports [encryption of local data](../encryption.md). By encrypting the data stored on the device, developers can protect sensitive information and prevent unauthorized access.
+## Testing Flutter Apps that Use RxDB
 
-### Change Streams and Event Handling
-RxDB provides change streams, which emit events whenever data changes occur. By leveraging change streams, developers can implement custom event handling logic, such as updating the UI or triggering background processes, in response to specific data changes.
+For unit tests on a machine without a device, run RxDB in a Node.js child process and keep SQLite in memory. The tests of the rxdb Dart package run this way in CI, and the same test suite also runs with QuickJS in a Linux desktop build of the [example app](https://github.com/pubkey/rxdb/tree/master/examples/flutter).
 
-### JSON Key Compression
-To minimize storage requirements and optimize performance, RxDB offers [JSON key compression](../key-compression.md). This feature reduces the size of keys used in the database, resulting in more efficient storage and improved query performance.
-
-## Conclusion
-RxDB offers a powerful and flexible database solution for Flutter applications. With its offline-first approach, real-time data synchronization, and reactive data handling capabilities, RxDB simplifies the development of feature-rich and scalable Flutter applications. By integrating RxDB into your Flutter projects, you can leverage its advanced features and techniques to build responsive and data-driven applications that provide an exceptional user experience.
+```dart
+final db = await createRxDatabase(
+  name: 'testdb',
+  runtime: NodeJsRuntime(),
+  jsBundle: File('path/to/rxdb-flutter.js').readAsStringSync(),
+  inMemory: true,
+);
+```
 
 ## FAQ
 
-<Faq>
-<FaqItem question="What is the best local-first database for Flutter apps?">
+<details>
+<summary>Can I use RxDB in Flutter without writing JavaScript?</summary>
 
-RxDB provides the best local-first database for Flutter applications. You gain full reactive data handling where observable queries automatically update your Flutter UI. The system stores data locally to ensure complete application functionality without an internet connection. Replication plugins handle background synchronization with your server effortlessly. You eliminate complex state management while maintaining consistent data across platforms.
+Yes. The rxdb Dart package ships a prebuilt JavaScript bundle and all APIs are available in Dart. Schemas, queries, migration strategies, and the [replication](../replication.md) handlers are written in Dart. You only need JavaScript when you want to add plugins or use the premium SQLite storage.
 
-</FaqItem>
-</Faq>
+</details>
 
-:::note
-You can find the source code for an example RxDB Flutter Application [at the github repo](https://github.com/pubkey/rxdb/tree/master/examples/flutter)
-:::
+<details>
+<summary>What is the best local-first database for Flutter apps?</summary>
 
+RxDB is a good fit when you want observable queries and a sync protocol that works with your own backend. **[RxDB](../rx-database.md)** stores the data in SQLite on the device, re-renders widgets through Dart streams, and replicates with any backend through pull and push handlers. When you need a pure Dart database without a JavaScript runtime, a native SQLite wrapper is the simpler choice.
 
+</details>
 
+<details>
+<summary>Can I use the RxDB Premium SQLite storage in Flutter?</summary>
+
+Yes. Build a JavaScript bundle that calls `startRxDBFlutterBridge()` with the premium `getRxStorageSQLite()` storage and pass it to `createRxDatabase()` with `jsBundleAsset`. The premium storage uses the same `getSQLiteBasicsFlutter()` adapter, so the data is still stored with the sqlite3 package in Dart. Your **[RxDB](../rx-database.md)** code in Dart does not change.
+
+</details>
+
+<details>
+<summary>Which platforms does the RxDB Flutter package support?</summary>
+
+Android, iOS, macOS, Linux, and Windows. Flutter Web is not supported because the package uses the native sqlite3 library and QuickJS through FFI. In a browser you can use RxDB directly with the [IndexedDB storage](../rx-storage-indexeddb.md).
+
+</details>
+
+<details>
+<summary>Does RxDB work offline in Flutter?</summary>
+
+Yes. All reads and writes go to the local SQLite database first, so the app works without a network connection. The [offline-first](../offline-first.md) replication pushes local changes and pulls remote changes as soon as the connection is back.
+
+</details>
+
+## Follow Up
+
+- The [example Flutter app](https://github.com/pubkey/rxdb/tree/master/examples/flutter) shows a full app with a reactive list and integration tests.
+- Learn the query syntax in the [RxQuery documentation](../rx-query.md).
+- Read how the [Sync Engine](../replication.md) handles checkpoints and conflicts.
+- Compare RxDB with other [mobile databases](./mobile-database.md) and the [React Native database](../react-native-database.md) setup.
+- Start with the [RxDB Quickstart](../quickstart.md).
+- If RxDB helps your project, leave a star ⭐ on [GitHub](/code/).

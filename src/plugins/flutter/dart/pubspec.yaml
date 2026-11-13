@@ -1,15 +1,44 @@
 name: rxdb
-description: A starting point for Dart libraries or applications.
-version: 0.0.1
-# homepage: https://www.example.com
+description: >-
+  RxDB for Flutter. A local-first, reactive NoSQL database with observable
+  queries, SQLite storage and a replication protocol you implement in Dart.
+version: 17.6.0
+homepage: https://rxdb.info/articles/flutter-database.html
+repository: https://github.com/pubkey/rxdb/tree/master/src/plugins/flutter/dart
+issue_tracker: https://github.com/pubkey/rxdb/issues
+documentation: https://rxdb.info/articles/flutter-database.html
+topics:
+  - database
+  - offline-first
+  - local-first
+  - sqlite
+  - replication
 
 environment:
-  sdk: '>=2.18.2 <3.0.0'
+  sdk: '>=3.10.0 <4.0.0'
+  flutter: '>=3.38.0'
+
+platforms:
+  android:
+  ios:
+  linux:
+  macos:
+  windows:
 
 dependencies:
-  flutter_qjs: 0.3.7
-  shared_preferences: 2.0.17
-  rxdart: 0.27.5
+  flutter:
+    sdk: flutter
+  fjs: ^3.3.2
+  sqlite3: ^3.7.0
+  crypto: ^3.0.6
+  path: ^1.9.0
+  path_provider: ^2.1.5
+
 dev_dependencies:
-  lints: 3.0.0
-  test: 1.25.3
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  assets:
+    - assets/rxdb-flutter.js
