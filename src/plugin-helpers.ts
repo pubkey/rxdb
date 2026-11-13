@@ -201,18 +201,38 @@ export function wrapRxStorageInstance<RxDocType>(
             documentWrites: BulkWriteRow<RxDocType>[],
             context: string
         ) => {
-            const useRows: BulkWriteRow<any>[] = [];
-            await Promise.all(
+            const useRows: BulkWriteRow<any>[] = await Promise.all(
                 documentWrites.map(async (row) => {
                     const [previous, document] = await Promise.all([
                         row.previous ? toStorage(row.previous) : undefined,
                         toStorage(row.document)
                     ]);
-                    useRows.push({ previous, document });
+                    return { previous, document };
                 })
             );
 
             const writeResult = await instance.bulkWrite(useRows, context);
+
+            /**
+             * A wrapped storage below this one can change the digest
+             * of a written attachment, like the attachments-compression does.
+             * The caller continues to work with the document data of its own write rows,
+             * so the digest must be set there too, also when modifyToStorage()
+             * has returned a copy of the attachment object.
+             */
+            useRows.forEach((useRow, idx) => {
+                const callerAttachments = documentWrites[idx].document._attachments;
+                const storedAttachments: RxDocumentData<RxDocType>['_attachments'] | undefined = useRow.document._attachments;
+                if (!callerAttachments || !storedAttachments) {
+                    return;
+                }
+                Object.entries(storedAttachments).forEach(([attachmentId, stored]) => {
+                    const callerAttachment = callerAttachments[attachmentId];
+                    if (callerAttachment && callerAttachment.digest !== stored.digest) {
+                        callerAttachment.digest = stored.digest;
+                    }
+                });
+            });
             const ret: RxStorageBulkWriteResponse<RxDocType> = {
                 error: []
             };

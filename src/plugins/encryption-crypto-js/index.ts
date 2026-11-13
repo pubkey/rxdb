@@ -80,24 +80,6 @@ export function wrappedKeyEncryptionCryptoJsStorage<Internals, InstanceCreationO
                     return retInstance;
                 }
 
-                /**
-                 * The attachments-compression wrapper removes attachments.compression
-                 * from the schema of its child storage. When it is still set here,
-                 * the compression would run on the encrypted data inside of this wrapper
-                 * and the changed attachment digest would not reach the RxCollection.
-                 */
-                if (
-                    params.schema.attachments &&
-                    params.schema.attachments.encrypted &&
-                    params.schema.attachments.compression
-                ) {
-                    throw newRxError('EN6', {
-                        database: params.databaseName,
-                        collection: params.collectionName,
-                        schema: params.schema
-                    });
-                }
-
                 if (!params.password) {
                     throw newRxError('EN3', {
                         database: params.databaseName,

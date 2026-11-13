@@ -1,6 +1,11 @@
 {
     "$schema": "./schema.json",
-    "text": "FIX wrapping the `encryption-crypto-js` storage around the `attachments-compression` storage with `attachments: { encrypted: true, compression }` stored attachments that could not be read back (`attachment does not exist`). This wrapper order now throws the error `EN6` when the collection is created. Wrap the compression storage around the encryption storage instead",
-    "links": [],
+    "text": "FIX wrapping the `encryption-crypto-js` storage around the `attachments-compression` storage with `attachments: { encrypted: true, compression }` stored attachments that could not be read back (`attachment does not exist`). A storage wrapper now passes the attachment digest that a wrapped storage below it has changed back to its caller, so both wrapping orders of the two plugins work",
+    "links": [
+        {
+            "url": "https://github.com/pubkey/rxdb/pull/9603",
+            "linkText": "#9603"
+        }
+    ],
     "priority": 5
 }
