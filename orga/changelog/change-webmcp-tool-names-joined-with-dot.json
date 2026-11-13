@@ -1,0 +1,11 @@
+{
+    "$schema": "./schema.json",
+    "text": "CHANGE (breaking) the WebMCP tool names now join the database name, the collection name and the schema version with a dot instead of an underscore, for example `rxdb_query_mydb.todos.0` instead of `rxdb_query_mydb_todos_0`. A dot cannot be part of a database or collection name, so two different collections no longer get the same tool names (before, database `a_b` with collection `c` and database `a` with collection `b_c` collided and the second registration failed in the middle with the error of the WebMCP registry). Stored or hardcoded tool names must be updated. FIX a second `registerWebMCP()` call for the same collection at the same registry now throws the RxError `WMCP2` before any tool is registered, a failed registration no longer leaves a part of the tools or the reserved names behind, the tools are also removed through `unregisterTool()` at registries that ignore the abort signal, and tools of someone else with the same names are no longer unregistered.",
+    "links": [
+        {
+            "url": "https://github.com/pubkey/rxdb/pull/9698",
+            "linkText": "#9698"
+        }
+    ],
+    "priority": 7
+}

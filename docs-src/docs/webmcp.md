@@ -128,6 +128,8 @@ The plugin dynamically reads your RxDB schema to assemble a prompt description a
 State-modifying tools like insert/upsert/delete can be disabled via the [`readOnly`](#readonly-default-false) option.
 :::
 
+The full name of each tool is `rxdb_<tool>_<database>.<collection>.<schemaVersion>`. For example the query tool of the collection `todos` in the database `mydb` is named `rxdb_query_mydb.todos.0`. The database name, the collection name, and the schema version are joined with a dot because a dot cannot be part of a database or collection name. This ensures that two different collections never get the same tool names, even when their names contain underscores. When `registerWebMCP()` is called a second time for the same collection at the same registry, it throws the error [`WMCP2`](./errors.md#WMCP2) and registers nothing.
+
 ### Quick Start
 
 <Steps>

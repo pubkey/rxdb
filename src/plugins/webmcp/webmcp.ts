@@ -9,7 +9,10 @@ import type {
 } from '../../types/plugins/webmcp.d.ts';
 import { Subject } from 'rxjs';
 import { getWebMCPTargetFromCollection } from './webmcp-target.ts';
-import { registerWebMCPTarget } from './webmcp-tools.ts';
+import {
+    ensureWebMCPToolNamesNotRegistered,
+    registerWebMCPTarget
+} from './webmcp-tools.ts';
 
 
 export function registerWebMCPDatabase(this: RxDatabase, options?: WebMCPOptions): { error$: Subject<Error>; log$: Subject<WebMCPLogEvent> } {
@@ -18,15 +21,34 @@ export function registerWebMCPDatabase(this: RxDatabase, options?: WebMCPOptions
     const error$ = new Subject<Error>();
     const log$ = new Subject<WebMCPLogEvent>();
 
+    const unregisterFunctions: (() => void)[] = [];
     const registerCollection = (collection: RxCollection<any>) => {
-        const res = collection.registerWebMCP(options);
+        const res = registerWebMCPTarget(getWebMCPTargetFromCollection(collection), options);
+        unregisterFunctions.push(res.unregister);
         res.error$.subscribe(error$);
         res.log$.subscribe(log$);
     };
 
+    Object.values(collections).forEach(collection => {
+        ensureWebMCPToolNamesNotRegistered({
+            databaseName: database.name,
+            collectionName: collection.name,
+            schemaVersion: collection.schema.version
+        }, options);
+    });
+
     // Register existing collections
-    for (const [name, collection] of Object.entries(collections)) {
-        registerCollection(collection as RxCollection<any>);
+    try {
+        for (const [name, collection] of Object.entries(collections)) {
+            registerCollection(collection as RxCollection<any>);
+        }
+    } catch (err) {
+        /**
+         * When one collection cannot be registered, the collections
+         * that were registered before it are unregistered again.
+         */
+        unregisterFunctions.forEach(unregister => unregister());
+        throw err;
     }
 
     // Store options and subjects on the database instance so the hook can pick them up dynamically
