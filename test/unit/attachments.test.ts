@@ -217,117 +217,172 @@ describe('attachments.test.ts', () => {
             });
             await c.database.close();
         });
-        it('should not let an attachment id with "||" overwrite the attachment of another document', async () => {
+        it('should store attachment ids that contain "|" without mixing up the attachments of other documents', async () => {
             const c = await humansCollection.createAttachments(0);
-            const docWithSeparator = await c.insert(schemaObjects.humanData('todo1||b'));
-            const otherDoc = await c.insert(schemaObjects.humanData('todo1'));
+            /**
+             * In each pair the document id joined with "||"
+             * and the attachment id results in the same string.
+             */
+            const pairs: [string, string, string, string][] = [
+                ['todo1||b', 'c.txt', 'todo1', 'b||c.txt'],
+                ['todo2||', 'b.txt', 'todo2|', '|b.txt'],
+                ['todo3||||', 'b.txt', 'todo3', '||||b.txt'],
+                ['todo4%7C||', 'b.txt', 'todo4%7C|', '|b.txt'],
+                ['todo5|||', 'b.txt', 'todo5|', '||b.txt']
+            ];
+            for (const [docIdA, attachmentIdA, docIdB, attachmentIdB] of pairs) {
+                const docA = await c.insert(schemaObjects.humanData(docIdA));
+                const docB = await c.insert(schemaObjects.humanData(docIdB));
+                const dataA = 'data of ' + docIdA;
+                const dataB = 'data of ' + docIdB;
+                const readA = () => ensureNotFalsy(
+                    docA.getLatest().getAttachment(attachmentIdA)
+                ).getStringData();
+                const readB = () => ensureNotFalsy(
+                    docB.getLatest().getAttachment(attachmentIdB)
+                ).getStringData();
 
-            await docWithSeparator.putAttachment({
+                await docA.putAttachment({
+                    id: attachmentIdA,
+                    data: createBlob(dataA, 'text/plain'),
+                    type: 'text/plain'
+                });
+                const attachmentB = await docB.putAttachment({
+                    id: attachmentIdB,
+                    data: createBlob(dataB, 'text/plain'),
+                    type: 'text/plain'
+                });
+                assert.strictEqual(attachmentB.id, attachmentIdB);
+                assert.strictEqual(await attachmentB.getStringData(), dataB);
+                assert.strictEqual(await readA(), dataA);
+                assert.strictEqual(await readB(), dataB);
+
+                await docB.getLatest().putAttachments([
+                    {
+                        id: attachmentIdB,
+                        data: createBlob(dataB + ' v2', 'text/plain'),
+                        type: 'text/plain'
+                    }
+                ]);
+                assert.strictEqual(await readB(), dataB + ' v2');
+                assert.strictEqual(await readA(), dataA);
+                await docB.getLatest().putAttachmentBase64({
+                    id: attachmentIdB,
+                    length: (dataB + ' v3').length,
+                    data: await blobToBase64String(createBlob(dataB + ' v3', 'text/plain')),
+                    type: 'text/plain'
+                });
+                assert.strictEqual(await readB(), dataB + ' v3');
+                assert.strictEqual(await readA(), dataA);
+                assert.deepStrictEqual(
+                    docB.getLatest().allAttachments().map(attachment => attachment.id),
+                    [attachmentIdB]
+                );
+
+                // removing the attachment of docB must keep the attachment of docA
+                await ensureNotFalsy(docB.getLatest().getAttachment(attachmentIdB)).remove();
+                assert.strictEqual(docB.getLatest().getAttachment(attachmentIdB), null);
+                assert.strictEqual(await readA(), dataA);
+
+                // removing docB together with its attachment must keep the attachment of docA
+                await docB.getLatest().putAttachment({
+                    id: attachmentIdB,
+                    data: createBlob(dataB, 'text/plain'),
+                    type: 'text/plain'
+                });
+                assert.strictEqual(await readB(), dataB);
+                await docB.getLatest().remove();
+                assert.strictEqual(await readA(), dataA);
+
+                // removing the attachment of docA must keep the attachment of a new docB
+                const docB2 = await c.insert(schemaObjects.humanData(docIdB));
+                await docB2.putAttachment({
+                    id: attachmentIdB,
+                    data: createBlob(dataB, 'text/plain'),
+                    type: 'text/plain'
+                });
+                await ensureNotFalsy(docA.getLatest().getAttachment(attachmentIdA)).remove();
+                assert.strictEqual(
+                    await ensureNotFalsy(
+                        docB2.getLatest().getAttachment(attachmentIdB)
+                    ).getStringData(),
+                    dataB
+                );
+            }
+            await c.database.close();
+        });
+        it('should store several attachments with "|" in the id on the same document', async () => {
+            const c = await humansCollection.createAttachments(0);
+            const doc = await c.insert(schemaObjects.humanData('todo1|'));
+            const attachmentIds = ['|', '||', '|||', 'a||b', 'a|b', '|a', 'a|', '%7C', '%7C%7C', '|%7C', 'a%7C|b'];
+            await doc.putAttachments(
+                attachmentIds.map(id => ({
+                    id,
+                    data: createBlob('data of ' + id, 'text/plain'),
+                    type: 'text/plain'
+                }))
+            );
+            const latest = doc.getLatest();
+            assert.deepStrictEqual(
+                latest.allAttachments().map(attachment => attachment.id).sort(),
+                attachmentIds.slice().sort()
+            );
+            for (const id of attachmentIds) {
+                assert.strictEqual(
+                    await ensureNotFalsy(latest.getAttachment(id)).getStringData(),
+                    'data of ' + id
+                );
+            }
+
+            await ensureNotFalsy(latest.getAttachment('||')).remove();
+            const afterRemove = doc.getLatest();
+            assert.strictEqual(afterRemove.getAttachment('||'), null);
+            for (const id of attachmentIds.filter(attachmentId => attachmentId !== '||')) {
+                assert.strictEqual(
+                    await ensureNotFalsy(afterRemove.getAttachment(id)).getStringData(),
+                    'data of ' + id
+                );
+            }
+            await c.database.close();
+        });
+        it('should store inline attachments with "||" in the id', async () => {
+            const db = await createRxDatabase({
+                name: randomToken(10),
+                storage: config.storage.getStorage(),
+                multiInstance: false,
+                ignoreDuplicate: true
+            });
+            const schemaJson = clone(schemas.human);
+            schemaJson.attachments = {};
+            const collections = await db.addCollections({
+                humans: { schema: schemaJson }
+            });
+            const c = collections.humans;
+            const otherDoc = await c.insert(schemaObjects.humanData('todo1||b'));
+            await otherDoc.putAttachment({
                 id: 'c.txt',
                 data: createBlob('data of todo1||b', 'text/plain'),
                 type: 'text/plain'
             });
-
-            const errors: any[] = [];
-            await otherDoc.putAttachment({
-                id: 'b||c.txt',
-                data: createBlob('data of todo1', 'text/plain'),
-                type: 'text/plain'
-            }).catch(err => errors.push(err));
-            await otherDoc.putAttachments([
-                {
-                    id: 'ok.txt',
-                    data: createBlob('ok', 'text/plain'),
-                    type: 'text/plain'
-                },
-                {
-                    id: 'b||c.txt',
-                    data: createBlob('data of todo1', 'text/plain'),
-                    type: 'text/plain'
-                }
-            ]).catch(err => errors.push(err));
-            await otherDoc.putAttachmentBase64({
-                id: 'b||c.txt',
-                length: 13,
-                data: await blobToBase64String(createBlob('data of todo1', 'text/plain')),
-                type: 'text/plain'
-            }).catch(err => errors.push(err));
-
-            const attachment = ensureNotFalsy(
-                docWithSeparator.getLatest().getAttachment('c.txt')
-            );
-            assert.strictEqual(await attachment.getStringData(), 'data of todo1||b');
-
-            assert.strictEqual(errors.length, 3);
-            errors.forEach(err => assert.strictEqual(err.code, 'AT5'));
-            assert.deepStrictEqual(otherDoc.getLatest().allAttachments(), []);
-
-            await c.database.close();
-        });
-        it('should not let an attachment id that starts with "|" overwrite the attachment of another document', async () => {
-            if (!config.storage.hasAttachments) {
-                return;
-            }
-            const c = await humansCollection.createAttachments(0);
-            const docWithTwoPipes = await c.insert(schemaObjects.humanData('todo1||'));
-            const docWithOnePipe = await c.insert(schemaObjects.humanData('todo1|'));
-
-            await docWithTwoPipes.putAttachment({
-                id: 'b.txt',
-                data: createBlob('data of todo1||', 'text/plain'),
-                type: 'text/plain'
+            const doc = await c.insert({
+                ...schemaObjects.humanData('todo1'),
+                _attachments: [
+                    {
+                        id: 'b||c.txt',
+                        data: createBlob('data of todo1', 'text/plain'),
+                        type: 'text/plain'
+                    }
+                ]
             });
-
-            const errors: any[] = [];
-            await docWithOnePipe.putAttachment({
-                id: '|b.txt',
-                data: createBlob('data of todo1|', 'text/plain'),
-                type: 'text/plain'
-            }).catch(err => errors.push(err));
-            await docWithOnePipe.putAttachments([
-                {
-                    id: '|b.txt',
-                    data: createBlob('data of todo1|', 'text/plain'),
-                    type: 'text/plain'
-                }
-            ]).catch(err => errors.push(err));
-            await docWithOnePipe.putAttachmentBase64({
-                id: '|b.txt',
-                length: 14,
-                data: await blobToBase64String(createBlob('data of todo1|', 'text/plain')),
-                type: 'text/plain'
-            }).catch(err => errors.push(err));
-
-            const attachment = ensureNotFalsy(
-                docWithTwoPipes.getLatest().getAttachment('b.txt')
-            );
-            assert.strictEqual(await attachment.getStringData(), 'data of todo1||');
-
-            assert.strictEqual(errors.length, 3);
-            errors.forEach(err => assert.strictEqual(err.code, 'AT5'));
-            assert.deepStrictEqual(docWithOnePipe.getLatest().allAttachments(), []);
-
-            /**
-             * A single "|" that is not at the start of the attachment id
-             * and a document id that ends with "|" stay allowed.
-             */
-            await docWithOnePipe.putAttachment({
-                id: 'a|b.txt|',
-                data: createBlob('single pipe', 'text/plain'),
-                type: 'text/plain'
-            });
-            const allowed = ensureNotFalsy(
-                docWithOnePipe.getLatest().getAttachment('a|b.txt|')
-            );
-            assert.strictEqual(await allowed.getStringData(), 'single pipe');
             assert.strictEqual(
-                await ensureNotFalsy(
-                    docWithTwoPipes.getLatest().getAttachment('b.txt')
-                ).getStringData(),
-                'data of todo1||'
+                await ensureNotFalsy(doc.getAttachment('b||c.txt')).getStringData(),
+                'data of todo1'
             );
-
-            await c.database.close();
+            assert.strictEqual(
+                await ensureNotFalsy(otherDoc.getLatest().getAttachment('c.txt')).getStringData(),
+                'data of todo1||b'
+            );
+            await db.close();
         });
     });
     describe('.getAttachment()', () => {

@@ -1,6 +1,11 @@
 {
     "$schema": "./schema.json",
-    "text": "FIX an attachment id that contains `||` or starts with `|` could overwrite or delete the attachment data of another document, because the storages build the attachment key as `documentId + '||' + attachmentId`. BREAKING: `putAttachment()`, `putAttachments()`, `putAttachmentBase64()` and inline attachments now throw the error `AT5` when the attachment id contains `||` or starts with `|`",
-    "links": [],
+    "text": "FIX an attachment id that contains `||` or starts with `|` could overwrite or delete the attachment data of another document, because the storages build the key of the attachment data as `documentId + '||' + attachmentId`. The memory, dexie, localstorage and foundationdb storages now save such attachments under an escaped key that cannot be equal to the key of another document. The keys of all other attachments stay the same",
+    "links": [
+        {
+            "url": "https://github.com/pubkey/rxdb/pull/9613",
+            "linkText": "#9613"
+        }
+    ],
     "priority": 5
 }

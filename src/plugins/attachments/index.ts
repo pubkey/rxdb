@@ -26,7 +26,6 @@ import {
     ensureSchemaSupportsAttachments
 } from './attachments-utils.ts';
 import { isWriteAllowed } from '../../rx-collection-helper.ts';
-import { newRxError } from '../../rx-error.ts';
 
 
 
@@ -119,25 +118,6 @@ async function _putAttachmentsImpl<RxDocType>(
 
     if (attachments.length === 0) {
         return [];
-    }
-
-    /**
-     * The storages build the key of the attachment data
-     * as documentId + '||' + attachmentId.
-     * That key resolves to exactly one document and attachment
-     * only when the attachment id does not contain '||'
-     * and does not start with '|'. Otherwise a document
-     * with a longer primary key can own the same key:
-     * 'a' + '||' + 'x||b' equals 'a||x' + '||' + 'b' and
-     * 'a' + '||' + '|b' equals 'a|' + '||' + 'b'.
-     */
-    for (const att of attachments) {
-        if (att.id.startsWith('|') || att.id.includes('||')) {
-            throw newRxError('AT5', {
-                id: att.id,
-                documentId: doc.primary
-            });
-        }
     }
 
     const prepared = await Promise.all(

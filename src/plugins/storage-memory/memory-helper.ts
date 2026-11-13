@@ -12,6 +12,7 @@ import {
     pushAtSortPosition
 } from 'array-push-at-sort-position';
 import { newRxError } from '../../rx-error.ts';
+import { getAttachmentDataKey } from '../utils/index.ts';
 import { boundEQByIndexString } from './binary-search-bounds.ts';
 
 
@@ -41,7 +42,7 @@ export function ensureNotRemoved(
 }
 
 export function attachmentMapKey(documentId: string, attachmentId: string): string {
-    return documentId + '||' + attachmentId;
+    return getAttachmentDataKey(documentId, attachmentId);
 }
 
 

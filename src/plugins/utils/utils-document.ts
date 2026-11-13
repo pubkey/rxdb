@@ -115,3 +115,26 @@ export function toWithDeleted<RxDocType>(
         _rev: undefined
     }) as any;
 }
+
+
+function escapeAttachmentKeyPart(value: string): string {
+    return value.replace(/[%|]/g, char => char === '|' ? '%7C' : '%25');
+}
+
+/**
+ * Returns the key under which a storage saves the data of an attachment.
+ * The key is documentId + '||' + attachmentId. Reading such a key from
+ * the last '||' resolves to exactly one document and attachment
+ * when the attachment id does not contain '||' and does not start with '|'.
+ * Any other attachment id would share its key with an attachment of
+ * a document with a longer primary key ('a' + '||' + '|b' equals 'a|' + '||' + 'b'),
+ * so both parts are escaped and joined with a single '|' instead.
+ * An escaped key never contains '||', which is why it cannot be equal
+ * to a key of the first form.
+ */
+export function getAttachmentDataKey(documentId: string, attachmentId: string): string {
+    if (attachmentId.startsWith('|') || attachmentId.includes('||')) {
+        return escapeAttachmentKeyPart(documentId) + '|' + escapeAttachmentKeyPart(attachmentId);
+    }
+    return documentId + '||' + attachmentId;
+}

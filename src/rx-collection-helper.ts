@@ -96,9 +96,6 @@ export async function normalizeInlineAttachments(
             ) {
                 throw newRxError('AT2', { obj: att });
             }
-            if (att.id.startsWith('|') || att.id.includes('||')) {
-                throw newRxError('AT5', { id: att.id });
-            }
             if (Object.prototype.hasOwnProperty.call(attachmentMap, att.id)) {
                 throw newRxError('AT3', { obj: att });
             }

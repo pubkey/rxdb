@@ -83,8 +83,6 @@ const attachment = await myDocument.putAttachment(
 );
 ```
 
-The attachment `id` must not contain `||` and must not start with `|`, because the storages build the key of the attachment data as `documentId + '||' + attachmentId`. With such an id, two different documents can get the same key: the document `a|` with the attachment `|b` and the document `a||` with the attachment `b` both resolve to `a||||b`. This is why `putAttachment()`, `putAttachments()`, `putAttachmentBase64()`, and inline attachments throw the error [`AT5`](./errors.md#AT5) for such an id. A single `|` at any other position of the attachment `id` is allowed, and the primary key of the document has no such restriction.
-
 :::warning
 Expo/React-Native does not support the `Blob` API natively. Make sure you use your own polyfill that properly supports `blob.arrayBuffer()` when using RxAttachments or use the `putAttachmentBase64()` and `getDataBase64()` so that you do not have to create blobs.
 :::

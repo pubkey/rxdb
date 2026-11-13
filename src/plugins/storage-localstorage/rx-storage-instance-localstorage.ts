@@ -4,6 +4,7 @@ import {
     PROMISE_RESOLVE_VOID,
     arrayBufferToBase64,
     ensureNotFalsy,
+    getAttachmentDataKey,
     now,
     toArray
 } from '../utils/index.ts';
@@ -321,8 +322,7 @@ export class RxStorageInstanceLocalstorage<RxDocType> implements RxStorageInstan
             const mimeType = attachment.attachmentData.type || 'application/octet-stream';
             this.localStorage.setItem(
                 this.attachmentsKey +
-                '-' + attachment.documentId +
-                '||' + attachment.attachmentId,
+                '-' + getAttachmentDataKey(attachment.documentId, attachment.attachmentId),
                 'data:' + mimeType + ';base64,' + base64
             );
         });
@@ -331,16 +331,14 @@ export class RxStorageInstanceLocalstorage<RxDocType> implements RxStorageInstan
             const mimeType = attachment.attachmentData.type || 'application/octet-stream';
             this.localStorage.setItem(
                 this.attachmentsKey +
-                '-' + attachment.documentId +
-                '||' + attachment.attachmentId,
+                '-' + getAttachmentDataKey(attachment.documentId, attachment.attachmentId),
                 'data:' + mimeType + ';base64,' + base64
             );
         });
         categorized.attachmentsRemove.forEach(attachment => {
             this.localStorage.removeItem(
                 this.attachmentsKey +
-                '-' + attachment.documentId +
-                '||' + attachment.attachmentId
+                '-' + getAttachmentDataKey(attachment.documentId, attachment.attachmentId)
             );
         });
 
@@ -577,7 +575,7 @@ export class RxStorageInstanceLocalstorage<RxDocType> implements RxStorageInstan
 
     async getAttachmentData(documentId: string, attachmentId: string): Promise<Blob> {
         const stored = ensureNotFalsy(
-            this.localStorage.getItem(this.attachmentsKey + '-' + documentId + '||' + attachmentId)
+            this.localStorage.getItem(this.attachmentsKey + '-' + getAttachmentDataKey(documentId, attachmentId))
         );
         // Stored value is a data URL like "data:<mime>;base64,<payload>".
         // Fall back to application/octet-stream for legacy bare base64 payloads.
@@ -607,7 +605,7 @@ export class RxStorageInstanceLocalstorage<RxDocType> implements RxStorageInstan
             if (doc && doc._attachments) {
                 Object.keys(doc._attachments).forEach(attachmentId => {
                     this.localStorage.removeItem(
-                        this.attachmentsKey + '-' + docId + '||' + attachmentId
+                        this.attachmentsKey + '-' + getAttachmentDataKey(docId, attachmentId)
                     );
                 });
             }

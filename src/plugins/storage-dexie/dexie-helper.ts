@@ -5,7 +5,7 @@ import type {
 } from '../../types/index.d.ts';
 import { Dexie } from 'dexie';
 import type { DexieSettings } from '../../types/index.d.ts';
-import { flatClone, getFromMapOrCreate, getProperty, setProperty, toArray, uniqueArray } from '../utils/index.ts';
+import { flatClone, getAttachmentDataKey, getFromMapOrCreate, getProperty, setProperty, toArray, uniqueArray } from '../utils/index.ts';
 import {
     getPrimaryFieldOfPrimaryKey,
     getSchemaByObjectPath
@@ -294,7 +294,7 @@ export async function getDocsInDb<RxDocType>(
 
 
 export function attachmentObjectId(documentId: string, attachmentId: string): string {
-    return documentId + '||' + attachmentId;
+    return getAttachmentDataKey(documentId, attachmentId);
 }
 
 
