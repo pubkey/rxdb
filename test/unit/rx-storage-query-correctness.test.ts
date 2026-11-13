@@ -19,18 +19,8 @@ import {
     ensureNotFalsy,
     RxCollection,
     RxEventReduceOptions,
-    RxStorage,
     MangoQuerySelector
 } from '../../plugins/core/index.mjs';
-import { getRxStorageDexie } from '../../plugins/storage-dexie/index.mjs';
-import {
-    getRxStorageLocalstorage,
-    getLocalStorageMock
-} from '../../plugins/storage-localstorage/index.mjs';
-import {
-    indexedDB as fakeIndexedDB,
-    IDBKeyRange as fakeIDBKeyRange
-} from 'fake-indexeddb';
 import {
     schemaObjects,
     EXAMPLE_REVISION_1,
@@ -2934,63 +2924,54 @@ describe('rx-storage-query-correctness.test.ts', () => {
             { operators: { $lte: 'Learn RxDB' }, matches: n => n <= 'Learn RxDB' }
         ];
 
-        const storages: { name: string; storage: RxStorage<any, any>; }[] = [
-            { name: config.storage.name, storage: config.storage.getStorage() },
-            {
-                name: 'dexie (fake-indexeddb)',
-                storage: wrappedValidateAjvStorage({
-                    storage: getRxStorageDexie({ indexedDB: fakeIndexedDB, IDBKeyRange: fakeIDBKeyRange })
-                })
-            },
-            {
-                name: 'localstorage (mock)',
-                storage: wrappedValidateAjvStorage({
-                    storage: getRxStorageLocalstorage({ localStorage: getLocalStorageMock() })
-                })
-            }
-        ];
         const wrong: string[] = [];
-        for (const { name, storage } of storages) {
-            const createDatabase = async (allowSlowCount: boolean) => {
-                const database = await createRxDatabase<{
-                    numberFirst: RxCollection<TodoDocType>;
-                    numberLast: RxCollection<TodoDocType>;
-                }>({
-                    name: randomToken(10),
-                    storage,
-                    allowSlowCount
-                });
-                await database.addCollections({
-                    numberFirst: { schema: todoSchema(['priority', 'name']) },
-                    numberLast: { schema: todoSchema(['name', 'priority']) }
-                });
-                await database.numberFirst.bulkInsert(todos);
-                await database.numberLast.bulkInsert(todos);
-                return database;
-            };
+        const createDatabase = async (allowSlowCount: boolean) => {
+            const database = await createRxDatabase<{
+                numberFirst: RxCollection<TodoDocType>;
+                numberLast: RxCollection<TodoDocType>;
+            }>({
+                name: randomToken(10),
+                storage: config.storage.getStorage(),
+                allowSlowCount
+            });
+            await database.addCollections({
+                numberFirst: { schema: todoSchema(['priority', 'name']) },
+                numberLast: { schema: todoSchema(['name', 'priority']) }
+            });
+            await database.numberFirst.bulkInsert(todos);
+            await database.numberLast.bulkInsert(todos);
+            return database;
+        };
 
-            const myDatabase = await createDatabase(true);
-            for (const collection of [myDatabase.numberFirst, myDatabase.numberLast]) {
-                for (const priorityCondition of priorityConditions) {
-                    for (const nameCondition of nameConditions) {
-                        const selector: MangoQuerySelector<TodoDocType> = { priority: priorityCondition.operators };
-                        if (nameCondition) {
-                            selector.name = nameCondition.operators;
-                        }
-                        const expected = todos
-                            .filter(todo => priorityCondition.matches(todo.priority))
-                            .filter(todo => !nameCondition || nameCondition.matches(todo.name))
-                            .map(todo => todo.id)
-                            .sort();
-                        const found = await collection.find({ selector }).exec();
+        const myDatabase = await createDatabase(true);
+        /**
+         * The queries run in parallel so that the test
+         * also finishes in time on a storage with slow reads.
+         */
+        const checks: Promise<void>[] = [];
+        for (const collection of [myDatabase.numberFirst, myDatabase.numberLast]) {
+            for (const priorityCondition of priorityConditions) {
+                for (const nameCondition of nameConditions) {
+                    const selector: MangoQuerySelector<TodoDocType> = { priority: priorityCondition.operators };
+                    if (nameCondition) {
+                        selector.name = nameCondition.operators;
+                    }
+                    const expected = todos
+                        .filter(todo => priorityCondition.matches(todo.priority))
+                        .filter(todo => !nameCondition || nameCondition.matches(todo.name))
+                        .map(todo => todo.id)
+                        .sort();
+                    checks.push((async () => {
+                        const [found, count] = await Promise.all([
+                            collection.find({ selector }).exec(),
+                            collection.count({ selector }).exec()
+                        ]);
                         const foundIds = found.map(doc => doc.id).sort();
-                        const count = await collection.count({ selector }).exec();
                         if (
                             JSON.stringify(foundIds) !== JSON.stringify(expected) ||
                             count !== expected.length
                         ) {
                             wrong.push([
-                                name,
                                 collection.name,
                                 JSON.stringify(selector),
                                 'find: ' + JSON.stringify(foundIds),
@@ -2998,46 +2979,46 @@ describe('rx-storage-query-correctness.test.ts', () => {
                                 'expected: ' + JSON.stringify(expected)
                             ].join(' | '));
                         }
-                    }
+                    })());
                 }
             }
-            await myDatabase.remove();
-
-            /**
-             * A value outside of the range must not turn
-             * a count() that uses the index into a slow count.
-             * With the name range, only the index that starts with
-             * the number field can count without the query matcher.
-             */
-            const noSlowCountDatabase = await createDatabase(false);
-            for (const collection of [noSlowCountDatabase.numberFirst, noSlowCountDatabase.numberLast]) {
-                for (const priority of [8, 12, 0, 4.5]) {
-                    for (const nameCondition of [nameConditions[1], nameConditions[2]]) {
-                        if (nameCondition === nameConditions[2] && collection === noSlowCountDatabase.numberLast) {
-                            continue;
-                        }
-                        const selector: MangoQuerySelector<TodoDocType> = {
-                            priority,
-                            name: ensureNotFalsy(nameCondition).operators
-                        };
-                        const expected = todos.filter(
-                            todo => todo.priority === priority && ensureNotFalsy(nameCondition).matches(todo.name)
-                        ).length;
-                        const count = await collection.count({ selector }).exec().catch(err => 'error ' + err.code);
-                        if (count !== expected) {
-                            wrong.push([
-                                name,
-                                collection.name,
-                                JSON.stringify(selector),
-                                'count without allowSlowCount: ' + count,
-                                'expected: ' + expected
-                            ].join(' | '));
-                        }
-                    }
-                }
-            }
-            await noSlowCountDatabase.remove();
         }
+        await Promise.all(checks);
+        await myDatabase.remove();
+
+        /**
+         * A value outside of the range must not turn
+         * a count() that uses the index into a slow count.
+         * With the name range, only the index that starts with
+         * the number field can count without the query matcher.
+         */
+        const noSlowCountDatabase = await createDatabase(false);
+        for (const collection of [noSlowCountDatabase.numberFirst, noSlowCountDatabase.numberLast]) {
+            for (const priority of [8, 12, 0, 4.5]) {
+                for (const nameCondition of [nameConditions[1], nameConditions[2]]) {
+                    if (nameCondition === nameConditions[2] && collection === noSlowCountDatabase.numberLast) {
+                        continue;
+                    }
+                    const selector: MangoQuerySelector<TodoDocType> = {
+                        priority,
+                        name: ensureNotFalsy(nameCondition).operators
+                    };
+                    const expected = todos.filter(
+                        todo => todo.priority === priority && ensureNotFalsy(nameCondition).matches(todo.name)
+                    ).length;
+                    const count = await collection.count({ selector }).exec().catch(err => 'error ' + err.code);
+                    if (count !== expected) {
+                        wrong.push([
+                            collection.name,
+                            JSON.stringify(selector),
+                            'count without allowSlowCount: ' + count,
+                            'expected: ' + expected
+                        ].join(' | '));
+                    }
+                }
+            }
+        }
+        await noSlowCountDatabase.remove();
         assert.deepStrictEqual(wrong, []);
     });
 
