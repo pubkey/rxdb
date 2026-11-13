@@ -1039,7 +1039,7 @@ describe('validate.test.js (custom formats) ', () => {
             const db = await createRxDatabase({
                 name: randomToken(10),
                 storage: wrappedValidateAjvStorage({
-                    storage: getRxStorageMemory()
+                    storage: config.storage.getStorage()
                 })
             });
             const schemaWithUnknownFormat = clone(schemas.human);
