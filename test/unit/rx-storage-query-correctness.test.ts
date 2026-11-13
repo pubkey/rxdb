@@ -2661,6 +2661,109 @@ describe('rx-storage-query-correctness.test.ts', () => {
         ]
     });
 
+    testCorrectQueries<{ id: string; name: string; priority: number; score: number; }>({
+        testTitle: 'bounds that the index string cannot represent exactly must return the same results as the query matcher',
+        data: [
+            { id: 'todo1', name: 'a', priority: 4, score: 5 },
+            { id: 'todo2', name: 'a ', priority: 5, score: 5.5 },
+            { id: 'todo3', name: 'b', priority: 6, score: 6 },
+            { id: 'todo4', name: 'c', priority: 7, score: 6.5 }
+        ],
+        schema: {
+            version: 0,
+            indexes: [['priority'], ['score'], ['name']],
+            primaryKey: 'id',
+            type: 'object',
+            properties: {
+                id: { type: 'string', maxLength: 10 },
+                name: { type: 'string', maxLength: 10 },
+                priority: { type: 'integer', minimum: 0, maximum: 100, multipleOf: 1 },
+                score: { type: 'number', minimum: 0, maximum: 100, multipleOf: 0.5 }
+            },
+            required: ['id', 'name', 'priority', 'score']
+        },
+        queries: [
+            {
+                info: '$gte with a bound that is exactly representable',
+                query: { selector: { priority: { $gte: 5 } }, sort: [{ priority: 'asc' }] },
+                selectorSatisfiedByIndex: true,
+                expectedResultDocIds: ['todo2', 'todo3', 'todo4']
+            },
+            {
+                info: '$gte with a decimal bound on an integer field',
+                query: { selector: { priority: { $gte: 5.5 } }, sort: [{ priority: 'asc' }] },
+                expectedResultDocIds: ['todo3', 'todo4']
+            },
+            {
+                info: '$gt with a decimal bound on an integer field',
+                query: { selector: { priority: { $gt: 5.5 } }, sort: [{ priority: 'asc' }] },
+                expectedResultDocIds: ['todo3', 'todo4']
+            },
+            {
+                info: '$lt with a decimal bound on an integer field',
+                query: { selector: { priority: { $lt: 5.5 } }, sort: [{ priority: 'asc' }] },
+                selectorSatisfiedByIndex: false,
+                expectedResultDocIds: ['todo1', 'todo2']
+            },
+            {
+                info: '$lte with a decimal bound on an integer field',
+                query: { selector: { priority: { $lte: 5.5 } }, sort: [{ priority: 'asc' }] },
+                expectedResultDocIds: ['todo1', 'todo2']
+            },
+            {
+                info: '$eq with a decimal bound on an integer field',
+                query: { selector: { priority: 5.5 }, sort: [{ priority: 'asc' }] },
+                expectedResultDocIds: []
+            },
+            {
+                info: '$gt with more decimals than multipleOf',
+                query: { selector: { score: { $gt: 5.46 } }, sort: [{ score: 'asc' }] },
+                expectedResultDocIds: ['todo2', 'todo3', 'todo4']
+            },
+            {
+                info: '$lte with more decimals than multipleOf',
+                query: { selector: { score: { $lte: 5.46 } }, sort: [{ score: 'asc' }] },
+                expectedResultDocIds: ['todo1']
+            },
+            {
+                info: '$gte above the schema maximum',
+                query: { selector: { priority: { $gte: 200 } }, sort: [{ priority: 'asc' }] },
+                expectedResultDocIds: []
+            },
+            {
+                info: '$lte below the schema minimum',
+                query: { selector: { priority: { $lte: -5 } }, sort: [{ priority: 'asc' }] },
+                expectedResultDocIds: []
+            },
+            {
+                info: '$eq with a string bound that ends with a space',
+                query: { selector: { name: 'a ' }, sort: [{ name: 'asc' }] },
+                selectorSatisfiedByIndex: false,
+                expectedResultDocIds: ['todo2']
+            },
+            {
+                info: '$gte with a string bound that ends with a space',
+                query: { selector: { name: { $gte: 'a ' } }, sort: [{ name: 'asc' }] },
+                expectedResultDocIds: ['todo2', 'todo3', 'todo4']
+            },
+            {
+                info: '$lt with a string bound that ends with a space',
+                query: { selector: { name: { $lt: 'a ' } }, sort: [{ name: 'asc' }] },
+                expectedResultDocIds: ['todo1']
+            },
+            {
+                info: '$eq: null on a required string field',
+                query: { selector: { name: { $eq: null } }, sort: [{ name: 'asc' }] },
+                expectedResultDocIds: []
+            },
+            {
+                info: '$eq: null on a required number field',
+                query: { selector: { priority: { $eq: null } }, sort: [{ priority: 'asc' }] },
+                expectedResultDocIds: []
+            }
+        ]
+    });
+
     /**
      * @link https://github.com/pubkey/rxdb/issues/9371
      */
