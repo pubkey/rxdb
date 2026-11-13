@@ -2590,6 +2590,7 @@ describe('replication-graphql.test.ts', () => {
                 });
                 const schema: RxJsonSchema<any> = clone(schemas.humanWithTimestampAllIndex);
                 schema.encrypted = ['name'];
+                schema.indexes = ['age', 'updatedAt'];
                 const collections = await db.addCollections({
                     humans: {
                         schema
@@ -2642,6 +2643,7 @@ describe('replication-graphql.test.ts', () => {
                 });
                 const schema: RxJsonSchema<any> = clone(schemas.humanWithTimestampAllIndex);
                 schema.encrypted = ['name'];
+                schema.indexes = ['age', 'updatedAt'];
                 const collections = await db.addCollections({
                     humans: {
                         schema
