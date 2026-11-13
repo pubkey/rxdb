@@ -18,12 +18,6 @@ import {
     RxDocument,
     ensureNotFalsy,
 } from '../../plugins/core/index.mjs';
-import { getRxStorageDexie } from '../../plugins/storage-dexie/index.mjs';
-import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.mjs';
-import {
-    indexedDB as fakeIndexedDB,
-    IDBKeyRange as fakeIDBKeyRange
-} from 'fake-indexeddb';
 
 import {
     schemaObjects,
@@ -177,19 +171,9 @@ describe('cross-instance.test.js', () => {
         });
         it('should not emit an older document state when the event of another instance arrives after the event of a later own write', async function () {
             this.timeout(120 * 1000);
-            /**
-             * The Dexie storage sends the events of other instances
-             * asynchronously over the BroadcastChannel.
-             */
-            const storage = wrappedValidateAjvStorage({
-                storage: getRxStorageDexie({
-                    indexedDB: fakeIndexedDB,
-                    IDBKeyRange: fakeIDBKeyRange
-                })
-            });
             const name = randomToken(10);
-            const c1 = await humansCollection.createMultiInstance(name, 0, undefined, storage);
-            const c2 = await humansCollection.createMultiInstance(name, 0, undefined, storage);
+            const c1 = await humansCollection.createMultiInstance(name);
+            const c2 = await humansCollection.createMultiInstance(name);
 
             const iterations = 10;
             for (let i = 0; i < iterations; i++) {
