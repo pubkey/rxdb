@@ -1,6 +1,6 @@
 {
     "$schema": "./schema.json",
-    "text": "FIX `incrementalModify()`, `incrementalPatch()`, `incrementalUpdate()` and `incrementalRemove()` wrote to an already deleted document and emitted additional `DELETE` events instead of rejecting with `DOC11`/`DOC13` like `modify()`, `patch()` and `remove()`",
+    "text": "FIX `incrementalModify()`, `incrementalPatch()`, `incrementalUpdate()` and `incrementalRemove()` wrote to an already deleted document and emitted additional `DELETE` events instead of rejecting with `DOC11`/`DOC13` like `modify()`, `patch()` and `remove()`. The deleted check now runs once in the incremental write queue, so `incrementalModify()` and `incrementalPatch()` of a deleted `RxLocalDocument` reject with `DOC11` too. `incrementalUpsert()` and `upsertLocal()` still insert a deleted document again",
     "links": [],
     "priority": 5
 }

@@ -325,24 +325,9 @@ export const basePrototype = {
         _context?: string
     ): Promise<RxDocument> {
         isWriteAllowed(this.collection);
-        const modifier = modifierFromPublicToInternal(mutationFunction);
         return this.collection.incrementalWriteQueue.addWrite(
             this._data,
-            async (docData) => {
-                const newData = await modifier(docData);
-                /**
-                 * Deleted documents cannot be changed.
-                 * This is checked on the state that the modifier runs on
-                 * because that state can be newer than this._data.
-                 */
-                if (docData._deleted && newData._deleted) {
-                    throw newRxError('DOC11', {
-                        id: this.primary,
-                        document: this
-                    });
-                }
-                return newData;
-            }
+            modifierFromPublicToInternal(mutationFunction)
         ).then(result => this.collection._docCache.getCachedRxDocument(result));
     },
 

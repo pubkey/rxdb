@@ -1101,6 +1101,15 @@ describe('rx-document.test.js', () => {
             assert.deepStrictEqual(removeEvents, [staleDoc.primary]);
             assert.strictEqual(removeHookRuns, 1);
 
+            // a deleted document can still be inserted again with an upsert
+            const upsertData = staleDoc.toMutableJSON();
+            upsertData.firstName = 'upserted';
+            const upserted = await c.incrementalUpsert(upsertData);
+            assert.strictEqual(upserted.deleted, false);
+            assert.strictEqual(upserted.firstName, 'upserted');
+            const found = await c.findOne(staleDoc.primary).exec(true);
+            assert.strictEqual(found.firstName, 'upserted');
+
             sub.unsubscribe();
             c.database.close();
         });

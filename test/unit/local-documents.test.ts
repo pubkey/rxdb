@@ -180,6 +180,44 @@ describe('local-documents.test.ts', () => {
 
                 c.database.close();
             });
+            it('should reject incremental writes on a deleted local document', async () => {
+                const c = await humansCollection.create(0);
+                const doc: RxLocalDocument<RxCollection<any>, LocalDocType> = await c.insertLocal<LocalDocType>('foobar', {
+                    foo: 'bar'
+                });
+                const deletedDoc = await doc.remove();
+                assert.strictEqual(deletedDoc.deleted, true);
+
+                /**
+                 * The document instance is outdated and still has the non-deleted state,
+                 * so the deleted state is only known when the write runs.
+                 */
+                assert.strictEqual(doc.deleted, false);
+                await AsyncTestUtil.assertThrows(
+                    () => doc.incrementalPatch({ added: 'foo' }),
+                    'RxError',
+                    'DOC11'
+                );
+                await AsyncTestUtil.assertThrows(
+                    () => doc.incrementalModify(data => {
+                        data.added = 'foo';
+                        return data;
+                    }),
+                    'RxError',
+                    'DOC11'
+                );
+                assert.strictEqual(await c.getLocal('foobar'), null);
+
+                // a deleted local document can still be inserted again
+                const upserted = await c.upsertLocal<LocalDocType>('foobar', {
+                    foo: 'bar2'
+                });
+                assert.strictEqual(upserted.deleted, false);
+                assert.strictEqual(upserted.get('foo'), 'bar2');
+                assert.strictEqual(upserted.get('added'), undefined);
+
+                c.database.close();
+            });
         });
         describe('.incrementalModify()', () => {
             it('should modify the data', async () => {

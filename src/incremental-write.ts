@@ -1,5 +1,6 @@
 import {
     isBulkWriteConflictError,
+    newRxError,
     rxStorageWriteErrorToRxError
 } from './rx-error.ts';
 import type {
@@ -105,7 +106,7 @@ export class IncrementalWriteQueue<RxDocType> {
                         const items: IncrementalWriteQueueItem<RxDocType>[] = [];
                         for (const item of allItems) {
                             try {
-                                newData = await item.modifier(
+                                const modified: RxDocumentData<RxDocType> = await item.modifier(
                                     /**
                                      * We have to clone() each time because the modifier
                                      * might throw while it already changed some properties
@@ -113,6 +114,21 @@ export class IncrementalWriteQueue<RxDocType> {
                                      */
                                     clone(newData)
                                 ) as any;
+                                /**
+                                 * Deleted documents cannot be changed.
+                                 * This is checked here for all callers on the state
+                                 * that the modifier runs on, because that state can be
+                                 * newer than the state the caller knows.
+                                 * A modifier that sets _deleted to false is allowed
+                                 * because upserts insert a deleted document again.
+                                 */
+                                if (newData._deleted && modified._deleted) {
+                                    throw newRxError('DOC11', {
+                                        id: docId,
+                                        data: modified
+                                    });
+                                }
+                                newData = modified;
                                 items.push(item);
                             } catch (err: any) {
                                 item.reject(err);
