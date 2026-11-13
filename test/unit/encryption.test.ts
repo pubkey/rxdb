@@ -27,6 +27,7 @@ import {
     getComposedPrimaryKeyOfDocumentData,
     getFromMapOrThrow,
     RxStorage,
+    RxStorageInstance,
     RxStorageInstanceCreationParams,
     WrappedRxStorageInstance
 } from '../../plugins/core/index.mjs';
@@ -38,10 +39,6 @@ import {
 } from '../../plugins/encryption-crypto-js/index.mjs';
 import { replicateRxCollection } from '../../plugins/replication/index.mjs';
 import { getRxStorageMemory } from '../../plugins/storage-memory/index.mjs';
-import {
-    getRxStorageLocalstorage,
-    getLocalStorageMock
-} from '../../plugins/storage-localstorage/index.mjs';
 import { wrappedKeyCompressionStorage } from '../../plugins/key-compression/index.mjs';
 import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.mjs';
 
@@ -855,26 +852,37 @@ describe('encryption.test.ts', () => {
                 },
                 required: ['id', 'name']
             };
-            function storageContains(ls: typeof localStorage, search: string): boolean {
-                for (let i = 0; i < ls.length; i++) {
-                    const value = ls.getItem(ensureNotFalsy(ls.key(i)));
-                    if (value && value.includes(search)) {
-                        return true;
-                    }
+            function getKeyCompressionStorage(
+                innerStorage: RxStorage<any, any> = getEncryptedStorage()
+            ): RxStorage<any, any> {
+                return wrappedKeyCompressionStorage({
+                    storage: innerStorage
+                });
+            }
+            /**
+             * Reads the document from the storage instance
+             * that is below the key-compression and the encryption,
+             * so that the data is returned the way it is stored.
+             */
+            async function storedDocumentContains(
+                collection: RxCollection<TodoDocType>,
+                search: string
+            ): Promise<boolean> {
+                let instance: RxStorageInstance<any, any, any> = collection.storageInstance;
+                while ((instance as WrappedRxStorageInstance<any, any, any>).originalStorageInstance) {
+                    instance = (instance as WrappedRxStorageInstance<any, any, any>).originalStorageInstance;
                 }
-                return false;
+                const docs = await instance.findDocumentsById(['todo2'], false);
+                assert.strictEqual(docs.length, 1);
+                return JSON.stringify(docs[0]).includes(search);
             }
             it('should not store the encrypted fields in plain text', async () => {
-                const ls = getLocalStorageMock();
+                if (config.storage.hasEncryption) {
+                    return;
+                }
                 const db = await createRxDatabase<{ todos: RxCollection<TodoDocType>; }>({
                     name: randomToken(10),
-                    storage: wrappedValidateAjvStorage({
-                        storage: wrappedKeyCompressionStorage({
-                            storage: wrappedKeyEncryptionCryptoJsStorage({
-                                storage: getRxStorageLocalstorage({ localStorage: ls })
-                            })
-                        })
-                    }),
+                    storage: getKeyCompressionStorage(),
                     password: await getPassword()
                 });
                 await db.addCollections({
@@ -895,23 +903,19 @@ describe('encryption.test.ts', () => {
                 assert.strictEqual(doc.note, 'Milk, eggs, bread');
                 assert.strictEqual(ensureNotFalsy(doc.assignee).email, 'bob@example.com');
 
-                assert.strictEqual(storageContains(ls, 'Buy groceries'), true);
-                assert.strictEqual(storageContains(ls, 'Milk, eggs, bread'), false);
-                assert.strictEqual(storageContains(ls, 'bob@example.com'), false);
+                assert.strictEqual(await storedDocumentContains(db.todos, 'Buy groceries'), true);
+                assert.strictEqual(await storedDocumentContains(db.todos, 'Milk, eggs, bread'), false);
+                assert.strictEqual(await storedDocumentContains(db.todos, 'bob@example.com'), false);
 
                 await db.remove();
             });
             it('should not store a top-level encrypted field in plain text', async () => {
-                const ls = getLocalStorageMock();
+                if (config.storage.hasEncryption) {
+                    return;
+                }
                 const db = await createRxDatabase<{ todos: RxCollection<TodoDocType>; }>({
                     name: randomToken(10),
-                    storage: wrappedValidateAjvStorage({
-                        storage: wrappedKeyCompressionStorage({
-                            storage: wrappedKeyEncryptionCryptoJsStorage({
-                                storage: getRxStorageLocalstorage({ localStorage: ls })
-                            })
-                        })
-                    }),
+                    storage: getKeyCompressionStorage(),
                     password: await getPassword()
                 });
                 await db.addCollections({
@@ -928,11 +932,17 @@ describe('encryption.test.ts', () => {
                 });
                 const doc = await db.todos.findOne('todo2').exec(true);
                 assert.strictEqual(doc.note, 'Milk, eggs, bread');
-                assert.strictEqual(storageContains(ls, 'Milk, eggs, bread'), false);
+                assert.strictEqual(await storedDocumentContains(db.todos, 'Milk, eggs, bread'), false);
 
                 await db.remove();
             });
             it('should read documents that have been stored without encryption and encrypt them on the next write', async () => {
+                if (
+                    config.storage.hasEncryption ||
+                    !config.storage.hasPersistence
+                ) {
+                    return;
+                }
                 /**
                  * Removes the encrypted fields from the schema
                  * so that the encryption storage below it stores plain text.
@@ -944,6 +954,9 @@ describe('encryption.test.ts', () => {
                         createStorageInstance<RxDocType>(
                             params: RxStorageInstanceCreationParams<RxDocType, InstanceCreationOptions>
                         ) {
+                            if (!params.schema.encrypted || params.schema.encrypted.length === 0) {
+                                return innerStorage.createStorageInstance(params);
+                            }
                             const schemaWithoutEncrypted = Object.assign({}, params.schema);
                             delete schemaWithoutEncrypted.encrypted;
                             return innerStorage.createStorageInstance(
@@ -952,7 +965,6 @@ describe('encryption.test.ts', () => {
                         }
                     });
                 }
-                const ls = getLocalStorageMock();
                 const name = randomToken(10);
                 const password = await getPassword();
                 const schema = Object.assign({}, todoSchema, {
@@ -960,15 +972,9 @@ describe('encryption.test.ts', () => {
                 });
                 const plainDb = await createRxDatabase<{ todos: RxCollection<TodoDocType>; }>({
                     name,
-                    storage: wrappedValidateAjvStorage({
-                        storage: wrappedKeyCompressionStorage({
-                            storage: withoutEncryptedFields(
-                                wrappedKeyEncryptionCryptoJsStorage({
-                                    storage: getRxStorageLocalstorage({ localStorage: ls })
-                                })
-                            )
-                        })
-                    }),
+                    storage: getKeyCompressionStorage(
+                        withoutEncryptedFields(getEncryptedStorage())
+                    ),
                     password
                 });
                 await plainDb.addCollections({ todos: { schema } });
@@ -977,18 +983,12 @@ describe('encryption.test.ts', () => {
                     name: 'Buy groceries',
                     note: 'Milk, eggs, bread'
                 });
-                assert.strictEqual(storageContains(ls, 'Milk, eggs, bread'), true);
+                assert.strictEqual(await storedDocumentContains(plainDb.todos, 'Milk, eggs, bread'), true);
                 await plainDb.close();
 
                 const db = await createRxDatabase<{ todos: RxCollection<TodoDocType>; }>({
                     name,
-                    storage: wrappedValidateAjvStorage({
-                        storage: wrappedKeyCompressionStorage({
-                            storage: wrappedKeyEncryptionCryptoJsStorage({
-                                storage: getRxStorageLocalstorage({ localStorage: ls })
-                            })
-                        })
-                    }),
+                    storage: getKeyCompressionStorage(),
                     password
                 });
                 await db.addCollections({ todos: { schema } });
@@ -998,8 +998,8 @@ describe('encryption.test.ts', () => {
                 await doc.incrementalPatch({ name: 'Buy more groceries' });
                 const docAfter = await db.todos.findOne('todo2').exec(true);
                 assert.strictEqual(docAfter.note, 'Milk, eggs, bread');
-                assert.strictEqual(storageContains(ls, 'Buy more groceries'), true);
-                assert.strictEqual(storageContains(ls, 'Milk, eggs, bread'), false);
+                assert.strictEqual(await storedDocumentContains(db.todos, 'Buy more groceries'), true);
+                assert.strictEqual(await storedDocumentContains(db.todos, 'Milk, eggs, bread'), false);
 
                 await db.remove();
             });
