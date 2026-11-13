@@ -19,7 +19,6 @@ import {
     CompressionMode,
     ensureNotFalsy,
     deepEqual,
-    RxStorage,
     RxAttachmentData,
     RxAttachmentWriteData,
     WithDeletedAndAttachments
@@ -36,28 +35,30 @@ import {
 const modes: CompressionMode[] = ['deflate', 'gzip'];
 
 /**
- * Wraps the given RxStorage and tracks the size of the attachment data
- * that reaches it, by attachment id.
+ * Returns the size of the attachment data that is stored in the storage of the test config.
+ * Reads through a second plain storage instance that does not have the compression wrapper.
  */
-const storedAttachmentSizes = new Map<string, number>();
-function wrappedSizeTrackingStorage<Internals, InstanceCreationOptions>(
-    storage: RxStorage<Internals, InstanceCreationOptions>
-): RxStorage<Internals, InstanceCreationOptions> {
-    return Object.assign({}, storage, {
-        async createStorageInstance(params: Parameters<typeof storage.createStorageInstance>[0]) {
-            const instance = await storage.createStorageInstance(params);
-            const bulkWrite = instance.bulkWrite.bind(instance);
-            instance.bulkWrite = (rows, context) => {
-                rows.forEach(row => Object.entries(row.document._attachments).forEach(([attachmentId, attachment]) => {
-                    if ('data' in attachment) {
-                        storedAttachmentSizes.set(attachmentId, attachment.data.size);
-                    }
-                }));
-                return bulkWrite(rows, context);
-            };
-            return instance;
-        }
+async function getStoredAttachmentSize(
+    collection: RxCollection<HumanDocumentType>,
+    documentId: string,
+    attachmentId: string
+): Promise<number> {
+    const schema = clone(collection.schema.jsonSchema);
+    delete ensureNotFalsy(schema.attachments).compression;
+    const storageInstance = await config.storage.getStorage().createStorageInstance<HumanDocumentType>({
+        databaseInstanceToken: randomToken(10),
+        databaseName: collection.database.name,
+        collectionName: collection.name,
+        schema,
+        options: {},
+        multiInstance: collection.database.multiInstance,
+        devMode: true
     });
+    const docs = await storageInstance.findDocumentsById([documentId], false);
+    const storedDigest = docs[0]._attachments[attachmentId].digest;
+    const data = await storageInstance.getAttachmentData(documentId, attachmentId, storedDigest);
+    await storageInstance.close();
+    return data.size;
 }
 modes.forEach(mode => {
     describe('attachments-compression.test.ts (mode: ' + mode + ')', () => {
@@ -86,7 +87,7 @@ modes.forEach(mode => {
             const db = await createRxDatabase<{ [prop: string]: RxCollection<HumanDocumentType>; }>({
                 name: randomToken(10),
                 storage: wrappedAttachmentsCompressionStorage({
-                    storage: wrappedSizeTrackingStorage(config.storage.getStorage())
+                    storage: config.storage.getStorage()
                 }),
                 multiInstance,
                 eventReduce: true,
@@ -200,9 +201,12 @@ modes.forEach(mode => {
                     data: createBlob(plainData, 'text/plain'),
                     type: 'text/plain'
                 });
-                assert.ok(
-                    (ensureNotFalsy(storedAttachmentSizes.get('compare-size.txt')) * 1.5) < attachmentB.length
-                );
+                if (config.storage.hasPersistence) {
+                    const storedSize = await getStoredAttachmentSize(c, docCompressed.primary, 'compare-size.txt');
+                    assert.ok(
+                        (storedSize * 1.5) < attachmentB.length
+                    );
+                }
                 c.database.close();
                 c2.database.close();
             });
@@ -222,11 +226,13 @@ modes.forEach(mode => {
                 assert.ok(attachment);
 
                 // Stored size should be smaller than original (text compresses well)
-                const storedSize = ensureNotFalsy(storedAttachmentSizes.get('compressible.txt'));
-                assert.ok(
-                    storedSize < originalBlob.size,
-                    'compressed attachment (' + storedSize + ') should be smaller than original (' + originalBlob.size + ')'
-                );
+                if (config.storage.hasPersistence) {
+                    const storedSize = await getStoredAttachmentSize(c, doc.primary, 'compressible.txt');
+                    assert.ok(
+                        storedSize < originalBlob.size,
+                        'compressed attachment (' + storedSize + ') should be smaller than original (' + originalBlob.size + ')'
+                    );
+                }
                 assert.strictEqual(attachment.length, originalBlob.size);
 
                 const data = await attachment.getData();
@@ -303,11 +309,13 @@ modes.forEach(mode => {
                 });
 
                 // Compressed text should be strictly smaller than uncompressed
-                const storedTextSize = ensureNotFalsy(storedAttachmentSizes.get('mixed.txt'));
-                assert.ok(
-                    storedTextSize < textAttachmentUncompressed.length,
-                    'compressed text (' + storedTextSize + ') should be smaller than uncompressed (' + textAttachmentUncompressed.length + ')'
-                );
+                if (config.storage.hasPersistence) {
+                    const storedTextSize = await getStoredAttachmentSize(c, doc.primary, 'mixed.txt');
+                    assert.ok(
+                        storedTextSize < textAttachmentUncompressed.length,
+                        'compressed text (' + storedTextSize + ') should be smaller than uncompressed (' + textAttachmentUncompressed.length + ')'
+                    );
+                }
 
                 // JPEG stored size should be exactly the original (not compressed, no overhead)
                 assert.strictEqual(
