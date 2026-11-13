@@ -38,8 +38,9 @@ export function getMessageChannel(
     keepAlive: boolean = false
 ): Promise<RemoteMessageChannel> {
     const cacheKey = getCacheKey(settings, cacheKeys);
+    const cache = getMessageChannelCache(settings.identifier);
     const cacheItem = getFromMapOrCreate(
-        getMessageChannelCache(settings.identifier),
+        cache,
         cacheKey,
         () => {
             const newCacheItem: RemoteMessageChannelCacheItem = {
@@ -52,6 +53,16 @@ export function getMessageChannel(
                         OPEN_REMOTE_MESSAGE_CHANNELS.add(messageChannel);
                         CACHE_ITEM_BY_MESSAGE_CHANNEL.set(messageChannel, newCacheItem);
                         return messageChannel;
+                    })
+                    .catch(err => {
+                        /**
+                         * A failed creation must not stay in the cache,
+                         * so that the next call creates a new message channel.
+                         */
+                        if (cache.get(cacheKey) === newCacheItem) {
+                            cache.delete(cacheKey);
+                        }
+                        throw err;
                     }),
             };
             return newCacheItem;

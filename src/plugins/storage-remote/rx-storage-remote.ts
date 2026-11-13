@@ -43,12 +43,29 @@ export class RxStorageRemote implements RxStorage<RxStorageRemoteInternals, any>
         public readonly settings: RxStorageRemoteSettings
     ) {
         if (settings.mode === 'one') {
-            this.messageChannelIfOneMode = getMessageChannel(
-                settings,
+            /**
+             * A failed creation is retried on the next createStorageInstance() call
+             * which then rejects with the error of that retry.
+             */
+            this.getMessageChannelForOneMode().catch(() => { });
+        }
+    }
+
+    private getMessageChannelForOneMode(): Promise<RemoteMessageChannel> {
+        if (!this.messageChannelIfOneMode) {
+            const messageChannelPromise = getMessageChannel(
+                this.settings,
                 [],
                 true
             );
+            this.messageChannelIfOneMode = messageChannelPromise;
+            messageChannelPromise.catch(() => {
+                if (this.messageChannelIfOneMode === messageChannelPromise) {
+                    this.messageChannelIfOneMode = undefined;
+                }
+            });
         }
+        return this.messageChannelIfOneMode;
     }
 
     public getRequestId() {
@@ -74,8 +91,8 @@ export class RxStorageRemote implements RxStorage<RxStorageRemoteInternals, any>
             case 'storage':
                 cacheKeys.push('seed-' + this.seed);
         }
-        const messageChannel = await (this.messageChannelIfOneMode ?
-            this.messageChannelIfOneMode :
+        const messageChannel = await (this.settings.mode === 'one' ?
+            this.getMessageChannelForOneMode() :
             getMessageChannel(
                 this.settings,
                 cacheKeys
