@@ -191,9 +191,14 @@ const replicationState = await replicateRxCollection({
     /**
      * Time in milliseconds after when a failed backend request
      * has to be retried.
+     * When you set a retryTime, each retry waits exactly that time.
+     * When it is not set, the first retry waits 200 milliseconds
+     * and the wait grows by the factor 1.3 on each consecutive
+     * failed request (200, 260, 338, ...) up to a maximum of 5 seconds.
+     * After a successful request the wait starts at 200 milliseconds again.
      * This time will be skipped if a offline->online switch is detected
      * via navigator.onLine
-     * (optional), default is 5 seconds.
+     * (optional), default is the growing wait from 200 milliseconds to 5 seconds.
      */
     retryTime: 5 * 1000,
     /**

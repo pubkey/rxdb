@@ -149,9 +149,14 @@ export type ReplicationOptions<RxDocType, CheckpointType> = {
     /**
      * Time in milliseconds after when a failed backend request
      * has to be retried.
+     * When a retryTime is set, each retry waits exactly that time.
+     * When it is not set, the first retry waits 200 milliseconds
+     * and the wait grows by the factor 1.3 on each consecutive
+     * failed request up to a maximum of 5000 milliseconds.
+     * After a successful request the wait starts at 200 milliseconds again.
      * This time will be skipped if a offline->online switch is detected
      * via `navigator.onLine`
-     * @default 5000
+     * @default undefined
      */
     retryTime?: number;
     /**

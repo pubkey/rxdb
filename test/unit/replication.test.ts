@@ -808,6 +808,129 @@ describe('replication.test.ts', () => {
             await localCollection.database.close();
             await remoteCollection.database.close();
         });
+        (['pull', 'push'] as const).forEach(direction => {
+            it('should grow the wait between failed ' + direction + ' handler calls when no retryTime is set and reset it after a successful call', async () => {
+                const { localCollection, remoteCollection } = await getTestCollections({
+                    local: direction === 'push' ? 1 : 0,
+                    remote: direction === 'pull' ? 1 : 0
+                });
+                const pullHandler = getPullHandler(remoteCollection);
+                const pushHandler = getPushHandler(remoteCollection);
+
+                /**
+                 * Time in milliseconds between each failed
+                 * handler call and the retry that came after it.
+                 */
+                const retryWaits: number[] = [];
+                let failsLeft = 4;
+                let lastFailTime: number | undefined;
+                function onHandlerCall() {
+                    const time = performance.now();
+                    if (lastFailTime !== undefined) {
+                        retryWaits.push(time - lastFailTime);
+                        lastFailTime = undefined;
+                    }
+                    if (failsLeft > 0) {
+                        failsLeft = failsLeft - 1;
+                        lastFailTime = time;
+                        throw new Error(direction + ' handler offline');
+                    }
+                }
+                const replicationState = replicateRxCollection({
+                    collection: localCollection,
+                    replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                    live: true,
+                    pull: direction === 'pull' ? {
+                        handler: async (checkpoint, batchSize) => {
+                            await wait(0);
+                            onHandlerCall();
+                            return pullHandler(checkpoint, batchSize);
+                        }
+                    } : undefined,
+                    push: direction === 'push' ? {
+                        handler: async (rows) => {
+                            await wait(0);
+                            onHandlerCall();
+                            return pushHandler(rows);
+                        }
+                    } : undefined
+                });
+                const errors: (RxError | RxTypeError)[] = [];
+                replicationState.error$.subscribe(err => errors.push(err));
+
+                const initialReplicationDone = await Promise.race([
+                    replicationState.awaitInitialReplication().then(() => true),
+                    wait(3000).then(() => false)
+                ]);
+                assert.strictEqual(initialReplicationDone, true, 'awaitInitialReplication() must resolve after the retries');
+                assert.strictEqual(retryWaits.length, 4);
+
+                /**
+                 * The lower bounds are a bit below the
+                 * expected waits of 200, 260, 338 and 439 milliseconds
+                 * because timers can fire slightly too early.
+                 */
+                [180, 240, 318, 419].forEach((minWait, idx) => {
+                    assert.ok(
+                        retryWaits[idx] >= minWait,
+                        'retry ' + idx + ' must wait at least ' + minWait + 'ms but waited ' + retryWaits[idx] + 'ms'
+                    );
+                });
+
+                /**
+                 * After the successful handler call,
+                 * the next failed call must be retried
+                 * after the short initial wait again.
+                 * Without the reset it would wait 571 milliseconds.
+                 */
+                failsLeft = 1;
+                if (direction === 'pull') {
+                    replicationState.reSync();
+                } else {
+                    await localCollection.insert(schemaObjects.humanWithTimestampData());
+                }
+                await waitUntil(() => retryWaits.length === 5, 3000);
+                assert.ok(retryWaits[4] >= 180, 'wait after reset was ' + retryWaits[4] + 'ms');
+                assert.ok(retryWaits[4] < 550, 'wait after reset was ' + retryWaits[4] + 'ms');
+                assert.strictEqual(errors.length, 5);
+
+                await localCollection.database.close();
+                await remoteCollection.database.close();
+            });
+        });
+        it('should not grow the wait between failed handler calls when retryTime is set', async () => {
+            const { localCollection, remoteCollection } = await getTestCollections({ local: 0, remote: 1 });
+            const pullHandler = getPullHandler(remoteCollection);
+            const callTimes: number[] = [];
+            const replicationState = replicateRxCollection({
+                collection: localCollection,
+                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                live: true,
+                retryTime: 50,
+                pull: {
+                    handler: async (checkpoint, batchSize) => {
+                        await wait(0);
+                        callTimes.push(performance.now());
+                        if (callTimes.length <= 8) {
+                            throw new Error('pull handler offline');
+                        }
+                        return pullHandler(checkpoint, batchSize);
+                    }
+                }
+            });
+            await replicationState.awaitInitialReplication();
+
+            /**
+             * 8 retries with a constant wait of 50 milliseconds take about 400 milliseconds,
+             * with the growing default wait they would take more than 4 seconds.
+             */
+            const timeForRetries = callTimes[8] - callTimes[0];
+            assert.ok(timeForRetries >= 8 * 45, 'retries took ' + timeForRetries + 'ms');
+            assert.ok(timeForRetries < 2000, 'retries took ' + timeForRetries + 'ms');
+
+            await localCollection.database.close();
+            await remoteCollection.database.close();
+        });
     });
     describe('other', () => {
         describe('autoStart', () => {
