@@ -17,6 +17,19 @@ export function ensureCollectionNameValid(
         });
     }
     validateDatabaseName(args.name);
+
+    /**
+     * Some storages (Dexie.js, localStorage) build the name of their physical store
+     * by joining the database name, the collection name, and the schema version with '--'.
+     * The joined name can only be split back into its parts in one way
+     * when the collection name does not contain '--'.
+     * Otherwise two different databases would share one physical store.
+     */
+    if (args.name.includes('--')) {
+        throw newRxError('UT9', {
+            name: args.name
+        });
+    }
 }
 
 export function ensureDatabaseNameIsValid(args: RxDatabaseCreator<any, any>) {

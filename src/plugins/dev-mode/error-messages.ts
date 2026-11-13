@@ -60,9 +60,9 @@ export const ERROR_MESSAGES = {
         docs: 'https://rxdb.info/rx-database.html?console=errors&code=UT8#ignoreduplicate'
     },
     UT9: {
-        message: 'The collection name must not contain "--" and must not start with "-" because this RxStorage joins the database name, the collection name, and the schema version with "--" to build the name of the physical store.',
-        cause: 'With that collection name, the name of the physical store would be the same as the one of a collection in a database with a different name, so both would read and write the same data.',
-        fix: 'Rename the collection so that it does not contain "--" and does not start with "-". Single hyphens inside the name are allowed.',
+        message: 'The collection name must not contain "--" because some storages (Dexie.js, localStorage) join the database name, the collection name, and the schema version with "--" to build the name of the physical store.',
+        cause: 'With that collection name, the name of the physical store can be the same as the one of a collection in a database with a different name, so both would read and write the same data.',
+        fix: 'Rename the collection so that it does not contain "--". Single hyphens inside the name are allowed.',
         docs: ''
     },
 

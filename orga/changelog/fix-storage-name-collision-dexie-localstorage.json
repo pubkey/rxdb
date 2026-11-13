@@ -1,6 +1,6 @@
 {
     "$schema": "./schema.json",
-    "text": "FIX the Dexie.js and localStorage RxStorage used the same physical store for two different databases when a collection name contained `--` (for example database `app--staging` with collection `todos` and database `app` with collection `staging--todos`). Both storages now throw the error `UT9` for collection names that contain `--` or start with `-`. BREAKING: collections with such names can no longer be opened on these two storages",
+    "text": "ADD dev-mode check that rejects collection names that contain `--` with the error `UT9`. The Dexie.js and localStorage RxStorage join the database name, the collection name, and the schema version with `--`, so with such a name two different databases used the same physical store (for example database `app--staging` with collection `todos` and database `app` with collection `staging--todos`). Nothing changes without the dev-mode plugin",
     "links": [],
     "priority": 6
 }
