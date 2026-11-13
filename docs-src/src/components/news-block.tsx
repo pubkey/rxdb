@@ -1,5 +1,6 @@
 import React from 'react';
 import { Slider } from './slider';
+import { IconArrowRightPixel } from './icons/arrow-right-pixel';
 
 export type NewsItem = {
     title: string;
@@ -61,7 +62,8 @@ export function NewsBlock() {
                         <h3>{item.title}</h3>
                         <p>{item.description}</p>
                         <a href={item.slug} className="news-slider-link">
-                            Read article →
+                            Read article
+                            <IconArrowRightPixel />
                         </a>
                     </div>
                 ))
