@@ -13,6 +13,7 @@ import {
     getFromMapOrThrow,
     PROMISE_RESOLVE_FALSE,
     PROMISE_RESOLVE_VOID,
+    createPromiseWithResolvers,
     NON_PREMIUM_COLLECTION_LIMIT,
     hasPremiumFlag
 } from './plugins/utils/index.ts';
@@ -234,6 +235,9 @@ export class RxCollectionBase<
     public onClose: (() => MaybePromise<any>)[] = [];
     public closed = false;
 
+    private _migrationInProgress = false;
+    private _migrationDone?: ReturnType<typeof createPromiseWithResolvers<void>>;
+
     /**
      * Emits once and completes when the collection gets closed.
      * Replays that emit to late subscribers so that observables
@@ -246,7 +250,32 @@ export class RxCollectionBase<
      * Writes are blocked while this is true to ensure the migration
      * replication can fill the new storage without external interference.
      */
-    public migrationInProgress = false;
+    public get migrationInProgress(): boolean {
+        return this._migrationInProgress;
+    }
+    public set migrationInProgress(value: boolean) {
+        this._migrationInProgress = value;
+        if (!value && this._migrationDone) {
+            this._migrationDone.resolve();
+            this._migrationDone = undefined;
+        }
+    }
+
+    /**
+     * Resolves when migrationInProgress is false.
+     * The promise is only created when this is called during a migration.
+     * It does not resolve when the collection is closed
+     * before the migration has finished.
+     */
+    public awaitMigration(): Promise<void> {
+        if (!this._migrationInProgress) {
+            return PROMISE_RESOLVE_VOID;
+        }
+        if (!this._migrationDone) {
+            this._migrationDone = createPromiseWithResolvers<void>();
+        }
+        return this._migrationDone.promise;
+    }
 
     public onRemove: (() => MaybePromise<any>)[] = [];
 

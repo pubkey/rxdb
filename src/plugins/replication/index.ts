@@ -77,12 +77,6 @@ import {
 } from '../../hooks.ts';
 
 
-/**
- * Time in milliseconds after which a replication that waits
- * for a schema migration checks again if the collection is migrated.
- */
-const MIGRATION_RECHECK_INTERVAL = 20;
-
 export const REPLICATION_STATE_BY_COLLECTION: WeakMap<RxCollection, RxReplicationState<any, any>[]> = new WeakMap();
 
 export class RxReplicationState<RxDocType, CheckpointType> {
@@ -172,16 +166,12 @@ export class RxReplicationState<RxDocType, CheckpointType> {
     private callOnStart: () => void = undefined as any;
 
     /**
-     * Amount of start() calls that wait for a schema migration
-     * and did not add their start to the startQueue yet.
+     * True when pause() was called on a live replication
+     * and start() was not called since.
+     * A start() that waits for a schema migration is not part of the startQueue,
+     * so the order of the start() and pause() calls is taken from this flag.
      */
-    private startsWaitingForMigration: number = 0;
-
-    /**
-     * True when pause() was called while a start() was waiting
-     * for a schema migration and start() was not called since.
-     */
-    private pausedBeforeStart: boolean = false;
+    private pausedSinceStart: boolean = false;
 
     public internalReplicationState?: RxStorageInstanceReplicationState<RxDocType>;
     public metaInstance?: RxStorageInstance<RxStorageReplicationMeta<RxDocType, CheckpointType>, any, {}, any>;
@@ -218,30 +208,15 @@ export class RxReplicationState<RxDocType, CheckpointType> {
          * during the wait, start() resolves without starting.
          * A pause() during the wait is kept so that the replication
          * is paused from its first moment on, until the next start() call.
-         * The wait ends up to one recheck interval after the migration,
-         * so the pause() is kept until the start is added to the startQueue
-         * and not only while the migration runs.
          */
-        this.pausedBeforeStart = false;
+        this.pausedSinceStart = false;
         if (this.collection.migrationInProgress) {
-            this.startsWaitingForMigration++;
-            return new Promise<void>(res => {
-                const done = () => {
-                    clearInterval(interval);
-                    res();
-                };
-                const interval = setInterval(() => {
-                    if (
-                        !this.collection.migrationInProgress ||
-                        this.collection.closed ||
-                        this.isStopped()
-                    ) {
-                        done();
-                    }
-                }, MIGRATION_RECHECK_INTERVAL);
-                this.onCancel.push(done);
-            }).then(() => {
-                this.startsWaitingForMigration--;
+            const canceled = createPromiseWithResolvers<void>();
+            this.onCancel.push(canceled.resolve);
+            return Promise.race([
+                this.collection.awaitMigration(),
+                canceled.promise
+            ]).then(() => {
                 if (this.isStopped() || this.collection.closed) {
                     return;
                 }
@@ -284,7 +259,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
         }
 
         if (this.internalReplicationState) {
-            this.internalReplicationState.events.paused.next(this.pausedBeforeStart);
+            this.internalReplicationState.events.paused.next(this.pausedSinceStart);
         }
 
         /**
@@ -513,7 +488,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
             }
         });
 
-        if (this.pausedBeforeStart) {
+        if (this.pausedSinceStart) {
             this.internalReplicationState.events.paused.next(true);
         }
 
@@ -576,8 +551,8 @@ export class RxReplicationState<RxDocType, CheckpointType> {
          * A non-live replication cancels itself when it is in sync,
          * which it cannot reach while it is paused.
          */
-        if (this.live && this.startsWaitingForMigration > 0) {
-            this.pausedBeforeStart = true;
+        if (this.live) {
+            this.pausedSinceStart = true;
         }
         this.startQueue = this.startQueue.then(() => {
             /**
