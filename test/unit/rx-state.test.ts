@@ -13,10 +13,8 @@ import {
     RxReactivityFactory,
     RxCleanupPolicy,
     RxState,
-    runXTimes,
-    randomDelayStorage
+    runXTimes
 } from '../../plugins/core/index.mjs';
-import { getRxStorageMemory } from '../../plugins/storage-memory/index.mjs';
 import {
     isDeno,
     isFastMode
@@ -331,18 +329,9 @@ addRxPlugin(RxDBJsonDumpPlugin);
                     [key: string]: number;
                 };
                 const databaseName = randomToken(10);
-                /**
-                 * Use a storage where reads and writes take some time
-                 * like on a persistent storage, so that writes to the state
-                 * overlap with the running cleanup.
-                 */
-                const storage = wrappedValidateAjvStorage({
-                    storage: randomDelayStorage({
-                        storage: getRxStorageMemory(),
-                        delayTimeBefore: () => 2,
-                        delayTimeAfter: () => 2
-                    })
-                });
+                const storage = useSchemaValidator ? wrappedValidateAjvStorage({
+                    storage: config.storage.getStorage()
+                }) : config.storage.getStorage();
                 const openState = async (cleanupPolicy?: Partial<RxCleanupPolicy>) => {
                     const database = await createRxDatabase({
                         name: databaseName,
@@ -364,25 +353,37 @@ addRxPlugin(RxDBJsonDumpPlugin);
                 }
                 await state.collection.database.close();
 
-                // reopen so that the cleanup directly starts while new writes happen
+                // reopen so that the cleanup directly starts
                 state = await openState({
                     awaitReplicationsInSync: false,
                     minimumCollectionAge: 0,
                     runEach: 1000 * 60 * 60,
                     waitForLeadership: false
                 });
-                const writesDuringCleanup = 30;
-                while (t < initialWrites + writesDuringCleanup) {
-                    const value = t;
-                    await state.set('k' + value, () => value);
-                    await wait(5);
-                    t++;
-                }
+                /**
+                 * Write to the state each time it emits,
+                 * like an app that stores a derived value.
+                 * The first emit comes from the cleanup, so these
+                 * writes happen while the cleanup still runs.
+                 */
+                const writesDuringCleanup = 5;
+                const derivedWrites: Promise<void>[] = [];
+                const currentState = state;
+                const sub = currentState.$.subscribe(() => {
+                    if (derivedWrites.length < writesDuringCleanup) {
+                        const value = initialWrites + derivedWrites.length;
+                        derivedWrites.push(
+                            currentState.set('k' + value, () => value)
+                        );
+                    }
+                });
                 // wait until the cleanup has removed the old operations
                 await waitUntil(async () => {
-                    const docs = await state.collection.find().exec();
-                    return docs.length <= writesDuringCleanup + 1;
+                    const docs = await currentState.collection.find().exec();
+                    return derivedWrites.length === writesDuringCleanup && docs.length <= writesDuringCleanup + 1;
                 });
+                sub.unsubscribe();
+                await Promise.all(derivedWrites);
 
                 const stateBeforeClose = state.get();
                 assert.strictEqual(Object.keys(stateBeforeClose).length, initialWrites + writesDuringCleanup);
