@@ -380,6 +380,40 @@ addRxPlugin(RxDBJsonDumpPlugin);
                 state1.collection.database.close();
                 state2.collection.database.close();
             });
+            it('close() and a pending set() must settle when the other instance wrote at the same time', async () => {
+                const databaseName = randomToken(10);
+                const state1 = await getState(databaseName);
+                const state2 = await getState(databaseName);
+                await state1.set('a', () => 0);
+                await waitUntil(() => state2.a === 0);
+
+                const set2 = state2.set('b', () => 1);
+                const set1 = state1.set('a', () => 2);
+                const closePromise = state1.collection.database.close();
+
+                const settled = await Promise.race([
+                    Promise.all([set1, closePromise, set2]),
+                    wait(isFastMode() ? 2000 : 5000).then(() => 'timeout' as const)
+                ]);
+                if (settled === 'timeout') {
+                    // do not await the close of the hanging instance
+                    state2.collection.database.close();
+                    assert.fail('set() or close() did not settle');
+                }
+                assert.strictEqual(settled[1], true);
+
+                // the write of the closed instance is stored
+                await waitUntil(() => state2.a === 2 && state2.b === 1);
+
+                // the remaining instance still works and a new one recovers the same state
+                await state2.set('b', plusOne);
+                const state3 = await getState(databaseName);
+                assert.deepStrictEqual(state3.get(), { a: 2, b: 2 });
+                assert.deepStrictEqual(state3.get(), state2.get());
+
+                await state3.collection.database.close();
+                await state2.collection.database.close();
+            });
             runXTimes(1, () => {
                 it('should have a deterministic output when 2 instances write at the same time', async () => {
                     // TODO shouldn't we fix this test for these storages?

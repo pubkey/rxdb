@@ -19,6 +19,7 @@ import type {
     RxQuery,
     RxDocument,
     RxError,
+    RxStorageWriteErrorConflict,
     Paths
 } from '../../types';
 import {
@@ -29,8 +30,7 @@ import {
     clone,
     randomToken,
     deepEqual,
-    getFromMapOrCreate,
-    promiseWait
+    getFromMapOrCreate
 } from '../utils/index.ts';
 import {
     RX_STATE_COLLECTION_SCHEMA,
@@ -235,11 +235,19 @@ export class RxStateBase<T, Reactivity = unknown> {
                         throw err;
                     }
                     /**
-                     * Yield to the event loop so that cross-instance
-                     * change events can be processed and the _lastIdQuery
-                     * cache gets updated before retrying.
+                     * The conflict error contains the operations document
+                     * that another instance has stored with the same id.
+                     * Merging it here makes the next run use a higher id
+                     * even when the change event of that document never arrives,
+                     * like when the database is closing.
                      */
-                    await promiseWait(0);
+                    const writeError = (err as RxError).parameters.writeError as RxStorageWriteErrorConflict<RxStateDocument>;
+                    const documentInDb = writeError.documentInDb;
+                    if (this._lastMergedId < documentInDb.id) {
+                        this._lastMergedId = documentInDb.id;
+                        this.mergeOperationsIntoState(documentInDb.ops);
+                        this._ownEmits$.next(this._state);
+                    }
                 }
             }
         });
