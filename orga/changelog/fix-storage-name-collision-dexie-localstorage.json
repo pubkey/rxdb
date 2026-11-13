@@ -1,6 +1,11 @@
 {
     "$schema": "./schema.json",
-    "text": "ADD dev-mode check that rejects collection names that contain `--` with the error `UT9`. The Dexie.js and localStorage RxStorage join the database name, the collection name, and the schema version with `--`, so with such a name two different databases used the same physical store (for example database `app--staging` with collection `todos` and database `app` with collection `staging--todos`). Nothing changes without the dev-mode plugin",
-    "links": [],
+    "text": "FIX two different databases shared one physical store in the Dexie.js, localStorage, and memory RxStorage when a database name or collection name contained the separator that the storage uses to join the database name, the collection name, and the schema version (for example database `app--staging` with collection `todos` and database `app` with collection `staging--todos` in the localStorage RxStorage). Such names now get an unambiguous store name. Note: The store name stays the same for all other names. Only these existing stores get a new name, so their previously stored data is no longer found: Dexie.js stores of a database whose name contains `--`, and localStorage stores where the database name or the collection name contains `--` or the collection name starts with `-`",
+    "links": [
+        {
+            "url": "https://github.com/pubkey/rxdb/pull/9616",
+            "linkText": "#9616"
+        }
+    ],
     "priority": 6
 }

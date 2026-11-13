@@ -17,6 +17,29 @@ export const DEXIE_ATTACHMENTS_TABLE_NAME = 'attachments';
 
 export const RX_STORAGE_NAME_DEXIE = 'dexie';
 
+/**
+ * Returns the name of the IndexedDB database of one storage instance.
+ * The name has the form [databaseName]--[schemaVersion]--[collectionName].
+ * When the databaseName does not contain '--', the name can only be split
+ * back into its parts in one way, because the databaseName is the only prefix
+ * without '--' that is followed by '--[digits]--'.
+ * A databaseName that contains '--' gets its length prepended,
+ * so that the parts can still be told apart. That prefix starts with '--n'
+ * which cannot be the start of a name of the first form.
+ */
+export function getDexieDbName(
+    databaseName: string,
+    collectionName: string,
+    schemaVersion: number
+): string {
+    const name = databaseName + '--' + schemaVersion + '--' + collectionName;
+    return 'rxdb-dexie-' + (
+        databaseName.includes('--')
+            ? '--n' + databaseName.length + '-' + name
+            : name
+    );
+}
+
 const DEXIE_STATE_DB_BY_NAME: Map<string, DexieStorageInternals> = new Map();
 const REF_COUNT_PER_DEXIE_DB: Map<DexieStorageInternals, number> = new Map();
 export function getDexieDbWithTables(
@@ -25,7 +48,7 @@ export function getDexieDbWithTables(
     settings: DexieSettings,
     schema: RxJsonSchema<any>
 ): DexieStorageInternals {
-    const dexieDbName = 'rxdb-dexie-' + databaseName + '--' + schema.version + '--' + collectionName;
+    const dexieDbName = getDexieDbName(databaseName, collectionName, schema.version);
 
     const state = getFromMapOrCreate(
         DEXIE_STATE_DB_BY_NAME,

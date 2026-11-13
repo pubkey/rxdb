@@ -132,10 +132,11 @@ export class RxStorageInstanceLocalstorage<RxDocType> implements RxStorageInstan
     ) {
         this.localStorage = settings.localStorage ? settings.localStorage : (typeof window !== 'undefined' ? window.localStorage : undefined as any);
         this.primaryPath = getPrimaryFieldOfPrimaryKey(this.schema.primaryKey) as any;
-        this.docsKey = 'RxDB-ls-doc-' + this.databaseName + '--' + this.collectionName + '--' + this.schema.version;
-        this.changestreamStorageKey = 'RxDB-ls-changes-' + this.databaseName + '--' + this.collectionName + '--' + this.schema.version;
-        this.indexesKey = 'RxDB-ls-idx-' + this.databaseName + '--' + this.collectionName + '--' + this.schema.version;
-        this.attachmentsKey = 'RxDB-ls-attachment-' + this.databaseName + '--' + this.collectionName + '--' + this.schema.version;
+        const keyNamePart = getLocalstorageKeyNamePart(this.databaseName, this.collectionName, this.schema.version);
+        this.docsKey = 'RxDB-ls-doc-' + keyNamePart;
+        this.changestreamStorageKey = 'RxDB-ls-changes-' + keyNamePart;
+        this.indexesKey = 'RxDB-ls-idx-' + keyNamePart;
+        this.attachmentsKey = 'RxDB-ls-attachment-' + keyNamePart;
 
         this.changeStreamSub = getStorageEventStream().subscribe((ev: {
             fromStorageEvent: boolean;
@@ -712,6 +713,34 @@ function rebuildCleanupIndexFromLegacyIndex<RxDocType>(
     instance.localStorage.removeItem(legacyKey);
 }
 
+
+/**
+ * Returns the part of the localStorage keys that identifies one storage instance.
+ * The part has the form [databaseName]--[collectionName]--[schemaVersion].
+ * It can only be split back into its parts in one way when
+ * no name is empty, no name contains '--', and the collectionName does not start with '-'.
+ * Then the databaseName is the only prefix without '--' that is followed by '--' and a character other than '-',
+ * and the collectionName is the only following part without '--' that is followed by '--[digits]'.
+ * Other names get the lengths of both names prepended, so that the parts can still be told apart.
+ * That prefix starts with '--n' which cannot be the start of a part of the first form.
+ */
+export function getLocalstorageKeyNamePart(
+    databaseName: string,
+    collectionName: string,
+    schemaVersion: number
+): string {
+    const name = databaseName + '--' + collectionName + '--' + schemaVersion;
+    if (
+        databaseName === '' ||
+        databaseName.includes('--') ||
+        collectionName === '' ||
+        collectionName.startsWith('-') ||
+        collectionName.includes('--')
+    ) {
+        return '--n' + databaseName.length + '-' + collectionName.length + '-' + name;
+    }
+    return name;
+}
 
 export function getIndexName(index: string[]): string {
     return index.join('|');

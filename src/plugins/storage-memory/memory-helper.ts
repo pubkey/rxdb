@@ -20,11 +20,15 @@ export function getMemoryCollectionKey(
     collectionName: string,
     schemaVersion: number
 ): string {
-    return [
+    /**
+     * JSON escapes the quotes inside of the names,
+     * so two different name combinations never get the same key.
+     */
+    return JSON.stringify([
         databaseName,
         collectionName,
         schemaVersion
-    ].join('--memory--');
+    ]);
 }
 
 

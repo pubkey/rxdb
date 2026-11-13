@@ -183,6 +183,89 @@ describe('rx-collection.test.ts', () => {
                     assert.ok(isRxCollection(db.collections.foobar4));
                     db.close();
                 });
+                it('allow the separators of the storages inside of the names without sharing the data', async () => {
+                    const prefix = randomToken(10);
+                    /**
+                     * These are the separators that the storages use
+                     * to join the database name, the collection name, and the schema version
+                     * into the name of the physical store.
+                     */
+                    const separators = ['--', '--0--', '--memory--'];
+                    for (const separator of separators) {
+                        const namesA = {
+                            database: prefix + 'app',
+                            collection: 'staging' + separator + 'todos'
+                        };
+                        const namesB = {
+                            database: prefix + 'app' + separator + 'staging',
+                            collection: 'todos'
+                        };
+                        const open = async (names: { database: string; collection: string; }): Promise<RxCollection<HumanDocumentType>> => {
+                            const db = await createRxDatabase({
+                                name: names.database,
+                                storage: config.storage.getStorage(),
+                            });
+                            const collections = await db.addCollections({
+                                [names.collection]: {
+                                    schema: schemas.human
+                                }
+                            });
+                            return collections[names.collection];
+                        };
+                        const getIds = async (collection: RxCollection<HumanDocumentType>): Promise<string[]> => {
+                            const docs = await collection.find().exec();
+                            return docs.map(doc => doc.passportId).sort();
+                        };
+
+                        let collectionA = await open(namesA);
+                        let collectionB = await open(namesB);
+                        assert.ok(isRxCollection(collectionA));
+                        assert.ok(isRxCollection(collectionB));
+
+                        // insert + find
+                        await collectionA.insert(schemaObjects.humanData('a1'));
+                        assert.deepStrictEqual(await getIds(collectionB), []);
+                        await collectionB.insert(schemaObjects.humanData('b1'));
+                        await collectionB.insert(schemaObjects.humanData('b2'));
+                        assert.deepStrictEqual(await getIds(collectionA), ['a1']);
+                        assert.deepStrictEqual(await getIds(collectionB), ['b1', 'b2']);
+                        assert.strictEqual(await collectionA.findOne('b1').exec(), null);
+                        assert.strictEqual(await collectionB.findOne('a1').exec(), null);
+
+                        // the same primary key must be usable in both collections
+                        await collectionA.insert(schemaObjects.humanData('b2'));
+                        assert.deepStrictEqual(await getIds(collectionA), ['a1', 'b2']);
+
+                        // remove
+                        await collectionA.findOne('b2').remove();
+                        assert.deepStrictEqual(await getIds(collectionA), ['a1']);
+                        assert.deepStrictEqual(await getIds(collectionB), ['b1', 'b2']);
+
+                        // close and reopen
+                        if (config.storage.hasPersistence) {
+                            await collectionA.database.close();
+                            await collectionB.database.close();
+                            collectionA = await open(namesA);
+                            collectionB = await open(namesB);
+                            assert.deepStrictEqual(await getIds(collectionA), ['a1']);
+                            assert.deepStrictEqual(await getIds(collectionB), ['b1', 'b2']);
+                        }
+
+                        // removing one database must not remove the data of the other one
+                        await collectionA.database.remove();
+                        assert.deepStrictEqual(await getIds(collectionB), ['b1', 'b2']);
+                        if (config.storage.hasPersistence) {
+                            await collectionB.database.close();
+                            collectionB = await open(namesB);
+                            assert.deepStrictEqual(await getIds(collectionB), ['b1', 'b2']);
+                        }
+                        collectionA = await open(namesA);
+                        assert.deepStrictEqual(await getIds(collectionA), []);
+
+                        await collectionA.database.remove();
+                        await collectionB.database.remove();
+                    }
+                });
             });
             describe('negative', () => {
                 it('not allow starting numbers', async () => {
@@ -220,31 +303,6 @@ describe('rx-collection.test.ts', () => {
                             schema: schemas.human
                         }
                     });
-
-                    db.close();
-                });
-                it('not allow names that contain two hyphens in a row', async () => {
-                    const db = await createRxDatabase({
-                        name: randomToken(10),
-                        storage: config.storage.getStorage(),
-                    });
-                    await AsyncTestUtil.assertThrows(
-                        () => db.addCollections({
-                            'staging--todos': {
-                                schema: schemas.human
-                            }
-                        }),
-                        'RxError',
-                        'UT9'
-                    );
-
-                    // single hyphens must be allowed
-                    await db.addCollections({
-                        'staging-todos': {
-                            schema: schemas.human
-                        }
-                    });
-                    assert.ok(isRxCollection(db.collections['staging-todos']));
 
                     db.close();
                 });
