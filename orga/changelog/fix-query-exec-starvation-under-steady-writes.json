@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `RxQuery.exec()` did not resolve while other writes kept running on a slow storage, because the query was re-run without an upper bound each time a write happened during the storage query. The number of re-runs is now limited and the next run executes the full query again instead of using event-reduce.",
+    "links": [],
+    "priority": 5
+}

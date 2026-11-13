@@ -81,6 +81,12 @@ const newQueryID = function (): number {
  */
 let _ensureEqualCount = 0;
 
+/**
+ * How often RxQuery._execOverDatabase() runs the query again
+ * when writes happened while the query was running.
+ */
+const MAX_EXEC_OVER_DATABASE_RERUNS = 3;
+
 export class RxQueryBase<
     RxDocType,
     RxQueryResult,
@@ -389,6 +395,19 @@ export class RxQueryBase<
             await Promise.allSettled(Array.from(pendingWrites));
         }
         if (this.collection._changeEventBuffer.getCounter() !== counterBefore) {
+            /**
+             * With a steady stream of writes, the counter moves during each run
+             * and the query would be re-run forever. So the amount of re-runs is limited.
+             * The result of the last run is not known to match any counter value,
+             * because some of the concurrent writes can be contained in it and others not.
+             * Returning the counter -1 marks the result as such, which
+             * makes the next _ensureEqual() run the full query again instead
+             * of applying change events on top of this result.
+             */
+            if (rerunCount >= MAX_EXEC_OVER_DATABASE_RERUNS) {
+                result.counter = -1;
+                return result;
+            }
             await promiseWait(20);
             return this._execOverDatabase(rerunCount + 1);
         }
@@ -842,6 +861,8 @@ function __ensureEqual<RxDocType>(rxQuery: RxQueryBase<RxDocType, any>): Promise
                  * The RxStorage is defined to always first emit events and then return
                  * on bulkWrite() calls. So here we have to use the counter AFTER the execOverDatabase()
                  * has been run, not the one from before.
+                 * The counter is -1 when writes kept running during the execution,
+                 * so that the next run executes over the database again.
                  */
                 rxQuery._latestChangeEvent = result.counter;
 
