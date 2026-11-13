@@ -17,10 +17,7 @@ import {
     createBlob,
     blobToString,
     CompressionMode,
-    ensureNotFalsy,
-    RxStorage,
-    RxStorageInstanceCreationParams,
-    RxAttachmentWriteData
+    ensureNotFalsy
 } from '../../plugins/core/index.mjs';
 
 import {
@@ -159,64 +156,39 @@ modes.forEach(mode => {
             ];
             wrapperOrders.forEach(wrapperOrder => {
                 it('should store and read encrypted and compressed attachments (' + wrapperOrder + ')', async () => {
-                    /**
-                     * Passes all calls to the storage of the test config
-                     * and collects the attachment data that reaches it.
-                     */
-                    const storedBlobs: Blob[] = [];
-                    const baseStorage = config.storage.getStorage();
-                    const collectingStorage: RxStorage<any, any> = Object.assign(
-                        {},
-                        baseStorage,
-                        {
-                            async createStorageInstance<RxDocType>(
-                                params: RxStorageInstanceCreationParams<RxDocType, any>
-                            ) {
-                                const instance = await baseStorage.createStorageInstance(params);
-                                const bulkWrite = instance.bulkWrite.bind(instance);
-                                instance.bulkWrite = (rows, context) => {
-                                    rows.forEach(row => {
-                                        Object.values(row.document._attachments).forEach(attachment => {
-                                            const data = (attachment as RxAttachmentWriteData).data;
-                                            if (data) {
-                                                storedBlobs.push(data);
-                                            }
-                                        });
-                                    });
-                                    return bulkWrite(rows, context);
-                                };
-                                return instance;
-                            }
-                        }
-                    );
-                    const storage = wrapperOrder === 'compression-around-encryption' ?
+                    const getWrappedStorage = () => wrapperOrder === 'compression-around-encryption' ?
                         wrappedAttachmentsCompressionStorage({
                             storage: wrappedKeyEncryptionCryptoJsStorage({
-                                storage: collectingStorage
+                                storage: config.storage.getStorage()
                             })
                         }) :
                         wrappedKeyEncryptionCryptoJsStorage({
                             storage: wrappedAttachmentsCompressionStorage({
-                                storage: collectingStorage
+                                storage: config.storage.getStorage()
                             })
                         });
-                    const db = await createRxDatabase<{ human: RxCollection<HumanDocumentType>; }>({
-                        name: randomToken(10),
-                        password: 'mypassword123',
-                        storage,
-                        multiInstance: false
-                    });
+                    const databaseName = randomToken(10);
+                    const password = 'mypassword123';
                     const schemaJson = clone(schemas.human);
                     schemaJson.attachments = {
                         encrypted: true,
                         compression: mode
                     };
-                    const collections = await db.addCollections({
-                        human: {
-                            schema: schemaJson
-                        }
-                    });
-                    const c = collections.human;
+                    const openCollection = async () => {
+                        const database = await createRxDatabase<{ human: RxCollection<HumanDocumentType>; }>({
+                            name: databaseName,
+                            password,
+                            storage: getWrappedStorage(),
+                            multiInstance: false
+                        });
+                        const collections = await database.addCollections({
+                            human: {
+                                schema: schemaJson
+                            }
+                        });
+                        return collections.human;
+                    };
+                    let c = await openCollection();
                     const insertedDoc = await c.insert(schemaObjects.humanData());
 
                     // 'text/plain' is compressed, 'image/jpeg' is stored without compression
@@ -261,6 +233,67 @@ modes.forEach(mode => {
                         imageData
                     );
 
+                    if (config.storage.hasPersistence) {
+                        const documentId = doc.primary;
+                        /**
+                         * The schema of the stored collection is the schema of the RxCollection
+                         * without the encryption and compression settings that the two wrappers resolve.
+                         */
+                        const storedSchema = clone(c.schema.jsonSchema);
+                        delete storedSchema.encrypted;
+                        storedSchema.attachments = {
+                            encrypted: false
+                        };
+                        await c.database.close();
+
+                        /**
+                         * The plain text must not be in the stored data,
+                         * also not after the compression is reverted.
+                         */
+                        const storageInstance = await config.storage.getStorage().createStorageInstance<HumanDocumentType>({
+                            databaseInstanceToken: randomToken(10),
+                            databaseName,
+                            collectionName: 'human',
+                            schema: storedSchema,
+                            options: {},
+                            multiInstance: false,
+                            devMode: true
+                        });
+                        const storedDocs = await storageInstance.findDocumentsById([documentId], false);
+                        assert.strictEqual(storedDocs.length, 1);
+                        const storedAttachments = Object.entries(storedDocs[0]._attachments);
+                        assert.strictEqual(storedAttachments.length, 2);
+                        for (const [attachmentId, storedAttachment] of storedAttachments) {
+                            const storedBlob = await storageInstance.getAttachmentData(
+                                documentId,
+                                attachmentId,
+                                storedAttachment.digest
+                            );
+                            const storedStrings = [await blobToString(storedBlob)];
+                            try {
+                                storedStrings.push(await blobToString(await decompressBlob(mode, storedBlob)));
+                            } catch (err) { }
+                            storedStrings.forEach(storedString => {
+                                assert.ok(storedString.length > 0);
+                                assert.strictEqual(storedString.includes('secret'), false);
+                                assert.strictEqual(storedString.includes('knife'), false);
+                            });
+                        }
+                        await storageInstance.close();
+
+                        // the attachments can still be read after the database was opened again
+                        c = await openCollection();
+                        doc = await c.findOne().exec(true);
+                        assert.strictEqual(
+                            await ensureNotFalsy(doc.getAttachment('cat.txt')).getStringData(),
+                            updatedTextData
+                        );
+                        assert.strictEqual(
+                            await ensureNotFalsy(doc.getAttachment('dog.jpg')).getStringData(),
+                            imageData
+                        );
+                    }
+
                     await ensureNotFalsy(doc.getAttachment('cat.txt')).remove();
                     doc = await c.findOne().exec(true);
                     assert.strictEqual(doc.getAttachment('cat.txt'), null);
@@ -269,24 +302,7 @@ modes.forEach(mode => {
                         imageData
                     );
 
-                    /**
-                     * The plain text must not be in the stored data,
-                     * also not after the compression is reverted.
-                     */
-                    assert.strictEqual(storedBlobs.length, 3);
-                    for (const storedBlob of storedBlobs) {
-                        const storedStrings = [await blobToString(storedBlob)];
-                        try {
-                            storedStrings.push(await blobToString(await decompressBlob(mode, storedBlob)));
-                        } catch (err) { }
-                        storedStrings.forEach(storedString => {
-                            assert.ok(storedString.length > 0);
-                            assert.strictEqual(storedString.includes('secret'), false);
-                            assert.strictEqual(storedString.includes('knife'), false);
-                        });
-                    }
-
-                    await db.close();
+                    await c.database.remove();
                 });
             });
         });
