@@ -18,11 +18,6 @@ import {
     isDeno,
     isFastMode
 } from '../../plugins/test-utils/index.mjs';
-import { getRxStorageDexie } from '../../plugins/storage-dexie/index.mjs';
-import {
-    indexedDB as fakeIndexedDB,
-    IDBKeyRange as fakeIDBKeyRange
-} from 'fake-indexeddb';
 import {
     nextRxStateId,
     RxDBStatePlugin
@@ -533,24 +528,13 @@ addRxPlugin(RxDBJsonDumpPlugin);
                 state2.collection.database.close();
             });
             it('should not lose a write when eventReduce is disabled and the events of the other instance arrive delayed', async () => {
-                if (isDeno) {
-                    return;
-                }
                 type CounterState = {
                     a?: number;
                     cnt?: number;
                 };
-                /**
-                 * The Dexie storage is created here because the events
-                 * between its instances are sent asynchronously,
-                 * also when the tests run with another storage.
-                 */
-                const storage = wrappedValidateAjvStorage({
-                    storage: getRxStorageDexie({
-                        indexedDB: fakeIndexedDB,
-                        IDBKeyRange: fakeIDBKeyRange
-                    })
-                });
+                const storage = useSchemaValidator ? wrappedValidateAjvStorage({
+                    storage: config.storage.getStorage()
+                }) : config.storage.getStorage();
                 const databaseName = randomToken(10);
                 const openState = async () => {
                     const database = await createRxDatabase({
