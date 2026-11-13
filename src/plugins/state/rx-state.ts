@@ -68,6 +68,11 @@ export class RxStateBase<T, Reactivity = unknown> {
     }[] = [];
     public _writeQueue = PROMISE_RESOLVE_VOID;
     public _initDone = false;
+    /**
+     * True when an event bulk arrived while
+     * the initial state was loaded from the storage.
+     */
+    public _eventDuringInit = false;
     public _instanceId = randomToken(RX_STATE_COLLECTION_SCHEMA.properties.sId.maxLength);
     public _ownEmits$ = new Subject<T>();
 
@@ -97,6 +102,7 @@ export class RxStateBase<T, Reactivity = unknown> {
                  */
                 filter((eventBulk: RxChangeEventBulk<RxStateDocument>) => {
                     if (!this._initDone) {
+                        this._eventDuringInit = true;
                         return false;
                     }
                     return eventBulk.events.some(event =>
@@ -344,6 +350,7 @@ export async function createRxState<T>(
     let done = false;
     let checkpoint: any = undefined;
     while (!done) {
+        rxState._eventDuringInit = false;
         const result = await getChangedDocumentsSince<RxStateDocument, any>(
             collection.storageInstance,
             1000,
@@ -352,7 +359,13 @@ export async function createRxState<T>(
         checkpoint = result.checkpoint;
         const documents = result.documents;
         if (documents.length === 0) {
-            done = true;
+            /**
+             * The events that arrive during the load are not merged
+             * into the state. A write that caused such an event might
+             * not be part of the read result, so the storage
+             * must be read again from the checkpoint.
+             */
+            done = !rxState._eventDuringInit;
         } else {
             for (let index = 0; index < documents.length; index++) {
                 const document = documents[index];
