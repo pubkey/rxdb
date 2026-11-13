@@ -8,6 +8,8 @@
 import assert from 'assert';
 import AsyncTestUtil, { wait, waitUntil } from 'async-test-util';
 
+import { mergeMap, of } from 'rxjs';
+
 import config from './config.ts';
 import {
     isRxDatabase,
@@ -16,15 +18,10 @@ import {
     promiseWait,
     RxDatabase,
     RxDocument,
+    RxStorage,
     ensureNotFalsy,
     RxCollection
 } from '../../plugins/core/index.mjs';
-import { getRxStorageDexie } from '../../plugins/storage-dexie/index.mjs';
-import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.mjs';
-import {
-    indexedDB as fakeIndexedDB,
-    IDBKeyRange as fakeIDBKeyRange
-} from 'fake-indexeddb';
 
 import {
     schemaObjects,
@@ -32,8 +29,7 @@ import {
     humansCollection,
     getPassword,
     getEncryptedStorage,
-    HumanDocumentType,
-    isNode
+    HumanDocumentType
 } from '../../plugins/test-utils/index.mjs';
 
 describe('cross-instance.test.js', () => {
@@ -144,23 +140,9 @@ describe('cross-instance.test.js', () => {
     });
 
     describe('RxQuery', () => {
-        it('should have the correct query results when the event of another instance arrives after the event of a later own write', async function () {
-            this.timeout(120 * 1000);
-            if (!isNode) {
-                return;
-            }
-            /**
-             * The Dexie storage sends the events of other instances
-             * asynchronously over the BroadcastChannel.
-             */
-            const storage = wrappedValidateAjvStorage({
-                storage: getRxStorageDexie({
-                    indexedDB: fakeIndexedDB,
-                    IDBKeyRange: fakeIDBKeyRange
-                })
-            });
+        it('should have the correct query results when the event of another instance arrives after the event of a later own write', async () => {
             const name = randomToken(10);
-            async function createInstance(): Promise<RxCollection<HumanDocumentType>> {
+            async function createInstance(storage: RxStorage<any, any>): Promise<RxCollection<HumanDocumentType>> {
                 const db = await createRxDatabase<{ human: RxCollection<HumanDocumentType>; }>({
                     name,
                     storage,
@@ -174,8 +156,9 @@ describe('cross-instance.test.js', () => {
                 });
                 return collections.human;
             }
-            const c1 = await createInstance();
-            const c2 = await createInstance();
+            const heldEventsStorage = getStorageWithHeldEvents();
+            const c1 = await createInstance(heldEventsStorage.storage);
+            const c2 = await createInstance(config.storage.getStorage());
             const query = c1.find({ sort: [{ passportId: 'asc' }] });
             const toState = (docs: RxDocument<HumanDocumentType>[]) => docs.map(d => d.passportId + '|' + d.firstName);
 
@@ -191,23 +174,25 @@ describe('cross-instance.test.js', () => {
                 ))
             ];
 
-            const iterations = 40;
+            const iterations = 3;
             for (let i = 0; i < iterations; i++) {
-                const id = 'doc' + (i + '').padStart(3, '0');
+                const id = 'doc' + i;
                 /**
-                 * The upsert of c1 runs into a conflict when c2 has stored the document first.
-                 * It then writes on top of the state of c2 and c1 gets its own event
-                 * before the insert event of c2 arrives.
+                 * The upsert of c1 writes on top of the state of c2
+                 * and c1 gets its own event before the insert event of c2 arrives.
                  */
-                const [insertResult] = await Promise.allSettled([
-                    c2.insert(schemaObjects.humanData(id, 20, 'other')),
-                    c1.upsert(schemaObjects.humanData(id, 20, 'own'))
-                ]);
-                const expectedEvents = insertResult.status === 'fulfilled' ? 2 : 1;
-                await waitUntil(() => eventsByDocId.get(id) === expectedEvents);
+                heldEventsStorage.holdEvents = true;
+                await c2.insert(schemaObjects.humanData(id, 20, 'other'));
+                await waitUntil(() => heldEventsStorage.heldEvents() > 0);
+                heldEventsStorage.holdEvents = false;
+                await c1.upsert(schemaObjects.humanData(id, 20, 'own'));
+                await waitUntil(() => eventsByDocId.get(id) === 1);
+                heldEventsStorage.releaseEvents();
+                await waitUntil(() => eventsByDocId.get(id) === 2);
 
                 const storageState = toState(await c2.find({ sort: [{ passportId: 'asc' }] }).exec());
                 assert.strictEqual(storageState.length, i + 1);
+                assert.strictEqual(storageState[i], id + '|own');
                 assert.deepStrictEqual(toState(await query.exec()), storageState, 'exec() in iteration ' + i);
                 await waitUntil(() => lastEmitted.length === storageState.length, 1000).catch(() => { });
                 assert.deepStrictEqual(lastEmitted, storageState, 'find().$ in iteration ' + i);
@@ -422,3 +407,56 @@ describe('cross-instance.test.js', () => {
         });
     });
 });
+
+/**
+ * Wraps the storage of the test config so that the change events
+ * of its instances can be held back and arrive later,
+ * like the events of another browser tab can do.
+ */
+function getStorageWithHeldEvents() {
+    const storage = config.storage.getStorage();
+    const waiting: (() => void)[] = [];
+    const ret = {
+        /**
+         * While true, the arriving events are held back
+         * until releaseEvents() is called.
+         */
+        holdEvents: false,
+        heldEvents: () => waiting.length,
+        releaseEvents() {
+            waiting.splice(0).forEach(release => release());
+        },
+        storage: {
+            name: storage.name,
+            rxdbVersion: storage.rxdbVersion,
+            async createStorageInstance(params) {
+                const instance = await storage.createStorageInstance(params);
+                return {
+                    databaseName: instance.databaseName,
+                    internals: instance.internals,
+                    options: instance.options,
+                    schema: instance.schema,
+                    collectionName: instance.collectionName,
+                    bulkWrite: (a, b) => instance.bulkWrite(a, b),
+                    findDocumentsById: (a, b) => instance.findDocumentsById(a, b),
+                    query: (a) => instance.query(a),
+                    count: (a) => instance.count(a),
+                    getAttachmentData: (a, b, c) => instance.getAttachmentData(a, b, c),
+                    getChangedDocumentsSince: !instance.getChangedDocumentsSince ? undefined : (a, b) => ensureNotFalsy(instance.getChangedDocumentsSince).call(instance, a, b),
+                    changeStream: () => instance.changeStream().pipe(
+                        mergeMap(eventBulk => {
+                            if (!ret.holdEvents) {
+                                return of(eventBulk);
+                            }
+                            return new Promise<typeof eventBulk>(res => waiting.push(() => res(eventBulk)));
+                        })
+                    ),
+                    cleanup: (a) => instance.cleanup(a),
+                    close: () => instance.close(),
+                    remove: () => instance.remove()
+                };
+            }
+        } as RxStorage<any, any>
+    };
+    return ret;
+}
