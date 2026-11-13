@@ -2395,6 +2395,70 @@ describe('rx-storage-query-correctness.test.ts', () => {
 
     testCorrectQueries<{
         id: string;
+        amount: number;
+    }>({
+        testTitle: 'indexed number with a multipleOf that is printed in exponent notation',
+        data: [
+            { id: 'a', amount: 0.75 },
+            { id: 'b', amount: 0.5 },
+            { id: 'c', amount: 0.25 },
+            { id: 'd', amount: 1.5 },
+            { id: 'e', amount: 1.25 },
+            { id: 'f', amount: 0.00000001 },
+            { id: 'g', amount: 0.00000002 },
+            { id: 'h', amount: 0.50000002 }
+        ],
+        schema: {
+            primaryKey: 'id',
+            type: 'object',
+            version: 0,
+            properties: {
+                id: { type: 'string', maxLength: 20 },
+                amount: { type: 'number', minimum: 0, maximum: 1000, multipleOf: 0.00000001 }
+            },
+            required: ['id', 'amount'],
+            indexes: ['amount']
+        },
+        queries: [
+            {
+                info: 'sort ascending by the decimals',
+                query: {
+                    selector: {},
+                    sort: [{ amount: 'asc' }]
+                },
+                expectedResultDocIds: ['f', 'g', 'c', 'b', 'h', 'a', 'e', 'd']
+            },
+            {
+                info: '$gt compares the decimals',
+                query: {
+                    selector: { amount: { $gt: 0.5 } },
+                    sort: [{ amount: 'asc' }]
+                },
+                selectorSatisfiedByIndex: true,
+                expectedResultDocIds: ['h', 'a', 'e', 'd']
+            },
+            {
+                info: '$lt compares the decimals',
+                query: {
+                    selector: { amount: { $lt: 1.5 } },
+                    sort: [{ amount: 'asc' }]
+                },
+                selectorSatisfiedByIndex: true,
+                expectedResultDocIds: ['f', 'g', 'c', 'b', 'h', 'a', 'e']
+            },
+            {
+                info: 'range on the smallest step',
+                query: {
+                    selector: { amount: { $gt: 0.00000001, $lte: 0.00000002 } },
+                    sort: [{ amount: 'asc' }]
+                },
+                expectedResultDocIds: ['g']
+            }
+        ]
+    });
+
+    testCorrectQueries<{
+        id: string;
         score: number;
     }>({
         testTitle: 'compound index with decimal numbers preserves correct sort order',
