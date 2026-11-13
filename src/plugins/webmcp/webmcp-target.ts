@@ -1,4 +1,5 @@
 import type {
+    RxChangeEventBulk,
     RxCollection
 } from '../../index.d.ts';
 import type {
@@ -6,7 +7,8 @@ import type {
 } from '../../types/plugins/webmcp.d.ts';
 import { getFromMapOrCreate } from '../utils/index.ts';
 import { REPLICATION_STATE_BY_COLLECTION } from '../replication/index.ts';
-import { firstValueFrom } from 'rxjs';
+import { filter, take } from 'rxjs';
+import { newRxError } from '../../rx-error.ts';
 import { getChangedDocumentsSince } from '../../rx-storage-helper.ts';
 
 /**
@@ -45,8 +47,51 @@ export function getWebMCPTargetFromCollection(collection: RxCollection<any>): We
         changesSince: async (limit: number, checkpoint?: any) => {
             return await getChangedDocumentsSince(collection.storageInstance, limit, checkpoint);
         },
-        awaitChange: async () => {
-            await firstValueFrom(collection.eventBulks$);
+        awaitChange: () => {
+            const closedError = () => newRxError('COL21', {
+                collection: collection.name,
+                version: collection.schema.version
+            });
+            if (collection.closed) {
+                return Promise.reject(closedError());
+            }
+            return new Promise<void>((res, rej) => {
+                const removeOnClose = () => {
+                    const index = collection.onClose.indexOf(onClose);
+                    if (index >= 0) {
+                        collection.onClose.splice(index, 1);
+                    }
+                };
+                const onClose = () => {
+                    sub.unsubscribe();
+                    rej(closedError());
+                };
+                /**
+                 * The event bulks of a collection also contain the writes
+                 * to its local documents, which are not changes of the collection.
+                 * When the database is closed, the stream completes before the
+                 * onClose handlers of the collection run, so a stream that ends
+                 * without a change must reject the call here.
+                 */
+                const sub = collection.eventBulks$.pipe(
+                    filter((bulk: RxChangeEventBulk<any>) => !bulk.isLocal),
+                    take(1)
+                ).subscribe({
+                    next: () => {
+                        removeOnClose();
+                        res();
+                    },
+                    error: () => {
+                        removeOnClose();
+                        rej(closedError());
+                    },
+                    complete: () => {
+                        removeOnClose();
+                        rej(closedError());
+                    }
+                });
+                collection.onClose.push(onClose);
+            });
         },
         insert: async (document: any) => {
             const doc = await collection.insert(document);

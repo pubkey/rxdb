@@ -10,12 +10,14 @@ import {
     getWebMCPTargetFromCollection,
     registerWebMCPTarget
 } from '../../plugins/webmcp/index.mjs';
+import { RxDBLocalDocumentsPlugin } from '../../plugins/local-documents/index.mjs';
 import config from './config.ts';
 import { schemaObjects, schemas, isDeno } from '../../plugins/test-utils/index.mjs';
 import { cleanupWebMCPPolyfill, initializeWebMCPPolyfill } from '@mcp-b/webmcp-polyfill';
 import { assertThrows, waitUntil } from 'async-test-util';
 
 addRxPlugin(RxDBWebMCPPlugin);
+addRxPlugin(RxDBLocalDocumentsPlugin);
 
 describe('webmcp.test.ts', () => {
     let db: any;
@@ -157,6 +159,100 @@ describe('webmcp.test.ts', () => {
         await collection.insert({ passportId: 'bob', firstName: 'Bob', lastName: 'Ross', age: 42 });
         await waitPromise;
         assert.strictEqual(waitResolved, true);
+    });
+
+    itWithDom('wait_changes tool should not resolve when a local document is written', async () => {
+        const collections = await db.addCollections({
+            withlocal: {
+                schema: schemas.human,
+                localDocuments: true
+            }
+        });
+        db.registerWebMCP();
+        const waitToolName = `rxdb_wait_changes_${db.name}_withlocal_0`;
+        let waitResolved = false;
+        const waitPromise = executeTool(waitToolName, {}).then(() => {
+            waitResolved = true;
+        });
+
+        await collections.withlocal.insertLocal('foobar', { foo: 'bar' });
+        await new Promise(res => setTimeout(res, 50));
+        assert.strictEqual(waitResolved, false);
+
+        await collections.withlocal.insert(schemaObjects.humanData('alice'));
+        await waitPromise;
+    });
+
+    it('wait_changes tool should reject when the collection is closed', async () => {
+        const toolsByName = new Map<string, any>();
+        db.registerWebMCP({
+            modelContext: {
+                registerTool(tool: any) {
+                    toolsByName.set(tool.name, tool);
+                }
+            }
+        });
+        const waitTool = toolsByName.get(`rxdb_wait_changes_${db.name}_humans_0`);
+        const waitPromise: Promise<any> = waitTool.execute({});
+        const settled = waitPromise.then(
+            () => 'resolved',
+            (err: any) => err.code
+        );
+        await collection.close();
+        const result = await Promise.race([
+            settled,
+            new Promise(res => setTimeout(() => res('pending'), 200))
+        ]);
+        assert.strictEqual(result, 'COL21');
+    });
+
+    it('wait_changes tool should reject without an uncaught error on all ways to close', async () => {
+        const closeWays: ((database: any) => Promise<any>)[] = [
+            database => database.humans.close(),
+            database => database.humans.remove(),
+            database => database.close(),
+            database => database.remove()
+        ];
+        for (const closeWay of closeWays) {
+            const database = await createRxDatabase({
+                name: 'webmcp-close-' + Math.random().toString(36).substring(2, 10),
+                storage: config.storage.getStorage()
+            });
+            await database.addCollections({
+                humans: {
+                    schema: schemas.human
+                }
+            });
+            const toolsByName = new Map<string, any>();
+            database.registerWebMCP({
+                modelContext: {
+                    registerTool(tool: any) {
+                        toolsByName.set(tool.name, tool);
+                    }
+                }
+            });
+            const waitTool = toolsByName.get(`rxdb_wait_changes_${database.name}_humans_0`);
+            const settled = [waitTool.execute({}), waitTool.execute({})].map(
+                (waitPromise: Promise<any>) => waitPromise.then(
+                    () => 'resolved',
+                    (err: any) => err.code
+                )
+            );
+            await closeWay(database);
+            const results = await Promise.race([
+                Promise.all(settled),
+                new Promise(res => setTimeout(() => res('pending'), 200))
+            ]);
+            assert.deepStrictEqual(results, ['COL21', 'COL21']);
+            if (!database.closed) {
+                await database.close();
+            }
+        }
+        /**
+         * An error that no subscriber handles is rethrown by RxJS
+         * in a timeout, where the test runner reports it as uncaught.
+         */
+        await new Promise(res => setTimeout(res, 50));
     });
 
     itWithDom('changes tool should return documents without internal meta fields', async () => {

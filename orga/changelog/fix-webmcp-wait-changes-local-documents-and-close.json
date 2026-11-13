@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX the WebMCP `wait_changes` tool resolved when a local document of the collection was written although no document of the collection had changed, and it never settled when the collection was closed while the tool was waiting. It now ignores local document writes and rejects with `COL21` when the collection is closed.",
+    "links": [],
+    "priority": 5
+}
