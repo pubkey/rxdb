@@ -256,7 +256,7 @@ const todoSchemaWithIndexes = {
 ```
 
 
-# internalIndexes
+## internalIndexes
 
 When you use RxDB on the server-side, you might want to use internalIndexes to speed up internal queries. [Read more](./rx-server.md#server-only-indexes)
 
