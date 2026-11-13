@@ -121,6 +121,16 @@ export type RxDumpOptions = {
 };
 
 /**
+ * Defines what importJSON() does with the documents of the dump
+ * that already exist in the collection.
+ * - 'skip': The existing documents are kept, only the other documents are imported.
+ * - 'abort': Throws before anything is written when at least one document already exists.
+ * - 'merge': The existing documents are overwritten with the documents of the dump.
+ * [default='skip']
+ */
+export type RxDumpImportConflictMode = 'abort' | 'skip' | 'merge';
+
+/**
  * The attachment data of a dump.
  * The binary data is stored as a base64 string
  * so that the dump stays JSON friendly.

@@ -64,7 +64,31 @@ await myCollection.importJSON(json);
 
 The collection has to exist and its schema has to be the same one the dump was created from. When the hashes do not match, RxDB throws the error [`JD2`](./errors.md#JD2).
 
-Notice that importing fires a change event for each inserted document, so open [queries](./rx-query.md) and their subscriptions update on their own.
+Notice that importing fires a change event for each written document, so open [queries](./rx-query.md) and their subscriptions update on their own.
+
+### Conflict Mode
+
+It can happen that a document of the dump has the same primary key as a document that already exists in the collection. The second parameter of `importJSON()` defines what happens with these documents. There are three modes:
+
+- **`skip`** (default): The existing documents are kept as they are and only the other documents of the dump are imported. The skipped documents are not reported as errors.
+- **`abort`**: Before anything is written, RxDB checks if any primary key of the dump already exists. When one does, `importJSON()` throws the error [`JD4`](./errors.md#JD4) and nothing is imported. The error parameters contain the collection name, the id of the first intersecting document as `firstId`, and the number of intersecting documents.
+- **`merge`**: The existing documents are overwritten with the documents of the dump and the other documents are inserted. The overwrite behaves like an [upsert](./rx-collection.md#upsert), so the document gets a new revision on top of its current state and [attachments](./rx-attachment.md) that are not part of the dump are kept.
+
+```ts
+// 'todo1' already exists in the collection, the dump contains 'todo1' and 'todo2'
+
+// keeps the existing 'todo1' and inserts 'todo2' (default)
+await myDatabase.todos.importJSON(json);
+await myDatabase.todos.importJSON(json, 'skip');
+
+// throws JD4 and writes nothing
+await myDatabase.todos.importJSON(json, 'abort');
+
+// overwrites 'todo1' with the state of the dump and inserts 'todo2'
+await myDatabase.todos.importJSON(json, 'merge');
+```
+
+A deleted document does not count as existing. When the dump contains a document that was deleted in the collection, the document is inserted again in every mode.
 
 ## Export a database
 
@@ -103,6 +127,12 @@ await myDatabase.importJSON(json);
 
 The collections must be created before the import, because the dump does not carry the collection settings like the [schema](./rx-schema.md), the [migration strategies](./migration-schema.md) or the conflict handler. When the dump contains a collection that does not exist in the database, RxDB throws the error [`JD1`](./errors.md#JD1) and nothing is written.
 
+`myDatabase.importJSON()` takes the same [conflict mode](#conflict-mode) as second parameter and passes it to every collection of the dump. With `abort`, all collections of the dump are checked before the first collection is written, so one intersecting document in any collection stops the whole import.
+
+```ts
+await myDatabase.importJSON(json, 'abort');
+```
+
 ## Attachments
 
 By default the [attachments](./rx-attachment.md) of the documents are not part of the dump, because their binary data can be way bigger than the documents itself. Set the `attachments` option to `true` to include them. The data is then stored as a base64 string so that the dump stays JSON friendly.
@@ -140,7 +170,7 @@ Keep these in mind before you use a dump as your backup strategy:
 
 - **Encrypted fields are exported in plain text.** The export reads the documents through the collection, so the [encryption](./encryption.md) is already undone at that point. Treat the dump as sensitive data and never write it to a place where the plain values must not appear.
 - **Deleted documents are not part of the dump.** The export runs a normal query, and queries skip deleted documents. Because of that, a dump cannot be used to replicate deletions to another database.
-- **Revisions are not part of the dump.** On import, every document is written as a fresh insert with a new revision and a new `_meta.lwt`. A dump is a snapshot of the current state, not a history.
+- **Revisions are not part of the dump.** On import, every document is written with a new revision and a new `_meta.lwt`. A dump is a snapshot of the current state, not a history.
 - **The whole dump is built in memory.** For a few thousand documents this is fine. For a large dataset, use the [backup plugin](./backup.md) or one of the [replication](./replication.md) plugins instead.
 - **The schema hash must match.** A dump cannot be imported into a collection with a changed schema. To move data across a schema change, import it into a collection with the old schema version and let the [schema migration](./migration-schema.md) run.
 
@@ -169,7 +199,7 @@ Use the json-dump plugin when you need one JSON object that you can move around,
 </FaqItem>
 <FaqItem question="Can I use a JSON dump to sync two devices?">
 
-No. A dump has no revisions and no deletions, so importing it a second time overwrites the target state instead of merging it. For two databases that both accept writes, use the [RxDB replication](./replication.md), which handles conflicts, deletions, and checkpoints.
+No. A dump has no revisions and no deletions, so `importJSON()` cannot detect which side has the newer state of a document. By default, importing a dump a second time skips every document that already exists in the target and only adds the missing ones. With the [conflict mode](#conflict-mode) `merge` the documents of the dump overwrite the existing ones, no matter which state is newer, and documents that were deleted on the source are never removed from the target. For two databases that both accept writes, use the [RxDB replication](./replication.md), which handles conflicts, deletions, and checkpoints.
 
 </FaqItem>
 </Faq>

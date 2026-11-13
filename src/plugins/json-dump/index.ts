@@ -15,9 +15,11 @@ import type {
     RxPlugin,
     RxDocumentData,
     RxDumpOptions,
+    RxDumpImportConflictMode,
     RxDumpAttachmentData,
     RxAttachmentData,
-    RxAttachmentWriteData
+    RxAttachmentWriteData,
+    BulkWriteRow
 } from '../../types/index.d.ts';
 import {
     blobToBase64String,
@@ -55,9 +57,47 @@ function dumpRxDatabase(
     });
 }
 
+/**
+ * Returns the current state of all documents of the dump
+ * that already exist in the collection.
+ * Deleted documents do not count as existing.
+ */
+async function getExistingDocumentsOfDump<RxDocType>(
+    collection: RxCollection<RxDocType>,
+    docs: any[]
+): Promise<Map<string, RxDocumentData<RxDocType>>> {
+    const primaryPath = collection.schema.primaryPath;
+    const ret = new Map<string, RxDocumentData<RxDocType>>();
+    if (docs.length === 0) {
+        return ret;
+    }
+    const existing = await collection.storageInstance.findDocumentsById(
+        docs.map(docData => docData[primaryPath]),
+        false
+    );
+    existing.forEach(docData => ret.set((docData as any)[primaryPath], docData));
+    return ret;
+}
+
+function throwOnIntersectingDocuments(
+    collection: RxCollection,
+    existingDocs: Map<string, any>
+) {
+    if (existingDocs.size > 0) {
+        throw newRxError('JD4', {
+            collection: collection.name,
+            firstId: existingDocs.keys().next().value,
+            args: {
+                intersectingDocuments: existingDocs.size
+            }
+        });
+    }
+}
+
 const importDumpRxDatabase = function (
     this: RxDatabase,
-    dump: any
+    dump: any,
+    conflictMode: RxDumpImportConflictMode = 'skip'
 ) {
     /**
      * collections must be created before the import
@@ -72,10 +112,30 @@ const importDumpRxDatabase = function (
         });
     }
 
-    return Promise.all(
+    const importCollections = () => Promise.all(
         dump.collections
-            .map((colDump: any) => this.collections[colDump.name].importJSON(colDump))
+            .map((colDump: any) => this.collections[colDump.name].importJSON(colDump, conflictMode))
     );
+    if (conflictMode !== 'abort') {
+        return importCollections();
+    }
+
+    /**
+     * All collections of the dump are checked
+     * before the first collection is written.
+     */
+    return Promise.all(
+        dump.collections.map((colDump: any) => getExistingDocumentsOfDump(
+            this.collections[colDump.name],
+            colDump.docs
+        ))
+    ).then(existingPerCollection => {
+        existingPerCollection.forEach((existingDocs, index) => throwOnIntersectingDocuments(
+            this.collections[dump.collections[index].name],
+            existingDocs
+        ));
+        return importCollections();
+    });
 };
 
 /**
@@ -176,7 +236,8 @@ async function importAttachmentsOfDocument(
 
 async function importDumpRxCollection<RxDocType>(
     this: RxCollection<RxDocType>,
-    exportedJSON: any
+    exportedJSON: any,
+    conflictMode: RxDumpImportConflictMode = 'skip'
 ): Promise<any> {
     // check schemaHash
     if (exportedJSON.schemaHash !== await this.schema.hash) {
@@ -186,9 +247,18 @@ async function importDumpRxCollection<RxDocType>(
         });
     }
 
-    const docs: any[] = exportedJSON.docs;
-    const rows = await Promise.all(
+    const primaryPath = this.schema.primaryPath;
+    const existingDocs = await getExistingDocumentsOfDump<RxDocType>(this as any, exportedJSON.docs);
+    if (conflictMode === 'abort') {
+        throwOnIntersectingDocuments(this as any, existingDocs);
+    }
+
+    const docs: any[] = conflictMode === 'skip' ?
+        exportedJSON.docs.filter((docData: any) => !existingDocs.has(docData[primaryPath])) :
+        exportedJSON.docs;
+    const rows: BulkWriteRow<RxDocType>[] = await Promise.all(
         docs.map(async (docData) => {
+            const previous = existingDocs.get(docData[primaryPath]);
             let attachments: { [attachmentId: string]: RxAttachmentWriteData; } = {};
             if (docData._attachments) {
                 const attachmentsJson = docData._attachments;
@@ -208,15 +278,41 @@ async function importDumpRxCollection<RxDocType>(
                     _deleted: false
                 }
             );
+            if (previous) {
+                /**
+                 * In merge mode the document of the dump is written
+                 * on top of the existing document like an upsert:
+                 * The existing meta data and the existing attachments
+                 * that are not in the dump are kept.
+                 */
+                document._meta = previous._meta;
+                document._attachments = Object.assign(
+                    {},
+                    previous._attachments,
+                    attachments
+                );
+                return {
+                    previous,
+                    document
+                };
+            }
             return {
                 document
             };
         })
     );
-    return this.storageInstance.bulkWrite(
-        rows as any,
+    const writeResult = await this.storageInstance.bulkWrite(
+        rows,
         'json-dump-import'
     );
+    if (conflictMode === 'skip' && writeResult.error.length > 0) {
+        /**
+         * A document that was inserted by another write
+         * while the import was running, is skipped too.
+         */
+        writeResult.error = writeResult.error.filter(error => error.status !== 409);
+    }
+    return writeResult;
 }
 
 export const RxDBJsonDumpPlugin: RxPlugin = {

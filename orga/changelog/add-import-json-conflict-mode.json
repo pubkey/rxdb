@@ -1,0 +1,11 @@
+{
+    "$schema": "./schema.json",
+    "text": "ADD a second `conflictMode` parameter to `importJSON()` of the json-dump plugin for collections and databases. It defines what happens with documents of the dump that already exist: `skip` (default) keeps the existing documents and imports the others, `abort` throws the new error `JD4` before anything is written, `merge` overwrites the existing documents with the documents of the dump. Added testcases.",
+    "links": [
+        {
+            "url": "https://github.com/pubkey/rxdb/pull/9706",
+            "linkText": "#9706"
+        }
+    ],
+    "priority": 7
+}
