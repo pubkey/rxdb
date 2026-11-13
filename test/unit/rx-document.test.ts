@@ -870,6 +870,8 @@ describe('rx-document.test.js', () => {
                 // the write queue must still work afterwards
                 const afterDoc = await doc.getLatest().incrementalPatch({ firstName: 'foobar' });
                 assert.strictEqual(afterDoc.firstName, 'foobar');
+                const stored = await c.findOne(doc.primary).exec(true);
+                assert.strictEqual(stored.firstName, 'foobar');
                 c.database.close();
             });
         });

@@ -1,6 +1,5 @@
 import {
     isBulkWriteConflictError,
-    newRxError,
     rxStorageWriteErrorToRxError
 } from './rx-error.ts';
 import type {
@@ -139,19 +138,6 @@ export class IncrementalWriteQueue<RxDocType> {
                              * we reject all of the writes because it is
                              * not possible to determine which one is to blame.
                              */
-                            items.forEach(item => item.reject(err));
-                            return;
-                        }
-                        /**
-                         * The queue and the write results are mapped by the document id,
-                         * so a write that changes the primary key cannot be processed.
-                         */
-                        if ((newData as any)[this.primaryPath] !== docId) {
-                            const err = newRxError('DOC9', {
-                                dataBefore: oldData,
-                                dataAfter: newData,
-                                fieldName: this.primaryPath
-                            });
                             items.forEach(item => item.reject(err));
                             return;
                         }
