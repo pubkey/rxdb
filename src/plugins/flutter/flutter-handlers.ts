@@ -3,6 +3,7 @@ import { map } from 'rxjs';
 import type {
     MangoQuery,
     RxCollection,
+    RxStorage,
     RxDatabase,
     RxDocument,
     RxReplicationPullStreamItem,
@@ -38,6 +39,17 @@ const META_FIELDS = ['_rev', '_meta', '_attachments'];
 let customDatabaseCreator: CreateRxDatabaseFunctionType | undefined;
 export function setCustomDatabaseCreator(creator: CreateRxDatabaseFunctionType) {
     customDatabaseCreator = creator;
+}
+let customStorage: RxStorage<any, any> | undefined;
+export function setCustomStorage(storage: RxStorage<any, any>) {
+    customStorage = storage;
+}
+/**
+ * Only creates the trial storage when it is used,
+ * so that its trial warning is not logged when another storage is set.
+ */
+function getStorage(): RxStorage<any, any> {
+    return customStorage ? customStorage : getRxStorageFlutterDefault();
 }
 
 function getDatabase(dbId: string): RxDatabase {
@@ -240,12 +252,14 @@ export function registerFlutterMethodHandlers() {
             let db: RxDatabase;
             if (customDatabaseCreator) {
                 db = await customDatabaseCreator(params.name, params, {
-                    storage: getRxStorageFlutterDefault()
+                    get storage() {
+                        return getStorage();
+                    }
                 });
             } else {
                 db = await createRxDatabase({
                     name: params.name,
-                    storage: getRxStorageFlutterDefault(),
+                    storage: getStorage(),
                     multiInstance: params.multiInstance ? true : false,
                     eventReduce: params.eventReduce === false ? false : true,
                     ignoreDuplicate: params.ignoreDuplicate,
@@ -259,6 +273,7 @@ export function registerFlutterMethodHandlers() {
             return {
                 name: db.name,
                 token: db.token,
+                storage: db.storage.name,
                 collections: collectionsMeta(db)
             };
         },

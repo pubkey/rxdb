@@ -15,7 +15,7 @@ Full documentation: [RxDB as Flutter Database](https://rxdb.info/articles/flutte
 
 RxDB is written in TypeScript. This package runs the RxDB JavaScript bundle inside of QuickJS via the [fjs](https://pub.dev/packages/fjs) package. The SQL queries of the RxDB [SQLite storage](https://rxdb.info/rx-storage-sqlite.html) are executed in Dart with the sqlite3 package. Dart and JavaScript exchange JSON messages, so every RxDB feature behaves the same as in JavaScript.
 
-By default the **SQLite trial storage** is used. It is limited to 500 stored documents and 500 operations per collection instance, which is enough to try out RxDB. For production apps, use the [RxDB Premium 👑](https://rxdb.info/premium/) SQLite storage with a custom JavaScript bundle (see below).
+By default the **SQLite trial storage** is used. It is limited to 500 stored documents and 500 operations per collection instance, which is enough to try out RxDB. For production apps, switch to the [RxDB Premium](https://rxdb.info/premium/) SQLite storage (see below).
 
 ## Installation
 
@@ -122,29 +122,46 @@ replication.error$.listen((err) => print(err));
 await replication.awaitInitialReplication();
 ```
 
-## Custom JavaScript bundle
+## Switching to the RxDB Premium SQLite storage
 
-To use additional RxDB plugins or the RxDB Premium SQLite storage, build your own bundle that starts the bridge with a custom database creator and pass it as `jsBundle`:
+The default SQLite trial storage is limited to 500 documents and 500 operations per collection instance. For production apps, switch to the [RxDB Premium](https://rxdb.info/premium/) SQLite storage. Its code cannot ship inside this public package, so you build a small JavaScript bundle that contains it. Your Dart code stays the same.
 
-```ts
-import { createRxDatabase } from 'rxdb';
-import { startRxDBFlutterBridge, getSQLiteBasicsFlutter, flutterHashSha256 } from 'rxdb/plugins/flutter';
-import { getRxStorageSQLite } from 'rxdb-premium/plugins/storage-sqlite';
+1. Install the npm packages in a folder next to your app. The `rxdb` npm version must match the version of this Dart package.
 
-startRxDBFlutterBridge((databaseName) => createRxDatabase({
-    name: databaseName,
-    storage: getRxStorageSQLite({ sqliteBasics: getSQLiteBasicsFlutter() }),
-    multiInstance: false,
-    hashFunction: flutterHashSha256
-}));
-```
+   ```bash
+   npm install rxdb@17.6.0 rxdb-premium@17.6.0 esbuild --save-exact
+   ```
 
-```dart
-final db = await createRxDatabase(
-  name: 'heroesdb',
-  jsBundle: await rootBundle.loadString('assets/my-rxdb-bundle.js'),
-);
-```
+2. Create `index.js` that starts the bridge with the premium storage. All other database options are still set from Dart.
+
+   ```js
+   import { startRxDBFlutterBridge, getSQLiteBasicsFlutter } from 'rxdb/plugins/flutter';
+   import { getRxStorageSQLite } from 'rxdb-premium/plugins/storage-sqlite';
+
+   startRxDBFlutterBridge({
+       storage: getRxStorageSQLite({ sqliteBasics: getSQLiteBasicsFlutter() })
+   });
+   ```
+
+3. Bundle it into an asset of your app and list `assets/rxdb-premium.js` under `flutter: assets:` in your `pubspec.yaml`.
+
+   ```bash
+   npx esbuild index.js --bundle --minify --format=iife --platform=neutral \
+     --main-fields=module,main --target=es2020 \
+     --define:process.env.NODE_ENV='"production"' --outfile=../assets/rxdb-premium.js
+   ```
+
+4. Use the bundle:
+
+   ```dart
+   final db = await createRxDatabase(
+     name: 'heroesdb',
+     jsBundleAsset: 'assets/rxdb-premium.js',
+     collections: {/* ... */},
+   );
+   ```
+
+To add other RxDB plugins, pass `createDatabase: (name, params, helpers) => createRxDatabase({...})` to `startRxDBFlutterBridge()` instead of `storage`. Use `helpers.storage` as the storage and set `hashFunction: flutterHashSha256` (from `rxdb/plugins/flutter`), because QuickJS has no `crypto.subtle`.
 
 ## Testing
 

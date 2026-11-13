@@ -111,9 +111,28 @@ export type CreateRxDatabaseFunctionType = (
     params: FlutterDatabaseCreationParams,
     helpers: {
         /**
-         * The default storage which is the SQLite trial storage
-         * that stores the data via the Dart sqlite3 package.
+         * The storage given to startRxDBFlutterBridge() or,
+         * if none was given, the SQLite trial storage.
+         * Both store the data via the Dart sqlite3 package.
          */
         storage: RxStorage<any, any>;
     }
 ) => Promise<RxDatabase>;
+
+export type FlutterBridgeOptions = {
+    /**
+     * The RxStorage that the default database creator uses.
+     * Defaults to the SQLite trial storage. To use the RxDB Premium
+     * SQLite storage, pass getRxStorageSQLite({ sqliteBasics: getSQLiteBasicsFlutter() })
+     * from 'rxdb-premium/plugins/storage-sqlite'.
+     * All other database options are still set from the Dart side.
+     */
+    storage?: RxStorage<any, any>;
+    /**
+     * Replaces the default database creator completely,
+     * for example to add RxDB plugins or hooks.
+     * QuickJS has no crypto.subtle, so the created database
+     * must use hashFunction: flutterHashSha256.
+     */
+    createDatabase?: CreateRxDatabaseFunctionType;
+};

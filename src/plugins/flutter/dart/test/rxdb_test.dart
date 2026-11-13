@@ -468,6 +468,34 @@ void main() {
     });
   });
 
+  group('custom storage', () {
+    test('a bundle can switch out the default SQLite trial storage', () async {
+      final dir = await Directory.systemTemp.createTemp('rxdb-dart-test-');
+      final name = randomDatabaseName();
+      final db = await createTestDatabase(name: name, directory: dir.path, jsBundle: await loadCustomStorageBundle!());
+      expect(db.storageName, 'sqlite');
+      await db['heroes'].insert(hero('alice'));
+      final docs = await db['heroes'].find().exec();
+      expect(docs.single.primary, 'alice');
+      await db.close();
+
+      // the custom storage was created with its own databaseNamePrefix
+      final files = dir.listSync().map((f) => f.uri.pathSegments.last).toList();
+      expect(files.any((f) => f.startsWith('custom-storage')), isTrue, reason: files.join(', '));
+      await dir.delete(recursive: true);
+    }, skip: loadCustomStorageBundle == null ? 'custom storage bundle not available' : false);
+    test('the default bundle uses the trial storage without a prefix', () async {
+      final dir = await Directory.systemTemp.createTemp('rxdb-dart-test-');
+      final db = await createTestDatabase(directory: dir.path);
+      await db['heroes'].insert(hero('alice'));
+      await db.close();
+      final files = dir.listSync().map((f) => f.uri.pathSegments.last).toList();
+      expect(files.any((f) => f.startsWith('custom-storage')), isFalse);
+      expect(files.any((f) => f.startsWith('_trial_')), isTrue, reason: files.join(', '));
+      await dir.delete(recursive: true);
+    });
+  });
+
   group('replication', () {
     test('pull, push and pull stream implemented in Dart', () async {
       final remote = _FakeRemote();

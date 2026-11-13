@@ -11,9 +11,13 @@ import {
 } from './flutter-bridge.ts';
 import {
     registerFlutterMethodHandlers,
-    setCustomDatabaseCreator
+    setCustomDatabaseCreator,
+    setCustomStorage
 } from './flutter-handlers.ts';
-import type { CreateRxDatabaseFunctionType } from './flutter-types.ts';
+import type {
+    CreateRxDatabaseFunctionType,
+    FlutterBridgeOptions
+} from './flutter-types.ts';
 
 export * from './flutter-types.ts';
 export * from './flutter-bridge.ts';
@@ -30,13 +34,20 @@ let started = false;
  * Starts the bridge so that the rxdb Dart package can
  * communicate with RxDB inside of the JavaScript runtime.
  * The prebuilt bundle that ships with the Dart package calls this
- * without arguments. In a custom bundle you can pass a function
- * that creates the RxDatabase, for example to use additional plugins
- * or a different RxStorage.
+ * without arguments and uses the SQLite trial storage.
+ * In a custom bundle you can pass a different RxStorage,
+ * like the RxDB Premium SQLite storage, or a function
+ * that creates the RxDatabase.
  */
-export function startRxDBFlutterBridge(createDB?: CreateRxDatabaseFunctionType) {
-    if (createDB) {
-        setCustomDatabaseCreator(createDB);
+export function startRxDBFlutterBridge(
+    options?: FlutterBridgeOptions | CreateRxDatabaseFunctionType
+) {
+    const useOptions: FlutterBridgeOptions = typeof options === 'function' ? { createDatabase: options } : (options || {});
+    if (useOptions.storage) {
+        setCustomStorage(useOptions.storage);
+    }
+    if (useOptions.createDatabase) {
+        setCustomDatabaseCreator(useOptions.createDatabase);
     }
     if (started) {
         return;

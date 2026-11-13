@@ -4,3 +4,6 @@
 .packages
 build/
 pubspec.lock
+
+# Test fixtures are only needed in this repository.
+test/assets/

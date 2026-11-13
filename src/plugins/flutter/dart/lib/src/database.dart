@@ -62,8 +62,10 @@ int _lastDatabaseId = 0;
 ///   Defaults to the application support directory. Use [inMemory] for tests.
 /// - [runtime] is the JavaScript runtime, defaults to [FjsRuntime] (QuickJS).
 /// - [jsBundle] is the JavaScript code to run. Defaults to the bundle that ships
-///   with this package. Pass your own bundle when you need additional RxDB plugins
-///   or the RxDB Premium SQLite storage.
+///   with this package, which uses the SQLite trial storage.
+/// - [jsBundleAsset] is the asset key of a custom bundle in your app, for example
+///   `assets/rxdb-premium.js`, which is built with the RxDB Premium SQLite storage or
+///   additional plugins. See https://rxdb.info/articles/flutter-database.html
 Future<RxDatabase> createRxDatabase({
   required String name,
   Map<String, RxCollectionCreator> collections = const {},
@@ -77,10 +79,14 @@ Future<RxDatabase> createRxDatabase({
   bool inMemory = false,
   RxJsRuntime? runtime,
   String? jsBundle,
+  String? jsBundleAsset,
   Map<String, dynamic>? options,
   RxLogHandler? onLog,
 }) async {
-  final bundle = jsBundle ?? await rootBundle.loadString(rxdbBundleAssetKey);
+  if (jsBundle != null && jsBundleAsset != null) {
+    throw ArgumentError('Pass either jsBundle or jsBundleAsset, not both');
+  }
+  final bundle = jsBundle ?? await rootBundle.loadString(jsBundleAsset ?? rxdbBundleAssetKey);
   String? directory;
   if (!inMemory) {
     directory = databaseDirectory ?? p.join((await getApplicationSupportDirectory()).path, 'rxdb');
@@ -107,6 +113,7 @@ Future<RxDatabase> createRxDatabase({
       'options': options,
     });
     database.token = result['token'] as String;
+    database.storageName = result['storage'] as String;
     database._setCollectionsMeta(result['collections']);
     if (collections.isNotEmpty) {
       await database.addCollections(collections);
@@ -126,6 +133,9 @@ class RxDatabase {
   final RxBridge bridge;
   final RxSQLiteHost sqliteHost;
   late final String token;
+
+  /// The name of the RxStorage the database runs on, for example `sqlite`.
+  late final String storageName;
 
   final Map<String, RxCollection> _collections = {};
   final Map<String, Map<int, RxMigrationStrategy>> _migrationStrategies = {};

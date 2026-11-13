@@ -7,6 +7,10 @@ import 'package:rxdb/rxdb.dart';
 RxJsRuntime Function() createTestRuntime = () => NodeJsRuntime();
 Future<String> Function() loadTestBundle = () => File('assets/rxdb-flutter.js').readAsString();
 
+/// Loads a bundle that starts the bridge with a custom storage, see scripts/build-flutter-bundle.mjs.
+/// The example app's integration tests set this to null because the file is not an app asset.
+Future<String> Function()? loadCustomStorageBundle = () => File('test/assets/rxdb-custom-storage.js').readAsString();
+
 int _dbCount = 0;
 String randomDatabaseName() => 'testdb${DateTime.now().microsecondsSinceEpoch}x${_dbCount++}';
 
@@ -37,12 +41,13 @@ Future<RxDatabase> createTestDatabase({
   Map<String, RxCollectionCreator>? collections,
   String? directory,
   bool localDocuments = false,
+  String? jsBundle,
 }) async {
   return createRxDatabase(
     name: name ?? randomDatabaseName(),
     collections: collections ?? {'heroes': RxCollectionCreator(schema: heroSchema)},
     runtime: createTestRuntime(),
-    jsBundle: await loadTestBundle(),
+    jsBundle: jsBundle ?? await loadTestBundle(),
     inMemory: directory == null,
     databaseDirectory: directory,
     localDocuments: localDocuments,
