@@ -796,6 +796,52 @@ describe('rx-database.test.ts', () => {
 
             assert.strictEqual(onRemoveCalled, true, 'collection onRemove handler should have been called when database.remove() is called');
         });
+        it('should close the collections of the other instances like collection.remove() does', async () => {
+            if (!config.storage.hasMultiInstance) {
+                return;
+            }
+            const name = randomToken(10);
+            const createInstance = async () => {
+                const db = await createRxDatabase({
+                    name,
+                    storage: config.storage.getStorage(),
+                    multiInstance: true,
+                    ignoreDuplicate: true
+                });
+                await db.addCollections({
+                    humans: {
+                        schema: schemas.human
+                    }
+                });
+                return db;
+            };
+            const db1 = await createInstance();
+            const db2 = await createInstance();
+            await db1.humans.bulkInsert(
+                new Array(3).fill(0).map(() => schemaObjects.humanData())
+            );
+            const collection2 = db2.humans;
+            await waitUntil(async () => {
+                const docs = await collection2.find().exec();
+                return docs.length === 3;
+            });
+
+            await db1.remove();
+
+            await waitUntil(() => collection2.closed, 5000);
+            await AsyncTestUtil.assertThrows(
+                () => collection2.find().exec(),
+                'RxError',
+                'COL21'
+            );
+            await AsyncTestUtil.assertThrows(
+                () => collection2.insert(schemaObjects.humanData()),
+                'RxError',
+                'COL21'
+            );
+
+            await db2.close();
+        });
         it('should have deleted the local documents', async () => {
             const name = randomToken(10);
             const db = await createRxDatabase({
