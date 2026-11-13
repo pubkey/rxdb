@@ -24,6 +24,7 @@ import {
     DEFAULT_SIGNALING_SERVER_URL
 } from './webrtc.ts';
 import type { ViewerWebRTCStatus } from './webrtc.ts';
+import { trackFirstViewerOpen } from './tracking.ts';
 
 const INIT_TIMEOUT_MS = 4000;
 const WEBRTC_FORM_STORAGE_KEY = 'rxdb-dbviewer-webrtc';
@@ -264,6 +265,7 @@ function StandaloneLanding(props: {
 }
 
 function boot() {
+    trackFirstViewerOpen();
     ensureViewerStyles(document);
     const rootElement = document.getElementById('rxdbv-page-root');
     if (!rootElement) {
