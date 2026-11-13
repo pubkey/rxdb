@@ -28,6 +28,16 @@ export {
     FLUTTER_SUBSCRIPTIONS
 } from './flutter-handlers.ts';
 
+/**
+ * Code of a custom bundle, like creating the RxDB Premium storage,
+ * runs before startRxDBFlutterBridge() is called and may already log.
+ * So the runtime is patched when this module is evaluated, but only
+ * inside a runtime that was prepared by the rxdb Dart package.
+ */
+if (typeof (globalThis as any).__rxdbFlutterSend === 'function') {
+    patchFlutterJavaScriptRuntime();
+}
+
 let started = false;
 
 /**

@@ -146,7 +146,12 @@ function stringifyLogArg(arg: any): string {
  * Also the console output is forwarded to Dart so that
  * logs are visible in the Flutter console on all platforms.
  */
+let runtimePatched = false;
 export function patchFlutterJavaScriptRuntime() {
+    if (runtimePatched) {
+        return;
+    }
+    runtimePatched = true;
     const g = globalThis as any;
     if (typeof g.global === 'undefined') {
         g.global = g;

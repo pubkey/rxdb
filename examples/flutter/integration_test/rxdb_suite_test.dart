@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/services.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:rxdb/rxdb.dart';
@@ -11,5 +13,12 @@ void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
   helper.createTestRuntime = () => FjsRuntime();
   helper.loadTestBundle = () => rootBundle.loadString(rxdbBundleAssetKey);
+  // The fixture is not an app asset. On desktop it can be read from the repository.
+  final customStorageBundle = File(
+    '../../src/plugins/flutter/dart/test/assets/rxdb-custom-storage.js',
+  );
+  helper.loadCustomStorageBundle = customStorageBundle.existsSync()
+      ? customStorageBundle.readAsString
+      : null;
   suite.main();
 }
