@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX the `INSERT` change event of a document that is inserted again after it was deleted had `previousDocumentData: null` instead of `undefined` like every other `INSERT` event and like the `RxChangeEventInsert` type declares",
+    "links": [],
+    "priority": 4
+}

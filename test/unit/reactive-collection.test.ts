@@ -45,6 +45,25 @@ describe('reactive-collection.test.js', () => {
                 assert.ok(changeEvent.documentData);
                 db.close();
             });
+            it('should emit the same INSERT event shape when a deleted document is inserted again', async () => {
+                const c = await humansCollection.create(0);
+                const emitted: RxChangeEvent<HumanDocumentType>[] = [];
+                const sub = c.insert$.subscribe(ce => emitted.push(ce));
+
+                const docData = schemaObjects.humanData();
+                const doc = await c.insert(docData);
+                await doc.remove();
+                await c.insert(docData);
+                await AsyncTestUtil.waitUntil(() => emitted.length === 2);
+
+                emitted.forEach(changeEvent => {
+                    assert.strictEqual(changeEvent.operation, 'INSERT');
+                    assert.strictEqual(changeEvent.previousDocumentData, undefined);
+                });
+
+                sub.unsubscribe();
+                c.database.close();
+            });
         });
     });
     describe('.bulkInsert()', () => {
