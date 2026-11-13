@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX dev-mode accepted a schema `version` that is not an integer (like `1.5`, `NaN`, or `Infinity`), which then threw a plain `RangeError: Invalid array length` instead of the `SC11` error",
+    "links": [],
+    "priority": 4
+}

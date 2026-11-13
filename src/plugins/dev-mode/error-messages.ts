@@ -981,9 +981,9 @@ export const ERROR_MESSAGES = {
         docs: 'https://rxdb.info/rx-schema.html?console=errors&code=SC10'
     },
     SC11: {
-        message: 'SchemaCheck: schema needs a number >=0 as version',
+        message: 'SchemaCheck: schema needs an integer >=0 as version',
         cause: 'The version field is missing or invalid.',
-        fix: 'Set a valid version number (>=0).',
+        fix: 'Set a valid integer version number (>=0).',
         docs: 'https://rxdb.info/rx-schema.html?console=errors&code=SC11#version'
     },
     // removed in 10.0.0 - SC12: 'SchemaCheck: primary can only be defined once',

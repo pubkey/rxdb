@@ -547,6 +547,27 @@ describe('rx-schema.test.ts', () => {
                         }
                     } as any));
                 });
+                it('throw SC11 when version is not an integer', () => {
+                    [1.5, 0.5, NaN, Infinity].forEach(version => {
+                        assert.throws(
+                            () => checkSchema({
+                                title: 'schema',
+                                version,
+                                description: 'schema with non-integer version',
+                                primaryKey: 'foobar',
+                                type: 'object',
+                                properties: {
+                                    'foobar': {
+                                        type: 'string',
+                                        maxLength: 100
+                                    }
+                                }
+                            }),
+                            (err: any) => err.code === 'SC11',
+                            'version ' + version + ' must throw SC11'
+                        );
+                    });
+                });
                 it('throw when defaults on non-first-level field', () => {
                     assert.throws(() => checkSchema({
                         title: 'schema',
