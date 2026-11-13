@@ -580,5 +580,26 @@ export function checkSchema(jsonSchema: RxJsonSchema<any>) {
                     });
                 }
             });
+
+        /**
+         * The storage only sees the ciphertext of an encrypted field,
+         * so an index on that field or on a path below it
+         * can never be used to query or sort by the real value.
+         */
+        (jsonSchema.indexes || []).forEach(index => {
+            const indexAsArray = isMaybeReadonlyArray(index) ? index : [index];
+            indexAsArray.forEach(field => {
+                const isEncrypted = jsonSchema.encrypted!.some(
+                    encryptedPath => field === encryptedPath || field.startsWith(encryptedPath + '.')
+                );
+                if (isEncrypted) {
+                    throw newRxError('SC46', {
+                        field,
+                        index,
+                        schema: jsonSchema
+                    });
+                }
+            });
+        });
     }
 }

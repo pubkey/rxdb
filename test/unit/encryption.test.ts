@@ -812,6 +812,83 @@ describe('encryption.test.ts', () => {
             );
             await db.remove();
         });
+        it('should throw when an index contains an encrypted field', async () => {
+            type DocType = {
+                id: string;
+                note: string;
+                amount: number;
+                priority: number;
+                nested: {
+                    secret: string;
+                };
+            };
+            const indexesWithEncryptedField: NonNullable<RxJsonSchema<DocType>['indexes']>[] = [
+                ['note'],
+                ['amount'],
+                [['priority', 'note']],
+                ['nested.secret']
+            ];
+            const db = await createRxDatabase({
+                name: randomToken(10),
+                storage: wrappedKeyEncryptionCryptoJsStorage({
+                    storage: wrappedValidateAjvStorage({
+                        storage: getRxStorageMemory()
+                    })
+                }),
+                password: await getPassword()
+            });
+            let t = 0;
+            for (const indexes of indexesWithEncryptedField) {
+                const mySchema: RxJsonSchema<DocType> = {
+                    version: 0,
+                    primaryKey: 'id',
+                    type: 'object',
+                    properties: {
+                        id: {
+                            type: 'string',
+                            maxLength: 100
+                        },
+                        note: {
+                            type: 'string',
+                            maxLength: 100
+                        },
+                        amount: {
+                            type: 'number',
+                            minimum: 0,
+                            maximum: 100,
+                            multipleOf: 1
+                        },
+                        priority: {
+                            type: 'number',
+                            minimum: 0,
+                            maximum: 100,
+                            multipleOf: 1
+                        },
+                        nested: {
+                            type: 'object',
+                            properties: {
+                                secret: {
+                                    type: 'string',
+                                    maxLength: 100
+                                }
+                            },
+                            required: ['secret']
+                        }
+                    },
+                    required: ['id', 'note', 'amount', 'priority', 'nested'],
+                    encrypted: ['note', 'amount', 'nested'],
+                    indexes
+                };
+                await AsyncTestUtil.assertThrows(
+                    () => db.addCollections({
+                        ['test' + (t++)]: { schema: mySchema }
+                    }),
+                    'RxError',
+                    'SC46'
+                );
+            }
+            await db.remove();
+        });
     });
     describe('SECURITY', () => {
         it('should not expose the database password as an enumerable property', async () => {
