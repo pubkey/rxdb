@@ -379,6 +379,60 @@ addRxPlugin(RxDBJsonDumpPlugin);
                 state1.collection.database.close();
                 state2.collection.database.close();
             });
+            it('close() and a pending set() must settle when the other instance wrote at the same time', async () => {
+                if (
+                    config.storage.name.includes('random-delay') ||
+                    config.storage.name === 'sqlite-trial' ||
+                    isDeno
+                ) {
+                    return;
+                }
+                const databaseName = randomToken(10);
+                const state1 = await getState(databaseName);
+                const state2 = await getState(databaseName);
+                await state1.set('a', () => 0);
+                await waitUntil(() => state2.a === 0);
+
+                const set2 = state2.set('b', () => 1);
+                const set1 = state1.set('a', () => 2);
+                const closePromise = state1.collection.database.close();
+
+                type SetResult = { error?: any; };
+                const set1Result: Promise<SetResult> = set1.then(() => ({}), err => ({ error: err }));
+                const settled = await Promise.race([
+                    Promise.all([set1Result, closePromise, set2]),
+                    wait(isFastMode() ? 2000 : 5000).then(() => 'timeout' as const)
+                ]);
+                if (settled === 'timeout') {
+                    // do not await the close of the hanging instance
+                    state2.collection.database.close();
+                    assert.fail('set() or close() did not settle');
+                }
+                assert.strictEqual(settled[1], true);
+
+                /**
+                 * The set() of the closed instance either was stored
+                 * or it rejected with an RxError.
+                 */
+                const error = settled[0].error;
+                await waitUntil(() => state2.b === 1);
+                if (error) {
+                    assert.ok(error.rxdb, 'must be an RxError: ' + error);
+                    assert.strictEqual(error.code, 'COL21');
+                    assert.strictEqual(state2.a, 0);
+                } else {
+                    await waitUntil(() => state2.a === 2);
+                }
+
+                // the remaining instance still works and a new one recovers the same state
+                await state2.set('b', plusOne);
+                const state3 = await getState(databaseName);
+                assert.deepStrictEqual(state3.get(), state2.get());
+                assert.strictEqual(state3.b, 2);
+
+                await state3.collection.database.close();
+                await state2.collection.database.close();
+            });
             runXTimes(1, () => {
                 it('should have a deterministic output when 2 instances write at the same time', async () => {
                     // TODO shouldn't we fix this test for these storages?
