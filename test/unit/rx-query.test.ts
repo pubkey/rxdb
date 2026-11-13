@@ -1502,7 +1502,7 @@ describe('rx-query.test.ts', () => {
             });
         });
         describe('count queries', () => {
-            it('must throw QU21 on all update and remove functions', async () => {
+            it('must throw QU21 in dev-mode on all update and remove functions', async () => {
                 for (const documentAmount of [2, 0]) {
                     const c = await humansCollection.create(documentAmount);
                     const calls: (() => Promise<number>)[] = [

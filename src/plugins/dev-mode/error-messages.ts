@@ -192,7 +192,7 @@ export const ERROR_MESSAGES = {
         message: 'RxQuery: remove(), patch(), modify(), update() and their incremental variants cannot be used on count() queries',
         cause: 'The result of a count query is a number, so the query has no documents that can be changed or removed.',
         fix: 'Use find() with the same selector to change or remove the documents.',
-        docs: ''
+        docs: 'https://rxdb.info/rx-query.html?console=errors&code=QU21#count'
     },
     QU22: {
         message: 'The query contains a value that cannot be represented in JSON. RxDB queries are JSON, so NaN, Infinity, -Infinity, bigint, functions, symbols, Date, Map, Set and class instances are not allowed.',

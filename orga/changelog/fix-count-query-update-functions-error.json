@@ -1,6 +1,11 @@
 {
     "$schema": "./schema.json",
-    "text": "FIX `remove()`, `patch()`, `modify()`, `update()` and their incremental variants on a `count()` query threw a raw `TypeError` or resolved with `null`. They now throw the error `QU21`",
-    "links": [],
+    "text": "ADD a dev-mode check that throws the error `QU21` when `remove()`, `patch()`, `modify()`, `update()` or one of their incremental variants is called on a `count()` query. The result of a count query is a number, so there are no documents to change. Without dev-mode such a call still throws a raw `TypeError` or resolves with `null`",
+    "links": [
+        {
+            "url": "https://github.com/pubkey/rxdb/pull/9705",
+            "linkText": "#9705"
+        }
+    ],
     "priority": 4
 }
