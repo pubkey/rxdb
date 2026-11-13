@@ -3059,6 +3059,142 @@ describe('migration-schema.test.ts', function () {
 
                 await db3.close();
             });
+
+            const closingDocsAmount = 6;
+            async function createClosingTestState(dbName: string, storage: RxStorage<any, any>) {
+                const db = await createRxDatabase({
+                    name: dbName,
+                    storage
+                });
+                await db.addCollections({
+                    items: { schema: schema0 }
+                });
+                await db.items.bulkInsert(
+                    new Array(closingDocsAmount)
+                        .fill(0)
+                        .map((_v, idx) => ({ id: 'doc-' + idx, name: 'Document ' + idx }))
+                );
+                await db.close();
+            }
+            /**
+             * Opens the database with the new schema version
+             * and a migration strategy that waits until release() is called.
+             */
+            async function openWithHeldStrategy(dbName: string, storage: RxStorage<any, any>) {
+                let release: () => void = () => { };
+                const hold = new Promise<void>(res => release = res);
+                let strategyStarted: () => void = () => { };
+                const started = new Promise<void>(res => strategyStarted = res);
+                let strategyCalls = 0;
+                const db = await createRxDatabase({
+                    name: dbName,
+                    storage
+                });
+                await db.addCollections({
+                    items: {
+                        schema: schema1,
+                        autoMigrate: false,
+                        migrationStrategies: {
+                            1: async (docData: any) => {
+                                strategyCalls = strategyCalls + 1;
+                                strategyStarted();
+                                await hold;
+                                docData.migrated = true;
+                                return docData;
+                            }
+                        }
+                    }
+                });
+                return {
+                    db,
+                    release,
+                    started,
+                    getStrategyCalls: () => strategyCalls
+                };
+            }
+            function isSettled(promise: Promise<any>): Promise<boolean> {
+                return Promise.race([
+                    promise.then(() => true, () => true),
+                    wait(2000).then(() => false)
+                ]);
+            }
+            async function ensureMigrationContinuesAfterReopen(dbName: string, storage: RxStorage<any, any>) {
+                const db = await createRxDatabase({
+                    name: dbName,
+                    storage
+                });
+                await db.addCollections({
+                    items: {
+                        schema: schema1,
+                        autoMigrate: false,
+                        migrationStrategies
+                    }
+                });
+                const result = await db.items.migratePromise();
+                assert.strictEqual(result.status, 'DONE');
+                const docs = await db.items.find().exec();
+                assert.strictEqual(docs.length, closingDocsAmount);
+                assert.ok(docs.every(d => d.migrated === true));
+                await db.close();
+            }
+
+            it('must not store an error when the collection is closed directly after the migration was started', async () => {
+                const dbName = randomToken(10);
+                const storage = config.storage.getStorage();
+                await createClosingTestState(dbName, storage);
+
+                const state = await openWithHeldStrategy(dbName, storage);
+                const startPromise = state.db.items.startMigration();
+                startPromise.catch(() => { });
+                await state.db.items.close();
+                state.release();
+                assert.strictEqual(await isSettled(startPromise), true, 'startMigration() must settle');
+                assert.strictEqual(
+                    state.getStrategyCalls(),
+                    0,
+                    'a migration that was canceled before it has started must not run the migration strategy'
+                );
+                await state.db.close();
+
+                await ensureMigrationContinuesAfterReopen(dbName, storage);
+            });
+            it('must settle startMigration() when the database is closed while a migration strategy is running', async () => {
+                const dbName = randomToken(10);
+                const storage = config.storage.getStorage();
+                await createClosingTestState(dbName, storage);
+
+                const state = await openWithHeldStrategy(dbName, storage);
+                const startPromise = state.db.items.startMigration();
+                startPromise.catch(() => { });
+                await state.started;
+
+                const closePromise = state.db.close();
+                await Promise.race([closePromise, wait(100)]);
+                state.release();
+                await closePromise;
+                assert.strictEqual(await isSettled(startPromise), true, 'startMigration() must settle');
+
+                await ensureMigrationContinuesAfterReopen(dbName, storage);
+            });
+            it('must settle startMigration() when the collection is closed while a migration strategy is running', async () => {
+                const dbName = randomToken(10);
+                const storage = config.storage.getStorage();
+                await createClosingTestState(dbName, storage);
+
+                const state = await openWithHeldStrategy(dbName, storage);
+                const startPromise = state.db.items.startMigration();
+                startPromise.catch(() => { });
+                await state.started;
+
+                const closePromise = state.db.items.close();
+                await Promise.race([closePromise, wait(100)]);
+                state.release();
+                await closePromise;
+                assert.strictEqual(await isSettled(startPromise), true, 'startMigration() must settle');
+                await state.db.close();
+
+                await ensureMigrationContinuesAfterReopen(dbName, storage);
+            });
         });
     });
 });

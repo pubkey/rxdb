@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX closing the collection or the database during a schema migration was stored as migration status `ERROR` with the \"storage is closed\" error, so that the next `migratePromise()` rejected with `DM4`. It also caused unhandled promise rejections and a `startMigration()` promise that never settled. A close during a migration now cancels the migration without storing an error",
+    "links": [],
+    "priority": 5
+}
