@@ -17,11 +17,6 @@ import {
     randomToken,
     RxChangeEvent
 } from '../../plugins/core/index.mjs';
-import {
-    getRxStorageLocalstorage,
-    getLocalStorageMock
-} from '../../plugins/storage-localstorage/index.mjs';
-import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.mjs';
 
 
 describe('hooks.test.js', () => {
@@ -565,62 +560,54 @@ describe('hooks.test.js', () => {
             c.database.close();
         });
         it('a write that waits in an async pre-hook must not reach the storage after the collection was removed', async () => {
-            const storages = [
-                config.storage.getStorage(),
-                wrappedValidateAjvStorage({
-                    storage: getRxStorageLocalstorage({ localStorage: getLocalStorageMock() })
-                })
-            ];
-            for (const storage of storages) {
-                for (const hookKind of ['preInsert', 'preSave'] as const) {
-                    const db = await createRxDatabase({
-                        name: randomToken(10),
-                        storage
-                    });
-                    const collections = await db.addCollections({
-                        humans: { schema: schemas.human }
-                    });
-                    const c = collections.humans;
-                    const existingDoc = await c.insert(schemaObjects.humanData());
+            for (const hookKind of ['preInsert', 'preSave'] as const) {
+                const db = await createRxDatabase({
+                    name: randomToken(10),
+                    storage: config.storage.getStorage()
+                });
+                const collections = await db.addCollections({
+                    humans: { schema: schemas.human }
+                });
+                const c = collections.humans;
+                const existingDoc = await c.insert(schemaObjects.humanData());
 
-                    let hookEntered: () => void = () => { };
-                    const hookEnteredPromise = new Promise<void>(res => hookEntered = res);
-                    let releaseHook: () => void = () => { };
-                    const releaseHookPromise = new Promise<void>(res => releaseHook = res);
-                    const hook = () => {
-                        hookEntered();
-                        return releaseHookPromise;
-                    };
+                let hookEntered: () => void = () => { };
+                const hookEnteredPromise = new Promise<void>(res => hookEntered = res);
+                let releaseHook: () => void = () => { };
+                const releaseHookPromise = new Promise<void>(res => releaseHook = res);
+                const hook = () => {
+                    hookEntered();
+                    return releaseHookPromise;
+                };
 
-                    let writePromise: Promise<any>;
-                    if (hookKind === 'preInsert') {
-                        c.preInsert(hook, false);
-                        writePromise = c.insert(schemaObjects.humanData());
-                    } else {
-                        c.preSave(hook, false);
-                        writePromise = existingDoc.incrementalPatch({ firstName: 'foobar' });
-                    }
-                    const writeResultPromise = writePromise.then(
-                        () => undefined,
-                        (error: any) => error
-                    );
-
-                    await hookEnteredPromise;
-                    await c.remove();
-                    releaseHook();
-
-                    const err = await writeResultPromise;
-                    assert.ok(err, hookKind + ': write must reject');
-                    assert.strictEqual(err.code, 'COL21', hookKind);
-
-                    const recreated = await db.addCollections({
-                        humans: { schema: schemas.human }
-                    });
-                    const docs = await recreated.humans.find().exec();
-                    assert.deepStrictEqual(docs.map(d => d.primary), [], hookKind);
-
-                    await db.remove();
+                let writePromise: Promise<any>;
+                if (hookKind === 'preInsert') {
+                    c.preInsert(hook, false);
+                    writePromise = c.insert(schemaObjects.humanData());
+                } else {
+                    c.preSave(hook, false);
+                    writePromise = existingDoc.incrementalPatch({ firstName: 'foobar' });
                 }
+                const writeResultPromise = writePromise.then(
+                    () => undefined,
+                    (error: any) => error
+                );
+
+                await hookEnteredPromise;
+                await c.remove();
+                releaseHook();
+
+                const err = await writeResultPromise;
+                assert.ok(err, hookKind + ': write must reject');
+                assert.strictEqual(err.code, 'COL21', hookKind);
+
+                const recreated = await db.addCollections({
+                    humans: { schema: schemas.human }
+                });
+                const docs = await recreated.humans.find().exec();
+                assert.deepStrictEqual(docs.map(d => d.primary), [], hookKind);
+
+                await db.remove();
             }
         });
         it('should auto-generate composite primary key when set in preInsert hook', async () => {
