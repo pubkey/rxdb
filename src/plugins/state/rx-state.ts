@@ -19,6 +19,7 @@ import type {
     RxQuery,
     RxDocument,
     RxError,
+    RxStorageWriteErrorConflict,
     Paths
 } from '../../types';
 import {
@@ -29,8 +30,7 @@ import {
     clone,
     randomToken,
     deepEqual,
-    getFromMapOrCreate,
-    promiseWait
+    getFromMapOrCreate
 } from '../utils/index.ts';
 import {
     RX_STATE_COLLECTION_SCHEMA,
@@ -70,6 +70,11 @@ export class RxStateBase<T, Reactivity = unknown> {
     public _initDone = false;
     public _instanceId = randomToken(RX_STATE_COLLECTION_SCHEMA.properties.sId.maxLength);
     public _ownEmits$ = new Subject<T>();
+    /**
+     * Id of the newest operations document that is merged into _state.
+     * All operations documents with a lower id are merged too.
+     */
+    public _lastMergedId = '';
 
     constructor(
         public readonly prefix: string,
@@ -109,10 +114,24 @@ export class RxStateBase<T, Reactivity = unknown> {
                     for (let index = 0; index < events.length; index++) {
                         const event = events[index];
                         if (
-                            event.operation === 'INSERT' &&
-                            event.documentData.sId !== this._instanceId
+                            event.operation !== 'INSERT' ||
+                            event.documentData.sId === this._instanceId ||
+                            event.documentData.id <= this._lastMergedId
                         ) {
+                            continue;
+                        }
+                        if (event.documentData.id === nextRxStateId(this._lastMergedId || undefined)) {
+                            this._lastMergedId = event.documentData.id;
                             this.mergeOperationsIntoState(event.documentData.ops);
+                        } else {
+                            /**
+                             * The events of the operations between the last merged
+                             * one and this one did not arrive yet. Merging this one
+                             * now would apply the operations in the wrong order.
+                             */
+                            this._mergeMissingOperations()
+                                .then(() => this._ownEmits$.next(this._state))
+                                .catch(() => { });
                         }
                     }
                 })
@@ -151,9 +170,18 @@ export class RxStateBase<T, Reactivity = unknown> {
             let done = false;
             while (!done) {
                 const lastIdDoc = await this._lastIdQuery.exec();
+                /**
+                 * The query can return an operations document
+                 * before its change event has been merged into the state.
+                 * The modifiers must run on a state that
+                 * contains all operations with a lower id.
+                 */
+                if (lastIdDoc && lastIdDoc.id > this._lastMergedId) {
+                    await this._mergeMissingOperations();
+                }
                 useWrites = useWrites.concat(this._nonPersisted);
                 this._nonPersisted = [];
-                const nextId = nextRxStateId(lastIdDoc ? lastIdDoc.id : undefined);
+                const nextId = nextRxStateId(this._lastMergedId || undefined);
                 try {
                     /**
                      * TODO instead of a deep-clone we should
@@ -191,7 +219,15 @@ export class RxStateBase<T, Reactivity = unknown> {
                         sId: this._instanceId,
                         ops
                     });
-                    this._state = newState;
+                    /**
+                     * When a newer operation was merged during the insert,
+                     * the state already contains this write
+                     * and must not be replaced with the older newState.
+                     */
+                    if (this._lastMergedId < nextId) {
+                        this._lastMergedId = nextId;
+                        this._state = newState;
+                    }
                     this._ownEmits$.next(this._state);
                     done = true;
                 } catch (err) {
@@ -199,17 +235,48 @@ export class RxStateBase<T, Reactivity = unknown> {
                         throw err;
                     }
                     /**
-                     * Yield to the event loop so that cross-instance
-                     * change events can be processed and the _lastIdQuery
-                     * cache gets updated before retrying.
+                     * The conflict error contains the operations document
+                     * that another instance has stored with the same id.
+                     * Merging it here makes the next run use a higher id
+                     * even when the change event of that document never arrives,
+                     * like when the database is closing.
                      */
-                    await promiseWait(0);
+                    const writeError = (err as RxError).parameters.writeError as RxStorageWriteErrorConflict<RxStateDocument>;
+                    const documentInDb = writeError.documentInDb;
+                    if (this._lastMergedId < documentInDb.id) {
+                        this._lastMergedId = documentInDb.id;
+                        this.mergeOperationsIntoState(documentInDb.ops);
+                        this._ownEmits$.next(this._state);
+                    }
                 }
             }
         });
         // Keep the shared queue alive so a failing write does not block subsequent ones.
         this._writeQueue = next.catch(() => { });
         return next;
+    }
+
+    /**
+     * Loads the operations documents that are newer
+     * than the last merged one from the storage
+     * and merges them in id order.
+     */
+    async _mergeMissingOperations() {
+        const docs = await this.collection.find({
+            selector: {
+                id: {
+                    $gt: this._lastMergedId
+                }
+            },
+            sort: [{ id: 'asc' }]
+        }).exec();
+        for (let index = 0; index < docs.length; index++) {
+            const doc = docs[index];
+            if (doc.id > this._lastMergedId) {
+                this._lastMergedId = doc.id;
+                this.mergeOperationsIntoState(doc.ops);
+            }
+        }
     }
 
     mergeOperationsIntoState(
@@ -357,6 +424,9 @@ export async function createRxState<T>(
             for (let index = 0; index < documents.length; index++) {
                 const document = documents[index];
                 rxState._state = mergeOperationsIntoState(rxState._state, document.ops);
+                if (document.id > rxState._lastMergedId) {
+                    rxState._lastMergedId = document.id;
+                }
             }
         }
     }

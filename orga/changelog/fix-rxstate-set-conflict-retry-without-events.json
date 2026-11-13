@@ -1,0 +1,11 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `RxState.set()` and `RxDatabase.close()` never settled when another instance wrote to the same state while the database was closing. On a conflict, `set()` now merges the conflicting operations from the write error and retries with the next id, instead of waiting for a cross-instance change event that never arrives",
+    "links": [
+        {
+            "url": "https://github.com/pubkey/rxdb/pull/9628",
+            "linkText": "#9628"
+        }
+    ],
+    "priority": 5
+}

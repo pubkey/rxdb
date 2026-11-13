@@ -8,6 +8,7 @@ import {
     createRxDatabase,
     randomToken,
     addRxPlugin,
+    deepEqual,
     lastOfArray,
     RxReactivityFactory,
     RxState,
@@ -379,6 +380,40 @@ addRxPlugin(RxDBJsonDumpPlugin);
                 state1.collection.database.close();
                 state2.collection.database.close();
             });
+            it('close() and a pending set() must settle when the other instance wrote at the same time', async () => {
+                const databaseName = randomToken(10);
+                const state1 = await getState(databaseName);
+                const state2 = await getState(databaseName);
+                await state1.set('a', () => 0);
+                await waitUntil(() => state2.a === 0);
+
+                const set2 = state2.set('b', () => 1);
+                const set1 = state1.set('a', () => 2);
+                const closePromise = state1.collection.database.close();
+
+                const settled = await Promise.race([
+                    Promise.all([set1, closePromise, set2]),
+                    wait(isFastMode() ? 2000 : 5000).then(() => 'timeout' as const)
+                ]);
+                if (settled === 'timeout') {
+                    // do not await the close of the hanging instance
+                    state2.collection.database.close();
+                    assert.fail('set() or close() did not settle');
+                }
+                assert.strictEqual(settled[1], true);
+
+                // the write of the closed instance is stored
+                await waitUntil(() => state2.a === 2 && state2.b === 1);
+
+                // the remaining instance still works and a new one recovers the same state
+                await state2.set('b', plusOne);
+                const state3 = await getState(databaseName);
+                assert.deepStrictEqual(state3.get(), { a: 2, b: 2 });
+                assert.deepStrictEqual(state3.get(), state2.get());
+
+                await state3.collection.database.close();
+                await state2.collection.database.close();
+            });
             runXTimes(1, () => {
                 it('should have a deterministic output when 2 instances write at the same time', async () => {
                     // TODO shouldn't we fix this test for these storages?
@@ -525,6 +560,59 @@ addRxPlugin(RxDBJsonDumpPlugin);
 
                 state1.collection.database.close();
                 state2.collection.database.close();
+            });
+            it('should not lose a write when eventReduce is disabled and the events of the other instance arrive delayed', async () => {
+                type CounterState = {
+                    a?: number;
+                    cnt?: number;
+                };
+                const storage = useSchemaValidator ? wrappedValidateAjvStorage({
+                    storage: config.storage.getStorage()
+                }) : config.storage.getStorage();
+                const databaseName = randomToken(10);
+                const openState = async () => {
+                    const database = await createRxDatabase({
+                        name: databaseName,
+                        storage,
+                        multiInstance: true,
+                        ignoreDuplicate: true,
+                        eventReduce: false
+                    });
+                    const state: RxState<CounterState> = await database.addState<CounterState>();
+                    return state;
+                };
+                const increment = (v?: number) => (v ? v : 0) + 1;
+                const state1 = await openState();
+                const state2 = await openState();
+
+                const rounds = 20;
+                for (let round = 1; round <= rounds; round++) {
+                    await state1.set('a', () => round);
+                    await Promise.all([
+                        state1.set('a', () => round + 0.5),
+                        state1.set('cnt', increment),
+                        state2.set('cnt', increment)
+                    ]);
+                    const expected = { a: round + 0.5, cnt: round * 2 };
+                    try {
+                        await waitUntil(() => deepEqual(state1.get(), expected) && deepEqual(state2.get(), expected), 2000);
+                    } catch (err) {
+                        assert.deepStrictEqual(
+                            [state1.get(), state2.get()],
+                            [expected, expected],
+                            'wrong state in round ' + round
+                        );
+                    }
+                }
+
+                const freshState = await openState();
+                assert.deepStrictEqual(freshState.get(), { a: rounds + 0.5, cnt: rounds * 2 });
+                assert.deepStrictEqual(state1.get(), freshState.get());
+                assert.deepStrictEqual(state2.get(), freshState.get());
+
+                await state1.collection.database.close();
+                await state2.collection.database.close();
+                await freshState.collection.database.remove();
             });
         });
         describe('issues', () => {
