@@ -99,6 +99,8 @@ await myDatabase.todos.insert({/* ... */}); // insert one
 querySub.unsubscribe()
 ```
 
+When the [RxCollection](./rx-collection.md) or the [RxDatabase](./rx-database.md) of the query gets closed or removed, the observable completes and emits no more results or errors.
+
 ## update()
 Runs an [update](./rx-document.md#update) on every RxDocument of the query-result.
 
