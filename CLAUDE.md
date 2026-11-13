@@ -63,6 +63,10 @@ npm run check-types
 - Prefer including a link to the root issue or pull request in the `links` of that changelog entry.
 - Do NOT add a changelog entry for changes that are neither a testcase, a FIX, nor a deprecation. For example, adding a SEM landingpage under `docs-src/src/pages/sem/` must not produce a changelog entry.
 
+## Pull Request Title Rule
+- When a pull request contains a breaking change, prefix its title with `[BREAKING]`. Example: `[BREAKING] Store backup documents in one folder per collection`.
+- A change is breaking when existing code, stored data, or files written by a released version stop working or behave differently without a change by the user. Examples: a removed or renamed export, a changed function signature, a changed storage or file layout, a call that now throws where it resolved before.
+
 ## Example Schema Rule
 - Whenever a docs page needs an example schema, example documents, or example queries, use the shared `todos` example schema from the "Example Schema" section of `docs-src/docs/rx-schema.md`. Do NOT invent a new schema (heroes, humans, users, etc.).
 - Use the same names everywhere: database variable `myDatabase`, collection `todos`, schema `todoSchema`, document type `TodoDocType`.
