@@ -26,7 +26,8 @@ import {
     createBlobFromBase64,
     flatClone,
     getDefaultRevision,
-    now
+    now,
+    setOwnProperty
 } from '../../plugins/utils/index.ts';
 
 function dumpRxDatabase(
@@ -156,11 +157,11 @@ async function exportAttachmentsOfDocument(
                 attachmentId,
                 attachmentData.digest
             );
-            ret[attachmentId] = {
+            setOwnProperty(ret, attachmentId, {
                 type: attachmentData.type,
                 length: blob.size,
                 data: await blobToBase64String(blob)
-            };
+            });
         })
     );
     return ret;
@@ -219,7 +220,7 @@ async function importAttachmentsOfDocument(
     await Promise.all(
         Object.entries(attachments).map(async ([attachmentId, attachmentData]) => {
             const blob = await createBlobFromBase64(attachmentData.data, attachmentData.type);
-            ret[attachmentId] = {
+            setOwnProperty(ret, attachmentId, {
                 type: attachmentData.type,
                 length: blob.size,
                 data: blob,
@@ -228,7 +229,7 @@ async function importAttachmentsOfDocument(
                  * of the importing database can be a different one.
                  */
                 digest: await collection.database.hashFunction(blob)
-            };
+            });
         })
     );
     return ret;

@@ -25,7 +25,8 @@ import {
     ensureNotFalsy,
     flatClone,
     getProperty,
-    setProperty
+    setProperty,
+    setOwnProperty
 } from '../../plugins/utils/index.ts';
 
 export const MINIMUM_PASSWORD_LENGTH: 8 = 8;
@@ -157,7 +158,7 @@ export function wrappedKeyEncryptionCryptoJsStorage<Internals, InstanceCreationO
                                     const encrypted = encryptString(base64, password);
                                     useAttachment.data = new Blob([encrypted], { type: useAttachment.type });
                                 }
-                                newAttachments[id] = useAttachment;
+                                setOwnProperty(newAttachments, id, useAttachment);
                             })
                         );
                         docData._attachments = newAttachments;

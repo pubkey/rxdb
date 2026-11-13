@@ -8,7 +8,9 @@ import {
     blobToString,
     createBlobFromBase64,
     deepEqual,
-    flatClone
+    flatClone,
+    hasOwnProperty,
+    setOwnProperty
 } from '../../plugins/utils/index.ts';
 import type {
     RxDocument,
@@ -25,10 +27,7 @@ import {
     assignMethodsToAttachment,
     ensureSchemaSupportsAttachments
 } from './attachments-utils.ts';
-import {
-    ensureAttachmentIdIsStorable,
-    isWriteAllowed
-} from '../../rx-collection-helper.ts';
+import { isWriteAllowed } from '../../rx-collection-helper.ts';
 
 
 
@@ -123,10 +122,6 @@ async function _putAttachmentsImpl<RxDocType>(
         return [];
     }
 
-    for (const att of attachments) {
-        ensureAttachmentIdIsStorable(att.id, doc.primary);
-    }
-
     const prepared = await Promise.all(
         attachments.map(async (att) => ({
             id: att.id,
@@ -142,12 +137,12 @@ async function _putAttachmentsImpl<RxDocType>(
             docWriteData = flatClone(docWriteData);
             docWriteData._attachments = flatClone(docWriteData._attachments);
             for (const att of prepared) {
-                docWriteData._attachments[att.id] = {
+                setOwnProperty(docWriteData._attachments, att.id, {
                     length: att.data.size,
                     type: att.type,
                     data: att.data,
                     digest: att.digest
-                };
+                });
             }
             return docWriteData;
         }
@@ -206,7 +201,7 @@ export function getAttachment(
      * an id like 'toString' must not resolve to a member of Object.prototype.
      */
     if (
-        !Object.prototype.hasOwnProperty.call(docData._attachments, id) ||
+        !hasOwnProperty(docData._attachments, id) ||
         !docData._attachments[id]
     ) {
         return null;
@@ -258,12 +253,12 @@ export async function preMigrateDocument<RxDocType>(
                     attachment.digest
                 );
                 const digest = await data.oldCollection.database.hashFunction(rawAttachmentBlob);
-                newAttachments[attachmentId] = {
+                setOwnProperty(newAttachments, attachmentId, {
                     length: rawAttachmentBlob.size,
                     type: attachment.type,
                     data: rawAttachmentBlob,
                     digest
-                };
+                });
             })
         );
 

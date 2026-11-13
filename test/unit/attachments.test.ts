@@ -18,6 +18,7 @@ import {
     clone,
     createRxDatabase,
     randomToken,
+    RxDatabase,
     RxDocument,
     RxJsonSchema,
     MigrationStrategies,
@@ -217,40 +218,144 @@ describe('attachments.test.ts', () => {
             });
             await c.database.close();
         });
-        it('should reject the attachment id __proto__ instead of losing the data', async () => {
-            if (!config.storage.hasAttachments) {
-                return;
+    });
+    describe('attachment ids that are names of Object.prototype members', () => {
+        const ids = ['constructor', 'toString', 'hasOwnProperty', 'valueOf', '__proto__'];
+        async function createTwoInstances() {
+            const name = randomToken(10);
+            type Collections = { humans: RxCollection<HumanDocumentType, {}, {}>; };
+            const schemaJson: RxJsonSchema<HumanDocumentType> = clone(schemas.human);
+            schemaJson.attachments = {};
+            const dbs: RxDatabase<Collections>[] = [];
+            const collections: RxCollection<HumanDocumentType, {}, {}>[] = [];
+            for (let i = 0; i < 2; i++) {
+                const db = await createRxDatabase<Collections>({
+                    name,
+                    storage: config.storage.getStorage(),
+                    multiInstance: true,
+                    ignoreDuplicate: true
+                });
+                const cols = await db.addCollections<Collections>({
+                    humans: {
+                        schema: schemaJson
+                    }
+                });
+                dbs.push(db);
+                collections.push(cols.humans);
             }
+            return { dbs, collections };
+        }
+        it('should return null on a document without attachments', async () => {
             const c = await humansCollection.createAttachments(1);
             const doc = await c.findOne().exec(true);
-            const creator = {
-                id: '__proto__',
-                data: createBlob('meow', 'text/plain'),
-                type: 'text/plain'
-            };
-            await AsyncTestUtil.assertThrows(
-                () => doc.putAttachment(creator),
-                'RxError',
-                'AT7'
-            );
-            await AsyncTestUtil.assertThrows(
-                () => doc.putAttachments([creator]),
-                'RxError',
-                'AT7'
-            );
-            await AsyncTestUtil.assertThrows(
-                () => doc.putAttachmentBase64({
-                    id: '__proto__',
-                    length: 4,
-                    data: 'bWVvdw==',
-                    type: 'text/plain'
-                }),
-                'RxError',
-                'AT7'
-            );
-            assert.strictEqual(doc.getLatest().allAttachments().length, 0);
-            assert.strictEqual(doc.getLatest().getAttachment('__proto__'), null);
+            ids.forEach(id => assert.ok(doc.getAttachment(id) === null, id));
+            assert.strictEqual(doc.allAttachments().length, 0);
             await c.database.close();
+        });
+        ids.forEach(id => {
+            it('should store, read and remove the attachment with the id "' + id + '"', async () => {
+                const c = await humansCollection.createAttachments(1);
+                let doc = await c.findOne().exec(true);
+                const putResult = await doc.putAttachment({
+                    id,
+                    data: createBlob('meow ' + id, 'text/plain'),
+                    type: 'text/plain'
+                });
+                assert.strictEqual(putResult.id, id);
+                assert.strictEqual(putResult.type, 'text/plain');
+                assert.strictEqual(await putResult.getStringData(), 'meow ' + id);
+
+                // reload via a second query
+                doc = await c.findOne(doc.primary).exec(true);
+                const attachment = ensureNotFalsy(doc.getAttachment(id), 'attachment missing ' + id);
+                assert.strictEqual(attachment.id, id);
+                assert.strictEqual(attachment.type, 'text/plain');
+                assert.strictEqual(attachment.length, ('meow ' + id).length);
+                assert.strictEqual(await attachment.getStringData(), 'meow ' + id);
+                assert.deepStrictEqual(doc.allAttachments().map(a => a.id), [id]);
+                ids
+                    .filter(otherId => otherId !== id)
+                    .forEach(otherId => assert.ok(doc.getAttachment(otherId) === null, otherId));
+
+                // overwrite with other data
+                await doc.putAttachment({
+                    id,
+                    data: createBlob('woof', 'text/plain'),
+                    type: 'text/plain'
+                });
+                doc = await c.findOne(doc.primary).exec(true);
+                assert.strictEqual(await ensureNotFalsy(doc.getAttachment(id)).getStringData(), 'woof');
+
+                // an update of the document must keep the attachment
+                await doc.incrementalPatch({ age: 7 });
+                doc = await c.findOne(doc.primary).exec(true);
+                assert.strictEqual(doc.age, 7);
+                assert.strictEqual(await ensureNotFalsy(doc.getAttachment(id)).getStringData(), 'woof');
+
+                await ensureNotFalsy(doc.getAttachment(id)).remove();
+                doc = await c.findOne(doc.primary).exec(true);
+                assert.ok(doc.getAttachment(id) === null, id);
+                assert.strictEqual(doc.allAttachments().length, 0);
+
+                await c.database.close();
+            });
+        });
+        it('should store all of them on the same document and read them from another instance', async () => {
+            if (!config.storage.hasMultiInstance) {
+                return;
+            }
+            const { dbs, collections } = await createTwoInstances();
+            const docData = schemaObjects.humanData();
+            await collections[0].insert(docData);
+            const doc = await collections[0].findOne(docData.passportId).exec(true);
+            const half = Math.ceil(ids.length / 2);
+            await doc.putAttachments(
+                ids.slice(0, half).map(id => ({
+                    id,
+                    data: createBlob('meow ' + id, 'text/plain'),
+                    type: 'text/plain'
+                }))
+            );
+            for (const id of ids.slice(half)) {
+                await doc.getLatest().putAttachmentBase64({
+                    id,
+                    length: ('meow ' + id).length,
+                    data: await blobToBase64String(createBlob('meow ' + id, 'text/plain')),
+                    type: 'text/plain'
+                });
+            }
+            assert.deepStrictEqual(
+                doc.getLatest().allAttachments().map(a => a.id).sort(),
+                ids.slice(0).sort()
+            );
+
+            await AsyncTestUtil.waitUntil(async () => {
+                const otherDoc = await collections[1].findOne(docData.passportId).exec(true);
+                return otherDoc.allAttachments().length === ids.length;
+            });
+            const doc2 = await collections[1].findOne(docData.passportId).exec(true);
+            for (const id of ids) {
+                const attachment = ensureNotFalsy(doc2.getAttachment(id), 'attachment missing ' + id);
+                assert.strictEqual(attachment.type, 'text/plain');
+                assert.strictEqual(await attachment.getStringData(), 'meow ' + id);
+            }
+
+            // removing one must keep the others
+            await ensureNotFalsy(doc2.getAttachment('toString')).remove();
+            await ensureNotFalsy(doc2.getLatest().getAttachment('__proto__')).remove();
+            const remaining = ids.filter(id => id !== 'toString' && id !== '__proto__');
+            assert.deepStrictEqual(
+                doc2.getLatest().allAttachments().map(a => a.id).sort(),
+                remaining.slice(0).sort()
+            );
+            for (const id of remaining) {
+                assert.strictEqual(
+                    await ensureNotFalsy(doc2.getLatest().getAttachment(id)).getStringData(),
+                    'meow ' + id
+                );
+            }
+
+            await Promise.all(dbs.map(db => db.close()));
         });
     });
     describe('.getAttachment()', () => {
@@ -265,32 +370,6 @@ describe('attachments.test.ts', () => {
             doc = await c.findOne().exec(true);
             const attachment: any = doc.getAttachment('cat.txt');
             assert.ok(attachment);
-            await c.database.close();
-        });
-        it('should return null when the id is the name of an Object.prototype member', async () => {
-            if (!config.storage.hasAttachments) {
-                return;
-            }
-            const c = await humansCollection.createAttachments(1);
-            let doc = await c.findOne().exec(true);
-            const ids = ['toString', 'constructor', 'hasOwnProperty', 'valueOf', '__proto__'];
-            ids.forEach(id => assert.strictEqual(doc.getAttachment(id), null, id));
-
-            // an attachment with such an id can be stored and is the only one that is found
-            await doc.putAttachment({
-                id: 'constructor',
-                data: createBlob('meow', 'text/plain'),
-                type: 'text/plain'
-            });
-            doc = doc.getLatest();
-            const attachment = ensureNotFalsy(doc.getAttachment('constructor'));
-            assert.strictEqual(attachment.type, 'text/plain');
-            assert.strictEqual(await attachment.getStringData(), 'meow');
-            assert.deepStrictEqual(doc.allAttachments().map(a => a.id), ['constructor']);
-            ids
-                .filter(id => id !== 'constructor')
-                .forEach(id => assert.strictEqual(doc.getAttachment(id), null, id));
-
             await c.database.close();
         });
         it('should find the attachment after another doc-update', async () => {
