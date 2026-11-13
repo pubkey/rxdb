@@ -711,9 +711,7 @@ validationImplementations.forEach(
             it('should accept decimal values that are a multiple of a decimal multipleOf', async () => {
                 const db = await createRxDatabase({
                     name: randomToken(10),
-                    storage: validationImplementation.implementation({
-                        storage: getRxStorageMemory()
-                    })
+                    storage
                 });
                 const collections = await db.addCollections({
                     products: {
