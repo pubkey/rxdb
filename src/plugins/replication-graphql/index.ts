@@ -196,9 +196,20 @@ export function replicateGraphQL<RxDocType, CheckpointType>(
         pull.streamQueryBuilder &&
         live;
 
+    /**
+     * start() is also called to resume after pause().
+     * The stream subscription stays open while paused,
+     * so it must only be opened once per replication state.
+     */
+    let socketOpened = false;
     const startBefore = graphqlReplicationState.start.bind(graphqlReplicationState);
     graphqlReplicationState.start = () => {
-        if (mustUseSocket) {
+        if (
+            mustUseSocket &&
+            !socketOpened &&
+            !graphqlReplicationState.isStopped()
+        ) {
+            socketOpened = true;
             const httpHeaders = pull.includeWsHeaders ? mutateableClientState.headers : undefined;
             const wsClient = getGraphQLWebSocket(ensureNotFalsy(url.ws), httpHeaders, pull.wsOptions);
 
@@ -237,7 +248,8 @@ export function replicateGraphQL<RxDocType, CheckpointType>(
     graphqlReplicationState.cancel = () => {
         if (!graphqlReplicationState.isStopped()) {
             pullStream$.complete();
-            if (mustUseSocket) {
+            if (socketOpened) {
+                socketOpened = false;
                 removeGraphQLWebSocketRef(ensureNotFalsy(url.ws));
             }
         }
