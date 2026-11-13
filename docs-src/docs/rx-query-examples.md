@@ -20,7 +20,7 @@ A Mango query is an object with these fields:
 | `selector` | The conditions a document must match. An empty selector `{}` matches all documents. |
 | `sort` | An array of `{ field: 'asc' \| 'desc' }` objects. |
 | `skip` | The number of documents to skip. |
-| `limit` | The maximum number of documents to return. `limit: 0` returns zero documents. See [limit](./rx-query.md#limit). |
+| `limit` | The maximum number of documents to return. `limit: 0` returns zero documents. |
 | `index` | Forces the query to use a specific index. See [setting a specific index](./rx-query.md#setting-a-specific-index). |
 
 ```ts
@@ -356,7 +356,7 @@ const results = await myDatabase.todos.find({
 // > [RxDocument[todo3], RxDocument[todo4]]
 ```
 
-Same as in SQL databases, `limit: 0` returns zero documents and not all documents. A negative `limit` throws [`QU23`](./errors.md#QU23). Read more in the [limit section of RxQuery](./rx-query.md#limit).
+Same as in SQL databases, `limit: 0` returns zero documents and not all documents. A negative `limit` throws [`QU23`](./errors.md#QU23).
 
 `findOne()` sets `limit: 1` by itself and returns the first document of the sorted result, or `null`:
 
