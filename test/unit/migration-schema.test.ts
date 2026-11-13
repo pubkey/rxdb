@@ -451,6 +451,88 @@ describe('migration-schema.test.ts', function () {
                     assert.ok(failed);
                     await col.database.close();
                 });
+                it('should reject when the storage of the old collection version cannot be opened', async () => {
+                    const dbName = randomToken(10);
+                    const schema0 = {
+                        version: 0,
+                        primaryKey: 'id',
+                        type: 'object',
+                        properties: {
+                            id: { type: 'string', maxLength: 100 },
+                            name: { type: 'string' }
+                        },
+                        required: ['id', 'name']
+                    };
+                    const schema1 = clone(schema0);
+                    schema1.version = 1;
+
+                    const db = await createRxDatabase({
+                        name: dbName,
+                        storage: config.storage.getStorage(),
+                        multiInstance: false
+                    });
+                    await db.addCollections({
+                        items: { schema: schema0 }
+                    });
+                    await db.items.insert({ id: 'doc1', name: 'Document 1' });
+                    await db.close();
+
+                    /**
+                     * A storage that fails to open
+                     * the storage instance of the old schema version.
+                     */
+                    const baseStorage = config.storage.getStorage();
+                    const failingStorage: RxStorage<any, any> = {
+                        name: baseStorage.name,
+                        rxdbVersion: baseStorage.rxdbVersion,
+                        createStorageInstance(params) {
+                            if (
+                                params.collectionName === 'items' &&
+                                params.schema.version === 0
+                            ) {
+                                return Promise.reject(new Error('open-old-storage-failed-on-purpose'));
+                            }
+                            return baseStorage.createStorageInstance(params);
+                        }
+                    };
+                    const db2 = await createRxDatabase({
+                        name: dbName,
+                        storage: failingStorage,
+                        multiInstance: false
+                    });
+                    await db2.addCollections({
+                        items: {
+                            schema: schema1,
+                            autoMigrate: false,
+                            migrationStrategies: {
+                                1: (doc: any) => doc
+                            }
+                        }
+                    });
+
+                    let timeoutRef: ReturnType<typeof setTimeout> | undefined;
+                    const result = await Promise.race([
+                        db2.items.migratePromise().then(
+                            () => 'RESOLVED',
+                            (err: any) => err
+                        ),
+                        new Promise<string>(res => {
+                            timeoutRef = setTimeout(() => res('TIMEOUT'), 5 * 1000);
+                        })
+                    ]);
+                    clearTimeout(timeoutRef);
+                    assert.notStrictEqual(result, 'TIMEOUT', 'migratePromise() must settle');
+                    assert.notStrictEqual(result, 'RESOLVED', 'migratePromise() must reject');
+                    assert.strictEqual(result.code, 'DM4');
+                    assert.ok(
+                        JSON.stringify(result.parameters).includes('open-old-storage-failed-on-purpose')
+                    );
+
+                    const status = await db2.items.getMigrationState().getStatus();
+                    assert.strictEqual(status.status, 'ERROR');
+
+                    await db2.close();
+                });
             });
         });
         describe('writes during migration', () => {

@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX schema migration `migratePromise()` and `addCollections()` with `autoMigrate` never settling when the migration fails before or after copying the documents, for example when the storage instance of the old schema version cannot be opened. These errors are now written to the migration status and reject with `DM4`",
+    "links": [],
+    "priority": 5
+}
