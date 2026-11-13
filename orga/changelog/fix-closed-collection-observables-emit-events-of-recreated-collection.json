@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX the observables of a closed or removed `RxCollection` (`$`, `insert$`, `update$`, `remove$`, `eventBulks$`, `checkpoint$`) did not complete and emitted the change events of a collection with the same name that was added again with `addCollections()`. Documents of the closed collection also got the data of the new collection from `getLatest()`.",
+    "links": [],
+    "priority": 5
+}
