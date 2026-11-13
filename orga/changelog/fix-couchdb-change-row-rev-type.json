@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX the exported CouchDB types: `CouchChangeRow.changes[].rev` was typed as the string literal `'string'` instead of `string`, and `CouchBulkDocResultRow.error` only allowed `'conflict'` instead of any CouchDB error name",
+    "links": [],
+    "priority": 4
+}

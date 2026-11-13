@@ -25,7 +25,9 @@ import {
     addRxPlugin,
     createBlob,
     ReactivityLambda,
-    Reactified
+    Reactified,
+    CouchdbChangesResult,
+    CouchBulkDocResultRow
 } from '../plugins/core/index.mjs';
 import { getRxStorageMemory } from '../plugins/storage-memory/index.mjs';
 import { RxDatabaseProvider } from '../plugins/react/index.mjs';
@@ -831,6 +833,34 @@ describe('other', () => {
                         }
                     };
                     addRxPlugin(myPlugin);
+                });
+            });
+            describe('couchdb types', () => {
+                it('should accept the revisions of a CouchDB changes response', () => {
+                    const changesResult: CouchdbChangesResult = {
+                        results: [
+                            {
+                                id: 'todo1',
+                                seq: 1,
+                                changes: [
+                                    { rev: '1-967a00dff5e02add41819138abb3284d' }
+                                ]
+                            }
+                        ],
+                        last_seq: 1
+                    };
+                    const rev: string = changesResult.results[0].changes[0].rev;
+                    assert.ok(rev.startsWith('1-'));
+                });
+                it('should accept the error names of a CouchDB bulk docs response', () => {
+                    const row: CouchBulkDocResultRow = {
+                        ok: false,
+                        id: 'todo1',
+                        rev: '1-967a00dff5e02add41819138abb3284d',
+                        error: 'forbidden',
+                        reason: 'not allowed'
+                    };
+                    assert.strictEqual(row.error === 'conflict', false);
                 });
             });
             describe('issues', () => {
