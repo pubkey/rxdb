@@ -28,6 +28,7 @@ import {
     newRxError,
     rxStorageWriteErrorToRxError
 } from './rx-error.ts';
+import { throwIfIsStorageWriteError } from './rx-storage-helper.ts';
 import {
     runPluginHooks
 } from './hooks.ts';
@@ -46,6 +47,7 @@ import type {
     QueryMatcher,
     ModifyFunction,
     RxStorageChangeEvent,
+    RxStorageWriteError,
     Reactified
 } from './types/index.d.ts';
 import {
@@ -544,7 +546,7 @@ export class RxQueryBase<
         if (Array.isArray(docs)) {
             const result = await this.collection.bulkRemove(docs);
             if (result.error.length > 0) {
-                throw rxStorageWriteErrorToRxError(result.error[0]);
+                throwQueryRemoveError(this.collection, result.error[0]);
             } else {
                 return result.success as any;
             }
@@ -552,7 +554,7 @@ export class RxQueryBase<
             const docsArray = [...docs.values()];
             const result = await this.collection.bulkRemove(docsArray as any);
             if (result.error.length > 0) {
-                throw rxStorageWriteErrorToRxError(result.error[0]);
+                throwQueryRemoveError(this.collection, result.error[0]);
             }
             const resultMap = new Map();
             result.success.forEach((doc: any) => resultMap.set(doc.primary, doc));
@@ -637,6 +639,25 @@ export class RxQueryBase<
     }
 }
 
+
+/**
+ * Conflict and validation errors of a query remove
+ * must have the same error codes as the errors of RxDocument.remove().
+ */
+function throwQueryRemoveError<RxDocType>(
+    collection: RxCollection<RxDocType>,
+    error: RxStorageWriteError<RxDocType>
+): never {
+    if (error.status === 409 || error.status === 422) {
+        throwIfIsStorageWriteError(
+            collection,
+            error.documentId,
+            error.writeRow.document,
+            error
+        );
+    }
+    throw rxStorageWriteErrorToRxError(error);
+}
 
 export function _getDefaultQuery<RxDocType>(): MangoQuery<RxDocType> {
     return {

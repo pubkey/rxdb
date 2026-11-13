@@ -1,0 +1,5 @@
+{
+    "text": "FIX `find().remove()` and `findByIds().remove()` threw a `COL20` error on a write conflict instead of the `CONFLICT` error that `RxDocument.remove()` and `findOne().remove()` throw",
+    "links": [],
+    "priority": 5
+}
