@@ -1,6 +1,6 @@
 {
     "$schema": "./schema.json",
-    "text": "FIX `insert()`, `insertIfNotExists()` and `bulkInsert()` stored a document without a primary key when an `RxDocument` instance was passed instead of plain document data. These calls now throw the error `COL1`. Added a testcase",
+    "text": "FIX `insert()`, `insertIfNotExists()` and `bulkInsert()` stored a document without a primary key when an `RxDocument` instance was passed instead of plain document data. The dev-mode plugin now detects this and throws the error `COL1`. Added a testcase",
     "links": [],
     "priority": 4
 }
