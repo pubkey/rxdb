@@ -169,7 +169,7 @@ describe('webmcp.test.ts', () => {
             }
         });
         db.registerWebMCP();
-        const waitToolName = `rxdb_wait_changes_${db.name}_withlocal_0`;
+        const waitToolName = `rxdb_wait_changes_${db.name}.withlocal.0`;
         let waitResolved = false;
         const waitPromise = executeTool(waitToolName, {}).then(() => {
             waitResolved = true;
@@ -192,7 +192,7 @@ describe('webmcp.test.ts', () => {
                 }
             }
         });
-        const waitTool = toolsByName.get(`rxdb_wait_changes_${db.name}_humans_0`);
+        const waitTool = toolsByName.get(`rxdb_wait_changes_${db.name}.humans.0`);
         const waitPromise: Promise<any> = waitTool.execute({});
         const settled = waitPromise.then(
             () => 'resolved',
@@ -231,7 +231,7 @@ describe('webmcp.test.ts', () => {
                     }
                 }
             });
-            const waitTool = toolsByName.get(`rxdb_wait_changes_${database.name}_humans_0`);
+            const waitTool = toolsByName.get(`rxdb_wait_changes_${database.name}.humans.0`);
             const settled = [waitTool.execute({}), waitTool.execute({})].map(
                 (waitPromise: Promise<any>) => waitPromise.then(
                     () => 'resolved',
