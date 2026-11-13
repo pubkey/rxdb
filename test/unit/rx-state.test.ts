@@ -11,7 +11,6 @@ import {
     lastOfArray,
     RxReactivityFactory,
     RxState,
-    RxStorage,
     runXTimes
 } from '../../plugins/core/index.mjs';
 import {
@@ -381,65 +380,37 @@ addRxPlugin(RxDBJsonDumpPlugin);
                 state2.collection.database.close();
             });
             it('should not miss a write of another instance that happens while the state is created', async () => {
+                type CounterState = {
+                    [key: string]: number;
+                };
                 const databaseName = randomToken(10);
-                const state1 = await getState(databaseName);
-                await state1.set('a', () => 1);
+                const database1 = await getDatabase(databaseName);
+                const state1 = await database1.addState<CounterState>();
+                await state1.set('before', () => 1);
 
                 /**
-                 * Storage that delays the results of the read operations
-                 * and calls onEmptyRead() once when a read found no documents.
+                 * In each round the first instance writes at a different
+                 * point in time while the state of the second instance is created.
                  */
-                let onEmptyRead: undefined | (() => Promise<void>);
-                async function delayResult<R extends { documents: unknown[]; }>(result: R): Promise<R> {
-                    if (result.documents.length === 0 && onEmptyRead) {
-                        const callback = onEmptyRead;
-                        onEmptyRead = undefined;
-                        await callback();
-                    }
-                    await wait(50);
-                    return result;
+                const rounds = config.storage.name.includes('random-delay') ? 5 : 50;
+                for (let round = 0; round < rounds; round++) {
+                    const database2 = await getDatabase(databaseName);
+                    const writeDuringCreation = (async () => {
+                        for (let i = 0; i < round; i++) {
+                            await Promise.resolve();
+                        }
+                        await state1.set('during' + round, () => round);
+                    })();
+                    const state2 = await database2.addState<CounterState>();
+                    await writeDuringCreation;
+
+                    await state1.set('after' + round, () => round);
+                    await waitUntil(() => state2.get('after' + round) === round);
+
+                    assert.deepStrictEqual(state2.get(), state1.get());
+                    await database2.close();
                 }
-                const baseStorage = config.storage.getStorage();
-                const slowStorage: RxStorage<any, any> = {
-                    name: baseStorage.name,
-                    rxdbVersion: baseStorage.rxdbVersion,
-                    async createStorageInstance(params) {
-                        const instance = await baseStorage.createStorageInstance(params);
-                        if (!params.collectionName.startsWith('rx-state')) {
-                            return instance;
-                        }
-                        const query = instance.query.bind(instance);
-                        instance.query = async (preparedQuery) => delayResult(await query(preparedQuery));
-                        if (instance.getChangedDocumentsSince) {
-                            const getChanged = instance.getChangedDocumentsSince.bind(instance);
-                            instance.getChangedDocumentsSince = async (limit, checkpoint) => delayResult(
-                                await getChanged(limit, checkpoint)
-                            );
-                        }
-                        return instance;
-                    }
-                };
-                const database2 = await createRxDatabase<{}, {}, {}, ReactivityType>({
-                    name: databaseName,
-                    storage: useSchemaValidator ? wrappedValidateAjvStorage({ storage: slowStorage }) : slowStorage,
-                    reactivity,
-                    ignoreDuplicate: true
-                });
-                let wroteDuringStartup = false;
-                onEmptyRead = async () => {
-                    await state1.set('foo', () => 'bar');
-                    wroteDuringStartup = true;
-                };
-                const state2: RxState<TestState, ReactivityType> = await database2.addState<TestState>();
-                assert.strictEqual(wroteDuringStartup, true);
-                await wait(isFastMode() ? 100 : 300);
-
-                assert.strictEqual(state1.foo, 'bar');
-                assert.strictEqual(state2.a, 1);
-                assert.strictEqual(state2.foo, 'bar');
-
-                state1.collection.database.close();
-                database2.close();
+                await database1.close();
             });
             runXTimes(1, () => {
                 it('should have a deterministic output when 2 instances write at the same time', async () => {
