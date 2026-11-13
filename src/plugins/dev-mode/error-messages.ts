@@ -198,7 +198,7 @@ export const ERROR_MESSAGES = {
         message: 'The limit of a query must not be negative.',
         cause: 'A query was created with a negative limit. There is no result set with a negative amount of documents, so RxDB does not guess what was meant.',
         fix: 'Use a limit of 0 or more. A limit of 0 returns no documents. Leave out the limit to get all documents. When the limit is calculated, check its boundaries before the query is created, for example with Math.max(0, limit).',
-        docs: 'https://rxdb.info/rx-query.html?console=errors&code=QU23#limit'
+        docs: 'https://rxdb.info/rx-query.html?console=errors&code=QU23#faq'
     },
 
     // mquery.js

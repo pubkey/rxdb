@@ -220,7 +220,7 @@ const results = await myDatabase.todos.find()
 // > [RxDocument[todo2], RxDocument[todo4]]
 ```
 
-`limit(0)` makes the query return zero documents and a negative value like `limit(-1)` throws [`QU23`](./errors.md#QU23), same as the [`limit` of a JSON query](./rx-query.md#limit).
+`limit(0)` makes the query return zero documents and a negative value like `limit(-1)` throws [`QU23`](./errors.md#QU23).
 
 The chained methods also work with `findOne()`:
 
