@@ -2527,6 +2527,8 @@ myDatabase.todos.find({
 
 The `selector` of a query is written in the [Mango query syntax](./rx-query-examples.md). That page shows every supported operator with examples, including nested fields, array fields, regex queries, sorting, and pagination.
 
+RxDB stores and sends queries as JSON, so a query can only contain values that are valid JSON. `NaN`, `Infinity`, `-Infinity`, and `RegExp` objects are not allowed in the `selector`, `sort`, `skip`, `limit`, or `index` of a query. In [dev-mode](./dev-mode.md) such a query throws [`QU22`](./errors.md#QU22), or [`QU16`](./errors.md#QU16) for a `RegExp` object.
+
 ```ts
 const results = await myDatabase.todos.find({
   selector: {
