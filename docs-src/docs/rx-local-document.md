@@ -158,5 +158,5 @@ const localDoc = await myCollection.upsertLocal<MyLocalDocumentType>(
 );
 
 // typescript will know that foo is a string
-const foo: string = localDoc.toJSON().foo;
+const foo: string = localDoc.toJSON().data.foo;
 ```

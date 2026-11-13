@@ -18,7 +18,7 @@ Statics are defined collection-wide and can be called on the collection.
 To add static functions, pass a `statics` object when you create your collection. The object contains functions, mapped to their function names.
 
 ```javascript
-const heroes = await myDatabase.addCollections({
+const { heroes } = await myDatabase.addCollections({
   heroes: {
     schema: mySchema,
     statics: {
@@ -36,7 +36,7 @@ console.log(heroes.scream());
 You can also use the `this` keyword which resolves to the collection:
 
 ```javascript
-const heroes = await myDatabase.addCollections({
+const { heroes } = await myDatabase.addCollections({
   heroes: {
     schema: mySchema,
     statics: {
@@ -57,7 +57,7 @@ Instance methods are defined collection-wide. They can be called on the [RxDocum
 ### Add instance methods to a collection
 
 ```javascript
-const heroes = await myDatabase.addCollections({
+const { heroes } = await myDatabase.addCollections({
   heroes: {
     schema: mySchema,
     methods: {
@@ -75,7 +75,7 @@ console.log(doc.scream());
 Here you can also use the `this` keyword:
 
 ```javascript
-const heroes = await myDatabase.addCollections({
+const { heroes } = await myDatabase.addCollections({
   heroes: {
     schema: mySchema,
     methods: {
@@ -98,7 +98,9 @@ console.log(doc.whoAmI());
 Attachment methods are defined collection-wide. They can be called on the [RxAttachments](./rx-attachment.md) of the RxDocuments of the collection.
 
 ```javascript
-const heroes = await myDatabase.addCollections({
+import { createBlob } from 'rxdb';
+
+const { heroes } = await myDatabase.addCollections({
   heroes: {
     schema: mySchema,
     attachments: {
@@ -111,7 +113,7 @@ const heroes = await myDatabase.addCollections({
 const doc = await heroes.findOne().exec();
 const attachment = await doc.putAttachment({
     id: 'cat.txt',
-    data: 'meow I am a kitty',
+    data: createBlob('meow I am a kitty', 'text/plain'),
     type: 'text/plain'
 });
 console.log(attachment.scream());

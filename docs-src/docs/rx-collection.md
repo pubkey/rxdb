@@ -297,7 +297,7 @@ const ids = [
   'todo2',
   /* ... */
 ];
-const docsMap = await myDatabase.todos.findByIds(ids);
+const docsMap = await myDatabase.todos.findByIds(ids).exec();
 
 console.dir(docsMap); // Map(2)
 ```

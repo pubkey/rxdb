@@ -177,10 +177,6 @@ The hash of the attachments data as `string`.
 The digest is NOT calculated by RxDB, instead it is calculated by the RxStorage. The only guarantee is that the digest will change when the attachments data changes.
 :::
 
-### rev
-
-The revision-number of the attachment as `number`.
-
 ### remove()
 
 Removes the attachment. Returns a Promise that resolves when done.
