@@ -390,7 +390,12 @@ export function checkSchema(jsonSchema: RxJsonSchema<any>) {
                     jsonSchema,
                     fieldName
                 );
-
+                if (!schemaPart || typeof schemaPart !== 'object') {
+                    throw newRxError('SC21', {
+                        index: fieldName,
+                        schema: jsonSchema
+                    });
+                }
 
                 const type: JsonSchemaTypes = schemaPart.type as any;
                 switch (type) {

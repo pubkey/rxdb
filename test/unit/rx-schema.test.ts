@@ -236,6 +236,42 @@ describe('rx-schema.test.ts', () => {
                 it('break when index does not exist in schema properties', () => {
                     assert.throws(() => checkSchema(schemas.notExistingIndex));
                 });
+                it('throw SC21 when an index field does not exist in the schema properties', async () => {
+                    await AsyncTestUtil.assertThrows(
+                        () => checkSchema(schemas.notExistingIndex),
+                        'RxError',
+                        'SC21'
+                    );
+                    const indexesOnUnknownFields: (string | string[])[] = [
+                        'nope',
+                        'firstName.foo',
+                        ['firstName', 'nope']
+                    ];
+                    for (const index of indexesOnUnknownFields) {
+                        await AsyncTestUtil.assertThrows(
+                            () => checkSchema({
+                                title: 'schema',
+                                version: 0,
+                                primaryKey: 'id',
+                                type: 'object',
+                                properties: {
+                                    id: {
+                                        type: 'string',
+                                        maxLength: 100
+                                    },
+                                    firstName: {
+                                        type: 'string',
+                                        maxLength: 100
+                                    }
+                                },
+                                indexes: [index],
+                                required: ['firstName']
+                            }),
+                            'RxError',
+                            'SC21'
+                        );
+                    }
+                });
                 it('break when index is string but too long', async () => {
                     await AsyncTestUtil.assertThrows(
                         () => checkSchema({
