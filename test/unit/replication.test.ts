@@ -50,7 +50,8 @@ import {
     prepareQuery,
     addRxPlugin,
     getLastCheckpointDoc,
-    defaultConflictHandler
+    defaultConflictHandler,
+    deepEqual
 } from '../../plugins/core/index.mjs';
 
 import {
@@ -67,6 +68,7 @@ import type {
     RxReplicationWriteToMasterRow,
     RxStorage,
     RxStorageDefaultCheckpoint,
+    RxStorageInstanceCreationParams,
     WithDeleted
 } from '../../plugins/core/index.mjs';
 import { firstValueFrom, map, Subject, timer } from 'rxjs';
@@ -754,6 +756,484 @@ describe('replication.test.ts', () => {
 
             localCollection.database.close();
             remoteCollection.database.close();
+        });
+        it('should not lose a pulled master state when the push of the same document is still running', async () => {
+            type ServerCheckpoint = { seq: number; };
+            let resolvePullRequested: () => void = () => { };
+            const pullRequested = new Promise<void>(res => resolvePullRequested = res);
+            let resolvePullResponse: () => void = () => { };
+            const pullResponse = new Promise<void>(res => resolvePullResponse = res);
+            let resolvePushResponse: () => void = () => { };
+            const pushResponse = new Promise<void>(res => resolvePushResponse = res);
+            let interleave = false;
+
+            /**
+             * The downstream calls isEqual() when it compares the assumed master state
+             * with the local state of a pulled document. At that point the response
+             * of the running push is released, so that it arrives after the pull.
+             */
+            const conflictHandler: RxConflictHandler<TestDocType> = {
+                isEqual(a, b, context) {
+                    if (interleave && context === 'downstream-check-if-equal-0') {
+                        resolvePushResponse();
+                    }
+                    return defaultConflictHandler.isEqual(a, b, context);
+                },
+                resolve: defaultConflictHandler.resolve
+            };
+            const collection = await humansCollection.createHumanWithTimestamp(
+                0,
+                randomToken(10),
+                false,
+                config.storage.getStorage(),
+                conflictHandler
+            );
+
+            // in-test server that detects conflicts by comparing the assumedMasterState
+            const serverDocs = new Map<string, { doc: WithDeleted<TestDocType>; seq: number; }>();
+            let serverSeq = 0;
+            function serverPush(rows: RxReplicationWriteToMasterRow<TestDocType>[]): WithDeleted<TestDocType>[] {
+                const conflicts: WithDeleted<TestDocType>[] = [];
+                rows.forEach(row => {
+                    const current = serverDocs.get(row.newDocumentState.id);
+                    if (
+                        current &&
+                        (!row.assumedMasterState || !deepEqual(current.doc, row.assumedMasterState))
+                    ) {
+                        conflicts.push(current.doc);
+                    } else {
+                        serverDocs.set(row.newDocumentState.id, { doc: row.newDocumentState, seq: ++serverSeq });
+                    }
+                });
+                return conflicts;
+            }
+            function serverPull(
+                checkpoint: ServerCheckpoint | undefined,
+                batchSize: number
+            ): ReplicationPullHandlerResult<TestDocType, ServerCheckpoint> {
+                const minSeq = checkpoint ? checkpoint.seq : 0;
+                const rows = Array.from(serverDocs.values())
+                    .filter(row => row.seq > minSeq)
+                    .sort((a, b) => a.seq - b.seq)
+                    .slice(0, batchSize);
+                return {
+                    documents: rows.map(row => row.doc),
+                    checkpoint: rows.length > 0 ? { seq: rows[rows.length - 1].seq } : { seq: minSeq }
+                };
+            }
+            const stateOnServer: WithDeleted<TestDocType> = {
+                id: 'foobar',
+                name: 'server',
+                age: 1,
+                updatedAt: 1001,
+                _deleted: false
+            };
+            serverPush([{ newDocumentState: stateOnServer }]);
+
+            const replicationState = replicateRxCollection<TestDocType, ServerCheckpoint>({
+                collection,
+                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                live: true,
+                pull: {
+                    handler: async (checkpoint, batchSize) => {
+                        if (interleave) {
+                            resolvePullRequested();
+                            await pullResponse;
+                        }
+                        return serverPull(checkpoint, batchSize);
+                    }
+                },
+                push: {
+                    handler: async (rows) => {
+                        const conflicts = serverPush(rows);
+                        if (interleave) {
+                            // another client updates the same document after the push was accepted
+                            const pushedState = rows[0].newDocumentState;
+                            const otherClientConflicts = serverPush([{
+                                assumedMasterState: pushedState,
+                                newDocumentState: Object.assign({}, pushedState, { name: 'other-client' })
+                            }]);
+                            assert.deepStrictEqual(otherClientConflicts, []);
+                            resolvePullResponse();
+                            await pushResponse;
+                        }
+                        return conflicts;
+                    }
+                }
+            });
+            ensureReplicationHasNoErrors(replicationState);
+            await replicationState.awaitInSync();
+            const doc = await collection.findOne('foobar').exec(true);
+            assert.strictEqual(doc.name, 'server');
+
+            /**
+             * A pull request is running. In the meantime the document is updated locally
+             * and pushed. The server accepts the push, another client updates the
+             * document on the server, the pull returns that newer state and only
+             * then the response of the push arrives.
+             */
+            interleave = true;
+            replicationState.reSync();
+            await pullRequested;
+            await doc.incrementalPatch({ name: 'client' });
+            await replicationState.awaitInSync();
+            interleave = false;
+
+            replicationState.reSync();
+            await replicationState.awaitInSync();
+
+            assert.strictEqual(ensureNotFalsy(serverDocs.get('foobar')).doc.name, 'other-client');
+            const docAfter = await collection.findOne('foobar').exec(true);
+            assert.strictEqual(docAfter.name, 'other-client');
+
+            await collection.database.close();
+        });
+        it('should still pull the other documents while the push of a pulled document keeps failing', async () => {
+            const collection = await humansCollection.createHumanWithTimestamp(0, randomToken(10), false);
+            await collection.insert({
+                id: 'foobar',
+                name: 'client',
+                age: 1,
+                updatedAt: 1001
+            });
+            const docsOnServer: WithDeleted<TestDocType>[] = [
+                {
+                    id: 'foobar',
+                    name: 'server',
+                    age: 1,
+                    updatedAt: 1001,
+                    _deleted: false
+                },
+                {
+                    id: 'other',
+                    name: 'server',
+                    age: 1,
+                    updatedAt: 1001,
+                    _deleted: false
+                }
+            ];
+            let serverRejectsWrites = true;
+            const replicationState = replicateRxCollection<TestDocType, { done: boolean; }>({
+                collection,
+                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                live: true,
+                retryTime: 50,
+                pull: {
+                    handler: (checkpoint) => {
+                        return Promise.resolve({
+                            documents: checkpoint ? [] : docsOnServer,
+                            checkpoint: { done: true }
+                        });
+                    }
+                },
+                push: {
+                    handler: (rows) => {
+                        if (serverRejectsWrites) {
+                            return Promise.reject(new Error('server rejects writes'));
+                        }
+                        // the server already has another state of all pushed documents
+                        return Promise.resolve(
+                            rows.map(row => ensureNotFalsy(docsOnServer.find(d => d.id === row.newDocumentState.id)))
+                        );
+                    }
+                }
+            });
+            const errors: (RxError | RxTypeError)[] = [];
+            const errorSub = replicationState.error$.subscribe(err => errors.push(err));
+
+            await waitUntil(async () => {
+                const otherDoc = await collection.findOne('other').exec();
+                return !!otherDoc;
+            }, 3000);
+            await waitUntil(() => errors.length > 0, 3000);
+            errors.forEach(err => assert.strictEqual(err.code, 'RC_PUSH'));
+            const docWhileFailing = await collection.findOne('foobar').exec(true);
+            assert.strictEqual(docWhileFailing.name, 'client');
+
+            // when the server accepts requests again, the conflict is resolved
+            serverRejectsWrites = false;
+            await replicationState.awaitInSync();
+            const docAfter = await collection.findOne('foobar').exec(true);
+            assert.strictEqual(docAfter.name, 'server');
+
+            errorSub.unsubscribe();
+            await collection.database.close();
+        });
+        it('should still pull the other documents while the push handler keeps rejecting with an RxError', async () => {
+            const collection = await humansCollection.createHumanWithTimestamp(0, randomToken(10), false);
+            await collection.insert({
+                id: 'foobar',
+                name: 'client',
+                age: 1,
+                updatedAt: 1001
+            });
+            // the push handler writes each push into this collection
+            const pushLogCollection = await humansCollection.createHumanWithTimestamp(0, randomToken(10), false);
+            const pushLogEntry: TestDocType = {
+                id: 'push-log',
+                name: 'log',
+                age: 1,
+                updatedAt: 1001
+            };
+            await pushLogCollection.insert(pushLogEntry);
+            const docsOnServer: WithDeleted<TestDocType>[] = [
+                {
+                    id: 'foobar',
+                    name: 'server',
+                    age: 1,
+                    updatedAt: 1001,
+                    _deleted: false
+                },
+                {
+                    id: 'other',
+                    name: 'server',
+                    age: 1,
+                    updatedAt: 1001,
+                    _deleted: false
+                }
+            ];
+            let pushLogFails = true;
+            const replicationState = replicateRxCollection<TestDocType, { done: boolean; }>({
+                collection,
+                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                live: true,
+                retryTime: 50,
+                pull: {
+                    handler: (checkpoint) => {
+                        return Promise.resolve({
+                            documents: checkpoint ? [] : docsOnServer,
+                            checkpoint: { done: true }
+                        });
+                    }
+                },
+                push: {
+                    handler: async (rows) => {
+                        if (pushLogFails) {
+                            // rejects with the RxError CONFLICT because the document already exists
+                            await pushLogCollection.insert(pushLogEntry);
+                        }
+                        // the server already has another state of all pushed documents
+                        return rows.map(row => ensureNotFalsy(docsOnServer.find(d => d.id === row.newDocumentState.id)));
+                    }
+                }
+            });
+            const errors: (RxError | RxTypeError)[] = [];
+            const errorSub = replicationState.error$.subscribe(err => errors.push(err));
+
+            await waitUntil(() => errors.length > 0, 3000);
+            await waitUntil(async () => {
+                const otherDoc = await collection.findOne('other').exec();
+                return !!otherDoc;
+            }, 3000);
+            errors.forEach(err => assert.strictEqual(err.code, 'CONFLICT'));
+            const docWhileFailing = await collection.findOne('foobar').exec(true);
+            assert.strictEqual(docWhileFailing.name, 'client');
+
+            // when the push handler works again, the conflict is resolved
+            pushLogFails = false;
+            await replicationState.awaitInSync();
+            const docAfter = await collection.findOne('foobar').exec(true);
+            assert.strictEqual(docAfter.name, 'server');
+
+            errorSub.unsubscribe();
+            await collection.database.close();
+            await pushLogCollection.database.close();
+        });
+        it('should not lose a pulled master state when an error of the pull direction is emitted while the push of the same document is running', async () => {
+            type ServerCheckpoint = { seq: number; };
+            let resolvePullRequested: () => void = () => { };
+            const pullRequested = new Promise<void>(res => resolvePullRequested = res);
+            let resolvePushRunning: () => void = () => { };
+            const pushRunning = new Promise<void>(res => resolvePushRunning = res);
+            let resolvePushResponse: () => void = () => { };
+            const pushResponse = new Promise<void>(res => resolvePushResponse = res);
+            let resolveMetaWriteRejected: () => void = () => { };
+            const metaWriteRejected = new Promise<void>(res => resolveMetaWriteRejected = res);
+            let interleave = false;
+            let rejectNextMetaWrite = false;
+            let rejectedMetaWrites = 0;
+
+            /**
+             * Rejects one write of the meta data of a pulled document,
+             * which emits an error that is not related to the push.
+             */
+            const innerStorage = config.storage.getStorage();
+            const storage: RxStorage<any, any> = {
+                name: innerStorage.name,
+                rxdbVersion: innerStorage.rxdbVersion,
+                async createStorageInstance<RxDocType>(
+                    params: RxStorageInstanceCreationParams<RxDocType, any>
+                ) {
+                    const instance = await innerStorage.createStorageInstance<RxDocType>(params);
+                    if (params.collectionName.startsWith('rx-replication-meta-')) {
+                        const bulkWrite = instance.bulkWrite.bind(instance);
+                        instance.bulkWrite = (rows, context) => {
+                            if (
+                                rejectNextMetaWrite &&
+                                context === 'replication-down-write-meta'
+                            ) {
+                                rejectNextMetaWrite = false;
+                                rejectedMetaWrites = rejectedMetaWrites + 1;
+                                resolveMetaWriteRejected();
+                                return Promise.reject(new Error('injected meta write failure'));
+                            }
+                            return bulkWrite(rows, context);
+                        };
+                    }
+                    return instance;
+                }
+            };
+
+            /**
+             * The downstream calls isEqual() when it compares the assumed master state
+             * with the local state of the pulled document. At that point the response
+             * of the running push is released, so that it arrives after the pull.
+             */
+            const conflictHandler: RxConflictHandler<TestDocType> = {
+                isEqual(a, b, context) {
+                    if (
+                        interleave &&
+                        context === 'downstream-check-if-equal-0' &&
+                        a.id === 'foobar'
+                    ) {
+                        resolvePushResponse();
+                    }
+                    return defaultConflictHandler.isEqual(a, b, context);
+                },
+                resolve: defaultConflictHandler.resolve
+            };
+            const collection = await humansCollection.createHumanWithTimestamp(
+                0,
+                randomToken(10),
+                false,
+                storage,
+                conflictHandler
+            );
+
+            // in-test server that detects conflicts by comparing the assumedMasterState
+            const serverDocs = new Map<string, { doc: WithDeleted<TestDocType>; seq: number; }>();
+            let serverSeq = 0;
+            function serverPush(rows: RxReplicationWriteToMasterRow<TestDocType>[]): WithDeleted<TestDocType>[] {
+                const conflicts: WithDeleted<TestDocType>[] = [];
+                rows.forEach(row => {
+                    const current = serverDocs.get(row.newDocumentState.id);
+                    if (
+                        current &&
+                        (!row.assumedMasterState || !deepEqual(current.doc, row.assumedMasterState))
+                    ) {
+                        conflicts.push(current.doc);
+                    } else {
+                        serverDocs.set(row.newDocumentState.id, { doc: row.newDocumentState, seq: ++serverSeq });
+                    }
+                });
+                return conflicts;
+            }
+            function serverPull(
+                checkpoint: ServerCheckpoint | undefined,
+                batchSize: number
+            ): ReplicationPullHandlerResult<TestDocType, ServerCheckpoint> {
+                const minSeq = checkpoint ? checkpoint.seq : 0;
+                const rows = Array.from(serverDocs.values())
+                    .filter(row => row.seq > minSeq)
+                    .sort((a, b) => a.seq - b.seq)
+                    .slice(0, batchSize);
+                return {
+                    documents: rows.map(row => row.doc),
+                    checkpoint: rows.length > 0 ? { seq: rows[rows.length - 1].seq } : { seq: minSeq }
+                };
+            }
+            serverPush([{
+                newDocumentState: {
+                    id: 'foobar',
+                    name: 'server',
+                    age: 1,
+                    updatedAt: 1001,
+                    _deleted: false
+                }
+            }]);
+
+            const replicationState = replicateRxCollection<TestDocType, ServerCheckpoint>({
+                collection,
+                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                live: true,
+                retryTime: 50,
+                pull: {
+                    batchSize: 1,
+                    handler: async (checkpoint, batchSize) => {
+                        const result = serverPull(checkpoint, batchSize);
+                        if (interleave && result.documents.some(d => d.id === 'other')) {
+                            // the first batch is returned while the push is running
+                            resolvePullRequested();
+                            await pushRunning;
+                        }
+                        if (interleave && result.documents.some(d => d.id === 'foobar')) {
+                            // the second batch is returned after the write of the first batch has failed
+                            await metaWriteRejected;
+                        }
+                        return result;
+                    }
+                },
+                push: {
+                    handler: async (rows) => {
+                        const conflicts = serverPush(rows);
+                        if (interleave) {
+                            // another client updates the same document after the push was accepted
+                            const pushedState = rows[0].newDocumentState;
+                            const otherClientConflicts = serverPush([{
+                                assumedMasterState: pushedState,
+                                newDocumentState: Object.assign({}, pushedState, { name: 'other-client' })
+                            }]);
+                            assert.deepStrictEqual(otherClientConflicts, []);
+                            resolvePushRunning();
+                            await pushResponse;
+                        }
+                        return conflicts;
+                    }
+                }
+            });
+            const errors: (RxError | RxTypeError)[] = [];
+            const errorSub = replicationState.error$.subscribe(err => errors.push(err));
+            await replicationState.awaitInSync();
+            const doc = await collection.findOne('foobar').exec(true);
+            assert.strictEqual(doc.name, 'server');
+
+            /**
+             * A pull request is running. In the meantime the document is updated locally
+             * and pushed, the server accepts the push and another client updates
+             * the document on the server. While the response of the push is still on its way,
+             * the pull first returns another document, whose meta data cannot be written,
+             * and then the newer state of the pushed document.
+             * Only then the response of the push arrives.
+             */
+            serverPush([{
+                newDocumentState: {
+                    id: 'other',
+                    name: 'server',
+                    age: 1,
+                    updatedAt: 1001,
+                    _deleted: false
+                }
+            }]);
+            interleave = true;
+            rejectNextMetaWrite = true;
+            replicationState.reSync();
+            await pullRequested;
+            await doc.incrementalPatch({ name: 'client' });
+            await replicationState.awaitInSync();
+            interleave = false;
+
+            replicationState.reSync();
+            await replicationState.awaitInSync();
+
+            assert.strictEqual(rejectedMetaWrites, 1);
+            assert.strictEqual(errors.length, 1);
+            assert.ok(await collection.findOne('other').exec());
+            assert.strictEqual(ensureNotFalsy(serverDocs.get('foobar')).doc.name, 'other-client');
+            const docAfter = await collection.findOne('foobar').exec(true);
+            assert.strictEqual(docAfter.name, 'other-client');
+
+            errorSub.unsubscribe();
+            await collection.database.close();
         });
     });
     describe('other', () => {

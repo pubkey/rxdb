@@ -1,7 +1,8 @@
 import {
     firstValueFrom,
     filter,
-    mergeMap
+    mergeMap,
+    Subscription
 } from 'rxjs';
 import { newRxError } from '../rx-error.ts';
 import { getWrittenDocumentsFromBulkWriteResponse, stackCheckpoints } from '../rx-storage-helper.ts';
@@ -132,6 +133,38 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
             });
     }
     addNewTask('RESYNC');
+
+    /**
+     * The upstream and the push handler emit to events.pushFailed.
+     * The error subject is not used for that because it also contains
+     * the errors of the pull direction, which say nothing about the running push.
+     *
+     * True when a push failed while the upstream was active
+     * and the upstream did not finish a push or get idle since then.
+     * A failed push might be retried forever by the replication handler,
+     * so the downstream must not wait for the upstream while this is set.
+     */
+    let upstreamHasFailed = false;
+    if (!state.events.canceled.getValue()) {
+        const upstreamFailedSubs = [
+            state.events.pushFailed.subscribe(() => {
+                if (state.events.active.up.getValue()) {
+                    upstreamHasFailed = true;
+                }
+            }),
+            state.events.active.up.subscribe(active => {
+                if (!active) {
+                    upstreamHasFailed = false;
+                }
+            }),
+            state.events.processed.up.subscribe(() => upstreamHasFailed = false)
+        ];
+        firstValueFrom(
+            state.events.canceled.pipe(
+                filter((canceled: boolean) => !!canceled)
+            )
+        ).then(() => upstreamFailedSubs.forEach(sub => sub.unsubscribe()));
+    }
 
     /**
      * If a write on the master happens, we have to trigger the downstream.
@@ -303,13 +336,13 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
                 currentForkStateList.forEach(doc => currentForkState.set((doc as any)[primaryPath], doc));
                 return Promise.all(
                     docIds.map(async (docId) => {
-                        const forkStateFullDoc: RxDocumentData<RxDocType> | undefined = currentForkState.get(docId);
-                        const forkStateDocData: WithDeletedAndAttachments<RxDocType> | undefined = forkStateFullDoc
+                        let forkStateFullDoc: RxDocumentData<RxDocType> | undefined = currentForkState.get(docId);
+                        let forkStateDocData: WithDeletedAndAttachments<RxDocType> | undefined = forkStateFullDoc
                             ? writeDocToDocState(forkStateFullDoc, state.hasAttachments, false)
                             : undefined
                             ;
                         const masterState = downDocsById[docId];
-                        const assumedMaster = assumedMasterState[docId];
+                        let assumedMaster = assumedMasterState[docId];
 
                         if (
                             assumedMaster &&
@@ -375,8 +408,66 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
                              * synced from the master but the process exited before
                              * the metadata was written.
                              * @link https://github.com/pubkey/rxdb/pull/7804
+                             *
+                             * The upstream might be pushing that local write right now.
+                             * When the master accepts it without a conflict,
+                             * the pulled master state is newer than the pushed state
+                             * and no later pull would return it again.
+                             * So we wait for the upstream and only drop the master state
+                             * if the fork state is still not equal to the assumed master state
+                             * or if the pull did not return a new master state.
+                             *
+                             * A push that fails is retried inside of masterWrite(),
+                             * so the upstream queue does not resolve while the master rejects the push.
+                             * In that case the master state is dropped without waiting,
+                             * so that the other pulled documents are still written.
                              */
-                            return PROMISE_RESOLVE_VOID;
+                            if (!upstreamHasFailed) {
+                                const pushErrorSub = new Subscription();
+                                try {
+                                    await Promise.race([
+                                        state.streamQueue.up,
+                                        new Promise<void>(res => pushErrorSub.add(state.events.pushFailed.subscribe(() => res())))
+                                    ]);
+                                } finally {
+                                    pushErrorSub.unsubscribe();
+                                }
+                            }
+                            if (upstreamHasFailed || state.events.canceled.getValue()) {
+                                return PROMISE_RESOLVE_VOID;
+                            }
+                            const [forkStateAfterUp, assumedMasterAfterUp] = await Promise.all([
+                                state.input.forkInstance.findDocumentsById([docId], true),
+                                getAssumedMasterState(state, [docId])
+                            ]);
+                            const newAssumedMaster = assumedMasterAfterUp[docId];
+                            const newForkStateDocData = forkStateAfterUp[0]
+                                ? writeDocToDocState(forkStateAfterUp[0], state.hasAttachments, false)
+                                : undefined;
+                            if (
+                                !newForkStateDocData ||
+                                !newAssumedMaster ||
+                                newAssumedMaster.metaDocument.isResolvedConflict !== (assumedMaster ? assumedMaster.metaDocument.isResolvedConflict : undefined) ||
+                                !state.input.conflictHandler.isEqual(
+                                    newAssumedMaster.docData,
+                                    newForkStateDocData,
+                                    'downstream-check-if-equal-0'
+                                ) ||
+                                (
+                                    assumedMaster &&
+                                    state.input.conflictHandler.isEqual(
+                                        assumedMaster.docData,
+                                        masterState,
+                                        'downstream-check-if-equal-0'
+                                    )
+                                )
+                            ) {
+                                return PROMISE_RESOLVE_VOID;
+                            }
+                            forkStateFullDoc = forkStateAfterUp[0];
+                            forkStateDocData = newForkStateDocData;
+                            assumedMaster = newAssumedMaster;
+                            isAssumedMasterEqualToForkState = true;
                         }
 
                         const areStatesExactlyEqual = !forkStateDocData

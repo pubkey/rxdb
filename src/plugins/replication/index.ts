@@ -423,7 +423,13 @@ export class RxReplicationState<RxDocType, CheckpointType> {
                                 errors: toArray(err).map(er => errorToPlainJson(er)),
                                 direction: 'push'
                             });
-                            this.subjects.error.next(emitError);
+                            /**
+                             * Emitted via the internal replication state (which forwards to error$),
+                             * so that the replication protocol knows that the push has failed.
+                             */
+                            const internalEvents = ensureNotFalsy(this.internalReplicationState).events;
+                            internalEvents.pushFailed.next();
+                            internalEvents.error.next(emitError);
                             await awaitRetry(this.collection, ensureNotFalsy(this.retryTime));
                         }
                     }

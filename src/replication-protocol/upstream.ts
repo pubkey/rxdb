@@ -586,6 +586,7 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
 
             return hadConflictWrites;
         }).catch(unhandledError => {
+            state.events.pushFailed.next();
             state.events.error.next(unhandledError);
             return false;
         });

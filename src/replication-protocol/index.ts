@@ -93,7 +93,8 @@ export function replicateRxStorageInstance<RxDocType>(
                 up: new Subject()
             },
             resolvedConflicts: new Subject(),
-            error: new Subject()
+            error: new Subject(),
+            pushFailed: new Subject()
         },
         stats: {
             down: {

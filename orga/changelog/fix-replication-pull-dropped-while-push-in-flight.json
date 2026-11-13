@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX replication dropped a pulled master state forever when the push of the same document was still running and the master accepted that push, so the client reported in-sync with an outdated document",
+    "links": [],
+    "priority": 5
+}

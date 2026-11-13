@@ -217,6 +217,11 @@ export type RxStorageInstanceReplicationState<RxDocType> = {
          * get emitted here.
          */
         error: Subject<RxError | RxTypeError>;
+        /**
+         * Emits each time a push to the master has failed,
+         * no matter which error was emitted to the error subject for it.
+         */
+        pushFailed: Subject<void>;
     };
 
 
