@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX re-inserting a previously deleted document with an inline attachment stored the attachment data compressed or encrypted twice when the attachments-compression or the encryption storage wrapper is used, so that reading the attachment returned the compressed bytes or the ciphertext",
+    "links": [],
+    "priority": 5
+}
