@@ -2741,6 +2741,123 @@ describe('rx-storage-query-correctness.test.ts', () => {
     });
 
     /**
+     * The character U+FFFF is used as the "no bound" marker
+     * of the query planner. Documents and queries that contain
+     * that character must give the same results as without an index.
+     */
+    testCorrectQueries<{ id: string; f: string; g: string; }>({
+        testTitle: 'string values that contain the INDEX_MAX character',
+        data: [
+            { id: 'a', f: '\uffff', g: 'x' },
+            { id: 'b', f: '\uffffa', g: '\uffff' },
+            { id: 'c', f: 'x', g: '\uffffa' },
+            { id: 'd', f: 'x\uffff', g: 'a' }
+        ],
+        schema: {
+            version: 0,
+            primaryKey: 'id',
+            type: 'object',
+            properties: {
+                id: { type: 'string', maxLength: 10 },
+                f: { type: 'string', maxLength: 5 },
+                g: { type: 'string', maxLength: 5 }
+            },
+            required: ['id', 'f', 'g'],
+            indexes: ['f', ['g', 'f']]
+        },
+        queries: [
+            {
+                info: '$eq with the INDEX_MAX character',
+                query: {
+                    selector: { f: '\uffff' },
+                    sort: [{ id: 'asc' }]
+                },
+                expectedResultDocIds: ['a']
+            },
+            {
+                info: '$gte with the INDEX_MAX character',
+                query: {
+                    selector: { f: { $gte: '\uffff' } },
+                    sort: [{ id: 'asc' }]
+                },
+                expectedResultDocIds: ['a', 'b']
+            },
+            {
+                info: '$gt with the INDEX_MAX character',
+                query: {
+                    selector: { f: { $gt: '\uffff' } },
+                    sort: [{ id: 'asc' }]
+                },
+                expectedResultDocIds: ['b']
+            },
+            {
+                info: '$lte with the INDEX_MAX character',
+                query: {
+                    selector: { f: { $lte: '\uffff' } },
+                    sort: [{ id: 'asc' }]
+                },
+                expectedResultDocIds: ['a', 'c', 'd']
+            },
+            {
+                info: '$lt with the INDEX_MAX character',
+                query: {
+                    selector: { f: { $lt: '\uffff' } },
+                    sort: [{ id: 'asc' }]
+                },
+                expectedResultDocIds: ['c', 'd']
+            },
+            {
+                info: '$in with the INDEX_MAX character',
+                query: {
+                    selector: { f: { $in: ['\uffff'] } },
+                    sort: [{ id: 'asc' }]
+                },
+                expectedResultDocIds: ['a']
+            },
+            {
+                info: 'range without upper bound',
+                query: {
+                    selector: { f: { $gt: 'x' } },
+                    sort: [{ id: 'asc' }]
+                },
+                expectedResultDocIds: ['a', 'b', 'd']
+            },
+            {
+                info: 'sort by the field with the INDEX_MAX character',
+                query: {
+                    selector: {},
+                    sort: [{ f: 'asc' }]
+                },
+                expectedResultDocIds: ['c', 'd', 'a', 'b']
+            },
+            {
+                info: 'compound index with $eq on the first and $gt on the second field',
+                query: {
+                    selector: { g: '\uffff', f: { $gt: 'x' } },
+                    sort: [{ id: 'asc' }]
+                },
+                expectedResultDocIds: ['b']
+            },
+            {
+                info: 'compound index with $gt on the first field',
+                query: {
+                    selector: { g: { $gt: '\uffff' }, f: { $lte: 'x' } },
+                    sort: [{ id: 'asc' }]
+                },
+                expectedResultDocIds: ['c']
+            },
+            {
+                info: 'compound index with $lt on the first field',
+                query: {
+                    selector: { g: { $lt: '\uffff' }, f: { $gte: 'x' } },
+                    sort: [{ id: 'asc' }]
+                },
+                expectedResultDocIds: ['a', 'd']
+            }
+        ]
+    });
+
+    /**
      * Missing fields and fields with the value null
      * must be handled the same way on all storages.
      * @link https://github.com/pubkey/rxdb/issues/9371
