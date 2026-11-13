@@ -1,0 +1,5 @@
+{
+    "text": "FIX `RxState.set()` calls made in the same tick are persisted as one batch. A throwing modifier rejected the first call of that batch instead of its own call and dropped the writes of all other calls. Now only the call with the throwing modifier rejects and the other writes are stored.",
+    "links": [],
+    "priority": 5
+}

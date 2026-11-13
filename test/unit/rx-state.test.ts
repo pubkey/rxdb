@@ -162,6 +162,37 @@ addRxPlugin(RxDBJsonDumpPlugin);
 
                 state.collection.database.remove();
             });
+            it('a throwing modifier must only reject its own set() call when multiple writes are batched', async () => {
+                const databaseName = randomToken(10);
+                let state = await getState(databaseName);
+                const thrownError = new Error('bad modifier');
+
+                const results = await Promise.allSettled([
+                    state.set('a', () => 1),
+                    state.set('foo', () => {
+                        throw thrownError;
+                    }),
+                    state.set('b', () => 2)
+                ]);
+                assert.deepStrictEqual(
+                    results.map(result => result.status),
+                    ['fulfilled', 'rejected', 'fulfilled']
+                );
+                const rejected = results[1];
+                assert.ok(rejected.status === 'rejected' && rejected.reason === thrownError);
+
+                assert.strictEqual(state.get('a'), 1);
+                assert.strictEqual(state.get('b'), 2);
+                assert.strictEqual(state.get('foo'), undefined);
+                await state.collection.database.close();
+
+                state = await getState(databaseName);
+                assert.strictEqual(state.get('a'), 1);
+                assert.strictEqual(state.get('b'), 2);
+                assert.strictEqual(state.get('foo'), undefined);
+
+                await state.collection.database.remove();
+            });
         });
         describe('.get()', () => {
             it('should get root state', async () => {
