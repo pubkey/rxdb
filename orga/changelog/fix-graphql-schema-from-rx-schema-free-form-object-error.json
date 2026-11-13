@@ -1,6 +1,6 @@
 {
     "$schema": "./schema.json",
-    "text": "FIX `graphQLSchemaFromRxSchema()` threw a plain error of the `get-graphql-from-jsonschema` dependency (or a `TypeError`) when the schema contains an object without `properties`, an array without `items`, a field without `type`, or a `type` list like `['string', 'null']`. A `type` list with `null` now creates a nullable GraphQL field. All other fields without a GraphQL type now throw the RxError `GQL5` that names the collection and the field path.",
+    "text": "FIX `graphQLSchemaFromRxSchema()` threw an error of the `get-graphql-from-jsonschema` dependency when the schema contains a `type` list like `['string', 'null']`. A `type` list with `null` now creates a nullable GraphQL field. ADD a dev-mode check that throws the RxError `GQL5` with the collection and the field path when a field has no GraphQL type (an object without `properties`, an array without `items`, a field without `type`).",
     "links": [],
     "priority": 4
 }
