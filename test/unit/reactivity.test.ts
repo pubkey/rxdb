@@ -11,14 +11,15 @@ import {
 } from '../../plugins/test-utils/index.mjs';
 
 import { waitUntil } from 'async-test-util';
-import { Observable } from 'rxjs';
+import { Observable, firstValueFrom } from 'rxjs';
 import {
     createRxDatabase,
     randomToken,
     addRxPlugin,
     RxCollection,
     RxReactivityFactory,
-    isRxDatabase
+    isRxDatabase,
+    isRxDocument
 } from '../../plugins/core/index.mjs';
 
 import { RxDBQueryBuilderPlugin } from '../../plugins/query-builder/index.mjs';
@@ -75,7 +76,7 @@ describe('reactivity.test.ts', () => {
             const doc = await query.exec(true);
 
             const signal = doc.$$;
-            assert.deepStrictEqual(signal.init, doc._data);
+            assert.ok(signal.init === doc);
             collection.database.close();
         });
         it('RxDocument.get$$()', async () => {
@@ -110,7 +111,7 @@ describe('reactivity.test.ts', () => {
             const collection = await getReactivityCollection();
             const localDoc = await collection.database.insertLocal('foo', { bar: 1 });
             const signal: ReactivityType = localDoc.$$ as any;
-            assert.deepStrictEqual(signal.init.data, { bar: 1 });
+            assert.ok(signal.init === localDoc);
             collection.database.close();
         });
         it('RxLocalDocument.get$$()', async () => {
@@ -210,6 +211,33 @@ describe('reactivity.test.ts', () => {
         });
     });
     describe('issues', () => {
+        it('RxDocument.$$ and RxLocalDocument.$$ must pass a document instance as initial value', async () => {
+            const collection = await getReactivityCollection();
+            const doc = await collection.findOne().exec(true);
+
+            const signal = doc.$$;
+            assert.ok(isRxDocument(signal.init));
+            assert.strictEqual(signal.init.age, doc.age);
+            assert.deepStrictEqual(signal.init.toJSON(), doc.toJSON());
+
+            /**
+             * The initial value must have the same shape
+             * as the values that are emitted afterwards.
+             */
+            const emitted = await firstValueFrom(signal.obs);
+            assert.ok(isRxDocument(emitted));
+            assert.ok(signal.init === emitted);
+
+            const localDoc = await collection.database.insertLocal<{ bar: number; }>('foo', { bar: 1 });
+            const localSignal: ReactivityType = localDoc.$$ as any;
+            assert.strictEqual(typeof localSignal.init.get, 'function');
+            assert.strictEqual(localSignal.init.get('bar'), 1);
+            assert.deepStrictEqual(localSignal.init.toJSON().data, { bar: 1 });
+            const localEmitted = await firstValueFrom(localSignal.obs);
+            assert.ok(localSignal.init === localEmitted);
+
+            collection.database.close();
+        });
         it('RxLocalDocument.get$() should not emit spurious values on nested object paths', async () => {
             const collection = await getReactivityCollection();
             const db = collection.database;

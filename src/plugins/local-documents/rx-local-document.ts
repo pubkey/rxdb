@@ -120,7 +120,7 @@ const RxLocalDocumentPrototype: any = {
         const reactivity = db.getReactivityFactory();
         return reactivity.fromObservable(
             _this.$,
-            _this.getLatest()._data,
+            _this.getLatest(),
             db
         );
     },
