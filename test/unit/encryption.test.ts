@@ -33,7 +33,8 @@ import {
 import {
     encryptString,
     decryptString,
-    wrappedKeyEncryptionCryptoJsStorage
+    wrappedKeyEncryptionCryptoJsStorage,
+    MINIMUM_PASSWORD_LENGTH
 } from '../../plugins/encryption-crypto-js/index.mjs';
 import { replicateRxCollection } from '../../plugins/replication/index.mjs';
 import { getRxStorageMemory } from '../../plugins/storage-memory/index.mjs';
@@ -981,6 +982,35 @@ describe('encryption.test.ts', () => {
                 !serialized.includes(shortPassword),
                 'password should not appear anywhere in the serialized error object'
             );
+        });
+        it('should report the correct minimum password length when the password is too short', async () => {
+            let thrownError: any = null;
+            try {
+                await createRxDatabase({
+                    name: randomToken(10),
+                    storage: getEncryptedStorage(),
+                    password: 'short1'
+                });
+            } catch (err: any) {
+                thrownError = err;
+            }
+            assert.ok(thrownError);
+            assert.strictEqual(thrownError.code, 'EN2');
+            assert.strictEqual(thrownError.parameters.minPassLength, MINIMUM_PASSWORD_LENGTH);
+            assert.strictEqual(thrownError.parameters.passwordLength, 6);
+
+            /**
+             * A length that is named in the message text
+             * must not contradict the minPassLength parameter.
+             */
+            const textBeforeParameters: string = thrownError.message.split('Parameters:')[0];
+            const lengthsInText = textBeforeParameters.match(/min\.? (\d+)/g) || [];
+            lengthsInText.forEach(lengthText => {
+                assert.ok(
+                    lengthText.endsWith(' ' + MINIMUM_PASSWORD_LENGTH),
+                    'message names a wrong minimum length: ' + lengthText
+                );
+            });
         });
     });
 });

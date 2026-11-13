@@ -696,7 +696,7 @@ export const ERROR_MESSAGES = {
     EN2: {
         message: 'validatePassword: min-length of password not complied',
         cause: 'The password is too short.',
-        fix: 'Use a longer password (min 12 chars).',
+        fix: 'Use a longer password. The required minimum length is given in the minPassLength parameter of this error.',
         docs: 'https://rxdb.info/encryption.html?console=errors&code=EN2'
     },
     EN3: {
