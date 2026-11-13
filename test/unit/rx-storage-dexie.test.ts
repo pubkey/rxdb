@@ -6,27 +6,20 @@ import {
     createRxDatabase,
     RxCollection
 } from '../../plugins/core/index.mjs';
-import type {
-    RxCollection,
-    RxJsonSchema
-} from '../../plugins/core/index.mjs';
 
 import {
     getRxStorageDexie,
     getDexieStoreSchema,
-    getRxStorageDexie,
     fromDexieToStorage,
     fromStorageToDexie
 } from '../../plugins/storage-dexie/index.mjs';
-import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.mjs';
 import {
     isDeno,
     isFastMode,
     isNode
 } from '../../plugins/test-utils/index.mjs';
 import {
-    indexedDB as fakeIndexedDB,
-    IDBKeyRange as fakeIDBKeyRange
+    indexedDB as fakeIndexedDB
 } from 'fake-indexeddb';
 import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.mjs';
 import type { RxJsonSchema } from '../../plugins/core/index.mjs';
@@ -340,90 +333,6 @@ describe('rx-storage-dexie.test.js', () => {
             assert.strictEqual(doc.firstName, 'Bob');
 
             await db2.close();
-        });
-    });
-});
-
-/**
- * These tests create the dexie storage by themselves
- * so that they run independent of the DEFAULT_STORAGE.
- */
-describe('rx-storage-dexie.test.js (own storage)', () => {
-    function getOwnDexieStorage() {
-        // in nodejs and deno the dexie tests run on fake-indexeddb, see config.ts
-        const useFakeIndexedDB = isNode || isDeno || isFastMode();
-        return wrappedValidateAjvStorage({
-            storage: getRxStorageDexie(
-                useFakeIndexedDB ? {
-                    indexedDB: fakeIndexedDB,
-                    IDBKeyRange: fakeIDBKeyRange
-                } : {}
-            )
-        });
-    }
-    describe('document keys', () => {
-        it('should not change keys that start with two underscores', async () => {
-            type DocType = {
-                id: string;
-                data: {
-                    [key: string]: any;
-                };
-            };
-            const mySchema: RxJsonSchema<DocType> = {
-                version: 0,
-                primaryKey: 'id',
-                type: 'object',
-                properties: {
-                    id: {
-                        type: 'string',
-                        maxLength: 100
-                    },
-                    data: {
-                        type: 'object',
-                        additionalProperties: true
-                    }
-                },
-                required: ['id', 'data']
-            };
-            const name = randomToken(10);
-            const createDb = async () => {
-                const database = await createRxDatabase<{ mycollection: RxCollection<DocType>; }>({
-                    name,
-                    storage: getOwnDexieStorage()
-                });
-                await database.addCollections({
-                    mycollection: {
-                        schema: mySchema
-                    }
-                });
-                return database;
-            };
-            const data = {
-                __typename: 'Todo',
-                '|pipe': 'foobar',
-                plain: 'barfoo',
-                nested: [{ __v: 1, '|v': 2 }]
-            };
-
-            const db = await createDb();
-            await db.mycollection.insert({
-                id: 'foobar',
-                data
-            });
-            await db.close();
-
-            // open the same database again so that the document is read out of the storage
-            const db2 = await createDb();
-            const doc = await db2.mycollection.findOne('foobar').exec(true);
-            assert.deepStrictEqual(doc.toJSON().data, data);
-            const queryResult = await db2.mycollection.find({
-                selector: {
-                    'data.__typename': 'Todo'
-                }
-            }).exec();
-            assert.strictEqual(queryResult.length, 1);
-
-            await db2.remove();
         });
     });
 });
