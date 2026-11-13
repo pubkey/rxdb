@@ -299,6 +299,36 @@ describe('rx-database.test.ts', () => {
                 );
                 db.close();
             });
+            it('must keep rejecting duplicates after a previous duplicate creation has failed', async () => {
+                const name = randomToken(10);
+                const storage = config.storage.getStorage();
+                const db = await createRxDatabase({
+                    name,
+                    storage
+                });
+
+                let attempts = 0;
+                while (attempts < 3) {
+                    attempts++;
+                    await AsyncTestUtil.assertThrows(
+                        () => createRxDatabase({
+                            name,
+                            storage
+                        }),
+                        'RxError',
+                        'DB8'
+                    );
+                }
+                assert.strictEqual(db.closed, false);
+
+                await db.close();
+                const db2 = await createRxDatabase({
+                    name,
+                    storage
+                });
+                assert.ok(isRxDatabase(db2));
+                await db2.close();
+            });
         });
     });
     describe('.addCollections()', () => {

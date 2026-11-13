@@ -846,9 +846,17 @@ export function createRxDatabase<
     const databaseNameKeyUnclosedInstancesSet = DATABASE_UNCLOSED_INSTANCE_PROMISE_MAP.get(databaseNameKey) || new Set();
     const instancePromiseWithResolvers = createPromiseWithResolvers<RxDatabase<Collections, Internals, InstanceCreationOptions, Reactivity>>();
     const closeDuplicatesPromises = Array.from(databaseNameKeyUnclosedInstancesSet);
+    /**
+     * Only the creation call that has registered the name is allowed to release it.
+     * A call that was rejected before the registration must leave the name
+     * of the other still open instance untouched.
+     */
+    let hasRegisteredName = false;
     const onInstanceClosed = () => {
         databaseNameKeyUnclosedInstancesSet.delete(instancePromiseWithResolvers.promise as any as Promise<RxDatabase>);
-        USED_DATABASE_NAMES.delete(databaseNameKey);
+        if (hasRegisteredName) {
+            USED_DATABASE_NAMES.delete(databaseNameKey);
+        }
     };
 
     databaseNameKeyUnclosedInstancesSet.add(instancePromiseWithResolvers.promise as any as Promise<RxDatabase>);
@@ -877,6 +885,7 @@ export function createRxDatabase<
         }
 
         USED_DATABASE_NAMES.add(databaseNameKey);
+        hasRegisteredName = true;
 
         const databaseInstanceToken = randomToken(10);
         const storageInstance = await createRxDatabaseStorageInstance<
