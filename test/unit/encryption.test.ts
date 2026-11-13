@@ -14,6 +14,7 @@ import {
 } from '../../plugins/test-utils/index.mjs';
 
 import {
+    clone,
     createRxDatabase,
     RxJsonSchema,
     randomToken,
@@ -28,7 +29,7 @@ import {
     getFromMapOrThrow,
     RxStorage,
     RxStorageInstance,
-    RxStorageInstanceCreationParams,
+    RxDocumentData,
     WrappedRxStorageInstance
 } from '../../plugins/core/index.mjs';
 
@@ -39,7 +40,10 @@ import {
 } from '../../plugins/encryption-crypto-js/index.mjs';
 import { replicateRxCollection } from '../../plugins/replication/index.mjs';
 import { getRxStorageMemory } from '../../plugins/storage-memory/index.mjs';
-import { wrappedKeyCompressionStorage } from '../../plugins/key-compression/index.mjs';
+import {
+    wrappedKeyCompressionStorage,
+    getCompressionStateByRxJsonSchema
+} from '../../plugins/key-compression/index.mjs';
 import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.mjs';
 
 
@@ -860,24 +864,45 @@ describe('encryption.test.ts', () => {
                 });
             }
             /**
-             * Reads the document from the storage instance
-             * that is below the key-compression and the encryption,
+             * Opens a second plain storage instance on the storage of the test config
+             * that has no key-compression and no encryption,
              * so that the data is returned the way it is stored.
              */
+            function getPlainStorageInstance(
+                databaseName: string,
+                collectionSchema: RxJsonSchema<RxDocumentData<TodoDocType>>
+            ): Promise<RxStorageInstance<any, any, any>> {
+                const schema = clone(getCompressionStateByRxJsonSchema(collectionSchema).compressedSchema);
+                schema.keyCompression = false;
+                delete schema.encrypted;
+                return config.storage.getStorage().createStorageInstance<any>({
+                    databaseInstanceToken: randomToken(10),
+                    databaseName,
+                    collectionName: 'todos',
+                    schema,
+                    options: {},
+                    multiInstance: true,
+                    devMode: false
+                });
+            }
             async function storedDocumentContains(
                 collection: RxCollection<TodoDocType>,
                 search: string
             ): Promise<boolean> {
-                let instance: RxStorageInstance<any, any, any> = collection.storageInstance;
-                while ((instance as WrappedRxStorageInstance<any, any, any>).originalStorageInstance) {
-                    instance = (instance as WrappedRxStorageInstance<any, any, any>).originalStorageInstance;
-                }
+                const instance = await getPlainStorageInstance(
+                    collection.database.name,
+                    collection.schema.jsonSchema
+                );
                 const docs = await instance.findDocumentsById(['todo2'], false);
+                await instance.close();
                 assert.strictEqual(docs.length, 1);
                 return JSON.stringify(docs[0]).includes(search);
             }
             it('should not store the encrypted fields in plain text', async () => {
-                if (config.storage.hasEncryption) {
+                if (
+                    config.storage.hasEncryption ||
+                    !config.storage.hasPersistence
+                ) {
                     return;
                 }
                 const db = await createRxDatabase<{ todos: RxCollection<TodoDocType>; }>({
@@ -910,7 +935,10 @@ describe('encryption.test.ts', () => {
                 await db.remove();
             });
             it('should not store a top-level encrypted field in plain text', async () => {
-                if (config.storage.hasEncryption) {
+                if (
+                    config.storage.hasEncryption ||
+                    !config.storage.hasPersistence
+                ) {
                     return;
                 }
                 const db = await createRxDatabase<{ todos: RxCollection<TodoDocType>; }>({
@@ -943,48 +971,42 @@ describe('encryption.test.ts', () => {
                 ) {
                     return;
                 }
-                /**
-                 * Removes the encrypted fields from the schema
-                 * so that the encryption storage below it stores plain text.
-                 */
-                function withoutEncryptedFields<Internals, InstanceCreationOptions>(
-                    innerStorage: RxStorage<Internals, InstanceCreationOptions>
-                ): RxStorage<Internals, InstanceCreationOptions> {
-                    return Object.assign({}, innerStorage, {
-                        createStorageInstance<RxDocType>(
-                            params: RxStorageInstanceCreationParams<RxDocType, InstanceCreationOptions>
-                        ) {
-                            if (!params.schema.encrypted || params.schema.encrypted.length === 0) {
-                                return innerStorage.createStorageInstance(params);
-                            }
-                            const schemaWithoutEncrypted = Object.assign({}, params.schema);
-                            delete schemaWithoutEncrypted.encrypted;
-                            return innerStorage.createStorageInstance(
-                                Object.assign({}, params, { schema: schemaWithoutEncrypted })
-                            );
-                        }
-                    });
-                }
                 const name = randomToken(10);
                 const password = await getPassword();
                 const schema = Object.assign({}, todoSchema, {
                     encrypted: ['note']
                 });
-                const plainDb = await createRxDatabase<{ todos: RxCollection<TodoDocType>; }>({
+                const firstDb = await createRxDatabase<{ todos: RxCollection<TodoDocType>; }>({
                     name,
-                    storage: getKeyCompressionStorage(
-                        withoutEncryptedFields(getEncryptedStorage())
-                    ),
+                    storage: getKeyCompressionStorage(),
                     password
                 });
-                await plainDb.addCollections({ todos: { schema } });
-                await plainDb.todos.insert({
+                await firstDb.addCollections({ todos: { schema } });
+                await firstDb.todos.insert({
                     id: 'todo2',
                     name: 'Buy groceries',
                     note: 'Milk, eggs, bread'
                 });
-                assert.strictEqual(await storedDocumentContains(plainDb.todos, 'Milk, eggs, bread'), true);
-                await plainDb.close();
+                const collectionSchema = firstDb.todos.schema.jsonSchema;
+                await firstDb.close();
+
+                /**
+                 * Store the note in plain text through the plain storage instance.
+                 * The note is the only field that is not the primary key,
+                 * the name or a meta field.
+                 */
+                const plainInstance = await getPlainStorageInstance(name, collectionSchema);
+                const storedDocs = await plainInstance.findDocumentsById(['todo2'], false);
+                const storedDoc = storedDocs[0];
+                const noteKey = ensureNotFalsy(
+                    Object.keys(storedDoc).find(key => !key.startsWith('_') && key !== 'id' && storedDoc[key] !== 'Buy groceries')
+                );
+                const writeResult = await plainInstance.bulkWrite([{
+                    previous: storedDoc,
+                    document: Object.assign({}, storedDoc, { [noteKey]: 'Milk, eggs, bread' })
+                }], 'encryption-test');
+                assert.deepStrictEqual(writeResult.error, []);
+                await plainInstance.close();
 
                 const db = await createRxDatabase<{ todos: RxCollection<TodoDocType>; }>({
                     name,
@@ -992,6 +1014,7 @@ describe('encryption.test.ts', () => {
                     password
                 });
                 await db.addCollections({ todos: { schema } });
+                assert.strictEqual(await storedDocumentContains(db.todos, 'Milk, eggs, bread'), true);
                 const doc = await db.todos.findOne('todo2').exec(true);
                 assert.strictEqual(doc.note, 'Milk, eggs, bread');
 
