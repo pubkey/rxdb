@@ -93,7 +93,7 @@ To export only some of the collections, pass their names as the first argument.
 const json = await myDatabase.exportJSON(['heroes', 'villains']);
 ```
 
-Collections whose name starts with an underscore are internal and are always left out of the database export.
+Collections whose name starts with an underscore are internal and are always left out of the database export. Same goes for the internal collection of an [RxState](./rx-state.md). To export the state operations, call `exportJSON()` on `myState.collection`.
 
 ## Import into a database
 
@@ -101,7 +101,7 @@ Collections whose name starts with an underscore are internal and are always lef
 await myDatabase.importJSON(json);
 ```
 
-The collections must be created before the import, because the dump does not carry the collection settings like the [schema](./rx-schema.md), the [migration strategies](./migration-schema.md) or the conflict handler. When the dump contains a collection that does not exist in the database, RxDB throws the error [`JD1`](./errors.md#JD1) and nothing is written.
+The collections must be created before the import, because the dump does not carry the collection settings like the [schema](./rx-schema.md), the [migration strategies](./migration-schema.md) or the conflict handler. When the dump contains a collection that does not exist in the database, RxDB throws the error [`JD1`](./errors.md#JD1) and nothing is written. Only the `rx-state-*` collection of an [RxState](./rx-state.md) inside of a dump from an older RxDB version is skipped when the state was not added to the database.
 
 ## Attachments
 

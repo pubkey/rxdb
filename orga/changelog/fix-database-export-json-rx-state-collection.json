@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `RxDatabase.exportJSON()` contained the internal `rx-state-*` collection of an RxState, so that `importJSON()` of the dump into a database without that state threw `JD1`. The collection of an RxState is no longer part of the database dump and `importJSON()` skips the `rx-state-*` entry of older dumps when the state was not added to the database.",
+    "links": [],
+    "priority": 5
+}
