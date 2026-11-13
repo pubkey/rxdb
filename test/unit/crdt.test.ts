@@ -22,7 +22,9 @@ import {
     rxStorageInstanceToReplicationHandler,
     RxReplicationWriteToMasterRow,
     defaultConflictHandler,
-    RxConflictHandler
+    RxConflictHandler,
+    prepareQuery,
+    normalizeMangoQuery
 } from '../../plugins/core/index.mjs';
 
 
@@ -34,7 +36,6 @@ import {
 } from '../../plugins/crdt/index.mjs';
 import { RxDBUpdatePlugin } from '../../plugins/update/index.mjs';
 import { wrappedKeyEncryptionCryptoJsStorage } from '../../plugins/encryption-crypto-js/index.mjs';
-import { getRxStorageLocalstorage, getLocalStorageMock } from '../../plugins/storage-localstorage/index.mjs';
 addRxPlugin(RxDBUpdatePlugin);
 addRxPlugin(RxDBcrdtPlugin);
 import config from './config.ts';
@@ -136,23 +137,10 @@ describe('crdt.test.ts', () => {
                     }
                 };
             }
-            const localStorageMock = getLocalStorageMock();
-            function getStoredValues(): string {
-                const values: string[] = [];
-                for (let i = 0; i < localStorageMock.length; i++) {
-                    const key = ensureNotFalsy(localStorageMock.key(i));
-                    values.push(key + ensureNotFalsy(localStorageMock.getItem(key)));
-                }
-                return values.join('\n');
-            }
             const db = await createRxDatabase({
                 name: randomToken(10),
-                storage: wrappedValidateAjvStorage({
-                    storage: wrappedKeyEncryptionCryptoJsStorage({
-                        storage: getRxStorageLocalstorage({
-                            localStorage: localStorageMock
-                        })
-                    })
+                storage: wrappedKeyEncryptionCryptoJsStorage({
+                    storage: config.storage.getStorage()
                 }),
                 password: 'mysecretpassword',
                 multiInstance: false
@@ -195,7 +183,33 @@ describe('crdt.test.ts', () => {
                 }
             });
 
-            const stored = getStoredValues();
+            /**
+             * Read the stored documents through a storage instance
+             * that has no encryption, with the schema
+             * that the encryption plugin passes to the storage.
+             */
+            const storedSchema = clone(collections.todos.schema.jsonSchema);
+            delete storedSchema.encrypted;
+            storedSchema.properties.note = { type: 'string' };
+            storedSchema.properties.crdts = { type: 'string' };
+            const plainInstance = await config.storage.getStorage().createStorageInstance<SecretTodo>({
+                databaseInstanceToken: randomToken(10),
+                databaseName: db.name,
+                collectionName: 'todos',
+                schema: storedSchema,
+                options: {},
+                multiInstance: false,
+                devMode: true
+            });
+            const storedResult = await plainInstance.query(
+                prepareQuery(
+                    storedSchema,
+                    normalizeMangoQuery(storedSchema, {})
+                )
+            );
+            await plainInstance.close();
+            assert.strictEqual(storedResult.documents.length, 2);
+            const stored = JSON.stringify(storedResult.documents);
             assert.ok(stored.includes('todo1'));
             assert.strictEqual(stored.includes('PLAINNOTE'), false);
 
