@@ -50,8 +50,8 @@ describe('hooks.test.js', () => {
                     const c = await humansCollection.create(0);
                     const human = schemaObjects.humanData();
                     let count = 0;
-                    c.preInsert((data, instance) => {
-                        assert.strictEqual(typeof instance, 'undefined');
+                    c.preInsert(function () {
+                        assert.strictEqual(typeof arguments[1], 'undefined');
                         count++;
                     }, false);
                     await c.insert(human);
@@ -62,13 +62,13 @@ describe('hooks.test.js', () => {
                     const c = await humansCollection.create(0);
                     const human = schemaObjects.humanData();
                     let count = 0;
-                    c.preInsert(function (doc, instance) {
-                        assert.strictEqual(typeof instance, 'undefined');
+                    c.preInsert(function () {
+                        assert.strictEqual(typeof arguments[1], 'undefined');
                         count++;
                     }, false);
                     let countp = 0;
-                    c.preInsert(function (doc, instance) {
-                        assert.strictEqual(typeof instance, 'undefined');
+                    c.preInsert(function () {
+                        assert.strictEqual(typeof arguments[1], 'undefined');
                         countp++;
                     }, true);
                     await c.insert(human);
@@ -80,8 +80,8 @@ describe('hooks.test.js', () => {
                     const c = await humansCollection.createPrimary(0);
                     const human = schemaObjects.simpleHumanData();
 
-                    c.preInsert(function (d, instance) {
-                        assert.strictEqual(typeof instance, 'undefined');
+                    c.preInsert(function (d) {
+                        assert.strictEqual(typeof arguments[1], 'undefined');
                         d.lastName = 'foobar';
                     }, false);
 
@@ -94,8 +94,8 @@ describe('hooks.test.js', () => {
                     const c = await humansCollection.createPrimary(0);
                     const human = schemaObjects.simpleHumanData();
 
-                    c.preInsert(async function (d, instance) {
-                        assert.strictEqual(typeof instance, 'undefined');
+                    c.preInsert(async function (d) {
+                        assert.strictEqual(typeof arguments[1], 'undefined');
                         await promiseWait(10);
                         d.lastName = 'foobar';
                     }, false);

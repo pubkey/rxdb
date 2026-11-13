@@ -1,0 +1,11 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX the TypeScript type of `preInsert` hooks declared the `RxCollection` as second parameter although the hooks are called with the document data only, so a typed hook that used it threw a `TypeError` on every insert. The type no longer declares a second parameter",
+    "links": [
+        {
+            "url": "https://github.com/pubkey/rxdb/pull/9582",
+            "linkText": "#9582"
+        }
+    ],
+    "priority": 4
+}

@@ -754,6 +754,27 @@ describe('other', () => {
                 return Promise.resolve();
             }, true);
         });
+        it('preInsert must only have the data as parameter', async () => {
+            const myDb: any = {};
+            const myCollections = await myDb.addCollections({
+                humans: {
+                    schema: {}
+                }
+            });
+            const myCollection: RxCollection<DefaultDocType, DefaultOrmMethods> = myCollections.humans;
+            let myNumber: number;
+            myCollection.preInsert((data) => {
+                myNumber = data.age;
+            }, false);
+            myCollection.preInsert(function (data) {
+                myNumber = data.age;
+            }, true);
+            // @ts-expect-error preInsert hooks are called with the data only
+            myCollection.preInsert((data, instance) => {
+                myNumber = data.age;
+                return instance;
+            }, false);
+        });
         describe('query', () => {
             it('should know the where-fields', async () => {
                 const myDb: any = {};
