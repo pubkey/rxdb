@@ -19,7 +19,6 @@ import {
     RxQuery,
     RxJsonSchema,
     RxError,
-    RxCollection,
     MangoQuery,
     MangoQueryNoLimit,
     promiseWait,
