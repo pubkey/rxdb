@@ -1,0 +1,11 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX the `RxQuery.$` observable now completes when its collection gets closed or removed, also by closing or removing the database. Before, the subscription stayed open forever and a query that was still running during the close could emit a raw storage error like `RxStorageInstanceDexie is closed` or the Dexie.js `DatabaseClosedError`",
+    "links": [
+        {
+            "url": "https://github.com/pubkey/rxdb/pull/9658",
+            "linkText": "#9658"
+        }
+    ],
+    "priority": 4
+}

@@ -57,6 +57,7 @@ import { fillPrimaryKey } from './rx-schema-helper.ts';
 import {
     Subscription,
     Observable,
+    ReplaySubject,
     Subject
 } from 'rxjs';
 
@@ -232,6 +233,13 @@ export class RxCollectionBase<
     */
     public onClose: (() => MaybePromise<any>)[] = [];
     public closed = false;
+
+    /**
+     * Emits once and completes when the collection gets closed.
+     * Replays that emit to late subscribers so that observables
+     * which are subscribed after the close can complete directly.
+     */
+    public readonly closed$ = new ReplaySubject<void>(1);
 
     /**
      * Set to true while a schema migration is running for this collection.
@@ -1114,6 +1122,8 @@ export class RxCollectionBase<
          * instead of sending requests to a closed storage.
          */
         this.closed = true;
+        this.closed$.next();
+        this.closed$.complete();
 
 
         Array.from(this.timeouts).forEach(timeout => clearTimeout(timeout));

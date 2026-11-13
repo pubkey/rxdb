@@ -11,7 +11,8 @@ import {
     map,
     startWith,
     distinctUntilChanged,
-    shareReplay
+    shareReplay,
+    takeUntil
 } from 'rxjs/operators';
 import {
     sortObject,
@@ -221,6 +222,14 @@ export class RxQueryBase<
                 this.refCount$.pipe(
                     filter(() => false)
                 )
+            ).pipe(
+                /**
+                 * Complete when the collection gets closed.
+                 * closed$ emits before the storage instance is closed,
+                 * so a query that still runs at that time
+                 * cannot emit its result or an error to the subscribers.
+                 */
+                takeUntil(this.collection.closed$)
             );
         }
         return this._$ as any;

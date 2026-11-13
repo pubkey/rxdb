@@ -15,6 +15,8 @@ import {
 import {
     isRxQuery,
     createRxDatabase,
+    RxCollection,
+    RxQuery,
     RxJsonSchema,
     RxError,
     RxCollection,
@@ -715,6 +717,105 @@ describe('rx-query.test.ts', () => {
             assert.strictEqual(allDocs.length, 10);
 
             db2.close();
+        });
+        describe('.$ when the collection gets closed', () => {
+            type ObserveState = {
+                emitted: number;
+                completed: number;
+                errors: any[];
+            };
+            function observeQueries(c: RxCollection<HumanDocumentType>) {
+                const queries: RxQuery<HumanDocumentType, any>[] = [
+                    c.find(),
+                    c.findOne(),
+                    c.count()
+                ];
+                const states: ObserveState[] = queries.map(query => {
+                    const state: ObserveState = {
+                        emitted: 0,
+                        completed: 0,
+                        errors: []
+                    };
+                    query.$.subscribe({
+                        next: () => state.emitted++,
+                        error: err => state.errors.push(err),
+                        complete: () => state.completed++
+                    });
+                    return state;
+                });
+                return { queries, states };
+            }
+            function assertCompletedWithoutError(states: ObserveState[]) {
+                states.forEach(state => {
+                    assert.deepStrictEqual(state.errors, []);
+                    assert.strictEqual(state.completed, 1);
+                });
+            }
+
+            const closeFunctions: {
+                [name: string]: (c: RxCollection<HumanDocumentType>) => Promise<any>;
+            } = {
+                'collection.close()': c => c.close(),
+                'database.close()': c => c.database.close(),
+                'collection.remove()': c => c.remove(),
+                'database.remove()': c => c.database.remove()
+            };
+            Object.entries(closeFunctions).forEach(([name, closeFunction]) => {
+                it('find().$, findOne().$ and count().$ must complete on ' + name, async () => {
+                    const c = await humansCollection.create(2);
+                    const { queries, states } = observeQueries(c);
+                    await waitUntil(() => states.every(state => state.emitted === 1));
+
+                    await closeFunction(c);
+                    assertCompletedWithoutError(states);
+
+                    // a subscription that is made after the close, completes directly.
+                    const lateStates: ObserveState[] = queries.map(query => {
+                        const state: ObserveState = {
+                            emitted: 0,
+                            completed: 0,
+                            errors: []
+                        };
+                        query.$.subscribe({
+                            next: () => state.emitted++,
+                            error: err => state.errors.push(err),
+                            complete: () => state.completed++
+                        });
+                        return state;
+                    });
+                    await promiseWait(50);
+                    assertCompletedWithoutError(lateStates);
+                    lateStates.forEach(state => assert.strictEqual(state.emitted, 0));
+
+                    // nothing is emitted after the close.
+                    states.forEach(state => assert.strictEqual(state.emitted, 1));
+
+                    await c.database.close();
+                });
+            });
+            it('closing directly after a write must complete the observables without an error', async () => {
+                const closeNames = ['collection.close()', 'database.close()'];
+                for (const name of closeNames) {
+                    const c = await humansCollection.create(2);
+                    const { states } = observeQueries(c);
+
+                    /**
+                     * The write is not awaited, so the queries
+                     * are still running when the close starts.
+                     */
+                    const writePromise = c.insert(schemaObjects.humanData()).catch(() => { });
+                    await closeFunctions[name](c);
+                    await writePromise;
+
+                    assertCompletedWithoutError(states);
+                    const emittedAtClose = states.map(state => state.emitted);
+                    await promiseWait(100);
+                    assertCompletedWithoutError(states);
+                    assert.deepStrictEqual(states.map(state => state.emitted), emittedAtClose);
+
+                    await c.database.close();
+                }
+            });
         });
         it('exec(true) should throw if missing', async () => {
             const c = await humansCollection.create(0);
