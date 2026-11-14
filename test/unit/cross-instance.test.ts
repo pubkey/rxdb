@@ -8,6 +8,8 @@
 import assert from 'assert';
 import AsyncTestUtil, { wait, waitUntil } from 'async-test-util';
 
+import { mergeMap, of } from 'rxjs';
+
 import config from './config.ts';
 import {
     isRxDatabase,
@@ -15,7 +17,9 @@ import {
     randomToken,
     promiseWait,
     RxDatabase,
+    RxCollection,
     RxDocument,
+    RxStorage,
     ensureNotFalsy,
 } from '../../plugins/core/index.mjs';
 
@@ -135,6 +139,80 @@ describe('cross-instance.test.js', () => {
         });
     });
 
+    describe('RxQuery', () => {
+        it('should not apply a write of another instance twice when the query result already contains it', async () => {
+            const name = randomToken(10);
+            const createCollection = async (storage: RxStorage<any, any>) => {
+                const db = await createRxDatabase<{ human: RxCollection<HumanDocumentType>; }>({
+                    name,
+                    storage,
+                    multiInstance: true,
+                    ignoreDuplicate: true,
+                    allowSlowCount: true
+                });
+                const collections = await db.addCollections({
+                    human: {
+                        schema: schemas.human
+                    }
+                });
+                return collections.human;
+            };
+            const heldEventsStorage = getStorageWithHeldEvents();
+            const c1 = await createCollection(config.storage.getStorage());
+            const c2 = await createCollection(heldEventsStorage.storage);
+            let c2Events = 0;
+            const eventSub = c2.$.subscribe(() => c2Events = c2Events + 1);
+            const docData = schemaObjects.humanData('doc-1', 1, 'first-1');
+
+            /**
+             * c2 runs new queries after the insert of c1 was stored
+             * and before the event of that insert arrives at c2.
+             */
+            heldEventsStorage.holdEvents = true;
+            const doc = await c1.insert(docData);
+            const countQuery = c2.count({ selector: { firstName: docData.firstName } });
+            const findQuery = c2.find({ selector: { firstName: docData.firstName } });
+            let lastCount = -1;
+            let lastIds: string[] = [];
+            const sub1 = countQuery.$.subscribe(count => lastCount = count);
+            const sub2 = findQuery.$.subscribe(docs => lastIds = docs.map(d => d.primary));
+            assert.strictEqual(await countQuery.exec(), 1);
+            assert.deepStrictEqual((await findQuery.exec()).map(d => d.primary), ['doc-1']);
+            await waitUntil(() => heldEventsStorage.heldEvents() > 0);
+            heldEventsStorage.holdEvents = false;
+            heldEventsStorage.releaseEvents();
+            await waitUntil(() => c2Events === 1);
+
+            assert.strictEqual(await countQuery.exec(), 1);
+            assert.deepStrictEqual((await findQuery.exec()).map(d => d.primary), ['doc-1']);
+            await wait(50);
+            assert.strictEqual(lastCount, 1);
+            assert.deepStrictEqual(lastIds, ['doc-1']);
+            sub1.unsubscribe();
+            sub2.unsubscribe();
+
+            // c2 runs a new query after the remove of c1 was stored and before its event arrives
+            heldEventsStorage.holdEvents = true;
+            await doc.remove();
+            const countQuery2 = c2.count({ selector: { age: docData.age } });
+            let lastCount2 = -1;
+            const sub3 = countQuery2.$.subscribe(count => lastCount2 = count);
+            assert.strictEqual(await countQuery2.exec(), 0);
+            await waitUntil(() => heldEventsStorage.heldEvents() > 0);
+            heldEventsStorage.holdEvents = false;
+            heldEventsStorage.releaseEvents();
+            await waitUntil(() => c2Events === 2);
+
+            assert.strictEqual(await countQuery2.exec(), 0);
+            await wait(50);
+            assert.strictEqual(lastCount2, 0);
+            sub3.unsubscribe();
+            eventSub.unsubscribe();
+
+            await c1.database.close();
+            await c2.database.close();
+        });
+    });
     describe('Document.$', () => {
         it('get event on doc2 when doc1 is changed', async () => {
             const name = randomToken(10);
@@ -337,3 +415,56 @@ describe('cross-instance.test.js', () => {
         });
     });
 });
+
+/**
+ * Wraps the storage of the test config so that the change events
+ * of its instances can be held back and arrive later,
+ * like the events of another browser tab can do.
+ */
+function getStorageWithHeldEvents() {
+    const storage = config.storage.getStorage();
+    const waiting: (() => void)[] = [];
+    const ret = {
+        /**
+         * While true, the arriving events are held back
+         * until releaseEvents() is called.
+         */
+        holdEvents: false,
+        heldEvents: () => waiting.length,
+        releaseEvents() {
+            waiting.splice(0).forEach(release => release());
+        },
+        storage: {
+            name: storage.name,
+            rxdbVersion: storage.rxdbVersion,
+            async createStorageInstance(params) {
+                const instance = await storage.createStorageInstance(params);
+                return {
+                    databaseName: instance.databaseName,
+                    internals: instance.internals,
+                    options: instance.options,
+                    schema: instance.schema,
+                    collectionName: instance.collectionName,
+                    bulkWrite: (a, b) => instance.bulkWrite(a, b),
+                    findDocumentsById: (a, b) => instance.findDocumentsById(a, b),
+                    query: (a) => instance.query(a),
+                    count: (a) => instance.count(a),
+                    getAttachmentData: (a, b, c) => instance.getAttachmentData(a, b, c),
+                    getChangedDocumentsSince: !instance.getChangedDocumentsSince ? undefined : (a, b) => ensureNotFalsy(instance.getChangedDocumentsSince).call(instance, a, b),
+                    changeStream: () => instance.changeStream().pipe(
+                        mergeMap(eventBulk => {
+                            if (!ret.holdEvents) {
+                                return of(eventBulk);
+                            }
+                            return new Promise<typeof eventBulk>(res => waiting.push(() => res(eventBulk)));
+                        })
+                    ),
+                    cleanup: (a) => instance.cleanup(a),
+                    close: () => instance.close(),
+                    remove: () => instance.remove()
+                };
+            }
+        } as RxStorage<any, any>
+    };
+    return ret;
+}

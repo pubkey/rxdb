@@ -23,7 +23,8 @@ import {
     RXJS_SHARE_REPLAY_DEFAULTS,
     ensureNotFalsy,
     areRxDocumentArraysEqual,
-    promiseWait
+    promiseWait,
+    now
 } from './plugins/utils/index.ts';
 import {
     newRxError,
@@ -113,6 +114,13 @@ export class RxQueryBase<
     // used in the query-cache to determine if the RxQuery can be cleaned up.
     // 0 means never executed. Updated to an incrementing counter on each _ensureEqual call.
     public _lastEnsureEqual = 0;
+
+    /**
+     * Time when the last execution over the database has finished.
+     * A write with a _meta.lwt that is not newer than this time
+     * can already be contained in the result of that execution.
+     */
+    public _lastExecEnd = 0;
 
     public uncached = false;
 
@@ -810,6 +818,14 @@ function __ensureEqual<RxDocType>(rxQuery: RxQueryBase<RxDocType, any>): Promise
         if (missedChangeEvents === null) {
             // changeEventBuffer is of bounds -> we must re-execute over the database
             mustReExec = true;
+        } else if (missedChangeEvents.some(cE => cE.documentData._meta.lwt <= rxQuery._lastExecEnd)) {
+            /**
+             * Events of other instances arrive asynchronously, so the last execution
+             * over the database can have read a write before its event arrived here.
+             * Applying such an event to the result would apply the write twice,
+             * so we have to re-execute over the database.
+             */
+            mustReExec = true;
         } else {
             rxQuery._latestChangeEvent = rxQuery.asRxQuery.collection._changeEventBuffer.getCounter();
             const runChangeEvents: RxStorageChangeEvent<RxDocType>[] = rxQuery.asRxQuery.collection
@@ -874,6 +890,7 @@ function __ensureEqual<RxDocType>(rxQuery: RxQueryBase<RxDocType, any>): Promise
                  * so that the next run executes over the database again.
                  */
                 rxQuery._latestChangeEvent = result.counter;
+                rxQuery._lastExecEnd = now();
 
                 // A count query needs a different has-changed check.
                 if (typeof newResultData === 'number') {
