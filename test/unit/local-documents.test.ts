@@ -687,6 +687,93 @@ describe('local-documents.test.ts', () => {
             db.close();
             db2.close();
         });
+        describe('reads that race with a write of another instance', () => {
+            /**
+             * The race depends on the timing of the storage,
+             * so each test runs it several times with different documents.
+             */
+            const runs = 20;
+            it('getLocal() must not keep an older state when the document is written during the read', async () => {
+                const name = randomToken(10);
+                const db = await createRxDatabase({
+                    name,
+                    storage: config.storage.getStorage(),
+                    localDocuments: true
+                });
+                const db2 = await createRxDatabase({
+                    name,
+                    storage: config.storage.getStorage(),
+                    ignoreDuplicate: true,
+                    localDocuments: true
+                });
+
+                for (let i = 0; i < runs; i++) {
+                    const id = 'foobar' + i;
+                    await db.insertLocal<TestDocType>(id, { foo: 'bar' });
+
+                    const eventArrived = firstValueFrom(
+                        db2.$.pipe(
+                            filter(event => event.isLocal && event.documentId === id && event.documentData.data.foo === 'bar2')
+                        )
+                    );
+                    await Promise.all([
+                        db2.getLocal<TestDocType>(id),
+                        db.upsertLocal<TestDocType>(id, { foo: 'bar2' })
+                    ]);
+                    await eventArrived;
+
+                    const docAfterWrite = ensureNotFalsy(await db2.getLocal<TestDocType>(id));
+                    assert.strictEqual(docAfterWrite.toJSON().data.foo, 'bar2');
+                }
+
+                await db.close();
+                await db2.close();
+            });
+            it('getLocal$() must not emit an older state after a newer one', async () => {
+                const name = randomToken(10);
+                const db = await createRxDatabase({
+                    name,
+                    storage: config.storage.getStorage(),
+                    localDocuments: true
+                });
+                const db2 = await createRxDatabase({
+                    name,
+                    storage: config.storage.getStorage(),
+                    ignoreDuplicate: true,
+                    localDocuments: true
+                });
+
+                for (let i = 0; i < runs; i++) {
+                    const id = 'foobar' + i;
+                    const emitted: number[] = [];
+                    const sub = db2.getLocal$<{ nr: number; }>(id).subscribe(doc => {
+                        emitted.push(doc ? doc.toJSON().data.nr : 0);
+                    });
+                    await waitUntil(() => emitted.length === 1);
+
+                    await db.insertLocal(id, { nr: 1 });
+                    await db.upsertLocal(id, { nr: 2 });
+                    await db.upsertLocal(id, { nr: 3 });
+
+                    /**
+                     * One emit for the initial state
+                     * and one for each of the three writes.
+                     */
+                    await waitUntil(() => emitted.length === 4);
+                    assert.deepStrictEqual(
+                        emitted,
+                        emitted.slice(0).sort((a, b) => a - b),
+                        'must not emit an older state after a newer one: ' + JSON.stringify(emitted)
+                    );
+                    assert.strictEqual(emitted[3], 3);
+
+                    sub.unsubscribe();
+                }
+
+                await db.close();
+                await db2.close();
+            });
+        });
         it('BUG insertLocal not send to other instance', async () => {
             const name = randomToken(10);
             const db = await createRxDatabase({
