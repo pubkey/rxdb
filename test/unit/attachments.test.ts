@@ -162,6 +162,40 @@ describe('attachments.test.ts', () => {
             assert.strictEqual(attachment.type, 'text/plain');
             c.database.close();
         });
+        it('should store and return an empty attachment', async () => {
+            const c = await humansCollection.createAttachments(1);
+            const doc = await c.findOne().exec(true);
+
+            const attachment = await doc.putAttachment({
+                id: 'empty.txt',
+                data: createBlob('', 'text/plain'),
+                type: 'text/plain'
+            });
+            assert.strictEqual(attachment.id, 'empty.txt');
+            assert.strictEqual(attachment.length, 0);
+            assert.strictEqual(await attachment.getStringData(), '');
+
+            const updated = await doc.getLatest().putAttachment({
+                id: 'empty.txt',
+                data: createBlob('meow', 'text/plain'),
+                type: 'text/plain'
+            });
+            assert.strictEqual(await updated.getStringData(), 'meow');
+            const emptyAgain = await doc.getLatest().putAttachment({
+                id: 'empty.txt',
+                data: createBlob('', 'text/plain'),
+                type: 'text/plain'
+            });
+            assert.strictEqual(emptyAgain.length, 0);
+
+            const found = ensureNotFalsy(doc.getLatest().getAttachment('empty.txt'));
+            assert.strictEqual(found.type, 'text/plain');
+            const blob = await found.getData();
+            assert.strictEqual(blob.size, 0);
+            assert.strictEqual(await found.getStringData(), '');
+
+            await c.database.remove();
+        });
         it('should insert two attachments', async () => {
             const c = await humansCollection.createAttachments(1);
             let doc = await c.findOne().exec(true);
