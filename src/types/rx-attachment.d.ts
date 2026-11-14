@@ -37,7 +37,6 @@ export declare class RxAttachment<RxDocumentType, OrmMethods = {}, Reactivity = 
     readonly type: string;
     readonly length: number;
     readonly digest: string;
-    readonly rev: string;
 
     remove(): Promise<void>;
     getData(): Promise<Blob>;
