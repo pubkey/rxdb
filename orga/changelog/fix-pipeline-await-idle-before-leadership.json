@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `RxPipeline.awaitIdle()` and reads on the destination collection resolved before the source documents that existed when the pipeline was created were processed, when the leader election had not finished yet or the pipeline ran on a non-leader instance",
+    "links": [],
+    "priority": 5
+}

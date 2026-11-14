@@ -153,6 +153,86 @@ describe('rx-pipeline.test.js', () => {
         });
     });
     describe('.awaitIdle()', () => {
+        it('should not resolve before the documents that existed at creation are processed', async () => {
+            if (!config.storage.hasMultiInstance) {
+                return;
+            }
+            const c1 = await humansCollection.createMultiInstance(randomToken(10), 3);
+            const c2 = await humansCollection.create(0);
+            const pipeline = await c1.addPipeline({
+                destination: c2,
+                handler: async (docs) => {
+                    for (const doc of docs) {
+                        await c2.insert(schemaObjects.humanData(doc.passportId));
+                    }
+                },
+                identifier: randomToken(10)
+            });
+            await pipeline.awaitIdle();
+            const destinationDocs = await c2.find().exec();
+            assert.strictEqual(destinationDocs.length, 3);
+
+            await c1.database.close();
+            await c2.database.close();
+        });
+        it('should block reads on the destination until the documents that existed at creation are processed', async () => {
+            if (!config.storage.hasMultiInstance) {
+                return;
+            }
+            const c1 = await humansCollection.createMultiInstance(randomToken(10), 3);
+            const c2 = await humansCollection.create(0);
+            await c1.addPipeline({
+                destination: c2,
+                handler: async (docs) => {
+                    for (const doc of docs) {
+                        await c2.insert(schemaObjects.humanData(doc.passportId));
+                    }
+                },
+                identifier: randomToken(10)
+            });
+            const destinationDocs = await c2.find().exec();
+            assert.strictEqual(destinationDocs.length, 3);
+
+            await c1.database.close();
+            await c2.database.close();
+        });
+        it('should resolve on a non-leader instance when the leader has processed all documents', async () => {
+            if (!config.storage.hasMultiInstance) {
+                return;
+            }
+            const identifier = randomToken(10);
+            const name = randomToken(10);
+            const c1 = await humansCollection.createMultiInstance(name, 5);
+            await c1.database.waitForLeadership();
+            const c2 = await humansCollection.createMultiInstance(name);
+            const destination1 = await humansCollection.createMultiInstance(name + 'dest');
+            const destination2 = await humansCollection.createMultiInstance(name + 'dest');
+            const p2 = await c2.addPipeline({
+                destination: destination2,
+                handler: () => { },
+                batchSize: 2,
+                identifier
+            });
+            await c1.addPipeline({
+                destination: destination1,
+                handler: async (docs) => {
+                    await promiseWait(20);
+                    for (const doc of docs) {
+                        await destination1.insert(schemaObjects.humanData(doc.passportId));
+                    }
+                },
+                batchSize: 2,
+                identifier
+            });
+            await p2.awaitIdle();
+            const destinationDocs = await destination2.find().exec();
+            assert.strictEqual(destinationDocs.length, 5);
+
+            await c1.database.close();
+            await c2.database.close();
+            await destination1.database.close();
+            await destination2.database.close();
+        });
         it('should have updated its internal timestamps', async () => {
             const c1 = await humansCollection.create(0);
             await c1.database.waitForLeadership();
