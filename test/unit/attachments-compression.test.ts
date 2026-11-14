@@ -26,6 +26,9 @@ import {
     decompressBlob,
     isCompressibleType
 } from '../../plugins/attachments-compression/index.mjs';
+import {
+    wrappedKeyEncryptionCryptoJsStorage
+} from '../../plugins/encryption-crypto-js/index.mjs';
 
 const modes: CompressionMode[] = ['deflate', 'gzip'];
 modes.forEach(mode => {
@@ -143,6 +146,164 @@ modes.forEach(mode => {
                 const dataString = await blobToString(data);
                 assert.strictEqual(dataString, dat);
                 c.database.close();
+            });
+        });
+        describe('wrapper order', () => {
+            type WrapperOrder = 'compression-around-encryption' | 'encryption-around-compression';
+            const wrapperOrders: WrapperOrder[] = [
+                'compression-around-encryption',
+                'encryption-around-compression'
+            ];
+            wrapperOrders.forEach(wrapperOrder => {
+                it('should store and read encrypted and compressed attachments (' + wrapperOrder + ')', async () => {
+                    const getWrappedStorage = () => wrapperOrder === 'compression-around-encryption' ?
+                        wrappedAttachmentsCompressionStorage({
+                            storage: wrappedKeyEncryptionCryptoJsStorage({
+                                storage: config.storage.getStorage()
+                            })
+                        }) :
+                        wrappedKeyEncryptionCryptoJsStorage({
+                            storage: wrappedAttachmentsCompressionStorage({
+                                storage: config.storage.getStorage()
+                            })
+                        });
+                    const databaseName = randomToken(10);
+                    const password = 'mypassword123';
+                    const schemaJson = clone(schemas.human);
+                    schemaJson.attachments = {
+                        encrypted: true,
+                        compression: mode
+                    };
+                    const openCollection = async () => {
+                        const database = await createRxDatabase<{ human: RxCollection<HumanDocumentType>; }>({
+                            name: databaseName,
+                            password,
+                            storage: getWrappedStorage(),
+                            multiInstance: false
+                        });
+                        const collections = await database.addCollections({
+                            human: {
+                                schema: schemaJson
+                            }
+                        });
+                        return collections.human;
+                    };
+                    let c = await openCollection();
+                    const insertedDoc = await c.insert(schemaObjects.humanData());
+
+                    // 'text/plain' is compressed, 'image/jpeg' is stored without compression
+                    const textData = 'meow I am a secret kitty ' + new Array(50).fill('with a knife').join(' ');
+                    const imageData = 'woof I am a secret doggo ' + randomToken(20);
+                    await insertedDoc.putAttachment({
+                        id: 'cat.txt',
+                        data: createBlob(textData, 'text/plain'),
+                        type: 'text/plain'
+                    });
+                    await insertedDoc.getLatest().putAttachment({
+                        id: 'dog.jpg',
+                        data: createBlob(imageData, 'image/jpeg'),
+                        type: 'image/jpeg'
+                    });
+
+                    let doc = await c.findOne().exec(true);
+                    assert.strictEqual(doc.allAttachments().length, 2);
+                    assert.strictEqual(
+                        await ensureNotFalsy(doc.getAttachment('cat.txt')).getStringData(),
+                        textData
+                    );
+                    assert.strictEqual(
+                        await ensureNotFalsy(doc.getAttachment('dog.jpg')).getStringData(),
+                        imageData
+                    );
+
+                    // overwrite one attachment while the other one stays untouched
+                    const updatedTextData = 'purr ' + textData;
+                    await doc.putAttachment({
+                        id: 'cat.txt',
+                        data: createBlob(updatedTextData, 'text/plain'),
+                        type: 'text/plain'
+                    });
+                    doc = await c.findOne().exec(true);
+                    assert.strictEqual(
+                        await ensureNotFalsy(doc.getAttachment('cat.txt')).getStringData(),
+                        updatedTextData
+                    );
+                    assert.strictEqual(
+                        await ensureNotFalsy(doc.getAttachment('dog.jpg')).getStringData(),
+                        imageData
+                    );
+
+                    if (config.storage.hasPersistence) {
+                        const documentId = doc.primary;
+                        /**
+                         * The schema of the stored collection is the schema of the RxCollection
+                         * without the encryption and compression settings that the two wrappers resolve.
+                         */
+                        const storedSchema = clone(c.schema.jsonSchema);
+                        delete storedSchema.encrypted;
+                        storedSchema.attachments = {
+                            encrypted: false
+                        };
+                        await c.database.close();
+
+                        /**
+                         * The plain text must not be in the stored data,
+                         * also not after the compression is reverted.
+                         */
+                        const storageInstance = await config.storage.getStorage().createStorageInstance<HumanDocumentType>({
+                            databaseInstanceToken: randomToken(10),
+                            databaseName,
+                            collectionName: 'human',
+                            schema: storedSchema,
+                            options: {},
+                            multiInstance: false,
+                            devMode: true
+                        });
+                        const storedDocs = await storageInstance.findDocumentsById([documentId], false);
+                        assert.strictEqual(storedDocs.length, 1);
+                        const storedAttachments = Object.entries(storedDocs[0]._attachments);
+                        assert.strictEqual(storedAttachments.length, 2);
+                        for (const [attachmentId, storedAttachment] of storedAttachments) {
+                            const storedBlob = await storageInstance.getAttachmentData(
+                                documentId,
+                                attachmentId,
+                                storedAttachment.digest
+                            );
+                            const storedStrings = [await blobToString(storedBlob)];
+                            try {
+                                storedStrings.push(await blobToString(await decompressBlob(mode, storedBlob)));
+                            } catch (err) { }
+                            storedStrings.forEach(storedString => {
+                                assert.ok(storedString.length > 0);
+                                assert.strictEqual(storedString.includes('secret'), false);
+                                assert.strictEqual(storedString.includes('knife'), false);
+                            });
+                        }
+                        await storageInstance.close();
+
+                        // the attachments can still be read after the database was opened again
+                        c = await openCollection();
+                        doc = await c.findOne().exec(true);
+                        assert.strictEqual(
+                            await ensureNotFalsy(doc.getAttachment('cat.txt')).getStringData(),
+                            updatedTextData
+                        );
+                        assert.strictEqual(
+                            await ensureNotFalsy(doc.getAttachment('dog.jpg')).getStringData(),
+                            imageData
+                        );
+                    }
+
+                    await ensureNotFalsy(doc.getAttachment('cat.txt')).remove();
+                    doc = await c.findOne().exec(true);
+                    assert.strictEqual(doc.getAttachment('cat.txt'), null);
+                    assert.strictEqual(
+                        await ensureNotFalsy(doc.getAttachment('dog.jpg')).getStringData(),
+                        imageData
+                    );
+
+                    await c.database.remove();
+                });
             });
         });
         describe('compare size', () => {

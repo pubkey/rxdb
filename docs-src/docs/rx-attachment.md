@@ -267,6 +267,16 @@ Therefore it can make sense to compress the attachments before storing them in t
 With the `attachments-compression` plugin you can compress the attachments data on write and decompress it on reads.
 This happens internally and will not change how you use the API. The compression is run with the [Compression Streams API](https://developer.mozilla.org/en-US/docs/Web/API/Compression_Streams_API) which is only supported on [newer browsers](https://caniuse.com/?search=compressionstream).
 
+When you also store the attachments [encrypted](./encryption.md#encrypted-attachments), both wrapping orders work and the attachments are stored encrypted in both of them. It is recommended to wrap the compression storage around the encryption storage, so that the data is compressed before it is encrypted. In the other order the compression runs on the encrypted data, which saves less disk space.
+
+```ts
+const storage = wrappedAttachmentsCompressionStorage({
+    storage: wrappedKeyEncryptionCryptoJsStorage({
+        storage: getRxStorageIndexedDB()
+    })
+});
+```
+
 ## MIME-type-aware compression
 
 The compression plugin is MIME-type-aware. It only compresses attachment types that benefit from compression (text, JSON, SVG, etc.) and passes through already-compressed formats (JPEG, PNG, MP4, etc.) as-is. This avoids wasting CPU cycles on files that won't shrink.
