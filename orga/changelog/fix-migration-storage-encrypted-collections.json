@@ -1,0 +1,5 @@
+{
+    "text": "FIX `migrateStorage()` failed with `EN3` for collections with `encrypted` fields because the old storage instance was created without the database password",
+    "links": [],
+    "priority": 5
+}
