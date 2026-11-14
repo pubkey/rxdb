@@ -1,7 +1,7 @@
 import type { RxCleanupPolicy, RxCollection } from '../../types/index.d.ts';
 import { PROMISE_RESOLVE_TRUE, getFromMapOrCreate } from '../../plugins/utils/index.ts';
 import { REPLICATION_STATE_BY_COLLECTION } from '../replication/index.ts';
-import { DEFAULT_CLEANUP_POLICY } from './cleanup-helper.ts';
+import { DEFAULT_CLEANUP_POLICY, awaitReplicationInSyncOrCanceled } from './cleanup-helper.ts';
 import { runAsyncPluginHooks } from '../../hooks.ts';
 import { filter, firstValueFrom } from 'rxjs';
 
@@ -79,7 +79,7 @@ export async function cleanupRxCollection(
             await Promise.all(
                 replicationStates.map(replicationState => {
                     if (!replicationState.isStopped()) {
-                        return replicationState.awaitInSync();
+                        return awaitReplicationInSyncOrCanceled(replicationState);
                     }
                 })
             );

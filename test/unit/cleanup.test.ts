@@ -153,6 +153,50 @@ describe('cleanup.test.js', () => {
             await replicationState.cancel();
             await db.remove();
         });
+        it('cleanup() must resolve when a replication is canceled before its first sync', async () => {
+            const db = await createRxDatabase({
+                name: randomToken(10),
+                storage: config.storage.getStorage()
+            });
+            const cols = await db.addCollections({
+                humans: {
+                    schema: schemas.human
+                }
+            });
+            const collection: RxCollection<HumanDocumentType> = cols.humans;
+
+            let pullCalled: () => void = () => { };
+            const pullCalledPromise = new Promise<void>(res => pullCalled = res);
+            const replicationState = replicateRxCollection<HumanDocumentType, any>({
+                collection,
+                replicationIdentifier: 'my-rep-canceled',
+                deletedField: '_deleted',
+                retryTime: 10,
+                waitForLeadership: false,
+                pull: {
+                    handler() {
+                        pullCalled();
+                        return Promise.reject(new Error('offline'));
+                    }
+                },
+                live: true
+            });
+            await pullCalledPromise;
+
+            const doc = await collection.insert(schemaObjects.humanData());
+            await doc.remove();
+
+            const cleanupPromise = collection.cleanup(0);
+            await replicationState.cancel();
+
+            const result = await Promise.race([
+                cleanupPromise,
+                wait(isFastMode() ? 2000 : 5000).then(() => 'timeout')
+            ]);
+            assert.strictEqual(result, true);
+
+            await db.remove();
+        });
         /**
          * While the metadata of a replication is append-only
          * we still have to run the cleanup on it because some storages
