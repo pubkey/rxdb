@@ -18,6 +18,18 @@ import {
 } from '../plugins/utils/index.ts';
 import { stripAttachmentsDataFromDocument } from '../rx-storage-helper.ts';
 
+/**
+ * Can be returned by RxReplicationHandler.masterWrite()
+ * to signal that the rows have not been sent to the master,
+ * for example because the replication was paused or canceled.
+ * It is compared by reference, so that it can be distinguished
+ * from an empty array which means that all rows have been
+ * written without conflicts.
+ * The upstream then does not mark the rows as replicated
+ * and does not move the checkpoint forward.
+ */
+export const MASTER_WRITE_NOT_SENT: any[] = [];
+
 export function docStateToWriteDoc<RxDocType>(
     databaseInstanceToken: string,
     hasAttachments: boolean,

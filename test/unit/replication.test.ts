@@ -1746,6 +1746,72 @@ describe('replication.test.ts', () => {
             localCollection.database.close();
             remoteCollection.database.close();
         });
+        it('should push all batches when paused and restarted while a multi-batch push is in flight', async () => {
+            const { localCollection, remoteCollection } = await getTestCollections({ local: 0, remote: 0 });
+            const realPushHandler = getPushHandler(remoteCollection);
+
+            /**
+             * The first push call fails once so that its batch waits in the retry.
+             * The second push call is held open until the test releases it.
+             */
+            let pushCalls = 0;
+            let secondCallStarted: () => void = () => { };
+            const secondCallStartedPromise = new Promise<void>(res => secondCallStarted = res);
+            let releaseSecondCall: () => void = () => { };
+            const releaseSecondCallPromise = new Promise<void>(res => releaseSecondCall = res);
+            const pushHandler: typeof realPushHandler = async (rows) => {
+                pushCalls = pushCalls + 1;
+                if (pushCalls === 1) {
+                    throw new Error('simulated network error');
+                }
+                if (pushCalls === 2) {
+                    secondCallStarted();
+                    await releaseSecondCallPromise;
+                }
+                return realPushHandler(rows);
+            };
+
+            const retryTime = 50;
+            const replicationState = replicateRxCollection({
+                collection: localCollection,
+                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                live: true,
+                retryTime,
+                push: {
+                    batchSize: 2,
+                    handler: pushHandler
+                }
+            });
+            await replicationState.awaitInitialReplication();
+            await replicationState.awaitInSync();
+
+            const firstError = firstValueFrom(replicationState.error$);
+            await localCollection.bulkInsert(
+                new Array(4)
+                    .fill(0)
+                    .map((_v, idx) => schemaObjects.humanWithTimestampData({ id: 'multi-batch-' + idx }))
+            );
+            await firstError;
+            await secondCallStartedPromise;
+
+            // pause while one batch waits in the retry and the other batch is in flight
+            await replicationState.pause();
+            await wait(retryTime * 4);
+
+            // restart before the in-flight batch has finished
+            await replicationState.start();
+            releaseSecondCall();
+            await replicationState.awaitInSync();
+
+            const remoteDocs = await remoteCollection.find().exec();
+            assert.deepStrictEqual(
+                remoteDocs.map(d => d.primary).sort(),
+                ['multi-batch-0', 'multi-batch-1', 'multi-batch-2', 'multi-batch-3']
+            );
+
+            await localCollection.database.close();
+            await remoteCollection.database.close();
+        });
     });
     describe('pull-only', () => {
         it('should not store document metadata on pull only replications', async () => {
