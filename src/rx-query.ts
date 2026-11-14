@@ -1,6 +1,8 @@
 import {
     BehaviorSubject,
     Observable,
+    defer,
+    from,
     merge,
     of
 } from 'rxjs';
@@ -11,7 +13,7 @@ import {
     map,
     startWith,
     distinctUntilChanged,
-    shareReplay,
+    share,
     takeUntil
 } from 'rxjs/operators';
 import {
@@ -20,7 +22,6 @@ import {
     overwriteGetterForCaching,
     clone,
     PROMISE_RESOLVE_FALSE,
-    RXJS_SHARE_REPLAY_DEFAULTS,
     ensureNotFalsy,
     areRxDocumentArraysEqual,
     promiseWait
@@ -184,17 +185,33 @@ export class RxQueryBase<
                      */
                     startWith(null)
                 );
-            const results$ = updateTrigger$.pipe(
+            const results$ = merge(
+                updateTrigger$.pipe(
+                    /**
+                     * Ensure query results are up to date.
+                     * When enabled, liveQueryUpdateThrottleTime groups change-triggered
+                     * reruns before this point so downstream throttling is not too late.
+                     */
+                    mergeMap(() => _ensureEqual(this as any)),
+                    // do not run stuff above for each new subscriber, only once.
+                    share()
+                ),
                 /**
-                 * Ensure query results are up to date.
-                 * When enabled, liveQueryUpdateThrottleTime groups change-triggered
-                 * reruns before this point so downstream throttling is not too late.
+                 * Each subscriber gets the current result set on subscribe.
+                 * When the result set is known to be up to date, it is emitted
+                 * synchronously inside of subscribe().
+                 * Otherwise the subscriber ensures the results on its own once,
+                 * so that its first value contains all writes that were done
+                 * before the subscription, also when the shared update
+                 * of these writes is still running or throttled.
                  */
-                mergeMap(() => _ensureEqual(this as any)),
+                defer(() => _isResultCurrent(this as any) ?
+                    of(false) :
+                    from(_ensureEqual(this as any))
+                )
+            ).pipe(
                 // use the current result set, written by _ensureEqual().
                 map(() => this._result),
-                // do not run stuff above for each new subscriber, only once.
-                shareReplay(RXJS_SHARE_REPLAY_DEFAULTS),
                 // do not proceed if result set has not changed.
                 distinctUntilChanged((prev: RxQuerySingleResult<RxDocType> | null, curr: RxQuerySingleResult<RxDocType> | null) => {
                     if (prev && prev.time === ensureNotFalsy(curr).time) {
@@ -246,6 +263,12 @@ export class RxQueryBase<
 
     // stores the changeEvent-number of the last handled change-event
     public _latestChangeEvent: -1 | number = -1;
+
+    /**
+     * True while the query runs over the database to replace the result set.
+     * During that time _latestChangeEvent can already be ahead of the result set.
+     */
+    public _execRunning = false;
 
     /**
      * ensures that the exec-runs
@@ -745,6 +768,18 @@ function _isResultsInSync(rxQuery: RxQueryBase<any, any>): boolean {
     }
 }
 
+/**
+ * Returns true if the query has a result set
+ * that contains all change events known to this instance.
+ * Always false when the collection has awaitBeforeReads functions,
+ * because it cannot be known synchronously if a read has to wait for them.
+ */
+function _isResultCurrent(rxQuery: RxQueryBase<any, any>): boolean {
+    return !!rxQuery._result &&
+        !rxQuery._execRunning &&
+        rxQuery.collection.awaitBeforeReads.size === 0 &&
+        _isResultsInSync(rxQuery);
+}
 
 /**
  * wraps __ensureEqual()
@@ -862,8 +897,10 @@ function __ensureEqual<RxDocType>(rxQuery: RxQueryBase<RxDocType, any>): Promise
 
     // oh no we have to re-execute the whole query over the database
     if (mustReExec) {
+        rxQuery._execRunning = true;
         return rxQuery._execOverDatabase()
             .then(result => {
+                rxQuery._execRunning = false;
                 const newResultData = result.result;
 
                 /**

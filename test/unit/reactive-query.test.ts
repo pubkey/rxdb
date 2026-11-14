@@ -13,9 +13,11 @@ import {
 } from '../../plugins/test-utils/index.mjs';
 
 import AsyncTestUtil, { wait, waitUntil } from 'async-test-util';
+import { firstValueFrom } from 'rxjs';
 import {
     createRxDatabase,
     RxDocument,
+    RxQuery,
     isRxDocument,
     promiseWait,
     randomToken,
@@ -108,6 +110,84 @@ describe('reactive-query.test.js', () => {
             await promiseWait(10);
             assert.strictEqual(lastValue2.length, 1);
             assert.deepStrictEqual(lastValue, lastValue2);
+            c.database.close();
+        });
+        it('the first value of a second subscriber must contain the writes that were awaited before', async () => {
+            const c = await humansCollection.create(0);
+            await c.bulkInsert([
+                schemaObjects.humanData('a1'),
+                schemaObjects.humanData('a2')
+            ]);
+            const mangoQuery = {
+                selector: {},
+                sort: [{ passportId: 'asc' as const }],
+                skip: 1
+            };
+            const emitted: string[][] = [];
+            const sub = c.find(mangoQuery).$.subscribe(docs => emitted.push(docs.map(d => d.primary)));
+            await waitUntil(() => emitted.length === 1);
+            assert.deepStrictEqual(emitted[0], ['a2']);
+
+            const doc = await c.findOne('a1').exec(true);
+            await doc.remove();
+            await c.bulkInsert([
+                schemaObjects.humanData('a3'),
+                schemaObjects.humanData('a4')
+            ]);
+            const firstValue = await firstValueFrom(c.find(mangoQuery).$);
+            assert.deepStrictEqual(firstValue.map(d => d.primary), ['a3', 'a4']);
+
+            const execResult = await c.find(mangoQuery).exec();
+            assert.deepStrictEqual(execResult.map(d => d.primary), ['a3', 'a4']);
+            await waitUntil(() => emitted.length > 1 && emitted[emitted.length - 1].length === 2);
+
+            sub.unsubscribe();
+            c.database.close();
+        });
+        it('a later subscriber of an idle query must get the current result synchronously on subscribe', async () => {
+            const c = await humansCollection.create(0);
+            await c.bulkInsert([
+                schemaObjects.humanData('a1'),
+                schemaObjects.humanData('a2')
+            ]);
+            const queries = [
+                c.find({ selector: {}, sort: [{ passportId: 'asc' }] }),
+                c.findOne('a1'),
+                c.count(),
+                c.findByIds(['a1', 'a2'])
+            ];
+            const toPlain = (result: any): any => {
+                if (typeof result === 'number') {
+                    return result;
+                } else if (result instanceof Map) {
+                    return Array.from(result.keys());
+                } else if (Array.isArray(result)) {
+                    return result.map(d => d.primary);
+                } else {
+                    return result.primary;
+                }
+            };
+            const expected = [
+                ['a1', 'a2'],
+                'a1',
+                2,
+                ['a1', 'a2']
+            ];
+            for (let i = 0; i < queries.length; i++) {
+                const query: RxQuery<any, any> = queries[i];
+                const firstEmitted: any[] = [];
+                const firstSub = query.$.subscribe(result => firstEmitted.push(toPlain(result)));
+                await waitUntil(() => firstEmitted.length === 1);
+
+                const laterEmitted: any[] = [];
+                const laterSub = query.$.subscribe(result => laterEmitted.push(toPlain(result)));
+                assert.deepStrictEqual(laterEmitted, [expected[i]]);
+
+                await wait(isFastMode() ? 20 : 100);
+                assert.deepStrictEqual(laterEmitted, [expected[i]]);
+                firstSub.unsubscribe();
+                laterSub.unsubscribe();
+            }
             c.database.close();
         });
         it('subscribing many times should not result in many database-requests', async () => {

@@ -159,6 +159,30 @@ describe('reactivity.test.ts', () => {
         });
     });
     describe('preact-signals.test.ts', () => {
+        it('a second signal of an observed query must start with the current result', async () => {
+            const db = await createRxDatabase<{ docs: any; }, any, any, PreactSignalReactivityLambda>({
+                name: randomToken(10),
+                storage: getConfig().storage.getStorage(),
+                reactivity: PreactSignalsRxReactivityFactory
+            });
+            const collections = await db.addCollections({
+                docs: {
+                    schema: schemas.human
+                }
+            });
+            const collection = collections.docs;
+            await collection.insert(schemaObjects.humanData());
+
+            const firstSignal = collection.find().$$;
+            await waitUntil(() => !!firstSignal.value);
+            assert.strictEqual(firstSignal.value.length, 1);
+
+            const secondSignal = collection.find().$$;
+            assert.ok(secondSignal.value);
+            assert.strictEqual(secondSignal.value.length, 1);
+
+            await db.close();
+        });
         it('should get the signal and clean up correctly', async function () {
             /**
              * This test can take very long because we await the garbage collection

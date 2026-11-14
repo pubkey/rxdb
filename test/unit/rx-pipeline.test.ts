@@ -22,6 +22,7 @@ addRxPlugin(RxDBPipelinePlugin);
 addRxPlugin(RxDBLocalDocumentsPlugin);
 import { RxDBLeaderElectionPlugin } from '../../plugins/leader-election/index.mjs';
 import { assertThrows } from 'async-test-util';
+import { firstValueFrom } from 'rxjs';
 addRxPlugin(RxDBLeaderElectionPlugin);
 
 describe('rx-pipeline.test.js', () => {
@@ -150,6 +151,41 @@ describe('rx-pipeline.test.js', () => {
             await pipeline.close();
             c1.database.close();
             c2.database.close();
+        });
+        it('first value of a later query.$ subscriber on the destination must contain the processed source write', async () => {
+            const c1 = await humansCollection.create(0);
+            await c1.database.waitForLeadership();
+            const c2 = await humansCollection.create(0);
+            const pipeline = await c1.addPipeline({
+                destination: c2,
+                handler: async (docs) => {
+                    await promiseWait(50);
+                    for (const doc of docs) {
+                        await c2.insert(schemaObjects.humanData(doc.passportId));
+                    }
+                },
+                identifier: randomToken(10)
+            });
+            await pipeline.awaitIdle();
+
+            const query = c2.find();
+            const sub = query.$.subscribe();
+            assert.strictEqual((await firstValueFrom(query.$)).length, 0);
+
+            await c1.insert(schemaObjects.humanData('foobar'));
+
+            const firstValueOfLaterSubscriber = await firstValueFrom(query.$);
+            const execResult = await c2.find().exec();
+            assert.strictEqual(execResult.length, 1);
+            assert.deepStrictEqual(
+                firstValueOfLaterSubscriber.map(d => d.passportId),
+                ['foobar']
+            );
+
+            sub.unsubscribe();
+            await pipeline.close();
+            await c1.database.close();
+            await c2.database.close();
         });
     });
     describe('.awaitIdle()', () => {
