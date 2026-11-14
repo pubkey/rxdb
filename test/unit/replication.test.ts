@@ -994,14 +994,20 @@ describe('replication.test.ts', () => {
                 }));
 
                 let resolved = false;
-                replicationState.awaitDocumentPushed(doc).then(() => {
+                const pushedPromise = replicationState.awaitDocumentPushed(doc).then(() => {
                     resolved = true;
                 });
                 await wait(isFastMode() ? 100 : 400);
                 assert.strictEqual(resolved, false);
 
+                /**
+                 * Each call reads the assumed master state on its own,
+                 * so the order in which two calls resolve is not defined.
+                 * Both calls must resolve after the push.
+                 */
                 continuePush();
                 await replicationState.awaitDocumentPushed(doc);
+                await pushedPromise;
                 assert.strictEqual(resolved, true);
 
                 await localCollection.database.close();
@@ -1076,6 +1082,74 @@ describe('replication.test.ts', () => {
                 assert.strictEqual(hadConflict, true, 'the first push must have returned a conflict');
                 const masterDoc = ensureNotFalsy(masterDocs.get('conflict-doc'));
                 assert.strictEqual(masterDoc.name, 'local-name', 'the resolved state must exist on the master');
+
+                await localCollection.database.close();
+            });
+            it('should not resolve when only an older state of the document was pushed', async () => {
+                const localCollection = await humansCollection.createHumanWithTimestamp(0, randomToken(10), false);
+                const masterDocs = new Map<string, WithDeleted<TestDocType>>();
+
+                let firstPushStarted: Function = () => { };
+                const firstPushStartedPromise = new Promise<void>(res => {
+                    firstPushStarted = res;
+                });
+                let continueFirstPush: Function = () => { };
+                const firstPushBlock = new Promise<void>(res => {
+                    continueFirstPush = res;
+                });
+
+                let pushCalls = 0;
+                let failedPushCalls = 0;
+                let masterIsOffline = false;
+                const replicationState = replicateRxCollection<TestDocType, CheckpointType>({
+                    collection: localCollection,
+                    replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                    live: true,
+                    retryTime: 20,
+                    push: {
+                        handler: async (rows) => {
+                            pushCalls = pushCalls + 1;
+                            if (pushCalls === 1) {
+                                // the first push is in flight until the test continues it
+                                firstPushStarted();
+                                await firstPushBlock;
+                            } else if (masterIsOffline) {
+                                failedPushCalls = failedPushCalls + 1;
+                                throw new Error('master is offline');
+                            }
+                            rows.forEach(row => {
+                                masterDocs.set(row.newDocumentState.id, row.newDocumentState);
+                            });
+                            return [];
+                        }
+                    }
+                });
+
+                const firstDocState = await localCollection.insert(schemaObjects.humanWithTimestampData({
+                    id: 'foobar-local',
+                    name: 'v1'
+                }));
+                await firstPushStartedPromise;
+
+                // write a newer state while the push of the first state is in flight
+                const secondDocState = await firstDocState.incrementalPatch({ name: 'v2' });
+                masterIsOffline = true;
+
+                let resolved = false;
+                const pushedPromise = replicationState.awaitDocumentPushed(secondDocState).then(() => {
+                    resolved = true;
+                });
+
+                continueFirstPush();
+                await waitUntil(() => failedPushCalls > 1);
+                await wait(isFastMode() ? 50 : 200);
+
+                assert.strictEqual(ensureNotFalsy(masterDocs.get('foobar-local')).name, 'v1');
+                assert.strictEqual(resolved, false, 'must not resolve while the master only has the older state');
+
+                masterIsOffline = false;
+                await pushedPromise;
+                assert.strictEqual(ensureNotFalsy(masterDocs.get('foobar-local')).name, 'v2');
 
                 await localCollection.database.close();
             });
