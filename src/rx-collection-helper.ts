@@ -13,7 +13,9 @@ import type {
 import {
     createRevision,
     flatClone,
-    now
+    now,
+    hasOwnProperty,
+    setOwnProperty
 } from './plugins/utils/index.ts';
 import {
     fillObjectWithDefaults,
@@ -96,13 +98,13 @@ export async function normalizeInlineAttachments(
             ) {
                 throw newRxError('AT2', { obj: att });
             }
-            if (Object.prototype.hasOwnProperty.call(attachmentMap, att.id)) {
+            if (hasOwnProperty(attachmentMap, att.id)) {
                 throw newRxError('AT3', { obj: att });
             }
-            attachmentMap[att.id] = {
+            setOwnProperty(attachmentMap, att.id, {
                 type: att.type,
                 data: att.data
-            };
+            });
         }
         entries = Object.entries(attachmentMap);
         await Promise.all(

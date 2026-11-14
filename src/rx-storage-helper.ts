@@ -42,7 +42,9 @@ import {
     lastOfArray,
     now,
     promiseWait,
-    randomToken
+    randomToken,
+    hasOwnProperty,
+    setOwnProperty
 } from './plugins/utils/index.ts';
 import { Observable, filter, map, startWith, switchMap } from 'rxjs';
 import { normalizeMangoQuery, prepareQuery } from './rx-query-helper.ts';
@@ -385,7 +387,7 @@ export function categorizeBulkWriteRows<RxDocType>(
                     for (let a = 0; a < docAttKeys.length; a++) {
                         const attachmentId = docAttKeys[a];
                         const attachmentData = docAtts[attachmentId];
-                        const previousAttachmentData = previous._attachments[attachmentId];
+                        const previousAttachmentData = hasOwnProperty(previous._attachments, attachmentId) ? previous._attachments[attachmentId] : undefined;
                         if (
                             !previousAttachmentData &&
                             !(attachmentData as RxAttachmentWriteData).data
@@ -406,7 +408,7 @@ export function categorizeBulkWriteRows<RxDocType>(
                         for (let a = 0; a < docAttKeys.length; a++) {
                             const attachmentId = docAttKeys[a];
                             const attachmentData = docAtts[attachmentId];
-                            const previousAttachmentData = previous._attachments[attachmentId];
+                            const previousAttachmentData = hasOwnProperty(previous._attachments, attachmentId) ? previous._attachments[attachmentId] : undefined;
                             if (!previousAttachmentData) {
                                 attachmentsAdd.push({
                                     documentId: docId,
@@ -442,7 +444,7 @@ export function categorizeBulkWriteRows<RxDocType>(
                         const prevAttKeys = Object.keys(prevAtts);
                         for (let a = 0; a < prevAttKeys.length; a++) {
                             const attachmentId = prevAttKeys[a];
-                            if (!docAtts[attachmentId]) {
+                            if (!hasOwnProperty(docAtts, attachmentId) || !docAtts[attachmentId]) {
                                 attachmentsRemove.push({
                                     documentId: docId,
                                     attachmentId,
@@ -559,7 +561,7 @@ export function stripAttachmentsDataFromDocument<RxDocType>(doc: RxDocumentWrite
     const attKeys = Object.keys(atts);
     for (let i = 0; i < attKeys.length; i++) {
         const attachmentId = attKeys[i];
-        destAtts[attachmentId] = attachmentWriteDataToNormalData(atts[attachmentId]);
+        setOwnProperty(destAtts, attachmentId, attachmentWriteDataToNormalData(atts[attachmentId]));
     }
     useDoc._attachments = destAtts;
     return useDoc;

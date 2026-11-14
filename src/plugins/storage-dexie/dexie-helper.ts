@@ -5,7 +5,7 @@ import type {
 } from '../../types/index.d.ts';
 import { Dexie } from 'dexie';
 import type { DexieSettings } from '../../types/index.d.ts';
-import { flatClone, getFromMapOrCreate, getProperty, setProperty, toArray, uniqueArray } from '../utils/index.ts';
+import { flatClone, getFromMapOrCreate, getProperty, setOwnProperty, setProperty, toArray, uniqueArray } from '../utils/index.ts';
 import {
     getPrimaryFieldOfPrimaryKey,
     getSchemaByObjectPath
@@ -107,6 +107,8 @@ export async function closeDexieDb(statePromise: DexieStorageInternals) {
  * It is not possible to set non-javascript-variable-syntax
  * keys as IndexedDB indexes. So we have to substitute the pipe-char
  * which comes from the key-compression plugin.
+ * A key that itself starts with the substitute is stored with a leading pipe-char,
+ * so that it is not mixed up with a substituted key when the document is read.
  */
 export const DEXIE_PIPE_SUBSTITUTE = '__';
 export function dexieReplaceIfStartsWithPipe(str: string): string {
@@ -118,6 +120,8 @@ export function dexieReplaceIfStartsWithPipe(str: string): string {
     if (str.startsWith('|')) {
         const withoutFirst = str.substring(1);
         return DEXIE_PIPE_SUBSTITUTE + withoutFirst;
+    } else if (str.startsWith(DEXIE_PIPE_SUBSTITUTE)) {
+        return '|' + str;
     } else {
         return str;
     }
@@ -129,7 +133,9 @@ export function dexieReplaceIfStartsWithPipeRevert(str: string): string {
         return split.map(part => dexieReplaceIfStartsWithPipeRevert(part)).join('.');
     }
 
-    if (str.startsWith(DEXIE_PIPE_SUBSTITUTE)) {
+    if (str.startsWith('|' + DEXIE_PIPE_SUBSTITUTE)) {
+        return str.substring(1);
+    } else if (str.startsWith(DEXIE_PIPE_SUBSTITUTE)) {
         const withoutFirst = str.substring(DEXIE_PIPE_SUBSTITUTE.length);
         return '|' + withoutFirst;
     } else {
@@ -201,7 +207,7 @@ export function fromStorageToDexieField(documentData: RxDocumentData<any>): any 
             if (typeof value === 'object') {
                 value = fromStorageToDexieField(value);
             }
-            ret[dexieReplaceIfStartsWithPipe(key)] = value;
+            setOwnProperty(ret, dexieReplaceIfStartsWithPipe(key), value);
         });
         return ret;
     }
@@ -218,7 +224,7 @@ export function fromDexieToStorageField(documentData: any): RxDocumentData<any> 
             if (typeof value === 'object' || Array.isArray(documentData)) {
                 value = fromDexieToStorageField(value);
             }
-            ret[dexieReplaceIfStartsWithPipeRevert(key)] = value;
+            setOwnProperty(ret, dexieReplaceIfStartsWithPipeRevert(key), value);
         });
         return ret;
     }
