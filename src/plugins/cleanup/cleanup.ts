@@ -30,8 +30,12 @@ export async function startCleanupForRxCollection(
         return;
     }
 
-    // initially cleanup the collection
-    await cleanupRxCollection(rxCollection, cleanupPolicy);
+    /**
+     * Initially cleanup the collection.
+     * A failed run must not end the automatic cleanup,
+     * it runs again after the next write.
+     */
+    await cleanupRxCollection(rxCollection, cleanupPolicy).catch(() => { });
 
     /**
      * Afterwards we listen to deletes
@@ -87,7 +91,7 @@ export async function cleanupRxCollection(
         if (rxCollection.closed) {
             return false;
         }
-        RXSTORAGE_CLEANUP_QUEUE = RXSTORAGE_CLEANUP_QUEUE
+        const cleanupRun = RXSTORAGE_CLEANUP_QUEUE
             .then(async () => {
                 if (rxCollection.closed) {
                     return true;
@@ -112,7 +116,13 @@ export async function cleanupRxCollection(
 
                 return (await Promise.all(allDone)).every(v => v);
             });
-        isDone = await RXSTORAGE_CLEANUP_QUEUE;
+        /**
+         * The queue must continue with the next cleanup
+         * when this run rejects. The error is only thrown
+         * to the caller of this run.
+         */
+        RXSTORAGE_CLEANUP_QUEUE = cleanupRun.catch(() => true);
+        isDone = await cleanupRun;
     }
     await runAsyncPluginHooks('postCleanup', {
         collectionName: rxCollection.name,
@@ -125,19 +135,25 @@ export async function runCleanupAfterDelete(
     rxCollection: RxCollection,
     cleanupPolicy: RxCleanupPolicy
 ) {
+    let lastRunFailed = false;
     while (!rxCollection.closed) {
         /**
          * In theory we should wait here until a document is deleted.
          * But this would mean we have to search through all events ever processed.
          * So instead we just wait for any write event and then we anyway throttle
          * the calls with the promiseWait() below.
+         * After a failed run there is still something to clean up,
+         * so the next run starts after runEach without waiting for a write.
          */
-        await firstValueFrom(rxCollection.eventBulks$).catch(() => { });
+        if (!lastRunFailed) {
+            await firstValueFrom(rxCollection.eventBulks$).catch(() => { });
+        }
 
         await rxCollection.promiseWait(cleanupPolicy.runEach);
         if (rxCollection.closed) {
             return;
         }
-        await cleanupRxCollection(rxCollection, cleanupPolicy);
+        lastRunFailed = await cleanupRxCollection(rxCollection, cleanupPolicy)
+            .then(() => false, () => true);
     }
 }
