@@ -182,7 +182,7 @@ export function getWebMCPTools(
     const changesToolName = `rxdb_changes_${toolNameSuffix}`;
     tools.push({
         name: changesToolName,
-        description: `Returns all changes of the RxDB collection '${target.collectionName}' of database '${target.databaseName}' since a given checkpoint. If no checkpoint is provided, starts from the oldest change. The collection has the following JSON schema: ${schemaString}. ${WEBMCP_ERROR_DOCS_HINT}`,
+        description: `Returns all changes of the RxDB collection '${target.collectionName}' of database '${target.databaseName}' since a given checkpoint. If no checkpoint is provided, starts from the oldest change. Documents that have been deleted are returned with the field '_deleted' set to true. The collection has the following JSON schema: ${schemaString}. ${WEBMCP_ERROR_DOCS_HINT}`,
         annotations: {
             readOnlyHint: true
         },
@@ -210,7 +210,9 @@ export function getWebMCPTools(
                     delete cleaned._meta;
                     delete cleaned._rev;
                     delete cleaned._attachments;
-                    delete cleaned._deleted;
+                    if (!cleaned._deleted) {
+                        delete cleaned._deleted;
+                    }
                     return cleaned;
                 }),
                 checkpoint: changes.checkpoint

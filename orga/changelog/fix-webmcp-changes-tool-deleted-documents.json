@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX the WebMCP `changes` tool returned removed documents without the `_deleted` flag, so an AI agent could not distinguish them from live documents. Removed documents are now returned with `_deleted: true`.",
+    "links": [],
+    "priority": 5
+}
