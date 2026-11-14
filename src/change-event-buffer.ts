@@ -41,6 +41,13 @@ export class ChangeEventBuffer<RxDocType> {
     */
     private buffer: RxStorageChangeEvent<RxDocType>[] = [];
 
+    /**
+     * Pointers lower than this value are out of bounds,
+     * so that queries which have not processed these events
+     * re-execute over the storage instead of using the buffer.
+     */
+    private minPointer: number = 0;
+
     public limit: number = 100;
 
 
@@ -76,6 +83,9 @@ export class ChangeEventBuffer<RxDocType> {
     private _handleChangeEvents(events: RxStorageChangeEvent<RxDocType>[]) {
         const counterBefore = this.counter;
         this.counter = this.counter + events.length;
+        if (this.hasNewerState(events)) {
+            this.minPointer = this.counter + 1;
+        }
         if (events.length > this.limit) {
             this.buffer = events.slice(events.length * -1);
         } else {
@@ -88,6 +98,45 @@ export class ChangeEventBuffer<RxDocType> {
             const event = events[index];
             eventCounterMap.set(event, counterBase + index);
         }
+    }
+
+    /**
+     * Events of other instances arrive asynchronously,
+     * so they can arrive after the event of a later write to the same document.
+     * Applying such an event on top of the newer state gives a wrong query result.
+     * The revision ends with the token of the instance that has written it,
+     * so events of own writes are skipped which keeps this check cheap.
+     * @return true if the buffer contains a newer state of one of the event documents
+     */
+    private hasNewerState(events: RxStorageChangeEvent<RxDocType>[]): boolean {
+        const buffer = this.buffer;
+        if (buffer.length === 0) {
+            return false;
+        }
+        const ownRevisionEnd = '-' + this.collection.database.token;
+        let lwtByDocId: Map<string, number> | undefined;
+        for (let index = 0; index < events.length; index++) {
+            const event = events[index];
+            if (event.documentData._rev.endsWith(ownRevisionEnd)) {
+                continue;
+            }
+            if (!lwtByDocId) {
+                lwtByDocId = new Map();
+                for (let bufferIndex = 0; bufferIndex < buffer.length; bufferIndex++) {
+                    const buffered = buffer[bufferIndex];
+                    const lwt = buffered.documentData._meta.lwt;
+                    const before = lwtByDocId.get(buffered.documentId);
+                    if (before === undefined || before < lwt) {
+                        lwtByDocId.set(buffered.documentId, lwt);
+                    }
+                }
+            }
+            const bufferedLwt = lwtByDocId.get(event.documentId);
+            if (bufferedLwt !== undefined && bufferedLwt > event.documentData._meta.lwt) {
+                return true;
+            }
+        }
+        return false;
     }
 
     getCounter() {
@@ -105,6 +154,9 @@ export class ChangeEventBuffer<RxDocType> {
      */
     getArrayIndexByPointer(pointer: number): number | null {
         this.processTasks();
+        if (pointer < this.minPointer) {
+            return null;
+        }
         const oldestEvent = this.buffer[0];
         const oldestCounter = this.eventCounterMap.get(
             oldestEvent

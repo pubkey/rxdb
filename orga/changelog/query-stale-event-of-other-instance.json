@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX With `multiInstance: true`, the results of `find().$`, `find().exec()`, and `count().$` contained a document twice or with an outdated state when the event of a write from another instance arrived after the event of a later own write to the same document. The query now runs again over the storage when such an event arrives",
+    "links": [],
+    "priority": 5
+}
