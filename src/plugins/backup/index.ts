@@ -2,7 +2,9 @@ import * as path from 'node:path';
 import {
     BehaviorSubject,
     firstValueFrom,
+    merge,
     Observable,
+    ReplaySubject,
     Subject,
     Subscription
 } from 'rxjs';
@@ -103,6 +105,18 @@ export class RxBackupState {
     private readonly internalWriteEvents$: Subject<RxBackupWriteEvent> = new Subject();
     public readonly writeEvents$: Observable<RxBackupWriteEvent> = this.internalWriteEvents$.asObservable();
 
+    private readonly internalError$: Subject<any> = new Subject();
+    /**
+     * Emits the error of each backup run that has failed,
+     * for example when the backup directory is not accessible.
+     */
+    public readonly error$: Observable<any> = this.internalError$.asObservable();
+    /**
+     * Contains the error of the latest failed run
+     * for as long as no run has succeeded.
+     */
+    private readonly initialBackupError$: ReplaySubject<any> = new ReplaySubject(1);
+
     constructor(
         public readonly database: RxDatabase,
         public readonly options: BackupOptions
@@ -120,9 +134,19 @@ export class RxBackupState {
      * to the newest one.
      * Do not call this while it is already running.
      * Returns true if there are more documents to process
+     * The returned promise rejects when the run fails.
+     * A failed run does not prevent later runs,
+     * they start again from the last stored checkpoint.
      */
-    public persistOnce() {
-        return this.persistRunning = this.persistRunning.then(() => this._persistOnce());
+    public persistOnce(): Promise<void> {
+        const run = this.persistRunning.then(() => this._persistOnce());
+        this.persistRunning = run.catch(err => {
+            if (!this.initialReplicationDone$.getValue()) {
+                this.initialBackupError$.next(err);
+            }
+            this.internalError$.next(err);
+        });
+        return run;
     }
 
     public async _persistOnce() {
@@ -216,7 +240,8 @@ export class RxBackupState {
         collections.forEach(collection => {
             const changes$ = collection.storageInstance.changeStream();
             const sub = changes$.subscribe(() => {
-                this.persistOnce();
+                // the error of a failed run is emitted to error$
+                this.persistOnce().catch(() => { });
             });
             this.subs.push(sub);
         });
@@ -224,13 +249,21 @@ export class RxBackupState {
 
     /**
      * Returns a promise that resolves when the initial backup is done
-     * and the filesystem is in sync with the database state
+     * and the filesystem is in sync with the database state.
+     * Rejects when a backup run fails before the initial backup is done.
      */
     public awaitInitialBackup(): Promise<boolean> {
         return firstValueFrom(
-            this.initialReplicationDone$.pipe(
-                filter((v: boolean) => !!v),
-                map(() => true)
+            merge(
+                this.initialReplicationDone$.pipe(
+                    filter((v: boolean) => !!v),
+                    map(() => true)
+                ),
+                this.initialBackupError$.pipe(
+                    map(err => {
+                        throw err;
+                    })
+                )
             )
         );
     }
@@ -251,7 +284,8 @@ export function backup(
     options: BackupOptions
 ): RxBackupState {
     const backupState = new RxBackupState(this, options);
-    backupState.persistOnce();
+    // the error of a failed run is emitted to error$
+    backupState.persistOnce().catch(() => { });
 
     if (options.live) {
         backupState.watchForChanges();

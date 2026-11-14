@@ -233,6 +233,95 @@ describe('backup.test.ts', () => {
             sub.unsubscribe();
             await collection.database.close();
         });
+        it('a failed backup run must not stop later runs', async () => {
+            const collection = await humansCollection.create(1);
+            const directory = getBackupDir();
+            const movedDirectory = directory + '_moved';
+            const backupState = collection.database.backup({
+                live: false,
+                directory,
+                attachments: false
+            });
+            await backupState.awaitInitialBackup();
+
+            // the backup directory is not reachable for some time
+            fs.renameSync(directory, movedDirectory);
+            const doc2 = await collection.insert(schemaObjects.humanData());
+            await assert.rejects(
+                () => backupState.persistOnce(),
+                (err: any) => err.code === 'ENOENT'
+            );
+
+            // the backup directory is reachable again
+            fs.renameSync(movedDirectory, directory);
+            await backupState.persistOnce();
+            assert.ok(
+                fs.existsSync(
+                    path.join(directory, toFileName(doc2.primary), 'document.json')
+                )
+            );
+
+            await collection.database.close();
+        });
+        it('live backup must continue after a failed run and emit the error', async () => {
+            const collection = await humansCollection.create(1);
+            const directory = getBackupDir();
+            const movedDirectory = directory + '_moved';
+            const backupState = collection.database.backup({
+                live: true,
+                directory,
+                attachments: false
+            });
+            const errors: any[] = [];
+            const emitted: RxBackupWriteEvent[] = [];
+            const subs = [
+                backupState.error$.subscribe(err => errors.push(err)),
+                backupState.writeEvents$.subscribe(ev => emitted.push(ev))
+            ];
+            await backupState.awaitInitialBackup();
+
+            // the backup directory is not reachable for some time
+            fs.renameSync(directory, movedDirectory);
+            const doc2 = await collection.insert(schemaObjects.humanData());
+            await waitUntil(() => errors.length > 0);
+            assert.strictEqual(errors[0].code, 'ENOENT');
+
+            // the backup directory is reachable again
+            fs.renameSync(movedDirectory, directory);
+            const doc3 = await collection.insert(schemaObjects.humanData());
+            await waitUntil(() => {
+                return [doc2, doc3].every(doc => fs.existsSync(
+                    path.join(directory, toFileName(doc.primary), 'document.json')
+                ));
+            });
+            [doc2, doc3].forEach(doc => {
+                assert.ok(emitted.find(ev => ev.documentId === doc.primary && !ev.deleted));
+            });
+
+            /**
+             * awaitInitialBackup() must reject
+             * when the initial backup run fails.
+             */
+            const directory2 = getBackupDir();
+            const backupState2 = collection.database.backup({
+                live: false,
+                directory: directory2,
+                attachments: false
+            });
+            fs.renameSync(directory2, directory2 + '_moved');
+            await assert.rejects(
+                () => backupState2.awaitInitialBackup(),
+                (err: any) => err.code === 'ENOENT'
+            );
+            // also when called after the run has failed
+            await assert.rejects(
+                () => backupState2.awaitInitialBackup(),
+                (err: any) => err.code === 'ENOENT'
+            );
+
+            subs.forEach(sub => sub.unsubscribe());
+            await collection.database.close();
+        });
         it('toFileName() must return unique file names that are valid on all operating systems', () => {
             const ids = [
                 'foobar',
