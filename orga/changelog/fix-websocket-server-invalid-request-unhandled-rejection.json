@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX the server of the WebSocket replication crashed with an unhandled promise rejection when a client sent invalid JSON, a request for an unknown collection or method, or when a handler threw. It now answers the request with an `error` response and keeps serving the connection",
+    "links": [],
+    "priority": 5
+}

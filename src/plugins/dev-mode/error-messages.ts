@@ -936,6 +936,18 @@ export const ERROR_MESSAGES = {
         fix: 'Check if the server is reachable. The client retries the connection on its own.',
         docs: 'https://rxdb.info/replication-websocket.html?console=errors&code=RC_WEBSOCKET_TIMEOUT'
     },
+    RC_WEBSOCKET_COLLECTION: {
+        message: 'RxReplication websocket server got a request for a collection that does not exist',
+        cause: 'The collection name in the request of the client does not match any collection of the database that was given to startWebsocketServer().',
+        fix: 'Add the collection to the server database before clients replicate with it and use the same collection name on the client and the server.',
+        docs: 'https://rxdb.info/replication-websocket.html?console=errors&code=RC_WEBSOCKET_COLLECTION'
+    },
+    RC_WEBSOCKET_REQUEST: {
+        message: 'RxReplication websocket server got an invalid request',
+        cause: 'The method of the request is not one of masterChangesSince, masterWrite, masterChangeStream$ or auth, or the params of the request are not an array.',
+        fix: 'Use replicateWithWebsocketServer() on the client or send requests that match the WebsocketMessageType.',
+        docs: 'https://rxdb.info/replication-websocket.html?console=errors&code=RC_WEBSOCKET_REQUEST'
+    },
 
     // plugins/dev-mode/check-schema.js
     SC1: {
