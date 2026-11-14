@@ -4,6 +4,7 @@ import {
     PROMISE_RESOLVE_VOID,
     arrayBufferToBase64,
     ensureNotFalsy,
+    createBlobFromBase64,
     now,
     toArray
 } from '../utils/index.ts';
@@ -579,14 +580,20 @@ export class RxStorageInstanceLocalstorage<RxDocType> implements RxStorageInstan
         const stored = ensureNotFalsy(
             this.localStorage.getItem(this.attachmentsKey + '-' + documentId + '||' + attachmentId)
         );
-        // Stored value is a data URL like "data:<mime>;base64,<payload>".
-        // Fall back to application/octet-stream for legacy bare base64 payloads.
-        let dataUrl = stored;
-        if (!stored.startsWith('data:')) {
-            dataUrl = 'data:application/octet-stream;base64,' + stored;
+        /**
+         * Stored value is a data URL like "data:<mime>;base64,<payload>".
+         * The mime type can contain characters like a comma or a hash,
+         * so the value is split at the last ";base64," instead of fetching it as URL.
+         * Fall back to application/octet-stream for legacy bare base64 payloads.
+         */
+        const headerEnd = stored.startsWith('data:') ? stored.lastIndexOf(';base64,') : -1;
+        if (headerEnd === -1) {
+            return createBlobFromBase64(stored, 'application/octet-stream');
         }
-        const response = await fetch(dataUrl);
-        return response.blob();
+        return createBlobFromBase64(
+            stored.slice(headerEnd + ';base64,'.length),
+            stored.slice('data:'.length, headerEnd)
+        );
     }
 
     remove(): Promise<void> {
