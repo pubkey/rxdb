@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX a write that was waiting in an async `preInsert`, `preSave` or `preRemove` hook while the collection or database got closed or removed was still sent to the storage afterwards. On the localStorage RxStorage the document survived `remove()`, on other storages the write rejected with a raw storage error. The write now rejects with `COL21` and nothing is written",
+    "links": [],
+    "priority": 5
+}
