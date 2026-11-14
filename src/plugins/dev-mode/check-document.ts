@@ -101,7 +101,22 @@ export function checkWriteRows<RxDocType>(
             writeRow.document
         );
 
-
+        /**
+         * Writes and their results are mapped by the document id,
+         * so an update must not change the primary key.
+         * A modifier is checked by RxSchema.validateChange(),
+         * this also detects a change made by a preSave hook.
+         */
+        if (
+            writeRow.previous &&
+            (writeRow.previous as any)[primaryPath] !== (writeRow.document as any)[primaryPath]
+        ) {
+            throw newRxError('DOC9', {
+                dataBefore: writeRow.previous,
+                dataAfter: writeRow.document,
+                fieldName: primaryPath
+            });
+        }
 
         /**
          * Ensure that _meta fields have been merged

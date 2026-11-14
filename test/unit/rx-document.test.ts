@@ -845,6 +845,35 @@ describe('rx-document.test.js', () => {
                 );
                 c.database.close();
             });
+            it('incremental write must reject and not hang when the primary key is changed', async () => {
+                const c = await humansCollection.create(1);
+                const doc = await c.findOne().exec(true);
+                c.preSave(function (data) {
+                    if (data.firstName === 'change-primary') {
+                        data.passportId = 'other-primary';
+                    }
+                }, false);
+
+                const result = await Promise.race([
+                    doc.incrementalPatch({ firstName: 'change-primary' }).then(
+                        () => 'resolved',
+                        (err: any) => err.code
+                    ),
+                    wait(1000).then(() => 'not-settled')
+                ]);
+                assert.strictEqual(result, 'DOC9');
+
+                const docs = await c.find().exec();
+                assert.strictEqual(docs.length, 1);
+                assert.strictEqual(docs[0].primary, doc.primary);
+
+                // the write queue must still work afterwards
+                const afterDoc = await doc.getLatest().incrementalPatch({ firstName: 'foobar' });
+                assert.strictEqual(afterDoc.firstName, 'foobar');
+                const stored = await c.findOne(doc.primary).exec(true);
+                assert.strictEqual(stored.firstName, 'foobar');
+                c.database.close();
+            });
         });
     });
     describe('.toJSON()', () => {
