@@ -450,7 +450,14 @@ export class RxReplicationState<RxDocType, CheckpointType> {
                 .subscribe((row: BulkWriteRow<RxDocType>) => this.subjects.received.next(row.document as any)),
             this.internalReplicationState.events.processed.up
                 .subscribe((writeToMasterRow: RxReplicationWriteToMasterRow<RxDocType>) => {
-                    this.subjects.sent.next(writeToMasterRow.newDocumentState);
+                    /**
+                     * Without a push handler, masterWrite() does not send anything.
+                     * The upstream still processes these rows to move its checkpoint,
+                     * but they never reached the remote and must not show up in sent$.
+                     */
+                    if (this.push) {
+                        this.subjects.sent.next(writeToMasterRow.newDocumentState);
+                    }
                 }),
             this.internalReplicationState.events.resolvedConflicts
                 .subscribe((conflict: RxReplicationConflict<RxDocType>) => {
