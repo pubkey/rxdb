@@ -4,7 +4,9 @@
  */
 import {
     ensureNotFalsy,
-    flatClone
+    errorToPlainJson,
+    flatClone,
+    toArray
 } from '../../plugins/utils/index.ts';
 
 import {
@@ -39,6 +41,7 @@ import {
     getGraphQLWebSocket
 } from './graphql-websocket.ts';
 import { Subject } from 'rxjs';
+import { newRxError } from '../../rx-error.ts';
 
 
 export class RxGraphQLReplicationState<RxDocType, CheckpointType> extends RxReplicationState<RxDocType, CheckpointType> {
@@ -212,15 +215,32 @@ export function replicateGraphQL<RxDocType, CheckpointType>(
                 query,
                 {
                     next: async (streamResponse: any) => {
-                        const firstField = Object.keys(streamResponse.data)[0];
-                        let data = streamResponse.data[firstField];
-                        if (pull.responseModifier) {
-                            data = await pull.responseModifier(
-                                data,
-                                'stream'
+                        try {
+                            if (streamResponse.errors) {
+                                throw streamResponse.errors;
+                            }
+                            const firstField = Object.keys(streamResponse.data)[0];
+                            let data = streamResponse.data[firstField];
+                            if (pull.responseModifier) {
+                                data = await pull.responseModifier(
+                                    data,
+                                    'stream'
+                                );
+                            }
+                            pullStream$.next(data);
+                        } catch (err: any | Error | Error[]) {
+                            graphqlReplicationState.subjects.error.next(
+                                newRxError('RC_STREAM', {
+                                    errors: toArray(err).map(er => errorToPlainJson(er)),
+                                    direction: 'pull'
+                                })
                             );
+                            /**
+                             * The documents of the failed event
+                             * are fetched by the checkpoint iteration instead.
+                             */
+                            pullStream$.next('RESYNC');
                         }
-                        pullStream$.next(data);
                     },
                     error: (error: any) => {
                         pullStream$.error(error);
