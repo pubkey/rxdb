@@ -1,0 +1,5 @@
+{
+    "text": "FIX `useRxQuery()` and `useLiveRxQuery()` of the React plugin kept `loading: true` forever after the `query` changed, and ran the query again on each render when an equal query object was passed inline",
+    "links": [],
+    "priority": 5
+}
