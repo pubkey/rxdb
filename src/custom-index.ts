@@ -25,7 +25,7 @@ import {
 import {
     INDEX_MAX,
     INDEX_MIN
-} from './query-planner.ts';
+} from './query-planner-bounds.ts';
 import {
     newRxError
 } from './rx-error.ts';

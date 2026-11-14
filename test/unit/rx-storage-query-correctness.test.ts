@@ -18,7 +18,8 @@ import {
     prepareQuery,
     ensureNotFalsy,
     RxCollection,
-    RxEventReduceOptions
+    RxEventReduceOptions,
+    MangoQuerySelector
 } from '../../plugins/core/index.mjs';
 import {
     schemaObjects,
@@ -2727,6 +2728,298 @@ describe('rx-storage-query-correctness.test.ts', () => {
                 expectedResultDocIds: ['aa', 'bb', 'cc', 'dd']
             }
         ]
+    });
+
+    testCorrectQueries<{ id: string; score: number; }>({
+        testTitle: 'query value that is not a multipleOf step or outside the schema minimum/maximum of an indexed integer field',
+        data: [
+            { id: 'aa', score: 0 },
+            { id: 'bb', score: 4 },
+            { id: 'cc', score: 5 },
+            { id: 'dd', score: 10 }
+        ],
+        schema: {
+            version: 0,
+            indexes: [['score']],
+            primaryKey: 'id',
+            type: 'object',
+            properties: {
+                id: { type: 'string', maxLength: 2 },
+                score: { type: 'integer', minimum: 0, maximum: 10, multipleOf: 1 }
+            },
+            required: ['id', 'score']
+        },
+        queries: [
+            {
+                info: '$lt between two steps',
+                query: { selector: { score: { $lt: 4.5 } }, sort: [{ score: 'asc' }] },
+                selectorSatisfiedByIndex: true,
+                expectedResultDocIds: ['aa', 'bb']
+            },
+            {
+                info: '$lte between two steps',
+                query: { selector: { score: { $lte: 4.5 } }, sort: [{ score: 'asc' }] },
+                selectorSatisfiedByIndex: true,
+                expectedResultDocIds: ['aa', 'bb']
+            },
+            {
+                info: '$gte between two steps',
+                query: { selector: { score: { $gte: 4.5 } }, sort: [{ score: 'asc' }] },
+                selectorSatisfiedByIndex: true,
+                expectedResultDocIds: ['cc', 'dd']
+            },
+            {
+                info: '$gt between two steps',
+                query: { selector: { score: { $gt: 4.5 } }, sort: [{ score: 'asc' }] },
+                selectorSatisfiedByIndex: true,
+                expectedResultDocIds: ['cc', 'dd']
+            },
+            {
+                info: '$gt and $lt between two steps',
+                query: { selector: { score: { $gt: 3.5, $lt: 5.5 } }, sort: [{ score: 'asc' }] },
+                expectedResultDocIds: ['bb', 'cc']
+            },
+            {
+                info: '$eq between two steps',
+                query: { selector: { score: 4.5 }, sort: [{ score: 'asc' }] },
+                expectedResultDocIds: []
+            },
+            {
+                info: '$eq above the maximum',
+                query: { selector: { score: 11 }, sort: [{ score: 'asc' }] },
+                expectedResultDocIds: []
+            },
+            {
+                info: '$eq below the minimum',
+                query: { selector: { score: -1 }, sort: [{ score: 'asc' }] },
+                expectedResultDocIds: []
+            },
+            {
+                info: '$lte below the minimum',
+                query: { selector: { score: { $lte: -1 } }, sort: [{ score: 'asc' }] },
+                expectedResultDocIds: []
+            },
+            {
+                info: '$gte above the maximum',
+                query: { selector: { score: { $gte: 20 } }, sort: [{ score: 'asc' }] },
+                expectedResultDocIds: []
+            },
+            {
+                info: '$gte below the minimum and $lte above the maximum',
+                query: { selector: { score: { $gte: -5, $lte: 20 } }, sort: [{ score: 'asc' }] },
+                expectedResultDocIds: ['aa', 'bb', 'cc', 'dd']
+            },
+            {
+                info: '$gte on a step',
+                query: { selector: { score: { $gte: 4 } }, sort: [{ score: 'asc' }] },
+                selectorSatisfiedByIndex: true,
+                expectedResultDocIds: ['bb', 'cc', 'dd']
+            }
+        ]
+    });
+    testCorrectQueries<{ id: string; score: number; }>({
+        testTitle: 'query value between the steps of an indexed number field with a decimal multipleOf',
+        data: [
+            { id: 'aa', score: -1 },
+            { id: 'bb', score: -0.5 },
+            { id: 'cc', score: 0.5 },
+            { id: 'dd', score: 1 }
+        ],
+        schema: {
+            version: 0,
+            indexes: [['score']],
+            primaryKey: 'id',
+            type: 'object',
+            properties: {
+                id: { type: 'string', maxLength: 2 },
+                score: { type: 'number', minimum: -10, maximum: 10, multipleOf: 0.5 }
+            },
+            required: ['id', 'score']
+        },
+        queries: [
+            {
+                info: '$gt slightly below a step',
+                query: { selector: { score: { $gt: 0.46 } }, sort: [{ score: 'asc' }] },
+                selectorSatisfiedByIndex: true,
+                expectedResultDocIds: ['cc', 'dd']
+            },
+            {
+                info: '$lt slightly above a step',
+                query: { selector: { score: { $lt: 0.54 } }, sort: [{ score: 'asc' }] },
+                selectorSatisfiedByIndex: true,
+                expectedResultDocIds: ['aa', 'bb', 'cc']
+            },
+            {
+                info: '$gte slightly above a negative step',
+                query: { selector: { score: { $gte: -0.46 } }, sort: [{ score: 'asc' }] },
+                expectedResultDocIds: ['cc', 'dd']
+            },
+            {
+                info: '$lte slightly below a negative step',
+                query: { selector: { score: { $lte: -0.54 } }, sort: [{ score: 'asc' }] },
+                expectedResultDocIds: ['aa']
+            },
+            {
+                info: '$eq slightly above a step',
+                query: { selector: { score: 0.52 }, sort: [{ score: 'asc' }] },
+                expectedResultDocIds: []
+            },
+            {
+                info: '$eq on a step',
+                query: { selector: { score: 0.5 }, sort: [{ score: 'asc' }] },
+                selectorSatisfiedByIndex: true,
+                expectedResultDocIds: ['cc']
+            }
+        ]
+    });
+
+    it('number query value that no document can have on a compound index must return no documents', async () => {
+        type TodoDocType = { id: string; name: string; priority: number; };
+        const todoSchema = (index: string[]): RxJsonSchema<TodoDocType> => ({
+            version: 0,
+            primaryKey: 'id',
+            type: 'object',
+            properties: {
+                id: { type: 'string', maxLength: 100 },
+                name: { type: 'string', maxLength: 100 },
+                priority: { type: 'number', minimum: 1, maximum: 10, multipleOf: 1 }
+            },
+            required: ['id', 'name', 'priority'],
+            indexes: [index]
+        });
+        const todos: TodoDocType[] = [
+            { id: 'todo1', name: 'Learn RxDB', priority: 8 },
+            { id: 'todo2', name: 'Buy groceries', priority: 3 },
+            { id: 'todo3', name: 'Set up replication', priority: 10 },
+            { id: 'todo4', name: 'Clean the kitchen', priority: 1 },
+            { id: 'todo5', name: 'Write tests', priority: 10 },
+            { id: 'todo6', name: 'Learn RxDB', priority: 1 }
+        ];
+
+        type Condition<T> = { operators: Record<string, T | T[]>; matches: (value: T) => boolean; };
+        const priorityConditions: Condition<number>[] = [];
+        [-3, 0, 1, 4.5, 8, 10, 10.5, 12].forEach(v => {
+            priorityConditions.push(
+                { operators: { $eq: v }, matches: p => p === v },
+                { operators: { $gt: v }, matches: p => p > v },
+                { operators: { $gte: v }, matches: p => p >= v },
+                { operators: { $lt: v }, matches: p => p < v },
+                { operators: { $lte: v }, matches: p => p <= v }
+            );
+        });
+        [[12, 13], [-3, 0], [0, 12], [4.5], [0, 8], [10, 12]].forEach(values => {
+            priorityConditions.push({ operators: { $in: values }, matches: p => values.includes(p) });
+        });
+        priorityConditions.push(
+            { operators: { $gt: 12, $lt: 20 }, matches: () => false },
+            { operators: { $gte: -5, $lte: 0 }, matches: () => false },
+            { operators: { $gte: 0, $lte: 12 }, matches: () => true }
+        );
+        const nameConditions: (Condition<string> | undefined)[] = [
+            undefined,
+            { operators: { $eq: 'Learn RxDB' }, matches: n => n === 'Learn RxDB' },
+            { operators: { $gt: 'A' }, matches: n => n > 'A' },
+            { operators: { $gte: 'Learn RxDB' }, matches: n => n >= 'Learn RxDB' },
+            { operators: { $lt: 'z' }, matches: n => n < 'z' },
+            { operators: { $lte: 'Learn RxDB' }, matches: n => n <= 'Learn RxDB' }
+        ];
+
+        const wrong: string[] = [];
+        const createDatabase = async (allowSlowCount: boolean) => {
+            const database = await createRxDatabase<{
+                numberFirst: RxCollection<TodoDocType>;
+                numberLast: RxCollection<TodoDocType>;
+            }>({
+                name: randomToken(10),
+                storage: config.storage.getStorage(),
+                allowSlowCount
+            });
+            await database.addCollections({
+                numberFirst: { schema: todoSchema(['priority', 'name']) },
+                numberLast: { schema: todoSchema(['name', 'priority']) }
+            });
+            await database.numberFirst.bulkInsert(todos);
+            await database.numberLast.bulkInsert(todos);
+            return database;
+        };
+
+        const myDatabase = await createDatabase(true);
+        /**
+         * The queries run in parallel so that the test
+         * also finishes in time on a storage with slow reads.
+         */
+        const checks: Promise<void>[] = [];
+        for (const collection of [myDatabase.numberFirst, myDatabase.numberLast]) {
+            for (const priorityCondition of priorityConditions) {
+                for (const nameCondition of nameConditions) {
+                    const selector: MangoQuerySelector<TodoDocType> = { priority: priorityCondition.operators };
+                    if (nameCondition) {
+                        selector.name = nameCondition.operators;
+                    }
+                    const expected = todos
+                        .filter(todo => priorityCondition.matches(todo.priority))
+                        .filter(todo => !nameCondition || nameCondition.matches(todo.name))
+                        .map(todo => todo.id)
+                        .sort();
+                    checks.push((async () => {
+                        const [found, count] = await Promise.all([
+                            collection.find({ selector }).exec(),
+                            collection.count({ selector }).exec()
+                        ]);
+                        const foundIds = found.map(doc => doc.id).sort();
+                        if (
+                            JSON.stringify(foundIds) !== JSON.stringify(expected) ||
+                            count !== expected.length
+                        ) {
+                            wrong.push([
+                                collection.name,
+                                JSON.stringify(selector),
+                                'find: ' + JSON.stringify(foundIds),
+                                'count: ' + count,
+                                'expected: ' + JSON.stringify(expected)
+                            ].join(' | '));
+                        }
+                    })());
+                }
+            }
+        }
+        await Promise.all(checks);
+        await myDatabase.remove();
+
+        /**
+         * A value outside of the range must not turn
+         * a count() that uses the index into a slow count.
+         * With the name range, only the index that starts with
+         * the number field can count without the query matcher.
+         */
+        const noSlowCountDatabase = await createDatabase(false);
+        for (const collection of [noSlowCountDatabase.numberFirst, noSlowCountDatabase.numberLast]) {
+            for (const priority of [8, 12, 0, 4.5]) {
+                for (const nameCondition of [nameConditions[1], nameConditions[2]]) {
+                    if (nameCondition === nameConditions[2] && collection === noSlowCountDatabase.numberLast) {
+                        continue;
+                    }
+                    const selector: MangoQuerySelector<TodoDocType> = {
+                        priority,
+                        name: ensureNotFalsy(nameCondition).operators
+                    };
+                    const expected = todos.filter(
+                        todo => todo.priority === priority && ensureNotFalsy(nameCondition).matches(todo.name)
+                    ).length;
+                    const count = await collection.count({ selector }).exec().catch(err => 'error ' + err.code);
+                    if (count !== expected) {
+                        wrong.push([
+                            collection.name,
+                            JSON.stringify(selector),
+                            'count without allowSlowCount: ' + count,
+                            'expected: ' + expected
+                        ].join(' | '));
+                    }
+                }
+            }
+        }
+        await noSlowCountDatabase.remove();
+        assert.deepStrictEqual(wrong, []);
     });
 
     /**
