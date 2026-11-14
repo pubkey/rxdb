@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX the CouchDB replication did not start the long polling of the changes feed when the `live` option was not set, although `live` defaults to `true`. Also `pause()` now stops the long polling and calling `start()` after `pause()` no longer starts additional parallel long polling requests",
+    "links": [],
+    "priority": 5
+}
