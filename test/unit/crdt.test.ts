@@ -325,6 +325,39 @@ describe('crdt.test.ts', () => {
         });
     });
 
+    describe('upsert methods', () => {
+        it('should remove the fields that are not part of the upserted data', async () => {
+            const collection = await getCRDTCollection<{ id: string; name?: string; note?: string; }>({
+                version: 0,
+                primaryKey: 'id',
+                type: 'object',
+                properties: {
+                    id: {
+                        type: 'string',
+                        maxLength: 100
+                    },
+                    name: {
+                        type: 'string'
+                    },
+                    note: {
+                        type: 'string'
+                    }
+                },
+                required: ['id']
+            });
+            await collection.insert({ id: 'foobar', name: 'alice', note: 'first' });
+            const doc = await collection.upsert({ id: 'foobar', name: 'bob' });
+            assert.strictEqual(doc.name, 'bob');
+            assert.strictEqual(doc.note, undefined);
+            assert.strictEqual(doc.toJSON().crdts?.operations.length, 2);
+
+            const inserted = await collection.upsert({ id: 'foobar2', name: 'carol' });
+            assert.strictEqual(inserted.name, 'carol');
+            assert.strictEqual(inserted.toJSON().crdts?.operations.length, 1);
+
+            collection.database.close();
+        });
+    });
     describe('.updateCRDT()', () => {
         return; // TODO
         it('should update the document via CRDT', async () => {
@@ -659,6 +692,59 @@ describe('crdt.test.ts', () => {
                 clientACollection.database.close();
                 clientBCollection.database.close();
                 serverCollection.database.close();
+            });
+            (['upsert', 'bulkUpsert', 'incrementalUpsert'] as const).forEach(method => {
+                it('should not lose the ' + method + '() on an existing document when it is merged with an update of another client', async () => {
+                    const clientACollection = await getCRDTCollection();
+                    const clientBCollection = await getCRDTCollection();
+                    const serverCollection = await getCRDTCollection();
+
+                    const writeData = schemaObjects.humanData('foobar', 0);
+                    await clientACollection.insert(writeData);
+                    await replicateOnce(clientACollection, serverCollection);
+                    await replicateOnce(clientBCollection, serverCollection);
+
+                    const docB = await clientBCollection.findOne().exec(true);
+
+                    // write on both sides while 'offline'
+                    const upsertData = Object.assign({}, writeData, { lastName: 'upserted' });
+                    if (method === 'bulkUpsert') {
+                        const result = await clientACollection.bulkUpsert([upsertData]);
+                        assert.deepStrictEqual(result.error, []);
+                        assert.strictEqual(result.success[0].lastName, 'upserted');
+                    } else {
+                        const upsertedDoc = await clientACollection[method](upsertData);
+                        assert.strictEqual(upsertedDoc.lastName, 'upserted');
+                    }
+                    await docB.updateCRDT({
+                        ifMatch: {
+                            $set: {
+                                firstName: 'updated'
+                            }
+                        }
+                    });
+
+                    await replicateOnce(clientACollection, serverCollection);
+                    await replicateOnce(clientBCollection, serverCollection);
+                    await replicateOnce(clientACollection, serverCollection);
+
+                    const docA = await clientACollection.findOne().exec(true);
+                    [docA, docB.getLatest()].forEach(doc => {
+                        assert.strictEqual(doc.lastName, 'upserted');
+                        assert.strictEqual(doc.toJSON().crdts?.operations.length, 2);
+                        assert.strictEqual(doc.toJSON().crdts?.operations[1].length, 2);
+                    });
+                    /**
+                     * Both operations are in the same row and run sorted by their creator.
+                     * The upsert sets all fields, so the firstName depends on that order,
+                     * but both clients must end up with the same state.
+                     */
+                    assert.deepStrictEqual(docA.toJSON(), docB.getLatest().toJSON());
+
+                    clientACollection.database.close();
+                    clientBCollection.database.close();
+                    serverCollection.database.close();
+                });
             });
         });
     });
