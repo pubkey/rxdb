@@ -151,7 +151,7 @@ addRxPlugin(RxDBJsonDumpPlugin);
             it('should remove the value when the modifier returns undefined', async () => {
                 const databaseName = randomToken(10);
                 let state = await getState(databaseName);
-                const state2 = await getState(databaseName);
+                const state2 = config.storage.hasMultiInstance ? await getState(databaseName) : undefined;
                 await state.set('foo', () => 'bar');
                 await state.set('a', () => 1);
                 await state.set('nes', () => ({ ted: 'x' }));
@@ -167,9 +167,11 @@ addRxPlugin(RxDBJsonDumpPlugin);
                 ]);
                 assert.deepStrictEqual(state.get(), { nes: {}, b: 2 });
 
-                await waitUntil(() => state2.get('b') === 2);
-                assert.deepStrictEqual(state2.get(), { nes: {}, b: 2 });
-                await state2.collection.database.close();
+                if (state2) {
+                    await waitUntil(() => state2.get('b') === 2);
+                    assert.deepStrictEqual(state2.get(), { nes: {}, b: 2 });
+                    await state2.collection.database.close();
+                }
                 await state.collection.database.close();
 
                 state = await getState(databaseName);
