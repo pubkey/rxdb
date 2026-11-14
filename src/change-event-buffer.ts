@@ -109,34 +109,21 @@ export class ChangeEventBuffer<RxDocType> {
      * @return true if the buffer contains a newer state of one of the event documents
      */
     private hasNewerState(events: RxStorageChangeEvent<RxDocType>[]): boolean {
-        const buffer = this.buffer;
-        if (buffer.length === 0) {
-            return false;
-        }
         const ownRevisionEnd = '-' + this.collection.database.token;
         let lwtByDocId: Map<string, number> | undefined;
-        for (let index = 0; index < events.length; index++) {
-            const event = events[index];
+        return events.some(event => {
             if (event.documentData._rev.endsWith(ownRevisionEnd)) {
-                continue;
+                return false;
             }
             if (!lwtByDocId) {
-                lwtByDocId = new Map();
-                for (let bufferIndex = 0; bufferIndex < buffer.length; bufferIndex++) {
-                    const buffered = buffer[bufferIndex];
-                    const lwt = buffered.documentData._meta.lwt;
-                    const before = lwtByDocId.get(buffered.documentId);
-                    if (before === undefined || before < lwt) {
-                        lwtByDocId.set(buffered.documentId, lwt);
-                    }
-                }
+                const map = lwtByDocId = new Map<string, number>();
+                this.buffer.forEach(buffered => map.set(
+                    buffered.documentId,
+                    Math.max(map.get(buffered.documentId) || 0, buffered.documentData._meta.lwt)
+                ));
             }
-            const bufferedLwt = lwtByDocId.get(event.documentId);
-            if (bufferedLwt !== undefined && bufferedLwt > event.documentData._meta.lwt) {
-                return true;
-            }
-        }
-        return false;
+            return (lwtByDocId.get(event.documentId) as number) > event.documentData._meta.lwt;
+        });
     }
 
     getCounter() {
