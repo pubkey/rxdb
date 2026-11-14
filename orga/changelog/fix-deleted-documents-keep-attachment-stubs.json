@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX deleted documents kept the stubs of their attachments although the attachments data is removed from the storage on delete. This made the schema migration fail with `DM4`, the replication push retry forever with `attachment does not exist`, and the attachment data get lost when a deleted document was inserted again with the same attachment",
+    "links": [],
+    "priority": 5
+}
