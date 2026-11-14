@@ -541,8 +541,16 @@ export class RxDatabaseBase<
         return this.idleQueue.wrapCall(fn) as any;
     }
 
-    requestIdlePromise() {
-        return this.idleQueue.requestIdlePromise();
+    /**
+     * Returns a promise that resolves when the database is idle.
+     * @param timeout (optional) time in milliseconds after which
+     * the promise resolves even when the database is not idle.
+     */
+    requestIdlePromise(timeout?: number): Promise<void> {
+        if (timeout === undefined) {
+            return this.idleQueue.requestIdlePromise();
+        }
+        return this.idleQueue.requestIdlePromise({ timeout });
     }
 
     /**

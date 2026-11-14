@@ -27,5 +27,21 @@ describe('idle-queue.test.js', () => {
 
             c.database.close();
         });
+        it('should resolve when the timeout has passed while the database is not idle', async () => {
+            const c = await humansCollection.create(0);
+            const order: string[] = [];
+
+            const lockedPromise = c.database.lockedRun(
+                () => AsyncTestUtil.wait(400)
+            ).then(() => order.push('locked'));
+            const withoutTimeout = c.database.requestIdlePromise().then(() => order.push('idle'));
+            await c.database.requestIdlePromise(50);
+            order.push('timeout');
+
+            await Promise.all([lockedPromise, withoutTimeout]);
+            assert.deepStrictEqual(order, ['timeout', 'locked', 'idle']);
+
+            c.database.close();
+        });
     });
 });
