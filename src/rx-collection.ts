@@ -1138,8 +1138,15 @@ export class RxCollectionBase<
          * because it might lead to undefined behavior like when a doc is written
          * but the change is not added to the changes collection.
          */
-        return this.database.requestIdlePromise()
-            .then(() => this.storageInstance.close())
+        const storageClosed = this.database.requestIdlePromise()
+            .then(() => this.storageInstance.close());
+        /**
+         * When the storage fails to close, the collection is still
+         * unregistered from the database so that it does not stay
+         * in a half-closed state. The storage error is thrown afterwards.
+         */
+        return storageClosed
+            .catch(() => { })
             .then(() => {
                 /**
                  * Unsubscribing must be done AFTER the storageInstance.close()
@@ -1154,7 +1161,9 @@ export class RxCollectionBase<
                     collection: this.asRxCollection,
                     type: 'CLOSED'
                 });
-                return runAsyncPluginHooks('postCloseRxCollection', this).then(() => true);
+                return runAsyncPluginHooks('postCloseRxCollection', this)
+                    .then(() => storageClosed)
+                    .then(() => true);
             });
     }
 

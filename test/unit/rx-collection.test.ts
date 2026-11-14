@@ -2364,6 +2364,64 @@ describe('rx-collection.test.ts', () => {
                 });
             });
         });
+        describe('.close()', () => {
+            it('should unregister the collection when the close() of the storage instance rejects', async () => {
+                const baseStorage = config.storage.getStorage();
+                let rejectNextClose = false;
+                const storage: typeof baseStorage = {
+                    ...baseStorage,
+                    async createStorageInstance(params) {
+                        const instance = await baseStorage.createStorageInstance(params);
+                        return new Proxy(instance, {
+                            get(target, property) {
+                                if (property === 'close') {
+                                    return async () => {
+                                        await target.close();
+                                        if (rejectNextClose && params.collectionName === 'human') {
+                                            rejectNextClose = false;
+                                            throw new TypeError('storage close failed');
+                                        }
+                                    };
+                                }
+                                const value = Reflect.get(target, property);
+                                return typeof value === 'function' ? value.bind(target) : value;
+                            }
+                        });
+                    }
+                };
+                const db = await createRxDatabase({
+                    name: randomToken(10),
+                    storage
+                });
+                const collections = await db.addCollections({
+                    human: {
+                        schema: schemas.primaryHuman
+                    }
+                });
+                await collections.human.insert(schemaObjects.humanData());
+                const events: string[] = [];
+                const sub = db.collections$.subscribe(event => events.push(event.type));
+
+                rejectNextClose = true;
+                await assert.rejects(
+                    () => collections.human.close(),
+                    (err: any) => err.message === 'storage close failed'
+                );
+                assert.strictEqual(collections.human.closed, true);
+                assert.deepStrictEqual(Object.keys(db.collections), []);
+                assert.deepStrictEqual(events, ['CLOSED']);
+
+                const collectionsAgain = await db.addCollections({
+                    human: {
+                        schema: schemas.primaryHuman
+                    }
+                });
+                await collectionsAgain.human.insert(schemaObjects.humanData());
+
+                sub.unsubscribe();
+                await db.close();
+            });
+        });
         describe('.findByIds()', () => {
             it('should not crash', async () => {
                 const c = await humansCollection.create();
