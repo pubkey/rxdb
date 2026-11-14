@@ -97,6 +97,54 @@ describe('crdt.test.ts', () => {
             );
             db.close();
         });
+        it('should throw if the crdt field is a nested path', async () => {
+            type DocType = {
+                id: string;
+                name: string;
+                meta?: {
+                    crdts?: CRDTDocumentField<DocType>;
+                };
+            };
+            const schema: RxJsonSchema<DocType> = {
+                version: 0,
+                primaryKey: 'id',
+                type: 'object',
+                properties: {
+                    id: {
+                        type: 'string',
+                        maxLength: 100
+                    },
+                    name: {
+                        type: 'string'
+                    },
+                    meta: {
+                        type: 'object',
+                        properties: {
+                            crdts: getCRDTSchemaPart()
+                        }
+                    }
+                },
+                required: ['id', 'name'],
+                crdt: {
+                    field: 'meta.crdts'
+                }
+            };
+            const db = await createRxDatabase({
+                name: randomToken(10),
+                storage: config.storage.getStorage(),
+                multiInstance: false
+            });
+            await AsyncTestUtil.assertThrows(
+                () => db.addCollections({
+                    docs: {
+                        schema
+                    }
+                }),
+                'RxError',
+                'CRDT6'
+            );
+            db.close();
+        });
         it('should automatically set the CRDT conflict handler', async () => {
             const collection = await getCRDTCollection();
             assert.ok(collection.conflictHandler !== defaultConflictHandler);

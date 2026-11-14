@@ -73,7 +73,7 @@ For the exact definition on how each operator behaves, check out the [MongoDB do
 To use CRDTs with RxDB, you need the following:
 
 - Add the CRDT plugin via `addRxPlugin`.
-- Add a field to your schema that defines where to store the CRDT operations via `getCRDTSchemaPart()`
+- Add a field to your schema that defines where to store the CRDT operations via `getCRDTSchemaPart()`. This must be a top-level field. A nested path like `meta.crdts` is rejected by the [dev-mode](./dev-mode.md) plugin with the error [`CRDT6`](./errors.md#CRDT6).
 - Set the `crdt` options in your schema.
 - Do **NOT** set a custom conflict handler, the plugin will use its own one.
 

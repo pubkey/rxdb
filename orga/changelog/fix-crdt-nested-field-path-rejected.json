@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX a schema with a nested path as `crdt.field` (like `meta.crdts`) passed `addCollections()` and with the dev-mode plugin the first `insert()` ended in `RangeError: Maximum call stack size exceeded`. The schema check of the dev-mode plugin now throws the new error `CRDT6` when the collection is created. Nothing changes without the dev-mode plugin. Added a testcase",
+    "links": [],
+    "priority": 4
+}

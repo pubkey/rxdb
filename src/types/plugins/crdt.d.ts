@@ -21,6 +21,7 @@ export type CRDTSchemaOptions<RxDocType> = {
      * to store the crdt operations.
      * The given field must exist with the content of "CRDT_FIELD_SCHEMA" in the
      * properties part of your schema.
+     * Must be a top-level field, nested paths are not allowed.
      */
     field: StringKeys<RxDocType> | string;
 

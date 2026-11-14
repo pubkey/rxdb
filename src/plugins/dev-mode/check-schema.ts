@@ -607,4 +607,17 @@ export function checkSchema(jsonSchema: RxJsonSchema<any>) {
             });
         });
     }
+
+    /**
+     * The operations of a CRDT document set its top-level fields,
+     * so the CRDT field must be a top-level field itself.
+     * A nested path would put the operations into a field
+     * that is overwritten by the operations.
+     */
+    if (jsonSchema.crdt && jsonSchema.crdt.field.includes('.')) {
+        throw newRxError('CRDT6', {
+            field: jsonSchema.crdt.field,
+            schema: jsonSchema
+        });
+    }
 }
