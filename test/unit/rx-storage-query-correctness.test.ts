@@ -2729,6 +2729,48 @@ describe('rx-storage-query-correctness.test.ts', () => {
         ]
     });
 
+    testCorrectQueries<{ id: string; indexed: string; plain: string; }>({
+        testTitle: 'operator object without operators must give the same result on indexed and non-indexed fields',
+        data: [
+            { id: 'aa', indexed: 'x', plain: 'x' },
+            { id: 'bb', indexed: 'y', plain: 'y' }
+        ],
+        schema: {
+            version: 0,
+            indexes: [['indexed']],
+            primaryKey: 'id',
+            type: 'object',
+            properties: {
+                id: { type: 'string', maxLength: 2 },
+                indexed: { type: 'string', maxLength: 5 },
+                plain: { type: 'string', maxLength: 5 }
+            },
+            required: ['id', 'indexed', 'plain']
+        },
+        queries: [
+            {
+                info: 'empty operator object on a non-indexed field',
+                query: { selector: { plain: {} }, sort: [{ id: 'asc' }] },
+                expectedResultDocIds: []
+            },
+            {
+                info: 'empty operator object on an indexed field',
+                query: { selector: { indexed: {} }, sort: [{ id: 'asc' }] },
+                expectedResultDocIds: []
+            },
+            {
+                info: 'empty operator object on the primary key',
+                query: { selector: { id: {} }, sort: [{ id: 'asc' }] },
+                expectedResultDocIds: []
+            },
+            {
+                info: 'empty operator object on an indexed field together with a non-indexed condition',
+                query: { selector: { indexed: {}, plain: 'x' }, sort: [{ id: 'asc' }] },
+                expectedResultDocIds: []
+            }
+        ]
+    });
+
     /**
      * @link https://github.com/pubkey/rxdb/issues/9371
      */

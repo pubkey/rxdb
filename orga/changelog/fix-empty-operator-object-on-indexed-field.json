@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX a query with an empty operator object like `{ selector: { field: {} } }` returned all documents when `field` was indexed or the primary key and no documents when it was not indexed. The query planner no longer marks such a selector as satisfied by the index, so the query matcher decides and the result is the same with and without an index",
+    "links": [],
+    "priority": 4
+}
