@@ -164,6 +164,13 @@ export type RxStorageInstanceReplicationInput<RxDocType> = {
      */
     waitBeforePersist?: () => Promise<any>;
 
+    /**
+     * Time in milliseconds to wait before the documents
+     * are pulled again after persisting a pulled batch to the fork has failed.
+     * [default=5000]
+     */
+    retryTime?: number;
+
     hashFunction: HashFunction;
     skipStoringPullMeta: boolean;
 

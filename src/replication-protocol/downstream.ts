@@ -1,7 +1,9 @@
 import {
     firstValueFrom,
     filter,
-    mergeMap
+    merge,
+    mergeMap,
+    timer as rxjsTimer
 } from 'rxjs';
 import { newRxError } from '../rx-error.ts';
 import { getWrittenDocumentsFromBulkWriteResponse, stackCheckpoints } from '../rx-storage-helper.ts';
@@ -177,42 +179,69 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
             return;
         }
 
-        state.checkpointQueue = state.checkpointQueue.then(() => getLastCheckpointDoc(state, 'down'));
-        let lastCheckpoint: CheckpointType = await state.checkpointQueue;
-
-
-        const promises: Promise<any>[] = [];
+        /**
+         * When persisting a batch has failed, the documents of that batch
+         * are still missing on the fork. Therefore we have to
+         * pull again from the last stored checkpoint until
+         * all batches have been persisted.
+         */
         while (!state.events.canceled.getValue()) {
-            lastTimeMasterChangesRequested = timer++;
-            const downResult = await replicationHandler.masterChangesSince(
-                lastCheckpoint,
-                state.input.pullBatchSize
-            );
+            persistFailed = false;
+            state.checkpointQueue = state.checkpointQueue.then(() => getLastCheckpointDoc(state, 'down'));
+            let lastCheckpoint: CheckpointType = await state.checkpointQueue;
 
-            if (downResult.documents.length === 0) {
+            const promises: Promise<any>[] = [];
+            while (!state.events.canceled.getValue()) {
+                lastTimeMasterChangesRequested = timer++;
+                const downResult = await replicationHandler.masterChangesSince(
+                    lastCheckpoint,
+                    state.input.pullBatchSize
+                );
+
+                if (downResult.documents.length === 0) {
+                    break;
+                }
+
+                lastCheckpoint = stackCheckpoints([lastCheckpoint, downResult.checkpoint]);
+
+                promises.push(
+                    persistFromMaster(
+                        downResult.documents,
+                        lastCheckpoint
+                    )
+                );
+
+                /**
+                 * By definition we stop pull when the pulled documents
+                 * do not fill up the pullBatchSize because we
+                 * can assume that the remote has no more documents.
+                 */
+                if (downResult.documents.length < state.input.pullBatchSize) {
+                    break;
+                }
+
+            }
+            await Promise.all(promises);
+            if (!persistFailed) {
                 break;
             }
-
-            lastCheckpoint = stackCheckpoints([lastCheckpoint, downResult.checkpoint]);
-
-            promises.push(
-                persistFromMaster(
-                    downResult.documents,
-                    lastCheckpoint
-                )
-            );
-
-            /**
-             * By definition we stop pull when the pulled documents
-             * do not fill up the pullBatchSize because we
-             * can assume that the remote has no more documents.
-             */
-            if (downResult.documents.length < state.input.pullBatchSize) {
-                break;
-            }
-
+            await awaitPersistRetry();
         }
-        await Promise.all(promises);
+    }
+
+    /**
+     * Waits for the retry time, resolves earlier when the replication is canceled.
+     */
+    function awaitPersistRetry(): Promise<any> {
+        return firstValueFrom(
+            merge(
+                rxjsTimer(state.input.retryTime === undefined ? 5000 : state.input.retryTime),
+                state.events.canceled.pipe(
+                    filter((canceled: boolean) => !!canceled)
+                )
+            ),
+            { defaultValue: true }
+        );
     }
 
 
@@ -231,7 +260,11 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
         return persistFromMaster(
             docsOfAllTasks,
             ensureNotFalsy(lastCheckpoint)
-        );
+        ).then(() => {
+            if (persistFailed) {
+                return awaitPersistRetry().then(() => downstreamResyncOnce());
+            }
+        });
     }
 
 
@@ -244,6 +277,29 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
      * by processing the documents in bulks.
      */
     let persistenceQueue = PROMISE_RESOLVE_VOID;
+
+    /**
+     * Is true when a storage call has thrown while persisting a batch.
+     * While it is true, no checkpoint is stored because that checkpoint
+     * would be behind the documents that have not been persisted.
+     * It is reset when the documents are pulled again from the last stored checkpoint.
+     */
+    let persistFailed = false;
+
+    /**
+     * An error thrown by a storage call can be transient,
+     * so the documents of the batch must be pulled again.
+     * All other errors, like a write error of a single document
+     * or pulled document data from which no write row can be built,
+     * will happen again when the same documents are pulled again.
+     * These are only emitted to the error stream and the batch is not retried.
+     */
+    function retryBatchOnError<T>(storageCall: Promise<T>): Promise<T> {
+        return storageCall.catch(err => {
+            persistFailed = true;
+            throw err;
+        });
+    }
     const nonPersistedFromMaster: {
         checkpoint?: CheckpointType;
         docs: ById<WithDeleted<RxDocType>>;
@@ -290,11 +346,11 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
             const useMetaWriteRows: BulkWriteRow<RxStorageReplicationMeta<RxDocType, CheckpointType>>[] = [];
 
             return Promise.all([
-                state.input.forkInstance.findDocumentsById(docIds, true),
-                getAssumedMasterState(
+                retryBatchOnError(state.input.forkInstance.findDocumentsById(docIds, true)),
+                retryBatchOnError(getAssumedMasterState(
                     state,
                     docIds
-                )
+                ))
             ]).then(([
                 currentForkStateList,
                 assumedMasterState
@@ -482,10 +538,10 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
                 );
             }).then(async () => {
                 if (writeRowsToFork.length > 0) {
-                    return state.input.forkInstance.bulkWrite(
+                    return retryBatchOnError(state.input.forkInstance.bulkWrite(
                         writeRowsToFork,
                         await state.downstreamBulkWriteFlag
-                    ).then((forkWriteResult) => {
+                    )).then((forkWriteResult) => {
                         const success = getWrittenDocumentsFromBulkWriteResponse(
                             state.primaryPath,
                             writeRowsToFork,
@@ -519,10 +575,10 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
                 }
             }).then(() => {
                 if (!state.skipStoringPullMeta && useMetaWriteRows.length > 0) {
-                    return state.input.metaInstance.bulkWrite(
+                    return retryBatchOnError(state.input.metaInstance.bulkWrite(
                         stripAttachmentsDataFromMetaWriteRows(state, useMetaWriteRows),
                         'replication-down-write-meta'
-                    ).then(metaWriteResult => {
+                    )).then(metaWriteResult => {
                         metaWriteResult.error
                             .forEach(writeError => {
                                 state.events.error.next(newRxError('RC_PULL', {
@@ -533,6 +589,9 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
                     });
                 }
             }).then(() => {
+                if (persistFailed) {
+                    return;
+                }
                 /**
                  * For better performance we do not await checkpoint writes,
                  * but to ensure order on parallel checkpoint writes,
