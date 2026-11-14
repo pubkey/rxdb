@@ -660,6 +660,45 @@ describe('crdt.test.ts', () => {
                 clientBCollection.database.close();
                 serverCollection.database.close();
             });
+            it('should keep the document deleted when it was removed via bulkRemove() or RxQuery.remove()', async () => {
+                const removeMethods: ((collection: RxCollection<TestDocType>) => Promise<any>)[] = [
+                    collection => collection.bulkRemove(['foobar']),
+                    collection => collection.find().remove()
+                ];
+                for (const removeMethod of removeMethods) {
+                    const clientACollection = await getCRDTCollection();
+                    const clientBCollection = await getCRDTCollection();
+                    const serverCollection = await getCRDTCollection();
+
+                    await clientACollection.insert(schemaObjects.humanData('foobar', 0));
+                    await replicateOnce(clientACollection, serverCollection);
+                    await replicateOnce(clientBCollection, serverCollection);
+
+                    // delete on A and update on B while 'offline'
+                    await removeMethod(clientACollection);
+                    const docB = await clientBCollection.findOne().exec(true);
+                    await docB.updateCRDT({
+                        ifMatch: {
+                            $inc: {
+                                age: 1
+                            }
+                        }
+                    });
+
+                    await replicateOnce(clientACollection, serverCollection);
+                    await replicateOnce(clientBCollection, serverCollection);
+                    await replicateOnce(clientACollection, serverCollection);
+
+                    for (const collection of [clientACollection, clientBCollection, serverCollection]) {
+                        const docsAfter = await collection.find().exec();
+                        assert.deepStrictEqual(docsAfter.map(d => d.primary), []);
+                    }
+
+                    clientACollection.database.close();
+                    clientBCollection.database.close();
+                    serverCollection.database.close();
+                }
+            });
         });
     });
 });

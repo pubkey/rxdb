@@ -571,6 +571,41 @@ export const RxDBcrdtPlugin: RxPlugin = {
                     );
                     return bulkInsertBefore(useDocsData);
                 };
+
+                /**
+                 * A delete must be stored as CRDT operation,
+                 * otherwise it is not contained in the operations
+                 * from which the document state is rebuilt on conflicts.
+                 */
+                collection.bulkRemove = async function (idsOrDocs: string[] | RxDocument[]) {
+                    if (idsOrDocs.length === 0) {
+                        return {
+                            success: [],
+                            error: []
+                        };
+                    }
+                    const docs: RxDocument[] = typeof idsOrDocs[0] === 'string'
+                        ? Array.from((await collection.findByIds(idsOrDocs as string[]).exec()).values())
+                        : idsOrDocs as RxDocument[];
+                    const success = await Promise.all(
+                        docs.map(async (doc) => {
+                            await collection._runHooks('pre', 'remove', doc.toMutableJSON(true), doc);
+                            const deletedDoc = await doc.updateCRDT({
+                                ifMatch: {
+                                    $set: {
+                                        _deleted: true
+                                    }
+                                }
+                            });
+                            await collection._runHooks('post', 'remove', deletedDoc.toMutableJSON(true), deletedDoc);
+                            return deletedDoc;
+                        })
+                    );
+                    return {
+                        success,
+                        error: []
+                    };
+                };
             }
         }
     }
