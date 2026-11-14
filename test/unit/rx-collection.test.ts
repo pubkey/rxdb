@@ -490,6 +490,45 @@ describe('rx-collection.test.ts', () => {
                 assert.strictEqual(doc.age, 1);
                 db.close();
             });
+            it('should throw the same RxError as insert() when the document is not valid', async () => {
+                const db = await createRxDatabase({
+                    name: randomToken(10),
+                    storage: config.storage.getStorage(),
+                });
+                const collections = await db.addCollections({
+                    human: {
+                        schema: schemas.human
+                    }
+                });
+                const collection = collections.human;
+
+                // age is above the maximum of the schema
+                const invalidDocData = schemaObjects.humanData('foobar', 1000);
+
+                const insertError: RxError = await assertThrows(
+                    () => collection.insert(invalidDocData),
+                    'RxError',
+                    'VD2'
+                ) as any;
+
+                let thrown: any;
+                try {
+                    await collection.insertIfNotExists(invalidDocData);
+                } catch (err) {
+                    thrown = err;
+                }
+                assert.ok(thrown, 'insertIfNotExists() must throw');
+                assert.ok(thrown instanceof Error, 'must throw an Error instance');
+                const rxError = thrown as RxError;
+                assert.strictEqual(rxError.code, insertError.code);
+                assert.strictEqual(rxError.code, 'VD2');
+                assert.strictEqual(rxError.parameters.id, 'foobar');
+
+                const docs = await collection.find().exec();
+                assert.strictEqual(docs.length, 0);
+
+                db.close();
+            });
         });
         describe('.bulkInsert()', () => {
             describe('positive', () => {

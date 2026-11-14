@@ -417,9 +417,8 @@ export class RxCollectionBase<
                 const conflictDocData = error.documentInDb;
                 return mapDocumentsDataToCacheDocs(this._docCache, [conflictDocData])[0] as any;
 
-            } else {
-                throw error;
             }
+            throwIfIsStorageWriteError(this as any, (json as any)[this.schema.primaryPath] as any, json, error as any);
         }
         return writeResult.success[0];
     }
