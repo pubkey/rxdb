@@ -152,8 +152,8 @@ addRxPlugin(RxDBJsonDumpPlugin);
                 const databaseName = randomToken(10);
                 const database = await getDatabase(databaseName);
                 const state = await database.addState<ListState>();
-                const database2 = await getDatabase(databaseName);
-                const state2 = await database2.addState<ListState>();
+                const database2 = config.storage.hasMultiInstance ? await getDatabase(databaseName) : undefined;
+                const state2 = database2 ? await database2.addState<ListState>() : undefined;
                 const expected: ListState = {
                     list: [{ name: 'a' }, { name: 'b2' }, { name: 'c2' }],
                     matrix: [[1, 2], [3, 44]],
@@ -170,9 +170,11 @@ addRxPlugin(RxDBJsonDumpPlugin);
                 assert.deepStrictEqual(state.get(), expected);
                 assert.strictEqual(state.get('list.1.name'), 'b2');
 
-                await waitUntil(() => state2.get('byNr.1') === 'one');
-                assert.deepStrictEqual(state2.get(), expected);
-                await database2.close();
+                if (database2 && state2) {
+                    await waitUntil(() => state2.get('byNr.1') === 'one');
+                    assert.deepStrictEqual(state2.get(), expected);
+                    await database2.close();
+                }
                 await database.close();
 
                 const database3 = await getDatabase(databaseName);
@@ -515,7 +517,7 @@ addRxPlugin(RxDBJsonDumpPlugin);
             it('should replay writes with dot, bracket and mixed paths on a second instance and after a reopen', async () => {
                 const databaseName = randomToken(10);
                 const state = await getPathState(databaseName);
-                const state2 = await getPathState(databaseName);
+                const state2 = config.storage.hasMultiInstance ? await getPathState(databaseName) : undefined;
                 const expected: PathState = {
                     list: [{ foo: 'bracket' }, { foo: 'dot' }],
                     m: [[1, 20], [30, 4]],
@@ -532,16 +534,18 @@ addRxPlugin(RxDBJsonDumpPlugin);
                 await state.set('created.0.foo', () => 'c');
                 assert.deepStrictEqual(state.get(), expected);
 
-                await waitUntil(() => state2.get('created.0.foo') === 'c');
-                assert.deepStrictEqual(state2.get(), expected);
-                assert.strictEqual(state2.get('m.1.0'), 30);
+                if (state2) {
+                    await waitUntil(() => state2.get('created.0.foo') === 'c');
+                    assert.deepStrictEqual(state2.get(), expected);
+                    assert.strictEqual(state2.get('m.1.0'), 30);
 
-                // a write of the second instance on top of the replayed state
-                await state2.set('m.1.1', (v: number) => v + 1);
-                expected.m[1][1] = 5;
-                await waitUntil(() => state.get('m.1.1') === 5);
-                assert.deepStrictEqual(state.get(), expected);
-                await state2.collection.database.close();
+                    // a write of the second instance on top of the replayed state
+                    await state2.set('m.1.1', (v: number) => v + 1);
+                    expected.m[1][1] = 5;
+                    await waitUntil(() => state.get('m.1.1') === 5);
+                    assert.deepStrictEqual(state.get(), expected);
+                    await state2.collection.database.close();
+                }
                 await state.collection.database.close();
 
                 const state3 = await getPathState(databaseName);
