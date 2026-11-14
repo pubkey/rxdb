@@ -291,6 +291,45 @@ describe('rx-collection.test.ts', () => {
                     }
                     db.close();
                 });
+                it('should reject with COL1 when an RxDocument is inserted instead of plain data', async () => {
+                    const db = await createRxDatabase({
+                        name: randomToken(10),
+                        storage: config.storage.getStorage(),
+                    });
+                    const collections = await db.addCollections({
+                        humans: {
+                            schema: schemas.human
+                        },
+                        archive: {
+                            schema: schemas.human
+                        }
+                    });
+                    const doc = await collections.humans.insert(schemaObjects.humanData());
+
+                    const insertError: RxError = await assertThrows(
+                        () => collections.archive.insert(doc),
+                        'RxError'
+                    ) as any;
+                    assert.strictEqual(insertError.code, 'COL1');
+                    const insertIfNotExistsError: RxError = await assertThrows(
+                        () => collections.archive.insertIfNotExists(doc),
+                        'RxError'
+                    ) as any;
+                    assert.strictEqual(insertIfNotExistsError.code, 'COL1');
+                    const bulkInsertError: RxError = await assertThrows(
+                        () => collections.archive.bulkInsert([doc]),
+                        'RxError'
+                    ) as any;
+                    assert.strictEqual(bulkInsertError.code, 'COL1');
+
+                    const stored = await collections.archive.find().exec();
+                    assert.strictEqual(stored.length, 0);
+
+                    const copy = await collections.archive.insert(doc.toMutableJSON());
+                    assert.strictEqual(copy.primary, doc.primary);
+
+                    db.close();
+                });
                 it('should set default values', async () => {
                     const db = await createRxDatabase({
                         name: randomToken(10),

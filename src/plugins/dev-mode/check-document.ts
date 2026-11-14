@@ -1,6 +1,7 @@
 import { newRxError } from '../../rx-error.ts';
 import { fillPrimaryKey, getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper.ts';
-import type { BulkWriteRow, RxDocumentData, RxStorageInstance } from '../../types/index.d.ts';
+import { isRxDocument } from '../../rx-document.ts';
+import type { BulkWriteRow, RxCollection, RxDocumentData, RxStorageInstance } from '../../types/index.d.ts';
 
 /**
  * Strip Blob data from _attachments so that
@@ -87,6 +88,31 @@ export function containsDateInstance(obj: any): boolean {
     return false;
 }
 
+
+/**
+ * An RxDocument instance is not plain document data.
+ * Its own properties would be stored instead of the document fields
+ * which results in a stored document without a primary key.
+ * insert() and insertIfNotExists() call bulkInsert(),
+ * so wrapping bulkInsert() covers all three methods
+ * and sees the input before the preInsert hooks run.
+ */
+export function ensureInsertInputIsNoRxDocument(
+    collection: RxCollection<any, any, any, any, any>
+) {
+    const bulkInsert = collection.bulkInsert.bind(collection);
+    collection.bulkInsert = async function (docsData: any[]) {
+        for (const docData of docsData) {
+            if (isRxDocument(docData)) {
+                throw newRxError('COL1', {
+                    collection: collection.name,
+                    id: docData.primary
+                });
+            }
+        }
+        return bulkInsert(docsData);
+    };
+}
 
 export function checkWriteRows<RxDocType>(
     storageInstance: RxStorageInstance<RxDocType, any, any, any>,

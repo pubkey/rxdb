@@ -396,7 +396,7 @@ export class RxCollectionBase<
     }
 
     async insert(
-        json: RxDocumentType | RxDocument
+        json: RxDocumentType
     ): Promise<RxDocument<RxDocumentType, OrmMethods, Reactivity>> {
         isWriteAllowed(this);
         const writeResult = await this.bulkInsert([json as any]);
@@ -408,7 +408,7 @@ export class RxCollectionBase<
     }
 
     async insertIfNotExists(
-        json: RxDocumentType | RxDocument
+        json: RxDocumentType
     ): Promise<RxDocument<RxDocumentType, OrmMethods, Reactivity>> {
         const writeResult = await this.bulkInsert([json as any]);
         if (writeResult.error.length > 0) {
