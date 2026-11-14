@@ -21,8 +21,125 @@ import { getRxStorageMemory } from '../../plugins/storage-memory/index.mjs';
 import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.mjs';
 import { assertThrows } from 'async-test-util';
 import { nextPort } from '../helper/port-manager.ts';
+import { Subject } from 'rxjs';
+import {
+    exposeRxStorageRemote,
+    getRxStorageRemote
+} from '../../plugins/storage-remote/index.mjs';
+import type {
+    MessageFromRemote,
+    MessageToRemote
+} from '../../plugins/storage-remote/index.mjs';
+import type { RxStorage } from '../../plugins/core/index.mjs';
+import { getRxStorageDexie } from '../../plugins/storage-dexie/index.mjs';
+import {
+    indexedDB as fakeIndexedDB,
+    IDBKeyRange as fakeIDBKeyRange
+} from 'fake-indexeddb';
 
 describe('rx-storage-remote.test.ts', () => {
+    /**
+     * Uses an in-process message channel and its own base storage
+     * that rejects calls to a closed instance,
+     * so it runs with each config.storage.
+     */
+    describe('close() in parallel to a create of another connection', () => {
+        it('should give a usable instance to a client that opens the collection while another client closes it', async () => {
+            const baseStorage = getRxStorageDexie({
+                indexedDB: fakeIndexedDB,
+                IDBKeyRange: fakeIDBKeyRange
+            });
+            let closeRunning = false;
+            let onCloseStarted: () => void = () => { };
+            const closeStarted = new Promise<void>(res => onCloseStarted = res);
+            let finishClose: () => void = () => { };
+            const closeCanFinish = new Promise<void>(res => finishClose = res);
+            /**
+             * The close() of the collection instance stays pending
+             * until the remote has received the next create message.
+             */
+            const slowCloseStorage: RxStorage<any, any> = {
+                name: baseStorage.name,
+                rxdbVersion: baseStorage.rxdbVersion,
+                async createStorageInstance(params) {
+                    const instance = await baseStorage.createStorageInstance(params);
+                    if (params.collectionName === 'humans') {
+                        const closeInstance = instance.close.bind(instance);
+                        instance.close = async () => {
+                            closeRunning = true;
+                            onCloseStarted();
+                            await closeCanFinish;
+                            return closeInstance();
+                        };
+                    }
+                    return instance;
+                }
+            };
+            const toRemote$ = new Subject<MessageToRemote>();
+            const fromRemote$ = new Subject<MessageFromRemote>();
+            exposeRxStorageRemote({
+                storage: slowCloseStorage,
+                messages$: toRemote$,
+                send(msg) {
+                    fromRemote$.next(msg);
+                }
+            });
+            function getClientStorage() {
+                return wrappedValidateAjvStorage({
+                    storage: getRxStorageRemote({
+                        identifier: 'in-process-' + randomToken(10),
+                        mode: 'storage',
+                        messageChannelCreator: () => Promise.resolve({
+                            messages$: fromRemote$,
+                            send(msg) {
+                                toRemote$.next(msg);
+                                if (closeRunning && msg.method === 'create') {
+                                    finishClose();
+                                }
+                            },
+                            close() {
+                                return Promise.resolve();
+                            }
+                        })
+                    })
+                });
+            }
+            const name = randomToken(10);
+            const databaseA = await createRxDatabase({
+                name,
+                storage: getClientStorage(),
+                multiInstance: false,
+                ignoreDuplicate: true
+            });
+            await databaseA.addCollections({
+                humans: {
+                    schema: schemas.human
+                }
+            });
+            const databaseB = await createRxDatabase({
+                name,
+                storage: getClientStorage(),
+                multiInstance: false,
+                ignoreDuplicate: true
+            });
+
+            const closePromise = databaseA.humans.close();
+            await closeStarted;
+            const collectionsB = await databaseB.addCollections({
+                humans: {
+                    schema: schemas.human
+                }
+            });
+            await closePromise;
+
+            await collectionsB.humans.insert(schemaObjects.humanData());
+            const docs = await collectionsB.humans.find().exec();
+            assert.strictEqual(docs.length, 1);
+
+            await databaseA.close();
+            await databaseB.close();
+        });
+    });
     /**
      * Notice: Most use cases for the remote storage
      * are tests by having a full unit-test run where all
