@@ -148,6 +148,39 @@ addRxPlugin(RxDBJsonDumpPlugin);
                 assert.deepStrictEqual(value, { foo: 'bar2' });
                 state.collection.database.remove();
             });
+            it('should remove the value when the modifier returns undefined', async () => {
+                const databaseName = randomToken(10);
+                let state = await getState(databaseName);
+                const state2 = await getState(databaseName);
+                await state.set('foo', () => 'bar');
+                await state.set('a', () => 1);
+                await state.set('nes', () => ({ ted: 'x' }));
+
+                await state.set('a', () => undefined);
+                await state.set('nes.ted', () => undefined);
+                assert.strictEqual(state.get('a'), undefined);
+                assert.deepStrictEqual(state.get(), { foo: 'bar', nes: {} });
+
+                await Promise.all([
+                    state.set('foo', () => undefined),
+                    state.set('b', () => 2)
+                ]);
+                assert.deepStrictEqual(state.get(), { nes: {}, b: 2 });
+
+                await waitUntil(() => state2.get('b') === 2);
+                assert.deepStrictEqual(state2.get(), { nes: {}, b: 2 });
+                await state2.collection.database.close();
+                await state.collection.database.close();
+
+                state = await getState(databaseName);
+                assert.deepStrictEqual(state.get(), { nes: {}, b: 2 });
+
+                await state.set('', () => undefined);
+                assert.deepStrictEqual(state.get(), {});
+                await state.set('a', () => 5);
+                assert.deepStrictEqual(state.get(), { a: 5 });
+                await state.collection.database.remove();
+            });
             it('doing many writes should end up in a single persistence write to the storage', async () => {
                 const state = await getState();
                 await state.set('a', () => 0);

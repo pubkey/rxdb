@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `RxState.set()` with a modifier that returns `undefined` rejected with `VD2` when a schema validator is used. It now removes the value at that path, with and without a validator",
+    "links": [],
+    "priority": 4
+}
