@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX RxPipeline ending permanently in its error state with `no flagged keys left` when more than 20 pipeline handlers run at the same time",
+    "links": [],
+    "priority": 5
+}
