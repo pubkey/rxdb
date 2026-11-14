@@ -709,7 +709,7 @@
     "typescript": "6.0.3",
     "vue": "3.5.44",
     "webpack": "5.111.1",
-    "webpack-bundle-analyzer": "5.4.1",
+    "webpack-bundle-analyzer": "5.4.2",
     "webpack-cli": "7.2.3",
     "webpack-dev-server": "6.0.0"
   },
