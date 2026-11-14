@@ -96,9 +96,16 @@ export function wrappedValidateStorageFactory(
                      * to save initial page load performance.
                      * Some libraries take really long to initialize the validator
                      * from the schema.
+                     * A schema that the validator cannot compile must not cause
+                     * an uncaught error inside of the idle callback.
+                     * The error is thrown by the first write instead.
                      */
                     let validatorCached: ValidatorFunction;
-                    requestIdleCallbackIfAvailable(() => validatorCached = initValidator(params.schema));
+                    requestIdleCallbackIfAvailable(() => {
+                        try {
+                            validatorCached = initValidator(params.schema);
+                        } catch { }
+                    });
 
                     const oldBulkWrite = instance.bulkWrite.bind(instance);
                     instance.bulkWrite = (
