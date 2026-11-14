@@ -517,6 +517,12 @@ export const RxDBcrdtPlugin: RxPlugin = {
                     const useDocsData = await Promise.all(
                         docsData.map(async (docData) => {
                             /**
+                             * Work on a copy so that the object of the caller
+                             * stays untouched and frozen objects can be inserted.
+                             */
+                            docData = clone(docData);
+
+                            /**
                              * Fill schema default values before creating CRDT operations,
                              * so that default values are captured in the operations and
                              * will be preserved during rebuildFromCRDT (conflict resolution).
