@@ -13,6 +13,7 @@ import {
     randomToken,
     addRxPlugin,
     RxCollection,
+    RxDocument,
     RxJsonSchema,
     ensureNotFalsy,
     removeRxDatabase,
@@ -95,6 +96,68 @@ describe('cleanup.test.js', () => {
                 true
             );
             assert.ok(deletedDocInStorage.length >= 1);
+
+            await db.close();
+        });
+        it('incrementalUpsert() after remove and cleanup must insert the document like upsert() does', async () => {
+            const db = await createRxDatabase({
+                name: randomToken(10),
+                storage: config.storage.getStorage()
+            });
+            const cols = await db.addCollections({
+                viaupsert: {
+                    schema: schemas.human
+                },
+                viaincremental: {
+                    schema: schemas.human
+                }
+            });
+            const docData = schemaObjects.humanData();
+            const newDocData = Object.assign({}, docData, { firstName: 'afterCleanup' });
+
+            const run = async (
+                collection: RxCollection<HumanDocumentType>,
+                write: (data: HumanDocumentType) => Promise<RxDocument<HumanDocumentType>>
+            ) => {
+                await collection.insert(docData);
+                await collection.find().remove();
+                await collection.cleanup(0);
+
+                const hooks: string[] = [];
+                collection.preInsert(() => {
+                    hooks.push('preInsert');
+                }, false);
+                collection.postInsert(() => {
+                    hooks.push('postInsert');
+                }, false);
+                collection.preSave(() => {
+                    hooks.push('preSave');
+                }, false);
+                collection.postSave(() => {
+                    hooks.push('postSave');
+                }, false);
+
+                const doc = await write(newDocData);
+                assert.strictEqual(doc.firstName, 'afterCleanup');
+                const found = await collection.find().exec();
+                assert.deepStrictEqual(found.map(d => d.toJSON()), [newDocData]);
+                return {
+                    hooks,
+                    revisionHeight: doc.revision.split('-')[0]
+                };
+            };
+
+            const upsertResult = await run(cols.viaupsert, data => cols.viaupsert.upsert(data));
+            const incrementalResult = await run(cols.viaincremental, data => cols.viaincremental.incrementalUpsert(data));
+            assert.deepStrictEqual(upsertResult.hooks, ['preInsert', 'postInsert']);
+            assert.deepStrictEqual(incrementalResult, upsertResult);
+
+            const updated = await cols.viaincremental.incrementalUpsert(
+                Object.assign({}, docData, { firstName: 'updated' })
+            );
+            assert.strictEqual(updated.firstName, 'updated');
+            const docsAfterUpdate = await cols.viaincremental.find().exec();
+            assert.deepStrictEqual(docsAfterUpdate.map(d => d.firstName), ['updated']);
 
             await db.close();
         });

@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `collection.incrementalUpsert()` on a document that was removed and then purged with `collection.cleanup()` used the deleted document state from the document cache as the previous state of the write. This threw a `TypeError` and left a broken document on the localstorage RxStorage, threw a `TypeError` with the CRDT plugin and wrote a wrong revision height on other storages. It now inserts the document like `upsert()` does.",
+    "links": [],
+    "priority": 5
+}
