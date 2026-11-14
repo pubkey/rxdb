@@ -194,6 +194,8 @@ myDatabase.registerWebMCP();
 myDatabase.collections.todos.registerWebMCP();
 ```
 
+`myDatabase.registerWebMCP()` only exposes the collections that you have added. The internal collection of an [RxState](./rx-state.md) is not exposed, because a write that does not go through the RxState would corrupt the state.
+
 </Steps>
 
 
