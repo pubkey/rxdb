@@ -227,6 +227,7 @@ export function exposeRxStorageRemote(settings: RxStorageRemoteExposeSettings): 
                          * In that case we only close the instance
                          * when the RxDatabase gets closed.
                          */
+                        closeThisConnection();
                         settings.send(createAnswer(message, null));
                         return;
                     }

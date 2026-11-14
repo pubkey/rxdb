@@ -4,6 +4,7 @@ import type {
 } from 'ws';
 import {
     PROMISE_RESOLVE_VOID,
+    RXDB_VERSION,
     blobToBase64String,
     clone,
     createBlobFromBase64
@@ -127,11 +128,24 @@ export function startRxStorageRemoteWebsocketServer(
     const exposeState = exposeRxStorageRemote(exposeSettings);
 
     serverState.onConnection$.subscribe((ws: WebSocket) => {
-        const onCloseHandlers: Function[] = [];
         const connectionIds = new Set<string>();
         ws.onclose = () => {
-            onCloseHandlers.map(fn => fn());
-            connectionIds.forEach(id => websocketByConnectionId.delete(id));
+            connectionIds.forEach(connectionId => {
+                websocketByConnectionId.delete(connectionId);
+                /**
+                 * A dropped socket never sends the close() calls
+                 * of its storage instances. Run them here so that the
+                 * remote releases the subscriptions and the storage instances
+                 * of that connection.
+                 */
+                messages$.next({
+                    connectionId,
+                    requestId: 'socket-closed|' + connectionId,
+                    method: 'close',
+                    version: RXDB_VERSION,
+                    params: []
+                });
+            });
         };
         ws.on('message', (messageString: string) => {
             void (async () => {
