@@ -793,11 +793,8 @@ export class RxCollectionBase<
         const deleteExisting = options?.deleteExistingAttachments === true;
 
         // ensure that it won't try 2 parallel runs
-        let queue = this._incrementalUpsertQueues.get(primary);
-        if (!queue) {
-            queue = PROMISE_RESOLVE_VOID;
-        }
-        queue = queue
+        const previousQueue = this._incrementalUpsertQueues.get(primary) || PROMISE_RESOLVE_VOID;
+        const result = previousQueue
             // Normalize array-format attachments to map format
             .then(() => {
                 if (hasAttachments) {
@@ -836,8 +833,20 @@ export class RxCollectionBase<
                     return wasInserted.doc;
                 }
             });
+
+        /**
+         * The stored queue never rejects, so that a failed call
+         * does not make the later calls for the same primary fail.
+         * The entry is removed when no newer call has been queued behind it.
+         */
+        const removeFromQueues = () => {
+            if (this._incrementalUpsertQueues.get(primary) === queue) {
+                this._incrementalUpsertQueues.delete(primary);
+            }
+        };
+        const queue: Promise<void> = result.then(removeFromQueues, removeFromQueues);
         this._incrementalUpsertQueues.set(primary, queue);
-        return queue;
+        return result;
     }
 
     find(queryObj?: MangoQuery<RxDocumentType>): RxQuery<
