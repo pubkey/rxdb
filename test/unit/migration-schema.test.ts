@@ -2794,6 +2794,100 @@ describe('migration-schema.test.ts', function () {
 
             await db2.remove();
         });
+        describe('collection of a not finished addCollections() call', () => {
+            const schemaV0 = {
+                version: 0,
+                primaryKey: 'id',
+                type: 'object',
+                properties: {
+                    id: {
+                        type: 'string',
+                        maxLength: 100
+                    },
+                    name: {
+                        type: 'string'
+                    }
+                },
+                required: ['id', 'name']
+            } as const;
+            const schemaV1 = Object.assign({}, schemaV0, { version: 1 } as const);
+            type DocType = { id: string; name: string; };
+            type Collections = { todos: RxCollection<DocType>; };
+            async function createDatabaseWithOldDocument(name: string, storage: RxStorage<any, any>) {
+                const db = await createRxDatabase<Collections>({
+                    name,
+                    storage
+                });
+                await db.addCollections({ todos: { schema: schemaV0 } });
+                await db.todos.insert({ id: 'todo1', name: 'Learn RxDB' });
+                await db.close();
+            }
+            it('should close the collection when the automatic migration fails', async () => {
+                const name = randomToken(10);
+                const storage = config.storage.getStorage();
+                await createDatabaseWithOldDocument(name, storage);
+
+                const db = await createRxDatabase<Collections>({
+                    name,
+                    storage
+                });
+                const createdCollections: RxCollection[] = [];
+                await assertThrows(
+                    () => db.addCollections({
+                        todos: {
+                            schema: schemaV1,
+                            migrationStrategies: {
+                                1: (_oldDoc, collection) => {
+                                    createdCollections.push(collection);
+                                    throw new Error('migration strategy failed');
+                                }
+                            }
+                        }
+                    }),
+                    'RxError',
+                    'DM4'
+                );
+                assert.ok(createdCollections.length > 0);
+                assert.strictEqual(createdCollections[0].closed, true);
+                assert.deepStrictEqual(Object.keys(db.collections), []);
+
+                await db.close();
+            });
+            it('should close the collection when the database is closed during the automatic migration', async () => {
+                const name = randomToken(10);
+                const storage = config.storage.getStorage();
+                await createDatabaseWithOldDocument(name, storage);
+
+                const db = await createRxDatabase<Collections>({
+                    name,
+                    storage
+                });
+                const createdCollections: RxCollection[] = [];
+                let releaseStrategy: () => void = () => { };
+                const strategyReleased = new Promise<void>(res => releaseStrategy = res);
+                const addPromise = db.addCollections({
+                    todos: {
+                        schema: schemaV1,
+                        migrationStrategies: {
+                            1: async (oldDoc, collection) => {
+                                createdCollections.push(collection);
+                                await strategyReleased;
+                                return oldDoc;
+                            }
+                        }
+                    }
+                });
+                addPromise.catch(() => { });
+                await waitUntil(() => createdCollections.length > 0);
+                assert.strictEqual(createdCollections[0].closed, false);
+
+                await db.close();
+                releaseStrategy();
+
+                assert.strictEqual(createdCollections[0].closed, true);
+                assert.deepStrictEqual(Object.keys(db.collections), []);
+            });
+        });
         /**
          * An interrupted schema migration could never complete.
          * As soon as a document was already stored in the new storage,

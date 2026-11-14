@@ -1363,10 +1363,12 @@ export async function createRxCollection(
     } catch (err) {
         /**
          * If the collection creation fails,
-         * we yet have to close the storage instances.
+         * the collection must be closed so that its storage instance,
+         * its timeouts and everything that was started by the plugin hooks is stopped.
+         * When prepare() has failed before the storage instance was wrapped,
+         * the given storage instance is closed directly.
          */
-        OPEN_COLLECTIONS.delete(collection);
-        await storageInstance.close();
+        await collection.close().catch(() => storageInstance.close());
         throw err;
     }
 
