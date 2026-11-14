@@ -31,7 +31,7 @@ import { promiseWait } from "../utils/utils-promise.ts";
 import { queryDenoKV } from "./denokv-query.ts";
 import { INDEX_MAX } from "../../query-planner.ts";
 import { flatClone } from "../utils/utils-object.ts";
-import { PROMISE_RESOLVE_VOID } from 'rxdb-old';
+import { PROMISE_RESOLVE_VOID } from '../utils/utils-promise.ts';
 
 
 
