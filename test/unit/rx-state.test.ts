@@ -11,6 +11,7 @@ import {
     deepEqual,
     lastOfArray,
     RxReactivityFactory,
+    RxCleanupPolicy,
     RxState,
     runXTimes
 } from '../../plugins/core/index.mjs';
@@ -27,6 +28,8 @@ addRxPlugin(RxDBStatePlugin);
 import { RxDBAttachmentsPlugin } from '../../plugins/attachments/index.mjs';
 addRxPlugin(RxDBAttachmentsPlugin);
 import { RxDBJsonDumpPlugin } from '../../plugins/json-dump/index.mjs';
+import { RxDBCleanupPlugin } from '../../plugins/cleanup/index.mjs';
+addRxPlugin(RxDBCleanupPlugin);
 import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.mjs';
 addRxPlugin(RxDBJsonDumpPlugin);
 
@@ -320,6 +323,75 @@ addRxPlugin(RxDBJsonDumpPlugin);
                 assert.strictEqual(state.a, amount);
 
                 state.collection.database.remove();
+            });
+            it('should restore the last state after a reload when writes happen while the automatic cleanup runs', async () => {
+                type CounterState = {
+                    [key: string]: number;
+                };
+                const databaseName = randomToken(10);
+                const storage = useSchemaValidator ? wrappedValidateAjvStorage({
+                    storage: config.storage.getStorage()
+                }) : config.storage.getStorage();
+                const openState = async (cleanupPolicy?: Partial<RxCleanupPolicy>) => {
+                    const database = await createRxDatabase({
+                        name: databaseName,
+                        storage,
+                        cleanupPolicy
+                    });
+                    return database.addState<CounterState>();
+                };
+
+                // fill the state while no cleanup runs
+                const initialWrites = 10;
+                let state = await openState();
+                await state.set('', () => ({ k0: 0 }));
+                let t = 1;
+                while (t < initialWrites) {
+                    const value = t;
+                    await state.set('k' + value, () => value);
+                    t++;
+                }
+                await state.collection.database.close();
+
+                // reopen so that the cleanup directly starts
+                state = await openState({
+                    awaitReplicationsInSync: false,
+                    minimumCollectionAge: 0,
+                    runEach: 1000 * 60 * 60,
+                    waitForLeadership: false
+                });
+                /**
+                 * Write to the state each time it emits,
+                 * like an app that stores a derived value.
+                 * The first emit comes from the cleanup, so these
+                 * writes happen while the cleanup still runs.
+                 */
+                const writesDuringCleanup = 5;
+                const derivedWrites: Promise<void>[] = [];
+                const currentState = state;
+                const sub = currentState.$.subscribe(() => {
+                    if (derivedWrites.length < writesDuringCleanup) {
+                        const value = initialWrites + derivedWrites.length;
+                        derivedWrites.push(
+                            currentState.set('k' + value, () => value)
+                        );
+                    }
+                });
+                // wait until the cleanup has removed the old operations
+                await waitUntil(async () => {
+                    const docs = await currentState.collection.find().exec();
+                    return derivedWrites.length === writesDuringCleanup && docs.length <= writesDuringCleanup + 1;
+                });
+                sub.unsubscribe();
+                await Promise.all(derivedWrites);
+
+                const stateBeforeClose = state.get();
+                assert.strictEqual(Object.keys(stateBeforeClose).length, initialWrites + writesDuringCleanup);
+                await state.collection.database.close();
+
+                state = await openState();
+                assert.deepStrictEqual(state.get(), stateBeforeClose);
+                await state.collection.database.remove();
             });
         });
         describe('multiInstance', () => {
