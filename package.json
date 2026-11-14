@@ -608,7 +608,7 @@
     "z-schema": "12.5.0"
   },
   "devDependencies": {
-    "@angular/core": "22.2.4",
+    "@angular/core": "22.2.5",
     "@babel/cli": "8.0.6",
     "@babel/core": "8.0.10",
     "@babel/plugin-external-helpers": "8.0.1",
