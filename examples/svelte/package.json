@@ -16,7 +16,7 @@
     "@rollup/plugin-commonjs": "29.0.3",
     "@rollup/plugin-node-resolve": "16.0.3",
     "async-test-util": "2.5.0",
-    "concurrently": "10.0.6",
+    "concurrently": "10.0.7",
     "rollup": "4.65.1",
     "rollup-plugin-css-only": "4.5.5",
     "rollup-plugin-livereload": "2.0.5",
