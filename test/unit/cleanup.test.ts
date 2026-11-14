@@ -14,7 +14,6 @@ import {
     addRxPlugin,
     RxCollection,
     RxJsonSchema,
-    RxStorage,
     RxStorageInstance,
     RxStorageInstanceCreationParams,
     ensureNotFalsy,
