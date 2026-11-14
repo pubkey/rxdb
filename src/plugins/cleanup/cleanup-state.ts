@@ -59,7 +59,7 @@ export async function cleanupRxState(
         if (rxCollection.closed) {
             return;
         }
-        RXSTATE_CLEANUP_QUEUE = RXSTATE_CLEANUP_QUEUE
+        const cleanupRun = RXSTATE_CLEANUP_QUEUE
             .then(async () => {
                 if (rxCollection.closed) {
                     return true;
@@ -67,7 +67,13 @@ export async function cleanupRxState(
                 await rxDatabase.requestIdlePromise();
                 return state._cleanup();
             });
-        isDone = await RXSTATE_CLEANUP_QUEUE;
+        /**
+         * The queue must continue with the next cleanup
+         * when this run rejects. The error is only thrown
+         * to the caller of this run.
+         */
+        RXSTATE_CLEANUP_QUEUE = cleanupRun.catch(() => true);
+        isDone = await cleanupRun;
     }
 }
 
