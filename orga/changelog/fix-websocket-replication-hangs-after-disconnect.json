@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX the websocket replication client hung forever when the connection was lost while a pull or push request was pending. The request now rejects with `RC_WEBSOCKET_DISCONNECTED` so that the replication retries it after the reconnect. Also `RxReplicationState.cancel()` now closes the websocket instead of keeping a reconnecting socket open until the collection is closed, and the leftover `console.log()` calls in the error handler of the client have been removed",
+    "links": [],
+    "priority": 5
+}
