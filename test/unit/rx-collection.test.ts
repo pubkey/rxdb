@@ -366,6 +366,36 @@ describe('rx-collection.test.ts', () => {
 
                     db.close();
                 });
+                it('re-insert of a deleted document must get a write time that is newer than the writes that ran in between', async () => {
+                    const c = await humansCollection.create(0);
+                    const reInsertData = schemaObjects.humanData('re-insert');
+                    const doc = await c.insert(reInsertData);
+                    await doc.remove();
+
+                    const emitted: RxDocumentData<HumanDocumentType>[] = [];
+                    const sub = c.$.subscribe(event => emitted.push(event.documentData));
+
+                    await Promise.all([
+                        c.insert(reInsertData),
+                        c.insert(schemaObjects.humanData('other'))
+                    ]);
+                    await waitUntil(() => emitted.length === 2);
+                    sub.unsubscribe();
+
+                    /**
+                     * Consumers like the replication iterate over the changes
+                     * by the write time, so the order of the write times
+                     * must be equal to the order of the writes.
+                     */
+                    const writeOrder = emitted.map(d => d.passportId);
+                    const writeTimeOrder = emitted
+                        .slice(0)
+                        .sort((a, b) => a._meta.lwt - b._meta.lwt)
+                        .map(d => d.passportId);
+                    assert.deepStrictEqual(writeTimeOrder, writeOrder);
+
+                    c.database.close();
+                });
             });
             describe('negative', () => {
                 it('should throw a conflict-error', async () => {

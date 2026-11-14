@@ -769,6 +769,12 @@ export function getWrappedStorageInstance<
                     }) as any;
             if (reInsertErrors.length > 0) {
                 const reInsertIds = new Set<string>();
+                /**
+                 * The re-insert is its own write that is stored after
+                 * all writes that ran since the first attempt,
+                 * so it must have its own, newer timestamp.
+                 */
+                const reInsertMeta = { lwt: now() };
                 const reInserts: BulkWriteRow<RxDocType>[] = reInsertErrors
                     .map((error) => {
                         reInsertIds.add(error.documentId);
@@ -778,6 +784,7 @@ export function getWrappedStorageInstance<
                                 {},
                                 error.writeRow.document,
                                 {
+                                    _meta: reInsertMeta,
                                     _rev: createRevision(
                                         database.token,
                                         error.documentInDb
