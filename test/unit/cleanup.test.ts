@@ -18,8 +18,7 @@ import {
     RxStorageInstance,
     RxStorageInstanceCreationParams,
     ensureNotFalsy,
-    removeRxDatabase,
-    RxStorage
+    removeRxDatabase
 } from '../../plugins/core/index.mjs';
 
 import { replicateRxCollection } from '../../plugins/replication/index.mjs';
