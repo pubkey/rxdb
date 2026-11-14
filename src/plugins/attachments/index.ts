@@ -10,6 +10,7 @@ import {
     deepEqual,
     flatClone
 } from '../../plugins/utils/index.ts';
+import { newRxError } from '../../rx-error.ts';
 import type {
     RxDocument,
     RxPlugin,
@@ -60,6 +61,7 @@ export class RxAttachment {
         return this.doc.collection.incrementalWriteQueue.addWrite(
             this.doc._data,
             docWriteData => {
+                ensureNotDeleted(this.doc, docWriteData);
                 delete docWriteData._attachments[this.id];
                 return docWriteData;
             }
@@ -92,6 +94,24 @@ export class RxAttachment {
     async getDataBase64(): Promise<string> {
         const blob = await this.getData();
         return blobToBase64String(blob);
+    }
+}
+
+/**
+ * Deleted documents cannot be changed.
+ * This must be called inside of the write modifier
+ * because the state that the modifier runs on
+ * can be newer than the data of the RxDocument instance.
+ */
+function ensureNotDeleted<RxDocType>(
+    doc: RxDocument<RxDocType>,
+    docWriteData: RxDocumentWriteData<RxDocType>
+) {
+    if (docWriteData._deleted) {
+        throw newRxError('DOC11', {
+            id: doc.primary,
+            document: doc
+        });
     }
 }
 
@@ -132,6 +152,7 @@ async function _putAttachmentsImpl<RxDocType>(
     const writeResult = await doc.collection.incrementalWriteQueue.addWrite(
         doc._data,
         (docWriteData: RxDocumentWriteData<RxDocType>) => {
+            ensureNotDeleted(doc, docWriteData);
             docWriteData = flatClone(docWriteData);
             docWriteData._attachments = flatClone(docWriteData._attachments);
             for (const att of prepared) {
