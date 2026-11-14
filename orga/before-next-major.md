@@ -203,3 +203,74 @@ Idea:
 - The existing `EventBulk.checkpoint` cannot be used for this because its `lwt` comes from the clock of each tab and is not ordered by commit across tabs.
 
 Breaking for RxStorage implementations, not for RxDB users. It can be introduced as an optional field in a minor release (storages without it keep the current behavior) and be made required in the next major.
+
+## Attachments: make the storage key of attachment data unambiguous
+
+The memory, Dexie.js, localStorage, and FoundationDB storages build the key of the attachment data as `documentId + '||' + attachmentId`. The document `todo1` with the attachment `b||c.txt` and the document `todo1||b` with the attachment `c.txt` get the same key, so one overwrites or deletes the attachment data of the other.
+
+Todo:
+- Build the key with one shared function that cannot give the same key for two different pairs, for example by escaping `|` and `%` in both parts when the attachment id contains `||` or starts with `|`.
+- This changes the key of attachments whose id contains `||` or starts with `|`. Data that was stored under the old key is no longer found, which is why it must be done in a major release. Either migrate these keys or state it in the release notes.
+- The premium storages must use the same function.
+
+An implementation with tests is in the closed pull request [#9613](https://github.com/pubkey/rxdb/pull/9613).
+
+## RxStorage: make the name of the physical store unambiguous
+
+The Dexie.js, localStorage, and memory storages join the database name, the collection name, and the schema version into the name of the physical store. When a name contains the separator, two different databases use the same store and see each other's documents.
+
+- localStorage uses `<db>--<collection>--<version>`: the database `app--staging` with the collection `todos` collides with the database `app` with the collection `staging--todos`.
+- Dexie.js uses `rxdb-dexie-<db>--<version>--<collection>`: `app--0--staging` with `todos` collides with `app` with `staging--0--todos`.
+- The memory storage joins with `--memory--`.
+- The DenoKV storage joins with `|` and the FoundationDB storage with `.`, which collides only with collection names that dev-mode rejects.
+
+Todo:
+- Build a store name that can only be split back into its parts in one way, for example with a length prefix when a name contains the separator.
+- Stores of names that contain `--` get another name, so their existing data is no longer found. Either migrate these stores or state it in the release notes.
+- Check the premium storages for the same kind of join.
+
+An implementation with tests is in the closed pull request [#9616](https://github.com/pubkey/rxdb/pull/9616).
+
+## Backup plugin: binary attachments and one folder per collection
+
+Two defects in the backup plugin:
+- Attachment data is converted to a string and written with the `utf-8` encoding, so every binary attachment (images, PDFs) in the backup is corrupted.
+- The folder of a document is `<directory>/<documentId>` without the collection name. Two collections with a document of the same primary key overwrite each other's backup, and deleting the document in one collection removes the backup of the other.
+
+Todo:
+- Write attachment blobs as bytes.
+- Store documents in `<directory>/<collectionName>/<documentId>/`.
+- Existing backup directories have the old layout. Either migrate them or require an empty directory and state it in the release notes.
+
+An implementation with tests is in the closed pull request [#9474](https://github.com/pubkey/rxdb/pull/9474).
+
+## Encryption inside of key-compression stores encrypted fields in plain text
+
+With the wrapper order `wrappedKeyCompressionStorage({ storage: wrappedKeyEncryptionCryptoJsStorage({ storage }) })`, which is the order shown in the RxStorage docs, and `keyCompression: true` in the schema, the fields listed in `encrypted` are stored in plain text. The key-compression plugin compresses the keys of the document but passes the `encrypted` paths of the schema on uncompressed, so the encryption storage does not find the fields. A nested encrypted path makes `addCollections()` throw a `TypeError`.
+
+Todo:
+- The key-compression plugin must also compress the `encrypted` paths of the schema that it passes down.
+- Documents that released versions stored in plain text must stay readable and get encrypted on their next write. The encryption plugins need a tolerant read for values that are not cipher text.
+- The premium Web Crypto encryption plugin gets the compressed paths then and needs the same tolerant read. This is the breaking part.
+- Until this is done, the docs should tell users to wrap the key-compression inside of the encryption, or not to combine both.
+
+An implementation with tests is in the closed pull request [#9530](https://github.com/pubkey/rxdb/pull/9530).
+
+## dev-mode: reject indexed number fields whose range is too wide for exact index strings
+
+The index string of a number field is built from its `minimum`, `maximum`, and `multipleOf`. When the range `maximum - minimum` is larger than `Number.MAX_SAFE_INTEGER` (with a minimum other than `0`), or the span is `1e21` or more, the index string loses precision. Different values share an index string and queries return wrong documents.
+
+Todo:
+- Throw a schema error in dev-mode at `addCollections()` for such a field. Existing schemas with such a field then no longer start in dev-mode, which is why it must be done in a major release.
+
+An implementation with tests (error `SC44`) is in the closed pull request [#9618](https://github.com/pubkey/rxdb/pull/9618).
+
+## CRDT: the CRDT field must be encrypted when the collection has encrypted fields
+
+The CRDT plugin stores every operation in the CRDT field of the document. When the collection has `encrypted` fields but the CRDT field is not listed in `encrypted`, the values of the encrypted fields are stored in plain text inside of the CRDT operations.
+
+Todo:
+- Either treat the CRDT field as encrypted automatically when the schema has encrypted fields, or throw a schema error in dev-mode at `addCollections()` when the CRDT field is not listed in `encrypted`.
+- Both need a new schema version with a migration for existing collections, which is why it must be done in a major release.
+
+An implementation of the dev-mode error with tests (error `CRDT5`) is in the closed pull request [#9601](https://github.com/pubkey/rxdb/pull/9601).
