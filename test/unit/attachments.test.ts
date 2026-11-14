@@ -495,6 +495,30 @@ describe('attachments.test.ts', () => {
 
                 await c.database.close();
             });
+            it('should store the decoded base64 data when the type contains a comma or a hash', async () => {
+                const c = await humansCollection.createAttachments(1);
+                const doc = await c.findOne().exec(true);
+                const dataString = await blobToBase64String(createBlob('hello', 'text/plain'));
+
+                const types = [
+                    'multipart/mixed; boundary="a,b"',
+                    'application/x#y'
+                ];
+                for (const [index, type] of types.entries()) {
+                    const attachment = await doc.getLatest().putAttachmentBase64({
+                        id: 'file' + index,
+                        length: 5,
+                        data: dataString,
+                        type
+                    });
+                    assert.strictEqual(attachment.type, type);
+                    assert.strictEqual(attachment.length, 5);
+                    assert.strictEqual(await attachment.getStringData(), 'hello');
+                    assert.strictEqual(await attachment.getDataBase64(), dataString);
+                }
+
+                await c.database.close();
+            });
         });
     });
     describe('schema', () => {
