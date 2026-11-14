@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX the ajv validator (`wrappedValidateAjvStorage`) rejected valid decimal values like `19.99` on fields with a decimal `multipleOf` like `0.01` with a `VD2` error. `createAjv()` now sets the ajv option `multipleOfPrecision` to `6` by default",
+    "links": [],
+    "priority": 5
+}

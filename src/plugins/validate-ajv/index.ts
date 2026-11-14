@@ -23,7 +23,13 @@ let ajv: Ajv;
  */
 export function createAjv(options: Options = {}): Ajv {
     const ret = new Ajv(Object.assign({
-        strict: true
+        strict: true,
+        /**
+         * Decimal steps like 0.01 have no exact binary representation,
+         * so the division result of a valid value like 19.99 / 0.01
+         * is not an exact integer. Ajv compares it with this precision instead.
+         */
+        multipleOfPrecision: 6
     }, options));
     ret.addKeyword('version');
     ret.addKeyword('keyCompression');
