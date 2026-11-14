@@ -279,7 +279,8 @@ myDatabase.todos.preSave(docData => {
     docData.name = docData.name.trim();
 }, false);
 
-// stores the operation with the $set and one more operation that sets the trimmed name
+// Stores the operation with the $set
+// and one more operation that sets the trimmed name.
 await doc.updateCRDT({
     ifMatch: {
         $set: {
