@@ -126,7 +126,7 @@ describe('query-correctness-fuzzing.test.ts', () => {
                         collection,
                         changeEvent
                     );
-                    const docs = await storageInstance.findDocumentsById([changeEvent.id], true);
+                    const docs = await storageInstance.findDocumentsById([changeEvent.id as string], true);
                     const previous = docs[0];
                     const nextRev = createRevision(randomToken(10), previous);
 
