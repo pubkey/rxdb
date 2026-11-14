@@ -140,6 +140,31 @@ describe('backup.test.ts', () => {
             collection.database.close();
             sub.unsubscribe();
         });
+        it('should backup a collection without attachments when attachments=true', async () => {
+            const collection = await humansCollection.create(1);
+            const firstDoc = await collection.findOne().exec(true);
+            const directory = getBackupDir();
+            const options = {
+                live: false,
+                directory,
+                attachments: true
+            };
+
+            const backupState = collection.database.backup(options);
+            await backupState.awaitInitialBackup();
+
+            const docFolder = path.join(directory, toFileName(firstDoc.primary));
+            const content = JSON.parse(
+                fs.readFileSync(path.join(docFolder, 'document.json'), 'utf-8')
+            );
+            assert.strictEqual(content.passportId, firstDoc.primary);
+            assert.deepStrictEqual(fs.readdirSync(docFolder), ['document.json']);
+
+            const meta: BackupMetaFileContent = await getMeta(options);
+            assert.ok(meta.collectionStates.human.checkpoint);
+
+            await collection.database.close();
+        });
     });
     describe('RxDatabase.backup() live=true', () => {
         it('should backup ongoing writes', async () => {

@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `database.backup()` with `attachments: true` threw `AT1` and `awaitInitialBackup()` never resolved when a collection has no `attachments` in its schema",
+    "links": [],
+    "priority": 5
+}
