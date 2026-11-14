@@ -186,6 +186,62 @@ describe('rx-document.test.js', () => {
             assert.strictEqual(doc.get('meta.a.b').x, 2);
             await db.close();
         });
+        it('nested property access must return the object value of a key that contains path syntax characters', async () => {
+            type NestedValue = {
+                x: number;
+                inner?: { y: number; };
+            };
+            type DocType = {
+                id: string;
+                meta: Record<string, NestedValue>;
+            };
+            const db = await createRxDatabase<{ docs: RxCollection<DocType>; }>({
+                name: randomToken(10),
+                storage: config.storage.getStorage()
+            });
+            const collections = await db.addCollections({
+                docs: {
+                    schema: {
+                        version: 0,
+                        primaryKey: 'id',
+                        type: 'object',
+                        properties: {
+                            id: {
+                                type: 'string',
+                                maxLength: 100
+                            },
+                            meta: {
+                                type: 'object'
+                            }
+                        }
+                    }
+                }
+            });
+            const doc = await collections.docs.insert({
+                id: 'foobar',
+                meta: {
+                    'a.b': { x: 1, inner: { y: 11 } },
+                    'c[0]': { x: 3 },
+                    'd\\e.': { x: 4 },
+                    a: { x: 5, inner: { y: 55 } },
+                    plain: { x: 2 }
+                }
+            });
+            const expected = doc.toJSON().meta;
+
+            assert.deepStrictEqual(doc.meta['a.b'], expected['a.b']);
+            assert.strictEqual(doc.meta['a.b'].x, 1);
+            assert.deepStrictEqual(doc.meta['a.b'].inner, { y: 11 });
+            assert.deepStrictEqual(doc.get('meta')['a.b'], expected['a.b']);
+            assert.deepStrictEqual(doc.meta['c[0]'], { x: 3 });
+            assert.deepStrictEqual(doc.meta['d\\e.'], { x: 4 });
+
+            assert.deepStrictEqual(doc.meta.plain, { x: 2 });
+            assert.deepStrictEqual(doc.meta.a.inner, { y: 55 });
+            assert.deepStrictEqual(doc.get('meta.a.inner'), { y: 55 });
+            assert.strictEqual(doc.get('meta.a.x'), 5);
+            await db.close();
+        });
         it('get undefined on undefined value', async () => {
             const c = await humansCollection.createNested(5);
             const doc = await c.findOne().exec(true);
