@@ -19,6 +19,7 @@ import {
     createRxDatabase,
     randomToken,
     RxDocument,
+    RxAttachment,
     RxJsonSchema,
     MigrationStrategies,
     WithAttachmentsData,
@@ -680,6 +681,49 @@ describe('attachments.test.ts', () => {
 
             await AsyncTestUtil.waitUntil(() => emitted.length === 2);
             assert.strictEqual((emitted[1] as any).length, 2);
+
+            sub.unsubscribe();
+            await c.database.close();
+        });
+        it('should emit when an existing attachment is replaced with other content', async () => {
+            const c = await humansCollection.createAttachments(1);
+            let doc = await c.findOne().exec(true);
+            const firstAttachment = await doc.putAttachment({
+                id: 'a.txt',
+                data: createBlob('hello', 'text/plain'),
+                type: 'text/plain'
+            });
+            doc = doc.getLatest();
+
+            const emitted: RxAttachment<HumanDocumentType>[][] = [];
+            const sub = doc.allAttachments$
+                .subscribe(attachments => emitted.push(attachments));
+            await AsyncTestUtil.waitUntil(() => emitted.length === 1);
+            assert.strictEqual(emitted[0].length, 1);
+            assert.strictEqual(emitted[0][0].digest, firstAttachment.digest);
+
+            const replacedAttachment = await doc.getLatest().putAttachment({
+                id: 'a.txt',
+                data: createBlob('other content with another length', 'text/plain'),
+                type: 'text/plain'
+            });
+            assert.notStrictEqual(replacedAttachment.digest, firstAttachment.digest);
+
+            await AsyncTestUtil.waitUntil(() => emitted.length === 2);
+            assert.strictEqual(emitted[1].length, 1);
+            const emittedAttachment = emitted[1][0];
+            assert.strictEqual(emittedAttachment.id, 'a.txt');
+            assert.strictEqual(emittedAttachment.digest, replacedAttachment.digest);
+            assert.strictEqual(emittedAttachment.length, replacedAttachment.length);
+            assert.strictEqual(
+                await emittedAttachment.getStringData(),
+                'other content with another length'
+            );
+
+            // an unrelated field update must still not emit
+            await doc.getLatest().incrementalPatch({ age: 10 });
+            await promiseWait(200);
+            assert.strictEqual(emitted.length, 2);
 
             sub.unsubscribe();
             await c.database.close();

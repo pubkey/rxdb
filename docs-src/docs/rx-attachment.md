@@ -140,7 +140,7 @@ const attachments = myDocument.allAttachments();
 
 ## allAttachments$
 
-Gets an Observable which emits a stream of all attachments from the document. Re-emits each time an attachment gets added or removed from the [RxDocument](./rx-document.md).
+Gets an Observable which emits a stream of all attachments from the document. Re-emits each time an attachment gets added, replaced, or removed from the [RxDocument](./rx-document.md). Writes that only change other fields of the document do not emit.
 
 ```javascript
 const all = [];
