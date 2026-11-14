@@ -15,6 +15,7 @@ import {
     RxJsonSchema,
     ensureNotFalsy,
     RxCollection,
+    RxDocument,
     CRDTDocumentField,
     fillWithDefaultSettings,
     defaultHashSha256,
@@ -296,6 +297,111 @@ describe('crdt.test.ts', () => {
             const crdts = latest.toJSON().crdts;
             assert.ok(crdts);
             assert.ok(crdts.operations.length > 1);
+
+            collection.database.close();
+        });
+        it('patch() and incrementalPatch() with an undefined value must store an operation that removes the field', async () => {
+            type DocType = {
+                id: string;
+                name: string;
+                note?: string;
+                assignee?: {
+                    name: string;
+                    email?: string;
+                };
+            };
+            const schema: RxJsonSchema<DocType> = {
+                version: 0,
+                primaryKey: 'id',
+                type: 'object',
+                properties: {
+                    id: {
+                        type: 'string',
+                        maxLength: 100
+                    },
+                    name: {
+                        type: 'string'
+                    },
+                    note: {
+                        type: 'string'
+                    },
+                    assignee: {
+                        type: 'object',
+                        properties: {
+                            name: {
+                                type: 'string'
+                            },
+                            email: {
+                                type: 'string'
+                            }
+                        },
+                        required: ['name']
+                    }
+                },
+                required: ['id', 'name']
+            };
+            const collection = await getCRDTCollection<DocType>(schema);
+            const conflictHandler: RxConflictHandler<WithCRDTs<DocType>> = collection.conflictHandler;
+
+            /**
+             * Replays the operations of the document
+             * like they arrive on another instance after
+             * they have been sent as JSON.
+             */
+            async function replayFromJson(doc: RxDocument<WithCRDTs<DocType>>) {
+                const state = JSON.parse(JSON.stringify(doc.toJSON(true)));
+                const resolved = await conflictHandler.resolve({
+                    newDocumentState: state,
+                    realMasterState: state
+                }, 'crdt-test');
+                return resolved;
+            }
+
+            const methods = ['patch', 'incrementalPatch'] as const;
+            for (const method of methods) {
+                let doc = await collection.insert({
+                    id: method,
+                    name: 'Learn RxDB',
+                    note: 'remove me',
+                    assignee: {
+                        name: 'Alice',
+                        email: 'alice@example.com'
+                    }
+                });
+
+                doc = await doc[method]({ note: undefined });
+                assert.strictEqual(doc.note, undefined);
+                assert.strictEqual(Object.prototype.hasOwnProperty.call(doc.toJSON(), 'note'), false);
+                let replayed = await replayFromJson(doc);
+                assert.strictEqual(Object.prototype.hasOwnProperty.call(replayed, 'note'), false);
+                assert.strictEqual(replayed.name, 'Learn RxDB');
+
+                // undefined together with other values
+                doc = await doc[method]({ note: 'again' });
+                doc = await doc[method]({ name: 'Learn CRDTs', note: undefined });
+                assert.strictEqual(doc.name, 'Learn CRDTs');
+                replayed = await replayFromJson(doc);
+                assert.strictEqual(Object.prototype.hasOwnProperty.call(replayed, 'note'), false);
+                assert.strictEqual(replayed.name, 'Learn CRDTs');
+
+                // nested undefined value
+                doc = await doc[method]({
+                    assignee: {
+                        name: 'Bob',
+                        email: undefined
+                    }
+                });
+                replayed = await replayFromJson(doc);
+                assert.deepStrictEqual(replayed.assignee, { name: 'Bob' });
+                assert.deepStrictEqual(
+                    JSON.parse(JSON.stringify(doc.toJSON().assignee)),
+                    { name: 'Bob' }
+                );
+
+                // the document must still be writable
+                doc = await doc[method]({ note: 'new note' });
+                assert.strictEqual(doc.note, 'new note');
+            }
 
             collection.database.close();
         });
