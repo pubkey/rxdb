@@ -20,7 +20,7 @@ export const GRAPHQL_WEBSOCKET_BY_URL: Map<string, WebsocketWithRefCount> = new 
 
 export function getGraphQLWebSocket(
     url: string,
-    headers?: { [k: string]: string; },
+    headers?: { [k: string]: string; } | (() => { [k: string]: string; }),
     options: RxGraphQLPullWSOptions = {},
 ): Client {
 
@@ -28,7 +28,13 @@ export function getGraphQLWebSocket(
         GRAPHQL_WEBSOCKET_BY_URL,
         url,
         () => {
-            const connectionParamsHeaders = headers ? { headers } : undefined;
+            /**
+             * graphql-ws calls this function each time it opens a connection,
+             * so that a reconnect uses the headers that are set at that time.
+             */
+            const connectionParamsHeaders = headers ? () => ({
+                headers: typeof headers === 'function' ? headers() : headers
+            }) : undefined;
             const wsClient = createClient({
                 ...options,
                 url,

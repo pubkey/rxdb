@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `setHeaders()` of the GraphQL replication did not reach the websocket. With `pull.includeWsHeaders` the `connectionParams` and the query of the `pull.streamQueryBuilder` kept the headers from the start of the replication, so a reconnect after a token refresh was sent with the old token. Each new websocket connection now uses the current headers.",
+    "links": [],
+    "priority": 5
+}
