@@ -26,7 +26,8 @@ import {
     ensureNotFalsy,
     deepFreeze,
     addRxPlugin,
-    randomDelayStorage
+    randomDelayStorage,
+    RxStorage
 } from '../../plugins/core/index.mjs';
 import { RxDBUpdatePlugin } from '../../plugins/update/index.mjs';
 addRxPlugin(RxDBUpdatePlugin);
@@ -1319,6 +1320,119 @@ describe('rx-query.test.ts', () => {
             );
 
             c.database.close();
+        });
+        describe('recover after a failed query', () => {
+            /**
+             * Returns a RxStorage that wraps the default test storage.
+             * The storage instances reject the next query() call
+             * when failNextQuery() was called before.
+             */
+            function getStorageWithFailingQuery() {
+                const baseStorage = config.storage.getStorage();
+                let failNext = false;
+                const storage: RxStorage<any, any> = {
+                    name: baseStorage.name,
+                    rxdbVersion: baseStorage.rxdbVersion,
+                    async createStorageInstance(params) {
+                        const instance = await baseStorage.createStorageInstance(params);
+                        const originalQuery = instance.query.bind(instance);
+                        instance.query = (preparedQuery) => {
+                            if (failNext) {
+                                failNext = false;
+                                return Promise.reject(new Error('transient storage error'));
+                            }
+                            return originalQuery(preparedQuery);
+                        };
+                        return instance;
+                    }
+                };
+                return {
+                    storage,
+                    failNextQuery: () => failNext = true
+                };
+            }
+            async function createCollection(storage: RxStorage<any, any>, eventReduce: boolean) {
+                const db = await createRxDatabase<{ humans: RxCollection<HumanDocumentType>; }>({
+                    name: randomToken(10),
+                    storage,
+                    eventReduce
+                });
+                const collections = await db.addCollections({
+                    humans: {
+                        schema: schemas.human
+                    }
+                });
+                await collections.humans.bulkInsert([
+                    schemaObjects.humanData('aa', 10),
+                    schemaObjects.humanData('bb', 20),
+                    schemaObjects.humanData('cc', 30)
+                ]);
+                return collections.humans;
+            }
+            it('exec() of an equal query must work after the first exec() failed', async () => {
+                const { storage, failNextQuery } = getStorageWithFailingQuery();
+                const c = await createCollection(storage, true);
+                const query = {
+                    selector: {
+                        age: {
+                            $gt: 15
+                        }
+                    },
+                    sort: [{ age: 'asc' as const }]
+                };
+
+                failNextQuery();
+                await assertThrows(
+                    () => c.find(query).exec(),
+                    'Error',
+                    'transient storage error'
+                );
+
+                const result = await c.find(query).exec();
+                assert.deepStrictEqual(
+                    result.map(d => d.passportId),
+                    ['bb', 'cc']
+                );
+
+                const emitted = await firstValueFrom(c.find(query).$);
+                assert.deepStrictEqual(
+                    emitted.map(d => d.passportId),
+                    ['bb', 'cc']
+                );
+
+                await c.database.close();
+            });
+            it('exec() must not return outdated results after a failed re-execution', async () => {
+                const { storage, failNextQuery } = getStorageWithFailingQuery();
+                // without EventReduce, each write requires a new query over the storage
+                const c = await createCollection(storage, false);
+                const query = c.find({
+                    selector: {},
+                    sort: [{ age: 'asc' }],
+                    limit: 2
+                });
+                const firstResult = await query.exec();
+                assert.deepStrictEqual(
+                    firstResult.map(d => d.passportId),
+                    ['aa', 'bb']
+                );
+
+                await firstResult[0].remove();
+                failNextQuery();
+                await assertThrows(
+                    () => query.exec(),
+                    'Error',
+                    'transient storage error'
+                );
+
+                const result = await query.exec();
+                assert.deepStrictEqual(
+                    result.map(d => d.passportId),
+                    ['bb', 'cc']
+                );
+
+                await c.database.close();
+            });
         });
 
     });
