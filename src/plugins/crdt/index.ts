@@ -11,8 +11,10 @@ import type {
     RxDocument,
     RxDocumentData,
     RxJsonSchema,
+    RxAttachmentWriteData,
     RxPlugin,
-    WithDeleted
+    WithDeleted,
+    WithDeletedAndAttachments
 } from '../../types/index.d.ts';
 import {
     clone,
@@ -33,7 +35,7 @@ import {
     RxError
 } from '../../index.ts';
 import { mingoUpdater } from '../update/mingo-updater.ts';
-import { fillObjectWithDefaults, fillPrimaryKey } from '../../rx-schema-helper.ts';
+import { fillObjectWithDefaults, fillPrimaryKey, getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper.ts';
 
 
 
@@ -302,27 +304,131 @@ export function rebuildFromCRDT<RxDocType>(
 }
 
 
+type CRDTAttachments = WithDeletedAndAttachments<any>['_attachments'];
+type CRDTAttachment = NonNullable<CRDTAttachments>[string];
+
+function getAttachment(
+    attachments: CRDTAttachments,
+    attachmentId: string
+): CRDTAttachment | undefined {
+    return attachments && Object.prototype.hasOwnProperty.call(attachments, attachmentId)
+        ? attachments[attachmentId]
+        : undefined;
+}
+
+function isSameAttachment(
+    a: CRDTAttachment | undefined,
+    b: CRDTAttachment | undefined
+): boolean {
+    if (!a || !b) {
+        return !a && !b;
+    }
+    return a.digest === b.digest && a.type === b.type;
+}
+
+function hasSameAttachments(
+    a: CRDTAttachments,
+    b: CRDTAttachments
+): boolean {
+    return Object
+        .keys(Object.assign({}, a, b))
+        .every(attachmentId => isSameAttachment(
+            getAttachment(a, attachmentId),
+            getAttachment(b, attachmentId)
+        ));
+}
+
+/**
+ * Attachments are not part of the CRDT operations,
+ * so they are merged per attachment id:
+ * An attachment that was changed on the master is taken from the master,
+ * all other attachments are taken from the fork.
+ * The resolved document is written to the fork and pushed to the master afterwards.
+ * A changed master attachment can therefore only be used when the master state
+ * contains its data or the fork already has the same attachment.
+ * Without the data there is no resolved state that keeps the attachment of the master,
+ * because each attachment that is missing in the pushed state is removed from the master.
+ * In that case the missing attachment id is given to onMissingData().
+ */
+function mergeCRDTAttachments(
+    assumedMaster: CRDTAttachments,
+    master: CRDTAttachments,
+    fork: CRDTAttachments,
+    onMissingData: (attachmentId: string) => void
+): NonNullable<CRDTAttachments> {
+    const ret: NonNullable<CRDTAttachments> = {};
+    Object.keys(Object.assign({}, master, fork)).forEach(attachmentId => {
+        const masterAttachment = getAttachment(master, attachmentId);
+        const forkAttachment = getAttachment(fork, attachmentId);
+        let use = forkAttachment;
+        if (
+            !isSameAttachment(getAttachment(assumedMaster, attachmentId), masterAttachment) &&
+            !isSameAttachment(masterAttachment, forkAttachment)
+        ) {
+            if (
+                !masterAttachment ||
+                (masterAttachment as RxAttachmentWriteData).data
+            ) {
+                use = masterAttachment;
+            } else {
+                onMissingData(attachmentId);
+            }
+        }
+        if (use) {
+            ret[attachmentId] = use;
+        }
+    });
+    return ret;
+}
+
 export function getCRDTConflictHandler<RxDocType>(
     hashFunction: HashFunction,
     schema: RxJsonSchema<RxDocumentData<RxDocType>>
 ): RxConflictHandler<RxDocType> {
     const crdtOptions = ensureNotFalsy(schema.crdt);
     const crdtField = crdtOptions.field;
+    const primaryPath = getPrimaryFieldOfPrimaryKey(schema.primaryKey);
     const getCRDTValue = objectPathMonad<WithDeleted<RxDocType> | RxDocType, CRDTDocumentField<RxDocType>>(crdtField);
 
     const conflictHandler: RxConflictHandler<RxDocType> = {
-        isEqual(a, b, ctx) {
-            return getCRDTValue(a).hash === getCRDTValue(b).hash;
+        isEqual(
+            a: WithDeletedAndAttachments<RxDocType>,
+            b: WithDeletedAndAttachments<RxDocType>
+        ) {
+            return getCRDTValue(a).hash === getCRDTValue(b).hash &&
+                hasSameAttachments(a._attachments, b._attachments);
         },
         async resolve(i) {
-            const newDocCrdt = getCRDTValue(i.newDocumentState);
-            const masterDocCrdt = getCRDTValue(i.realMasterState);
+            const newDocumentState: WithDeletedAndAttachments<RxDocType> = i.newDocumentState;
+            const realMasterState: WithDeletedAndAttachments<RxDocType> = i.realMasterState;
+            const assumedMasterState: WithDeletedAndAttachments<RxDocType> | undefined = i.assumedMasterState;
+            const newDocCrdt = getCRDTValue(newDocumentState);
+            const masterDocCrdt = getCRDTValue(realMasterState);
             const mergedCrdt = await mergeCRDTFields(hashFunction, newDocCrdt, masterDocCrdt);
-            const mergedDoc = rebuildFromCRDT(
+            const mergedDoc: WithDeletedAndAttachments<RxDocType> = rebuildFromCRDT(
                 schema,
-                i.newDocumentState,
+                newDocumentState,
                 mergedCrdt
             );
+            if (newDocumentState._attachments || realMasterState._attachments) {
+                mergedDoc._attachments = mergeCRDTAttachments(
+                    assumedMasterState ? assumedMasterState._attachments : undefined,
+                    realMasterState._attachments,
+                    newDocumentState._attachments,
+                    attachmentId => {
+                        /**
+                         * A deleted document has no attachments,
+                         * so the attachment of the master is not needed for it.
+                         */
+                        if (!mergedDoc._deleted) {
+                            throw newRxError('CRDT7', {
+                                documentId: (newDocumentState as any)[primaryPath],
+                                args: { attachmentId }
+                            });
+                        }
+                    }
+                );
+            }
             return mergedDoc;
         }
     }

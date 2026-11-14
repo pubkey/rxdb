@@ -22,7 +22,9 @@ import {
     rxStorageInstanceToReplicationHandler,
     RxReplicationWriteToMasterRow,
     defaultConflictHandler,
-    RxConflictHandler
+    RxConflictHandler,
+    createBlob,
+    WithDeletedAndAttachments
 } from '../../plugins/core/index.mjs';
 
 
@@ -614,6 +616,170 @@ describe('crdt.test.ts', () => {
                 await replicationState.awaitInSync();
                 await replicationState.cancel();
             }
+            it('should keep the attachments when a conflict is resolved', async () => {
+                if (!config.storage.hasAttachments) {
+                    return;
+                }
+                const schemaWithAttachments: RxJsonSchema<HumanDocumentType> = clone(schemas.human);
+                schemaWithAttachments.attachments = {};
+                const clientACollection = await getCRDTCollection(schemaWithAttachments);
+                const clientBCollection = await getCRDTCollection(schemaWithAttachments);
+                const serverCollection = await getCRDTCollection(schemaWithAttachments);
+                const collections = [clientACollection, clientBCollection, serverCollection];
+                async function ensureAllHave(age: number, attachments: { [id: string]: string; }) {
+                    for (const collection of collections) {
+                        const doc = await collection.findOne('foobar').exec(true);
+                        assert.strictEqual(doc.age, age);
+                        assert.deepStrictEqual(
+                            doc.allAttachments().map(attachment => attachment.id).sort(),
+                            Object.keys(attachments).sort()
+                        );
+                        for (const [id, data] of Object.entries(attachments)) {
+                            const attachment = ensureNotFalsy(doc.getAttachment(id));
+                            assert.strictEqual(await attachment.getStringData(), data);
+                        }
+                    }
+                }
+
+                await clientACollection.insert(schemaObjects.humanData('foobar', 0));
+                await replicateOnce(clientACollection, serverCollection);
+                await replicateOnce(clientBCollection, serverCollection);
+                const docA = await clientACollection.findOne('foobar').exec(true);
+                const docB = await clientBCollection.findOne('foobar').exec(true);
+
+                // A adds an attachment while B runs a CRDT operation and replicates first
+                await docA.putAttachment({
+                    id: 'a.txt',
+                    data: createBlob('from-a', 'text/plain'),
+                    type: 'text/plain'
+                });
+                await docB.updateCRDT({ ifMatch: { $inc: { age: 1 } } });
+                await replicateOnce(clientBCollection, serverCollection);
+                await replicateOnce(clientACollection, serverCollection);
+                await replicateOnce(clientBCollection, serverCollection);
+                await ensureAllHave(1, { 'a.txt': 'from-a' });
+
+                // B adds an attachment while A runs a CRDT operation and replicates first
+                await docB.getLatest().putAttachment({
+                    id: 'b.txt',
+                    data: createBlob('from-b', 'text/plain'),
+                    type: 'text/plain'
+                });
+                await docA.getLatest().updateCRDT({ ifMatch: { $inc: { age: 1 } } });
+                await replicateOnce(clientACollection, serverCollection);
+                await replicateOnce(clientBCollection, serverCollection);
+                await replicateOnce(clientACollection, serverCollection);
+                await ensureAllHave(2, { 'a.txt': 'from-a', 'b.txt': 'from-b' });
+
+                // an attachment change without a CRDT operation is replicated
+                await docA.getLatest().putAttachment({
+                    id: 'a.txt',
+                    data: createBlob('from-a-2', 'text/plain'),
+                    type: 'text/plain'
+                });
+                await replicateOnce(clientACollection, serverCollection);
+                await replicateOnce(clientBCollection, serverCollection);
+                await ensureAllHave(2, { 'a.txt': 'from-a-2', 'b.txt': 'from-b' });
+
+                await Promise.all(collections.map(collection => collection.database.close()));
+            });
+            it('should not remove an attachment of the master when the conflict contains no attachment data', async () => {
+                if (!config.storage.hasAttachments) {
+                    return;
+                }
+                const schemaWithAttachments: RxJsonSchema<HumanDocumentType> = clone(schemas.human);
+                schemaWithAttachments.attachments = {};
+                const clientCollection = await getCRDTCollection(schemaWithAttachments);
+                const serverCollection = await getCRDTCollection(schemaWithAttachments);
+                const pullHandler = getPullHandler(serverCollection);
+                const pushHandler = getPushHandler(serverCollection);
+                async function getAttachments(collection: RxCollection<TestDocType>) {
+                    const doc = await collection.findOne('foobar').exec(true);
+                    const ret: { [id: string]: string; } = {};
+                    for (const attachment of doc.allAttachments()) {
+                        ret[attachment.id] = await attachment.getStringData();
+                    }
+                    return ret;
+                }
+                /**
+                 * Replicates once with a push handler that returns the conflicts
+                 * either with only the meta data of the attachments or with their data.
+                 */
+                async function replicateWithConflictAttachments(withData: boolean): Promise<string[]> {
+                    const replicationState = replicateRxCollection<TestDocType, CheckpointType>({
+                        collection: clientCollection,
+                        replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                        live: false,
+                        pull: {
+                            handler: pullHandler
+                        },
+                        push: {
+                            async handler(rows) {
+                                const conflicts: WithDeletedAndAttachments<TestDocType>[] = await pushHandler(rows);
+                                const masterDoc = await serverCollection.findOne('foobar').exec(true);
+                                for (const conflict of conflicts) {
+                                    const attachments: NonNullable<WithDeletedAndAttachments<TestDocType>['_attachments']> = {};
+                                    for (const [id, attachment] of Object.entries(conflict._attachments ?? {})) {
+                                        attachments[id] = {
+                                            digest: attachment.digest,
+                                            length: attachment.length,
+                                            type: attachment.type
+                                        };
+                                        if (withData) {
+                                            attachments[id] = Object.assign({}, attachments[id], {
+                                                data: await ensureNotFalsy(masterDoc.getAttachment(id)).getData()
+                                            });
+                                        }
+                                    }
+                                    conflict._attachments = attachments;
+                                }
+                                return conflicts;
+                            }
+                        }
+                    });
+                    const emittedErrorCodes: string[] = [];
+                    replicationState.error$.subscribe(error => emittedErrorCodes.push(error.code));
+                    await replicationState.awaitInSync();
+                    await replicationState.cancel();
+                    return emittedErrorCodes;
+                }
+
+                await clientCollection.insert(schemaObjects.humanData('foobar', 0));
+                await replicateOnce(clientCollection, serverCollection);
+
+                // client and master add a different attachment at the same time
+                const clientDoc = await clientCollection.findOne('foobar').exec(true);
+                await clientDoc.putAttachment({
+                    id: 'f.txt',
+                    data: createBlob('from-fork', 'text/plain'),
+                    type: 'text/plain'
+                });
+                const serverDoc = await serverCollection.findOne('foobar').exec(true);
+                await serverDoc.putAttachment({
+                    id: 'm.txt',
+                    data: createBlob('from-master', 'text/plain'),
+                    type: 'text/plain'
+                });
+
+                /**
+                 * Without the data of m.txt the conflict cannot be resolved.
+                 * The error is emitted and both sides keep their attachment.
+                 */
+                const errorCodes = await replicateWithConflictAttachments(false);
+                assert.deepStrictEqual(await getAttachments(serverCollection), { 'm.txt': 'from-master' });
+                assert.deepStrictEqual(await getAttachments(clientCollection), { 'f.txt': 'from-fork' });
+                assert.ok(errorCodes.includes('CRDT7'), 'got errors: ' + errorCodes.join(','));
+
+                // the conflict is resolved by the next run where the conflict contains the attachment data
+                const errorCodesWithData = await replicateWithConflictAttachments(true);
+                assert.deepStrictEqual(errorCodesWithData, []);
+                const merged = { 'f.txt': 'from-fork', 'm.txt': 'from-master' };
+                assert.deepStrictEqual(await getAttachments(clientCollection), merged);
+                assert.deepStrictEqual(await getAttachments(serverCollection), merged);
+
+                await clientCollection.database.close();
+                await serverCollection.database.close();
+            });
             it('should merge the +1 increments', async () => {
                 const clientACollection = await getCRDTCollection();
                 const clientBCollection = await getCRDTCollection();

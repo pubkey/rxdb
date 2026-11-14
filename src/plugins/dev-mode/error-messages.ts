@@ -1259,6 +1259,12 @@ export const ERROR_MESSAGES = {
         fix: 'Use updateCRDT() instead of modify().',
         docs: 'https://rxdb.info/crdt.html?console=errors&code=CRDT4'
     },
+    CRDT7: {
+        message: 'CRDT conflict cannot be resolved because the master changed an attachment and the conflict document does not contain the attachment data.',
+        cause: 'The push handler returned a conflict document whose _attachments contain only the attachment meta data. The CRDT conflict handler needs the data of an attachment that was added or changed on the master to write it to the client. Without it, the attachment would be removed from the master by the next push.',
+        fix: 'Return the conflict documents from the push handler with the attachment data, in the same format that the pull handler uses.',
+        docs: 'https://rxdb.info/crdt.html?console=errors&code=CRDT7'
+    },
 
     // plugins/storage-dexie/
     DXE1: {
