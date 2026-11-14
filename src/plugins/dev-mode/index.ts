@@ -23,7 +23,7 @@ import {
     ensureCollectionNameValid,
     ensureDatabaseNameIsValid
 } from './unallowed-properties.ts';
-import { checkMangoQuery, checkQuery, isQueryAllowed } from './check-query.ts';
+import { checkMangoQuery, checkQuery, ensureCountQueryWriteMethodsThrow, isQueryAllowed } from './check-query.ts';
 import { newRxError } from '../../rx-error.ts';
 import { DeepReadonly } from '../../types/util.ts';
 import { deepFreeze } from '../../plugins/utils/index.ts';
@@ -174,6 +174,7 @@ Docs: ${err.docs}`;
         preCreateRxQuery: {
             after: function (args) {
                 checkQuery(args);
+                ensureCountQueryWriteMethodsThrow();
             }
         },
         prePrepareQuery: {

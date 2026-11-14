@@ -310,6 +310,8 @@ query.$.subscribe(amount => {
 });
 ```
 
+The result of a count query is a number, so there are no documents that can be changed or removed. In [dev-mode](./dev-mode.md), calling `remove()`, `patch()`, `modify()`, `update()`, or one of their incremental variants on a count query throws [`QU21`](./errors.md#QU21). Use `find()` with the same selector instead.
+
 :::note
 Count queries have a better performance than normal queries because they do not have to fetch the full document data out of the storage. Therefore it is **not** possible to run a `count()` query with a selector that requires fetching and comparing the document data. So if your query selector **does not** fully match an index of the schema, it is not allowed to run it. These queries would have no performance benefit compared to normal queries but have the tradeoff of not using the fetched document data for caching.
 :::
