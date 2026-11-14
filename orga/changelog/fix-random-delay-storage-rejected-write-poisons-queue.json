@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `randomDelayStorage()` rejected all later writes of all its storage instances with the old error after one `bulkWrite()` of the wrapped storage had rejected. Now only the failing write rejects and the write queue continues",
+    "links": [],
+    "priority": 4
+}
