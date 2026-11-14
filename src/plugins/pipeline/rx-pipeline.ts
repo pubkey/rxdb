@@ -135,6 +135,11 @@ export class RxPipeline<RxDocType> {
             ) {
                 const checkpointDoc = await getCheckpointDoc(this);
                 const checkpoint = checkpointDoc ? checkpointDoc.data.checkpoint : undefined;
+                /**
+                 * Read before the iteration, so that all changes
+                 * up to this time are known to be covered by the iteration.
+                 */
+                const sourceDocTime = this.lastSourceDocTime.getValue();
                 const docsSinceResult = await getChangedDocumentsSince(
                     this.source.storageInstance,
                     this.batchSize,
@@ -169,6 +174,18 @@ export class RxPipeline<RxDocType> {
                     }
 
                     lastTime = ensureNotFalsy(lastOfArray(docsSinceResult.documents))._meta.lwt;
+                }
+                /**
+                 * When the iteration has reached the end of the source changes,
+                 * all changes up to sourceDocTime are processed. A change whose
+                 * document was purged by the cleanup is never returned,
+                 * so the time of the last returned document is not sufficient.
+                 */
+                if (
+                    docsSinceResult.documents.length < this.batchSize &&
+                    sourceDocTime > lastTime
+                ) {
+                    lastTime = sourceDocTime;
                 }
                 if (!this.destination.closed) {
                     await setCheckpointDoc(this, { checkpoint: docsSinceResult.checkpoint, lastDocTime: lastTime }, checkpointDoc);

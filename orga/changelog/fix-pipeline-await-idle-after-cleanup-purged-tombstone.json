@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `RxPipeline.awaitIdle()` and reads on the destination collection no longer hang when `cleanup()` purged a deleted document of the source collection before the pipeline has processed it",
+    "links": [],
+    "priority": 5
+}
