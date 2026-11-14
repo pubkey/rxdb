@@ -62,6 +62,18 @@ await myState.set('myField', v => 42);
 
 The modifier is used instead of a direct assignment to ensure correct behavior when other JavaScript realms write to the state at the same time, like other browser tabs or WebWorkers. On conflicts, the modifier will just be run again to ensure deterministic and correct behavior. Therefore mutation is `async`, you have to `await` the call to the set function when you care about the moment when the change actually happened.
 
+To write a single item of an array, address it by its index with the dot notation, the same way as in the [sorting of queries](./rx-query-examples.md#sorting). When the parent of a path does not exist, `set()` creates objects and never arrays, so you have to set the array first.
+
+```ts
+// set the array first
+await myState.set('myArrayField', v => [{ foobar: 'a' }, { foobar: 'b' }]);
+
+// update the property of the first array item
+await myState.set('myArrayField.0.foobar', v => 'c');
+
+// replace the second array item
+await myState.set('myArrayField.1', v => ({ foobar: 'd' }));
+```
 
 ## Get State Data
 
@@ -82,7 +94,7 @@ const val = myState.get('myField.childfield');
 const val = myState.myField.childfield;
 
 // get nested array property
-const val = myState.get('myArrayField[0].foobar');
+const val = myState.get('myArrayField.0.foobar');
 const val = myState.myArrayField[0].foobar;
 ```
 

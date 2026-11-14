@@ -159,6 +159,27 @@ Why it is breaking, and what has to be handled:
 
 A non-breaking variant was tried in [#9463](https://github.com/pubkey/rxdb/pull/9463). It called the `push.handler` with a second argument that contained a random `requestId` which was the same on all retries of a request. It was dropped because the `requestId` was only kept in memory: After a restart of the app the same writes are pushed with a new `requestId`, and the rows can be batched differently so that the same request no longer exists.
 
+## Only support the dot notation for paths into arrays
+
+A path that points to an item of an array can be written in two ways: with the dot notation (`myArray.1.foo`) and with the bracket notation (`myArray[1].foo`). The dot notation is the one that is documented and typed (`Paths<T>`), and the only one that works in Mango selectors, in the sort of a query (`QU20`), in the update plugin and in CRDT operations. The bracket notation only works in some places because `getProperty()` and `setProperty()` in `src/plugins/utils/utils-object-dot-prop.ts` are a copy of `dot-prop`, and people who carry it over to a query get no results without an error.
+
+In the next major release only the dot notation is supported. The bracket notation is dropped in general, and a path with brackets throws an error so that accidental use is found. Decide at that time if this is a dev-mode check like `QU20` or a runtime error.
+
+The places that still accept the bracket notation today:
+
+- `RxState`: `get()`, `get$()`, `get$$()`, the proxy getters and `set()`, also mixed paths like `myMatrix.1[0]`. The paths go through `toRxStateReadPath()` and `toRxStateWritePath()` in `src/plugins/state/helpers.ts`.
+- `RxDocument.get()`, `RxDocument.get$()` and `RxDocument.get$$()` (without dev-mode, in dev-mode `get$()` throws `DOC4` for each path into an array). A path that mixes both notations like `myMatrix[1].0` returns `undefined` there.
+- `RxLocalDocument.get()`, `get$()` and `get$$()`.
+- The `dataPath` options of the GraphQL replication, which are resolved with `getProperty()` in `getDataFromResult()` in `src/plugins/replication-graphql/helper.ts`.
+
+The places that already only work with the dot notation and need no change: Mango selectors (a bracket path matches no document, which should throw too), the sort of a query (`QU20` in dev-mode), the update plugin and CRDT operations (a `$set` on `myArray[1].foo` creates a top level field with the name `myArray[1]`, which should throw too).
+
+What has to be handled:
+
+- **Stored RxState operations use the bracket notation.** `RxState.set()` stores the path of each operation in the `k` field of the operation documents. For an array item it stores the bracket form (`myArray[1].foo`), also when the dot form was passed, because all released versions throw `Cannot use string index` when they replay a dot path into an array. The replay (`mergeOperationsIntoState()` in `src/plugins/state/rx-state.ts`) must keep reading the stored bracket form, or the stored operations have to be migrated. The replay already reads both forms.
+- **A bracket segment decides between array and object.** When the parent of a path does not exist, `RxState.set('newList[0].foo')` creates an array and `RxState.set('newList.0.foo')` creates an object. With only the dot notation, an array has to be set first. If the stored `k` is changed to the dot form, the replay has to end with the same state, also in older browser tabs that still run the previous version.
+- `setProperty()` throws `Cannot use string index` for a dot path into an array, which is why `RxState` converts the path before the write. When brackets are dropped, `getProperty()` and `setProperty()` can resolve the segments with a plain `split('.')` and the path parser `getPathSegments()` can be removed. Check the other callers first: the CRDT plugin, the encryption plugins and the Dexie helper.
+
 ---------------------------------
 ## Maybe later (not sure if should be done)
 

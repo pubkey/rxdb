@@ -140,6 +140,43 @@ addRxPlugin(RxDBJsonDumpPlugin);
                 await state.set('nes.ted', () => 'foo2');
                 state.collection.database.remove();
             });
+            it('should set an item of an array by its index path', async () => {
+                type ListState = {
+                    list: { name: string; }[];
+                    matrix: number[][];
+                    byNr: { [k: number]: string; };
+                };
+                const databaseName = randomToken(10);
+                const database = await getDatabase(databaseName);
+                const state = await database.addState<ListState>();
+                const database2 = await getDatabase(databaseName);
+                const state2 = await database2.addState<ListState>();
+                const expected: ListState = {
+                    list: [{ name: 'a' }, { name: 'b2' }, { name: 'c2' }],
+                    matrix: [[1, 2], [3, 44]],
+                    byNr: { 1: 'one' }
+                };
+
+                await state.set('list', () => [{ name: 'a' }, { name: 'b' }, { name: 'c' }]);
+                await state.set('matrix', () => [[1, 2], [3, 4]]);
+                await state.set('byNr', () => ({}));
+                await state.set('list.1', () => ({ name: 'b2' }));
+                await state.set('list.2.name', (v: string) => v + '2');
+                await state.set('matrix.1.1', (v: number) => v * 11);
+                await state.set('byNr.1', () => 'one');
+                assert.deepStrictEqual(state.get(), expected);
+                assert.strictEqual(state.get('list.1.name'), 'b2');
+
+                await waitUntil(() => state2.get('byNr.1') === 'one');
+                assert.deepStrictEqual(state2.get(), expected);
+                await database2.close();
+                await database.close();
+
+                const database3 = await getDatabase(databaseName);
+                const state3 = await database3.addState<ListState>();
+                assert.deepStrictEqual(state3.get(), expected);
+                await database3.remove();
+            });
             it('update complete state at once', async () => {
                 const state = await getState();
                 await state.set('foo', () => 'bar');
@@ -290,6 +327,192 @@ addRxPlugin(RxDBJsonDumpPlugin);
                 ];
                 reactivityAr.forEach(rr => assert.strictEqual(rr.init, 42));
                 state.collection.database.remove();
+            });
+        });
+        describe('paths into arrays', () => {
+            type PathState = {
+                list: { foo: string; }[];
+                m: number[][];
+                obj: { [k: number]: { foo: string; }; };
+                created?: { [k: number]: { foo: string; }; };
+            };
+            async function getPathState(databaseName: string = randomToken(10)) {
+                const database = await getDatabase(databaseName);
+                const state = await database.addState<PathState>();
+                return state;
+            }
+            async function fillPathState(state: RxState<PathState, ReactivityType>) {
+                await state.set('list', () => [{ foo: 'a' }, { foo: 'b' }]);
+                await state.set('m', () => [[1, 2], [3, 4]]);
+                await state.set('obj', () => ({ 1: { foo: 'o' } }));
+            }
+            it('get(), get$() and get$$() should read an array item with the dot notation', async () => {
+                const state = await getPathState();
+                await fillPathState(state);
+
+                assert.strictEqual(state.get('list.1.foo'), 'b');
+                assert.deepStrictEqual(state.get('list.1'), { foo: 'b' });
+                assert.strictEqual(state.get('m.1.0'), 3);
+                assert.strictEqual(state.get('obj.1.foo'), 'o');
+                assert.strictEqual(state.list[1].foo, 'b');
+
+                // paths past the end of an array
+                assert.strictEqual(state.get('list.5'), undefined);
+                assert.strictEqual(state.get('list.5.foo'), undefined);
+                assert.strictEqual(state.get('m.5.0'), undefined);
+
+                assert.strictEqual(state.get$$('list.1.foo').init, 'b');
+                const emitted: any[] = [];
+                const sub = state.get$('m.1.0').subscribe(v => emitted.push(v));
+                await state.set('m.1.0', (v: number) => v + 1);
+                await waitUntil(() => emitted.length === 2);
+                assert.deepStrictEqual(emitted, [3, 4]);
+                sub.unsubscribe();
+
+                await state.collection.database.remove();
+            });
+            it('set() should write an array item with the dot notation so that get() returns it for the same path', async () => {
+                const state = await getPathState();
+                await fillPathState(state);
+
+                await state.set('list.1.foo', (v: string) => v + '2');
+                assert.strictEqual(state.get('list.1.foo'), 'b2');
+                await state.set('list.0', () => ({ foo: 'a2' }));
+                assert.deepStrictEqual(state.get('list.0'), { foo: 'a2' });
+                await state.set('m.1.0', (v: number) => v * 10);
+                assert.strictEqual(state.get('m.1.0'), 30);
+
+                // a numeric key of an object stays an object key
+                await state.set('obj.1.foo', (v: string) => v + '2');
+                await state.set('obj.2', () => ({ foo: 'p' }));
+                assert.deepStrictEqual(state.get('obj'), { 1: { foo: 'o2' }, 2: { foo: 'p' } });
+
+                // past the end of the array
+                await state.set('list.3', () => ({ foo: 'd' }));
+                assert.deepStrictEqual(state.get('list.3'), { foo: 'd' });
+                assert.strictEqual(state.get('list').length, 4);
+                assert.deepStrictEqual(state.get('list.1'), { foo: 'b2' });
+
+                // a parent that does not exist is created as object, not as array
+                await state.set('created.0.foo', () => 'c');
+                assert.strictEqual(state.get('created.0.foo'), 'c');
+                assert.deepStrictEqual(state.get('created'), { 0: { foo: 'c' } });
+
+                await state.collection.database.remove();
+            });
+            /**
+             * The Paths type only allows the dot notation.
+             * The paths with brackets are casted here on purpose
+             * to pin that the bracket notation and mixed paths
+             * are still resolved at runtime.
+             */
+            it('should resolve dot, bracket and mixed paths to the same value in get() and set()', async () => {
+                const state = await getPathState();
+                await fillPathState(state);
+                const samePaths = ['m.1.0', 'm[1][0]', 'm[1].0', 'm.1[0]'] as 'm.1.0'[];
+
+                samePaths.forEach(path => assert.strictEqual(state.get(path), 3, path));
+                assert.strictEqual(state.get$$('m[1].0' as 'm.1.0').init, 3);
+
+                let expected = 3;
+                for (const writePath of samePaths) {
+                    expected = expected + 1;
+                    await state.set(writePath, (v: number) => v + 1);
+                    samePaths.forEach(readPath => assert.strictEqual(
+                        state.get(readPath),
+                        expected,
+                        'written with ' + writePath + ' read with ' + readPath
+                    ));
+                }
+                assert.deepStrictEqual(state.get('m'), [[1, 2], [7, 4]]);
+
+                await state.set('list[1].foo' as 'list.1.foo', () => 'bracket');
+                assert.strictEqual(state.get('list.1.foo'), 'bracket');
+                await state.set('list.1.foo', () => 'dot');
+                assert.strictEqual(state.get('list[1].foo' as 'list.1.foo'), 'dot');
+                await state.set('obj[1].foo' as 'obj.1.foo', () => 'o2');
+                assert.deepStrictEqual(state.get('obj'), { 1: { foo: 'o2' } });
+
+                // a parent that does not exist is created as array by the bracket notation
+                await state.set('created[0].foo' as 'created.0.foo', () => 'c');
+                assert.deepStrictEqual(state.get('created'), [{ foo: 'c' }]);
+                assert.strictEqual(state.get('created.0.foo'), 'c');
+
+                await state.collection.database.remove();
+            });
+            /**
+             * The paths with brackets are casted on purpose, see above.
+             */
+            it('should replay writes with dot, bracket and mixed paths on a second instance and after a reopen', async () => {
+                const databaseName = randomToken(10);
+                const state = await getPathState(databaseName);
+                const state2 = await getPathState(databaseName);
+                const expected: PathState = {
+                    list: [{ foo: 'bracket' }, { foo: 'dot' }],
+                    m: [[1, 20], [30, 4]],
+                    obj: { 1: { foo: 'o2' } },
+                    created: { 0: { foo: 'c' } }
+                };
+
+                await fillPathState(state);
+                await state.set('list.1.foo', () => 'dot');
+                await state.set('list[0].foo' as 'list.0.foo', () => 'bracket');
+                await state.set('m.1[0]' as 'm.1.0', (v: number) => v * 10);
+                await state.set('m[0].1' as 'm.0.1', (v: number) => v * 10);
+                await state.set('obj.1.foo', () => 'o2');
+                await state.set('created.0.foo', () => 'c');
+                assert.deepStrictEqual(state.get(), expected);
+
+                await waitUntil(() => state2.get('created.0.foo') === 'c');
+                assert.deepStrictEqual(state2.get(), expected);
+                assert.strictEqual(state2.get('m.1.0'), 30);
+
+                // a write of the second instance on top of the replayed state
+                await state2.set('m.1.1', (v: number) => v + 1);
+                expected.m[1][1] = 5;
+                await waitUntil(() => state.get('m.1.1') === 5);
+                assert.deepStrictEqual(state.get(), expected);
+                await state2.collection.database.close();
+                await state.collection.database.close();
+
+                const state3 = await getPathState(databaseName);
+                assert.deepStrictEqual(state3.get(), expected);
+                assert.strictEqual(state3.get('list.1.foo'), 'dot');
+                assert.strictEqual(state3.get('m[1].0' as 'm.1.0'), 30);
+                await state3.collection.database.remove();
+            });
+            /**
+             * RxState.set() stores the bracket notation for array items.
+             * To have an operation with the dot notation in the storage,
+             * the operation document is inserted into the collection of the state.
+             */
+            it('should replay a stored operation that addresses an array item with the dot notation', async () => {
+                const databaseName = randomToken(10);
+                const state = await getPathState(databaseName);
+                await fillPathState(state);
+
+                const lastDoc = await state.collection.findOne({ sort: [{ id: 'desc' }] }).exec(true);
+                await state.collection.insert({
+                    id: nextRxStateId(lastDoc.id),
+                    sId: randomToken(10),
+                    ops: [
+                        { k: 'list.1.foo', v: 'stored-dot' },
+                        { k: 'm.1.0', v: 33 },
+                        { k: 'obj.1.foo', v: 'o2' }
+                    ]
+                });
+                const expected: PathState = {
+                    list: [{ foo: 'a' }, { foo: 'stored-dot' }],
+                    m: [[1, 2], [33, 4]],
+                    obj: { 1: { foo: 'o2' } }
+                };
+                await waitUntil(() => state.get('list.1.foo') === 'stored-dot');
+                assert.deepStrictEqual(state.get(), expected);
+                await state.collection.database.close();
+
+                const state2 = await getPathState(databaseName);
+                assert.deepStrictEqual(state2.get(), expected);
+                await state2.collection.database.remove();
             });
         });
         describe('cleanup', () => {

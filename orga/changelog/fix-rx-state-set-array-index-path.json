@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `RxState.set()` with a path into an array like `state.set('list.1.name', ...)` rejected with `Cannot use string index` while `RxState.get()` could read the same path. Paths into arrays now work with the dot notation in `get()`, `get$()`, `get$$()` and `set()`, also for nested arrays, and a path that mixes the dot and the bracket notation like `matrix.1[0]` resolves to the same value when reading and writing",
+    "links": [],
+    "priority": 4
+}
