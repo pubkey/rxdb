@@ -1076,9 +1076,11 @@ export function isFindOneByIdQuery(
         const value: any = (query.selector as any)[primaryPath];
         if (typeof value === 'string') {
             return value;
-        } else if (
-            typeof value.$eq === 'string'
-        ) {
+        }
+        if (typeof value !== 'object' || value === null) {
+            return false;
+        }
+        if (typeof value.$eq === 'string') {
             return value.$eq;
         }
 

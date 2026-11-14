@@ -1873,6 +1873,31 @@ describe('rx-query.test.ts', () => {
 
             c.database.close();
         });
+        it('must throw QU19 instead of a TypeError when the primary key in the selector is undefined', async () => {
+            const c = await humansCollection.create(0);
+            const maybeId: string | undefined = undefined;
+
+            await assertThrows(
+                () => c.find({
+                    selector: {
+                        passportId: maybeId
+                    }
+                }).exec(),
+                'RxError',
+                'QU19'
+            );
+            await assertThrows(
+                () => c.findOne({
+                    selector: {
+                        passportId: maybeId
+                    }
+                }).exec(),
+                'RxError',
+                'QU19'
+            );
+
+            c.database.close();
+        });
         it('should throw when a sort field uses the bracket notation for an array index', async () => {
             const c = await humansCollection.create(0);
             await assertThrows(
