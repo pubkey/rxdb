@@ -41,6 +41,7 @@ import { getSchemaByObjectPath } from './rx-schema-helper.ts';
 import { getWrittenDocumentsFromBulkWriteResponse, throwIfIsStorageWriteError } from './rx-storage-helper.ts';
 import { modifierFromPublicToInternal } from './incremental-write.ts';
 import { isWriteAllowed } from './rx-collection-helper.ts';
+import { isNewerDocumentState } from './doc-cache.ts';
 
 export const basePrototype = {
     get primaryPath() {
@@ -105,13 +106,32 @@ export const basePrototype = {
 
         return defer(() => {
             const latestDocData = _this.collection._docCache.getLatestDocumentData(id);
+            let lastEmitted: RxDocumentData<any> | undefined;
             return _this.collection.eventBulks$.pipe(
                 filter((bulk: any) => !bulk.isLocal),
                 map((bulk: any) => bulk.events.find((ev: any) => ev.documentId === id)),
                 filter((event: any) => !!event),
                 map((changeEvent: any) => ensureNotFalsy(changeEvent).documentData),
                 startWith(latestDocData),
-                distinctUntilChanged((prev: RxDocumentData<any>, curr: RxDocumentData<any>) => prev._rev === curr._rev),
+                /**
+                 * In multiInstance mode the event of an older document state
+                 * that was written by another instance can arrive
+                 * after the event of a newer own write.
+                 * A state that is not newer than the last emitted one must not be emitted.
+                 */
+                filter((docData: RxDocumentData<any>) => {
+                    if (
+                        lastEmitted &&
+                        (
+                            lastEmitted._rev === docData._rev ||
+                            !isNewerDocumentState(docData, lastEmitted)
+                        )
+                    ) {
+                        return false;
+                    }
+                    lastEmitted = docData;
+                    return true;
+                }),
                 map((docData: RxDocumentData<any>) => (this as RxDocument<any>).collection._docCache.getCachedRxDocument(docData)),
             );
         }).pipe(

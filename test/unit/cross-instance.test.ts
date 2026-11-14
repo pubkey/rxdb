@@ -169,6 +169,71 @@ describe('cross-instance.test.js', () => {
             c1.database.close();
             c2.database.close();
         });
+        it('should not emit an older document state when the event of another instance arrives after the event of a later own write', async function () {
+            this.timeout(120 * 1000);
+            const name = randomToken(10);
+            const c1 = await humansCollection.createMultiInstance(name);
+            const c2 = await humansCollection.createMultiInstance(name);
+
+            const iterations = 10;
+            for (let i = 0; i < iterations; i++) {
+                const how = i % 2 === 0 ? 'remove' : 'patch';
+                const id = 'doc' + i;
+                let events = 0;
+                const eventSub = c2.$.subscribe(event => {
+                    if (event.documentId === id) {
+                        events = events + 1;
+                    }
+                });
+                await c1.insert(schemaObjects.humanData(id, 20, 'inserted'));
+
+                /**
+                 * c2 reads the document from the storage and writes to it
+                 * before the insert event of c1 has arrived at c2.
+                 */
+                const doc = await c2.findOne(id).exec(true);
+                const emitted: string[] = [];
+                const emittedDeleted: boolean[] = [];
+                const emittedFirstName: string[] = [];
+                const subs = [
+                    eventSub,
+                    doc.$.subscribe(d => emitted.push(d.revision.split('-')[0] + '|' + d.firstName + '|' + d.deleted)),
+                    doc.deleted$.subscribe(deleted => emittedDeleted.push(deleted)),
+                    doc.get$('firstName').subscribe(firstName => emittedFirstName.push(firstName))
+                ];
+                if (how === 'remove') {
+                    await doc.remove();
+                } else {
+                    await doc.patch({ firstName: 'patched' });
+                }
+                await waitUntil(() => events === 2);
+                await wait(0);
+
+                const firstNameAfter = how === 'remove' ? 'inserted' : 'patched';
+                assert.deepStrictEqual(
+                    emitted,
+                    [
+                        '1|inserted|false',
+                        '2|' + firstNameAfter + '|' + (how === 'remove')
+                    ],
+                    'doc.$ in iteration ' + i
+                );
+                assert.deepStrictEqual(
+                    emittedDeleted,
+                    how === 'remove' ? [false, true] : [false],
+                    'doc.deleted$ in iteration ' + i
+                );
+                assert.deepStrictEqual(
+                    emittedFirstName,
+                    how === 'remove' ? ['inserted'] : ['inserted', 'patched'],
+                    'doc.get$() in iteration ' + i
+                );
+                subs.forEach(sub => sub.unsubscribe());
+            }
+
+            await c1.database.close();
+            await c2.database.close();
+        });
         it('should work with encrypted fields', async () => {
             const name = randomToken(10);
             const password = await getPassword();
