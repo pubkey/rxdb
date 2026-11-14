@@ -2909,8 +2909,15 @@ describe('migration-schema.test.ts', function () {
                 await waitUntil(() => createdCollections.length > 0);
                 assert.strictEqual(createdCollections[0].closed, false);
 
-                await db.close();
+                /**
+                 * Closing the database cancels the migration and then waits
+                 * until the running batch of the migration has ended,
+                 * so the strategy must be released before the close can resolve.
+                 */
+                const closePromise = db.close();
+                await waitUntil(() => createdCollections[0].getMigrationState().canceled);
                 releaseStrategy();
+                await closePromise;
 
                 assert.strictEqual(createdCollections[0].closed, true);
                 assert.deepStrictEqual(Object.keys(db.collections), []);
