@@ -929,6 +929,47 @@ describe('rx-document.test.js', () => {
             json.firstName = 'alice';
             c.database.close();
         });
+        it('should keep a nested key named __proto__ as own property', async () => {
+            type DocType = {
+                id: string;
+                data: Record<string, any>;
+            };
+            const schema: RxJsonSchema<DocType> = {
+                version: 0,
+                primaryKey: 'id',
+                type: 'object',
+                properties: {
+                    id: {
+                        type: 'string',
+                        maxLength: 100
+                    },
+                    data: {
+                        type: 'object'
+                    }
+                },
+                required: ['id', 'data']
+            };
+            const db = await createRxDatabase({
+                name: randomToken(10),
+                storage: config.storage.getStorage()
+            });
+            const cols = await db.addCollections<{ docs: RxCollection<DocType>; }>({
+                docs: { schema }
+            });
+            const input: DocType = JSON.parse('{"id":"a","data":{"x":1,"__proto__":{"isAdmin":true}}}');
+            const doc = await cols.docs.insert(input);
+
+            const immutable = doc.toJSON();
+            assert.deepStrictEqual(Object.keys(immutable.data).sort(), ['__proto__', 'x']);
+
+            const mutable = doc.toMutableJSON();
+            assert.deepStrictEqual(Object.keys(mutable.data).sort(), ['__proto__', 'x']);
+            assert.strictEqual(mutable.data.isAdmin, undefined);
+            assert.strictEqual(Object.getPrototypeOf(mutable.data), Object.prototype);
+            assert.deepStrictEqual(mutable, immutable);
+
+            await db.close();
+        });
     });
     describe('incrementalModify', () => {
         it('should end up with a single storage write', async () => {

@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `clone()` and `RxDocument.toMutableJSON()` dropped a nested key named `__proto__` (as created by `JSON.parse()`) and set its value as the prototype of the cloned object",
+    "links": [],
+    "priority": 5
+}
