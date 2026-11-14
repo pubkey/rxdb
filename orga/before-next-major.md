@@ -274,3 +274,185 @@ Todo:
 - Both need a new schema version with a migration for existing collections, which is why it must be done in a major release.
 
 An implementation of the dev-mode error with tests (error `CRDT5`) is in the closed pull request [#9601](https://github.com/pubkey/rxdb/pull/9601).
+
+## Incremental writes: reject with `VD2` instead of `COL20` on a schema validation error
+
+With a schema validator, data that does not match the schema rejects with `VD2` on `insert()`, `upsert()`, `patch()`, `modify()`, and `update()`. The same write through `incrementalPatch()`, `incrementalModify()`, `incrementalUpdate()`, and `incrementalUpsert()` on an existing document rejects with `COL20`, because the incremental write queue maps every storage error to that code.
+
+Todo:
+- Use one shared mapping from a storage write error to an RxError for the direct write path and the incremental write queue.
+- Breaking: the error code changes from `COL20` to `VD2` and the error parameters change, also for attachment writes and incremental writes of local documents.
+
+An implementation with tests is in the closed pull request [#9708](https://github.com/pubkey/rxdb/pull/9708).
+
+## RxStorage: memory and localStorage must report a slow count
+
+The memory and localStorage storages report `mode: 'fast'` for a `count()` whose selector is not satisfied by the index, so `collection.count()` does not throw `QU14` in production like it does on the Dexie.js storage and in dev-mode.
+
+Todo:
+- Report `mode: 'slow'` with the same condition that the Dexie.js storage uses.
+- Decide whether every storage has to report `slow` here. The SQLite trial, MongoDB, FoundationDB, and DenoKV storages return `fast` in every case.
+- Breaking: such a `count()` throws `QU14` in production on these storages unless `allowSlowCount: true` is set.
+
+An implementation with tests is in the closed pull request [#9668](https://github.com/pubkey/rxdb/pull/9668).
+
+## Remote websocket storage: reject requests when the connection to the server is lost
+
+When the connection to the server is lost, the client of the remote websocket storage lets pending requests hang forever. After the automatic reconnect every call rejects with `First call must be a create call`, because the server does not know the old connections any more.
+
+Todo:
+- Answer all unanswered and all later requests with an RxError and let `close` requests succeed, so that `database.close()` resolves.
+- Breaking: the client no longer reconnects by itself. To continue, the database has to be closed and created again with a new storage.
+
+An implementation with tests is in the closed pull request [#9667](https://github.com/pubkey/rxdb/pull/9667).
+
+## Cleanup must not purge tombstones while a replication is paused
+
+With `awaitReplicationsInSync: true`, `awaitInSync()` resolves on a paused replication. The cleanup then purges deleted documents and the deletion is never pushed to the server after `start()`.
+
+Todo:
+- Let the cleanup wait until the paused replication is started again or canceled, or the collection is closed. The cleanup of RxState has the same pattern.
+- Breaking: `collection.cleanup()` and the automatic cleanup wait while a replication of the collection is paused.
+
+An implementation with tests is in the closed pull request [#9637](https://github.com/pubkey/rxdb/pull/9637).
+
+## Replication must wait for a pending schema migration
+
+With `autoMigrate: false`, a replication that is started before the schema migration has finished replicates into the collection that is not migrated yet. The migration then drops the local changes that are not pushed and deleted documents come back.
+
+Todo:
+- Let the start of the replication wait until the migration of the collection is done, with a real signal from the collection (for example a promise `awaitMigration()`).
+- Breaking: `awaitInitialReplication()` and `awaitInSync()` stay pending until the migration is done. Code that awaits one of them before it calls `migratePromise()` waits forever.
+
+An implementation with tests is in the closed pull request [#9633](https://github.com/pubkey/rxdb/pull/9633).
+
+## Attachments: `getAttachmentData()` must reject on an outdated digest on all storages
+
+`getAttachmentData()` of the Dexie.js and localStorage storages ignores the `digest` parameter, so `getData()` on an RxAttachment object of an attachment that was replaced returns the new data. The memory storage throws a plain `Error`.
+
+Todo:
+- Reject with one RxError on all storages when the digest no longer matches the stored attachment.
+- Breaking: `getData()` and `getStringData()` on an outdated RxAttachment object reject on Dexie.js and localStorage, where they returned the new data.
+
+An implementation with tests is in the closed pull request [#9614](https://github.com/pubkey/rxdb/pull/9614).
+
+## Attachments-compression: replicated documents must have the plain digest and length
+
+With `attachments.compression`, a pulled document is stored in the replication state with the internal `c-` digest and the compressed length of its attachments. A backend that compares the `assumedMasterState` answers each later push with a conflict and the local change is dropped.
+
+Todo:
+- Give newly written compressed attachments the plain digest and the `length` of the uncompressed data on the RxAttachment and in replicated documents.
+- Breaking: newly written compressed attachments get another digest prefix that released versions cannot read, and `RxAttachment.length` is the uncompressed size.
+
+An implementation with tests is in the closed pull request [#9605](https://github.com/pubkey/rxdb/pull/9605).
+
+## `RxQuery.exec()` on a closed or removed collection must reject with `COL21`
+
+`exec()` on a query of a closed or removed collection rejects with a plain `ensureNotFalsy()` error, or resolves with the old cached result when the query was executed before.
+
+Todo:
+- Reject with `COL21`.
+- Breaking: an `exec()` that resolved with the cached result of a closed collection rejects.
+
+An implementation with tests is in the closed pull request [#9583](https://github.com/pubkey/rxdb/pull/9583).
+
+## Incremental writes on a deleted document must reject like the non-incremental methods
+
+`incrementalModify()`, `incrementalPatch()`, `incrementalUpdate()`, and `incrementalRemove()` write to a document that is already deleted and emit additional `DELETE` events. `modify()`, `patch()`, and `remove()` reject with `DOC11` and `DOC13`. Attachment writes and incremental writes of a deleted local document have the same problem.
+
+Todo:
+- Put one check into the `IncrementalWriteQueue`: when the state that a modifier runs on is deleted and the modifier keeps it deleted, reject that write with `DOC11`. `incrementalUpsert()`, `bulkUpsert()`, and `upsertLocal()` must still be able to insert a deleted document again.
+- Breaking: these calls reject on a deleted document.
+- The attachment case has its own pull request [#9686](https://github.com/pubkey/rxdb/pull/9686), which is covered by this one.
+
+An implementation with tests is in the closed pull request [#9558](https://github.com/pubkey/rxdb/pull/9558).
+
+## Wrong range query results for string bounds with astral characters or more code units than `maxLength`
+
+Range queries on indexed string fields return wrong documents on the storages with custom index strings (memory, localStorage, and others) when the queried value contains astral characters like emojis or is longer than the `maxLength` of the field.
+
+Todo:
+- Fix the bounds in the query planner. The stored index strings do not have to change.
+- Breaking: `count()` with such a bound becomes a slow count and throws `QU14` without `allowSlowCount: true`.
+
+An implementation with tests is in the closed pull request [#9554](https://github.com/pubkey/rxdb/pull/9554).
+
+## Queries on optional index fields must not return documents without the field
+
+Queries and `count()` on an optional index field return documents that do not have the field, for example with `{ priority: 0 }`, `{ priority: { $lt: 5 } }`, or `{ dueAt: '' }`, on storages that use the custom index strings (memory, localStorage).
+
+Todo:
+- The query planner must not treat the selector as satisfied by the index when the index range can contain documents without the field. The stored index strings do not have to change.
+- Breaking: `count()` with such a selector becomes a slow count and throws `QU14` without `allowSlowCount: true`. Before, it returned a count that was too high.
+
+An implementation with tests is in the closed pull request [#9531](https://github.com/pubkey/rxdb/pull/9531).
+
+## `preSave` hook must get the RxDocument as second parameter
+
+The `preSave` hook gets the plain previous document data as second parameter and not the RxDocument instance as typed and documented, so `rxDocument.toJSON()` or `rxDocument.get()` inside the hook throws a `TypeError`.
+
+Todo:
+- Decide whether the runtime follows the type (pass the RxDocument) or the type follows the runtime (plain data), and make `postSave` consistent between `patch()`/`modify()` and the incremental writes.
+- Breaking: hooks that use the second parameter as plain data.
+
+An implementation with tests is in the closed pull request [#9552](https://github.com/pubkey/rxdb/pull/9552).
+
+## `importJSON()` must report documents that could not be written
+
+`importJSON()` of the json-dump plugin resolves with the internal storage write response and ignores write errors like a document that fails the schema validation.
+
+Todo:
+- Reject when a document of the dump could not be written and resolve with `void` as typed. Conflicts with existing documents are handled by the conflict mode parameter of `importJSON()` that was added in [#9716](https://github.com/pubkey/rxdb/pull/9716), so check what is left to do.
+- Breaking: an import that resolved before rejects.
+
+An implementation with tests is in the closed pull request [#9551](https://github.com/pubkey/rxdb/pull/9551).
+
+## Incremental writes must await `postSave` hooks
+
+`incrementalPatch()`, `incrementalModify()`, `incrementalUpdate()`, `incrementalUpsert()`, and `incrementalRemove()` do not wait for async `postSave` hooks. An error that is thrown in a `postSave` hook becomes an unhandled promise rejection and the write call resolves.
+
+Todo:
+- Await the `postSave` hooks in the incremental write queue and reject the write call when a hook throws, like the non-incremental methods.
+- Breaking: these calls take as long as their `postSave` hooks and can reject.
+
+An implementation with tests is in the closed pull request [#9520](https://github.com/pubkey/rxdb/pull/9520).
+
+## GraphQL replication: schema and query builders must match with `ignoreInputKeys` and `ignoreOutputKeys`
+
+`graphQLSchemaFromRxSchema()` and `pushQueryBuilderFromRxSchema()` do not match when `ignoreInputKeys` or `ignoreOutputKeys` are set.
+
+Todo:
+- Build the `PullBulk` documents type from the output schema and do not select the `ignoreOutputKeys` fields in the push mutation.
+- Breaking: the generated schema and query change for users of these options, so the server schema has to be generated again.
+
+An implementation with tests is in the closed pull request [#9535](https://github.com/pubkey/rxdb/pull/9535).
+
+## GraphQL replication: `pullStreamBuilderFromRxSchema()` must create a valid query without `headerFields`
+
+Without `headerFields`, `pullStreamBuilderFromRxSchema()` creates a subscription query with a `$headers` variable of a type that is not defined, so the query is invalid against the schema of `graphQLSchemaFromRxSchema()`.
+
+Todo:
+- Do not declare `$headers` and do not pass the `headers` argument when no `headerFields` are set.
+- Breaking: the generated query string changes.
+
+An implementation with tests is in the closed pull request [#9533](https://github.com/pubkey/rxdb/pull/9533).
+
+## Throw `DB1` when a database with a password is opened without a password
+
+The password check compares the stored password hash only when the new instance has a password. A database that was created with a password can be opened again without one and no `DB1` is thrown.
+
+Todo:
+- Run the comparison in both directions. The stored format does not have to change and `removeRxDatabase()` without a password must still work.
+- Breaking: code that opens such a database without the password throws.
+
+An implementation with tests is in the closed pull request [#9483](https://github.com/pubkey/rxdb/pull/9483).
+
+## `migrateStorage()` must not delete documents that could not be written to the new storage
+
+`migrateStorage()` does not look at the write errors of the new storage. Every document of a batch is marked as deleted in the old storage and purged. Documents that the new storage rejected, for example with a 422 from a schema validation wrapper, exist nowhere afterwards.
+
+Todo:
+- Keep documents with a write error other than 409 in the old storage, migrate the rest of the batch, and reject with an RxError. A 409 still counts as already migrated, so that an interrupted run can resume.
+- Breaking: a `migrateStorage()` call that resolved before can reject.
+
+An implementation with tests is in the closed pull request [#9473](https://github.com/pubkey/rxdb/pull/9473).
