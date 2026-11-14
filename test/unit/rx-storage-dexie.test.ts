@@ -19,7 +19,8 @@ import {
     isNode
 } from '../../plugins/test-utils/index.mjs';
 import {
-    indexedDB as fakeIndexedDB
+    indexedDB as fakeIndexedDB,
+    IDBKeyRange as fakeIDBKeyRange
 } from 'fake-indexeddb';
 import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.mjs';
 import type { RxJsonSchema } from '../../plugins/core/index.mjs';
