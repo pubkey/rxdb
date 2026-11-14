@@ -190,14 +190,40 @@ export function exposeRxStorageRemote(settings: RxStorageRemoteExposeSettings): 
              */
         }
 
-        // also close the connection when the collection gets closed
+        /**
+         * Also close the connection when the collection gets closed.
+         * The client is not notified about that, so its later requests
+         * must still be answered. Otherwise the calls on the client
+         * would never settle.
+         */
+        function closeThisConnectionOnInstanceClose() {
+            if (connectionClosed) {
+                return;
+            }
+            closeThisConnection();
+            const closedSub = settings.messages$.pipe(
+                filter((subMsg: MessageToRemote) => subMsg.connectionId === connectionId)
+            ).subscribe((message: MessageToRemote) => {
+                if (message.method === 'close') {
+                    closedSub.unsubscribe();
+                    settings.send(createAnswer(message, null));
+                } else {
+                    settings.send(createErrorAnswer(message, newRxError('RM2', {
+                        collection: collectionName,
+                        args: {
+                            method: message.method
+                        }
+                    })));
+                }
+            });
+        }
         if ((settings as RxStorageRemoteExposeSettingsRxDatabase).database) {
             const database = (settings as RxStorageRemoteExposeSettingsRxDatabase).database;
             const collection = database.collections[collectionName];
             if (collection) {
-                collection.onClose.push(() => closeThisConnection());
+                collection.onClose.push(() => closeThisConnectionOnInstanceClose());
             } else {
-                database.onClose.push(() => closeThisConnection());
+                database.onClose.push(() => closeThisConnectionOnInstanceClose());
             }
         }
 

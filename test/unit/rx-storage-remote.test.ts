@@ -17,12 +17,85 @@ import {
     getRxStorageRemoteWebsocket,
     startRxStorageRemoteWebsocketServer
 } from '../../plugins/storage-remote-websocket/index.mjs';
+import {
+    exposeRxStorageRemote,
+    getRxStorageRemote
+} from '../../plugins/storage-remote/index.mjs';
+import type {
+    MessageFromRemote,
+    MessageToRemote
+} from '../../plugins/storage-remote/index.mjs';
 import { getRxStorageMemory } from '../../plugins/storage-memory/index.mjs';
 import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.mjs';
 import { assertThrows } from 'async-test-util';
 import { nextPort } from '../helper/port-manager.ts';
+import { Subject } from 'rxjs';
 
 describe('rx-storage-remote.test.ts', () => {
+    describe('exposed RxDatabase gets closed', () => {
+        it('should answer the requests of the client after the exposed RxDatabase was closed', async () => {
+            const serverDb = await createRxDatabase({
+                name: randomToken(10),
+                storage: wrappedValidateAjvStorage({ storage: getRxStorageMemory() }),
+                multiInstance: false
+            });
+            await serverDb.addCollections({ humans: { schema: schemas.human } });
+            await serverDb.humans.insert(schemaObjects.humanData());
+
+            const toRemote$ = new Subject<MessageToRemote>();
+            const fromRemote$ = new Subject<MessageFromRemote>();
+            exposeRxStorageRemote({
+                database: serverDb,
+                messages$: toRemote$.asObservable(),
+                send(msg) {
+                    setTimeout(() => fromRemote$.next(msg), 0);
+                }
+            });
+            const clientDb = await createRxDatabase({
+                name: randomToken(10),
+                storage: wrappedValidateAjvStorage({
+                    storage: getRxStorageRemote({
+                        identifier: randomToken(10),
+                        mode: 'storage',
+                        messageChannelCreator: () => Promise.resolve({
+                            messages$: fromRemote$.asObservable(),
+                            send(msg) {
+                                setTimeout(() => toRemote$.next(msg), 0);
+                            },
+                            close: () => Promise.resolve()
+                        })
+                    })
+                }),
+                multiInstance: false
+            });
+            await clientDb.addCollections({ humans: { schema: schemas.human } });
+            const docsBefore = await clientDb.humans.find().exec();
+            assert.strictEqual(docsBefore.length, 1);
+
+            await serverDb.close();
+
+            function mustSettle<T>(promise: Promise<T>): Promise<T> {
+                let timeout: ReturnType<typeof setTimeout>;
+                return Promise.race([
+                    promise,
+                    new Promise<T>((_res, rej) => {
+                        timeout = setTimeout(() => rej(new Error('call did not settle')), 1000);
+                    })
+                ]).finally(() => clearTimeout(timeout));
+            }
+            await assertThrows(
+                () => mustSettle(clientDb.humans.find({ selector: { age: { $gt: 0 } } }).exec()),
+                Error,
+                'RM2'
+            );
+            await assertThrows(
+                () => mustSettle(clientDb.humans.insert(schemaObjects.humanData())),
+                Error,
+                'RM2'
+            );
+            await mustSettle(clientDb.close());
+        });
+    });
     /**
      * Notice: Most use cases for the remote storage
      * are tests by having a full unit-test run where all

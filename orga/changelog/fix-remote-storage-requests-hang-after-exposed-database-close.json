@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX remote storage calls like `find()`, `insert()` and `close()` on the client never settled after the RxDatabase or RxCollection that is exposed with `exposeRxStorageRemote()` was closed on the remote side. These requests are now answered with the error `RM2` and `close()` resolves",
+    "links": [],
+    "priority": 5
+}
