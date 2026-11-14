@@ -521,6 +521,22 @@ describe('local-documents.test.ts', () => {
             c.database.close();
         });
     });
+    describe('.isLocal', () => {
+        it('should be true on local documents of a collection and of a database', async () => {
+            const c = await humansCollection.create(0);
+            const collectionDoc = await c.insertLocal('foobar', {
+                foo: 'bar'
+            });
+            const databaseDoc = await c.database.insertLocal('foobar', {
+                foo: 'bar'
+            });
+            const collectionDocIsLocal: true = collectionDoc.isLocal;
+            const databaseDocIsLocal: true = databaseDoc.isLocal;
+            assert.strictEqual(collectionDocIsLocal, true);
+            assert.strictEqual(databaseDocIsLocal, true);
+            c.database.close();
+        });
+    });
     describe('with database', () => {
         it('should be able to use local documents directly on the database', async () => {
             const c = await humansCollection.create(0);
