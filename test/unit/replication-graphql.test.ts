@@ -2049,6 +2049,221 @@ describe('replication-graphql.test.ts', () => {
                 const build = buildSchema(output.asString);
                 assert.ok(build);
             });
+            it('should throw an RxError that names the field when the schema has an object without properties or an array without items', () => {
+                type BaseDocType = {
+                    id: string;
+                    updatedAt: number;
+                };
+                type FreeFormDocType = BaseDocType & { meta?: Record<string, any>; };
+                type UntypedArrayDocType = BaseDocType & { tags?: any[]; };
+                type NestedFreeFormDocType = BaseDocType & { nested?: { meta?: Record<string, any>; }; };
+                const baseProperties = {
+                    id: {
+                        type: 'string',
+                        maxLength: 100
+                    },
+                    updatedAt: {
+                        type: 'number'
+                    }
+                } as const;
+                const freeFormSchema: RxJsonSchema<FreeFormDocType> = {
+                    version: 0,
+                    primaryKey: 'id',
+                    type: 'object',
+                    properties: {
+                        ...baseProperties,
+                        meta: {
+                            type: 'object'
+                        }
+                    },
+                    required: ['id', 'updatedAt']
+                };
+                const untypedArraySchema: RxJsonSchema<UntypedArrayDocType> = {
+                    version: 0,
+                    primaryKey: 'id',
+                    type: 'object',
+                    properties: {
+                        ...baseProperties,
+                        tags: {
+                            type: 'array'
+                        }
+                    },
+                    required: ['id', 'updatedAt']
+                };
+                const nestedFreeFormSchema: RxJsonSchema<NestedFreeFormDocType> = {
+                    version: 0,
+                    primaryKey: 'id',
+                    type: 'object',
+                    properties: {
+                        ...baseProperties,
+                        nested: {
+                            type: 'object',
+                            properties: {
+                                meta: {
+                                    type: 'object',
+                                    additionalProperties: true
+                                }
+                            }
+                        }
+                    },
+                    required: ['id', 'updatedAt']
+                };
+                const freeFormSchemas: { field: string; schema: RxJsonSchema<any>; }[] = [
+                    { field: 'meta', schema: freeFormSchema },
+                    { field: 'tags', schema: untypedArraySchema },
+                    { field: 'nested.meta', schema: nestedFreeFormSchema }
+                ];
+                freeFormSchemas.forEach(({ field, schema }) => {
+                    let thrown: any;
+                    try {
+                        graphQLSchemaFromRxSchema({
+                            todos: {
+                                schema,
+                                checkpointFields: [
+                                    'id',
+                                    'updatedAt'
+                                ]
+                            }
+                        });
+                    } catch (err) {
+                        thrown = err;
+                    }
+                    assert.ok(thrown, 'must throw on field ' + field);
+                    assert.strictEqual(thrown.rxdb, true, 'must be an RxError on field ' + field + ' but got: ' + thrown.message);
+                    assert.strictEqual(thrown.code, 'GQL5');
+                    assert.strictEqual(thrown.parameters.collection, 'todos');
+                    assert.strictEqual(thrown.parameters.field, field);
+                });
+
+                // a field that is ignored for input and output must not throw
+                const output = graphQLSchemaFromRxSchema({
+                    todos: {
+                        schema: freeFormSchema,
+                        checkpointFields: [
+                            'id',
+                            'updatedAt'
+                        ],
+                        ignoreInputKeys: ['meta'],
+                        ignoreOutputKeys: ['meta']
+                    }
+                });
+                assert.ok(buildSchema(output.asString));
+            });
+            it('should create nullable fields for type unions with null and throw an RxError for fields without a GraphQL type', () => {
+                type NullableDocType = {
+                    id: string;
+                    updatedAt: number;
+                    note: string | null;
+                    priority?: number | null;
+                    assignee?: { name?: string | null; } | null;
+                    tags?: (string | null)[] | null;
+                };
+                const nullableSchema: RxJsonSchema<NullableDocType> = {
+                    version: 0,
+                    primaryKey: 'id',
+                    type: 'object',
+                    properties: {
+                        id: {
+                            type: 'string',
+                            maxLength: 100
+                        },
+                        updatedAt: {
+                            type: 'number'
+                        },
+                        note: {
+                            type: ['string', 'null']
+                        },
+                        priority: {
+                            type: ['null', 'integer']
+                        },
+                        assignee: {
+                            type: ['object', 'null'],
+                            properties: {
+                                name: {
+                                    type: ['string', 'null']
+                                }
+                            },
+                            required: ['name']
+                        },
+                        tags: {
+                            type: ['array', 'null'],
+                            items: {
+                                type: ['string', 'null']
+                            }
+                        }
+                    },
+                    required: ['id', 'updatedAt', 'note']
+                };
+                const output = graphQLSchemaFromRxSchema({
+                    todos: {
+                        schema: nullableSchema,
+                        checkpointFields: [
+                            'id',
+                            'updatedAt'
+                        ]
+                    }
+                });
+                const built = buildSchema(output.asString);
+                ['Todos', 'TodosInput'].forEach(typeName => {
+                    const fields = (built.getType(typeName) as any).getFields();
+                    assert.strictEqual(String(fields.id.type), 'String!');
+                    assert.strictEqual(String(fields.note.type), 'String');
+                    assert.strictEqual(String(fields.priority.type), 'Int');
+                    assert.strictEqual(String(fields.tags.type), '[String]');
+                    assert.strictEqual(String(fields.assignee.type.getFields().name.type), 'String');
+                });
+
+                type StateDocType = {
+                    id: string;
+                    updatedAt: number;
+                    state?: any;
+                };
+                const noTypeSchemas: { field: string; property: RxJsonSchema<StateDocType>['properties']['state']; }[] = [
+                    { field: 'state', property: { enum: ['open', 'closed'] } },
+                    { field: 'state', property: { type: 'null' } },
+                    { field: 'state', property: { type: ['object', 'string'], properties: { name: { type: 'string' } } } },
+                    { field: 'state', property: { type: 'array', items: { enum: ['open', 'closed'] } } },
+                    { field: 'state.name', property: { type: ['object', 'null'], properties: { name: { enum: ['open', 'closed'] } } } }
+                ];
+                noTypeSchemas.forEach(({ field, property }) => {
+                    const schema: RxJsonSchema<StateDocType> = {
+                        version: 0,
+                        primaryKey: 'id',
+                        type: 'object',
+                        properties: {
+                            id: {
+                                type: 'string',
+                                maxLength: 100
+                            },
+                            updatedAt: {
+                                type: 'number'
+                            },
+                            state: property
+                        },
+                        required: ['id', 'updatedAt']
+                    };
+                    let thrown: any;
+                    try {
+                        graphQLSchemaFromRxSchema({
+                            todos: {
+                                schema,
+                                checkpointFields: [
+                                    'id',
+                                    'updatedAt'
+                                ]
+                            }
+                        });
+                    } catch (err) {
+                        thrown = err;
+                    }
+                    const label = JSON.stringify(property);
+                    assert.ok(thrown, 'must throw on ' + label);
+                    assert.strictEqual(thrown.rxdb, true, 'must be an RxError on ' + label + ' but got: ' + thrown.message);
+                    assert.strictEqual(thrown.code, 'GQL5');
+                    assert.strictEqual(thrown.parameters.collection, 'todos');
+                    assert.strictEqual(thrown.parameters.field, field);
+                });
+            });
         });
         describe('.pullQueryBuilderFromRxSchema()', () => {
             it('assumption: parseQuery() fails on non-graphql input', () => {
