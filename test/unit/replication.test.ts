@@ -714,6 +714,88 @@ describe('replication.test.ts', () => {
             localCollection.database.close();
             remoteCollection.database.close();
         });
+        it('should not drop a RESYNC that comes in after a stream event while a pull is still running', async () => {
+            const localCollection = await humansCollection.createHumanWithTimestamp(0, randomToken(10), false);
+            type ServerCheckpoint = { updatedAt: number; };
+            const serverDocs: WithDeleted<TestDocType>[] = [];
+            const pullStream$ = new Subject<RxReplicationPullStreamItem<TestDocType, ServerCheckpoint>>();
+
+            let pullCount = 0;
+            let pendingResponse: Promise<void> = Promise.resolve();
+            const replicationState = replicateRxCollection<TestDocType, ServerCheckpoint>({
+                collection: localCollection,
+                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                live: true,
+                pull: {
+                    handler: async (lastCheckpoint, batchSize) => {
+                        pullCount++;
+                        const since = lastCheckpoint ? lastCheckpoint.updatedAt : 0;
+                        const documents = serverDocs
+                            .filter(d => d.updatedAt > since)
+                            .slice(0, batchSize);
+                        const lastDoc = lastOfArray(documents);
+                        const result: ReplicationPullHandlerResult<TestDocType, ServerCheckpoint> = {
+                            documents,
+                            checkpoint: lastDoc ? { updatedAt: lastDoc.updatedAt } : lastCheckpoint
+                        };
+                        // the server has answered, but the response is still on its way to the client
+                        await pendingResponse;
+                        return result;
+                    },
+                    stream$: pullStream$.asObservable()
+                }
+            });
+            ensureReplicationHasNoErrors(replicationState);
+            await replicationState.awaitInitialReplication();
+            await replicationState.awaitInSync();
+
+            // a pull is running and its response is slow
+            let resolvePendingResponse: () => void = () => { };
+            pendingResponse = new Promise<void>(res => resolvePendingResponse = res);
+            const pullCountBefore = pullCount;
+            pullStream$.next('RESYNC');
+            await waitUntil(() => pullCount === pullCountBefore + 1);
+
+            // the stream emits an event for the 'seen' document
+            const seenDoc: WithDeleted<TestDocType> = {
+                id: 'seen',
+                name: 'seen',
+                age: 1,
+                updatedAt: 1001,
+                _deleted: false
+            };
+            serverDocs.push(seenDoc);
+            pullStream$.next({
+                documents: [seenDoc],
+                checkpoint: { updatedAt: seenDoc.updatedAt }
+            });
+            await wait(isFastMode() ? 20 : 100);
+
+            // 'missed' is written while the stream is down, so the client never gets an event for it
+            const missedDoc: WithDeleted<TestDocType> = {
+                id: 'missed',
+                name: 'missed',
+                age: 2,
+                updatedAt: 1002,
+                _deleted: false
+            };
+            serverDocs.push(missedDoc);
+
+            // the stream is back and emits a RESYNC because of the reconnect
+            pullStream$.next('RESYNC');
+            await wait(isFastMode() ? 20 : 100);
+
+            resolvePendingResponse();
+            await replicationState.awaitInSync();
+
+            const localDocs = await localCollection.find().exec();
+            assert.deepStrictEqual(
+                localDocs.map(d => d.id).sort(),
+                ['missed', 'seen']
+            );
+
+            await localCollection.database.close();
+        });
         it('should emit conflicts reported by the remote on conflict$ together with the conflictHandler output', async () => {
             const localCollection = await humansCollection.createHumanWithTimestamp(0, randomToken(10), false);
             const remoteCollection = await humansCollection.createHumanWithTimestamp(0, randomToken(10), false);
