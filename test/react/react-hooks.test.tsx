@@ -23,6 +23,7 @@ import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.mjs'
 import {
     RxDatabaseProvider,
     useRxDatabase,
+    useRxCollection,
     useRxDocument,
     useRxQuery,
     useLiveRxQuery,
@@ -91,6 +92,82 @@ describe('react-hooks.test.tsx', () => {
             assert.throws(() => {
                 renderHook(() => useRxDatabase());
             });
+        });
+    });
+
+    describe('useRxCollection', () => {
+        it('should return the collection by name', async () => {
+            const db = await createDatabase();
+            const { result } = renderHook(
+                () => useRxCollection<SimpleHumanDocumentType>('humans'),
+                { wrapper: createWrapper(db) }
+            );
+            await waitFor(() => {
+                assert.strictEqual(result.current, db.collections.humans);
+            });
+            await db.close();
+        });
+
+        it('should not return the previous collection when the name changes to a collection that does not exist', async () => {
+            const db = await createDatabase();
+            const { result, rerender } = renderHook(
+                (props: { name: string; }) => useRxCollection<SimpleHumanDocumentType>(props.name),
+                {
+                    wrapper: createWrapper(db),
+                    initialProps: { name: 'humans' }
+                }
+            );
+            await waitFor(() => {
+                assert.strictEqual(result.current, db.collections.humans);
+            });
+
+            rerender({ name: 'humans2' });
+            assert.strictEqual(result.current === null, true, 'must not return a collection for a name that does not exist');
+
+            await act(async () => {
+                await db.addCollections({
+                    humans2: {
+                        schema: schemas.simpleHuman
+                    }
+                });
+            });
+            await waitFor(() => {
+                assert.strictEqual(result.current, db.collections.humans2);
+            });
+
+            await db.close();
+        });
+
+        it('should keep returning the current collection when the collection of a previous name is closed', async () => {
+            const db = await createDatabase();
+            await db.addCollections({
+                humans2: {
+                    schema: schemas.simpleHuman
+                }
+            });
+            const humansCollection: RxCollection<SimpleHumanDocumentType> = db.collections.humans;
+            const { result, rerender } = renderHook(
+                (props: { name: string; }) => useRxCollection<SimpleHumanDocumentType>(props.name),
+                {
+                    wrapper: createWrapper(db),
+                    initialProps: { name: 'humans' }
+                }
+            );
+            await waitFor(() => {
+                assert.strictEqual(result.current, humansCollection);
+            });
+
+            rerender({ name: 'humans2' });
+            await waitFor(() => {
+                assert.strictEqual(result.current, db.collections.humans2);
+            });
+
+            await act(async () => {
+                await humansCollection.close();
+            });
+            assert.strictEqual(result.current === db.collections.humans2, true, 'must still return the collection of the current name');
+
+            await db.close();
         });
     });
 
