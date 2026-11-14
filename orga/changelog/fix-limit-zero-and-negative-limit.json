@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX a query with `limit: 0` now returns zero documents everywhere, like in SQL databases. Before, `find()` by primary key (also with `$in`) and its live query ignored `limit: 0` and returned documents, and the query-builder dropped `limit(0)` when more building steps were chained. A negative `limit` now throws the new error `QU23` when the query is created, also without dev-mode. Before, it threw a plain `Error` of event-reduce on `exec()`, ended the process with an uncaught exception on live queries, or was ignored for queries by primary key",
+    "links": [],
+    "priority": 6
+}

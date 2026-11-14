@@ -20,7 +20,7 @@ A Mango query is an object with these fields:
 | `selector` | The conditions a document must match. An empty selector `{}` matches all documents. |
 | `sort` | An array of `{ field: 'asc' \| 'desc' }` objects. |
 | `skip` | The number of documents to skip. |
-| `limit` | The maximum number of documents to return. |
+| `limit` | The maximum number of documents to return. `limit: 0` returns zero documents. |
 | `index` | Forces the query to use a specific index. See [setting a specific index](./rx-query.md#setting-a-specific-index). |
 
 ```ts
@@ -356,6 +356,8 @@ const results = await myDatabase.todos.find({
 // > [RxDocument[todo3], RxDocument[todo4]]
 ```
 
+Same as in SQL databases, `limit: 0` returns zero documents and not all documents. A negative `limit` throws [`QU23`](./errors.md#QU23).
+
 `findOne()` sets `limit: 1` by itself and returns the first document of the sorted result, or `null`:
 
 ```ts
@@ -377,6 +379,7 @@ RxDB validates queries in [dev-mode](./dev-mode.md) to catch mistakes early:
 - **No `undefined` values**: A query must not contain fields with the value `undefined`, because JSON serialization would drop them silently and change the meaning of the query. This throws [`QU19`](./errors.md#QU19).
 - **No `RegExp` instances**: Use a `$regex` string instead. This throws [`QU16`](./errors.md#QU16).
 - **Only JSON values**: A query must not contain values that `JSON.stringify()` drops or changes, like `NaN`, `Infinity`, `-Infinity`, `bigint`, functions, or `Date` objects. This throws [`QU22`](./errors.md#QU22).
+- **No negative limit**: The `limit` must be `0` or greater, where `limit: 0` returns zero documents. A negative `limit` throws [`QU23`](./errors.md#QU23). This check is part of the RxDB core and also runs without dev-mode.
 - **Only the known query fields**: The query object may only contain `selector`, `sort`, `skip`, `limit` and `index`. This throws [`QU11`](./errors.md#QU11).
 
 RxDB supports the operators `$eq`, `$ne`, `$gt`, `$gte`, `$lt`, `$lte`, `$in`, `$nin`, `$exists`, `$type`, `$regex` (with `$options`), `$size`, `$mod`, `$elemMatch`, `$and`, `$or`, `$nor` and `$not`. Queries always return full documents. There are no projections or aggregations, because the documents are already in the same JavaScript process as your application code. Read more in the [RxQuery FAQ](./rx-query.md#faq).
