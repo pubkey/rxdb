@@ -60,6 +60,7 @@ import {
 import { newRxError } from '../../rx-error.ts';
 import {
     awaitRetry,
+    getRetryTime,
     DEFAULT_MODIFIER,
     swapDefaultDeletedTodeletedField,
     handlePulledDocuments,
@@ -313,6 +314,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
                      */
                     let done = false;
                     let result: ReplicationPullHandlerResult<RxDocType, CheckpointType> = {} as any;
+                    let failedAttempts = 0;
                     while (!done && !this.isStoppedOrPaused()) {
                         try {
                             result = await this.pull.handler(
@@ -327,7 +329,8 @@ export class RxReplicationState<RxDocType, CheckpointType> {
                                 direction: 'pull'
                             });
                             this.subjects.error.next(emitError);
-                            await awaitRetry(this.collection, ensureNotFalsy(this.retryTime));
+                            failedAttempts = failedAttempts + 1;
+                            await awaitRetry(this.collection, getRetryTime(this.retryTime, failedAttempts));
                         }
                     }
 
@@ -390,6 +393,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
                     const useRows: RxReplicationWriteToMasterRow<RxDocType>[] = useRowsOrNull.filter(arrayFilterNotEmpty);
 
                     let result: WithDeleted<RxDocType>[] = null as any;
+                    let failedAttempts = 0;
 
                     // In case all the rows have been filtered and nothing has to be sent
                     if (useRows.length === 0) {
@@ -424,7 +428,8 @@ export class RxReplicationState<RxDocType, CheckpointType> {
                                 direction: 'push'
                             });
                             this.subjects.error.next(emitError);
-                            await awaitRetry(this.collection, ensureNotFalsy(this.retryTime));
+                            failedAttempts = failedAttempts + 1;
+                            await awaitRetry(this.collection, getRetryTime(this.retryTime, failedAttempts));
                         }
                     }
                     if (this.isStoppedOrPaused()) {
@@ -818,7 +823,7 @@ export function replicateRxCollection<RxDocType, CheckpointType>(
         pull,
         push,
         live = true,
-        retryTime = 1000 * 5,
+        retryTime,
         waitForLeadership = true,
         autoStart = true,
         toggleOnDocumentVisible = true

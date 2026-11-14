@@ -40,7 +40,7 @@ The replication runs in two modes. On the first start, or after being offline, i
 Other properties worth knowing:
 
 - **Live mode**: with `live: true` (the default) the replication keeps running and syncs continuously. With `live: false` it runs once until the local state matches the remote state and then cancels itself.
-- **Retries**: failed requests are retried after `retryTime` (default 5 seconds). The wait is skipped when an offline-to-online switch is detected.
+- **Retries**: failed requests are retried after `retryTime`. When `retryTime` is not set, the first retry waits 200 milliseconds and the wait grows by the factor `1.3` on each consecutive failed request up to 5 seconds. The wait is skipped when an offline-to-online switch is detected.
 - **Conflicts are resolved on the client** by the [conflict handler](../../transactions-conflicts-revisions.md) of the RxCollection. The backend stays "dumb" and only reports which writes conflicted.
 - **Multi-tab support**: when the app runs in multiple browser tabs, [leader election](../../leader-election.md) makes sure that only one tab runs the replication. All other tabs receive the results through the shared storage. See [Multi-Tab Sync for TanStack DB](./tanstack-db-multi-tab.md).
 
@@ -130,7 +130,7 @@ const replicationState = await replicateRxCollection({
     collection: db.todos,
     replicationIdentifier: 'todos-to-https://example.com/api/sync',
     live: true,           // keep syncing continuously (default)
-    retryTime: 5 * 1000,  // retry failed requests after 5 seconds (default)
+    retryTime: 5 * 1000,  // retry failed requests after 5 seconds
     pull: {
         async handler(checkpointOrNull, batchSize) {
             const updatedAt = checkpointOrNull ? checkpointOrNull.updatedAt : 0;

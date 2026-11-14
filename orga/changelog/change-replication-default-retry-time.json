@@ -1,0 +1,11 @@
+{
+    "$schema": "./schema.json",
+    "text": "CHANGE when no `retryTime` is set in `replicateRxCollection()`, a failed pull or push handler call is no longer retried every 5 seconds. The first retry waits 200 milliseconds and the wait grows by the factor 1.3 on each consecutive failed call up to 5 seconds. It starts at 200 milliseconds again after a successful call. A `retryTime` that is set explicitly stays constant",
+    "links": [
+        {
+            "url": "https://github.com/pubkey/rxdb/pull/9527",
+            "linkText": "#9527"
+        }
+    ],
+    "priority": 5
+}

@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX replication with `retryTime: 0` stopped retrying after the first failed pull or push handler call, so that `awaitInitialReplication()` and `awaitInSync()` never resolved and an unhandled `ensureNotFalsy() is falsy` rejection was raised",
+    "links": [],
+    "priority": 5
+}
