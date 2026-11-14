@@ -366,6 +366,98 @@ describe('rx-collection.test.ts', () => {
 
                     db.close();
                 });
+                it('should not share nested objects and arrays of a default value between inserted documents', async () => {
+                    type DocType = {
+                        id: string;
+                        meta?: {
+                            labels: string[];
+                            nested: { list: string[]; };
+                        };
+                        rows?: { values: string[]; }[];
+                    };
+                    const mySchema: RxJsonSchema<DocType> = {
+                        version: 0,
+                        primaryKey: 'id',
+                        type: 'object',
+                        properties: {
+                            id: {
+                                type: 'string',
+                                maxLength: 100
+                            },
+                            meta: {
+                                type: 'object',
+                                properties: {
+                                    labels: {
+                                        type: 'array',
+                                        items: { type: 'string' }
+                                    },
+                                    nested: {
+                                        type: 'object',
+                                        properties: {
+                                            list: {
+                                                type: 'array',
+                                                items: { type: 'string' }
+                                            }
+                                        }
+                                    }
+                                },
+                                default: {
+                                    labels: [],
+                                    nested: { list: [] }
+                                }
+                            },
+                            rows: {
+                                type: 'array',
+                                items: {
+                                    type: 'object',
+                                    properties: {
+                                        values: {
+                                            type: 'array',
+                                            items: { type: 'string' }
+                                        }
+                                    }
+                                },
+                                default: [{ values: [] }]
+                            }
+                        },
+                        required: ['id']
+                    };
+                    const db = await createRxDatabase({
+                        name: randomToken(10),
+                        storage: config.storage.getStorage(),
+                    });
+                    const collections = await db.addCollections<{ items: RxCollection<DocType>; }>({
+                        items: {
+                            schema: mySchema
+                        }
+                    });
+                    const collection = collections.items;
+
+                    collection.preInsert((data: DocType) => {
+                        if (data.meta) {
+                            data.meta.labels.push(data.id);
+                            data.meta.nested.list.push(data.id);
+                        }
+                        if (data.rows) {
+                            data.rows[0].values.push(data.id);
+                        }
+                    }, false);
+
+                    await collection.insert({ id: 'doc1' });
+                    await collection.insert({ id: 'doc2' });
+
+                    const doc1 = await collection.findOne('doc1').exec(true);
+                    const doc2 = await collection.findOne('doc2').exec(true);
+                    assert.deepStrictEqual(doc1.toJSON().meta, { labels: ['doc1'], nested: { list: ['doc1'] } });
+                    assert.deepStrictEqual(doc1.toJSON().rows, [{ values: ['doc1'] }]);
+                    assert.deepStrictEqual(doc2.toJSON().meta, { labels: ['doc2'], nested: { list: ['doc2'] } });
+                    assert.deepStrictEqual(doc2.toJSON().rows, [{ values: ['doc2'] }]);
+
+                    assert.deepStrictEqual(collection.schema.defaultValues.meta, { labels: [], nested: { list: [] } });
+                    assert.deepStrictEqual(collection.schema.defaultValues.rows, [{ values: [] }]);
+
+                    db.close();
+                });
             });
             describe('negative', () => {
                 it('should throw a conflict-error', async () => {
