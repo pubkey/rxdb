@@ -1290,7 +1290,7 @@ describe('replication.test.ts', () => {
                     }
                 });
                 const localCollection: RxCollection<TestDocType> = database.humans;
-                const { remoteCollection } = await getTestCollections({ local: 0, remote: 0 });
+                const remoteCollection = await humansCollection.createHumanWithTimestamp(0, randomToken(10), false);
 
                 let lastCheckpoint: any;
                 const checkpointCollection = direction === 'pull' ? remoteCollection : localCollection;
