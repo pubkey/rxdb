@@ -169,13 +169,13 @@ function generateGQLOutputFields(options: GenerateGQLOutputFieldsOptions) {
             continue;
         }
 
-        const value = properties[key];
-        if (value.type === "array" && value.items) {
-            outputFields.push(
-                LINE_SPACING + NESTED_SPACING + key + " {",
-                generateGQLOutputFields({ schema: value.items as any, spaceCount, depth: depth + 1 }),
-                LINE_SPACING + NESTED_SPACING + "}"
-            );
+        /**
+         * A GraphQL list field is selected like its item type,
+         * so arrays are unwrapped down to their item schema.
+         */
+        let value = properties[key];
+        while (value.type === "array" && value.items) {
+            value = value.items as any;
         }
         if (value.type === "object") {
             outputFields.push(
