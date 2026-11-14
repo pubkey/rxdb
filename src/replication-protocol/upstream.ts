@@ -85,6 +85,13 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
     };
     const openTasks: TaskWithTime[] = [];
     let persistenceQueue: Promise<boolean> = PROMISE_RESOLVE_FALSE;
+    /**
+     * Is true after persisting documents to the master has failed.
+     * From then on the up-checkpoint must not be stored,
+     * because it would point behind the documents of the failed write
+     * and these documents would be skipped when the replication starts again.
+     */
+    let persistFailed = false;
     const nonPersistedFromMaster: {
         checkpoint?: CheckpointType;
         docs: ById<RxDocumentData<RxDocType>>;
@@ -309,6 +316,9 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
              * these documents from the storage again when the replication is restarted.
              */
             function rememberCheckpointBeforeReturn() {
+                if (persistFailed) {
+                    return;
+                }
                 return setCheckpoint(
                     state,
                     'up',
@@ -586,6 +596,7 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
 
             return hadConflictWrites;
         }).catch(unhandledError => {
+            persistFailed = true;
             state.events.error.next(unhandledError);
             return false;
         });

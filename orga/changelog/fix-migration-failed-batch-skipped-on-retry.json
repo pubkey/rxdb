@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX a failed schema migration lost documents when it ran again, because the up-checkpoint of the internal replication was stored behind the failed batch and the documents of that batch were never migrated before the old storage was removed",
+    "links": [],
+    "priority": 6
+}
