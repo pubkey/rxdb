@@ -19,6 +19,7 @@ import {
     deepEqual,
     ensureNotFalsy,
     getProperty,
+    lastOfArray,
     now,
     objectPathMonad,
     setProperty,
@@ -332,6 +333,41 @@ export function getCRDTConflictHandler<RxDocType>(
 
 export const RX_CRDT_CONTEXT = 'rx-crdt';
 
+/**
+ * Creator of the operation that a schema migration creates
+ * for a document that had no CRDT operations before the migration.
+ */
+const MIGRATION_OPERATION_CREATOR = 'migration';
+
+/**
+ * Returns true when running the operations
+ * leads to the same document data as the given state.
+ */
+function isStateEqualToOperations<RxDocType>(
+    schema: RxJsonSchema<RxDocumentData<RxDocType>>,
+    docData: WithDeleted<RxDocType>,
+    crdts: CRDTDocumentField<RxDocType>
+): boolean {
+    function withoutMeta(doc: any) {
+        const ret: any = {
+            _deleted: !!doc._deleted
+        };
+        Object.entries(doc).forEach(([k, v]) => {
+            if (
+                !k.startsWith('_') &&
+                typeof v !== 'undefined'
+            ) {
+                ret[k] = v;
+            }
+        });
+        return ret;
+    }
+    return deepEqual(
+        withoutMeta(docData),
+        withoutMeta(rebuildFromCRDT(schema, docData, clone(crdts)))
+    );
+}
+
 export const RxDBcrdtPlugin: RxPlugin = {
     name: 'crdt',
     rxdb: true,
@@ -447,6 +483,66 @@ export const RxDBcrdtPlugin: RxPlugin = {
                     data.database.hashFunction,
                     data.schema
                 );
+            }
+        },
+        /**
+         * The migration strategies change the document data
+         * but they do not know about the CRDT operations.
+         * When the migrated state is no longer the result of the stored operations,
+         * the operations are replaced with a single operation that sets the migrated state.
+         * This ensures that later writes and merges are based on the migrated state.
+         *
+         * The migration runs this hook for the document itself, for the assumed master state
+         * of each replication and on each instance that migrates on its own.
+         * All of them must end with the same operation for the same document state.
+         * Therefore the new operation takes its creator and its time
+         * from the last operation of the replaced operations and never from the instance or the clock.
+         */
+        postMigrateDocument: {
+            after: async ({ collection, migratedDocData }) => {
+                const schema = collection.schema.jsonSchema;
+                if (!schema.crdt) {
+                    return;
+                }
+                const crdtField = schema.crdt.field;
+                const crdtsBefore: CRDTDocumentField<any> | undefined = getProperty(migratedDocData, crdtField);
+                if (
+                    crdtsBefore &&
+                    isStateEqualToOperations(schema, migratedDocData, crdtsBefore)
+                ) {
+                    return;
+                }
+                const setMe: Record<string, any> = {};
+                Object.entries(migratedDocData).forEach(([key, value]) => {
+                    if (
+                        !key.startsWith('_') &&
+                        key !== crdtField &&
+                        typeof value !== 'undefined'
+                    ) {
+                        setMe[key] = clone(value);
+                    }
+                });
+                if (migratedDocData._deleted) {
+                    setMe._deleted = true;
+                }
+                const lastRowBefore = crdtsBefore ? lastOfArray(crdtsBefore.operations) : undefined;
+                const lastOperationBefore = lastRowBefore ? lastOfArray(lastRowBefore) : undefined;
+                const crdts: CRDTDocumentField<any> = {
+                    operations: [
+                        [{
+                            creator: lastOperationBefore ? lastOperationBefore.creator : MIGRATION_OPERATION_CREATOR,
+                            body: [{
+                                ifMatch: {
+                                    $set: setMe
+                                }
+                            }],
+                            time: lastOperationBefore ? lastOperationBefore.time : 1
+                        }]
+                    ],
+                    hash: ''
+                };
+                crdts.hash = await hashCRDTOperations(collection.database.hashFunction, crdts);
+                setProperty(migratedDocData, crdtField, crdts);
             }
         },
         createRxCollection: {

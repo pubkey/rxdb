@@ -150,7 +150,11 @@ export interface RxPlugin {
             rows: BulkWriteRow<any>[];
         }>;
         preMigrateDocument?: RxPluginHooks<any>;
-        postMigrateDocument?: RxPluginHooks<any>;
+        postMigrateDocument?: RxPluginHooks<{
+            collection: RxCollection;
+            oldDocData: any;
+            migratedDocData: any;
+        }>;
         postCleanup?: RxPluginHooks<{
             databaseName: string;
             collectionName: string;

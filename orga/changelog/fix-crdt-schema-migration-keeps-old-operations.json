@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX a schema migration that changes the data of a document in a CRDT collection kept the old CRDT operations, so later writes threw `SNH` in dev-mode and the next conflict resolution restored the document state from before the migration. The operations of such a document are now replaced with one operation that sets the migrated state",
+    "links": [],
+    "priority": 5
+}
