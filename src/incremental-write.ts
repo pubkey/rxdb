@@ -34,9 +34,12 @@ export type IncrementalWriteModifier<RxDocType> = (
 type IncrementalWriteQueueItem<RxDocType> = {
     lastKnownDocumentState: RxDocumentData<RxDocType>;
     modifier: IncrementalWriteModifier<RxDocType>;
+    ownWrite?: boolean;
     resolve: (d: RxDocumentData<RxDocType>) => void;
     reject: (error: RxError) => void;
 };
+
+type WaitingWrite<RxDocType> = (docData?: RxDocumentData<RxDocType>, ownWrite?: boolean) => any;
 
 /**
  * The incremental write queue
@@ -49,6 +52,14 @@ export class IncrementalWriteQueue<RxDocType> {
     public queueByDocId = new Map<string, IncrementalWriteQueueItem<RxDocType>[]>();
     public isRunning: boolean = false;
 
+    /**
+     * Writes that have been called while the state of their document was not known.
+     * They are added to the queue before the next write to the same document,
+     * so that all writes to one document run in call order.
+     * A function that returns true stays in the list.
+     */
+    public waitingByDocId = new Map<string, WaitingWrite<RxDocType>[]>();
+
     constructor(
         public readonly storageInstance: RxStorageInstance<RxDocType, any, any>,
         public readonly primaryPath: StringKeys<RxDocumentData<RxDocType>>,
@@ -60,14 +71,27 @@ export class IncrementalWriteQueue<RxDocType> {
 
     addWrite(
         lastKnownDocumentState: RxDocumentData<RxDocType>,
-        modifier: IncrementalWriteModifier<RxDocType>
+        modifier: IncrementalWriteModifier<RxDocType>,
+        /**
+         * If true, the write is not merged into the
+         * same storage write as the earlier writes of that document.
+         */
+        ownWrite?: boolean,
+        /**
+         * If true, the waiting writes are not added before this write.
+         */
+        beforeWaiting?: boolean
     ): Promise<RxDocumentData<RxDocType>> {
         const docId: string = lastKnownDocumentState[this.primaryPath] as any;
+        if (!beforeWaiting) {
+            this.addWaiting(docId, lastKnownDocumentState, ownWrite);
+        }
         const ar = getFromMapOrCreate(this.queueByDocId, docId, () => []);
         const ret = new Promise<RxDocumentData<RxDocType>>((resolve, reject) => {
             const item: IncrementalWriteQueueItem<RxDocType> = {
                 lastKnownDocumentState,
                 modifier,
+                ownWrite,
                 resolve,
                 reject
             };
@@ -75,6 +99,25 @@ export class IncrementalWriteQueue<RxDocType> {
             this.triggerRun();
         });
         return ret;
+    }
+
+    wait(docId: string, fn: WaitingWrite<RxDocType>) {
+        getFromMapOrCreate(this.waitingByDocId, docId, () => []).push(fn);
+    }
+
+    /**
+     * @param docData without it, only the functions that are no longer needed are removed.
+     * @param ownWrite if true, the pending RxCollection.upsert() calls add their write, too.
+     */
+    addWaiting(docId: string, docData?: RxDocumentData<RxDocType>, ownWrite?: boolean) {
+        const waiting = this.waitingByDocId.get(docId);
+        if (waiting) {
+            this.waitingByDocId.delete(docId);
+            const keep = waiting.filter(fn => fn(docData, ownWrite));
+            if (keep.length) {
+                this.waitingByDocId.set(docId, keep);
+            }
+        }
     }
 
     async triggerRun(): Promise<void> {
@@ -94,6 +137,13 @@ export class IncrementalWriteQueue<RxDocType> {
          */
         const itemsById = this.queueByDocId;
         this.queueByDocId = new Map();
+        itemsById.forEach((items, docId) => {
+            const cutAt = items.findIndex((item, idx) => idx && item.ownWrite);
+            if (cutAt > 0) {
+                // this item and the ones after it stay in the queue for the next run
+                this.queueByDocId.set(docId, items.splice(cutAt));
+            }
+        });
         try {
             await Promise.all(
                 Array.from(itemsById.entries())
