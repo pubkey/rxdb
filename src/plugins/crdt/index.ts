@@ -472,6 +472,11 @@ export const RxDBcrdtPlugin: RxPlugin = {
                             writes.map(async (write) => {
                                 const newDocState: typeof write.document = clone(write.document);
                                 const crdts = getCrdt(newDocState);
+                                if (!crdts) {
+                                    throw newRxError('SNH', {
+                                        document: newDocState
+                                    });
+                                }
 
                                 const rebuild = rebuildFromCRDT(
                                     collection.schema.jsonSchema,
@@ -510,6 +515,76 @@ export const RxDBcrdtPlugin: RxPlugin = {
                     };
                 }
 
+
+                /**
+                 * The preInsert and preSave hooks can change the document data
+                 * after the CRDT operations of the write have been created.
+                 * To ensure the document state is still the result of its operations,
+                 * the changes of the hooks are stored as an additional operation.
+                 */
+                const runHooksBefore = collection._runHooks.bind(collection);
+                collection._runHooks = async function (when, key, data, instance) {
+                    if (
+                        when !== 'pre' ||
+                        (key !== 'insert' && key !== 'save') ||
+                        !collection.hasHooks(when, key)
+                    ) {
+                        return runHooksBefore(when, key, data, instance);
+                    }
+                    const getFields = (docData: any) => {
+                        const ret: Record<string, any> = {};
+                        Object.entries(docData).forEach(([k, v]) => {
+                            if (
+                                !k.startsWith('_') &&
+                                k !== crdtField &&
+                                typeof v !== 'undefined'
+                            ) {
+                                ret[k] = v;
+                            }
+                        });
+                        return ret;
+                    };
+                    const fieldsBefore = clone(getFields(data));
+                    await runHooksBefore(when, key, data, instance);
+                    const fieldsAfter = getFields(data);
+
+                    const ifMatch: Record<string, Record<string, any>> = {};
+                    Object.entries(fieldsAfter).forEach(([k, v]) => {
+                        if (!deepEqual(fieldsBefore[k], v)) {
+                            ifMatch.$set = ifMatch.$set || {};
+                            ifMatch.$set[k] = clone(v);
+                        }
+                    });
+                    Object.keys(fieldsBefore).forEach(k => {
+                        if (!Object.prototype.hasOwnProperty.call(fieldsAfter, k)) {
+                            ifMatch.$unset = ifMatch.$unset || {};
+                            ifMatch.$unset[k] = '';
+                        }
+                    });
+                    if (Object.keys(ifMatch).length === 0) {
+                        return;
+                    }
+
+                    /**
+                     * Not all writes hand over the CRDT field to the hooks,
+                     * for example incrementalUpsert() on an existing document
+                     * runs the preSave hooks on the given data.
+                     * Without the CRDT field there are no operations
+                     * that the changes of the hooks can be added to.
+                     */
+                    const crdtsBefore: CRDTDocumentField<any> | undefined = getCrdt(data);
+                    if (!crdtsBefore) {
+                        return;
+                    }
+                    const crdtDocField: CRDTDocumentField<any> = clone(crdtsBefore);
+                    crdtDocField.operations.push([{
+                        creator: await collection.database.storageToken,
+                        body: [{ ifMatch }],
+                        time: now()
+                    }]);
+                    crdtDocField.hash = await hashCRDTOperations(collection.database.hashFunction, crdtDocField);
+                    setProperty(data, crdtField, crdtDocField);
+                };
 
                 const bulkInsertBefore = collection.bulkInsert.bind(collection);
                 collection.bulkInsert = async function (docsData: any[]) {

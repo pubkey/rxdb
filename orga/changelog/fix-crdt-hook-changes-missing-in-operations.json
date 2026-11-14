@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX changes that a `preInsert` or `preSave` hook made to a document of a CRDT collection were not part of the CRDT operations, so the write threw `SNH` in dev-mode and the changes of the hook were reverted by the next conflict resolution. The changes of the hooks are now stored as an additional CRDT operation",
+    "links": [],
+    "priority": 5
+}
