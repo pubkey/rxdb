@@ -19,7 +19,8 @@ import {
     ensureNotFalsy,
     RxCollection,
     RxEventReduceOptions,
-    MangoQuerySelector
+    MangoQuerySelector,
+    batchArray
 } from '../../plugins/core/index.mjs';
 import {
     schemaObjects,
@@ -2943,48 +2944,54 @@ describe('rx-storage-query-correctness.test.ts', () => {
             return database;
         };
 
-        const myDatabase = await createDatabase(true);
         /**
-         * The queries run in parallel so that the test
-         * also finishes in time on a storage with slow reads.
+         * The queries are spread over several databases because the trial
+         * SQLite storage only allows 500 operations per storage instance.
          */
-        const checks: Promise<void>[] = [];
-        for (const collection of [myDatabase.numberFirst, myDatabase.numberLast]) {
-            for (const priorityCondition of priorityConditions) {
-                for (const nameCondition of nameConditions) {
-                    const selector: MangoQuerySelector<TodoDocType> = { priority: priorityCondition.operators };
-                    if (nameCondition) {
-                        selector.name = nameCondition.operators;
-                    }
-                    const expected = todos
-                        .filter(todo => priorityCondition.matches(todo.priority))
-                        .filter(todo => !nameCondition || nameCondition.matches(todo.name))
-                        .map(todo => todo.id)
-                        .sort();
-                    checks.push((async () => {
-                        const [found, count] = await Promise.all([
-                            collection.find({ selector }).exec(),
-                            collection.count({ selector }).exec()
-                        ]);
-                        const foundIds = found.map(doc => doc.id).sort();
-                        if (
-                            JSON.stringify(foundIds) !== JSON.stringify(expected) ||
-                            count !== expected.length
-                        ) {
-                            wrong.push([
-                                collection.name,
-                                JSON.stringify(selector),
-                                'find: ' + JSON.stringify(foundIds),
-                                'count: ' + count,
-                                'expected: ' + JSON.stringify(expected)
-                            ].join(' | '));
+        for (const priorityConditionsBatch of batchArray(priorityConditions, 15)) {
+            const myDatabase = await createDatabase(true);
+            /**
+             * The queries run in parallel so that the test
+             * also finishes in time on a storage with slow reads.
+             */
+            const checks: Promise<void>[] = [];
+            for (const collection of [myDatabase.numberFirst, myDatabase.numberLast]) {
+                for (const priorityCondition of priorityConditionsBatch) {
+                    for (const nameCondition of nameConditions) {
+                        const selector: MangoQuerySelector<TodoDocType> = { priority: priorityCondition.operators };
+                        if (nameCondition) {
+                            selector.name = nameCondition.operators;
                         }
-                    })());
+                        const expected = todos
+                            .filter(todo => priorityCondition.matches(todo.priority))
+                            .filter(todo => !nameCondition || nameCondition.matches(todo.name))
+                            .map(todo => todo.id)
+                            .sort();
+                        checks.push((async () => {
+                            const [found, count] = await Promise.all([
+                                collection.find({ selector }).exec(),
+                                collection.count({ selector }).exec()
+                            ]);
+                            const foundIds = found.map(doc => doc.id).sort();
+                            if (
+                                JSON.stringify(foundIds) !== JSON.stringify(expected) ||
+                                count !== expected.length
+                            ) {
+                                wrong.push([
+                                    collection.name,
+                                    JSON.stringify(selector),
+                                    'find: ' + JSON.stringify(foundIds),
+                                    'count: ' + count,
+                                    'expected: ' + JSON.stringify(expected)
+                                ].join(' | '));
+                            }
+                        })());
+                    }
                 }
             }
+            await Promise.all(checks);
+            await myDatabase.remove();
         }
-        await Promise.all(checks);
-        await myDatabase.remove();
 
         /**
          * A value outside of the range must not turn

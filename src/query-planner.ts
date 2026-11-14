@@ -173,8 +173,9 @@ export function getQueryPlan<RxDocType>(
              * A query value can be any number, also one that is outside
              * of the schema minimum/maximum or between two steps of the
              * index precision. getNumberIndexString() cannot represent
-             * these values, so the bound is moved to the next value
-             * that is representable inside of the queried range.
+             * these values, so a lower bound is moved up and an upper bound
+             * is moved down to the next representable value, which is then inclusive.
+             * When no representable value is left between the bounds, the range is empty.
              */
             const schemaPart = getSchemaByObjectPath(schema, indexField);
             if (
@@ -190,27 +191,23 @@ export function getQueryPlan<RxDocType>(
                 const hasEnd = typeof endKey === 'number' && endKey !== INDEX_MIN;
                 if (hasStart || hasEnd) {
                     const parsedLengths = getStringLengthOfIndexNumber(schemaPart);
-                    if (
-                        (hasStart && (startKey as number) > parsedLengths.maximum) ||
-                        (hasEnd && (endKey as number) < parsedLengths.minimum)
-                    ) {
-                        rangeIsEmpty = true;
-                    }
+                    let start = parsedLengths.minimum;
+                    let end = parsedLengths.maximum;
                     if (hasStart) {
-                        const bound = getRepresentableNumberBound(parsedLengths, startKey as number, true);
-                        if (bound) {
-                            matcherOpts.startKey = bound.key;
-                            matcherOpts.inclusiveStart = bound.inclusive;
+                        start = Math.max(start, roundToIndexStep(parsedLengths, startKey as number, Math.ceil));
+                        if (start !== startKey) {
+                            matcherOpts.startKey = start;
+                            matcherOpts.inclusiveStart = true;
                         }
                     }
                     if (hasEnd) {
-                        const bound = getRepresentableNumberBound(parsedLengths, endKey as number, false);
-                        if (bound) {
-                            matcherOpts.endKey = bound.key;
-                            matcherOpts.inclusiveEnd = bound.inclusive;
+                        end = Math.min(end, roundToIndexStep(parsedLengths, endKey as number, Math.floor));
+                        if (end !== endKey) {
+                            matcherOpts.endKey = end;
+                            matcherOpts.inclusiveEnd = true;
                         }
                     }
-                    if (hasStart && hasEnd && (matcherOpts.startKey as number) > (matcherOpts.endKey as number)) {
+                    if (start > end) {
                         rangeIsEmpty = true;
                     }
                 }
@@ -298,38 +295,21 @@ export function getQueryPlan<RxDocType>(
 }
 
 /**
- * Returns the bound that must be used in the index range
- * when the given query value has no index string of its own,
- * or undefined when the value is representable.
- * A lower bound is moved up and an upper bound is moved down
- * to the next representable value, which is then inclusive.
- * A lower bound above the maximum or an upper bound below
- * the minimum becomes exclusive so that the range is empty.
+ * Rounds a query value that lies between two steps of the index precision
+ * to the next step with the given rounding function.
+ * Values that differ from a step only by the floating point
+ * error are returned unchanged because they get the index string
+ * of that step, same as document values.
  */
-export function getRepresentableNumberBound(
+function roundToIndexStep(
     parsedLengths: ReturnType<typeof getStringLengthOfIndexNumber>,
     value: number,
-    isLowerBound: boolean
-): { key: number; inclusive: boolean; } | undefined {
-    if (value < parsedLengths.minimum) {
-        return { key: parsedLengths.minimum, inclusive: isLowerBound };
-    }
-    if (value > parsedLengths.maximum) {
-        return { key: parsedLengths.maximum, inclusive: !isLowerBound };
-    }
-    const multiplier = parsedLengths.multiplier;
-    const scaled = value * multiplier;
-    /**
-     * Values that differ from a step only by the floating point
-     * error get the index string of that step, same as document values.
-     */
-    if (Math.abs(scaled - Math.round(scaled)) <= Number.EPSILON * 4 * Math.max(1, Math.abs(scaled))) {
-        return undefined;
-    }
-    return {
-        key: (isLowerBound ? Math.ceil(scaled) : Math.floor(scaled)) / multiplier,
-        inclusive: true
-    };
+    round: (value: number) => number
+): number {
+    const scaled = value * parsedLengths.multiplier;
+    return Math.abs(scaled - Math.round(scaled)) <= Number.EPSILON * 4 * Math.max(1, Math.abs(scaled)) ?
+        value :
+        round(scaled) / parsedLengths.multiplier;
 }
 
 export const LOGICAL_OPERATORS = new Set(['$eq', '$gt', '$gte', '$lt', '$lte']);
