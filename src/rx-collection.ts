@@ -1362,10 +1362,13 @@ export async function createRxCollection(
 
     } catch (err) {
         /**
-         * If the collection creation fails,
-         * we yet have to close the storage instances.
+         * If the collection creation fails, we yet have to close the storage instance.
+         * The collection must also be marked as closed. Otherwise plugins like the cleanup
+         * keep running on it, and when its meta document gets deleted it would call close()
+         * and remove a later collection with the same name from database.collections.
          */
         OPEN_COLLECTIONS.delete(collection);
+        collection.closed = true;
         await storageInstance.close();
         throw err;
     }

@@ -509,7 +509,6 @@ export class RxDatabaseBase<
             throw err;
         }
 
-        const conflictingMetaDocIds = new Set(putDocsResult.error.map(error => error.documentId));
         const ret: { [key in keyof CreatedCollections]: RxCollection<any, {}, {}, {}, Reactivity> } = {} as any;
         await Promise.all(
             Object.keys(collectionCreators).map(async (collectionName) => {
@@ -529,29 +528,23 @@ export class RxDatabaseBase<
                      * A database that is closing or closed keeps its data,
                      * and an error of the rollback must not hide the creation error.
                      */
-                    if (this.closePromise) {
-                        throw err;
-                    }
                     const jsonSchema = useArgs.schema.jsonSchema;
+                    const metaDocId = (version: number) => getPrimaryKeyOfInternalDocument(
+                        collectionName + '-' + version,
+                        INTERNAL_CONTEXT_COLLECTION
+                    );
                     try {
-                        const previousMetaDocs = await this.internalStore.findDocumentsById(
-                            getPreviousVersions(jsonSchema).map(version => getPrimaryKeyOfInternalDocument(
-                                collectionName + '-' + version,
-                                INTERNAL_CONTEXT_COLLECTION
-                            )),
-                            false
-                        );
                         if (
-                            !conflictingMetaDocIds.has(getPrimaryKeyOfInternalDocument(
-                                _collectionNamePrimary(collectionName, jsonSchema),
-                                INTERNAL_CONTEXT_COLLECTION
-                            )) &&
-                            previousMetaDocs.length === 0
+                            !this.closePromise &&
+                            !putDocsResult.error.some(error => error.documentId === metaDocId(jsonSchema.version)) &&
+                            !(await this.internalStore.findDocumentsById(
+                                getPreviousVersions(jsonSchema).map(metaDocId),
+                                false
+                            )).length
                         ) {
-                            const newStorageInstance = await this.storage.createStorageInstance(
+                            await (await this.storage.createStorageInstance(
                                 storageInstanceCreationParamsByCollectionName[collectionName]
-                            );
-                            await newStorageInstance.remove();
+                            )).remove();
                             await this.removeCollectionDoc(collectionName, jsonSchema);
                         }
                     } catch { }
