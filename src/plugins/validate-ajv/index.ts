@@ -4,13 +4,15 @@
  * @link https://github.com/epoberezkin/ajv
  * @link https://github.com/ajv-validator/ajv/issues/2132#issuecomment-1537224620
  */
-import { Ajv, type Options } from 'ajv';
+import { Ajv, type Options, type ValidateFunction } from 'ajv';
 import addFormats from 'ajv-formats';
 import type {
     RxDocumentData,
     RxJsonSchema
 } from '../../types/index.d.ts';
 import { wrappedValidateStorageFactory } from '../../plugin-helpers.ts';
+import { newRxError } from '../../rx-error.ts';
+import { errorToPlainJson } from '../utils/index.ts';
 
 
 let ajv: Ajv;
@@ -23,7 +25,14 @@ let ajv: Ajv;
  */
 export function createAjv(options: Options = {}): Ajv {
     const ret = new Ajv(Object.assign({
-        strict: true
+        strict: true,
+        /**
+         * Union types like ['string', 'number'], keywords without
+         * a type in the same sub-schema (inside of allOf) and tuple items
+         * are valid JSON schema, so the schema must compile with them.
+         */
+        strictTypes: false,
+        strictTuples: false
     }, options));
     ret.addKeyword('version');
     ret.addKeyword('keyCompression');
@@ -36,6 +45,7 @@ export function createAjv(options: Options = {}): Ajv {
     ret.addKeyword('attachments');
     ret.addKeyword('ref');
     ret.addKeyword('crdt');
+    ret.addKeyword('example');
     addFormats(ret);
     return ret;
 }
@@ -51,7 +61,15 @@ export function getAjv() {
 export function getValidator(
     schema: RxJsonSchema<any>
 ) {
-    const validator = getAjv().compile(schema);
+    let validator: ValidateFunction;
+    try {
+        validator = getAjv().compile(schema);
+    } catch (err) {
+        throw newRxError('VD4', {
+            schema,
+            error: errorToPlainJson(err as Error)
+        });
+    }
     return (docData: RxDocumentData<any>) => {
         const isValid = validator(docData);
         if (isValid) {

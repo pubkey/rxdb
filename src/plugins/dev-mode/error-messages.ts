@@ -1205,6 +1205,12 @@ export const ERROR_MESSAGES = {
         fix: 'Recompile the validators at build time with getStandaloneValidationSchema() and pass all of them, including the previous schema versions that still have to be migrated.',
         docs: 'https://rxdb.info/schema-validation.html?console=errors&code=VD3'
     },
+    VD4: {
+        message: 'The schema validator could not compile the schema',
+        cause: 'The schema of the collection contains something that the validation library does not know or does not allow, like a format that was not registered or an unknown keyword. See the error property for the message of the validation library.',
+        fix: 'Change the schema or register the custom format or keyword at the validator before the database is created, for example with getAjv().addFormat().',
+        docs: 'https://rxdb.info/schema-validation.html?console=errors&code=VD4#custom-formats'
+    },
 
     // plugins/in-memory.js
     // removed in 14.0.0 - PouchDB RxStorage is removed IM1: 'InMemory: Memory-Adapter must be added. Use addPouchPlugin(require(\'pouchdb-adapter-memory\'));',
