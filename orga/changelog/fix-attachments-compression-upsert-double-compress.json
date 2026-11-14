@@ -1,0 +1,5 @@
+{
+    "text": "FIX `upsert()` and `bulkUpsert()` with inline `_attachments` on an existing document stored the attachment data compressed twice when the attachments-compression plugin is used, so that `getData()` returned compressed bytes",
+    "links": [],
+    "priority": 5
+}

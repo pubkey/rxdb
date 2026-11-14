@@ -168,14 +168,28 @@ export function wrapRxStorageInstance<RxDocType>(
         }
         return await modifyFromStorage(docData);
     }
+    /**
+     * The writeRow of the error is the row
+     * that the caller passed to bulkWrite(), not the modified row
+     * that was sent to the wrapped instance. The caller might
+     * send that row into bulkWrite() again, where it runs through
+     * modifyToStorage() another time. Attachment data cannot be
+     * restored by modifyFromStorage(), so mapping the stored row back
+     * would hand out attachment data that is already modified.
+     */
     async function errorFromStorage(
-        error: RxStorageWriteError<any>
+        error: RxStorageWriteError<any>,
+        callerWriteRow: BulkWriteRow<RxDocType> | undefined
     ): Promise<RxStorageWriteError<RxDocType>> {
         const ret = flatClone(error);
-        ret.writeRow = flatClone(ret.writeRow);
         if ((ret as RxStorageWriteErrorConflict<any>).documentInDb) {
             (ret as RxStorageWriteErrorConflict<any>).documentInDb = await fromStorage((ret as RxStorageWriteErrorConflict<any>).documentInDb);
         }
+        if (callerWriteRow) {
+            ret.writeRow = callerWriteRow;
+            return ret;
+        }
+        ret.writeRow = flatClone(ret.writeRow);
         if (ret.writeRow.previous) {
             ret.writeRow.previous = await fromStorage(ret.writeRow.previous);
         }
@@ -183,6 +197,7 @@ export function wrapRxStorageInstance<RxDocType>(
         return ret;
     }
 
+    const primaryPath = getPrimaryFieldOfPrimaryKey(originalSchema.primaryKey);
 
     const processingChangesCount$ = new BehaviorSubject(0);
 
@@ -201,28 +216,62 @@ export function wrapRxStorageInstance<RxDocType>(
             documentWrites: BulkWriteRow<RxDocType>[],
             context: string
         ) => {
-            const useRows: BulkWriteRow<any>[] = [];
-            await Promise.all(
+            const useRows: BulkWriteRow<any>[] = await Promise.all(
                 documentWrites.map(async (row) => {
                     const [previous, document] = await Promise.all([
                         row.previous ? toStorage(row.previous) : undefined,
                         toStorage(row.document)
                     ]);
-                    useRows.push({ previous, document });
+                    return { previous, document };
                 })
             );
 
             const writeResult = await instance.bulkWrite(useRows, context);
+
+            /**
+             * A wrapped storage below this one can change the digest
+             * of a written attachment, like the attachments-compression does.
+             * The caller continues to work with the document data of its own write rows,
+             * so the digest must be set there too, also when modifyToStorage()
+             * has returned a copy of the attachment object.
+             */
+            useRows.forEach((useRow, idx) => {
+                const callerAttachments = documentWrites[idx].document._attachments;
+                const storedAttachments: RxDocumentData<RxDocType>['_attachments'] | undefined = useRow.document._attachments;
+                if (!callerAttachments || !storedAttachments) {
+                    return;
+                }
+                Object.entries(storedAttachments).forEach(([attachmentId, stored]) => {
+                    const callerAttachment = callerAttachments[attachmentId];
+                    if (callerAttachment && callerAttachment.digest !== stored.digest) {
+                        callerAttachment.digest = stored.digest;
+                    }
+                    /**
+                     * Same goes for the length, which is the size of the compressed data
+                     * when the attachments-compression has compressed the attachment.
+                     * The attachment data of the caller is never replaced.
+                     */
+                    if (callerAttachment && callerAttachment.length !== stored.length) {
+                        callerAttachment.length = stored.length;
+                    }
+                });
+            });
             const ret: RxStorageBulkWriteResponse<RxDocType> = {
                 error: []
             };
-            const promises: Promise<any>[] = [];
-            writeResult.error.forEach(error => {
-                promises.push(
-                    errorFromStorage(error).then(err => ret.error.push(err))
+            if (writeResult.error.length > 0) {
+                const callerRowsById = new Map<string, BulkWriteRow<RxDocType>>();
+                documentWrites.forEach(row => callerRowsById.set(
+                    (row.document as any)[primaryPath],
+                    row
+                ));
+                await Promise.all(
+                    writeResult.error.map(error => errorFromStorage(
+                        error,
+                        callerRowsById.get(error.documentId)
+                    ).then(err => ret.error.push(err)))
                 );
-            });
-            await Promise.all(promises);
+            }
 
             /**
              * By definition, all change events must be emitted

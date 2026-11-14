@@ -158,32 +158,46 @@ export function wrappedAttachmentsCompressionStorage<Internals, InstanceCreation
                 const mode = params.schema.attachments.compression;
                 const compressibleTypes = params.schema.attachments.compressibleTypes || DEFAULT_COMPRESSIBLE_TYPES;
 
+                /**
+                 * Returns a copy of the document where the data of compressible
+                 * attachments is compressed. The given document and its attachment
+                 * objects are not mutated because the caller can write the same
+                 * objects again, like bulkUpsert() or a retry after a conflict do.
+                 * wrapRxStorageInstance() sets the changed digest and length
+                 * on the attachments of the caller after the write.
+                 */
                 async function modifyToStorage(docData: RxDocumentWriteData<RxDocType>) {
-                    await Promise.all(
-                        Object.values(docData._attachments).map(async (attachment) => {
-                            if (!(attachment as RxAttachmentWriteData).data) {
-                                return;
-                            }
+                    const attachmentEntries = await Promise.all(
+                        Object.entries(docData._attachments).map(async ([attachmentId, attachment]) => {
                             const attachmentWriteData = attachment as RxAttachmentWriteData;
-                            if (isCompressibleType(attachmentWriteData.type, compressibleTypes)) {
-                                attachmentWriteData.data = await compressBlob(mode, attachmentWriteData.data);
-                                /**
-                                 * Prefix the digest to signal that this attachment is compressed.
-                                 * This is intentional: the stored digest is 'c-' + hash(originalData),
-                                 * NOT hash(compressedData). RxDB does not use digests for integrity
-                                 * verification — only for change detection (comparing before vs after).
-                                 * Change detection remains correct because both sides of any comparison
-                                 * consistently carry the 'c-' prefix for compressed attachments.
-                                 * All write paths flow through this modifyToStorage wrapper so the
-                                 * prefix is always applied, regardless of which API was used to write.
-                                 */
-                                if (!attachmentWriteData.digest.startsWith(COMPRESSED_DIGEST_PREFIX)) {
-                                    attachmentWriteData.digest = COMPRESSED_DIGEST_PREFIX + attachmentWriteData.digest;
-                                }
+                            if (
+                                !attachmentWriteData.data ||
+                                !isCompressibleType(attachmentWriteData.type, compressibleTypes)
+                            ) {
+                                return [attachmentId, attachment] as const;
                             }
+                            const compressedAttachment = flatClone(attachmentWriteData);
+                            compressedAttachment.data = await compressBlob(mode, attachmentWriteData.data);
+                            compressedAttachment.length = compressedAttachment.data.size;
+                            /**
+                             * Prefix the digest to signal that this attachment is compressed.
+                             * This is intentional: the stored digest is 'c-' + hash(originalData),
+                             * NOT hash(compressedData). RxDB does not use digests for integrity
+                             * verification — only for change detection (comparing before vs after).
+                             * Change detection remains correct because both sides of any comparison
+                             * consistently carry the 'c-' prefix for compressed attachments.
+                             * All write paths flow through this modifyToStorage wrapper so the
+                             * prefix is always applied, regardless of which API was used to write.
+                             */
+                            if (!compressedAttachment.digest.startsWith(COMPRESSED_DIGEST_PREFIX)) {
+                                compressedAttachment.digest = COMPRESSED_DIGEST_PREFIX + compressedAttachment.digest;
+                            }
+                            return [attachmentId, compressedAttachment] as const;
                         })
                     );
-                    return docData;
+                    const ret = flatClone(docData);
+                    ret._attachments = Object.fromEntries(attachmentEntries);
+                    return ret;
                 }
 
                 /**

@@ -32,7 +32,8 @@ import {
     RxDocumentWriteData,
     addRxPlugin,
     randomOfArray,
-    promiseWait
+    promiseWait,
+    RxAttachmentCreator
 } from '../../plugins/core/index.mjs';
 import {
     wrappedAttachmentsCompressionStorage,
@@ -539,6 +540,62 @@ describe('attachments.test.ts', () => {
             const data = await attachment.getStringData();
             assert.strictEqual(data, insertData);
             c.database.close();
+        });
+        it('should return the decrypted data after re-inserting a deleted document with an inline attachment', async () => {
+            type HumanWithInlineAttachments = HumanDocumentType & {
+                _attachments?: RxAttachmentCreator[];
+            };
+            const db = await createRxDatabase<{ humans: RxCollection<HumanWithInlineAttachments>; }>({
+                name: randomToken(10),
+                password: await getPassword(),
+                storage: getEncryptedStorage(),
+                multiInstance: false,
+                ignoreDuplicate: true
+            });
+            const schemaJson = clone(schemas.human);
+            schemaJson.attachments = {
+                encrypted: true
+            };
+            const collections = await db.addCollections({
+                humans: {
+                    schema: schemaJson
+                }
+            });
+            const c = collections.humans;
+            const humanData = schemaObjects.humanData();
+            const getInsertData = (text: string): HumanWithInlineAttachments => Object.assign(
+                {},
+                humanData,
+                {
+                    _attachments: [{
+                        id: 'cat.txt',
+                        type: 'text/plain',
+                        data: createBlob(text, 'text/plain')
+                    }]
+                }
+            );
+
+            const firstText = 'meow I am the first kitty';
+            const firstDoc = await c.insert(getInsertData(firstText));
+            assert.strictEqual(
+                await ensureNotFalsy(firstDoc.getAttachment('cat.txt')).getStringData(),
+                firstText
+            );
+            await firstDoc.remove();
+
+            const secondText = 'meow I am the second kitty';
+            const secondDoc = await c.insert(getInsertData(secondText));
+            assert.strictEqual(
+                await ensureNotFalsy(secondDoc.getAttachment('cat.txt')).getStringData(),
+                secondText
+            );
+
+            const foundDoc = await c.findOne(humanData.passportId).exec(true);
+            assert.strictEqual(
+                await ensureNotFalsy(foundDoc.getAttachment('cat.txt')).getStringData(),
+                secondText
+            );
+            await db.close();
         });
         it('should be able to render an encrypted stored image attachment', async () => {
             if (isNode || isDeno || isBun) {
