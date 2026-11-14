@@ -37,6 +37,7 @@ import type {
 import { RxDBLeaderElectionPlugin } from '../leader-election/index.ts';
 import {
     arrayFilterNotEmpty,
+    clone,
     createPromiseWithResolvers,
     ensureNotFalsy,
     errorToPlainJson,
@@ -233,7 +234,14 @@ export class RxReplicationState<RxDocType, CheckpointType> {
 
         // fill in defaults for pull & push
         const pullModifier = this.pull && this.pull.modifier ? this.pull.modifier : DEFAULT_MODIFIER;
-        const pushModifier = this.push && this.push.modifier ? this.push.modifier : DEFAULT_MODIFIER;
+        const userPushModifier = this.push && this.push.modifier;
+        /**
+         * The push modifier gets a deep clone of the document
+         * because the replication protocol also stores the same object
+         * as assumed master state. A modifier that mutates its input
+         * must not change that stored state.
+         */
+        const pushModifier = userPushModifier ? (d: WithDeleted<RxDocType>) => userPushModifier(clone(d)) : DEFAULT_MODIFIER;
 
         const database = this.collection.database;
         const metaInfo = await this.metaInfoPromise;
