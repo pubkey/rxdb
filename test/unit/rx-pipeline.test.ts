@@ -364,6 +364,65 @@ describe('rx-pipeline.test.js', () => {
             await c1.database.close();
             await c2.database.close();
         });
+        it('should not start the handler of the next leader before the closing leader has finished its handler', async () => {
+            const identifier = randomToken(10);
+            const name = randomToken(10);
+            const c1 = await humansCollection.createMultiInstance(name);
+            await c1.database.waitForLeadership();
+            const c2 = await humansCollection.createMultiInstance(name);
+            const runAt: string[] = [];
+
+            let firstHandlerStarted: () => void = () => { };
+            const firstHandlerStartedPromise = new Promise<void>(res => firstHandlerStarted = res);
+            let releaseFirstHandler: () => void = () => { };
+            const releaseFirstHandlerPromise = new Promise<void>(res => releaseFirstHandler = res);
+            let secondHandlerStarted: () => void = () => { };
+            const secondHandlerStartedPromise = new Promise<void>(res => secondHandlerStarted = res);
+
+            await c1.addPipeline({
+                destination: c1,
+                handler: async () => {
+                    runAt.push('c1.start');
+                    firstHandlerStarted();
+                    await releaseFirstHandlerPromise;
+                    runAt.push('c1.end');
+                },
+                identifier
+            });
+            const p2 = await c2.addPipeline({
+                destination: c2,
+                handler: () => {
+                    runAt.push('c2.start');
+                    secondHandlerStarted();
+                },
+                identifier
+            });
+
+            await c1.insert(schemaObjects.humanData());
+            await firstHandlerStartedPromise;
+
+            const closePromise = c1.database.close();
+
+            /**
+             * Give the other instance enough time for an election
+             * while the handler of the closing leader is still running.
+             */
+            await Promise.race([
+                secondHandlerStartedPromise,
+                promiseWait(1000)
+            ]);
+            releaseFirstHandler();
+            await closePromise;
+
+            await c2.database.waitForLeadership();
+            await c2.insert(schemaObjects.humanData());
+            await p2.awaitIdle();
+            await secondHandlerStartedPromise;
+
+            assert.deepStrictEqual(runAt.slice(0, 3), ['c1.start', 'c1.end', 'c2.start']);
+
+            await c2.database.close();
+        });
     });
     describe('transactional behavior', () => {
         it('should not block reads/writes that come from inside the pipeline handler', async () => {
