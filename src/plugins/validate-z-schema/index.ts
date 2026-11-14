@@ -15,7 +15,14 @@ let zSchema: ZSchema;
 export function getZSchema() {
     if (!zSchema) {
         zSchema = ZSchema.create({
-            strictMode: false
+            strictMode: false,
+            /**
+             * RxDB schemas have no $schema field and use the
+             * keyword forms of draft-07, like an array of schemas
+             * as 'items' together with 'additionalItems'.
+             * This is the same draft that the ajv validator uses.
+             */
+            version: 'draft-07'
         });
     }
     return zSchema;

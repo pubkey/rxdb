@@ -455,6 +455,64 @@ validationImplementations.forEach(
 
                     await instance.close();
                 });
+                it('should validate each position of a tuple when items is an array of schemas', async () => {
+                    const schema: RxJsonSchema<{ id: string; pair: (string | number)[]; }> = {
+                        version: 0,
+                        primaryKey: 'id',
+                        type: 'object',
+                        properties: {
+                            id: {
+                                type: 'string',
+                                maxLength: 100
+                            },
+                            pair: {
+                                type: 'array',
+                                items: [
+                                    { type: 'string' },
+                                    { type: 'number' }
+                                ],
+                                minItems: 2,
+                                additionalItems: false
+                            }
+                        },
+                        required: ['id', 'pair']
+                    };
+                    const instance = await getRxStorageInstance(schema);
+
+                    await assertBulkWriteNoError(
+                        instance,
+                        [{
+                            document: toRxDocumentData({
+                                id: randomToken(12),
+                                pair: ['a', 1]
+                            })
+                        }]
+                    );
+
+                    // wrong types at the tuple positions
+                    await assertBulkWriteValidationError(
+                        instance,
+                        [{
+                            document: toRxDocumentData({
+                                id: randomToken(12),
+                                pair: [1, 'a']
+                            })
+                        }]
+                    );
+
+                    // more items than tuple positions
+                    await assertBulkWriteValidationError(
+                        instance,
+                        [{
+                            document: toRxDocumentData({
+                                id: randomToken(12),
+                                pair: ['a', 1, 2]
+                            })
+                        }]
+                    );
+
+                    await instance.close();
+                });
             });
             describe('error layout', () => {
                 it('accessible error-parameters', async () => {
