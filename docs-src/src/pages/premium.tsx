@@ -374,7 +374,7 @@ export default function Premium() {
 
                     <div className="block trophy-before trophy-after" id="pricing">
                         <div className="content centered">
-                            <h2>
+                            <h2 style={{ textAlign: 'center' }}>
                                 Pick your <b>Plan</b>
                             </h2>
                             <div className="pricing-tiers">
@@ -437,7 +437,7 @@ export default function Premium() {
 
                     <div className="block trophy-before trophy-after" id="faq">
                         <div className="content centered premium-faq">
-                            <h2>
+                            <h2 style={{ textAlign: 'center' }}>
                                 Frequently Asked <b>Questions</b>
                             </h2>
                             <Faq>
@@ -557,7 +557,7 @@ export default function Premium() {
 
                     <div className="block dark trophy-before" style={{ paddingBottom: 90 }}>
                         <div className="content centered">
-                            <h2>
+                            <h2 style={{ textAlign: 'center' }}>
                                 Get <b>RxDB Premium</b> today
                             </h2>
                             <div className="premium-closing-buttons">

@@ -1308,6 +1308,12 @@ details[open] {
     text-align: left;
 }
 
+@media (max-width: 900px) {
+    .premium-faq details {
+        width: 90%;
+    }
+}
+
 .premium-faq details>summary {
     font-weight: 700;
     gap: 20px;
@@ -2217,6 +2223,12 @@ pre[data-theme] span[style*="--shiki-token-keyword"] {
 @media (max-width: 1150px) {
     .pricing-tiers {
         grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 900px) {
+    .pricing-tiers {
+        width: 92%;
     }
 }
 
