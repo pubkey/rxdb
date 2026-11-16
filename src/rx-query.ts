@@ -301,10 +301,6 @@ export class RxQueryBase<
         counter: number;
     }> {
         this._execOverDatabaseCount = this._execOverDatabaseCount + 1;
-        let result: {
-            result: RxDocumentData<RxDocType>[] | number;
-            counter: number;
-        };
 
         /**
          * Snapshot the counter before running the query.
@@ -312,6 +308,18 @@ export class RxQueryBase<
          * when we check it below, and we need to signal re-evaluation.
          */
         const counterBefore = this.collection._changeEventBuffer.getCounter();
+
+        /**
+         * Starts as the empty result of a query with limit 0,
+         * which never returns documents so that the storage is not asked.
+         */
+        let result: {
+            result: RxDocumentData<RxDocType>[] | number;
+            counter: number;
+        } = {
+            result: [],
+            counter: counterBefore
+        };
 
         if (this.op === 'findByIds') {
             const ids: string[] = ensureNotFalsy(this.mangoQuery.selector as any)[this.collection.schema.primaryPath].$in;
@@ -354,13 +362,7 @@ export class RxQueryBase<
                     counter: this.collection._changeEventBuffer.getCounter()
                 };
             }
-        } else if (this.mangoQuery.limit === 0) {
-            // a query with limit 0 never returns documents, the storage is not asked
-            result = {
-                result: [],
-                counter: this.collection._changeEventBuffer.getCounter()
-            };
-        } else {
+        } else if (this.mangoQuery.limit !== 0) {
             const resultWindowBuffer = getResultWindowBuffer<RxDocType>(this as any);
             if (resultWindowBuffer) {
                 /**
