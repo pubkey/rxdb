@@ -9,6 +9,9 @@ import { IframeFormModal } from '../components/modal';
 import { Button } from '../components/button';
 import { IconChevronsRight } from '../components/icons/chevrons-right';
 import { Faq, FaqItem } from '../components/faq';
+import { CheckedList } from '../components/checked-list';
+import { PartnerTrophy } from '../components/trophy';
+import { PERFORMANCE_BROWSER_DEXIE, PERFORMANCE_BROWSER_INDEXEDDB, PERFORMANCE_OPFS_WORKER } from '../components/performance-data';
 
 
 
@@ -102,6 +105,147 @@ const PRODUCT_JSON_LD = {
     ],
 };
 
+type PricingTierId = 'free' | 'pro' | 'pro-plus' | 'corporate';
+type PricingTier = {
+    id: PricingTierId;
+    name: string;
+    description: string;
+    pricePrefix?: string;
+    price: number;
+    per: string;
+    priceSub: React.ReactNode;
+    features: React.ReactNode[];
+    notIncluded?: string[];
+    cta: string;
+    /**
+     * Tiers without a href open their request form in a dialog.
+     */
+    href?: string;
+    recommended?: boolean;
+};
+
+const PRICING_TIERS: PricingTier[] = [
+    {
+        id: 'free',
+        name: 'Free',
+        description: 'Open-source core. Get started for free.',
+        price: 0,
+        per: 'forever',
+        priceSub: <a href="https://github.com/pubkey/rxdb/blob/master/LICENSE.txt" target="_blank">Apache 2.0 License</a>,
+        features: [
+            'RxDB core (schemas, queries, hooks)',
+            'Replication & realtime sync',
+            'Default RxStorage (Dexie, Memory, LokiJS)',
+            'Schema validation & migration',
+            <>Up to <a href="/rx-collection.html#faq">{NON_PREMIUM_COLLECTION_LIMIT} open collections</a> in parallel.</>,
+            'Community support on GitHub & Discord',
+        ],
+        notIncluded: [
+            'Premium storages (OPFS, SQLite, Filesystem)',
+            'Performance plugins (Sharding, Memory Mapped)',
+        ],
+        cta: 'Get started',
+        href: '/quickstart.html',
+    },
+    {
+        id: 'pro',
+        name: 'Pro',
+        description: 'Production-grade storage engines.',
+        pricePrefix: 'From',
+        price: PRICE_PRO_MONTHLY,
+        per: 'month',
+        priceSub: 'billed annually, unlimited developers',
+        features: [
+            'Everything in Free',
+            <><a href="/rx-storage-opfs.html" target="_blank">RxStorage OPFS</a> - newest browser storage</>,
+            <><a href="/rx-storage-indexeddb.html" target="_blank">RxStorage IndexedDB</a> - most reliable browser storage</>,
+            <><a href="/rx-storage-sqlite.html" target="_blank">RxStorage SQLite</a> - Electron, React-Native, Capacitor</>,
+            <><a href="/rx-storage-filesystem-node.html" target="_blank">RxStorage Filesystem</a> (<a href="/rx-storage-filesystem-node.html" target="_blank">Node</a> + <a href="/rx-storage-filesystem-expo.html" target="_blank">Expo</a>)</>,
+            <a href="/encryption.html" target="_blank">WebCrypto Encryption</a>,
+            <a href="/fulltext-search.html" target="_blank">Fulltext Search</a>,
+        ],
+        cta: 'Get Pro',
+        recommended: true,
+    },
+    {
+        id: 'pro-plus',
+        name: 'Pro Plus',
+        description: 'Performance plugins & server adapters.',
+        pricePrefix: 'From',
+        price: PRICE_PRO_PLUS_MONTHLY,
+        per: 'month',
+        priceSub: 'billed annually, unlimited developers',
+        features: [
+            'Everything in Pro',
+            <><a href="/rx-storage-worker.html" target="_blank">RxStorage Worker</a> - main-thread offload</>,
+            <a href="/rx-storage-shared-worker.html" target="_blank">RxStorage Shared Worker</a>,
+            <a href="/rx-storage-sharding.html" target="_blank">RxStorage Sharding</a>,
+            <a href="/rx-storage-memory-mapped.html" target="_blank">RxStorage Memory-Mapped</a>,
+            <a href="/rx-storage-localstorage-meta-optimizer.html" target="_blank">Localstorage Meta Optimizer</a>,
+            <a href="/query-optimizer.html" target="_blank">Query Optimizer</a>,
+            <a href="/rx-server.html" target="_blank">RxServer adapters: Fastify, Koa</a>,
+            <><a href="/logger.html" target="_blank">Logger plugin</a> (Compatible with Sentry)</>,
+        ],
+        cta: 'Get Pro Plus',
+    },
+    {
+        id: 'corporate',
+        name: 'Corporate',
+        description: 'Pro Plus with consulting sessions.',
+        price: PRICE_CORPORATE_YEARLY,
+        per: 'year',
+        priceSub: 'unlimited developers',
+        features: [
+            'Everything in Pro Plus',
+            <a href="/consulting/" target="_blank">Consulting sessions</a>,
+            'Architecture review & onboarding',
+            'Named engineer',
+            'Source code access',
+            'Private support channel',
+            'Code review of your RxDB integration',
+            'Migration help',
+            'Priority bug fixes & feature requests',
+        ],
+        cta: 'Get Corporate',
+    },
+];
+
+const BENCHMARK_METRICS = [
+    { title: 'Insert 500 documents (bulk)', key: 'insert-documents-500' },
+    { title: 'Find 3000 documents by query', key: 'find-by-query' },
+] as const;
+
+const BENCHMARK_STORAGES = [
+    { label: 'Dexie.js (free)', data: PERFORMANCE_BROWSER_DEXIE, premium: false },
+    { label: 'IndexedDB (Pro)', data: PERFORMANCE_BROWSER_INDEXEDDB, premium: true },
+    { label: 'OPFS (Pro)', data: PERFORMANCE_OPFS_WORKER, premium: true },
+];
+
+/**
+ * Compares the free Dexie.js storage with the premium browser storages.
+ * Uses the same measurements as the charts on the storage performance page.
+ */
+function PremiumBenchmark() {
+    return <div className="premium-bench">
+        <div className="bench-title">Browser storage performance</div>
+        <div className="bench-sub">time in milliseconds (lower is better)</div>
+        {BENCHMARK_METRICS.map(metric => {
+            const max = Math.max(...BENCHMARK_STORAGES.map(storage => storage.data[metric.key]));
+            return <div key={metric.key}>
+                <div className="bench-group">{metric.title}</div>
+                {BENCHMARK_STORAGES.map(storage => (
+                    <div key={storage.label} className={'bench-row' + (storage.premium ? ' premium' : '')}>
+                        <span className="label">{storage.label}</span>
+                        <span><div className="bar" style={{ width: Math.max(2, (storage.data[metric.key] / max) * 100) + '%' }} /></span>
+                        <span className="ms">{storage.data[metric.key]} ms</span>
+                    </div>
+                ))}
+            </div>;
+        })}
+        <div className="bench-foot"><a href="/rx-storage-performance.html" target="_blank">See all storage benchmarks</a></div>
+    </div>;
+}
+
 export default function Premium() {
     const isBrowser = useIsBrowser();
     const [initDone, setInitDone] = React.useState<boolean>(false);
@@ -146,6 +290,13 @@ export default function Premium() {
         setOpenProPlus(false);
     };
 
+    const openDialogByTier: Record<PricingTierId, () => void> = {
+        'free': () => { },
+        'pro': handleOpenProDialog,
+        'pro-plus': handleOpenProPlusDialog,
+        'corporate': handleOpenCorporateDialog,
+    };
+
 
     return (
         <>
@@ -162,158 +313,91 @@ export default function Premium() {
                 description="RxDB plugins for professionals. FAQ, pricing and license"
             >
                 <main>
-                    <div className="block first">
-                        <div className="content centered">
-
-                            <h2>
+                    <div className="block first hero dark" style={{
+                        background: 'linear-gradient(to bottom, rgba(15, 23, 42, 0.8), #05060a)',
+                        paddingBottom: 90
+                    }}>
+                        <div className="content">
+                            <h1 style={{ textAlign: 'center' }}>
                                 RxDB for <b>Professionals</b>
-                            </h2>
-
-                            <p style={{ width: '80%', textAlign: 'center' }}>
-                                While the core of RxDB is free and open-source, we offer paid licenses for businesses and professionals.
-                                Pro and Pro Plus tiers add commercial plugins that provide <a href="/rx-storage-performance.html" target="_blank">better performance</a>, a smaller build size, flexible storage engines, and secure encryption for production workloads.
-                                The Corporate tier adds consulting sessions with the RxDB maintainer.
-                            </p>
-                        </div>
-                    </div>
-
-                    <div className="block dark" id="pricing">
-                        <div className="content centered">
-                            <div className="pricing-tiers">
-                                {/* FREE TIER */}
-                                <div className="pricing-tier">
-                                    <div className="tier-top" style={{ minHeight: 220, display: 'flex', flexDirection: 'column' }}>
-                                        <span className="tier-note">// no signup, no key</span>
-                                        <h3>Free</h3>
-                                        <p className="tier-desc">Open-source core. Get started for free.</p>
-                                        <span className="tier-price-prefix">&nbsp;</span>
-                                        <div className="tier-price">$0<span>/ forever</span></div>
-                                        <div className="tier-price-sub">&nbsp;</div>
-                                        <div className="tier-license">Open Source license</div>
-                                    </div>
-
-                                    <div className="tier-includes-title">INCLUDES</div>
-                                    <ul className="tier-features">
-                                        <li>RxDB core (schemas, queries, hooks)</li>
-                                        <li>Replication & realtime sync</li>
-                                        <li>Default RxStorage (Dexie, Memory, LokiJS)</li>
-                                        <li>Schema validation & migration</li>
-                                        <li>Up to <a href="/rx-collection.html#faq">{NON_PREMIUM_COLLECTION_LIMIT} open collections</a> in parallel.</li>
-                                        <li>Community support on GitHub & Discord</li>
-                                        <li className="strikethrough">Premium storages (OPFS, SQLite, Filesystem)</li>
-                                        <li className="strikethrough">Performance plugins (Sharding, Memory Mapped)</li>
-                                    </ul>
-
-                                    <Button href="/quickstart.html" style={{ width: '100%', marginBottom: 15 }} icon={<IconChevronsRight />}>Get started</Button>
-                                    <div style={{ minHeight: 0, display: 'flex', flexDirection: 'column' }}>
-                                        <a href="https://github.com/pubkey/rxdb/blob/master/LICENSE.txt" className="tier-agreement" target="_blank">Apache 2.0 License</a>
-                                    </div>
+                            </h1>
+                            <div className="inner">
+                                <div className="half left">
+                                    <p style={{ marginTop: 0, marginBottom: 0 }} className='centered-mobile-p'>
+                                        The core of RxDB is free and open-source.
+                                        The Pro and Pro Plus tiers add commercial plugins with <a href="/rx-storage-performance.html" target="_blank">better performance</a>, a smaller build size, flexible storage engines, and secure encryption for production workloads.
+                                        The Corporate tier adds consulting sessions with the RxDB maintainer.
+                                    </p>
+                                    <CheckedList className='centered-mobile padding-right-20-0' style={{
+                                        paddingTop: 35,
+                                        paddingLeft: 0,
+                                        paddingBottom: 0,
+                                        maxWidth: 400
+                                    }}>
+                                        <>Faster <b>Storages</b> for every runtime</>
+                                        <>Smaller <b>build size</b></>
+                                        <>WebCrypto <b>Encryption</b></>
+                                        <>Unlimited <b>developers</b> per license</>
+                                    </CheckedList>
                                 </div>
-
-                                {/* PRO TIER */}
-                                <div className="pricing-tier pro-tier">
-                                    <div className="tier-top" style={{ minHeight: 220, display: 'flex', flexDirection: 'column' }}>
-                                        <span className="tier-note">// most teams start here</span>
-                                        <div className="badge-recommended">RECOMMENDED</div>
-                                        <h3>Pro</h3>
-                                        <p className="tier-desc">Production-grade storage engines.</p>
-                                        <span className="tier-price-prefix">From</span>
-                                        <div className="tier-price">${PRICE_PRO_MONTHLY}<span>/ month</span></div>
-                                        <div className="tier-price-sub">billed annually, unlimited developers</div>
-                                        <div className="tier-license">&nbsp;</div>
-                                    </div>
-
-                                    <div className="tier-includes-title">INCLUDES</div>
-                                    <ul className="tier-features">
-                                        <li>Everything in Free</li>
-                                        <li><a href="/rx-storage-opfs.html" target="_blank">RxStorage OPFS</a> - newest browser storage</li>
-                                        <li><a href="/rx-storage-indexeddb.html" target="_blank">RxStorage IndexedDB</a> - most reliable browser storage</li>
-                                        <li><a href="/rx-storage-sqlite.html" target="_blank">RxStorage SQLite</a> - Electron, React-Native, Capacitor</li>
-                                        <li><a href="/rx-storage-filesystem-node.html" target="_blank">RxStorage Filesystem</a> (<a href="/rx-storage-filesystem-node.html" target="_blank">Node</a> + <a href="/rx-storage-filesystem-expo.html" target="_blank">Expo</a>)</li>
-                                        <li><a href="/encryption.html" target="_blank">WebCrypto Encryption</a></li>
-                                        <li><a href="/fulltext-search.html" target="_blank">Fulltext Search</a></li>
-                                    </ul>
-
-                                    <Button primary onClick={(e) => {
-                                        e.preventDefault(); handleOpenProDialog();
-                                    }} style={{ width: '100%', marginBottom: 15 }} icon={<IconChevronsRight />}>Get Pro</Button>
-                                    <div style={{ minHeight: 0, display: 'flex', flexDirection: 'column' }}>
-                                        <span className="tier-agreement" style={{ visibility: 'hidden' }}>Preview License Agreement</span>
-                                    </div>
-                                </div>
-
-                                {/* PRO PLUS TIER */}
-                                <div className="pricing-tier">
-                                    <div className="tier-top" style={{ minHeight: 220, display: 'flex', flexDirection: 'column' }}>
-                                        <span className="tier-note">// for high-throughput apps</span>
-                                        <h3>Pro Plus</h3>
-                                        <p className="tier-desc">Performance plugins & server adapters.</p>
-                                        <span className="tier-price-prefix">From</span>
-                                        <div className="tier-price">${PRICE_PRO_PLUS_MONTHLY}<span>/ month</span></div>
-                                        <div className="tier-price-sub">billed annually, unlimited developers</div>
-                                        <div className="tier-license">&nbsp;</div>
-                                    </div>
-
-                                    <div className="tier-includes-title">INCLUDES</div>
-                                    <ul className="tier-features">
-                                        <li>Everything in Pro</li>
-                                        <li><a href="/rx-storage-worker.html" target="_blank">RxStorage Worker</a> - main-thread offload</li>
-                                        <li><a href="/rx-storage-shared-worker.html" target="_blank">RxStorage Shared Worker</a></li>
-                                        <li><a href="/rx-storage-sharding.html" target="_blank">RxStorage Sharding</a></li>
-                                        <li><a href="/rx-storage-memory-mapped.html" target="_blank">RxStorage Memory-Mapped</a></li>
-                                        <li><a href="/rx-storage-localstorage-meta-optimizer.html" target="_blank">Localstorage Meta Optimizer</a></li>
-                                        <li><a href="/query-optimizer.html" target="_blank">Query Optimizer</a></li>
-                                        <li><a href="/rx-server.html" target="_blank">RxServer adapters: Fastify, Koa</a></li>
-                                        <li><a href="/logger.html" target="_blank">Logger plugin</a> (Compatible with Sentry)</li>
-                                    </ul>
-
-                                    <Button onClick={(e) => {
-                                        e.preventDefault(); handleOpenProPlusDialog();
-                                    }} style={{ width: '100%', marginBottom: 15 }} icon={<IconChevronsRight />}>Get Pro Plus</Button>
-                                    <div style={{ minHeight: 0, display: 'flex', flexDirection: 'column' }}>
-                                        <span className="tier-agreement" style={{ visibility: 'hidden' }}>Preview License Agreement</span>
-                                    </div>
-                                </div>
-
-                                {/* CORPORATE TIER */}
-                                <div className="pricing-tier">
-                                    <div className="tier-top" style={{ minHeight: 220, display: 'flex', flexDirection: 'column' }}>
-                                        <span className="tier-note">// consulting included</span>
-                                        <h3>Corporate</h3>
-                                        <p className="tier-desc">Pro Plus with consulting sessions.</p>
-                                        <span className="tier-price-prefix">&nbsp;</span>
-                                        <div className="tier-price">${PRICE_CORPORATE_YEARLY}<span>/ year</span></div>
-                                        <div className="tier-price-sub">unlimited developers</div>
-                                        <div className="tier-license">&nbsp;</div>
-                                    </div>
-
-                                    <div className="tier-includes-title">INCLUDES</div>
-                                    <ul className="tier-features">
-                                        <li>Everything in Pro Plus</li>
-                                        <li><a href="/consulting/" target="_blank">Consulting sessions</a></li>
-                                        <li>Architecture review & onboarding</li>
-                                        <li>Named engineer</li>
-                                        <li>Source code access</li>
-                                        <li>Private support channel</li>
-                                        <li>Code review of your RxDB integration</li>
-                                        <li>Migration help</li>
-                                        <li>Priority bug fixes & feature requests</li>
-                                    </ul>
-
-                                    <Button onClick={(e) => {
-                                        e.preventDefault(); handleOpenCorporateDialog();
-                                    }} style={{ width: '100%', marginBottom: 15, whiteSpace: 'nowrap' }} icon={<IconChevronsRight />}>Get Corporate</Button>
-                                    <div style={{ minHeight: 0, display: 'flex', flexDirection: 'column' }}>
-                                        <span className="tier-agreement" style={{ visibility: 'hidden' }}>Preview License Agreement</span>
-                                    </div>
+                                <div className="half right premium-bench-half">
+                                    <PremiumBenchmark />
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div className="block" id="faq">
+
+                    <PartnerTrophy
+                        href="https://www.mongodb.com/company/blog/innovation/from-local-global-scalable-edge-apps-rxdb"
+                        title="MongoDB"
+                        imgUrl="/files/icons/mongodb-icon.svg"
+                    />
+
+                    <div className="block trophy-before trophy-after" id="pricing">
+                        <div className="content centered">
+                            <h2 style={{ textAlign: 'center' }}>
+                                Pick your <b>Plan</b>
+                            </h2>
+                            <div className="pricing-tiers">
+                                {PRICING_TIERS.map(tier => (
+                                    <div key={tier.id} className={'pricing-tier' + (tier.recommended ? ' pro-tier' : '')}>
+                                        {tier.recommended ? <div className="badge-recommended">RECOMMENDED</div> : null}
+                                        <h3>{tier.name}</h3>
+                                        <p className="tier-desc">{tier.description}</p>
+                                        <span className="tier-price-prefix">{tier.pricePrefix ? tier.pricePrefix : <>&nbsp;</>}</span>
+                                        <div className="tier-price">${tier.price}<span>/ {tier.per}</span></div>
+                                        <div className="tier-price-sub">{tier.priceSub}</div>
+                                        <div className="tier-cta">
+                                            {
+                                                tier.href
+                                                    ? <Button href={tier.href} style={{ width: '100%' }} icon={<IconChevronsRight />}>{tier.cta}</Button>
+                                                    : <Button primary={tier.recommended} onClick={(e) => {
+                                                        e.preventDefault();
+                                                        openDialogByTier[tier.id]();
+                                                    }} style={{ width: '100%', whiteSpace: 'nowrap' }} icon={<IconChevronsRight />}>{tier.cta}</Button>
+                                            }
+                                        </div>
+                                        <div className="tier-includes-title">INCLUDES</div>
+                                        <ul className="tier-features">
+                                            {tier.features.map((feature, i) => <li key={i}>{feature}</li>)}
+                                            {(tier.notIncluded || []).map((feature, i) => <li key={'not-' + i} className="strikethrough">{feature}</li>)}
+                                        </ul>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+
+                    <PartnerTrophy
+                        href="https://supabase.com/partners/integrations/rxdb"
+                        title="Supabase"
+                        imgUrl="/files/icons/supabase.svg"
+                    />
+
+                    <div className="block dark trophy-before" id="faq">
                         <div className="content centered premium-faq">
-                            <h2>
-                                F.A.Q.
+                            <h2 style={{ textAlign: 'center' }}>
+                                Frequently Asked <b>Questions</b>
                             </h2>
                             <Faq>
                             {
