@@ -1,14 +1,14 @@
 {
     "memory-minimal": {
-        "minified": 146885,
-        "gzip": 47716
+        "minified": 154228,
+        "gzip": 50038
     },
     "todo-dexie": {
-        "minified": 260175,
-        "gzip": 84671
+        "minified": 270968,
+        "gzip": 88122
     },
     "todo-dexie-plugins": {
-        "minified": 332885,
-        "gzip": 107896
+        "minified": 347289,
+        "gzip": 112349
     }
 }
