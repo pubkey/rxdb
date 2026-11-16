@@ -474,8 +474,11 @@ addRxPlugin(RxDBJsonDumpPlugin);
                     const state2 = await database2.addState<CounterState>();
                     await writeDuringCreation;
 
-                    await state1.set('after' + round, () => round);
-                    await waitUntil(() => state2.get('after' + round) === round);
+                    /**
+                     * No further write happens here, so the write
+                     * must be part of the state without a later event.
+                     */
+                    await waitUntil(() => state2.get('during' + round) === round, 2000);
 
                     assert.deepStrictEqual(state2.get(), state1.get());
                     await database2.close();
