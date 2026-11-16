@@ -14,7 +14,9 @@ import {
     createRevision,
     flatClone,
     getDefaultRevision,
-    now
+    now,
+    hasOwnProperty,
+    setOwnProperty
 } from '../plugins/utils/index.ts';
 import { stripAttachmentsDataFromDocument } from '../rx-storage-helper.ts';
 
@@ -114,7 +116,7 @@ export async function serializeDocAttachments<T>(doc: T, serializeData: boolean)
     await Promise.all(
         Object.entries(d._attachments as Record<string, any>).map(async ([id, att]) => {
             if (att.data instanceof Blob) {
-                attachmentData[id] = await blobToBase64String(att.data);
+                setOwnProperty(attachmentData, id, await blobToBase64String(att.data));
             }
         })
     );
@@ -154,7 +156,7 @@ export async function deserializeDocAttachments(doc: any): Promise<void> {
     }
     await Promise.all(
         Object.entries(attachmentData).map(async ([id, base64]) => {
-            if (doc._attachments[id]) {
+            if (hasOwnProperty(doc._attachments, id) && doc._attachments[id]) {
                 doc._attachments[id] = {
                     ...doc._attachments[id],
                     data: await createBlobFromBase64(base64, doc._attachments[id].type)

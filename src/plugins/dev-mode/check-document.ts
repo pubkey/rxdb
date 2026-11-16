@@ -1,4 +1,5 @@
 import { newRxError } from '../../rx-error.ts';
+import { setOwnProperty } from '../utils/index.ts';
 import { fillPrimaryKey, getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper.ts';
 import type { BulkWriteRow, RxDocumentData, RxStorageInstance } from '../../types/index.d.ts';
 
@@ -16,7 +17,7 @@ function stripBlobsFromAttachments(
     for (const [key, val] of Object.entries(attachments)) {
         const clone = Object.assign({}, val);
         delete clone.data;
-        ret[key] = clone;
+        setOwnProperty(ret, key, clone);
     }
     return ret;
 }

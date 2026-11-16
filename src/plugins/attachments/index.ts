@@ -8,7 +8,9 @@ import {
     blobToString,
     createBlobFromBase64,
     deepEqual,
-    flatClone
+    flatClone,
+    hasOwnProperty,
+    setOwnProperty
 } from '../../plugins/utils/index.ts';
 import type {
     RxDocument,
@@ -135,12 +137,12 @@ async function _putAttachmentsImpl<RxDocType>(
             docWriteData = flatClone(docWriteData);
             docWriteData._attachments = flatClone(docWriteData._attachments);
             for (const att of prepared) {
-                docWriteData._attachments[att.id] = {
+                setOwnProperty(docWriteData._attachments, att.id, {
                     length: att.data.size,
                     type: att.type,
                     data: att.data,
                     digest: att.digest
-                };
+                });
             }
             return docWriteData;
         }
@@ -194,8 +196,16 @@ export function getAttachment(
 ): RxAttachment | null {
     ensureSchemaSupportsAttachments(this);
     const docData: any = this._data;
-    if (!docData._attachments[id])
+    /**
+     * Only own properties are attachments,
+     * an id like 'toString' must not resolve to a member of Object.prototype.
+     */
+    if (
+        !hasOwnProperty(docData._attachments, id) ||
+        !docData._attachments[id]
+    ) {
         return null;
+    }
 
     const attachmentData = docData._attachments[id];
     const attachment = fromStorageInstanceResult(
@@ -243,12 +253,12 @@ export async function preMigrateDocument<RxDocType>(
                     attachment.digest
                 );
                 const digest = await data.oldCollection.database.hashFunction(rawAttachmentBlob);
-                newAttachments[attachmentId] = {
+                setOwnProperty(newAttachments, attachmentId, {
                     length: rawAttachmentBlob.size,
                     type: attachment.type,
                     data: rawAttachmentBlob,
                     digest
-                };
+                });
             })
         );
 

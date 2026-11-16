@@ -258,11 +258,42 @@ function deepClone<T>(src: T | DeepReadonlyObject<T>): T {
     const dest: any = {};
     // eslint-disable-next-line guard-for-in
     for (const key in src) {
-        dest[key] = deepClone(src[key]);
+        if (key === '__proto__') {
+            setOwnProperty(dest, key, deepClone(src[key]));
+        } else {
+            dest[key] = deepClone(src[key]);
+        }
     }
     return dest;
 }
 export const clone = deepClone;
+
+/**
+ * Returns true when the object has the key as own property.
+ * Use this instead of reading obj[key] when the key is not known upfront,
+ * because keys like 'constructor' or 'toString' resolve to members of Object.prototype.
+ */
+export function hasOwnProperty(obj: any, key: string): boolean {
+    return Object.prototype.hasOwnProperty.call(obj, key);
+}
+
+/**
+ * Sets the value as own property of the object.
+ * A plain assignment with the key '__proto__' sets the prototype of the object
+ * instead of adding a property.
+ */
+export function setOwnProperty<T>(obj: { [k: string]: T; }, key: string, value: T) {
+    if (key === '__proto__') {
+        Object.defineProperty(obj, key, {
+            value,
+            enumerable: true,
+            writable: true,
+            configurable: true
+        });
+    } else {
+        obj[key] = value;
+    }
+}
 
 
 

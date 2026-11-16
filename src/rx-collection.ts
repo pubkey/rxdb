@@ -743,11 +743,10 @@ export class RxCollectionBase<
                             return Object.assign({}, writeData, {
                                 _attachments: deleteExisting
                                     ? newAttachments
-                                    : Object.assign(
-                                        {},
-                                        docWriteData._attachments,
-                                        newAttachments
-                                    )
+                                    : {
+                                        ...docWriteData._attachments,
+                                        ...newAttachments
+                                    }
                             });
                         }
                     ).then(writeResult => this._docCache.getCachedRxDocument(writeResult) as any);
@@ -824,11 +823,10 @@ export class RxCollectionBase<
                             return Object.assign({}, useJson, {
                                 _attachments: deleteExisting
                                     ? newAttachments
-                                    : Object.assign(
-                                        {},
-                                        docWriteData._attachments,
-                                        newAttachments
-                                    )
+                                    : {
+                                        ...docWriteData._attachments,
+                                        ...newAttachments
+                                    }
                             });
                         }
                     ).then(writeResult => this._docCache.getCachedRxDocument(writeResult) as any);

@@ -1,0 +1,11 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX attachment ids that are names of `Object.prototype` members (`constructor`, `toString`, `hasOwnProperty`, `valueOf`, `__proto__`) now work like any other attachment id. Before, `getAttachment()` returned a broken RxAttachment instead of `null` for such an id that is not stored, an attachment with the id `__proto__` was dropped without an error, and the Dexie RxStorage returned keys that start with `__` (like the attachment id `__init__.py`) with a leading `|`",
+    "links": [
+        {
+            "url": "https://github.com/pubkey/rxdb/pull/9687",
+            "linkText": "#9687"
+        }
+    ],
+    "priority": 4
+}
