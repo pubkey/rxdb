@@ -1,0 +1,5 @@
+{
+    "text": "FIX the backup plugin skipped a document that was written again while a backup run was in progress, so its `document.json` stayed outdated forever",
+    "links": [],
+    "priority": 5
+}
