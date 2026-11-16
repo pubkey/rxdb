@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `sortObject()` sorted the arrays of the given object in place, so the input of the caller was mutated. It now sorts a copy and leaves the input untouched",
+    "links": [],
+    "priority": 4
+}

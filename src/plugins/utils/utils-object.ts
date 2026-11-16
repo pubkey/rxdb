@@ -194,7 +194,8 @@ export function firstPropertyValueOfObject<T>(obj: { [k: string]: T; }): T {
 
 /**
  * deep-sort an object so its attributes are in lexical order.
- * Also sorts the arrays inside of the object if no-array-sort not set
+ * Also sorts the arrays inside of the object if no-array-sort not set.
+ * Returns a new object, the given object and its arrays are not mutated.
  */
 export function sortObject(obj: any, noArraySort = false): any {
     if (!obj) return obj; // do not sort null, false or undefined
@@ -202,6 +203,7 @@ export function sortObject(obj: any, noArraySort = false): any {
     // array
     if (!noArraySort && Array.isArray(obj)) {
         return obj
+            .slice()
             .sort((a, b) => {
                 if (typeof a === 'string' && typeof b === 'string')
                     return a.localeCompare(b);
