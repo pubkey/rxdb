@@ -141,6 +141,116 @@ describe('rx-storage-sqlite.test.ts', function () {
         return getConcurrencyTrackingBasics(getSQLiteBasicsNodeNative(DatabaseSync));
     }
 
+    async function getNodeNativeBasics(): Promise<SQLiteBasics<any>> {
+        const DatabaseSync = await import('node:sqlite').then(module => module.DatabaseSync);
+        return getSQLiteBasicsNodeNative(DatabaseSync);
+    }
+
+    describe('failed transactions', () => {
+        it('must still accept writes and close after a write was rejected by the trial document limit', async () => {
+            const storage = wrappedValidateAjvStorage({
+                storage: getRxStorageSQLiteTrial({
+                    sqliteBasics: await getNodeNativeBasics(),
+                    databaseNamePrefix: './test_tmp/'
+                })
+            });
+            const db = await createRxDatabase({
+                name: 'failed-transaction-' + randomToken(10),
+                storage,
+                multiInstance: false
+            });
+            await db.addCollections({
+                heroes: {
+                    schema: HEROES_SCHEMA_V0
+                },
+                villains: {
+                    schema: HEROES_SCHEMA_V0
+                }
+            });
+
+            /**
+             * The trial version is limited to 500 non-deleted documents,
+             * so this write is expected to be rejected.
+             */
+            const tooManyDocs = new Array(501).fill(0).map((_v, idx) => ({
+                id: 'hero-' + idx,
+                name: 'alice'
+            }));
+            await assert.rejects(
+                () => db.heroes.bulkInsert(tooManyDocs),
+                (err: any) => {
+                    assert.strictEqual(err.code, 'SQL2');
+                    return true;
+                }
+            );
+
+            // nothing of the rejected write must be stored
+            const docsAfterFailedWrite = await db.heroes.find().exec();
+            assert.strictEqual(docsAfterFailedWrite.length, 0);
+
+            // a valid write to the same collection must work
+            await db.heroes.insert({
+                id: 'hero-valid',
+                name: 'alice'
+            });
+            const heroes = await db.heroes.find().exec();
+            assert.deepStrictEqual(heroes.map(doc => doc.id), ['hero-valid']);
+
+            // a valid write to another collection of the same database must work
+            await db.villains.insert({
+                id: 'villain-valid',
+                name: 'bob'
+            });
+            const villains = await db.villains.find().exec();
+            assert.deepStrictEqual(villains.map(doc => doc.id), ['villain-valid']);
+
+            await db.close();
+        });
+    });
+
+    describe('.close()', () => {
+        it('must close the SQLite connection when the database is closed', async () => {
+            const nativeBasics = await getNodeNativeBasics();
+            let closeCalls = 0;
+            const basics: SQLiteBasics<any> = Object.assign({}, nativeBasics, {
+                close: (database: any) => {
+                    closeCalls = closeCalls + 1;
+                    return nativeBasics.close(database);
+                }
+            });
+            const storage = wrappedValidateAjvStorage({
+                storage: getRxStorageSQLiteTrial({
+                    sqliteBasics: basics,
+                    databaseNamePrefix: './test_tmp/'
+                })
+            });
+            const databaseName = 'close-connection-' + randomToken(10);
+
+            let cycle = 0;
+            while (cycle < 3) {
+                const db = await createRxDatabase({
+                    name: databaseName,
+                    storage,
+                    multiInstance: false
+                });
+                await db.addCollections({
+                    heroes: {
+                        schema: HEROES_SCHEMA_V0
+                    }
+                });
+                await db.heroes.insert({
+                    id: 'hero-' + cycle,
+                    name: 'alice'
+                });
+                const docs = await db.heroes.find().exec();
+                assert.strictEqual(docs.length, cycle + 1);
+                await db.close();
+                cycle = cycle + 1;
+                assert.strictEqual(closeCalls, cycle);
+            }
+        });
+    });
+
     describe('issue #9024', () => {
         /**
          * The SQLite RxStorage shares one connection between all storage

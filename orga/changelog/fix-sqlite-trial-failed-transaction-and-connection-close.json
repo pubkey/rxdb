@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX the SQLite trial storage rejected all later writes and `close()` of the whole database after one transaction failed (for example by reaching the trial document limit `SQL2`), because the failed transaction was not rolled back and stayed in the transaction queue. Also FIX the SQLite trial storage never closing its database connection on `close()`",
+    "links": [],
+    "priority": 5
+}

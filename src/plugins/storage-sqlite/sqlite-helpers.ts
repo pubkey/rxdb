@@ -172,13 +172,24 @@ export function sqliteTransaction(
     if (!queue) {
         queue = PROMISE_RESOLVE_VOID;
     }
-    queue = queue.then(async () => {
+    const transaction = queue.then(async () => {
         await openSqliteTransaction(database, sqliteBasics);
-        const handlerResult = await handler();
+        let handlerResult: 'COMMIT' | 'ROLLBACK';
+        try {
+            handlerResult = await handler();
+        } catch (err) {
+            await finishSqliteTransaction(database, sqliteBasics, 'ROLLBACK').catch(() => { });
+            throw err;
+        }
         await finishSqliteTransaction(database, sqliteBasics, handlerResult, context);
     });
-    TX_QUEUE_BY_DATABASE.set(database, queue);
-    return queue;
+    /**
+     * The queue must never be rejected, otherwise one failed transaction
+     * would make all later transactions of the same database fail.
+     * The error is only passed to the caller of the failed transaction.
+     */
+    TX_QUEUE_BY_DATABASE.set(database, transaction.catch(() => { }));
+    return transaction;
 }
 
 /**

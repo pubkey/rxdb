@@ -128,6 +128,17 @@ export class RxStorageInstanceSQLite<RxDocType> implements RxStorageInstance<
         context: string
     ): Promise<RxStorageBulkWriteResponse<RxDocType>> {
         this.openWriteCount$.next(this.openWriteCount$.getValue() + 1);
+        try {
+            return await this.runBulkWrite(documentWrites, context);
+        } finally {
+            this.openWriteCount$.next(this.openWriteCount$.getValue() - 1);
+        }
+    }
+
+    private async runBulkWrite(
+        documentWrites: BulkWriteRow<RxDocType>[],
+        context: string
+    ): Promise<RxStorageBulkWriteResponse<RxDocType>> {
         const database = await this.internals.databasePromise;
         const ret: RxStorageBulkWriteResponse<RxDocType> = {
             error: []
@@ -161,7 +172,6 @@ export class RxStorageInstanceSQLite<RxDocType> implements RxStorageInstance<
             this.sqliteBasics,
             async () => {
                 if (this.closed) {
-                    this.openWriteCount$.next(this.openWriteCount$.getValue() - 1);
                     throw new Error('SQLite.bulkWrite(' + context + ') already closed ' + this.tableName + ' context: ' + context);
                 }
                 const result = await this.all(
@@ -243,49 +253,57 @@ export class RxStorageInstanceSQLite<RxDocType> implements RxStorageInstance<
                     throw newRxError('SQL2');
                 }
 
-                categorized.bulkInsertDocs.forEach(row => {
-                    const insertQuery = getSQLiteInsertSQL(
-                        this.tableName,
-                        this.primaryPath as any,
-                        row.document
-                    );
-                    writePromises.push(
-                        this.all(
-                            database,
-                            {
-                                query: insertQuery.query,
-                                params: insertQuery.params,
-                                context: {
-                                    method: 'bulkWrite',
-                                    data: categorized
+                try {
+                    categorized.bulkInsertDocs.forEach(row => {
+                        const insertQuery = getSQLiteInsertSQL(
+                            this.tableName,
+                            this.primaryPath as any,
+                            row.document
+                        );
+                        writePromises.push(
+                            this.all(
+                                database,
+                                {
+                                    query: insertQuery.query,
+                                    params: insertQuery.params,
+                                    context: {
+                                        method: 'bulkWrite',
+                                        data: categorized
+                                    }
                                 }
-                            }
-                        )
-                    );
-                });
+                            )
+                        );
+                    });
 
-                categorized.bulkUpdateDocs.forEach(row => {
-                    const updateQuery = getSQLiteUpdateSQL<RxDocType>(
-                        this.tableName,
-                        this.primaryPath,
-                        row
-                    );
-                    writePromises.push(
-                        this.run(
-                            database,
-                            updateQuery
-                        )
-                    );
-                });
+                    categorized.bulkUpdateDocs.forEach(row => {
+                        const updateQuery = getSQLiteUpdateSQL<RxDocType>(
+                            this.tableName,
+                            this.primaryPath,
+                            row
+                        );
+                        writePromises.push(
+                            this.run(
+                                database,
+                                updateQuery
+                            )
+                        );
+                    });
 
-                await Promise.all(writePromises);
+                    await Promise.all(writePromises);
+                } catch (err) {
+                    /**
+                     * All started statements must be settled before the
+                     * transaction is rolled back, otherwise they would run
+                     * outside of the transaction and be stored anyway.
+                     */
+                    await Promise.allSettled(writePromises);
+                    throw err;
+                }
 
                 // close transaction
                 if (this.closed) {
-                    this.openWriteCount$.next(this.openWriteCount$.getValue() - 1);
                     return 'ROLLBACK';
                 } else {
-                    this.openWriteCount$.next(this.openWriteCount$.getValue() - 1);
                     return 'COMMIT';
                 }
             },
@@ -503,13 +521,23 @@ export class RxStorageInstanceSQLite<RxDocType> implements RxStorageInstance<
             ).catch(() => { });
             this.changes$.complete();
             await closeDatabaseConnection(
-                this.databaseName,
+                getSQLiteTrialConnectionName(this.settings, this.databaseName),
                 this.storage.settings.sqliteBasics
             );
         })();
         return this.closed;
 
     }
+}
+
+/**
+ * Name under which the connection of a database is opened and closed.
+ */
+function getSQLiteTrialConnectionName(
+    settings: SQLiteStorageSettings,
+    databaseName: string
+): string {
+    return (settings.databaseNamePrefix ? settings.databaseNamePrefix : '') + '_trial_' + databaseName;
 }
 
 export async function createSQLiteTrialStorageInstance<RxDocType>(
@@ -526,7 +554,7 @@ export async function createSQLiteTrialStorageInstance<RxDocType>(
     }
 
     const internals: Partial<SQLiteInternals> = {};
-    const useDatabaseName = (settings.databaseNamePrefix ? settings.databaseNamePrefix : '') + '_trial_' + params.databaseName;
+    const useDatabaseName = getSQLiteTrialConnectionName(settings, params.databaseName);
     internals.databasePromise = getDatabaseConnection(
         storage.settings.sqliteBasics,
         useDatabaseName
