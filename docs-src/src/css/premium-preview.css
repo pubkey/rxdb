@@ -1,0 +1,338 @@
+/* ---------- shared: landing-style pricing cards ---------- */
+.pv2 .pricing-tiers {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-top: 40px;
+    max-width: none;
+}
+
+.pv2 .pricing-tier {
+    width: auto;
+    border-radius: 0;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    box-shadow: none;
+    padding: 28px 22px 22px 22px;
+    background: var(--bg-color-dark);
+}
+
+.pv2 .block.dark .pricing-tier {
+    background: var(--bg-color);
+}
+
+.pv2 .pricing-tier.pro-tier {
+    border: 2px solid var(--color-top);
+    padding: 27px 21px 21px 21px;
+}
+
+.pv2 .pricing-tier .badge-recommended {
+    top: 0;
+    right: 0;
+    border-radius: 0;
+    font-size: 11px;
+    letter-spacing: 1px;
+    padding: 5px 10px;
+    background: linear-gradient(90deg, var(--color-top) 0%, var(--color-middle) 100%);
+}
+
+.pv2 .pricing-tier .tier-note {
+    color: #8b93a7;
+    font-size: 13px;
+}
+
+.pv2 .pricing-tier h3 {
+    font-size: var(--fontSizes-xl);
+    color: #fff;
+    text-transform: none;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+}
+
+.pv2 .pricing-tier.pro-tier h3 {
+    color: var(--color-top);
+}
+
+.pv2 .pricing-tier p.tier-desc {
+    font-size: 15px;
+    color: #d1d5db;
+    min-height: 68px;
+    margin-bottom: 14px;
+}
+
+.pv2 .pricing-tier .tier-top {
+    min-height: 0 !important;
+}
+
+.pv2 .pricing-tier .tier-price {
+    font-size: 2.6rem;
+}
+
+.pv2 .pricing-tier .tier-price-sub {
+    min-height: 44px;
+    font-size: 13px;
+}
+
+.pv2 .pricing-tier .tier-license {
+    display: none;
+}
+
+.pv2 .pricing-tier .tier-cta {
+    margin: 14px 0 24px 0;
+    padding-bottom: 24px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.pv2 .pricing-tier .tier-includes-title {
+    font-size: 12px;
+    color: #8b93a7;
+}
+
+.pv2 .pricing-tier ul.tier-features li {
+    font-size: 15px;
+    padding-left: 28px;
+    color: #fff;
+}
+
+.pv2 .pricing-tier ul.tier-features li::before {
+    content: "";
+    width: 18px;
+    height: 13px;
+    top: 4px;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 37 26' fill='none'%3E%3Cpath d='M34.79 2.21 13.25 23.79 2.21 12.72' stroke='%23ED168F' stroke-width='4.4'/%3E%3C/svg%3E") no-repeat center / contain;
+}
+
+.pv2 .pricing-tier ul.tier-features li.strikethrough {
+    color: #6b7280;
+}
+
+.pv2 .pricing-tier ul.tier-features li.strikethrough::before {
+    background: none;
+    content: "✕";
+    color: #6b7280;
+    font-size: 13px;
+    top: 1px;
+    left: 3px;
+}
+
+.pv2 .pricing-tier ul.tier-features {
+    margin-bottom: 10px;
+}
+
+.pv2 .pricing-tier .tier-agreement {
+    margin: 0;
+}
+
+@media (max-width: 1150px) {
+    .pv2 .pricing-tiers {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 700px) {
+    .pv2 .pricing-tiers {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ---------- hero ---------- */
+.pv2 .block.first.hero {
+    background: linear-gradient(to bottom, rgba(15, 23, 42, 0.8), #05060a);
+}
+
+.pv2 .hero-lead {
+    max-width: 760px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.pv2 .hero-facts {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px 34px;
+    margin-top: 28px;
+    font-weight: 700;
+}
+
+.pv2 .hero-facts span {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.pv2 .hero-facts b {
+    color: var(--color-top);
+}
+
+/* ---------- benchmark bars ---------- */
+.pv2 .bench {
+    width: 100%;
+    max-width: 520px;
+    margin-left: auto;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    background: var(--bg-color);
+    padding: 22px 22px 16px 22px;
+    text-align: left;
+}
+
+.pv2 .bench-title {
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.pv2 .bench-sub {
+    font-size: 13px;
+    color: #a0a4b8;
+    margin-bottom: 18px;
+}
+
+.pv2 .bench-row {
+    display: grid;
+    grid-template-columns: 150px 1fr 84px;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    margin-bottom: 8px;
+}
+
+.pv2 .bench-row .bar {
+    height: 14px;
+    background: #6b7280;
+}
+
+.pv2 .bench-row.premium .bar {
+    background: linear-gradient(90deg, var(--color-top) 0%, var(--color-middle) 100%);
+}
+
+.pv2 .bench-row.premium .label {
+    font-weight: 700;
+}
+
+.pv2 .bench-row .ms {
+    white-space: nowrap;
+    text-align: right;
+    color: #d1d5db;
+}
+
+.pv2 .bench-group {
+    font-size: 12px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #8b93a7;
+    margin: 16px 0 8px 0;
+}
+
+.pv2 .bench-foot {
+    font-size: 12px;
+    color: #a0a4b8;
+    margin-top: 14px;
+}
+
+/* ---------- FAQ ---------- */
+.pv2 .premium-faq details {
+    width: 100%;
+    max-width: 860px;
+    text-align: left;
+}
+
+.pv2 .premium-faq details>summary {
+    font-weight: 700;
+    gap: 20px;
+}
+
+/* ---------- closing CTA ---------- */
+.pv2 .closing {
+    text-align: center;
+}
+
+.pv2 .closing .closing-buttons {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 10px;
+}
+
+/* ---------- compact cards + matrix (variant c) ---------- */
+.pv2 .pricing-tier.compact p.tier-desc {
+    min-height: 46px;
+}
+
+.pv2 .pricing-tier.compact .tier-cta {
+    border-bottom: none;
+    padding-bottom: 0;
+    margin-bottom: 0;
+}
+
+.pv2 .matrix-wrap {
+    overflow-x: auto;
+    margin-top: 40px;
+}
+
+.pv2 table.matrix {
+    display: table;
+    width: 100%;
+    min-width: 720px;
+    border-collapse: collapse;
+    text-align: left;
+    margin: 0;
+}
+
+.pv2 table.matrix th,
+.pv2 table.matrix td {
+    border: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 12px 14px;
+    background: transparent;
+    font-size: 15px;
+}
+
+.pv2 table.matrix tr {
+    background: transparent;
+    border: none;
+}
+
+.pv2 table.matrix thead th {
+    font-size: var(--fontSizes-l);
+    text-align: center;
+    border-bottom: 2px solid #fff;
+}
+
+.pv2 table.matrix thead th:first-child {
+    text-align: left;
+}
+
+.pv2 table.matrix td:not(:first-child) {
+    text-align: center;
+    width: 15%;
+}
+
+.pv2 table.matrix th.hl,
+.pv2 table.matrix td.hl {
+    background: rgba(237, 22, 143, 0.08);
+}
+
+.pv2 table.matrix thead th.hl {
+    color: var(--color-top);
+    border-bottom-color: var(--color-top);
+}
+
+.pv2 table.matrix tr.group td {
+    font-size: 12px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #8b93a7;
+    padding-top: 26px;
+    text-align: left;
+}
+
+.pv2 table.matrix .yes {
+    color: var(--color-top);
+    font-size: 22px;
+    line-height: 1;
+    font-weight: 800;
+}
+
+.pv2 table.matrix .no {
+    color: #6b7280;
+}
