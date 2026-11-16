@@ -13,6 +13,16 @@ import {
     ensureWebMCPToolNamesNotRegistered,
     registerWebMCPTarget
 } from './webmcp-tools.ts';
+import { RX_STATE_SCHEMA_TITLE } from '../state/helpers.ts';
+
+/**
+ * The collection of an RxState is internal.
+ * Writes to it that do not go through the RxState corrupt the state,
+ * so the database-wide registration does not expose it.
+ */
+function isInternalCollection(collection: RxCollection<any>): boolean {
+    return collection.schema.jsonSchema.title === RX_STATE_SCHEMA_TITLE;
+}
 
 
 export function registerWebMCPDatabase(this: RxDatabase, options?: WebMCPOptions): { error$: Subject<Error>; log$: Subject<WebMCPLogEvent> } {
@@ -29,7 +39,10 @@ export function registerWebMCPDatabase(this: RxDatabase, options?: WebMCPOptions
         res.log$.subscribe(log$);
     };
 
-    Object.values(collections).forEach(collection => {
+    const exposedCollections = Object.values(collections)
+        .filter(collection => !isInternalCollection(collection as RxCollection<any>));
+
+    exposedCollections.forEach(collection => {
         ensureWebMCPToolNamesNotRegistered({
             databaseName: database.name,
             collectionName: collection.name,
@@ -39,7 +52,7 @@ export function registerWebMCPDatabase(this: RxDatabase, options?: WebMCPOptions
 
     // Register existing collections
     try {
-        for (const [name, collection] of Object.entries(collections)) {
+        for (const collection of exposedCollections) {
             registerCollection(collection as RxCollection<any>);
         }
     } catch (err) {
@@ -81,7 +94,7 @@ export const RxDBWebMCPPlugin: RxWebMCPPlugin = {
         createRxCollection: {
             after: ({ collection }: { collection: RxCollection }) => {
                 const db = collection.database as any;
-                if (db._webmcpOptions) {
+                if (db._webmcpOptions && !isInternalCollection(collection)) {
                     const res = (collection as any).registerWebMCP(db._webmcpOptions);
                     if (db._webmcpError$) {
                         res.error$.subscribe(db._webmcpError$);

@@ -11,6 +11,7 @@ import {
     registerWebMCPTarget
 } from '../../plugins/webmcp/index.mjs';
 import { RxDBLocalDocumentsPlugin } from '../../plugins/local-documents/index.mjs';
+import { RxDBStatePlugin } from '../../plugins/state/index.mjs';
 import config from './config.ts';
 import { schemaObjects, schemas, isDeno } from '../../plugins/test-utils/index.mjs';
 import { cleanupWebMCPPolyfill, initializeWebMCPPolyfill } from '@mcp-b/webmcp-polyfill';
@@ -18,6 +19,7 @@ import { assertThrows, waitUntil } from 'async-test-util';
 
 addRxPlugin(RxDBWebMCPPlugin);
 addRxPlugin(RxDBLocalDocumentsPlugin);
+addRxPlugin(RxDBStatePlugin);
 
 describe('webmcp.test.ts', () => {
     let db: any;
@@ -716,6 +718,21 @@ describe('webmcp.test.ts', () => {
             const queryTool = getTools().find((t: any) => t.name === `rxdb_query_${db.name}.aliens.0`);
             return !!queryTool;
         });
+    });
+
+    itWithDom('should not register tools for the internal collection of an RxState', async () => {
+        const stateBefore = await db.addState('before');
+        db.registerWebMCP();
+        const stateAfter = await db.addState('after');
+        await stateBefore.set('foo', () => 'bar');
+        await stateAfter.set('foo', () => 'bar');
+
+        const toolNames: string[] = getTools().map((t: any) => t.name);
+        assert.deepStrictEqual(
+            toolNames.filter(name => !name.endsWith(`_${db.name}.humans.0`)),
+            []
+        );
+        assert.strictEqual(toolNames.length, 7);
     });
 
     describe('custom targets', () => {

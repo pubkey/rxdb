@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `database.registerWebMCP()` registered the WebMCP tools also for the internal collection of an RxState, so an AI agent could insert, overwrite and delete the state operation documents. The internal RxState collection is no longer exposed.",
+    "links": [],
+    "priority": 5
+}
