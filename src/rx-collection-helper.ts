@@ -26,7 +26,6 @@ import { flatCloneDocWithMeta } from './rx-storage-helper.ts';
 import { overwritable } from './overwritable.ts';
 import type { RxCollectionBase } from './rx-collection.ts';
 import { newRxError } from './rx-error.ts';
-import { isRxDocument } from './rx-document.ts';
 
 /**
  * fills in the default data.
@@ -39,7 +38,11 @@ export function fillObjectDataBeforeInsert<RxDocType>(
     data: Partial<RxDocumentData<RxDocType>> | any,
     skipPrimaryKeyFill: boolean = false
 ): RxDocumentData<RxDocType> {
-    data = isRxDocument(data) ? data.toMutableJSON() : flatClone(data);
+    /**
+     * An RxDocument instance is detected by its property and not with isRxDocument(),
+     * because importing rx-document.ts here would be a circular dependency.
+     */
+    data = data && data.isInstanceOfRxDocument ? data.toMutableJSON() : flatClone(data);
     data = fillObjectWithDefaults(schema, data);
     if (!skipPrimaryKeyFill && typeof schema.jsonSchema.primaryKey !== 'string') {
         data = fillPrimaryKey(
