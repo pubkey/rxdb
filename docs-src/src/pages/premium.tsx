@@ -356,7 +356,7 @@ export default function Premium() {
                                         <Button primary className="hero-action" href="#pricing">See Pricing</Button>
                                     </div>
                                 </div>
-                                <div className="half right justify-center-mobile" style={{ display: 'flex', alignItems: 'center' }}>
+                                <div className="half right premium-bench-half">
                                     <PremiumBenchmark />
                                 </div>
                             </div>

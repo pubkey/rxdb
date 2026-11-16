@@ -2309,18 +2309,14 @@ pre[data-theme] span[style*="--shiki-token-keyword"] {
     margin-top: 14px;
 }
 
-@media (max-width: 900px) {
-    .premium-bench {
-        width: 94%;
-        margin-right: auto;
-        margin-bottom: 30px;
-    }
+.premium-bench-half {
+    display: flex;
+    align-items: center;
 }
 
-@media (max-width: 480px) {
-    .premium-bench .bench-row {
-        grid-template-columns: 110px 1fr 76px;
-        font-size: 12px;
+@media (max-width: 900px) {
+    .premium-bench-half {
+        display: none;
     }
 }
 
