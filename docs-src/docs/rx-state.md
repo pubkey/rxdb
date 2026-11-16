@@ -60,6 +60,8 @@ await myState.set('myField', v => v + 1);
 await myState.set('myField', v => 42);
 ```
 
+When the modifier returns `undefined`, the value at that path is removed from the state. This works the same with and without a [schema validator](./schema-validation.md).
+
 The modifier is used instead of a direct assignment to ensure correct behavior when other JavaScript realms write to the state at the same time, like other browser tabs or WebWorkers. On conflicts, the modifier will just be run again to ensure deterministic and correct behavior. Therefore mutation is `async`, you have to `await` the call to the set function when you care about the moment when the change actually happened.
 
 

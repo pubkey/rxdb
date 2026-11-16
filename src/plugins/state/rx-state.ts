@@ -26,6 +26,7 @@ import {
     RXJS_SHARE_REPLAY_DEFAULTS,
     getProperty,
     setProperty,
+    deleteProperty,
     PROMISE_RESOLVE_VOID,
     clone,
     randomToken,
@@ -194,6 +195,24 @@ export class RxStateBase<T, Reactivity = unknown> {
                         const writeRow = useWrites[index];
                         const value = writeRow.path === '' ? newState : getProperty(newState, writeRow.path);
                         const newValue = writeRow.modifier(value);
+                        if (newValue === undefined) {
+                            /**
+                             * An operation cannot contain undefined as value
+                             * because it is not valid JSON.
+                             * So the key is removed from the state and
+                             * the resulting state is stored as operation.
+                             */
+                            if (writeRow.path === '') {
+                                newState = {};
+                            } else {
+                                deleteProperty(newState, writeRow.path);
+                            }
+                            ops.push({
+                                k: '',
+                                v: clone(newState)
+                            });
+                            continue;
+                        }
                         /**
                          * Here we have to clone the value because
                          * some storages like the memory storage
