@@ -2320,13 +2320,6 @@ pre[data-theme] span[style*="--shiki-token-keyword"] {
     }
 }
 
-.premium-closing-buttons {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 12px;
-}
-
 /**
  * ComparisonTable component (src/components/comparison-table.tsx)
  * in markdown-children mode: scrollable container and highlighted

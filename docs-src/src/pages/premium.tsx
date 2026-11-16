@@ -345,16 +345,6 @@ export default function Premium() {
                                         <>WebCrypto <b>Encryption</b></>
                                         <>Unlimited <b>developers</b> per license</>
                                     </CheckedList>
-                                    <div style={{
-                                        marginTop: 44,
-                                        display: 'flex',
-                                        flexWrap: 'wrap',
-                                        gap: 10,
-                                        maxWidth: 500,
-                                    }} className='hero-action-buttons centered-smaller-mobile'>
-                                        <Button className="hero-action" href="/rx-storage-performance.html" target="_blank">Compare Performance</Button>
-                                        <Button primary className="hero-action" href="#pricing">See Pricing</Button>
-                                    </div>
                                 </div>
                                 <div className="half right premium-bench-half">
                                     <PremiumBenchmark />
@@ -435,7 +425,7 @@ export default function Premium() {
                         black={true}
                     />
 
-                    <div className="block trophy-before trophy-after" id="faq">
+                    <div className="block trophy-before" id="faq">
                         <div className="content centered premium-faq">
                             <h2 style={{ textAlign: 'center' }}>
                                 Frequently Asked <b>Questions</b>
@@ -546,27 +536,6 @@ export default function Premium() {
                                 Taxation depends on your country and entity type. We recommend that you add a correct address and, importantly, your Tax ID when filling out the form.
                             </FaqItem>
                             </Faq>
-                        </div>
-                    </div>
-
-                    <PartnerTrophy
-                        href="https://supabase.com/partners/integrations/rxdb"
-                        title="Supabase"
-                        imgUrl="/files/icons/supabase.svg"
-                    />
-
-                    <div className="block dark trophy-before" style={{ paddingBottom: 90 }}>
-                        <div className="content centered">
-                            <h2 style={{ textAlign: 'center' }}>
-                                Get <b>RxDB Premium</b> today
-                            </h2>
-                            <div className="premium-closing-buttons">
-                                <Button primary onClick={(e) => {
-                                    e.preventDefault(); handleOpenProDialog();
-                                }} icon={<IconChevronsRight />}>Get Pro</Button>
-                                <Button href="/consulting/">Talk to the Maintainer</Button>
-                                <Button href="/rx-storage-performance.html" target="_blank">Compare Performance</Button>
-                            </div>
                         </div>
                     </div>
 
