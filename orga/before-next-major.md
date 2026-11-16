@@ -659,3 +659,85 @@ Todo:
 - The re-insert case has its own pull request [#9472](https://github.com/pubkey/rxdb/pull/9472), which is covered by this one.
 
 An implementation with tests is in the closed pull request [#9561](https://github.com/pubkey/rxdb/pull/9561).
+
+## Database `exportJSON()` must not contain the internal RxState collection
+
+`RxDatabase.exportJSON()` contains the internal `rx-state-*` collection of an RxState. `importJSON()` of that dump into a database without the state throws `JD1`.
+
+Todo:
+- Leave the collection of an RxState out of the database dump. The state can be exported with `myState.collection.exportJSON()`.
+- On import, skip an `rx-state-*` entry of older dumps when that collection does not exist.
+- Breaking: the content of the dump changes. Code that restored a state through the database dump has to export the state on its own.
+
+An implementation with tests is in the closed pull request [#9602](https://github.com/pubkey/rxdb/pull/9602).
+
+## `insertIfNotExists()` must throw an RxError and not the raw storage write error
+
+`insertIfNotExists()` rejects with the plain storage write error object when the write fails for another reason than a conflict, for example on a schema validation error. `insert()` throws an RxError like `VD2` in the same case.
+
+Todo:
+- Throw the same RxError as `insert()`. The original storage write error is in `err.parameters.writeError`.
+- Breaking: code that reads the plain error object of the rejection.
+
+An implementation with tests is in the closed pull request [#9517](https://github.com/pubkey/rxdb/pull/9517).
+
+## validate-z-schema must validate with draft-07
+
+The `validate-z-schema` plugin creates the z-schema instance without a `version`, and z-schema then uses draft 2020-12. There an array as `items` (tuple) is not valid, so every document of such a schema is rejected. RxDB schemas use the draft-07 forms, like the ajv validator.
+
+Todo:
+- Set `version: 'draft-07'`.
+- Breaking: a schema that relies on keywords that only exist in draft 2020-12 (`prefixItems`, `dependentRequired`, `unevaluatedProperties`, `$defs`) gets draft-07 semantics.
+
+An implementation with tests is in the closed pull request [#9645](https://github.com/pubkey/rxdb/pull/9645).
+
+## validate-ajv must compile valid schemas with union types, `example`, `allOf`, and tuple items
+
+The ajv plugin creates ajv with `strict: true`. Schemas that are valid for RxDB then fail on every write with a plain ajv `strict mode` error: union types like `['string', 'number']`, the `example` keyword, tuple `items`, or a keyword without a `type` inside of `allOf`.
+
+Todo:
+- Turn off `strictTypes` and `strictTuples` and register `example` as keyword. Unknown keywords and formats stay rejected.
+- Throw an RxError (`VD4`) when ajv cannot compile a schema, for example because of a `format` that was not registered. The warm-up of the validator in an idle callback must not throw an uncaught error in browsers.
+- Breaking: the error for a schema that cannot be compiled changes from the plain ajv error to `VD4`.
+
+An implementation with tests is in the closed pull request [#9648](https://github.com/pubkey/rxdb/pull/9648).
+
+## Leader election: release the leadership only after the closing database has closed its collections
+
+The leader-election plugin releases the leadership in the `preCloseRxDatabase` hook, the first step of `close()`. Another instance becomes leader and starts its pipeline handler while the handler of the closing leader is still running.
+
+Todo:
+- Release the leadership after `close()` has finished, which includes the pipelines and replications of the collections.
+- Breaking: the next leader is elected later, by the duration of the close.
+
+An implementation with tests is in the closed pull request [#9626](https://github.com/pubkey/rxdb/pull/9626).
+
+## CRDT: a nested path as `crdt.field`
+
+A schema with a nested path as `crdt.field`, like `meta.crdts`, passes `addCollections()`. With dev-mode the first `insert()` then ends in `RangeError: Maximum call stack size exceeded`. Without dev-mode `insert()` and `updateCRDT()` work, but `insertCRDT()` stores a document whose `toJSON()` throws `Converting circular structure to JSON`.
+
+Todo:
+- Decide: either support a nested `crdt.field` in the CRDT plugin, or reject it in the schema check of dev-mode (`CRDT6`).
+- Breaking: rejecting it stops schemas that start today.
+
+An implementation with tests is in the closed pull request [#9685](https://github.com/pubkey/rxdb/pull/9685).
+
+## A write that waits in an async pre-hook must not reach the storage after close or remove
+
+A write that is waiting in an async `preInsert`, `preSave`, or `preRemove` hook while the collection or database gets closed or removed is still sent to the storage afterwards. On the localStorage storage the document survives `remove()`, on other storages the write rejects with a raw storage error.
+
+Todo:
+- Check after the hooks whether the collection is closed and reject the write with `COL21`.
+- Breaking: a write that is not awaited and is followed by `close()` in the same tick rejects with `COL21`, also when the hook is synchronous.
+
+An implementation with tests is in the closed pull request [#9655](https://github.com/pubkey/rxdb/pull/9655).
+
+## `addCollections()` must wait for a pending `remove()` or `close()` of the same collection name
+
+`collection.close()` removes the name from `database.collections` before `remove()` has deleted the storages. An `addCollections()` call in that window creates a new collection, and the running `remove()` then removes its data, so later writes throw `COL21` and documents are lost.
+
+Todo:
+- Let `close()` and `remove()` register their promise by collection name and let `addCollections()` wait for it.
+- Breaking: `addCollections()` in the same tick as a `remove()` or `close()` that is not awaited resolves after the pending call, where it rejected with `DB3` before.
+
+An implementation with tests is in the closed pull request [#9651](https://github.com/pubkey/rxdb/pull/9651).
