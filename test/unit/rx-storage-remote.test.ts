@@ -21,8 +21,122 @@ import { getRxStorageMemory } from '../../plugins/storage-memory/index.mjs';
 import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.mjs';
 import { assertThrows } from 'async-test-util';
 import { nextPort } from '../helper/port-manager.ts';
+import { Subject } from 'rxjs';
+import {
+    exposeRxStorageRemote,
+    getRxStorageRemote
+} from '../../plugins/storage-remote/index.mjs';
+import type {
+    MessageFromRemote,
+    MessageToRemote,
+    RemoteMessageChannel
+} from '../../plugins/storage-remote/index.mjs';
+import type { RxStorage } from '../../plugins/core/index.mjs';
 
 describe('rx-storage-remote.test.ts', () => {
+    /**
+     * These tests use an in-process message channel
+     * and their own base storage, so they run with each config.storage.
+     */
+    describe('failed creations', () => {
+        function withTimeout<T>(promise: Promise<T>, name: string): Promise<T> {
+            return Promise.race([
+                promise,
+                new Promise<T>((_res, rej) => setTimeout(() => rej(new Error('timeout: ' + name)), 2000))
+            ]);
+        }
+        function getInProcessRemote(
+            serverStorage: RxStorage<any, any>,
+            failFirstMessageChannel = false
+        ) {
+            const toRemote$ = new Subject<MessageToRemote>();
+            const fromRemote$ = new Subject<MessageFromRemote>();
+            exposeRxStorageRemote({
+                storage: serverStorage,
+                messages$: toRemote$,
+                send(msg) {
+                    fromRemote$.next(msg);
+                }
+            });
+            let channelCalls = 0;
+            const remoteStorage = getRxStorageRemote({
+                identifier: 'in-process-' + randomToken(10),
+                mode: 'storage',
+                messageChannelCreator: () => {
+                    channelCalls = channelCalls + 1;
+                    if (failFirstMessageChannel && channelCalls === 1) {
+                        return Promise.reject(new Error('message-channel-failed-once'));
+                    }
+                    const messageChannel: RemoteMessageChannel = {
+                        messages$: fromRemote$,
+                        send(msg) {
+                            toRemote$.next(msg);
+                        },
+                        close() {
+                            return Promise.resolve();
+                        }
+                    };
+                    return Promise.resolve(messageChannel);
+                }
+            });
+            return wrappedValidateAjvStorage({ storage: remoteStorage });
+        }
+        it('should be able to create the instance after the first creation failed on the remote', async () => {
+            const baseStorage = getRxStorageMemory();
+            let createCalls = 0;
+            const failingOnceStorage: RxStorage<any, any> = {
+                name: baseStorage.name,
+                rxdbVersion: baseStorage.rxdbVersion,
+                createStorageInstance(params) {
+                    createCalls = createCalls + 1;
+                    if (createCalls === 1) {
+                        return Promise.reject(new Error('create-failed-once'));
+                    }
+                    return baseStorage.createStorageInstance(params);
+                }
+            };
+            const storage = getInProcessRemote(failingOnceStorage);
+            const name = randomToken(10);
+
+            await assertThrows(
+                () => withTimeout(createRxDatabase({ name, storage }), 'first creation'),
+                Error,
+                'create-failed-once'
+            );
+
+            const database = await withTimeout(createRxDatabase({ name, storage }), 'second creation');
+            await database.addCollections({
+                humans: {
+                    schema: schemas.human
+                }
+            });
+            await database.humans.insert(schemaObjects.humanData());
+            const docs = await database.humans.find().exec();
+            assert.strictEqual(docs.length, 1);
+            await database.close();
+        });
+        it('should be able to create the instance after the first messageChannelCreator() call failed', async () => {
+            const storage = getInProcessRemote(getRxStorageMemory(), true);
+            const name = randomToken(10);
+
+            await assertThrows(
+                () => withTimeout(createRxDatabase({ name, storage }), 'first creation'),
+                Error,
+                'message-channel-failed-once'
+            );
+
+            const database = await withTimeout(createRxDatabase({ name, storage }), 'second creation');
+            await database.addCollections({
+                humans: {
+                    schema: schemas.human
+                }
+            });
+            await database.humans.insert(schemaObjects.humanData());
+            const docs = await database.humans.find().exec();
+            assert.strictEqual(docs.length, 1);
+            await database.close();
+        });
+    });
     /**
      * Notice: Most use cases for the remote storage
      * are tests by having a full unit-test run where all

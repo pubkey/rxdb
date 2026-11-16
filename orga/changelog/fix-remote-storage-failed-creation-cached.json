@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX the remote storage kept a failed storage instance creation and a failed `messageChannelCreator()` call in its caches, so that each later `createRxDatabase()` or `addCollections()` call for the same name never resolved or failed with the old error",
+    "links": [],
+    "priority": 5
+}
