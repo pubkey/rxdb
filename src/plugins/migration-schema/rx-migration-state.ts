@@ -1,6 +1,5 @@
 import {
     Observable,
-    ReplaySubject,
     Subject,
     defer,
     distinctUntilChanged,
@@ -117,12 +116,19 @@ export class RxMigrationState {
     private readonly canceledPromise: Promise<void> = new Promise<void>(res => {
         this.resolveCanceled = res;
     });
+    private resolveInterrupted: () => void = () => { };
     /**
-     * Emits when cancel() interrupts a migration that is not finished,
+     * Resolves when cancel() has stopped a migration that is not finished,
      * so that migratePromise() can reject instead of waiting forever
      * for a status that is never written.
+     * In contrast to canceledPromise, it resolves after the running batch
+     * has ended. The caller of migratePromise() closes the storage instance
+     * of the collection on the rejection, and the running batch
+     * still writes to that storage instance.
      */
-    public readonly interrupted$ = new ReplaySubject<true>(1);
+    private readonly interruptedPromise: Promise<void> = new Promise<void>(res => {
+        this.resolveInterrupted = res;
+    });
     public broadcastChannel?: BroadcastChannel;
     public heartbeatInterval?: ReturnType<typeof setInterval>;
     constructor(
@@ -821,9 +827,7 @@ export class RxMigrationState {
         this.canceled = true;
         this.resolveCanceled();
         this.stopHeartbeat();
-        if (this.collection.migrationInProgress) {
-            this.interrupted$.next(true);
-        }
+        const interrupted = this.collection.migrationInProgress;
         this.collection.migrationInProgress = false;
         await Promise.all(
             Array.from(this.replicationStates.values())
@@ -856,6 +860,9 @@ export class RxMigrationState {
          * continue and therefore never closes them on its own.
          */
         await this.closeOpenStorageInstances();
+        if (interrupted) {
+            this.resolveInterrupted();
+        }
 
         if (this.broadcastChannel) {
             await this.broadcastChannel.close();
@@ -983,7 +990,7 @@ export class RxMigrationState {
                     filter((d: RxMigrationStatus) => d.status === 'DONE' || d.status === 'ERROR')
                 )
             ),
-            firstValueFrom(this.interrupted$).then(() => undefined)
+            this.interruptedPromise.then(() => undefined)
         ]);
 
         if (!result) {
