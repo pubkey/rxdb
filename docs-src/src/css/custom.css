@@ -2093,13 +2093,6 @@ pre[data-theme] span[style*="--shiki-token-keyword"] {
     text-transform: uppercase;
 }
 
-.pricing-tier .tier-note {
-    font-size: 13px;
-    color: #8b93a7;
-    margin-bottom: 10px;
-    display: block;
-}
-
 .pricing-tier h3 {
     font-size: var(--fontSizes-xl);
     font-weight: 700;

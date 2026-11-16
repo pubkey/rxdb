@@ -108,7 +108,6 @@ const PRODUCT_JSON_LD = {
 type PricingTierId = 'free' | 'pro' | 'pro-plus' | 'corporate';
 type PricingTier = {
     id: PricingTierId;
-    note: string;
     name: string;
     description: string;
     pricePrefix?: string;
@@ -128,7 +127,6 @@ type PricingTier = {
 const PRICING_TIERS: PricingTier[] = [
     {
         id: 'free',
-        note: '// no signup, no key',
         name: 'Free',
         description: 'Open-source core. Get started for free.',
         price: 0,
@@ -151,7 +149,6 @@ const PRICING_TIERS: PricingTier[] = [
     },
     {
         id: 'pro',
-        note: '// most teams start here',
         name: 'Pro',
         description: 'Production-grade storage engines.',
         pricePrefix: 'From',
@@ -172,7 +169,6 @@ const PRICING_TIERS: PricingTier[] = [
     },
     {
         id: 'pro-plus',
-        note: '// for high-throughput apps',
         name: 'Pro Plus',
         description: 'Performance plugins & server adapters.',
         pricePrefix: 'From',
@@ -194,7 +190,6 @@ const PRICING_TIERS: PricingTier[] = [
     },
     {
         id: 'corporate',
-        note: '// consulting included',
         name: 'Corporate',
         description: 'Pro Plus with consulting sessions.',
         price: PRICE_CORPORATE_YEARLY,
@@ -366,7 +361,6 @@ export default function Premium() {
                             <div className="pricing-tiers">
                                 {PRICING_TIERS.map(tier => (
                                     <div key={tier.id} className={'pricing-tier' + (tier.recommended ? ' pro-tier' : '')}>
-                                        <span className="tier-note">{tier.note}</span>
                                         {tier.recommended ? <div className="badge-recommended">RECOMMENDED</div> : null}
                                         <h3>{tier.name}</h3>
                                         <p className="tier-desc">{tier.description}</p>
