@@ -400,7 +400,7 @@ export default function Premium() {
                         imgUrl="/files/icons/supabase.svg"
                     />
 
-                    <div className="block dark trophy-before trophy-after" id="faq">
+                    <div className="block dark trophy-before" id="faq">
                         <div className="content centered premium-faq">
                             <h2 style={{ textAlign: 'center' }}>
                                 Frequently Asked <b>Questions</b>
@@ -513,14 +513,6 @@ export default function Premium() {
                             </Faq>
                         </div>
                     </div>
-
-                    <PartnerTrophy
-                        href="https://tanstack.com/db/latest/docs/collections/rxdb-collection"
-                        title="TanStack DB"
-                        slug="tanstack"
-                        subTitle="Integrates with"
-                        imgUrl="/files/icons/tanstack.svg"
-                    />
 
                     {/* <div className="block dark" id="premium-request-form-block">
                         <div className="content centered premium-request">
