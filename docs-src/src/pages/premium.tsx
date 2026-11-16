@@ -10,8 +10,7 @@ import { Button } from '../components/button';
 import { IconChevronsRight } from '../components/icons/chevrons-right';
 import { Faq, FaqItem } from '../components/faq';
 import { CheckedList } from '../components/checked-list';
-import { PartnerTrophy, SOCIAL_PROOF_VALUES, Trophy } from '../components/trophy';
-import { ReviewsBlock } from '../components/review-block';
+import { PartnerTrophy } from '../components/trophy';
 import { PERFORMANCE_BROWSER_DEXIE, PERFORMANCE_BROWSER_INDEXEDDB, PERFORMANCE_OPFS_WORKER } from '../components/performance-data';
 
 
@@ -353,13 +352,10 @@ export default function Premium() {
                         </div>
                     </div>
 
-                    <Trophy
-                        href="/code/"
-                        title="GitHub"
-                        subTitle='Open Source'
-                        value={SOCIAL_PROOF_VALUES.github}
-                        icon="/files/icons/github-star-with-logo.svg"
-                        valueTitle='stars'
+                    <PartnerTrophy
+                        href="https://www.mongodb.com/company/blog/innovation/from-local-global-scalable-edge-apps-rxdb"
+                        title="MongoDB"
+                        imgUrl="/files/icons/mongodb-icon.svg"
                     />
 
                     <div className="block trophy-before trophy-after" id="pricing">
@@ -399,33 +395,12 @@ export default function Premium() {
                     </div>
 
                     <PartnerTrophy
-                        href="https://www.mongodb.com/company/blog/innovation/from-local-global-scalable-edge-apps-rxdb"
-                        title="MongoDB"
-                        imgUrl="/files/icons/mongodb-icon.svg"
+                        href="https://supabase.com/partners/integrations/rxdb"
+                        title="Supabase"
+                        imgUrl="/files/icons/supabase.svg"
                     />
 
-                    <div className="block reviews dark trophy-before trophy-after" id="reviews">
-                        <div className="content centered">
-                            <h2>
-                                Used by <b>Thousands Worldwide</b>
-                            </h2>
-                            <div className="inner">
-                                <ReviewsBlock></ReviewsBlock>
-                            </div>
-                        </div>
-                    </div>
-
-                    <Trophy
-                        href="/chat/"
-                        title="Discord"
-                        subTitle='Chat on'
-                        value={SOCIAL_PROOF_VALUES.discord}
-                        icon="/files/icons/discord.svg"
-                        valueTitle='members'
-                        black={true}
-                    />
-
-                    <div className="block trophy-before" id="faq">
+                    <div className="block dark trophy-before trophy-after" id="faq">
                         <div className="content centered premium-faq">
                             <h2 style={{ textAlign: 'center' }}>
                                 Frequently Asked <b>Questions</b>
@@ -538,6 +513,14 @@ export default function Premium() {
                             </Faq>
                         </div>
                     </div>
+
+                    <PartnerTrophy
+                        href="https://tanstack.com/db/latest/docs/collections/rxdb-collection"
+                        title="TanStack DB"
+                        slug="tanstack"
+                        subTitle="Integrates with"
+                        imgUrl="/files/icons/tanstack.svg"
+                    />
 
                     {/* <div className="block dark" id="premium-request-form-block">
                         <div className="content centered premium-request">
