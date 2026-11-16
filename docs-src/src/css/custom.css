@@ -1302,20 +1302,15 @@ details[open] {
 }
 
 .premium-faq details {
-    width: 60%;
+    width: 100%;
+    max-width: 860px;
     margin: 0 auto !important;
+    text-align: left;
 }
 
-@media (max-width: 1050px) {
-    .premium-faq details {
-        width: 80%;
-    }
-}
-
-@media (max-width: 800px) {
-    .premium-faq details {
-        width: 90%;
-    }
+.premium-faq details>summary {
+    font-weight: 700;
+    gap: 20px;
 }
 
 footer {
@@ -2054,60 +2049,69 @@ pre[data-theme] span[style*="--shiki-token-keyword"] {
 }
 
 .pricing-tiers {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
     margin-top: 40px;
-    flex-wrap: wrap;
-    align-items: stretch;
 }
 
 .pricing-tier {
-    background: var(--bg-color);
-    border: 1px solid #2a2d3d;
-    border-radius: 8px;
-    padding: 30px 20px;
-    width: 250px;
+    background: var(--bg-color-dark);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    padding: 28px 22px 22px 22px;
     display: flex;
     flex-direction: column;
     text-align: left;
     position: relative;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-.pricing-tier h3 {
-    font-size: 14px;
-    font-weight: 700;
-    letter-spacing: 1px;
-    color: var(--ifm-color-primary);
-    margin-bottom: 10px;
-    text-transform: uppercase;
+.block.dark .pricing-tier {
+    background: var(--bg-color);
 }
 
 .pricing-tier.pro-tier {
-    border: 2px solid var(--ifm-color-primary);
+    border: 2px solid var(--color-top);
+    padding: 27px 21px 21px 21px;
 }
 
 .pricing-tier .badge-recommended {
     position: absolute;
-    top: -12px;
-    right: 10px;
-    background: var(--ifm-color-primary);
+    top: 0;
+    right: 0;
+    background: linear-gradient(90deg, var(--color-top) 0%, var(--color-middle) 100%);
     color: white;
-    font-size: 10px;
+    font-size: 11px;
     font-weight: bold;
-    padding: 4px 8px;
-    border-radius: 4px;
+    letter-spacing: 1px;
+    padding: 5px 10px;
     text-transform: uppercase;
 }
 
+.pricing-tier .tier-note {
+    font-size: 13px;
+    color: #8b93a7;
+    margin-bottom: 10px;
+    display: block;
+}
+
+.pricing-tier h3 {
+    font-size: var(--fontSizes-xl);
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: #fff;
+    margin-bottom: 8px;
+}
+
+.pricing-tier.pro-tier h3 {
+    color: var(--color-top);
+}
+
 .pricing-tier p.tier-desc {
-    font-size: 14px;
-    color: #a0a4b8;
+    font-size: 15px;
+    color: #d1d5db;
     line-height: 1.5;
-    margin-bottom: 20px;
-    flex-grow: 0;
-    min-height: 46px;
+    margin-bottom: 14px;
+    min-height: 68px;
 }
 
 .pricing-tier .tier-price-prefix {
@@ -2119,7 +2123,7 @@ pre[data-theme] span[style*="--shiki-token-keyword"] {
 }
 
 .pricing-tier .tier-price {
-    font-size: 34px;
+    font-size: 2.6rem;
     font-weight: 800;
     color: white;
     line-height: 1;
@@ -2138,25 +2142,27 @@ pre[data-theme] span[style*="--shiki-token-keyword"] {
 }
 
 .pricing-tier .tier-price-sub {
-    font-size: 0.85rem;
+    font-size: 13px;
     font-weight: normal;
     color: #a0a4b8;
     margin-top: 2px;
-    margin-bottom: 10px;
+    min-height: 44px;
 }
 
-.pricing-tier .tier-license {
-    font-size: 12px;
+.pricing-tier .tier-price-sub a {
     color: #a0a4b8;
-    margin-bottom: 30px;
-    padding-bottom: 20px;
-    border-bottom: 1px dashed #2a2d3d;
+}
+
+.pricing-tier .tier-cta {
+    margin: 14px 0 24px 0;
+    padding-bottom: 24px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.14);
 }
 
 .pricing-tier .tier-includes-title {
-    font-size: 11px;
+    font-size: 12px;
     font-weight: bold;
-    color: #a0a4b8;
+    color: #8b93a7;
     letter-spacing: 1px;
     margin-bottom: 15px;
     text-transform: uppercase;
@@ -2166,15 +2172,14 @@ pre[data-theme] span[style*="--shiki-token-keyword"] {
     list-style: none;
     padding: 0;
     margin: 0;
-    margin-bottom: 30px;
     flex-grow: 1;
 }
 
 .pricing-tier ul.tier-features li {
-    font-size: 14px;
-    color: #d1d5db;
+    font-size: 15px;
+    color: #fff;
     margin-bottom: 12px;
-    padding-left: 15px;
+    padding-left: 28px;
     position: relative;
     line-height: 1.4;
 }
@@ -2184,11 +2189,13 @@ pre[data-theme] span[style*="--shiki-token-keyword"] {
 }
 
 .pricing-tier ul.tier-features li::before {
-    content: "▸";
-    color: var(--ifm-color-primary);
+    content: "";
     position: absolute;
     left: 0;
-    top: 0;
+    top: 4px;
+    width: 18px;
+    height: 13px;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 37 26' fill='none'%3E%3Cpath d='M34.79 2.21 13.25 23.79 2.21 12.72' stroke='%23ED168F' stroke-width='4.4'/%3E%3C/svg%3E") no-repeat center / contain;
 }
 
 .pricing-tier ul.tier-features li.strikethrough {
@@ -2197,51 +2204,121 @@ pre[data-theme] span[style*="--shiki-token-keyword"] {
 }
 
 .pricing-tier ul.tier-features li.strikethrough::before {
+    content: "\2715";
+    background: none;
     color: #6b7280;
+    font-size: 13px;
+    top: 1px;
+    left: 3px;
+    width: auto;
+    height: auto;
 }
 
-.pricing-tier .tier-agreement {
-    font-size: 12px;
-    color: #a0a4b8;
-    text-decoration: none;
-    display: flex;
-    align-items: center;
-    margin-bottom: 15px;
-}
-
-.pricing-tier .tier-agreement::before {
-    content: "▸";
-    margin-right: 5px;
-}
-
-.pricing-tier .tier-agreement:hover {
-    color: white;
-}
-
-.pricing-tier .tier-note {
-    font-size: 12px;
-    color: #6b7280;
-    margin-top: 0px;
-    margin-bottom: 10px;
-}
-
-@media (max-width: 768px) {
-    .pricing-tier {
-        width: 90%;
-    }
-}
-
-@media (max-width: 1150px) and (min-width: 769px) {
+@media (max-width: 1150px) {
     .pricing-tiers {
-        max-width: 620px;
-        margin-left: auto;
-        margin-right: auto;
-    }
-
-    .pricing-tier {
-        width: 300px;
+        grid-template-columns: repeat(2, 1fr);
     }
 }
+
+@media (max-width: 700px) {
+    .pricing-tiers {
+        grid-template-columns: 1fr;
+    }
+
+    .pricing-tier p.tier-desc,
+    .pricing-tier .tier-price-sub {
+        min-height: 0;
+    }
+}
+
+/**
+ * Benchmark bars in the hero of the premium page.
+ */
+.premium-bench {
+    width: 100%;
+    max-width: 520px;
+    margin-left: auto;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    background: var(--bg-color);
+    padding: 22px 22px 16px 22px;
+    box-sizing: border-box;
+    text-align: left;
+}
+
+.premium-bench .bench-title {
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.premium-bench .bench-sub {
+    font-size: 13px;
+    color: #a0a4b8;
+    margin-bottom: 18px;
+}
+
+.premium-bench .bench-group {
+    font-size: 12px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #8b93a7;
+    margin: 16px 0 8px 0;
+}
+
+.premium-bench .bench-row {
+    display: grid;
+    grid-template-columns: 150px 1fr 84px;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    margin-bottom: 8px;
+}
+
+.premium-bench .bench-row .bar {
+    height: 14px;
+    background: #6b7280;
+}
+
+.premium-bench .bench-row.premium .bar {
+    background: linear-gradient(90deg, var(--color-top) 0%, var(--color-middle) 100%);
+}
+
+.premium-bench .bench-row.premium .label {
+    font-weight: 700;
+}
+
+.premium-bench .bench-row .ms {
+    white-space: nowrap;
+    text-align: right;
+    color: #d1d5db;
+}
+
+.premium-bench .bench-foot {
+    font-size: 12px;
+    margin-top: 14px;
+}
+
+@media (max-width: 900px) {
+    .premium-bench {
+        width: 94%;
+        margin-right: auto;
+        margin-bottom: 30px;
+    }
+}
+
+@media (max-width: 480px) {
+    .premium-bench .bench-row {
+        grid-template-columns: 110px 1fr 76px;
+        font-size: 12px;
+    }
+}
+
+.premium-closing-buttons {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
 /**
  * ComparisonTable component (src/components/comparison-table.tsx)
  * in markdown-children mode: scrollable container and highlighted
