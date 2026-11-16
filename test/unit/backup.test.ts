@@ -3,6 +3,7 @@ import * as fs from 'node:fs';
 
 import assert from 'assert';
 import { waitUntil } from 'async-test-util';
+import { firstValueFrom } from 'rxjs';
 import config, { getRootPath } from './config.ts';
 
 import {
@@ -175,6 +176,45 @@ describe('backup.test.ts', () => {
             await collection.database.close();
             // backupState should be stopped
             assert.strictEqual(backupState.isStopped, true);
+        });
+        it('cancel() should wait for the running persist so that a new backup can continue on the same directory', async () => {
+            const collection = await humansCollection.create(10);
+            const directory = getBackupDir();
+            const options = {
+                live: true,
+                directory,
+                batchSize: 1
+            };
+            const metaPath = path.join(directory, 'backup_meta.json');
+
+            const backupState = collection.database.backup(options);
+            await firstValueFrom(backupState.writeEvents$);
+            const cancelResult = await backupState.cancel();
+            assert.strictEqual(cancelResult, true);
+
+            // the canceled run must have stored its checkpoint completely
+            const meta: BackupMetaFileContent = JSON.parse(fs.readFileSync(metaPath, 'utf-8'));
+            assert.ok(meta.collectionStates.human, 'meta file must contain the collection state');
+            assert.ok(meta.collectionStates.human.checkpoint);
+
+            const backupState2 = collection.database.backup({
+                live: false,
+                directory,
+                batchSize: 1
+            });
+            await backupState2.awaitInitialBackup();
+            const docs = await collection.find().exec();
+            docs.forEach(doc => {
+                assert.ok(
+                    fs.existsSync(path.join(directory, toFileName(doc.primary), 'document.json'))
+                );
+            });
+            assert.deepStrictEqual(
+                JSON.parse(fs.readFileSync(metaPath, 'utf-8')),
+                await getMeta(options)
+            );
+
+            await collection.database.close();
         });
     });
     describe('issues', () => {

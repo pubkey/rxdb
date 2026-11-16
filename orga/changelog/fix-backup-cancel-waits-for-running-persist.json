@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `cancel()` of the backup plugin did not wait for the running persist, so a new backup on the same directory could read a half-written `backup_meta.json` and end the Node.js process with an uncaught `SyntaxError`",
+    "links": [],
+    "priority": 5
+}
