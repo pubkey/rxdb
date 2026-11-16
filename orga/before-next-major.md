@@ -527,6 +527,8 @@ Todo:
 
 An implementation with tests is in the closed pull request [#9590](https://github.com/pubkey/rxdb/pull/9590).
 
+The same pattern for `close()` and for a remove that comes from another instance is in the closed pull request [#9578](https://github.com/pubkey/rxdb/pull/9578).
+
 ## Observables of a closed collection must complete
 
 The observables of a closed or removed RxCollection (`$`, `insert$`, `update$`, `remove$`, `eventBulks$`, `checkpoint$`) do not complete, and they emit the change events of a collection with the same name that is added again with `addCollections()`. Documents of the closed collection also get the data of the new collection from `getLatest()`.
@@ -618,6 +620,8 @@ Todo:
 
 An implementation with tests is in the closed pull request [#9676](https://github.com/pubkey/rxdb/pull/9676).
 
+The closed pull request [#9621](https://github.com/pubkey/rxdb/pull/9621) makes the same change of `error$` (an `RC_STREAM` RxError and not the plain error) in the replication plugin.
+
 ## CRDT: a schema migration must not keep the old CRDT operations
 
 A schema migration runs the migration strategies on the document data but keeps the stored CRDT operations of the old schema. The migrated document then no longer equals the replay of its operations. In dev-mode the next write throws `SNH`, and without dev-mode a merge rebuilds the state from before the migration.
@@ -659,6 +663,8 @@ Todo:
 - The re-insert case has its own pull request [#9472](https://github.com/pubkey/rxdb/pull/9472), which is covered by this one.
 
 An implementation with tests is in the closed pull request [#9561](https://github.com/pubkey/rxdb/pull/9561).
+
+Related closed pull requests that contain parts of this change: [#9603](https://github.com/pubkey/rxdb/pull/9603) (the digest that a wrapped storage changed is set on the write rows of the caller, so that the encryption and the attachments-compression storage work in both wrapping orders) and [#9556](https://github.com/pubkey/rxdb/pull/9556) (the `length` of the write data is used for the stored attachment).
 
 ## Database `exportJSON()` must not contain the internal RxState collection
 
@@ -731,6 +737,8 @@ Todo:
 - Breaking: a write that is not awaited and is followed by `close()` in the same tick rejects with `COL21`, also when the hook is synchronous.
 
 An implementation with tests is in the closed pull request [#9655](https://github.com/pubkey/rxdb/pull/9655).
+
+The same check for the write path of an existing document (`beforeDocumentUpdateWrite()`) is in the closed pull request [#9673](https://github.com/pubkey/rxdb/pull/9673).
 
 ## `addCollections()` must wait for a pending `remove()` or `close()` of the same collection name
 
