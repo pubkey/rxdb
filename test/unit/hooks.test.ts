@@ -90,6 +90,36 @@ describe('hooks.test.js', () => {
                     assert.strictEqual(doc.get('lastName'), 'foobar');
                     c.database.close();
                 });
+                it('should pass plain data to the hooks when an RxDocument instance is inserted', async () => {
+                    const c = await humansCollection.createPrimary(0);
+                    const other = await humansCollection.createPrimary(0);
+                    const sourceDoc = await c.insert(schemaObjects.simpleHumanData());
+
+                    const preInsertData: any[] = [];
+                    other.preInsert(function (d) {
+                        assert.strictEqual(typeof arguments[1], 'undefined');
+                        preInsertData.push(Object.assign({}, d));
+                        d.lastName = 'foobar';
+                    }, false);
+                    const postInsertData: any[] = [];
+                    other.postInsert(function (d) {
+                        postInsertData.push(d);
+                    }, false);
+
+                    const copy = await other.insert(sourceDoc);
+                    assert.strictEqual(copy.lastName, 'foobar');
+                    assert.ok(sourceDoc.lastName !== 'foobar');
+                    assert.strictEqual(preInsertData.length, 1);
+                    assert.strictEqual(isRxDocument(preInsertData[0]), false);
+                    assert.strictEqual(preInsertData[0].passportId, sourceDoc.passportId);
+                    assert.strictEqual(preInsertData[0].lastName, sourceDoc.lastName);
+                    assert.strictEqual(postInsertData.length, 1);
+                    assert.strictEqual(isRxDocument(postInsertData[0]), false);
+                    assert.strictEqual(postInsertData[0].passportId, sourceDoc.passportId);
+
+                    c.database.close();
+                    other.database.close();
+                });
                 it('async: should save a modified document', async () => {
                     const c = await humansCollection.createPrimary(0);
                     const human = schemaObjects.simpleHumanData();

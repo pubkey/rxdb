@@ -27,7 +27,7 @@ import { checkMangoQuery, checkQuery, isQueryAllowed } from './check-query.ts';
 import { newRxError } from '../../rx-error.ts';
 import { DeepReadonly } from '../../types/util.ts';
 import { deepFreeze } from '../../plugins/utils/index.ts';
-import { checkWriteRows, ensureInsertInputIsNoRxDocument, ensurePrimaryKeyValid } from './check-document.ts';
+import { checkWriteRows, ensurePrimaryKeyValid } from './check-document.ts';
 import { addDevModeTrackingIframe } from './dev-mode-tracking.ts';
 
 export * from './check-schema.ts';
@@ -188,8 +188,6 @@ Docs: ${err.docs}`;
         },
         createRxCollection: {
             after: (args) => {
-                ensureInsertInputIsNoRxDocument(args.collection);
-
                 // check ORM-methods
                 checkOrmMethods(args.creator.statics);
                 checkOrmMethods(args.creator.methods);

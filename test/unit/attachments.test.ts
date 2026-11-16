@@ -162,6 +162,29 @@ describe('attachments.test.ts', () => {
             assert.strictEqual(attachment.type, 'text/plain');
             c.database.close();
         });
+        it('should not copy the attachments when an RxDocument instance is inserted into another collection', async () => {
+            const c = await humansCollection.createAttachments(1);
+            const other = await humansCollection.createAttachments(0);
+            const doc = await c.findOne().exec(true);
+            await doc.putAttachment({
+                id: 'cat.txt',
+                data: createBlob('meow', 'text/plain'),
+                type: 'text/plain'
+            });
+            const withAttachment = doc.getLatest();
+            assert.strictEqual(withAttachment.allAttachments().length, 1);
+
+            const copy = await other.insert(withAttachment);
+            assert.deepStrictEqual(copy.toJSON(), withAttachment.toJSON());
+            assert.strictEqual(copy.allAttachments().length, 0);
+
+            // upsert() into the own collection keeps the stored attachments
+            const upserted = await c.upsert(withAttachment);
+            assert.strictEqual(upserted.allAttachments().length, 1);
+
+            c.database.close();
+            other.database.close();
+        });
         it('should insert two attachments', async () => {
             const c = await humansCollection.createAttachments(1);
             let doc = await c.findOne().exec(true);

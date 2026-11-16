@@ -396,7 +396,7 @@ export class RxCollectionBase<
     }
 
     async insert(
-        json: RxDocumentType
+        json: RxDocumentType | RxDocument<RxDocumentType>
     ): Promise<RxDocument<RxDocumentType, OrmMethods, Reactivity>> {
         isWriteAllowed(this);
         const writeResult = await this.bulkInsert([json as any]);
@@ -408,7 +408,7 @@ export class RxCollectionBase<
     }
 
     async insertIfNotExists(
-        json: RxDocumentType
+        json: RxDocumentType | RxDocument<RxDocumentType>
     ): Promise<RxDocument<RxDocumentType, OrmMethods, Reactivity>> {
         const writeResult = await this.bulkInsert([json as any]);
         if (writeResult.error.length > 0) {
@@ -425,7 +425,7 @@ export class RxCollectionBase<
     }
 
     async bulkInsert(
-        docsData: RxDocumentType[]
+        docsData: (RxDocumentType | RxDocument<RxDocumentType>)[]
     ): Promise<{
         success: RxDocument<RxDocumentType, OrmMethods, Reactivity>[];
         error: RxStorageWriteError<RxDocumentType>[];
@@ -671,7 +671,7 @@ export class RxCollectionBase<
     /**
      * same as bulkInsert but overwrites existing document with same primary
      */
-    async bulkUpsert(docsData: Partial<RxDocumentType>[], options?: UpsertOptions): Promise<{
+    async bulkUpsert(docsData: (Partial<RxDocumentType> | RxDocument<RxDocumentType>)[], options?: UpsertOptions): Promise<{
         success: RxDocument<RxDocumentType, OrmMethods, Reactivity>[];
         error: RxStorageWriteError<RxDocumentType>[];
     }> {
@@ -764,7 +764,7 @@ export class RxCollectionBase<
     /**
      * same as insert but overwrites existing document with same primary
      */
-    async upsert(json: Partial<RxDocumentType>, options?: UpsertOptions): Promise<RxDocument<RxDocumentType, OrmMethods, Reactivity>> {
+    async upsert(json: Partial<RxDocumentType> | RxDocument<RxDocumentType>, options?: UpsertOptions): Promise<RxDocument<RxDocumentType, OrmMethods, Reactivity>> {
         isWriteAllowed(this);
         const bulkResult = await this.bulkUpsert([json], options);
         throwIfIsStorageWriteError<RxDocumentType>(
@@ -779,7 +779,7 @@ export class RxCollectionBase<
     /**
      * upserts to a RxDocument, uses incrementalModify if document already exists
      */
-    incrementalUpsert(json: Partial<RxDocumentType>, options?: UpsertOptions): Promise<RxDocument<RxDocumentType, OrmMethods, Reactivity>> {
+    incrementalUpsert(json: Partial<RxDocumentType> | RxDocument<RxDocumentType>, options?: UpsertOptions): Promise<RxDocument<RxDocumentType, OrmMethods, Reactivity>> {
         isWriteAllowed(this);
         const useJson = fillObjectDataBeforeInsert(this.schema, json);
         const primary: string = useJson[this.schema.primaryPath] as any;
