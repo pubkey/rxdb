@@ -1,0 +1,5 @@
+{
+    "text": "FIX `useRxQuery()`, `useLiveRxQuery()` and `useRxDocument()` of the React plugin returned the result of the previous collection, query or `primaryKey` together with `loading: false` for one render after these inputs changed",
+    "links": [],
+    "priority": 5
+}
