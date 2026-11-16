@@ -456,3 +456,204 @@ Todo:
 - Breaking: a `migrateStorage()` call that resolved before can reject.
 
 An implementation with tests is in the closed pull request [#9473](https://github.com/pubkey/rxdb/pull/9473).
+
+## `insert()` must not accept an RxDocument instance
+
+The typings of `insert()` and `insertIfNotExists()` allow `RxDocumentType | RxDocument`. Passing an RxDocument never worked: dev-mode throws `DOC24`, and without dev-mode the instance properties of the RxDocument are stored under the primary key `undefined`.
+
+Todo:
+- Remove `| RxDocument` from both signatures and let dev-mode throw a clear error (`COL1`) for JavaScript users and casts.
+- Breaking: code that passes an RxDocument no longer compiles.
+
+An implementation with tests is in the closed pull request [#9529](https://github.com/pubkey/rxdb/pull/9529).
+
+## Wrong query results for bounds that the custom index string cannot represent exactly
+
+On storages that use the custom index strings (memory, localStorage), the query planner marks a selector as satisfied by the index although the bound string is lossy, so the storage skips the query matcher. For example `{ priority: { $gte: 5.5 } }` on an indexed integer field returns the document with `5`.
+
+Todo:
+- Do not mark the selector as satisfied by the index when the bound cannot be represented exactly, so that the query matcher runs.
+- Breaking: a `count()` with such a bound becomes a slow count and throws `QU14` without `allowSlowCount: true`. Before, it returned a wrong count.
+
+An implementation with tests is in the closed pull request [#9469](https://github.com/pubkey/rxdb/pull/9469).
+
+## An empty operator object on an indexed field must not return all documents
+
+A query like `{ selector: { field: {} } }` returns all documents when `field` is indexed or the primary key and no documents when it is not indexed. The query planner treats an operator object without operators as fully answered by the index.
+
+Todo:
+- Do not mark such a selector as satisfied by the index, so that the query matcher decides and the result is the same with and without an index.
+- Breaking: code that builds the operator object conditionally and relies on an empty object meaning "no filter" on an indexed field gets no documents.
+
+An implementation with tests is in the closed pull request [#9617](https://github.com/pubkey/rxdb/pull/9617).
+
+## `upsert()`, `bulkUpsert()`, and `insertIfNotExists()` must not run the `preInsert` hooks for existing documents
+
+`bulkUpsert()` always tries an insert first, and the insert runs the `preInsert` hooks before the storage says whether the row is new. So `upsert()`, `bulkUpsert()`, and `insertIfNotExists()` run the `preInsert` hooks for a document that already exists. A hook that throws to stop inserts blocks the update of an existing document. `incrementalUpsert()` does not run them.
+
+Todo:
+- Run the insert hooks only for the documents that are inserted.
+- Breaking: collections whose `preInsert` hooks have side effects or throw no longer get them on an upsert of an existing document.
+
+An implementation with tests is in the closed pull request [#9707](https://github.com/pubkey/rxdb/pull/9707).
+
+## `incrementalUpsert()` after remove and cleanup must not write on top of the cached deleted document
+
+`incrementalUpsert()` has a shortcut that takes the document from the document cache, also when it is deleted. After `cleanup()` the storage no longer has that tombstone, so the write uses a previous state that the storage does not know. On localStorage that gives a `TypeError` and a document that cannot be read or written any more, on other storages a wrong revision height.
+
+Todo:
+- Use the shortcut only when the cached document is not deleted. Otherwise run the same path as after a restart, like `upsert()` does.
+- Breaking: `incrementalUpsert()` on a removed document that is still in the cache runs the `preInsert` and `postInsert` hooks, where it ran `preSave` and `postSave` before.
+
+An implementation with tests is in the closed pull request [#9638](https://github.com/pubkey/rxdb/pull/9638).
+
+## Deleted documents must not keep attachment stubs
+
+Deleted documents keep their `_attachments` stubs although the storage removes the attachment data on delete. One deleted document that had an attachment makes a schema migration fail with `DM4` on every start, and it also breaks the replication push and a re-insert of the document.
+
+Todo:
+- Store deleted documents with an empty `_attachments` object.
+- Breaking: a deleted document no longer exposes attachment stubs.
+
+An implementation with tests is in the closed pull request [#9471](https://github.com/pubkey/rxdb/pull/9471).
+
+## No `DELETE` event for a write on an already deleted document
+
+A write that replaces a deleted document with another deleted state, like a replication pull of a changed tombstone, emits a second `DELETE` event on `collection.$` and `remove$` and makes EventReduce drop a document from the results of queries with `skip`.
+
+Todo:
+- Do not emit a `DELETE` event on `collection.$`, `database.$`, and `remove$` for a write from a deleted state to another deleted state. `eventBulks$` and the `changeStream()` of the storage stay unchanged.
+- Breaking: code that counts on these events.
+
+An implementation with tests is in the closed pull request [#9586](https://github.com/pubkey/rxdb/pull/9586).
+
+## `remove()` must run all `onRemove` handlers and remove the data when one handler throws
+
+`collection.remove()` and `database.remove()` skip the remaining `onRemove` handlers and leave the stored data in place when one `onRemove` handler throws.
+
+Todo:
+- Run all handlers, remove the data, and then reject with the first handler error.
+- Breaking: the data is removed where it stayed before.
+
+An implementation with tests is in the closed pull request [#9590](https://github.com/pubkey/rxdb/pull/9590).
+
+## Observables of a closed collection must complete
+
+The observables of a closed or removed RxCollection (`$`, `insert$`, `update$`, `remove$`, `eventBulks$`, `checkpoint$`) do not complete, and they emit the change events of a collection with the same name that is added again with `addCollections()`. Documents of the closed collection also get the data of the new collection from `getLatest()`.
+
+Todo:
+- Complete the observables of a collection on `close()` and `remove()`, the same as the streams of RxDatabase do on `close()`. `RxQuery.$` already completes since [#9658](https://github.com/pubkey/rxdb/pull/9658).
+- Breaking: subscribers get `complete`.
+
+An implementation with tests is in the closed pull request [#9564](https://github.com/pubkey/rxdb/pull/9564).
+
+## The first value of a later `RxQuery.$` subscriber must be the current result
+
+`query.$` replays the last result object to every later subscriber. When a write is awaited and a second subscriber then subscribes, the shared update of the query can still be running or throttled, so the first value of that subscriber is the result from before the write.
+
+Todo:
+- Let each subscriber run the same check as `exec()` once on subscribe. Emit synchronously only when the cached result is current.
+- Breaking: the timing of the first value changes. A later subscriber can get its first value asynchronously, and a query that only ran `exec()` gives its first subscriber the value synchronously.
+
+An implementation with tests is in the closed pull request [#9702](https://github.com/pubkey/rxdb/pull/9702).
+
+## CouchDB replication: a push must not overwrite a deletion on the server
+
+The CouchDB replication push creates a document again that was deleted on the CouchDB server and does not handle the deletion as a conflict. It also writes a broken conflict state when the document gets deleted on the server during the push.
+
+Todo:
+- Handle a local write to a document that is deleted on the server as a conflict.
+- Breaking: with the default conflict handler the local document gets deleted, where it was created again on the server before.
+
+An implementation with tests is in the closed pull request [#9576](https://github.com/pubkey/rxdb/pull/9576).
+
+## CouchDB replication: long polling when `live` is not set
+
+The CouchDB replication does not start the long polling of the changes feed when the `live` option is not set, although `live` defaults to `true`. Also `pause()` does not stop the long polling, and `start()` after `pause()` starts additional parallel long polling requests.
+
+Todo:
+- Run the long polling when `live` is omitted, stop it on `pause()`, and run one loop per replication state.
+- Breaking: replications that omit `live` start to send `_changes?feed=longpoll` requests.
+
+An implementation with tests is in the closed pull request [#9542](https://github.com/pubkey/rxdb/pull/9542).
+
+## Replication: retry with `retryTime: 0` and a growing default retry time
+
+A replication with `retryTime: 0` stops retrying after the first failed pull or push handler call, so `awaitInitialReplication()` and `awaitInSync()` never resolve. The default retry time is a constant 5 seconds.
+
+Todo:
+- Retry also with `retryTime: 0`. Without a `retryTime`, start at 200 ms and grow by the factor 1.3 on each consecutive failure up to 5 seconds, like the reconnect of the websocket replication. An explicit `retryTime` stays constant.
+- Decide whether the GraphQL, CouchDB, Firestore, MongoDB, Supabase, NATS, Appwrite, Google Drive, and OneDrive plugins, which set their own default of 5 seconds, use the growing default too.
+- Breaking: a backend that is down gets more requests in the first 20 seconds, and `replicationState.retryTime` is `undefined` when the option is not set.
+
+An implementation with tests is in the closed pull request [#9527](https://github.com/pubkey/rxdb/pull/9527).
+
+## Replication must not drop a pulled master state while the push of the same document is running
+
+The downstream skips a pulled document whose fork state differs from the assumed master state and still stores the checkpoint. When the push of that document is running and gets accepted, the newer master state is never pulled again and the client reports in-sync with an outdated document.
+
+Todo:
+- Let the skip branch wait for the upstream queue and read the fork state and the assumed master state again.
+- Breaking: the pull waits for the push of that document. With a push handler that fails forever, the pull stops at that document.
+
+An implementation with tests is in the closed pull request [#9625](https://github.com/pubkey/rxdb/pull/9625).
+
+## Replication: the marker of a resolved conflict must use the stored revision
+
+The upstream stores the revision of the resolved document as `isResolvedConflict` marker before the write. With `replicateRxCollection()` the storage wrapper of the collection replaces `_rev` on that write, so the marker never matches and a resolved push conflict is not pushed again. When the master changed again in between, the client stays on the outdated master state.
+
+Todo:
+- Use the `_rev` that was stored as marker.
+- Breaking: after every resolved push conflict the resolved document is pushed once more, which is one more push handler call and `sent$` emission per conflict.
+
+An implementation with tests is in the closed pull request [#9623](https://github.com/pubkey/rxdb/pull/9623).
+
+## Replication: a push conflict with an equal master state must not rewrite the fork document
+
+When a push is answered with a conflict although the master already has the pushed state, the upstream writes the same content to the fork again with a new revision. With three instances that replicate with each other, like in the WebRTC replication, that revision change makes one instance answer a correct push with a conflict, and the states are pushed around without end.
+
+Todo:
+- For such a conflict, only store the master state in the replication meta data.
+- Breaking: `conflict$` emits the existing fork document as `output` and `resolve()` of the conflict handler is not called for a conflict with equal states.
+
+An implementation with tests is in the closed pull request [#9677](https://github.com/pubkey/rxdb/pull/9677).
+
+## GraphQL replication must reopen the pull stream after the websocket client gave up
+
+When the `graphql-ws` client has used up its connection retries or the socket is closed with a fatal close code, the plugin puts the error on the pull stream. An errored stream is not observed any more, so the live pull never continues when the server comes back.
+
+Todo:
+- Emit the error on `error$` as an RxError (`RC_STREAM`), wait `retryTime`, open the stream again, and send a `RESYNC`.
+- Breaking: `error$` gets one `RC_STREAM` RxError per failed cycle, where it got one plain close or error event before.
+
+An implementation with tests is in the closed pull request [#9676](https://github.com/pubkey/rxdb/pull/9676).
+
+## CRDT: a schema migration must not keep the old CRDT operations
+
+A schema migration runs the migration strategies on the document data but keeps the stored CRDT operations of the old schema. The migrated document then no longer equals the replay of its operations. In dev-mode the next write throws `SNH`, and without dev-mode a merge rebuilds the state from before the migration.
+
+Todo:
+- Replace the operations of a document that the migration changed by one operation that sets the migrated state.
+- Breaking: the operation history of such a document is dropped.
+
+An implementation with tests is in the closed pull request [#9688](https://github.com/pubkey/rxdb/pull/9688).
+
+## CRDT: changes of `preInsert` and `preSave` hooks must be part of the CRDT operations
+
+The CRDT operation of a write is built before the `preInsert` and `preSave` hooks run. A change that a hook makes is stored in the document but not in the operations. In dev-mode the next write throws `SNH`, and without dev-mode the change of the hook is reverted on the next merge.
+
+Todo:
+- Create the operation after the hooks have run, or append one more operation with the changes of the hooks, for all write paths.
+- Breaking: a write whose hook changes data stores one more operation. A `preSave` hook that sets a timestamp on every write doubles the number of stored operations.
+
+An implementation with tests is in the closed pull request [#9689](https://github.com/pubkey/rxdb/pull/9689).
+
+## CRDT: the conflict handler must handle attachments
+
+The conflict handler of the CRDT plugin compares two document states only by the hash of their operations. A change of an attachment adds no operation, so the states count as equal, the attachment is never pushed, and the next pull replaces the document by the master state without the attachment.
+
+Todo:
+- Compare the attachments too and merge them per attachment id against the assumed master state.
+- Breaking: attachment changes on CRDT collections are replicated, and the handler can throw a new error when it cannot keep an attachment of the master.
+
+An implementation with tests is in the closed pull request [#9690](https://github.com/pubkey/rxdb/pull/9690).
