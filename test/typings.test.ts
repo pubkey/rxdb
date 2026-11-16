@@ -737,6 +737,38 @@ describe('other', () => {
             const doc2 = await myCollection.findOne('asdf').exec(true);
             const x2: string = doc.foobar();
         });
+        it('should accept RxDocument instances as input of the insert and upsert methods', async () => {
+            const myDb: any = {};
+            const myCollections = await myDb.addCollections({
+                humans: {
+                    schema: {}
+                }
+            });
+            const myCollection: RxCollection<DefaultDocType, DefaultOrmMethods, {}> = myCollections.humans;
+            const plainCollection: RxCollection<DefaultDocType> = myCollections.humans;
+            const doc = await myCollection.findOne('asdf').exec(true);
+            const plainDoc = await plainCollection.findOne('asdf').exec(true);
+            const plainData: DefaultDocType = {
+                passportId: 'asdf',
+                age: 10
+            };
+
+            const inserted: RxDocument<DefaultDocType, DefaultOrmMethods> = await myCollection.insert(plainDoc);
+            const insertedPlain: RxDocument<DefaultDocType> = await plainCollection.insert(doc);
+            await plainCollection.insertIfNotExists(doc);
+            await plainCollection.bulkInsert([doc, plainDoc, plainData]);
+            await plainCollection.bulkUpsert([doc, plainDoc, plainData, { passportId: 'asdf' }]);
+            await plainCollection.upsert(doc);
+            await myCollection.upsert(plainDoc);
+            await plainCollection.incrementalUpsert(doc);
+            await myCollection.incrementalUpsert(plainDoc);
+
+            const otherTypeDoc: RxDocument<{ foo: string; }> = myDb.otherDoc;
+            // @ts-expect-error a document of another document type is not allowed
+            await plainCollection.insert(otherTypeDoc);
+            // @ts-expect-error a string is not allowed
+            await plainCollection.bulkInsert(['asdf']);
+        });
     });
     describe('hooks', () => {
         it('should know the types', async () => {

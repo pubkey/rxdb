@@ -291,6 +291,111 @@ describe('rx-collection.test.ts', () => {
                     }
                     db.close();
                 });
+                it('should accept an RxDocument instance and copy its data into another collection', async () => {
+                    const db = await createRxDatabase<{
+                        humans: RxCollection<HumanDocumentType>;
+                        archive: RxCollection<HumanDocumentType>;
+                    }>({
+                        name: randomToken(10),
+                        storage: config.storage.getStorage(),
+                    });
+                    const collections = await db.addCollections({
+                        humans: {
+                            schema: schemas.human
+                        },
+                        archive: {
+                            schema: schemas.human
+                        }
+                    });
+                    const docs = await Promise.all(
+                        new Array(4).fill(0).map(() => collections.humans.insert(schemaObjects.humanData()))
+                    );
+                    const plainData = schemaObjects.humanData();
+
+                    const inserted = await collections.archive.insert(docs[0]);
+                    assert.ok(inserted !== docs[0]);
+                    assert.strictEqual(inserted.collection, collections.archive);
+                    assert.deepStrictEqual(inserted.toJSON(), docs[0].toJSON());
+                    assert.ok(inserted.revision.startsWith('1-'));
+
+                    const notExisting = await collections.archive.insertIfNotExists(docs[1]);
+                    assert.deepStrictEqual(notExisting.toJSON(), docs[1].toJSON());
+                    const existing = await collections.archive.insertIfNotExists(docs[1]);
+                    assert.strictEqual(existing, notExisting);
+
+                    const bulkResult = await collections.archive.bulkInsert([docs[2], plainData, docs[3]]);
+                    assert.deepStrictEqual(bulkResult.error, []);
+                    assert.strictEqual(bulkResult.success.length, 3);
+
+                    const stored = await collections.archive.find().exec();
+                    assert.deepStrictEqual(
+                        stored.map(d => d.toJSON()).sort((x, y) => x.passportId.localeCompare(y.passportId)),
+                        docs.map(d => d.toJSON()).concat([plainData]).sort((x, y) => x.passportId.localeCompare(y.passportId))
+                    );
+
+                    // the source documents are not changed
+                    const sourceDocs = await collections.humans.find().exec();
+                    assert.strictEqual(sourceDocs.length, 4);
+                    sourceDocs.forEach(d => assert.ok(d.revision.startsWith('1-')));
+
+                    // a conflict is handled like with plain data
+                    const conflictError: RxError = await assertThrows(
+                        () => collections.archive.insert(docs[0]),
+                        'RxError'
+                    ) as any;
+                    assert.strictEqual(conflictError.code, 'CONFLICT');
+
+                    db.close();
+                });
+                it('should insert an RxDocument instance again after it was removed', async () => {
+                    const c = await humansCollection.create(0);
+                    const doc = await c.insert(schemaObjects.humanData());
+                    await doc.incrementalPatch({ age: 42 });
+                    const latest = doc.getLatest();
+                    await latest.remove();
+                    assert.strictEqual(await c.findOne(doc.primary).exec(), null);
+
+                    const reinserted = await c.insert(latest);
+                    assert.strictEqual(reinserted.deleted, false);
+                    assert.deepStrictEqual(reinserted.toJSON(), latest.toJSON());
+                    const found = await c.findOne(doc.primary).exec(true);
+                    assert.strictEqual(found.age, 42);
+
+                    c.database.close();
+                });
+                it('should validate an RxDocument instance of a collection with a different schema like plain data', async () => {
+                    const db = await createRxDatabase({
+                        name: randomToken(10),
+                        storage: config.storage.getStorage(),
+                    });
+                    const collections = await db.addCollections({
+                        humans: {
+                            schema: schemas.human
+                        },
+                        simple: {
+                            schema: schemas.simpleHuman
+                        }
+                    });
+                    const doc = await collections.humans.insert(schemaObjects.humanData());
+
+                    const plainError: RxError = await assertThrows(
+                        () => collections.simple.insert(doc.toMutableJSON()),
+                        'RxError'
+                    ) as any;
+                    const docError: RxError = await assertThrows(
+                        () => collections.simple.insert(doc),
+                        'RxError'
+                    ) as any;
+                    assert.strictEqual(docError.code, plainError.code);
+                    const bulkResult = await collections.simple.bulkInsert([doc]);
+                    assert.strictEqual(bulkResult.success.length, 0);
+                    assert.strictEqual(bulkResult.error.length, 1);
+
+                    const stored = await collections.simple.find().exec();
+                    assert.strictEqual(stored.length, 0);
+
+                    db.close();
+                });
                 it('should set default values', async () => {
                     const db = await createRxDatabase({
                         name: randomToken(10),
@@ -1809,9 +1914,49 @@ describe('rx-collection.test.ts', () => {
 
                 db.close();
             });
+            it('should accept RxDocument instances mixed with plain data', async () => {
+                const c = await humansCollection.create(0);
+                const doc = await c.insert(schemaObjects.humanData(undefined, 1));
+                const otherDoc = await c.insert(schemaObjects.humanData(undefined, 1));
+                await doc.incrementalPatch({ age: 2 });
+                const plainData = otherDoc.toMutableJSON();
+                plainData.age = 3;
+
+                const result = await c.bulkUpsert([doc, plainData]);
+                assert.deepStrictEqual(result.error, []);
+                assert.strictEqual(result.success.length, 2);
+
+                const stored = await c.find().exec();
+                assert.strictEqual(stored.length, 2);
+                assert.strictEqual(getFromMapOrThrow(new Map(stored.map(d => [d.primary, d])), doc.primary).age, 1);
+                assert.strictEqual(getFromMapOrThrow(new Map(stored.map(d => [d.primary, d])), otherDoc.primary).age, 3);
+
+                c.database.close();
+            });
         });
         describe('.upsert()', () => {
             describe('positive', () => {
+                it('should write the data of an outdated RxDocument instance', async () => {
+                    const c = await humansCollection.create(0);
+                    const other = await humansCollection.create(0);
+                    const doc = await c.insert(schemaObjects.humanData(undefined, 1));
+                    const updated = await doc.incrementalPatch({ age: 2 });
+                    assert.strictEqual(doc.age, 1);
+
+                    const upserted = await c.upsert(doc);
+                    assert.strictEqual(upserted.age, 1);
+                    assert.deepStrictEqual(upserted.toJSON(), doc.toJSON());
+                    assert.ok(upserted.revision.startsWith('3-'));
+                    assert.strictEqual(updated.getLatest().age, 1);
+
+                    // upsert into a collection that does not have the document
+                    const copy = await other.upsert(updated);
+                    assert.strictEqual(copy.collection, other);
+                    assert.strictEqual(copy.age, 2);
+
+                    c.database.close();
+                    other.database.close();
+                });
                 it('insert when not exists', async () => {
                     const db = await createRxDatabase({
                         name: randomToken(10),
@@ -1931,6 +2076,25 @@ describe('rx-collection.test.ts', () => {
         });
         describe('.incrementalUpsert()', () => {
             describe('positive', () => {
+                it('should write the data of an outdated RxDocument instance', async () => {
+                    const c = await humansCollection.create(0);
+                    const other = await humansCollection.create(0);
+                    const doc = await c.insert(schemaObjects.humanData(undefined, 1));
+                    await doc.incrementalPatch({ age: 2 });
+
+                    const upserted = await c.incrementalUpsert(doc);
+                    assert.strictEqual(upserted.age, 1);
+                    assert.deepStrictEqual(upserted.toJSON(), doc.toJSON());
+                    const found = await c.findOne(doc.primary).exec(true);
+                    assert.strictEqual(found.age, 1);
+
+                    const copy = await other.incrementalUpsert(doc);
+                    assert.strictEqual(copy.collection, other);
+                    assert.deepStrictEqual(copy.toJSON(), doc.toJSON());
+
+                    c.database.close();
+                    other.database.close();
+                });
                 it('should work in serial', async () => {
                     const c = await humansCollection.createPrimary(0);
                     const docData = schemaObjects.simpleHumanData();

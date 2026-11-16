@@ -103,6 +103,13 @@ const doc = await myDatabase.todos.insert({
 });
 ```
 
+Instead of plain document data, you can also pass an [RxDocument](./rx-document.md) instance, for example to copy a document into another collection with the same schema. RxDB then inserts the current data of that instance, same as when you pass `myRxDocument.toMutableJSON()`. The revision and the [attachments](./rx-attachment.md) of the given document are not copied. The same works for `insertIfNotExists()`, `bulkInsert()`, `upsert()`, `bulkUpsert()`, and `incrementalUpsert()`.
+
+```js
+const doc = await myDatabase.todos.findOne('todo4').exec(true);
+const copy = await myDatabase.archive.insert(doc);
+```
+
 ### insertIfNotExists()
 
 The insertIfNotExists() method attempts to insert a new document into the collection only if a document with the same primary key does not already exist. This is useful for ensuring uniqueness without having to manually check for existing records before inserting or handling [conflicts](./transactions-conflicts-revisions.md).
@@ -121,7 +128,7 @@ const doc = await myDatabase.todos.insertIfNotExists({
 ### bulkInsert()
 
 When you have to insert many documents at once, use bulk insert. This is much faster than calling `.insert()` multiple times.
-Returns an object with a `success` and `error` arrays.
+Returns an object with a `success` and `error` arrays. The array can contain plain document data and [RxDocument instances](#insert).
 
 ```js
 const result = await myDatabase.todos.bulkInsert([
@@ -177,6 +184,8 @@ const result = await myDatabase.todos.bulkRemove([
 
 ### upsert()
 Inserts the document if it does not exist within the collection, otherwise it will overwrite it. Returns the new or overwritten RxDocument.
+
+When you pass an [RxDocument instance](#insert) that is no longer the latest state, `upsert()` writes the data of that instance and overwrites the newer state.
 
 When the document already exists, any [inline attachments](./rx-attachment.md#inline-attachments-on-insert-and-upsert) in the upsert data are **merged** with existing attachments by default. Pass `{ deleteExistingAttachments: true }` as the second argument to replace all existing attachments instead.
 

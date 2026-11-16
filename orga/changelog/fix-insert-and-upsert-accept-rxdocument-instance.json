@@ -1,0 +1,11 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `insert()`, `insertIfNotExists()`, `bulkInsert()`, `upsert()`, `bulkUpsert()` and `incrementalUpsert()` now accept `RxDocument` instances (also mixed with plain data in the bulk methods) and write the current data of the instance, same as `doc.toMutableJSON()`. Before, `insert()` and `insertIfNotExists()` allowed an `RxDocument` in their types but threw `DOC24` in dev-mode and stored a document without a primary key otherwise. Added testcases",
+    "links": [
+        {
+            "url": "https://github.com/pubkey/rxdb/pull/9529",
+            "linkText": "#9529"
+        }
+    ],
+    "priority": 5
+}

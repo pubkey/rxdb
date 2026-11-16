@@ -133,6 +133,32 @@ describe('crdt.test.ts', () => {
 
             collection.database.close();
         });
+        it('should insert an RxDocument instance of another collection with a new crdt state', async () => {
+            const collection = await getCRDTCollection();
+            const otherCollection = await getCRDTCollection();
+            const sourceDoc = await collection.insert(schemaObjects.humanData());
+            await sourceDoc.updateCRDT({
+                ifMatch: {
+                    $set: {
+                        age: 99
+                    }
+                }
+            });
+            const latest = sourceDoc.getLatest();
+
+            const copy = await otherCollection.insert(latest);
+            const docData = copy.toJSON(true);
+            assert.strictEqual(docData.age, 99);
+            const crdts = ensureNotFalsy(docData.crdts);
+            assert.strictEqual(crdts.operations.length, 1);
+            const firstOp = crdts.operations[0][0];
+            assert.strictEqual(firstOp.creator, await otherCollection.database.storageToken);
+            assert.strictEqual(firstOp.body[0].ifMatch?.$set?.passportId, latest.passportId);
+            assert.strictEqual(firstOp.body[0].ifMatch?.$set?.age, 99);
+
+            collection.database.close();
+            otherCollection.database.close();
+        });
     });
     describe('.insertCRDT()', () => {
         it('should insert the document', async () => {
