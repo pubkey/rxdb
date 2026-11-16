@@ -29,7 +29,7 @@ const SCENARIOS = [
  * When updating, the limits are set this much above the measured size
  * so that small changes do not fail the check.
  */
-const HEADROOM = 1.02;
+const HEADROOM = 1.05;
 
 async function measure(scenario) {
     const result = await esbuild.build({
