@@ -758,23 +758,27 @@ function _isResultsInSync(rxQuery: RxQueryBase<any, any>): boolean {
 function _ensureEqual(rxQuery: RxQueryBase<any, any>): Promise<boolean> {
     if (rxQuery.collection.awaitBeforeReads.size > 0) {
         return Promise.all(Array.from(rxQuery.collection.awaitBeforeReads).map(fn => fn()))
-            .then(() => {
-                rxQuery._ensureEqualQueue = rxQuery._ensureEqualQueue
-                    .then(() => __ensureEqual(rxQuery));
-                return rxQuery._ensureEqualQueue;
-            });
+            .then(() => _enqueueEnsureEqual(rxQuery));
     }
+    return _enqueueEnsureEqual(rxQuery);
+}
 
+function _enqueueEnsureEqual(rxQuery: RxQueryBase<any, any>): Promise<boolean> {
+    const execCountWhenQueued = rxQuery._execOverDatabaseCount;
     rxQuery._ensureEqualQueue = rxQuery._ensureEqualQueue
-        .then(() => __ensureEqual(rxQuery));
+        .then(() => __ensureEqual(rxQuery, execCountWhenQueued));
     return rxQuery._ensureEqualQueue;
 }
 
 /**
  * ensures that the results of this query is equal to the results which a query over the database would give
+ * @param execCountWhenQueued the value of RxQuery._execOverDatabaseCount at the time when this call was added to the queue
  * @return true if results have changed
  */
-function __ensureEqual<RxDocType>(rxQuery: RxQueryBase<RxDocType, any>): Promise<boolean> {
+function __ensureEqual<RxDocType>(
+    rxQuery: RxQueryBase<RxDocType, any>,
+    execCountWhenQueued: number
+): Promise<boolean> {
     /**
      * @performance
      * Use a counter instead of Date.now() since _lastEnsureEqual
@@ -790,7 +794,17 @@ function __ensureEqual<RxDocType>(rxQuery: RxQueryBase<RxDocType, any>): Promise
         // db is closed
         rxQuery.collection.database.closed ||
         // nothing happened since last run
-        _isResultsInSync(rxQuery)
+        _isResultsInSync(rxQuery) ||
+        /**
+         * While writes keep running, each run over the database ends with the counter -1
+         * and each change event adds one more call to the queue. Running the query
+         * for each of these calls takes longer than it takes for the next event to arrive,
+         * so the queue would grow and an exec() at its end would not resolve.
+         * A run over the database that was started after this call was queued
+         * already contains all writes that were finished when this call was made.
+         * So its result is used instead of running the query again.
+         */
+        rxQuery._execOverDatabaseCount > execCountWhenQueued
     ) {
         return PROMISE_RESOLVE_FALSE;
     }

@@ -1,0 +1,11 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `RxQuery.exec()` on a query that is also observed via `.$` did not resolve in bounded time while other writes kept running on a slow storage. Each change event queued one more run of the query and the `exec()` had to wait for all of them. A queued call now uses the result of a run over the database that was started after the call was queued.",
+    "links": [
+        {
+            "url": "https://github.com/pubkey/rxdb/pull/9476",
+            "linkText": "#9476"
+        }
+    ],
+    "priority": 5
+}

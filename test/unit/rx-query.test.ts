@@ -1672,6 +1672,15 @@ describe('rx-query.test.ts', () => {
                 return result;
             };
 
+            /**
+             * The observed queries get one more run queued by each change event.
+             * An exec() must not wait for all of them, so the number of runs over the database
+             * during a single exec() is counted. This does not depend on the speed of the timers.
+             * At most, the queued run that is already running finishes its 4 runs
+             * and the run of the exec() itself does 4 more.
+             */
+            const observedQueries = [findQuery, limitQuery, countQuery];
+            let maxRunsPerExec = 0;
             let timedOut = false;
             try {
                 for (let i = 0; i < 3 && !timedOut; i++) {
@@ -1682,10 +1691,14 @@ describe('rx-query.test.ts', () => {
                         () => c.find({ selector: { age: { $gt: i } } }).exec()
                     ];
                     for (const run of runs) {
+                        const runsBefore = observedQueries.map(q => q._execOverDatabaseCount);
                         if (await execInTime<unknown>(run) === 'timeout') {
                             timedOut = true;
                             break;
                         }
+                        observedQueries.forEach((q, idx) => {
+                            maxRunsPerExec = Math.max(maxRunsPerExec, q._execOverDatabaseCount - runsBefore[idx]);
+                        });
                     }
                 }
             } finally {
@@ -1694,6 +1707,7 @@ describe('rx-query.test.ts', () => {
             }
             assert.strictEqual(timedOut, false, 'exec() did not resolve while writes are running');
             assert.ok(writeCount > 5, 'writes must have been running, got ' + writeCount);
+            assert.ok(maxRunsPerExec <= 8, 'a single exec() must not wait for more than 8 runs over the database, got ' + maxRunsPerExec);
 
             const expectedSorted = Array.from(expectedIds).sort();
             const findResult = await findQuery.exec();
