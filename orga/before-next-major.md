@@ -648,17 +648,6 @@ Todo:
 
 An implementation with tests is in the closed pull request [#9690](https://github.com/pubkey/rxdb/pull/9690).
 
-## Dexie.js RxStorage: document keys that start with two underscores must not change
-
-IndexedDB cannot use keys like `|a` as index names, and the key-compression plugin creates such keys. So the Dexie.js storage replaces a leading `|` with `__` on write and turns a leading `__` back into `|` on read (`dexieReplaceIfStartsWithPipe()` and its revert in `dexie-helper.ts`). The revert does not know whether the `__` was in the document. A document key that starts with `__`, like `__typename`, comes back as `|typename`, and an attachment with an id like `__init__.py` cannot be read.
-
-Todo:
-- Make the mapping reversible, so that a key that starts with `__` and a key that starts with `|` both do the round trip.
-- Breaking: the stored form of keys that start with `__` changes. Documents that were written before keep their old form, so they need a migration or a tolerant read.
-- There are two implementations with different stored forms: [#9501](https://github.com/pubkey/rxdb/pull/9501) swaps the two prefixes for document fields, and the open pull request [#9687](https://github.com/pubkey/rxdb/pull/9687) stores `__x` as `|__x` for document fields and for index and query paths. Only one of them can be used.
-
-An implementation with tests is in the closed pull request [#9501](https://github.com/pubkey/rxdb/pull/9501).
-
 ## Storage wrappers must not transform inline attachment data twice
 
 `upsert()`, `bulkUpsert()`, a conflict retry, and the re-insert of a deleted document write the same write row a second time. With the attachments-compression or the encryption storage the attachment data is then compressed or encrypted twice, so `getData()` returns compressed bytes or cipher text. The attachments-compression wrapper replaces `data` and `digest` on the attachment objects of its caller, and `wrapRxStorageInstance()` returns the already transformed row as `writeRow` of a write error.
@@ -670,13 +659,3 @@ Todo:
 - The re-insert case has its own pull request [#9472](https://github.com/pubkey/rxdb/pull/9472), which is covered by this one.
 
 An implementation with tests is in the closed pull request [#9561](https://github.com/pubkey/rxdb/pull/9561).
-
-## WebMCP: do not register tools for the internal RxState collection
-
-`registerDatabase()` of the WebMCP plugin registers tools for every collection of the database, also for the internal collection that the RxState plugin creates (`rx-state-<prefix>`). An agent can then read and change the raw operations of the state.
-
-Todo:
-- Skip the internal RxState collection in `registerDatabase()` and in the hook for collections that are created later.
-- Breaking: an agent that used the tools of an `rx-state-` collection loses them. Decide whether an option to include them is needed.
-
-An implementation with tests is in the closed pull request [#9696](https://github.com/pubkey/rxdb/pull/9696).
