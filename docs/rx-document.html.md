@@ -225,7 +225,7 @@ console.log(lastState);
 ```
 
 ### get deleted
-A getter to get the current value of `deleted$`.
+A getter that returns the deleted state of this `RxDocument` instance. An instance does not change after a write, so you have to call `getLatest()` to get the current value of `deleted$`.
 
 ```js
 console.log(myDocument.deleted);
@@ -234,6 +234,9 @@ console.log(myDocument.deleted);
 await myDocument.remove();
 
 console.log(myDocument.deleted);
+// false
+
+console.log(myDocument.getLatest().deleted);
 // true
 ```
 

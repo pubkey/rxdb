@@ -14,8 +14,8 @@ The database is created by the asynchronous `.createRxDatabase()` function of th
 import { createRxDatabase } from 'rxdb/plugins/core';
 import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
 
-const db = await createRxDatabase({
-  name: 'heroesdb',                   // <- name
+const myDatabase = await createRxDatabase({
+  name: 'mydatabase',                 // <- name
   storage: getRxStorageLocalstorage(),       // <- RxStorage
 
   /* Optional parameters: */
@@ -39,7 +39,7 @@ When you deploy your app to a staging area, prefix the database name with the st
 // and '' on production
 const stagingId = import.meta.env.VITE_STAGING_ID;
 
-const db = await createRxDatabase({
+const myDatabase = await createRxDatabase({
   name: stagingId ? stagingId + '-mydatabasename' : 'mydatabasename',
   storage: getRxStorageLocalstorage()
 });
@@ -60,7 +60,7 @@ For example you can use the [LocalStorage RxStorage](./rx-storage-localstorage.m
 // use the LocalStorage that stores data in the browser.
 import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
 
-const db = await createRxDatabase({
+const myDatabase = await createRxDatabase({
   name: 'mydatabase',
   storage: getRxStorageLocalstorage()
 });
@@ -79,7 +79,7 @@ const dbMongo = await createRxDatabase({
 
 ### password
 `(optional)`
-If you want to use encrypted fields in the collections of a database, you have to set a password for it. The password must be a string with at least 12 characters.
+If you want to use encrypted fields in the collections of a database, you have to set a password for it. The format of the password depends on which encryption plugin is used. With the `encryption-crypto-js` plugin, the password must be a string with at least 8 characters.
 
 [Read more about encryption here](./encryption.md).
 
@@ -102,12 +102,12 @@ In some rare cases like unit-tests, you want to do this intentionally by setting
 
 ```js
 const db1 = await createRxDatabase({
-  name: 'heroesdb',
+  name: 'mydatabase',
   storage: getRxStorageLocalstorage(),
   ignoreDuplicate: true
 });
 const db2 = await createRxDatabase({
-  name: 'heroesdb',
+  name: 'mydatabase',
   storage: getRxStorageLocalstorage(),
   // this create-call will not throw because
   // you explicitly allow it
@@ -122,12 +122,12 @@ Closes all other RxDatabase instances that have the same storage+name combinatio
 
 ```js
 const db1 = await createRxDatabase({
-  name: 'heroesdb',
+  name: 'mydatabase',
   storage: getRxStorageLocalstorage(),
   closeDuplicates: true
 });
 const db2 = await createRxDatabase({
-  name: 'heroesdb',
+  name: 'mydatabase',
   storage: getRxStorageLocalstorage(),
   closeDuplicates: true // this create-call will close db1
 });
@@ -151,7 +151,7 @@ async function myOwnHashFunction(input: string | ArrayBuffer | Blob) {
     }
     return sha256(input);
 }
-const db = await createRxDatabase({
+const myDatabase = await createRxDatabase({
   hashFunction: myOwnHashFunction
   /* ... */
 });
@@ -300,8 +300,8 @@ const sub = myDatabase.collections$.subscribe(event => {
 });
 
 await myDatabase.addCollections({
-  heroes: {
-    schema: mySchema
+  todos: {
+    schema: todoSchema
   }
 });
 

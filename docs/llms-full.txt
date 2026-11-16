@@ -1008,8 +1008,8 @@ The database is created by the asynchronous `.createRxDatabase()` function of th
 import { createRxDatabase } from 'rxdb/plugins/core';
 import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
 
-const db = await createRxDatabase({
-  name: 'heroesdb',                   // <- name
+const myDatabase = await createRxDatabase({
+  name: 'mydatabase',                 // <- name
   storage: getRxStorageLocalstorage(),       // <- RxStorage
 
   /* Optional parameters: */
@@ -1033,7 +1033,7 @@ When you deploy your app to a staging area, prefix the database name with the st
 // and '' on production
 const stagingId = import.meta.env.VITE_STAGING_ID;
 
-const db = await createRxDatabase({
+const myDatabase = await createRxDatabase({
   name: stagingId ? stagingId + '-mydatabasename' : 'mydatabasename',
   storage: getRxStorageLocalstorage()
 });
@@ -1054,7 +1054,7 @@ For example you can use the [LocalStorage RxStorage](./rx-storage-localstorage.m
 // use the LocalStorage that stores data in the browser.
 import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
 
-const db = await createRxDatabase({
+const myDatabase = await createRxDatabase({
   name: 'mydatabase',
   storage: getRxStorageLocalstorage()
 });
@@ -1073,7 +1073,7 @@ const dbMongo = await createRxDatabase({
 
 #### password
 `(optional)`
-If you want to use encrypted fields in the collections of a database, you have to set a password for it. The password must be a string with at least 12 characters.
+If you want to use encrypted fields in the collections of a database, you have to set a password for it. The format of the password depends on which encryption plugin is used. With the `encryption-crypto-js` plugin, the password must be a string with at least 8 characters.
 
 [Read more about encryption here](./encryption.md).
 
@@ -1096,12 +1096,12 @@ In some rare cases like unit-tests, you want to do this intentionally by setting
 
 ```js
 const db1 = await createRxDatabase({
-  name: 'heroesdb',
+  name: 'mydatabase',
   storage: getRxStorageLocalstorage(),
   ignoreDuplicate: true
 });
 const db2 = await createRxDatabase({
-  name: 'heroesdb',
+  name: 'mydatabase',
   storage: getRxStorageLocalstorage(),
   // this create-call will not throw because
   // you explicitly allow it
@@ -1116,12 +1116,12 @@ Closes all other RxDatabase instances that have the same storage+name combinatio
 
 ```js
 const db1 = await createRxDatabase({
-  name: 'heroesdb',
+  name: 'mydatabase',
   storage: getRxStorageLocalstorage(),
   closeDuplicates: true
 });
 const db2 = await createRxDatabase({
-  name: 'heroesdb',
+  name: 'mydatabase',
   storage: getRxStorageLocalstorage(),
   closeDuplicates: true // this create-call will close db1
 });
@@ -1145,7 +1145,7 @@ async function myOwnHashFunction(input: string | ArrayBuffer | Blob) {
     }
     return sha256(input);
 }
-const db = await createRxDatabase({
+const myDatabase = await createRxDatabase({
   hashFunction: myOwnHashFunction
   /* ... */
 });
@@ -1294,8 +1294,8 @@ const sub = myDatabase.collections$.subscribe(event => {
 });
 
 await myDatabase.addCollections({
-  heroes: {
-    schema: mySchema
+  todos: {
+    schema: todoSchema
   }
 });
 
@@ -1557,7 +1557,7 @@ const todoSchemaWithIndexes = {
 };
 ```
 
-## internalIndexes
+### internalIndexes
 
 When you use RxDB on the server-side, you might want to use internalIndexes to speed up internal queries. [Read more](./rx-server.md#server-only-indexes)
 
@@ -1887,6 +1887,13 @@ const doc = await myDatabase.todos.insert({
 });
 ```
 
+Instead of plain document data, you can also pass an [RxDocument](./rx-document.md) instance, for example to copy a document into another collection with the same schema. RxDB then inserts the current data of that instance, same as when you pass `myRxDocument.toMutableJSON()`. The revision and the [attachments](./rx-attachment.md) of the given document are not copied. The same works for `insertIfNotExists()`, `bulkInsert()`, `upsert()`, `bulkUpsert()`, and `incrementalUpsert()`.
+
+```js
+const doc = await myDatabase.todos.findOne('todo4').exec(true);
+const copy = await myDatabase.archive.insert(doc);
+```
+
 #### insertIfNotExists()
 
 The insertIfNotExists() method attempts to insert a new document into the collection only if a document with the same primary key does not already exist. This is useful for ensuring uniqueness without having to manually check for existing records before inserting or handling [conflicts](./transactions-conflicts-revisions.md).
@@ -1905,7 +1912,7 @@ const doc = await myDatabase.todos.insertIfNotExists({
 #### bulkInsert()
 
 When you have to insert many documents at once, use bulk insert. This is much faster than calling `.insert()` multiple times.
-Returns an object with a `success` and `error` arrays.
+Returns an object with a `success` and `error` arrays. The array can contain plain document data and [RxDocument instances](#insert).
 
 ```js
 const result = await myDatabase.todos.bulkInsert([
@@ -1961,6 +1968,8 @@ const result = await myDatabase.todos.bulkRemove([
 
 #### upsert()
 Inserts the document if it does not exist within the collection, otherwise it will overwrite it. Returns the new or overwritten RxDocument.
+
+When you pass an [RxDocument instance](#insert) that is no longer the latest state, `upsert()` writes the data of that instance and overwrites the newer state.
 
 When the document already exists, any [inline attachments](./rx-attachment.md#inline-attachments-on-insert-and-upsert) in the upsert data are **merged** with existing attachments by default. Pass `{ deleteExistingAttachments: true }` as the second argument to replace all existing attachments instead.
 
@@ -2079,7 +2088,7 @@ const ids = [
   'todo2',
   /* ... */
 ];
-const docsMap = await myDatabase.todos.findByIds(ids);
+const docsMap = await myDatabase.todos.findByIds(ids).exec();
 
 console.dir(docsMap); // Map(2)
 ```
@@ -2386,7 +2395,7 @@ console.log(lastState);
 ```
 
 #### get deleted
-A getter to get the current value of `deleted$`.
+A getter that returns the deleted state of this `RxDocument` instance. An instance does not change after a write, so you have to call `getLatest()` to get the current value of `deleted$`.
 
 ```js
 console.log(myDocument.deleted);
@@ -2395,6 +2404,9 @@ console.log(myDocument.deleted);
 await myDocument.remove();
 
 console.log(myDocument.deleted);
+// false
+
+console.log(myDocument.getLatest().deleted);
 // true
 ```
 
@@ -2596,6 +2608,8 @@ await myDatabase.todos.insert({/* ... */}); // insert one
 // stop watching this query
 querySub.unsubscribe()
 ```
+
+When the [RxCollection](./rx-collection.md) or the [RxDatabase](./rx-database.md) of the query gets closed or removed, the observable completes and emits no more results or errors.
 
 ### update()
 Runs an [update](./rx-document.md#update) on every RxDocument of the query-result.
@@ -2987,6 +3001,8 @@ await myDatabase.addCollections({
 ```
 
 ### FAQ
+
+  A query with `limit: 0` returns zero documents, same as `LIMIT 0` in SQL databases. The limit is often calculated from variables in your own code, and when that calculation ends at `0`, fetching zero documents is the expected result instead of all documents of the collection. To get all documents, leave out the `limit`. A negative `limit` throws the error [`QU23`](./errors.md#QU23), also when [dev-mode](./dev-mode.md) is not used.
 
   Like most other NoSQL databases, RxDB uses the JSON-based [Mango query syntax](https://github.com/cloudant/mango), similar to MongoDB. Mango queries work better with TypeScript than SQL strings, and they are composable, so you can transform them in code without joining strings. They can also be run fast with only a minimal query planner that picks the best index and operations. And NoSQL queries can be optimized with the [EventReduce](https://github.com/pubkey/event-reduce) algorithm, which improves the performance of observed and cached queries.
 
@@ -4963,7 +4979,7 @@ This means the encryption works with all [RxStorage](./rx-storage.md) like **[SQ
 
 Keep in mind that everything which reads the documents through the collection sees the decrypted values. A [JSON dump](./json-import-export.md) therefore contains your encrypted fields in plain text, so treat such a dump as sensitive data.
 
-However, there's a limitation when it comes to querying encrypted fields. **Encrypted fields cannot be used as operators in queries**. This means you cannot perform queries like "find all documents where the encrypted field equals a certain value." RxDB does not expose the encrypted data in a way that allows direct querying based on the encrypted content. To filter or search for documents based on the contents of encrypted fields, you would need to first decrypt the data and then perform the query, which might not be efficient or practical in some cases.
+However, there's a limitation when it comes to querying encrypted fields. **Encrypted fields cannot be used as operators in queries**. This means you cannot perform queries like "find all documents where the encrypted field equals a certain value." RxDB does not expose the encrypted data in a way that allows direct querying based on the encrypted content. To filter or search for documents based on the contents of encrypted fields, you would need to first decrypt the data and then perform the query, which might not be efficient or practical in some cases. For the same reason an encrypted field cannot be part of the `indexes` of the schema. In [dev-mode](./dev-mode.md), `addCollections()` rejects such a schema with the error [`SC46`](./errors.md#SC46).
 You could however use the [memory mapped](./rx-storage-memory-mapped.md) RxStorage to replicate the encrypted documents into a non-encrypted in-memory storage and then query them like normal.
 
 ### Password handling
@@ -11511,10 +11527,6 @@ The hash of the attachments data as `string`.
 The digest is NOT calculated by RxDB, instead it is calculated by the RxStorage. The only guarantee is that the digest will change when the attachments data changes.
 :::
 
-#### rev
-
-The revision-number of the attachment as `number`.
-
 #### remove()
 
 Removes the attachment. Returns a Promise that resolves when done.
@@ -11679,7 +11691,7 @@ mySourceCollection.$.subscribe(event => {/* ...process...*/});
 While this could work in some cases, it causes many problems that are fixed by using the pipeline plugin instead:
 - In an RxPipeline, only the [Leading Instance](./leader-election.md) runs the operations. For example when you have multiple browser tabs open, only one will run the processing and when that tab is closed, another tab will become elected leader and continue the pipeline processing.
 - On sudden stops and restarts of the JavaScript process, the processing will continue at the correct checkpoint and not miss out any documents even on unexpected crashes.
-- Reads/Writes on the destination collection are halted while the pipeline is processing. This ensures your queries only return fully processed documents and no partial results. So when you run a query to the destination collection directly after a write to the source collection, you can be sure your query results are up to date and the pipeline has already been run at the moment the query resolved:
+- Queries on the destination collection are halted while the pipeline is processing. This ensures your queries only return fully processed documents and no partial results. So when you run a query to the destination collection directly after a write to the source collection, you can be sure your query results are up to date and the pipeline has already been run at the moment the query resolved:
 
 ```ts
 await mySourceCollection.insert({/* ... */});
@@ -11731,7 +11743,9 @@ const pipeline = await emailCollection.addPipeline({
     handler: async (docs) => {
         for (const doc of docs) {
             // remove previous mapping
-            await emailByReceiverCollection.find({emailId: doc.primary}).remove();
+            await emailByReceiverCollection.find({
+                selector: { emailId: doc.primary }
+            }).remove();
             // add new mapping
             if(!doc.deleted) {
                 await emailByReceiverCollection.bulkInsert(
@@ -11750,7 +11764,7 @@ With this you can efficiently query for "all emails that a person received" by r
 
 ```ts
 const mailIds = await emailByReceiverCollection.find({
-    receiver: 'foobar@example.com'
+    selector: { receiver: 'foobar@example.com' }
 }).exec();
 ```
 
@@ -11765,7 +11779,9 @@ const pipeline = await emailCollection.addPipeline({
     handler: async (docs) => {
         for (const doc of docs) {
             // remove previous mapping
-            await mailByWordCollection.find({emailId: doc.primary}).remove();
+            await mailByWordCollection.find({
+                selector: { emailId: doc.primary }
+            }).remove();
             // add new mapping
             if(!doc.deleted) {
                 const words = doc.text.split(' ');
@@ -11784,7 +11800,9 @@ const pipeline = await emailCollection.addPipeline({
 With this you can efficiently query for "all emails that contain a given word" by running:
 
 ```ts
-const mailIds = await emailByReceiverCollection.find({word: 'foobar'}).exec();
+const mailIds = await mailByWordCollection.find({
+    selector: { word: 'foobar' }
+}).exec();
 ```
 
 #### UseCase: Download data based on source documents
@@ -11834,11 +11852,11 @@ Pipeline handlers must never throw. If you run operations inside of the handler 
 
 #### Be careful when doing http requests in the handler
 
-When you run http requests inside of your handler, you no longer have an [offline first](./offline-first.md) application because reads to the destination collection will be blocked until all handlers have finished. When your client is offline, therefore the collection will be blocked for reads and writes.
+When you run http requests inside of your handler, you no longer have an [offline first](./offline-first.md) application because reads to the destination collection will be blocked until all handlers have finished. When your client is offline, queries on the destination collection are blocked until the requests succeed.
 
-#### Pipelines temporarily block external reads and writes
+#### Pipelines temporarily block external reads
 
-While a pipeline is running, **all reads and writes to its destination collection are blocked**. This guarantees that queries never observe partially processed data, but it also means that pipelines can block each other if they interact incorrectly.
+While a pipeline is running, **all queries on its destination collection are blocked**. Writes to the destination collection from outside of the handler are not blocked. This guarantees that queries never observe partially processed data, but it also means that pipelines can block each other if they interact incorrectly.
 
 Problems occur when multiple pipelines:
 
@@ -12146,6 +12164,8 @@ await myState.set('myField', v => v + 1);
 await myState.set('myField', v => 42);
 ```
 
+When the modifier returns `undefined`, the value at that path is removed from the state. This works the same with and without a [schema validator](./schema-validation.md).
+
 The modifier is used instead of a direct assignment to ensure correct behavior when other JavaScript realms write to the state at the same time, like other browser tabs or WebWorkers. On conflicts, the modifier will just be run again to ensure deterministic and correct behavior. Therefore mutation is `async`, you have to `await` the call to the set function when you care about the moment when the change actually happened.
 
 ### Get State Data
@@ -12439,7 +12459,7 @@ const localDoc = await myCollection.upsertLocal<MyLocalDocumentType>(
 );
 
 // typescript will know that foo is a string
-const foo: string = localDoc.toJSON().foo;
+const foo: string = localDoc.toJSON().data.foo;
 ```
 
 ---
@@ -12822,9 +12842,9 @@ An insert-hook receives the data-object of the new document.
 - preInsert parallel-hooks
 - [schema validation](./schema-validation.md) runs
 - new document is written to database
+- event is emitted to [RxDatabase](./rx-database.md) and [RxCollection](./rx-collection.md)
 - postInsert series-hooks
 - postInsert parallel-hooks
-- event is emitted to [RxDatabase](./rx-database.md) and [RxCollection](./rx-collection.md)
 
 ##### preInsert
 
@@ -12878,9 +12898,9 @@ A save-hook receives the document which is saved.
 - preSave series-hooks
 - preSave parallel-hooks
 - updated document is written to database
+- event is emitted to RxDatabase and RxCollection
 - postSave series-hooks
 - postSave parallel-hooks
-- event is emitted to RxDatabase and RxCollection
 
 ##### preSave
 
@@ -12934,9 +12954,9 @@ A remove-hook receives the document which is removed.
 - preRemove series-hooks
 - preRemove parallel-hooks
 - deleted document is written to database
+- event is emitted to RxDatabase and RxCollection
 - postRemove series-hooks
 - postRemove parallel-hooks
-- event is emitted to RxDatabase and RxCollection
 
 ##### preRemove
 
@@ -13570,7 +13590,7 @@ Statics are defined collection-wide and can be called on the collection.
 To add static functions, pass a `statics` object when you create your collection. The object contains functions, mapped to their function names.
 
 ```javascript
-const heroes = await myDatabase.addCollections({
+const { heroes } = await myDatabase.addCollections({
   heroes: {
     schema: mySchema,
     statics: {
@@ -13588,7 +13608,7 @@ console.log(heroes.scream());
 You can also use the `this` keyword which resolves to the collection:
 
 ```javascript
-const heroes = await myDatabase.addCollections({
+const { heroes } = await myDatabase.addCollections({
   heroes: {
     schema: mySchema,
     statics: {
@@ -13609,7 +13629,7 @@ Instance methods are defined collection-wide. They can be called on the [RxDocum
 #### Add instance methods to a collection
 
 ```javascript
-const heroes = await myDatabase.addCollections({
+const { heroes } = await myDatabase.addCollections({
   heroes: {
     schema: mySchema,
     methods: {
@@ -13627,7 +13647,7 @@ console.log(doc.scream());
 Here you can also use the `this` keyword:
 
 ```javascript
-const heroes = await myDatabase.addCollections({
+const { heroes } = await myDatabase.addCollections({
   heroes: {
     schema: mySchema,
     methods: {
@@ -13650,7 +13670,9 @@ console.log(doc.whoAmI());
 Attachment methods are defined collection-wide. They can be called on the [RxAttachments](./rx-attachment.md) of the RxDocuments of the collection.
 
 ```javascript
-const heroes = await myDatabase.addCollections({
+import { createBlob } from 'rxdb';
+
+const { heroes } = await myDatabase.addCollections({
   heroes: {
     schema: mySchema,
     attachments: {
@@ -13663,7 +13685,7 @@ const heroes = await myDatabase.addCollections({
 const doc = await heroes.findOne().exec();
 const attachment = await doc.putAttachment({
     id: 'cat.txt',
-    data: 'meow I am a kitty',
+    data: createBlob('meow I am a kitty', 'text/plain'),
     type: 'text/plain'
 });
 console.log(attachment.scream());
@@ -13954,6 +13976,8 @@ The plugin dynamically reads your RxDB schema to assemble a prompt description a
 State-modifying tools like insert/upsert/delete can be disabled via the [`readOnly`](#readonly-default-false) option.
 :::
 
+The full name of each tool is `rxdb_<tool>_<database>.<collection>.<schemaVersion>`. For example the query tool of the collection `todos` in the database `mydb` is named `rxdb_query_mydb.todos.0`. The database name, the collection name, and the schema version are joined with a dot because a dot cannot be part of a database or collection name. This ensures that two different collections never get the same tool names, even when their names contain underscores. When `registerWebMCP()` is called a second time for the same collection at the same registry, it throws the error [`WMCP2`](./errors.md#WMCP2) and registers nothing.
+
 #### Quick Start
 
 ##### Add the plugin
@@ -14015,6 +14039,8 @@ myDatabase.registerWebMCP();
 // Or expose only a specific collection:
 myDatabase.collections.todos.registerWebMCP();
 ```
+
+`myDatabase.registerWebMCP()` only exposes the collections that you have added. The internal collection of an [RxState](./rx-state.md) is not exposed, because a write that does not go through the RxState would corrupt the state.
 
 #### Options
 
@@ -41655,7 +41681,31 @@ await myCollection.importJSON(json);
 
 The collection has to exist and its schema has to be the same one the dump was created from. When the hashes do not match, RxDB throws the error [`JD2`](./errors.md#JD2).
 
-Notice that importing fires a change event for each inserted document, so open [queries](./rx-query.md) and their subscriptions update on their own.
+Notice that importing fires a change event for each written document, so open [queries](./rx-query.md) and their subscriptions update on their own.
+
+#### Conflict Mode
+
+It can happen that a document of the dump has the same primary key as a document that already exists in the collection. The second parameter of `importJSON()` defines what happens with these documents. There are three modes:
+
+- **`skip`** (default): The existing documents are kept as they are and only the other documents of the dump are imported. The skipped documents are not reported as errors.
+- **`abort`**: Before anything is written, RxDB checks if any primary key of the dump already exists. When one does, `importJSON()` throws the error [`JD4`](./errors.md#JD4) and nothing is imported. The error parameters contain the collection name, the id of the first intersecting document as `firstId`, and the number of intersecting documents.
+- **`merge`**: The existing documents are overwritten with the documents of the dump and the other documents are inserted. The overwrite behaves like an [upsert](./rx-collection.md#upsert), so the document gets a new revision on top of its current state and [attachments](./rx-attachment.md) that are not part of the dump are kept.
+
+```ts
+// 'todo1' already exists in the collection, the dump contains 'todo1' and 'todo2'
+
+// keeps the existing 'todo1' and inserts 'todo2' (default)
+await myDatabase.todos.importJSON(json);
+await myDatabase.todos.importJSON(json, 'skip');
+
+// throws JD4 and writes nothing
+await myDatabase.todos.importJSON(json, 'abort');
+
+// overwrites 'todo1' with the state of the dump and inserts 'todo2'
+await myDatabase.todos.importJSON(json, 'merge');
+```
+
+A deleted document does not count as existing. When the dump contains a document that was deleted in the collection, the document is inserted again in every mode.
 
 ### Export a database
 
@@ -41694,6 +41744,12 @@ await myDatabase.importJSON(json);
 
 The collections must be created before the import, because the dump does not carry the collection settings like the [schema](./rx-schema.md), the [migration strategies](./migration-schema.md) or the conflict handler. When the dump contains a collection that does not exist in the database, RxDB throws the error [`JD1`](./errors.md#JD1) and nothing is written.
 
+`myDatabase.importJSON()` takes the same [conflict mode](#conflict-mode) as second parameter and passes it to every collection of the dump. With `abort`, all collections of the dump are checked before the first collection is written, so one intersecting document in any collection stops the whole import.
+
+```ts
+await myDatabase.importJSON(json, 'abort');
+```
+
 ### Attachments
 
 By default the [attachments](./rx-attachment.md) of the documents are not part of the dump, because their binary data can be way bigger than the documents itself. Set the `attachments` option to `true` to include them. The data is then stored as a base64 string so that the dump stays JSON friendly.
@@ -41731,7 +41787,7 @@ Keep these in mind before you use a dump as your backup strategy:
 
 - **Encrypted fields are exported in plain text.** The export reads the documents through the collection, so the [encryption](./encryption.md) is already undone at that point. Treat the dump as sensitive data and never write it to a place where the plain values must not appear.
 - **Deleted documents are not part of the dump.** The export runs a normal query, and queries skip deleted documents. Because of that, a dump cannot be used to replicate deletions to another database.
-- **Revisions are not part of the dump.** On import, every document is written as a fresh insert with a new revision and a new `_meta.lwt`. A dump is a snapshot of the current state, not a history.
+- **Revisions are not part of the dump.** On import, every document is written with a new revision and a new `_meta.lwt`. A dump is a snapshot of the current state, not a history.
 - **The whole dump is built in memory.** For a few thousand documents this is fine. For a large dataset, use the [backup plugin](./backup.md) or one of the [replication](./replication.md) plugins instead.
 - **The schema hash must match.** A dump cannot be imported into a collection with a changed schema. To move data across a schema change, import it into a collection with the old schema version and let the [schema migration](./migration-schema.md) run.
 
@@ -41745,7 +41801,7 @@ The dump stores the hash of the [schema](./rx-schema.md) it was created from, an
 
 Use the json-dump plugin when you need one JSON object that you can move around, for example to seed a database or to hand a user their data. Use the [backup plugin](./backup.md) when you run on the server and want the state written to disk continuously. The backup plugin writes each document as its own file and continues from the last checkpoint, so it also works for datasets that do not fit into memory.
 
-No. A dump has no revisions and no deletions, so importing it a second time overwrites the target state instead of merging it. For two databases that both accept writes, use the [RxDB replication](./replication.md), which handles conflicts, deletions, and checkpoints.
+No. A dump has no revisions and no deletions, so `importJSON()` cannot detect which side has the newer state of a document. By default, importing a dump a second time skips every document that already exists in the target and only adds the missing ones. With the [conflict mode](#conflict-mode) `merge` the documents of the dump overwrite the existing ones, no matter which state is newer, and documents that were deleted on the source are never removed from the target. For two databases that both accept writes, use the [RxDB replication](./replication.md), which handles conflicts, deletions, and checkpoints.
 
 ### Follow Up
 
@@ -42465,6 +42521,8 @@ const results = await myDatabase.todos.find()
     .exec();
 // > [RxDocument[todo2], RxDocument[todo4]]
 ```
+
+`limit(0)` makes the query return zero documents and a negative value like `limit(-1)` throws [`QU23`](./errors.md#QU23).
 
 The chained methods also work with `findOne()`:
 
@@ -44624,7 +44682,7 @@ A Mango query is an object with these fields:
 | `selector` | The conditions a document must match. An empty selector `{}` matches all documents. |
 | `sort` | An array of `{ field: 'asc' \| 'desc' }` objects. |
 | `skip` | The number of documents to skip. |
-| `limit` | The maximum number of documents to return. |
+| `limit` | The maximum number of documents to return. `limit: 0` returns zero documents. |
 | `index` | Forces the query to use a specific index. See [setting a specific index](./rx-query.md#setting-a-specific-index). |
 
 ```ts
@@ -44960,6 +45018,8 @@ const results = await myDatabase.todos.find({
 // > [RxDocument[todo3], RxDocument[todo4]]
 ```
 
+Same as in SQL databases, `limit: 0` returns zero documents and not all documents. A negative `limit` throws [`QU23`](./errors.md#QU23).
+
 `findOne()` sets `limit: 1` by itself and returns the first document of the sorted result, or `null`:
 
 ```ts
@@ -44981,6 +45041,7 @@ RxDB validates queries in [dev-mode](./dev-mode.md) to catch mistakes early:
 - **No `undefined` values**: A query must not contain fields with the value `undefined`, because JSON serialization would drop them silently and change the meaning of the query. This throws [`QU19`](./errors.md#QU19).
 - **No `RegExp` instances**: Use a `$regex` string instead. This throws [`QU16`](./errors.md#QU16).
 - **Only JSON values**: A query must not contain values that `JSON.stringify()` drops or changes, like `NaN`, `Infinity`, `-Infinity`, `bigint`, functions, or `Date` objects. This throws [`QU22`](./errors.md#QU22).
+- **No negative limit**: The `limit` must be `0` or greater, where `limit: 0` returns zero documents. A negative `limit` throws [`QU23`](./errors.md#QU23). This check is part of the RxDB core and also runs without dev-mode.
 - **Only the known query fields**: The query object may only contain `selector`, `sort`, `skip`, `limit` and `index`. This throws [`QU11`](./errors.md#QU11).
 
 RxDB supports the operators `$eq`, `$ne`, `$gt`, `$gte`, `$lt`, `$lte`, `$in`, `$nin`, `$exists`, `$type`, `$regex` (with `$options`), `$size`, `$mod`, `$elemMatch`, `$and`, `$or`, `$nor` and `$not`. Queries always return full documents. There are no projections or aggregations, because the documents are already in the same JavaScript process as your application code. Read more in the [RxQuery FAQ](./rx-query.md#faq).

@@ -53,9 +53,9 @@ An insert-hook receives the data-object of the new document.
 - preInsert parallel-hooks
 - [schema validation](./schema-validation.md) runs
 - new document is written to database
+- event is emitted to [RxDatabase](./rx-database.md) and [RxCollection](./rx-collection.md)
 - postInsert series-hooks
 - postInsert parallel-hooks
-- event is emitted to [RxDatabase](./rx-database.md) and [RxCollection](./rx-collection.md)
 
 #### preInsert
 
@@ -109,9 +109,9 @@ A save-hook receives the document which is saved.
 - preSave series-hooks
 - preSave parallel-hooks
 - updated document is written to database
+- event is emitted to RxDatabase and RxCollection
 - postSave series-hooks
 - postSave parallel-hooks
-- event is emitted to RxDatabase and RxCollection
 
 #### preSave
 
@@ -165,9 +165,9 @@ A remove-hook receives the document which is removed.
 - preRemove series-hooks
 - preRemove parallel-hooks
 - deleted document is written to database
+- event is emitted to RxDatabase and RxCollection
 - postRemove series-hooks
 - postRemove parallel-hooks
-- event is emitted to RxDatabase and RxCollection
 
 #### preRemove
 

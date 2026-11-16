@@ -95,6 +95,8 @@ await myDatabase.todos.insert({/* ... */}); // insert one
 querySub.unsubscribe()
 ```
 
+When the [RxCollection](./rx-collection.md) or the [RxDatabase](./rx-database.md) of the query gets closed or removed, the observable completes and emits no more results or errors.
+
 ## update()
 Runs an [update](./rx-document.md#update) on every RxDocument of the query-result.
 
@@ -485,6 +487,8 @@ await myDatabase.addCollections({
 ```
 
 ## FAQ
+
+  A query with `limit: 0` returns zero documents, same as `LIMIT 0` in SQL databases. The limit is often calculated from variables in your own code, and when that calculation ends at `0`, fetching zero documents is the expected result instead of all documents of the collection. To get all documents, leave out the `limit`. A negative `limit` throws the error [`QU23`](./errors.md#QU23), also when [dev-mode](./dev-mode.md) is not used.
 
   Like most other NoSQL databases, RxDB uses the JSON-based [Mango query syntax](https://github.com/cloudant/mango), similar to MongoDB. Mango queries work better with TypeScript than SQL strings, and they are composable, so you can transform them in code without joining strings. They can also be run fast with only a minimal query planner that picks the best index and operations. And NoSQL queries can be optimized with the [EventReduce](https://github.com/pubkey/event-reduce) algorithm, which improves the performance of observed and cached queries.
 

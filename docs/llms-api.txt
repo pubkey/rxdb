@@ -763,10 +763,6 @@ The hash of the attachments data as `string`.
 The digest is NOT calculated by RxDB, instead it is calculated by the RxStorage. The only guarantee is that the digest will change when the attachments data changes.
 :::
 
-#### rev
-
-The revision-number of the attachment as `number`.
-
 #### remove()
 
 Removes the attachment. Returns a Promise that resolves when done.
@@ -1011,6 +1007,13 @@ const doc = await myDatabase.todos.insert({
 });
 ```
 
+Instead of plain document data, you can also pass an [RxDocument](./rx-document.md) instance, for example to copy a document into another collection with the same schema. RxDB then inserts the current data of that instance, same as when you pass `myRxDocument.toMutableJSON()`. The revision and the [attachments](./rx-attachment.md) of the given document are not copied. The same works for `insertIfNotExists()`, `bulkInsert()`, `upsert()`, `bulkUpsert()`, and `incrementalUpsert()`.
+
+```js
+const doc = await myDatabase.todos.findOne('todo4').exec(true);
+const copy = await myDatabase.archive.insert(doc);
+```
+
 #### insertIfNotExists()
 
 The insertIfNotExists() method attempts to insert a new document into the collection only if a document with the same primary key does not already exist. This is useful for ensuring uniqueness without having to manually check for existing records before inserting or handling [conflicts](./transactions-conflicts-revisions.md).
@@ -1029,7 +1032,7 @@ const doc = await myDatabase.todos.insertIfNotExists({
 #### bulkInsert()
 
 When you have to insert many documents at once, use bulk insert. This is much faster than calling `.insert()` multiple times.
-Returns an object with a `success` and `error` arrays.
+Returns an object with a `success` and `error` arrays. The array can contain plain document data and [RxDocument instances](#insert).
 
 ```js
 const result = await myDatabase.todos.bulkInsert([
@@ -1085,6 +1088,8 @@ const result = await myDatabase.todos.bulkRemove([
 
 #### upsert()
 Inserts the document if it does not exist within the collection, otherwise it will overwrite it. Returns the new or overwritten RxDocument.
+
+When you pass an [RxDocument instance](#insert) that is no longer the latest state, `upsert()` writes the data of that instance and overwrites the newer state.
 
 When the document already exists, any [inline attachments](./rx-attachment.md#inline-attachments-on-insert-and-upsert) in the upsert data are **merged** with existing attachments by default. Pass `{ deleteExistingAttachments: true }` as the second argument to replace all existing attachments instead.
 
@@ -1203,7 +1208,7 @@ const ids = [
   'todo2',
   /* ... */
 ];
-const docsMap = await myDatabase.todos.findByIds(ids);
+const docsMap = await myDatabase.todos.findByIds(ids).exec();
 
 console.dir(docsMap); // Map(2)
 ```
@@ -1299,8 +1304,8 @@ The database is created by the asynchronous `.createRxDatabase()` function of th
 import { createRxDatabase } from 'rxdb/plugins/core';
 import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
 
-const db = await createRxDatabase({
-  name: 'heroesdb',                   // <- name
+const myDatabase = await createRxDatabase({
+  name: 'mydatabase',                 // <- name
   storage: getRxStorageLocalstorage(),       // <- RxStorage
 
   /* Optional parameters: */
@@ -1324,7 +1329,7 @@ When you deploy your app to a staging area, prefix the database name with the st
 // and '' on production
 const stagingId = import.meta.env.VITE_STAGING_ID;
 
-const db = await createRxDatabase({
+const myDatabase = await createRxDatabase({
   name: stagingId ? stagingId + '-mydatabasename' : 'mydatabasename',
   storage: getRxStorageLocalstorage()
 });
@@ -1345,7 +1350,7 @@ For example you can use the [LocalStorage RxStorage](./rx-storage-localstorage.m
 // use the LocalStorage that stores data in the browser.
 import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
 
-const db = await createRxDatabase({
+const myDatabase = await createRxDatabase({
   name: 'mydatabase',
   storage: getRxStorageLocalstorage()
 });
@@ -1364,7 +1369,7 @@ const dbMongo = await createRxDatabase({
 
 #### password
 `(optional)`
-If you want to use encrypted fields in the collections of a database, you have to set a password for it. The password must be a string with at least 12 characters.
+If you want to use encrypted fields in the collections of a database, you have to set a password for it. The format of the password depends on which encryption plugin is used. With the `encryption-crypto-js` plugin, the password must be a string with at least 8 characters.
 
 [Read more about encryption here](./encryption.md).
 
@@ -1387,12 +1392,12 @@ In some rare cases like unit-tests, you want to do this intentionally by setting
 
 ```js
 const db1 = await createRxDatabase({
-  name: 'heroesdb',
+  name: 'mydatabase',
   storage: getRxStorageLocalstorage(),
   ignoreDuplicate: true
 });
 const db2 = await createRxDatabase({
-  name: 'heroesdb',
+  name: 'mydatabase',
   storage: getRxStorageLocalstorage(),
   // this create-call will not throw because
   // you explicitly allow it
@@ -1407,12 +1412,12 @@ Closes all other RxDatabase instances that have the same storage+name combinatio
 
 ```js
 const db1 = await createRxDatabase({
-  name: 'heroesdb',
+  name: 'mydatabase',
   storage: getRxStorageLocalstorage(),
   closeDuplicates: true
 });
 const db2 = await createRxDatabase({
-  name: 'heroesdb',
+  name: 'mydatabase',
   storage: getRxStorageLocalstorage(),
   closeDuplicates: true // this create-call will close db1
 });
@@ -1436,7 +1441,7 @@ async function myOwnHashFunction(input: string | ArrayBuffer | Blob) {
     }
     return sha256(input);
 }
-const db = await createRxDatabase({
+const myDatabase = await createRxDatabase({
   hashFunction: myOwnHashFunction
   /* ... */
 });
@@ -1585,8 +1590,8 @@ const sub = myDatabase.collections$.subscribe(event => {
 });
 
 await myDatabase.addCollections({
-  heroes: {
-    schema: mySchema
+  todos: {
+    schema: todoSchema
   }
 });
 
@@ -1822,7 +1827,7 @@ console.log(lastState);
 ```
 
 #### get deleted
-A getter to get the current value of `deleted$`.
+A getter that returns the deleted state of this `RxDocument` instance. An instance does not change after a write, so you have to call `getLatest()` to get the current value of `deleted$`.
 
 ```js
 console.log(myDocument.deleted);
@@ -1831,6 +1836,9 @@ console.log(myDocument.deleted);
 await myDocument.remove();
 
 console.log(myDocument.deleted);
+// false
+
+console.log(myDocument.getLatest().deleted);
 // true
 ```
 
@@ -2093,7 +2101,7 @@ const localDoc = await myCollection.upsertLocal<MyLocalDocumentType>(
 );
 
 // typescript will know that foo is a string
-const foo: string = localDoc.toJSON().foo;
+const foo: string = localDoc.toJSON().data.foo;
 ```
 
 ---
@@ -2117,7 +2125,7 @@ mySourceCollection.$.subscribe(event => {/* ...process...*/});
 While this could work in some cases, it causes many problems that are fixed by using the pipeline plugin instead:
 - In an RxPipeline, only the [Leading Instance](./leader-election.md) runs the operations. For example when you have multiple browser tabs open, only one will run the processing and when that tab is closed, another tab will become elected leader and continue the pipeline processing.
 - On sudden stops and restarts of the JavaScript process, the processing will continue at the correct checkpoint and not miss out any documents even on unexpected crashes.
-- Reads/Writes on the destination collection are halted while the pipeline is processing. This ensures your queries only return fully processed documents and no partial results. So when you run a query to the destination collection directly after a write to the source collection, you can be sure your query results are up to date and the pipeline has already been run at the moment the query resolved:
+- Queries on the destination collection are halted while the pipeline is processing. This ensures your queries only return fully processed documents and no partial results. So when you run a query to the destination collection directly after a write to the source collection, you can be sure your query results are up to date and the pipeline has already been run at the moment the query resolved:
 
 ```ts
 await mySourceCollection.insert({/* ... */});
@@ -2169,7 +2177,9 @@ const pipeline = await emailCollection.addPipeline({
     handler: async (docs) => {
         for (const doc of docs) {
             // remove previous mapping
-            await emailByReceiverCollection.find({emailId: doc.primary}).remove();
+            await emailByReceiverCollection.find({
+                selector: { emailId: doc.primary }
+            }).remove();
             // add new mapping
             if(!doc.deleted) {
                 await emailByReceiverCollection.bulkInsert(
@@ -2188,7 +2198,7 @@ With this you can efficiently query for "all emails that a person received" by r
 
 ```ts
 const mailIds = await emailByReceiverCollection.find({
-    receiver: 'foobar@example.com'
+    selector: { receiver: 'foobar@example.com' }
 }).exec();
 ```
 
@@ -2203,7 +2213,9 @@ const pipeline = await emailCollection.addPipeline({
     handler: async (docs) => {
         for (const doc of docs) {
             // remove previous mapping
-            await mailByWordCollection.find({emailId: doc.primary}).remove();
+            await mailByWordCollection.find({
+                selector: { emailId: doc.primary }
+            }).remove();
             // add new mapping
             if(!doc.deleted) {
                 const words = doc.text.split(' ');
@@ -2222,7 +2234,9 @@ const pipeline = await emailCollection.addPipeline({
 With this you can efficiently query for "all emails that contain a given word" by running:
 
 ```ts
-const mailIds = await emailByReceiverCollection.find({word: 'foobar'}).exec();
+const mailIds = await mailByWordCollection.find({
+    selector: { word: 'foobar' }
+}).exec();
 ```
 
 #### UseCase: Download data based on source documents
@@ -2272,11 +2286,11 @@ Pipeline handlers must never throw. If you run operations inside of the handler 
 
 #### Be careful when doing http requests in the handler
 
-When you run http requests inside of your handler, you no longer have an [offline first](./offline-first.md) application because reads to the destination collection will be blocked until all handlers have finished. When your client is offline, therefore the collection will be blocked for reads and writes.
+When you run http requests inside of your handler, you no longer have an [offline first](./offline-first.md) application because reads to the destination collection will be blocked until all handlers have finished. When your client is offline, queries on the destination collection are blocked until the requests succeed.
 
-#### Pipelines temporarily block external reads and writes
+#### Pipelines temporarily block external reads
 
-While a pipeline is running, **all reads and writes to its destination collection are blocked**. This guarantees that queries never observe partially processed data, but it also means that pipelines can block each other if they interact incorrectly.
+While a pipeline is running, **all queries on its destination collection are blocked**. Writes to the destination collection from outside of the handler are not blocked. This guarantees that queries never observe partially processed data, but it also means that pipelines can block each other if they interact incorrectly.
 
 Problems occur when multiple pipelines:
 
@@ -2409,6 +2423,8 @@ await myDatabase.todos.insert({/* ... */}); // insert one
 // stop watching this query
 querySub.unsubscribe()
 ```
+
+When the [RxCollection](./rx-collection.md) or the [RxDatabase](./rx-database.md) of the query gets closed or removed, the observable completes and emits no more results or errors.
 
 ### update()
 Runs an [update](./rx-document.md#update) on every RxDocument of the query-result.
@@ -2801,6 +2817,8 @@ await myDatabase.addCollections({
 
 ### FAQ
 
+  A query with `limit: 0` returns zero documents, same as `LIMIT 0` in SQL databases. The limit is often calculated from variables in your own code, and when that calculation ends at `0`, fetching zero documents is the expected result instead of all documents of the collection. To get all documents, leave out the `limit`. A negative `limit` throws the error [`QU23`](./errors.md#QU23), also when [dev-mode](./dev-mode.md) is not used.
+
   Like most other NoSQL databases, RxDB uses the JSON-based [Mango query syntax](https://github.com/cloudant/mango), similar to MongoDB. Mango queries work better with TypeScript than SQL strings, and they are composable, so you can transform them in code without joining strings. They can also be run fast with only a minimal query planner that picks the best index and operations. And NoSQL queries can be optimized with the [EventReduce](https://github.com/pubkey/event-reduce) algorithm, which improves the performance of observed and cached queries.
 
   No, RxDB does not support partial document retrieval. Because RxDB is a client-side database with limited memory, it caches and de-duplicates entire documents across multiple queries. Even if you only need a few fields, most storages must still fetch the entire JSON data, so subselecting fields would not significantly improve performance. Therefore, RxDB always returns full documents. If you only need certain fields, you can filter them out in your application code or consider storing just the necessary data in a separate collection.
@@ -3088,7 +3106,7 @@ const todoSchemaWithIndexes = {
 };
 ```
 
-## internalIndexes
+### internalIndexes
 
 When you use RxDB on the server-side, you might want to use internalIndexes to speed up internal queries. [Read more](./rx-server.md#server-only-indexes)
 
@@ -3371,6 +3389,8 @@ await myState.set('myField', v => v + 1);
 // update value to be 42
 await myState.set('myField', v => 42);
 ```
+
+When the modifier returns `undefined`, the value at that path is removed from the state. This works the same with and without a [schema validator](./schema-validation.md).
 
 The modifier is used instead of a direct assignment to ensure correct behavior when other JavaScript realms write to the state at the same time, like other browser tabs or WebWorkers. On conflicts, the modifier will just be run again to ensure deterministic and correct behavior. Therefore mutation is `async`, you have to `await` the call to the set function when you care about the moment when the change actually happened.
 
